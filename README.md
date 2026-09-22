@@ -11,14 +11,14 @@ Claude plugins for the [Aspire Atlas](https://atlas.aspire.io) platform. Works i
 ### Claude Cowork
 
 1. Open **Customize** in the sidebar, then **Plugins**.
-2. Choose **Add marketplace** and enter `aspire-atlas/claude-plugins`.
+2. Choose **Add marketplace** and enter `aspire-atlas/claude-plugin`.
 3. Install **Aspire Atlas**. Sign in to Atlas when prompted.
 4. Start a new chat and type `/aspire:aspire`.
 
 ### Claude Code
 
 ```shell
-/plugin marketplace add aspire-atlas/claude-plugins
+/plugin marketplace add aspire-atlas/claude-plugin
 /plugin install aspire@aspire-atlas
 ```
 
@@ -29,7 +29,7 @@ Releases on this channel are pinned by version and listed in [CHANGELOG.md](CHAN
 The `develop` branch is the beta channel. It ships every commit, so you get new features days or weeks before the official release, with less testing behind them. Available in Claude Code:
 
 ```shell
-/plugin marketplace add https://github.com/aspire-atlas/claude-plugins.git#develop
+/plugin marketplace add https://github.com/aspire-atlas/claude-plugin.git#develop
 /plugin install aspire@aspire-atlas-beta
 ```
 
@@ -38,7 +38,7 @@ Notes:
 - Install from one channel at a time. Both channels provide the plugin named `aspire`; if both are installed, Claude Code loads one and warns about the other.
 - Beta updates arrive on `/plugin marketplace update aspire-atlas-beta`, or turn on auto-update for the marketplace under `/plugin` → **Marketplaces**.
 - To leave the beta: `/plugin marketplace remove aspire-atlas-beta`, then install from the official channel.
-- Report beta issues on [GitHub Issues](https://github.com/aspire-atlas/claude-plugins/issues) with the `beta` label.
+- Report beta issues on [GitHub Issues](https://github.com/aspire-atlas/claude-plugin/issues) with the `beta` label.
 
 ## Update
 
@@ -61,7 +61,7 @@ Full details in the [plugin README](plugins/aspire/README.md).
 
 ## Support
 
-- Bugs and requests: [GitHub Issues](https://github.com/aspire-atlas/claude-plugins/issues)
+- Bugs and requests: [GitHub Issues](https://github.com/aspire-atlas/claude-plugin/issues)
 - Security: see [SECURITY.md](SECURITY.md)
 - Product: [atlas.aspire.io](https://atlas.aspire.io)
 

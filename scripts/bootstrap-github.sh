@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One-time GitHub setup for aspire-atlas/claude-plugins.
+# One-time GitHub setup for aspire-atlas/claude-plugin.
 # Requires: gh (authenticated with admin rights on the aspire-atlas org).
 #
 #   bash scripts/bootstrap-github.sh            # create repo, push both branches, protect
@@ -7,7 +7,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-REPO="${REPO:-aspire-atlas/claude-plugins}"
+REPO="${REPO:-aspire-atlas/claude-plugin}"
 
 if [[ "${SKIP_CREATE:-0}" != "1" ]]; then
   gh repo create "$REPO" --public \
