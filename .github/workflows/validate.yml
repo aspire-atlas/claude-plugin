@@ -55,8 +55,8 @@ jobs:
           # This keeps develop -> release merges conflict-free.
           git fetch -q origin main || { echo "no main yet; skipping"; exit 0; }
           base=$(git merge-base origin/main HEAD)
-          if ! git diff --quiet "$base" HEAD -- CHANGELOG.md; then
-            echo "CHANGELOG.md changed on develop. Write release notes on the release/* branch instead."; exit 1
+          if ! git diff --quiet "$base" HEAD -- CHANGELOG.md && ! git diff --quiet origin/main HEAD -- CHANGELOG.md; then
+            echo "CHANGELOG.md changed on develop. Write release notes on the release/* branch instead (or sync it to main's copy)."; exit 1
           fi
           echo "ok"
 
