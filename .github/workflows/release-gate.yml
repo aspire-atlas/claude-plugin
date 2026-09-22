@@ -23,14 +23,21 @@ jobs:
             *) echo "PRs to main must come from release/*, develop, or hotfix/*, got '$src'"; exit 1 ;;
           esac
 
-      - name: PR must bump the release version
+      - name: PR must bump the release version when plugin content changed
+        id: bump
         run: |
           base_ver=$(git show "origin/${{ github.base_ref }}:.claude-plugin/marketplace.json" | jq -r '.plugins[0].version // empty')
           head_ver=$(jq -r '.plugins[0].version // empty' .claude-plugin/marketplace.json)
           echo "main: ${base_ver:-none}  ->  PR: ${head_ver:-none}"
           [[ -n "$head_ver" ]] || { echo "marketplace entry has no version; set plugins[0].version to X.Y.Z"; exit 1; }
-          if [[ -n "$base_ver" && "$base_ver" == "$head_ver" ]]; then
-            echo "Version unchanged ($head_ver). Bump it in .claude-plugin/marketplace.json."; exit 1
+          if git diff --quiet "origin/${{ github.base_ref }}" HEAD -- plugins/; then
+            echo "No plugin content changed; docs/CI-only PR, bump optional"
+            echo "release=$([[ "$base_ver" != "$head_ver" ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          else
+            echo "release=true" >> "$GITHUB_OUTPUT"
+            if [[ -n "$base_ver" && "$base_ver" == "$head_ver" ]]; then
+              echo "Plugin content changed but version is still $head_ver. Bump it in .claude-plugin/marketplace.json."; exit 1
+            fi
           fi
           if [[ -n "$base_ver" ]]; then
             highest=$(printf '%s\n%s\n' "$base_ver" "$head_ver" | sort -V | tail -1)
@@ -38,6 +45,7 @@ jobs:
           fi
 
       - name: CHANGELOG has a dated entry for the new version
+        if: steps.bump.outputs.release == 'true'
         run: |
           ver=$(jq -r '.plugins[0].version' .claude-plugin/marketplace.json)
           grep -qE "^## \[$ver\] - [0-9]{4}-[0-9]{2}-[0-9]{2}" CHANGELOG.md \
