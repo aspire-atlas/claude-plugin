@@ -69,7 +69,12 @@ for i in $(seq 0 $((count - 1))); do
       # (the release workflow tags main right after the merge lands).
       if [[ -n "$ever" ]] && git rev-parse -q --verify "refs/tags/v$ever^{commit}" >/dev/null 2>&1; then
         if [[ "$(git rev-parse "v$ever^{commit}")" != "$(git rev-parse HEAD)" ]]; then
-          err "$pname: version $ever was already released at another commit (tag v$ever). Bump it."
+          # Docs, CI and repo housekeeping may land on main without a bump.
+          # Plugin content may not: anything under the plugin folder that
+          # differs from the tagged release requires a new version.
+          if ! git diff --quiet "v$ever" HEAD -- "$src"; then
+            err "$pname: $src changed since tag v$ever but version is still $ever. Bump it."
+          fi
         fi
       fi
       ;;

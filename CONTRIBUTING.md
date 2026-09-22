@@ -60,7 +60,7 @@ git push -u origin release/1.1.0
 gh pr create --base main --label release --title "Release 1.1.0"
 ```
 
-1. The **Release gate** workflow blocks the merge unless: the source is `release/*`, `develop`, or `hotfix/*`; the version is higher than what `main` has; and CHANGELOG has a dated entry with nothing left under Unreleased.
+1. The **Release gate** workflow blocks the merge unless: the source is `release/*`, `develop`, or `hotfix/*`; the version is higher than what `main` has whenever anything under `plugins/` changed (docs and CI-only PRs may skip the bump); and CHANGELOG has a dated entry with nothing left under Unreleased.
 2. Merge with a merge commit (not squash, so `main` records that it contains `develop`). The **Release** workflow tags `v1.1.0`, packages a zip with a SHA-256, and publishes the GitHub Release with the changelog section as notes. Delete the release branch.
 3. Do not merge `main` back into `develop`. Nothing on `main` is needed there.
 
