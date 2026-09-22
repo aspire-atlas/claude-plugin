@@ -1,5 +1,7 @@
 # Contributing
 
+Authoritative runbook: [docs/PLUGIN-LIFECYCLE.md](docs/PLUGIN-LIFECYCLE.md). This file is the short version.
+
 ## Branches and channels
 
 | Branch | Marketplace name | Version | Who gets it |
@@ -83,3 +85,7 @@ It sets `main` as default, requires PRs plus the `validate` and `gate` checks on
 - Never show internal ids, slugs, or tool names to the user. Handles (`@name`) are the anchor.
 - Re-verify the tool surface against the live server before each official release and update `skills/aspire/references/atlas-tools.md`.
 - No secrets, customer names, or internal URLs in any file. CI scans for credential patterns; treat a hit as a blocker.
+
+## Internal mirror (Aspire staff)
+
+Org-managed plugin marketplaces in claude.ai accept private repositories only, and this repo is public for the Anthropic directory. The **Mirror to internal** workflow force-pushes `develop` to the private repo `aspire-atlas/claude-plugin-internal` on every push, and the org marketplace syncs from there. Staff therefore run the beta channel. Never commit to the mirror; it is overwritten on the next push. Auth is a write deploy key on the mirror, stored as the `MIRROR_DEPLOY_KEY` secret here.
