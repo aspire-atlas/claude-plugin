@@ -1,0 +1,57 @@
+name: Release
+
+# Tags the official channel. Runs when main receives a version bump and cuts
+# the GitHub Release automatically, so a merged release PR is the whole job.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read version and decide whether to release
+        id: ver
+        run: |
+          ver=$(jq -r '.plugins[0].version' .claude-plugin/marketplace.json)
+          echo "version=$ver" >> "$GITHUB_OUTPUT"
+          if git rev-parse -q --verify "refs/tags/v$ver" >/dev/null; then
+            echo "v$ver already tagged; nothing to do"; echo "release=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "release=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Extract changelog section
+        if: steps.ver.outputs.release == 'true'
+        run: |
+          awk -v v="${{ steps.ver.outputs.version }}" '
+            $0 ~ "^## \\["v"\\]" {p=1; next}
+            p && /^## \[/ {exit}
+            p {print}
+          ' CHANGELOG.md > notes.md
+          [[ -s notes.md ]] || { echo "No CHANGELOG section"; exit 1; }
+
+      - name: Package plugin archive
+        if: steps.ver.outputs.release == 'true'
+        run: |
+          v="${{ steps.ver.outputs.version }}"
+          (cd plugins && zip -qr "../aspire-$v.zip" aspire)
+          sha256sum "aspire-$v.zip" > "aspire-$v.zip.sha256"
+
+      - name: Tag and publish GitHub Release
+        if: steps.ver.outputs.release == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.ver.outputs.version }}
+          name: aspire v${{ steps.ver.outputs.version }}
+          body_path: notes.md
+          files: |
+            aspire-*.zip
+            aspire-*.zip.sha256

@@ -1,0 +1,37 @@
+{
+  "$schema": "https://code.claude.com/schemas/marketplace.json",
+  "name": "aspire-atlas-beta",
+  "description": "BETA channel. Claude plugins for the Aspire Atlas platform (atlas.aspire.io), tracking the develop branch by commit. For the official channel add aspire-atlas/claude-plugins.",
+  "owner": {
+    "name": "Aspire",
+    "url": "https://github.com/aspire-atlas"
+  },
+  "plugins": [
+    {
+      "name": "aspire",
+      "displayName": "Aspire Atlas (beta)",
+      "source": "./plugins/aspire",
+      "description": "Onboarding, first insights, weekly creator content briefs, and schedulable daily and weekly readouts for the Atlas platform (atlas.aspire.io). To get started, type /aspire:aspire.",
+      "author": {
+        "name": "Aspire"
+      },
+      "homepage": "https://atlas.aspire.io",
+      "repository": "https://github.com/aspire-atlas/claude-plugins",
+      "license": "Apache-2.0",
+      "category": "marketing",
+      "keywords": [
+        "aspire",
+        "atlas",
+        "social listening",
+        "influencer marketing",
+        "creator discovery",
+        "content planning",
+        "brand",
+        "readout",
+        "reporting",
+        "instagram",
+        "tiktok"
+      ]
+    }
+  ]
+}

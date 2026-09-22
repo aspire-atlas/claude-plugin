@@ -1,0 +1,68 @@
+name: Validate
+
+# Runs on every push and PR. Structural validation plus the channel contract
+# for the branch being built or targeted.
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # tags are needed for the version gate
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Validate marketplace manifest
+        run: claude plugin validate .
+
+      - name: Validate each plugin
+        run: |
+          for d in plugins/*/; do
+            echo "== $d"
+            claude plugin validate "$d"
+          done
+
+      - name: Resolve channel
+        id: channel
+        run: |
+          # PRs are checked against the branch they will land on.
+          target="${{ github.base_ref || github.ref_name }}"
+          case "$target" in
+            main) echo "name=main" >> "$GITHUB_OUTPUT" ;;
+            develop) echo "name=develop" >> "$GITHUB_OUTPUT" ;;
+            *) echo "name=develop" >> "$GITHUB_OUTPUT" ;;
+          esac
+          echo "Checking channel contract for: $target"
+
+      - name: Channel contract (names, pinning, CHANGELOG, version bump)
+        run: bash scripts/check-channel.sh "${{ steps.channel.outputs.name }}"
+
+      - name: CHANGELOG is edited only on release branches
+        if: steps.channel.outputs.name == 'develop'
+        run: |
+          # develop must never touch CHANGELOG.md; release/* branches own it.
+          # This keeps develop -> release merges conflict-free.
+          git fetch -q origin main || { echo "no main yet; skipping"; exit 0; }
+          base=$(git merge-base origin/main HEAD)
+          if ! git diff --quiet "$base" HEAD -- CHANGELOG.md; then
+            echo "CHANGELOG.md changed on develop. Write release notes on the release/* branch instead."; exit 1
+          fi
+          echo "ok"
+
+      - name: Scan for credential patterns
+        run: |
+          if grep -rniE '(api[_-]?key|secret|password|bearer)[[:space:]]*[:=][[:space:]]*["'"'"']?[A-Za-z0-9_\-]{12,}' plugins/ ; then
+            echo "Possible credential found"; exit 1
+          fi
+          echo "clean"

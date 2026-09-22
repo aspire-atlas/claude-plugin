@@ -1,0 +1,26 @@
+{
+  "name": "aspire",
+  "displayName": "Aspire Atlas",
+  "description": "Onboarding, first insights, weekly creator content briefs, and schedulable daily and weekly readouts for the Atlas platform (atlas.aspire.io). Connects the Atlas data source, scopes the brand, connects social accounts, delivers first insights, plans creator-made content with priced creator shortlists, and reports what changed on your accounts on a daily and weekly cadence. To get started, just type /aspire:aspire.",
+  "icon": "./assets/icon.png",
+  "author": {
+    "name": "Aspire"
+  },
+  "homepage": "https://atlas.aspire.io",
+  "repository": "https://github.com/aspire-atlas/claude-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "aspire",
+    "atlas",
+    "social listening",
+    "onboarding",
+    "brand",
+    "creator brief",
+    "creator discovery",
+    "content planning",
+    "readout",
+    "reporting",
+    "scheduled tasks"
+  ],
+  "mcpServers": "./.mcp.json"
+}
