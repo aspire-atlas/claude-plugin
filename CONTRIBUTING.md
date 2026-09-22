@@ -1,5 +1,7 @@
 # Contributing
 
+Authoritative runbook: [docs/PLUGIN-LIFECYCLE.md](docs/PLUGIN-LIFECYCLE.md). This file is the short version.
+
 ## Branches and channels
 
 | Branch | Marketplace name | Version | Who gets it |

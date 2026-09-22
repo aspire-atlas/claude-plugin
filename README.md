@@ -61,6 +61,7 @@ Full details in the [plugin README](plugins/aspire/README.md).
 
 ## Support
 
+- Maintainers: [docs/PLUGIN-LIFECYCLE.md](docs/PLUGIN-LIFECYCLE.md) and [CONTRIBUTING.md](CONTRIBUTING.md)
 - Bugs and requests: [GitHub Issues](https://github.com/aspire-atlas/claude-plugin/issues)
 - Security: see [SECURITY.md](SECURITY.md)
 - Product: [atlas.aspire.io](https://atlas.aspire.io)
