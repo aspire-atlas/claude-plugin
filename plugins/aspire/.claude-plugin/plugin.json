@@ -7,7 +7,7 @@
     "name": "Aspire"
   },
   "homepage": "https://atlas.aspire.io",
-  "repository": "https://github.com/aspire-atlas/claude-plugins",
+  "repository": "https://github.com/aspire-atlas/claude-plugin",
   "license": "Apache-2.0",
   "keywords": [
     "aspire",

@@ -19,5 +19,5 @@ First public release. Versioning restarts at 1.0.0; earlier 0.x builds were inte
 - Two release channels: `aspire-atlas` (official, pinned) and `aspire-atlas-beta` (tracks `develop`).
 - Apache-2.0 license.
 
-[Unreleased]: https://github.com/aspire-atlas/claude-plugins/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/aspire-atlas/claude-plugins/releases/tag/v1.0.0
+[Unreleased]: https://github.com/aspire-atlas/claude-plugin/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/aspire-atlas/claude-plugin/releases/tag/v1.0.0

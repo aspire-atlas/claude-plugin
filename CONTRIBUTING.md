@@ -4,8 +4,8 @@
 
 | Branch | Marketplace name | Version | Who gets it |
 | ------ | ---------------- | ------- | ----------- |
-| `develop` | `aspire-atlas-beta` | none; Claude uses the commit SHA, so every commit ships | Beta users who added `...claude-plugins.git#develop` |
-| `main` | `aspire-atlas` | pinned `X.Y.Z` in `marketplace.json` | Everyone who added `aspire-atlas/claude-plugins`; the Anthropic plugin directory mirrors this branch |
+| `develop` | `aspire-atlas-beta` | none; Claude uses the commit SHA, so every commit ships | Beta users who added `...claude-plugin.git#develop` |
+| `main` | `aspire-atlas` | pinned `X.Y.Z` in `marketplace.json` | Everyone who added `aspire-atlas/claude-plugin`; the Anthropic plugin directory mirrors this branch |
 
 Rules that make this work:
 
@@ -38,7 +38,7 @@ bash scripts/check-channel.sh develop   # or: main
 Try the plugin from a checkout in Claude Code:
 
 ```shell
-/plugin marketplace add ./path/to/claude-plugins
+/plugin marketplace add ./path/to/claude-plugin
 /plugin install aspire@aspire-atlas-beta
 ```
 
