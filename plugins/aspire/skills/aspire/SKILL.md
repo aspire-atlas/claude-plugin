@@ -1,7 +1,8 @@
 ---
 name: aspire
 description: >
-  This skill should be used when the user types "/aspire:aspire" or "/aspire", says
+  This skill should be used when the user types "/aspire:aspire" or "/aspire" (with or
+  without an argument such as "agents", which lists the plugin's subagents), says
   "get started with Atlas", "connect Aspire Atlas",
   "set up Atlas", "connect Atlas", "onboard my brand", "connect my Instagram/TikTok/YouTube
   to Atlas", asks how to start using the atlas.aspire.io platform, or asks for a daily or
@@ -16,12 +17,45 @@ metadata:
 # /aspire: Atlas onboarding
 
 Guide a new or returning user from zero to first insights on Atlas. Run the phases in order.
-Never skip Phase 1. Stop and resolve any phase that fails before moving on.
+Never skip Phase 1 when running the phases. Stop and resolve any phase that fails before moving on.
 
 Tone for all user-facing messages: brief, plain language, no jargon about tools or servers.
 Refer to the connection as "Aspire Atlas" and the platform as "Atlas". Never expose internal
 tool names. The slash command is `/aspire:aspire` (plugin namespace), so use that form in
 any instruction that tells the user to re-run the skill.
+
+The `agents` argument (`/aspire:aspire agents`) lists the plugin's subagents and runs no phase.
+
+## Arguments
+
+Text after the command is the argument. Route on it before anything else:
+
+| Argument | Action |
+| -------- | ------ |
+| `agents` (also `list agents`, `show agents`) | Run **List agents** below. Skip every phase. |
+| empty, or anything else | Run the phases in order, starting at Phase 1. Treat the text as context. |
+
+### List agents
+
+Report every subagent the plugin ships. Read the list from disk each time so it never goes
+stale; never recite it from memory.
+
+1. Resolve the plugin's `agents/` folder from this skill's base directory: it is two levels
+   up, at `<base>/../../agents/`. Use `Glob` for `agents/*.md` there.
+2. For each file, read the frontmatter with `Read`. Take `name` and the first sentence of
+   `description` (stop at the first period; ignore any `<example>` blocks).
+3. Reply with one bullet per agent, sorted by name, in this shape:
+   `**aspire:{name}**: {first sentence}` followed on the same line by "Trigger: {phrases}",
+   where the phrases are the quoted "Trigger on ..." terms from the description when present.
+   Skip the trigger part when the description has none.
+4. Close with one line: agents run on their own when the matching phrase is used, or the user
+   can ask for one by name.
+
+No Atlas connection or sign in is needed for this argument, so do not run Phase 1 and do not
+render a connector card. If the `agents/` folder is missing or empty, say so in one line and
+stop; never invent an agent.
+
+---
 
 ## Phase overview
 
