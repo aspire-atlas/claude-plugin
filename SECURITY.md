@@ -8,8 +8,8 @@ Email **security@aspire.io** with a description, reproduction steps, and impact.
 
 - **Data access.** The bundled connector talks only to `https://atlas.aspire.io/mcp` over HTTPS with OAuth. It reads and writes Atlas data for the organizations the signed-in user belongs to. It does not read Claude memory, chat history, or uploaded files beyond what the user hands it in the task.
 - **No local code.** The plugin is markdown and JSON only: skills, agents, and an MCP definition. It installs no binaries, runs no hooks, and needs no environment variables or API keys.
-- **State changes need consent.** Every Atlas write is confirmed through a multiple-choice question. Destructive actions each get their own confirmation. Paid creator discovery runs only on explicit choice.
-- **Unattended runs are constrained.** Scheduled readouts never ask questions, never run destructive or paid tools, and deliver only to Slack channels and email recipients the user saved during setup.
+- **State changes need consent.** Every Atlas write is confirmed through a multiple-choice question. Destructive actions each get their own confirmation.
+- **Unattended runs are constrained.** Scheduled readouts never ask questions, never run destructive tools, never start discovery jobs, and deliver only to Slack channels and email recipients the user saved during setup.
 
 ## Supply chain
 

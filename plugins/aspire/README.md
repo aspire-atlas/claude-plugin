@@ -25,10 +25,10 @@ Plugin skills are namespaced, so the canonical command is `/aspire:aspire`. The 
 ## Usage
 
 - `/aspire:aspire` runs the full onboarding, resuming at the right phase for existing organizations.
-- Account review: the first-insights phase asks which account to cover - the brand's connected accounts, or a network and handle the user types. A typed handle that Atlas does not hold, or holds from more than 24 hours ago, is fetched through Aspire discovery first; naming the handle is the approval for that fetch, and TikTok discovery makes paid vendor calls.
+- Account review: the first-insights phase asks which account to cover - the brand's connected accounts, or a network and handle the user types. A typed handle that Atlas does not hold, or holds from more than 24 hours ago, is fetched through Aspire discovery first; naming the handle is the approval for that fetch.
 - `/aspire:aspire agents` lists every subagent in the plugin with a one-line purpose and its trigger phrases, then asks which one to run and hands off to that agent's flow (connection check, profile, and confirmations included). Read from the `agents/` folder at run time, so it stays current as agents are added. No Atlas connection is needed to see the list; picking an agent starts one.
 - Trigger phrases: "get started with Atlas", "connect Atlas", "onboard my brand", "connect my Instagram to Atlas".
-- Creator brief: "create a content brief for next week", "find creators to make this", "what should we post next week". Runs the `atlas-creator-brief` agent for a connected brand. Marketplace discovery is only run with the user's explicit choice because it can start paid work.
+- Creator brief: "create a content brief for next week", "find creators to make this", "what should we post next week". Runs the `atlas-creator-brief` agent for a connected brand. Marketplace discovery is only run with the user's explicit choice.
 - Readouts: "what happened yesterday", "how did last week go", "weekly readout", "daily readout", "schedule the readouts". First use runs a six-question setup (delivery times and timezone, Slack channel and email recipients, flag thresholds, lead metric, escalation rule, audience). Answers are saved to the brand's Atlas memory so every teammate and every scheduled run uses the same setup without re-asking.
 
 ## Scheduling the readouts
@@ -84,8 +84,7 @@ destinations saved in the brand's readout routing.
 
 - Every action that changes Atlas state is confirmed through a multiple-choice question first, never plain text.
 - Destructive actions (`delete_profile`, `unlink_channel`, superseding or retracting a calibration, removing hashtags, changing the brand instruction) each get their own confirmation with the safe option first, and never run during onboarding on the skill's own initiative.
-- Paid discovery (`lookup_*`, marketplace search) runs only on the user's explicit choice.
-- Scheduled (unattended) runs never ask questions, never run destructive or paid tools, and deliver only to destinations saved during readout setup. Incomplete setup produces a "setup needed" page, not a guess.
+- Scheduled (unattended) runs never ask questions, never run destructive tools, never start discovery jobs, and deliver only to destinations saved during readout setup. Incomplete setup produces a "setup needed" page, not a guess.
 - The tool surface is re-verified per release; unlisted tools that change state are treated as destructive until documented. See `skills/aspire/references/atlas-tools.md`.
 
 ## Changes

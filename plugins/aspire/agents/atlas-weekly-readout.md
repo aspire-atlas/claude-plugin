@@ -48,7 +48,7 @@ run rules. Follow it exactly.
    Never ask the user directly.
 2. **Never fabricate.** Every figure comes from a search hit or an aggregation. Say "not
    measurable yet" where the data is thin (fewer than 3 posts in a bucket).
-3. **No spending, no destruction.** Never call `lookup_creators`, `lookup_posts`,
+3. **No discovery, no destruction.** Never call `lookup_creators`, `lookup_posts`,
    `search_creator_marketplace`, `start_business_discovery`, or any tool in the Destructive
    tools table.
 4. **Deliver only to saved destinations.** Slack channel and email recipients come from

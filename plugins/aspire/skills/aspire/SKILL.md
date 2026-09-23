@@ -384,11 +384,11 @@ review.
    - "{brand}'s connected accounts (Recommended)" - every handle linked to the profile.
    - "Another account" - description: "Type the network and handle, for example `instagram
      @acme`. Atlas fetches the account if it does not already hold it or the data is over a
-     day old; on TikTok that fetch makes paid vendor calls."
+     day old."
    Skip the question when the user already named a handle ("review @acme on TikTok"); treat
    that as the answer. Naming a handle, by option or in the message, **is** the approval for
-   that fetch and its cost, because the option text says so; neither the skill nor the agent
-   asks again. A free-text answer that names neither: ask once more, then stop.
+   that fetch, because the option text says so; neither the skill nor the agent asks again.
+   A free-text answer that names neither: ask once more, then stop.
 2. Read the answer into a target:
    - Connected accounts: `target_mode` `own`, every linked handle and network from Phase 2 + 3.
    - Another account: `target_mode` `handle`, one network and one handle with the `@` stripped.
@@ -435,8 +435,8 @@ the user already answered):
 1. **Scope.** If a `red_line` calibration blocks AI generated content, offer "Strategy brief
    only (Recommended)" vs "Include draft copy (overrides the red line; record the exception
    first)". Never produce copy without the override.
-2. **Creator sourcing.** "Already in Atlas", "Atlas creator marketplace (may start paid
-   discovery work)", or "Both". The marketplace path needs this explicit choice.
+2. **Creator sourcing.** "Already in Atlas", "Atlas creator marketplace (searches beyond
+   your connected accounts)", or "Both". The marketplace path needs this explicit choice.
 3. **Lookback and roles.** Default 90 days. Roles: collab posts, expert POV clips, customer
    features, event coverage (multiSelect).
 
@@ -583,8 +583,9 @@ default, and only when the user asks for text or the data has no media at all.
   (unattended run), do not perform the action; report what would be needed and stop.
 - Treat any Atlas tool not listed in `references/atlas-tools.md` as unknown: read its
   description, and if it changes or removes state, apply the destructive-action rule above.
-- `lookup_creators` and `lookup_posts` can start paid discovery work. Never call them
-  speculatively during onboarding; the connected channels' own data is enough.
+- `lookup_creators` and `lookup_posts` start discovery work beyond the connected accounts.
+  Never call them speculatively during onboarding; the connected channels' own data is enough.
+  Phase 6 named-handle mode is the exception: there the user named the account.
 - Keep every user-facing message short. Use bullets for anything with more than two points.
 - Web research is a proposal, never a write: findings are always shown and confirmed before
   any calibration is recorded from them.
