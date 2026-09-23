@@ -54,7 +54,8 @@ Notes:
 
 - Every action that changes Atlas state is confirmed with a multiple-choice question first.
 - Destructive actions (deleting a profile, unlinking a channel, retracting a calibration) each get their own confirmation.
-- Scheduled runs never ask questions, never run destructive tools, never start discovery jobs, and deliver only to destinations you saved during setup.
+- Scheduled runs never ask questions, never run destructive tools, and deliver only to destinations you saved during setup.
+- Only creator discovery searches for new creators on a schedule, and only because you set that cadence yourself. No other scheduled run starts discovery work.
 
 Full details in the [plugin README](plugins/aspire/README.md).
 

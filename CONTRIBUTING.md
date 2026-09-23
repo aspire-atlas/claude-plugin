@@ -81,6 +81,7 @@ It sets `main` as default, requires PRs plus the `validate` and `gate` checks on
 ## Rules for skills and agents
 
 - Every Atlas write is confirmed through `AskUserQuestion` first. Destructive tools each get their own confirmation with the safe option listed first.
+- Unattended runs never ask and never destroy. Only `atlas-creator-discovery` may start discovery work on a schedule, under a saved cadence record.
 - Never show internal ids, slugs, or tool names to the user. Handles (`@name`) are the anchor.
 - Re-verify the tool surface against the live server before each official release and update `skills/aspire/references/atlas-tools.md`.
 - No secrets, customer names, or internal URLs in any file. CI scans for credential patterns; treat a hit as a blocker.

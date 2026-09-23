@@ -174,7 +174,7 @@ Because the mirror is overwritten wholesale, it carries the `develop` copy of ev
 These are product and safety commitments. A PR that breaks one is blocked in review regardless of CI.
 
 - Every Atlas write is confirmed through `AskUserQuestion` before it runs. Destructive tools (`delete_profile`, `unlink_channel`, superseding or retracting a calibration, removing hashtags, changing the brand instruction) each get their own confirmation with the safe option listed first, and never run during onboarding on the skill's own initiative.
-- Scheduled (unattended) runs never ask questions, never run destructive tools, never start discovery jobs, and deliver only to destinations saved during readout setup.
+- Scheduled (unattended) runs never ask questions, never run destructive tools, and deliver only to destinations saved during setup. The one exception to the no-discovery rule is `atlas-creator-discovery`: its saved cadence record is the standing approval to search Atlas and the creator marketplace on every run, including scheduled ones. Every other scheduled run starts no discovery work.
 - Never show internal ids, slugs, field names, or tool names to users. Handles (`@name`) are the anchor.
 - Re-verify the tool surface against the live Atlas server before each official release; update `plugins/aspire/skills/aspire/references/atlas-tools.md` and treat any unlisted state-changing tool as destructive until documented.
 - No secrets, customer names, customer handles, or internal URLs in any file. CI scans for credential patterns; a hit is a blocker.

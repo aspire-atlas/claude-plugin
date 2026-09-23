@@ -7,9 +7,11 @@ description: >
   "connect Atlas", "onboard my brand", "connect my Instagram/TikTok/YouTube
   to Atlas", asks how to start using the atlas.aspire.io platform, or asks for a daily or
   weekly readout ("what happened yesterday", "how did last week go", "schedule the weekly
-  readout"). It verifies the Atlas data connection, authenticates and selects an
-  organization, scopes the brand, connects social accounts, captures brand context for
-  future sessions, delivers first insights, and routes recurring readouts and creator briefs.
+  readout"), or asks to find or shortlist creators for a campaign ("creator discovery", "refill
+  the shortlist", "find creators for the campaign"). It verifies the Atlas data connection,
+  authenticates and selects an organization, scopes the brand, connects social accounts,
+  captures brand context for future sessions, delivers first insights, and routes recurring
+  readouts, creator briefs, and creator discovery.
 metadata:
   author: Aspire
 ---
@@ -65,6 +67,7 @@ time so it never goes stale; never recite it from memory.
    | ------------ | ----------- |
    | `atlas-account-analyst` | Phase 1, then Phase 2 + 3 for the profile and handles, then Phase 6 (its target question first) |
    | `atlas-creator-brief` | Phase 1, then Phase 2 + 3, then **Creator brief** (its three questions first) |
+   | `atlas-creator-discovery` | Phase 1, then Phase 2 + 3, then **Creator discovery**, Setup if the campaign is new, then Run |
    | `atlas-daily-readout` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the daily cadence |
    | `atlas-weekly-readout` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the weekly cadence |
 
@@ -95,9 +98,10 @@ research option whose findings are shown before anything is written (Phase 5), a
 request to show posts or creators is answered visually with the post media and profile
 pictures (Visual output, after Phase 6).
 
-After onboarding, two recurring flows hang off the same connection: the **Creator brief**
-(weekly content plan with creators) and the **Readouts** (daily and weekly performance
-digests, schedulable). Both are routed from their own sections below.
+After onboarding, three recurring flows hang off the same connection: the **Creator brief**
+(weekly content plan with creators), the **Creator discovery** (a standing creator shortlist per
+campaign, schedulable), and the **Readouts** (daily and weekly performance digests,
+schedulable). Each is routed from its own section below.
 
 ---
 
@@ -405,8 +409,8 @@ review.
    calibrations. In mode `handle`, state that the user approved the fetch so the agent does not
    ask again. State that the calibrations are for classification and relevance only: a named
    account is never benchmarked against the brand's own account or the brand's competitors.
-   It is compared against its **own** peers - accounts the user named, or "like" accounts in
-   the same category and follower band, on rates rather than raw counts. Pass any comparison
+   It is compared against its **own** peers — accounts the user named, or "like" accounts in the
+   same category and follower band, on rates rather than raw counts. Pass any comparison
    accounts the user named.
 5. The subagent reads with `search_posts` / `search_creators` (calling
    `list_post_search_fields` first for the live field census), resolves and refreshes a named
@@ -444,6 +448,72 @@ Then launch the `atlas-creator-brief` agent with: tool prefix, `profile_slug`, l
 and networks, target week (next Monday to Friday unless given), lookback, and the three
 answers. Relay its summary, the published page, and any decisions it needs (guideline
 conflicts, budget tier). The agent writes action items back to Atlas as insights.
+
+---
+
+## Creator discovery (standing creator shortlist per campaign)
+
+Trigger when the user asks to find creators for a campaign, refill or review a shortlist, ask
+who to add, or schedule any of that. Requires a brand profile; linked channels help but are
+not required, because discovery is not limited to them. Full detail - the setup interview, the
+tier model, scoring, the pool state machine, the page, and the unattended rules - lives in
+`references/creator-discovery.md`.
+
+Creator discovery keeps a pool of undecided candidates at a saved target (default 50) for one named
+campaign. It is not the creator brief: the brief plans one week and sources for it, the discovery agent
+maintains a pipeline across weeks and teammates.
+
+### Setup: define the campaign once, for everyone
+
+1. Call `search_calibrations` (no filter, limit 100, `includeSuperseded: true`). If the five
+   campaign keys exist for the campaign in question (`campaign:{slug}-brief`, `-criteria`,
+   `-pool`, `-routing`, `-cadence`), skip to **Run** and offer "Change setup" as an option on
+   the run question. Several campaigns may be saved; `AskUserQuestion` which one when more
+   than one is active.
+2. Otherwise ask S1 from `references/creator-discovery.md`: what the campaign is, in the user's
+   own words.
+3. **Then write the refinement questions.** Read the S1 answer together with `brand:summary`,
+   `brand:business-context`, and the `competitor`, `red_line` and `guideline` records, and from
+   those compose 3 to 5 `AskUserQuestion` questions covering the dimensions the reference
+   lists, in its order, skipping anything S1 already settled. The options are inferred from the
+   brief and the brand context, never generic. Never ask more than five, never ask in plain
+   text.
+4. Ask S7 (pool target), S8 (routing) and S9 (cadence). On S8, state that scheduled runs will
+   post to the named Slack channel and email the named recipients without asking each time. On
+   S9, state that scheduled runs will search Atlas and the creator marketplace on their own to
+   keep the shortlist full. Those two confirmations are the standing approvals.
+5. Confirm the batch once with `AskUserQuestion` ("Save this campaign setup for {brand}?
+   Everyone on the team and every scheduled run will use it."), then write all five records
+   with `append_calibration`, `provenance: "interview"`. A `key-exists` follows the Phase 5
+   supersede rule with its own confirmation.
+
+### Run
+
+Ask once with `AskUserQuestion`: "What should the discovery agent do?" Options: "Fill the shortlist to
+{target}", "Show the current shortlist", "Record decisions on the shortlist", "Change setup".
+Then launch `atlas-creator-discovery` with: tool prefix, `profile_slug`, the campaign slug, the
+brand handles and networks, and run mode `interactive`. Relay its summary, the page link, and
+the numbered range the user can decide against.
+
+**Recording decisions** stays in the main thread, never the agent. The user replies in their
+own words against the page numbers ("keep 1, 3 and 4, drop the rest"). Resolve the numbers
+against the newest run, confirm the batch once with `AskUserQuestion` naming the handles being
+rejected, then write the verdicts with `append_insights` per the reference. Rejected creators
+never reappear; accepted ones free their slot for the next run.
+
+### Schedule (two schedules, one pass)
+
+After the first successful run, or whenever the user asks, offer with `AskUserQuestion`: "Set
+up the recurring discovery now?" Options: "Yes, discovery and shortlist (Recommended)", "Discovery
+only", "Shortlist only", "Not now". On yes, follow the same mechanics as **Readouts**,
+Schedule: read the times and timezone from `campaign:{slug}-cadence`, convert to UTC cron,
+create one task per job with the session's scheduled-task tools, confirm both in one
+`AskUserQuestion` before creating them, and tell the user the tasks run in fresh sessions so
+Aspire Atlas must be enabled for scheduled tasks. Prompts must say "do not ask questions",
+name the campaign slug, and state no date.
+
+Unattended runs never ask questions and never record a verdict; if setup is incomplete they
+publish a "setup needed" card and stop.
 
 ---
 
@@ -585,7 +655,8 @@ default, and only when the user asks for text or the data has no media at all.
   description, and if it changes or removes state, apply the destructive-action rule above.
 - `lookup_creators` and `lookup_posts` start discovery work beyond the connected accounts.
   Never call them speculatively during onboarding; the connected channels' own data is enough.
-  Phase 6 named-handle mode is the exception: there the user named the account.
+  Two exceptions: Phase 6 named-handle mode, where the user named the account, and creator
+  discovery, whose saved cadence record approves it on every run including scheduled ones.
 - Keep every user-facing message short. Use bullets for anything with more than two points.
 - Web research is a proposal, never a write: findings are always shown and confirmed before
   any calibration is recorded from them.
