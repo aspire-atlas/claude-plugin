@@ -6,6 +6,16 @@ The version lives in exactly one place: `plugins[].version` in `.claude-plugin/m
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-23
+
+### Added
+- `/aspire:aspire agents` lists every subagent the plugin ships, with its purpose and trigger phrases, then runs the one the user picks and hands off to that agent's section of the skill so the connection check, profile, and confirmations still happen.
+- Account review covers any Instagram or TikTok handle the user names, not only the brand's linked channels. The analyst resolves the handle and refreshes it in Atlas when nothing is held for it or the record is over 24 hours old, and reports the resolved freshness with its findings.
+
+### Changed
+- A named account is compared against its own category peers - accounts the user named, or accounts in the same category and follower band - on rates rather than raw counts. It is never measured against the brand's own account or the brand's competitors, and cross-referencing the brand's goal and competitor set is now scoped to reviews of the brand's own accounts.
+- Findings from a named-handle review are written under their own run key, so an external review does not mix with the brand's onboarding insights.
+
 ## [1.0.1] - 2026-09-22
 
 ### Changed
@@ -25,6 +35,7 @@ First public release. Versioning restarts at 1.0.0; earlier 0.x builds were inte
 - Two release channels: `aspire-atlas` (official, pinned) and `aspire-atlas-beta` (tracks `develop`).
 - Apache-2.0 license.
 
-[Unreleased]: https://github.com/aspire-atlas/claude-plugin/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/aspire-atlas/claude-plugin/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/aspire-atlas/claude-plugin/releases/tag/v1.1.0
 [1.0.1]: https://github.com/aspire-atlas/claude-plugin/releases/tag/v1.0.1
 [1.0.0]: https://github.com/aspire-atlas/claude-plugin/releases/tag/v1.0.0
