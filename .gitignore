@@ -1,6 +1,28 @@
+# OS
 .DS_Store
+._*
 Thumbs.db
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*~
+
+# Release artifacts, built by .github/workflows/release.yml
 *.zip
 *.sha256
 notes.md
+
+# Local Claude Code state. Project config under .claude/ is committed; per-user overrides are not.
+.claude/settings.local.json
+CLAUDE.local.md
+
+# Logs and dependencies
+*.log
 node_modules/
+
+# Never commit credentials. See SECURITY.md.
+.env
+.env.*
+!.env.example
