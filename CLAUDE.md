@@ -8,6 +8,6 @@ This repo is the Aspire Atlas plugin for Claude and its marketplace catalog. Ful
 - `plugins/aspire/.claude-plugin/plugin.json` and `SKILL.md` frontmatter never carry a `version`.
 - Never touch `aspire-atlas/claude-plugin-internal`; CI overwrites it from `develop`.
 - Plugin content is markdown and JSON only. No hooks, scripts, or binaries without a deliberate decision and a major version.
-- Every Atlas write in a skill or agent is confirmed with `AskUserQuestion` first; destructive tools each get their own confirmation; unattended runs never ask, never destroy, never start discovery jobs.
+- Every Atlas write in a skill or agent is confirmed with `AskUserQuestion` first; destructive tools each get their own confirmation; unattended runs never ask and never destroy; only `atlas-creator-discovery` may start discovery work unattended, under a cadence the user saved for that campaign.
 - Before pushing: `claude plugin validate .`, `claude plugin validate plugins/aspire`, `bash scripts/check-channel.sh <develop|main>`.
 - No secrets, customer names, or internal URLs in any file.
