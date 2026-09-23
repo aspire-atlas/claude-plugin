@@ -25,7 +25,7 @@ Plugin skills are namespaced, so the canonical command is `/aspire:aspire`. The 
 ## Usage
 
 - `/aspire:aspire` runs the full onboarding, resuming at the right phase for existing organizations.
-- `/aspire:aspire agents` lists every subagent in the plugin with a one-line purpose and its trigger phrases. Read from the `agents/` folder at run time, so it stays current as agents are added. No Atlas connection needed.
+- `/aspire:aspire agents` lists every subagent in the plugin with a one-line purpose and its trigger phrases, then asks which one to run and hands off to that agent's flow (connection check, profile, and confirmations included). Read from the `agents/` folder at run time, so it stays current as agents are added. No Atlas connection is needed to see the list; picking an agent starts one.
 - Trigger phrases: "get started with Atlas", "connect Atlas", "onboard my brand", "connect my Instagram to Atlas".
 - Creator brief: "create a content brief for next week", "find creators to make this", "what should we post next week". Runs the `atlas-creator-brief` agent for a connected brand. Marketplace discovery is only run with the user's explicit choice because it can start paid work.
 - Readouts: "what happened yesterday", "how did last week go", "weekly readout", "daily readout", "schedule the readouts". First use runs a six-question setup (delivery times and timezone, Slack channel and email recipients, flag thresholds, lead metric, escalation rule, audience). Answers are saved to the brand's Atlas memory so every teammate and every scheduled run uses the same setup without re-asking.

@@ -2,9 +2,9 @@
 name: aspire
 description: >
   This skill should be used when the user types "/aspire:aspire" or "/aspire" (with or
-  without an argument such as "agents", which lists the plugin's subagents), says
-  "get started with Atlas", "connect Aspire Atlas",
-  "set up Atlas", "connect Atlas", "onboard my brand", "connect my Instagram/TikTok/YouTube
+  without an argument such as "agents", which lists the plugin's subagents and runs the one
+  the user picks), says "get started with Atlas", "connect Aspire Atlas", "set up Atlas",
+  "connect Atlas", "onboard my brand", "connect my Instagram/TikTok/YouTube
   to Atlas", asks how to start using the atlas.aspire.io platform, or asks for a daily or
   weekly readout ("what happened yesterday", "how did last week go", "schedule the weekly
   readout"). It verifies the Atlas data connection, authenticates and selects an
@@ -24,7 +24,8 @@ Refer to the connection as "Aspire Atlas" and the platform as "Atlas". Never exp
 tool names. The slash command is `/aspire:aspire` (plugin namespace), so use that form in
 any instruction that tells the user to re-run the skill.
 
-The `agents` argument (`/aspire:aspire agents`) lists the plugin's subagents and runs no phase.
+The `agents` argument (`/aspire:aspire agents`) lists the plugin's subagents and offers to
+run one; it starts no phase until an agent is picked.
 
 ## Arguments
 
@@ -32,28 +33,49 @@ Text after the command is the argument. Route on it before anything else:
 
 | Argument | Action |
 | -------- | ------ |
-| `agents` (also `list agents`, `show agents`) | Run **List agents** below. Skip every phase. |
+| `agents` (also `list agents`, `show agents`) | Run **List agents** below. Skip the phases unless the user picks an agent to run. |
 | empty, or anything else | Run the phases in order, starting at Phase 1. Treat the text as context. |
 
 ### List agents
 
-Report every subagent the plugin ships. Read the list from disk each time so it never goes
-stale; never recite it from memory.
+Report every subagent the plugin ships, then let the user run one. Read the list from disk each
+time so it never goes stale; never recite it from memory.
 
 1. Resolve the plugin's `agents/` folder from this skill's base directory: it is two levels
    up, at `<base>/../../agents/`. Use `Glob` for `agents/*.md` there.
-2. For each file, read the frontmatter with `Read`. Take `name` and the first sentence of
-   `description` (stop at the first period; ignore any `<example>` blocks).
+2. For each file, read the frontmatter with `Read`. Take `name`, the first sentence of
+   `description` (stop at the first period; ignore any `<example>` blocks), and the quoted
+   "Trigger on ..." phrases when the description has them.
 3. Reply with one bullet per agent, sorted by name, in this shape:
-   `**aspire:{name}**: {first sentence}` followed on the same line by "Trigger: {phrases}",
-   where the phrases are the quoted "Trigger on ..." terms from the description when present.
+   `**aspire:{name}**: {first sentence}` followed on the same line by "Trigger: {phrases}".
    Skip the trigger part when the description has none.
-4. Close with one line: agents run on their own when the matching phrase is used, or the user
-   can ask for one by name.
+4. Then ask with `AskUserQuestion`, one question, header "Agent": "Which one do you want to
+   run?" One option per agent, in the same order as the bullets. Label is the agent name
+   without the `aspire:` prefix; description is what it produces in one line plus what it
+   needs (for example "needs a linked channel with indexed posts"). The tool takes 2 to 4
+   options and adds its own free text field, so never add a "None" or "Not now" option: if
+   the answer names no agent on the list, say nothing further and stop. With more than four
+   agents on disk, offer the first four and say in the question text that any other name from
+   the bullets can be typed into the free text field.
+5. On a selection, hand off to that agent's section of this skill rather than launching the
+   agent straight from here. Those sections own the connection check, the profile, and the
+   confirmations each agent needs:
 
-No Atlas connection or sign in is needed for this argument, so do not run Phase 1 and do not
-render a connector card. If the `agents/` folder is missing or empty, say so in one line and
-stop; never invent an agent.
+   | Chosen agent | Hand off to |
+   | ------------ | ----------- |
+   | `atlas-account-analyst` | Phase 1, then Phase 2 + 3 for the profile and handles, then Phase 6 |
+   | `atlas-creator-brief` | Phase 1, then Phase 2 + 3, then **Creator brief** (its three questions first) |
+   | `atlas-daily-readout` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the daily cadence |
+   | `atlas-weekly-readout` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the weekly cadence |
+
+   An agent on disk that is not in that table: run Phase 1 and Phase 2 + 3, then launch it
+   with the tool prefix, `profile_slug`, and the linked handles and networks, and relay
+   whatever it asks the main thread to confirm.
+
+Listing needs no Atlas connection, so do not run Phase 1 and do not render a connector card
+before the question; run Phase 1 only once an agent is picked. If the `agents/` folder is
+missing or empty, say so in one line and stop; never invent an agent and never offer one that
+is not on disk.
 
 ---
 
