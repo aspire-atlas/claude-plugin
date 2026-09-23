@@ -1,9 +1,10 @@
 ---
 name: aspire
 description: >
-  This skill should be used when the user types "/aspire:aspire" or "/aspire", says
-  "get started with Atlas", "connect Aspire Atlas",
-  "set up Atlas", "connect Atlas", "onboard my brand", "connect my Instagram/TikTok/YouTube
+  This skill should be used when the user types "/aspire:aspire" or "/aspire" (with or
+  without an argument such as "agents", which lists the plugin's subagents and runs the one
+  the user picks), says "get started with Atlas", "connect Aspire Atlas", "set up Atlas",
+  "connect Atlas", "onboard my brand", "connect my Instagram/TikTok/YouTube
   to Atlas", asks how to start using the atlas.aspire.io platform, or asks for a daily or
   weekly readout ("what happened yesterday", "how did last week go", "schedule the weekly
   readout"). It verifies the Atlas data connection, authenticates and selects an
@@ -16,12 +17,67 @@ metadata:
 # /aspire: Atlas onboarding
 
 Guide a new or returning user from zero to first insights on Atlas. Run the phases in order.
-Never skip Phase 1. Stop and resolve any phase that fails before moving on.
+Never skip Phase 1 when running the phases. Stop and resolve any phase that fails before moving on.
 
 Tone for all user-facing messages: brief, plain language, no jargon about tools or servers.
 Refer to the connection as "Aspire Atlas" and the platform as "Atlas". Never expose internal
 tool names. The slash command is `/aspire:aspire` (plugin namespace), so use that form in
 any instruction that tells the user to re-run the skill.
+
+The `agents` argument (`/aspire:aspire agents`) lists the plugin's subagents and offers to
+run one; it starts no phase until an agent is picked.
+
+## Arguments
+
+Text after the command is the argument. Route on it before anything else:
+
+| Argument | Action |
+| -------- | ------ |
+| `agents` (also `list agents`, `show agents`) | Run **List agents** below. Skip the phases unless the user picks an agent to run. |
+| empty, or anything else | Run the phases in order, starting at Phase 1. Treat the text as context. |
+
+### List agents
+
+Report every subagent the plugin ships, then let the user run one. Read the list from disk each
+time so it never goes stale; never recite it from memory.
+
+1. Resolve the plugin's `agents/` folder from this skill's base directory: it is two levels
+   up, at `<base>/../../agents/`. Use `Glob` for `agents/*.md` there.
+2. For each file, read the frontmatter with `Read`. Take `name`, the first sentence of
+   `description` (stop at the first period; ignore any `<example>` blocks), and the quoted
+   "Trigger on ..." phrases when the description has them.
+3. Reply with one bullet per agent, sorted by name, in this shape:
+   `**aspire:{name}**: {first sentence}` followed on the same line by "Trigger: {phrases}".
+   Skip the trigger part when the description has none.
+4. Then ask with `AskUserQuestion`, one question, header "Agent": "Which one do you want to
+   run?" One option per agent, in the same order as the bullets. Label is the agent name
+   without the `aspire:` prefix; description is what it produces in one line plus what it
+   needs (for example "needs a linked channel with indexed posts"). The tool takes 2 to 4
+   options and adds its own free text field, so never add a "None" or "Not now" option: if
+   the answer names no agent on the list, say nothing further and stop. With more than four
+   agents on disk, offer the first four and say in the question text that any other name from
+   the bullets can be typed into the free text field.
+5. On a selection, hand off to that agent's section of this skill rather than launching the
+   agent straight from here. Those sections own the connection check, the profile, and the
+   confirmations each agent needs:
+
+   | Chosen agent | Hand off to |
+   | ------------ | ----------- |
+   | `atlas-account-analyst` | Phase 1, then Phase 2 + 3 for the profile and handles, then Phase 6 (its target question first) |
+   | `atlas-creator-brief` | Phase 1, then Phase 2 + 3, then **Creator brief** (its three questions first) |
+   | `atlas-daily-readout` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the daily cadence |
+   | `atlas-weekly-readout` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the weekly cadence |
+
+   An agent on disk that is not in that table: run Phase 1 and Phase 2 + 3, then launch it
+   with the tool prefix, `profile_slug`, and the linked handles and networks, and relay
+   whatever it asks the main thread to confirm.
+
+Listing needs no Atlas connection, so do not run Phase 1 and do not render a connector card
+before the question; run Phase 1 only once an agent is picked. If the `agents/` folder is
+missing or empty, say so in one line and stop; never invent an agent and never offer one that
+is not on disk.
+
+---
 
 ## Phase overview
 
@@ -320,22 +376,52 @@ Rules:
 
 ## Phase 6: First insights
 
-Trigger once at least one channel reports linked.
+Trigger once at least one channel reports linked, or whenever the user asks for an account
+review.
 
-1. Confirm data has landed: `search_posts` with `esFilter` on `author.username` for each
-   linked handle, `limit: 1`. If empty, tell the user indexing is still running and offer to
-   check back; do not run the analyst on nothing.
-2. Launch the `atlas-account-analyst` subagent with: `profile_slug`, the linked handles and
-   networks, the tool prefix, and a digest of the Phase 5 calibrations.
-3. The subagent reads with `search_posts` / `search_creators` (calling
-   `list_post_search_fields` first for the live field census), then writes findings back with
-   `append_insights` under one `runKey` per session.
-4. Present the subagent's executive summary: headline, 3 to 5 insights with numbers, 2 to 3
-   ranked next steps, data gaps. Offer to go deeper on any item, and mention the findings are
-   saved in Atlas and searchable later.
-5. Deliver the summary visually per the **Visual output** rule below: a card view of the top
+1. **Pick the target.** Ask once with `AskUserQuestion`, header "Account": "Which account
+   should the review cover?" Two options:
+   - "{brand}'s connected accounts (Recommended)" - every handle linked to the profile.
+   - "Another account" - description: "Type the network and handle, for example `instagram
+     @acme`. Atlas fetches the account if it does not already hold it or the data is over a
+     day old; on TikTok that fetch makes paid vendor calls."
+   Skip the question when the user already named a handle ("review @acme on TikTok"); treat
+   that as the answer. Naming a handle, by option or in the message, **is** the approval for
+   that fetch and its cost, because the option text says so; neither the skill nor the agent
+   asks again. A free-text answer that names neither: ask once more, then stop.
+2. Read the answer into a target:
+   - Connected accounts: `target_mode` `own`, every linked handle and network from Phase 2 + 3.
+   - Another account: `target_mode` `handle`, one network and one handle with the `@` stripped.
+     If the network is missing or unsupported, ask for it with `AskUserQuestion` (Instagram /
+     TikTok). Only those two are searchable in Atlas today; say so if the user names YouTube
+     and offer the other two.
+   - A typed handle that matches one of the profile's linked handles is `own` mode.
+3. Mode `own` only: confirm data has landed with `search_posts`, `esFilter` on
+   `author.username` for each linked handle, `limit: 1`. If empty, tell the user indexing is
+   still running and offer to check back; do not run the analyst on nothing. Mode `handle`
+   skips this check: the agent owns resolution and the freshness check.
+4. Launch the `atlas-account-analyst` subagent with: `profile_slug`, the tool prefix,
+   `target_mode`, the handles and networks for that mode, and a digest of the Phase 5
+   calibrations. In mode `handle`, state that the user approved the fetch so the agent does not
+   ask again. State that the calibrations are for classification and relevance only: a named
+   account is never benchmarked against the brand's own account or the brand's competitors.
+   It is compared against its **own** peers - accounts the user named, or "like" accounts in
+   the same category and follower band, on rates rather than raw counts. Pass any comparison
+   accounts the user named.
+5. The subagent reads with `search_posts` / `search_creators` (calling
+   `list_post_search_fields` first for the live field census), resolves and refreshes a named
+   handle with `lookup_creators` when Atlas holds nothing or the record is over 24 hours old,
+   then writes findings back with `append_insights` under one `runKey` per run (`own`:
+   `onboarding-{profile}-{date}`; `handle`: `account-review-{profile}-{handle}-{date}`).
+6. Present the subagent's executive summary: headline, 3 to 5 insights with numbers, 2 to 3
+   ranked next steps, data gaps. In mode `handle`, lead the data gaps with the freshness the
+   agent reports (indexed through {timestamp}, refreshed or not). Offer to go deeper on any
+   item, and mention the findings are saved in Atlas and searchable later.
+7. Deliver the summary visually per the **Visual output** rule below: a card view of the top
    and bottom posts with their media, and one chart of the engagement pattern the headline
    rests on.
+8. Unattended run with no `AskUserQuestion` available: default to `own` mode and never start a
+   lookup.
 
 ---
 

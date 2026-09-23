@@ -1,0 +1,32 @@
+name: Mirror to internal
+
+# Pushes develop (the beta channel) to the private repo
+# aspire-atlas/claude-plugin-internal, which the Aspire org plugin marketplace
+# syncs from. Org marketplaces accept private repos only, so staff get beta
+# through the mirror while customers use this public repo directly.
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+concurrency:
+  group: mirror-internal
+  cancel-in-progress: true
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push develop to internal main
+        env:
+          DEPLOY_KEY: ${{ secrets.MIRROR_DEPLOY_KEY }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/mirror && chmod 600 ~/.ssh/mirror
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
+          export GIT_SSH_COMMAND="ssh -i ~/.ssh/mirror -o IdentitiesOnly=yes"
+          git push --force git@github.com:aspire-atlas/claude-plugin-internal.git HEAD:refs/heads/main

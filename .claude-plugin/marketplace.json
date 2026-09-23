@@ -2,7 +2,7 @@
   "$schema": "https://code.claude.com/schemas/marketplace.json",
   "name": "aspire-atlas",
   "description": "Claude plugins for the Aspire Atlas platform (atlas.aspire.io): onboarding, first insights, creator content briefs, and scheduled daily and weekly readouts.",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "owner": {
     "name": "Aspire",
     "url": "https://github.com/aspire-atlas"
@@ -12,7 +12,7 @@
       "name": "aspire",
       "displayName": "Aspire Atlas",
       "source": "./plugins/aspire",
-      "version": "1.0.1",
+      "version": "1.1.0",
       "description": "Onboarding, first insights, weekly creator content briefs, and schedulable daily and weekly readouts for the Atlas platform (atlas.aspire.io). To get started, type /aspire:aspire.",
       "author": {
         "name": "Aspire"
