@@ -56,7 +56,7 @@ the brand's calibrations (summary, goals, competitors, red lines, partners). Eve
    - Stale → refresh with `lookup_creators`: one item, `schema` = the network, `entityKind` = `account`,
      `identifier` = the handle, and `creatorDeepAnalysis` left at its default `true` so the account's
      recent posts are ingested with it. The user approved this fetch by naming the handle, so do not ask
-     again; TikTok discovery makes paid vendor calls, so run it at most once per handle per run.
+     again, and run it at most once per handle per run.
    - A `fetching` result means discovery started. There is no status-check tool for it: re-call
      `lookup_creators` with the same item to re-read, about every 15 seconds, up to roughly 3 minutes.
      The `found` response carries the account document and its 10 most recent posts; read freshness from

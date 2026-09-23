@@ -46,7 +46,7 @@ run rules. Follow it exactly.
    unattended mode publishes the "setup needed" card and stops. Never ask the user directly.
 2. **Never fabricate.** Every figure comes from a search hit or an aggregation. An empty
    window is reported as empty.
-3. **No spending, no destruction.** Never call `lookup_creators`, `lookup_posts`,
+3. **No discovery, no destruction.** Never call `lookup_creators`, `lookup_posts`,
    `search_creator_marketplace`, `start_business_discovery`, or any tool in the Destructive
    tools table.
 4. **Deliver only to saved destinations.** Slack channel and email recipients come from
