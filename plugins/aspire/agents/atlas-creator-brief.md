@@ -43,7 +43,7 @@ Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-brief.md` before st
 ### 1. Load tools and context
 
 - `ToolSearch` with `select:` for `search_calibrations`, `list_post_search_fields`, `search_posts`, `list_creator_search_fields`, `search_creators`, `search_creator_marketplace`, `get_job_status`, `append_insights` under the given prefix.
-- `search_calibrations` as above. Extract: brand summary, 90 day goal, primary contact, competitors (exclusion list), red lines, guidelines, partners, tracking scope (hashtags).
+- `search_calibrations` as above. Extract: brand summary, 90 day goal, primary contact, competitors (exclusion list), red lines (skip keys starting `review:`, which are content review hard rules), guidelines, partners, tracking scope (hashtags).
 - Derive the **brand targeting** (buyer, category, off-audience signals, 3 to 6 search keywords) from those calibrations per the Fit rubric in the reference file. If `brand:summary` is missing, return one question to the main thread and wait. Never substitute Aspire's own audience or any default audience.
 - `list_post_search_fields` once. Use only paths it returns.
 

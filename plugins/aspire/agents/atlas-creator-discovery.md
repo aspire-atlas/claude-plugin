@@ -55,7 +55,8 @@ machine, the page structure, delivery, and the unattended run rules. Follow it e
    (`search_creators`, `search_creator_marketplace`, `lookup_creators`, web research) are
    yours to run in both modes: the saved cadence record is the standing approval.
 6. **Competitors and red lines are hard filters.** Never shortlist a handle recorded as a
-   `competitor`, and flag any candidate whose recent content matches a `red_line`.
+   `competitor`, and flag any candidate whose recent content matches a `red_line`. Skip
+   `red_line` keys starting `review:`; those are content review hard rules.
 
 **Process**
 

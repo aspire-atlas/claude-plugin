@@ -103,7 +103,7 @@ the brand's calibrations (summary, goals, competitors, red lines, partners). Eve
    - The brand's calibrations are still for two things only: saying whether the handle matches a saved
      `competitor` or `partner` record, which is a classification, not a benchmark, and framing why the
      account is or is not relevant to the brand's stated goal. Apply `red_line` checks only to the
-     brand's own accounts.
+     brand's own accounts, and skip keys starting `review:` (content review hard rules).
 8. Write findings back with `append_insights`: one `runKey` for this run — mode `own`:
    `onboarding-{profile}-{date}`; mode `handle`: `account-review-{profile}-{handle}-{date}` — role
    `account_review`, `schema` = network, `entityKind` = account (or post for post-level findings),

@@ -39,6 +39,9 @@ Rules:
 
 - One `AskUserQuestion` per question, in order, never plain text. The tool adds its own free
   text field; never add "Other" or "Skip".
+- C3 and C4 may be declined. A declined question is written as kind `decline` with the same
+  key, so setup counts it as answered and never asks it again. C1 and C2 cannot be declined:
+  the agent needs both to reach a verdict.
 - Write C1's options from the brand's context. If no `red_line` is saved, say so in C1's
   question text ("No red lines are saved yet, so option 2 blocks nothing").
 - C3's option list starts from what exists: when `guideline` records or the
@@ -211,7 +214,7 @@ Apply `review:verdict-rule` (C1). With no saved rule, use option 1.
 | Verdict | When |
 | ------- | ---- |
 | **Do not post** | Any `block` red line fails, whatever C1 says |
-| **Revise and resubmit** | Anything C1 says blocks has failed |
+| **Revise and resubmit** | Anything C1 says blocks has failed, or a paid post is missing its disclosure (whatever C1 says) |
 | **Approve with edits** | Flags only, or fails C1 treats as advice |
 | **Approve** | Every check passes or is "Can't check" for a stated reason |
 
@@ -236,36 +239,50 @@ user has answered it or declined.
 | - | -------- | ------- |
 | F1 | What's your call on this post? Your answer is saved to Atlas so future reviews learn from it. | 1) Agree with the review; 2) Approve it anyway (the review was too strict); 3) It needs more changes (the review was too lenient); 4) The review missed something |
 | F2 | Which calls were off? (multiSelect; only after options 2 to 4 of F1) | Up to four Flags or Fails (option 2) or Passes (option 3), each labelled by check and one line of evidence. The free text field carries anything missed. |
-| F3 | Save this for future reviews: *"{lesson}"*? | 1) Save as a review rule (Recommended); 2) Just this post; 3) Save as a hard rule that blocks posts |
+| F3 | Save this for future reviews: *"{lesson}"*? | 1) Save as a review rule (Recommended); 2) Just this post; 3) Propose it as a hard rule (description: "Goes to the next question, where hard rules are confirmed. Hard rules apply to every review for every brand in {organization} and can block a post.") |
 | F4 | Apply any of these to every content review? (multiSelect; only when the agent proposed hard rules) | Up to four proposed hard rules, each labelled with the rule in a few words; the description gives the full rule, its action (blocks or flags), and where it came from. The free text field carries a rule the user wants added or reworded. |
 
 Rules:
 
 - The F1 answer is its own write confirmation because its question text says so. Write it
   with `append_insights` under the review's `runKey`: kind `went_well` for "Agree",
-  `needs_improvement` otherwise. `detail` carries `userVerdict`, `agentVerdict`, the checks
-  named in F2, and the user's free text verbatim.
+  `needs_improvement` otherwise. `detail` carries `findingType: "feedback"`, `userVerdict`,
+  `agentVerdict`, the checks named in F2, and the user's free text verbatim. This is where
+  `userVerdict` lives: the verdict finding is written before F1 is asked and is never
+  rewritten.
 - Write the lesson yourself, one sentence that generalizes the correction beyond this post
   ("Product shown in use counts as the must-include demo, even without a spoken mention").
   Show it in F3's question text. Never save a lesson the user has not seen.
 - F3 option 1: `append_calibration`, kind `guideline`, key `review:lesson-{slug}` (from the
   lesson, lowercase, hyphenated), `concern: "preference"` when it relaxes a check and
   `"requirement"` when it adds or tightens one, `appliesTo: ["content-review"]`, `body` = the
-  lesson plus the originating `runKey` and one evidence line. Option 3: kind `red_line`,
-  `action: "block"`, key `review:rule-{slug}`, detail per **Hard rules for every review**.
-  Option 2 writes nothing more.
+  lesson plus the originating `runKey` and one evidence line. Option 3 writes nothing yet: it
+  adds the lesson, worded as a rule, to F4's proposals, where the scope is stated and
+  duplicates are checked. If the rule is already saved, say so and drop it. Option 2 writes
+  nothing more.
 - Skip F3 when F1 is "Agree" and F2 did not run.
-- If F2 marks a red line or the disclosure rule as wrong, do not write a lesson. Say that the
-  rule itself would have to change, and offer the `supersede_calibration` or
-  `retract_calibration` confirmation from the Destructive tools table.
-- A lesson that contradicts an existing `review:lesson-*` record replaces it through
-  `supersede_calibration`, with its own confirmation showing both versions.
+- If F2 marks a red line, a hard rule, or the disclosure rule as wrong, do not write a lesson.
+  Say that the rule itself would have to change.
+- A lesson that contradicts an existing `review:lesson-*` record replaces it rather than
+  sitting beside it.
+- **Changes to saved rules belong to the main thread.** Superseding a lesson, changing a
+  red line, a hard rule or the disclosure rule, and retracting any of them all go through
+  `supersede_calibration` or `retract_calibration`, each with its own Destructive tools
+  confirmation. The agent never calls either. When it asked the feedback questions itself,
+  it lists each such change under "Needs the main thread" in its summary (the record's key,
+  the current wording, the proposed wording or "retract", and why), and the main thread
+  offers each one.
 
 ## Hard rules for every review
 
 A lesson is a soft rule: it changes how a check is judged. A hard rule is a check that runs on
 every future review for every brand in the organization, whatever the brief says, and it can
 block a post. Hard rules are `red_line` calibrations scoped to content review.
+
+**Only content review applies them.** A `red_line` whose key starts with `review:` is a hard
+rule for reviews. The readouts' red-line scan, creator discovery, the creator brief, and the
+account analyst skip it (see `atlas-tools.md`, calibration kinds). A rule the brand wants
+everywhere is saved as an ordinary `redline:*` record instead, through onboarding.
 
 **Where proposals come from.** After each review the agent proposes up to four candidate hard
 rules, from these sources only:
@@ -283,6 +300,9 @@ Never propose a rule already saved: compare against every active `review:rule-*`
 `red_line` record. Never propose a rule that only restates a setup answer (C1 to C4). Word
 each rule so it can be checked from a post: what must or must not appear, and where.
 
+3. **F3 option 3.** A lesson the user chose to propose as a hard rule. It still goes through
+   the duplicate check below.
+
 **Asking.** F4, one multiSelect, after F1 to F3. The question text says: "Hard rules apply to
 every content review in {organization}, for every brand, and can block a post." Each option's
 description states the action: `block` for anything a brief would treat as a must-include or
@@ -298,12 +318,12 @@ that batch, because its question text says the rules will be saved.
   "<the rule, why it was proposed, the originating runKey, and one evidence line>"}`
 - `provenance: "interview"`
 
-A `key-exists` means a rule with that name is already saved. Show both versions, and
-supersede only through the Destructive tools confirmation.
+A `key-exists` means a rule with that name is already saved. Write nothing for it, and hand
+both versions to the main thread under "Needs the main thread".
 
 **Changing a hard rule.** Retracting or rewording one goes through `retract_calibration` or
-`supersede_calibration`, each with its own Destructive tools confirmation. A lesson never
-overrides a hard rule.
+`supersede_calibration`, each with its own Destructive tools confirmation, run by the main
+thread. A lesson never overrides a hard rule.
 
 **Reading lessons back (agent).** Load every `review:lesson-*`, `review:rule-*`, and other `review:*` record from
 `search_calibrations`. Also run `search_insights` with a `prefix` filter on
@@ -329,26 +349,35 @@ draft. Role `account_review`. Anchor:
 
 | Finding | Kind | `priority` |
 | ------- | ---- | ---------- |
-| The verdict | `went_well` for Approve, `action_item` otherwise | `high` for Do not post and Revise, `medium` for Approve with edits |
-| Each Fail | `needs_improvement` | n/a |
-| Each Flag | `needs_improvement` | n/a |
-| Each required edit | `action_item` | `high` if it clears a Fail, `medium` for a Flag |
-| Up to three standout passes | `went_well` | n/a |
+| Finding | Kind | `priority` | `findingType` |
+| ------- | ---- | ---------- | ------------- |
+| The verdict | `went_well` for Approve, `needs_improvement` otherwise | n/a | `verdict` |
+| Each Fail | `needs_improvement` | n/a | `check` |
+| Each Flag | `needs_improvement` | n/a | `check` |
+| Each required edit | `action_item` | `high` if it clears a Fail, `medium` for a Flag | `edit` |
+| Up to three standout passes | `went_well` | n/a | `check` |
+| An earlier edit this post now passes | `went_well` | n/a | `close` |
+| The F1 answer (see **The feedback loop**) | `went_well` or `needs_improvement` | n/a | `feedback` |
+
+The verdict is never an `action_item`: the edits are the open work, and the verdict only
+summarizes them.
 
 `detail` carries `rationale`, `evidence[]`, `theme: ["content-review", "<dimension>"]`, and
-these keys, stored verbatim: `verdict`, `dimension`, `check`, `result`, `stage` (`draft` or
-`published`), `creator` (the handle), `deliverable`, `lessonsApplied[]`. Supply an
-`idempotencyKey` per finding.
+these keys, stored verbatim: `findingType` (from the table), `reviewedAt` (ISO timestamp from
+the shell clock, the same value on every finding of one review), `verdict`, `dimension`,
+`check`, `result`, `stage` (`draft` or `published`), `creator` (the handle), `deliverable`,
+`lessonsApplied[]`. Supply an `idempotencyKey` per finding.
 
 The verdict finding also carries what the readouts need, so they never have to re-derive a
-review: `reviewedAt` (ISO timestamp from the shell clock), `postedAt` and `permalink` for a
-published post, `briefRef` (the brief and deliverable), `counts` (`{pass, flag, fail,
-cantCheck}` per dimension), `openEdits` (the number of required edits), `hardRuleHits[]` (the
-`review:rule-*` and `red_line` keys that failed), and `userVerdict` once F1 is answered.
+review: `postedAt` and `permalink` (the post's own URL) for a published post, `reviewPage`
+(the review page's link from step 9), `briefRef` (the brief and deliverable), `counts`
+(`{pass, flag, fail, cantCheck}` per dimension), `openEdits` (the number of required edits),
+and `hardRuleHits[]` (the `review:rule-*` and `red_line` keys that failed). The user's own
+call is not on it: it is on the `feedback` finding of the same `runKey`.
 
 **Closing edits.** When a resubmitted draft or a corrected post passes a check that an earlier
-review failed, write a `went_well` that references the earlier edit's `idempotencyKey` in
-`detail.closes`. The readouts treat that edit as resolved.
+review failed, write a `went_well` with `findingType: "close"` that references the earlier
+edit's `idempotencyKey` in `detail.closes`. The readouts treat that edit as resolved.
 
 ## Feeding the readouts
 
@@ -358,8 +387,20 @@ The daily and weekly readouts read content reviews the same way they read prior 
 separate from the brand's own post performance, because reviewed posts are usually on a
 creator's account.
 
+How the readouts put a review back together:
+
+1. **Group by `runKey`.** One `runKey` is one review.
+2. **Pick the reviews in the window** by `detail.reviewedAt`. Every finding of a review
+   carries the same value, so the fails, flags and edits come along with the verdict.
+3. **Read each group by `findingType`:** `verdict` for the verdict, counts, links and
+   hard-rule hits; `check` with `result: "Fail"` for the most failed check; `feedback` for
+   the user's call (`userVerdict`); `edit` for required edits.
+4. **Open edits are counted across all reviews, not just the window.** An `edit` is open
+   until a `close` finding in any later review names its `idempotencyKey` in
+   `detail.closes`. Its age runs from its own `reviewedAt`.
+
 - **Daily:** reviews run yesterday, by verdict. Every **Do not post** and every hard-rule hit
-  is named, with the creator's handle and the page link.
+  is named, with the creator's handle and the review page link (`reviewPage`).
 - **Weekly:** reviews run last week, by verdict. The most common failed check, and the
   creators with more than one review. Open required edits go into the open action items table
   with their age, and source "content review". For reviewed published posts, the lead metric

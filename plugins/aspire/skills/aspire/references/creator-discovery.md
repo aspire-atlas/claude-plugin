@@ -45,8 +45,8 @@ skip any the S1 answer already settles. Never ask more than five.
    cost), with bands that suit the archetype rather than fixed numbers.
 4. **Geography and language** — market fit, when the brief implies a market at all.
 5. **Content and hard exclusions** — formats the campaign needs, and who is disqualified.
-   Always fold in the brand's existing `competitor` and `red_line` records as a stated
-   default ("competitors already recorded are excluded"), so the user only has to add to it.
+   Always fold in the brand's existing `competitor` and `red_line` records (except `review:`
+   keys, which are content review hard rules) as a stated default ("competitors already recorded are excluded"), so the user only has to add to it.
 
 Rules:
 

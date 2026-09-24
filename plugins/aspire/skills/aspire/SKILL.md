@@ -536,11 +536,13 @@ weekly readouts.
 
 ### Setup: calibrate the reviewer once, for everyone
 
-1. Call `search_calibrations` (no filter, limit 100, `includeSuperseded: true`). If the four
-   review keys exist (`review:verdict-rule`, `review:disclosure`, `review:brand-rules`,
-   `review:safety-scope`), skip to **Review**.
+1. Call `search_calibrations` (no filter, limit 100, `includeSuperseded: true`). Setup is
+   done when `review:verdict-rule` and `review:disclosure` exist and `review:brand-rules`
+   and `review:safety-scope` are each either saved or recorded as a `decline`. Then skip to
+   **Review**.
 2. Otherwise ask the missing questions C1 to C4 from `references/content-review.md`, one
-   `AskUserQuestion` each, in order. C3 carries the web research option (Phase 5 rules).
+   `AskUserQuestion` each, in order. C3 carries the web research option (Phase 5 rules). A
+   declined C3 or C4 is written as a `decline` record so it is never asked again.
 3. Confirm the batch once with `AskUserQuestion` ("Save this review setup for {brand}? Every
    teammate's reviews will use it."), then write the records with `append_calibration`,
    `provenance: "interview"`. A `key-exists` follows the Phase 5 supersede rule with its own
@@ -564,19 +566,23 @@ weekly readouts.
 ### Feedback: teach the next review
 
 Every review ends with feedback. When the agent reports "asked", relay what the user decided
-and what was saved, and ask nothing again. When it returns a feedback packet instead, run F1
+and what was saved, and ask no feedback question again. If its summary has a "Needs the main
+thread" line, offer each change there through its own Destructive tools confirmation
+(`supersede_calibration` or `retract_calibration`), one per call; the agent never makes
+them. When it returns a feedback packet instead, run F1
 to F4 from the reference yourself, before anything else in the conversation:
 
 - F1: the user's call on the post. The answer is saved as a finding.
 - F2 and F3: which calls were off, and the lesson to save. F2's options come from the
-  packet's check lines.
+  packet's check lines. F3's "hard rule" option saves nothing itself: it adds the lesson to
+  F4.
 - F4: the proposed hard rules, one multiSelect. Its question text says hard rules apply to
   every content review in the organization and can block a post. Each selected rule becomes
   a `review:rule-*` red line.
 
 Write each answer exactly as the reference says. If a correction targets a red line, a hard
-rule, or the disclosure rule, offer to change that rule through its Destructive tools
-confirmation instead of saving a lesson. Never save a lesson or a hard rule the user has not
+rule, or the disclosure rule, or contradicts a saved lesson, offer to change that record
+through its Destructive tools confirmation instead of saving a new one. Never save a lesson or a hard rule the user has not
 seen worded.
 
 ---

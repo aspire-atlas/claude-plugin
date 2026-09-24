@@ -68,15 +68,20 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
    `readout-weekly-{profile}`, sorted newest first, limit 50. This is the "since last time"
    source: open `action_item` findings, last follower count, last flagged posts.
 6b. Content reviews: `search_insights` with a `prefix` filter on
-   `detail.account_review.runKey` = `content-review-{profile}`, newest first, paged, keeping
-   findings whose `detail.reviewedAt` falls in the window. The verdict finding of each review
-   carries `verdict`, `userVerdict`, `creator`, `counts`, `openEdits`, `hardRuleHits`,
-   `permalink`, and `postedAt` (see `content-review.md`, **Feeding the readouts**). A
-   `went_well` with `detail.closes` resolves the edit it names. Read only; never write a
-   review finding.
+   `detail.account_review.runKey` = `content-review-{profile}`, newest first, paged. Group the
+   findings by `runKey` (one review each) and keep the reviews whose `detail.reviewedAt` falls
+   in the window; every finding of a review carries the same value. Within a review, read by
+   `detail.findingType`: `verdict` carries `verdict`, `creator`, `counts`, `openEdits`,
+   `hardRuleHits`, `reviewPage`, `permalink`, and `postedAt`; `feedback` carries the user's
+   `userVerdict`; `check` with `result: "Fail"` feeds the most failed check; `edit` is a
+   required edit. Open edits span every review, not just the window: an `edit` stays open
+   until a `close` finding names its `idempotencyKey` in `detail.closes`. See
+   `content-review.md`, **Feeding the readouts**. Read only; never write a review finding.
 7. Red-line scan: for each `red_line` with `action: block|flag|escalate`, one semantic
    `search_posts` with `queryText` = the red-line body, filtered to the window and the brand's
-   handles, limit 10. Report hits by permalink. Never invent a hit.
+   handles, limit 10. Report hits by permalink. Never invent a hit. Skip `red_line` records
+   whose key starts with `review:`: those are content review hard rules, and hits on them
+   come from step 6b (`hardRuleHits`).
 
 Metric definitions:
 
