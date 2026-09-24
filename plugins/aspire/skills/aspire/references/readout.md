@@ -67,6 +67,13 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
 6. `search_insights` filtered on `runKey` prefix `readout-daily-{profile}` or
    `readout-weekly-{profile}`, sorted newest first, limit 50. This is the "since last time"
    source: open `action_item` findings, last follower count, last flagged posts.
+6b. Content reviews: `search_insights` with a `prefix` filter on
+   `detail.account_review.runKey` = `content-review-{profile}`, newest first, paged, keeping
+   findings whose `detail.reviewedAt` falls in the window. The verdict finding of each review
+   carries `verdict`, `userVerdict`, `creator`, `counts`, `openEdits`, `hardRuleHits`,
+   `permalink`, and `postedAt` (see `content-review.md`, **Feeding the readouts**). A
+   `went_well` with `detail.closes` resolves the edit it names. Read only; never write a
+   review finding.
 7. Red-line scan: for each `red_line` with `action: block|flag|escalate`, one semantic
    `search_posts` with `queryText` = the red-line body, filtered to the window and the brand's
    handles, limit 10. Report hits by permalink. Never invent a hit.
@@ -104,12 +111,16 @@ Chat summary, under 150 words:
 - Yesterday: posts published, engagement, the best post with its number.
 - Flags: anomalies and red-line hits, each with a permalink; "none" is a valid line.
 - Since last readout: follower delta, any action item that changed state.
+- Content reviews: reviews run yesterday by verdict, and every Do not post or hard-rule hit
+  with the creator's handle and page link. Leave the line out when there were none.
 - One closing line: findings saved, page link.
 
 Page: one compact card. Header (brand, date, network). KPI strip (posts, engagement,
 engagement rate, followers with delta). One 28-day sparkline of the lead metric with
 yesterday marked. Cards for yesterday's posts (media, metric row, one-line takeaway). Flags
-block. Footer with the CDN expiry note. Republish to the same path each day.
+block. A content reviews block when any review ran yesterday: one row per review with
+verdict chip, creator, deliverable, open edits, and the review page link. Footer with the CDN
+expiry note. Republish to the same path each day.
 
 Insights written (`append_insights`): `runKey` `readout-daily-{profile}-{YYYY-MM-DD}`,
 role `account_review`, `schema` = network, `entityKind` account or post, `entityId` the
@@ -131,7 +142,11 @@ team: post-level detail first; both: two short blocks):
 - What worked: top 3 posts with metric and the pattern they share (format, theme, day, hook).
 - What did not: bottom 2 posts and the likely reason in one clause each.
 - Mix: format split and cadence vs the prior week.
-- Open items: action items from prior readouts and briefs still open, with age in weeks.
+- Open items: action items from prior readouts, briefs, and content reviews still open, with
+  age in weeks.
+- Content reviews: reviews run by verdict, the most common failed check, and creators
+  reviewed more than once. For reviewed published posts, the lead metric against the
+  creator's own median when Atlas holds it.
 - Next steps: 3 ranked bullets, each tied to a number above.
 - Data gaps and one closing line: findings saved, page link.
 
@@ -143,7 +158,10 @@ Page, sections in order:
 3. Lead-metric line chart, 9 weeks, last week highlighted.
 4. Top 3 and bottom 2 post cards with media, metric row, takeaway.
 5. Format and theme mix: one small-multiple bar pair (this week vs prior).
-6. Open action items table: item, source run, age, owner if known.
+6. Open action items table: item, source run (readout, creator brief, or content review), age,
+   owner if known.
+6b. Content reviews: verdict counts as a small bar, the three most failed checks, and a row
+   per review with creator, verdict chip, open edits, and the review page link.
 7. Next steps, ranked.
 8. Footer: sources, CDN expiry note, "numbers come from Atlas as of {timestamp}".
 

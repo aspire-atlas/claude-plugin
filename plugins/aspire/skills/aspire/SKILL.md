@@ -8,10 +8,12 @@ description: >
   to Atlas", asks how to start using the atlas.aspire.io platform, or asks for a daily or
   weekly readout ("what happened yesterday", "how did last week go", "schedule the weekly
   readout"), or asks to find or shortlist creators for a campaign ("creator discovery", "refill
-  the shortlist", "find creators for the campaign"). It verifies the Atlas data connection,
+  the shortlist", "find creators for the campaign"), or asks to review a post or a creator's
+  draft against a brief ("review this post", "content review", "check this draft against the
+  brief", "brand safety check on this post"). It verifies the Atlas data connection,
   authenticates and selects an organization, scopes the brand, connects social accounts,
   captures brand context for future sessions, delivers first insights, and routes recurring
-  readouts, creator briefs, and creator discovery.
+  readouts, creator briefs, creator discovery, and content reviews.
 metadata:
   author: Aspire
 ---
@@ -68,6 +70,7 @@ time so it never goes stale; never recite it from memory.
    | `atlas-account-analyst` | Phase 1, then Phase 2 + 3 for the profile and handles, then Phase 6 (its target question first) |
    | `atlas-creator-brief` | Phase 1, then Phase 2 + 3, then **Creator brief** (its three questions first) |
    | `atlas-creator-discovery` | Phase 1, then Phase 2 + 3, then **Creator discovery**, Setup if the campaign is new, then Run |
+   | `atlas-content-review` | Phase 1, then Phase 2 + 3, then **Content review**, Setup if it has never run, then Review |
    | `atlas-daily-readout` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the daily cadence |
    | `atlas-weekly-readout` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the weekly cadence |
 
@@ -98,10 +101,11 @@ research option whose findings are shown before anything is written (Phase 5), a
 request to show posts or creators is answered visually with the post media and profile
 pictures (Visual output, after Phase 6).
 
-After onboarding, three recurring flows hang off the same connection: the **Creator brief**
+After onboarding, four recurring flows hang off the same connection: the **Creator brief**
 (weekly content plan with creators), the **Creator discovery** (a standing creator shortlist per
-campaign, schedulable), and the **Readouts** (daily and weekly performance digests,
-schedulable). Each is routed from its own section below.
+campaign, schedulable), the **Content review** (one post or draft checked against its brief,
+interactive only), and the **Readouts** (daily and weekly performance digests, schedulable).
+Each is routed from its own section below.
 
 ---
 
@@ -517,6 +521,66 @@ publish a "setup needed" card and stop.
 
 ---
 
+## Content review (one post against its brief)
+
+Trigger when the user asks to review a post or a creator's draft, check content against a
+brief, check whether a post is on brief, run a brand safety check on a post, or approve a
+draft. Requires a brand profile. Full detail - the setup questions, the per-review questions,
+the checks, the verdict rule, the feedback loop, and the page - lives in
+`references/content-review.md`.
+
+Content review is interactive only. Never schedule it, and never run it in an unattended
+session: if `AskUserQuestion` is unavailable, say in one line that content review needs a
+person to supply the post, and stop. Saved reviews still show up in the scheduled daily and
+weekly readouts.
+
+### Setup: calibrate the reviewer once, for everyone
+
+1. Call `search_calibrations` (no filter, limit 100, `includeSuperseded: true`). If the four
+   review keys exist (`review:verdict-rule`, `review:disclosure`, `review:brand-rules`,
+   `review:safety-scope`), skip to **Review**.
+2. Otherwise ask the missing questions C1 to C4 from `references/content-review.md`, one
+   `AskUserQuestion` each, in order. C3 carries the web research option (Phase 5 rules).
+3. Confirm the batch once with `AskUserQuestion` ("Save this review setup for {brand}? Every
+   teammate's reviews will use it."), then write the records with `append_calibration`,
+   `provenance: "interview"`. A `key-exists` follows the Phase 5 supersede rule with its own
+   confirmation.
+
+### Review
+
+1. Ask P1 to P3 from the reference with `AskUserQuestion`, skipping any the user already
+   answered (a pasted link answers P3; "Thursday's Reel" answers P2). Normalize the chosen
+   deliverable per the reference, **Normalizing the brief**. For a draft, collect the caption
+   and the local paths of the attached media. If a video comes without a transcript, say once
+   that spoken content can't be checked without one, and accept one if offered.
+2. Ask P4, the write confirmation. Run only on "Run the review".
+3. Launch `atlas-content-review` with: tool prefix, `profile_slug`, brand handles and
+   networks, `stage`, the normalized deliverable, the brief source, and the post inputs. For a
+   published post, state that the user approved fetching it.
+4. Relay the verdict, the required edits, the page link, and anything it could not check.
+   Offer to draft the edit notes as a message to the creator. The notes are the agent's; do
+   not add copy the brand's red lines forbid.
+
+### Feedback: teach the next review
+
+Every review ends with feedback. When the agent reports "asked", relay what the user decided
+and what was saved, and ask nothing again. When it returns a feedback packet instead, run F1
+to F4 from the reference yourself, before anything else in the conversation:
+
+- F1: the user's call on the post. The answer is saved as a finding.
+- F2 and F3: which calls were off, and the lesson to save. F2's options come from the
+  packet's check lines.
+- F4: the proposed hard rules, one multiSelect. Its question text says hard rules apply to
+  every content review in the organization and can block a post. Each selected rule becomes
+  a `review:rule-*` red line.
+
+Write each answer exactly as the reference says. If a correction targets a red line, a hard
+rule, or the disclosure rule, offer to change that rule through its Destructive tools
+confirmation instead of saving a lesson. Never save a lesson or a hard rule the user has not
+seen worded.
+
+---
+
 ## Readouts (daily and weekly performance digests)
 
 Trigger when the user asks for a daily or weekly readout, "what happened yesterday", "how
@@ -655,7 +719,8 @@ default, and only when the user asks for text or the data has no media at all.
   description, and if it changes or removes state, apply the destructive-action rule above.
 - `lookup_creators` and `lookup_posts` start discovery work beyond the connected accounts.
   Never call them speculatively during onboarding; the connected channels' own data is enough.
-  Two exceptions: Phase 6 named-handle mode, where the user named the account, and creator
+  Three exceptions: Phase 6 named-handle mode, where the user named the account; content
+  review, where pasting a post link approves `lookup_posts` for that one post; and creator
   discovery, whose saved cadence record approves it on every run including scheduled ones.
 - Keep every user-facing message short. Use bullets for anything with more than two points.
 - Web research is a proposal, never a write: findings are always shown and confirmed before

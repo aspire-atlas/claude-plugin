@@ -74,7 +74,8 @@ run rules. Follow it exactly.
    in the summary, and skip `append_insights` (no duplicate findings).
 3. Pull data per the **Data pull** section of the reference: yesterday's posts, the 28-day
    baseline aggregation, current follower count, the last daily readout's insights (`runKey`
-   prefix `readout-daily-{profile}`), and one semantic red-line scan per `red_line`.
+   prefix `readout-daily-{profile}`), yesterday's content reviews (`content-review-{profile}`,
+   step 6b of the data pull), and one semantic red-line scan per `red_line`.
 4. Compute: posts published, engagement, engagement rate, best post, anomalies against the
    28-day median using the threshold, follower delta since the last readout, and the state of
    any open action items from prior readouts.
@@ -94,5 +95,7 @@ run rules. Follow it exactly.
 - Yesterday: posts, engagement, best post with its number and link.
 - Flags: anomalies and red-line hits with links, or "none".
 - Since last readout: follower delta, action items that changed.
+- Content reviews: yesterday's reviews by verdict, naming any Do not post or hard-rule hit.
+  Leave the line out when none ran.
 - Delivered to: page link, Slack channel, email recipients, and anything that failed.
 - Closing line: findings saved under this run.

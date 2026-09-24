@@ -19,7 +19,7 @@ Never open a PR, push a commit, or change a setting on `claude-plugin-internal`.
 | `develop` | `aspire-atlas-beta` | none in the files; Claude uses the commit SHA | Beta customers (Claude Code, `...claude-plugin.git#develop`) and all Aspire staff (via the mirror) | Every merged PR |
 | `main` | `aspire-atlas` | `X.Y.Z` pinned in `.claude-plugin/marketplace.json` | Customers (Cowork and Claude Code, `aspire-atlas/claude-plugin`) and the Anthropic directory | Only when the version string changes |
 
-Both channels install a plugin named `aspire` with the `/aspire:aspire` skill and the four `aspire:atlas-*` agents. A user should be on one channel at a time; two installs of the same plugin name make Claude load one and warn about the other.
+Both channels install a plugin named `aspire` with the `/aspire:aspire` skill and the `aspire:atlas-*` agents. A user should be on one channel at a time; two installs of the same plugin name make Claude load one and warn about the other.
 
 ### The single-version rule
 

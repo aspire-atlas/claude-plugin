@@ -82,7 +82,8 @@ run rules. Follow it exactly.
 3. Pull data per the **Data pull** section of the reference: last week's posts, prior-week
    and 8-week aggregations by day and by `mediaKind`, current follower count, prior readout
    and creator-brief insights (`runKey` prefixes `readout-weekly-{profile}`,
-   `readout-daily-{profile}`, `creator-brief-{profile}`), and one semantic red-line scan per
+   `readout-daily-{profile}`, `creator-brief-{profile}`), last week's content reviews
+   (`content-review-{profile}`, step 6b of the data pull), and one semantic red-line scan per
    `red_line`.
 4. Compute: weekly totals and week-over-week deltas, engagement rate, top 3 and bottom 2 posts
    with the shared pattern (format, theme, weekday, hook), format split and cadence vs prior
@@ -108,7 +109,9 @@ run rules. Follow it exactly.
 - What worked: top 3 posts with metric, link, and the shared pattern.
 - What did not: bottom 2 posts with one clause each.
 - Mix: format split and cadence vs prior week.
-- Open items: action items still open, with age.
+- Open items: action items still open, with age, including open edits from content reviews.
+- Content reviews: reviews by verdict, the most failed check, and creators reviewed more
+  than once.
 - Next steps: 3 ranked bullets, each tied to a number above.
 - Delivered to: page link, Slack channel, email recipients, and anything that failed.
 - Data gaps and closing line: findings saved under this run.
