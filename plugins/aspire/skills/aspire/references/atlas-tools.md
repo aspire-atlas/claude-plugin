@@ -112,12 +112,19 @@ CDN URLs expire. Render with `onerror` placeholders and note the expiry on the p
 | `user_fact` | member+ | `{role, relationship: in_house|agency|owner, owns?, firstAsk?}` |
 | `competitor` | member+ | `{handle, tier: a|b, body?, spellingVariants?}` |
 | `partner` | member+ | `{handle, platform: instagram|tiktok, themes?, safetyVerdict?, readClosely?, notes?}` |
-| `red_line` | member+ | `{action: block|flag|escalate, appliesTo[], body?}` hard limit. Keys starting `review:` are content review hard rules: only content review applies them, and every other flow skips them |
+| `red_line` | member+ | `{action: block|flag|escalate, appliesTo[], body?}` hard limit |
 | `guideline` | member+ | `{concern: ceiling|requirement|preference, appliesTo[], body?}` soft rule |
 | `policy` | member+ | `{area: escalation|cadence|routing, cadence?, body?}` |
 | `decline` | member+ | `{topic, body?, askedAt?}` question the user declined |
 | `alignment_target` | admin+ | `{horizon: 90d|2y, confidence, cadence, observable, notCovered, dependsOn?}` |
 | `coverage_stamp` | platform only | not writable from a session |
+
+**Keys starting `review:` belong to content review only.** That covers the review setup
+answers, lessons (`review:lesson-*`), and hard rules (`review:rule-*`), whatever their kind.
+Only content review applies them. Every other flow (onboarding, the readouts, the creator
+brief, creator discovery, the account analyst) drops them when it reads `red_line`,
+`guideline`, or any other calibration. A rule the brand wants everywhere is saved under its
+normal key (`redline:*`, `guideline:*`) instead.
 
 Keys are `<namespace>:<slug>`, lowercase, e.g. `brand:summary`, `competitor:acme`,
 `user:primary-contact`, `target:q4-awareness`.

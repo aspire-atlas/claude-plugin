@@ -84,7 +84,7 @@ run rules. Follow it exactly.
    and creator-brief insights (`runKey` prefixes `readout-weekly-{profile}`,
    `readout-daily-{profile}`, `creator-brief-{profile}`), last week's content reviews
    (`content-review-{profile}`, step 6b of the data pull), and one semantic red-line scan per
-   `red_line`.
+   `red_line` (skipping `review:` keys, per the data pull).
 4. Compute: weekly totals and week-over-week deltas, engagement rate, top 3 and bottom 2 posts
    with the shared pattern (format, theme, weekday, hook), format split and cadence vs prior
    week, follower delta, and the list of open action items with age in weeks. Assign each

@@ -32,7 +32,7 @@ Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-brief.md` before st
 
 ## Standing rules
 
-1. **Read the brand's red lines and guidelines first.** Call `search_calibrations` (no filter, limit 100, `includeSuperseded: true`) on the profile. If a `red_line` blocks AI generated content or copy, the brief is strategy only: themes, formats, angles, must-haves, off-limits, targets. No captions, scripts, hooks or creative, and say so in a standing-rule banner at the top of the page. If any `guideline` conflicts with what the data recommends (for example a topic requirement the top performing content does not meet), surface it as a flag for review in the brief and in the summary. Never resolve it silently.
+1. **Read the brand's red lines and guidelines first.** Call `search_calibrations` (no filter, limit 100, `includeSuperseded: true`) on the profile, and drop every key starting `review:` (content review only). If a `red_line` blocks AI generated content or copy, the brief is strategy only: themes, formats, angles, must-haves, off-limits, targets. No captions, scripts, hooks or creative, and say so in a standing-rule banner at the top of the page. If any `guideline` conflicts with what the data recommends (for example a topic requirement the top performing content does not meet), surface it as a flag for review in the brief and in the summary. Never resolve it silently.
 2. **Never fabricate.** Every number on the page comes from an Atlas search hit, a marketplace record, or a cited public source. If a search returns nothing, say indexing is still running and stop that branch.
 3. **Stay inside the chosen sourcing scope.** `search_creator_marketplace`, `lookup_creators` and `lookup_posts` reach beyond the accounts Atlas already holds. Run them only when the user has chosen marketplace sourcing in the inputs. If the inputs do not say, return a single question to the main thread and wait.
 4. **Competitors are never candidates.** Exclude any handle recorded as a `competitor` calibration.
@@ -43,7 +43,7 @@ Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-brief.md` before st
 ### 1. Load tools and context
 
 - `ToolSearch` with `select:` for `search_calibrations`, `list_post_search_fields`, `search_posts`, `list_creator_search_fields`, `search_creators`, `search_creator_marketplace`, `get_job_status`, `append_insights` under the given prefix.
-- `search_calibrations` as above. Extract: brand summary, 90 day goal, primary contact, competitors (exclusion list), red lines (skip keys starting `review:`, which are content review hard rules), guidelines, partners, tracking scope (hashtags).
+- `search_calibrations` as above. Extract: brand summary, 90 day goal, primary contact, competitors (exclusion list), red lines, guidelines (neither including `review:` keys), partners, tracking scope (hashtags).
 - Derive the **brand targeting** (buyer, category, off-audience signals, 3 to 6 search keywords) from those calibrations per the Fit rubric in the reference file. If `brand:summary` is missing, return one question to the main thread and wait. Never substitute Aspire's own audience or any default audience.
 - `list_post_search_fields` once. Use only paths it returns.
 

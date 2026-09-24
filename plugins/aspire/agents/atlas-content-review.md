@@ -72,15 +72,19 @@ shape, and the page. Follow it exactly.
    `list_post_search_fields`, `list_creator_search_fields`, `search_posts`, `search_creators`,
    `append_insights`, `append_calibration` (only for the lessons and hard rules the user
    saves in step 11). In `published` mode, also `lookup_posts`.
-2. Read the date from the shell clock (`date -u +%F`), never from the prompt.
+2. Read the date and time from the shell clock (`date -u +%FT%TZ`), never from the prompt.
+   That value is `reviewedAt` on every finding of this review; the date part feeds the
+   `runKey`.
 3. `search_calibrations` (no filter, limit 100, `includeSuperseded: true`): every `review:*`
    record, including lessons, plus `red_line`, `guideline`, `competitor`, `partner`,
    `brand:summary`, the `voice_and_content_ops` brand fact, and `user:primary-contact`. Use
    only active records; superseded ones tell you what changed. Then `get_brand_instruction`
    with `agentType: "brand_safety"`.
 4. `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
-   `content-review-{profile}`, newest first, limit 50. Use it for overturned calls, earlier
-   reviews of this creator, and open edits this post might close.
+   `content-review-{profile}`, newest first. The first 50 give the overturned calls and
+   earlier reviews of this creator. For open edits this post might close, page on the cursor
+   through every result and keep the `edit` and `close` findings: an edit stays open until a
+   `close` names it, however old it is.
 5. **Get the post.**
    - `published`: `list_post_search_fields` once, then `search_posts` filtered on the URL or
      permalink field the census exposes, projecting `postedAt`, `text`, `url`, `mediaKind`,

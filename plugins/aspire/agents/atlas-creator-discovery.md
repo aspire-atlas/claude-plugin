@@ -55,8 +55,8 @@ machine, the page structure, delivery, and the unattended run rules. Follow it e
    (`search_creators`, `search_creator_marketplace`, `lookup_creators`, web research) are
    yours to run in both modes: the saved cadence record is the standing approval.
 6. **Competitors and red lines are hard filters.** Never shortlist a handle recorded as a
-   `competitor`, and flag any candidate whose recent content matches a `red_line`. Skip
-   `red_line` keys starting `review:`; those are content review hard rules.
+   `competitor`, and flag any candidate whose recent content matches a `red_line`. `review:`
+   keys never count (step 3 drops them).
 
 **Process**
 
@@ -68,7 +68,7 @@ machine, the page structure, delivery, and the unattended run rules. Follow it e
    never from the prompt or the session header.
 3. Read `search_calibrations` (no filter, limit 100, `includeSuperseded: true`): the five
    campaign records, plus `brand:summary`, every `competitor`, `partner`, `red_line`, and
-   `guideline`.
+   `guideline`. Drop every key starting `review:` (content review only).
 4. Rebuild the pool: `search_insights` on the `runKey` prefix
    `creator-discovery-{profile}-{campaign}`, newest first, paged. Newest record per `entityId`
    wins. Count undecided against the pool target; that gap is this run's fill quota.

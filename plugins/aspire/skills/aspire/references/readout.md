@@ -51,7 +51,8 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
 (15 to 25 words, third person).
 
 1. `search_calibrations` as above. Extract: readout calibrations, `red_line`, `guideline`,
-   `competitor`, `partner`, `brand:summary`, `target:weekly-health`.
+   `competitor`, `partner`, `brand:summary`, `target:weekly-health`. Drop every `review:` key
+   (content review only; see `atlas-tools.md`).
 2. `list_post_search_fields` once. Use only paths it returns.
 3. `search_posts` per linked handle: `author.username` = handle, `postedAt` gte the window
    start, `exists mediaKind` (drops stories). Sort `postedAt` desc, limit 100, page on the
@@ -69,19 +70,20 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
    source: open `action_item` findings, last follower count, last flagged posts.
 6b. Content reviews: `search_insights` with a `prefix` filter on
    `detail.account_review.runKey` = `content-review-{profile}`, newest first, paged. Group the
-   findings by `runKey` (one review each) and keep the reviews whose `detail.reviewedAt` falls
-   in the window; every finding of a review carries the same value. Within a review, read by
+   findings by `runKey` (one review each) and keep the reviews whose `detail.reviewedAt` (UTC) falls
+   in the window once converted to the R1 timezone; every finding of a review carries the same value. Within a review, read by
    `detail.findingType`: `verdict` carries `verdict`, `creator`, `counts`, `openEdits`,
    `hardRuleHits`, `reviewPage`, `permalink`, and `postedAt`; `feedback` carries the user's
    `userVerdict`; `check` with `result: "Fail"` feeds the most failed check; `edit` is a
    required edit. Open edits span every review, not just the window: an `edit` stays open
    until a `close` finding names its `idempotencyKey` in `detail.closes`. See
    `content-review.md`, **Feeding the readouts**. Read only; never write a review finding.
+   A content review edit is closed only by a later review's `close` finding, never by a
+   readout: the readout's own resolving `went_well` applies to readout and brief items only.
 7. Red-line scan: for each `red_line` with `action: block|flag|escalate`, one semantic
    `search_posts` with `queryText` = the red-line body, filtered to the window and the brand's
-   handles, limit 10. Report hits by permalink. Never invent a hit. Skip `red_line` records
-   whose key starts with `review:`: those are content review hard rules, and hits on them
-   come from step 6b (`hardRuleHits`).
+   handles, limit 10. Report hits by permalink. Never invent a hit. `review:` keys were
+   dropped in step 1; hits on content review hard rules come from step 6b (`hardRuleHits`).
 
 Metric definitions:
 
@@ -117,7 +119,8 @@ Chat summary, under 150 words:
 - Flags: anomalies and red-line hits, each with a permalink; "none" is a valid line.
 - Since last readout: follower delta, any action item that changed state.
 - Content reviews: reviews run yesterday by verdict, and every Do not post or hard-rule hit
-  with the creator's handle and page link. Leave the line out when there were none.
+  with the creator's handle and the review page link (`reviewPage`). Leave the line out when
+  there were none.
 - One closing line: findings saved, page link.
 
 Page: one compact card. Header (brand, date, network). KPI strip (posts, engagement,
@@ -173,7 +176,9 @@ Page, sections in order:
 Insights written: `runKey` `readout-weekly-{profile}-{ISO week, e.g. 2026-W38}`, role
 `account_review`. Kinds: `went_well` per top post pattern, `needs_improvement` per bottom
 pattern, `action_item` with `priority` per next step (3 max). Mark an older open action item
-as resolved by writing a new `went_well` that references its `idempotencyKey` in `detail`.
+from a readout or a creator brief as resolved by writing a new `went_well` that references its
+`idempotencyKey` in `detail`. Content review edits are never resolved here; only a later
+review closes them (step 6b).
 
 ## Page mechanics
 

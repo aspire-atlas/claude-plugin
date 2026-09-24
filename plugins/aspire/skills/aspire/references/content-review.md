@@ -41,7 +41,9 @@ Rules:
   text field; never add "Other" or "Skip".
 - C3 and C4 may be declined. A declined question is written as kind `decline` with the same
   key, so setup counts it as answered and never asks it again. C1 and C2 cannot be declined:
-  the agent needs both to reach a verdict.
+  the agent needs both to reach a verdict. To answer a declined question later, retract the
+  `decline` record through its Destructive tools confirmation, then ask the question again as
+  a fresh setup item.
 - Write C1's options from the brand's context. If no `red_line` is saved, say so in C1's
   question text ("No red lines are saved yet, so option 2 blocks nothing").
 - C3's option list starts from what exists: when `guideline` records or the
@@ -240,7 +242,7 @@ user has answered it or declined.
 | F1 | What's your call on this post? Your answer is saved to Atlas so future reviews learn from it. | 1) Agree with the review; 2) Approve it anyway (the review was too strict); 3) It needs more changes (the review was too lenient); 4) The review missed something |
 | F2 | Which calls were off? (multiSelect; only after options 2 to 4 of F1) | Up to four Flags or Fails (option 2) or Passes (option 3), each labelled by check and one line of evidence. The free text field carries anything missed. |
 | F3 | Save this for future reviews: *"{lesson}"*? | 1) Save as a review rule (Recommended); 2) Just this post; 3) Propose it as a hard rule (description: "Goes to the next question, where hard rules are confirmed. Hard rules apply to every review for every brand in {organization} and can block a post.") |
-| F4 | Apply any of these to every content review? (multiSelect; only when the agent proposed hard rules) | Up to four proposed hard rules, each labelled with the rule in a few words; the description gives the full rule, its action (blocks or flags), and where it came from. The free text field carries a rule the user wants added or reworded. |
+| F4 | Apply any of these to every content review? (multiSelect; only when there are proposed hard rules, from the agent or from F3 option 3) | Up to four proposed hard rules, each labelled with the rule in a few words; the description gives the full rule, its action (blocks or flags), and where it came from. The free text field carries a rule the user wants added or reworded. |
 
 Rules:
 
@@ -295,13 +297,12 @@ rules, from these sources only:
    "never", or "any post".
 3. **Repeated overturns.** The same check overturned in two or more reviews (the candidate
    lessons from **Reading lessons back**).
+4. **F3 option 3.** A lesson the user chose to propose as a hard rule. It goes through the
+   same duplicate check as the others.
 
 Never propose a rule already saved: compare against every active `review:rule-*` and
 `red_line` record. Never propose a rule that only restates a setup answer (C1 to C4). Word
 each rule so it can be checked from a post: what must or must not appear, and where.
-
-3. **F3 option 3.** A lesson the user chose to propose as a hard rule. It still goes through
-   the duplicate check below.
 
 **Asking.** F4, one multiSelect, after F1 to F3. The question text says: "Hard rules apply to
 every content review in {organization}, for every brand, and can block a post." Each option's
@@ -347,8 +348,6 @@ draft. Role `account_review`. Anchor:
   that network and put the creator's handle in `detail`. Never call `lookup_creators` to
   obtain an anchor.
 
-| Finding | Kind | `priority` |
-| ------- | ---- | ---------- |
 | Finding | Kind | `priority` | `findingType` |
 | ------- | ---- | ---------- | ------------- |
 | The verdict | `went_well` for Approve, `needs_improvement` otherwise | n/a | `verdict` |
@@ -363,8 +362,8 @@ The verdict is never an `action_item`: the edits are the open work, and the verd
 summarizes them.
 
 `detail` carries `rationale`, `evidence[]`, `theme: ["content-review", "<dimension>"]`, and
-these keys, stored verbatim: `findingType` (from the table), `reviewedAt` (ISO timestamp from
-the shell clock, the same value on every finding of one review), `verdict`, `dimension`,
+these keys, stored verbatim: `findingType` (from the table), `reviewedAt` (full UTC timestamp
+from the shell clock, `date -u +%FT%TZ`, the same value on every finding of one review), `verdict`, `dimension`,
 `check`, `result`, `stage` (`draft` or `published`), `creator` (the handle), `deliverable`,
 `lessonsApplied[]`. Supply an `idempotencyKey` per finding.
 

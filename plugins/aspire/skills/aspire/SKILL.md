@@ -440,7 +440,8 @@ plan for next week's content, or creators to make it. Requires at least one link
 with indexed posts. Before launching, settle three things with `AskUserQuestion` (skip any
 the user already answered):
 
-1. **Scope.** If a `red_line` calibration blocks AI generated content, offer "Strategy brief
+1. **Scope.** If a `red_line` calibration blocks AI generated content (ignore `review:` keys,
+   which are content review only), offer "Strategy brief
    only (Recommended)" vs "Include draft copy (overrides the red line; record the exception
    first)". Never produce copy without the override.
 2. **Creator sourcing.** "Already in Atlas", "Atlas creator marketplace (searches beyond
@@ -477,7 +478,8 @@ maintains a pipeline across weeks and teammates.
 2. Otherwise ask S1 from `references/creator-discovery.md`: what the campaign is, in the user's
    own words.
 3. **Then write the refinement questions.** Read the S1 answer together with `brand:summary`,
-   `brand:business-context`, and the `competitor`, `red_line` and `guideline` records, and from
+   `brand:business-context`, and the `competitor`, `red_line` and `guideline` records (not
+   `review:` keys, which are content review only), and from
    those compose 3 to 5 `AskUserQuestion` questions covering the dimensions the reference
    lists, in its order, skipping anything S1 already settled. The options are inferred from the
    brief and the brand context, never generic. Never ask more than five, never ask in plain

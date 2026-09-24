@@ -75,7 +75,8 @@ run rules. Follow it exactly.
 3. Pull data per the **Data pull** section of the reference: yesterday's posts, the 28-day
    baseline aggregation, current follower count, the last daily readout's insights (`runKey`
    prefix `readout-daily-{profile}`), yesterday's content reviews (`content-review-{profile}`,
-   step 6b of the data pull), and one semantic red-line scan per `red_line`.
+   step 6b of the data pull), and one semantic red-line scan per `red_line`
+   (skipping `review:` keys, per the data pull).
 4. Compute: posts published, engagement, engagement rate, best post, anomalies against the
    28-day median using the threshold, follower delta since the last readout, and the state of
    any open action items from prior readouts.
