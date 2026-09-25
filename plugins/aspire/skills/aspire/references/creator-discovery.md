@@ -22,7 +22,7 @@ Only the spine below is fixed. The refinement questions are written at setup tim
 user's campaign description plus the brand's existing calibrations, so the discovery agent asks about
 this campaign rather than a generic creator search.
 
-Before asking anything, call `search_calibrations` (no filter, limit 100,
+Before asking anything, call `search_calibrations` (no filter, limit 100 per page, paged to the end,
 `includeSuperseded: true`) and skip any question whose key is already occupied.
 
 | # | Question (via `AskUserQuestion`) | Options | kind | key | detail |

@@ -369,7 +369,7 @@ the web option; only the person can answer those.
 
 Rules:
 
-- Before asking anything, call `search_calibrations` (no filter, limit 100) for
+- Before asking anything, call `search_calibrations` (no filter, limit 100 per page, paged to the end) for
   `profile_slug`. Skip any question whose key is already occupied. Pass
   `includeSuperseded: true` so moved facts are not re-asked as new.
 - Write each answer with `append_calibration` right after it is given, `provenance:
@@ -470,7 +470,7 @@ maintains a pipeline across weeks and teammates.
 
 ### Setup: define the campaign once, for everyone
 
-1. Call `search_calibrations` (no filter, limit 100, `includeSuperseded: true`). If the five
+1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end, `includeSuperseded: true`). If the five
    campaign keys exist for the campaign in question (`campaign:{slug}-brief`, `-criteria`,
    `-pool`, `-routing`, `-cadence`), skip to **Run** and offer "Change setup" as an option on
    the run question. Several campaigns may be saved; `AskUserQuestion` which one when more
@@ -538,7 +538,7 @@ weekly readouts.
 
 ### Setup: calibrate the reviewer once, for everyone
 
-1. Call `search_calibrations` (no filter, limit 100, `includeSuperseded: true`). Setup is
+1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end, `includeSuperseded: true`). Setup is
    done when `review:verdict-rule` and `review:disclosure` exist and `review:brand-rules`
    and `review:safety-scope` are each either saved or recorded as a `decline`. Then skip to
    **Review**.
@@ -601,7 +601,7 @@ structures live in `references/readout.md`.
 Readout preferences are brand memory, not session state. Every teammate and every scheduled
 run reads the same answers, so setup always runs through Atlas calibrations:
 
-1. Call `search_calibrations` (no filter, limit 100, `includeSuperseded: true`) for
+1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end, `includeSuperseded: true`) for
    `profile_slug`. If all six readout keys are present (`policy:readout-cadence`,
    `policy:readout-routing`, `guideline:readout-thresholds`, `guideline:readout-focus`,
    `policy:readout-escalation`, `guideline:readout-audience`), skip to **Run**. Tell the user

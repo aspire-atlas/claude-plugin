@@ -109,14 +109,14 @@ CDN URLs expire. Render with `onerror` placeholders and note the expiry on the p
 | kind | Standing | detail shape (required fields) |
 | ---- | -------- | ------------------------------ |
 | `brand_fact` | member+ | `{section, body}` sections: brand_summary, brand_context, business_context, voice_and_content_ops, limits_and_gaps, what_this_unlocks |
-| `user_fact` | member+ | `{role, relationship: in_house|agency|owner, owns?, firstAsk?}` |
-| `competitor` | member+ | `{handle, tier: a|b, body?, spellingVariants?}` |
-| `partner` | member+ | `{handle, platform: instagram|tiktok, themes?, safetyVerdict?, readClosely?, notes?}` |
-| `red_line` | member+ | `{action: block|flag|escalate, appliesTo[], body?}` hard limit |
-| `guideline` | member+ | `{concern: ceiling|requirement|preference, appliesTo[], body?}` soft rule |
-| `policy` | member+ | `{area: escalation|cadence|routing, cadence?, body?}` |
+| `user_fact` | member+ | `{role, relationship: in_house\|agency\|owner, owns?, firstAsk?}` |
+| `competitor` | member+ | `{handle, tier: a\|b, body?, spellingVariants?}` |
+| `partner` | member+ | `{handle, platform: instagram\|tiktok, themes?, safetyVerdict?, readClosely?, notes?}` |
+| `red_line` | member+ | `{action: block\|flag\|escalate, appliesTo[], body?}` hard limit |
+| `guideline` | member+ | `{concern: ceiling\|requirement\|preference, appliesTo[], body?}` soft rule |
+| `policy` | member+ | `{area: escalation\|cadence\|routing, cadence?, body?}` |
 | `decline` | member+ | `{topic, body?, askedAt?}` question the user declined |
-| `alignment_target` | admin+ | `{horizon: 90d|2y, confidence, cadence, observable, notCovered, dependsOn?}` |
+| `alignment_target` | admin+ | `{horizon: 90d\|2y, confidence, cadence, observable, notCovered, dependsOn?}` |
 | `coverage_stamp` | platform only | not writable from a session |
 
 **Keys starting `review:` belong to content review only.** That covers the review setup
@@ -125,6 +125,12 @@ Only content review applies them. Every other flow (onboarding, the readouts, th
 brief, creator discovery, the account analyst) drops them when it reads `red_line`,
 `guideline`, or any other calibration. A rule the brand wants everywhere is saved under its
 normal key (`redline:*`, `guideline:*`) instead.
+
+**Read every page.** `limit 100` on `search_calibrations` is the page size, not a cap. Pass
+each response's `nextCursor` back as `cursor` until none is returned, then filter. Lessons,
+hard rules and superseded versions keep growing, so a single page can miss the records a
+flow needs. A flow that finds its setup records missing only after reading every page may
+report "setup needed".
 
 Keys are `<namespace>:<slug>`, lowercase, e.g. `brand:summary`, `competitor:acme`,
 `user:primary-contact`, `target:q4-awareness`.

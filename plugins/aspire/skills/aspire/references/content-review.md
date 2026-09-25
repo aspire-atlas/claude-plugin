@@ -23,7 +23,7 @@ readouts**).
 
 ## Setup: calibrate the reviewer once, for everyone
 
-Before asking anything, call `search_calibrations` (no filter, limit 100,
+Before asking anything, call `search_calibrations` (no filter, limit 100 per page, paged to the end,
 `includeSuperseded: true`) and skip any question whose key is already occupied. All answers
 are written with `append_calibration`, `provenance: "interview"` (or `"web"` per the SKILL.md
 web research option), `statement` under 280 characters, prose in `detail`.
@@ -118,7 +118,9 @@ One check per brief field that is specified:
 ### 2. Brand guidelines
 
 - Every `guideline` calibration whose `appliesTo` is empty or names content, a network the
-  post is on, or `content-review`. One check per guideline.
+  post is on, or `content-review`. One check per guideline. Leave out `review:` keys here:
+  the setup answers already shape the verdict, disclosure, brand rules and safety screen, and
+  lessons are applied on their own below.
 - `review:brand-rules`, one check per line.
 - Voice: the `voice_and_content_ops` brand fact, when saved.
 - Competitors: every `competitor` handle and its `spellingVariants`, in the caption, the

@@ -18,7 +18,7 @@ a teammate, or a new session picks them up without asking again. All are written
 `append_calibration`, `provenance: "interview"`, `statement` under 280 characters, prose in
 `detail`. `key-exists` on write follows the supersede rule in SKILL.md Phase 5.
 
-Before asking anything, call `search_calibrations` (no filter, limit 100,
+Before asking anything, call `search_calibrations` (no filter, limit 100 per page, paged to the end,
 `includeSuperseded: true`) and skip any question whose key is already occupied.
 
 | # | Question (via `AskUserQuestion`) | Options | kind | key | detail |

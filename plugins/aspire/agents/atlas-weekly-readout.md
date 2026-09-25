@@ -40,7 +40,7 @@ run rules. Follow it exactly.
 
 ## Standing rules
 
-1. **Calibrations first.** `search_calibrations` (no filter, limit 100,
+1. **Calibrations first.** `search_calibrations` (no filter, limit 100 per page, paged to the end,
    `includeSuperseded: true`). If `policy:readout-cadence`, `policy:readout-routing`,
    `guideline:readout-thresholds`, `guideline:readout-focus`, `guideline:readout-audience`,
    or `brand:summary` is missing: interactive mode returns one line to the main thread asking
@@ -99,7 +99,8 @@ run rules. Follow it exactly.
 7. Write findings with `append_insights`: `runKey` `readout-weekly-{profile}-{ISO week}`,
    role `account_review`, `went_well` per top pattern, `needs_improvement` per bottom pattern,
    `action_item` with `priority` per next step (3 max), and a `went_well` that closes any
-   older action item now met, referencing its `idempotencyKey` in `detail`. `idempotencyKey`
+   older readout or creator-brief action item now met, referencing its `idempotencyKey` in
+   `detail`. Never close a content review edit: only a later review does that. `idempotencyKey`
    per finding.
 
 ## Output to the main thread (under 250 words, ordered for the saved audience)

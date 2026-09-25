@@ -75,7 +75,7 @@ shape, and the page. Follow it exactly.
 2. Read the date and time from the shell clock (`date -u +%FT%TZ`), never from the prompt.
    That value is `reviewedAt` on every finding of this review; the date part feeds the
    `runKey`.
-3. `search_calibrations` (no filter, limit 100, `includeSuperseded: true`): every `review:*`
+3. `search_calibrations` (no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): every `review:*`
    record, including lessons, plus `red_line`, `guideline`, `competitor`, `partner`,
    `brand:summary`, the `voice_and_content_ops` brand fact, and `user:primary-contact`. Use
    only active records; superseded ones tell you what changed. Then `get_brand_instruction`

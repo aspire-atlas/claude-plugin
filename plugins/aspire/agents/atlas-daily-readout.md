@@ -39,7 +39,7 @@ run rules. Follow it exactly.
 
 ## Standing rules
 
-1. **Calibrations first.** `search_calibrations` (no filter, limit 100,
+1. **Calibrations first.** `search_calibrations` (no filter, limit 100 per page, paged to the end,
    `includeSuperseded: true`). If `policy:readout-cadence`, `policy:readout-routing`,
    `guideline:readout-thresholds`, `guideline:readout-focus`, or `brand:summary` is missing:
    interactive mode returns one line to the main thread asking it to run readout setup;

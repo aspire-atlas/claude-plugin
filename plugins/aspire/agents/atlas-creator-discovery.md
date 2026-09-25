@@ -66,7 +66,7 @@ machine, the page structure, delivery, and the unattended run rules. Follow it e
    `lookup_creators`, `append_insights`.
 2. Resolve the date from the shell clock in the cadence record's timezone (`TZ=<tz> date +%F`),
    never from the prompt or the session header.
-3. Read `search_calibrations` (no filter, limit 100, `includeSuperseded: true`): the five
+3. Read `search_calibrations` (no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the five
    campaign records, plus `brand:summary`, every `competitor`, `partner`, `red_line`, and
    `guideline`. Drop every key starting `review:` (content review only).
 4. Rebuild the pool: `search_insights` on the `runKey` prefix
