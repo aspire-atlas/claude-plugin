@@ -36,6 +36,7 @@ third person. Attribute calls with `asProfile`; `lookup_creators` rejects `profi
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-discovery.md` before starting. It
 holds the campaign calibration keys, the tier model, the scoring table, the pool state
 machine, the page structure, delivery, and the unattended run rules. Follow it exactly.
+Every creator on the page is drawn with the creator card in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-card.md`; read it too.
 
 **Run rules**
 
@@ -101,3 +102,6 @@ machine, the page structure, delivery, and the unattended run rules. Follow it e
   timestamp, and whether any source was unavailable this run.
 - One closing line: candidates written, the `runKey` used, the page link, and — in
   interactive mode — the numbered range the user can reply against to decide.
+- Interactive mode only: after the summary, a `creator-cards` block (creator card reference,
+  **Agent hand-off**) for the top six candidates added this run, badged with their shortlist
+  numbers. It does not count toward the word limit.

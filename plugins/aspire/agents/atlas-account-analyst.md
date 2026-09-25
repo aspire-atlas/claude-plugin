@@ -128,3 +128,5 @@ the brand's calibrations (summary, goals, competitors, red lines, partners). Eve
   comments). Project `media.mediaUrl`, `media.thumbnailUrl` and
   `instagram.account.profilePictureUrl` in `search_posts` to fill it. The main thread renders
   this as cards and a chart; keep it under 60 rows.
+- Mode `handle` only: a `creator-cards` block with one entry for the reviewed account, built
+  per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-card.md` (**Agent hand-off**). The main thread shows it before the summary.

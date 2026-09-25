@@ -77,7 +77,19 @@ The pool is the set of candidates **awaiting a decision**. Its target size is S7
 
 Any decision frees a slot, so a run fills back to the target with candidates nobody has seen.
 A rejected creator is never re-surfaced, on any later run, by any source — the dedupe set is
-every entity id ever written for this campaign, not just the current pool.
+every entity id ever written for this campaign, not just the current pool. Only a person can
+bring one back, and only straight onto the active list (**Added by the team** below).
+
+**Added by the team.** A person can add a creator from a creator card (SKILL.md, **Creator card
+actions**). These carry `tier` `manual` and `source` `creator card`.
+
+- Accepted from the card: a `went_well` verdict, shown in the active list like any other.
+- Added as a candidate (`action_item`, undecided): the shortlist shows them in their own
+  group, **Added by the team**, before tier 1, because a person chose them. The next run
+  scores them like any other undecided candidate and never drops them for being unscored.
+  Until then they have no `fitScore`: no fit ring, a "Not scored yet" note in `{DETAILS}`, and
+  they sort after the scored ones in their group. They are numbered with everyone else.
+- A candidate the campaign already rejected cannot be added as a candidate, only accepted.
 
 ## Tiers: where candidates come from, and in what order
 
@@ -149,12 +161,15 @@ Sections in order:
    rejected against target), run timestamp.
 2. **Since last run** — added, re-scored up or down, went dormant, decided. One line each;
    "no change" is a valid line.
-3. **Active list** — accepted creators, compact cards, so the working set is visible first.
+3. **Active list** — accepted creators as creator cards, so the working set is visible first.
 4. **Shortlist** — the undecided pool, grouped by tier, ranked by fit score inside it.
    Numbered from 1 across the whole shortlist, stable for the run, because those numbers are
-   what the user replies with. Each card: profile picture, handle, follower count,
-   engagement rate, fit score with its two strongest components named, tier chip, source
-   chip, one evidence post thumbnail with permalink, risk flags, contact route if known.
+   what the user replies with. Each candidate is a creator card (`creator-card.md`): the fit
+   score in the ring; flow chips `#{number}` and the tier (`Added by team` for `manual`), then
+   the card's own badges; safety flags in the brand safety tile and every other risk flag under
+   "Notes" in `{DETAILS}`, per the card's **Brand safety** rule; evidence posts first in the
+   thumbnails. `{DETAILS}` also holds the two strongest fit components with their points, the
+   source, and the contact route if known.
 5. **Rejected this cycle** — collapsed list of handles with the reason recorded, so a
    decision is auditable.
 6. **Criteria** — the saved criteria in plain words, so a reader can see what "fit" meant.
@@ -163,7 +178,7 @@ Sections in order:
 More than 12 candidates means a chart leads the shortlist: fit score by tier, or follower
 count against engagement rate with the pool plotted. Page mechanics are the readouts':
 download media and profile pictures from `cdn.aspire.io` with `curl`, resize with Pillow
-(cards 240px wide, profile pictures 96px), embed as JPEG data URIs, keep the page under 2MB,
+(thumbnails 240px wide, profile pictures 112px), embed as JPEG data URIs, keep the page under 2MB,
 fall back to the base media URL on a `/thumbnail` 404. Load `artifact-design`, and `dataviz`
 for any chart, before building. Title: "<Brand> Creator Discovery: <Campaign>".
 

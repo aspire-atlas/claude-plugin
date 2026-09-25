@@ -10,7 +10,10 @@ description: >
   readout"), or asks to find or shortlist creators for a campaign ("creator discovery", "refill
   the shortlist", "find creators for the campaign"), or asks to review a post or a creator's
   draft against a brief ("review this post", "content review", "check this draft against the
-  brief", "brand safety check on this post"). It verifies the Atlas data connection,
+  brief", "brand safety check on this post"), or asks to see a specific creator ("show me
+  @handle", "who is @handle"), or sends a creator card action ("Draft outreach to @handle on
+  Instagram", "Add @handle on TikTok to a campaign shortlist", "Save @handle on Instagram to the
+  watch list", "show my watch list"). It verifies the Atlas data connection,
   authenticates and selects an organization, scopes the brand, connects social accounts,
   captures brand context for future sessions, delivers first insights, and routes recurring
   readouts, creator briefs, creator discovery, and content reviews.
@@ -99,7 +102,8 @@ is not on disk.
 Two standing rules apply across phases: brand-facing calibration questions offer a web
 research option whose findings are shown before anything is written (Phase 5), and any
 request to show posts or creators is answered visually with the post media and profile
-pictures (Visual output, after Phase 6).
+pictures (Visual output, after Phase 6). Every creator is shown with the creator card
+(`references/creator-card.md`), in chat or on a page.
 
 After onboarding, four recurring flows hang off the same connection: the **Creator brief**
 (weekly content plan with creators), the **Creator discovery** (a standing creator shortlist per
@@ -427,7 +431,8 @@ review.
    item, and mention the findings are saved in Atlas and searchable later.
 7. Deliver the summary visually per the **Visual output** rule below: a card view of the top
    and bottom posts with their media, and one chart of the engagement pattern the headline
-   rests on.
+   rests on. In mode `handle`, lead with the account's creator card inline, before the
+   summary, rendered from the agent's `creator-cards` block.
 8. Unattended run with no `AskUserQuestion` available: default to `own` mode and never start a
    lookup.
 
@@ -452,7 +457,7 @@ the user already answered):
 Then launch the `atlas-creator-brief` agent with: tool prefix, `profile_slug`, linked handles
 and networks, target week (next Monday to Friday unless given), lookback, and the three
 answers. Relay its summary, the published page, and any decisions it needs (guideline
-conflicts, budget tier). The agent writes action items back to Atlas as insights.
+conflicts, budget tier). Show the first-pick creators inline as creator cards from the agent's `creator-cards` block. The agent writes action items back to Atlas as insights.
 
 ---
 
@@ -499,7 +504,9 @@ Ask once with `AskUserQuestion`: "What should the discovery agent do?" Options: 
 {target}", "Show the current shortlist", "Record decisions on the shortlist", "Change setup".
 Then launch `atlas-creator-discovery` with: tool prefix, `profile_slug`, the campaign slug, the
 brand handles and networks, and run mode `interactive`. Relay its summary, the page link, and
-the numbered range the user can decide against.
+the numbered range the user can decide against. Show the candidates added this run inline as
+creator cards from the agent's `creator-cards` block (top six by fit score, badged with their
+shortlist numbers).
 
 **Recording decisions** stays in the main thread, never the agent. The user replies in their
 own words against the page numbers ("keep 1, 3 and 4, drop the rest"). Resolve the numbers
@@ -677,9 +684,9 @@ default, and only when the user asks for text or the data has no media at all.
 - Posts: the post media (`media.mediaUrl`, falling back to `media.thumbnailUrl`) plus the
   author's profile picture (`instagram.account.profilePictureUrl` or
   `tiktok.account.profileImage`). Project these fields in `search_posts`.
-- Creators: the profile picture and 3 to 6 recent post thumbnails. Project
-  `instagram.account.profilePictureUrl` / `tiktok.account.profileImage` in `search_creators`
-  and pull thumbnails with a `search_posts` filter on `author.username`.
+- Creators: always the creator card in `references/creator-card.md`, which sets the fields to
+  pull, the sections, and the leave-out rules. No other creator layout is used anywhere in the
+  plugin.
 
 **Default shapes:**
 
@@ -689,8 +696,12 @@ default, and only when the user asks for text or the data has no media at all.
 - More than 12 items, or any question about trends, cadence, or format mix → **chart** first
   (bar for ranking, line for over time, small multiples for format or theme comparison),
   then cards for the top 3 to 5.
-- Creator comparisons → a card per creator with a profile picture and a metric strip; a bar
-  chart of the comparison metric when 3 or more creators.
+- Creators → creator cards. One to six render inline in chat with the action buttons; seven
+  or more go on a published page without them. Comparisons of 3 or more creators add a bar
+  chart of the comparison metric above the cards.
+- A single creator the user names ("show me @handle", "who is @handle") → one inline creator
+  card from what Atlas already holds. If Atlas holds nothing, say so and offer an account
+  review (Phase 6, mode `handle`); never call `lookup_creators` just to draw a card.
 
 **Mechanics:**
 
@@ -705,7 +716,76 @@ default, and only when the user asks for text or the data has no media at all.
 - Never fabricate an image. If a post has no media fields, show the placeholder tile, not a
   stock or generated picture.
 - In the chat reply, give a 3 to 5 bullet readout of the numbers alongside the visual so the
-  user can scan without opening it.
+  user can scan without opening it. For inline creator cards, the bullets add only what the
+  card cannot show.
+
+---
+
+## Creator card actions
+
+The inline card's buttons send these messages; users may also type them. Each message is a
+request, never an approval: every write below is confirmed with `AskUserQuestion` first, and
+unattended runs never act on them. Resolve the creator with `search_creators` on the handle
+and network (never `lookup_creators`); if Atlas does not hold it, say so and stop.
+
+**"Draft outreach to @handle on {network}"**
+
+1. Read `brand:summary`, `brand:business-context`, `guideline:voice`, any `competitor` and
+   `red_line` records (not `review:` keys), and any campaign the creator is in
+   (`search_insights` on the `creator-discovery-{profile}` prefix, newest record for the
+   creator's `entityId`).
+2. Draft one message in chat: a subject line and a body under 120 words, in the brand's voice,
+   naming one specific post of theirs from Atlas and the campaign when there is one. Never
+   state a fee, a date, or a product the calibrations do not hold; leave a bracketed blank.
+3. Name the contact route Atlas holds (`instagram.email`, `youtube.youtubeBusinessEmail`,
+   Instagram partnership messages when `isPaidPartnershipMessagesEnabled`), or say there is
+   none.
+4. Never send. If a mail tool is connected and an email is known, offer with
+   `AskUserQuestion`: "Keep it here (Recommended)" / "Save as an email draft". Only the second
+   option creates the draft.
+5. A `red_line` that blocks AI-written copy: give talking points instead of a draft and say
+   why. A `competitor` handle: say it is saved as a competitor and ask before drafting.
+
+**"Add @handle on {network} to a campaign shortlist"**
+
+1. Instagram and TikTok only: discovery and the insights store take no other network. For
+   YouTube, say so and stop before asking anything.
+2. Find the campaigns: `campaign:*-brief` keys in `search_calibrations`. None: offer creator
+   discovery setup and stop. Several: ask which one with `AskUserQuestion`.
+3. Read the creator's newest record for that campaign (`search_insights` on the
+   `creator-discovery-{profile}-{campaign}` prefix, the creator's `entityId`):
+   - Already accepted: say so and stop.
+   - Already undecided: say it is on the shortlist as #{number} and stop.
+   - Rejected before: say when and why, then offer only "Accept onto the active list" and
+     "Leave it rejected (Recommended)". A rejected creator cannot come back as a candidate,
+     because discovery never re-surfaces one.
+   - Not in the campaign: ask how, "Add to the active list (Recommended)" (`went_well`,
+     accepted) or "Add as a candidate" (`action_item`, undecided, priority `medium`; the next
+     discovery run scores it).
+4. Write one finding with `append_insights` under that campaign's runKey for today, following
+   `references/creator-discovery.md`, **State written to Atlas** and **Added by the team**,
+   with `tier` `manual`, `source` `creator card`, and `idempotencyKey`
+   `card-add-{campaign}-{entityId}-{YYYY-MM-DD}`. A new verdict never edits the old one.
+   Republishing the shortlist page is the discovery agent's job on its next run; say so.
+
+**"Save @handle on {network} to the watch list"**
+
+The watch list is the brand's saved creators, outside any campaign.
+
+1. Confirm with `AskUserQuestion`: "Save @handle to {brand}'s watch list?" Options: "Save
+   (Recommended)" / "Cancel".
+2. Write one finding with `append_insights`: runKey `creator-watchlist-{profile}-{YYYY-MM-DD}`,
+   role `account_review`, `schema` = network, `entityKind` `account`, `entityId` = the
+   network's account id from the search hit, `kind` `action_item`, `priority` `low`, rationale
+   "Saved from a creator card", `detail.watching: true`, `detail.changedAt` = the current UTC
+   time, and `idempotencyKey` `watchlist-{entityId}-save-{changedAt}`. Instagram and TikTok
+   only; the insights store takes no other network, so say that for YouTube and stop.
+3. **"Show my watch list"**: `search_insights` on the `creator-watchlist-{profile}` prefix,
+   newest record per `entityId` (by `detail.changedAt`) wins, keep `watching: true`, render as
+   creator cards. Removing someone writes a new finding with `watching: false` after the same
+   kind of confirmation, with its own `changedAt` and `idempotencyKey`
+   `watchlist-{entityId}-remove-{changedAt}`, so a save and a removal on the same day never
+   collide; never a destructive tool.
 
 ---
 

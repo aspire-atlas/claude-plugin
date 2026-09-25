@@ -21,12 +21,12 @@ One self-contained HTML page, published with the Artifact tool. Sections in orde
    (numeric target bold), rights. Optional product slot in amber.
 4. **Guardrails.** Two boxes: required, off limits.
 5. **Creator shortlist.** Intro naming the discovery runs. Horizontal bar chart of followers
-   colored by tier, bar label with Reel interaction rate. Then a card per creator: profile
-   picture, handle, fit chip, name, location, tier; three sample post thumbnails with a view or
-   like count chip; metric strip (followers, Reel interaction, hook rate, engaged accounts);
-   angle; role; why; recommended engagement cost block (range, rationale); past B2B partners,
-   contact, marketplace badges; open profile link. Then two boxes: budget scenarios, how the
-   costs were set. Footnote naming creators considered but not shortlisted.
+   colored by tier, bar label with Reel interaction rate. Then a creator card per creator
+   (`creator-card.md`): badges in order fit ("Strong fit" or "Partial fit"), tier, then the
+   card's own; no fit ring, because the rubric has no score. `{DETAILS}` holds angle, role,
+   why, the recommended engagement cost (range and rationale), past partners in the
+   category, contact, and the profile link. Then two boxes: budget scenarios, how the costs
+   were set. Footnote naming creators considered but not shortlisted.
 6. **Timeline.** Working back from the first post: outreach, confirm, brief calls, drafts,
    post days, 7 day readout.
 7. **Measurement.** Table: piece, primary metric, target, benchmark from the brand's own
