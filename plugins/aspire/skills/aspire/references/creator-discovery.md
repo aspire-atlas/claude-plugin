@@ -173,13 +173,11 @@ Sections in order:
 5. **Rejected this cycle** — collapsed list of handles with the reason recorded, so a
    decision is auditable.
 6. **Criteria** — the saved criteria in plain words, so a reader can see what "fit" meant.
-7. **Footer** — sources, the CDN expiry note, "numbers come from Atlas as of {timestamp}".
+7. **Footer** — sources, a note that images are a snapshot, "numbers come from Atlas as of {timestamp}".
 
 More than 12 candidates means a chart leads the shortlist: fit score by tier, or follower
-count against engagement rate with the pool plotted. Page mechanics are the readouts':
-download media and profile pictures from `cdn.aspire.io` with `curl`, resize with Pillow
-(thumbnails 240px wide, profile pictures 112px), embed as JPEG data URIs, keep the page under 2MB,
-fall back to the base media URL on a `/thumbnail` 404. Load `artifact-design`, and `dataviz`
+count against engagement rate with the pool plotted. Embed every image with the snippet in
+`creator-card.md`, **Images**, page profile, and keep the page under 2MB. Load `artifact-design`, and `dataviz`
 for any chart, before building. Title: "<Brand> Creator Discovery: <Campaign>".
 
 ## Decisions

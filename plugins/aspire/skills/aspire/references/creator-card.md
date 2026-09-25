@@ -9,7 +9,7 @@ account analysis. The layout is the compact Aspire creator card; only the placeh
 
 | Surface | How | Actions row |
 | ------- | --- | ----------- |
-| Main thread, 1 to 6 creators | Inline widget, one `show_widget` call holding all the cards in a grid | Shown |
+| Main thread, 1 to 6 creators | Inline widget, one `show_widget` call holding all the cards in a grid. Every image embedded as a data URI (see **Images**) | Shown |
 | Main thread, 7 or more creators | Published page (Visual output in SKILL.md); more than 12 leads with a chart | Hidden |
 | Agents (brief, discovery, account analyst, content review) | Inside the agent's published page | Hidden |
 | No widget tool, or the call fails | The Markdown fallback below | n/a |
@@ -33,6 +33,8 @@ left out as keys rather than set to null.
 ```
 
 The main thread renders from this block and does not query Atlas again for these creators.
+`avatarUrl` and `thumbUrl` stay remote URLs in the hand-off block; the main thread embeds them
+(see **Images**) before rendering. Agents never send data URIs through the summary.
 
 ## Inline rendering
 
@@ -40,12 +42,17 @@ The main thread renders from this block and does not query Atlas again for these
    `select:mcp__visualize__read_me,mcp__visualize__show_widget`.
 2. Call `mcp__visualize__read_me` with `modules: ["mockup"]` silently before the first card,
    unless this session already did for the connection card. Never mention it.
-3. Call `mcp__visualize__show_widget` with:
+3. Embed every image before building the card. The widget sandbox blocks `cdn.aspire.io`, so
+   a remote URL renders blank. Run the **Images** snippet with the inline profile and put each
+   returned `dataUri` into `{AVATAR}` and `{THUMB}`. An image with `ok: false` falls back the
+   normal way: initials for the avatar, and the cell is left out for a thumbnail. Never put a
+   `cdn.aspire.io` URL in `widget_code`.
+4. Call `mcp__visualize__show_widget` with:
    - `title`: `atlas_creator_card_{handle}` for one creator, `atlas_creator_cards` for several.
    - `loading_messages`: one short neutral message, for example `["Loading creator profile"]`.
    - `widget_code`: the style block once, then one card per creator inside
      `<div class="ac-grid">`.
-4. Reply after the card with at most three bullets the card cannot show (why this creator, what
+5. Reply after the card with at most three bullets the card cannot show (why this creator, what
    is missing, the next step). Never repeat the card's numbers in text.
 
 If `read_me` documents a different way for a widget to send a message back to the chat than
@@ -56,11 +63,97 @@ actions row out.
 
 Put the style block in the page `<head>` once and the cards wherever the page structure calls
 for them, inside `<div class="ac-grid">`. The page's own tokens are not used by the card; the
-card carries Aspire's. Page mechanics are the readouts' (`readout.md`, **Page mechanics**):
-download the profile picture and thumbnails, resize (profile picture 112px, thumbnails 240px),
-embed as JPEG data URIs, because published pages cannot load `cdn.aspire.io`. Leave out the
-actions row. Flow-specific detail goes in the `{DETAILS}` slot, never in extra markup around
-the card.
+card carries Aspire's. Embed images with the **Images** snippet and `--profile=page`. Leave
+out the actions row. Flow-specific detail goes in the `{DETAILS}` slot, never in extra markup
+around the card.
+
+## Images
+
+Every image on a card is a JPEG data URI, inline and on pages alike. No surface can load
+`cdn.aspire.io` directly: the widget sandbox allows only a short list of script and font
+hosts, and published pages allow no outside images.
+
+| Surface | Profile | Avatar | Thumbnail | JPEG quality |
+| ------- | ------- | ------ | --------- | ------------ |
+| Inline widget | `inline` (default) | 96px | 150px | 55 |
+| Published page | `page` | 112px | 240px | 75 |
+
+- Use `media.thumbnailUrl` first. Some `/thumbnail` routes return 404 while the base media URL
+  works; the snippet retries the base URL.
+- The CDN returns 403 to Python's default User-Agent, so every request sends one. `curl`
+  works without it; hand-rolled code must set it.
+- Budget: about 20KB per card inline (an avatar and three thumbnails measured 15.5KB). Six
+  cards stay under 150KB. If a set of cards is over 150KB, drop to two thumbnails per card
+  before cutting cards.
+- A video URL, a 404, or any other failure comes back `ok: false`: initials for the avatar,
+  the cell left out for a thumbnail. Never substitute another image.
+- Keep the `onerror` handlers in the template as a second line of defense. They are not the
+  fix.
+- No code execution in the session: leave every image out (initials, no thumbnails) rather
+  than use a remote URL.
+
+Save this to a scratch file (for example `embed_media.py` in the session's temp directory) and
+run it with one `kind=url` argument per image. `kind` is `avatar` or `thumb` (square crop)
+or `post` (the thumbnail width, aspect ratio kept, for post cards on readout pages). It needs
+Python 3 and Pillow. It prints one JSON line per image, in argument order:
+`{"kind","url","ok","bytes","dataUri"}` or `{"kind","url","ok":false,"error"}`.
+
+```bash
+python3 embed_media.py [--profile=page] avatar=<url> thumb=<url> thumb=<url> thumb=<url>
+```
+
+```python
+import base64, io, json, sys, urllib.request
+from PIL import Image
+
+PROFILES = {"inline": {"avatar": 96, "thumb": 150, "q": 55},
+            "page": {"avatar": 112, "thumb": 240, "q": 75}}
+UA = {"User-Agent": "Mozilla/5.0 (compatible; aspire-atlas-plugin)"}
+
+
+def fetch(url):
+    req = urllib.request.Request(url, headers=UA)
+    with urllib.request.urlopen(req, timeout=20) as r:
+        return r.read()
+
+
+def embed(kind, url, p):
+    try:
+        data = fetch(url)
+    except Exception:
+        if not url.rstrip("/").endswith("/thumbnail"):
+            raise
+        data = fetch(url.rstrip("/")[: -len("/thumbnail")])
+    im = Image.open(io.BytesIO(data)).convert("RGB")
+    w, h = im.size
+    if kind == "post":  # keep the aspect ratio, fit the width
+        size = p["thumb"]
+        im = im.resize((size, max(1, round(h * size / w))), Image.LANCZOS)
+    else:  # avatar or thumb: centre square crop
+        s = min(w, h)
+        left, top = (w - s) // 2, (h - s) // 2
+        im = im.crop((left, top, left + s, top + s)).resize((p[kind], p[kind]), Image.LANCZOS)
+    buf = io.BytesIO()
+    im.save(buf, "JPEG", quality=p["q"], optimize=True)
+    return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
+
+
+profile, items = "inline", []
+for arg in sys.argv[1:]:
+    if arg.startswith("--profile="):
+        profile = arg.split("=", 1)[1]
+    else:
+        kind, url = arg.split("=", 1)
+        items.append((kind, url))
+for kind, url in items:
+    out = {"kind": kind, "url": url}
+    try:
+        uri = embed(kind, url, PROFILES[profile])
+        out.update(ok=True, bytes=len(uri), dataUri=uri)
+    except Exception as e:
+        out.update(ok=False, error=str(e)[:200])
+    print(json.dumps(out))
+```
 
 ## Data: what fills each section
 
@@ -344,8 +437,8 @@ Then offer the three actions as one line: "Reply 'draft outreach', 'add to a sho
 - Never show an internal id, slug, field name, or tool name on a card. Flow text copied into
   `{DETAILS}` (rationale, risk flags) often quotes field names: rewrite them as plain words
   ("past brand partners list", not `instagram.pastBrandPartnershipPartners`).
-- CDN images expire. Inline cards use the URL with the `onerror` fallback; pages embed data
-  URIs and note the expiry once in the footer.
+- Every image is embedded as a data URI (see **Images**). Remote CDN URLs never appear in
+  widget code or page HTML. Pages still note once in the footer that images are a snapshot.
 - One card per person, not per channel. Two hits that are the same person (the same
   `channels` entry) render once.
 - Escape every value that comes from Atlas or the web (`&`, `<`, `>`, `"`, `'`) before placing
