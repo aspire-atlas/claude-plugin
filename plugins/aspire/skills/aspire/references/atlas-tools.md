@@ -104,6 +104,9 @@ opaque or `exists`-only in the census, so they cannot be filtered on, but they p
 
 CDN URLs expire. Render with `onerror` placeholders and note the expiry on the page.
 
+Creators are always drawn with the creator card; its field list, including the post
+`analysis` fields behind the brand safety and sentiment tiles, is in `creator-card.md`.
+
 ## Calibration kinds (for Phase 5)
 
 | kind | Standing | detail shape (required fields) |

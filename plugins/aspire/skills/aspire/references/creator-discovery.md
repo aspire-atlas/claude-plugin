@@ -149,12 +149,13 @@ Sections in order:
    rejected against target), run timestamp.
 2. **Since last run** — added, re-scored up or down, went dormant, decided. One line each;
    "no change" is a valid line.
-3. **Active list** — accepted creators, compact cards, so the working set is visible first.
+3. **Active list** — accepted creators as creator cards, so the working set is visible first.
 4. **Shortlist** — the undecided pool, grouped by tier, ranked by fit score inside it.
    Numbered from 1 across the whole shortlist, stable for the run, because those numbers are
-   what the user replies with. Each card: profile picture, handle, follower count,
-   engagement rate, fit score with its two strongest components named, tier chip, source
-   chip, one evidence post thumbnail with permalink, risk flags, contact route if known.
+   what the user replies with. Each candidate is a creator card (`creator-card.md`): the fit
+   score in the ring; badges in order `#{number}`, tier, source, then the card's own; risk
+   flags in the brand safety tile; evidence posts first in the thumbnails. `{DETAILS}` holds
+   the two strongest fit components with their points and the contact route if known.
 5. **Rejected this cycle** — collapsed list of handles with the reason recorded, so a
    decision is auditable.
 6. **Criteria** — the saved criteria in plain words, so a reader can see what "fit" meant.
@@ -163,7 +164,7 @@ Sections in order:
 More than 12 candidates means a chart leads the shortlist: fit score by tier, or follower
 count against engagement rate with the pool plotted. Page mechanics are the readouts':
 download media and profile pictures from `cdn.aspire.io` with `curl`, resize with Pillow
-(cards 240px wide, profile pictures 96px), embed as JPEG data URIs, keep the page under 2MB,
+(thumbnails 240px wide, profile pictures 112px), embed as JPEG data URIs, keep the page under 2MB,
 fall back to the base media URL on a `/thumbnail` 404. Load `artifact-design`, and `dataviz`
 for any chart, before building. Title: "<Brand> Creator Discovery: <Campaign>".
 

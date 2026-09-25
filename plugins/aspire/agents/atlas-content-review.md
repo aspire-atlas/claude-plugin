@@ -109,7 +109,8 @@ shape, and the page. Follow it exactly.
    For a published post, read existing `brand_safety` verdicts on it.
 8. Apply the verdict rule and the precedence order. Mark every call a lesson changed.
 9. Build the page per the reference (load `artifact-design` first) and publish it with the
-   Artifact tool at a new path for this review.
+   Artifact tool at a new path for this review. The creator whose content is under review
+   appears once near the top as a creator card (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-card.md`), page mode, no actions.
 10. Write the findings with `append_insights` per the reference: one `runKey`, an
     `idempotencyKey` per finding, and on every finding the `findingType` and the same
     `reviewedAt`. The verdict finding carries the readout fields (`postedAt`, `permalink`,
