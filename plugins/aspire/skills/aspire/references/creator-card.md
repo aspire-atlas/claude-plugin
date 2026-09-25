@@ -28,7 +28,7 @@ left out as keys rather than set to null.
   "channels":[{"network":"instagram","followers":"3.1K","primary":true,
     "stats":[{"value":"3.1K","label":"Followers"}],
     "posts":[{"url":"…","thumbUrl":"…","video":true,"alt":"…"}]}],
-  "badges":["…"],"safety":{"title":"Brand safe","note":"No flags","tone":"ok"},
+  "flowChips":["#1","Tier 3"],"badges":["…"],"safety":{"title":"Brand safe","note":"No flags","tone":"ok"},
   "sentiment":{"pct":88,"tone":"ok"}}]
 ```
 
@@ -81,35 +81,67 @@ fill in from web copy. The one exception is the header row, which always shows.
 | Profile picture | `{AVATAR}` | `instagram.profilePictureUrl`, `tiktok.profileImage`, `youtube.profileImageUrl` of the primary channel | Missing or failed load: `{INITIALS}` on a muted circle |
 | Network badge on the picture | `{NET_ICON}` | Primary channel's `network` | Icon from the icon table |
 | Handle | `{HANDLE}` | `username` | No `@` in the card; escape HTML |
-| Subtitle | `{SUBTITLE}` | Display name (`instagram.name`, `tiktok.displayName`, `youtube.displayName`) · a 2 to 4 word descriptor taken from the bio's own words | Descriptor only when the bio states one; otherwise the name alone. No name and no descriptor: leave the line out |
-| Topics | `{TOPICS}`, `{TOPICS_MORE}` | Top two `analysis.aestheticTags` by post count across the 12 posts (a `terms` agg works), or `youtube.youtubeTopicCategories` | A tag must appear on 3 or more posts. `+N` counts the other tags that pass; omit when zero |
-| Audience | `{AUDIENCE}` | `instagram.creatorEngagedAccountsBreakdowns`: engaged accounts, the top gender share, the top age band | Only when a gender or age breakdown has results; the breakdowns are often empty. Format `33.4K, Female 79%, 25-34` |
+| Subtitle | `{SUBTITLE}` | Name · descriptor, per **Subtitle** below | No name and no descriptor: leave the line out |
+| Topics | `{TOPICS}`, `{TOPICS_MORE}` | Top two `analysis.aestheticTags` by post count across the 12 posts, or `youtube.youtubeTopicCategories` | Count tags case-insensitively and show each in its most common spelling. A tag must appear on 3 or more posts. `+N` counts the other tags that pass; omit when zero |
+| Audience | `{AUDIENCE}` | Instagram: `instagram.creatorEngagedAccountsBreakdowns` (engaged accounts, top gender share, top age band). TikTok: `tiktok.audienceGenders` and `tiktok.audienceAges` with the follower count | Only when a gender or age breakdown has results; they are often empty. Format `33.4K, Female 79%, 25-34` |
 | Fit ring | `{FIT}` | The fit score the current flow computed or read from Atlas (discovery `fitScore`) | Only a 0 to 100 score from a stated rubric. Flows without one leave the ring out; the brief shows its Strong or Partial read as a badge instead |
 | Network chips | `{CHIPS}` | One chip per entry in `channels` with its `followersCount` | Only when there are two or more channels. The primary one is `aria-selected="true"` |
-| Badges | `{BADGES}` | See the badge order below | Up to two, then an outline `+N` chip |
-| Brand safety tile | `{SAFETY}` | `analysis.brandSafety` on the posts, plus any risk flag the flow raised | Needs 3 or more analyzed posts. Every category `Low Risk` and no flags: "Brand safe" / "No flags", success tone. Otherwise: "{n} flags" / the category or flag names, warning tone |
+| Badges | `{BADGES}` | See **Badges** below | Flow chips, then up to two card badges, then an outline `+N` chip |
+| Brand safety tile | `{SAFETY}` | `analysis.brandSafety` on the posts, plus the flow's **safety** risk flags only | Needs 3 or more analyzed posts, or a safety flag. See **Brand safety** below |
 | Sentiment tile | `{SENTIMENT}` | Sum of `commentSentimentBreakdown.positive.count` over the sum of positive, neutral, and negative counts, across the posts | Needs 20 or more classified comments. Label "{pct}% positive" / "Comments". Success tone at 70% and up, neutral from 40% to 69%, warning below 40% |
 | Stats | `{STATS}` | Per network, below | Two or three cells; drop a cell with no data |
 | Thumbnails | `{THUMBS}` | Three posts: the flow's evidence posts first, then the most recent | `media.thumbnailUrl`, falling back to `media.mediaUrl`. Play glyph on video. Each links to its permalink |
 | Details | `{DETAILS}` | The calling flow | Pages only. Empty by default |
 | Actions | `{ACTIONS}` | Fixed | Inline only |
 
-Badge order, first match first: the flow's own verdict chip (brief "Strong fit" or "Partial
-fit", discovery tier and source); "Repeat partner" when a `partner` calibration names the
-handle or the creator came from discovery tier 1; "Verified" when `verified` is true; then
-`instagram.badges` as Atlas gives them ("Engaging reels", "Responsive", ...). A `competitor`
-handle is never carded as a candidate; if the user asks about one, show it with a "Competitor"
-badge first.
+**Badges.** Two kinds, in this order:
+
+1. **Flow chips**, which never count toward the limit: the discovery shortlist number (`#12`)
+   and tier (`Tier 3`, or `Added by team`), the brief's `Strong fit` / `Partial fit`, or
+   `Accepted`. Source goes in `{DETAILS}`, not a chip.
+2. **Card badges**, at most two shown: "Competitor" (only when the user asked about a
+   `competitor` handle; one is never carded as a candidate), "Repeat partner" (a `partner`
+   calibration names the handle, or discovery tier 1), "Verified", then `instagram.badges`.
+   Atlas spells some badges two ways (`high_hook` and "Strong hooks"): turn snake_case into
+   words, then drop case-insensitive duplicates. The rest go into the `+N` chip, whose
+   `title` lists them.
+
+**Brand safety.** The tile answers one question: is this creator's content safe for the brand?
+
+- Count **n** = the Atlas categories rated anything but `Low Risk` on any of the posts, plus the
+  flow's safety flags: a `red_line` match, a competitor mention, and on a content review
+  page only, a hard-rule hit (`review:` keys never count anywhere else).
+- n = 0 with 3 or more analyzed posts: "Brand safe" / "No flags", success tone.
+- n ≥ 1: "{n} flag" or "{n} flags" / the first one's short name (≤ 4 words, e.g. "Profanity",
+  "Competitor mention"), warning tone. All of them go in `{DETAILS}` under "Flags".
+- Fewer than 3 analyzed posts and no safety flag: leave the tile out.
+- Every other risk flag (dormant, no contact route, near the follower ceiling, an engagement
+  pattern) is not a safety question. It goes in `{DETAILS}` under "Notes" and never in the tile.
+
+**Subtitle.** `{name} · {descriptor}`, both taken from Atlas text, never written fresh.
+
+- Name: the display name (`instagram.name`, `tiktok.displayName`, `youtube.displayName`). When
+  it contains `|`, `•` or `·`, the part before is the name and the part after is the
+  descriptor. A display name that is only the handle counts as no name.
+- Descriptor, when the display name gave none: the bio's first phrase if it is 2 to 4 words
+  that describe the person ("Forager & cook", "UGC Creator"); otherwise none.
+- Drop the descriptor when the name already contains it, case-insensitively, so the line never
+  repeats itself.
 
 Stats per network, in order:
 
 | Network | Cell 1 | Cell 2 | Cell 3 |
 | ------- | ------ | ------ | ------ |
-| Instagram | Followers (`followersCount`) | Eng. rate: mean of (likes + comments) / followers over the 12 posts; with fewer than 3 posts, `instagram.reelsInteractionRate` labeled "Reel eng." | Avg. eng.: mean of likes + comments over the 12 posts |
+| Instagram | Followers (`followersCount`) | Eng. rate: mean of (likes + comments) / followers over the 12 posts; with fewer than 3 usable posts, `instagram.reelsInteractionRate` labeled "Reel eng." | Avg. eng.: mean of likes + comments over the 12 posts |
 | TikTok | Followers | Eng. rate (`tiktok.engagementRate`) | Median views (`tiktok.medianViews`) |
 | YouTube | Subscribers | Avg. views over the 12 posts | Eng. rate: mean of (likes + comments) / views |
 
-Number format: `3.1K`, `33.4K`, `1.2M`, one decimal under 100, none above; rates as `4.6%`.
+A post with a null `likeCount` (hidden likes) is not usable for engagement: leave it out of
+the means rather than counting it as 0. Cell 3 needs 3 usable posts too, or it is dropped.
+
+Number format: whole numbers under 1,000 (`43`, `143`); one decimal from 1K to under 100K
+(`3.1K`, `33.4K`); none from 100K (`134K`); millions the same way (`1.2M`, `12M`). Rates one
+decimal (`4.6%`).
 
 **Several networks.** Render one `.ac-net` block per channel, each with its own stats and
 thumbnails; the header, badges, and tiles are the person's and show once. The primary channel
@@ -309,7 +341,9 @@ Then offer the three actions as one line: "Reply 'draft outreach', 'add to a sho
 
 - Never fabricate a number, badge, or image. A missing field removes its section; the rules
   above are the only derivations allowed.
-- Never show an internal id, slug, field name, or tool name on a card.
+- Never show an internal id, slug, field name, or tool name on a card. Flow text copied into
+  `{DETAILS}` (rationale, risk flags) often quotes field names: rewrite them as plain words
+  ("past brand partners list", not `instagram.pastBrandPartnershipPartners`).
 - CDN images expire. Inline cards use the URL with the `onerror` fallback; pages embed data
   URIs and note the expiry once in the footer.
 - One card per person, not per channel. Two hits that are the same person (the same

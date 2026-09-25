@@ -100,7 +100,7 @@ opaque or `exists`-only in the census, so they cannot be filtered on, but they p
 | Post | `instagram.mediaProductType` | FEED / REELS chip (null on older posts) |
 | Post author | `instagram.account.profilePictureUrl` | Profile picture, Instagram |
 | Post author | `tiktok.account.profileImage` | Profile picture, TikTok |
-| Creator | `instagram.account.profilePictureUrl`, `tiktok.account.profileImage` | Profile picture in `search_creators` |
+| Creator | `instagram.profilePictureUrl`, `tiktok.profileImage`, `youtube.profileImageUrl` | Profile picture in `search_creators` (project the network container; on posts the same fields sit under `*.account`) |
 
 CDN URLs expire. Render with `onerror` placeholders and note the expiry on the page.
 

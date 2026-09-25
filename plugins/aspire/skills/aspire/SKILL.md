@@ -748,17 +748,25 @@ and network (never `lookup_creators`); if Atlas does not hold it, say so and sto
 
 **"Add @handle on {network} to a campaign shortlist"**
 
-1. Find the campaigns: `campaign:*-brief` keys in `search_calibrations`. None: offer creator
-   discovery setup and stop.
-2. Ask with `AskUserQuestion` which campaign (skip when there is one), then how: "Add to the
-   active list (Recommended)" (the user has decided: `went_well`, accepted) or "Add as a
-   candidate" (`action_item`, undecided, priority `medium`; the next discovery run scores
-   it). Say so if the creator was rejected for that campaign before; adding records a new
-   verdict and never edits the old one.
-3. Write one finding with `append_insights` under that campaign's runKey for today, following
-   `references/creator-discovery.md`, **State written to Atlas**, with `tier` `manual` and
-   `source` `creator card`. Republishing the shortlist page is the discovery agent's job on its
-   next run; say so.
+1. Instagram and TikTok only: discovery and the insights store take no other network. For
+   YouTube, say so and stop before asking anything.
+2. Find the campaigns: `campaign:*-brief` keys in `search_calibrations`. None: offer creator
+   discovery setup and stop. Several: ask which one with `AskUserQuestion`.
+3. Read the creator's newest record for that campaign (`search_insights` on the
+   `creator-discovery-{profile}-{campaign}` prefix, the creator's `entityId`):
+   - Already accepted: say so and stop.
+   - Already undecided: say it is on the shortlist as #{number} and stop.
+   - Rejected before: say when and why, then offer only "Accept onto the active list" and
+     "Leave it rejected (Recommended)". A rejected creator cannot come back as a candidate,
+     because discovery never re-surfaces one.
+   - Not in the campaign: ask how, "Add to the active list (Recommended)" (`went_well`,
+     accepted) or "Add as a candidate" (`action_item`, undecided, priority `medium`; the next
+     discovery run scores it).
+4. Write one finding with `append_insights` under that campaign's runKey for today, following
+   `references/creator-discovery.md`, **State written to Atlas** and **Added by the team**,
+   with `tier` `manual`, `source` `creator card`, and `idempotencyKey`
+   `card-add-{campaign}-{entityId}-{YYYY-MM-DD}`. A new verdict never edits the old one.
+   Republishing the shortlist page is the discovery agent's job on its next run; say so.
 
 **"Save @handle on {network} to the watch list"**
 
@@ -769,12 +777,15 @@ The watch list is the brand's saved creators, outside any campaign.
 2. Write one finding with `append_insights`: runKey `creator-watchlist-{profile}-{YYYY-MM-DD}`,
    role `account_review`, `schema` = network, `entityKind` `account`, `entityId` = the
    network's account id from the search hit, `kind` `action_item`, `priority` `low`, rationale
-   "Saved from a creator card", `detail.watching: true`. Instagram and TikTok only; the
-   insights store takes no other network, so say that for YouTube and stop.
+   "Saved from a creator card", `detail.watching: true`, `detail.changedAt` = the current UTC
+   time, and `idempotencyKey` `watchlist-{entityId}-save-{changedAt}`. Instagram and TikTok
+   only; the insights store takes no other network, so say that for YouTube and stop.
 3. **"Show my watch list"**: `search_insights` on the `creator-watchlist-{profile}` prefix,
-   newest record per `entityId` wins, keep `watching: true`, render as creator cards.
-   Removing someone writes a new finding with `watching: false` after the same kind of
-   confirmation; never a destructive tool.
+   newest record per `entityId` (by `detail.changedAt`) wins, keep `watching: true`, render as
+   creator cards. Removing someone writes a new finding with `watching: false` after the same
+   kind of confirmation, with its own `changedAt` and `idempotencyKey`
+   `watchlist-{entityId}-remove-{changedAt}`, so a save and a removal on the same day never
+   collide; never a destructive tool.
 
 ---
 
