@@ -171,7 +171,7 @@ Page, sections in order:
 6b. Content reviews: verdict counts as a small bar, the three most failed checks, and a row
    per review with creator, verdict chip, open edits, and the review page link.
 7. Next steps, ranked.
-8. Footer: sources, CDN expiry note, "numbers come from Atlas as of {timestamp}".
+8. Footer: sources, a note that images are a snapshot, "numbers come from Atlas as of {timestamp}".
 
 Insights written: `runKey` `readout-weekly-{profile}-{ISO week, e.g. 2026-W38}`, role
 `account_review`. Kinds: `went_well` per top post pattern, `needs_improvement` per bottom
@@ -182,12 +182,13 @@ review closes them (step 6b).
 
 ## Page mechanics
 
-Same as the creator brief: download media and profile pictures from `cdn.aspire.io` with
-`curl`, resize with Pillow (posts 240px wide, profile pictures 96px), embed as JPEG data URIs,
-keep the page under 2MB, fall back to the base media URL on a `/thumbnail` 404. Load the
+Embed every image as a JPEG data URI with the snippet in `creator-card.md`, **Images**, page
+profile: `post` for post cards (240px wide), `avatar` for profile pictures (112px). It retries
+the base media URL on a `/thumbnail` 404. Keep the page under 2MB. Load the
 `artifact-design` and `dataviz` skills before building. Publish with the Artifact tool,
 title "<Brand> Daily Readout" or "<Brand> Weekly Readout", and republish to the same path
-each run so the link in Slack or email stays stable. Note the CDN expiry once in the footer.
+each run so the link in Slack or email stays stable. Note once in the footer that images are
+a snapshot.
 
 ## Delivery (Slack and email)
 

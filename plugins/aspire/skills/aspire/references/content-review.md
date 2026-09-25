@@ -437,11 +437,12 @@ One page per review, with a new path each time so earlier reviews stay linkable.
 6. **Lessons applied.** Each saved lesson that changed a call, and any candidate lesson from
    repeated overturns.
 7. **Footer.** The brief source, "numbers come from Atlas as of {timestamp}", what was not
-   checkable and why, and the CDN expiry note.
+   checkable and why, and a note that images are a snapshot.
 
-Page mechanics are the creator brief's: download media and profile pictures with `curl`,
-resize in the order under **Media** (frames 320px wide, profile picture 96px), embed as JPEG data URIs, keep
-the page under 2MB, fall back to the base media URL on a `/thumbnail` 404. Draft media comes
+Page mechanics: frames come from the files under **Media**, resized to 320px wide and
+embedded as JPEG data URIs. The creator card's images (profile picture 112px, thumbnails
+240px) are embedded with the snippet in `creator-card.md`, **Images**, page profile, which
+retries the base media URL on a `/thumbnail` 404. Keep the page under 2MB. Draft media comes
 from the local files the user attached. Load `artifact-design` before building.
 
 ## Atlas quirks that apply here

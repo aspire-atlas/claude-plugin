@@ -111,4 +111,5 @@ vocabulary; the names above are placeholders, not a fixed taxonomy.
   strongest signal for collab performance.
 - Stories appear as posts with `mediaKind` null and only `organicReach`. Exclude with
   `exists mediaKind`.
-- Published pages cannot load `cdn.aspire.io` images. Embed as data URIs.
+- Published pages cannot load `cdn.aspire.io` images. Embed as data URIs with the snippet in
+  `creator-card.md`, **Images**, page profile.

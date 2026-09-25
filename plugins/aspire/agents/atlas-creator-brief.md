@@ -77,7 +77,7 @@ Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-brief.md` before st
 
 ### 6. Publish the visual brief
 
-- Download each thumbnail and profile picture from the `cdn.aspire.io` URLs with `curl`, resize with Pillow (posts 240px wide, profile pictures 96px), and embed as JPEG data URIs. Published pages cannot load images from outside hosts. If a `/thumbnail` route returns 404, fetch the base media URL instead. Keep the page under 2MB.
+- Embed each thumbnail and profile picture as a JPEG data URI with the snippet in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-card.md`, **Images**, page profile (profile pictures 112px, thumbnails 240px). Published pages cannot load images from outside hosts. The snippet retries the base media URL when a `/thumbnail` route returns 404. Keep the page under 2MB.
 - Build one self-contained HTML page following the structure in the reference file. Load the `artifact-design` and `dataviz` skills first. Publish with the Artifact tool, title "<Brand> Creator Brief", favicon 🎬. Republish to the same path on a later run for the same brand.
 - Write back to Atlas with `append_insights`: one `runKey` (`creator-brief-{profile}-{week}`), role `account_review`, entity = the brand account, kind `action_item` per deliverable with `priority`, plus `went_well` and `needs_improvement` findings for the top theme and weakest theme. Supply an `idempotencyKey` per finding.
 
