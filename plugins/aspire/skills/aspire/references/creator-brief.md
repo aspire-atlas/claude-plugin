@@ -48,7 +48,7 @@ calibrations (never from Aspire's own positioning; this plugin serves any brand)
   `brand:business-context`. Write one line each, for example buyer "home cooks who buy
   premium cookware", category "consumer kitchen brands".
 - **Off-audience signals**: the content types that would not reach that buyer. Infer from the
-  buyer line and any `guideline` or `red_line` records.
+  buyer line and any `guideline` or `red_line` records (never `review:` keys).
 - **Search vocabulary**: 3 to 6 bio keywords a creator serving that buyer would use. Derive
   from the buyer, category, and `brand:tracking-scope` hashtags. When `brand:summary` is
   missing, stop and return one question to the main thread asking for the brand's buyer in a

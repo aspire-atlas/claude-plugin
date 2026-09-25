@@ -59,8 +59,9 @@ social channels and brand memory have a home in the organization."
 | 6 | `search_creators` | Accounts by filter | No per-post fields here |
 | 6 | `append_insights` | Write analyst findings | `runKey` per session; roles `account_review` (went_well / needs_improvement / action_item) |
 | 6 | `search_insights` / `list_insight_search_fields` | Read back findings | Tenant-private |
+| Content review | `search_calibrations`, `get_brand_instruction` (read only), `search_posts`, `search_creators`, `search_insights`, `append_insights`, `append_calibration` (lessons and hard rules the user saved), `lookup_posts` (one named post) | Reviews one post against a brief; reads prior reviews and feedback by `runKey` prefix `content-review-*` | Setup and lessons in `content-review.md`; interactive only |
 | Readouts | `search_calibrations`, `search_posts` (+ `aggs`), `search_creators`, `search_insights`, `append_insights` | Daily and weekly readouts read prior runs by `runKey` prefix (`readout-daily-*`, `readout-weekly-*`) and write new findings | Setup calibrations in `readout.md`; unattended runs never ask or destroy |
-| Avoid in onboarding | `lookup_creators`, `lookup_posts`, `start_business_discovery`, `search_creator_marketplace`, `get_job_status` | Start discovery work beyond the accounts Atlas already holds | Only on explicit user request. The one routine use is `atlas-account-analyst` in named-handle mode: the user typing a network and handle in Phase 6 is the approval, and the agent calls `lookup_creators` only when Atlas holds nothing for that handle or the record is over 24 hours old. `lookup_creators` has no status-check tool; re-call it with the same item to re-read a `fetching` result, and `creatorDeepAnalysis` defaults to `true` there, so recent posts come with the account. It rejects `profileSlug`; attribute with `asProfile`. |
+| Avoid in onboarding | `lookup_creators`, `lookup_posts`, `start_business_discovery`, `search_creator_marketplace`, `get_job_status` | Start discovery work beyond the accounts Atlas already holds | Only on explicit user request. The one routine use is `atlas-account-analyst` in named-handle mode: the user typing a network and handle in Phase 6 is the approval, and the agent calls `lookup_creators` only when Atlas holds nothing for that handle or the record is over 24 hours old. `lookup_creators` has no status-check tool; re-call it with the same item to re-read a `fetching` result, and `creatorDeepAnalysis` defaults to `true` there, so recent posts come with the account. It rejects `profileSlug`; attribute with `asProfile`. The other routine use is `atlas-content-review` on a published post: pasting the link is the approval, and the agent calls `lookup_posts` once for that post only when Atlas does not hold it, with `creatorDeepAnalysis` left at its default `false`. A TikTok miss is a paid vendor call. |
 | Utility | `get_more_tools` | Server-side tool discovery | Do not call during onboarding; the phase map above is the supported surface. |
 
 ## Destructive tools: confirmation is mandatory
@@ -108,15 +109,28 @@ CDN URLs expire. Render with `onerror` placeholders and note the expiry on the p
 | kind | Standing | detail shape (required fields) |
 | ---- | -------- | ------------------------------ |
 | `brand_fact` | member+ | `{section, body}` sections: brand_summary, brand_context, business_context, voice_and_content_ops, limits_and_gaps, what_this_unlocks |
-| `user_fact` | member+ | `{role, relationship: in_house|agency|owner, owns?, firstAsk?}` |
-| `competitor` | member+ | `{handle, tier: a|b, body?, spellingVariants?}` |
-| `partner` | member+ | `{handle, platform: instagram|tiktok, themes?, safetyVerdict?, readClosely?, notes?}` |
-| `red_line` | member+ | `{action: block|flag|escalate, appliesTo[], body?}` hard limit |
-| `guideline` | member+ | `{concern: ceiling|requirement|preference, appliesTo[], body?}` soft rule |
-| `policy` | member+ | `{area: escalation|cadence|routing, cadence?, body?}` |
+| `user_fact` | member+ | `{role, relationship: in_house\|agency\|owner, owns?, firstAsk?}` |
+| `competitor` | member+ | `{handle, tier: a\|b, body?, spellingVariants?}` |
+| `partner` | member+ | `{handle, platform: instagram\|tiktok, themes?, safetyVerdict?, readClosely?, notes?}` |
+| `red_line` | member+ | `{action: block\|flag\|escalate, appliesTo[], body?}` hard limit |
+| `guideline` | member+ | `{concern: ceiling\|requirement\|preference, appliesTo[], body?}` soft rule |
+| `policy` | member+ | `{area: escalation\|cadence\|routing, cadence?, body?}` |
 | `decline` | member+ | `{topic, body?, askedAt?}` question the user declined |
-| `alignment_target` | admin+ | `{horizon: 90d|2y, confidence, cadence, observable, notCovered, dependsOn?}` |
+| `alignment_target` | admin+ | `{horizon: 90d\|2y, confidence, cadence, observable, notCovered, dependsOn?}` |
 | `coverage_stamp` | platform only | not writable from a session |
+
+**Keys starting `review:` belong to content review only.** That covers the review setup
+answers, lessons (`review:lesson-*`), and hard rules (`review:rule-*`), whatever their kind.
+Only content review applies them. Every other flow (onboarding, the readouts, the creator
+brief, creator discovery, the account analyst) drops them when it reads `red_line`,
+`guideline`, or any other calibration. A rule the brand wants everywhere is saved under its
+normal key (`redline:*`, `guideline:*`) instead.
+
+**Read every page.** `limit 100` on `search_calibrations` is the page size, not a cap. Pass
+each response's `nextCursor` back as `cursor` until none is returned, then filter. Lessons,
+hard rules and superseded versions keep growing, so a single page can miss the records a
+flow needs. A flow that finds its setup records missing only after reading every page may
+report "setup needed".
 
 Keys are `<namespace>:<slug>`, lowercase, e.g. `brand:summary`, `competitor:acme`,
 `user:primary-contact`, `target:q4-awareness`.

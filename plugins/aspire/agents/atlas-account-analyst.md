@@ -75,7 +75,7 @@ the brand's calibrations (summary, goals, competitors, red lines, partners). Eve
      posts, to size the sample.
 5. Assess per account: posting cadence over the window, engagement per post relative to follower count,
    top 3 posts by engagement and what they share, format mix, and any content that touches a stated red
-   line.
+   line (never a `review:` key; those are content review only).
 6. Mode `own` only: cross reference the brand's 90-day goal and competitors. Name gaps and quick wins.
    If a competitor handle is already indexed, one `search_creators` read for a follower benchmark is
    allowed; do not start discovery for it.
@@ -103,7 +103,7 @@ the brand's calibrations (summary, goals, competitors, red lines, partners). Eve
    - The brand's calibrations are still for two things only: saying whether the handle matches a saved
      `competitor` or `partner` record, which is a classification, not a benchmark, and framing why the
      account is or is not relevant to the brand's stated goal. Apply `red_line` checks only to the
-     brand's own accounts.
+     brand's own accounts, and ignore every key starting `review:` (content review only).
 8. Write findings back with `append_insights`: one `runKey` for this run — mode `own`:
    `onboarding-{profile}-{date}`; mode `handle`: `account-review-{profile}-{handle}-{date}` — role
    `account_review`, `schema` = network, `entityKind` = account (or post for post-level findings),

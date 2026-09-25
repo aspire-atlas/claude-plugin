@@ -40,7 +40,7 @@ run rules. Follow it exactly.
 
 ## Standing rules
 
-1. **Calibrations first.** `search_calibrations` (no filter, limit 100,
+1. **Calibrations first.** `search_calibrations` (no filter, limit 100 per page, paged to the end,
    `includeSuperseded: true`). If `policy:readout-cadence`, `policy:readout-routing`,
    `guideline:readout-thresholds`, `guideline:readout-focus`, `guideline:readout-audience`,
    or `brand:summary` is missing: interactive mode returns one line to the main thread asking
@@ -82,8 +82,9 @@ run rules. Follow it exactly.
 3. Pull data per the **Data pull** section of the reference: last week's posts, prior-week
    and 8-week aggregations by day and by `mediaKind`, current follower count, prior readout
    and creator-brief insights (`runKey` prefixes `readout-weekly-{profile}`,
-   `readout-daily-{profile}`, `creator-brief-{profile}`), and one semantic red-line scan per
-   `red_line`.
+   `readout-daily-{profile}`, `creator-brief-{profile}`), last week's content reviews
+   (`content-review-{profile}`, step 6b of the data pull), and one semantic red-line scan per
+   `red_line` (skipping `review:` keys, per the data pull).
 4. Compute: weekly totals and week-over-week deltas, engagement rate, top 3 and bottom 2 posts
    with the shared pattern (format, theme, weekday, hook), format split and cadence vs prior
    week, follower delta, and the list of open action items with age in weeks. Assign each
@@ -98,7 +99,8 @@ run rules. Follow it exactly.
 7. Write findings with `append_insights`: `runKey` `readout-weekly-{profile}-{ISO week}`,
    role `account_review`, `went_well` per top pattern, `needs_improvement` per bottom pattern,
    `action_item` with `priority` per next step (3 max), and a `went_well` that closes any
-   older action item now met, referencing its `idempotencyKey` in `detail`. `idempotencyKey`
+   older readout or creator-brief action item now met, referencing its `idempotencyKey` in
+   `detail`. Never close a content review edit: only a later review does that. `idempotencyKey`
    per finding.
 
 ## Output to the main thread (under 250 words, ordered for the saved audience)
@@ -108,7 +110,9 @@ run rules. Follow it exactly.
 - What worked: top 3 posts with metric, link, and the shared pattern.
 - What did not: bottom 2 posts with one clause each.
 - Mix: format split and cadence vs prior week.
-- Open items: action items still open, with age.
+- Open items: action items still open, with age, including open edits from content reviews.
+- Content reviews: reviews by verdict, the most failed check, and creators reviewed more
+  than once.
 - Next steps: 3 ranked bullets, each tied to a number above.
 - Delivered to: page link, Slack channel, email recipients, and anything that failed.
 - Data gaps and closing line: findings saved under this run.

@@ -18,7 +18,7 @@ a teammate, or a new session picks them up without asking again. All are written
 `append_calibration`, `provenance: "interview"`, `statement` under 280 characters, prose in
 `detail`. `key-exists` on write follows the supersede rule in SKILL.md Phase 5.
 
-Before asking anything, call `search_calibrations` (no filter, limit 100,
+Before asking anything, call `search_calibrations` (no filter, limit 100 per page, paged to the end,
 `includeSuperseded: true`) and skip any question whose key is already occupied.
 
 | # | Question (via `AskUserQuestion`) | Options | kind | key | detail |
@@ -51,7 +51,8 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
 (15 to 25 words, third person).
 
 1. `search_calibrations` as above. Extract: readout calibrations, `red_line`, `guideline`,
-   `competitor`, `partner`, `brand:summary`, `target:weekly-health`.
+   `competitor`, `partner`, `brand:summary`, `target:weekly-health`. Drop every `review:` key
+   (content review only; see `atlas-tools.md`).
 2. `list_post_search_fields` once. Use only paths it returns.
 3. `search_posts` per linked handle: `author.username` = handle, `postedAt` gte the window
    start, `exists mediaKind` (drops stories). Sort `postedAt` desc, limit 100, page on the
@@ -67,9 +68,22 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
 6. `search_insights` filtered on `runKey` prefix `readout-daily-{profile}` or
    `readout-weekly-{profile}`, sorted newest first, limit 50. This is the "since last time"
    source: open `action_item` findings, last follower count, last flagged posts.
+6b. Content reviews: `search_insights` with a `prefix` filter on
+   `detail.account_review.runKey` = `content-review-{profile}`, newest first, paged. Group the
+   findings by `runKey` (one review each) and keep the reviews whose `detail.reviewedAt` (UTC) falls
+   in the window once converted to the R1 timezone; every finding of a review carries the same value. Within a review, read by
+   `detail.findingType`: `verdict` carries `verdict`, `creator`, `counts`, `openEdits`,
+   `hardRuleHits`, `reviewPage`, `permalink`, and `postedAt`; `feedback` carries the user's
+   `userVerdict`; `check` with `result: "Fail"` feeds the most failed check; `edit` is a
+   required edit. Open edits span every review, not just the window: an `edit` stays open
+   until a `close` finding names its `idempotencyKey` in `detail.closes`. See
+   `content-review.md`, **Feeding the readouts**. Read only; never write a review finding.
+   A content review edit is closed only by a later review's `close` finding, never by a
+   readout: the readout's own resolving `went_well` applies to readout and brief items only.
 7. Red-line scan: for each `red_line` with `action: block|flag|escalate`, one semantic
    `search_posts` with `queryText` = the red-line body, filtered to the window and the brand's
-   handles, limit 10. Report hits by permalink. Never invent a hit.
+   handles, limit 10. Report hits by permalink. Never invent a hit. `review:` keys were
+   dropped in step 1; hits on content review hard rules come from step 6b (`hardRuleHits`).
 
 Metric definitions:
 
@@ -104,12 +118,17 @@ Chat summary, under 150 words:
 - Yesterday: posts published, engagement, the best post with its number.
 - Flags: anomalies and red-line hits, each with a permalink; "none" is a valid line.
 - Since last readout: follower delta, any action item that changed state.
+- Content reviews: reviews run yesterday by verdict, and every Do not post or hard-rule hit
+  with the creator's handle and the review page link (`reviewPage`). Leave the line out when
+  there were none.
 - One closing line: findings saved, page link.
 
 Page: one compact card. Header (brand, date, network). KPI strip (posts, engagement,
 engagement rate, followers with delta). One 28-day sparkline of the lead metric with
 yesterday marked. Cards for yesterday's posts (media, metric row, one-line takeaway). Flags
-block. Footer with the CDN expiry note. Republish to the same path each day.
+block. A content reviews block when any review ran yesterday: one row per review with
+verdict chip, creator, deliverable, open edits, and the review page link. Footer with the CDN
+expiry note. Republish to the same path each day.
 
 Insights written (`append_insights`): `runKey` `readout-daily-{profile}-{YYYY-MM-DD}`,
 role `account_review`, `schema` = network, `entityKind` account or post, `entityId` the
@@ -131,7 +150,11 @@ team: post-level detail first; both: two short blocks):
 - What worked: top 3 posts with metric and the pattern they share (format, theme, day, hook).
 - What did not: bottom 2 posts and the likely reason in one clause each.
 - Mix: format split and cadence vs the prior week.
-- Open items: action items from prior readouts and briefs still open, with age in weeks.
+- Open items: action items from prior readouts, briefs, and content reviews still open, with
+  age in weeks.
+- Content reviews: reviews run by verdict, the most common failed check, and creators
+  reviewed more than once. For reviewed published posts, the lead metric against the
+  creator's own median when Atlas holds it.
 - Next steps: 3 ranked bullets, each tied to a number above.
 - Data gaps and one closing line: findings saved, page link.
 
@@ -143,14 +166,19 @@ Page, sections in order:
 3. Lead-metric line chart, 9 weeks, last week highlighted.
 4. Top 3 and bottom 2 post cards with media, metric row, takeaway.
 5. Format and theme mix: one small-multiple bar pair (this week vs prior).
-6. Open action items table: item, source run, age, owner if known.
+6. Open action items table: item, source run (readout, creator brief, or content review), age,
+   owner if known.
+6b. Content reviews: verdict counts as a small bar, the three most failed checks, and a row
+   per review with creator, verdict chip, open edits, and the review page link.
 7. Next steps, ranked.
 8. Footer: sources, CDN expiry note, "numbers come from Atlas as of {timestamp}".
 
 Insights written: `runKey` `readout-weekly-{profile}-{ISO week, e.g. 2026-W38}`, role
 `account_review`. Kinds: `went_well` per top post pattern, `needs_improvement` per bottom
 pattern, `action_item` with `priority` per next step (3 max). Mark an older open action item
-as resolved by writing a new `went_well` that references its `idempotencyKey` in `detail`.
+from a readout or a creator brief as resolved by writing a new `went_well` that references its
+`idempotencyKey` in `detail`. Content review edits are never resolved here; only a later
+review closes them (step 6b).
 
 ## Page mechanics
 

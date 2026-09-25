@@ -22,7 +22,7 @@ Only the spine below is fixed. The refinement questions are written at setup tim
 user's campaign description plus the brand's existing calibrations, so the discovery agent asks about
 this campaign rather than a generic creator search.
 
-Before asking anything, call `search_calibrations` (no filter, limit 100,
+Before asking anything, call `search_calibrations` (no filter, limit 100 per page, paged to the end,
 `includeSuperseded: true`) and skip any question whose key is already occupied.
 
 | # | Question (via `AskUserQuestion`) | Options | kind | key | detail |
@@ -45,8 +45,8 @@ skip any the S1 answer already settles. Never ask more than five.
    cost), with bands that suit the archetype rather than fixed numbers.
 4. **Geography and language** — market fit, when the brief implies a market at all.
 5. **Content and hard exclusions** — formats the campaign needs, and who is disqualified.
-   Always fold in the brand's existing `competitor` and `red_line` records as a stated
-   default ("competitors already recorded are excluded"), so the user only has to add to it.
+   Always fold in the brand's existing `competitor` and `red_line` records (except `review:`
+   keys, which are content review only) as a stated default ("competitors already recorded are excluded"), so the user only has to add to it.
 
 Rules:
 
