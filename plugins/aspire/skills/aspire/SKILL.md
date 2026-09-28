@@ -156,7 +156,7 @@ message. Never surface raw field names, flags, or other connectors' names.
 user-facing message is one line pointing at it. Give the manual Settings steps only when no
 card rendered (for example, `ListConnectors` is unavailable).
 
-Do not attempt to reach `https://atlas.aspire.io/mcp` with curl, fetch, or any HTTP client.
+Do not attempt to reach `https://atlas.aspire.io/mcp` with an HTTP client or a web fetch.
 The connection must come through the Claude connector, not an ad hoc request.
 
 ### 1.2 If live

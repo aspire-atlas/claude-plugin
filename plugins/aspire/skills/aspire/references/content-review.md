@@ -156,8 +156,8 @@ Visual checks rest on frames the agent has viewed itself. A cover image is one f
 clip. Keep every downloaded file and frame in the review's own working folder, named for the
 post, so parallel reviews never share files.
 
-**Getting the video.** Published post: download the `media` container's video URL with
-`curl` (fall back to the base media URL on a `/thumbnail` 404). Draft: use the local file the
+**Getting the video.** Published post: save the video at the `media` container's URL into the
+working folder (fall back to the base media URL on a `/thumbnail` 404). Draft: use the local file the
 user attached. Record the duration, resolution, and frame rate.
 
 **Frame extraction, in this order.** Check each tool with `command -v` (or an import test)
