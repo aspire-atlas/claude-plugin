@@ -56,6 +56,7 @@ Notes:
 - Destructive actions (deleting a profile, unlinking a channel, retracting a calibration) each get their own confirmation.
 - Scheduled runs never ask questions, never run destructive tools, and deliver only to destinations you saved during setup.
 - Only creator discovery searches for new creators on a schedule, and only because you set that cadence yourself. No other scheduled run starts discovery work.
+- The plugin works with services outside Aspire, such as Slack, email, and social networks, through connections you set up yourself. See [Other services this plugin works with](plugins/aspire/README.md#other-services-this-plugin-works-with).
 
 Full details in the [plugin README](plugins/aspire/README.md).
 
