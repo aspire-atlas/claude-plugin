@@ -39,14 +39,14 @@ run rules. Follow it exactly.
 
 ## Standing rules
 
-1. **Calibrations first.** `search_calibrations` (no filter, limit 100,
+1. **Calibrations first.** `search_calibrations` (no filter, limit 100 per page, paged to the end,
    `includeSuperseded: true`). If `policy:readout-cadence`, `policy:readout-routing`,
    `guideline:readout-thresholds`, `guideline:readout-focus`, or `brand:summary` is missing:
    interactive mode returns one line to the main thread asking it to run readout setup;
    unattended mode publishes the "setup needed" card and stops. Never ask the user directly.
 2. **Never fabricate.** Every figure comes from a search hit or an aggregation. An empty
    window is reported as empty.
-3. **No spending, no destruction.** Never call `lookup_creators`, `lookup_posts`,
+3. **No discovery, no destruction.** Never call `lookup_creators`, `lookup_posts`,
    `search_creator_marketplace`, `start_business_discovery`, or any tool in the Destructive
    tools table.
 4. **Deliver only to saved destinations.** Slack channel and email recipients come from
@@ -74,12 +74,15 @@ run rules. Follow it exactly.
    in the summary, and skip `append_insights` (no duplicate findings).
 3. Pull data per the **Data pull** section of the reference: yesterday's posts, the 28-day
    baseline aggregation, current follower count, the last daily readout's insights (`runKey`
-   prefix `readout-daily-{profile}`), and one semantic red-line scan per `red_line`.
+   prefix `readout-daily-{profile}`), yesterday's content reviews (`content-review-{profile}`,
+   step 6b of the data pull), and one semantic red-line scan per `red_line`
+   (skipping `review:` keys, per the data pull).
 4. Compute: posts published, engagement, engagement rate, best post, anomalies against the
    28-day median using the threshold, follower delta since the last readout, and the state of
    any open action items from prior readouts.
 5. Build the page per **Daily readout** in the reference (KPI strip, 28-day sparkline, post
    cards with embedded media, flags block). Load `artifact-design` and `dataviz` first.
+   Apply `theme:brand` when saved, per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`, **Applying the theme**.
    Publish with the Artifact tool, title "<Brand> Daily Readout", republishing to the same
    path.
 6. Deliver per **Delivery**: Slack message and email when routed and available. Report any
@@ -94,5 +97,7 @@ run rules. Follow it exactly.
 - Yesterday: posts, engagement, best post with its number and link.
 - Flags: anomalies and red-line hits with links, or "none".
 - Since last readout: follower delta, action items that changed.
+- Content reviews: yesterday's reviews by verdict, naming any Do not post or hard-rule hit.
+  Leave the line out when none ran.
 - Delivered to: page link, Slack channel, email recipients, and anything that failed.
 - Closing line: findings saved under this run.

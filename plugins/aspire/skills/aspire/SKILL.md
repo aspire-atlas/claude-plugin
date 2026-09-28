@@ -1,15 +1,14 @@
 ---
 name: aspire
 description: >
-  This skill should be used when the user types "/aspire:aspire" or "/aspire" (with or
-  without an argument such as "agents", which lists the plugin's subagents and runs the one
-  the user picks), says "get started with Atlas", "connect Aspire Atlas", "set up Atlas",
-  "connect Atlas", "onboard my brand", "connect my Instagram/TikTok/YouTube
-  to Atlas", asks how to start using the atlas.aspire.io platform, or asks for a daily or
-  weekly readout ("what happened yesterday", "how did last week go", "schedule the weekly
-  readout"). It verifies the Atlas data connection, authenticates and selects an
-  organization, scopes the brand, connects social accounts, captures brand context for
-  future sessions, delivers first insights, and routes recurring readouts and creator briefs.
+  Creative Intelligence for your brand on Aspire Atlas. Connect Instagram, TikTok, and
+  YouTube, see what's working, benchmark competitors, and check brand safety. Find and brief
+  creators, keep a campaign shortlist, review posts, and get daily and weekly reports. Use
+  for "/aspire", "/aspire agents", "get started with Atlas", "connect Atlas", "onboard my
+  brand", "connect my Instagram", "what happened yesterday", "how did last week go",
+  "schedule the weekly readout", "find creators for the campaign", "refill the shortlist",
+  "review this post", "check this draft against the brief", or "brand safety check on this
+  post".
 metadata:
   author: Aspire
 ---
@@ -65,6 +64,8 @@ time so it never goes stale; never recite it from memory.
    | ------------ | ----------- |
    | `atlas-account-analyst` | Phase 1, then Phase 2 + 3 for the profile and handles, then Phase 6 (its target question first) |
    | `atlas-creator-brief` | Phase 1, then Phase 2 + 3, then **Creator brief** (its three questions first) |
+   | `atlas-creator-discovery` | Phase 1, then Phase 2 + 3, then **Creator discovery**, Setup if the campaign is new, then Run |
+   | `atlas-content-review` | Phase 1, then Phase 2 + 3, then **Content review**, Setup if it has never run, then Review |
    | `atlas-daily-readout` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the daily cadence |
    | `atlas-weekly-readout` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the weekly cadence |
 
@@ -90,14 +91,18 @@ is not on disk.
 | 5 | Capture brand context into shared brand memory | Implemented |
 | 6 | Subagent evaluates connected accounts and produces first insights | Implemented |
 
-Two standing rules apply across phases: brand-facing calibration questions offer a web
-research option whose findings are shown before anything is written (Phase 5), and any
+Three standing rules apply across phases: brand-facing calibration questions offer a web
+research option whose findings are shown before anything is written (Phase 5), any
 request to show posts or creators is answered visually with the post media and profile
-pictures (Visual output, after Phase 6).
+pictures (Visual output, after Phase 6), and every page, creator card, and chart uses the
+brand's saved theme when there is one (**Theme**). Every creator is shown with the creator
+card (`references/creator-card.md`), in chat or on a page.
 
-After onboarding, two recurring flows hang off the same connection: the **Creator brief**
-(weekly content plan with creators) and the **Readouts** (daily and weekly performance
-digests, schedulable). Both are routed from their own sections below.
+After onboarding, four recurring flows hang off the same connection: the **Creator brief**
+(weekly content plan with creators), the **Creator discovery** (a standing creator shortlist per
+campaign, schedulable), the **Content review** (one post or draft checked against its brief,
+interactive only), and the **Readouts** (daily and weekly performance digests, schedulable).
+Each is routed from its own section below. The **Theme** section brands all of their pages.
 
 ---
 
@@ -111,8 +116,13 @@ Check whether Atlas tools are available in this session before doing anything el
 2. Treat the connection as **live** when at least one returned tool name contains
    `aspire_atlas` or `atlas__` (case-insensitive). Typical patterns: `mcp__Aspire_Atlas__*`
    (bundled with this plugin or org-installed, the normal case), `mcp__plugin_aspire_Aspire_Atlas__*`
-   on clients that namespace plugin servers, or `mcp__atlas__*` from Claude Code. A bare `atlas`
-   substring is not enough: it also matches Atlassian tools.
+   on clients that namespace plugin servers, `mcp__claude_ai_Aspire_Atlas__*` for a connector
+   added in claude.ai settings, or `mcp__atlas__*` from Claude Code. A bare `atlas` substring
+   is not enough: it also matches Atlassian tools. Ignore any name containing
+   `organization_admin`: that is the bundled admin connector, whose name also contains
+   `aspire_atlas`, never the Atlas data connection. A match whose only tools are `authenticate`
+   and `complete_authentication` is a copy that is not signed in. When several prefixes match,
+   use the one that has `get_status`; if none has it, go to 1.3c.
 3. If ToolSearch returns nothing, also scan the deferred tool list in context for the same
    patterns.
 4. If still nothing and `ListConnectors` is available, call it **exactly once** with
@@ -122,8 +132,8 @@ Check whether Atlas tools are available in this session before doing anything el
    button. Do not call `SuggestConnectors` or `ListConnectors` again afterwards; every
    extra call renders a duplicate card.
    Safety filter: if the result still contains more than one entry, keep only the one whose
-   lowercased, space-stripped name equals `aspireatlas` or `atlas`, and never mention the
-   others. Classify the surviving entry:
+   lowercased, space-stripped name equals `aspireatlas` or `atlas` (so never
+   `aspireatlasorganizationadmin`), and never mention the others. Classify the surviving entry:
    - `enabledInChat: true` but no tools found: treat as a load glitch; call
      `RefreshMcpTools` once and retry step 1.
    - `enabledInChat: false`: state is **installed, not active here**. Go to 1.3b.
@@ -146,7 +156,7 @@ message. Never surface raw field names, flags, or other connectors' names.
 user-facing message is one line pointing at it. Give the manual Settings steps only when no
 card rendered (for example, `ListConnectors` is unavailable).
 
-Do not attempt to reach `https://atlas.aspire.io/mcp` with curl, fetch, or any HTTP client.
+Do not attempt to reach `https://atlas.aspire.io/mcp` with an HTTP client or a web fetch.
 The connection must come through the Claude connector, not an ad hoc request.
 
 ### 1.2 If live
@@ -231,7 +241,9 @@ When the user replies, or on the next `/aspire:aspire`, repeat 1.1.
 ### 1.5 Record outcome
 
 Note the result for later phases: `atlas_connected = true|false`, and the tool name prefix
-actually observed (used to resolve tool names in `references/atlas-tools.md`).
+actually observed (used to resolve tool names in `references/atlas-tools.md`). The plugin also
+bundles **Aspire Atlas Organization Admin** for the organization's members. Phase 1 never checks
+it; the `org-admin` skill does (see **Organization admin**).
 
 ---
 
@@ -361,7 +373,7 @@ the web option; only the person can answer those.
 
 Rules:
 
-- Before asking anything, call `search_calibrations` (no filter, limit 100) for
+- Before asking anything, call `search_calibrations` (no filter, limit 100 per page, paged to the end) for
   `profile_slug`. Skip any question whose key is already occupied. Pass
   `includeSuperseded: true` so moved facts are not re-asked as new.
 - Write each answer with `append_calibration` right after it is given, `provenance:
@@ -373,6 +385,7 @@ Rules:
   move on; the suggestion is recorded for an admin.
 - If the user declines a question, record it with kind `decline` so it is not asked again.
 - Stop after the core set (about 7 questions) unless the user wants to keep going.
+- When the questions are done, and before Phase 6, make the theme offer from **Theme**, Offers.
 
 ## Phase 6: First insights
 
@@ -384,11 +397,11 @@ review.
    - "{brand}'s connected accounts (Recommended)" - every handle linked to the profile.
    - "Another account" - description: "Type the network and handle, for example `instagram
      @acme`. Atlas fetches the account if it does not already hold it or the data is over a
-     day old; on TikTok that fetch makes paid vendor calls."
+     day old."
    Skip the question when the user already named a handle ("review @acme on TikTok"); treat
    that as the answer. Naming a handle, by option or in the message, **is** the approval for
-   that fetch and its cost, because the option text says so; neither the skill nor the agent
-   asks again. A free-text answer that names neither: ask once more, then stop.
+   that fetch, because the option text says so; neither the skill nor the agent asks again.
+   A free-text answer that names neither: ask once more, then stop.
 2. Read the answer into a target:
    - Connected accounts: `target_mode` `own`, every linked handle and network from Phase 2 + 3.
    - Another account: `target_mode` `handle`, one network and one handle with the `@` stripped.
@@ -405,8 +418,8 @@ review.
    calibrations. In mode `handle`, state that the user approved the fetch so the agent does not
    ask again. State that the calibrations are for classification and relevance only: a named
    account is never benchmarked against the brand's own account or the brand's competitors.
-   It is compared against its **own** peers - accounts the user named, or "like" accounts in
-   the same category and follower band, on rates rather than raw counts. Pass any comparison
+   It is compared against its **own** peers — accounts the user named, or "like" accounts in the
+   same category and follower band, on rates rather than raw counts. Pass any comparison
    accounts the user named.
 5. The subagent reads with `search_posts` / `search_creators` (calling
    `list_post_search_fields` first for the live field census), resolves and refreshes a named
@@ -419,7 +432,8 @@ review.
    item, and mention the findings are saved in Atlas and searchable later.
 7. Deliver the summary visually per the **Visual output** rule below: a card view of the top
    and bottom posts with their media, and one chart of the engagement pattern the headline
-   rests on.
+   rests on. In mode `handle`, lead with the account's creator card inline, before the
+   summary, rendered from the agent's `creator-cards` block.
 8. Unattended run with no `AskUserQuestion` available: default to `own` mode and never start a
    lookup.
 
@@ -432,18 +446,154 @@ plan for next week's content, or creators to make it. Requires at least one link
 with indexed posts. Before launching, settle three things with `AskUserQuestion` (skip any
 the user already answered):
 
-1. **Scope.** If a `red_line` calibration blocks AI generated content, offer "Strategy brief
+1. **Scope.** If a `red_line` calibration blocks AI generated content (ignore `review:` keys,
+   which are content review only), offer "Strategy brief
    only (Recommended)" vs "Include draft copy (overrides the red line; record the exception
    first)". Never produce copy without the override.
-2. **Creator sourcing.** "Already in Atlas", "Atlas creator marketplace (may start paid
-   discovery work)", or "Both". The marketplace path needs this explicit choice.
+2. **Creator sourcing.** "Already in Atlas", "Atlas creator marketplace (searches beyond
+   your connected accounts)", or "Both". The marketplace path needs this explicit choice.
 3. **Lookback and roles.** Default 90 days. Roles: collab posts, expert POV clips, customer
    features, event coverage (multiSelect).
 
 Then launch the `atlas-creator-brief` agent with: tool prefix, `profile_slug`, linked handles
 and networks, target week (next Monday to Friday unless given), lookback, and the three
 answers. Relay its summary, the published page, and any decisions it needs (guideline
-conflicts, budget tier). The agent writes action items back to Atlas as insights.
+conflicts, budget tier). Show the first-pick creators inline as creator cards from the agent's `creator-cards` block. The agent writes action items back to Atlas as insights.
+
+---
+
+## Creator discovery (standing creator shortlist per campaign)
+
+Trigger when the user asks to find creators for a campaign, refill or review a shortlist, ask
+who to add, or schedule any of that. Requires a brand profile; linked channels help but are
+not required, because discovery is not limited to them. Full detail - the setup interview, the
+tier model, scoring, the pool state machine, the page, and the unattended rules - lives in
+`references/creator-discovery.md`.
+
+Creator discovery keeps a pool of undecided candidates at a saved target (default 50) for one named
+campaign. It is not the creator brief: the brief plans one week and sources for it, the discovery agent
+maintains a pipeline across weeks and teammates.
+
+### Setup: define the campaign once, for everyone
+
+1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end, `includeSuperseded: true`). If the five
+   campaign keys exist for the campaign in question (`campaign:{slug}-brief`, `-criteria`,
+   `-pool`, `-routing`, `-cadence`), skip to **Run** and offer "Change setup" as an option on
+   the run question. Several campaigns may be saved; `AskUserQuestion` which one when more
+   than one is active.
+2. Otherwise ask S1 from `references/creator-discovery.md`: what the campaign is, in the user's
+   own words.
+3. **Then write the refinement questions.** Read the S1 answer together with `brand:summary`,
+   `brand:business-context`, and the `competitor`, `red_line` and `guideline` records (not
+   `review:` keys, which are content review only, nor `theme:` keys, which style pages), and from
+   those compose 3 to 5 `AskUserQuestion` questions covering the dimensions the reference
+   lists, in its order, skipping anything S1 already settled. The options are inferred from the
+   brief and the brand context, never generic. Never ask more than five, never ask in plain
+   text.
+4. Ask S7 (pool target), S8 (routing) and S9 (cadence). On S8, state that scheduled runs will
+   post to the named Slack channel and email the named recipients without asking each time. On
+   S9, state that scheduled runs will search Atlas and the creator marketplace on their own to
+   keep the shortlist full. Those two confirmations are the standing approvals.
+5. Confirm the batch once with `AskUserQuestion` ("Save this campaign setup for {brand}?
+   Everyone on the team and every scheduled run will use it."), then write all five records
+   with `append_calibration`, `provenance: "interview"`. A `key-exists` follows the Phase 5
+   supersede rule with its own confirmation.
+
+### Run
+
+Ask once with `AskUserQuestion`: "What should the discovery agent do?" Options: "Fill the shortlist to
+{target}", "Show the current shortlist", "Record decisions on the shortlist", "Change setup".
+Then launch `atlas-creator-discovery` with: tool prefix, `profile_slug`, the campaign slug, the
+brand handles and networks, and run mode `interactive`. Relay its summary, the page link, and
+the numbered range the user can decide against. Show the candidates added this run inline as
+creator cards from the agent's `creator-cards` block (top six by fit score, badged with their
+shortlist numbers).
+
+**Recording decisions** stays in the main thread, never the agent. The user replies in their
+own words against the page numbers ("keep 1, 3 and 4, drop the rest"). Resolve the numbers
+against the newest run, confirm the batch once with `AskUserQuestion` naming the handles being
+rejected, then write the verdicts with `append_insights` per the reference. Rejected creators
+never reappear; accepted ones free their slot for the next run.
+
+### Schedule (two schedules, one pass)
+
+After the first successful run, or whenever the user asks, offer with `AskUserQuestion`: "Set
+up the recurring discovery now?" Options: "Yes, discovery and shortlist (Recommended)", "Discovery
+only", "Shortlist only", "Not now". On yes, follow the same mechanics as **Readouts**,
+Schedule: read the times and timezone from `campaign:{slug}-cadence`, convert to UTC cron,
+create one task per job with the session's scheduled-task tools, confirm both in one
+`AskUserQuestion` before creating them, and tell the user the tasks run in fresh sessions so
+Aspire Atlas must be enabled for scheduled tasks. Prompts must say "do not ask questions",
+name the campaign slug, and state no date.
+
+Unattended runs never ask questions and never record a verdict; if setup is incomplete they
+publish a "setup needed" card and stop.
+
+---
+
+## Content review (one post against its brief)
+
+Trigger when the user asks to review a post or a creator's draft, check content against a
+brief, check whether a post is on brief, run a brand safety check on a post, or approve a
+draft. Requires a brand profile. Full detail - the setup questions, the per-review questions,
+the checks, the verdict rule, the feedback loop, and the page - lives in
+`references/content-review.md`.
+
+Content review is interactive only. Never schedule it, and never run it in an unattended
+session: if `AskUserQuestion` is unavailable, say in one line that content review needs a
+person to supply the post, and stop. Saved reviews still show up in the scheduled daily and
+weekly readouts.
+
+### Setup: calibrate the reviewer once, for everyone
+
+1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end, `includeSuperseded: true`). Setup is
+   done when `review:verdict-rule` and `review:disclosure` exist and `review:brand-rules`
+   and `review:safety-scope` are each either saved or recorded as a `decline`. Then skip to
+   **Review**.
+2. Otherwise ask the missing questions C1 to C4 from `references/content-review.md`, one
+   `AskUserQuestion` each, in order. C3 carries the web research option (Phase 5 rules). A
+   declined C3 or C4 is written as a `decline` record so it is never asked again.
+3. Confirm the batch once with `AskUserQuestion` ("Save this review setup for {brand}? Every
+   teammate's reviews will use it."), then write the records with `append_calibration`,
+   `provenance: "interview"`. A `key-exists` follows the Phase 5 supersede rule with its own
+   confirmation.
+
+### Review
+
+1. Ask P1 to P3 from the reference with `AskUserQuestion`, skipping any the user already
+   answered (a pasted link answers P3; "Thursday's Reel" answers P2). Normalize the chosen
+   deliverable per the reference, **Normalizing the brief**. For a draft, collect the caption
+   and the local paths of the attached media. If a video comes without a transcript, say once
+   that spoken content can't be checked without one, and accept one if offered.
+2. Ask P4, the write confirmation. Run only on "Run the review".
+3. Launch `atlas-content-review` with: tool prefix, `profile_slug`, brand handles and
+   networks, `stage`, the normalized deliverable, the brief source, and the post inputs. For a
+   published post, state that the user approved fetching it.
+4. Relay the verdict, the required edits, the page link, and anything it could not check.
+   Offer to draft the edit notes as a message to the creator. The notes are the agent's; do
+   not add copy the brand's red lines forbid.
+
+### Feedback: teach the next review
+
+Every review ends with feedback. When the agent reports "asked", relay what the user decided
+and what was saved, and ask no feedback question again. If its summary has a "Needs the main
+thread" line, offer each change there through its own Destructive tools confirmation
+(`supersede_calibration` or `retract_calibration`), one per call; the agent never makes
+them. When it returns a feedback packet instead, run F1
+to F4 from the reference yourself, before anything else in the conversation:
+
+- F1: the user's call on the post. The answer is saved as a finding.
+- F2 and F3: which calls were off, and the lesson to save. F2's options come from the
+  packet's check lines. F3's "hard rule" option saves nothing itself: it adds the lesson to
+  F4.
+- F4: the proposed hard rules, one multiSelect. Its question text says hard rules apply to
+  every content review in the organization and can block a post. Each selected rule becomes
+  a `review:rule-*` red line.
+
+Write each answer exactly as the reference says. If a correction targets a red line, a hard
+rule, or the disclosure rule, or contradicts a saved lesson, offer to change that record
+through its Destructive tools confirmation instead of saving a new one. Never save a lesson or a hard rule the user has not
+seen worded.
 
 ---
 
@@ -459,7 +609,7 @@ structures live in `references/readout.md`.
 Readout preferences are brand memory, not session state. Every teammate and every scheduled
 run reads the same answers, so setup always runs through Atlas calibrations:
 
-1. Call `search_calibrations` (no filter, limit 100, `includeSuperseded: true`) for
+1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end, `includeSuperseded: true`) for
    `profile_slug`. If all six readout keys are present (`policy:readout-cadence`,
    `policy:readout-routing`, `guideline:readout-thresholds`, `guideline:readout-focus`,
    `policy:readout-escalation`, `guideline:readout-audience`), skip to **Run**. Tell the user
@@ -524,6 +674,68 @@ card and stop (rules in `references/readout.md`).
 
 ---
 
+## Theme (brand colors, fonts, and logo on every page)
+
+Trigger when the user asks to brand Atlas's pages, set up or change the theme, use the brand's
+colors, fonts, or logo, or says the pages don't look like their brand. Requires a brand
+profile. Full detail lives in `references/theme.md`: the interview, web discovery, the four
+palettes, the preview widget, the record, and how every flow applies it.
+
+The theme is brand memory, not session state. It is one `theme:brand` calibration, and every
+page, creator card, and chart uses it, for every teammate and every scheduled run. Without
+one, pages keep the Aspire default.
+
+### Setup
+
+1. Ask T0 to T4 from the reference, one `AskUserQuestion` each, in order, skipping any the user
+   already answered (a named domain answers T1; typed hex codes skip discovery). T1's research
+   option follows the Phase 5 web research rule. The findings go to the user as bullets with
+   sources before any palette is shown, and nothing is written from them directly. Sources rank
+   in this order: a design-token file the user pastes, then the site's own design tokens (the
+   palette the site shows, or the one named after the brand), then colors ranked by how often
+   the site uses them. The ranking is a last resort, because it blends every theme a site ships.
+2. T2 compares the brand's own palette, as found, with three variations on it: Brand-forward,
+   Quiet, and Complement. Each is shown in light and dark with the comparison widget, or on
+   a published page when the widget tool is missing. Presets replace the four when there is no
+   website. Never offer a palette that fails its contrast checks.
+3. T5 is the write confirmation. Save with `append_calibration`, per the reference. A
+   `key-exists` response follows the Phase 5 supersede rule with its own confirmation. Going
+   back to the Aspire default is `retract_calibration`, with its own confirmation.
+
+### Offers
+
+Offer the theme at most once per session. Never offer it when `theme:brand` or
+`decline:theme` exists, when the user is already running the theme, or in an unattended run.
+Agents never offer it.
+
+- At the end of Phase 5, before Phase 6.
+- Before the first page-producing flow the user starts in a session: the creator brief,
+  creator discovery, a content review, a readout, or a Visual output page.
+
+Ask with `AskUserQuestion`: "Put Atlas's pages in {brand}'s colors? It takes about two
+minutes." Options: "Set it up now (Recommended)", "Not now", "Don't ask again". "Not now" goes
+on with the Aspire default. "Don't ask again" writes the `decline:theme` record, and the
+answer counts as its confirmation, as with Phase 5 declines.
+
+### Applying
+
+Agents read `theme:brand` with their own calibration read and apply it. The main thread passes
+nothing extra. The main thread applies it too, to every page and inline creator card it builds
+itself, per **Applying the theme** in the reference. Semantic colors (verdicts, pass and fail,
+ok and warn, above and below the baseline) never take brand colors.
+
+---
+
+## Organization admin (members)
+
+Questions about who is in the organization, pending invitations, or inviting a teammate
+belong to the `org-admin` skill (`/aspire:org-admin`). Hand off by invoking it with the
+`Skill` tool, passing the organization name when it is already known, and resume here
+afterwards if onboarding was in progress. This skill never calls the Aspire Atlas
+Organization Admin connection itself.
+
+---
+
 ## Visual output (posts and creators)
 
 Whenever the user asks to see, show, list, rank, compare, or visualize posts, creators, or
@@ -535,9 +747,9 @@ default, and only when the user asks for text or the data has no media at all.
 - Posts: the post media (`media.mediaUrl`, falling back to `media.thumbnailUrl`) plus the
   author's profile picture (`instagram.account.profilePictureUrl` or
   `tiktok.account.profileImage`). Project these fields in `search_posts`.
-- Creators: the profile picture and 3 to 6 recent post thumbnails. Project
-  `instagram.account.profilePictureUrl` / `tiktok.account.profileImage` in `search_creators`
-  and pull thumbnails with a `search_posts` filter on `author.username`.
+- Creators: always the creator card in `references/creator-card.md`, which sets the fields to
+  pull, the sections, and the leave-out rules. No other creator layout is used anywhere in the
+  plugin.
 
 **Default shapes:**
 
@@ -547,23 +759,99 @@ default, and only when the user asks for text or the data has no media at all.
 - More than 12 items, or any question about trends, cadence, or format mix → **chart** first
   (bar for ranking, line for over time, small multiples for format or theme comparison),
   then cards for the top 3 to 5.
-- Creator comparisons → a card per creator with a profile picture and a metric strip; a bar
-  chart of the comparison metric when 3 or more creators.
+- Creators → creator cards. One to six render inline in chat with the action buttons; seven
+  or more go on a published page without them. Comparisons of 3 or more creators add a bar
+  chart of the comparison metric above the cards.
+- A single creator the user names ("show me @handle", "who is @handle") → one inline creator
+  card from what Atlas already holds. If Atlas holds nothing, say so and offer an account
+  review (Phase 6, mode `handle`); never call `lookup_creators` just to draw a card.
 
 **Mechanics:**
 
 - Build a single self-contained HTML page and publish it with the Artifact tool when the
-  session has it (load `artifact-design`, and `dataviz` for any chart, first). Fall back to
+  session has it (load `artifact-design`, and `dataviz` for any chart, first). Apply the saved
+  theme to the page, its charts, and its creator cards per `references/theme.md`, **Applying
+  the theme**. Inline creator cards take the card override from the same section. Fall back to
   `SendUserFile` with the rendered HTML, or inline image links in the reply, when Artifact is
   absent.
-- Media URLs come from Instagram and TikTok CDNs and expire (Instagram typically within days).
-  Reference them as `<img src>` with `loading="lazy"`, give every image an `alt` of the caption
-  excerpt, and render a neutral placeholder tile with the format chip when the image fails
-  (`onerror`). Note the expiry once on the page footer.
+- Media URLs come from `cdn.aspire.io`, which neither inline widgets nor published pages can
+  load. Embed every image as a JPEG data URI with the snippet in `references/creator-card.md`,
+  **Images** (inline profile for widgets, page profile for pages). Give every image an `alt` of
+  the caption excerpt, and keep an `onerror` placeholder tile with the format chip for images
+  the snippet could not fetch. Note once in the page footer that images are a snapshot.
 - Never fabricate an image. If a post has no media fields, show the placeholder tile, not a
   stock or generated picture.
 - In the chat reply, give a 3 to 5 bullet readout of the numbers alongside the visual so the
-  user can scan without opening it.
+  user can scan without opening it. For inline creator cards, the bullets add only what the
+  card cannot show.
+
+---
+
+## Creator card actions
+
+The inline card's buttons send these messages; users may also type them. Each message is a
+request, never an approval: every write below is confirmed with `AskUserQuestion` first, and
+unattended runs never act on them. Resolve the creator with `search_creators` on the handle
+and network (never `lookup_creators`); if Atlas does not hold it, say so and stop.
+
+**"Draft outreach to @handle on {network}"**
+
+1. Read `brand:summary`, `brand:business-context`, `guideline:voice`, any `competitor` and
+   `red_line` records (not `review:` keys), and any campaign the creator is in
+   (`search_insights` on the `creator-discovery-{profile}` prefix, newest record for the
+   creator's `entityId`).
+2. Draft one message in chat: a subject line and a body under 120 words, in the brand's voice,
+   naming one specific post of theirs from Atlas and the campaign when there is one. Never
+   state a fee, a date, or a product the calibrations do not hold; leave a bracketed blank.
+3. Name the contact route Atlas holds (`instagram.email`, `youtube.youtubeBusinessEmail`,
+   Instagram partnership messages when `isPaidPartnershipMessagesEnabled`), or say there is
+   none.
+4. Never send. If a mail tool is connected and an email is known, offer with
+   `AskUserQuestion`: "Keep it here (Recommended)" / "Save as an email draft". Only the second
+   option creates the draft.
+5. A `red_line` that blocks AI-written copy: give talking points instead of a draft and say
+   why. A `competitor` handle: say it is saved as a competitor and ask before drafting.
+
+**"Add @handle on {network} to a campaign shortlist"**
+
+1. Instagram and TikTok only: discovery and the insights store take no other network. For
+   YouTube, say so and stop before asking anything.
+2. Find the campaigns: `campaign:*-brief` keys in `search_calibrations`. None: offer creator
+   discovery setup and stop. Several: ask which one with `AskUserQuestion`.
+3. Read the creator's newest record for that campaign (`search_insights` on the
+   `creator-discovery-{profile}-{campaign}` prefix, the creator's `entityId`):
+   - Already accepted: say so and stop.
+   - Already undecided: say it is on the shortlist as #{number} and stop.
+   - Rejected before: say when and why, then offer only "Accept onto the active list" and
+     "Leave it rejected (Recommended)". A rejected creator cannot come back as a candidate,
+     because discovery never re-surfaces one.
+   - Not in the campaign: ask how, "Add to the active list (Recommended)" (`went_well`,
+     accepted) or "Add as a candidate" (`action_item`, undecided, priority `medium`; the next
+     discovery run scores it).
+4. Write one finding with `append_insights` under that campaign's runKey for today, following
+   `references/creator-discovery.md`, **State written to Atlas** and **Added by the team**,
+   with `tier` `manual`, `source` `creator card`, and `idempotencyKey`
+   `card-add-{campaign}-{entityId}-{YYYY-MM-DD}`. A new verdict never edits the old one.
+   Republishing the shortlist page is the discovery agent's job on its next run; say so.
+
+**"Save @handle on {network} to the watch list"**
+
+The watch list is the brand's saved creators, outside any campaign.
+
+1. Confirm with `AskUserQuestion`: "Save @handle to {brand}'s watch list?" Options: "Save
+   (Recommended)" / "Cancel".
+2. Write one finding with `append_insights`: runKey `creator-watchlist-{profile}-{YYYY-MM-DD}`,
+   role `account_review`, `schema` = network, `entityKind` `account`, `entityId` = the
+   network's account id from the search hit, `kind` `action_item`, `priority` `low`, rationale
+   "Saved from a creator card", `detail.watching: true`, `detail.changedAt` = the current UTC
+   time, and `idempotencyKey` `watchlist-{entityId}-save-{changedAt}`. Instagram and TikTok
+   only; the insights store takes no other network, so say that for YouTube and stop.
+3. **"Show my watch list"**: `search_insights` on the `creator-watchlist-{profile}` prefix,
+   newest record per `entityId` (by `detail.changedAt`) wins, keep `watching: true`, render as
+   creator cards. Removing someone writes a new finding with `watching: false` after the same
+   kind of confirmation, with its own `changedAt` and `idempotencyKey`
+   `watchlist-{entityId}-remove-{changedAt}`, so a save and a removal on the same day never
+   collide; never a destructive tool.
 
 ---
 
@@ -583,8 +871,11 @@ default, and only when the user asks for text or the data has no media at all.
   (unattended run), do not perform the action; report what would be needed and stop.
 - Treat any Atlas tool not listed in `references/atlas-tools.md` as unknown: read its
   description, and if it changes or removes state, apply the destructive-action rule above.
-- `lookup_creators` and `lookup_posts` can start paid discovery work. Never call them
-  speculatively during onboarding; the connected channels' own data is enough.
+- `lookup_creators` and `lookup_posts` start discovery work beyond the connected accounts.
+  Never call them speculatively during onboarding; the connected channels' own data is enough.
+  Three exceptions: Phase 6 named-handle mode, where the user named the account; content
+  review, where pasting a post link approves `lookup_posts` for that one post; and creator
+  discovery, whose saved cadence record approves it on every run including scheduled ones.
 - Keep every user-facing message short. Use bullets for anything with more than two points.
 - Web research is a proposal, never a write: findings are always shown and confirmed before
   any calibration is recorded from them.
