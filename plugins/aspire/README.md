@@ -110,6 +110,24 @@ Shortlist prompt: the same text, with "to fill the shortlist back to target" rep
 
 Unlike the readouts, a scheduled discovery run does start discovery work in Atlas and the creator marketplace. Setting the cadence is what approves that, and it is the only scheduled run in this plugin permitted to do it. Pause the discovery task to stop it.
 
+## Other services this plugin works with
+
+Aspire Atlas works alongside other apps and services you already use. The plugin bundles only Aspire's own connectors. It reaches everything else through connections, tools, and accounts you set up and control, and each of those services has its own terms and privacy policy.
+
+| Service | What the plugin uses it for | When |
+| ------- | --------------------------- | ---- |
+| Instagram (Meta), TikTok, YouTube | You sign in to link your brand's accounts, and Atlas reads their posts and stats. | When you connect an account |
+| Slack | Posts the readout or shortlist headline and a link to the channel you choose. Needs your own Slack connection in Claude. | Readouts and creator discovery, only if you add a channel |
+| Email (for example Gmail) | Sends the readout or shortlist summary to the people you list. Needs your own email connection in Claude. | Readouts and creator discovery, only if you add recipients |
+| Web search and public websites | Researches your brand's public footprint, finds creators and fee benchmarks, and reads your website's colors, fonts, and logo. Findings are shown to you before anything is saved. | Onboarding, creator brief and discovery, brand theme |
+| Google Fonts | Checks whether your brand's fonts are available and loads them on published pages. | Brand theme |
+| Claude pages and scheduled tasks | Publishes briefs, readouts, shortlists, and reviews as pages, and runs readouts and discovery on the schedule you set. | Pages and schedules you create |
+| Tools on your computer: Python 3 with Pillow, ffmpeg, OpenCV, and on a Mac, Swift and `sips` | Shrinks images so they fit on pages and cards, reads your website's theme, and pulls still frames from videos for content review. The plugin uses whichever of these is already installed and never installs anything. | Pages, creator cards, brand theme, content review |
+
+Nothing goes to Slack or email unless you saved that destination during setup. Anything you send to those services leaves Atlas and falls under that service's policies.
+
+Instagram, Meta, TikTok, YouTube, Slack, Gmail, Google Fonts, and the other names above are trademarks of their owners. They're listed here to explain what the plugin does. Listing a service doesn't mean it endorses Aspire or this plugin.
+
 ## Safety rules
 
 - Every action that changes Atlas state is confirmed through a multiple-choice question first, never plain text.

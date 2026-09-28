@@ -81,8 +81,8 @@ hosts, and published pages allow no outside images.
 
 - Use `media.thumbnailUrl` first. Some `/thumbnail` routes return 404 while the base media URL
   works; the snippet retries the base URL.
-- The CDN returns 403 to Python's default User-Agent, so every request sends one. `curl`
-  works without it; hand-rolled code must set it.
+- The CDN returns 403 to Python's default User-Agent, so the snippet sends its own. Any
+  other code that reads from the CDN must set one too.
 - Budget: about 20KB per card inline (an avatar and three thumbnails measured 15.5KB). Six
   cards stay under 150KB. If a set of cards is over 150KB, drop to two thumbnails per card
   before cutting cards.
