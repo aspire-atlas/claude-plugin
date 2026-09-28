@@ -4,7 +4,7 @@
       "type": "http",
       "url": "https://atlas.aspire.io/mcp"
     },
-    "Aspire Organization Admin": {
+    "Aspire Atlas Organization Admin": {
       "type": "http",
       "url": "https://atlas.aspire.io/mcp/admin-organization"
     }

@@ -185,7 +185,7 @@ These are product and safety commitments. A PR that breaks one is blocked in rev
 
 - Submission (one time): https://claude.ai/admin-settings/directory/submissions/plugins/new with the public repo URL. Requires an Owner on the Aspire Team or Enterprise org. Track status at https://claude.ai/admin-settings/directory/submissions.
 - After approval, the directory mirrors `main` and screens each update automatically. No re-submission for new versions.
-- Governing documents: the Anthropic Software Directory Terms and Policy. Practical implications: keep the description narrow and accurate, keep the connector list to what the plugin uses (two, both on atlas.aspire.io: Aspire Atlas for data, Aspire Organization Admin for organization members), and respond to Anthropic within a reasonable time if they flag something.
+- Governing documents: the Anthropic Software Directory Terms and Policy. Practical implications: keep the description narrow and accurate, keep the connector list to what the plugin uses (two, both on atlas.aspire.io: Aspire Atlas for data, Aspire Atlas Organization Admin for organization members), and respond to Anthropic within a reasonable time if they flag something.
 - Optional but worth doing: submit the Atlas MCP server to the Connectors Directory. A plugin that bundles a directory-listed connector shows fewer install warnings and has a better chance at the Anthropic Verified badge.
 
 ## 11. Access and permissions

@@ -2,7 +2,7 @@
 
 Server: `https://atlas.aspire.io/mcp` (streamable HTTP, OAuth handled by the connector).
 Last verified 2026-09-28 against the live server: 34 tools. The surface changes without
-notice; when a tool named here is missing, or an unlisted `*Aspire_Atlas*` tool appears, note
+notice; when a tool named here is missing, or an unlisted `*Aspire_Atlas*` tool appears (other than the admin connector's `*Organization_Admin*` tools), note
 it in the run summary so the plugin can be updated. Never call an unlisted tool that changes
 state without first checking the **Destructive tools** section below.
 
@@ -16,17 +16,20 @@ state without first checking the **Destructive tools** section below.
 | Claude Code `claude mcp add atlas` | `mcp__atlas__` |
 
 Detect by matching `aspire_atlas` or `atlas__` (case-insensitive) in the tool name; never match
-a bare `atlas` substring, which also hits Atlassian tools. More than one prefix can match in
+a bare `atlas` substring, which also hits Atlassian tools. Exclude any name containing
+`organization_admin`: the bundled **Aspire Atlas Organization Admin** connector also contains
+`aspire_atlas` and is never the data connection. More than one prefix can match in
 one session, for example a signed-out plugin copy next to a signed-in claude.ai copy. A copy
 whose only tools are `authenticate` and `complete_authentication` is not signed in: use the
 prefix whose tools include `get_status`, and treat the connection as needing a sign in only
-when no prefix has it. Resolve once in Phase 1.5 and use everywhere. Load tools per phase with one `ToolSearch` `select:` call each, or `+Aspire_Atlas`
-with `max_results: 40` to load all at once.
+when no prefix has it. Resolve once in Phase 1.5 and use everywhere. Load tools per phase
+with one `ToolSearch` `select:` call each, or `+Aspire_Atlas` with `max_results: 50` to load
+all at once and drop the `organization_admin` results.
 
 ## Organization admin connector
 
 Server: `https://atlas.aspire.io/mcp/admin-organization` (streamable HTTP, OAuth), bundled as
-**Aspire Organization Admin**. Its own OAuth scope is `mcp:admin-organization`, separate
+**Aspire Atlas Organization Admin**. Its own OAuth scope is `mcp:admin-organization`, separate
 from Atlas's `mcp`, so it needs its own sign in. Every tool on it requires `context` (see
 **Universal argument**).
 
@@ -34,8 +37,8 @@ from Atlas's `mcp`, so it needs its own sign in. Every tool on it requires `cont
 
 | How added | Prefix |
 | --------- | ------ |
-| Bundled with this plugin (the normal case) | `mcp__Aspire_Organization_Admin__` |
-| Some clients namespace plugin servers | `mcp__plugin_aspire_Aspire_Organization_Admin__` |
+| Bundled with this plugin (the normal case) | `mcp__Aspire_Atlas_Organization_Admin__` |
+| Some clients namespace plugin servers | `mcp__plugin_aspire_Aspire_Atlas_Organization_Admin__` |
 
 Match the prefix exactly (case-insensitive), not a substring. A copy of the same server added
 by hand under another name (for example `mcp__aspire-org-admin__*` or `mcp__claude_ai_Atlas_Admin__*`)

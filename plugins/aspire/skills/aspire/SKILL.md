@@ -128,7 +128,9 @@ Check whether Atlas tools are available in this session before doing anything el
    (bundled with this plugin or org-installed, the normal case), `mcp__plugin_aspire_Aspire_Atlas__*`
    on clients that namespace plugin servers, `mcp__claude_ai_Aspire_Atlas__*` for a connector
    added in claude.ai settings, or `mcp__atlas__*` from Claude Code. A bare `atlas` substring
-   is not enough: it also matches Atlassian tools. A match whose only tools are `authenticate`
+   is not enough: it also matches Atlassian tools. Ignore any name containing
+   `organization_admin`: that is the bundled admin connector, whose name also contains
+   `aspire_atlas`, never the Atlas data connection. A match whose only tools are `authenticate`
    and `complete_authentication` is a copy that is not signed in. When several prefixes match,
    use the one that has `get_status`; if none has it, go to 1.3c.
 3. If ToolSearch returns nothing, also scan the deferred tool list in context for the same
@@ -140,8 +142,8 @@ Check whether Atlas tools are available in this session before doing anything el
    button. Do not call `SuggestConnectors` or `ListConnectors` again afterwards; every
    extra call renders a duplicate card.
    Safety filter: if the result still contains more than one entry, keep only the one whose
-   lowercased, space-stripped name equals `aspireatlas` or `atlas`, and never mention the
-   others. Classify the surviving entry:
+   lowercased, space-stripped name equals `aspireatlas` or `atlas` (so never
+   `aspireatlasorganizationadmin`), and never mention the others. Classify the surviving entry:
    - `enabledInChat: true` but no tools found: treat as a load glitch; call
      `RefreshMcpTools` once and retry step 1.
    - `enabledInChat: false`: state is **installed, not active here**. Go to 1.3b.
@@ -250,7 +252,7 @@ When the user replies, or on the next `/aspire:aspire`, repeat 1.1.
 
 Note the result for later phases: `atlas_connected = true|false`, and the tool name prefix
 actually observed (used to resolve tool names in `references/atlas-tools.md`). The plugin also
-bundles **Aspire Organization Admin** for the organization's members. Phase 1 never checks
+bundles **Aspire Atlas Organization Admin** for the organization's members. Phase 1 never checks
 it; see **Organization admin**.
 
 ---
@@ -743,10 +745,12 @@ wants to invite a teammate. Also trigger when a `get_status` link names `list_me
 
 1. Run Phase 1 and Phase 2 + 3 first, so the organization and the caller's role are known.
    Take the role from `get_status`, never from the caller's row in the member list.
-2. Load the admin tools with `ToolSearch` (`+Aspire_Organization_Admin`) and keep only the
+2. Load the admin tools with `ToolSearch` (`+Aspire_Atlas_Organization_Admin`) and keep only the
    bundled prefixes the reference lists. A hand-added copy under another name does not count:
    never call it or mention it. If no bundled tools load, render one connector card for Aspire
-   Organization Admin with the Phase 1 rules, then stop until the user replies. Never suggest
+   Atlas Organization Admin with the Phase 1 rules, then stop until the user replies. On that
+   card the safety filter keeps the entry whose lowercased, space-stripped name equals
+   `aspireatlasorganizationadmin` instead. Never suggest
    adding the connector's URL as a custom connector.
 3. `list_members` and `list_invitations` need no confirmation. Show people by name and email,
    never by id, and leave service accounts out.
