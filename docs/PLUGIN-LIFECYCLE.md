@@ -19,14 +19,14 @@ Never open a PR, push a commit, or change a setting on `claude-plugin-internal`.
 | `develop` | `aspire-atlas-beta` | none in the files; Claude uses the commit SHA | Beta customers (Claude Code, `...claude-plugin.git#develop`) and all Aspire staff (via the mirror) | Every merged PR |
 | `main` | `aspire-atlas` | `X.Y.Z` pinned in `.claude-plugin/marketplace.json` | Customers (Cowork and Claude Code, `aspire-atlas/claude-plugin`) and the Anthropic directory | Only when the version string changes |
 
-Both channels install a plugin named `aspire` with the `/aspire:aspire` skill and the `aspire:atlas-*` agents. A user should be on one channel at a time; two installs of the same plugin name make Claude load one and warn about the other.
+Both channels install a plugin named `aspire` with the `/aspire:aspire` and `/aspire:org-admin` skills and the `aspire:atlas-*` agents. A user should be on one channel at a time; two installs of the same plugin name make Claude load one and warn about the other.
 
 ### The single-version rule
 
 The plugin version lives in exactly one place: `plugins[0].version` (and the matching top-level `version`) in `.claude-plugin/marketplace.json`, and only on `main`.
 
 - `plugins/aspire/.claude-plugin/plugin.json` never has a `version` field.
-- `skills/aspire/SKILL.md` frontmatter never has a `version` field.
+- No `skills/*/SKILL.md` frontmatter has a `version` field.
 - `develop`'s `marketplace.json` never has any `version` field.
 
 CI (`scripts/check-channel.sh`) fails the build if any of these are violated. The reason: Claude resolves a plugin's version as marketplace entry, then `plugin.json`, then commit SHA. Keeping the field out of shared files is what lets `develop` track commits while `main` stays pinned, and what keeps merges between the branches conflict-free.
@@ -176,7 +176,7 @@ These are product and safety commitments. A PR that breaks one is blocked in rev
 - Every Atlas write is confirmed through `AskUserQuestion` before it runs. Destructive tools (`delete_profile`, `unlink_channel`, superseding or retracting a calibration, removing hashtags, changing the brand instruction) each get their own confirmation with the safe option listed first, and never run during onboarding on the skill's own initiative.
 - Scheduled (unattended) runs never ask questions, never run destructive tools, and deliver only to destinations saved during setup. The one exception to the no-discovery rule is `atlas-creator-discovery`: its saved cadence record is the standing approval to search Atlas and the creator marketplace on every run, including scheduled ones. Every other scheduled run starts no discovery work.
 - Never show internal ids, slugs, field names, or tool names to users. Handles (`@name`) are the anchor.
-- Re-verify the tool surface against the live Atlas server before each official release; update `plugins/aspire/skills/aspire/references/atlas-tools.md` and treat any unlisted state-changing tool as destructive until documented.
+- Re-verify the tool surface against the live Atlas server before each official release; update `plugins/aspire/skills/aspire/references/atlas-tools.md` (and `plugins/aspire/skills/org-admin/references/org-admin-tools.md` for the admin connector) and treat any unlisted state-changing tool as destructive until documented.
 - No secrets, customer names, customer handles, or internal URLs in any file. CI scans for credential patterns; a hit is a blocker.
 - The plugin stays markdown and JSON only: no hooks, no scripts, no binaries. Adding any of these changes the security posture of every install and needs a deliberate decision, a SECURITY.md update, and a major version.
 - Keep the plugin `name` as `aspire`. Renaming it breaks `/aspire:aspire` for every existing user.

@@ -253,7 +253,7 @@ When the user replies, or on the next `/aspire:aspire`, repeat 1.1.
 Note the result for later phases: `atlas_connected = true|false`, and the tool name prefix
 actually observed (used to resolve tool names in `references/atlas-tools.md`). The plugin also
 bundles **Aspire Atlas Organization Admin** for the organization's members. Phase 1 never checks
-it; see **Organization admin**.
+it; the `org-admin` skill does (see **Organization admin**).
 
 ---
 
@@ -738,32 +738,11 @@ ok and warn, above and below the baseline) never take brand colors.
 
 ## Organization admin (members)
 
-Trigger when the user asks who is in the organization, asks about pending invitations, or
-wants to invite a teammate. Also trigger when a `get_status` link names `list_members`,
-`list_invitations` or `invite_member`. The tools and rules are in `references/atlas-tools.md`,
-**Organization admin connector**.
-
-1. Run Phase 1 and Phase 2 + 3 first, so the organization and the caller's role are known.
-   Take the role from `get_status`, never from the caller's row in the member list.
-2. Load the admin tools with `ToolSearch` (`+Aspire_Atlas_Organization_Admin`) and keep only the
-   bundled prefixes the reference lists. A hand-added copy under another name does not count:
-   never call it or mention it. If no bundled tools load, render one connector card for Aspire
-   Atlas Organization Admin with the Phase 1 rules, then stop until the user replies. On that
-   card the safety filter keeps the entry whose lowercased, space-stripped name equals
-   `aspireatlasorganizationadmin` instead. Never suggest
-   adding the connector's URL as a custom connector.
-3. `list_members` and `list_invitations` need no confirmation. Show people by name and email,
-   never by id, and leave service accounts out.
-4. `invite_member` needs the caller to be an owner or admin. Otherwise say so in one line.
-   Check the email against members and pending invitations first. Confirm each invite with
-   `AskUserQuestion`, naming the email address, the role (member unless the user says
-   otherwise; owner only when the caller is an owner), and the organization. After sending,
-   say the invitation lasts 48 hours, and say so plainly if the email did not go out.
-5. Anything else (removing someone, changing a role, cancelling an invitation, leaving,
-   renaming, creating or deleting an organization) is not supported yet. Say so in one line,
-   and never call a tool the reference does not list.
-6. Never invite in an unattended session, during onboarding on the skill's own initiative,
-   or on a "yes" from an earlier message.
+Questions about who is in the organization, pending invitations, or inviting a teammate
+belong to the `org-admin` skill (`/aspire:org-admin`). Hand off by invoking it with the
+`Skill` tool, passing the organization name when it is already known, and resume here
+afterwards if onboarding was in progress. This skill never calls the Aspire Atlas
+Organization Admin connection itself.
 
 ---
 
