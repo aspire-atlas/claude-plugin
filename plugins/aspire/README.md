@@ -7,6 +7,7 @@ Onboarding for the Atlas platform (https://atlas.aspire.io). Takes a new or retu
 | Component | Name | Purpose |
 | --------- | ---- | ------- |
 | MCP server | `Aspire Atlas` | Atlas data connection at `https://atlas.aspire.io/mcp` (HTTP, OAuth). Tools appear as `mcp__Aspire_Atlas__*`. |
+| MCP server | `Aspire Organization Admin` | Organization management at `https://atlas.aspire.io/mcp/admin-organization` (HTTP, OAuth): members, invitations, and organizations. Tools appear as `mcp__Aspire_Organization_Admin__*`. Used only when the user asks; every change is confirmed. |
 | Skill | `/aspire:aspire` | Six phase onboarding flow: connection check, auth and org selection, org status, profile and social connect, brand context capture, first insights |
 | Agent | `atlas-account-analyst` | Evaluates accounts and produces first insights (Phase 6). Reviews the brand's connected accounts, or any Instagram or TikTok handle the user names, resolving and refreshing it in Atlas when the held data is over a day old |
 | Agent | `atlas-creator-discovery` | Standing creator shortlist for one campaign: fills a pool of undecided candidates to a saved target in tier order (worked with the brand, posted about the brand, indexed in Atlas, marketplace and web), scores each with evidence, republishes one living page, and keeps decisions in Atlas. Schedulable. |
@@ -17,10 +18,10 @@ Onboarding for the Atlas platform (https://atlas.aspire.io). Takes a new or retu
 
 ## Setup
 
-1. Install the plugin. The Aspire Atlas connector is bundled; do not add it again as a custom connector.
+1. Install the plugin. The Aspire Atlas and Aspire Organization Admin connectors are bundled; do not add either again as a custom connector.
 2. Start a new chat with Aspire Atlas enabled, sign in when prompted, and type `/aspire:aspire`.
 
-No environment variables are required. Authentication is handled by the connector's OAuth flow.
+No environment variables are required. Authentication is handled by each connector's OAuth flow. Aspire Organization Admin only needs a sign in when someone manages members or organizations; onboarding and every other flow use Aspire Atlas alone.
 
 Plugin skills are namespaced, so the canonical command is `/aspire:aspire`. The skill also triggers on `/aspire` and on the phrases below. If Aspire Atlas is installed but off in the current chat, or not signed in, the skill detects it and walks the user through turning it on and connecting.
 
@@ -36,6 +37,7 @@ Plugin skills are namespaced, so the canonical command is `/aspire:aspire`. The 
 - Creator cards: every creator the plugin shows ("show me @handle", search results, the discovery shortlist, the brief's creators) is drawn with one compact card: profile picture, network chips, badges, brand safety and comment sentiment tiles, key stats, and three recent posts. Sections with no data behind them are left out. In chat the card carries three buttons: Draft Outreach writes a message for review (never sent), Add to list puts the creator on a campaign shortlist, and Save adds them to the brand's watch list ("show my watch list"). Each one asks before writing anything.
 - Readouts: "what happened yesterday", "how did last week go", "weekly readout", "daily readout", "schedule the readouts". First use runs a six-question setup (delivery times and timezone, Slack channel and email recipients, flag thresholds, lead metric, escalation rule, audience). Answers are saved to the brand's Atlas memory so every teammate and every scheduled run uses the same setup without re-asking.
 - Brand theme: "set up our theme", "brand our pages", "use our brand colors". Scans the brand's website for its colors, fonts, and logo, shows the findings with sources, then compares the palette as found against three variations on it (Brand-forward, Quiet, Complement), each in light and dark. Palettes that fail contrast checks are never offered. The chosen theme, with its fonts and logo, is saved to the brand's Atlas memory, and every page, chart, and creator card the plugin publishes uses it, including scheduled readouts. Pass, fail, and other status colors keep their meaning. Offered once after onboarding and once before the first page of a session; "Don't ask again" stops the offers.
+- Organization admin: "who's in our organization", "invite a teammate", "remove someone from Atlas", "change their role". Uses the Aspire Organization Admin connector. Only owners and admins can make changes. Invites are confirmed, and removals, role changes, cancelled invitations, and organization deletes each get their own confirmation. None of them ever run unattended.
 
 ## Scheduling the readouts
 

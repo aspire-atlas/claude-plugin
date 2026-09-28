@@ -47,8 +47,8 @@ Notes:
 
 ## Requirements
 
-- An Aspire Atlas account. The connector points at `https://atlas.aspire.io/mcp` and authenticates with OAuth; no API keys or environment variables are needed.
-- Do not add Atlas a second time as a custom connector. The plugin bundles it.
+- An Aspire Atlas account. The Atlas connector points at `https://atlas.aspire.io/mcp`, and the organization admin connector at `https://atlas.aspire.io/mcp/admin-organization`. Both authenticate with OAuth; no API keys or environment variables are needed.
+- Do not add either connector a second time as a custom connector. The plugin bundles both.
 
 ## Safety
 
