@@ -126,8 +126,11 @@ Check whether Atlas tools are available in this session before doing anything el
 2. Treat the connection as **live** when at least one returned tool name contains
    `aspire_atlas` or `atlas__` (case-insensitive). Typical patterns: `mcp__Aspire_Atlas__*`
    (bundled with this plugin or org-installed, the normal case), `mcp__plugin_aspire_Aspire_Atlas__*`
-   on clients that namespace plugin servers, or `mcp__atlas__*` from Claude Code. A bare `atlas`
-   substring is not enough: it also matches Atlassian tools.
+   on clients that namespace plugin servers, `mcp__claude_ai_Aspire_Atlas__*` for a connector
+   added in claude.ai settings, or `mcp__atlas__*` from Claude Code. A bare `atlas` substring
+   is not enough: it also matches Atlassian tools. A match whose only tools are `authenticate`
+   and `complete_authentication` is a copy that is not signed in. When several prefixes match,
+   use the one that has `get_status`; if none has it, go to 1.3c.
 3. If ToolSearch returns nothing, also scan the deferred tool list in context for the same
    patterns.
 4. If still nothing and `ListConnectors` is available, call it **exactly once** with
@@ -733,21 +736,28 @@ ok and warn, above and below the baseline) never take brand colors.
 
 ## Organization admin (members)
 
-Trigger when the user asks who is in the organization or wants to invite a teammate. Also
-trigger when a `get_status` link names `list_members` or `invite_member`. The tools and
-rules are in `references/atlas-tools.md`, **Organization admin connector**.
+Trigger when the user asks who is in the organization, asks about pending invitations, or
+wants to invite a teammate. Also trigger when a `get_status` link names `list_members`,
+`list_invitations` or `invite_member`. The tools and rules are in `references/atlas-tools.md`,
+**Organization admin connector**.
 
 1. Run Phase 1 and Phase 2 + 3 first, so the organization and the caller's role are known.
-2. Load the admin tools with `ToolSearch` (`+Organization_Admin`). If none load, render one
-   connector card for Aspire Organization Admin with the Phase 1 rules, then stop until the
-   user replies.
-3. `list_members` needs no confirmation. Show people by name and email, never by id.
+   Take the role from `get_status`, never from the caller's row in the member list.
+2. Load the admin tools with `ToolSearch` (`+Aspire_Organization_Admin`) and keep only the
+   bundled prefixes the reference lists. A hand-added copy under another name does not count:
+   never call it or mention it. If no bundled tools load, render one connector card for Aspire
+   Organization Admin with the Phase 1 rules, then stop until the user replies. Never suggest
+   adding the connector's URL as a custom connector.
+3. `list_members` and `list_invitations` need no confirmation. Show people by name and email,
+   never by id, and leave service accounts out.
 4. `invite_member` needs the caller to be an owner or admin. Otherwise say so in one line.
-   Confirm each invite with `AskUserQuestion`, naming the email address, the role if the
-   tool takes one, and the organization.
-5. Anything else (removing someone, changing a role, cancelling an invitation, creating or
-   deleting an organization) is not supported yet. Say so in one line, and never call a tool
-   the reference does not list.
+   Check the email against members and pending invitations first. Confirm each invite with
+   `AskUserQuestion`, naming the email address, the role (member unless the user says
+   otherwise; owner only when the caller is an owner), and the organization. After sending,
+   say the invitation lasts 48 hours, and say so plainly if the email did not go out.
+5. Anything else (removing someone, changing a role, cancelling an invitation, leaving,
+   renaming, creating or deleting an organization) is not supported yet. Say so in one line,
+   and never call a tool the reference does not list.
 6. Never invite in an unattended session, during onboarding on the skill's own initiative,
    or on a "yes" from an earlier message.
 

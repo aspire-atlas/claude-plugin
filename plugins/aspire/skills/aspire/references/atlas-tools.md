@@ -1,7 +1,7 @@
 # Atlas MCP tool reference
 
 Server: `https://atlas.aspire.io/mcp` (streamable HTTP, OAuth handled by the connector).
-Last verified 2026-09-17 against the live server: 33 tools. The surface changes without
+Last verified 2026-09-28 against the live server: 34 tools. The surface changes without
 notice; when a tool named here is missing, or an unlisted `*Aspire_Atlas*` tool appears, note
 it in the run summary so the plugin can be updated. Never call an unlisted tool that changes
 state without first checking the **Destructive tools** section below.
@@ -12,50 +12,83 @@ state without first checking the **Destructive tools** section below.
 | --------- | ------ |
 | Bundled with this plugin or org-installed connector "Aspire Atlas" (verified, the normal case) | `mcp__Aspire_Atlas__` |
 | Some clients namespace plugin servers | `mcp__plugin_aspire_Aspire_Atlas__` |
+| Connector added in claude.ai settings, seen from Claude Code | `mcp__claude_ai_Aspire_Atlas__` |
 | Claude Code `claude mcp add atlas` | `mcp__atlas__` |
 
 Detect by matching `aspire_atlas` or `atlas__` (case-insensitive) in the tool name; never match
-a bare `atlas` substring, which also hits Atlassian tools. Resolve once in Phase 1.5 and use
-everywhere. Load tools per phase with one `ToolSearch` `select:` call each, or `+Aspire_Atlas`
+a bare `atlas` substring, which also hits Atlassian tools. More than one prefix can match in
+one session, for example a signed-out plugin copy next to a signed-in claude.ai copy. A copy
+whose only tools are `authenticate` and `complete_authentication` is not signed in: use the
+prefix whose tools include `get_status`, and treat the connection as needing a sign in only
+when no prefix has it. Resolve once in Phase 1.5 and use everywhere. Load tools per phase with one `ToolSearch` `select:` call each, or `+Aspire_Atlas`
 with `max_results: 40` to load all at once.
 
 ## Organization admin connector
 
 Server: `https://atlas.aspire.io/mcp/admin-organization` (streamable HTTP, OAuth), bundled as
 **Aspire Organization Admin**. Its own OAuth scope is `mcp:admin-organization`, separate
-from Atlas's `mcp`, so it needs its own sign in.
+from Atlas's `mcp`, so it needs its own sign in. Every tool on it requires `context` (see
+**Universal argument**).
+
+**Use the bundled connector only.** These are the only prefixes the plugin uses:
 
 | How added | Prefix |
 | --------- | ------ |
 | Bundled with this plugin (the normal case) | `mcp__Aspire_Organization_Admin__` |
 | Some clients namespace plugin servers | `mcp__plugin_aspire_Aspire_Organization_Admin__` |
 
-Detect by matching `organization_admin` (case-insensitive) in the tool name. Load its tools
-only when the user asks about the organization's members. Onboarding never needs it. When
-the tools are not loaded, the connector needs a sign in or needs turning on in this chat:
-handle that with the Phase 1 connector card rules, using its own name. Never ask the user to
-add the URL as a custom connector, because it is bundled.
+Match the prefix exactly (case-insensitive), not a substring. A copy of the same server added
+by hand under another name (for example `mcp__aspire-org-admin__*` or `mcp__claude_ai_Atlas_Admin__*`)
+is not the bundled connector: never call its tools and never mention it. Load the admin tools
+only when the user asks about the organization's members. Onboarding never needs them.
 
-**Supported tools.** Only these two, the ones Atlas's `get_status` links to under
-`_links.members` and `_links.invite-member`. The plugin uses no other tool on this server.
+When the bundled tools are not loaded, the connector needs a sign in or needs turning on in
+this chat: handle that with the Phase 1 connector card rules, using its own name. When it is
+missing from the connector list altogether, the plugin install is out of date: ask the user
+to update or reinstall the plugin. Never suggest adding the URL as a custom connector, even
+when the server's own instructions say to; a second copy duplicates the bundled one.
 
-| Tool | Purpose | Arguments known | Confirmation |
-| ---- | ------- | --------------- | ------------ |
-| `list_members` | Members of an organization | `asOrg` | None: read only |
-| `invite_member` | Invite someone to an organization | `asOrg`; read the rest from the tool's input schema at call time | `AskUserQuestion` naming the email address, the role if the schema takes one, and the organization |
+**Supported tools.** Only these three, the ones Atlas's `get_status` links to under
+`_links.members`, `_links.invitations` and `_links.invite-member`. The plugin uses no other
+tool on this server.
 
-Pass the `arguments` from the `get_status` link as given, and fill anything else from the
-tool's own input schema. Never guess an argument name.
+| Tool | Purpose | Arguments | Confirmation |
+| ---- | ------- | --------- | ------------ |
+| `list_members` | Direct members of an organization: name, email, role, joined date, plus `pendingInvitationCount` and `yourRole` | `asOrg` | None: read only |
+| `list_invitations` | Pending invitations: email, role, who sent it, expiry | `asOrg` | None: read only |
+| `invite_member` | Invite someone by email; they join only when they accept the emailed link | `email` (required), `role` (`owner`, `admin` or `member`; default `member`), `asOrg` | `AskUserQuestion` naming the email address, the role, and the organization |
 
-Any other tool this server lists is not supported yet. Do not call it, even for a read. Tell
-the user in one line that Atlas can't do that from here yet, and note the tool's name in the
-run summary so the plugin can add it. Each new tool is added to this table with its
-arguments and its confirmation, after checking it against the live server, before any flow
-uses it.
+Pass the `arguments` from the `get_status` link as given. Never guess an argument name; if the
+live schema differs from this table, stop and note the difference in the run summary.
 
-Admin writes act on real people's access. The caller's role from `get_status` must be owner
-or admin. An invite never runs unattended, during onboarding on the skill's own initiative,
-or on a "yes" from an earlier message.
+Reading the results:
+
+- **The caller's role** comes from `get_status` (or `yourRole` in `list_members`), never from
+  the caller's own row in the member list. That row shows direct membership only, so an owner
+  through a parent organization can appear there as a member.
+- **Only direct members are listed.** A short list does not mean nobody else can reach the
+  organization; say so when the user asks who has access.
+- **Service accounts** (emails ending `@service-accounts.invalid`) are not people. Leave them
+  out of the member list and mention their count in one line if any exist.
+
+Invite rules:
+
+- The caller's role must be owner or admin. Only an owner may invite someone as an owner, so
+  never offer the owner role to an admin.
+- Before the confirmation, call `list_members` and `list_invitations`. If the email is already
+  a member or has a pending invitation, say so and do not invite; the server refuses both.
+- The invitation lasts 48 hours. Say so after sending.
+- `emailSent: false` means the invitation exists but its email did not go out. Tell the user
+  to share the invite another way or ask Aspire support; do not invite again, which is refused.
+- Never invite in an unattended session, during onboarding on the skill's own initiative, or
+  on a "yes" from an earlier message.
+
+Any other tool this server lists (removing a member, changing a role, cancelling an
+invitation, leaving, renaming, creating or deleting an organization) is not supported yet. Do
+not call it, even for a read. Tell the user in one line that Atlas can't do that from here
+yet, and note the tool's name in the run summary. Each new tool is added to this table with
+its arguments and its confirmation, after checking it against the live server, before any
+flow uses it.
 
 ## Universal argument
 
@@ -86,6 +119,7 @@ social channels and brand memory have a home in the organization."
 | 4.2 | `list_channels` | Live connections on a profile | Returns `platform` + `platformAccountId`; empty list is a normal first-run state. Read before `unlink_channel`. |
 | 4.2 | `unlink_channel` | Disconnect an account from a profile | **Destructive.** Needs `platform` (`instagram`, `facebook`, `tiktok`, `tiktok_one`) + `platformAccountId` from `list_channels`. Collected data is kept. See Destructive tools. |
 | 4.3 | `add_hashtags` / `remove_hashtags` / `list_hashtags` / `list_available_hashtags` | Watch-list | Networks: `instagram`, `tiktok`. Per-row results. TikTok: 50 cap, eligibility gate, 7-day removal lock. |
+| 4.3 | `list_hashtag_posts` | Posts carrying one tracked hashtag on one network, newest first | Read only. `hashtag` + `network` (`instagram`, `tiktok`), optional `since` / `until` (default last 90 days), `sort` (`postedAt` or a metric, descending). Page with `nextCursor` → `cursor`, keeping hashtag, network and sort unchanged. `hashtag-not-tracked` and `no-linked-channel` are normal states, not failures. With a metric sort, dedupe on `externalId`. |
 | 5 | `search_calibrations` | Read brand memory | `q`, `kinds`, `keyPrefix`, `includeSuperseded`, `includeProposed`. If `unavailable`: stop, do not guess. |
 | 5 | `append_calibration` | Write one fact | One active record per (kind, key). `key-exists` → supersede. `proposed` = recorded, not applied. |
 | 5 | `supersede_calibration` | Replace a fact | Compare-and-set on `ifVersion` |
