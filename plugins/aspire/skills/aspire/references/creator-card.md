@@ -63,7 +63,8 @@ actions row out.
 
 Put the style block in the page `<head>` once and the cards wherever the page structure calls
 for them, inside `<div class="ac-grid">`. The page's own tokens are not used by the card; the
-card carries Aspire's. Embed images with the **Images** snippet and `--profile=page`. Leave
+card carries Aspire's, unless the brand has a saved theme: then add the card override from
+`theme.md`, **Creator card**, right after the style block, on pages and inline alike. Embed images with the **Images** snippet and `--profile=page`. Leave
 out the actions row. Flow-specific detail goes in the `{DETAILS}` slot, never in extra markup
 around the card.
 
@@ -258,7 +259,8 @@ Escape `'` in the handle as `\'` inside the `onclick` string.
 ## Style block
 
 Once per widget or page. Colors follow the host theme in light and dark mode where the host
-defines the variable, and fall back to the Aspire tokens where it does not.
+defines the variable, and fall back to the Aspire tokens where it does not. A saved brand
+theme replaces only the brand color and the font (`theme.md`, **Creator card**).
 
 ```html
 <style>

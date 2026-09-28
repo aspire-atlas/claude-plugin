@@ -51,8 +51,9 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
 (15 to 25 words, third person).
 
 1. `search_calibrations` as above. Extract: readout calibrations, `red_line`, `guideline`,
-   `competitor`, `partner`, `brand:summary`, `target:weekly-health`. Drop every `review:` key
-   (content review only; see `atlas-tools.md`).
+   `competitor`, `partner`, `brand:summary`, `target:weekly-health`, `theme:brand`. Drop every
+   `review:` key (content review only; see `atlas-tools.md`). `theme:brand` styles the page
+   and is never a guideline.
 2. `list_post_search_fields` once. Use only paths it returns.
 3. `search_posts` per linked handle: `author.username` = handle, `postedAt` gte the window
    start, `exists mediaKind` (drops stories). Sort `postedAt` desc, limit 100, page on the
@@ -185,7 +186,8 @@ review closes them (step 6b).
 Embed every image as a JPEG data URI with the snippet in `creator-card.md`, **Images**, page
 profile: `post` for post cards (240px wide), `avatar` for profile pictures (112px). It retries
 the base media URL on a `/thumbnail` 404. Keep the page under 2MB. Load the
-`artifact-design` and `dataviz` skills before building. Publish with the Artifact tool,
+`artifact-design` and `dataviz` skills before building. Apply the saved brand theme (`theme:brand`) per `theme.md`, **Applying the theme**; without one, the design here stands. Flags, deltas, and verdict
+chips keep their semantic colors. Publish with the Artifact tool,
 title "<Brand> Daily Readout" or "<Brand> Weekly Readout", and republish to the same path
 each run so the link in Slack or email stays stable. Note once in the footer that images are
 a snapshot.

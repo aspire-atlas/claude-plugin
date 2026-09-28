@@ -82,6 +82,7 @@ run rules. Follow it exactly.
    any open action items from prior readouts.
 5. Build the page per **Daily readout** in the reference (KPI strip, 28-day sparkline, post
    cards with embedded media, flags block). Load `artifact-design` and `dataviz` first.
+   Apply `theme:brand` when saved, per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`, **Applying the theme**.
    Publish with the Artifact tool, title "<Brand> Daily Readout", republishing to the same
    path.
 6. Deliver per **Delivery**: Slack message and email when routed and available. Report any

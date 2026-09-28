@@ -38,6 +38,8 @@ Design: token palette on `:root` with dark redefinitions under both the media qu
 Plex Sans body, IBM Plex Mono data). Bullets use a positioned marker with left padding,
 never a grid per list item (a grid splits inline bold labels into their own cells).
 Categorical chart palette from the dataviz reference, validated. One axis per chart.
+With a saved brand theme, its tokens, fonts, header, logo, and chart series replace these
+defaults: apply `theme:brand` per `theme.md`, **Applying the theme**.
 
 ## Fit rubric
 

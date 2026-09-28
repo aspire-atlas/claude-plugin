@@ -69,7 +69,8 @@ Every creator on the page is drawn with the creator card in `${CLAUDE_PLUGIN_ROO
    never from the prompt or the session header.
 3. Read `search_calibrations` (no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the five
    campaign records, plus `brand:summary`, every `competitor`, `partner`, `red_line`, and
-   `guideline`. Drop every key starting `review:` (content review only).
+   `guideline`. Drop every key starting `review:` (content review only). Keep `theme:brand`
+   for the page in step 10; it is never a guideline.
 4. Rebuild the pool: `search_insights` on the `runKey` prefix
    `creator-discovery-{profile}-{campaign}`, newest first, paged. Newest record per `entityId`
    wins. Count undecided against the pool target; that gap is this run's fill quota.
@@ -86,7 +87,8 @@ Every creator on the page is drawn with the creator card in `${CLAUDE_PLUGIN_ROO
    component. A component with no data scores zero and is listed as missing.
 9. Write `action_item` findings for every candidate added or re-scored, per the reference's
    `detail` shape, with an `idempotencyKey` per candidate per run.
-10. Build and republish the living page to the same path, then deliver per
+10. Build and republish the living page to the same path, applying `theme:brand` when saved
+    per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`, **Applying the theme**, then deliver per
     `campaign:{slug}-routing`.
 
 **Output format (summary for the main thread, under 250 words)**

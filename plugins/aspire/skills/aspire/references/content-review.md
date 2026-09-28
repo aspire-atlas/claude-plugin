@@ -120,7 +120,8 @@ One check per brief field that is specified:
 - Every `guideline` calibration whose `appliesTo` is empty or names content, a network the
   post is on, or `content-review`. One check per guideline. Leave out `review:` keys here:
   the setup answers already shape the verdict, disclosure, brand rules and safety screen, and
-  lessons are applied on their own below.
+  lessons are applied on their own below. Leave out `theme:` keys too: they style Atlas's
+  pages and say nothing about the creator's content.
 - `review:brand-rules`, one check per line.
 - Voice: the `voice_and_content_ops` brand fact, when saved.
 - Competitors: every `competitor` handle and its `spellingVariants`, in the caption, the
@@ -443,7 +444,8 @@ Page mechanics: frames come from the files under **Media**, resized to 320px wid
 embedded as JPEG data URIs. The creator card's images (profile picture 112px, thumbnails
 240px) are embedded with the snippet in `creator-card.md`, **Images**, page profile, which
 retries the base media URL on a `/thumbnail` 404. Keep the page under 2MB. Draft media comes
-from the local files the user attached. Load `artifact-design` before building.
+from the local files the user attached. Load `artifact-design` before building. Apply the saved brand theme (`theme:brand`) per `theme.md`, **Applying the theme**; without one, the design here stands. The
+verdict banner and the result chips keep their semantic colors.
 
 ## Atlas quirks that apply here
 
