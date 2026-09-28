@@ -1,24 +1,14 @@
 ---
 name: aspire
 description: >
-  This skill should be used when the user types "/aspire:aspire" or "/aspire" (with or
-  without an argument such as "agents", which lists the plugin's subagents and runs the one
-  the user picks), says "get started with Atlas", "connect Aspire Atlas", "set up Atlas",
-  "connect Atlas", "onboard my brand", "connect my Instagram/TikTok/YouTube
-  to Atlas", asks how to start using the atlas.aspire.io platform, or asks for a daily or
-  weekly readout ("what happened yesterday", "how did last week go", "schedule the weekly
-  readout"), or asks to find or shortlist creators for a campaign ("creator discovery", "refill
-  the shortlist", "find creators for the campaign"), or asks to review a post or a creator's
-  draft against a brief ("review this post", "content review", "check this draft against the
-  brief", "brand safety check on this post"), or asks to see a specific creator ("show me
-  @handle", "who is @handle"), or sends a creator card action ("Draft outreach to @handle on
-  Instagram", "Add @handle on TikTok to a campaign shortlist", "Save @handle on Instagram to the
-  watch list", "show my watch list"), or asks to put Atlas's pages in the brand's colors
-  ("set up our theme", "brand our pages", "use our brand colors", "add our logo to the
-  pages"). It verifies the Atlas data connection,
-  authenticates and selects an organization, scopes the brand, connects social accounts,
-  captures brand context for future sessions, delivers first insights, and routes recurring
-  readouts, creator briefs, creator discovery, content reviews, and the brand theme.
+  Creative Intelligence for your brand on Aspire Atlas. Connect Instagram, TikTok, and
+  YouTube, see what's working, benchmark competitors, and check brand safety. Find and brief
+  creators, keep a campaign shortlist, review posts, and get daily and weekly reports. Use
+  for "/aspire", "/aspire agents", "get started with Atlas", "connect Atlas", "onboard my
+  brand", "connect my Instagram", "what happened yesterday", "how did last week go",
+  "schedule the weekly readout", "find creators for the campaign", "refill the shortlist",
+  "review this post", "check this draft against the brief", or "brand safety check on this
+  post".
 metadata:
   author: Aspire
 ---

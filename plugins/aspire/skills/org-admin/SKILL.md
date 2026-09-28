@@ -1,14 +1,11 @@
 ---
 name: org-admin
 description: >
-  This skill should be used when the user types "/aspire:org-admin", asks who is in their
-  Atlas organization ("who's in our org", "list our members", "who has access to Atlas"),
-  asks about pending invitations ("any pending invites", "did my invite go out"), or wants to
-  add someone to their Atlas organization ("invite a teammate", "add jane@company.com to
-  Atlas", "give my colleague access"). It lists the organization's members and pending
-  invitations and sends confirmed invitations through the bundled Aspire Atlas Organization
-  Admin connection. It does not onboard a brand or connect social accounts; that is
-  /aspire:aspire.
+  The Org Admin for your Aspire Atlas organization. See who's on the team, check pending
+  invites, and invite teammates. Anyone can view; owners and admins can invite, and every
+  invite is confirmed first. Open it with /aspire:org-admin, or ask "who's in our org", "who
+  has access to Atlas", "any pending invites", "invite a teammate", or "give my colleague
+  access".
 metadata:
   author: Aspire
 ---

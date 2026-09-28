@@ -1,7 +1,7 @@
 {
   "name": "aspire",
   "displayName": "Aspire Atlas",
-  "description": "Onboarding, first insights, weekly creator content briefs, and schedulable daily and weekly readouts for the Atlas platform (atlas.aspire.io). Connects the Atlas data source, scopes the brand, connects social accounts, delivers first insights, plans creator-made content with priced creator shortlists, reports what changed on your accounts on a daily and weekly cadence, and lists and invites the members of your Atlas organization. To get started, just type /aspire:aspire.",
+  "description": "Aspire Atlas is the Creative Intelligence layer for your brand's social content. Connect Instagram, TikTok, and YouTube for social listening, competitive benchmarking, and brand safety checks. Discover creators, plan next week's content, review posts before they go live, and get daily and weekly reports in Slack or email. Type /aspire to start.",
   "icon": "./assets/icon.png",
   "author": {
     "name": "Aspire"
@@ -12,18 +12,21 @@
   "keywords": [
     "aspire",
     "atlas",
+    "creative intelligence",
+    "social media",
     "social listening",
-    "onboarding",
-    "brand",
-    "creator brief",
+    "social analytics",
+    "competitive benchmarking",
+    "influencer marketing",
+    "creator marketing",
     "creator discovery",
     "content planning",
     "content review",
     "brand safety",
-    "readout",
     "reporting",
-    "scheduled tasks",
-    "team members"
+    "instagram",
+    "tiktok",
+    "youtube"
   ],
   "mcpServers": "./.mcp.json"
 }
