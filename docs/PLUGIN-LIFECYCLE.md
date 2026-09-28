@@ -178,7 +178,7 @@ These are product and safety commitments. A PR that breaks one is blocked in rev
 - Never show internal ids, slugs, field names, or tool names to users. Handles (`@name`) are the anchor.
 - Re-verify the tool surface against the live Atlas server before each official release; update `plugins/aspire/skills/aspire/references/atlas-tools.md` (and `plugins/aspire/skills/org-admin/references/org-admin-tools.md` for the admin connector) and treat any unlisted state-changing tool as destructive until documented.
 - No secrets, customer names, customer handles, or internal URLs in any file. CI scans for credential patterns; a hit is a blocker.
-- The plugin stays markdown and JSON only: no hooks, no scripts, no binaries. Adding any of these changes the security posture of every install and needs a deliberate decision, a SECURITY.md update, and a major version.
+- The plugin stays markdown and JSON only: no hooks, no script files, no binaries. Python snippets written out inside markdown are allowed when they follow the snippet rules in `SECURITY.md`: standard library and Pillow only, no other programs started, nothing installed, network reads limited to what the flow names, and no files written beyond what those rules list. A new snippet is reviewed against those rules in its PR. A hook, a script file, a binary, or a snippet that breaks the rules changes the security posture of every install and needs a deliberate decision, a SECURITY.md update, and a major version.
 - Keep the plugin `name` as `aspire`. Renaming it breaks `/aspire:aspire` for every existing user.
 
 ## 10. Anthropic plugin directory
