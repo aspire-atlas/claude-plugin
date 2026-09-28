@@ -56,7 +56,7 @@ the brand's calibrations (summary, goals, competitors, red lines, partners). Eve
    - Stale → refresh with `lookup_creators`: one item, `schema` = the network, `entityKind` = `account`,
      `identifier` = the handle, and `creatorDeepAnalysis` left at its default `true` so the account's
      recent posts are ingested with it. The user approved this fetch by naming the handle, so do not ask
-     again; TikTok discovery makes paid vendor calls, so run it at most once per handle per run.
+     again, and run it at most once per handle per run.
    - A `fetching` result means discovery started. There is no status-check tool for it: re-call
      `lookup_creators` with the same item to re-read, about every 15 seconds, up to roughly 3 minutes.
      The `found` response carries the account document and its 10 most recent posts; read freshness from
@@ -75,7 +75,7 @@ the brand's calibrations (summary, goals, competitors, red lines, partners). Eve
      posts, to size the sample.
 5. Assess per account: posting cadence over the window, engagement per post relative to follower count,
    top 3 posts by engagement and what they share, format mix, and any content that touches a stated red
-   line.
+   line (never a `review:` key; those are content review only).
 6. Mode `own` only: cross reference the brand's 90-day goal and competitors. Name gaps and quick wins.
    If a competitor handle is already indexed, one `search_creators` read for a follower benchmark is
    allowed; do not start discovery for it.
@@ -103,7 +103,7 @@ the brand's calibrations (summary, goals, competitors, red lines, partners). Eve
    - The brand's calibrations are still for two things only: saying whether the handle matches a saved
      `competitor` or `partner` record, which is a classification, not a benchmark, and framing why the
      account is or is not relevant to the brand's stated goal. Apply `red_line` checks only to the
-     brand's own accounts.
+     brand's own accounts, and ignore every key starting `review:` (content review only).
 8. Write findings back with `append_insights`: one `runKey` for this run — mode `own`:
    `onboarding-{profile}-{date}`; mode `handle`: `account-review-{profile}-{handle}-{date}` — role
    `account_review`, `schema` = network, `entityKind` = account (or post for post-level findings),
@@ -128,3 +128,5 @@ the brand's calibrations (summary, goals, competitors, red lines, partners). Eve
   comments). Project `media.mediaUrl`, `media.thumbnailUrl` and
   `instagram.account.profilePictureUrl` in `search_posts` to fill it. The main thread renders
   this as cards and a chart; keep it under 60 rows.
+- Mode `handle` only: a `creator-cards` block with one entry for the reviewed account, built
+  per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-card.md` (**Agent hand-off**). The main thread shows it before the summary.

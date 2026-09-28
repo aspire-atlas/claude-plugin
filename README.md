@@ -4,7 +4,7 @@ Claude plugins for the [Aspire Atlas](https://atlas.aspire.io) platform. Works i
 
 | Plugin | What it does | Command |
 | ------ | ------------ | ------- |
-| [`aspire`](plugins/aspire) | Onboards a brand onto Atlas, connects Instagram and TikTok, delivers first insights, plans weekly creator content briefs, and runs schedulable daily and weekly readouts. Bundles the Aspire Atlas connector. | `/aspire:aspire` |
+| [`aspire`](plugins/aspire) | Onboards a brand onto Atlas, connects Instagram and TikTok, delivers first insights, plans weekly creator content briefs, runs schedulable daily and weekly readouts, and lists and invites organization members. Bundles the Aspire Atlas and Aspire Atlas Organization Admin connectors. | `/aspire:aspire`, `/aspire:org-admin` |
 
 ## Install (official channel)
 
@@ -47,15 +47,16 @@ Notes:
 
 ## Requirements
 
-- An Aspire Atlas account. The connector points at `https://atlas.aspire.io/mcp` and authenticates with OAuth; no API keys or environment variables are needed.
-- Do not add Atlas a second time as a custom connector. The plugin bundles it.
+- An Aspire Atlas account. The Atlas connector points at `https://atlas.aspire.io/mcp`, and the organization admin connector at `https://atlas.aspire.io/mcp/admin-organization`. Both authenticate with OAuth; no API keys or environment variables are needed.
+- Do not add either connector a second time as a custom connector. The plugin bundles both.
 
 ## Safety
 
 - Every action that changes Atlas state is confirmed with a multiple-choice question first.
 - Destructive actions (deleting a profile, unlinking a channel, retracting a calibration) each get their own confirmation.
-- Paid creator discovery runs only on your explicit choice.
-- Scheduled runs never ask questions, never run destructive or paid tools, and deliver only to destinations you saved during setup.
+- Scheduled runs never ask questions, never run destructive tools, and deliver only to destinations you saved during setup.
+- Only creator discovery searches for new creators on a schedule, and only because you set that cadence yourself. No other scheduled run starts discovery work.
+- The plugin works with services outside Aspire, such as Slack, email, and social networks, through connections you set up yourself. See [Other services this plugin works with](plugins/aspire/README.md#other-services-this-plugin-works-with).
 
 Full details in the [plugin README](plugins/aspire/README.md).
 

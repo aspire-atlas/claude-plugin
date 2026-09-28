@@ -21,12 +21,12 @@ One self-contained HTML page, published with the Artifact tool. Sections in orde
    (numeric target bold), rights. Optional product slot in amber.
 4. **Guardrails.** Two boxes: required, off limits.
 5. **Creator shortlist.** Intro naming the discovery runs. Horizontal bar chart of followers
-   colored by tier, bar label with Reel interaction rate. Then a card per creator: profile
-   picture, handle, fit chip, name, location, tier; three sample post thumbnails with a view or
-   like count chip; metric strip (followers, Reel interaction, hook rate, engaged accounts);
-   angle; role; why; recommended engagement cost block (range, rationale); past B2B partners,
-   contact, marketplace badges; open profile link. Then two boxes: budget scenarios, how the
-   costs were set. Footnote naming creators considered but not shortlisted.
+   colored by tier, bar label with Reel interaction rate. Then a creator card per creator
+   (`creator-card.md`): badges in order fit ("Strong fit" or "Partial fit"), tier, then the
+   card's own; no fit ring, because the rubric has no score. `{DETAILS}` holds angle, role,
+   why, the recommended engagement cost (range and rationale), past partners in the
+   category, contact, and the profile link. Then two boxes: budget scenarios, how the costs
+   were set. Footnote naming creators considered but not shortlisted.
 6. **Timeline.** Working back from the first post: outreach, confirm, brief calls, drafts,
    post days, 7 day readout.
 7. **Measurement.** Table: piece, primary metric, target, benchmark from the brand's own
@@ -38,6 +38,8 @@ Design: token palette on `:root` with dark redefinitions under both the media qu
 Plex Sans body, IBM Plex Mono data). Bullets use a positioned marker with left padding,
 never a grid per list item (a grid splits inline bold labels into their own cells).
 Categorical chart palette from the dataviz reference, validated. One axis per chart.
+With a saved brand theme, its tokens, fonts, header, logo, and chart series replace these
+defaults: apply `theme:brand` per `theme.md`, **Applying the theme**.
 
 ## Fit rubric
 
@@ -48,7 +50,7 @@ calibrations (never from Aspire's own positioning; this plugin serves any brand)
   `brand:business-context`. Write one line each, for example buyer "home cooks who buy
   premium cookware", category "consumer kitchen brands".
 - **Off-audience signals**: the content types that would not reach that buyer. Infer from the
-  buyer line and any `guideline` or `red_line` records.
+  buyer line and any `guideline` or `red_line` records (never `review:` keys).
 - **Search vocabulary**: 3 to 6 bio keywords a creator serving that buyer would use. Derive
   from the buyer, category, and `brand:tracking-scope` hashtags. When `brand:summary` is
   missing, stop and return one question to the main thread asking for the brand's buyer in a
@@ -111,4 +113,5 @@ vocabulary; the names above are placeholders, not a fixed taxonomy.
   strongest signal for collab performance.
 - Stories appear as posts with `mediaKind` null and only `organicReach`. Exclude with
   `exists mediaKind`.
-- Published pages cannot load `cdn.aspire.io` images. Embed as data URIs.
+- Published pages cannot load `cdn.aspire.io` images. Embed as data URIs with the snippet in
+  `creator-card.md`, **Images**, page profile.
