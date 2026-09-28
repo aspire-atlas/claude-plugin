@@ -13,10 +13,12 @@ description: >
   brief", "brand safety check on this post"), or asks to see a specific creator ("show me
   @handle", "who is @handle"), or sends a creator card action ("Draft outreach to @handle on
   Instagram", "Add @handle on TikTok to a campaign shortlist", "Save @handle on Instagram to the
-  watch list", "show my watch list"). It verifies the Atlas data connection,
+  watch list", "show my watch list"), or asks to put Atlas's pages in the brand's colors
+  ("set up our theme", "brand our pages", "use our brand colors", "add our logo to the
+  pages"). It verifies the Atlas data connection,
   authenticates and selects an organization, scopes the brand, connects social accounts,
   captures brand context for future sessions, delivers first insights, and routes recurring
-  readouts, creator briefs, creator discovery, and content reviews.
+  readouts, creator briefs, creator discovery, content reviews, and the brand theme.
 metadata:
   author: Aspire
 ---
@@ -99,17 +101,18 @@ is not on disk.
 | 5 | Capture brand context into shared brand memory | Implemented |
 | 6 | Subagent evaluates connected accounts and produces first insights | Implemented |
 
-Two standing rules apply across phases: brand-facing calibration questions offer a web
-research option whose findings are shown before anything is written (Phase 5), and any
+Three standing rules apply across phases: brand-facing calibration questions offer a web
+research option whose findings are shown before anything is written (Phase 5), any
 request to show posts or creators is answered visually with the post media and profile
-pictures (Visual output, after Phase 6). Every creator is shown with the creator card
-(`references/creator-card.md`), in chat or on a page.
+pictures (Visual output, after Phase 6), and every page, creator card, and chart uses the
+brand's saved theme when there is one (**Theme**). Every creator is shown with the creator
+card (`references/creator-card.md`), in chat or on a page.
 
 After onboarding, four recurring flows hang off the same connection: the **Creator brief**
 (weekly content plan with creators), the **Creator discovery** (a standing creator shortlist per
 campaign, schedulable), the **Content review** (one post or draft checked against its brief,
 interactive only), and the **Readouts** (daily and weekly performance digests, schedulable).
-Each is routed from its own section below.
+Each is routed from its own section below. The **Theme** section brands all of their pages.
 
 ---
 
@@ -385,6 +388,7 @@ Rules:
   move on; the suggestion is recorded for an admin.
 - If the user declines a question, record it with kind `decline` so it is not asked again.
 - Stop after the core set (about 7 questions) unless the user wants to keep going.
+- When the questions are done, and before Phase 6, make the theme offer from **Theme**, Offers.
 
 ## Phase 6: First insights
 
@@ -484,7 +488,7 @@ maintains a pipeline across weeks and teammates.
    own words.
 3. **Then write the refinement questions.** Read the S1 answer together with `brand:summary`,
    `brand:business-context`, and the `competitor`, `red_line` and `guideline` records (not
-   `review:` keys, which are content review only), and from
+   `review:` keys, which are content review only, nor `theme:` keys, which style pages), and from
    those compose 3 to 5 `AskUserQuestion` questions covering the dimensions the reference
    lists, in its order, skipping anything S1 already settled. The options are inferred from the
    brief and the brand context, never generic. Never ask more than five, never ask in plain
@@ -673,6 +677,58 @@ card and stop (rules in `references/readout.md`).
 
 ---
 
+## Theme (brand colors, fonts, and logo on every page)
+
+Trigger when the user asks to brand Atlas's pages, set up or change the theme, use the brand's
+colors, fonts, or logo, or says the pages don't look like their brand. Requires a brand
+profile. Full detail lives in `references/theme.md`: the interview, web discovery, the four
+palettes, the preview widget, the record, and how every flow applies it.
+
+The theme is brand memory, not session state. It is one `theme:brand` calibration, and every
+page, creator card, and chart uses it, for every teammate and every scheduled run. Without
+one, pages keep the Aspire default.
+
+### Setup
+
+1. Ask T0 to T4 from the reference, one `AskUserQuestion` each, in order, skipping any the user
+   already answered (a named domain answers T1; typed hex codes skip discovery). T1's research
+   option follows the Phase 5 web research rule. The findings go to the user as bullets with
+   sources before any palette is shown, and nothing is written from them directly. Sources rank
+   in this order: a design-token file the user pastes, then the site's own design tokens (the
+   palette the site shows, or the one named after the brand), then colors ranked by how often
+   the site uses them. The ranking is a last resort, because it blends every theme a site ships.
+2. T2 compares the brand's own palette, as found, with three variations on it: Brand-forward,
+   Quiet, and Complement. Each is shown in light and dark with the comparison widget, or on
+   a published page when the widget tool is missing. Presets replace the four when there is no
+   website. Never offer a palette that fails its contrast checks.
+3. T5 is the write confirmation. Save with `append_calibration`, per the reference. A
+   `key-exists` response follows the Phase 5 supersede rule with its own confirmation. Going
+   back to the Aspire default is `retract_calibration`, with its own confirmation.
+
+### Offers
+
+Offer the theme at most once per session. Never offer it when `theme:brand` or
+`decline:theme` exists, when the user is already running the theme, or in an unattended run.
+Agents never offer it.
+
+- At the end of Phase 5, before Phase 6.
+- Before the first page-producing flow the user starts in a session: the creator brief,
+  creator discovery, a content review, a readout, or a Visual output page.
+
+Ask with `AskUserQuestion`: "Put Atlas's pages in {brand}'s colors? It takes about two
+minutes." Options: "Set it up now (Recommended)", "Not now", "Don't ask again". "Not now" goes
+on with the Aspire default. "Don't ask again" writes the `decline:theme` record, and the
+answer counts as its confirmation, as with Phase 5 declines.
+
+### Applying
+
+Agents read `theme:brand` with their own calibration read and apply it. The main thread passes
+nothing extra. The main thread applies it too, to every page and inline creator card it builds
+itself, per **Applying the theme** in the reference. Semantic colors (verdicts, pass and fail,
+ok and warn, above and below the baseline) never take brand colors.
+
+---
+
 ## Visual output (posts and creators)
 
 Whenever the user asks to see, show, list, rank, compare, or visualize posts, creators, or
@@ -706,7 +762,9 @@ default, and only when the user asks for text or the data has no media at all.
 **Mechanics:**
 
 - Build a single self-contained HTML page and publish it with the Artifact tool when the
-  session has it (load `artifact-design`, and `dataviz` for any chart, first). Fall back to
+  session has it (load `artifact-design`, and `dataviz` for any chart, first). Apply the saved
+  theme to the page, its charts, and its creator cards per `references/theme.md`, **Applying
+  the theme**. Inline creator cards take the card override from the same section. Fall back to
   `SendUserFile` with the rendered HTML, or inline image links in the reply, when Artifact is
   absent.
 - Media URLs come from `cdn.aspire.io`, which neither inline widgets nor published pages can

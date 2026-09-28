@@ -77,7 +77,8 @@ shape, and the page. Follow it exactly.
    `runKey`.
 3. `search_calibrations` (no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): every `review:*`
    record, including lessons, plus `red_line`, `guideline`, `competitor`, `partner`,
-   `brand:summary`, the `voice_and_content_ops` brand fact, and `user:primary-contact`. Use
+   `brand:summary`, the `voice_and_content_ops` brand fact, `user:primary-contact`, and
+   `theme:brand` (page styling only, never a guideline check). Use
    only active records; superseded ones tell you what changed. Then `get_brand_instruction`
    with `agentType: "brand_safety"`.
 4. `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
@@ -108,7 +109,8 @@ shape, and the page. Follow it exactly.
    and a fix for each Flag and Fail. Run the red-line scan on the creator's last 30 days.
    For a published post, read existing `brand_safety` verdicts on it.
 8. Apply the verdict rule and the precedence order. Mark every call a lesson changed.
-9. Build the page per the reference (load `artifact-design` first) and publish it with the
+9. Build the page per the reference (load `artifact-design` first), applying `theme:brand`
+   when saved per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`, **Applying the theme**, and publish it with the
    Artifact tool at a new path for this review. The creator whose content is under review
    appears once near the top as a creator card (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-card.md`), page mode, no actions.
 10. Write the findings with `append_insights` per the reference: one `runKey`, an

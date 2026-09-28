@@ -92,8 +92,9 @@ run rules. Follow it exactly.
    profile).
 5. Build the page per **Weekly readout** in the reference (KPI strip with benchmark row,
    9-week line chart, post cards, mix small-multiples, open items table, ranked next steps).
-   Load `artifact-design` and `dataviz` first. Publish with the Artifact tool, title
-   "<Brand> Weekly Readout", republishing to the same path.
+   Load `artifact-design` and `dataviz` first. Apply `theme:brand` when saved, per
+   `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`, **Applying the theme**.
+   Publish with the Artifact tool, title "<Brand> Weekly Readout", republishing to the same path.
 6. Deliver per **Delivery**: Slack message and email when routed and available. Report any
    destination that could not be reached.
 7. Write findings with `append_insights`: `runKey` `readout-weekly-{profile}-{ISO week}`,

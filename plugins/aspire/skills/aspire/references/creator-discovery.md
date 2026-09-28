@@ -178,7 +178,7 @@ Sections in order:
 More than 12 candidates means a chart leads the shortlist: fit score by tier, or follower
 count against engagement rate with the pool plotted. Embed every image with the snippet in
 `creator-card.md`, **Images**, page profile, and keep the page under 2MB. Load `artifact-design`, and `dataviz`
-for any chart, before building. Title: "<Brand> Creator Discovery: <Campaign>".
+for any chart, before building. Apply the saved brand theme (`theme:brand`) per `theme.md`, **Applying the theme**; without one, the design here stands. Title: "<Brand> Creator Discovery: <Campaign>".
 
 ## Decisions
 
