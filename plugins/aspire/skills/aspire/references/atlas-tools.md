@@ -1,8 +1,8 @@
 # Atlas MCP tool reference
 
 Server: `https://atlas.aspire.io/mcp` (streamable HTTP, OAuth handled by the connector).
-Last verified 2026-09-17 against the live server: 33 tools. The surface changes without
-notice; when a tool named here is missing, or an unlisted `*Aspire_Atlas*` tool appears, note
+Last verified 2026-09-28 against the live server: 34 tools. The surface changes without
+notice; when a tool named here is missing, or an unlisted `*Aspire_Atlas*` tool appears (other than the admin connector's `*Organization_Admin*` tools), note
 it in the run summary so the plugin can be updated. Never call an unlisted tool that changes
 state without first checking the **Destructive tools** section below.
 
@@ -12,12 +12,25 @@ state without first checking the **Destructive tools** section below.
 | --------- | ------ |
 | Bundled with this plugin or org-installed connector "Aspire Atlas" (verified, the normal case) | `mcp__Aspire_Atlas__` |
 | Some clients namespace plugin servers | `mcp__plugin_aspire_Aspire_Atlas__` |
+| Connector added in claude.ai settings, seen from Claude Code | `mcp__claude_ai_Aspire_Atlas__` |
 | Claude Code `claude mcp add atlas` | `mcp__atlas__` |
 
 Detect by matching `aspire_atlas` or `atlas__` (case-insensitive) in the tool name; never match
-a bare `atlas` substring, which also hits Atlassian tools. Resolve once in Phase 1.5 and use
-everywhere. Load tools per phase with one `ToolSearch` `select:` call each, or `+Aspire_Atlas`
-with `max_results: 40` to load all at once.
+a bare `atlas` substring, which also hits Atlassian tools. Exclude any name containing
+`organization_admin`: the bundled **Aspire Atlas Organization Admin** connector also contains
+`aspire_atlas` and is never the data connection. More than one prefix can match in
+one session, for example a signed-out plugin copy next to a signed-in claude.ai copy. A copy
+whose only tools are `authenticate` and `complete_authentication` is not signed in: use the
+prefix whose tools include `get_status`, and treat the connection as needing a sign in only
+when no prefix has it. Resolve once in Phase 1.5 and use everywhere. Load tools per phase
+with one `ToolSearch` `select:` call each, or `+Aspire_Atlas` with `max_results: 50` to load
+all at once and drop the `organization_admin` results.
+
+## Organization admin connector
+
+The bundled **Aspire Atlas Organization Admin** connector (organization members and
+invitations) belongs to the `org-admin` skill. Its tools and rules are in
+`../../org-admin/references/org-admin-tools.md`. No flow in this skill calls it.
 
 ## Universal argument
 
@@ -48,6 +61,7 @@ social channels and brand memory have a home in the organization."
 | 4.2 | `list_channels` | Live connections on a profile | Returns `platform` + `platformAccountId`; empty list is a normal first-run state. Read before `unlink_channel`. |
 | 4.2 | `unlink_channel` | Disconnect an account from a profile | **Destructive.** Needs `platform` (`instagram`, `facebook`, `tiktok`, `tiktok_one`) + `platformAccountId` from `list_channels`. Collected data is kept. See Destructive tools. |
 | 4.3 | `add_hashtags` / `remove_hashtags` / `list_hashtags` / `list_available_hashtags` | Watch-list | Networks: `instagram`, `tiktok`. Per-row results. TikTok: 50 cap, eligibility gate, 7-day removal lock. |
+| 4.3 | `list_hashtag_posts` | Posts carrying one tracked hashtag on one network, newest first | Read only. `hashtag` + `network` (`instagram`, `tiktok`), optional `since` / `until` (default last 90 days), `sort` (`postedAt` or a metric, descending). Page with `nextCursor` → `cursor`, keeping hashtag, network and sort unchanged. `hashtag-not-tracked` and `no-linked-channel` are normal states, not failures. With a metric sort, dedupe on `externalId`. |
 | 5 | `search_calibrations` | Read brand memory | `q`, `kinds`, `keyPrefix`, `includeSuperseded`, `includeProposed`. If `unavailable`: stop, do not guess. |
 | 5 | `append_calibration` | Write one fact | One active record per (kind, key). `key-exists` → supersede. `proposed` = recorded, not applied. |
 | 5 | `supersede_calibration` | Replace a fact | Compare-and-set on `ifVersion` |

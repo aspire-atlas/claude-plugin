@@ -21,7 +21,7 @@ Substitute `{brand}` with the profile display name, `{org}` with the organizatio
 
 | # | Question | Options | Used for |
 | - | -------- | ------- | -------- |
-| P1 | What is the brand name, as customers know it? | 1) `{org}` stripped of "'s Organization"; 2) the user's company name if known; 3) "Test brand" (for trying the flow) | `create_profile.name` |
+| P1 | What is the brand name, as customers know it? | 1) `{org}` with any trailing "'s Organization" or "'s Org" and any emoji removed; 2) the user's company name if known; 3) "Test brand" (for trying the flow) | `create_profile.name` |
 | P2 | Create a profile for **{name}** in {org}? | 1) Yes, create it (Recommended); 2) Change the name | gate |
 
 ## Phase 4.2: channels

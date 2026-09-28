@@ -1,24 +1,14 @@
 ---
 name: aspire
 description: >
-  This skill should be used when the user types "/aspire:aspire" or "/aspire" (with or
-  without an argument such as "agents", which lists the plugin's subagents and runs the one
-  the user picks), says "get started with Atlas", "connect Aspire Atlas", "set up Atlas",
-  "connect Atlas", "onboard my brand", "connect my Instagram/TikTok/YouTube
-  to Atlas", asks how to start using the atlas.aspire.io platform, or asks for a daily or
-  weekly readout ("what happened yesterday", "how did last week go", "schedule the weekly
-  readout"), or asks to find or shortlist creators for a campaign ("creator discovery", "refill
-  the shortlist", "find creators for the campaign"), or asks to review a post or a creator's
-  draft against a brief ("review this post", "content review", "check this draft against the
-  brief", "brand safety check on this post"), or asks to see a specific creator ("show me
-  @handle", "who is @handle"), or sends a creator card action ("Draft outreach to @handle on
-  Instagram", "Add @handle on TikTok to a campaign shortlist", "Save @handle on Instagram to the
-  watch list", "show my watch list"), or asks to put Atlas's pages in the brand's colors
-  ("set up our theme", "brand our pages", "use our brand colors", "add our logo to the
-  pages"). It verifies the Atlas data connection,
-  authenticates and selects an organization, scopes the brand, connects social accounts,
-  captures brand context for future sessions, delivers first insights, and routes recurring
-  readouts, creator briefs, creator discovery, content reviews, and the brand theme.
+  Creative Intelligence for your brand on Aspire Atlas. Connect Instagram, TikTok, and
+  YouTube, see what's working, benchmark competitors, and check brand safety. Find and brief
+  creators, keep a campaign shortlist, review posts, and get daily and weekly reports. Use
+  for "/aspire", "/aspire agents", "get started with Atlas", "connect Atlas", "onboard my
+  brand", "connect my Instagram", "what happened yesterday", "how did last week go",
+  "schedule the weekly readout", "find creators for the campaign", "refill the shortlist",
+  "review this post", "check this draft against the brief", or "brand safety check on this
+  post".
 metadata:
   author: Aspire
 ---
@@ -126,8 +116,13 @@ Check whether Atlas tools are available in this session before doing anything el
 2. Treat the connection as **live** when at least one returned tool name contains
    `aspire_atlas` or `atlas__` (case-insensitive). Typical patterns: `mcp__Aspire_Atlas__*`
    (bundled with this plugin or org-installed, the normal case), `mcp__plugin_aspire_Aspire_Atlas__*`
-   on clients that namespace plugin servers, or `mcp__atlas__*` from Claude Code. A bare `atlas`
-   substring is not enough: it also matches Atlassian tools.
+   on clients that namespace plugin servers, `mcp__claude_ai_Aspire_Atlas__*` for a connector
+   added in claude.ai settings, or `mcp__atlas__*` from Claude Code. A bare `atlas` substring
+   is not enough: it also matches Atlassian tools. Ignore any name containing
+   `organization_admin`: that is the bundled admin connector, whose name also contains
+   `aspire_atlas`, never the Atlas data connection. A match whose only tools are `authenticate`
+   and `complete_authentication` is a copy that is not signed in. When several prefixes match,
+   use the one that has `get_status`; if none has it, go to 1.3c.
 3. If ToolSearch returns nothing, also scan the deferred tool list in context for the same
    patterns.
 4. If still nothing and `ListConnectors` is available, call it **exactly once** with
@@ -137,8 +132,8 @@ Check whether Atlas tools are available in this session before doing anything el
    button. Do not call `SuggestConnectors` or `ListConnectors` again afterwards; every
    extra call renders a duplicate card.
    Safety filter: if the result still contains more than one entry, keep only the one whose
-   lowercased, space-stripped name equals `aspireatlas` or `atlas`, and never mention the
-   others. Classify the surviving entry:
+   lowercased, space-stripped name equals `aspireatlas` or `atlas` (so never
+   `aspireatlasorganizationadmin`), and never mention the others. Classify the surviving entry:
    - `enabledInChat: true` but no tools found: treat as a load glitch; call
      `RefreshMcpTools` once and retry step 1.
    - `enabledInChat: false`: state is **installed, not active here**. Go to 1.3b.
@@ -246,7 +241,9 @@ When the user replies, or on the next `/aspire:aspire`, repeat 1.1.
 ### 1.5 Record outcome
 
 Note the result for later phases: `atlas_connected = true|false`, and the tool name prefix
-actually observed (used to resolve tool names in `references/atlas-tools.md`).
+actually observed (used to resolve tool names in `references/atlas-tools.md`). The plugin also
+bundles **Aspire Atlas Organization Admin** for the organization's members. Phase 1 never checks
+it; the `org-admin` skill does (see **Organization admin**).
 
 ---
 
@@ -726,6 +723,16 @@ Agents read `theme:brand` with their own calibration read and apply it. The main
 nothing extra. The main thread applies it too, to every page and inline creator card it builds
 itself, per **Applying the theme** in the reference. Semantic colors (verdicts, pass and fail,
 ok and warn, above and below the baseline) never take brand colors.
+
+---
+
+## Organization admin (members)
+
+Questions about who is in the organization, pending invitations, or inviting a teammate
+belong to the `org-admin` skill (`/aspire:org-admin`). Hand off by invoking it with the
+`Skill` tool, passing the organization name when it is already known, and resume here
+afterwards if onboarding was in progress. This skill never calls the Aspire Atlas
+Organization Admin connection itself.
 
 ---
 
