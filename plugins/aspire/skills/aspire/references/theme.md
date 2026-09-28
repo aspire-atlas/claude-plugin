@@ -126,7 +126,7 @@ Then:
    - Several candidates and no clear pick: **T1b. Which theme?** "Which of {domain}'s themes is
      {brand}'s?" Offer up to four palettes, labeled by name, each described with its primary
      and background hex in light and dark. Put the one named after the brand first.
-   - Save the chosen entry to `palette.json` and build with `--tokens=palette.json`. Its
+   - Save the chosen entry to `palette.json` and build with `--palette=palette.json`. Its
      `primary` token is the brand color even when it is nearly black or white. Its `accent`
      token counts as an accent only when it is a real color: shadcn's `--accent` is a hover
      tint, and the builder drops it.
@@ -162,8 +162,8 @@ No code execution in the session: use the `WebFetch` fallback for discovery, bui
 palettes by hand from the rules in **Building the options**, and say once that contrast was
 checked by eye, not computed. The logo is left out, because it cannot be embedded.
 
-**Pasted tokens.** Save the pasted text to `tokens.css` and run **Brand scan** with
-`--css=tokens.css`. Handle the returned `tokenPalettes` exactly as in step 2. Fonts come from
+**Pasted tokens.** Save the pasted text to `site-styles.css` and run **Brand scan** with
+`--css=site-styles.css`. Handle the returned `tokenPalettes` exactly as in step 2. Fonts come from
 the file's font tokens. The logo still needs a site or a URL, so ask T4 without the "found"
 option unless a domain is known.
 
@@ -233,7 +233,7 @@ readout) only when the user asks.
 
 ### Building the options
 
-Run **Theme build** below. With design tokens, pass `--tokens=palette.json` and nothing else.
+Run **Theme build** below. With design tokens, pass `--palette=palette.json` and nothing else.
 Without them, pass the brand color, the accent if one was found, and the site background and
 text if found. It prints one JSON line per variant with every role in `light` and `dark`, the
 header style, `source`, `checks`, and `notes`.
@@ -429,7 +429,7 @@ Each prints one JSON object per line.
 
 ```bash
 python3 brand_scan.py example.com
-python3 brand_scan.py --css=tokens.css     # a pasted token file: design tokens only, no fetching
+python3 brand_scan.py --css=site-styles.css   # a pasted stylesheet: its colors and fonts only, no fetching
 ```
 
 Prints `{url, finalUrl, stylesheetsRead, tokenPalettes[], colors[{hex, score, sources}],
@@ -786,8 +786,9 @@ def scan(url):
 
 if __name__ == "__main__":
     try:
-        if sys.argv[1].startswith("--css="):  # a pasted or downloaded token file, no fetching
-            print(json.dumps({"tokenPalettes": token_palettes(open(sys.argv[1][6:]).read())}))
+        if sys.argv[1].startswith("--css="):  # a stylesheet the user pasted, no fetching
+            with open(sys.argv[1][6:]) as css_file:
+                print(json.dumps({"tokenPalettes": token_palettes(css_file.read())}))
         else:
             print(json.dumps(scan(sys.argv[1])))
     except Exception as e:
@@ -797,7 +798,7 @@ if __name__ == "__main__":
 ### Theme build
 
 ```bash
-python3 theme_build.py --tokens=palette.json [found forward quiet complement]
+python3 theme_build.py --palette=palette.json [found forward quiet complement]
 python3 theme_build.py --brand=#1e4945 [--accent=#dcc697] [--bg=#f1ebe4] [--text=#162826] [found forward quiet complement]
 ```
 
@@ -1075,9 +1076,11 @@ def build(brand, variant, accent=None, site_bg=None, site_text=None, tokens=None
 if __name__ == "__main__":
     args = dict(a.lstrip("-").split("=", 1) for a in sys.argv[1:] if "=" in a)
     variants = [a for a in sys.argv[1:] if "=" not in a] or ["found", "forward", "quiet", "complement"]
-    tokens = json.load(open(args["tokens"])) if "tokens" in args else None
-    if tokens:  # one entry of the scan's tokenPalettes: its brand, accent and surfaces anchor every variant
-        lt = tokens["light"]
+    palette = None
+    if "palette" in args:  # one entry of the scan's tokenPalettes: its brand, accent and surfaces anchor every variant
+        with open(args["palette"]) as palette_file:
+            palette = json.load(palette_file)
+        lt = palette["light"]
         args.setdefault("brand", lt["brand"])
         acc = lt.get("accent")
         if acc and to_lch(acc)[1] >= 0.04 and acc not in (lt.get("bg"), lt.get("surface")):
@@ -1087,7 +1090,7 @@ if __name__ == "__main__":
     for v in variants:
         print(json.dumps(build(args["brand"].lower(), v, args.get("accent", "").lower() or None,
                                args.get("bg", "").lower() or None, args.get("text", "").lower() or None,
-                               tokens)))
+                               palette)))
 ```
 
 ### Logo embed
