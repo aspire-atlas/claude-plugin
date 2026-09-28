@@ -247,8 +247,8 @@ When the user replies, or on the next `/aspire:aspire`, repeat 1.1.
 
 Note the result for later phases: `atlas_connected = true|false`, and the tool name prefix
 actually observed (used to resolve tool names in `references/atlas-tools.md`). The plugin also
-bundles **Aspire Organization Admin** for members, invitations, and organizations. Phase 1
-never checks it; see **Organization admin**.
+bundles **Aspire Organization Admin** for the organization's members. Phase 1 never checks
+it; see **Organization admin**.
 
 ---
 
@@ -731,27 +731,25 @@ ok and warn, above and below the baseline) never take brand colors.
 
 ---
 
-## Organization admin (members, invitations, organizations)
+## Organization admin (members)
 
-Trigger when the user asks who is in the organization, to invite or remove a teammate, to
-change someone's role, or to create or delete an organization. Also trigger when a
-`get_status` link names a tool on the admin connector. The tools, prefixes, and rules are in
-`references/atlas-tools.md`, **Organization admin connector**.
+Trigger when the user asks who is in the organization or wants to invite a teammate. Also
+trigger when a `get_status` link names `list_members` or `invite_member`. The tools and
+rules are in `references/atlas-tools.md`, **Organization admin connector**.
 
 1. Run Phase 1 and Phase 2 + 3 first, so the organization and the caller's role are known.
-   A `member` cannot manage the organization: say so in one line and name an owner or admin
-   from `get_status` if one is listed.
 2. Load the admin tools with `ToolSearch` (`+Organization_Admin`). If none load, render one
    connector card for Aspire Organization Admin with the Phase 1 rules, then stop until the
    user replies.
-3. Reads (list members, list invitations) need no confirmation. Show people by name and
-   email, never by id.
-4. Inviting someone or creating an organization is confirmed with `AskUserQuestion`, naming
-   the email address, the role, and the organization. Removing a member, changing a role,
-   revoking an invitation, or deleting an organization each get their own Destructive tools
-   confirmation, one per call, with the safe option first.
-5. Never run an admin write in an unattended session, never during onboarding on the
-   skill's own initiative, and never on a "yes" from an earlier message.
+3. `list_members` needs no confirmation. Show people by name and email, never by id.
+4. `invite_member` needs the caller to be an owner or admin. Otherwise say so in one line.
+   Confirm each invite with `AskUserQuestion`, naming the email address, the role if the
+   tool takes one, and the organization.
+5. Anything else (removing someone, changing a role, cancelling an invitation, creating or
+   deleting an organization) is not supported yet. Say so in one line, and never call a tool
+   the reference does not list.
+6. Never invite in an unattended session, during onboarding on the skill's own initiative,
+   or on a "yes" from an earlier message.
 
 ---
 
@@ -883,8 +881,7 @@ The watch list is the brand's saved creators, outside any campaign.
   Phase 5 answers just given).
 - **Destructive actions get their own confirmation, one call per confirmation:**
   `delete_profile`, `unlink_channel`, `supersede_calibration`, `retract_calibration`,
-  `remove_hashtags`, `set_brand_instruction`, and the admin connector's remove, role change,
-  revoke, and delete tools. Use the exact question, object name, and
+  `remove_hashtags`, `set_brand_instruction`. Use the exact question, object name, and
   option order in `references/atlas-tools.md`, Destructive tools, with the safe option first.
   Never run any of them during onboarding on your own initiative, never on a "yes" from an
   earlier message, and never chain two on one answer. If `AskUserQuestion` is unavailable

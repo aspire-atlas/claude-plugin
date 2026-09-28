@@ -22,10 +22,8 @@ with `max_results: 40` to load all at once.
 ## Organization admin connector
 
 Server: `https://atlas.aspire.io/mcp/admin-organization` (streamable HTTP, OAuth), bundled as
-**Aspire Organization Admin**. It manages the organization itself: members, invitations, and
-creating or deleting an organization. The Atlas server does none of this. It only points at
-this server: a `get_status` link with a `connector.url` ending `/mcp/admin-organization`
-names a tool here (for example `list_members`, `invite_member`).
+**Aspire Organization Admin**. Its own OAuth scope is `mcp:admin-organization`, separate
+from Atlas's `mcp`, so it needs its own sign in.
 
 | How added | Prefix |
 | --------- | ------ |
@@ -33,26 +31,31 @@ names a tool here (for example `list_members`, `invite_member`).
 | Some clients namespace plugin servers | `mcp__plugin_aspire_Aspire_Organization_Admin__` |
 
 Detect by matching `organization_admin` (case-insensitive) in the tool name. Load its tools
-only when the user asks about members, invitations, or organizations. Onboarding never needs
-it. When a `get_status` link names one of its tools and the tools are not loaded, the
-connector needs a sign in or needs turning on in this chat. Handle that with the Phase 1
-connector card rules, using its own name. Never ask the user to add the URL as a custom
-connector: it is bundled.
+only when the user asks about the organization's members. Onboarding never needs it. When
+the tools are not loaded, the connector needs a sign in or needs turning on in this chat:
+handle that with the Phase 1 connector card rules, using its own name. Never ask the user to
+add the URL as a custom connector, because it is bundled.
 
-Tool surface not yet verified against the live server. Until it is, list the tools once per
-session and classify each one by its description:
+**Supported tools.** Only these two, the ones Atlas's `get_status` links to under
+`_links.members` and `_links.invite-member`. The plugin uses no other tool on this server.
 
-| Kind of tool | Rule |
-| ------------ | ---- |
-| Reads (list members, list invitations, read an organization) | Allowed on request, never in unattended runs unless a saved setup names them |
-| Invite a member, create an organization | State-creating: confirm with `AskUserQuestion`, naming the email address, the role, and the organization |
-| Remove a member, change a role, revoke an invitation, delete an organization, transfer ownership | **Destructive**: see the table below |
-| Anything not described clearly | Treat as destructive until it is documented here |
+| Tool | Purpose | Arguments known | Confirmation |
+| ---- | ------- | --------------- | ------------ |
+| `list_members` | Members of an organization | `asOrg` | None: read only |
+| `invite_member` | Invite someone to an organization | `asOrg`; read the rest from the tool's input schema at call time | `AskUserQuestion` naming the email address, the role if the schema takes one, and the organization |
 
-Admin tools act on real people's access. Every write names the exact person and
-organization in its confirmation, the caller's role from `get_status` must allow it (owner or
-admin), and no admin write ever runs unattended or during onboarding on the skill's own
-initiative.
+Pass the `arguments` from the `get_status` link as given, and fill anything else from the
+tool's own input schema. Never guess an argument name.
+
+Any other tool this server lists is not supported yet. Do not call it, even for a read. Tell
+the user in one line that Atlas can't do that from here yet, and note the tool's name in the
+run summary so the plugin can add it. Each new tool is added to this table with its
+arguments and its confirmation, after checking it against the live server, before any flow
+uses it.
+
+Admin writes act on real people's access. The caller's role from `get_status` must be owner
+or admin. An invite never runs unattended, during onboarding on the skill's own initiative,
+or on a "yes" from an earlier message.
 
 ## Universal argument
 
@@ -117,10 +120,6 @@ confirmation.
 | `retract_calibration` | Record is withdrawn. | "Withdraw this saved fact from brand memory: *{statement}*?" Options: Keep it (Recommended) / Withdraw. |
 | `remove_hashtags` | Re-add later; TikTok has a 7-day removal lock. | "Stop tracking {tags} on {network}?" Options: Keep tracking (Recommended) / Stop tracking. |
 | `set_brand_instruction` | Versioned. | Show current vs. new text. Options: Keep current (Recommended) / Update. |
-| Admin: remove a member | Access is lost at once; re-inviting is a new invitation. | "Remove **{name or email}** from {organization}? They lose access to every brand profile in it." Options: Keep them (Recommended) / Remove. |
-| Admin: change a role | Reversible by another change. | "Change **{name}**'s role in {organization} from {current} to {new}?" Options: Keep {current} (Recommended) / Change to {new}. |
-| Admin: revoke an invitation | The link stops working. | "Cancel the invitation to **{email}** for {organization}?" Options: Keep the invitation (Recommended) / Cancel it. |
-| Admin: delete an organization | No. Every profile, channel link, and calibration in it goes. | "Permanently delete **{organization}** and everything in it? This cannot be undone." Options: Keep it (Recommended) / Delete permanently. Refuse while it has live profiles unless the user deletes those separately first. |
 
 State-creating calls (`create_profile`, `connect_channel` start, `append_calibration`,
 `add_hashtags`, `append_insights`) also need a confirmation, per the Guardrails in SKILL.md,
