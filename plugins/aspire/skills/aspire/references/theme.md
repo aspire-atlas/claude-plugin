@@ -14,7 +14,8 @@ The theme changes:
 - The page header: a brand-colored band, a brand rule, or plain, with the logo or the brand name.
 - Categorical chart series, in order.
 - Display and body fonts.
-- The creator card's brand color (the fit ring, the main button, selected chips) and its font.
+- The creator card's surfaces, text, muted text, borders, corners, and fonts, and its brand color
+  (the fit ring, the main button, selected chips).
 
 The theme never changes:
 
@@ -126,7 +127,7 @@ Then:
    - Several candidates and no clear pick: **T1b. Which theme?** "Which of {domain}'s themes is
      {brand}'s?" Offer up to four palettes, labeled by name, each described with its primary
      and background hex in light and dark. Put the one named after the brand first.
-   - Save the chosen entry to `palette.json` and build with `--tokens=palette.json`. Its
+   - Save the chosen entry to `palette.json` and build with `--palette=palette.json`. Its
      `primary` token is the brand color even when it is nearly black or white. Its `accent`
      token counts as an accent only when it is a real color: shadcn's `--accent` is a hover
      tint, and the builder drops it.
@@ -162,8 +163,8 @@ No code execution in the session: use the `WebFetch` fallback for discovery, bui
 palettes by hand from the rules in **Building the options**, and say once that contrast was
 checked by eye, not computed. The logo is left out, because it cannot be embedded.
 
-**Pasted tokens.** Save the pasted text to `tokens.css` and run **Brand scan** with
-`--css=tokens.css`. Handle the returned `tokenPalettes` exactly as in step 2. Fonts come from
+**Pasted tokens.** Save the pasted text to `site-styles.css` and run **Brand scan** with
+`--css=site-styles.css`. Handle the returned `tokenPalettes` exactly as in step 2. Fonts come from
 the file's font tokens. The logo still needs a site or a URL, so ask T4 without the "found"
 option unless a domain is known.
 
@@ -233,7 +234,7 @@ readout) only when the user asks.
 
 ### Building the options
 
-Run **Theme build** below. With design tokens, pass `--tokens=palette.json` and nothing else.
+Run **Theme build** below. With design tokens, pass `--palette=palette.json` and nothing else.
 Without them, pass the brand color, the accent if one was found, and the site background and
 text if found. It prints one JSON line per variant with every role in `light` and `dark`, the
 header style, `source`, `checks`, and `notes`.
@@ -374,6 +375,8 @@ exactly as its own reference describes. Map the roles onto the page's own tokens
 | Secondary highlights, tags, a second emphasis | `accent-ink` as text, `accent` with `on-accent` as fill |
 | Headings and large numbers / everything else / data and code | `font-display` (with `font-stretch: var(--font-display-stretch)`) / `font-body` / `font-mono` |
 | Card and panel corners | `radius`, when set |
+| Creator cards | `surface`, `text`, `muted`, `border`, `radius`, `brand-ink`, and the display and body fonts, through the override in **Creator card** below |
+| Creator profile page | The same roles plus `chart-1` and `chart-2` for its charts, through **Creator profile** below |
 | Status chips, verdicts, deltas, and alerts | Unchanged: the page's semantic colors |
 
 ### Header
@@ -402,22 +405,65 @@ color from outside the theme.
 
 ### Creator card
 
-The card carries Aspire's tokens (`creator-card.md`, **Style block**). With a theme saved, add
-this block right after the card's style block, on pages and in inline widgets alike. Use
-`brandInk` rather than `brand`, because the card draws its fit ring as text on the card
-surface. `brandInk` equals `brand` whenever the brand already reads there.
+The card carries Aspire's tokens (`creator-card.md`, **Style block**), which fall back to the
+host's `--surface-2`, `--text-primary`, `--text-secondary`, and `--secondary`. A themed page
+defines none of those, so without an override the card keeps Aspire's white and zinc in light
+mode and navy in dark mode. With a theme saved, add the override below right after the card's
+style block. It maps every card token to the theme: surfaces, text, muted text, borders, the
+brand color, corners, and fonts. The declarations are repeated under each mode selector, so
+they beat the card's own dark-mode rules (the same specificity, placed later). Use `brandInk`
+rather than `brand`, because the card draws its fit ring as text on the card surface.
+`brandInk` equals `brand` whenever the brand already reads there.
+
+**On a page**, the override reads the page tokens from **Page tokens** above:
 
 ```html
 <style>
-.ac-card{--ac-brand:{light.brandInk};--ac-on-brand:{light.surface};font-family:var(--font-body,Inter,ui-sans-serif,system-ui,sans-serif)}
-:root[data-theme="light"] .ac-card{--ac-brand:{light.brandInk};--ac-on-brand:{light.surface}}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ac-card{--ac-brand:{dark.brandInk};--ac-on-brand:{dark.surface}}}
-:root[data-theme="dark"] .ac-card,.dark .ac-card{--ac-brand:{dark.brandInk};--ac-on-brand:{dark.surface}}
+.ac-card,:root[data-theme="light"] .ac-card{--ac-card:var(--surface);--ac-fg:var(--text);--ac-muted:var(--muted);--ac-border:var(--border);--ac-soft:var(--bg);--ac-tile:var(--tile,var(--bg));--ac-brand:var(--brand-ink);--ac-on-brand:var(--surface);--ac-neutral-bg:var(--flat-bg,var(--bg));--ac-neutral-fg:var(--flat,var(--muted))}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ac-card{--ac-card:var(--surface);--ac-fg:var(--text);--ac-muted:var(--muted);--ac-border:var(--border);--ac-soft:var(--bg);--ac-tile:var(--tile,var(--bg));--ac-brand:var(--brand-ink);--ac-on-brand:var(--surface);--ac-neutral-bg:var(--flat-bg,var(--bg));--ac-neutral-fg:var(--flat,var(--muted))}}
+:root[data-theme="dark"] .ac-card,.dark .ac-card{--ac-card:var(--surface);--ac-fg:var(--text);--ac-muted:var(--muted);--ac-border:var(--border);--ac-soft:var(--bg);--ac-tile:var(--tile,var(--bg));--ac-brand:var(--brand-ink);--ac-on-brand:var(--surface);--ac-neutral-bg:var(--flat-bg,var(--bg));--ac-neutral-fg:var(--flat,var(--muted))}
+.ac-card{font-family:var(--font-body);border-radius:var(--radius,12px);box-shadow:none}
+.ac-card .ac-handle,.ac-card .ac-stat b{font-family:var(--font-display);font-stretch:var(--font-display-stretch)}
+.ac-card .ac-tile,.ac-card .ac-thumb{border-radius:calc(var(--radius,12px) - 4px)}
 </style>
 ```
 
-The card's ok, warn, and neutral tiles keep their colors. Inline widgets write the font name
-into `font-family` directly, since they have no page tokens.
+**In an inline widget**, there are no page tokens, so write the theme's values in literally,
+from `light` and `dark` in the saved theme. `{radius}` is the theme's `radius`, or `12px` when
+it is `null`. With `fonts` set, load `fonts.href` as the widget allows; with `fonts` `null`,
+leave out the `font-family` and `font-stretch` declarations. Leave out `font-stretch` when
+`fonts.displayStretch` is `null`.
+
+```html
+<style>
+.ac-card,:root[data-theme="light"] .ac-card{--ac-card:{light.surface};--ac-fg:{light.text};--ac-muted:{light.muted};--ac-border:{light.border};--ac-soft:{light.bg};--ac-tile:{light.bg};--ac-brand:{light.brandInk};--ac-on-brand:{light.surface};--ac-neutral-bg:{light.bg};--ac-neutral-fg:{light.muted}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ac-card{--ac-card:{dark.surface};--ac-fg:{dark.text};--ac-muted:{dark.muted};--ac-border:{dark.border};--ac-soft:{dark.bg};--ac-tile:{dark.bg};--ac-brand:{dark.brandInk};--ac-on-brand:{dark.surface};--ac-neutral-bg:{dark.bg};--ac-neutral-fg:{dark.muted}}}
+:root[data-theme="dark"] .ac-card,.dark .ac-card{--ac-card:{dark.surface};--ac-fg:{dark.text};--ac-muted:{dark.muted};--ac-border:{dark.border};--ac-soft:{dark.bg};--ac-tile:{dark.bg};--ac-brand:{dark.brandInk};--ac-on-brand:{dark.surface};--ac-neutral-bg:{dark.bg};--ac-neutral-fg:{dark.muted}}
+.ac-card{font-family:"{fonts.body}",ui-sans-serif,system-ui,sans-serif;border-radius:{radius};box-shadow:none}
+.ac-card .ac-handle,.ac-card .ac-stat b{font-family:"{fonts.display}",ui-sans-serif,system-ui,sans-serif;font-stretch:{fonts.displayStretch}}
+.ac-card .ac-tile,.ac-card .ac-thumb{border-radius:calc({radius} - 4px)}
+</style>
+```
+
+The card's ok and warn tiles keep their semantic colors; the neutral tile follows the theme.
+
+### Creator profile
+
+The full-page creator profile (`creator-profile.md`) is page only, so it has no widget
+variant. Add this block after the creator card override. It maps the profile's surfaces, text,
+borders, brand color, and chart series to the theme, in each mode. The sentiment and brand
+safety colors (`--ac-neg`, `--ac-neu`, the ok and warn dots and tiles) keep their semantic values.
+
+```html
+<style>
+.acp,:root[data-theme="light"] .acp{--ac-card:var(--surface);--ac-fg:var(--text);--ac-muted:var(--muted);--ac-border:var(--border);--ac-soft:var(--bg);--ac-brand:var(--brand-ink);--ac-on-brand:var(--surface);--ac-chart-1:var(--chart-1);--ac-chart-2:var(--chart-2,var(--muted))}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .acp{--ac-card:var(--surface);--ac-fg:var(--text);--ac-muted:var(--muted);--ac-border:var(--border);--ac-soft:var(--bg);--ac-brand:var(--brand-ink);--ac-on-brand:var(--surface);--ac-chart-1:var(--chart-1);--ac-chart-2:var(--chart-2,var(--muted))}}
+:root[data-theme="dark"] .acp,.dark .acp{--ac-card:var(--surface);--ac-fg:var(--text);--ac-muted:var(--muted);--ac-border:var(--border);--ac-soft:var(--bg);--ac-brand:var(--brand-ink);--ac-on-brand:var(--surface);--ac-chart-1:var(--chart-1);--ac-chart-2:var(--chart-2,var(--muted))}
+.acp{font-family:var(--font-body)}
+.acp h1,.acp h2,.acp .acp-big{font-family:var(--font-display);font-stretch:var(--font-display-stretch)}
+.acp .acp-panel,.acp .acp-note{border-radius:var(--radius,12px);box-shadow:none}
+</style>
+```
 
 ## Snippets
 
@@ -429,7 +475,7 @@ Each prints one JSON object per line.
 
 ```bash
 python3 brand_scan.py example.com
-python3 brand_scan.py --css=tokens.css     # a pasted token file: design tokens only, no fetching
+python3 brand_scan.py --css=site-styles.css   # a pasted stylesheet: its colors and fonts only, no fetching
 ```
 
 Prints `{url, finalUrl, stylesheetsRead, tokenPalettes[], colors[{hex, score, sources}],
@@ -786,8 +832,9 @@ def scan(url):
 
 if __name__ == "__main__":
     try:
-        if sys.argv[1].startswith("--css="):  # a pasted or downloaded token file, no fetching
-            print(json.dumps({"tokenPalettes": token_palettes(open(sys.argv[1][6:]).read())}))
+        if sys.argv[1].startswith("--css="):  # a stylesheet the user pasted, no fetching
+            with open(sys.argv[1][6:]) as css_file:
+                print(json.dumps({"tokenPalettes": token_palettes(css_file.read())}))
         else:
             print(json.dumps(scan(sys.argv[1])))
     except Exception as e:
@@ -797,7 +844,7 @@ if __name__ == "__main__":
 ### Theme build
 
 ```bash
-python3 theme_build.py --tokens=palette.json [found forward quiet complement]
+python3 theme_build.py --palette=palette.json [found forward quiet complement]
 python3 theme_build.py --brand=#1e4945 [--accent=#dcc697] [--bg=#f1ebe4] [--text=#162826] [found forward quiet complement]
 ```
 
@@ -1075,9 +1122,11 @@ def build(brand, variant, accent=None, site_bg=None, site_text=None, tokens=None
 if __name__ == "__main__":
     args = dict(a.lstrip("-").split("=", 1) for a in sys.argv[1:] if "=" in a)
     variants = [a for a in sys.argv[1:] if "=" not in a] or ["found", "forward", "quiet", "complement"]
-    tokens = json.load(open(args["tokens"])) if "tokens" in args else None
-    if tokens:  # one entry of the scan's tokenPalettes: its brand, accent and surfaces anchor every variant
-        lt = tokens["light"]
+    palette = None
+    if "palette" in args:  # one entry of the scan's tokenPalettes: its brand, accent and surfaces anchor every variant
+        with open(args["palette"]) as palette_file:
+            palette = json.load(palette_file)
+        lt = palette["light"]
         args.setdefault("brand", lt["brand"])
         acc = lt.get("accent")
         if acc and to_lch(acc)[1] >= 0.04 and acc not in (lt.get("bg"), lt.get("surface")):
@@ -1087,7 +1136,7 @@ if __name__ == "__main__":
     for v in variants:
         print(json.dumps(build(args["brand"].lower(), v, args.get("accent", "").lower() or None,
                                args.get("bg", "").lower() or None, args.get("text", "").lower() or None,
-                               tokens)))
+                               palette)))
 ```
 
 ### Logo embed

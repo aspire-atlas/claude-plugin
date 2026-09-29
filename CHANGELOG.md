@@ -6,6 +6,36 @@ The version lives in exactly one place: `plugins[].version` in `.claude-plugin/m
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-09-29
+
+Major release. Three agents are renamed, and every agent now shapes its output for the person who will act on it. Old agent names and scheduled task names keep working, but update them when you can (see **Migrating from 2.x**).
+
+### Added
+- Output shaped for the reader. Every request has two users: the person asking and the person who acts on the result. The skill reads who the output is for, what they decide, and when, confirms it in one line, and each agent shapes its page and summary for that reader: product, product marketing, leadership, growth, campaign, brand, creative, performance, or the team itself. The numbers never change between readers; only what leads and how it is worded. Each summary ends with a short note the requester can forward.
+- `atlas-market-signal` agent: what creators say about the brand compared with its saved competitors. Share of voice (organic and paid kept apart), the features creators compare and where the brand won or lost (only on an explicit statement), friction, spreading language, and the comparison videos with the strongest openings. One run renders a parity read, a messaging read, reuse candidates, and a brief update. Weekly schedulable; never starts discovery.
+- `atlas-quarterly-signal` agent: the quarter's one-page story for leadership, outcome first, rolled up from the findings already saved in Atlas. Cost efficiency appears only when the user gives the spend.
+- `atlas-creator-profile` agent: a full-page profile of one Instagram or TikTok creator with audience, top and lowest posts, engagement, comment sentiment, brand safety by category, paid partnerships kept apart from organic mentions, recommended fees, peers, next steps, and data gaps. Read only.
+- Fee calculator (`/aspire:aspire fee calculator`): sets the brand's creator rates from Aspire's recommended CPM ladder ($40 open, $80 target, $120 max per 1,000 views), saved to Atlas. Every fee the plugin shows is priced from it. Carousels and images without view counts are priced from engagement and marked as estimated. No data, no price.
+- Next week's content pushes: `atlas-profile-analyst` turns an account's patterns into three pushes with day, format, angle, and a target from the account's own medians.
+- Ad reuse: `atlas-profile-analyst` ranks videos on the hook patterns that work as ads and publishes a cut list with timestamps, cut lengths, placements, and rights status. Content review adds the same check for one post when the reader is a performance or creative team.
+- Campaign mode for the creator brief: a timeline worked back from the launch date in three phases, first picks from the campaign shortlist, led by the latest saved findings.
+- Lookalike tier in creator discovery: finds creators like the ones already delivering results.
+- Launch pulse in the daily insights report while a campaign window is open: creators live, mentions and tracked hashtags, how the launch is landing, and draft verdicts.
+- Weekly insights report readers: the setup question now takes several readers (team, leadership, product, product marketing, growth), each with its own section and optional Slack or email destination.
+
+### Changed
+- **Renamed** `atlas-account-analyst` to `atlas-profile-analyst`, `atlas-daily-readout` to `atlas-daily-insights-report`, and `atlas-weekly-readout` to `atlas-weekly-insights-report`. Report pages are titled "Daily Insights Report" and "Weekly Insights Report".
+- Content review gives a go or no-go and a severity on every issue.
+- The account review benchmarks the brand's own accounts on rates against competitors Atlas already indexes.
+- Images on every page and card are embedded at twice their rendered size, from the full-size source, so they look sharp on high-density screens. Page budgets rise to 8MB of images and a 10MB page.
+- The creator card follows the full brand theme, not only its accent color.
+- The theme snippets take a stylesheet (`--css`) or a palette (`--palette`) instead of a "token file". Behavior is unchanged.
+
+### Migrating from 2.x
+- Scheduled tasks and messages that name the old agents still launch the renamed ones. Running `/aspire:aspire` and scheduling the readouts again offers to replace old-named tasks, so nothing is delivered twice.
+- Saved Atlas data is unchanged: run keys (`readout-daily-*`, `readout-weekly-*`) and readout calibrations carry over. A weekly audience saved in the old wording maps to the new readers.
+- Discovery shortlist records written before this release use the old tier numbers and are read correctly.
+
 ## [2.0.0] - 2026-09-28
 
 Major release. The plugin now bundles a second connector that each user signs in to, and some flows run short Python snippets on the user's computer.

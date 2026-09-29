@@ -4,7 +4,7 @@ Claude plugins for the [Aspire Atlas](https://atlas.aspire.io) platform. Works i
 
 | Plugin | What it does | Command |
 | ------ | ------------ | ------- |
-| [`aspire`](plugins/aspire) | Onboards a brand onto Atlas, connects Instagram and TikTok, delivers first insights, plans weekly creator content briefs, runs schedulable daily and weekly readouts, and lists and invites organization members. Bundles the Aspire Atlas and Aspire Atlas Organization Admin connectors. | `/aspire:aspire`, `/aspire:org-admin` |
+| [`aspire`](plugins/aspire) | Onboards a brand onto Atlas, connects Instagram and TikTok, delivers first insights, plans weekly and campaign creator briefs, tracks what creators say about the brand vs. competitors, and runs schedulable daily and weekly readouts and a quarterly roll-up, each shaped for the team that will act on it. Bundles its Aspire connectors. | `/aspire:aspire` |
 
 ## Install (official channel)
 

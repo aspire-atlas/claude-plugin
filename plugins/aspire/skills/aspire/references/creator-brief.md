@@ -1,20 +1,23 @@
 # Creator brief reference
 
-Used by the `atlas-creator-brief` agent. Page structure, fit rubric, pricing method, and
-Atlas quirks learned on 2026-09-16 against the live server.
+Used by the `atlas-creator-brief` agent. Page structure, campaign mode, fit rubric, pricing method (from the fee
+calculator), and Atlas quirks learned on 2026-09-16 against the live server.
 
 ## Page structure
 
 One self-contained HTML page, published with the Artifact tool. Sections in order:
 
-1. **Header.** Eyebrow with handle, network, "Content creation brief", target week. Headline
-   that names the strategy in one line. Meta row: owner, channel and follower count, creator
-   count, prepared date. Standing-rule banner (red) when a red line makes the brief strategy
+1. **Header.** Eyebrow with handle, network, "Content creation brief", target week (or the
+   campaign name and window). Headline that names the strategy in one line. Meta row: owner,
+   channel and follower count, creator count, prepared date, and the "Prepared for" chip
+   (`recipient-lens.md`). Standing-rule banner (red) when a red line makes the brief strategy
    only.
 2. **Objective and audience.** KPI strip: 90 day goal from calibrations, engaged audience age
    band, top country share, gender split (from `instagram.account.audienceDemographics` on any
    brand post, projected via the `instagram.account` container). Two boxes: who we are talking
-   to (primary, secondary), what the data says to do (4 bullets with numbers). Flag-for-review
+   to (primary, secondary), what the data says to do (4 bullets with numbers). A "Built on"
+   line names the saved findings the plan leads with (market signal, weekly readout, ad reuse),
+   each with its run date. Flag-for-review
    banner (amber) when a guideline conflicts with the recommendation.
 3. **Deliverables.** One card per piece: day and date, format and length, title, one-paragraph
    lede, then a spec grid: angle, must include, avoid, creators (first pick bold), success
@@ -31,7 +34,7 @@ One self-contained HTML page, published with the Artifact tool. Sections in orde
    post days, 7 day readout.
 7. **Measurement.** Table: piece, primary metric, target, benchmark from the brand's own
    medians, secondary metric.
-8. **Footer.** Sources, date, "costs are opening offers not quotes", contact email note.
+8. **Footer.** Sources, date, the rate label, "costs are estimates from public view counts, not quotes", contact email note.
 
 Design: token palette on `:root` with dark redefinitions under both the media query and
 `[data-theme="dark"]`. Fonts from Google Fonts with fallbacks (Instrument Sans display, IBM
@@ -40,6 +43,34 @@ never a grid per list item (a grid splits inline bold labels into their own cell
 Categorical chart palette from the dataviz reference, validated. One axis per chart.
 With a saved brand theme, its tokens, fonts, header, logo, and chart series replace these
 defaults: apply `theme:brand` per `theme.md`, **Applying the theme**.
+
+## Campaign mode
+
+For a dated campaign or launch (`brief_mode` `campaign`), the brief is time-bound in three
+phases instead of one week of three posts.
+
+- **Phases.** **Before:** outreach, contracts, brief calls, drafts, and content review of every
+  draft. **During:** the post days, from the first post date to the campaign end (the launch
+  week when no end is given). **After:** the recap against goals, 7 and 14 days after the last
+  post.
+- **Deliverables.** Sized to the window, not fixed at three: at least one launch-day
+  deliverable per first-pick creator, optional teasers before the first post only when the
+  brand's history shows teasers working, and sustain posts through the window. Cadence cap and
+  repost cooldown still apply to the brand's own account.
+- **Timeline**, worked back from the first post date (T): outreach by T-21, confirmations by
+  T-14, brief calls by T-12, drafts due T-7, content review T-6 to T-3, final approvals T-2, go
+  live T, daily pulse T to the campaign end, recap T+7 and T+14. When T is closer than 21 days,
+  compress the steps before it proportionally and flag the risk on the page; never schedule a
+  step in the past.
+- **Creators.** First picks from the campaign's discovery pool (accepted first, then the top
+  undecided by fit score), each carrying its discovery tier and fit ring on the card. Source
+  beyond the pool only when fewer than five fit, and only within the chosen sourcing scope.
+- **Measurement.** Two tables: during (the daily pulse metrics: creator posts live, engagement
+  against each creator's own median, mentions, sentiment) and after (the campaign goal from
+  `campaign:{slug}-brief` against the recap).
+- **Page.** Section 3 groups deliverables by phase, section 6 is the phase timeline, and a
+  closing "Next steps" box offers content review for drafts and the daily launch pulse.
+  Title "<Brand> Campaign Brief: <Campaign>", republished to the same path for that campaign.
 
 ## Fit rubric
 
@@ -78,22 +109,21 @@ vocabulary; the names above are placeholders, not a fixed taxonomy.
 
 ## Pricing method
 
-1. Search for current-year rate benchmarks on the brand's network by follower tier and format.
-   Fetch two sources and record their bands. On 2026-09-16 the Instagram bands were: micro
-   (10K to 100K) Reel $300 to $800, carousel $200 to $650; mid (100K to 500K) Reel $800 to
-   $5,000, carousel $600 to $3,000; macro (500K to 1M) Reel $5,000 to $15,000; mega (1M+)
-   Reel $15,000 and up, bespoke. Rights, whitelisting and exclusivity add 30% to 200%.
-   Bundles save 15% to 30%. Niche premiums and discounts vary by category; take them from the
-   fetched sources for the brand's category, not from memory. Treat the bands above as a
-   sanity check for the fetched figures, never as the source of a price on the page.
-2. Per creator: tier band by followers and format, plus 30% to 50% for 90 day reuse and paid
-   amplification whitelisting. Adjust up for Reel interaction above 6%, category-relevant past
-   partnerships, exact topic fit. Adjust down for partial fit. Express as a range with a
-   one-line rationale. Mega tier: label as an estimate, expect an agency rate card.
-3. Event on-site work: base rate plus travel plus $500 to $1,500 for mid tier. Not benchmarked;
-   label as an opening offer.
-4. Scenarios: practitioners only; one reach creator swapped in; mega reach. Sum first picks.
-5. Cite the benchmark sources on the page footer and in the chat summary.
+Every engagement cost comes from the fee calculator (`fees.md`), never from benchmarks
+fetched during the run.
+
+1. Read `fees:rate-card` from the calibration read in step 1; without one, use the Aspire
+   recommended rates. Label the costs as `fees.md` says.
+2. Per creator: price the deliverables the brief assigns them as one bundle, per **How a fee
+   is calculated** (median views of the last 10 posts per channel, bundled, times the CPM
+   ladder). The creator row shows target; the rationale gives open to max and the bundled
+   median views.
+3. A creator or deliverable the calculator cannot price (too few posts with views, a platform
+   outside the brand's rates, on-site event work) shows no cost: say which input is missing,
+   and leave it out of the scenario totals with a note.
+4. Scenarios: practitioners only; one reach creator swapped in; mega reach. Sum the first
+   picks at target.
+5. Name the rate label and the view window in the "how the costs were set" box.
 
 ## Atlas quirks (verified 2026-09-16)
 
@@ -102,7 +132,9 @@ vocabulary; the names above are placeholders, not a fixed taxonomy.
 - Same for `instagram.account.profilePictureUrl` on posts: project `instagram.account`.
 - `search_creators` returns `instagram.profilePictureUrl` null as a leaf; project the
   `instagram` container and exclude the three demographics blobs to keep the payload small.
-- Some `/thumbnail` routes on `cdn.aspire.io` return 404. Fall back to the base media URL.
+- `/thumbnail` routes on `cdn.aspire.io` return 404 on image posts, where the base media URL is
+  the full-size image. On video posts the base URL is the video file and `/thumbnail` is the
+  full-size poster. Pass both, `mediaUrl` first, to the **Images** snippet in `creator-card.md`.
 - `search_creator_marketplace` requires `keyword` and rejects it alongside
   `filters.similarToCreators`, so lookalike search is unreachable from the connector.
 - Marketplace results land in `search_creators` 1 to 3 minutes after `get_job_status`
@@ -114,4 +146,4 @@ vocabulary; the names above are placeholders, not a fixed taxonomy.
 - Stories appear as posts with `mediaKind` null and only `organicReach`. Exclude with
   `exists mediaKind`.
 - Published pages cannot load `cdn.aspire.io` images. Embed as data URIs with the snippet in
-  `creator-card.md`, **Images**, page profile.
+  `creator-card.md`, **Images**, page profile, sized to each image's rendered box at 2x.

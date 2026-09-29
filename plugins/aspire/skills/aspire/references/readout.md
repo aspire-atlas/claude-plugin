@@ -1,6 +1,8 @@
 # Readout reference (daily and weekly)
 
-Shared by the `atlas-daily-readout` and `atlas-weekly-readout` agents and by the **Readouts**
+Shared by the `atlas-daily-insights-report` and `atlas-weekly-insights-report` agents (formerly
+`atlas-daily-readout` and `atlas-weekly-readout`; a scheduled task naming an old agent means the
+new one) and by the **Readouts**
 section of SKILL.md. Holds the calibration set, metric definitions, page structures, delivery
 mechanics, and the rules for scheduled (unattended) runs.
 
@@ -28,7 +30,7 @@ Before asking anything, call `search_calibrations` (no filter, limit 100 per pag
 | R3 | What counts as worth flagging? | 1) 25% above or below the 28-day median (Recommended); 2) 50% swing only; 3) I'll set thresholds (type them) | `guideline` | `guideline:readout-thresholds` | `{concern: "preference", appliesTo: ["readout"], body: "<threshold rule>"}` |
 | R4 | Which metric should lead every readout? | 1) Engagement per post; 2) Reach and views; 3) Saves and shares; 4) Follower growth | `guideline` | `guideline:readout-focus` | `{concern: "preference", appliesTo: ["readout"], body: "<metric>"}` |
 | R5 | What should interrupt you between scheduled readouts? | 1) Red-line hits only (Recommended); 2) Red-line hits and a 50%+ drop in the lead metric; 3) Nothing, wait for the schedule | `policy` | `policy:readout-escalation` | `{area: "escalation", body: "<rule>"}` |
-| R6 | Who is the audience for the weekly readout? | 1) The social team (tactical); 2) Marketing leadership (outcome first); 3) Both, executive summary on top | `guideline` | `guideline:readout-audience` | `{concern: "preference", appliesTo: ["readout-weekly"], body: "<audience>"}` |
+| R6 | Who reads the weekly readout? The first one picked leads; each other gets its own section. (multiSelect) | 1) Our social team (tactical) (Recommended); 2) Leadership (outcome first); 3) Product and product marketing (parity and messaging); 4) Growth (creator and channel efficiency). A reader may carry its own destination in the free text field, for example "product > slack:#product-feedback" | `guideline` | `guideline:readout-audience` | `{concern: "preference", appliesTo: ["readout-weekly"], body: "primary: <lens>; lenses: <lens>[><destination>], ..."}` |
 
 Rules:
 
@@ -39,6 +41,11 @@ Rules:
   confirmation may an unattended run send anything.
 - Confirm the batch once before writing (Guardrails: one confirmation may cover a batch of the
   same kind). Then write all six.
+- R6 lenses are `team`, `leadership`, `product`, `pmm`, and `growth` (`recipient-lens.md`).
+  Option 3 saves both `product` and `pmm`. A destination named on a lens is covered by the R2
+  standing approval; say so in the same confirmation. A saved R6 in the older wording maps as:
+  "The social team" is `team`, "Marketing leadership" is `leadership`, "Both" is `team` then
+  `leadership`.
 - If `target:weekly-health` (onboarding question 10) exists, reuse it as the benchmark row on
   the weekly page. Do not re-ask.
 - A teammate re-running setup sees the saved answers and is offered "Keep as saved
@@ -137,14 +144,46 @@ network's own id. Kinds: `went_well` for the best post, `needs_improvement` for 
 below threshold, `action_item` (with `priority`) only for red-line hits and escalations.
 `idempotencyKey` per finding. Keep daily writes to 5 or fewer.
 
+## Daily launch pulse (campaign window)
+
+The campaign lens needs a live read during launch week, and product teams want to know how the
+launch is landing. The daily readout adds a pulse while a campaign window is open.
+
+**Pulse calibration** (written by the main thread after a campaign brief, or on request, with
+its own `AskUserQuestion` confirmation): kind `policy`, key `campaign:{slug}-pulse`, `detail`
+`{area: "pulse", body: "window <YYYY-MM-DD>..<YYYY-MM-DD>; topics: <launch terms creators would use>; hashtags: <#tags>; lenses: <lens>[><destination>], ..."}`, where each lens is `campaign` or
+`product` and "Both" saves both, each with its own destination if one was typed. A destination
+named there is covered by the R2 standing approval, and the confirmation says so.
+
+On every daily run, read every `campaign:*-pulse` record and keep those whose window covers the
+target date. A caller may also pass a campaign slug for an on-demand pulse. For each one:
+
+1. **Campaign creators live.** The campaign's accepted creators (`creator-discovery.md`, **State
+   written to Atlas**): their posts on the target date that mention the brand. Engagement per
+   post against each creator's own median.
+2. **Mentions.** A semantic `search_posts` with `queryText` = the pulse topics, filtered to the
+   target date, excluding the brand's handles, limit 50; plus `list_hashtag_posts` for each
+   pulse hashtag. Posts and distinct creators, against the day before.
+3. **Reception.** From the posts in 1 and 2: tone (`analysis.emotionalAnalysis.tone` when the
+   census lists it) as counts, and up to five verbatims with permalinks: the praise and the
+   friction creators state. For the `product` lens, group the friction by issue.
+4. **Drafts and verdicts.** The campaign creators' content reviews on the target date (step 6b).
+
+The pulse is a page section after the flags block, "Launch pulse: {campaign}, day {n} of {N}",
+and three bullets in the chat summary. A pulse lens with its own destination gets its own Slack
+or email message with the pulse bullets and the page link. Up to three extra findings per
+campaign (`detail.campaign`, `detail.recipient`), outside the daily cap of five. A pulse reads
+only what Atlas holds: no lookups, no marketplace.
+
 ## Weekly readout
 
 Window: Monday to Sunday of the previous week in the R1 timezone, resolved per
 **Resolving "today"** above (a Monday run reports the week that ended yesterday). Compare
 with the prior week and the 8-week median.
 
-Chat summary, under 250 words, ordered by the R6 audience (leadership: outcome bullets first;
-team: post-level detail first; both: two short blocks):
+Chat summary, under 250 words, ordered by the primary R6 lens (leadership: outcome bullets
+first; team: post-level detail first; product, pmm, growth: that lens's block first), with two
+bullets per other saved lens:
 
 - Headline: the week in one line, lead metric vs prior week and vs 8-week median.
 - Numbers: posts, engagement, engagement rate, reach or views, followers with delta.
@@ -159,9 +198,29 @@ team: post-level detail first; both: two short blocks):
 - Next steps: 3 ranked bullets, each tied to a number above.
 - Data gaps and one closing line: findings saved, page link.
 
+**Lenses.** The analysis runs once; each saved R6 lens is a section of the same page, the
+primary first after the KPI strip, each with an anchor (`#lens-{lens}`). The `team` lens is the
+section list below. The others:
+
+- **Leadership:** the outcome in one sentence, the trend, and two or three headline insights.
+  One screen.
+- **Product:** from the week's market signal findings (`search_insights` on the
+  `market-signal-{profile}` prefix, the run covering the week): what changed since the last
+  review, features compared with the clips as evidence, friction with quotes. No market signal
+  run for the week: one line saying so and offering it, never a substitute analysis.
+- **PMM:** from the same findings: creators' own phrases by theme and competitor, share of voice
+  by message, and the language the brand's own top posts used this week.
+- **Growth:** creator posts about the brand in the week (collab posts on the brand's account,
+  partnership-marked posts, and mentions by accounts other than the brand), per creator and per
+  format: engagement per post against the creator's own median and the brand's median, and the
+  estimated fee from the fee calculator (`fees.md`) per 1,000 engagements, labelled as estimated
+  because Atlas holds no spend. End with one recommendation: where the next dollar goes. Each
+  creator that beat both medians gets a `went_well` finding with `detail.creator`,
+  `detail.lens: "growth"`, and `detail.seedEligible: true`, which feeds discovery's lookalike tier.
+
 Page, sections in order:
 
-1. Header: brand, network, week label, prepared date, audience chip.
+1. Header: brand, network, week label, prepared date, and a "Prepared for" chip per lens.
 2. KPI strip with week-over-week deltas and the benchmark row from `target:weekly-health`
    when present.
 3. Lead-metric line chart, 9 weeks, last week highlighted.
@@ -172,6 +231,7 @@ Page, sections in order:
 6b. Content reviews: verdict counts as a small bar, the three most failed checks, and a row
    per review with creator, verdict chip, open edits, and the review page link.
 7. Next steps, ranked.
+7b. One section per non-`team` lens, per **Lenses** above, in R6 order.
 8. Footer: sources, a note that images are a snapshot, "numbers come from Atlas as of {timestamp}".
 
 Insights written: `runKey` `readout-weekly-{profile}-{ISO week, e.g. 2026-W38}`, role
@@ -179,16 +239,21 @@ Insights written: `runKey` `readout-weekly-{profile}-{ISO week, e.g. 2026-W38}`,
 pattern, `action_item` with `priority` per next step (3 max). Mark an older open action item
 from a readout or a creator brief as resolved by writing a new `went_well` that references its
 `idempotencyKey` in `detail`. Content review edits are never resolved here; only a later
-review closes them (step 6b).
+review closes them (step 6b). Every finding carries `detail.recipient` (the primary lens); lens
+findings carry `detail.lens`. Growth creator findings are outside the 3 next-step cap, at most 5.
 
 ## Page mechanics
 
-Embed every image as a JPEG data URI with the snippet in `creator-card.md`, **Images**, page
-profile: `post` for post cards (240px wide), `avatar` for profile pictures (112px). It retries
-the base media URL on a `/thumbnail` 404. Keep the page under 2MB. Load the
+Embed every image as a data URI with the snippet in `creator-card.md`, **Images**, page
+profile, which also sets how the `<img>` is sized: `post@{card media width}` for post cards
+(the CSS width of the card's media, 360 by default), `detail@{W}x{H}` for a larger media panel
+(for example `detail@480x1000` for a tall carousel panel), `+text` on posts that are mostly text
+or graphics, and `avatar` for profile pictures. Pass `media.mediaUrl` first and
+`media.thumbnailUrl` after it, so each post comes from the full-size image or poster. Keep the
+images under 8MB and the page under 10MB, cutting images before quality per **Images**. Load the
 `artifact-design` and `dataviz` skills before building. Apply the saved brand theme (`theme:brand`) per `theme.md`, **Applying the theme**; without one, the design here stands. Flags, deltas, and verdict
 chips keep their semantic colors. Publish with the Artifact tool,
-title "<Brand> Daily Readout" or "<Brand> Weekly Readout", and republish to the same path
+title "<Brand> Daily Insights Report" or "<Brand> Weekly Insights Report", and republish to the same path
 each run so the link in Slack or email stays stable. Note once in the footer that images are
 a snapshot.
 
@@ -200,13 +265,17 @@ Read `policy:readout-routing`. The page and chat summary always ship. Then:
   session, send one message: the headline, the 3 to 5 key bullets, the page link. Plain text
   with Slack formatting, no images. If no Slack connection is present, say so in the chat
   summary and continue.
+- **Per-lens destinations:** a lens in R6 (or a pulse lens) with its own destination gets its own
+  message: that lens's three bullets and the page link with the lens anchor. Same connection
+  rules as below.
 - **Email:** if the routing names recipients and an email connection is available, send one
-  message with subject "<Brand> {Daily|Weekly} Readout, {date}", the chat summary as the body,
+  message with subject "<Brand> {Daily|Weekly} Insights Report, {date}", the chat summary as the body,
   and the page link. If no email connection is present, say so and continue.
 - Interactive run: confirm the send once with `AskUserQuestion` ("Post to {channel} and email
   {recipients}?" Options: Send (Recommended) / Page only this time). Unattended run: the R2
   confirmation is the standing approval; send without asking.
-- Never send to a channel or address that is not in the routing calibration. If the user
+- Never send to a channel or address that is not in the routing calibration, a lens destination
+  in `guideline:readout-audience`, or an open `campaign:{slug}-pulse` record. If the user
   names a new destination mid-run, update the calibration first (supersede, with confirmation).
 
 ## Scheduled (unattended) runs
@@ -216,7 +285,7 @@ to answer questions. The scheduled task prompt must therefore be standalone (tem
 README). Rules for the agents:
 
 - Never ask a question. If any of the six readout calibrations or `brand:summary` is missing,
-  publish a one-card page titled "<Brand> Readout: setup needed" listing the missing items,
+  publish a one-card page titled "<Brand> Insights Report: setup needed" listing the missing items,
   write nothing to Atlas, and end with "Run /aspire:aspire and ask for readout setup."
 - Never run a destructive tool. Never call `lookup_*`, `search_creator_marketplace`, or
   `start_business_discovery`.
@@ -228,7 +297,7 @@ README). Rules for the agents:
 ## Atlas quirks that apply here
 
 Inherited from `creator-brief.md`: project the `media` and `instagram.account` containers, not
-leaf URLs; exclude stories with `exists mediaKind`; some `/thumbnail` routes 404; published
+leaf URLs; exclude stories with `exists mediaKind`; `/thumbnail` routes 404 on image posts; published
 pages cannot load `cdn.aspire.io` images. New for readouts: `search_insights` returns findings
 tenant-wide, so always filter on the `runKey` prefix; and `aggs` only work on the filter path,
 so run the red-line semantic query as a separate call.

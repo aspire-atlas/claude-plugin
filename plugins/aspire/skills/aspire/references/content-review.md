@@ -176,7 +176,9 @@ and use the first that works. Say which one ran.
    check (no frame extractor)", and the summary says which tool would fix it. Never pass a
    continuous must-include from the cover alone.
 
-**Resizing, in this order:** Pillow, then `sips` on macOS, then `ffmpeg -vf scale`.
+**Resizing, in this order:** Pillow (`Image.LANCZOS`, WebP quality 85, or JPEG quality 85
+with `subsampling=0`), then `sips` on macOS (`--resampleWidth`, `-s formatOptions 85`), then
+`ffmpeg -vf scale=W:-2:flags=lanczos -q:v 2`. Never resize past the file's own size.
 
 **Which frames.** Start at 0.5 seconds, take one frame every 3 seconds, and add one 1 second
 before the end. Stop at 30 frames: for a longer clip, widen the step to duration ÷ 30. Then add
@@ -222,6 +224,22 @@ Apply `review:verdict-rule` (C1). With no saved rule, use option 1.
 | **Revise and resubmit** | Anything C1 says blocks has failed, or a paid post is missing its disclosure (whatever C1 says) |
 | **Approve with edits** | Flags only, or fails C1 treats as advice |
 | **Approve** | Every check passes or is "Can't check" for a stated reason |
+
+**Go or no-go.** Every verdict maps to one call the brand reviewer can act on: **Approve** is
+Go; **Approve with edits** is Go once the edits are made; **Revise and resubmit** and **Do not
+post** are No-go. The verdict banner, the summary, and the verdict finding (`detail.goNoGo`)
+carry it.
+
+**Severity.** Every Flag, Fail, and Can't check carries one, so a reviewer reads the risk at a
+glance:
+
+| Severity | When |
+| -------- | ---- |
+| Critical | A `block` red line or hard rule fails, or a paid post lacks disclosure |
+| High | Any other Fail |
+| Medium | A Flag |
+| Unknown | Can't check on a safety or red-line check |
+| Low | Can't check on anything else |
 
 Too many "Can't check" results can hide a problem. When more than a third of the checks are
 "Can't check", the verdict is at most **Approve with edits**, and the first edit asks for
@@ -367,8 +385,10 @@ summarizes them.
 `detail` carries `rationale`, `evidence[]`, `theme: ["content-review", "<dimension>"]`, and
 these keys, stored verbatim: `findingType` (from the table), `reviewedAt` (full UTC timestamp
 from the shell clock, `date -u +%FT%TZ`, the same value on every finding of one review), `verdict`, `dimension`,
-`check`, `result`, `stage` (`draft` or `published`), `creator` (the handle), `deliverable`,
-`lessonsApplied[]`. Supply an `idempotencyKey` per finding.
+`check`, `result`, `severity`, `stage` (`draft` or `published`), `creator` (the handle),
+`deliverable`, `lessonsApplied[]`, and `recipient` (`recipient-lens.md`). An Ad reuse result is
+one `went_well` or `needs_improvement` finding with `findingType: "check"`, `dimension:
+"ad-reuse"`, and the hook score, pattern, and cuts in `detail`; it is never an edit. Supply an `idempotencyKey` per finding.
 
 The verdict finding also carries what the readouts need, so they never have to re-derive a
 review: `postedAt` and `permalink` (the post's own URL) for a published post, `reviewPage`
@@ -419,8 +439,10 @@ the judging pipeline's own schema, and this agent does not produce that.
 One page per review, with a new path each time so earlier reviews stay linkable. Title:
 "<Brand> Content Review: @<creator>, <date>". Sections in order:
 
-1. **Verdict banner.** Verdict, one-line reason, counts of Pass / Flag / Fail / Can't check
-   per dimension, stage chip (draft or published), brief and deliverable name.
+1. **Verdict banner.** Verdict with its go or no-go, one-line reason, the highest severity,
+   counts of Pass / Flag / Fail / Can't check per dimension, stage chip (draft or published),
+   brief and deliverable name, and the "Prepared for" chip (`recipient-lens.md`). For the
+   `brand` lens the go or no-go is the largest element on the banner.
 2. **The brief.** The brief's title, brand, creator and deliverable, then a two-column table
    with every field of the normalized deliverable in the brief's own words. Number the
    must-include and avoid items the way the checks refer to them. Say where the brief came
@@ -433,18 +455,28 @@ One page per review, with a new path each time so earlier reviews stay linkable.
    the creator: plain, specific, polite, one fix each. If a `red_line` blocks AI-generated
    copy, describe what to change and never write replacement caption text.
 5. **Brief adherence**, **Brand guidelines**, **Brand safety.** One row per check: result
-   chip, check name, evidence, fix. Fails first, then Flags, then Can't check, then Passes
-   collapsed.
+   chip, severity, check name, evidence, fix. Fails first, then Flags, then Can't check, then
+   Passes collapsed.
+5b. **Ad reuse**, only when the check ran (`ad-reuse.md`): the hook score, the pattern, the
+   first-three-seconds frame strip, and the cut list rows with rights. Labelled as advice that
+   does not affect the verdict. For the `performance` or `creative` lens it moves up to follow
+   the verdict banner.
 6. **Lessons applied.** Each saved lesson that changed a call, and any candidate lesson from
    repeated overturns.
 7. **Footer.** The brief source, "numbers come from Atlas as of {timestamp}", what was not
    checkable and why, and a note that images are a snapshot.
 
-Page mechanics: frames come from the files under **Media**, resized to 320px wide and
-embedded as JPEG data URIs. The creator card's images (profile picture 112px, thumbnails
-240px) are embedded with the snippet in `creator-card.md`, **Images**, page profile, which
-retries the base media URL on a `/thumbnail` 404. Keep the page under 2MB. Draft media comes
-from the local files the user attached. Load `artifact-design` before building. Apply the saved brand theme (`theme:brand`) per `theme.md`, **Applying the theme**; without one, the design here stands. The
+Page mechanics: every image follows `creator-card.md`, **Images**: sized to its rendered box
+at 2x, never upscaled, LANCZOS, WebP or JPEG at quality 85 or more, and placed with `width` and
+`height` at half its pixels. The post under review is the page's main image: for a published
+post, embed it with the snippet, page profile, as `detail@{W}x{H}` for its panel
+(`detail+text@…` when it is mostly text or graphics), passing `media.mediaUrl` then
+`media.thumbnailUrl`. Frames in the strip and draft media come from the local files under
+**Media**; resize them with the first tool on the **Resizing** list to twice their CSS width
+(a 160px frame is 320px wide, a 480px draft panel 960px), never past the file's own size, and
+encode them at the same settings. The creator card's images use the snippet's `avatar` and
+`thumb` kinds. Keep the images under 8MB and the page under 10MB; past that, embed every other
+frame of a long strip before lowering quality. Load `artifact-design` before building. Apply the saved brand theme (`theme:brand`) per `theme.md`, **Applying the theme**; without one, the design here stands. The
 verdict banner and the result chips keep their semantic colors.
 
 ## Atlas quirks that apply here
