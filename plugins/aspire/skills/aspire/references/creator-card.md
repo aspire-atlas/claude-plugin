@@ -260,7 +260,8 @@ Escape `'` in the handle as `\'` inside the `onclick` string.
 
 Once per widget or page. Colors follow the host theme in light and dark mode where the host
 defines the variable, and fall back to the Aspire tokens where it does not. A saved brand
-theme replaces only the brand color and the font (`theme.md`, **Creator card**).
+theme replaces the surfaces, text, borders, brand color, corners, and fonts; the ok and warn
+tiles keep their semantic colors (`theme.md`, **Creator card**).
 
 ```html
 <style>
