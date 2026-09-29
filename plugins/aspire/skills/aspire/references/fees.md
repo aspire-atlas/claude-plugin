@@ -20,7 +20,10 @@ creator typically gets. One CPM ladder covers every platform.
    platforms, or, on a profile page, every channel the creator has.
 2. **Views per channel.** The median `viewCount` of the creator's last 10 posts of that format
    on that channel. It needs at least 3 of those 10 to have a view count. The median, never the
-   mean: one viral post must not set the price.
+   mean: one viral post must not set the price. A post with no `viewCount` counts its
+   impressions instead when the post field census lists an impressions field (connected
+   accounts often have one). A format with too few views on its own posts, usually Instagram
+   carousels and images, goes to **Estimated views from engagement** below.
 3. **Bundled views** = the sum of the channels' medians. A single-channel offer uses that
    channel's median alone.
 4. **Fee** = bundled views ÷ 1,000 × CPM, at each of the ladder's open, target, and max,
@@ -33,15 +36,45 @@ Bundled views 250,000. At $40 / $80 / $120: open $10,000, target $20,000, max $3
 
 - The offer includes a channel the brand's saved platforms leave out ("{brand}'s rates don't
   include YouTube Shorts").
-- A channel has fewer than 3 posts of that format with views. This is common for Instagram
-  feed posts, which rarely carry a view count ("not enough view data for Instagram feed
+- A channel has fewer than 3 posts of that format with views, and **Estimated views from
+  engagement** cannot run either ("not enough view or engagement data for Instagram feed
   posts").
 - The deliverable is work the calculator does not price, such as on-site event work.
 
 For a bundle, a channel with no data leaves the whole bundle unpriced; price the channels that
-have data separately and name the missing one. Never fall back to another format's views, to
-follower counts, or to another method. A flow that needs a number where there is none leaves a
+have data separately and name the missing one. **Estimated views from engagement** is the
+only fallback. Never use another format's views directly, follower counts, or any other
+method. A flow that needs a number where there is none leaves a
 bracketed blank, `[fee]`.
+
+### Estimated views from engagement
+
+For a format whose own posts rarely carry views (Instagram carousels and images), estimate its
+views from its engagement, using how the same creator's views and engagement relate on a format
+that does carry views. It stays inside the creator's own numbers.
+
+1. **Views per engagement.** Take the creator's last 10 posts on the same network in a format
+   with views (Instagram Reels for Instagram feed posts). For each post with a view count and
+   more than 0 likes plus comments, divide views by (likes + comments). The ratio is the median
+   of those. It needs at least 3 such posts.
+2. **Feed engagement.** The median of likes plus comments over the creator's last 10 posts in
+   the format being priced. It needs at least 3 usable posts (a post with a null `likeCount`,
+   hidden likes, is not usable).
+3. **Estimated views** = feed engagement × views per engagement, capped at the median views of
+   the posts used in step 1. A feed post is never assumed to out-reach the creator's typical
+   Reel.
+4. Price the estimate like any other views, and mark the fee "est. from engagement". Wherever
+   the flow shows its working (the profile page's note, the brief's rationale), give the three
+   numbers: "{feed engagement} engagements × {ratio} views per engagement from their Reels =
+   {estimated views} estimated views."
+
+Worked example: the creator's last 10 Reels have a median of 25 views per engagement, and a
+median of 20,000 views. Their last 10 carousels have a median of 300 likes plus comments.
+Estimated views: 300 × 25 = 7,500, under the 20,000 cap. At $40 / $80 / $120: open $300,
+target $600, max $900, marked "est. from engagement".
+
+Either step short of 3 posts: no price for that format, and name which one was short. Never
+borrow another creator's ratio or a benchmark ratio.
 
 **Label every fee** with where its rates came from, once per page or message:
 

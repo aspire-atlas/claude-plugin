@@ -72,7 +72,7 @@ Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-brief.md` before st
 ### 5. Price each engagement
 
 - Price with the fee calculator in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/fees.md`, per the reference file's **Pricing method**: the saved `fees:rate-card` from step 1's read, or the Aspire recommended rates without one. Never search the web for rates and never price from follower counts.
-- For each creator, bundle the deliverables you mapped to them and use the median views of their last 10 posts per channel from the sample posts you fetched. Target in the row, open to max and the median views in the rationale. No price when the views are not there; say what is missing.
+- For each creator, bundle the deliverables you mapped to them and use the median views of their last 10 posts per channel from the sample posts you fetched. Target in the row, open to max and the median views in the rationale. For Instagram carousels and images, use the calculator's **Estimated views from engagement**, and mark those fees. No price when the calculator cannot compute one; say what is missing.
 - Produce 2 to 3 budget scenarios (practitioners only, one reach creator, mega reach) that sum the first picks at target.
 
 ### 6. Publish the visual brief

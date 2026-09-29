@@ -171,7 +171,7 @@ Sections in order:
    thumbnails. `{DETAILS}` also holds the two strongest fit components with their points, the
    source, the contact route if known, and the estimated fee from the fee calculator
    (`fees.md`, **Applying the rates**) on the campaign's platforms: "Est. fee {open} to {max},
-   target {target}", or nothing when the views are not there. The page footer carries the rate
+   target {target}" (marked "est. from engagement" when the calculator estimated the views), or nothing when it gives no price. The page footer carries the rate
    label once.
 5. **Rejected this cycle** — collapsed list of handles with the reason recorded, so a
    decision is auditable.
