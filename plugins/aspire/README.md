@@ -10,13 +10,13 @@ Onboarding for the Atlas platform (https://atlas.aspire.io). Takes a new or retu
 | MCP server | `Aspire Atlas Organization Admin` | Support only. Organization members at `https://atlas.aspire.io/mcp/admin-organization` (HTTP, OAuth). Tools appear as `mcp__Aspire_Atlas_Organization_Admin__*`. Used only when someone asks; every invite is confirmed. |
 | Skill | `/aspire:aspire` | Six phase onboarding flow: connection check, auth and org selection, org status, profile and social connect, brand context capture, first insights |
 | Skill | `/aspire:org-admin` | Support only. Lists organization members and pending invitations and sends confirmed invitations when someone asks. Uses Aspire Atlas Organization Admin |
-| Agent | `atlas-account-analyst` | Evaluates accounts and produces first insights (Phase 6). Reviews the brand's connected accounts, benchmarked on rates against competitors Atlas indexes, or any Instagram or TikTok handle the user names, resolving and refreshing it in Atlas when the held data is over a day old. Reuse mode ranks videos on the hooks that work as ads and publishes a cut list with timestamps, lengths, placements, and rights status |
+| Agent | `atlas-profile-analyst` | Analyzes an account handle the brand manages and ideates next week's content pushes: cadence, engagement, top posts and what they share, format mix, rate benchmarks against competitors Atlas indexes, then three pushes with day, format, angle, and target. Runs for first insights in Phase 6 and any time after. Also reviews any public Instagram or TikTok handle the user names, resolving and refreshing it in Atlas when the held data is over a day old. Reuse mode ranks videos on the hooks that work as ads and publishes a cut list with timestamps, lengths, placements, and rights status |
 | Agent | `atlas-creator-profile` | Full-page profile of one Instagram or TikTok creator: the creator card at full width, audience, top and lowest posts, engagement, sentiment, brand safety, partnerships, recommended fees from the fee calculator, peers, and next steps. Refreshes the handle in Atlas when the held data is over a day old. Publishes a page and writes nothing to Atlas |
 | Agent | `atlas-creator-discovery` | Standing creator shortlist for one campaign: fills a pool of undecided candidates to a saved target in tier order (worked with the brand, posted about the brand, lookalikes of the creators already delivering, indexed in Atlas, marketplace and web), scores each with evidence, republishes one living page, and keeps decisions in Atlas. Schedulable. |
 | Agent | `atlas-content-review` | Reviews one creator draft or published post against its brief: brief adherence, brand guidelines, and brand safety, each check with evidence. Gives a verdict and edit notes the team can forward to the creator, publishes a review page, and learns from the team's feedback on every review. Interactive only. |
 | Agent | `atlas-creator-brief` | Content creation brief for a week or a dated campaign: reviews recent posts and the latest market signal and readout findings, sets deliverables and guardrails, takes first picks from the campaign shortlist or sources creators through Aspire discovery, prices each engagement, publishes a visual brief. Campaign mode works the timeline back from the launch date |
-| Agent | `atlas-daily-readout` | Yesterday's posts against the 28-day baseline: anomalies, red-line hits, follower delta, what changed since the last readout, and a launch pulse while a campaign window is open. Compact page, Slack and email delivery, findings saved to Atlas. Schedulable. |
-| Agent | `atlas-weekly-readout` | Last week against the prior week and 8-week median: top and bottom posts with the pattern behind them, format and cadence mix, open action items, three ranked next steps. One section per saved reader: the social team, leadership, product (parity), product marketing (messaging), and growth (creator and format efficiency). Visual page, Slack and email delivery, findings saved to Atlas. Schedulable. |
+| Agent | `atlas-daily-insights-report` | Daily insights: what yesterday's posts tell the team against the 28-day baseline, the breakouts and misses and why, red-line hits, follower delta, what changed since the last report, each turned into a next step, and a launch pulse while a campaign window is open. Compact page, Slack and email delivery, findings saved to Atlas. Schedulable. |
+| Agent | `atlas-weekly-insights-report` | Weekly insights: the patterns behind last week's results against the prior week and 8-week median, why the top and bottom posts landed where they did, format and cadence mix, open action items, three ranked next steps. One section per saved reader: the social team, leadership, product (parity), product marketing (messaging), and growth (creator and format efficiency). Visual page, Slack and email delivery, findings saved to Atlas. Schedulable. |
 | Agent | `atlas-market-signal` | What creators say about the brand compared with its saved competitors: share of voice (organic and paid apart), features compared and where the brand won or lost, friction, spreading language, and the comparison videos with the strongest openings. One run renders a parity read, a messaging read, reuse candidates, and a brief update. Page, Slack and email delivery, findings saved to Atlas. Schedulable weekly. |
 | Agent | `atlas-quarterly-signal` | The quarter's one-page story for leadership: the outcome first, three KPIs against the prior quarter, the trend, headline insights, what the program delivered, and next quarter's priorities, rolled up from the findings already saved in Atlas. |
 
@@ -64,16 +64,16 @@ Readouts are designed to run on a schedule. The skill offers to create both sche
 **Create the two scheduled tasks (Cowork)**
 
 1. In the Claude desktop app, open Scheduled tasks and choose New.
-2. Name the first task `Atlas daily readout: {brand}`. Set it to repeat daily at the time saved in setup, in your timezone. Paste the daily prompt below with the brand, handles, and networks filled in.
-3. Name the second task `Atlas weekly readout: {brand}`. Set it to repeat weekly on the saved day and time. Paste the weekly prompt below.
+2. Name the first task `Atlas daily insights report: {brand}`. Set it to repeat daily at the time saved in setup, in your timezone. Paste the daily prompt below with the brand, handles, and networks filled in.
+3. Name the second task `Atlas weekly insights report: {brand}`. Set it to repeat weekly on the saved day and time. Paste the weekly prompt below.
 4. Turn on completion notifications so the summary reaches your phone.
 
 Daily prompt:
 
 ```
-Run the Atlas daily readout for {brand} (handles: {@handle1 on instagram, @handle2 on tiktok}).
+Run the Atlas daily insights report for {brand} (handles: {@handle1 on instagram, @handle2 on tiktok}).
 Use the Aspire Atlas connection and the brand's saved readout calibrations for the window,
-thresholds, lead metric, and delivery routing. Launch the atlas-daily-readout agent in
+thresholds, lead metric, and delivery routing. Launch the atlas-daily-insights-report agent in
 unattended mode. Do not ask questions. Do not state today's date in the launch message; the
 agent reads the current date from the shell clock in the brand's saved timezone and reports
 yesterday. If setup is incomplete or Atlas needs a fresh sign in, publish the "setup needed"
@@ -83,10 +83,10 @@ card and stop. Deliver only to the destinations saved in the brand's readout rou
 Weekly prompt:
 
 ```
-Run the Atlas weekly readout for {brand} (handles: {@handle1 on instagram, @handle2 on tiktok})
+Run the Atlas weekly insights report for {brand} (handles: {@handle1 on instagram, @handle2 on tiktok})
 for the previous Monday to Sunday. Use the Aspire Atlas connection and the brand's saved
 readout calibrations for thresholds, lead metric, audience, and delivery routing. Launch the
-atlas-weekly-readout agent in unattended mode. Do not ask questions. Do not state today's date
+atlas-weekly-insights-report agent in unattended mode. Do not ask questions. Do not state today's date
 in the launch message; the agent reads the current date from the shell clock in the brand's
 saved timezone and reports the most recent completed Monday to Sunday. If setup is incomplete
 or Atlas needs a fresh sign in, publish the "setup needed" card and stop. Deliver only to the

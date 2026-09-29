@@ -66,15 +66,20 @@ time so it never goes stale; never recite it from memory.
 
    | Chosen agent | Hand off to |
    | ------------ | ----------- |
-   | `atlas-account-analyst` | Phase 1, then Phase 2 + 3 for the profile and handles, then Phase 6 (its target question first), or **Ad reuse** when the ask is about hooks, ads, or a cut list |
+   | `atlas-profile-analyst` | Phase 1, then Phase 2 + 3 for the profile and handles, then Phase 6 (its target question first), or **Ad reuse** when the ask is about hooks, ads, or a cut list |
    | `atlas-creator-profile` | Phase 1, then Phase 2 + 3, then **Creator profile** (it asks for the handle and network first) |
    | `atlas-creator-brief` | Phase 1, then Phase 2 + 3, then **Creator brief** (its three questions first) |
    | `atlas-creator-discovery` | Phase 1, then Phase 2 + 3, then **Creator discovery**, Setup if the campaign is new, then Run |
    | `atlas-content-review` | Phase 1, then Phase 2 + 3, then **Content review**, Setup if it has never run, then Review |
-   | `atlas-daily-readout` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the daily cadence |
-   | `atlas-weekly-readout` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the weekly cadence |
+   | `atlas-daily-insights-report` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the daily cadence |
+   | `atlas-weekly-insights-report` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the weekly cadence |
    | `atlas-market-signal` | Phase 1, then Phase 2 + 3, then **Market signal**, Setup if it has never run, then Run |
    | `atlas-quarterly-signal` | Phase 1, then Phase 2 + 3, then **Quarterly signal** |
+
+   Older names still reach the renamed agents: `atlas-account-analyst` is `atlas-profile-analyst`,
+   `atlas-daily-readout` is `atlas-daily-insights-report`, and `atlas-weekly-readout` is
+   `atlas-weekly-insights-report`. A scheduled task or message that names an old agent launches
+   the new one; offer once, in an interactive session, to update the task's prompt and name.
 
    An agent on disk that is not in that table: run Phase 1 and Phase 2 + 3, then launch it
    with the tool prefix, `profile_slug`, the linked handles and networks, and `recipient`
@@ -476,7 +481,7 @@ against competitors goes to **Market signal**.
    `author.username` for each linked handle, `limit: 1`. If empty, tell the user indexing is
    still running and offer to check back; do not run the analyst on nothing. Mode `handle`
    skips this check: the agent owns resolution and the freshness check.
-4. Launch the `atlas-account-analyst` subagent with: `profile_slug`, the tool prefix,
+4. Launch the `atlas-profile-analyst` subagent with: `profile_slug`, the tool prefix,
    `target_mode`, the handles and networks for that mode, `recipient` (**Reading the ask**;
    `team` during onboarding), and a digest of the Phase 5 calibrations. In mode `handle`, state that the user approved the fetch so the agent does not
    ask again. State that the calibrations are for classification and relevance only: a named
@@ -489,8 +494,9 @@ against competitors goes to **Market signal**.
    handle with `lookup_creators` when Atlas holds nothing or the record is over 24 hours old,
    then writes findings back with `append_insights` under one `runKey` per run (`own`:
    `onboarding-{profile}-{date}`; `handle`: `account-review-{profile}-{handle}-{date}`).
-6. Present the subagent's executive summary: headline, 3 to 5 insights with numbers, 2 to 3
-   ranked next steps, data gaps. In mode `handle`, lead the data gaps with the freshness the
+6. Present the subagent's executive summary: headline, 3 to 5 insights with numbers, next
+   week's three content pushes (mode `own`), 2 to 3 ranked next steps, data gaps. Offer the
+   creator brief in one line when a push needs creators. In mode `handle`, lead the data gaps with the freshness the
    agent reports (indexed through {timestamp}, refreshed or not). Offer to go deeper on any
    item, and mention the findings are saved in Atlas and searchable later.
 7. Deliver the summary visually per the **Visual output** rule below: a card view of the top
@@ -542,7 +548,7 @@ both are passed by default. Detail lives in `references/ad-reuse.md`. For one po
    or typed), and the sources ("The brand's and creators' posts (Recommended)", "Only our own
    posts", "Only creators' posts about us"). Add the write confirmation as the last question:
    "Save the ranked candidates to Atlas?" (Save (Recommended) / Page only).
-2. Launch `atlas-account-analyst` with `target_mode` `reuse`, the tool prefix, `profile_slug`,
+2. Launch `atlas-profile-analyst` with `target_mode` `reuse`, the tool prefix, `profile_slug`,
    the linked handles and networks, `reuse_scope`, the window, any placements named,
    `recipient`, and whether the user approved the write. It reads only what Atlas holds.
 3. Relay the page link, the top patterns, the top candidates as post cards per **Visual
@@ -754,9 +760,9 @@ run reads the same answers, so setup always runs through Atlas calibrations:
 
 ### Run
 
-Ask once with `AskUserQuestion`: "Which readout?" Options: "Weekly (last week)",
-"Daily (yesterday)", "Both now", "Change setup". Then launch `atlas-weekly-readout` and/or
-`atlas-daily-readout` with: tool prefix, `profile_slug`, linked handles and networks, run mode
+Ask once with `AskUserQuestion`: "Which insights report?" Options: "Weekly (last week)",
+"Daily (yesterday)", "Both now", "Change setup". Then launch `atlas-weekly-insights-report` and/or
+`atlas-daily-insights-report` with: tool prefix, `profile_slug`, linked handles and networks, run mode
 `interactive`, `recipient` only when **Reading the ask** found a reader other than the saved
 ones, and the target window only if the user named one. Never pass "today" or any
 date the main thread assumed: session headers can be a day stale, and a wrong "today" shifts
@@ -796,7 +802,7 @@ After the first successful run, or whenever the user asks to schedule, offer wit
 2. Create the scheduled tasks with the session's scheduled-task tools (Cowork: the
    `create_trigger` tool on the Claude Code Remote server; load it with `ToolSearch` first).
    Never use local cron tools; they die with the session. One task per cadence:
-   - Name: "Atlas daily readout: {brand}" / "Atlas weekly readout: {brand}".
+   - Name: "Atlas daily insights report: {brand}" / "Atlas weekly insights report: {brand}".
    - Prompt: the standalone templates in the README under **Scheduling the readouts**, with
      the brand name, handles, and networks filled in. The prompt must say "do not ask
      questions" and "use the saved readout calibrations", and must not state a date; the

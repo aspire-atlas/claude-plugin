@@ -1,6 +1,6 @@
 # Account resolution reference
 
-Shared by the agents that work on one named account: `atlas-account-analyst` (mode `handle`)
+Shared by the agents that work on one named account: `atlas-profile-analyst` (mode `handle`)
 and `atlas-creator-profile`. **Resolve** finds the account in Atlas and makes sure the data is
 current before any analysis. **Peer set** builds the accounts it is compared against. Each
 agent's own file says what it does with the result.

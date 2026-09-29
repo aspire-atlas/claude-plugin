@@ -1,6 +1,6 @@
 # Readout reference (daily and weekly)
 
-Shared by the `atlas-daily-readout` and `atlas-weekly-readout` agents and by the **Readouts**
+Shared by the `atlas-daily-insights-report` and `atlas-weekly-insights-report` agents and by the **Readouts**
 section of SKILL.md. Holds the calibration set, metric definitions, page structures, delivery
 mechanics, and the rules for scheduled (unattended) runs.
 
@@ -251,7 +251,7 @@ or graphics, and `avatar` for profile pictures. Pass `media.mediaUrl` first and
 images under 8MB and the page under 10MB, cutting images before quality per **Images**. Load the
 `artifact-design` and `dataviz` skills before building. Apply the saved brand theme (`theme:brand`) per `theme.md`, **Applying the theme**; without one, the design here stands. Flags, deltas, and verdict
 chips keep their semantic colors. Publish with the Artifact tool,
-title "<Brand> Daily Readout" or "<Brand> Weekly Readout", and republish to the same path
+title "<Brand> Daily Insights Report" or "<Brand> Weekly Insights Report", and republish to the same path
 each run so the link in Slack or email stays stable. Note once in the footer that images are
 a snapshot.
 

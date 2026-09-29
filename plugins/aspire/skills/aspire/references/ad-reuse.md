@@ -1,6 +1,6 @@
 # Ad reuse reference (hooks and cut lists)
 
-Shared by `atlas-account-analyst` in `target_mode` `reuse` and by `atlas-content-review`'s
+Shared by `atlas-profile-analyst` in `target_mode` `reuse` and by `atlas-content-review`'s
 optional **Ad reuse** check. Serves the `performance` and `creative` lenses
 (`recipient-lens.md`): Performance decides what to license and put spend behind; Creative
 needs exactly which moments to cut, at what length, for which placement.
