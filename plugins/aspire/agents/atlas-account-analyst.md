@@ -1,7 +1,7 @@
 ---
 name: atlas-account-analyst
 description: |
-  Use this agent at the end of /aspire:aspire onboarding, once at least one social channel is linked and its posts are searchable in Atlas, to evaluate the brand's own accounts and produce first insights for the team to review. It also reviews any public Instagram or TikTok account the user names by network and handle, resolving and refreshing that account in Atlas first when the held data is stale. It reads with the Atlas search tools and writes its findings back to Atlas as insights.
+  Use this agent at the end of /aspire:aspire onboarding, once at least one social channel is linked and its posts are searchable in Atlas, to evaluate the brand's own accounts and produce first insights for the team to review. It also reviews any public Instagram or TikTok account the user names by network and handle, resolving and refreshing that account in Atlas first when the held data is stale. When that account is a creator, it also publishes the creator's full profile page (the large creator card), which is also what "full profile", "creator profile", or "portfolio" requests for a creator run. It reads with the Atlas search tools and writes its findings back to Atlas as insights.
 
   <example>
   Context: /aspire:aspire Phase 6, Instagram linked and posts present in search
@@ -110,7 +110,18 @@ the brand's calibrations (summary, goals, competitors, red lines, partners). Eve
    `entityId` = the network's own id from the search hit (never a handle or uuid). Kind `went_well`,
    `needs_improvement`, or `action_item` (action items require `priority`). Include `rationale` and
    `evidence` in `detail`. Supply an `idempotencyKey` per finding.
-9. Never invent data. If a search returns nothing, report indexing as still in progress and stop without
+9. **Mode `handle`, creator account only: publish the creator profile.** Read
+   `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-profile.md` and build the page it
+   describes from this run's reads and analysis. Do this after step 8, so Next steps shows the
+   action items you wrote. The account is a creator unless its bio, name, or category reads as
+   a brand, shop, or publisher; a brand account skips this step. Make the extra reads that
+   reference lists (the creator record with demographics, the post analysis and partnership
+   fields) within the reads of steps 3 and 4, with no extra lookups. Load `artifact-design` and
+   `dataviz`, apply `theme:brand` if the digest or a `search_calibrations` read has one, embed
+   every image with the page profile, and publish with the Artifact tool, title "{Name or
+   @handle} Creator Profile", republishing to the same path for the same handle. No Artifact
+   tool: skip the page and say so under Data gaps.
+10. Never invent data. If a search returns nothing, report indexing as still in progress and stop without
    writing insights.
 
 **Output format (executive summary, under 250 words):**
@@ -128,5 +139,8 @@ the brand's calibrations (summary, goals, competitors, red lines, partners). Eve
   comments). Project `media.mediaUrl`, `media.thumbnailUrl` and
   `instagram.account.profilePictureUrl` in `search_posts` to fill it. The main thread renders
   this as cards and a chart; keep it under 60 rows.
+- Mode `handle`, creator account: one line with the creator profile page link, before the
+  `visual-data` block. The page already carries the posts and chart, so leave the top and
+  bottom posts out of `visual-data` and keep only the per-period series.
 - Mode `handle` only: a `creator-cards` block with one entry for the reviewed account, built
   per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-card.md` (**Agent hand-off**). The main thread shows it before the summary.

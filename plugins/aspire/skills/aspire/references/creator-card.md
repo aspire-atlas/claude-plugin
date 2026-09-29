@@ -4,6 +4,8 @@ The one way this plugin shows a creator. Any flow that identifies, lists, ranks,
 recommends a creator renders it with this card: a single lookup, search and marketplace
 results, the discovery shortlist, the creator brief, and any creator named in a review or an
 account analysis. The layout is the compact Aspire creator card; only the placeholders change.
+The one larger view, a single creator's full profile page, embeds this same card
+(`creator-profile.md`).
 
 ## Where it renders
 
@@ -13,6 +15,7 @@ account analysis. The layout is the compact Aspire creator card; only the placeh
 | Main thread, 7 or more creators | Published page (Visual output in SKILL.md); more than 12 leads with a chart | Hidden |
 | Agents (brief, discovery, account analyst, content review) | Inside the agent's published page | Hidden |
 | No widget tool, or the call fails | The Markdown fallback below | n/a |
+| One creator's full profile or portfolio view | Published page, the card at full width with the evidence sections below it (`creator-profile.md`) | Hidden |
 
 Agents never call `show_widget`; the main thread can. When an agent returns a creator the user
 should see in chat, the main thread renders the card from the agent's numbers.

@@ -7,8 +7,8 @@ description: >
   for "/aspire", "/aspire agents", "get started with Atlas", "connect Atlas", "onboard my
   brand", "connect my Instagram", "what happened yesterday", "how did last week go",
   "schedule the weekly readout", "find creators for the campaign", "refill the shortlist",
-  "review this post", "check this draft against the brief", or "brand safety check on this
-  post".
+  "review this post", "check this draft against the brief", "brand safety check on this
+  post", or "show @handle's full profile".
 metadata:
   author: Aspire
 ---
@@ -390,7 +390,9 @@ Rules:
 ## Phase 6: First insights
 
 Trigger once at least one channel reports linked, or whenever the user asks for an account
-review.
+review. A request for one creator's full profile, creator profile, portfolio, or deep dive
+("full profile for @handle") is an account review in mode `handle` on that handle: the agent
+publishes the creator profile page (`references/creator-profile.md`).
 
 1. **Pick the target.** Ask once with `AskUserQuestion`, header "Account": "Which account
    should the review cover?" Two options:
@@ -433,7 +435,9 @@ review.
 7. Deliver the summary visually per the **Visual output** rule below: a card view of the top
    and bottom posts with their media, and one chart of the engagement pattern the headline
    rests on. In mode `handle`, lead with the account's creator card inline, before the
-   summary, rendered from the agent's `creator-cards` block.
+   summary, rendered from the agent's `creator-cards` block. When the agent returns a creator
+   profile page link, that page is the visual deliverable: link it right after the card and
+   build no second page from `visual-data`.
 8. Unattended run with no `AskUserQuestion` available: default to `own` mode and never start a
    lookup.
 
@@ -748,8 +752,8 @@ default, and only when the user asks for text or the data has no media at all.
   author's profile picture (`instagram.account.profilePictureUrl` or
   `tiktok.account.profileImage`). Project these fields in `search_posts`.
 - Creators: always the creator card in `references/creator-card.md`, which sets the fields to
-  pull, the sections, and the leave-out rules. No other creator layout is used anywhere in the
-  plugin.
+  pull, the sections, and the leave-out rules. The one exception is a single creator's full
+  profile page (`references/creator-profile.md`), which carries the same card at full width.
 
 **Default shapes:**
 
@@ -765,6 +769,9 @@ default, and only when the user asks for text or the data has no media at all.
 - A single creator the user names ("show me @handle", "who is @handle") → one inline creator
   card from what Atlas already holds. If Atlas holds nothing, say so and offer an account
   review (Phase 6, mode `handle`); never call `lookup_creators` just to draw a card.
+- A single creator's full profile or portfolio ("full profile for @handle") → the creator
+  profile page (`references/creator-profile.md`), built by the account review in mode
+  `handle`. It is the only other creator layout, and it is a page only.
 
 **Mechanics:**
 

@@ -376,6 +376,7 @@ exactly as its own reference describes. Map the roles onto the page's own tokens
 | Headings and large numbers / everything else / data and code | `font-display` (with `font-stretch: var(--font-display-stretch)`) / `font-body` / `font-mono` |
 | Card and panel corners | `radius`, when set |
 | Creator cards | `surface`, `text`, `muted`, `border`, `radius`, `brand-ink`, and the display and body fonts, through the override in **Creator card** below |
+| Creator profile page | The same roles plus `chart-1` and `chart-2` for its charts, through **Creator profile** below |
 | Status chips, verdicts, deltas, and alerts | Unchanged: the page's semantic colors |
 
 ### Header
@@ -445,6 +446,24 @@ leave out the `font-family` and `font-stretch` declarations. Leave out `font-str
 ```
 
 The card's ok and warn tiles keep their semantic colors; the neutral tile follows the theme.
+
+### Creator profile
+
+The full-page creator profile (`creator-profile.md`) is page only, so it has no widget
+variant. Add this block after the creator card override. It maps the profile's surfaces, text,
+borders, brand color, and chart series to the theme, in each mode. The sentiment and brand
+safety colors (`--ac-neg`, `--ac-neu`, the ok and warn dots and tiles) keep their semantic values.
+
+```html
+<style>
+.acp,:root[data-theme="light"] .acp{--ac-card:var(--surface);--ac-fg:var(--text);--ac-muted:var(--muted);--ac-border:var(--border);--ac-soft:var(--bg);--ac-brand:var(--brand-ink);--ac-on-brand:var(--surface);--ac-chart-1:var(--chart-1);--ac-chart-2:var(--chart-2,var(--muted))}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .acp{--ac-card:var(--surface);--ac-fg:var(--text);--ac-muted:var(--muted);--ac-border:var(--border);--ac-soft:var(--bg);--ac-brand:var(--brand-ink);--ac-on-brand:var(--surface);--ac-chart-1:var(--chart-1);--ac-chart-2:var(--chart-2,var(--muted))}}
+:root[data-theme="dark"] .acp,.dark .acp{--ac-card:var(--surface);--ac-fg:var(--text);--ac-muted:var(--muted);--ac-border:var(--border);--ac-soft:var(--bg);--ac-brand:var(--brand-ink);--ac-on-brand:var(--surface);--ac-chart-1:var(--chart-1);--ac-chart-2:var(--chart-2,var(--muted))}
+.acp{font-family:var(--font-body)}
+.acp h1,.acp h2,.acp .acp-big{font-family:var(--font-display);font-stretch:var(--font-display-stretch)}
+.acp .acp-panel,.acp .acp-note{border-radius:var(--radius,12px);box-shadow:none}
+</style>
+```
 
 ## Snippets
 
