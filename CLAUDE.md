@@ -3,7 +3,7 @@
 This repo is the Aspire Atlas plugin for Claude and its marketplace catalog. Full operating rules: `docs/PLUGIN-LIFECYCLE.md`. The short version:
 
 - `develop` is the beta channel (marketplace `aspire-atlas-beta`, version = commit SHA). `main` is the official channel (marketplace `aspire-atlas`, version pinned in `.claude-plugin/marketplace.json`).
-- Feature work: branch from `develop`, PR into `develop`. Never edit `CHANGELOG.md` or the `name` / `description` / `displayName` / `version` lines of `.claude-plugin/marketplace.json` on `develop`.
+- Feature work: branch from `develop`, PR into `develop`. Never edit `CHANGELOG.md` or the channel-specific lines of `.claude-plugin/marketplace.json` (top-level `name` and `description`, plugin `displayName`, `version`) on `develop`. The plugin entry's `description` is shared and stays identical on both branches.
 - Releases: `git checkout -b release/X.Y.Z origin/main && git merge origin/develop`, bump both version fields in `marketplace.json`, write the changelog entry, PR into `main` with a merge commit. CI tags and publishes.
 - `plugins/aspire/.claude-plugin/plugin.json` and `SKILL.md` frontmatter never carry a `version`.
 - Never touch `aspire-atlas/claude-plugin-internal`; CI overwrites it from `develop`.
@@ -11,3 +11,4 @@ This repo is the Aspire Atlas plugin for Claude and its marketplace catalog. Ful
 - Every Atlas write in a skill or agent is confirmed with `AskUserQuestion` first; destructive tools each get their own confirmation; unattended runs never ask and never destroy; only `atlas-creator-discovery` may start discovery work unattended, under a cadence the user saved for that campaign.
 - Before pushing: `claude plugin validate .`, `claude plugin validate plugins/aspire`, `bash scripts/check-channel.sh <develop|main>`.
 - No secrets, customer names, or internal URLs in any file.
+- The Aspire Atlas Organization Admin connector and the `/aspire:org-admin` skill are support tools, not features. Never merchandise or promote them. Keep them out of the plugin and marketplace descriptions, keywords, README feature lists and summaries, changelog highlights, and any flow that suggests them unprompted. Mention them only where people need the facts: setup and connection steps, the component list, and security and data-access notes. The skill runs only when someone asks about members or invitations.

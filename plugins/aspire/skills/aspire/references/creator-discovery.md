@@ -101,8 +101,34 @@ brand's own history is the stronger signal.
 | ---- | --- | ---------------- |
 | 1 | Creators the brand has worked with | `search_posts` for posts whose text or `instagram.hashtags` mention the brand's handles, plus the brand's own posts that tag another account, keeping only those carrying a partnership marker the field census exposes (branded-content / paid-partnership). Union with every `partner` calibration. |
 | 2 | Creators who have posted about the brand | The same mention query, minus everything already in tier 1. Recency-weighted: a mention in the campaign window outranks a two-year-old one. |
-| 3 | New creators already indexed in Atlas | `search_creators` filtered on the saved criteria (network, follower range, country, verification), then `search_posts` per shortlisted handle for topic evidence. |
-| 4 | New creators from outside the index | `search_creator_marketplace` against the criteria, and `WebSearch` / `WebFetch` for creators covering the campaign's topic. Resolve every web-sourced handle with `lookup_creators` before scoring it; an unresolvable handle is dropped, never scored from web copy alone. |
+| 3 | Lookalikes of what's working | Creators who resemble the brand's best-performing creators, per **Lookalike seeds** below. |
+| 4 | New creators already indexed in Atlas | `search_creators` filtered on the saved criteria (network, follower range, country, verification), then `search_posts` per shortlisted handle for topic evidence. |
+| 5 | New creators from outside the index | `search_creator_marketplace` against the criteria, and `WebSearch` / `WebFetch` for creators covering the campaign's topic. Resolve every web-sourced handle with `lookup_creators` before scoring it; an unresolvable handle is dropped, never scored from web copy alone. |
+
+**Lookalike seeds.** Tier 3 answers the growth question "where should the next dollar go?" by
+refilling the shortlist with creators like the ones already delivering.
+
+1. **Pick up to five seeds**, in this order, and stop at five: accepted creators in this
+   campaign whose posts about the brand beat their own median engagement per post; creators
+   named in `went_well` findings of the weekly readout's growth lens (`readout-weekly-{profile}`
+   prefix, `detail.creator` set, `detail.seedEligible: true`); `partner` creators whose collab
+   posts beat the brand's median. No seed qualifies: skip the tier and say so under Gaps.
+2. **Find lookalikes three ways**, each excluding the dedupe set, the brand's handles, and
+   every competitor:
+   - Semantic `search_posts` with `queryText` = the seed's best post caption (plus the first
+     transcript lines when present), filtered to the campaign's networks and a follower band
+     from half to double the seed's, limit 25. Collect the authors.
+   - `search_creators` with `match_phrase` on the bio for the seed's recurring bio and caption
+     vocabulary, in the same band.
+   - `search_creator_marketplace` with `keyword` = that vocabulary, `recommendationType:
+     "similar_audience"`, and the band's follower filters. Never pass `similarToCreators`: the
+     server rejects it alongside `keyword`, which is required (see `creator-brief.md`, **Atlas
+     quirks**).
+3. Read marketplace results through `search_creators` once they land (1 to 3 minutes after the
+   job completes, per `creator-brief.md`, **Atlas quirks**).
+   Record `source` `lookalike of @{seed}` and `detail.seed` on each candidate; the card's
+   `{DETAILS}` names the seed with the source, per the card's **Badges** rule. A lookalike is scored like any other candidate: resemblance earns
+   no points of its own.
 
 Rules:
 
@@ -147,8 +173,9 @@ handle or uuid), `idempotencyKey` per candidate per run.
 | `needs_improvement` | Rejected | n/a |
 
 `detail` carries: `campaign`, `tier`, `source`, `fitScore`, the per-component breakdown,
-`evidence` (permalinks and the profile URL), `riskFlags`, `verdict`, and `verdictAt` when
-decided. Reading state back: `search_insights` filtered on the `runKey` prefix
+`evidence` (permalinks and the profile URL), `riskFlags`, `verdict`, `verdictAt` when
+decided, `seed` for a lookalike, and `tierScheme: 2`. Records without `tierScheme` were written
+before the lookalike tier: read their tier 3 as tier 4 and their tier 4 as tier 5. Reading state back: `search_insights` filtered on the `runKey` prefix
 `creator-discovery-{profile}-{campaign}`, newest first, paged; the newest record per `entityId`
 wins. `search_insights` returns findings tenant-wide, so always filter on the prefix.
 
@@ -169,7 +196,10 @@ Sections in order:
    the card's own badges; safety flags in the brand safety tile and every other risk flag under
    "Notes" in `{DETAILS}`, per the card's **Brand safety** rule; evidence posts first in the
    thumbnails. `{DETAILS}` also holds the two strongest fit components with their points, the
-   source, and the contact route if known.
+   source, the contact route if known, and the estimated fee from the fee calculator
+   (`fees.md`, **Applying the rates**) on the campaign's platforms: "Est. fee {open} to {max},
+   target {target}" (marked "est. from engagement" when the calculator estimated the views), or nothing when it gives no price. The page footer carries the rate
+   label once.
 5. **Rejected this cycle** — collapsed list of handles with the reason recorded, so a
    decision is auditable.
 6. **Criteria** — the saved criteria in plain words, so a reader can see what "fit" meant.
@@ -177,7 +207,9 @@ Sections in order:
 
 More than 12 candidates means a chart leads the shortlist: fit score by tier, or follower
 count against engagement rate with the pool plotted. Embed every image with the snippet in
-`creator-card.md`, **Images**, page profile, and keep the page under 2MB. Load `artifact-design`, and `dataviz`
+`creator-card.md`, **Images**, page profile, and keep the images under 8MB and the page under
+10MB. A large pool cuts thumbnails per card (then rejected-list images) before quality, per
+**Images**. Load `artifact-design`, and `dataviz`
 for any chart, before building. Apply the saved brand theme (`theme:brand`) per `theme.md`, **Applying the theme**; without one, the design here stands. Title: "<Brand> Creator Discovery: <Campaign>".
 
 ## Decisions
@@ -214,8 +246,8 @@ A scheduled run starts a fresh session with nobody to answer questions.
   is missing, write nothing to Atlas, and end with "Run /aspire:aspire and ask for creator
   discovery setup."
 - **Discovery is allowed unattended for this agent**, and only this agent: the S9 cadence
-  record is the standing approval, and it covers `search_creators`, `search_creator_marketplace`,
-  `lookup_creators`, and web research. Every other scheduled run in this plugin still starts no
+  record is the standing approval, and it covers `search_creators`, `search_creator_marketplace`
+  (including the lookalike tier), `lookup_creators`, and web research. Every other scheduled run in this plugin still starts no
   discovery work.
 - Never run a destructive tool, and never record a verdict. Only a person decides, so an
   unattended run publishes and writes `action_item` findings, nothing else.
@@ -231,7 +263,7 @@ A scheduled run starts a fresh session with nobody to answer questions.
 
 Inherited from `creator-brief.md` and `readout.md`: project the `media` and
 `instagram.account` containers, not leaf URLs; exclude stories with `exists mediaKind`; some
-`/thumbnail` routes 404; published pages cannot load `cdn.aspire.io` images, so embed them.
+`/thumbnail` routes 404 on image posts; published pages cannot load `cdn.aspire.io` images, so embed them.
 New for creator discovery: `search_creators` carries no post-level fields, so topic evidence always
 needs a second `search_posts` call per candidate; `lookup_creators` has no status-check tool
 (re-call it with the same item to re-read a `fetching` result) and rejects `profileSlug`,

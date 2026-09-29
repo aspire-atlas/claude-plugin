@@ -3,12 +3,15 @@ name: aspire
 description: >
   Creative Intelligence for your brand on Aspire Atlas. Connect Instagram, TikTok, and
   YouTube, see what's working, benchmark competitors, and check brand safety. Find and brief
-  creators, keep a campaign shortlist, review posts, and get daily and weekly reports. Use
-  for "/aspire", "/aspire agents", "get started with Atlas", "connect Atlas", "onboard my
-  brand", "connect my Instagram", "what happened yesterday", "how did last week go",
-  "schedule the weekly readout", "find creators for the campaign", "refill the shortlist",
-  "review this post", "check this draft against the brief", or "brand safety check on this
-  post".
+  creators, keep a campaign shortlist, review posts, track what creators say about you vs.
+  competitors, and get daily, weekly, and quarterly reports shaped for whoever will act on
+  them. Use for "/aspire", "/aspire agents", "get started with Atlas", "connect Atlas",
+  "onboard my brand", "connect my Instagram", "what happened yesterday", "how did last week
+  go", "schedule the weekly readout", "find creators for the campaign", "refill the
+  shortlist", "we launch on the 14th and need creators", "review this post", "check this
+  draft against the brief", "brand safety check on this post", "show @handle's full
+  profile", "what are creators saying about us vs {competitor}", "best hooks to reuse as
+  ads", "how did influencer do this quarter", or "/aspire fee calculator".
 metadata:
   author: Aspire
 ---
@@ -33,6 +36,7 @@ Text after the command is the argument. Route on it before anything else:
 | Argument | Action |
 | -------- | ------ |
 | `agents` (also `list agents`, `show agents`) | Run **List agents** below. Skip the phases unless the user picks an agent to run. |
+| `fee calculator` (also `fees`, `pricing`, `rate card`, `creator rates`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Fee calculator** below. Skip the other phases. |
 | empty, or anything else | Run the phases in order, starting at Phase 1. Treat the text as context. |
 
 ### List agents
@@ -62,21 +66,75 @@ time so it never goes stale; never recite it from memory.
 
    | Chosen agent | Hand off to |
    | ------------ | ----------- |
-   | `atlas-account-analyst` | Phase 1, then Phase 2 + 3 for the profile and handles, then Phase 6 (its target question first) |
+   | `atlas-profile-analyst` | Phase 1, then Phase 2 + 3 for the profile and handles, then Phase 6 (its target question first), or **Ad reuse** when the ask is about hooks, ads, or a cut list |
+   | `atlas-creator-profile` | Phase 1, then Phase 2 + 3, then **Creator profile** (it asks for the handle and network first) |
    | `atlas-creator-brief` | Phase 1, then Phase 2 + 3, then **Creator brief** (its three questions first) |
    | `atlas-creator-discovery` | Phase 1, then Phase 2 + 3, then **Creator discovery**, Setup if the campaign is new, then Run |
    | `atlas-content-review` | Phase 1, then Phase 2 + 3, then **Content review**, Setup if it has never run, then Review |
-   | `atlas-daily-readout` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the daily cadence |
-   | `atlas-weekly-readout` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the weekly cadence |
+   | `atlas-daily-insights-report` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the daily cadence |
+   | `atlas-weekly-insights-report` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the weekly cadence |
+   | `atlas-market-signal` | Phase 1, then Phase 2 + 3, then **Market signal**, Setup if it has never run, then Run |
+   | `atlas-quarterly-signal` | Phase 1, then Phase 2 + 3, then **Quarterly signal** |
+
+   Older names still reach the renamed agents: `atlas-account-analyst` is `atlas-profile-analyst`,
+   `atlas-daily-readout` is `atlas-daily-insights-report`, and `atlas-weekly-readout` is
+   `atlas-weekly-insights-report`. A scheduled task or message that names an old agent launches
+   the new one; offer once, in an interactive session, to update the task's prompt and name.
 
    An agent on disk that is not in that table: run Phase 1 and Phase 2 + 3, then launch it
-   with the tool prefix, `profile_slug`, and the linked handles and networks, and relay
+   with the tool prefix, `profile_slug`, the linked handles and networks, and `recipient`
+   (**Reading the ask**), and relay
    whatever it asks the main thread to confirm.
 
 Listing needs no Atlas connection, so do not run Phase 1 and do not render a connector card
 before the question; run Phase 1 only once an agent is picked. If the `agents/` folder is
 missing or empty, say so in one line and stop; never invent an agent and never offer one that
 is not on disk.
+
+---
+
+## Reading the ask (every request has two users)
+
+The person typing is the **requester**. The person who acts on the output is the
+**recipient**, often on another team. Before launching any agent, read who the output is for,
+what they decide with it, and when, and pass that to the agent as `recipient`. Full rules, the
+team catalog, and how agents render for a lens are in `references/recipient-lens.md`.
+
+1. **Infer.** Match the ask's words against the catalog's cues, and take any reader, meeting,
+   or date the user names ("for Thursday's product review"). Pick a primary lens and, when a
+   hand-off applies (Performance then Creative; Campaign then Brand), a second one.
+2. **Confirm in one line.** One `AskUserQuestion`, header "For", in the same call as the
+   flow's first question when there is one. Word it as the guess ("This reads like it's for
+   the product review. Should I track it weekly and add a messaging view for PMM?"). Options:
+   the guess (Recommended), one or two other lenses from the cues, "Just for our team". Skip
+   it when the user named the reader and the decision, when this conversation already
+   confirmed a lens for the same kind of ask, or when the ask is the team's own routine ("run
+   the daily"). Never ask in plain text, never twice for one request, never in an unattended
+   run (saved lenses or `team`).
+3. **Route by lens** when the ask names no flow:
+
+   | Primary lens | Ask shape | Flow |
+   | ------------ | --------- | ---- |
+   | `product`, `pmm` | What creators say about the brand vs. competitors | **Market signal**, then offer to schedule it weekly and add the lens to the weekly readout |
+   | `product`, `pmm` | How our own accounts compare | Phase 6, mode `own` |
+   | `leadership` | This quarter, QBR | **Quarterly signal** |
+   | `leadership` | This week | **Readouts**, weekly, with the lens |
+   | `growth` | Which creators drive results, where to spend | **Readouts**, weekly, with the `growth` lens, then offer lookalikes in **Creator discovery** |
+   | `campaign` | A launch or dated campaign that needs creators | **Campaign plan** below |
+   | `brand` | Is this post safe or on brand | **Content review** |
+   | `performance`, `creative` | Hooks, ads, licensing, a cut list | **Ad reuse**; for one post, **Content review** with the ad reuse check |
+   | `team` | Anything | The flow the ask names |
+
+4. **Pass it on.** Every agent launch below includes `recipient` (the confirmed lens or lenses,
+   primary first). Relay the agent's forward note as-is, so the requester can paste it to the
+   reader.
+
+**Campaign plan.** A launch ask ("we launch on the 14th and need creators") spans four agents.
+Propose the sequence in the confirmation line ("I'll start a shortlist and brief for the
+launch, then check drafts and run a daily pulse through launch week. Sound right?"), then run
+it in order, each step through its own section and its own write confirmations: **Creator
+discovery** (Setup for the campaign if new, then Run), **Creator brief** in campaign mode,
+the pulse offer (**Readouts**, **Launch pulse**), and **Content review** as drafts arrive.
 
 ---
 
@@ -98,11 +156,17 @@ pictures (Visual output, after Phase 6), and every page, creator card, and chart
 brand's saved theme when there is one (**Theme**). Every creator is shown with the creator
 card (`references/creator-card.md`), in chat or on a page.
 
-After onboarding, four recurring flows hang off the same connection: the **Creator brief**
-(weekly content plan with creators), the **Creator discovery** (a standing creator shortlist per
-campaign, schedulable), the **Content review** (one post or draft checked against its brief,
-interactive only), and the **Readouts** (daily and weekly performance digests, schedulable).
-Each is routed from its own section below. The **Theme** section brands all of their pages.
+After onboarding, these flows hang off the same connection: the **Creator brief** (a weekly or
+campaign content plan with creators), the **Creator discovery** (a standing creator shortlist
+per campaign, schedulable), the **Content review** (one post or draft checked against its
+brief, interactive only), the **Readouts** (daily and weekly performance digests with a launch
+pulse and a section per reader, schedulable), the **Market signal** (what creators say about
+the brand vs. competitors, schedulable), and the **Quarterly signal** (the quarter's story for
+leadership). The **Creator profile** gives one creator's full page on request, and **Ad reuse**
+ranks hooks and builds a cut list. Every request is read for who will act on it first
+(**Reading the ask**). Each is routed from its own
+section below. The **Theme** section brands all of their pages,
+and the **Fee calculator** sets the creator rates behind every fee they show.
 
 ---
 
@@ -385,12 +449,16 @@ Rules:
   move on; the suggestion is recorded for an admin.
 - If the user declines a question, record it with kind `decline` so it is not asked again.
 - Stop after the core set (about 7 questions) unless the user wants to keep going.
-- When the questions are done, and before Phase 6, make the theme offer from **Theme**, Offers.
+- When the questions are done, and before Phase 6, make the theme offer from **Theme**, Offers,
+  then the fee calculator offer from **Fee calculator**, Offers.
 
 ## Phase 6: First insights
 
 Trigger once at least one channel reports linked, or whenever the user asks for an account
-review.
+review. A request for one creator's full profile, portfolio, or deep dive ("full profile for
+@handle") is not an account review: route it to **Creator profile** below. A request about
+hooks, ads, licensing, or a cut list goes to **Ad reuse**; what creators say about the brand
+against competitors goes to **Market signal**.
 
 1. **Pick the target.** Ask once with `AskUserQuestion`, header "Account": "Which account
    should the review cover?" Two options:
@@ -413,9 +481,9 @@ review.
    `author.username` for each linked handle, `limit: 1`. If empty, tell the user indexing is
    still running and offer to check back; do not run the analyst on nothing. Mode `handle`
    skips this check: the agent owns resolution and the freshness check.
-4. Launch the `atlas-account-analyst` subagent with: `profile_slug`, the tool prefix,
-   `target_mode`, the handles and networks for that mode, and a digest of the Phase 5
-   calibrations. In mode `handle`, state that the user approved the fetch so the agent does not
+4. Launch the `atlas-profile-analyst` subagent with: `profile_slug`, the tool prefix,
+   `target_mode`, the handles and networks for that mode, `recipient` (**Reading the ask**;
+   `team` during onboarding), and a digest of the Phase 5 calibrations. In mode `handle`, state that the user approved the fetch so the agent does not
    ask again. State that the calibrations are for classification and relevance only: a named
    account is never benchmarked against the brand's own account or the brand's competitors.
    It is compared against its **own** peers — accounts the user named, or "like" accounts in the
@@ -426,25 +494,78 @@ review.
    handle with `lookup_creators` when Atlas holds nothing or the record is over 24 hours old,
    then writes findings back with `append_insights` under one `runKey` per run (`own`:
    `onboarding-{profile}-{date}`; `handle`: `account-review-{profile}-{handle}-{date}`).
-6. Present the subagent's executive summary: headline, 3 to 5 insights with numbers, 2 to 3
-   ranked next steps, data gaps. In mode `handle`, lead the data gaps with the freshness the
+6. Present the subagent's executive summary: headline, 3 to 5 insights with numbers, next
+   week's three content pushes (mode `own`), 2 to 3 ranked next steps, data gaps. Offer the
+   creator brief in one line when a push needs creators. In mode `handle`, lead the data gaps with the freshness the
    agent reports (indexed through {timestamp}, refreshed or not). Offer to go deeper on any
    item, and mention the findings are saved in Atlas and searchable later.
 7. Deliver the summary visually per the **Visual output** rule below: a card view of the top
    and bottom posts with their media, and one chart of the engagement pattern the headline
    rests on. In mode `handle`, lead with the account's creator card inline, before the
-   summary, rendered from the agent's `creator-cards` block.
+   summary, rendered from the agent's `creator-cards` block. When the reviewed account is a
+   creator, offer its full profile in one line after the summary (**Creator profile**).
 8. Unattended run with no `AskUserQuestion` available: default to `own` mode and never start a
    lookup.
+
+---
+
+## Creator profile (full page for one creator)
+
+Trigger when the user asks for one creator's full profile, portfolio, or deep dive, or what a
+named creator would cost ("full profile for @handle", "show me @handle's portfolio"). Requires
+a brand profile. The page is described in `references/creator-profile.md`, and its fees come
+from the **Fee calculator**.
+
+1. Read the target: one network and one handle with the `@` stripped. If the network is
+   missing, ask with `AskUserQuestion` (Instagram / TikTok). Only those two are searchable in
+   Atlas today; for YouTube, say so and offer the other two. A handle that is one of the
+   profile's own linked handles is an account review (Phase 6, mode `own`), not a profile.
+2. Naming the handle **is** the approval for fetching it from Atlas when the held data is
+   missing or over a day old, as in Phase 6; neither the skill nor the agent asks again.
+3. Launch the `atlas-creator-profile` subagent with the tool prefix, `profile_slug`, the
+   network and handle, any comparison accounts the user named, `recipient` (**Reading the
+   ask**), and a note that the user approved the fetch. It writes nothing to Atlas, so it needs no write confirmation.
+4. Show the creator card inline from the agent's `creator-cards` block, then the page link,
+   then the agent's summary bullets and fee line. Never repeat the card's numbers in text.
+5. If the agent reports a brand account, say so and offer an account review (Phase 6, mode
+   `handle`). If it reports the handle could not be resolved, relay what was tried.
+6. When the fees used the Aspire recommended rates, make the fee calculator offer from **Fee
+   calculator**, Offers, after the reply.
+
+---
+
+## Ad reuse (hooks and cut lists)
+
+Trigger when the user asks for the best hooks, which creator content to reuse or license as
+ads, or clips and a cut list for editors ("pull the best hooks from last month's creator
+posts", "send creative the good stuff to cut down"). Requires a brand profile with a linked
+channel. Serves the `performance` and `creative` lenses, which hand off to each other, so
+both are passed by default. Detail lives in `references/ad-reuse.md`. For one post, use
+**Content review**, whose ad reuse check covers the same ground.
+
+1. Ask once with `AskUserQuestion`, skipping what the user already said, in the same call as
+   the **Reading the ask** confirmation: the window (last 30 days (Recommended), last 90 days,
+   or typed), and the sources ("The brand's and creators' posts (Recommended)", "Only our own
+   posts", "Only creators' posts about us"). Add the write confirmation as the last question:
+   "Save the ranked candidates to Atlas?" (Save (Recommended) / Page only).
+2. Launch `atlas-profile-analyst` with `target_mode` `reuse`, the tool prefix, `profile_slug`,
+   the linked handles and networks, `reuse_scope`, the window, any placements named,
+   `recipient`, a digest of the brand's calibrations (competitors, red lines, partners), and
+   whether the user approved the write. It reads only what Atlas holds.
+3. Relay the page link, the top patterns, the top candidates as post cards per **Visual
+   output**, and the rights line. Say plainly that usage rights for creator posts are not held
+   in Atlas unless a brief or record says otherwise.
 
 ---
 
 ## Creator brief (weekly content plan with creators)
 
 Trigger when the user asks for a content brief, a creator brief, what to post next week, a
-plan for next week's content, or creators to make it. Requires at least one linked channel
-with indexed posts. Before launching, settle three things with `AskUserQuestion` (skip any
-the user already answered):
+plan for next week's content, creators to make it, or creators for a dated launch or campaign
+(campaign mode). Requires at least one linked channel with indexed posts. Before launching,
+settle three things with `AskUserQuestion` (skip any the user already answered), plus, in
+campaign mode, the campaign (a saved `campaign:*-brief`, or "a new campaign", which runs
+**Creator discovery** Setup first unless the user declines) and the first post date:
 
 1. **Scope.** If a `red_line` calibration blocks AI generated content (ignore `review:` keys,
    which are content review only), offer "Strategy brief
@@ -456,9 +577,13 @@ the user already answered):
    features, event coverage (multiSelect).
 
 Then launch the `atlas-creator-brief` agent with: tool prefix, `profile_slug`, linked handles
-and networks, target week (next Monday to Friday unless given), lookback, and the three
-answers. Relay its summary, the published page, and any decisions it needs (guideline
+and networks, `brief_mode` (`campaign` when the ask names a launch, date, or campaign;
+otherwise `week`), target week (next Monday to Friday unless given) or the campaign slug, first
+post date, and end date, `recipient` (**Reading the ask**), lookback, and the three answers. Relay its summary, the published page, and any decisions it needs (guideline
 conflicts, budget tier). Show the first-pick creators inline as creator cards from the agent's `creator-cards` block. The agent writes action items back to Atlas as insights.
+
+In campaign mode, after the brief, offer the launch pulse (**Readouts**, **Launch pulse**) and
+say that each draft can go through **Content review** as it arrives.
 
 ---
 
@@ -504,7 +629,8 @@ maintains a pipeline across weeks and teammates.
 Ask once with `AskUserQuestion`: "What should the discovery agent do?" Options: "Fill the shortlist to
 {target}", "Show the current shortlist", "Record decisions on the shortlist", "Change setup".
 Then launch `atlas-creator-discovery` with: tool prefix, `profile_slug`, the campaign slug, the
-brand handles and networks, and run mode `interactive`. Relay its summary, the page link, and
+brand handles and networks, run mode `interactive`, and `recipient` (**Reading the ask**;
+`growth` when the ask is for more creators like the ones working). Relay its summary, the page link, and
 the numbered range the user can decide against. Show the candidates added this run inline as
 creator cards from the agent's `creator-cards` block (top six by fit score, badged with their
 shortlist numbers).
@@ -567,9 +693,12 @@ weekly readouts.
    that spoken content can't be checked without one, and accept one if offered.
 2. Ask P4, the write confirmation. Run only on "Run the review".
 3. Launch `atlas-content-review` with: tool prefix, `profile_slug`, brand handles and
-   networks, `stage`, the normalized deliverable, the brief source, and the post inputs. For a
+   networks, `stage`, the normalized deliverable, the brief source, the post inputs, and
+   `recipient` (**Reading the ask**: `brand` for "is this safe" or "approve"; `performance` or
+   `creative` when the user asks whether it can run as an ad, which adds the ad reuse check). For a
    published post, state that the user approved fetching it.
-4. Relay the verdict, the required edits, the page link, and anything it could not check.
+4. Relay the verdict with its go or no-go, the required edits, the page link, and anything it
+   could not check.
    Offer to draft the edit notes as a message to the creator. The notes are the agent's; do
    not add copy the brand's red lines forbid.
 
@@ -617,10 +746,12 @@ run reads the same answers, so setup always runs through Atlas calibrations:
    run question.
 2. Otherwise ask the missing questions R1 to R6 from `references/readout.md`, one
    `AskUserQuestion` each, in order. Daily and weekly are configured together in this one pass;
-   the only per-cadence answer is the time in R1 and the audience in R6. Never ask in plain
-   text. Never skip a question the user has not answered or declined.
+   the only per-cadence answer is the time in R1 and the readers in R6 (multiSelect: the
+   first picked leads, each other gets its own section, and any may carry its own
+   destination). Never ask in plain text. Never skip a question the user has not answered or declined.
 3. On R2, state plainly that scheduled runs will post to the named Slack channel and email the
-   named recipients without asking each time. That confirmation is the standing approval.
+   named recipients without asking each time. That confirmation is the standing approval, and
+   it covers any destination named on an R6 reader too; say so in the batch confirmation.
 4. Confirm the batch once with `AskUserQuestion` ("Save these readout preferences for
    {brand}? Everyone on the team and every scheduled run will use them."), then write all
    answers with `append_calibration`, `provenance: "interview"`. A `key-exists` follows the
@@ -630,10 +761,11 @@ run reads the same answers, so setup always runs through Atlas calibrations:
 
 ### Run
 
-Ask once with `AskUserQuestion`: "Which readout?" Options: "Weekly (last week)",
-"Daily (yesterday)", "Both now", "Change setup". Then launch `atlas-weekly-readout` and/or
-`atlas-daily-readout` with: tool prefix, `profile_slug`, linked handles and networks, run mode
-`interactive`, and the target window only if the user named one. Never pass "today" or any
+Ask once with `AskUserQuestion`: "Which insights report?" Options: "Weekly (last week)",
+"Daily (yesterday)", "Both now", "Change setup". Then launch `atlas-weekly-insights-report` and/or
+`atlas-daily-insights-report` with: tool prefix, `profile_slug`, linked handles and networks, run mode
+`interactive`, `recipient` (the lens **Reading the ask** confirmed, or the saved R6 lenses
+when it found none), and the target window only if the user named one. Never pass "today" or any
 date the main thread assumed: session headers can be a day stale, and a wrong "today" shifts
 the whole readout by a day (or a week). The agents resolve the date themselves from the
 shell clock in the brand's saved timezone and refuse a repeat window. Relay each agent's
@@ -641,6 +773,23 @@ summary and page link, including the resolved window it reports. When an agent a
 thread to confirm delivery, ask with
 `AskUserQuestion` ("Post to {channel} and email {recipients}?" Options: Send (Recommended) /
 Page only this time) and relay the answer.
+
+### Launch pulse
+
+While a campaign window is open, the daily readout adds a launch pulse: the campaign creators'
+posts, mentions and tracked hashtags, how the launch is landing, and draft verdicts
+(`references/readout.md`, **Daily launch pulse**). Offer it after a campaign brief, or when
+the user asks how a launch is landing:
+
+1. Ask in one `AskUserQuestion` call: the window (from the brief's first post date to its end
+   (Recommended), or typed), the launch terms creators would use (options inferred from the
+   campaign brief; free text for the rest), and who reads it (Campaign team (Recommended) /
+   Product team / Both), with an optional destination typed per reader.
+2. Confirm the write with `AskUserQuestion` ("Save a launch pulse for {campaign} from {start}
+   to {end}? The daily readout, scheduled runs included, will add it and deliver to {destinations}
+   without asking each time."), then write `campaign:{slug}-pulse` with `append_calibration`.
+3. If the daily readout is not scheduled, offer **Schedule** below; the pulse rides on it.
+   Readout setup must exist first.
 
 ### Schedule (two schedules, one pass)
 
@@ -653,8 +802,13 @@ After the first successful run, or whenever the user asks to schedule, offer wit
    the weekday too.
 2. Create the scheduled tasks with the session's scheduled-task tools (Cowork: the
    `create_trigger` tool on the Claude Code Remote server; load it with `ToolSearch` first).
-   Never use local cron tools; they die with the session. One task per cadence:
-   - Name: "Atlas daily readout: {brand}" / "Atlas weekly readout: {brand}".
+   Never use local cron tools; they die with the session. First list the existing scheduled
+   tasks and look for ones named "Atlas daily readout: {brand}" or "Atlas weekly readout:
+   {brand}" (the names before the rename). Offer to replace each in the step 3 confirmation:
+   update its name and prompt in place when the tools allow, otherwise create the new task and
+   delete the old one only after the new one exists. Never leave both running, which would
+   deliver twice. One task per cadence:
+   - Name: "Atlas daily insights report: {brand}" / "Atlas weekly insights report: {brand}".
    - Prompt: the standalone templates in the README under **Scheduling the readouts**, with
      the brand name, handles, and networks filled in. The prompt must say "do not ask
      questions" and "use the saved readout calibrations", and must not state a date; the
@@ -671,6 +825,76 @@ After the first successful run, or whenever the user asks to schedule, offer wit
 
 Unattended runs never ask questions; if setup is incomplete they publish a "setup needed"
 card and stop (rules in `references/readout.md`).
+
+---
+
+## Market signal (what creators say about the brand vs. competitors)
+
+Trigger when the user asks what creators are saying about the brand compared with
+competitors, how the brand is talked about, share of voice, whether the brand is behind on a
+feature, or to track any of that. Requires a brand profile; linked channels are not required,
+because the conversation is other creators' posts. Full detail lives in
+`references/market-signal.md`. It is not an account review: Phase 6 looks at accounts, the
+market signal looks at the conversation.
+
+### Setup: define the tracking once, for everyone
+
+1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end,
+   `includeSuperseded: true`). If `market-signal:scope`, `-topics`, `-lenses`, `-routing`, and
+   `-cadence` all exist, skip to **Run** and offer "Change setup" on the run question.
+2. Otherwise ask the missing questions M1 to M5 from the reference, one `AskUserQuestion`
+   each, in order. When **Reading the ask** already confirmed readers, preselect them as M3's
+   recommended option. M1 offers the saved competitors; a competitor typed in is also
+   offered as a new `competitor` record in the batch.
+3. On M3 and M4, state that scheduled runs will post to the named destinations and save their
+   findings to Atlas without asking each time. That is the standing approval for both.
+4. Confirm the batch once ("Save this market signal setup for {brand}? Everyone on the team and
+   every scheduled run will use it."), then write the records with `append_calibration`,
+   `provenance: "interview"`. A `key-exists` follows the Phase 5 supersede rule.
+5. Offer once to add the tracked hashtags to the watch list (`add_hashtags`, its own
+   confirmation). Never required.
+
+### Run
+
+Launch `atlas-market-signal` with: tool prefix, `profile_slug`, the brand handles and
+networks, run mode `interactive`, `recipient` (the lenses from **Reading the ask**, else the
+saved M3 lenses), and a window only if the user named one. Confirm the write before launching
+in the same `AskUserQuestion` call as the lens ("Save the findings to Atlas?" Save
+(Recommended) / Page only) and pass the answer. Relay the headline, the page link, and the
+forward note. When the agent asks to confirm delivery, ask as in **Readouts**, Run. When it
+names competitors Atlas does not index, offer an account review of each (Phase 6, mode
+`handle`), which is the approved way to fetch one.
+
+### Schedule
+
+After the first successful run, if M5 is weekly, offer with `AskUserQuestion`: "Track this
+weekly?" Options: "Yes, weekly (Recommended)" / "Not now". Follow **Readouts**, Schedule, for
+the mechanics: UTC cron from `market-signal:cadence`, one task named "Atlas market signal:
+{brand}", the prompt from the README under **Scheduling the market signal**, confirmed before
+creating. When the weekly readout is set up, offer to add the `product` and `pmm` lenses to R6
+so its page carries the parity and messaging sections from this run.
+
+Unattended runs never ask, never start discovery, and publish a "setup needed" card when setup
+is incomplete.
+
+---
+
+## Quarterly signal (the quarter's story for leadership)
+
+Trigger when the user asks how the creator or influencer program did this quarter, for a
+QBR, a quarter in review, or whether the program is working. Requires a brand profile. Full
+detail lives in `references/quarterly-signal.md`.
+
+1. Ask in one `AskUserQuestion` call, together with the **Reading the ask** confirmation
+   (default `leadership`): which quarter (last completed quarter (Recommended), quarter to
+   date, or typed dates or a fiscal quarter), and "Save the quarter's findings to Atlas?"
+   (Save (Recommended) / Page only). If the user mentions spend, take the number as typed;
+   never ask for it, and never estimate it.
+2. Launch `atlas-quarterly-signal` with: tool prefix, `profile_slug`, linked handles and
+   networks, run mode `interactive`, `recipient`, the quarter, any spend given, and the write
+   answer.
+3. Relay the page link, the outcome line, the KPIs, and the forward note. When the data gaps
+   name missing readouts, offer readout setup or scheduling so next quarter has them.
 
 ---
 
@@ -726,6 +950,56 @@ ok and warn, above and below the baseline) never take brand colors.
 
 ---
 
+## Fee calculator (creator rates for every fee)
+
+Trigger on `/aspire:aspire fee calculator` (see **Arguments**), or when the user asks to set,
+change, or check the brand's creator rates, CPM, or what the plugin offers creators. Requires a
+brand profile. Full detail lives in `references/fees.md`: the calculation, the Aspire
+recommended rates, the questionnaire, the record, and how every flow applies it.
+
+The rates are brand memory, not session state. They are one `fees:rate-card` calibration, and
+every creator fee the plugin shows uses them: the creator profile page, the creator brief, the
+discovery shortlist, Draft Outreach, and any flow added later. Without one, flows use the
+Aspire recommended rates and say so.
+
+### Setup
+
+1. Ask F0 to F4 from the reference, one `AskUserQuestion` each, in order, skipping any the user
+   already answered (typed CPMs answer F3 and go straight to F4's result). F2's benchmark check
+   follows the Phase 5 web research rule: findings go to the user as bullets with sources, and
+   they are context only; they never change the rates by themselves.
+2. F3 offers Aspire's recommended rates or the brand's own, built by adjusting Aspire's.
+3. F5 is the write confirmation. Save with `append_calibration`, per the reference. A
+   `key-exists` response follows the Phase 5 supersede rule with its own confirmation. Going
+   back to Aspire's rates is `retract_calibration`, with its own confirmation.
+
+Rates are refreshed only when someone runs the fee calculator again.
+
+### Offers
+
+Offer the fee calculator at most once per session. Never offer it when `fees:rate-card` or
+`decline:fees` exists, when the user is already running it, or in an unattended run. Agents
+never offer it.
+
+- At the end of Phase 5, after the theme offer, before Phase 6.
+- The first time in a session a flow shows the user a creator fee from the Aspire recommended
+  rates: after that flow's reply, not before it.
+
+Ask with `AskUserQuestion`: "Set {brand}'s creator rates? Fees on creator profiles, briefs,
+shortlists and outreach will use them. It takes about two minutes." Options: "Set them up now
+(Recommended)", "Later", "Don't ask again". "Later" goes on with Aspire's recommended rates.
+"Don't ask again" writes the `decline:fees` record, and the answer counts as its confirmation,
+as with Phase 5 declines.
+
+### Applying
+
+Agents read `fees:rate-card` with their own calibration read and apply it per **Applying the
+rates** in the reference. The main thread passes nothing extra, and applies it the same way to
+any fee it shows itself. No flow prices a creator any other way, and a fee the calculator
+cannot compute is left out, never estimated.
+
+---
+
 ## Organization admin (members)
 
 Questions about who is in the organization, pending invitations, or inviting a teammate
@@ -748,8 +1022,8 @@ default, and only when the user asks for text or the data has no media at all.
   author's profile picture (`instagram.account.profilePictureUrl` or
   `tiktok.account.profileImage`). Project these fields in `search_posts`.
 - Creators: always the creator card in `references/creator-card.md`, which sets the fields to
-  pull, the sections, and the leave-out rules. No other creator layout is used anywhere in the
-  plugin.
+  pull, the sections, and the leave-out rules. The one exception is a single creator's full
+  profile page (`references/creator-profile.md`), which carries the same card at full width.
 
 **Default shapes:**
 
@@ -765,6 +1039,9 @@ default, and only when the user asks for text or the data has no media at all.
 - A single creator the user names ("show me @handle", "who is @handle") → one inline creator
   card from what Atlas already holds. If Atlas holds nothing, say so and offer an account
   review (Phase 6, mode `handle`); never call `lookup_creators` just to draw a card.
+- A single creator's full profile or portfolio ("full profile for @handle") → the creator
+  profile page (`references/creator-profile.md`), built by the `atlas-creator-profile` agent
+  (**Creator profile**). It is the only other creator layout, and it is a page only.
 
 **Mechanics:**
 
@@ -775,8 +1052,9 @@ default, and only when the user asks for text or the data has no media at all.
   `SendUserFile` with the rendered HTML, or inline image links in the reply, when Artifact is
   absent.
 - Media URLs come from `cdn.aspire.io`, which neither inline widgets nor published pages can
-  load. Embed every image as a JPEG data URI with the snippet in `references/creator-card.md`,
-  **Images** (inline profile for widgets, page profile for pages). Give every image an `alt` of
+  load. Embed every image as a data URI with the snippet in `references/creator-card.md`,
+  **Images** (inline profile for widgets, page profile for pages), which sizes each image to its
+  rendered box at 2x from the full-size source and sets its `width` and `height`. Give every image an `alt` of
   the caption excerpt, and keep an `onerror` placeholder tile with the format chip for images
   the snippet could not fetch. Note once in the page footer that images are a snapshot.
 - Never fabricate an image. If a post has no media fields, show the placeholder tile, not a
@@ -801,8 +1079,10 @@ and network (never `lookup_creators`); if Atlas does not hold it, say so and sto
    (`search_insights` on the `creator-discovery-{profile}` prefix, newest record for the
    creator's `entityId`).
 2. Draft one message in chat: a subject line and a body under 120 words, in the brand's voice,
-   naming one specific post of theirs from Atlas and the campaign when there is one. Never
-   state a fee, a date, or a product the calibrations do not hold; leave a bracketed blank.
+   naming one specific post of theirs from Atlas and the campaign when there is one. A fee is
+   only the open offer from the fee calculator (`references/fees.md`) for the campaign's
+   platforms, or the channel the card shows; when it cannot be computed, write `[fee]`. Never
+   state a date or a product the calibrations do not hold; leave a bracketed blank.
 3. Name the contact route Atlas holds (`instagram.email`, `youtube.youtubeBusinessEmail`,
    Instagram partnership messages when `isPaidPartnershipMessagesEnabled`), or say there is
    none.
@@ -880,3 +1160,11 @@ The watch list is the brand's saved creators, outside any campaign.
 - Web research is a proposal, never a write: findings are always shown and confirmed before
   any calibration is recorded from them.
 - Posts and creators are shown, not just described: see **Visual output**.
+- Every agent launch carries `recipient` (**Reading the ask**). A lens changes what is
+  selected, the order, and the wording, never a number, and never adds a claim the data does
+  not support. What a reader needs that Atlas does not hold (spend, conversions, usage rights)
+  is named as a gap, never inferred.
+- The market signal, quarterly signal, ad reuse, and launch pulse read only what Atlas holds.
+  They never start discovery work, interactive or unattended.
+- Creator fees come only from the fee calculator (**Fee calculator**). No price is shown when
+  the data behind it is missing.
