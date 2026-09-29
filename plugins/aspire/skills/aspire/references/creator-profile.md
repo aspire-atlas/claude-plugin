@@ -81,7 +81,7 @@ Number format follows `creator-card.md`.
 | Comment sentiment | Stacked bar and legend: positive, neutral, negative shares of `commentSentimentBreakdown` counts summed over the posts. Lede: "Based on {n} comments across {k} analyzed posts." Top themes as badges only when the census exposes a comment-theme field; a safety-adjacent theme takes the warning badge | Fewer than 20 classified comments |
 | Brand safety | One cell per category `analysis.brandSafety` rates, named as Atlas names them. A category rated anything but `Low Risk` on any post is flagged (warning tone); the rest are low risk. One sentence below: how many categories were low risk on every post, then each flagged category with the post count and the context in plain words | Fewer than 3 analyzed posts |
 | Brand partnerships | Two groups. **Paid partnerships (confirmed)**: brands on posts marked as paid partnerships, or with a clear disclosure (#ad, #sponsored, "paid partnership with"), plus `pastBrandPartnershipPartners`, as success badges, with one line on how many paid posts and how they were disclosed. **Organic mentions (not confirmed as paid)**: other brands tagged or named without a disclosure, as outline badges, with the line "Spotted in captions or on screen. Treat these as organic visibility, not partnership history." A brand that matches a saved `competitor` record carries "(competitor)" | Neither group has an entry. Leave out an empty group |
-| Recommended fees | Aspire CPM method. Per channel, the median views of its last 12 posts with a `viewCount`; the bundled median is their sum, one post per channel. Open = bundle × $40 per 1,000 views, Target × $60, Max × $90, rounded to the nearest $10. Target takes `--ac-brand`. The note below lists each channel's median and the single-channel Target price for the primary channel | No channel has 3 or more posts with views |
+| Recommended fees | The fee calculator (`fees.md`): a bundle of one post on each of the creator's channels that the brand's rates cover, priced from the median views of each channel's last 10 posts. Open, target, and max from the saved `fees:rate-card`, or the Aspire recommended rates. Target takes `--ac-brand`. The note lists each channel's median views and the single-channel target for the primary channel. Lede carries the rate label | The calculator gives no price: no channel has 3 or more of its last 10 posts with views, or none is on the brand's platforms |
 | How {name} compares | Grouped bars per account: median engagement rate and median view rate, the reviewed account first and in bold, then the peer set from the analysis (step 7). Lede names the peer set and its follower band. View rate bars only when every account has views | Fewer than 3 usable peers |
 | Next steps | The 2 or 3 ranked action items the agent wrote to Atlas, each with a priority badge: High (brand fill), Medium (secondary), Monitor (outline), a bold lead sentence and one line of reason | No action items were written |
 | Data gaps & freshness | Bullets: the freshness line first ("Profiles were refreshed on {date}" or "indexed through {date}"), then the analyzed window, missing counts (saves, shares, views), how the peers were chosen, and which sections cover only one network. Also every section left out for lack of data, in one bullet | Never |
@@ -334,7 +334,7 @@ percentages of the axis or the largest value, written inline.
   </section>
 
   <section class="acp-sec">
-    <header><h2>Recommended fees</h2><p class="acp-lede">Aspire CPM method: median views of recent posts, bundled across {CHANNEL_COUNT} platforms, priced at $40 (open), $60 (target) and $90 (max) per 1,000 views.</p></header>
+    <header><h2>Recommended fees</h2><p class="acp-lede">{RATE_LABEL}: median views of the last 10 posts, bundled across {CHANNEL_COUNT} platforms, priced at ${OPEN_CPM} (open), ${TARGET_CPM} (target) and ${MAX_CPM} (max) per 1,000 views.</p></header>
     <div class="acp-panel acp-cells acp-fees">
       <div class="acp-cell"><span class="acp-eyebrow">Open</span><span class="acp-big">{OPEN}</span><span>first offer, {BUNDLE_LABEL}</span></div>
       <div class="acp-cell acp-target"><span class="acp-eyebrow">Target</span><span class="acp-big">{TARGET}</span><span>where to land</span></div>
@@ -381,7 +381,7 @@ legend entry with it.
   the web.
 - Every number on the page comes from the reads above or from the agent's analysis of them.
   A section whose number cannot be computed is left out, never estimated.
-- Fees are an estimate from public view counts, labeled as the Aspire CPM method. Never
-  present them as the creator's rate card.
+- Fees come only from the fee calculator (`fees.md`), with its rate label. They are an
+  estimate from public view counts; never present them as the creator's rate card.
 - Charts keep the page's semantic colors for sentiment (negative stays red) and brand safety
   (flags stay warning). The theme recolors the chart series only.

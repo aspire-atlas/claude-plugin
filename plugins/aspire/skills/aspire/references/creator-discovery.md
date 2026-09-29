@@ -169,7 +169,10 @@ Sections in order:
    the card's own badges; safety flags in the brand safety tile and every other risk flag under
    "Notes" in `{DETAILS}`, per the card's **Brand safety** rule; evidence posts first in the
    thumbnails. `{DETAILS}` also holds the two strongest fit components with their points, the
-   source, and the contact route if known.
+   source, the contact route if known, and the estimated fee from the fee calculator
+   (`fees.md`, **Applying the rates**) on the campaign's platforms: "Est. fee {open} to {max},
+   target {target}", or nothing when the views are not there. The page footer carries the rate
+   label once.
 5. **Rejected this cycle** — collapsed list of handles with the reason recorded, so a
    decision is auditable.
 6. **Criteria** — the saved criteria in plain words, so a reader can see what "fit" meant.

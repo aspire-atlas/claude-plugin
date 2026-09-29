@@ -1,6 +1,6 @@
 # Creator brief reference
 
-Used by the `atlas-creator-brief` agent. Page structure, fit rubric, pricing method, and
+Used by the `atlas-creator-brief` agent. Page structure, fit rubric, pricing method (from the fee calculator), and
 Atlas quirks learned on 2026-09-16 against the live server.
 
 ## Page structure
@@ -31,7 +31,7 @@ One self-contained HTML page, published with the Artifact tool. Sections in orde
    post days, 7 day readout.
 7. **Measurement.** Table: piece, primary metric, target, benchmark from the brand's own
    medians, secondary metric.
-8. **Footer.** Sources, date, "costs are opening offers not quotes", contact email note.
+8. **Footer.** Sources, date, the rate label, "costs are estimates from public view counts, not quotes", contact email note.
 
 Design: token palette on `:root` with dark redefinitions under both the media query and
 `[data-theme="dark"]`. Fonts from Google Fonts with fallbacks (Instrument Sans display, IBM
@@ -78,22 +78,21 @@ vocabulary; the names above are placeholders, not a fixed taxonomy.
 
 ## Pricing method
 
-1. Search for current-year rate benchmarks on the brand's network by follower tier and format.
-   Fetch two sources and record their bands. On 2026-09-16 the Instagram bands were: micro
-   (10K to 100K) Reel $300 to $800, carousel $200 to $650; mid (100K to 500K) Reel $800 to
-   $5,000, carousel $600 to $3,000; macro (500K to 1M) Reel $5,000 to $15,000; mega (1M+)
-   Reel $15,000 and up, bespoke. Rights, whitelisting and exclusivity add 30% to 200%.
-   Bundles save 15% to 30%. Niche premiums and discounts vary by category; take them from the
-   fetched sources for the brand's category, not from memory. Treat the bands above as a
-   sanity check for the fetched figures, never as the source of a price on the page.
-2. Per creator: tier band by followers and format, plus 30% to 50% for 90 day reuse and paid
-   amplification whitelisting. Adjust up for Reel interaction above 6%, category-relevant past
-   partnerships, exact topic fit. Adjust down for partial fit. Express as a range with a
-   one-line rationale. Mega tier: label as an estimate, expect an agency rate card.
-3. Event on-site work: base rate plus travel plus $500 to $1,500 for mid tier. Not benchmarked;
-   label as an opening offer.
-4. Scenarios: practitioners only; one reach creator swapped in; mega reach. Sum first picks.
-5. Cite the benchmark sources on the page footer and in the chat summary.
+Every engagement cost comes from the fee calculator (`fees.md`), never from benchmarks
+fetched during the run.
+
+1. Read `fees:rate-card` from the calibration read in step 1; without one, use the Aspire
+   recommended rates. Label the costs as `fees.md` says.
+2. Per creator: price the deliverables the brief assigns them as one bundle, per **How a fee
+   is calculated** (median views of the last 10 posts per channel, bundled, times the CPM
+   ladder). The creator row shows target; the rationale gives open to max and the bundled
+   median views.
+3. A creator or deliverable the calculator cannot price (too few posts with views, a platform
+   outside the brand's rates, on-site event work) shows no cost: say which input is missing,
+   and leave it out of the scenario totals with a note.
+4. Scenarios: practitioners only; one reach creator swapped in; mega reach. Sum the first
+   picks at target.
+5. Name the rate label and the view window in the "how the costs were set" box.
 
 ## Atlas quirks (verified 2026-09-16)
 

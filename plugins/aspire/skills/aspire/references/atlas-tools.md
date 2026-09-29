@@ -75,6 +75,7 @@ social channels and brand memory have a home in the organization."
 | 6 | `search_insights` / `list_insight_search_fields` | Read back findings | Tenant-private |
 | Content review | `search_calibrations`, `get_brand_instruction` (read only), `search_posts`, `search_creators`, `search_insights`, `append_insights`, `append_calibration` (lessons and hard rules the user saved), `lookup_posts` (one named post) | Reviews one post against a brief; reads prior reviews and feedback by `runKey` prefix `content-review-*` | Setup and lessons in `content-review.md`; interactive only |
 | Theme | `search_calibrations`, `append_calibration`, `supersede_calibration` and `retract_calibration` (Destructive tools confirmation each) | Brand colors, fonts, and logo for every page, in one `theme:brand` record | Interview and application rules in `theme.md`; main thread only, never unattended |
+| Fee calculator | `search_calibrations`, `append_calibration`, `supersede_calibration` and `retract_calibration` (Destructive tools confirmation each) | Creator rates for every fee the plugin shows, in one `fees:rate-card` record | Questionnaire, calculation, and application rules in `fees.md`; main thread only, never unattended |
 | Readouts | `search_calibrations`, `search_posts` (+ `aggs`), `search_creators`, `search_insights`, `append_insights` | Daily and weekly readouts read prior runs by `runKey` prefix (`readout-daily-*`, `readout-weekly-*`) and write new findings | Setup calibrations in `readout.md`; unattended runs never ask or destroy |
 | Avoid in onboarding | `lookup_creators`, `lookup_posts`, `start_business_discovery`, `search_creator_marketplace`, `get_job_status` | Start discovery work beyond the accounts Atlas already holds | Only on explicit user request. The one routine use is `atlas-account-analyst` in named-handle mode: the user typing a network and handle in Phase 6 is the approval, and the agent calls `lookup_creators` only when Atlas holds nothing for that handle or the record is over 24 hours old. `lookup_creators` has no status-check tool; re-call it with the same item to re-read a `fetching` result, and `creatorDeepAnalysis` defaults to `true` there, so recent posts come with the account. It rejects `profileSlug`; attribute with `asProfile`. The other routine use is `atlas-content-review` on a published post: pasting the link is the approval, and the agent calls `lookup_posts` once for that post only when Atlas does not hold it, with `creatorDeepAnalysis` left at its default `false`. A TikTok miss is a paid vendor call. |
 | Utility | `get_more_tools` | Server-side tool discovery | Do not call during onboarding; the phase map above is the supported surface. |
@@ -148,6 +149,11 @@ normal key (`redline:*`, `guideline:*`) instead.
 holds the brand's colors, fonts, and logo for Atlas's own pages (`theme.md`). Flows that
 publish a page apply it. No flow treats it as a brand guideline: brief conflicts, content
 review checks, discovery criteria, and red-line scans all leave it out.
+
+**Keys starting `fees:` are pricing only.** `fees:rate-card` is a `guideline` record that
+holds the brand's CPM ladder for creator fees (`fees.md`). Flows that show a creator fee apply
+it. No flow treats it as a brand guideline: brief conflicts, content review checks, discovery
+criteria, and red-line scans all leave it out.
 
 **Read every page.** `limit 100` on `search_calibrations` is the page size, not a cap. Pass
 each response's `nextCursor` back as `cursor` until none is returned, then filter. Lessons,

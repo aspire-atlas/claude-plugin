@@ -8,7 +8,7 @@ description: >
   brand", "connect my Instagram", "what happened yesterday", "how did last week go",
   "schedule the weekly readout", "find creators for the campaign", "refill the shortlist",
   "review this post", "check this draft against the brief", "brand safety check on this
-  post", or "show @handle's full profile".
+  post", "show @handle's full profile", or "/aspire fee calculator".
 metadata:
   author: Aspire
 ---
@@ -33,6 +33,7 @@ Text after the command is the argument. Route on it before anything else:
 | Argument | Action |
 | -------- | ------ |
 | `agents` (also `list agents`, `show agents`) | Run **List agents** below. Skip the phases unless the user picks an agent to run. |
+| `fee calculator` (also `fees`, `pricing`, `rate card`, `creator rates`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Fee calculator** below. Skip the other phases. |
 | empty, or anything else | Run the phases in order, starting at Phase 1. Treat the text as context. |
 
 ### List agents
@@ -102,7 +103,8 @@ After onboarding, four recurring flows hang off the same connection: the **Creat
 (weekly content plan with creators), the **Creator discovery** (a standing creator shortlist per
 campaign, schedulable), the **Content review** (one post or draft checked against its brief,
 interactive only), and the **Readouts** (daily and weekly performance digests, schedulable).
-Each is routed from its own section below. The **Theme** section brands all of their pages.
+Each is routed from its own section below. The **Theme** section brands all of their pages,
+and the **Fee calculator** sets the creator rates behind every fee they show.
 
 ---
 
@@ -385,7 +387,8 @@ Rules:
   move on; the suggestion is recorded for an admin.
 - If the user declines a question, record it with kind `decline` so it is not asked again.
 - Stop after the core set (about 7 questions) unless the user wants to keep going.
-- When the questions are done, and before Phase 6, make the theme offer from **Theme**, Offers.
+- When the questions are done, and before Phase 6, make the theme offer from **Theme**, Offers,
+  then the fee calculator offer from **Fee calculator**, Offers.
 
 ## Phase 6: First insights
 
@@ -730,6 +733,56 @@ ok and warn, above and below the baseline) never take brand colors.
 
 ---
 
+## Fee calculator (creator rates for every fee)
+
+Trigger on `/aspire:aspire fee calculator` (see **Arguments**), or when the user asks to set,
+change, or check the brand's creator rates, CPM, or what the plugin offers creators. Requires a
+brand profile. Full detail lives in `references/fees.md`: the calculation, the Aspire
+recommended rates, the questionnaire, the record, and how every flow applies it.
+
+The rates are brand memory, not session state. They are one `fees:rate-card` calibration, and
+every creator fee the plugin shows uses them: the creator profile page, the creator brief, the
+discovery shortlist, Draft Outreach, and any flow added later. Without one, flows use the
+Aspire recommended rates and say so.
+
+### Setup
+
+1. Ask F0 to F4 from the reference, one `AskUserQuestion` each, in order, skipping any the user
+   already answered (typed CPMs answer F3 and go straight to F4's result). F2's benchmark check
+   follows the Phase 5 web research rule: findings go to the user as bullets with sources, and
+   they are context only; they never change the rates by themselves.
+2. F3 offers Aspire's recommended rates or the brand's own, built by adjusting Aspire's.
+3. F5 is the write confirmation. Save with `append_calibration`, per the reference. A
+   `key-exists` response follows the Phase 5 supersede rule with its own confirmation. Going
+   back to Aspire's rates is `retract_calibration`, with its own confirmation.
+
+Rates are refreshed only when someone runs the fee calculator again.
+
+### Offers
+
+Offer the fee calculator at most once per session. Never offer it when `fees:rate-card` or
+`decline:fees` exists, when the user is already running it, or in an unattended run. Agents
+never offer it.
+
+- At the end of Phase 5, after the theme offer, before Phase 6.
+- The first time in a session a flow shows the user a creator fee from the Aspire recommended
+  rates: after that flow's reply, not before it.
+
+Ask with `AskUserQuestion`: "Set {brand}'s creator rates? Fees on creator profiles, briefs,
+shortlists and outreach will use them. It takes about two minutes." Options: "Set them up now
+(Recommended)", "Later", "Don't ask again". "Later" goes on with Aspire's recommended rates.
+"Don't ask again" writes the `decline:fees` record, and the answer counts as its confirmation,
+as with Phase 5 declines.
+
+### Applying
+
+Agents read `fees:rate-card` with their own calibration read and apply it per **Applying the
+rates** in the reference. The main thread passes nothing extra, and applies it the same way to
+any fee it shows itself. No flow prices a creator any other way, and a fee the calculator
+cannot compute is left out, never estimated.
+
+---
+
 ## Organization admin (members)
 
 Questions about who is in the organization, pending invitations, or inviting a teammate
@@ -808,8 +861,10 @@ and network (never `lookup_creators`); if Atlas does not hold it, say so and sto
    (`search_insights` on the `creator-discovery-{profile}` prefix, newest record for the
    creator's `entityId`).
 2. Draft one message in chat: a subject line and a body under 120 words, in the brand's voice,
-   naming one specific post of theirs from Atlas and the campaign when there is one. Never
-   state a fee, a date, or a product the calibrations do not hold; leave a bracketed blank.
+   naming one specific post of theirs from Atlas and the campaign when there is one. A fee is
+   only the open offer from the fee calculator (`references/fees.md`) for the campaign's
+   platforms, or the channel the card shows; when it cannot be computed, write `[fee]`. Never
+   state a date or a product the calibrations do not hold; leave a bracketed blank.
 3. Name the contact route Atlas holds (`instagram.email`, `youtube.youtubeBusinessEmail`,
    Instagram partnership messages when `isPaidPartnershipMessagesEnabled`), or say there is
    none.
@@ -887,3 +942,5 @@ The watch list is the brand's saved creators, outside any campaign.
 - Web research is a proposal, never a write: findings are always shown and confirmed before
   any calibration is recorded from them.
 - Posts and creators are shown, not just described: see **Visual output**.
+- Creator fees come only from the fee calculator (**Fee calculator**). No price is shown when
+  the data behind it is missing.

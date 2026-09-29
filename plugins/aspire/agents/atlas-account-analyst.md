@@ -117,7 +117,7 @@ the brand's calibrations (summary, goals, competitors, red lines, partners). Eve
    a brand, shop, or publisher; a brand account skips this step. Make the extra reads that
    reference lists (the creator record with demographics, the post analysis and partnership
    fields) within the reads of steps 3 and 4, with no extra lookups. Load `artifact-design` and
-   `dataviz`, apply `theme:brand` if the digest or a `search_calibrations` read has one, embed
+   `dataviz`, apply `theme:brand` if the digest or a `search_calibrations` read has one, price the Recommended fees section with `fees:rate-card` the same way (the Aspire recommended rates without one, per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/fees.md`), embed
    every image with the page profile, and publish with the Artifact tool, title "{Name or
    @handle} Creator Profile", republishing to the same path for the same handle. No Artifact
    tool: skip the page and say so under Data gaps.

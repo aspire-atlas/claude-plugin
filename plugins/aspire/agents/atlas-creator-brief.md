@@ -1,7 +1,7 @@
 ---
 name: atlas-creator-brief
 description: |
-  Use this agent when a brand on Atlas wants a content creation brief for an upcoming week, with creators sourced through Aspire creator discovery to make the content. It reviews the brand's recent posts, turns the performance pattern into deliverables with guardrails and targets, runs marketplace discovery for matching creators, prices each engagement from current public benchmarks, and publishes the whole brief as a visual page. Trigger on "content brief", "creator brief", "what should we post next week", "plan next week's content", "find creators to make this", or "who should we work with for next week".
+  Use this agent when a brand on Atlas wants a content creation brief for an upcoming week, with creators sourced through Aspire creator discovery to make the content. It reviews the brand's recent posts, turns the performance pattern into deliverables with guardrails and targets, runs marketplace discovery for matching creators, prices each engagement with the brand's fee calculator rates, and publishes the whole brief as a visual page. Trigger on "content brief", "creator brief", "what should we post next week", "plan next week's content", "find creators to make this", or "who should we work with for next week".
 
   <example>
   Context: Atlas connected, brand profile has a linked Instagram channel with indexed posts
@@ -71,9 +71,9 @@ Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-brief.md` before st
 
 ### 5. Price each engagement
 
-- `WebSearch` for current-year Instagram (or the brand's network) influencer rate benchmarks by follower tier and format. Fetch two sources. Record the tier bands.
-- For each creator: pick the tier band by follower count and format, include 90 day reuse and paid amplification whitelisting (+30 to 50%), adjust up for interaction rate above 6%, relevant past brand partnerships and topic fit, down for partial fit. Give a range and a one-line rationale. For mega tier creators say the figure is an estimate and to expect a rate card.
-- Produce 2 to 3 budget scenarios (practitioners only, one reach creator, mega reach) that sum the first picks.
+- Price with the fee calculator in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/fees.md`, per the reference file's **Pricing method**: the saved `fees:rate-card` from step 1's read, or the Aspire recommended rates without one. Never search the web for rates and never price from follower counts.
+- For each creator, bundle the deliverables you mapped to them and use the median views of their last 10 posts per channel from the sample posts you fetched. Target in the row, open to max and the median views in the rationale. No price when the views are not there; say what is missing.
+- Produce 2 to 3 budget scenarios (practitioners only, one reach creator, mega reach) that sum the first picks at target.
 
 ### 6. Publish the visual brief
 
