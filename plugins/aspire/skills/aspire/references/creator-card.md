@@ -4,6 +4,8 @@ The one way this plugin shows a creator. Any flow that identifies, lists, ranks,
 recommends a creator renders it with this card: a single lookup, search and marketplace
 results, the discovery shortlist, the creator brief, and any creator named in a review or an
 account analysis. The layout is the compact Aspire creator card; only the placeholders change.
+The one larger view, a single creator's full profile page, embeds this same card
+(`creator-profile.md`).
 
 ## Where it renders
 
@@ -13,6 +15,7 @@ account analysis. The layout is the compact Aspire creator card; only the placeh
 | Main thread, 7 or more creators | Published page (Visual output in SKILL.md); more than 12 leads with a chart | Hidden |
 | Agents (brief, discovery, account analyst, content review) | Inside the agent's published page | Hidden |
 | No widget tool, or the call fails | The Markdown fallback below | n/a |
+| One creator's full profile or portfolio view | Published page, the card at full width with the evidence sections below it (`creator-profile.md`) | Hidden |
 
 Agents never call `show_widget`; the main thread can. When an agent returns a creator the user
 should see in chat, the main thread renders the card from the agent's numbers.
@@ -33,8 +36,9 @@ left out as keys rather than set to null.
 ```
 
 The main thread renders from this block and does not query Atlas again for these creators.
-`avatarUrl` and `thumbUrl` stay remote URLs in the hand-off block; the main thread embeds them
-(see **Images**) before rendering. Agents never send data URIs through the summary.
+`avatarUrl` and `thumbUrl` stay remote URLs in the hand-off block; `thumbUrl` is the post's
+`media.mediaUrl` and `media.thumbnailUrl` joined by `|`, largest first, exactly as the **Images**
+snippet takes them. The main thread embeds them (see **Images**) before rendering. Agents never send data URIs through the summary.
 
 ## Inline rendering
 
@@ -64,93 +68,226 @@ actions row out.
 Put the style block in the page `<head>` once and the cards wherever the page structure calls
 for them, inside `<div class="ac-grid">`. The page's own tokens are not used by the card; the
 card carries Aspire's, unless the brand has a saved theme: then add the card override from
-`theme.md`, **Creator card**, right after the style block, on pages and inline alike. Embed images with the **Images** snippet and `--profile=page`. Leave
+`theme.md`, **Creator card**, right after the style block, on pages and inline alike. Embed images with the **Images** snippet and `--profile=page`: `avatar` and `thumb` at their
+default boxes fit the card at 2x. Leave
 out the actions row. Flow-specific detail goes in the `{DETAILS}` slot, never in extra markup
 around the card.
 
 ## Images
 
-Every image on a card is a JPEG data URI, inline and on pages alike. No surface can load
-`cdn.aspire.io` directly: the widget sandbox allows only a short list of script and font
-hosts, and published pages allow no outside images.
+Every image in the plugin, on a card, a post card, or a page panel, is embedded as a data URI,
+inline and on pages alike. No surface can load `cdn.aspire.io` directly: the widget sandbox
+allows only a short list of script and font hosts, and published pages allow no outside
+images. This section is the one set of rules for fetching, sizing, compressing, and placing
+them; every flow that shows an image uses it.
 
-| Surface | Profile | Avatar | Thumbnail | JPEG quality |
-| ------- | ------- | ------ | --------- | ------------ |
-| Inline widget | `inline` (default) | 96px | 150px | 55 |
-| Published page | `page` | 112px | 240px | 75 |
+**Size to the rendered box, at 2x.** Pass each image's rendered CSS size and the snippet
+targets twice that in device pixels, so it stays sharp on retina screens. It never upscales:
+a source smaller than the target is embedded at its own size and CSS scales it (`native:
+true` in the output). Each kind has a default box and, per profile, a largest box and a
+largest data URI:
 
-- Use `media.thumbnailUrl` first. Some `/thumbnail` routes return 404 while the base media URL
-  works; the snippet retries the base URL.
+| Kind | Use | Default CSS box | Largest box, inline | Largest box, page | Largest data URI, inline / page |
+| ---- | --- | --------------- | ------------------- | ----------------- | ------------------------------- |
+| `avatar` | Profile pictures, square crop | 56x56 | 112x112 | 192x192 | 16KB / 32KB |
+| `thumb` | Card thumbnails, cropped to the box (square by default) | 120x120 | 240x240 | 480x480 | 40KB / 120KB |
+| `post` | Post cards, aspect ratio kept, fit to the width | 360 wide | 720x1280 | 1080x1920 | 160KB / 450KB |
+| `detail` | Hero and detail panels (a tall post panel, the post under review), fit inside the box | 480x1000 | 960x1920 | 1440x2560 | 320KB / 800KB |
+
+Write the kind as `kind@W` or `kind@WxH` with the CSS size when the layout differs from the
+default, for example `detail@480x1000=` for a tall panel 480px wide. Add `+text` for a post that
+is mostly text or graphics (carousel slides with copy, infographics, screenshots):
+`detail+text@480x1000=`.
+
+**Source: the largest one available.** Pass `media.mediaUrl` first and `media.thumbnailUrl`
+after it, joined by `|`: `post=<mediaUrl>|<thumbnailUrl>`. On image posts the base media URL is
+the full-size image and the `/thumbnail` route often returns 404; on video posts the base URL
+is the video file, which the snippet skips without downloading, and the `/thumbnail` route is
+the full-size poster frame. A lone `/thumbnail` URL is retried at the base URL. For a
+carousel, the first entry in `media` is the cover slide.
+
+**Encoding.** LANCZOS resampling. WebP at quality 85 when the Python install supports it,
+otherwise JPEG at quality 85 with 4:4:4 chroma (no subsampling). `+text` images are JPEG at
+quality 90 with 4:4:4 chroma, or PNG when that is at most 1.2 times the size. EXIF rotation
+is applied and transparency is flattened onto white. An image over its largest data URI
+drops to quality 80 once, then steps down in pixels; it never goes below quality 80.
+`--quality=` (80 to 95) sets the starting quality for every image in the call.
+
+**Placing it.** The output carries `width` and `height` (the embedded pixels) and `cssWidth`
+and `cssHeight` (half of them). Use them so the browser never stretches the image:
+
+- Set `width="{cssWidth}" height="{cssHeight}"` on the `<img>`, with
+  `style="max-width:100%;height:auto"`, so it can shrink on a narrow screen but never grows
+  past its sharp size. Never set a CSS width or height larger than `cssWidth` x `cssHeight`.
+- Fixed boxes (card thumbnails, avatars) use `object-fit:cover` on an image cropped to the
+  box's shape (`thumb`, `avatar`, or `thumb@WxH`), so cover never has to zoom in.
+- Panels whose shape differs from the image (a tall media panel) use `object-fit:contain`,
+  centred on the panel background, never `cover`: cover would zoom a 4:5 post to fill a 1:2
+  panel and blur it.
+- With `native: true`, show the image at `cssWidth` x `cssHeight` centred in its box rather
+  than stretching it to fill.
+- Add `decoding="async"` to every page image, and keep `loading="lazy"` below the fold.
+
+**Budgets.** Cut the number of images before cutting quality.
+
+- Inline widget: all images in one `show_widget` call under 300KB of data URIs (the `bytes`
+  field, summed). An avatar and three thumbnails come to about 30 to 60KB a card. Over
+  300KB, drop to two thumbnails per card, then one, before cutting cards; only then rerun
+  with `--quality=80`.
+- Published page: all images under 8MB of data URIs and the whole page under 10MB (the
+  artifact limit is 16MB). Over 8MB, in this order: two thumbnails per creator card instead
+  of three; `post` cards past the first five as `thumb`; drop images from collapsed or
+  secondary sections (rejected lists, passed checks); then rerun with `--quality=80`. Never
+  drop the image of a post that is the subject of the page (the post under review, a top
+  post).
+- The snippet's output is large. Redirect it to a file in the scratch folder (`python3
+  embed_media.py … > media.jsonl`), read only the small fields (`ok`, `format`, `width`,
+  `height`, `cssWidth`, `cssHeight`, `native`, `bytes`), and put each `dataUri` into the page
+  from that file as you assemble the HTML. Never retype a data URI.
+
+**Failures.**
+
 - The CDN returns 403 to Python's default User-Agent, so the snippet sends its own. Any
   other code that reads from the CDN must set one too.
-- Budget: about 20KB per card inline (an avatar and three thumbnails measured 15.5KB). Six
-  cards stay under 150KB. If a set of cards is over 150KB, drop to two thumbnails per card
-  before cutting cards.
-- A video URL, a 404, or any other failure comes back `ok: false`: initials for the avatar,
-  the cell left out for a thumbnail. Never substitute another image.
+- A video with no poster, a 404, or any other failure comes back `ok: false`: initials for the
+  avatar, the cell left out for a thumbnail, the placeholder tile for a post. Never substitute
+  another image.
 - Keep the `onerror` handlers in the template as a second line of defense. They are not the
   fix.
 - No code execution in the session: leave every image out (initials, no thumbnails) rather
   than use a remote URL.
 
 Save this to a scratch file (for example `embed_media.py` in the session's temp directory) and
-run it with one `kind=url` argument per image. `kind` is `avatar` or `thumb` (square crop)
-or `post` (the thumbnail width, aspect ratio kept, for post cards on readout pages). It needs
-Python 3 and Pillow. It prints one JSON line per image, in argument order:
-`{"kind","url","ok","bytes","dataUri"}` or `{"kind","url","ok":false,"error"}`.
+run it with one `kind=url` argument per image, fallbacks after a `|`. It needs Python 3 and
+Pillow. It prints one JSON line per image, in argument order: `{"kind","url","ok","src",
+"format","srcWidth","srcHeight","width","height","cssWidth","cssHeight","native","bytes",
+"dataUri"}` or `{"kind","url","ok":false,"error"}`.
 
 ```bash
-python3 embed_media.py [--profile=page] avatar=<url> thumb=<url> thumb=<url> thumb=<url>
+python3 embed_media.py [--profile=page] [--quality=85] 'avatar=<url>' \
+  'thumb=<mediaUrl>|<thumbnailUrl>' 'post@320=<mediaUrl>|<thumbnailUrl>' \
+  'detail+text@480x1000=<mediaUrl>|<thumbnailUrl>' > media.jsonl
 ```
 
-```python
-import base64, io, json, sys, urllib.request
-from PIL import Image
+Quote each argument, as above, so the shell does not read `|` as a pipe.
 
-PROFILES = {"inline": {"avatar": 96, "thumb": 150, "q": 55},
-            "page": {"avatar": 112, "thumb": 240, "q": 75}}
+```python
+import base64, io, json, math, re, sys, urllib.request
+from PIL import Image, ImageOps, features
+
+# kind: (default CSS box w, h; h 0 = keep the aspect ratio), crop to the box's shape
+KINDS = {"avatar": ((56, 56), True), "thumb": ((120, 120), True),
+         "post": ((360, 0), False), "detail": ((480, 1000), False)}
+# profile -> kind: (largest box in device px, largest data URI in characters)
+PROFILES = {"inline": {"avatar": ((112, 112), 16_000), "thumb": ((240, 240), 40_000),
+                       "post": ((720, 1280), 160_000), "detail": ((960, 1920), 320_000)},
+            "page": {"avatar": ((192, 192), 32_000), "thumb": ((480, 480), 120_000),
+                     "post": ((1080, 1920), 450_000), "detail": ((1440, 2560), 800_000)}}
 UA = {"User-Agent": "Mozilla/5.0 (compatible; aspire-atlas-plugin)"}
+MAX_READ = 30_000_000
+WEBP = features.check("webp")
+ITEM = re.compile(r"^(avatar|thumb|post|detail)(\+text)?(?:@(\d+)(?:x(\d+))?)?$")
 
 
 def fetch(url):
     req = urllib.request.Request(url, headers=UA)
     with urllib.request.urlopen(req, timeout=20) as r:
-        return r.read()
+        ctype = r.headers.get("Content-Type", "")
+        if not ctype.startswith("image/"):  # a video file or an error page: never download it
+            raise ValueError("not an image: " + (ctype or "unknown type"))
+        data = r.read(MAX_READ + 1)
+    if len(data) > MAX_READ:
+        raise ValueError("image over 30MB")
+    return data
 
 
-def embed(kind, url, p):
-    try:
-        data = fetch(url)
-    except Exception:
-        if not url.rstrip("/").endswith("/thumbnail"):
-            raise
-        data = fetch(url.rstrip("/")[: -len("/thumbnail")])
-    im = Image.open(io.BytesIO(data)).convert("RGB")
-    w, h = im.size
-    if kind == "post":  # keep the aspect ratio, fit the width
-        size = p["thumb"]
-        im = im.resize((size, max(1, round(h * size / w))), Image.LANCZOS)
-    else:  # avatar or thumb: centre square crop
-        s = min(w, h)
-        left, top = (w - s) // 2, (h - s) // 2
-        im = im.crop((left, top, left + s, top + s)).resize((p[kind], p[kind]), Image.LANCZOS)
+def load(urls):
+    errors = []
+    for url in urls:  # highest resolution first; the caller lists fallbacks after it
+        tries = [url]
+        if url.rstrip("/").endswith("/thumbnail"):
+            tries.append(url.rstrip("/")[: -len("/thumbnail")])
+        for u in tries:
+            try:
+                im = ImageOps.exif_transpose(Image.open(io.BytesIO(fetch(u))))
+                if im.mode in ("RGBA", "LA", "P"):
+                    im = im.convert("RGBA")
+                    bg = Image.new("RGB", im.size, (255, 255, 255))
+                    bg.paste(im, mask=im.getchannel("A"))
+                    im = bg
+                return u, im.convert("RGB")
+            except Exception as e:
+                errors.append(str(e)[:80])
+    raise ValueError("; ".join(errors) or "no url")
+
+
+def encode(im, text, q):
+    if text:  # text and graphics: no chroma subsampling, or lossless when that is not much bigger
+        buf = io.BytesIO()
+        im.save(buf, "JPEG", quality=max(q, 90), subsampling=0, optimize=True, progressive=True)
+        best = ("jpeg", buf.getvalue())
+        buf = io.BytesIO()
+        im.save(buf, "PNG", optimize=True)
+        if len(buf.getvalue()) <= len(best[1]) * 1.2:
+            best = ("png", buf.getvalue())
+        return best
     buf = io.BytesIO()
-    im.save(buf, "JPEG", quality=p["q"], optimize=True)
-    return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
+    if WEBP:
+        im.save(buf, "WEBP", quality=q, method=6)
+        return "webp", buf.getvalue()
+    im.save(buf, "JPEG", quality=q, subsampling=0, optimize=True, progressive=True)
+    return "jpeg", buf.getvalue()
 
 
-profile, items = "inline", []
+def embed(key, urls, profile, q):
+    m = ITEM.match(key)
+    if not m:
+        raise ValueError("unknown kind: " + key)
+    kind, text = m.group(1), bool(m.group(2))
+    (dw, dh), crop = KINDS[kind]
+    (capw, caph), cap = PROFILES[profile][kind]
+    cw = int(m.group(3) or dw)
+    ch = int(m.group(4)) if m.group(4) else ((cw if crop else 0) if m.group(3) else dh)
+    src, im = load(urls)
+    sw, sh = im.size
+    if crop:  # centre crop to the box's shape, so object-fit:cover never enlarges it
+        ratio = cw / ch
+        w, h = (min(sw, round(sh * ratio)), min(sh, round(sw / ratio)))
+        left, top = (sw - w) // 2, (sh - h) // 2
+        im = im.crop((left, top, left + w, top + h))
+    tw, th = min(2 * cw, capw), min(2 * ch, caph) if ch else caph
+    scale = min(tw / im.width, th / im.height, 1.0)  # never upscale
+    native = min(tw / im.width, th / im.height) > 1  # smaller than the box: CSS scales it
+    while True:
+        size = (max(1, round(im.width * scale)), max(1, round(im.height * scale)))
+        out = im if size == im.size else im.resize(size, Image.LANCZOS)
+        fmt, data = encode(out, text, q)
+        uri = "data:image/%s;base64,%s" % (fmt, base64.b64encode(data).decode())
+        if len(uri) <= cap:
+            break
+        if q > 80:  # one quality step, then smaller pixels, never below quality 80
+            q = 80
+            continue
+        scale *= 0.85
+    return {"src": src, "format": fmt, "srcWidth": sw, "srcHeight": sh,
+            "width": out.width, "height": out.height,
+            "cssWidth": math.ceil(out.width / 2), "cssHeight": math.ceil(out.height / 2),
+            "native": native, "bytes": len(uri), "dataUri": uri}
+
+
+profile, q, items = "inline", 85, []
 for arg in sys.argv[1:]:
     if arg.startswith("--profile="):
         profile = arg.split("=", 1)[1]
+    elif arg.startswith("--quality="):
+        q = max(80, min(95, int(arg.split("=", 1)[1])))
     else:
-        kind, url = arg.split("=", 1)
-        items.append((kind, url))
-for kind, url in items:
-    out = {"kind": kind, "url": url}
+        key, urls = arg.split("=", 1)
+        items.append((key, urls.split("|")))
+for key, urls in items:
+    out = {"kind": key, "url": urls[0]}
     try:
-        uri = embed(kind, url, PROFILES[profile])
-        out.update(ok=True, bytes=len(uri), dataUri=uri)
+        out.update(ok=True, **embed(key, urls, profile, q))
     except Exception as e:
         out.update(ok=False, error=str(e)[:200])
     print(json.dumps(out))
@@ -184,7 +321,7 @@ fill in from web copy. The one exception is the header row, which always shows.
 | Brand safety tile | `{SAFETY}` | `analysis.brandSafety` on the posts, plus the flow's **safety** risk flags only | Needs 3 or more analyzed posts, or a safety flag. See **Brand safety** below |
 | Sentiment tile | `{SENTIMENT}` | Sum of `commentSentimentBreakdown.positive.count` over the sum of positive, neutral, and negative counts, across the posts | Needs 20 or more classified comments. Label "{pct}% positive" / "Comments". Success tone at 70% and up, neutral from 40% to 69%, warning below 40% |
 | Stats | `{STATS}` | Per network, below | Two or three cells; drop a cell with no data |
-| Thumbnails | `{THUMBS}` | Three posts: the flow's evidence posts first, then the most recent | `media.thumbnailUrl`, falling back to `media.mediaUrl`. Play glyph on video. Each links to its permalink |
+| Thumbnails | `{THUMBS}` | Three posts: the flow's evidence posts first, then the most recent | `media.mediaUrl`, falling back to `media.thumbnailUrl` (the full-size poster on video), per **Images**. Play glyph on video. Each links to its permalink |
 | Details | `{DETAILS}` | The calling flow | Pages only. Empty by default |
 | Actions | `{ACTIONS}` | Fixed | Inline only |
 
@@ -260,7 +397,8 @@ Escape `'` in the handle as `\'` inside the `onclick` string.
 
 Once per widget or page. Colors follow the host theme in light and dark mode where the host
 defines the variable, and fall back to the Aspire tokens where it does not. A saved brand
-theme replaces only the brand color and the font (`theme.md`, **Creator card**).
+theme replaces the surfaces, text, borders, brand color, corners, and fonts; the ok and warn
+tiles keep their semantic colors (`theme.md`, **Creator card**).
 
 ```html
 <style>
@@ -334,7 +472,7 @@ rule in the data table says so, and drop the comments themselves. Repeat `.ac-ne
 <article class="ac-card" aria-label="Creator {HANDLE} on {NETWORK}">
   <div class="ac-head">
     <div class="ac-av">
-      <img src="{AVATAR}" alt="" loading="lazy" onerror="this.parentNode.classList.add('ac-noimg')">
+      <img src="{AVATAR}" alt="" width="56" height="56" loading="lazy" decoding="async" onerror="this.parentNode.classList.add('ac-noimg')">
       <span class="ac-ini" aria-hidden="true">{INITIALS}</span>
       <span class="ac-netbadge" title="{NETWORK}">{NET_ICON}</span>
     </div>
@@ -377,7 +515,7 @@ rule in the data table says so, and drop the comments themselves. Repeat `.ac-ne
     </div>
     <!-- if thumbnails -->
     <div class="ac-thumbs">
-      <a class="ac-thumb" href="{POST_URL}" target="_blank" rel="noopener" aria-label="{POST_ALT}"><img src="{THUMB}" alt="" loading="lazy" onerror="this.remove()"><!-- if video --><span class="ac-play">{ICON_PLAY}</span></a>
+      <a class="ac-thumb" href="{POST_URL}" target="_blank" rel="noopener" aria-label="{POST_ALT}"><img src="{THUMB}" alt="" loading="lazy" decoding="async" onerror="this.remove()"><!-- if video --><span class="ac-play">{ICON_PLAY}</span></a>
       <!-- three thumbs; fewer than three posts leaves the empty cells out -->
     </div>
   </div>

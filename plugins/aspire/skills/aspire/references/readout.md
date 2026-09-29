@@ -183,9 +183,13 @@ review closes them (step 6b).
 
 ## Page mechanics
 
-Embed every image as a JPEG data URI with the snippet in `creator-card.md`, **Images**, page
-profile: `post` for post cards (240px wide), `avatar` for profile pictures (112px). It retries
-the base media URL on a `/thumbnail` 404. Keep the page under 2MB. Load the
+Embed every image as a data URI with the snippet in `creator-card.md`, **Images**, page
+profile, which also sets how the `<img>` is sized: `post@{card media width}` for post cards
+(the CSS width of the card's media, 360 by default), `detail@{W}x{H}` for a larger media panel
+(for example `detail@480x1000` for a tall carousel panel), `+text` on posts that are mostly text
+or graphics, and `avatar` for profile pictures. Pass `media.mediaUrl` first and
+`media.thumbnailUrl` after it, so each post comes from the full-size image or poster. Keep the
+images under 8MB and the page under 10MB, cutting images before quality per **Images**. Load the
 `artifact-design` and `dataviz` skills before building. Apply the saved brand theme (`theme:brand`) per `theme.md`, **Applying the theme**; without one, the design here stands. Flags, deltas, and verdict
 chips keep their semantic colors. Publish with the Artifact tool,
 title "<Brand> Daily Readout" or "<Brand> Weekly Readout", and republish to the same path
@@ -228,7 +232,7 @@ README). Rules for the agents:
 ## Atlas quirks that apply here
 
 Inherited from `creator-brief.md`: project the `media` and `instagram.account` containers, not
-leaf URLs; exclude stories with `exists mediaKind`; some `/thumbnail` routes 404; published
+leaf URLs; exclude stories with `exists mediaKind`; `/thumbnail` routes 404 on image posts; published
 pages cannot load `cdn.aspire.io` images. New for readouts: `search_insights` returns findings
 tenant-wide, so always filter on the `runKey` prefix; and `aggs` only work on the filter path,
 so run the red-line semantic query as a separate call.

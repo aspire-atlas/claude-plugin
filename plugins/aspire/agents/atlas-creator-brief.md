@@ -1,7 +1,7 @@
 ---
 name: atlas-creator-brief
 description: |
-  Use this agent when a brand on Atlas wants a content creation brief for an upcoming week, with creators sourced through Aspire creator discovery to make the content. It reviews the brand's recent posts, turns the performance pattern into deliverables with guardrails and targets, runs marketplace discovery for matching creators, prices each engagement from current public benchmarks, and publishes the whole brief as a visual page. Trigger on "content brief", "creator brief", "what should we post next week", "plan next week's content", "find creators to make this", or "who should we work with for next week".
+  Use this agent when a brand on Atlas wants a content creation brief for an upcoming week, with creators sourced through Aspire creator discovery to make the content. It reviews the brand's recent posts, turns the performance pattern into deliverables with guardrails and targets, runs marketplace discovery for matching creators, prices each engagement with the brand's fee calculator rates, and publishes the whole brief as a visual page. Trigger on "content brief", "creator brief", "what should we post next week", "plan next week's content", "find creators to make this", or "who should we work with for next week".
 
   <example>
   Context: Atlas connected, brand profile has a linked Instagram channel with indexed posts
@@ -71,13 +71,13 @@ Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-brief.md` before st
 
 ### 5. Price each engagement
 
-- `WebSearch` for current-year Instagram (or the brand's network) influencer rate benchmarks by follower tier and format. Fetch two sources. Record the tier bands.
-- For each creator: pick the tier band by follower count and format, include 90 day reuse and paid amplification whitelisting (+30 to 50%), adjust up for interaction rate above 6%, relevant past brand partnerships and topic fit, down for partial fit. Give a range and a one-line rationale. For mega tier creators say the figure is an estimate and to expect a rate card.
-- Produce 2 to 3 budget scenarios (practitioners only, one reach creator, mega reach) that sum the first picks.
+- Price with the fee calculator in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/fees.md`, per the reference file's **Pricing method**: the saved `fees:rate-card` from step 1's read, or the Aspire recommended rates without one. Never search the web for rates and never price from follower counts.
+- For each creator, bundle the deliverables you mapped to them and use the median views of their last 10 posts per channel from the sample posts you fetched. Target in the row, open to max and the median views in the rationale. For Instagram carousels and images, use the calculator's **Estimated views from engagement**, and mark those fees. No price when the calculator cannot compute one; say what is missing.
+- Produce 2 to 3 budget scenarios (practitioners only, one reach creator, mega reach) that sum the first picks at target.
 
 ### 6. Publish the visual brief
 
-- Embed each thumbnail and profile picture as a JPEG data URI with the snippet in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-card.md`, **Images**, page profile (profile pictures 112px, thumbnails 240px). Published pages cannot load images from outside hosts. The snippet retries the base media URL when a `/thumbnail` route returns 404. Keep the page under 2MB.
+- Embed each thumbnail, post image, and profile picture as a data URI with the snippet in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-card.md`, **Images**, page profile, sized to each image's rendered CSS box at 2x (`avatar` and `thumb` defaults for creator cards, `post@{W}` for post cards), passing `media.mediaUrl` first and `media.thumbnailUrl` after it. Published pages cannot load images from outside hosts. Set each `<img>` `width` and `height` from the snippet's `cssWidth` and `cssHeight`. Keep the images under 8MB and the page under 10MB, cutting images before quality per **Images**.
 - Build one self-contained HTML page following the structure in the reference file. Load the `artifact-design` and `dataviz` skills first. If `theme:brand` is saved, apply it to the page, its charts, and its creator cards per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`, **Applying the theme**; otherwise keep the reference's design. Publish with the Artifact tool, title "<Brand> Creator Brief", favicon 🎬. Republish to the same path on a later run for the same brand.
 - Write back to Atlas with `append_insights`: one `runKey` (`creator-brief-{profile}-{week}`), role `account_review`, entity = the brand account, kind `action_item` per deliverable with `priority`, plus `went_well` and `needs_improvement` findings for the top theme and weakest theme. Supply an `idempotencyKey` per finding.
 
