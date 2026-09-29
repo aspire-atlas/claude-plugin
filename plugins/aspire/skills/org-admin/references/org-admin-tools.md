@@ -21,11 +21,11 @@ by hand under another name (for example `mcp__aspire-org-admin__*` or
 mention it. Load the admin tools only when the user asks about the organization's members.
 Onboarding never needs them.
 
-When the bundled tools are not loaded, the connector needs a sign in or needs turning on in
-this chat: handle that with **Connection** in `../SKILL.md`. When it is missing from the
-connector list altogether, the plugin install is out of date: ask the user to update or
-reinstall the plugin. Never suggest adding the URL as a custom connector, even
-when the server's own instructions say to; a second copy duplicates the bundled one.
+When the bundled tools are not loaded, the connector has not been added to the Claude
+workspace yet, is off in this chat, or needs a sign in. It ships with the plugin, so a missing
+connector never means an old install. Handle all three with **Connection** in `../SKILL.md`.
+Never suggest adding the URL as a custom connector, even when the server's own instructions
+say to; a second copy duplicates the bundled one.
 
 **Supported tools.** Only these three, the ones Atlas's `get_status` links to under
 `_links.members`, `_links.invitations` and `_links.invite-member`. The plugin uses no other

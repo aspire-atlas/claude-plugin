@@ -24,6 +24,8 @@ Onboarding for the Atlas platform (https://atlas.aspire.io). Takes a new or retu
 
 No environment variables are required. Authentication is handled by each connector's OAuth flow. Aspire Atlas Organization Admin only needs a sign in when someone lists or invites members; onboarding and every other flow use Aspire Atlas alone.
 
+On a Team or Enterprise plan, a Claude workspace admin adds each bundled connector once for the team: Customize, then Plugins, then Aspire Atlas, then the Connectors tab, then **Add for your team**. Until that's done, `/aspire:org-admin` explains the step instead of listing members.
+
 Plugin skills are namespaced, so the canonical command is `/aspire:aspire`. The skill also triggers on `/aspire` and on the phrases below. If Aspire Atlas is installed but off in the current chat, or not signed in, the skill detects it and walks the user through turning it on and connecting.
 
 ## Usage
