@@ -101,7 +101,9 @@ fetched during the run.
 - Same for `instagram.account.profilePictureUrl` on posts: project `instagram.account`.
 - `search_creators` returns `instagram.profilePictureUrl` null as a leaf; project the
   `instagram` container and exclude the three demographics blobs to keep the payload small.
-- Some `/thumbnail` routes on `cdn.aspire.io` return 404. Fall back to the base media URL.
+- `/thumbnail` routes on `cdn.aspire.io` return 404 on image posts, where the base media URL is
+  the full-size image. On video posts the base URL is the video file and `/thumbnail` is the
+  full-size poster. Pass both, `mediaUrl` first, to the **Images** snippet in `creator-card.md`.
 - `search_creator_marketplace` requires `keyword` and rejects it alongside
   `filters.similarToCreators`, so lookalike search is unreachable from the connector.
 - Marketplace results land in `search_creators` 1 to 3 minutes after `get_job_status`
@@ -113,4 +115,4 @@ fetched during the run.
 - Stories appear as posts with `mediaKind` null and only `organicReach`. Exclude with
   `exists mediaKind`.
 - Published pages cannot load `cdn.aspire.io` images. Embed as data URIs with the snippet in
-  `creator-card.md`, **Images**, page profile.
+  `creator-card.md`, **Images**, page profile, sized to each image's rendered box at 2x.

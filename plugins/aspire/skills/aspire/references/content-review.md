@@ -176,7 +176,9 @@ and use the first that works. Say which one ran.
    check (no frame extractor)", and the summary says which tool would fix it. Never pass a
    continuous must-include from the cover alone.
 
-**Resizing, in this order:** Pillow, then `sips` on macOS, then `ffmpeg -vf scale`.
+**Resizing, in this order:** Pillow (`Image.LANCZOS`, WebP quality 85, or JPEG quality 85
+with `subsampling=0`), then `sips` on macOS (`--resampleWidth`, `-s formatOptions 85`), then
+`ffmpeg -vf scale=W:-2:flags=lanczos -q:v 2`. Never resize past the file's own size.
 
 **Which frames.** Start at 0.5 seconds, take one frame every 3 seconds, and add one 1 second
 before the end. Stop at 30 frames: for a longer clip, widen the step to duration ÷ 30. Then add
@@ -440,11 +442,17 @@ One page per review, with a new path each time so earlier reviews stay linkable.
 7. **Footer.** The brief source, "numbers come from Atlas as of {timestamp}", what was not
    checkable and why, and a note that images are a snapshot.
 
-Page mechanics: frames come from the files under **Media**, resized to 320px wide and
-embedded as JPEG data URIs. The creator card's images (profile picture 112px, thumbnails
-240px) are embedded with the snippet in `creator-card.md`, **Images**, page profile, which
-retries the base media URL on a `/thumbnail` 404. Keep the page under 2MB. Draft media comes
-from the local files the user attached. Load `artifact-design` before building. Apply the saved brand theme (`theme:brand`) per `theme.md`, **Applying the theme**; without one, the design here stands. The
+Page mechanics: every image follows `creator-card.md`, **Images**: sized to its rendered box
+at 2x, never upscaled, LANCZOS, WebP or JPEG at quality 85 or more, and placed with `width` and
+`height` at half its pixels. The post under review is the page's main image: for a published
+post, embed it with the snippet, page profile, as `detail@{W}x{H}` for its panel
+(`detail+text@…` when it is mostly text or graphics), passing `media.mediaUrl` then
+`media.thumbnailUrl`. Frames in the strip and draft media come from the local files under
+**Media**; resize them with the first tool on the **Resizing** list to twice their CSS width
+(a 160px frame is 320px wide, a 480px draft panel 960px), never past the file's own size, and
+encode them at the same settings. The creator card's images use the snippet's `avatar` and
+`thumb` kinds. Keep the images under 8MB and the page under 10MB; past that, embed every other
+frame of a long strip before lowering quality. Load `artifact-design` before building. Apply the saved brand theme (`theme:brand`) per `theme.md`, **Applying the theme**; without one, the design here stands. The
 verdict banner and the result chips keep their semantic colors.
 
 ## Atlas quirks that apply here

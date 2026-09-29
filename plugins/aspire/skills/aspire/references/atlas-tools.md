@@ -110,8 +110,8 @@ opaque or `exists`-only in the census, so they cannot be filtered on, but they p
 
 | Entity | Field | Use |
 | ------ | ----- | --- |
-| Post | `media.mediaUrl` | Full post image or video poster |
-| Post | `media.thumbnailUrl` | Fallback thumbnail |
+| Post | `media.mediaUrl` | Full-size post image; on video posts, the video file |
+| Post | `media.thumbnailUrl` | On video posts, the full-size poster frame; often 404 on image posts |
 | Post | `instagram.permalink` / `url` | Link target |
 | Post | `instagram.mediaProductType` | FEED / REELS chip (null on older posts) |
 | Post author | `instagram.account.profilePictureUrl` | Profile picture, Instagram |

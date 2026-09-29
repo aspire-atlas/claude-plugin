@@ -180,7 +180,9 @@ Sections in order:
 
 More than 12 candidates means a chart leads the shortlist: fit score by tier, or follower
 count against engagement rate with the pool plotted. Embed every image with the snippet in
-`creator-card.md`, **Images**, page profile, and keep the page under 2MB. Load `artifact-design`, and `dataviz`
+`creator-card.md`, **Images**, page profile, and keep the images under 8MB and the page under
+10MB. A large pool cuts thumbnails per card (then rejected-list images) before quality, per
+**Images**. Load `artifact-design`, and `dataviz`
 for any chart, before building. Apply the saved brand theme (`theme:brand`) per `theme.md`, **Applying the theme**; without one, the design here stands. Title: "<Brand> Creator Discovery: <Campaign>".
 
 ## Decisions
@@ -234,7 +236,7 @@ A scheduled run starts a fresh session with nobody to answer questions.
 
 Inherited from `creator-brief.md` and `readout.md`: project the `media` and
 `instagram.account` containers, not leaf URLs; exclude stories with `exists mediaKind`; some
-`/thumbnail` routes 404; published pages cannot load `cdn.aspire.io` images, so embed them.
+`/thumbnail` routes 404 on image posts; published pages cannot load `cdn.aspire.io` images, so embed them.
 New for creator discovery: `search_creators` carries no post-level fields, so topic evidence always
 needs a second `search_posts` call per candidate; `lookup_creators` has no status-check tool
 (re-call it with the same item to re-read a `fetching` result) and rejects `profileSlug`,

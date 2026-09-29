@@ -860,8 +860,9 @@ default, and only when the user asks for text or the data has no media at all.
   `SendUserFile` with the rendered HTML, or inline image links in the reply, when Artifact is
   absent.
 - Media URLs come from `cdn.aspire.io`, which neither inline widgets nor published pages can
-  load. Embed every image as a JPEG data URI with the snippet in `references/creator-card.md`,
-  **Images** (inline profile for widgets, page profile for pages). Give every image an `alt` of
+  load. Embed every image as a data URI with the snippet in `references/creator-card.md`,
+  **Images** (inline profile for widgets, page profile for pages), which sizes each image to its
+  rendered box at 2x from the full-size source and sets its `width` and `height`. Give every image an `alt` of
   the caption excerpt, and keep an `onerror` placeholder tile with the format chip for images
   the snippet could not fetch. Note once in the page footer that images are a snapshot.
 - Never fabricate an image. If a post has no media fields, show the placeholder tile, not a
