@@ -3,7 +3,7 @@
 This repo is the Aspire Atlas plugin for Claude and its marketplace catalog. Full operating rules: `docs/PLUGIN-LIFECYCLE.md`. The short version:
 
 - `develop` is the beta channel (marketplace `aspire-atlas-beta`, version = commit SHA). `main` is the official channel (marketplace `aspire-atlas`, version pinned in `.claude-plugin/marketplace.json`).
-- Feature work: branch from `develop`, PR into `develop`. Never edit `CHANGELOG.md` or the `name` / `description` / `displayName` / `version` lines of `.claude-plugin/marketplace.json` on `develop`.
+- Feature work: branch from `develop`, PR into `develop`. Never edit `CHANGELOG.md` or the channel-specific lines of `.claude-plugin/marketplace.json` (top-level `name` and `description`, plugin `displayName`, `version`) on `develop`. The plugin entry's `description` is shared and stays identical on both branches.
 - Releases: `git checkout -b release/X.Y.Z origin/main && git merge origin/develop`, bump both version fields in `marketplace.json`, write the changelog entry, PR into `main` with a merge commit. CI tags and publishes.
 - `plugins/aspire/.claude-plugin/plugin.json` and `SKILL.md` frontmatter never carry a `version`.
 - Never touch `aspire-atlas/claude-plugin-internal`; CI overwrites it from `develop`.
