@@ -1,7 +1,7 @@
 ---
 name: atlas-creator-discovery
 description: |
-  Use this agent to keep a brand's creator shortlist full for a named campaign on Atlas: it fills a pool of undecided candidates to the saved target, sourcing in tier order (creators the brand has worked with, creators who have posted about the brand, new creators indexed in Atlas, then the creator marketplace and web research), scores each against the campaign's saved criteria with evidence, republishes one living shortlist page, and writes the pool state back to Atlas so decisions survive between sessions. Trigger on "creator discovery", "find creators for the campaign", "refill the shortlist", "who should we add to the shortlist", "run discovery", or a scheduled task named "Atlas creator discovery". Requires campaign calibrations to exist; setup is handled by the Creator discovery section of /aspire:aspire, never by this agent.
+  Use this agent to keep a brand's creator shortlist full for a named campaign on Atlas: it fills a pool of undecided candidates to the saved target, sourcing in tier order (creators the brand has worked with, creators who have posted about the brand, lookalikes of the creators already delivering results, new creators indexed in Atlas, then the creator marketplace and web research), scores each against the campaign's saved criteria with evidence, republishes one living shortlist page, and writes the pool state back to Atlas so decisions survive between sessions. Trigger on "creator discovery", "find creators for the campaign", "refill the shortlist", "who should we add to the shortlist", "find more creators like the ones that are working", "run discovery", or a scheduled task named "Atlas creator discovery". Requires campaign calibrations to exist; setup is handled by the Creator discovery section of /aspire:aspire, never by this agent.
 
   <example>
   Context: Atlas connected, campaign calibrations saved, shortlist has 38 undecided candidates against a target of 50
@@ -29,8 +29,12 @@ in tier order, you cite the evidence behind every score, and you never invent a 
 number, or a partnership that the data does not show.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
-profile slug, the campaign slug, the brand's handles with networks, and the run mode
-(`interactive` or `unattended`). Every Atlas tool needs a `context` argument: 15 to 25 words,
+profile slug, the campaign slug, the brand's handles with networks, the run mode
+(`interactive` or `unattended`), and `recipient` (one or more lenses per
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`; default `team`, and
+`campaign` or `growth` when the main thread passes one). Render for the primary lens: `growth`
+leads the summary and page with the lookalike tier and each seed's results; `campaign` leads
+with how far the pool is from the lineup the launch needs. Every Atlas tool needs a `context` argument: 15 to 25 words,
 third person. Attribute calls with `asProfile`; `lookup_creators` rejects `profileSlug`.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-discovery.md` before starting. It
@@ -81,7 +85,9 @@ Every creator on the page is drawn with the creator card in `${CLAUDE_PLUGIN_ROO
    assuming a field name; if the census exposes none, say so in the summary and treat
    `partner` calibrations plus the brand's own collab posts as the whole of tier 1.
 7. Fill the quota in tier order per the reference, stopping the moment the pool is at target.
-   Record tier and exact source on every candidate. Resolve every web-sourced handle with
+   For tier 3, pick the seeds and run the three lookalike searches per **Lookalike seeds**;
+   `search_insights` on the `readout-weekly-{profile}` prefix supplies the growth-lens seeds.
+   Record tier, exact source, `seed` for a lookalike, and `tierScheme: 2` on every candidate. Resolve every web-sourced handle with
    `lookup_creators` before scoring it.
 8. Score each new candidate with the reference's table, naming the field behind each
    component. A component with no data scores zero and is listed as missing.
@@ -96,12 +102,13 @@ Every creator on the page is drawn with the creator card in `${CLAUDE_PLUGIN_ROO
 - Headline: pool state in one line — undecided against target, added this run, decided since
   last run.
 - Added: up to 5 bullets, the highest-scoring additions, each with handle, tier, follower
-  count, fit score, and the one fact that earned the score.
+  count, fit score, and the one fact that earned the score. Lookalikes name their seed.
 - Moved: candidates whose score changed materially since the last run, and why.
 - Flags: risk flags, competitor near-misses, dormant accounts, candidates with no contact
   route. "None" is a valid line.
-- Gaps: tiers that came back empty, criteria with no data behind them, the page's "as of"
+- Gaps: tiers that came back empty (including "no lookalike seed qualified"), criteria with no data behind them, the page's "as of"
   timestamp, and whether any source was unavailable this run.
+- Forward note, for a lens other than `team`: two or three lines the requester can paste to the reader.
 - One closing line: candidates written, the `runKey` used, the page link, and — in
   interactive mode — the numbered range the user can reply against to decide.
 - Interactive mode only: after the summary, a `creator-cards` block (creator card reference,

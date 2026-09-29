@@ -1,20 +1,23 @@
 # Creator brief reference
 
-Used by the `atlas-creator-brief` agent. Page structure, fit rubric, pricing method (from the fee calculator), and
-Atlas quirks learned on 2026-09-16 against the live server.
+Used by the `atlas-creator-brief` agent. Page structure, campaign mode, fit rubric, pricing method (from the fee
+calculator), and Atlas quirks learned on 2026-09-16 against the live server.
 
 ## Page structure
 
 One self-contained HTML page, published with the Artifact tool. Sections in order:
 
-1. **Header.** Eyebrow with handle, network, "Content creation brief", target week. Headline
-   that names the strategy in one line. Meta row: owner, channel and follower count, creator
-   count, prepared date. Standing-rule banner (red) when a red line makes the brief strategy
+1. **Header.** Eyebrow with handle, network, "Content creation brief", target week (or the
+   campaign name and window). Headline that names the strategy in one line. Meta row: owner,
+   channel and follower count, creator count, prepared date, and the "Prepared for" chip
+   (`recipient-lens.md`). Standing-rule banner (red) when a red line makes the brief strategy
    only.
 2. **Objective and audience.** KPI strip: 90 day goal from calibrations, engaged audience age
    band, top country share, gender split (from `instagram.account.audienceDemographics` on any
    brand post, projected via the `instagram.account` container). Two boxes: who we are talking
-   to (primary, secondary), what the data says to do (4 bullets with numbers). Flag-for-review
+   to (primary, secondary), what the data says to do (4 bullets with numbers). A "Built on"
+   line names the saved findings the plan leads with (market signal, weekly readout, ad reuse),
+   each with its run date. Flag-for-review
    banner (amber) when a guideline conflicts with the recommendation.
 3. **Deliverables.** One card per piece: day and date, format and length, title, one-paragraph
    lede, then a spec grid: angle, must include, avoid, creators (first pick bold), success
@@ -40,6 +43,34 @@ never a grid per list item (a grid splits inline bold labels into their own cell
 Categorical chart palette from the dataviz reference, validated. One axis per chart.
 With a saved brand theme, its tokens, fonts, header, logo, and chart series replace these
 defaults: apply `theme:brand` per `theme.md`, **Applying the theme**.
+
+## Campaign mode
+
+For a dated campaign or launch (`brief_mode` `campaign`), the brief is time-bound in three
+phases instead of one week of three posts.
+
+- **Phases.** **Before:** outreach, contracts, brief calls, drafts, and content review of every
+  draft. **During:** the post days, from the first post date to the campaign end (the launch
+  week when no end is given). **After:** the recap against goals, 7 and 14 days after the last
+  post.
+- **Deliverables.** Sized to the window, not fixed at three: at least one launch-day
+  deliverable per first-pick creator, optional teasers before the first post only when the
+  brand's history shows teasers working, and sustain posts through the window. Cadence cap and
+  repost cooldown still apply to the brand's own account.
+- **Timeline**, worked back from the first post date (T): outreach by T-21, confirmations by
+  T-14, brief calls by T-12, drafts due T-7, content review T-6 to T-3, final approvals T-2, go
+  live T, daily pulse T to the campaign end, recap T+7 and T+14. When T is closer than 21 days,
+  compress the steps before it proportionally and flag the risk on the page; never schedule a
+  step in the past.
+- **Creators.** First picks from the campaign's discovery pool (accepted first, then the top
+  undecided by fit score), each carrying its discovery tier and fit ring on the card. Source
+  beyond the pool only when fewer than five fit, and only within the chosen sourcing scope.
+- **Measurement.** Two tables: during (the daily pulse metrics: creator posts live, engagement
+  against each creator's own median, mentions, sentiment) and after (the campaign goal from
+  `campaign:{slug}-brief` against the recap).
+- **Page.** Section 3 groups deliverables by phase, section 6 is the phase timeline, and a
+  closing "Next steps" box offers content review for drafts and the daily launch pulse.
+  Title "<Brand> Campaign Brief: <Campaign>", republished to the same path for that campaign.
 
 ## Fit rubric
 

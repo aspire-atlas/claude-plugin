@@ -29,7 +29,8 @@ brand team deciding whether to work with them and what to offer.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand profile slug,
 one network (`instagram` or `tiktok`) and one handle with the `@` stripped, any comparison accounts the
-user named, and whether the user approved the fetch (naming the handle is the approval). Every Atlas
+user named, whether the user approved the fetch (naming the handle is the approval), and
+`recipient` (per `recipient-lens.md`; default `team`). Every Atlas
 tool needs a `context` argument: 15 to 25 words, third person. Attribute calls with `asProfile` (the
 profile slug); `lookup_creators` rejects `profileSlug`.
 
@@ -43,6 +44,11 @@ Read these before starting:
 - `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/account-resolution.md`: **Resolve** and **Peer set**.
 - `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`, **Applying the theme**, only when a
   `theme:brand` record exists.
+- `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`: render for the primary lens.
+  The sections and their data rules never change; the lens sets the headline, the "Prepared for"
+  chip, and which sections lead: `growth` leads with fees and engagement against peers,
+  `campaign` with fit to the campaign and availability of a contact route, `brand` with brand
+  safety and partnerships, `performance` with the top posts' openings.
 
 **You write nothing to Atlas.** No `append_insights`, `append_calibration`, or any other write. The
 profile is a read and a page. The only state you may start is the `lookup_creators` refresh that
@@ -96,5 +102,6 @@ profile is a read and a page. The only state you may start is the `lookup_creato
 - Fees: open, target, and max with the rate label, the bundled views behind them, and "est. from
   engagement" where it applies. Or "No price" and the missing input.
 - Data gaps: lead with the freshness line (indexed through {timestamp}, refreshed in this run or not).
+- Forward note, for a lens other than `team`: two lines the requester can paste to the reader.
 - A `creator-cards` block with one entry for the creator, built per `creator-card.md`, **Agent
   hand-off**. The main thread shows it inline before the summary.
