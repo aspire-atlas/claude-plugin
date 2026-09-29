@@ -91,11 +91,22 @@ a gender breakdown. Section 12's title uses the display name, or the handle when
 
 ## Images
 
-Embed every image as a data URI with the **Images** snippet in `creator-card.md`, page profile:
-the card's avatar as `avatar`, each top post and lowest post image as `post`. An image with
-`ok: false` leaves its media box empty (the tile background shows) with the format as its
-`alt`; never substitute another image. Keep the page under 2MB; over that, drop Lowest posts
-images first, then top posts 4 and 5. Note once in the page footer that images are a snapshot.
+Embed every image as a data URI with the **Images** snippet in `creator-card.md`, page profile,
+passing `media.mediaUrl` then `media.thumbnailUrl` for each post. The kinds, sized to this
+page's boxes:
+
+| Image | Kind | Why |
+| ----- | ---- | --- |
+| The card's avatar | `avatar` | The card's 56px circle |
+| Top posts | `thumb@160x200` | The 4:5 media box, about 160px wide at the page's full width, cropped to its shape so `object-fit:cover` never zooms |
+| Lowest posts | `thumb@72x96` | The 72px column of the compact row |
+
+Place each image with the snippet's `width` / `height` rules and `decoding="async"`. An image
+with `ok: false` leaves its media box empty (the tile background shows) with the format as its
+`alt`; never substitute another image. The page follows the snippet's page budget (images
+under 8MB, the page under 10MB); this page stays far below it, but if it ever goes over, drop
+Lowest posts images first. Top posts are the page's subject and are never dropped. Note once in
+the page footer that images are a snapshot.
 
 ## Style block
 
@@ -254,14 +265,14 @@ percentages of the axis or the largest value, written inline.
   <section class="acp-sec">
     <header><h2>Top posts</h2><p class="acp-lede">Ranked by engagement rate across analyzed {NETWORK} posts.</p></header>
     <div class="acp-posts">
-      <!-- one per post --><a class="acp-panel acp-post" href="{PERMALINK}" target="_blank" rel="noopener"><div class="acp-media"><img src="{IMAGE}" alt="{CAPTION_EXCERPT}" loading="lazy"><span class="acp-rank">{RANK}</span><span class="acp-er">{ER}</span></div><div class="acp-pbody"><span class="acp-eyebrow">{DATE} · {FORMAT}</span><span class="acp-cap">{CAPTION_EXCERPT}</span><span class="acp-pstats">{STATS}</span></div></a>
+      <!-- one per post --><a class="acp-panel acp-post" href="{PERMALINK}" target="_blank" rel="noopener"><div class="acp-media"><img src="{IMAGE}" alt="{CAPTION_EXCERPT}" width="{CSS_W}" height="{CSS_H}" loading="lazy" decoding="async"><span class="acp-rank">{RANK}</span><span class="acp-er">{ER}</span></div><div class="acp-pbody"><span class="acp-eyebrow">{DATE} · {FORMAT}</span><span class="acp-cap">{CAPTION_EXCERPT}</span><span class="acp-pstats">{STATS}</span></div></a>
     </div>
   </section>
 
   <section class="acp-sec">
     <header><h2>Lowest posts</h2></header>
     <div class="acp-lows">
-      <!-- one per post --><a class="acp-panel acp-low" href="{PERMALINK}" target="_blank" rel="noopener"><div class="acp-media"><img src="{IMAGE}" alt="{CAPTION_EXCERPT}" loading="lazy"><span class="acp-er">{ER}</span></div><div class="acp-pbody"><span class="acp-eyebrow">{DATE} · {FORMAT}</span><span class="acp-cap">{CAPTION_EXCERPT}</span><span class="acp-pstats">{STATS}</span></div></a>
+      <!-- one per post --><a class="acp-panel acp-low" href="{PERMALINK}" target="_blank" rel="noopener"><div class="acp-media"><img src="{IMAGE}" alt="{CAPTION_EXCERPT}" width="{CSS_W}" height="{CSS_H}" loading="lazy" decoding="async"><span class="acp-er">{ER}</span></div><div class="acp-pbody"><span class="acp-eyebrow">{DATE} · {FORMAT}</span><span class="acp-cap">{CAPTION_EXCERPT}</span><span class="acp-pstats">{STATS}</span></div></a>
     </div>
   </section>
 

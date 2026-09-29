@@ -80,7 +80,8 @@ profile is a read and a page. The only state you may start is the `lookup_creato
     Medium, Monitor), a lead sentence, and one line of reason. They are recommendations on the page,
     not saved action items.
 11. **Build and publish.** Load `artifact-design` and `dataviz`. Embed every image with the **Images**
-    snippet, page profile. Build the page per `creator-profile.md`, apply `theme:brand` when saved, and
+    snippet, page profile, using the kinds in `creator-profile.md`, **Images**, and writing the
+    snippet's output to a scratch file rather than reading data URIs back. Build the page per `creator-profile.md`, apply `theme:brand` when saved, and
     publish with the Artifact tool, title "{Name or @handle} Creator Profile", republishing to the same
     file path for the same handle. No Artifact tool: build nothing, and return the summary with the
     gap named.
