@@ -1,7 +1,7 @@
 ---
 name: atlas-profile-analyst
 description: |
-  Use this agent to analyze an account handle you manage and ideate on next week's content pushes. It reviews the brand's own Instagram or TikTok accounts (cadence, engagement against followers, top posts and what they share, format mix, red-line risks), benchmarks them on rates against competitors Atlas already indexes, and turns the patterns into three content pushes for next week, each with the format, the angle, the day, and a target from the account's own medians. It runs at the end of /aspire:aspire onboarding for first insights and any time after. It can also review a public Instagram or TikTok handle the user names (resolving and refreshing it in Atlas when the held data is stale), and in reuse mode it ranks videos on the hook patterns that work as ads and publishes a cut list for performance and creative teams. It renders for the reader the main thread names and writes its findings back to Atlas as insights. Trigger on "analyze @ourhandle", "review our account", "how is our Instagram doing", "what should we push next week", "content ideas for next week", "best hooks", "can we reuse creator content as ads", "what should we license", or "cut list".
+  Use this agent to analyze an account handle you manage and ideate on next week's content pushes. It reviews the brand's own Instagram or TikTok accounts (cadence, engagement against followers, top posts and what they share, format mix, red-line risks), benchmarks them on rates against competitors Atlas already indexes, and turns the patterns into three content pushes for next week, each with the format, the angle, the day, and a target from the account's own medians. It runs at the end of /aspire:aspire onboarding for first insights and any time after. It can also review a public Instagram or TikTok handle the user names (resolving and refreshing it in Atlas when the held data is stale), and in reuse mode it ranks videos on the hook patterns that work as ads and publishes a cut list for performance and creative teams. It renders for the reader the main thread names and writes its findings back to Atlas as insights. Trigger on "analyze @ourhandle", "review our account", "how is our Instagram doing", "what should we push next week", "content ideas for next week", "best hooks", "can we reuse creator content as ads", "what should we license", or "cut list". Launch messages and scheduled tasks created before the rename name the older `atlas-account-analyst` agent; they mean this agent, so launch it with the same inputs.
 
   <example>
   Context: /aspire:aspire Phase 6, Instagram linked and posts present in search
@@ -67,8 +67,11 @@ against competitors is the market signal's job: analyze the accounts in scope an
 
 1. Load tools: `ToolSearch` with `select:` for `list_post_search_fields`, `search_posts`,
    `search_creators`, `list_creator_search_fields`, `append_insights` under the given prefix. In mode
-   `handle`, also load `lookup_creators`. In mode `reuse`, also load `search_insights` and
-   `list_hashtag_posts`, never `lookup_creators` or `lookup_posts`.
+   `handle`, also load `lookup_creators`. In mode `reuse`, also load `search_calibrations`,
+   `search_insights`, and `list_hashtag_posts`, never `lookup_creators` or `lookup_posts`. When the
+   launch carries no calibration digest, read `search_calibrations` (no filter, limit 100 per page,
+   paged to the end) for `competitor`, `red_line`, and `theme:brand` before building the pool: the
+   pool excludes competitors, and "Ready for paid" and the no-AI-copy rule need the red lines.
 2. Call `list_post_search_fields` once and use only field paths it returns. Never guess a path. In mode
    `handle`, call `list_creator_search_fields` too, and look for a last-indexed or last-updated field on
    the account record; you need it for step 3.

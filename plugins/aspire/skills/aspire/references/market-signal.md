@@ -79,9 +79,10 @@ Filter path unless noted, `context` on every call, only field paths from the cen
    `analysis.emotionalAnalysis.tone`, `analysis.commercialAnalysis.featuredBrands`, the
    metrics, `media` (container), and the author's account container.
 7. **Last run.** `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
-   `market-signal-{profile}`, newest first, limit 50. Before pulling data, if the newest runKey
-   already names the resolved window, apply the readouts' duplicate-window guard: re-check the
-   clock once, then publish with a "Repeat window" banner and write nothing.
+   `market-signal-{profile}`, newest first, limit 50. Before pulling data, compare the resolved
+   window with the newest run's `detail.window` (not its `runKey`, whose form differs between
+   weekly and custom windows). If they match, apply the readouts' duplicate-window guard:
+   re-check the clock once, then publish with a "Repeat window" banner and write nothing.
 
 ## Analysis rules
 
@@ -150,7 +151,7 @@ findings anchor to the post (`entityKind` `post`, the network's own media id). A
 | A recommendation per lens (3 max) | `action_item` | Required |
 
 `detail` carries `recipient` (primary lens), `lens` (for a secondary-lens finding),
-`competitor`, `topic`, `outcome`, `sov` (`{brand, competitors{}, organic, paid}`),
+`window` (`{start, end}`), `competitor`, `topic`, `outcome`, `sov` (`{brand, competitors{}, organic, paid}`),
 `verbatims[]` (quote, permalink, timestamp), `changedSinceLastRun`, and `evidence[]`.
 `idempotencyKey` per finding.
 

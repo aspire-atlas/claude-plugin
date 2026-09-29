@@ -1,6 +1,8 @@
 # Readout reference (daily and weekly)
 
-Shared by the `atlas-daily-insights-report` and `atlas-weekly-insights-report` agents and by the **Readouts**
+Shared by the `atlas-daily-insights-report` and `atlas-weekly-insights-report` agents (formerly
+`atlas-daily-readout` and `atlas-weekly-readout`; a scheduled task naming an old agent means the
+new one) and by the **Readouts**
 section of SKILL.md. Holds the calibration set, metric definitions, page structures, delivery
 mechanics, and the rules for scheduled (unattended) runs.
 
@@ -267,7 +269,7 @@ Read `policy:readout-routing`. The page and chat summary always ship. Then:
   message: that lens's three bullets and the page link with the lens anchor. Same connection
   rules as below.
 - **Email:** if the routing names recipients and an email connection is available, send one
-  message with subject "<Brand> {Daily|Weekly} Readout, {date}", the chat summary as the body,
+  message with subject "<Brand> {Daily|Weekly} Insights Report, {date}", the chat summary as the body,
   and the page link. If no email connection is present, say so and continue.
 - Interactive run: confirm the send once with `AskUserQuestion` ("Post to {channel} and email
   {recipients}?" Options: Send (Recommended) / Page only this time). Unattended run: the R2
@@ -283,7 +285,7 @@ to answer questions. The scheduled task prompt must therefore be standalone (tem
 README). Rules for the agents:
 
 - Never ask a question. If any of the six readout calibrations or `brand:summary` is missing,
-  publish a one-card page titled "<Brand> Readout: setup needed" listing the missing items,
+  publish a one-card page titled "<Brand> Insights Report: setup needed" listing the missing items,
   write nothing to Atlas, and end with "Run /aspire:aspire and ask for readout setup."
 - Never run a destructive tool. Never call `lookup_*`, `search_creator_marketplace`, or
   `start_business_discovery`.
