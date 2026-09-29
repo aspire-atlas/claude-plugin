@@ -33,9 +33,10 @@ CI (`scripts/check-channel.sh`) fails the build if any of these are violated. Th
 
 ### Files that differ between the branches
 
-Only `.claude-plugin/marketplace.json` (the `name`, `description`, `displayName`, and `version` lines). Everything else is identical or flows from `develop` to `main` unchanged. Two rules follow:
+Only `.claude-plugin/marketplace.json`: the marketplace's top-level `name` and `description`, the plugin entry's `displayName` (the beta adds "(beta)"), and the `version` lines. Everything else is identical or flows from `develop` to `main` unchanged, including the plugin entry's `description`, which is what the plugin page shows on both channels. Rules that follow:
 
-- On `develop`, never edit those lines of `marketplace.json`.
+- On `develop`, never edit the lines that differ by channel.
+- Keep the plugin entry's `description` the same on both branches. Change it on `develop` like any other shared file, so the beta listing shows it right away and the next release carries it to `main`.
 - On `develop`, never edit `CHANGELOG.md`. Release branches own it. CI fails a `develop` push whose changelog differs from both the merge base and `main`.
 
 ## 3. Local setup
@@ -84,9 +85,11 @@ Release branches are cut **from `main`** and pull `develop` in. That direction i
 ```bash
 git fetch origin
 git checkout -b release/1.2.0 origin/main
-git merge origin/develop                  # expect: no conflicts
+git merge origin/develop                  # expect: no conflicts, except the one below
 git log origin/main..origin/develop --oneline   # what you are shipping
 ```
+
+If `develop` changed the plugin entry's `description` since the last release, `marketplace.json` conflicts, because on `main` the `version` line sits right above it. Resolve by keeping `main`'s channel lines (top-level `name` and `description`, `displayName`, both `version` fields) and `develop`'s plugin `description`, then `git add .claude-plugin/marketplace.json` and finish the merge. `bash scripts/check-channel.sh main` confirms the channel lines.
 
 Then edit two files:
 

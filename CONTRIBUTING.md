@@ -13,7 +13,7 @@ Rules that make this work:
 
 - All work lands on `develop` through pull requests. `main` only receives PRs from `release/*`, `develop`, or `hotfix/*`.
 - `plugin.json` and `SKILL.md` never carry a version. The one version field is `plugins[].version` in `.claude-plugin/marketplace.json`, and only on `main`.
-- `develop` never edits the marketplace `name`, `description`, `displayName`, or `version` lines, and never edits `CHANGELOG.md`. CI fails a develop PR that touches the changelog. Release branches own both. That is what keeps merges conflict-free.
+- `develop` never edits the marketplace lines that differ by channel (the top-level `name` and `description`, the plugin `displayName`, and `version`), and never edits `CHANGELOG.md`. The plugin entry's `description` is shared: keep it identical on both branches. CI fails a develop PR that touches the changelog. Release branches own both. That is what keeps merges conflict-free.
 - Do not merge `main` back into `develop`. Hotfixes go to `develop` first, then to `main` via `hotfix/*` (cut from `main`, cherry-pick the fix, bump the patch version) if they cannot wait for the next release.
 
 ## Layout
