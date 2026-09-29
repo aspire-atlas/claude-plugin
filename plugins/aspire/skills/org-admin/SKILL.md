@@ -1,11 +1,10 @@
 ---
 name: org-admin
 description: >
-  The Org Admin for your Aspire Atlas organization. See who's on the team, check pending
-  invites, and invite teammates. Anyone can view; owners and admins can invite, and every
-  invite is confirmed first. Open it with /aspire:org-admin, or ask "who's in our org", "who
-  has access to Atlas", "any pending invites", "invite a teammate", or "give my colleague
-  access".
+  Support tool for an Aspire Atlas organization: lists members and pending invitations and
+  sends invitations after a confirmation. Use only when someone asks, for example
+  "/aspire:org-admin", "who's in our org", "who has access to Atlas", "any pending invites",
+  "invite a teammate", or "give my colleague access". Never suggest it unprompted.
 metadata:
   author: Aspire
 ---
