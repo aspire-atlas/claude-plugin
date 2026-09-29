@@ -9,13 +9,13 @@ a creator is shown, the compact card in `creator-card.md` stays the only layout.
 
 | Trigger | Built by | Surface |
 | ------- | -------- | ------- |
-| Account review in mode `handle` whose account is a creator, not a brand | `atlas-account-analyst` | Published page |
-| "Full profile for @handle", "creator profile", "portfolio", "deep dive on @handle" | The main thread routes it to the same account review (SKILL.md, Phase 6, mode `handle`) | Published page |
+| "Full profile for @handle", "creator profile", "portfolio", "deep dive on @handle", "what would @handle cost" | `atlas-creator-profile`, launched from SKILL.md, **Creator profile** | Published page |
+| An account review of a creator, when the user takes up the offer of the full profile | The same agent, on the same handle | Published page |
 
 The profile is a page only. It is too large for an inline widget: in chat, the main thread
 shows the compact card inline (from the agent's `creator-cards` block) and links the page.
-A brand account reviewed in mode `handle` keeps the account review's normal output; it never
-gets a creator profile.
+Brand accounts never get a creator profile; they get an account review. The agent writes
+nothing to Atlas: Next steps are recommendations on the page, not saved action items.
 
 ## Page layout
 
@@ -51,8 +51,8 @@ of one; say what was missing in **Data gaps & freshness** instead.
 
 ## Data behind each section
 
-The agent already reads the creator record and up to 100 recent posts (`atlas-account-analyst`,
-steps 3 to 7). The profile needs these as well:
+The agent (`atlas-creator-profile`) reads the creator record and up to 100 recent posts. The
+profile needs these as well:
 
 - The creator record with its demographics: project the `instagram` or `tiktok` container
   **without** excluding the demographics blobs this time.
@@ -82,8 +82,8 @@ Number format follows `creator-card.md`.
 | Brand safety | One cell per category `analysis.brandSafety` rates, named as Atlas names them. A category rated anything but `Low Risk` on any post is flagged (warning tone); the rest are low risk. One sentence below: how many categories were low risk on every post, then each flagged category with the post count and the context in plain words | Fewer than 3 analyzed posts |
 | Brand partnerships | Two groups. **Paid partnerships (confirmed)**: brands on posts marked as paid partnerships, or with a clear disclosure (#ad, #sponsored, "paid partnership with"), plus `pastBrandPartnershipPartners`, as success badges, with one line on how many paid posts and how they were disclosed. **Organic mentions (not confirmed as paid)**: other brands tagged or named without a disclosure, as outline badges, with the line "Spotted in captions or on screen. Treat these as organic visibility, not partnership history." A brand that matches a saved `competitor` record carries "(competitor)" | Neither group has an entry. Leave out an empty group |
 | Recommended fees | The fee calculator (`fees.md`): a bundle of one post on each of the creator's channels that the brand's rates cover, priced from the median views of each channel's last 10 posts. Open, target, and max from the saved `fees:rate-card`, or the Aspire recommended rates. Target takes `--ac-brand`. The note lists each channel's median views and the single-channel target for the primary channel. Lede carries the rate label | The calculator gives no price for any channel (`fees.md`, **No data, no price**). A channel priced from estimated views carries "est. from engagement" and its working in the note |
-| How {name} compares | Grouped bars per account: median engagement rate and median view rate, the reviewed account first and in bold, then the peer set from the analysis (step 7). Lede names the peer set and its follower band. View rate bars only when every account has views | Fewer than 3 usable peers |
-| Next steps | The 2 or 3 ranked action items the agent wrote to Atlas, each with a priority badge: High (brand fill), Medium (secondary), Monitor (outline), a bold lead sentence and one line of reason | No action items were written |
+| How {name} compares | Grouped bars per account: median engagement rate and median view rate, the reviewed account first and in bold, then the peer set (`account-resolution.md`, **Peer set**). Lede names the peer set and its follower band. View rate bars only when every account has views | Fewer than 3 usable peers |
+| Next steps | The agent's 2 or 3 ranked recommendations, each with a priority badge: High (brand fill), Medium (secondary), Monitor (outline), a bold lead sentence and one line of reason | The agent has no recommendation |
 | Data gaps & freshness | Bullets: the freshness line first ("Profiles were refreshed on {date}" or "indexed through {date}"), then the analyzed window, missing counts (saves, shares, views), how the peers were chosen, and which sections cover only one network. Also every section left out for lack of data, in one bullet | Never |
 
 Write about the creator by name, or with "they". Never infer pronouns from a name, a photo, or

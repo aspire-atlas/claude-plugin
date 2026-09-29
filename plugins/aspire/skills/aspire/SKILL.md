@@ -64,6 +64,7 @@ time so it never goes stale; never recite it from memory.
    | Chosen agent | Hand off to |
    | ------------ | ----------- |
    | `atlas-account-analyst` | Phase 1, then Phase 2 + 3 for the profile and handles, then Phase 6 (its target question first) |
+   | `atlas-creator-profile` | Phase 1, then Phase 2 + 3, then **Creator profile** (it asks for the handle and network first) |
    | `atlas-creator-brief` | Phase 1, then Phase 2 + 3, then **Creator brief** (its three questions first) |
    | `atlas-creator-discovery` | Phase 1, then Phase 2 + 3, then **Creator discovery**, Setup if the campaign is new, then Run |
    | `atlas-content-review` | Phase 1, then Phase 2 + 3, then **Content review**, Setup if it has never run, then Review |
@@ -103,7 +104,8 @@ After onboarding, four recurring flows hang off the same connection: the **Creat
 (weekly content plan with creators), the **Creator discovery** (a standing creator shortlist per
 campaign, schedulable), the **Content review** (one post or draft checked against its brief,
 interactive only), and the **Readouts** (daily and weekly performance digests, schedulable).
-Each is routed from its own section below. The **Theme** section brands all of their pages,
+The **Creator profile** gives one creator's full page on request. Each is routed from its own
+section below. The **Theme** section brands all of their pages,
 and the **Fee calculator** sets the creator rates behind every fee they show.
 
 ---
@@ -393,9 +395,8 @@ Rules:
 ## Phase 6: First insights
 
 Trigger once at least one channel reports linked, or whenever the user asks for an account
-review. A request for one creator's full profile, creator profile, portfolio, or deep dive
-("full profile for @handle") is an account review in mode `handle` on that handle: the agent
-publishes the creator profile page (`references/creator-profile.md`).
+review. A request for one creator's full profile, portfolio, or deep dive ("full profile for
+@handle") is not an account review: route it to **Creator profile** below.
 
 1. **Pick the target.** Ask once with `AskUserQuestion`, header "Account": "Which account
    should the review cover?" Two options:
@@ -438,11 +439,35 @@ publishes the creator profile page (`references/creator-profile.md`).
 7. Deliver the summary visually per the **Visual output** rule below: a card view of the top
    and bottom posts with their media, and one chart of the engagement pattern the headline
    rests on. In mode `handle`, lead with the account's creator card inline, before the
-   summary, rendered from the agent's `creator-cards` block. When the agent returns a creator
-   profile page link, that page is the visual deliverable: link it right after the card and
-   build no second page from `visual-data`.
+   summary, rendered from the agent's `creator-cards` block. When the reviewed account is a
+   creator, offer its full profile in one line after the summary (**Creator profile**).
 8. Unattended run with no `AskUserQuestion` available: default to `own` mode and never start a
    lookup.
+
+---
+
+## Creator profile (full page for one creator)
+
+Trigger when the user asks for one creator's full profile, portfolio, or deep dive, or what a
+named creator would cost ("full profile for @handle", "show me @handle's portfolio"). Requires
+a brand profile. The page is described in `references/creator-profile.md`, and its fees come
+from the **Fee calculator**.
+
+1. Read the target: one network and one handle with the `@` stripped. If the network is
+   missing, ask with `AskUserQuestion` (Instagram / TikTok). Only those two are searchable in
+   Atlas today; for YouTube, say so and offer the other two. A handle that is one of the
+   profile's own linked handles is an account review (Phase 6, mode `own`), not a profile.
+2. Naming the handle **is** the approval for fetching it from Atlas when the held data is
+   missing or over a day old, as in Phase 6; neither the skill nor the agent asks again.
+3. Launch the `atlas-creator-profile` subagent with the tool prefix, `profile_slug`, the
+   network and handle, any comparison accounts the user named, and a note that the user
+   approved the fetch. It writes nothing to Atlas, so it needs no write confirmation.
+4. Show the creator card inline from the agent's `creator-cards` block, then the page link,
+   then the agent's summary bullets and fee line. Never repeat the card's numbers in text.
+5. If the agent reports a brand account, say so and offer an account review (Phase 6, mode
+   `handle`). If it reports the handle could not be resolved, relay what was tried.
+6. When the fees used the Aspire recommended rates, make the fee calculator offer from **Fee
+   calculator**, Offers, after the reply.
 
 ---
 
@@ -823,8 +848,8 @@ default, and only when the user asks for text or the data has no media at all.
   card from what Atlas already holds. If Atlas holds nothing, say so and offer an account
   review (Phase 6, mode `handle`); never call `lookup_creators` just to draw a card.
 - A single creator's full profile or portfolio ("full profile for @handle") → the creator
-  profile page (`references/creator-profile.md`), built by the account review in mode
-  `handle`. It is the only other creator layout, and it is a page only.
+  profile page (`references/creator-profile.md`), built by the `atlas-creator-profile` agent
+  (**Creator profile**). It is the only other creator layout, and it is a page only.
 
 **Mechanics:**
 
