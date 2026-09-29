@@ -110,7 +110,7 @@ Atlas connection and the brand's saved market signal calibrations for the compet
 readers, and delivery routing. Launch the atlas-market-signal agent in unattended mode. Do not
 ask questions. Do not start any discovery. Do not state today's date in the launch message;
 the agent reads the current date from the shell clock in the saved timezone and reports the
-last seven days. If setup is incomplete or Atlas needs a fresh sign in, publish the "setup
+most recent completed Monday to Sunday. If setup is incomplete or Atlas needs a fresh sign in, publish the "setup
 needed" card and stop. Deliver only to the destinations saved in the market signal routing
 and readers.
 ```

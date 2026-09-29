@@ -80,12 +80,12 @@ anchored to the brand's own account per network. At most six: `went_well` per he
 `needs_improvement` per headline miss, `action_item` with `priority` per next-quarter
 recommendation (3 max). `detail` carries `recipient`, `quarter`, the KPI values with their
 prior-quarter values, and `sources[]` (the runKeys read). `idempotencyKey` per finding.
-Interactive runs write only after the main thread's confirmation; unattended runs write per
-the readout routing's standing approval, and publish without delivering when there is no
-routing.
+Findings are written only after the main thread's confirmation in an interactive run.
+Unattended runs publish the page and write nothing, because no setup step approves quarterly
+findings; they deliver nowhere.
 
 ## Unattended runs
 
-Never ask. Default to the last completed calendar quarter. No spend means the cost tiles are
+Never ask, never write findings, never deliver. Default to the last completed calendar quarter. No spend means the cost tiles are
 left out and named as a gap. No discovery, no destruction. An unauthorized error publishes a
 "setup needed" card with "Aspire Atlas needs a fresh sign in".

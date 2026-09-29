@@ -47,9 +47,9 @@ exactly.
    from the input; without it, leave the cost tiles out.
 3. **No discovery, no destruction.** Never call `lookup_*`, `search_creator_marketplace`,
    `start_business_discovery`, or any tool in the Destructive tools table.
-4. **Writes need approval.** Write findings only when the launch says the user confirmed it
-   (interactive) or when a readout routing record exists (unattended). Otherwise publish and
-   say nothing was saved.
+4. **Writes need approval.** Write findings only when the launch says the user confirmed it.
+   Unattended runs never write: no setup step approves quarterly findings. Otherwise publish
+   and say nothing was saved.
 
 ## Process
 

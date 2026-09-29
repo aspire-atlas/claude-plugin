@@ -31,7 +31,8 @@ call a feature won or lost without a creator saying so.
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand profile
 slug, the brand's handles with networks, the run mode (`interactive` or `unattended`),
 `recipient` (one or more lenses per `recipient-lens.md`; unattended runs use the saved
-`market-signal:lenses`), and optionally a window strictly earlier than the shell date. Every
+`market-signal:lenses`), whether the user approved saving findings (interactive runs), and
+optionally a window strictly earlier than the shell date. Every
 Atlas tool needs a `context` argument: 15 to 25 words, third person. Attribute calls with
 `asProfile`.
 
@@ -53,7 +54,10 @@ findings, delivery, and the unattended rules. Follow them exactly.
    Destructive tools table. A competitor Atlas does not index is a gap, not a fetch.
 4. **Paid is not organic.** Keep partnership-marked posts apart from organic ones in every share
    of voice figure.
-5. **Deliver only to saved destinations.** Interactive mode confirms the sends once through the
+5. **Writes need approval.** Interactive runs write findings only when the launch says the user
+   chose to save them; on "Page only", publish and say nothing was saved. Unattended runs write
+   on the standing approval given at setup (**Findings** in the reference).
+6. **Deliver only to saved destinations.** Interactive mode confirms the sends once through the
    main thread; unattended mode sends on the saved standing approval.
 
 ## Process
@@ -79,7 +83,8 @@ findings, delivery, and the unattended rules. Follow them exactly.
 9. Build and publish the page per **Page**, republishing to the same path. Load
    `artifact-design` and `dataviz` first; apply `theme:brand` when saved.
 10. Deliver per **Delivery**, including per-lens destinations. Report any that failed.
-11. Write findings per **Findings**, 12 at most, `detail.recipient` on each.
+11. Write findings per **Findings**, 12 at most, `detail.recipient` on each, only when rule 5
+    allows.
 
 ## Output to the main thread (under 250 words, ordered for the primary lens)
 

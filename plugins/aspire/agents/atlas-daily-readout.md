@@ -33,7 +33,7 @@ optionally the target date (default: yesterday in the brand's saved timezone, co
 from the shell clock in Process step 2, never from a date stated in the prompt), optionally a
 campaign slug for an on-demand launch pulse, and `recipient` (per
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`; default `team`; a pulse
-uses the lens saved on its `campaign:{slug}-pulse` record). Every Atlas
+uses the lenses saved on its `campaign:{slug}-pulse` record). Every Atlas
 tool needs a `context` argument: 15 to 25 words, third person.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/readout.md` before starting. It holds

@@ -149,8 +149,9 @@ launch is landing. The daily readout adds a pulse while a campaign window is ope
 
 **Pulse calibration** (written by the main thread after a campaign brief, or on request, with
 its own `AskUserQuestion` confirmation): kind `policy`, key `campaign:{slug}-pulse`, `detail`
-`{area: "pulse", body: "window <YYYY-MM-DD>..<YYYY-MM-DD>; topics: <launch terms creators would use>; hashtags: <#tags>; lens: <campaign|product>[><destination>]"}`.
-A destination named there is covered by the R2 standing approval, and the confirmation says so.
+`{area: "pulse", body: "window <YYYY-MM-DD>..<YYYY-MM-DD>; topics: <launch terms creators would use>; hashtags: <#tags>; lenses: <lens>[><destination>], ..."}`, where each lens is `campaign` or
+`product` and "Both" saves both, each with its own destination if one was typed. A destination
+named there is covered by the R2 standing approval, and the confirmation says so.
 
 On every daily run, read every `campaign:*-pulse` record and keep those whose window covers the
 target date. A caller may also pass a campaign slug for an on-demand pulse. For each one:

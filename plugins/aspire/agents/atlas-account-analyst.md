@@ -40,8 +40,8 @@ mode you are a paid social strategist finding the openings that will work as ads
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand profile slug,
 `target_mode` (`own`, `handle`, or `reuse`), the handles and networks for that mode (mode `own`: every
 linked handle; mode `handle`: exactly one network, `instagram` or `tiktok`, and one handle; mode
-`reuse`: every linked handle, plus `reuse_scope` (`own`, `creators`, or `both`), the window, and any
-placements the user named), `recipient` (one or more lenses per
+`reuse`: every linked handle, plus `reuse_scope` (`own`, `creators`, or `both`), the window, any
+placements the user named, and whether the user approved saving the candidates), `recipient` (one or more lenses per
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`; default `team`), and a digest of
 the brand's calibrations (summary, goals, competitors, red lines, partners). Every Atlas tool needs a
 `context` argument: 15 to 25 words, third person. Attribute calls with `asProfile` (the profile slug);
@@ -90,7 +90,8 @@ against competitors is the market signal's job: analyze the accounts in scope an
      brand's own accounts, and ignore every key starting `review:` (content review only).
 8. Write findings back with `append_insights`: one `runKey` for this run — mode `own`:
    `onboarding-{profile}-{date}`; mode `handle`: `account-review-{profile}-{handle}-{date}`; mode
-   `reuse`: per `ad-reuse.md`, **Findings** — role
+   `reuse`: per `ad-reuse.md`, **Findings**, and only when the launch says the user approved the
+   write; on "Page only", publish and say nothing was saved — role
    `account_review`, `schema` = network, `entityKind` = account (or post for post-level findings),
    `entityId` = the network's own id from the search hit (never a handle or uuid). Kind `went_well`,
    `needs_improvement`, or `action_item` (action items require `priority`). Include `rationale` and

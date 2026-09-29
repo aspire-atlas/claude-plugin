@@ -94,6 +94,9 @@ frames follow `content-review.md`, **The page**, page mechanics. Load `artifact-
 
 ## Findings (reuse mode)
 
+Written only when the main thread's launch says the user chose to save the candidates. On
+"Page only", publish the page, write nothing, and say so in the closing line.
+
 `append_insights`, `runKey` `ad-reuse-{profile}-{YYYY-MM-DD}`, role `account_review`,
 `schema` = network, `entityKind` `post`, `entityId` = the network's own media id. Kinds:
 `went_well` per hook pattern that leads (3 max), `action_item` per licensing candidate with

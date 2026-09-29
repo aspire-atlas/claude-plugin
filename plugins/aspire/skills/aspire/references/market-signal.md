@@ -42,8 +42,9 @@ Rules:
   searchable ones.
 - M3: a lens may carry its own destination (`product>slack:#product-feedback`), typed in the
   free text field. Those destinations are covered by the same standing approval as M4.
-- M4 doubles as the **standing approval to deliver**. Say so: "Scheduled runs will post to
-  {channel} and email {recipients} without asking each time."
+- M4 doubles as the **standing approval to deliver and to save findings**. Say so: "Scheduled
+  runs will post to {channel} and email {recipients}, and save their findings to Atlas, without
+  asking each time."
 - Offer once, after the batch is saved, to add the tracked topics' hashtags and the
   competitors' branded hashtags to the watch list (`add_hashtags`, its own confirmation). The
   watch list widens what Atlas indexes; it is never required.
@@ -55,9 +56,10 @@ Rules:
 
 Filter path unless noted, `context` on every call, only field paths from the census.
 
-1. **Window.** Default the last 7 days ending yesterday in the M5 timezone, from the shell
-   clock (`readout.md`, **Resolving "today"**). Baseline: the four weeks before. A caller may
-   pass an earlier window.
+1. **Window.** Default the most recent completed Monday to Sunday in the M5 timezone, from
+   the shell clock (`readout.md`, **Resolving "today"**), whatever day the run starts on. That
+   keeps scheduled, on-demand, and weekly-readout windows on the same ISO weeks. Baseline: the
+   four weeks before. A caller may pass an earlier window of any length.
 2. **Entities.** The brand (its name, its handles, its tracked hashtags) and each M1
    competitor (its name, its handles, its `spellingVariants` from the `competitor` record).
 3. **Mention sets.** Per entity: `search_posts` where the text matches the name or a spelling
@@ -130,8 +132,14 @@ Images follow `creator-card.md`, **Images**, page profile. Load `artifact-design
 
 ## Findings
 
-`append_insights`, `runKey` `market-signal-{profile}-{ISO week, e.g. 2026-W40}` for a weekly
-window, `market-signal-{profile}-{start}-{end}` otherwise. Role `account_review`. Summary
+Findings are written only with approval: interactive runs when the user chose to save them in
+the launch question, unattended runs on the M3 and M4 setup confirmation, which says scheduled
+runs save their findings to Atlas.
+
+`append_insights`, `runKey` `market-signal-{profile}-{ISO week, e.g. 2026-W40}` when the window
+is exactly one Monday to Sunday week, `market-signal-{profile}-{start}-{end}` for any other
+window. The duplicate-window guard compares the resolved window with the newest run's window,
+not its name, so a custom window never blocks a weekly run. Role `account_review`. Summary
 findings anchor to the brand's own account on the network (`entityKind` `account`); evidence
 findings anchor to the post (`entityKind` `post`, the network's own media id). At most 12:
 

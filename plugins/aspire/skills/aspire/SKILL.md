@@ -834,8 +834,8 @@ market signal looks at the conversation.
    each, in order. When **Reading the ask** already confirmed readers, preselect them as M3's
    recommended option. M1 offers the saved competitors; a competitor typed in is also
    offered as a new `competitor` record in the batch.
-3. On M3 and M4, state that scheduled runs will post to the named destinations without asking
-   each time. That is the standing approval.
+3. On M3 and M4, state that scheduled runs will post to the named destinations and save their
+   findings to Atlas without asking each time. That is the standing approval for both.
 4. Confirm the batch once ("Save this market signal setup for {brand}? Everyone on the team and
    every scheduled run will use it."), then write the records with `append_calibration`,
    `provenance: "interview"`. A `key-exists` follows the Phase 5 supersede rule.
