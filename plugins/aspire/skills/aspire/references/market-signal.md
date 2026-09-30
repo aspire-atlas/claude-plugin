@@ -15,7 +15,7 @@ same run feeds several readers (`recipient-lens.md`):
 - **PMM** gets a messaging read: the words creators use for each product, and which framing is
   spreading.
 - **Performance and Creative** get reuse candidates: the comparison videos with the strongest
-  openings, handed to the account analyst's reuse mode for the cut list.
+  openings, handed to the `atlas-ad-reuse` agent for the cut list.
 - **Campaign** gets a brief update: what the brand won on, so the next brief leads with it.
 
 It runs weekly on a schedule, so the tracking leads with what changed since the last run.
@@ -99,7 +99,7 @@ Filter path unless noted, `context` on every call, only field paths from the cen
   least 3 creators). A phrase is **spreading** when its creator count is at least double its
   baseline and at least 3.
 - **Reuse candidates.** The comparison videos with the strongest openings, ranked by the
-  retention proxy in `ad-reuse.md`. List them; the cut list is the account analyst's reuse mode.
+  retention proxy in `ad-reuse.md`. List them; the cut list is the `atlas-ad-reuse` agent's job.
 - **What changed.** Against the last run: share-of-voice moves of 3 points or more, new or
   flipped feature outcomes, new friction issues, new spreading phrases.
 - Competitors not indexed (no posts in the window and none in the baseline): say so and
@@ -116,7 +116,7 @@ section. Each follows `recipient-lens.md`, **Rendering for a lens**.
 - **PMM:** framing by product with verbatim phrases grouped by theme and competitor, share of
   voice by message, and gaps where the brand's positioning has no creator language behind it.
 - **Performance and Creative:** the ranked reuse candidates with their openings, and a line
-  offering the account analyst's reuse mode for the cut list.
+  offering the `atlas-ad-reuse` agent for the cut list.
 - **Campaign:** three bullets: what the brand won on, the language to borrow, and what to
   avoid, for the next brief.
 

@@ -48,7 +48,9 @@ time so it never goes stale; never recite it from memory.
    up, at `<base>/../../agents/`. Use `Glob` for `agents/*.md` there.
 2. For each file, read the frontmatter with `Read`. Take `name`, the first sentence of
    `description` (stop at the first period; ignore any `<example>` blocks), and the quoted
-   "Trigger on ..." phrases when the description has them.
+   "Trigger on ..." phrases when the description has them. Skip every agent whose
+   description starts with "Aspire staff only": those belong to `/aspire:staff` and are never
+   listed or offered here.
 3. Reply with one bullet per agent, sorted by name, in this shape:
    `**aspire:{name}**: {first sentence}` followed on the same line by "Trigger: {phrases}".
    Skip the trigger part when the description has none.
@@ -66,7 +68,8 @@ time so it never goes stale; never recite it from memory.
 
    | Chosen agent | Hand off to |
    | ------------ | ----------- |
-   | `atlas-profile-analyst` | Phase 1, then Phase 2 + 3 for the profile and handles, then Phase 6 (its target question first), or **Ad reuse** when the ask is about hooks, ads, or a cut list |
+   | `atlas-profile-analyst` | Phase 1, then Phase 2 + 3 for the profile and handles, then Phase 6 (its target question first) |
+   | `atlas-ad-reuse` | Phase 1, then Phase 2 + 3, then **Ad reuse** (its window, sources, and save questions first) |
    | `atlas-creator-profile` | Phase 1, then Phase 2 + 3, then **Creator profile** (it asks for the handle and network first) |
    | `atlas-creator-brief` | Phase 1, then Phase 2 + 3, then **Creator brief** (its three questions first) |
    | `atlas-creator-discovery` | Phase 1, then Phase 2 + 3, then **Creator discovery**, Setup if the campaign is new, then Run |
@@ -79,8 +82,10 @@ time so it never goes stale; never recite it from memory.
 
    Older names still reach the renamed agents: `atlas-account-analyst` is `atlas-profile-analyst`,
    `atlas-daily-readout` is `atlas-daily-insights-report`, and `atlas-weekly-readout` is
-   `atlas-weekly-insights-report`. A scheduled task or message that names an old agent launches
-   the new one; offer once, in an interactive session, to update the task's prompt and name.
+   `atlas-weekly-insights-report`. A launch that names `atlas-profile-analyst` with `target_mode`
+   `reuse` means `atlas-ad-reuse`, which took over reuse mode. A scheduled task or message that
+   names an old agent launches the new one; offer once, in an interactive session, to update the
+   task's prompt and name.
 
    An agent on disk that is not in that table: run Phase 1 and Phase 2 + 3, then launch it
    with the tool prefix, `profile_slug`, the linked handles and networks, and `recipient`
@@ -551,7 +556,7 @@ both are passed by default. Detail lives in `references/ad-reuse.md`. For one po
    or typed), and the sources ("The brand's and creators' posts (Recommended)", "Only our own
    posts", "Only creators' posts about us"). Add the write confirmation as the last question:
    "Save the ranked candidates to Atlas?" (Save (Recommended) / Page only).
-2. Launch `atlas-profile-analyst` with `target_mode` `reuse`, the tool prefix, `profile_slug`,
+2. Launch `atlas-ad-reuse` with the tool prefix, `profile_slug`,
    the linked handles and networks, `reuse_scope`, the window, any placements named,
    `recipient`, a digest of the brand's calibrations (competitors, red lines, partners), and
    whether the user approved the write. It reads only what Atlas holds.
@@ -952,6 +957,10 @@ is incomplete.
 Trigger when the user asks how the creator or influencer program did this quarter, for a
 QBR, a quarter in review, or whether the program is working. Requires a brand profile. Full
 detail lives in `references/quarterly-signal.md`.
+
+When the ask is a QBR that Aspire prepares for one of its customers (it names a customer, a
+CSM, or an account team presenting to the customer), hand off to the `staff` skill
+(`/aspire:staff`) with the `Skill` tool instead. It runs its own staff check.
 
 1. Ask in one `AskUserQuestion` call, together with the **Reading the ask** confirmation
    (default `leadership`): which quarter (last completed quarter (Recommended), quarter to
