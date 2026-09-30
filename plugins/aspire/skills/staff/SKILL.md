@@ -25,9 +25,6 @@ Every ask to the user goes through `AskUserQuestion`, never a question in plain 
 
 Atlas tools, prefixes, and the attribution model: `../aspire/references/atlas-tools.md`.
 
-Every flow that publishes a page for a customer ends with a Slack draft staff can paste when
-they share it, in the one shape set by `references/slack-draft.md`.
-
 ## 1. Connection and staff check
 
 1. Confirm the Atlas connection with Phase 1 of `../aspire/SKILL.md`, then come back here.
@@ -110,13 +107,11 @@ and Slack prefixes when found, and the save answer.
 ### 3.4 Hand over
 
 1. Relay both links, the customer page first, each labeled.
-2. Relay the Slack draft the agent returned, exactly as returned, under the line "Slack
-   draft, ready to paste:". Never post it, pick a channel for it, or offer to send it.
-3. Show a small bar chart of each goal's result as a percent of target, with the chart tool
+2. Show a small bar chart of each goal's result as a percent of target, with the chart tool
    when one is available, then three bullets: the biggest surprise, the post to show first,
    and the paid pick.
-4. List the data gaps in one short block and what would close each.
-5. Offer the next quarter's rebuild with one `AskUserQuestion`, header "Schedule": "Rebuild
+3. List the data gaps in one short block and what would close each.
+4. Offer the next quarter's rebuild with one `AskUserQuestion`, header "Schedule": "Rebuild
    this QBR automatically a week after each quarter ends?" Options: Schedule it
    (Recommended) / Not now. On yes, create a scheduled task named "Aspire staff customer
    QBR" for the 7th of January, April, July, and October at 9:00 in the user's timezone, with
@@ -128,8 +123,8 @@ and Slack prefixes when found, and the save answer.
 
 A scheduled run never asks. It still runs the staff check and stops on a fail. It resolves
 the customer and profile by the names in the prompt, uses saved goals, launches the agent with
-run mode `unattended` and save `Pages only`, and relays the two links and the Slack draft.
-It never writes to Atlas.
+run mode `unattended` and save `Pages only`, and relays the two links. It never writes to
+Atlas.
 
 ## Guardrails
 
@@ -138,8 +133,7 @@ It never writes to Atlas.
   earlier message. Destructive tools are never called from this skill.
 - No discovery: never call `lookup_*`, `search_creator_marketplace`, or
   `start_business_discovery` from a staff flow.
-- Never post to Slack from a staff flow. Slack is read only here. The Slack draft is text for
-  staff to paste, never a message Claude sends.
+- Never post to Slack from a staff flow. Slack is read only here.
 - The customer page is safe to forward. Anything internal goes on the prep page, and never
   into Atlas.
 - Never fabricate customer, goal, or metric data. If a tool call fails, say so, name the gap,

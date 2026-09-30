@@ -27,7 +27,6 @@ It reads the quarterly signal's saved findings when they exist, and never re-run
 9. Verify before publishing
 10. Unattended runs
 11. Writing style
-12. Slack draft
 
 ## 1. Inputs and window
 
@@ -325,22 +324,3 @@ only.
 Plain English. Short sentences, one idea each. No em dashes or double hyphens. Headlines are
 one complete phrase, not a label with a colon. No jargon unless the customer uses it. Spell
 out earned media value once, then use EMV. Say sales, not GMV.
-
-## 12. Slack draft
-
-After the customer page is published, write the Slack draft staff paste when they share it.
-Follow `slack-draft.md` exactly; this section only says what fills it for a QBR.
-
-- **Question:** "Did {Customer}'s {Qn YYYY} creator program reach the goals we agreed, and
-  what should we do next quarter?" When the run was performance only, with no goals to
-  score: "How did {Customer}'s creator program perform in {Qn YYYY}, and what should we do
-  next quarter?"
-- **Bullets, in order:** the outcome as the goal count ("2 of 3 goals hit") with the headline
-  result against its target; what drove the result, with its number; the post to show first,
-  by handle and network; the paid pick or the affiliate result, whichever moved the outcome
-  more; and the first next quarter goal with its target and date. Drop a bullet whose
-  section the program does not include, but never go below three.
-- **Link:** the customer page URL. Never the prep page.
-
-Unattended runs write the draft too. It is text, not a delivery, so it does not break the
-rule in section 10 that a scheduled run delivers nowhere beyond the pages.
