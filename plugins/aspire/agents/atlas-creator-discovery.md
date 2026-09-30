@@ -73,8 +73,11 @@ Every creator on the page is drawn with the creator card in `${CLAUDE_PLUGIN_ROO
    never from the prompt or the session header.
 3. Read `search_calibrations` (no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the five
    campaign records, plus `brand:summary`, every `competitor`, `partner`, `red_line`, and
-   `guideline`. Drop every key starting `review:` (content review only). Keep `theme:brand`
-   for the page in step 10; it is never a guideline.
+   `guideline`. Drop every key starting `review:` (content review only) or `vetting:` (creator
+   vetting only). Keep `theme:brand` for the page in step 10; it is never a guideline. Keep
+   every `creator:*` record apart: it is the team's call on one creator, not a criterion. Add
+   each one with stance `reject` to the dedupe set, and show any other stance on that
+   creator's card under "Notes".
 4. Rebuild the pool: `search_insights` on the `runKey` prefix
    `creator-discovery-{profile}-{campaign}`, newest first, paged. Newest record per `entityId`
    wins. Count undecided against the pool target; that gap is this run's fill quota.

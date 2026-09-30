@@ -135,8 +135,10 @@ Rules:
 - Work the tiers in order and stop as soon as the pool is at target. A run that fills from
   tiers 1 and 2 alone is a good run, not a shallow one.
 - Record the tier and the exact source on every candidate; the page shows it.
-- Never surface the brand's own handles, any `competitor` handle, or any handle already
-  decided for this campaign.
+- Never surface the brand's own handles, any `competitor` handle, any handle already
+  decided for this campaign, or any creator whose `creator:*` calibration has stance `reject`
+  (the team's call from creator vetting, `creator-vetting.md`). Any other stance is shown on
+  the card under "Notes".
 - Web research is evidence, never a write: a web-sourced candidate still enters the pool
   through `lookup_creators`, with the source URL in its evidence.
 
