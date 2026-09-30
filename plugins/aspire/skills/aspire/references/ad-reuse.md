@@ -1,11 +1,11 @@
 # Ad reuse reference (hooks and cut lists)
 
-Shared by `atlas-profile-analyst` in `target_mode` `reuse` and by `atlas-content-review`'s
+Shared by the `atlas-ad-reuse` agent and by `atlas-content-review`'s
 optional **Ad reuse** check. Serves the `performance` and `creative` lenses
 (`recipient-lens.md`): Performance decides what to license and put spend behind; Creative
 needs exactly which moments to cut, at what length, for which placement.
 
-## Candidate pool (reuse mode)
+## Candidate pool (ad reuse agent)
 
 - **Window:** the one the user named ("last month"), default the last 30 days.
 - **Sources**, per the `reuse_scope` input:
@@ -82,7 +82,7 @@ unless a saved record says so.
 - Both lenses are one hand-off (Performance picks, Creative cuts), so the page always carries
   both sections; the primary lens decides the order.
 
-## Page (reuse mode)
+## Page (ad reuse agent)
 
 Title "<Brand> Ad Reuse: {window}", republished to the same path for the same brand. Sections:
 header with the "Prepared for" chip; headline (the top pattern and the top candidate); the
@@ -92,7 +92,7 @@ come from Atlas as of {timestamp}". Images follow `creator-card.md`, **Images**,
 frames follow `content-review.md`, **The page**, page mechanics. Load `artifact-design` and
 `dataviz` first, and apply `theme:brand` per `theme.md`, **Applying the theme**.
 
-## Findings (reuse mode)
+## Findings (ad reuse agent)
 
 Written only when the main thread's launch says the user chose to save the candidates. On
 "Page only", publish the page, write nothing, and say so in the closing line.
