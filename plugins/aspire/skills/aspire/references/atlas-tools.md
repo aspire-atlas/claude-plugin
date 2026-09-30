@@ -79,8 +79,9 @@ social channels and brand memory have a home in the organization."
 | Readouts | `search_calibrations`, `search_posts` (+ `aggs`), `search_creators`, `search_insights`, `list_hashtag_posts` (launch pulse), `append_insights` | Daily and weekly readouts read prior runs by `runKey` prefix (`readout-daily-*`, `readout-weekly-*`), and the weekly's product and PMM lenses read `market-signal-*`; they write new findings | Setup calibrations and the launch pulse in `readout.md`; unattended runs never ask or destroy |
 | Market signal | `search_calibrations`, `list_post_search_fields`, `search_posts` (+ `aggs`, + semantic), `search_creators`, `list_hashtag_posts`, `search_insights`, `append_insights` | What creators say about the brand vs. its competitors; reads prior runs by `runKey` prefix `market-signal-*` | Setup calibrations in `market-signal.md`; no discovery in any mode; unattended runs never ask or destroy |
 | Quarterly signal | `search_calibrations`, `search_posts`, `search_creators`, `search_insights`, `list_insight_search_fields`, `append_insights` | Rolls up every saved `runKey` prefix for the quarter into one page | `quarterly-signal.md`; no discovery |
+| Creator vetting | `search_calibrations`, `get_brand_instruction` (read only), `search_creators`, `search_posts`, `search_insights`, `append_insights`, `append_calibration` (creator notes and lessons the user saved), `lookup_creators` (listed handles, after R3) | Approve, Maybe, or Reject for a list of creators; `runKey` prefix `creator-vetting-*`; team calls on a creator in `creator:*` records | `creator-vetting.md`; interactive only |
 | Ad reuse | `search_posts`, `list_hashtag_posts`, `search_insights`, `append_insights` | `atlas-profile-analyst` mode `reuse`: hook scores and cut lists, `runKey` prefix `ad-reuse-*` | `ad-reuse.md`; reads only what Atlas holds |
-| Avoid in onboarding | `lookup_creators`, `lookup_posts`, `start_business_discovery`, `search_creator_marketplace`, `get_job_status` | Start discovery work beyond the accounts Atlas already holds | Only on explicit user request. The one routine use is `atlas-profile-analyst` in named-handle mode: the user typing a network and handle in Phase 6 is the approval, and the agent calls `lookup_creators` only when Atlas holds nothing for that handle or the record is over 24 hours old. `lookup_creators` has no status-check tool; re-call it with the same item to re-read a `fetching` result, and `creatorDeepAnalysis` defaults to `true` there, so recent posts come with the account. It rejects `profileSlug`; attribute with `asProfile`. The other routine use is `atlas-content-review` on a published post: pasting the link is the approval, and the agent calls `lookup_posts` once for that post only when Atlas does not hold it, with `creatorDeepAnalysis` left at its default `false`. A TikTok miss is a paid vendor call. |
+| Avoid in onboarding | `lookup_creators`, `lookup_posts`, `start_business_discovery`, `search_creator_marketplace`, `get_job_status` | Start discovery work beyond the accounts Atlas already holds | Only on explicit user request. The one routine use is `atlas-profile-analyst` in named-handle mode: the user typing a network and handle in Phase 6 is the approval, and the agent calls `lookup_creators` only when Atlas holds nothing for that handle or the record is over 24 hours old. `lookup_creators` has no status-check tool; re-call it with the same item to re-read a `fetching` result, and `creatorDeepAnalysis` defaults to `true` there, so recent posts come with the account. It rejects `profileSlug`; attribute with `asProfile`. Creator vetting is another: R3 "Fetch them" approves `lookup_creators` for exactly the listed handles Atlas does not hold, batched up to 100 per call. The other routine use is `atlas-content-review` on a published post: pasting the link is the approval, and the agent calls `lookup_posts` once for that post only when Atlas does not hold it, with `creatorDeepAnalysis` left at its default `false`. A TikTok miss is a paid vendor call. |
 | Utility | `get_more_tools` | Server-side tool discovery | Do not call during onboarding; the phase map above is the supported surface. |
 
 ## Destructive tools: confirmation is mandatory
@@ -147,6 +148,15 @@ Only content review applies them. Every other flow (onboarding, the readouts, th
 brief, creator discovery, the account analyst) drops them when it reads `red_line`,
 `guideline`, or any other calibration. A rule the brand wants everywhere is saved under its
 normal key (`redline:*`, `guideline:*`) instead.
+
+**Keys starting `vetting:` belong to creator vetting only**: its setup answers and lessons
+(`vetting:lesson-*`). Every other flow drops them, as it drops `review:` keys.
+
+**Keys starting `creator:` are the team's call on one creator** (`creator:ig-{handle}`,
+`creator:tt-{handle}`), saved from creator vetting feedback (`creator-vetting.md`, **Creator
+calibrations**). Vetting and creator discovery read them; a `reject` stance keeps the creator
+out of every discovery campaign. They are never brand guidelines: brief conflicts, content
+review checks, and red-line scans leave them out.
 
 **Keys starting `theme:` are page styling only.** `theme:brand` is a `guideline` record that
 holds the brand's colors, fonts, and logo for Atlas's own pages (`theme.md`). Flows that

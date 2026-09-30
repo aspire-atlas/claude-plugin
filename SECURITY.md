@@ -16,6 +16,8 @@ Email **security@aspire.io** with a description, reproduction steps, and impact.
   - writes nothing except up to three logo files in the folder where it runs, and prints its results;
   - runs through the same permission checks as any command Claude runs.
 
+  Creator vetting may use a browser tool already connected to the session to read a creator list from the Aspire app. You sign in yourself; Claude never types, reads, or stores a password or code, and changes nothing in the app.
+
   Content review may also use a video tool already on your computer (ffmpeg, OpenCV, or Swift on a Mac) to pull still frames from a post. It never installs one.
 - **State changes need consent.** Every Atlas and organization admin write is confirmed through a multiple-choice question. Destructive actions each get their own confirmation. Invites to an organization never run in unattended sessions.
 - **Unattended runs are constrained.** Scheduled runs never ask questions, never run destructive tools, and deliver only to Slack channels and email recipients the user saved during setup. Scheduled readouts start no discovery work at all; creator discovery is the sole agent permitted to run discovery unattended, and only under a cadence the user saved explicitly for that campaign.
