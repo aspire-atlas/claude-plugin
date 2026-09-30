@@ -6,7 +6,7 @@ Email **security@aspire.io** with a description, reproduction steps, and impact.
 
 ## What this plugin can and cannot do
 
-- **Data access.** The bundled connectors talk only to `https://atlas.aspire.io/mcp` (Atlas data) and `https://atlas.aspire.io/mcp/admin-organization` (organization members) over HTTPS with OAuth. They read and write data for the organizations the signed-in user belongs to, within that user's role. They do not read Claude memory, chat history, or uploaded files beyond what the user hands it in the task.
+- **Data access.** The bundled connectors talk only to `https://atlas.aspire.io/mcp` (Atlas data) and `https://atlas.aspire.io/mcp/admin-organization` (organization members) over HTTPS with OAuth. They read and write data for the organizations the signed-in user belongs to, within that user's role. They do not read Claude memory, chat history, or uploaded files beyond what the user hands it in the task. The Aspire staff flow (`/aspire:staff`) also reads a data warehouse connector and a Slack connector when the staff member has added them to Claude; the plugin bundles neither, and it never posts to Slack.
 - **What ships.** The plugin is markdown and JSON only: skills, agents, and an MCP definition. It ships no script files, hooks, or binaries, installs nothing, and needs no environment variables or API keys.
 - **Snippets that run on your computer.** A few reference files include short Python snippets. Claude saves one to a temporary file and runs it to embed images on a page or card, read a brand's website colors, fonts, and logo, or work out a color palette. Every snippet:
   - is written out in full in the plugin, where anyone can read it, and is never downloaded;
