@@ -74,10 +74,13 @@ hook signals when no ad reuse findings are saved.
 7. Verify (section 9). Fix what fails.
 8. Build and publish the two pages (section 7). Load `artifact-design` and `dataviz` first.
 9. Save findings per section 8 when rule 6 allows.
+10. Write the Slack draft per section 12 and `${CLAUDE_PLUGIN_ROOT}/skills/staff/references/slack-draft.md`.
+   Check it against the draft's never list and the customer page's figures.
 
-## Output to the main thread (under 250 words)
+## Output to the main thread (under 250 words, plus the Slack draft)
 
 - The customer page link and the prep page link, each on its own line, labeled.
+- The Slack draft in a `text` code block, exactly in the shape `slack-draft.md` sets.
 - Outcome: one sentence, for example "2 of 3 goals hit".
 - Goals: one line per goal with status, result, target, and percent of target, so the main
   thread can chart them.
