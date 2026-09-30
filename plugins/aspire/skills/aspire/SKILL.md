@@ -66,7 +66,8 @@ time so it never goes stale; never recite it from memory.
 
    | Chosen agent | Hand off to |
    | ------------ | ----------- |
-   | `atlas-profile-analyst` | Phase 1, then Phase 2 + 3 for the profile and handles, then Phase 6 (its target question first), or **Ad reuse** when the ask is about hooks, ads, or a cut list |
+   | `atlas-profile-analyst` | Phase 1, then Phase 2 + 3 for the profile and handles, then Phase 6 (its target question first) |
+   | `atlas-ad-reuse` | Phase 1, then Phase 2 + 3, then **Ad reuse** (its window, sources, and save questions first) |
    | `atlas-creator-profile` | Phase 1, then Phase 2 + 3, then **Creator profile** (it asks for the handle and network first) |
    | `atlas-creator-brief` | Phase 1, then Phase 2 + 3, then **Creator brief** (its three questions first) |
    | `atlas-creator-discovery` | Phase 1, then Phase 2 + 3, then **Creator discovery**, Setup if the campaign is new, then Run |
@@ -78,8 +79,10 @@ time so it never goes stale; never recite it from memory.
 
    Older names still reach the renamed agents: `atlas-account-analyst` is `atlas-profile-analyst`,
    `atlas-daily-readout` is `atlas-daily-insights-report`, and `atlas-weekly-readout` is
-   `atlas-weekly-insights-report`. A scheduled task or message that names an old agent launches
-   the new one; offer once, in an interactive session, to update the task's prompt and name.
+   `atlas-weekly-insights-report`. A launch that names `atlas-profile-analyst` with `target_mode`
+   `reuse` means `atlas-ad-reuse`, which took over reuse mode. A scheduled task or message that
+   names an old agent launches the new one; offer once, in an interactive session, to update the
+   task's prompt and name.
 
    An agent on disk that is not in that table: run Phase 1 and Phase 2 + 3, then launch it
    with the tool prefix, `profile_slug`, the linked handles and networks, and `recipient`
@@ -548,7 +551,7 @@ both are passed by default. Detail lives in `references/ad-reuse.md`. For one po
    or typed), and the sources ("The brand's and creators' posts (Recommended)", "Only our own
    posts", "Only creators' posts about us"). Add the write confirmation as the last question:
    "Save the ranked candidates to Atlas?" (Save (Recommended) / Page only).
-2. Launch `atlas-profile-analyst` with `target_mode` `reuse`, the tool prefix, `profile_slug`,
+2. Launch `atlas-ad-reuse` with the tool prefix, `profile_slug`,
    the linked handles and networks, `reuse_scope`, the window, any placements named,
    `recipient`, a digest of the brand's calibrations (competitors, red lines, partners), and
    whether the user approved the write. It reads only what Atlas holds.
