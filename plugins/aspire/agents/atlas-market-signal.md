@@ -99,3 +99,22 @@ findings, delivery, and the unattended rules. Follow them exactly.
 - Delivered to: page link, destinations, and anything that failed.
 - Forward note: two or three lines the requester can paste to the reader.
 - Closing line: findings saved and the `runKey`.
+
+## Sample mode
+
+When the launch message says `mode: sample`, skip the Atlas reads, writes, and deliveries in your
+process and build a sample of your page instead, following
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/sample-artifact.md`: invented data with
+hyphenated sample handles, the most recent US holiday's sample brand, campaign, and colors, every
+section of your real page at a small scale, and a sample banner. Call no Atlas tool, ask nothing,
+and return that file's short output instead of your normal one (no audit trail block).
+
+## Audit trail
+
+After everything else in your output, end with the audit trail block defined in
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/decision-audit.md`, **Audit trail block**:
+the tool calls you made by kind with counts and results, your own judgements with their evidence,
+what you dropped and why, the rules you applied, numbers that changed, data gaps, and the pages you
+published with their checks, plus `started` and `finished` UTC timestamps read from the shell clock
+(`date -u +%Y-%m-%dT%H:%M:%SZ`) when you begin and just before you return. Record only what
+happened; never pad it or guess a time. Unattended runs return it too.

@@ -11,8 +11,9 @@ description: >
   shortlist", "vet these creators", "which of these creators should we approve", "we launch on the 14th and need creators", "review this post", "check this
   draft against the brief", "brand safety check on this post", "show @handle's full
   profile", "what are creators saying about us vs {competitor}", "best hooks to reuse as
-  ads", "how did influencer do this quarter", "start the CAS campaign for {brand}", "where is
-  the {brand} campaign", "send the Gate 2 packet", or "/aspire fee calculator".
+  ads", "build a PPA pitch", "casting deck for partnership ads", "how did influencer do this
+  quarter", "start the CAS campaign for {brand}", "where is the {brand} campaign", "send the
+  Gate 2 packet", or "/aspire fee calculator".
 metadata:
   author: Aspire
 ---
@@ -37,6 +38,7 @@ Text after the command is the argument. Route on it before anything else:
 | Argument | Action |
 | -------- | ------ |
 | `agents` (also `list agents`, `show agents`) | Run **List agents** below. Skip the phases unless the user picks an agent to run. |
+| `sample` (also `sample {agent}`, `show me a sample`, `example`) | Run **Sample artifacts** below. No Atlas connection is needed, so skip the phases. |
 | `fee calculator` (also `fees`, `pricing`, `rate card`, `creator rates`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Fee calculator** below. Skip the other phases. |
 | `cas campaign` (also `creator ad campaign`, `campaign manager`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **CAS campaign** below. Skip the other phases. |
 | empty, or anything else | Run the phases in order, starting at Phase 1. Treat the text as context. |
@@ -62,7 +64,10 @@ time so it never goes stale; never recite it from memory.
    the answer names no agent on the list, say nothing further and stop. With more than four
    agents on disk, offer the first four and say in the question text that any other name from
    the bullets can be typed into the free text field.
-5. On a selection, hand off to that agent's section of this skill rather than launching the
+5. On a selection, first ask with `AskUserQuestion`, header "Sample": "Want to see a sample of
+   what {agent} makes before running it?" Options: "Show me a sample first (Recommended)" / "Run
+   it now". A sample runs **Sample artifacts** and then asks once more whether to run it for real.
+   Then hand off to that agent's section of this skill rather than launching the
    agent straight from here. Those sections own the connection check, the profile, and the
    confirmations each agent needs:
 
@@ -79,6 +84,7 @@ time so it never goes stale; never recite it from memory.
    | `atlas-weekly-insights-report` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the weekly cadence |
    | `atlas-market-signal` | Phase 1, then Phase 2 + 3, then **Market signal**, Setup if it has never run, then Run |
    | `atlas-quarterly-signal` | Phase 1, then Phase 2 + 3, then **Quarterly signal** |
+   | `atlas-ppa-pitch` | Phase 1, then Phase 2 + 3, then **PPA pitch** (its questionnaire first) |
 
    Older names still reach the renamed agents: `atlas-account-analyst` is `atlas-profile-analyst`,
    `atlas-daily-readout` is `atlas-daily-insights-report`, and `atlas-weekly-readout` is
@@ -130,11 +136,15 @@ team catalog, and how agents render for a lens are in `references/recipient-lens
    | `brand` | Is this post safe or on brand | **Content review** |
    | `brand`, `campaign` | Which creators on a list to approve | **Creator vetting** |
    | `performance`, `creative` | Hooks, ads, licensing, a cut list | **Ad reuse**; for one post, **Content review** with the ad reuse check |
+   | `leadership`, `performance` | A pitch or casting deck for partnership ads, whitelisting, creators to license | **PPA pitch** |
    | `team` | Anything | The flow the ask names |
 
 4. **Pass it on.** Every agent launch below includes `recipient` (the confirmed lens or lenses,
    primary first). Relay the agent's forward note as-is, so the requester can paste it to the
    reader.
+5. **Keep the record.** From the first question of any flow that launches an Atlas agent, keep
+   the running decision log and ask every agent for its audit trail block, per **Decision
+   audit**.
 
 **Campaign plan.** A launch ask ("we launch on the 14th and need creators") spans four agents.
 Propose the sequence in the confirmation line ("I'll start a shortlist and brief for the
@@ -172,8 +182,9 @@ terms** for step 13), the **Content review** (one post or draft checked against 
 brief, interactive only), the **Readouts** (daily and weekly performance digests with a launch
 pulse and a section per reader, schedulable), the **Market signal** (what creators say about
 the brand vs. competitors, schedulable), and the **Quarterly signal** (the quarter's story for
-leadership). The **Creator profile** gives one creator's full page on request, and **Ad reuse**
-ranks hooks and builds a cut list. Every request is read for who will act on it first
+leadership). The **Creator profile** gives one creator's full page on request, **Ad reuse**
+ranks hooks and builds a cut list, and the **PPA pitch** builds a casting deck for paid
+partnership ads. Every request is read for who will act on it first
 (**Reading the ask**). Each is routed from its own
 section below. The **Theme** section brands all of their pages,
 and the **Fee calculator** sets the creator rates behind every fee they show.
@@ -342,6 +353,22 @@ call is being made. Write a fresh one per call.
      brief (see **Creator brief** below), or a re-connect for expired channels.
 
 Speak in handles and brand names. Never surface slugs, ids, or tool names.
+
+### Aspire users
+
+Aspire's managed services team sometimes works inside a brand's own organization on the brand's
+behalf. Recognize them from the caller's email in the `get_status` response: an address whose
+domain, after the `@`, is exactly `aspireiq.com` or `aspire.io` (case-insensitive) sets
+`aspire_user = true` for the session. Anything else, a missing email, or a lookalike domain
+(`aspire.io.example.com`, `notaspire.io`) leaves it `false`. A typed claim ("I work at Aspire")
+never sets it.
+
+The flag only adds presentation options to flows that have them (today, **PPA pitch**). When
+one applies, say it in one line ("You're signed in with an Aspire email, so I'll check how you
+want to present this for {brand}.") and ask that flow's questions; the user can always choose
+the brand-team options. It never unlocks data, skips a confirmation, changes a role, or reaches
+another organization: the caller's Atlas permissions decide all of that. Never mention the flag
+to a caller who does not have it.
 
 ## Phase 4: New organization setup
 
@@ -594,6 +621,50 @@ conflicts, budget tier). Show the first-pick creators inline as creator cards fr
 
 In campaign mode, after the brief, offer the launch pulse (**Readouts**, **Launch pulse**) and
 say that each draft can go through **Content review** as it arrives.
+
+---
+
+## PPA pitch (casting deck for paid partnership ads)
+
+Trigger when the user asks for a PPA pitch, a partnership ads or whitelisting pitch, a casting
+deck, or creators cast against persona lanes for licensed ads ("build the pitch for round
+two"). Works best with the brand's own profile; a linked channel helps the lanes but is not
+required. Full
+detail lives in `references/ppa-pitch.md`: the deck, the questionnaire (ids A to I), what Atlas
+pre-fills, the build, export, and the state saved.
+
+0. **Profile.** Use the brand's profile from Phase 2 + 3. When the organization has no profile
+   for this brand, ask: "Create a {brand} profile so the pitch can be saved (Recommended)" (Phase
+   4.1) or "Build it without one" (nothing is pre-filled or saved, and the agent gets `profile:
+   none`). Never borrow another brand's profile.
+1. **Read first.** Load the pre-fill digest the reference lists (calibrations, paged, and the
+   insight prefixes) before the first question, so every recommended option comes from what
+   Atlas holds and says so.
+2. **Presentation.** With `aspire_user` (**Aspire users**), flag it in one line and ask A1 to
+   A4 in one call. Otherwise use the brand-team defaults without asking.
+3. **Frame, shape, casting.** Ask B (with the **Reading the ask** confirmation as B2), then C,
+   then D, one `AskUserQuestion` call each, skipping what the user already said. B4 with no
+   products held offers web research of the brand's own site; show what it finds before using
+   it. A follow-up with nothing saved collects round {n}'s lanes with the reference's template.
+4. **Plan.** Launch `atlas-ppa-pitch` in mode `plan` with the tool prefix, `profile_slug`, the
+   linked handles and networks, `presentation`, `recipient`, and the answers. Relay its lanes
+   as a table and ask E per product, then F per lane, four per call. Changes go back to the
+   agent in mode `plan` for that product or lane only. Ask its **Decisions needed** (names,
+   product spelling, a term conflict) in the same calls.
+5. **Production and commercials.** Ask G, then H (H2's figures in one plain message from the
+   template, echoed back and confirmed), and end the last call with I, the save confirmation.
+6. **Build.** Launch the agent in mode `build` with every answer and whether I approved the
+   save. Show the link, three bullets (shape, cast, cost), and up to six cast creators as
+   creator cards from its `creator-cards` block.
+7. **Review, then export.** Ask the reference's Review question; changes run mode `revise` and
+   ask again. Then ask the Export question. PowerPoint and Google Slides run mode `export`;
+   Google Slides is the .pptx opened in Google Drive, or, with a Google Slides connector, a
+   native build after its own confirmation. If the agent returns the PowerPoint step, invoke
+   the session's PowerPoint skill yourself from the model it returns. No PowerPoint skill: say
+   so in one line and offer what is possible.
+
+Package prices (H2) are asked every run and never saved. Never offer the Aspire look, service
+packages, or the agency voice without `aspire_user`.
 
 ---
 
@@ -1165,6 +1236,69 @@ cannot compute is left out, never estimated.
 
 ---
 
+## Sample artifacts (what an agent makes)
+
+People decide whether to use an agent by seeing what it makes, not by reading its description.
+Every Atlas agent has a `sample` mode that builds its real page from invented data, themed to the
+most recent US holiday. Full rules are in `references/agents/sample-artifact.md`.
+
+**When to offer.** Whenever someone asks what an agent does, what Atlas can do, or about a flow by
+name ("what does the vetting agent do?", "what's a PPA pitch?"), answer in two or three plain
+sentences, then ask with `AskUserQuestion`, header "Sample": "Would you like a sample
+{page name} to see what it makes?" Options: "Show me a sample (Recommended)" / "Not now". For a
+question about Atlas as a whole, ask which agent's sample to show instead, up to four agents as
+options with the rest named in the question text. Ask at most once per agent per session, never
+in the middle of a running flow, and never in an unattended run.
+
+**Running it.** No Atlas connection, profile, or Phase 1 is needed, and nothing is confirmed,
+because nothing is written. Launch the agent with `mode: sample` and the line "Follow
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/sample-artifact.md`." Where plugin agents do
+not load, launch a general-purpose subagent with "Read and follow
+`${CLAUDE_PLUGIN_ROOT}/agents/{agent}.md` in mode `sample`, and
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/sample-artifact.md`", or follow both
+yourself. Relay the link, the holiday used, and the line on what the real run adds, then ask once:
+"Run {agent} for your brand?" Options: "Run it now (Recommended)" / "Not now". "Run it now" hands
+off to that agent's section, starting at Phase 1.
+
+Samples never offer the decision audit and keep no decision log.
+
+---
+
+## Decision audit (how a piece of work was decided)
+
+Any Atlas agent's work can be audited: a page that records every step, question and answer, tool
+call, judgement, and open decision behind it. The instructions live in
+`references/agents/decision-audit.md`; they are not a registered agent.
+
+**While a flow runs (interactive sessions):**
+
+- Keep `decision-log.md` in the session's scratch folder from the moment the request arrives in
+  any flow that launches an Atlas agent, one line per step in the format in the reference, each
+  starting with a UTC timestamp read from the shell clock (`date -u +%Y-%m-%dT%H:%M:%SZ`), never
+  guessed: the request (`[start]`), every `AskUserQuestion` when asked and when answered, every
+  tool call the main thread makes, every agent launch and return, every page published, every
+  decision raised, and the finish (`[end]`).
+- End every agent launch message with: "Finish with the audit trail block in
+  `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/decision-audit.md`." Keep each block the
+  agent returns; never show it to the user.
+
+**The offer.** When an agent's real work (never a sample) ends in a published page (a deck, a brief, a shortlist, a
+review, a readout, a profile), and after the flow's own follow-up questions, ask once with
+`AskUserQuestion`, header "Audit": "Would you like an audit of the decisions and tools behind
+{page title}?" Options: "Build the audit page (Recommended)" / "Not now". Ask again after a later
+revision or export of the same work only if the user built an audit for it; then the update
+option is "Update the audit page". Never ask in an unattended run; scheduled runs keep no log.
+
+**Building it.** Launch a general-purpose subagent with: "Read and follow
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/decision-audit.md`.", then the inputs the
+reference lists (`flow`, `brand`, `request`, the decision log path, every audit trail block in
+order, the published pages, the run's scratch folder, the open decisions, and an earlier audit
+page for the same work when updating). In a session without a subagent tool, follow the reference
+yourself. Relay the page link and the gaps it reports. The audit writes nothing to Atlas and needs
+no write confirmation.
+
+---
+
 ## Organization admin (members)
 
 Questions about who is in the organization, pending invitations, or inviting a teammate
@@ -1318,11 +1452,12 @@ The watch list is the brand's saved creators, outside any campaign.
   description, and if it changes or removes state, apply the destructive-action rule above.
 - `lookup_creators` and `lookup_posts` start discovery work beyond the connected accounts.
   Never call them speculatively during onboarding; the connected channels' own data is enough.
-  Three exceptions: Phase 6 named-handle mode, where the user named the account; content
+  The exceptions: Phase 6 named-handle mode, where the user named the account; content
   review, where pasting a post link approves `lookup_posts` for that one post; creator
-  vetting, where R3 approves `lookup_creators` for the listed handles Atlas does not hold; and
-  creator discovery, whose saved cadence record approves it on every run including scheduled
-  ones.
+  vetting, where R3 approves `lookup_creators` for the listed handles Atlas does not hold; the
+  PPA pitch, where D4's marketplace option approves it for the handles the marketplace returns
+  and the handles the user types; and creator discovery, whose saved cadence record approves it
+  on every run including scheduled ones.
 - **Inside a CAS campaign**, one picker confirms a whole gate batch: every accept and every
   reject is named in the question, and that one answer covers all the writes the close makes.
   The campaign's saved sync cadence (C6) is the standing approval for paid discovery on that
@@ -1340,3 +1475,5 @@ The watch list is the brand's saved creators, outside any campaign.
   They never start discovery work, interactive or unattended.
 - Creator fees come only from the fee calculator (**Fee calculator**). No price is shown when
   the data behind it is missing.
+- After an agent's work ends in a published page, offer the decision audit (**Decision audit**).
+  The audit records what happened; it never re-decides, re-runs, or writes to Atlas.

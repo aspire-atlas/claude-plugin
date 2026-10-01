@@ -8,18 +8,21 @@ Email **security@aspire.io** with a description, reproduction steps, and impact.
 
 - **Data access.** The bundled connectors talk only to `https://atlas.aspire.io/mcp` (Atlas data) and `https://atlas.aspire.io/mcp/admin-organization` (organization members) over HTTPS with OAuth. They read and write data for the organizations the signed-in user belongs to, within that user's role. They do not read Claude memory, chat history, or uploaded files beyond what the user hands it in the task.
 - **What ships.** The plugin is markdown and JSON only: skills, agents, and an MCP definition. It ships no script files, hooks, or binaries, installs nothing, and needs no environment variables or API keys.
-- **Snippets that run on your computer.** A few reference files include short Python snippets. Claude saves one to a temporary file and runs it to embed images on a page or card, read a brand's website colors, fonts, and logo, or work out a color palette. Every snippet:
+- **Snippets that run on your computer.** A few reference files include short Python snippets. Claude saves one to a temporary file and runs it to embed images on a page or card, read a brand's website colors, fonts, and logo, work out a color palette, work out creator metrics from search results it saved, or pick the US holiday a sample page is themed around. Every snippet:
   - is written out in full in the plugin, where anyone can read it, and is never downloaded;
   - uses only the Python standard library and Pillow, and runs only when Python is already installed;
   - starts no other programs and installs nothing;
-  - only reads public web pages and images the flow names (Aspire's image server, the brand's website and its logo, Google Fonts);
+  - only reads public web pages and images the flow names (Aspire's image server, the brand's website, its logo and product images, Google Fonts), or files Claude saved in the same temporary folder;
   - writes nothing except up to three logo files in the folder where it runs, and prints its results;
   - runs through the same permission checks as any command Claude runs.
 
   Creator vetting may use a browser tool already connected to the session to read a creator list from the Aspire app. You sign in yourself; Claude never types, reads, or stores a password or code, and changes nothing in the app.
 
+  The PPA pitch builds its PowerPoint file with the PowerPoint skill already in the session, never with a snippet of its own. For Google Slides it hands you the file to open in Google Drive, or, with a Google Slides connector you have connected, builds the deck there only after you confirm.
+
   Content review may also use a video tool already on your computer (ffmpeg, OpenCV, or Swift on a Mac) to pull still frames from a post. It never installs one.
 - **State changes need consent.** Every Atlas and organization admin write is confirmed through a multiple-choice question. Destructive actions each get their own confirmation. Invites to an organization never run in unattended sessions.
+- **Aspire users get no extra access.** A flow may recognize an Aspire teammate by the email domain on the Atlas account and offer them presentation options (for example, presenting a pitch as Aspire's managed service). It never unlocks data, skips a confirmation, or changes what the account's Atlas role allows.
 - **Unattended runs are constrained.** Scheduled runs never ask questions, never run destructive tools, and deliver only to Slack channels and email recipients the user saved during setup. Scheduled readouts start no discovery work at all; creator discovery is the sole agent permitted to run discovery unattended, and only under a cadence the user saved explicitly for that campaign.
 
 ## Supply chain
