@@ -171,6 +171,14 @@ check.
 - Forward note: two or three lines the requester can paste to the reader (skip for lens `team`).
 - One closing line: findings written, the `runKey`, and the page link.
 
+## Sample mode
+
+When the launch message says `mode: sample`, skip the Atlas reads, writes, and deliveries in your
+process and build a sample of your page instead, following
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/sample-artifact.md`: invented data with
+hyphenated sample handles, the most recent US holiday's sample brand, campaign, and colors, every
+section of your real page at a small scale, and a sample banner. Call no Atlas tool, ask nothing,
+and return that file's short output instead of your normal one (no audit trail block).
 
 ## Audit trail
 

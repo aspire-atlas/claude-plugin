@@ -82,6 +82,14 @@ Build from the slide model per **Review and export**. PowerPoint: invoke the ses
 - Atlas notes: anything the platform did that the Aspire team should know (projection quirks, empty Meta fields, 404s).
 - After the summary in `build`, a `creator-cards` block (creator card reference, **Agent hand-off**) for up to six cast creators. It does not count toward the word limit.
 
+## Sample mode
+
+When the launch message says `mode: sample`, skip the Atlas reads, writes, and deliveries in your
+process and build a sample of your page instead, following
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/sample-artifact.md`: invented data with
+hyphenated sample handles, the most recent US holiday's sample brand, campaign, and colors, every
+section of your real page at a small scale, and a sample banner. Call no Atlas tool, ask nothing,
+and return that file's short output instead of your normal one (no audit trail block).
 
 ## Audit trail
 

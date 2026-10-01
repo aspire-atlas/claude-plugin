@@ -102,6 +102,14 @@ exactly, and render for the primary lens per **Rendering for a lens**.
   `instagram.account.profilePictureUrl` in `search_posts` to fill it. The main thread renders
   this as post cards.
 
+## Sample mode
+
+When the launch message says `mode: sample`, skip the Atlas reads, writes, and deliveries in your
+process and build a sample of your page instead, following
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/sample-artifact.md`: invented data with
+hyphenated sample handles, the most recent US holiday's sample brand, campaign, and colors, every
+section of your real page at a small scale, and a sample banner. Call no Atlas tool, ask nothing,
+and return that file's short output instead of your normal one (no audit trail block).
 
 ## Audit trail
 

@@ -83,6 +83,14 @@ exactly.
 - Forward note: two or three lines the requester can paste into the QBR deck or an email.
 - Closing line: findings saved (or "nothing saved") and the `runKey`.
 
+## Sample mode
+
+When the launch message says `mode: sample`, skip the Atlas reads, writes, and deliveries in your
+process and build a sample of your page instead, following
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/sample-artifact.md`: invented data with
+hyphenated sample handles, the most recent US holiday's sample brand, campaign, and colors, every
+section of your real page at a small scale, and a sample banner. Call no Atlas tool, ask nothing,
+and return that file's short output instead of your normal one (no audit trail block).
 
 ## Audit trail
 

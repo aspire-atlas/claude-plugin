@@ -37,6 +37,7 @@ Text after the command is the argument. Route on it before anything else:
 | Argument | Action |
 | -------- | ------ |
 | `agents` (also `list agents`, `show agents`) | Run **List agents** below. Skip the phases unless the user picks an agent to run. |
+| `sample` (also `sample {agent}`, `show me a sample`, `example`) | Run **Sample artifacts** below. No Atlas connection is needed, so skip the phases. |
 | `fee calculator` (also `fees`, `pricing`, `rate card`, `creator rates`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Fee calculator** below. Skip the other phases. |
 | empty, or anything else | Run the phases in order, starting at Phase 1. Treat the text as context. |
 
@@ -61,7 +62,10 @@ time so it never goes stale; never recite it from memory.
    the answer names no agent on the list, say nothing further and stop. With more than four
    agents on disk, offer the first four and say in the question text that any other name from
    the bullets can be typed into the free text field.
-5. On a selection, hand off to that agent's section of this skill rather than launching the
+5. On a selection, first ask with `AskUserQuestion`, header "Sample": "Want to see a sample of
+   what {agent} makes before running it?" Options: "Show me a sample first (Recommended)" / "Run
+   it now". A sample runs **Sample artifacts** and then asks once more whether to run it for real.
+   Then hand off to that agent's section of this skill rather than launching the
    agent straight from here. Those sections own the connection check, the profile, and the
    confirmations each agent needs:
 
@@ -1138,6 +1142,34 @@ cannot compute is left out, never estimated.
 
 ---
 
+## Sample artifacts (what an agent makes)
+
+People decide whether to use an agent by seeing what it makes, not by reading its description.
+Every Atlas agent has a `sample` mode that builds its real page from invented data, themed to the
+most recent US holiday. Full rules are in `references/agents/sample-artifact.md`.
+
+**When to offer.** Whenever someone asks what an agent does, what Atlas can do, or about a flow by
+name ("what does the vetting agent do?", "what's a PPA pitch?"), answer in two or three plain
+sentences, then ask with `AskUserQuestion`, header "Sample": "Would you like a sample
+{page name} to see what it makes?" Options: "Show me a sample (Recommended)" / "Not now". For a
+question about Atlas as a whole, ask which agent's sample to show instead, up to four agents as
+options with the rest named in the question text. Ask at most once per agent per session, never
+in the middle of a running flow, and never in an unattended run.
+
+**Running it.** No Atlas connection, profile, or Phase 1 is needed, and nothing is confirmed,
+because nothing is written. Launch the agent with `mode: sample` and the line "Follow
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/sample-artifact.md`." Where plugin agents do
+not load, launch a general-purpose subagent with "Read and follow
+`${CLAUDE_PLUGIN_ROOT}/agents/{agent}.md` in mode `sample`, and
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/sample-artifact.md`", or follow both
+yourself. Relay the link, the holiday used, and the line on what the real run adds, then ask once:
+"Run {agent} for your brand?" Options: "Run it now (Recommended)" / "Not now". "Run it now" hands
+off to that agent's section, starting at Phase 1.
+
+Samples never offer the decision audit and keep no decision log.
+
+---
+
 ## Decision audit (how a piece of work was decided)
 
 Any Atlas agent's work can be audited: a page that records every step, question and answer, tool
@@ -1156,7 +1188,7 @@ call, judgement, and open decision behind it. The instructions live in
   `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/decision-audit.md`." Keep each block the
   agent returns; never show it to the user.
 
-**The offer.** When an agent's work ends in a published page (a deck, a brief, a shortlist, a
+**The offer.** When an agent's real work (never a sample) ends in a published page (a deck, a brief, a shortlist, a
 review, a readout, a profile), and after the flow's own follow-up questions, ask once with
 `AskUserQuestion`, header "Audit": "Would you like an audit of the decisions and tools behind
 {page title}?" Options: "Build the audit page (Recommended)" / "Not now". Ask again after a later
