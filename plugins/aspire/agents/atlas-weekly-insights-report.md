@@ -129,3 +129,14 @@ and the unattended run rules. Follow it exactly. Read `recipient-lens.md` too.
 - Forward note, for a primary lens other than `team`: two or three lines the requester can
   paste to that reader.
 - Data gaps and closing line: findings saved under this run.
+
+
+## Audit trail
+
+After everything else in your output, end with the audit trail block defined in
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/decision-audit.md`, **Audit trail block**:
+the tool calls you made by kind with counts and results, your own judgements with their evidence,
+what you dropped and why, the rules you applied, numbers that changed, data gaps, and the pages you
+published with their checks, plus `started` and `finished` UTC timestamps read from the shell clock
+(`date -u +%Y-%m-%dT%H:%M:%SZ`) when you begin and just before you return. Record only what
+happened; never pad it or guess a time. Unattended runs return it too.

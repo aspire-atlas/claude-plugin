@@ -105,3 +105,14 @@ Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-brief.md` before st
 - Forward note: two or three lines the requester can paste to the reader (skip for lens `team`).
 - Atlas notes: anything the platform did that the Aspire team should know (field projection quirks, 404s, validation conflicts).
 - After the summary, a `creator-cards` block (creator card reference, **Agent hand-off**) for the first-pick creators, at most six. It does not count toward the word limit.
+
+
+## Audit trail
+
+After everything else in your output, end with the audit trail block defined in
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/decision-audit.md`, **Audit trail block**:
+the tool calls you made by kind with counts and results, your own judgements with their evidence,
+what you dropped and why, the rules you applied, numbers that changed, data gaps, and the pages you
+published with their checks, plus `started` and `finished` UTC timestamps read from the shell clock
+(`date -u +%Y-%m-%dT%H:%M:%SZ`) when you begin and just before you return. Record only what
+happened; never pad it or guess a time. Unattended runs return it too.

@@ -126,3 +126,14 @@ against competitors is the market signal's job: analyze the accounts in scope an
   this as cards and a chart; keep it under 60 rows.
 - Mode `handle` only: a `creator-cards` block with one entry for the reviewed account, built
   per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-card.md` (**Agent hand-off**). The main thread shows it before the summary.
+
+
+## Audit trail
+
+After everything else in your output, end with the audit trail block defined in
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/decision-audit.md`, **Audit trail block**:
+the tool calls you made by kind with counts and results, your own judgements with their evidence,
+what you dropped and why, the rules you applied, numbers that changed, data gaps, and the pages you
+published with their checks, plus `started` and `finished` UTC timestamps read from the shell clock
+(`date -u +%Y-%m-%dT%H:%M:%SZ`) when you begin and just before you return. Record only what
+happened; never pad it or guess a time. Unattended runs return it too.

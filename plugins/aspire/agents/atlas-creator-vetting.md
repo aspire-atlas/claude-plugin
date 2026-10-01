@@ -132,3 +132,14 @@ primary lens.
 - A `creator-cards` block with the approved creators and the top three maybes, built per
   `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-card.md` (**Agent hand-off**), badged
   with their page numbers.
+
+
+## Audit trail
+
+After everything else in your output, end with the audit trail block defined in
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/decision-audit.md`, **Audit trail block**:
+the tool calls you made by kind with counts and results, your own judgements with their evidence,
+what you dropped and why, the rules you applied, numbers that changed, data gaps, and the pages you
+published with their checks, plus `started` and `finished` UTC timestamps read from the shell clock
+(`date -u +%Y-%m-%dT%H:%M:%SZ`) when you begin and just before you return. Record only what
+happened; never pad it or guess a time. Unattended runs return it too.
