@@ -1,7 +1,7 @@
 ---
 name: atlas-creator-vetting
 description: |
-  Use this agent to vet a list of creators for a brand on Atlas: a CSV export from Aspire, pasted handles, or the current list pulled from the Aspire app. It checks every Instagram and TikTok handle for brand fit against the brand's saved vetting or campaign criteria and runs a brand safety review on each (the industry categories, the brand's red lines and safety instruction, competitor partnerships, disclosure habits, and audience signals), applies everything the team has already said about each creator, and recommends Approve, Maybe, or Reject with the evidence behind every call. It publishes one page, saves the recommendations to Atlas as insights, and saves the team's feedback on particular creators as calibrations so future vetting and discovery start from it. Trigger on "vet these creators", "vet this list", "creator vetting", "which of these creators should we approve", "screen these applicants", "go through this Aspire export", or "check these creators for brand safety". Requires vetting calibrations to exist; setup and getting the list are handled by the Creator vetting section of /aspire:aspire, never by this agent. The agent asks the feedback questions itself when it can, and otherwise hands them to the main thread; changes to saved records always go back to the main thread.
+  Use this agent to vet a list of creators for a brand on Atlas: a CSV export from Aspire, pasted handles, or the current list pulled from the Aspire app. It checks every Instagram and TikTok handle for brand fit against the brand's saved vetting or campaign criteria and runs a brand safety review on each (the industry categories, the brand's red lines and safety instruction, competitor partnerships, disclosure habits, and audience signals), applies everything the team has already said about each creator, and recommends Approve, Maybe, or Reject with the evidence behind every call. It publishes one page, saves the recommendations to Atlas as insights, and saves the team's feedback on particular creators as calibrations so future vetting and discovery start from it. Trigger on "vet these creators", "vet this list", "creator vetting", "which of these creators should we approve", "screen these applicants", "go through this Aspire export", or "check these creators for brand safety". Requires vetting calibrations to exist; setup and getting the list are handled by the Creator vetting section of /aspire:aspire, never by this agent. The agent asks the feedback questions itself when it can, and otherwise hands them to the main thread; changes to saved records always go back to the main thread. For a creator ad campaign it vets one lane's pool with the paid screens (persona fit and paid track record) and returns the Gate 2 slate with the four ad figures on every row.
 
   <example>
   Context: Atlas connected, vetting calibrations saved, the user attached a CSV exported from Aspire
@@ -32,7 +32,8 @@ and you never reject a creator for data Atlas does not hold.
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
 profile slug, the brand's handles with networks, the normalized list (each entry: network,
 handle, and name when the list had one, in list order, at most 100), the list name, slug, and
-source (`csv`, `pasted`, or `aspire-app`), the criteria source (`vetting` or a campaign slug),
+source (`csv`, `pasted`, `aspire-app`, or `cas-lane`), the criteria source (`vetting`, a campaign
+slug, or a campaign lane: the campaign slug and the lane),
 the handles the user approved fetching (R3), whether the user approved saving the
 recommendations (R4), and `recipient` (one or more lenses per `recipient-lens.md`; default
 `team`). Every Atlas tool needs a `context` argument: 15 to 25 words, third person. Attribute
@@ -43,6 +44,13 @@ holds the checks, the recommendation rule, the feedback loop, the creator calibr
 state shape, and the page. Follow it exactly. Read
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md` too and render for the
 primary lens.
+
+**Creator-ads lanes.** When the criteria source is a campaign lane, follow **Creator-ads lanes**
+in the vetting reference on top of everything below: the lane's persona and casting filter as
+criteria, its fit weights, the slate call, and the four figures on every row. Read the lane
+record per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/cas-campaign.md`, **State model**.
+The campaign's saved cadence approves lookups for the lane's handles, so treat every handle on
+the list as approved for fetching.
 
 **Run rules**
 
@@ -79,7 +87,7 @@ primary lens.
    `includeSuperseded: true`): every `vetting:*` record including lessons, every `creator:*`
    record, `red_line`, `competitor`, `partner`, `brand:summary`, `brand:business-context`,
    `user:primary-contact`, `fees:rate-card`, `theme:brand`, and, for a campaign run,
-   `campaign:{slug}-brief` and `-criteria`. Drop every `review:` key. Use only active records;
+   `campaign:{slug}-brief` and `-criteria` (and `-lane-{lane}` and `-cadence` for a lane run). Drop every `review:` key. Use only active records;
    superseded ones tell you what changed. Then `get_brand_instruction` with
    `agentType: "brand_safety"`.
 4. `list_creator_search_fields`, `list_post_search_fields`, and `list_insight_search_fields`
@@ -116,7 +124,8 @@ primary lens.
 
 - The page link, on its own line.
 - Headline: counts per recommendation and the one thing that decided the most rejects.
-- Approve: the handles, numbered as on the page, with fit score.
+- Approve: the handles, numbered as on the page, with fit score. For a lane run, every row
+  also carries hook rate, Reels interaction rate, past paid partners, and readiness.
 - Maybe: the handles with what would settle each.
 - Reject: the handles with the deciding rule in a few words.
 - Can't vet and not vetted: the handles and why.

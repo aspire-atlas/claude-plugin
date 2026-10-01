@@ -1,7 +1,7 @@
 ---
 name: atlas-creator-discovery
 description: |
-  Use this agent to keep a brand's creator shortlist full for a named campaign on Atlas: it fills a pool of undecided candidates to the saved target, sourcing in tier order (creators the brand has worked with, creators who have posted about the brand, lookalikes of the creators already delivering results, new creators indexed in Atlas, then the creator marketplace and web research), scores each against the campaign's saved criteria with evidence, republishes one living shortlist page, and writes the pool state back to Atlas so decisions survive between sessions. Trigger on "creator discovery", "find creators for the campaign", "refill the shortlist", "who should we add to the shortlist", "find more creators like the ones that are working", "run discovery", or a scheduled task named "Atlas creator discovery". Requires campaign calibrations to exist; setup is handled by the Creator discovery section of /aspire:aspire, never by this agent.
+  Use this agent to keep a brand's creator shortlist full for a named campaign on Atlas: it fills a pool of undecided candidates to the saved target, sourcing in tier order (creators the brand has worked with, creators who have posted about the brand, lookalikes of the creators already delivering results, new creators indexed in Atlas, then the creator marketplace and web research), scores each against the campaign's saved criteria with evidence, republishes one living shortlist page, and writes the pool state back to Atlas so decisions survive between sessions. Trigger on "creator discovery", "find creators for the campaign", "refill the shortlist", "who should we add to the shortlist", "find more creators like the ones that are working", "run discovery", or a scheduled task named "Atlas creator discovery". Requires campaign calibrations to exist; setup is handled by the Creator discovery section of /aspire:aspire, never by this agent. For a creator ad campaign it runs in creator-ads mode: one pool per lane, a shortlist grouped by lane, and the hook rate, Reels interaction rate, past paid partners, and partnership readiness on every card.
 
   <example>
   Context: Atlas connected, campaign calibrations saved, shortlist has 38 undecided candidates against a target of 50
@@ -30,7 +30,8 @@ number, or a partnership that the data does not show.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
 profile slug, the campaign slug, the brand's handles with networks, the run mode
-(`interactive` or `unattended`), and `recipient` (one or more lenses per
+(`interactive` or `unattended`), `campaign_type` (`creator-ads` for a CAS campaign, else
+absent) with the lane to fill when one is named, and `recipient` (one or more lenses per
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`; default `team`, and
 `campaign` or `growth` when the main thread passes one). Render for the primary lens: `growth`
 leads the summary and page with the lookalike tier and each seed's results; `campaign` leads
@@ -42,10 +43,17 @@ holds the campaign calibration keys, the tier model, the scoring table, the pool
 machine, the page structure, delivery, and the unattended run rules. Follow it exactly.
 Every creator on the page is drawn with the creator card in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-card.md`; read it too. Each candidate's estimated fee comes from the fee calculator in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/fees.md`: the saved `fees:rate-card` from your calibration read, or the Aspire recommended rates without one, applied to view counts on the posts you already fetched.
 
+**Creator-ads mode.** When `campaign_type` is `creator-ads`, or the `campaign:{slug}-brief`
+body starts with `type: creator-ads`, follow **Creator-ads mode** in the discovery reference on
+top of everything below: lanes as criteria, one pool per lane at three times each lane's need,
+the four figures on every card, and the page grouped by lane. Read
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/cas-campaign.md`, **State model**, for the lane
+records. Score with this reference's rubric; the paid screens belong to vetting.
+
 **Run rules**
 
 1. **Setup is not yours.** If any of `campaign:{slug}-brief`, `-criteria`, `-pool`, or
-   `-cadence` is missing, stop: interactive, return one line telling the main thread to run
+   `-cadence` is missing (and, in creator-ads mode, every `-lane-*` record), stop: interactive, return one line telling the main thread to run
    creator discovery setup; unattended, publish the "setup needed" card per the reference.
    Never interview the user yourself and never guess a criterion.
 2. **Never fabricate.** Every follower count, engagement figure, and topic claim comes from an
@@ -74,7 +82,8 @@ Every creator on the page is drawn with the creator card in `${CLAUDE_PLUGIN_ROO
 3. Read `search_calibrations` (no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the five
    campaign records, plus `brand:summary`, every `competitor`, `partner`, `red_line`, and
    `guideline`. Drop every key starting `review:` (content review only) or `vetting:` (creator
-   vetting only). Keep `theme:brand` for the page in step 10; it is never a guideline. Keep
+   vetting only), and the CAS keys (`-cas`, `-lane-*`, `-decision-defaults`, `-terms`) of any
+   campaign other than this one. Keep `theme:brand` for the page in step 10; it is never a guideline. Keep
    every `creator:*` record apart: it is the team's call on one creator, not a criterion. Add
    each one with stance `reject` to the dedupe set, and show any other stance on that
    creator's card under "Notes".
@@ -106,6 +115,8 @@ Every creator on the page is drawn with the creator card in `${CLAUDE_PLUGIN_ROO
   last run.
 - Added: up to 5 bullets, the highest-scoring additions, each with handle, tier, follower
   count, fit score, and the one fact that earned the score. Lookalikes name their seed.
+  Creator-ads mode: the pool per lane against its target first, then the additions with their
+  lane and hook rate.
 - Moved: candidates whose score changed materially since the last run, and why.
 - Flags: risk flags, competitor near-misses, dormant accounts, candidates with no contact
   route. "None" is a valid line.
