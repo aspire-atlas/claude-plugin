@@ -72,6 +72,68 @@ phases instead of one week of three posts.
   closing "Next steps" box offers content review for drafts and the daily launch pulse.
   Title "<Brand> Campaign Brief: <Campaign>", republished to the same path for that campaign.
 
+## Creator-ads mode (the CAS master brief)
+
+For a CAS campaign (`brief_mode` `creator-ads`, `cas-campaign.md`), the brief is one master brief
+per lane for the current round, not a weekly plan and not campaign phases. Editors cut the ads
+from it, so it must be complete enough to edit from.
+
+**Inputs from Atlas.** The lane records (`campaign:{slug}-lane-{lane}`), the campaign record
+(`-cas`: package, term, round), and the roster (`cas-campaign.md`, **Working state**): the
+creators approved at Gate 2 with their agreed fees. Creators and fees come from the roster,
+never from a new search, and fees are shown as agreed. Also read the hook log
+(`recordType` `hook` on the campaign's prefix) and the saved findings this reference already
+uses: ad reuse hook patterns lead, market signal language comes next.
+
+**Per lane, one brief with these fields:**
+
+- **Concept and persona**, from the lane record, in its own words.
+- **3 hooks, 2 CTAs, 1 body.** Each hook is the first three seconds: what is said, what is on
+  screen, and the text overlay. The body carries the beats between the hook and the CTA.
+- **Beat structure**: hook, problem or setup, proof, payoff, CTA, with seconds per beat.
+- **10 to 15 B-roll shots**, each one line: what is filmed and which beat it serves.
+- **Product and SKU**, from `brand:summary` and the campaign brief. Missing: a bracketed blank.
+- **CTA destinations**: where each CTA sends people. Missing: a bracketed blank, never a URL
+  invented.
+- **Runtime per platform**: the clip lengths per network, from the lane or the campaign brief.
+  None saved: a bracketed blank per network, and one line asking the CM to fill it.
+- **Disclosure treatment**: the paid partnership label, plus anything `review:disclosure` says
+  when it exists (read it for disclosure only).
+- **Do's and don'ts**: from saved `red_line` and `guideline` records (never `review:` keys).
+  When the client's own creator brief guardrails are saved (a `guideline` whose body names
+  them), mirror them line for line.
+- **Delivered file naming**: `[Brand] - [Creator] - Clip [#]`, stated once per brief.
+- **Creators**: the lane's approved creators from the roster, as creator cards, each with the
+  agreed fee and ship date.
+
+A `red_line` that blocks AI-written copy still applies: hooks, CTAs and the body become
+directions (what the line must do and must not say), not scripted lines. Say so in the
+standing-rule banner.
+
+**Editing coverage check**, before the page ships. Every brief must pass all three; fix the
+brief, never the check:
+
+1. Every hook has footage asked for: its on-screen action is in the B-roll list or the beats.
+2. Every runtime can hold the beats: the beat seconds fit inside the shortest runtime, with the
+   hook inside the first three seconds.
+3. The B-roll list is complete: 10 to 15 shots, every beat served by at least one.
+
+Show the result per lane on the page ("Coverage: 3 of 3 checks pass").
+
+**The hook log.** Before drafting, read every hook and CTA ever briefed on the campaign. Never
+reuse one, word for word or in close paraphrase, in any lane or round. After the brief is saved,
+append every new hook and CTA as a `hook` finding.
+
+**The page.** One page per round, a section per lane with an anchor (`#lane-{lane}`), the
+coverage result at the top of each section. Title "<Brand> Creator Ad Brief: <Campaign>, round
+{n}", republished to the same path for that round. The Gate 4 packet is this page with the gate
+header (`cas-campaign.md`, **Gate 4**). Sections 2, 5 and 6 of **Page structure** drop out: the
+lanes set the audience, the roster replaces the shortlist, and the gates replace the timeline.
+
+**Writes**, on the main thread's confirmation: a `brief` finding per lane (`locked: false`,
+`briefPage`, `version`), then a `hook` finding per new hook and CTA, all per
+`cas-campaign.md`, **Working state**. No `creator-brief-*` findings in this mode.
+
 ## Fit rubric
 
 **Build the brand targeting first.** Before scoring, derive three inputs from the profile's

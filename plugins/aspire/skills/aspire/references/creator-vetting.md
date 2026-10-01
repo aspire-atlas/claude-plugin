@@ -332,6 +332,49 @@ large list. Load `artifact-design`, and `dataviz` for any chart, and apply `them
 `theme.md`, **Applying the theme**. Approve, Maybe, and Reject keep their status colors under
 any theme.
 
+## Creator-ads lanes (CAS campaigns)
+
+Inside a CAS campaign (`cas-campaign.md`), the main thread launches vetting on one lane's
+discovery pool, with the lane as the criteria source. This is step 12's two paid screens:
+persona fit, and paid track record. Everything above applies, with these changes.
+
+**Criteria source.** `campaign:{slug}-lane-{lane}` plus `campaign:{slug}-criteria`. The list
+is the lane's undecided candidates from discovery (`creator-discovery-{profile}-{slug}` prefix,
+`detail.lane`); the list name is "{campaign}: {lane}" and its slug `{slug}-{lane}`. R1 and R2
+are answered by the launch. R3 is skipped: the campaign's saved cadence approves lookups for its
+lanes (SKILL.md, **Guardrails**). R4 is answered by the CAS Run picker.
+
+**Fit score for a creator-ads lane**, out of 100:
+
+| Component | Weight | Source |
+| --------- | ------ | ------ |
+| Persona fit | 30 | Does the creator credibly live the lane's persona? Bio, recent post topics, who appears on camera and in what setting, against the persona and casting filter. Cite the posts. |
+| Hook rate | 25 | `instagram.reelsHookRate`: full points at 45% or more, falling evenly to zero at 20% |
+| Past paid partners in or near category | 20 | `instagram.pastBrandPartnershipPartners` and partnership-marked posts: 20 for two or more in the brand's category, 12 for one in it or two or more near it, 6 for paid partners outside it, 0 for none |
+| Reels interaction rate | 15 | `instagram.reelsInteractionRate`: full points at 5% or more, falling evenly to zero at 1% |
+| Partnership readiness | 10 | 10 when partnership messages are enabled and the creator has partnership experience, 5 when one holds, 0 when neither does |
+
+- The category comes from `brand:summary` and `brand:business-context`, as in the creator
+  brief's **Fit rubric**. "Near" means a category the same buyer shops in.
+- A component Atlas holds no data for scores zero and is listed as missing. The one exception
+  is hook rate on TikTok, which Atlas does not report: score the other four out of 75, scale
+  to 100, and say so on the card ("Scored without hook rate, which TikTok doesn't report").
+- Brand safety runs exactly as today, and every hard stop still decides first.
+
+**The recommendation is the slate call.** Approve, Maybe, or Reject, by **The recommendation**
+above against `vetting:thresholds`. A creator who would be Can't vet appears on the slate as
+Maybe, with "not enough data to judge" as what would settle it. Every Reject carries its reason
+in plain words, because the Gate 2 packet shows it to the client.
+
+**Output rows carry the four figures**: hook rate, Reels interaction rate, past paid partners,
+and partnership readiness, in each finding's `detail.adFigures` and on each card, beside the
+recommendation. Findings also carry `detail.campaign` and `detail.lane`. The CAS campaign
+composes the Gate 2 packet from them.
+
+**The feedback loop still runs**, but the client's slate decisions are not F1: they come back
+at Gate 2 and are written by the main thread. F1 here is the agency team's own call before the
+packet goes out.
+
 ## Atlas quirks that apply here
 
 `search_creators` carries no post-level fields, so every creator needs its own `search_posts`
