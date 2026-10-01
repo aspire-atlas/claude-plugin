@@ -738,7 +738,8 @@ Trigger when the user asks to start, check, or move a creator ad campaign ("star
 campaign for {brand}", "where is the {brand} campaign", "what's next on {campaign}", "send the
 Gate 2 packet", "close Gate 3", "log a delay"). Requires a brand profile with a linked Instagram
 or TikTok channel. Full detail lives in `references/cas-campaign.md`: the state model, the setup
-interview, the dispatch table, the gate packets, the page, and the unattended rules.
+interview, the dispatch table, the gate packets, the page, and the unattended rules. Hook and
+CTA recommendations, and the hook review between rounds, live in `references/hooks-and-ctas.md`.
 
 The Campaign Manager conducts the campaign through sourcing, negotiation, and briefing. It reads
 where the campaign is, offers the single next step, launches the agent or section that does the
@@ -780,7 +781,10 @@ Launch what the row names, then record what came back:
 - **Brief** (row 9): `atlas-creator-brief` with `brief_mode` `creator-ads`, the campaign slug,
   the round, the lanes, and `recipient` (`campaign`, then `creative`). Confirm the write first:
   "Write the round {n} briefs for {lanes} and save them to the campaign?"
-- **Production** (row 12): **Content review** for each draft.
+- **Production** (row 12): **Content review** for each draft. Once creators have posted, the
+  hook review from `references/hooks-and-ctas.md`, run here in the main thread: it matches the
+  creators' posts to the briefed hooks, shows which led, and saves the results after one
+  confirmation, so the next round's briefs lead with what worked.
 
 After each step, write the outcome per the reference, republish the campaign page, post the gate
 line when a gate moved, and show the new status in one line.

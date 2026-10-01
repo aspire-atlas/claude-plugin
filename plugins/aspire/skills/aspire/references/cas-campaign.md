@@ -102,7 +102,8 @@ record type the newest finding per identity wins, by `detail.recordedAt`.
 | `gate` | gate + round | The brand's own account on its first linked network | `action_item` `high` while planned, open or slipped; `went_well` when cleared | `gate` (2, 3, 4), `status` (planned, open, cleared, slipped), `plannedAt`, `sentAt`, `dueAt`, `clearedAt`, `clearedBy`, `daysSlipped`, `reminderTask` (the task name) |
 | `roster` | the creator's account | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while a candidate; `went_well` approved; `needs_improvement` rejected | `handle`, `network`, `lane`, `slate` (candidate, approved, rejected), `rejectReason`, `rate` (offered, countered, agreed), `offer` `{open, target, max}`, `counter`, `agreed`, `deliverables`, `shipDate`, `vetting` (the four figures and the recommendation) |
 | `brief` | lane + round | The brand's account | `action_item` `medium` while a draft; `went_well` when locked | `lane`, `locked`, `briefPage`, `version` |
-| `hook` | one per hook or CTA, never replaced | The brand's account | `went_well` `low` | `lane`, `type` (hook, cta), `text`, `firstBriefed` (round and date) |
+| `hook` | one per hook or CTA, never replaced | The brand's account | `went_well` `low` | `lane`, `type` (hook, cta), `text`, `pattern`, `firstBriefed` (round and date) |
+| `hook-review` | hook + round | The brand's account | `went_well` when it led; `needs_improvement` when it lagged or was not used; `action_item` `low` when held or not measurable | `lane`, `hook` (the text), `pattern`, `postsMatched`, `vsMedian`, `result` (led, held, lagged, not used, not measurable yet) |
 | `ledger` | one per line, never replaced | The brand's account | `needs_improvement` | `gate`, `daysSlipped`, `reason`, `shifted` (the gates and dates it moved) |
 
 A creator ad campaign needs at least one linked Instagram or TikTok channel on the brand
@@ -176,7 +177,7 @@ current round only.
 | 9 | Gate 3 cleared, no brief | "Rates agreed. Contracts and shipping run in Aspire. No brief yet." | Write the master brief | `atlas-creator-brief`, creator-ads mode | A `brief` draft per lane, `hook` lines | None |
 | 10 | Brief drafted, Gate 4 not sent | "{n} lane briefs drafted." | Send the Gate 4 packet | **Gate 4 packet** below | Gate 4 `open` | Gate 4 reminder at its due time |
 | 11 | Gate 4 open | "Briefs with {approver}. Due {due}." | Record the client's brief approval | **CAS campaign**, Run, batch picker | `brief` locked per lane, Gate 4 `cleared`; a `ledger` line when late | Removes the Gate 4 reminder |
-| 12 | Gate 4 cleared | "In production. Hands to the content review flow." | Review a creator's draft | **Content review** | Content review's own findings | None. Offer once to keep or stop the weekly sync. |
+| 12 | Gate 4 cleared | "In production. Hands to the content review flow." | Review a creator's draft. Once creators have posted: review the round's hooks. | **Content review**; the hook review in `hooks-and-ctas.md` | Content review's own findings; `hook-review` findings | None. Offer once to keep or stop the weekly sync. |
 
 Rules:
 
@@ -189,7 +190,9 @@ Rules:
   dates the same way.
 - **Closing a gate removes its reminder.** Delete the gate's scheduled task by the name saved
   in `reminderTask`, after the close is written.
-- **Next round.** After Gate 4, "Start round {n+1}" asks one picker: "New briefs, same
+- **Next round.** Before a new round, offer the hook review (`hooks-and-ctas.md`, **The hook
+  review**) when the round has no `hook-review` findings yet, so the next briefs lead with what
+  worked. After Gate 4, "Start round {n+1}" asks one picker: "New briefs, same
   creators (Recommended)" starts at row 9; "New creators too" starts at row 2. The round change
   supersedes `campaign:{slug}-cas` with its own confirmation. Hooks in the log stay refused in
   every round.
@@ -244,7 +247,8 @@ post, republish.
 ### Gate 4: the briefs
 
 The packet is the round's brief page from `atlas-creator-brief` in creator-ads mode, with the
-gate header. Closing it: one picker, "Lock the round {n} briefs for {lanes}? This closes Gate 4
+gate header. Its hooks and CTAs follow `hooks-and-ctas.md`, each with the reason it was
+recommended. Closing it: one picker, "Lock the round {n} briefs for {lanes}? This closes Gate 4
 and hands the campaign to content review." On close, write a `brief` finding per lane with
 `locked: true`, Gate 4 `cleared`, remove the reminder, post, republish. The status becomes "In
 production. Hands to the content review flow."
@@ -263,7 +267,8 @@ stays stable. Title "<Brand> Creator Ad Campaign: <Campaign>". Sections in order
    planned, due or cleared date.
 4. **Roster**: by lane, one row per creator with slate state, rate state, agreed fee, and ship
    date.
-5. **Brief**: the round's brief version per lane, locked or draft, with its link.
+5. **Brief**: the round's brief version per lane, locked or draft, with its link, and the hook
+   review table per lane once one is saved (`hooks-and-ctas.md`).
 6. **Open items**: the next step, counters awaiting an answer, missing ship dates.
 7. **Delay ledger**: every slip with the gate, days, reason and what moved.
 8. **Footer**: sources, the fee rate label once, and "numbers come from Atlas as of

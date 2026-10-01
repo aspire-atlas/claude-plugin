@@ -83,13 +83,14 @@ from it, so it must be complete enough to edit from.
 creators approved at Gate 2 with their agreed fees. Creators and fees come from the roster,
 never from a new search, and fees are shown as agreed. Also read the hook log
 (`recordType` `hook` on the campaign's prefix) and the saved findings this reference already
-uses: ad reuse hook patterns lead, market signal language comes next.
+uses, in the order `hooks-and-ctas.md`, **Where recommendations come from**, gives.
 
 **Per lane, one brief with these fields:**
 
 - **Concept and persona**, from the lane record, in its own words.
-- **3 hooks, 2 CTAs, 1 body.** Each hook is the first three seconds: what is said, what is on
-  screen, and the text overlay. The body carries the beats between the hook and the CTA.
+- **3 hooks, 2 CTAs, 1 body.** Hooks and CTAs are written and recommended per
+  `hooks-and-ctas.md`: its sources, its patterns, its rules, and a reason under each one. The
+  body carries the beats between the hook and the CTA.
 - **Beat structure**: hook, problem or setup, proof, payoff, CTA, with seconds per beat.
 - **10 to 15 B-roll shots**, each one line: what is filmed and which beat it serves.
 - **Product and SKU**, from `brand:summary` and the campaign brief. Missing: a bracketed blank.
@@ -107,8 +108,7 @@ uses: ad reuse hook patterns lead, market signal language comes next.
   agreed fee and ship date.
 
 A `red_line` that blocks AI-written copy still applies: hooks, CTAs and the body become
-directions (what the line must do and must not say), not scripted lines. Say so in the
-standing-rule banner.
+directions, per `hooks-and-ctas.md`, **Limits**. Say so in the standing-rule banner.
 
 **Editing coverage check**, before the page ships. Every brief must pass all three; fix the
 brief, never the check:
@@ -120,9 +120,8 @@ brief, never the check:
 
 Show the result per lane on the page ("Coverage: 3 of 3 checks pass").
 
-**The hook log.** Before drafting, read every hook and CTA ever briefed on the campaign. Never
-reuse one, word for word or in close paraphrase, in any lane or round. After the brief is saved,
-append every new hook and CTA as a `hook` finding.
+**The hook log.** Follow `hooks-and-ctas.md`, **Limits**: read every hook and CTA ever briefed
+on the campaign, never reuse one, and append every new one as a `hook` finding.
 
 **The page.** One page per round, a section per lane with an anchor (`#lane-{lane}`), the
 coverage result at the top of each section. Title "<Brand> Creator Ad Brief: <Campaign>, round

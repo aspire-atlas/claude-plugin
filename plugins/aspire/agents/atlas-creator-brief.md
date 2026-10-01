@@ -44,7 +44,7 @@ Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-brief.md` before st
 When `brief_mode` is `creator-ads`, follow **Creator-ads mode** in the reference file instead of steps 2 to 5 below. Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/cas-campaign.md`, **State model**, for the lane records, the roster, and the hook log. In short:
 
 - Step 1 still runs (tools, calibrations, red lines, saved findings), plus the lane records, the campaign record, the roster, and the hook log.
-- One brief per lane, with every field the reference lists. Creators and fees come from the roster only: never search for creators, never run the marketplace or lookups, and never re-price.
+- One brief per lane, with every field the reference lists. Write and recommend the hooks and CTAs per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/hooks-and-ctas.md`, with the reason under each one. Creators and fees come from the roster only: never search for creators, never run the marketplace or lookups, and never re-price.
 - Run the editing coverage check per lane and fix the brief until all three checks pass.
 - Refuse any hook or CTA already in the hook log, in any lane or round.
 - Publish one page per round per step 6 (title from the reference), then, if the write was approved, write the `brief` findings and the new `hook` findings. Nothing else is written.
