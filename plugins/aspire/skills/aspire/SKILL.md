@@ -11,7 +11,8 @@ description: >
   shortlist", "vet these creators", "which of these creators should we approve", "we launch on the 14th and need creators", "review this post", "check this
   draft against the brief", "brand safety check on this post", "show @handle's full
   profile", "what are creators saying about us vs {competitor}", "best hooks to reuse as
-  ads", "how did influencer do this quarter", or "/aspire fee calculator".
+  ads", "how did influencer do this quarter", "start the CAS campaign for {brand}", "where is
+  the {brand} campaign", "send the Gate 2 packet", or "/aspire fee calculator".
 metadata:
   author: Aspire
 ---
@@ -37,6 +38,7 @@ Text after the command is the argument. Route on it before anything else:
 | -------- | ------ |
 | `agents` (also `list agents`, `show agents`) | Run **List agents** below. Skip the phases unless the user picks an agent to run. |
 | `fee calculator` (also `fees`, `pricing`, `rate card`, `creator rates`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Fee calculator** below. Skip the other phases. |
+| `cas campaign` (also `creator ad campaign`, `campaign manager`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **CAS campaign** below. Skip the other phases. |
 | empty, or anything else | Run the phases in order, starting at Phase 1. Treat the text as context. |
 
 ### List agents
@@ -164,7 +166,9 @@ card (`references/creator-card.md`), in chat or on a page.
 After onboarding, these flows hang off the same connection: the **Creator brief** (a weekly or
 campaign content plan with creators), the **Creator discovery** (a standing creator shortlist
 per campaign, schedulable), the **Creator vetting** (approve, maybe, or reject a list of
-creators from an Aspire export or pasted handles, interactive only), the **Content review** (one post or draft checked against its
+creators from an Aspire export or pasted handles, interactive only), the **CAS campaign** (a
+creator ad campaign conducted through the slate, rates, and brief gates, with **Rates and
+terms** for step 13), the **Content review** (one post or draft checked against its
 brief, interactive only), the **Readouts** (daily and weekly performance digests with a launch
 pulse and a section per reader, schedulable), the **Market signal** (what creators say about
 the brand vs. competitors, schedulable), and the **Quarterly signal** (the quarter's story for
@@ -728,6 +732,96 @@ the supersede when one exists.
 
 ---
 
+## CAS campaign (creator ad campaign manager)
+
+Trigger when the user asks to start, check, or move a creator ad campaign ("start the CAS
+campaign for {brand}", "where is the {brand} campaign", "what's next on {campaign}", "send the
+Gate 2 packet", "close Gate 3", "log a delay"). Requires a brand profile with a linked Instagram
+or TikTok channel. Full detail lives in `references/cas-campaign.md`: the state model, the setup
+interview, the dispatch table, the gate packets, the page, and the unattended rules. Hook and
+CTA recommendations, and the hook review between rounds, live in `references/hooks-and-ctas.md`.
+
+The Campaign Manager conducts the campaign through sourcing, negotiation, and briefing. It reads
+where the campaign is, offers the single next step, launches the agent or section that does the
+work, records the outcome, and sets the reminder. It never does the heavy lifting itself. Several
+campaigns may be saved; ask which one with `AskUserQuestion` when more than one is active.
+
+### Setup
+
+1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end,
+   `includeSuperseded: true`). If the campaign's setup records exist, skip to **Status**.
+2. Otherwise ask C1 to C6 from the reference, one `AskUserQuestion` each, in order. C2 repeats
+   one lane per turn until the user says that's all. On C5 and C6, say plainly what each one
+   approves: delivery without asking, and scheduled tasks for this campaign.
+3. C7 confirms the batch once, then write every record with `append_calibration`. A
+   `key-exists` follows the Phase 5 supersede rule with its own confirmation.
+
+### Status
+
+Read the setup records and the working state (`search_insights` on the campaign's prefix, paged).
+Find the row in the reference's dispatch table, reading from the bottom up. Show one screen: the
+row's status line, the gate strip, pool or roster counts by lane, and the campaign page link.
+Then one `AskUserQuestion`, header "Next": the row's next step first (Recommended), plus "Log a
+delay" and "Change setup". Never offer more than one next step.
+
+### Run
+
+Launch what the row names, then record what came back:
+
+- **Discovery** (rows 2 and 3): `atlas-creator-discovery` with the campaign slug, run mode
+  `interactive`, `campaign_type` `creator-ads`, the lane to fill, and `recipient` (`campaign`).
+- **Vetting** (row 4): `atlas-creator-vetting` with the lane's pool as the list (the lane's
+  undecided candidates from discovery), the lane as the criteria source, and `recipient`
+  (`campaign`, then `brand`). The Run picker is the write confirmation: "Vet the {lane} pool
+  and save the slate to Atlas?" If `vetting:thresholds` is missing, ask V2 from
+  `references/creator-vetting.md` first and write it with its own confirmation.
+- **Gate packets and closes** (rows 4, 5, 7, 8, 10, 11): this section, per the reference's
+  **Gate packets**. One batch picker covers a whole gate: every accept and reject, named.
+- **Rates** (row 6): **Rates and terms** below.
+- **Brief** (row 9): `atlas-creator-brief` with `brief_mode` `creator-ads`, the campaign slug,
+  the round, the lanes, and `recipient` (`campaign`, then `creative`). Confirm the write first:
+  "Write the round {n} briefs for {lanes} and save them to the campaign?"
+- **Production** (row 12): **Content review** for each draft. Once creators have posted, the
+  hook review from `references/hooks-and-ctas.md`, run here in the main thread: it matches the
+  creators' posts to the briefed hooks, shows which led, and saves the results after one
+  confirmation, so the next round's briefs lead with what worked.
+
+After each step, write the outcome per the reference, republish the campaign page, post the gate
+line when a gate moved, and show the new status in one line.
+
+### Schedule
+
+Follow **Readouts**, Schedule, for the mechanics. After setup, offer the weekly sync once with
+`AskUserQuestion` ("Set up the weekly sync for {campaign} at {slot}?" Options: "Yes (Recommended)"
+/ "Not now"). Gate reminders need no offer: C6 approved them, so a gate send creates its reminder
+and a gate close removes it. Name tasks and write prompts as the reference says. If the
+scheduled-task tools are missing, say so and stop; never fake a schedule.
+
+Unattended runs never ask, never decide, and never launch an agent. They publish and post only,
+and publish a "setup needed" card when the records are missing.
+
+---
+
+## Rates and terms (CAS step 13 and Gate 3)
+
+Reached from the **CAS campaign** dispatch table once Gate 2 is cleared, or when the user asks to
+draft rates, record a counter, or close Gate 3 on a creator ad campaign. Full detail lives in
+`references/rates-and-terms.md`.
+
+1. If `campaign:{slug}-terms` is missing, ask T1 and T2, confirm the pair once, and write it.
+2. Draft an opening offer for every creator approved at Gate 2, from the fee calculator
+   (**Fee calculator**). Say on the page when the Aspire recommended rates were used.
+3. Show the rate sheet, then confirm saving the offers in one picker.
+4. Record counters and agreements as the CM reports them, one picker per batch.
+5. Close Gate 3 per the reference: one batch picker for the approved fees, then one question for
+   ship dates. Ship dates are the only step 14 state kept; contracts and shipping run in the
+   core Aspire platform.
+
+When the fees used the Aspire recommended rates, make the fee calculator offer from **Fee
+calculator**, Offers, after the reply.
+
+---
+
 ## Content review (one post against its brief)
 
 Trigger when the user asks to review a post or a creator's draft, check content against a
@@ -1229,6 +1323,11 @@ The watch list is the brand's saved creators, outside any campaign.
   vetting, where R3 approves `lookup_creators` for the listed handles Atlas does not hold; and
   creator discovery, whose saved cadence record approves it on every run including scheduled
   ones.
+- **Inside a CAS campaign**, one picker confirms a whole gate batch: every accept and every
+  reject is named in the question, and that one answer covers all the writes the close makes.
+  The campaign's saved sync cadence (C6) is the standing approval for paid discovery on that
+  campaign: the creator marketplace and paid lookups for its lanes, without asking again. The
+  defaults for brand users everywhere else are unchanged.
 - Keep every user-facing message short. Use bullets for anything with more than two points.
 - Web research is a proposal, never a write: findings are always shown and confirmed before
   any calibration is recorded from them.

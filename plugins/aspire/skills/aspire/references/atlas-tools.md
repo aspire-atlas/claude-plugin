@@ -81,6 +81,7 @@ social channels and brand memory have a home in the organization."
 | Quarterly signal | `search_calibrations`, `search_posts`, `search_creators`, `search_insights`, `list_insight_search_fields`, `append_insights` | Rolls up every saved `runKey` prefix for the quarter into one page | `quarterly-signal.md`; no discovery |
 | Creator vetting | `search_calibrations`, `get_brand_instruction` (read only), `search_creators`, `search_posts`, `search_insights`, `append_insights`, `append_calibration` (creator notes and lessons the user saved), `lookup_creators` (listed handles, after R3) | Approve, Maybe, or Reject for a list of creators; `runKey` prefix `creator-vetting-*`; team calls on a creator in `creator:*` records | `creator-vetting.md`; interactive only |
 | Ad reuse | `search_calibrations`, `list_post_search_fields`, `search_posts`, `search_creators`, `list_hashtag_posts`, `search_insights`, `append_insights` | `atlas-ad-reuse`: hook scores and cut lists, `runKey` prefix `ad-reuse-*` | `ad-reuse.md`; reads only what Atlas holds |
+| CAS campaign | `search_calibrations`, `append_calibration`, `supersede_calibration` (its own confirmation), `search_insights`, `append_insights`, `search_posts` (rates and terms) | Conducts a creator ad campaign through Gates 2 to 4; setup in `campaign:{slug}-*` records, working state on `runKey` prefix `cas-campaign-*`; launches discovery, vetting, and the brief in creator-ads mode | `cas-campaign.md`, `rates-and-terms.md`, `hooks-and-ctas.md`; main thread only; unattended runs publish and post only |
 | Avoid in onboarding | `lookup_creators`, `lookup_posts`, `start_business_discovery`, `search_creator_marketplace`, `get_job_status` | Start discovery work beyond the accounts Atlas already holds | Only on explicit user request. The one routine use is `atlas-profile-analyst` in named-handle mode: the user typing a network and handle in Phase 6 is the approval, and the agent calls `lookup_creators` only when Atlas holds nothing for that handle or the record is over 24 hours old. `lookup_creators` has no status-check tool; re-call it with the same item to re-read a `fetching` result, and `creatorDeepAnalysis` defaults to `true` there, so recent posts come with the account. It rejects `profileSlug`; attribute with `asProfile`. Creator vetting is another: R3 "Fetch them" approves `lookup_creators` for exactly the listed handles Atlas does not hold, batched up to 100 per call. The other routine use is `atlas-content-review` on a published post: pasting the link is the approval, and the agent calls `lookup_posts` once for that post only when Atlas does not hold it, with `creatorDeepAnalysis` left at its default `false`. A TikTok miss is a paid vendor call. |
 | Utility | `get_more_tools` | Server-side tool discovery | Do not call during onboarding; the phase map above is the supported surface. |
 
@@ -167,6 +168,18 @@ review checks, discovery criteria, and red-line scans all leave it out.
 holds the brand's CPM ladder for creator fees (`fees.md`). Flows that show a creator fee apply
 it. No flow treats it as a brand guideline: brief conflicts, content review checks, discovery
 criteria, and red-line scans all leave it out.
+
+**CAS campaign records** (`cas-campaign.md`, **State model**). A creator ad campaign keeps two
+record families under its campaign slug:
+
+| Family | Where | Keys or prefix | Read by |
+| ------ | ----- | -------------- | ------- |
+| Setup | Calibrations | `campaign:{slug}-brief` (with `type: creator-ads`), `-criteria`, `-pool`, `-routing`, `-cadence` (shared with creator discovery), plus `-cas`, `-lane-{lane}`, `-decision-defaults`, `-terms` | The CAS campaign, and discovery, vetting, and the brief in creator-ads mode |
+| Working state | Insights | `runKey` prefix `cas-campaign-{profile}-{slug}`, `detail.recordType` `gate`, `roster`, `brief`, `hook`, `hook-review`, or `ledger` | The CAS campaign, and the brief in creator-ads mode (roster and hook log) |
+
+The keys `-cas`, `-lane-*`, `-decision-defaults`, and `-terms` belong to the CAS campaign only.
+Every other flow drops them, as it drops `review:` and `vetting:` keys. They are never brand
+guidelines: brief conflicts, content review checks, and red-line scans leave them out.
 
 **Read every page.** `limit 100` on `search_calibrations` is the page size, not a cap. Pass
 each response's `nextCursor` back as `cursor` until none is returned, then filter. Lessons,
