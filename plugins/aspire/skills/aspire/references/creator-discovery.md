@@ -135,8 +135,10 @@ Rules:
 - Work the tiers in order and stop as soon as the pool is at target. A run that fills from
   tiers 1 and 2 alone is a good run, not a shallow one.
 - Record the tier and the exact source on every candidate; the page shows it.
-- Never surface the brand's own handles, any `competitor` handle, or any handle already
-  decided for this campaign.
+- Never surface the brand's own handles, any `competitor` handle, any handle already
+  decided for this campaign, or any creator whose `creator:*` calibration has stance `reject`
+  (the team's call from creator vetting, `creator-vetting.md`). Any other stance is shown on
+  the card under "Notes".
 - Web research is evidence, never a write: a web-sourced candidate still enters the pool
   through `lookup_creators`, with the source URL in its evidence.
 
@@ -258,6 +260,47 @@ A scheduled run starts a fresh session with nobody to answer questions.
   needs a fresh sign in" and stop.
 - A discovery pass that finds nothing new publishes the page unchanged with "no new candidates
   this run" and says which tiers were searched. Never pad the pool to hit the target.
+
+## Creator-ads mode (CAS campaigns)
+
+A campaign whose `campaign:{slug}-brief` body starts with `type: creator-ads` is a creator ad
+campaign, set up by the **CAS campaign** section of SKILL.md (`cas-campaign.md`), not by S1 to
+S9. The main thread passes `campaign_type` `creator-ads` and the lane to fill when there is one.
+Everything above applies, with these changes:
+
+- **Lanes replace S1.** Each `campaign:{slug}-lane-{lane}` record is one criteria set: its
+  persona and casting filter, plus the shared `campaign:{slug}-criteria`. Score a candidate
+  against its own lane only.
+- **One pool per lane.** Every finding carries `detail.lane`. The target per lane is in
+  `campaign:{slug}-pool`: three times the creators that lane needs. Fill the named lane, or the
+  emptiest lane first when none is named, and stop each lane at its target. The dedupe set
+  stays campaign-wide, so a creator sits in one lane only.
+- **The setup check** reads `-brief`, `-criteria`, `-pool`, `-cadence` and at least one
+  `-lane-*` record. Missing any: return the one line telling the main thread to run CAS
+  campaign setup.
+- **The cadence is the standing approval** for the marketplace and paid lookups on this
+  campaign, in interactive runs too (SKILL.md, **Guardrails**). The weekly sync never launches
+  discovery; it runs when the CM picks it.
+- **Scoring stays this reference's rubric.** The paid screens (persona fit and paid track
+  record) are vetting's job (`creator-vetting.md`, **Creator-ads lanes**).
+- **Four figures on every card**, in `{DETAILS}` and in `detail.adFigures`:
+  - Hook rate (`instagram.reelsHookRate`)
+  - Reels interaction rate (`instagram.reelsInteractionRate`)
+  - Past paid partners (`instagram.pastBrandPartnershipPartners`, named, at most five)
+  - Partnership readiness: "Ready" when `isPaidPartnershipMessagesEnabled` is true and the
+    creator has partnership experience, "Partly" when only one holds, "Not yet" when neither
+    does
+
+  Project the `instagram` container to read them, per `creator-brief.md`, **Atlas quirks**. A
+  figure Atlas does not hold shows "Not in Atlas", never a guess. TikTok cards carry one plain
+  line: "Hook rate is not available on TikTok."
+- **The page groups by lane.** The shortlist section becomes one group per lane, in the order
+  the lanes were saved, each headed with the lane name, persona, and "{undecided} of {target}".
+  Inside a lane, tiers and fit score sort as above. Numbering still runs from 1 across the whole
+  page. Title "<Brand> Creator Discovery: <Campaign>" stays.
+- **Decisions come from Gate 2.** The main thread writes the verdicts when the client's slate
+  decisions close Gate 2 (`cas-campaign.md`, **Gate 2**). The agent still writes only undecided
+  findings.
 
 ## Atlas quirks that apply here
 
