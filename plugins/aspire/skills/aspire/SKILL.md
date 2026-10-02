@@ -12,8 +12,8 @@ description: >
   draft against the brief", "brand safety check on this post", "show @handle's full
   profile", "what are creators saying about us vs {competitor}", "best hooks to reuse as
   ads", "build a PPA pitch", "casting deck for partnership ads", "how did influencer do this
-  quarter", "start the CAS campaign for {brand}", "where is the {brand} campaign", "send the
-  Gate 2 packet", or "/aspire fee calculator".
+  quarter", "start the CAS campaign for {brand}", "where is the {brand} campaign", "pull the
+  client's decisions", "record a reply", or "/aspire fee calculator".
 metadata:
   author: Aspire
 ---
@@ -807,33 +807,50 @@ the supersede when one exists.
 
 Trigger when the user asks to start, check, or move a creator ad campaign ("start the CAS
 campaign for {brand}", "where is the {brand} campaign", "what's next on {campaign}", "send the
-Gate 2 packet", "close Gate 3", "log a delay"). Requires a brand profile with a linked Instagram
-or TikTok channel. Full detail lives in `references/cas-campaign.md`: the state model, the setup
-interview, the dispatch table, the gate packets, the page, and the unattended rules. Hook and
-CTA recommendations, and the hook review between rounds, live in `references/hooks-and-ctas.md`.
+creators for approval", "pull the client's decisions", "record a reply", "send the details
+emails", "send the briefs to creators", "log a delay"). Requires a brand profile with a linked
+Instagram or TikTok channel. Full detail lives in `references/cas-campaign.md`: the page
+vocabulary, the state model, the setup interview, the dispatch table, the gate packets, the
+campaign page and its page data, creator details and shipping, the creator's turn on the brief,
+and the unattended rules. Hook and CTA recommendations, and the hook review between rounds, live
+in `references/hooks-and-ctas.md`.
 
-The Campaign Manager conducts the campaign through sourcing, negotiation, and briefing. It reads
-where the campaign is, offers the single next step, launches the agent or section that does the
-work, records the outcome, and sets the reminder. It never does the heavy lifting itself. Several
-campaigns may be saved; ask which one with `AskUserQuestion` when more than one is active.
+The Campaign Manager conducts the campaign from approved concepts through sourcing, negotiation,
+product shipping, and briefing. It reads where the campaign is, offers the single next step,
+launches the agent or section that does the work, records the outcome, and sets the reminder.
+It never does the heavy lifting itself. Several campaigns may be saved; ask which one with
+`AskUserQuestion` when more than one is active.
+
+Everything a person sees uses the reference's **Page vocabulary**: concepts, not lanes; the four
+steps (Concepts approved, Creators approved, Fees approved, Briefs approved), not gates. The flow
+never sends email and never connects to a mailbox, a sheet, or a slides file: the CM sends from
+their own mail and pastes the replies.
 
 ### Setup
 
 1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end,
    `includeSuperseded: true`). If the campaign's setup records exist, skip to **Status**.
-2. Otherwise ask C1 to C6 from the reference, one `AskUserQuestion` each, in order. C2 repeats
-   one lane per turn until the user says that's all. On C5 and C6, say plainly what each one
-   approves: delivery without asking, and scheduled tasks for this campaign.
-3. C7 confirms the batch once, then write every record with `append_calibration`. A
-   `key-exists` follows the Phase 5 supersede rule with its own confirmation.
+2. Otherwise start with C0 from the reference: "Where are the approved concepts for {brand}?"
+   (the pitch saved in Atlas first when one exists, a Claude artifact link, a Google Slides link,
+   or pasted text). Show each concept found in its own picker with "Keep (Recommended)" or
+   "Change", then ask who approved them and when. C2, one concept per turn by hand, runs only
+   when nothing was found. No approved concepts anywhere: say so in one line and ask the CM to
+   confirm with the client first.
+3. Ask C1 and C3 to C6, one `AskUserQuestion` each, in order. On C5 and C6, say plainly what each
+   one approves: delivery without asking, and scheduled tasks for this campaign.
+4. C7 confirms the batch once, then write every record with `append_calibration` and the Gate 1
+   finding with `append_insights`. A `key-exists` follows the Phase 5 supersede rule with its own
+   confirmation.
 
 ### Status
 
 Read the setup records and the working state (`search_insights` on the campaign's prefix, paged).
 Find the row in the reference's dispatch table, reading from the bottom up. Show one screen: the
-row's status line, the gate strip, pool or roster counts by lane, and the campaign page link.
-Then one `AskUserQuestion`, header "Next": the row's next step first (Recommended), plus "Log a
-delay" and "Change setup". Never offer more than one next step.
+row's status line, the four steps (1 Concepts approved, 2 Creators approved, 3 Fees approved, 4
+Briefs approved) each with done and its date, now and its due date, or its planned date, the
+creator counts by concept, anything marked your call needed, and the campaign page link. Then one
+`AskUserQuestion`, header "Next": the row's next step first (Recommended), plus "Log a delay" and
+"Change setup". Never offer more than one next step.
 
 ### Run
 
@@ -843,50 +860,66 @@ Launch what the row names, then record what came back:
   `interactive`, `campaign_type` `creator-ads`, the lane to fill, and `recipient` (`campaign`).
 - **Vetting** (row 4): `atlas-creator-vetting` with the lane's pool as the list (the lane's
   undecided candidates from discovery), the lane as the criteria source, and `recipient`
-  (`campaign`, then `brand`). The Run picker is the write confirmation: "Vet the {lane} pool
-  and save the slate to Atlas?" If `vetting:thresholds` is missing, ask V2 from
+  (`campaign`, then `brand`). The Run picker is the write confirmation: "Screen the {concept}
+  creators and save the results to Atlas?" If `vetting:thresholds` is missing, ask V2 from
   `references/creator-vetting.md` first and write it with its own confirmation.
-- **Gate packets and closes** (rows 4, 5, 7, 8, 10, 11): this section, per the reference's
-  **Gate packets**. One batch picker covers a whole gate: every accept and reject, named.
+- **Sending a step for approval** (rows 4, 7, 11): per the reference's **Gate packets**. The
+  campaign page is the approval page; the CM shares it with the client as Contributor.
+- **Pull the client's decisions** (rows 5, 8, 12, 15, and whenever the CM asks "what did they
+  approve"): read the page data per the reference's **Pulling decisions**, show every approve,
+  maybe and reject named with its reason, plus shipping, status and ad permission edits, and
+  record them with one picker. A Maybe stays open on the page with a question back to the client.
+- **Record a reply** (rows 7, 10, 14, or whenever the CM pastes one): per
+  `references/rates-and-terms.md`, **Replies**. One picker proposes the record and the next move;
+  a reply that changes what the client approved becomes "your call needed" for the client.
 - **Rates** (row 6): **Rates and terms** below.
-- **Brief** (row 9): `atlas-creator-brief` with `brief_mode` `creator-ads`, the campaign slug,
+- **Send the details emails** (row 9): per the reference's **1f**. One draft per contracted
+  creator, shown ready to copy; the CM sends them and says when they went.
+- **Brief** (row 10): `atlas-creator-brief` with `brief_mode` `creator-ads`, the campaign slug,
   the round, the lanes, and `recipient` (`campaign`, then `creative`). Confirm the write first:
-  "Write the round {n} briefs for {lanes} and save them to the campaign?"
-- **Production** (row 12): **Content review** for each draft. Once creators have posted, the
+  "Write the round {n} briefs for {concepts} and save them to the campaign?"
+- **Send the briefs to creators** (row 13): per the reference's **1g**. A changed brief from a
+  creator goes back to `atlas-creator-brief` with `revision` for the differences in plain words,
+  then to the client on the Briefs tab.
+- **Production** (row 16): **Content review** for each draft. Once creators have posted, the
   hook review from `references/hooks-and-ctas.md`, run here in the main thread: it matches the
   creators' posts to the briefed hooks, shows which led, and saves the results after one
   confirmation, so the next round's briefs lead with what worked.
 
-After each step, write the outcome per the reference, republish the campaign page, post the gate
-line when a gate moved, and show the new status in one line.
+After each step, write the outcome per the reference, republish the campaign page with its page
+data, post the step line when a step moved, and show the new status in one line.
 
 ### Schedule
 
-Follow **Readouts**, Schedule, for the mechanics. After setup, offer the weekly sync once with
-`AskUserQuestion` ("Set up the weekly sync for {campaign} at {slot}?" Options: "Yes (Recommended)"
-/ "Not now"). Gate reminders need no offer: C6 approved them, so a gate send creates its reminder
-and a gate close removes it. Name tasks and write prompts as the reference says. If the
-scheduled-task tools are missing, say so and stop; never fake a schedule.
+Follow **Readouts**, Schedule, for the mechanics. After setup, offer the weekly call once with
+`AskUserQuestion` ("Set up the weekly call agenda for {campaign} at {slot}?" Options: "Yes
+(Recommended)" / "Not now"). Approval reminders need no offer: C6 approved them, so sending a
+step creates its reminder and closing it removes it. Name tasks and write prompts as the
+reference says. If the scheduled-task tools are missing, say so and stop; never fake a schedule.
 
-Unattended runs never ask, never decide, and never launch an agent. They publish and post only,
-and publish a "setup needed" card when the records are missing.
+Unattended runs never ask, never decide, never pull the page data, and never launch an agent.
+They publish and post only, and publish a "setup needed" card when the records are missing.
 
 ---
 
 ## Rates and terms (CAS step 13 and Gate 3)
 
-Reached from the **CAS campaign** dispatch table once Gate 2 is cleared, or when the user asks to
-draft rates, record a counter, or close Gate 3 on a creator ad campaign. Full detail lives in
-`references/rates-and-terms.md`.
+Reached from the **CAS campaign** dispatch table once creators are approved, or when the user
+asks to draft fees, record a reply, or record the client's fee approval on a creator ad campaign.
+Full detail lives in `references/rates-and-terms.md`.
 
 1. If `campaign:{slug}-terms` is missing, ask T1 and T2, confirm the pair once, and write it.
-2. Draft an opening offer for every creator approved at Gate 2, from the fee calculator
-   (**Fee calculator**). Say on the page when the Aspire recommended rates were used.
-3. Show the rate sheet, then confirm saving the offers in one picker.
-4. Record counters and agreements as the CM reports them, one picker per batch.
-5. Close Gate 3 per the reference: one batch picker for the approved fees, then one question for
-   ship dates. Ship dates are the only step 14 state kept; contracts and shipping run in the
-   core Aspire platform.
+2. Draft an opening offer for every approved creator, from the fee calculator (**Fee
+   calculator**). Say on the page when the Aspire recommended rates were used.
+3. Show the Fees tab and the offer drafts, then confirm saving the offers in one picker.
+4. Keep one email draft on each creator's row per the reference's **Drafts** (offer, counter,
+   accept, chase). The CM sends them from their own mail; mark them sent when the CM says so.
+5. Record each pasted reply per the reference's **Replies**: one picker for the record and the
+   next move. A fee above the maximum, a different deliverable, usage or product, or a creator
+   dropping out goes to the client as "your call needed". A creator past their reply window gets
+   a chase draft.
+6. Record the client's fee approval per the reference's **Closing Gate 3**, read back from the
+   page. Then the details emails start; contracts and shipping run in the core Aspire platform.
 
 When the fees used the Aspire recommended rates, make the fee calculator offer from **Fee
 calculator**, Offers, after the reply.
