@@ -172,7 +172,7 @@ python3 embed_media.py [--profile=page] [--quality=85] 'avatar=<url>' \
 Quote each argument, as above, so the shell does not read `|` as a pipe.
 
 ```python
-import base64, io, json, math, re, sys, urllib.request
+import base64, io, json, math, re, sys, time, urllib.error, urllib.request
 from PIL import Image, ImageOps, features
 
 # kind: (default CSS box w, h; h 0 = keep the aspect ratio), crop to the box's shape
@@ -189,7 +189,17 @@ WEBP = features.check("webp")
 ITEM = re.compile(r"^(avatar|thumb|post|detail)(\+text)?(?:@(\d+)(?:x(\d+))?)?$")
 
 
-def fetch(url):
+def fetch(url, tries=4):
+    for attempt in range(tries):  # the CDN rate-limits bursts with 429: back off and retry
+        try:
+            return fetch_once(url)
+        except urllib.error.HTTPError as e:
+            if e.code not in (429, 503) or attempt == tries - 1:
+                raise
+            time.sleep(2 ** attempt + 1)
+
+
+def fetch_once(url):
     req = urllib.request.Request(url, headers=UA)
     with urllib.request.urlopen(req, timeout=20) as r:
         ctype = r.headers.get("Content-Type", "")

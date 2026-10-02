@@ -6,6 +6,25 @@ The version lives in exactly one place: `plugins[].version` in `.claude-plugin/m
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-10-02
+
+Minor release. Three new agents, a campaign manager for creator ad campaigns, samples of every agent's page, and an audit of the decisions behind any page.
+
+### Added
+- `atlas-creator-vetting` agent: vets a list of creators from a CSV export from Aspire, pasted handles, or the Aspire app list (you sign in yourself). Each creator is checked for brand fit against the saved criteria and gets a brand safety review (industry categories, red lines, competitor partnerships, disclosure, audience signals), then a recommendation of Approve, Maybe, or Reject with evidence. Recommendations are saved as insights, and the team's call on each creator is saved so later vetting and discovery start from it. Interactive only.
+- `atlas-ad-reuse` agent: ranks the brand's and creators' videos on the hooks that work as ads and publishes a cut list with timestamps, cut lengths, placements, and rights status. This was reuse mode in `atlas-profile-analyst`; launches that ask for reuse mode now go to the new agent.
+- `atlas-ppa-pitch` agent: a casting deck for paid partnership ads. A questionnaire pre-filled from Atlas covers the frame, product groups and schedule, casting profile, lanes and the creator for each, production and rights, and cost. The deck is published as 16:9 slides to review first, then exported to PowerPoint with the session's PowerPoint skill, or built in Google Slides after a confirmation when that connector is connected. Follow-up rounds build on the previous pitch. Package prices are asked each time and never saved.
+- CAS campaign section in `/aspire:aspire` (`cas campaign`, also `creator ad campaign` or `campaign manager`): runs a creator ad campaign through sourcing, negotiation, and briefing. It reads the campaign's state from Atlas, offers the single next step, launches the agent or section that does the work, records each client approval gate, and sets the reminder. Discovery, vetting, and the creator brief gain a creator-ads mode, and a Rates and terms section covers negotiation.
+- Hook and CTA recommendations for creator ad campaigns, each with the reason behind it, and a hook review between rounds.
+- Samples: ask what an agent does, or type `/aspire:aspire sample`, and the skill offers a sample of that agent's page built from invented data and themed on the most recent US holiday. Samples need no Atlas connection and save nothing.
+- Decision audit: after an agent publishes a page, the skill offers an audit page with the time from request to finish and every question, option, tool call, and judgement behind the result, in order. It writes nothing to Atlas.
+- Aspire users: when the Atlas account uses an Aspire email, the PPA pitch also asks how Aspire's managed services team wants to present the deck. This gives no extra access: it never unlocks data, skips a confirmation, or changes what the account's Atlas role allows.
+
+### Changed
+- `atlas-profile-analyst` no longer has a reuse mode; ad reuse is its own agent.
+- The image snippet retries image fetches that hit a rate limit.
+- SECURITY.md covers the two new snippet uses (creator metrics from saved search results, picking the sample's holiday), reading a vetting list through a connected browser tool, the PowerPoint and Google Slides export, and what Aspire users can and cannot do.
+
 ## [3.0.0] - 2026-09-29
 
 Major release. Three agents are renamed, and every agent now shapes its output for the person who will act on it. Old agent names and scheduled task names keep working, but update them when you can (see **Migrating from 2.x**).
@@ -88,7 +107,9 @@ First public release. Versioning restarts at 1.0.0; earlier 0.x builds were inte
 - Two release channels: `aspire-atlas` (official, pinned) and `aspire-atlas-beta` (tracks `develop`).
 - Apache-2.0 license.
 
-[Unreleased]: https://github.com/aspire-atlas/claude-plugin/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/aspire-atlas/claude-plugin/compare/v3.1.0...HEAD
+[3.1.0]: https://github.com/aspire-atlas/claude-plugin/compare/v3.0.0...v3.1.0
+[3.0.0]: https://github.com/aspire-atlas/claude-plugin/compare/v2.0.0...v3.0.0
 [2.0.0]: https://github.com/aspire-atlas/claude-plugin/releases/tag/v2.0.0
 [1.1.0]: https://github.com/aspire-atlas/claude-plugin/releases/tag/v1.1.0
 [1.0.1]: https://github.com/aspire-atlas/claude-plugin/releases/tag/v1.0.1
