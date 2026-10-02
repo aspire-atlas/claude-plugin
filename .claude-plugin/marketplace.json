@@ -2,7 +2,7 @@
   "$schema": "https://code.claude.com/schemas/marketplace.json",
   "name": "aspire-atlas",
   "description": "Claude plugins for the Aspire Atlas platform (atlas.aspire.io): onboarding, first insights, creator briefs and discovery, content review, competitive signal, and scheduled daily and weekly insights reports.",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "owner": {
     "name": "Aspire",
     "url": "https://github.com/aspire-atlas"
@@ -12,7 +12,7 @@
       "name": "aspire",
       "displayName": "Aspire Atlas",
       "source": "./plugins/aspire",
-      "version": "3.0.0",
+      "version": "3.1.0",
       "description": "Aspire Atlas is the Creative Intelligence layer for your brand's social content. Connect Instagram, TikTok, and YouTube for social listening, competitive benchmarking, and brand safety checks. Discover creators, plan next week's content, review posts before they go live, and get daily and weekly reports in Slack or email. Type /aspire to start.",
       "author": {
         "name": "Aspire"
