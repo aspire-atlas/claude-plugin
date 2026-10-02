@@ -125,13 +125,38 @@ on the campaign, never reuse one, and append every new one as a `hook` finding.
 
 **The page.** One page per round, a section per lane with an anchor (`#lane-{lane}`), the
 coverage result at the top of each section. Title "<Brand> Creator Ad Brief: <Campaign>, round
-{n}", republished to the same path for that round. The Gate 4 packet is this page with the gate
-header (`cas-campaign.md`, **Gate 4**). Sections 2, 5 and 6 of **Page structure** drop out: the
+{n}", republished to the same path for that round. It stays the full brief editors cut from; the
+client approves the same briefs on the campaign page's Briefs tab (`cas-campaign.md`, **Gate
+4**), which the main thread builds from this page. Sections 2, 5 and 6 of **Page structure** drop out: the
 lanes set the audience, the roster replaces the shortlist, and the gates replace the timeline.
 
 **Writes**, on the main thread's confirmation: a `brief` finding per lane (`locked: false`,
 `briefPage`, `version`), then a `hook` finding per new hook and CTA, all per
 `cas-campaign.md`, **Working state**. No `creator-brief-*` findings in this mode.
+
+### A creator's revision
+
+After the briefs are approved, a creator may reply with their own version (`cas-campaign.md`,
+**1g**). The main thread launches this mode with `revision`: the creator's handle and network,
+their concept, and their version as pasted. Then the agent compares, and does nothing else:
+
+1. Read the concept's newest locked `brief` finding and its page as the approved brief, and the
+   creator's newest `brief-revision` when one exists (a second round compares against the
+   approved brief, not the last revision).
+2. Compare field by field: each hook and CTA, the body, the beats and their seconds, each B-roll
+   shot, the product, the runtime per platform, the disclosure, and the do's and don'ts.
+3. List each difference as one plain line: what changed, the approved text, the creator's text.
+   For example "Hook B: 'Charged once Friday night, back Sunday dark' becomes 'One charge. Friday
+   to Sunday.'", "Runtime: V2 45 seconds becomes 60 seconds", "B-roll 07, the trailhead sign:
+   dropped". Wording that means the same thing is not a difference. No field names, no record
+   words.
+4. Check each difference against the rules this mode already applies: a hook or CTA in the hook
+   log, a red line, the disclosure, and the editing coverage check. A difference that breaks one
+   is marked with the rule in plain words ("drops the spoken paid partnership line").
+5. Return the list, any marked differences, and "no changes" when the versions match. Publish
+   nothing and write nothing: the main thread writes the `brief-revision` after its own
+   confirmation. When the client approves it, the creator's version becomes their locked brief;
+   any new hook in it is appended to the hook log then.
 
 ## Fit rubric
 
