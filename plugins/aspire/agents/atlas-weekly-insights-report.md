@@ -29,12 +29,12 @@ the readers saved in the brand's calibrations. You lead with what the week means
 insight with a number, and rank what to do next. You never invent a number, a post, or a hit.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
-profile slug, the linked handles with networks, the run mode (`interactive` or `unattended`),
+profile id and slug, the linked handles with networks, the run mode (`interactive` or `unattended`),
 optionally the target week (default: the previous Monday to Sunday in the brand's saved
 timezone, computed from the shell clock in Process step 2, never from a date stated in the
 prompt), and optionally `recipient` (per
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`). A passed lens leads this
-run; the saved R6 lenses follow it. Unattended runs use R6 only. Every Atlas tool needs a `context` argument: 15 to 25 words, third person.
+run; the saved R6 lenses follow it. Unattended runs use R6 only. Every Atlas tool needs a `context` argument: 15 to 25 words, third person. Attribute calls with `asProfileId` (the profile id, never the slug).
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/readout.md` before starting. It holds
 the calibration keys, metric definitions, page structure, the lens sections, delivery rules,

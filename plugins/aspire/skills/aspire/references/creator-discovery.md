@@ -103,7 +103,7 @@ brand's own history is the stronger signal.
 | 2 | Creators who have posted about the brand | The same mention query, minus everything already in tier 1. Recency-weighted: a mention in the campaign window outranks a two-year-old one. |
 | 3 | Lookalikes of what's working | Creators who resemble the brand's best-performing creators, per **Lookalike seeds** below. |
 | 4 | New creators already indexed in Atlas | `search_creators` filtered on the saved criteria (network, follower range, country, verification), then `search_posts` per shortlisted handle for topic evidence. |
-| 5 | New creators from outside the index | `search_creator_marketplace` against the criteria, and `WebSearch` / `WebFetch` for creators covering the campaign's topic. Resolve every web-sourced handle with `lookup_creators` before scoring it; an unresolvable handle is dropped, never scored from web copy alone. |
+| 5 | New creators from outside the index | `search_creator_marketplace` against the criteria (one call per keyword, `networks` = the campaign's Networks answer, each network's filters mapped from the size band and countries, TikTok topic labels from `list_creator_marketplace_labels`; see **Marketplace search** below), and `WebSearch` / `WebFetch` for creators covering the campaign's topic. Resolve every web-sourced handle with `lookup_creators` before scoring it; an unresolvable handle is dropped, never scored from web copy alone. |
 
 **Lookalike seeds.** Tier 3 answers the growth question "where should the next dollar go?" by
 refilling the shortlist with creators like the ones already delivering.
@@ -120,15 +120,31 @@ refilling the shortlist with creators like the ones already delivering.
      from half to double the seed's, limit 25. Collect the authors.
    - `search_creators` with `match_phrase` on the bio for the seed's recurring bio and caption
      vocabulary, in the same band.
-   - `search_creator_marketplace` with `keyword` = that vocabulary, `recommendationType:
-     "similar_audience"`, and the band's follower filters. Never pass `similarToCreators`: the
-     server rejects it alongside `keyword`, which is required (see `creator-brief.md`, **Atlas
-     quirks**).
-3. Read marketplace results through `search_creators` once they land (1 to 3 minutes after the
-   job completes, per `creator-brief.md`, **Atlas quirks**).
+   - When the seed is on Instagram: `search_creator_marketplace` with `keyword` = that
+     vocabulary, `networks: ["instagram"]`, and `instagram: { filters: { recommendationType:
+     "similar_audience", creatorMinFollowers, creatorMaxFollowers } }` for the band. TikTok has
+     no audience-similarity filter, so a TikTok seed gets the first two ways only. Never send
+     `instagram.filters.similarToCreators`: the server rejects it alongside `keyword`, which is
+     required (see `creator-brief.md`, **Atlas quirks**).
+3. Read marketplace results through `search_creators` once they land (1 to 3 minutes after
+   each network's job completes, per `creator-brief.md`, **Atlas quirks**).
    Record `source` `lookalike of @{seed}` and `detail.seed` on each candidate; the card's
    `{DETAILS}` names the seed with the source, per the card's **Badges** rule. A lookalike is scored like any other candidate: resemblance earns
    no points of its own.
+
+**Marketplace search.** Follow `creator-brief.md`, **Atlas quirks**, Marketplace search, for
+the call shape, polling, and skips. For tier 5:
+
+- `networks` is the saved Networks answer. A network the brand did not choose is never sent.
+- Instagram: `creatorMinFollowers` / `creatorMaxFollowers` snapped outward to the nearest
+  allowed values around the size band, `creatorCountries` from the saved countries, and
+  `creatorInterests` only when the archetype maps cleanly onto one of the enum values.
+- TikTok: `minFollowers` / `maxFollowers` as the exact band, and `countryCodes` from the saved
+  countries, split into one call per region when they span regions (US; DE, ES, FR, GB, IT;
+  everything else). For topic labels, call `list_creator_marketplace_labels` once per run and
+  pass only ids whose name clearly matches the campaign's topic; none match, send none.
+- Record which networks ran and which were skipped (with the reason) in the run summary, and
+  list a skipped network under Gaps.
 
 Rules:
 
@@ -249,7 +265,8 @@ A scheduled run starts a fresh session with nobody to answer questions.
   discovery setup."
 - **Discovery is allowed unattended for this agent**, and only this agent: the S9 cadence
   record is the standing approval, and it covers `search_creators`, `search_creator_marketplace`
-  (including the lookalike tier), `lookup_creators`, and web research. Every other scheduled run in this plugin still starts no
+  (including the lookalike tier, with `get_job_status` and `list_creator_marketplace_labels`),
+  `lookup_creators`, and web research. Every other scheduled run in this plugin still starts no
   discovery work.
 - Never run a destructive tool, and never record a verdict. Only a person decides, so an
   unattended run publishes and writes `action_item` findings, nothing else.
@@ -309,5 +326,5 @@ Inherited from `creator-brief.md` and `readout.md`: project the `media` and
 `/thumbnail` routes 404 on image posts; published pages cannot load `cdn.aspire.io` images, so embed them.
 New for creator discovery: `search_creators` carries no post-level fields, so topic evidence always
 needs a second `search_posts` call per candidate; `lookup_creators` has no status-check tool
-(re-call it with the same item to re-read a `fetching` result) and rejects `profileSlug`,
-so attribute with `asProfile`.
+(re-call it with the same item to re-read a `fetching` result); attribute it with
+`asProfileId`.

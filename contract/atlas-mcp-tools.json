@@ -1,0 +1,532 @@
+{
+  "generated": "2026-10-05",
+  "source": "apps/api/lib/mcp/tools-list.golden.json",
+  "surfaces": {
+    "/mcp": {
+      "add_hashtags": {
+        "required": [
+          "hashtags"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "hashtags",
+          "networks"
+        ]
+      },
+      "append_calibration": {
+        "required": [
+          "detail",
+          "key",
+          "kind",
+          "provenance",
+          "statement"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "detail",
+          "key",
+          "kind",
+          "provenance",
+          "sourceRef",
+          "statement",
+          "visibility"
+        ]
+      },
+      "append_insights": {
+        "required": [
+          "insights",
+          "runKey"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "insights",
+          "runKey"
+        ]
+      },
+      "connect_channel": {
+        "required": [],
+        "paths": [
+          "asProfileId",
+          "channel",
+          "elicitationId",
+          "returnUrl"
+        ]
+      },
+      "create_profile": {
+        "required": [
+          "name"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "name"
+        ]
+      },
+      "delete_profile": {
+        "required": [],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "confirmProfileName",
+          "pendingActionId",
+          "reason"
+        ]
+      },
+      "get_brand_instruction": {
+        "required": [
+          "agentType"
+        ],
+        "paths": [
+          "agentType",
+          "asOrganizationId",
+          "asProfileId"
+        ]
+      },
+      "get_job_status": {
+        "required": [
+          "jobId"
+        ],
+        "paths": [
+          "jobId"
+        ]
+      },
+      "get_more_tools": {
+        "required": [],
+        "paths": []
+      },
+      "get_profile": {
+        "required": [],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId"
+        ]
+      },
+      "get_status": {
+        "required": [],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId"
+        ]
+      },
+      "list_available_hashtags": {
+        "required": [
+          "network"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "network"
+        ]
+      },
+      "list_channels": {
+        "required": [],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId"
+        ]
+      },
+      "list_creator_marketplace_labels": {
+        "required": [
+          "network"
+        ],
+        "paths": [
+          "network"
+        ]
+      },
+      "list_creator_search_fields": {
+        "required": [],
+        "paths": []
+      },
+      "list_hashtag_posts": {
+        "required": [
+          "hashtag",
+          "network"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "cursor",
+          "hashtag",
+          "include",
+          "limit",
+          "network",
+          "since",
+          "sort",
+          "until"
+        ]
+      },
+      "list_hashtags": {
+        "required": [],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "network"
+        ]
+      },
+      "list_insight_search_fields": {
+        "required": [],
+        "paths": []
+      },
+      "list_my_organizations": {
+        "required": [],
+        "paths": []
+      },
+      "list_my_profiles": {
+        "required": [],
+        "paths": []
+      },
+      "list_post_search_fields": {
+        "required": [],
+        "paths": []
+      },
+      "lookup_creators": {
+        "required": [
+          "items"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "creatorDeepAnalysis",
+          "forceRefresh",
+          "items"
+        ]
+      },
+      "lookup_posts": {
+        "required": [
+          "items"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "creatorDeepAnalysis",
+          "forceRefresh",
+          "items"
+        ]
+      },
+      "remove_hashtags": {
+        "required": [
+          "hashtags"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "hashtags",
+          "networks"
+        ]
+      },
+      "retract_calibration": {
+        "required": [
+          "ifVersion",
+          "key",
+          "kind"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "ifVersion",
+          "key",
+          "kind",
+          "visibility"
+        ]
+      },
+      "search_calibrations": {
+        "required": [],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "cursor",
+          "includeAspire",
+          "includeProposed",
+          "includeRetracted",
+          "includeSuperseded",
+          "keyPrefix",
+          "kinds",
+          "limit",
+          "q",
+          "visibility"
+        ]
+      },
+      "search_creator_marketplace": {
+        "required": [
+          "keyword"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "instagram",
+          "instagram.filters",
+          "instagram.filters.creatorAgeBucket",
+          "instagram.filters.creatorCountries",
+          "instagram.filters.creatorFollowerGrowth",
+          "instagram.filters.creatorGender",
+          "instagram.filters.creatorInterests",
+          "instagram.filters.creatorLatestPostActivity",
+          "instagram.filters.creatorMaxEngagedAccounts",
+          "instagram.filters.creatorMaxFollowers",
+          "instagram.filters.creatorMinEngagedAccounts",
+          "instagram.filters.creatorMinFollowers",
+          "instagram.filters.creatorStates",
+          "instagram.filters.customAudienceId",
+          "instagram.filters.majorAudienceAgeBucket",
+          "instagram.filters.majorAudienceCountries",
+          "instagram.filters.majorAudienceDeviceType",
+          "instagram.filters.majorAudienceGender",
+          "instagram.filters.majorAudienceStates",
+          "instagram.filters.recommendationType",
+          "instagram.filters.reelsInteractionRate",
+          "instagram.filters.similarToCreators",
+          "instagram.filters.username",
+          "keyword",
+          "networks",
+          "tiktok",
+          "tiktok.filters",
+          "tiktok.filters.contentLabelIds",
+          "tiktok.filters.countryCodes",
+          "tiktok.filters.followerAge",
+          "tiktok.filters.followerCountryCodes",
+          "tiktok.filters.followerGenderRatio",
+          "tiktok.filters.industryLabelIds",
+          "tiktok.filters.languages",
+          "tiktok.filters.maxAvgViews",
+          "tiktok.filters.maxCreatorPrice",
+          "tiktok.filters.maxEngagementRate",
+          "tiktok.filters.maxFollowers",
+          "tiktok.filters.maxMedianViews",
+          "tiktok.filters.minAvgViews",
+          "tiktok.filters.minCreatorPrice",
+          "tiktok.filters.minEngagementRate",
+          "tiktok.filters.minFollowers",
+          "tiktok.filters.minMedianViews",
+          "tiktok.filters.page",
+          "tiktok.filters.pageSize",
+          "tiktok.filters.sortField",
+          "tiktok.filters.sortOrder",
+          "tiktok.filters.stateProvinces"
+        ]
+      },
+      "search_creators": {
+        "required": [],
+        "paths": [
+          "aggs",
+          "asOrganizationId",
+          "asProfileId",
+          "cursor",
+          "esFilter",
+          "exclude",
+          "fields",
+          "limit",
+          "sort"
+        ]
+      },
+      "search_insights": {
+        "required": [],
+        "paths": [
+          "aggs",
+          "asOrganizationId",
+          "asProfileId",
+          "cursor",
+          "esFilter",
+          "exclude",
+          "fields",
+          "includeDeleted",
+          "limit",
+          "sort"
+        ]
+      },
+      "search_posts": {
+        "required": [],
+        "paths": [
+          "aggs",
+          "asOrganizationId",
+          "asProfileId",
+          "cursor",
+          "esFilter",
+          "exclude",
+          "fields",
+          "limit",
+          "queryText",
+          "sort"
+        ]
+      },
+      "set_brand_instruction": {
+        "required": [
+          "agentType",
+          "instructionText"
+        ],
+        "paths": [
+          "agentType",
+          "asOrganizationId",
+          "asProfileId",
+          "idempotencyKey",
+          "instructionText"
+        ]
+      },
+      "start_business_discovery": {
+        "required": [
+          "handle"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "handle",
+          "postLimit"
+        ]
+      },
+      "supersede_calibration": {
+        "required": [
+          "detail",
+          "ifVersion",
+          "key",
+          "kind",
+          "provenance",
+          "statement"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "detail",
+          "ifVersion",
+          "key",
+          "kind",
+          "provenance",
+          "sourceRef",
+          "statement",
+          "visibility"
+        ]
+      },
+      "unlink_channel": {
+        "required": [
+          "platform",
+          "platformAccountId"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "platform",
+          "platformAccountId"
+        ]
+      },
+      "update_profile": {
+        "required": [
+          "name"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "name"
+        ]
+      }
+    },
+    "/mcp/admin-organization": {
+      "cancel_invitation": {
+        "required": [
+          "email"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "email"
+        ]
+      },
+      "create_organization": {
+        "required": [
+          "name"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "name"
+        ]
+      },
+      "delete_organization": {
+        "required": [],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "confirmOrganizationName",
+          "pendingActionId",
+          "reason"
+        ]
+      },
+      "get_more_tools": {
+        "required": [],
+        "paths": []
+      },
+      "invite_member": {
+        "required": [
+          "email"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "email",
+          "role"
+        ]
+      },
+      "leave_organization": {
+        "required": [],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "confirmOrganizationName",
+          "pendingActionId",
+          "reason"
+        ]
+      },
+      "list_invitations": {
+        "required": [],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId"
+        ]
+      },
+      "list_members": {
+        "required": [],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId"
+        ]
+      },
+      "remove_member": {
+        "required": [
+          "memberEmail"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "confirmMemberEmail",
+          "memberEmail",
+          "pendingActionId",
+          "reason"
+        ]
+      },
+      "update_member_role": {
+        "required": [
+          "memberEmail",
+          "role"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "confirmMemberEmail",
+          "memberEmail",
+          "pendingActionId",
+          "reason",
+          "role"
+        ]
+      },
+      "update_organization": {
+        "required": [
+          "name"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "name"
+        ]
+      }
+    }
+  }
+}

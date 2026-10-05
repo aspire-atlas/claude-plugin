@@ -76,7 +76,7 @@ decisions.
 | `search_creators` | Atlas creator search |
 | `search_posts` | Atlas post search |
 | `list_hashtag_posts` | Atlas hashtag posts |
-| `search_creator_marketplace`, `get_job_status` | Creator marketplace search |
+| `search_creator_marketplace`, `get_job_status`, `list_creator_marketplace_labels` | Creator marketplace search |
 | `lookup_creators`, `lookup_posts` | Fetched from the network into Atlas |
 | `list_post_search_fields`, `list_creator_search_fields` | Atlas field check (leave out unless it changed something) |
 | A snippet from a reference file | The snippet's purpose: "Metrics calculation", "Image embedding", "Brand website scan", "Theme build" |
