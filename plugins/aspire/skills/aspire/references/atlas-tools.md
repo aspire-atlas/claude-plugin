@@ -61,7 +61,7 @@ social channels and brand memory have a home in the organization."
 | ----- | ---- | ------- | ----- |
 | 2, 3 | `get_status` | Orgs, selected org, profiles, channels, expired auths, next-step links | Call once per session. `asOrganizationId` to switch org. Keep the organization and profile `id`s it returns. |
 | 2 | `list_my_organizations` | Cheap org re-check | |
-| 3 | `list_my_profiles` | Cheap profile re-check per org | |
+| 3 | `list_my_profiles` | Cheap profile re-check | Every organization the caller can act on, each with its live profiles (`id`, `slug`, `name`) in one call |
 | 3 | `get_profile` | One profile's detail | `{found:false}` is normal |
 | 4.1 | `create_profile` | Create brand profile | `name` + `asOrganizationId`. Returns the profile's `id` (for `asProfileId`) and `slug` (display). Re-sending the same name to the same org returns the existing profile, not a duplicate. |
 | 4.1 | `update_profile` | Rename | Slug never changes |

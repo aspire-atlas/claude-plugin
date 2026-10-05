@@ -240,7 +240,10 @@ fetched during the run.
     IL, JP, KR, MX, MY, PH, SA, SG, TH, TR, TW and VN, and any other code fails the whole call,
     Instagram included: send only supported codes, and when none of the brand's countries is
     supported, drop `tiktok` from `networks` and report TikTok as not searched. Never omit
-    `countryCodes` to fall back on the US default. `stateProvinces` (only with
+    `countryCodes` to fall back on the US default. When the chosen markets span regions, the
+    first call per keyword carries one region and each further region gets its own call with
+    `networks: ["tiktok"]` only, so Instagram is searched once; any requested region left
+    unsearched is reported as not searched. `stateProvinces` (only with
     `countryCodes` exactly `["US"]`), `minFollowers` / `maxFollowers`, `minEngagementRate` /
     `maxEngagementRate` (0 to 1), `languages`, and `contentLabelIds` / `industryLabelIds`.
     Label ids come only from `list_creator_marketplace_labels({ network: "tiktok" })`, matched
@@ -250,8 +253,8 @@ fetched during the run.
   - The result has one entry per requested network under `jobs`: `{ jobId, runId }` when it
     started, or `{ skipped: true, reason }`. Poll `get_job_status` with **each** started
     `jobId` until `completed` or `failed`. On a skip: `rate-limited` or `unavailable`, retry
-    that network once later in the run with `networks` set to that network only; `no-seat` after sending label ids, retry that network
-    without them; anything else, report the network as not searched. The call errors only
+    that network once later in the run with `networks` set to that network only; `no-seat`
+    after sending label ids, retry that network without them; anything else, report the network as not searched. The call errors only
     when every requested network was skipped.
 - Marketplace results land in `search_creators` 1 to 3 minutes after each network's job
   reports `completed`. Filter on `indexedAt` gte now-2h, the network, and the country to read

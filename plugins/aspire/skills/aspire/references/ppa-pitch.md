@@ -617,8 +617,9 @@ unless the user names one.
 D4's marketplace option is the approval for `search_creator_marketplace` and `lookup_creators`
 on the handles that search returns and the handles the user types; without it the agent stays
 inside Atlas. The marketplace searches the networks the pitch is cast on, Instagram and/or TikTok, in one
-call per keyword (per `creator-brief.md`, **Atlas quirks**, Marketplace search). Each search
-adds accounts to Atlas's shared index, so say how many searches will run in the option. With
+call per keyword plus one TikTok-only call per extra TikTok region when the markets span
+regions (per `creator-brief.md`, **Atlas quirks**, Marketplace search). Each call adds accounts
+to Atlas's shared index, so say how many calls will run in the option. With
 `profile: none`, pass `asOrganizationId` on each call; Atlas attributes the search to the
 organization, or to its only profile when it has exactly one, so name that in the summary. "Willing to post and to whitelist" has no Atlas field: it is confirmed at outreach,
 before a creator reaches the shortlist, and never counted in the pool numbers.

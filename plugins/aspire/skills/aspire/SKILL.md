@@ -445,7 +445,9 @@ to a caller who does not have it.
      relying on that connection.
    - Any other failure: report the network's reason and offer to retry or continue with the
      other channels.
-6. **Do not ask any brand context questions until at least one channel reports `complete`.**
+6. **Do not ask any brand context questions until at least one channel reports `complete`
+   with at least one entry in `linkedAccounts`** (`outcome` `all-linked` or `partially-linked`).
+   A `none-linked` result does not count.
    While polling, the only user-facing output is the connection card (once per link) and, if a poll times out,
    one short line such as "Still waiting on the {network} sign in." Never fill the wait with
    questions: the user is in another tab finishing the sign in.
@@ -459,8 +461,8 @@ Instagram accepts any string. Report per-tag results, not a blanket success.
 
 ## Phase 5: Build brand context (shared brand memory)
 
-Entry condition: Phase 4.2 finished with at least one `complete` channel (or Phase 3 routed an
-existing org here). Never start before that.
+Entry condition: Phase 4.2 finished with at least one `complete` channel that linked an account
+(`linkedAccounts` not empty; `none-linked` does not count), or Phase 3 routed an existing org here. Never start before that.
 
 Brand context lives in Atlas's calibration layer, not in local notes, so every future session
 and every teammate inherits it. Ask each question with `AskUserQuestion`, one at a time, in the
