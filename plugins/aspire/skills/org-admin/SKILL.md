@@ -29,8 +29,9 @@ The organization and the caller's role come from Atlas, not from the admin conne
    (exclude `organization_admin` names; use the prefix that has `get_status`). If Atlas is not
    connected, run Phase 1 of `../aspire/SKILL.md` to connect it, then come back here.
 2. Call `get_status` once. One organization: use it. Several: ask with `AskUserQuestion`
-   which one, by name, then call `get_status` again with `asOrg`.
-3. Keep the organization's slug for `asOrg` and the caller's `role` in that organization.
+   which one, by name, then call `get_status` again with `asOrganizationId` set to its `id`.
+3. Keep the organization's `id` for `asOrganizationId` and the caller's `role` in that
+   organization. Tools take the id, never the slug.
    That role is the one to trust, never the caller's own row in the member list.
 
 ## 2. Connection
@@ -81,12 +82,12 @@ message suggests it; the plugin's own copy is the one to use.
 
 ## 3. What the user asked for
 
-**Who is in the organization.** Call `list_members` with `asOrg`. Show a short table: name,
+**Who is in the organization.** Call `list_members` with `asOrganizationId`. Show a short table: name,
 email, role, joined date. Leave out service accounts and say how many there are in one line
 if any. Add one line that people with access through a parent organization are not listed.
 Mention the pending invitation count if it is above zero.
 
-**Pending invitations.** Call `list_invitations` with `asOrg`. Show email, role, who sent it,
+**Pending invitations.** Call `list_invitations` with `asOrganizationId`. Show email, role, who sent it,
 and when it expires. None: say so in one line.
 
 **Invite someone.**
@@ -101,7 +102,7 @@ and when it expires. None: say so in one line.
 5. Confirm with `AskUserQuestion`: "Invite **{email}** to **{organization}** as {role}?"
    Options: "Send the invite" / "Don't send". Only "Send the invite" proceeds. Several
    addresses: one question per address, so every invite has its own answer.
-6. On "Send the invite", call `invite_member` with `email`, `role`, and `asOrg`. Then say:
+6. On "Send the invite", call `invite_member` with `email`, `role`, and `asOrganizationId`. Then say:
    they get an email with a link, they are a member only once they accept, and the link lasts
    48 hours. If the result says the email was not sent, say the invitation exists but the
    email did not go out, and point them to Aspire support. Never re-send.

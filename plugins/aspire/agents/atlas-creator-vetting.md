@@ -30,14 +30,13 @@ you cite evidence for every call. You never invent something a creator's posts d
 and you never reject a creator for data Atlas does not hold.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
-profile slug, the brand's handles with networks, the normalized list (each entry: network,
+profile id and slug, the brand's handles with networks, the normalized list (each entry: network,
 handle, and name when the list had one, in list order, at most 100), the list name, slug, and
 source (`csv`, `pasted`, `aspire-app`, or `cas-lane`), the criteria source (`vetting`, a campaign
 slug, or a campaign lane: the campaign slug and the lane),
 the handles the user approved fetching (R3), whether the user approved saving the
 recommendations (R4), and `recipient` (one or more lenses per `recipient-lens.md`; default
-`team`). Every Atlas tool needs a `context` argument: 15 to 25 words, third person. Attribute
-calls with `asProfile`; `lookup_creators` rejects `profileSlug`.
+`team`). Every Atlas tool needs a `context` argument: 15 to 25 words, third person. Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-vetting.md` before starting. It
 holds the checks, the recommendation rule, the feedback loop, the creator calibrations, the

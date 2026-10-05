@@ -81,7 +81,7 @@ Daily prompt:
 
 ```
 Run the Atlas daily insights report for {brand} (handles: {@handle1 on instagram, @handle2 on tiktok}).
-Use the Aspire Atlas connection and the brand's saved readout calibrations for the window,
+Use the Aspire Atlas connection, find {brand}'s Atlas profile by name, and use the brand's saved readout calibrations for the window,
 thresholds, lead metric, and delivery routing. Launch the atlas-daily-insights-report agent in
 unattended mode. Do not ask questions. Do not state today's date in the launch message; the
 agent reads the current date from the shell clock in the brand's saved timezone and reports
@@ -93,7 +93,7 @@ Weekly prompt:
 
 ```
 Run the Atlas weekly insights report for {brand} (handles: {@handle1 on instagram, @handle2 on tiktok})
-for the previous Monday to Sunday. Use the Aspire Atlas connection and the brand's saved
+for the previous Monday to Sunday. Use the Aspire Atlas connection, find {brand}'s Atlas profile by name, and use the brand's saved
 readout calibrations for thresholds, lead metric, audience, and delivery routing. Launch the
 atlas-weekly-insights-report agent in unattended mode. Do not ask questions. Do not state today's date
 in the launch message; the agent reads the current date from the shell clock in the brand's
@@ -115,7 +115,7 @@ The market signal runs weekly, ideally an hour before the weekly readout so the 
 
 ```
 Run the Atlas market signal for {brand} (handles: {@handle1 on instagram}). Use the Aspire
-Atlas connection and the brand's saved market signal calibrations for the competitors, topics,
+Atlas connection, find {brand}'s Atlas profile by name, and use the brand's saved market signal calibrations for the competitors, topics,
 readers, and delivery routing. Launch the atlas-market-signal agent in unattended mode. Do not
 ask questions. Do not start any discovery. Do not state today's date in the launch message;
 the agent reads the current date from the shell clock in the saved timezone and reports the
@@ -132,7 +132,7 @@ Discovery prompt:
 
 ```
 Run the Atlas creator discovery for {brand}, campaign {campaign-slug} (handles: {@handle1 on
-instagram}). Use the Aspire Atlas connection and the campaign's saved calibrations for the
+instagram}). Use the Aspire Atlas connection, find {brand}'s Atlas profile by name, and use the campaign's saved calibrations for the
 criteria, pool target, and delivery routing. Launch the atlas-creator-discovery agent in
 unattended mode to fill the shortlist back to target. Do not ask questions. Do not record
 any accept or reject verdict; only a person decides. Do not state today's date in the launch

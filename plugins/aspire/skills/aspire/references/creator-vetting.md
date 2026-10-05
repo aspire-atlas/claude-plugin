@@ -380,7 +380,7 @@ packet goes out.
 `search_creators` carries no post-level fields, so every creator needs its own `search_posts`
 call. `lookup_creators` takes up to 100 items per call, has no status-check tool (re-call with
 the same items to re-read `fetching` ones, about every 15 seconds, up to roughly 3 minutes),
-and rejects `profileSlug`; attribute with `asProfile`. Search indexing lags a lookup; re-run
+and is attributed with `asProfileId`. Search indexing lags a lookup; re-run
 the searches for fetched creators after it settles. `account-not-discoverable` is cached for 7
 days: report it, never retry it. Project the `media` and `instagram.account` containers, not
 leaf URLs; published pages cannot load `cdn.aspire.io` images, so embed them.
