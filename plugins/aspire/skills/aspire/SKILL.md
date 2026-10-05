@@ -9,8 +9,8 @@ description: >
   "onboard my brand", "connect my Instagram", "what happened yesterday", "how did last week
   go", "schedule the weekly readout", "find creators for the campaign", "refill the
   shortlist", "vet these creators", "which of these creators should we approve", "we launch on the 14th and need creators", "review this post", "check this
-  draft against the brief", "brand safety check on this post", "show @handle's full
-  profile", "what are creators saying about us vs {competitor}", "best hooks to reuse as
+  draft against the brief", "brand safety check on this post", "analyze this post", "what brands are in this
+  video", "show @handle's full profile", "what are creators saying about us vs {competitor}", "best hooks to reuse as
   ads", "build a PPA pitch", "casting deck for partnership ads", "how did influencer do this
   quarter", "start the CAS campaign for {brand}", "where is the {brand} campaign", "pull the
   client's decisions", "record a reply", or "/aspire fee calculator".
@@ -80,6 +80,7 @@ time so it never goes stale; never recite it from memory.
    | `atlas-creator-discovery` | Phase 1, then Phase 2 + 3, then **Creator discovery**, Setup if the campaign is new, then Run |
    | `atlas-creator-vetting` | Phase 1, then Phase 2 + 3, then **Creator vetting**, Setup if it has never run, then Run (it asks for the list first) |
    | `atlas-content-review` | Phase 1, then Phase 2 + 3, then **Content review**, Setup if it has never run, then Review |
+   | `atlas-post-analysis` | Phase 1, then Phase 2 + 3, then **Post analysis** (it asks for the post first) |
    | `atlas-daily-insights-report` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the daily cadence |
    | `atlas-weekly-insights-report` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the weekly cadence |
    | `atlas-market-signal` | Phase 1, then Phase 2 + 3, then **Market signal**, Setup if it has never run, then Run |
@@ -134,6 +135,7 @@ team catalog, and how agents render for a lens are in `references/recipient-lens
    | `growth` | Which creators drive results, where to spend | **Readouts**, weekly, with the `growth` lens, then offer lookalikes in **Creator discovery** |
    | `campaign` | A launch or dated campaign that needs creators | **Campaign plan** below |
    | `brand` | Is this post safe or on brand | **Content review** |
+   | `brand`, `performance` | What is in someone's post, how it did, and whether to sponsor, partner with, or reuse it (no brief) | **Post analysis** |
    | `brand`, `campaign` | Which creators on a list to approve | **Creator vetting** |
    | `performance`, `creative` | Hooks, ads, licensing, a cut list | **Ad reuse**; for one post, **Content review** with the ad reuse check |
    | `leadership`, `performance` | A pitch or casting deck for partnership ads, whitelisting, creators to license | **PPA pitch** |
@@ -179,7 +181,8 @@ per campaign, schedulable), the **Creator vetting** (approve, maybe, or reject a
 creators from an Aspire export or pasted handles, interactive only), the **CAS campaign** (a
 creator ad campaign conducted through the slate, rates, and brief gates, with **Rates and
 terms** for step 13), the **Content review** (one post or draft checked against its
-brief, interactive only), the **Readouts** (daily and weekly performance digests with a launch
+brief, interactive only), the **Post analysis** (one published post in depth for a brand
+deciding whether to sponsor, partner with, or reuse it, interactive only), the **Readouts** (daily and weekly performance digests with a launch
 pulse and a section per reader, schedulable), the **Market signal** (what creators say about
 the brand vs. competitors, schedulable), and the **Quarterly signal** (the quarter's story for
 leadership). The **Creator profile** gives one creator's full page on request, **Ad reuse**
@@ -1015,6 +1018,32 @@ Write each answer exactly as the reference says. If a correction targets a red l
 rule, or the disclosure rule, or contradicts a saved lesson, offer to change that record
 through its Destructive tools confirmation instead of saving a new one. Never save a lesson or a hard rule the user has not
 seen worded.
+
+---
+
+## Post analysis (one published post, in depth)
+
+Trigger when the user asks to analyze, break down, or explain one published post, asks what
+brands or people are in a video, or asks whether a post or the account behind it is safe to
+sponsor, partner with, or reuse ("analyze this post", "what brands are in this Reel", "should we
+sponsor this show"). Requires a brand profile, and the post's link; no brief. A post checked
+against a brief goes to **Content review**. Detail lives in `references/post-analysis.md`.
+
+Post analysis is interactive only. Never schedule it; with no `AskUserQuestion`, say in one line
+that it needs a person to supply the post, and stop.
+
+1. Ask the reference's Q1 to Q3 with `AskUserQuestion`, skipping what the user already said,
+   in the same call as the **Reading the ask** confirmation (default `brand`; `performance`
+   and `creative` when the ask is about reuse as an ad). Pasting the link is the approval to
+   fetch that one post; Q2's "Refresh the account first" is the approval to fetch its author.
+2. Launch `atlas-post-analysis` with the tool prefix, `profile_id`, `profile_slug`, the link, `recipient`,
+   `baseline`, whether the user approved saving, any earlier analysis of the same post, and a
+   digest of the brand's calibrations (summary, business context, competitors, partners, red
+   lines, campaign briefs).
+3. Relay the page link, the headline, the brands on screen, the safety read with the cleanest
+   trim, any corrections to an earlier analysis, and the data gaps. Offer **Content review**
+   when the user has a brief for the post, and **Ad reuse** when they want hooks across many
+   posts.
 
 ---
 

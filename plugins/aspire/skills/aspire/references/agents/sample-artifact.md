@@ -112,6 +112,7 @@ print(json.dumps({"holiday": name, "date": day.isoformat(), "year": day.year, "d
 | `atlas-creator-discovery` | A living shortlist for the holiday campaign | 6 candidates, 2 decided |
 | `atlas-creator-vetting` | Approve, maybe, or reject for a short list | 5 creators |
 | `atlas-content-review` | One draft reviewed against the brief | 1 draft |
+| `atlas-post-analysis` | One sample creator's holiday Reel analyzed in depth: brands on screen, safety, disclosure | 1 post, 4 brands |
 | `atlas-daily-insights-report` | Yesterday's insights on the holiday's launch pulse | 4 posts |
 | `atlas-weekly-insights-report` | The week of the holiday against the 8-week median | 12 posts, 2 readers |
 | `atlas-market-signal` | What creators said about the sample brand against one sample competitor ("Copper Pot Co. (sample)") | 8 posts |
