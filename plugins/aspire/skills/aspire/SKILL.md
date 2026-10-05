@@ -425,14 +425,18 @@ to a caller who does not have it.
 4. If status is awaiting-selection, render the follow-up variant of the connection card with
    `resultUrl` and the "Finish picking accounts" button (the original link cannot be reopened).
 5. Terminal statuses:
-   - `complete`: confirm each entry in `linkedAccounts` by handle, and list any discovered
-     but unselected accounts as available to add later.
+   - `complete`: read `outcome`. Confirm each entry in `linkedAccounts` by handle, and list
+     any discovered but unselected accounts as available to add later. With `outcome`
+     `none-linked`, say plainly that nothing was connected; with `partially-linked`, name the
+     accounts in `failedAccounts` and their `error`. A `failedAccounts` entry with `error`
+     `already-linked` follows the already-linked steps below.
    - `denied-at-provider`: the link is dead. Say the provider declined, then start over with
      `channel` + `asProfileId` to issue a fresh link. This is the one case where a new start
      is correct.
-   - `already-linked`: the account is connected to another profile in Atlas. The account's
-     entry names that profile in `alreadyLinkedTo` (show this name) and carries its id in
-     `alreadyLinkedToProfileId`. Call `list_channels` with `asProfileId` = that id to show the
+   - Already linked (a `failedAccounts` entry with `error` `already-linked`, not a status): the
+     account is connected to another profile in Atlas. Find the same `platformAccountId` in
+     `discoveredAccounts[].accounts[]`: its `alreadyLinkedTo` names that profile (show this name)
+     and `alreadyLinkedToProfileId` is its id. Call `list_channels` with `asProfileId` = that id to show the
      user which profile holds it, then `AskUserQuestion`: "Keep **@{handle}** on {other profile} (Recommended)" /
      "Move it to {brand}". Only on "Move it", confirm again per the Destructive tools table,
      call `unlink_channel` with `asProfileId` = `alreadyLinkedToProfileId` and the `platform`
@@ -870,7 +874,8 @@ creator counts by concept, anything marked your call needed, and the campaign pa
 
 ### Run
 
-Launch what the row names, then record what came back:
+Launch what the row names, then record what came back. Every agent launch here also carries
+the tool prefix, `profile_id`, and `profile_slug`:
 
 - **Discovery** (rows 2 and 3): `atlas-creator-discovery` with the campaign slug, run mode
   `interactive`, `campaign_type` `creator-ads`, the lane to fill, and `recipient` (`campaign`).

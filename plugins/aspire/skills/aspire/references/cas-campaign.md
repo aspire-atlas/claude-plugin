@@ -591,7 +591,8 @@ After Gate 4 clears, each creator gets their concept's locked brief.
 2. **The creator replies by email; the CM pastes it.** Read it against the locked brief:
    - **Accepted as is.** The reply picker proposes "brief accepted". The confirm writes roster
      `briefState` accepted. Nothing goes to the client.
-   - **Changed.** Launch `atlas-creator-brief` in creator-ads mode with `revision` (the
+   - **Changed.** Launch `atlas-creator-brief` in creator-ads mode with the tool prefix, `profile_id`,
+     `profile_slug`, and `revision` (the
      creator's handle, their concept, and their version as pasted). It returns the differences in
      plain words (hook text, runtime, a B-roll shot dropped or added, a CTA change). The reply
      picker names them: "@a changed the {concept} brief: Hook B now 'One charge. Friday to

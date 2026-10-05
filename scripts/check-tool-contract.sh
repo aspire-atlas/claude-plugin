@@ -109,8 +109,10 @@ done < <(
 # 3. Removed argument names. The server rejects them rather than ignoring them.
 #    connect_channel still returns a profileSlug output field; the plugin has
 #    no reason to name it.
-removed='\b(asOrg|asProfile|orgSlugs?|profileSlugs?)\b'
-if grep -rnE "$removed" plugins --include='*.md'; then
+# Any *Slug argument is rejected; the allowlist holds output fields the plugin
+# may name for display.
+removed='\b(asOrg|asProfile|[a-z]+Slugs?)\b'
+if grep -rnE "$removed" plugins --include='*.md' | grep -vE '\b(alreadyLinkedToSlug|organizationSlug)\b'; then
   err "removed attribution arguments above: use asOrganizationId / asProfileId (ids, never slugs)"
 fi
 if grep -rnE '(^|[^.a-zA-Z])filters\.similarToCreators' plugins --include='*.md'; then
@@ -129,6 +131,17 @@ while IFS= read -r a; do
   [[ -z "$a" ]] && continue
   grep -qxF "$a" <<<"$args" || err "'$a' is not an argument of any Atlas tool"
 done < <(grep -rhoE '`as[A-Z][A-Za-z]*`' plugins --include='*.md' | tr -d '`' | sort -u)
+
+# Every top-level key of a one-line search_creator_marketplace example is an
+# input of the tool (keyword, networks, instagram, tiktok, as*), which catches
+# the old flat shapes (top-level filters, recommendationType, similarToCreators).
+top=$(jq -r '.surfaces["/mcp"].search_creator_marketplace.paths[] | select(test("\\.") | not)' "$C")
+while IFS= read -r k; do
+  [[ -z "$k" ]] && continue
+  grep -qxF "$k" <<<"$top" || err "'$k' is not a top-level search_creator_marketplace input"
+done < <(grep -rhoE 'search_creator_marketplace\(\{[^`]*' plugins --include='*.md' \
+  | sed -E 's/^search_creator_marketplace\(\{//; s/\[[^]]*\]//g; s/"([A-Za-z]+)"[[:space:]]*:/\1:/g; s/"[^"]*"//g; s/\{[^{}]*\}//g; s/\{[^{}]*\}//g; s/\{[^{}]*\}//g' \
+  | tr ',' '\n' | sed -nE 's/^[[:space:]]*([A-Za-z]+).*/\1/p' | sort -u)
 
 # 4. Every marketplace filter path the plugin names exists on the server.
 paths=$(jq -r '.surfaces["/mcp"].search_creator_marketplace.paths[]' "$C")
