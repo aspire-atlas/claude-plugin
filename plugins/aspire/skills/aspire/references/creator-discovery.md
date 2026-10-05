@@ -140,8 +140,9 @@ the call shape, polling, and skips. For tier 5:
   allowed values around the size band, `creatorCountries` from the saved countries, and
   `creatorInterests` only when the archetype maps cleanly onto one of the enum values.
 - TikTok: `minFollowers` / `maxFollowers` as the exact band, and `countryCodes` from the saved
-  countries, split into one call per region when they span regions (US; DE, ES, FR, GB, IT;
-  everything else). For topic labels, call `list_creator_marketplace_labels` once per run and
+  countries TikTok supports (per the quirk). When they span regions (US; DE, ES, FR, GB, IT;
+  everything else), the first call carries one region and each extra region gets its own call
+  with `networks: ["tiktok"]` only, so Instagram is searched once. For topic labels, call `list_creator_marketplace_labels` once per run and
   pass only ids whose name clearly matches the campaign's topic; none match, send none.
 - Record which networks ran and which were skipped (with the reason) in the run summary, and
   list a skipped network under Gaps.

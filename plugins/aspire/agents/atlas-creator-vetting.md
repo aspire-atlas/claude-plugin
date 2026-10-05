@@ -37,7 +37,7 @@ slug, or a campaign lane: the campaign slug and the lane),
 the handles the user approved fetching (R3), whether the user approved saving the
 recommendations (R4), and `recipient` (one or more lenses per `recipient-lens.md`; default
 `team`). Every Atlas tool needs a `context` argument: 15 to 25 words, third person. Attribute
-calls with `asProfileId` (the profile id, never the slug).
+calls with `asProfileId` (the profile id, never the slug). If no profile id was passed (a scheduled run), resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` (`list_my_profiles`, matched by profile name) before any other call.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-vetting.md` before starting. It
 holds the checks, the recommendation rule, the feedback loop, the creator calibrations, the

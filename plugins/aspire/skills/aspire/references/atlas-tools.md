@@ -47,7 +47,9 @@ social channels and brand memory have a home in the organization."
   own records and files only.
 - `asProfileId` alone locates its own organization and is authorized by the caller's role
   there.
-- `asOrganizationId` alone works only when the organization has exactly one live profile.
+- With only `asOrganizationId`, a call is attributed to the organization; it reaches a
+  profile only when the organization has exactly one live profile. Profile-scoped reads and
+  writes need `asProfileId`.
 - Omitting both defaults to the connector's org (chosen at OAuth time).
 - The old slug-era argument names (anything containing `slug`, and the short `as…` names
   that took slugs) are rejected with `invalid-input`, and so is a slug passed where an id
@@ -78,7 +80,7 @@ social channels and brand memory have a home in the organization."
 | 6 | `list_creator_search_fields` | Live field census for accounts | |
 | 6 | `search_posts` | Posts by filter, optional semantic `queryText` | Filter-only is sub-100ms; semantic takes seconds. `aggs` on filter path only. |
 | 6 | `search_creators` | Accounts by filter | No per-post fields here |
-| Discovery | `search_creator_marketplace` | Start a creator-marketplace search on Instagram and/or TikTok | `{ keyword (required, 1 to 100 chars), networks (default both), instagram: { filters }, tiktok: { filters } }`. Each network takes its own filters; a filter block for a network not in `networks`, or any old top-level `filters`, is rejected. Returns `jobs.instagram` / `jobs.tiktok`: `{ jobId, runId }` when started (poll `get_job_status` with **each** `jobId`) or `{ skipped: true, reason }` (`no-seat`, `unavailable`, `rate-limited`, `internal-error`). Fails only when every requested network was skipped. TikTok: `countryCodes` defaults to `["US"]` (echoed in `jobs.tiktok.appliedDefaults`), one region per search, `stateProvinces` only with `["US"]`; `jobs.tiktok.seat` says whose TikTok One seat ran it (keyword results are personalized per seat). `instagram.filters.similarToCreators` cannot be combined with the required `keyword`, so never send it. Starts discovery work: see **Avoid in onboarding**. |
+| Discovery | `search_creator_marketplace` | Start a creator-marketplace search on Instagram and/or TikTok | `{ keyword (required, 1 to 100 chars), networks (default both), instagram: { filters }, tiktok: { filters } }`. Each network takes its own filters; a filter block for a network not in `networks`, or any old top-level `filters`, is rejected. Returns `jobs.instagram` / `jobs.tiktok`: `{ jobId, runId }` when started (poll `get_job_status` with **each** `jobId`) or `{ skipped: true, reason }` (`no-seat`, `unavailable`, `rate-limited`, `internal-error`). Fails only when every requested network was skipped. TikTok: `countryCodes` defaults to `["US"]` (echoed in `jobs.tiktok.appliedDefaults`), only 26 supported countries (an unsupported one fails the whole call), one region per search, `stateProvinces` only with `["US"]`; `jobs.tiktok.seat` says whose TikTok One seat ran it (keyword results are personalized per seat). `instagram.filters.similarToCreators` cannot be combined with the required `keyword`, so never send it. Starts discovery work: see **Avoid in onboarding**. |
 | Discovery | `list_creator_marketplace_labels` | TikTok content and industry labels | Read only. `{ network: "tiktok" }` → `contentLabels` / `industryLabels` with `id` and `name`; pass ids as `tiktok.filters.contentLabelIds` / `industryLabelIds`. An unknown id fails the search. A search that names label ids is skipped `no-seat` when Aspire has no default TikTok One seat: retry without them. `unavailable` with `retryable: false` means no seat is configured; search without labels. |
 | 6 | `append_insights` | Write analyst findings | `runKey` per session; roles `account_review` (went_well / needs_improvement / action_item) |
 | 6 | `search_insights` / `list_insight_search_fields` | Read back findings | Tenant-private |

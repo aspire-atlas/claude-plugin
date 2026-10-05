@@ -42,7 +42,7 @@ handle.
 linked handle; mode `handle`: exactly one network, `instagram` or `tiktok`, and one handle), `recipient` (one or more lenses per
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`; default `team`), and a digest of
 the brand's calibrations (summary, goals, competitors, red lines, partners). Every Atlas tool needs a
-`context` argument: 15 to 25 words, third person. Attribute calls with `asProfileId` (the profile id, never the slug).
+`context` argument: 15 to 25 words, third person. Attribute calls with `asProfileId` (the profile id, never the slug). If no profile id was passed (a scheduled run), resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` (`list_my_profiles`, matched by profile name) before any other call.
 
 Read `recipient-lens.md` before starting, and render for the primary lens per **Rendering for a
 lens**. A launch with `target_mode` `reuse`, or a `performance` or `creative` lens asking for hooks,

@@ -619,8 +619,8 @@ on the handles that search returns and the handles the user types; without it th
 inside Atlas. The marketplace searches the networks the pitch is cast on, Instagram and/or TikTok, in one
 call per keyword (per `creator-brief.md`, **Atlas quirks**, Marketplace search). Each search
 adds accounts to Atlas's shared index, so say how many searches will run in the option. With
-`profile: none`, pass `asOrganizationId` on each call; Atlas may still attribute it to the
-organization's default profile, so name that in the summary. "Willing to post and to whitelist" has no Atlas field: it is confirmed at outreach,
+`profile: none`, pass `asOrganizationId` on each call; Atlas attributes the search to the
+organization, or to its only profile when it has exactly one, so name that in the summary. "Willing to post and to whitelist" has no Atlas field: it is confirmed at outreach,
 before a creator reaches the shortlist, and never counted in the pool numbers.
 
 ### E. Lanes (after the plan pass)

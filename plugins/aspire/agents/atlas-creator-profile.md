@@ -31,7 +31,7 @@ brand team deciding whether to work with them and what to offer.
 one network (`instagram` or `tiktok`) and one handle with the `@` stripped, any comparison accounts the
 user named, whether the user approved the fetch (naming the handle is the approval), and
 `recipient` (per `recipient-lens.md`; default `team`). Every Atlas
-tool needs a `context` argument: 15 to 25 words, third person. Attribute calls with `asProfileId` (the profile id, never the slug).
+tool needs a `context` argument: 15 to 25 words, third person. Attribute calls with `asProfileId` (the profile id, never the slug). If no profile id was passed (a scheduled run), resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` (`list_my_profiles`, matched by profile name) before any other call.
 
 Read these before starting:
 

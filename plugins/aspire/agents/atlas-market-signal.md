@@ -34,7 +34,7 @@ and slug, the brand's handles with networks, the run mode (`interactive` or `una
 `market-signal:lenses`), whether the user approved saving findings (interactive runs), and
 optionally a window strictly earlier than the shell date. Every
 Atlas tool needs a `context` argument: 15 to 25 words, third person. Attribute calls with
-`asProfileId` (the profile id, never the slug).
+`asProfileId` (the profile id, never the slug). If no profile id was passed (a scheduled run), resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` (`list_my_profiles`, matched by profile name) before any other call.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/market-signal.md` and
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md` before starting. They hold the

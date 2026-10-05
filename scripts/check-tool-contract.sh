@@ -51,7 +51,9 @@ snapshot() {
 case "${1:-}" in
   --update)
     golden="${2:?usage: check-tool-contract.sh --update <tools-list.golden.json>}"
-    snapshot "$golden" > "$C"
+    tmp=$(mktemp)
+    snapshot "$golden" > "$tmp"
+    mv "$tmp" "$C"
     echo "wrote $C"
     exit 0
     ;;
@@ -108,16 +110,37 @@ fi
 if grep -rnE '(^|[^.a-zA-Z])filters\.similarToCreators' plugins --include='*.md'; then
   err "similarToCreators lives at instagram.filters.similarToCreators"
 fi
-if grep -rnE 'search_creator_marketplace\(\{[^}]*\bfilters[[:space:]]*:' plugins --include='*.md' \
-   | grep -vE '(instagram|tiktok)[[:space:]]*:[[:space:]]*\{[[:space:]]*filters'; then
+if grep -rnoE 'search_creator_marketplace\(\{[^`]*' plugins --include='*.md' \
+   | sed -E 's/(instagram|tiktok)[[:space:]]*:[[:space:]]*\{[[:space:]]*filters//g' \
+   | grep -E '[^A-Za-z.]filters[[:space:]]*:'; then
   err "search_creator_marketplace takes instagram.filters / tiktok.filters, not top-level filters"
 fi
+
+# Every backticked as* argument is one some tool takes (asOrganizationId,
+# asProfileId), so an invented or renamed attribution argument fails too.
+args=$(jq -r '.surfaces[][] | .paths[] | select(test("^as[A-Z]"))' "$C" | sort -u)
+while IFS= read -r a; do
+  [[ -z "$a" ]] && continue
+  grep -qxF "$a" <<<"$args" || err "'$a' is not an argument of any Atlas tool"
+done < <(grep -rhoE '`as[A-Z][A-Za-z]*`' plugins --include='*.md' | tr -d '`' | sort -u)
 
 # 4. Every marketplace filter path the plugin names exists on the server.
 paths=$(jq -r '.surfaces["/mcp"].search_creator_marketplace.paths[]' "$C")
 while IFS= read -r p; do
   grep -qxF "$p" <<<"$paths" || err "'$p' is not a search_creator_marketplace input"
-done < <(grep -rhoE '\b(instagram|tiktok)\.filters\.[A-Za-z]+' plugins --include='*.md' | sort -u)
+done < <(
+  { grep -rhoE '\b(instagram|tiktok)\.filters\.[A-Za-z]+' plugins --include='*.md'
+    # Object form: instagram: { filters: { creatorCountries: [...], creatorMinFollowers } }
+    grep -rhoE '(instagram|tiktok)[[:space:]]*:[[:space:]]*\{[[:space:]]*filters[[:space:]]*:[[:space:]]*\{[^}]*' plugins --include='*.md' \
+      | sed -E 's/^(instagram|tiktok)[^{]*\{[^{]*\{/\1 /' \
+      | while read -r net body; do
+          # Keys are identifiers at the start of the body or after a comma; values
+          # ("[...]", strings, numbers) are dropped with the brackets they sit in.
+          sed -E 's/\[[^]]*\]//g; s/"[^"]*"//g' <<<"$body" | tr ',' '\n' \
+            | sed -nE 's/^[[:space:]]*([A-Za-z]+).*/\1/p' | sed "s/^/$net.filters./"
+        done
+  } | sort -u
+)
 
 [[ $fail -eq 0 ]] && echo "ok: plugin matches the Atlas tool contract ($(wc -l <<<"$known" | tr -d ' ') tools)"
 exit $fail

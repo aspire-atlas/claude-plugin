@@ -355,7 +355,12 @@ call is being made. Write a fresh one per call.
 Once a profile is chosen or created, keep its `id` in working state as `profile_id` and its
 `slug` as `profile_slug`. Every Atlas call is attributed with `asProfileId` = `profile_id`
 (or `asOrganizationId` = the org's `id` where a flow says so); tools reject slugs. The slug is
-for naming only: record keys, file names, and the profile slug handed to agents.
+for naming only: record keys, file names, and the profile slug handed to agents. Never
+construct either value. When `profile_id` is missing (a resumed session, or a scheduled run
+whose prompt names only the brand), re-read it with `list_my_profiles` and match the brand by
+profile name across `organizations[].profiles[]`. An unattended run that finds no match or
+more than one publishes the "setup needed" card and stops; it never asks and never falls back
+to unattributed calls.
 
 Speak in handles and brand names. Never surface slugs, ids, or tool names.
 
@@ -386,7 +391,7 @@ to a caller who does not have it.
    options Yes / Change the name. Only proceed on Yes.
 3. Call `create_profile` with `name` and `asOrganizationId`. Keep the returned `id` in working
    state as `profile_id` and the `slug` as `profile_slug`; pass `profile_id` as `asProfileId` on
-   every later call. Never re-derive either.
+   every later call.
 4. Re-sending the same name to the same org returns the existing profile rather than a
    duplicate, so a retry after a timeout is safe. If the returned slug carries a numeric suffix
    (`brand-2`), a different profile already owned the plain slug. Tell the user in one line; the
@@ -423,12 +428,14 @@ to a caller who does not have it.
    - `denied-at-provider`: the link is dead. Say the provider declined, then start over with
      `channel` + `asProfileId` to issue a fresh link. This is the one case where a new start
      is correct.
-   - `already-linked`: the account is connected to another profile in Atlas. Call
-     `list_channels` on that profile (if the response names it) to show the user which profile
-     holds it, then `AskUserQuestion`: "Keep **@{handle}** on {other profile} (Recommended)" /
+   - `already-linked`: the account is connected to another profile in Atlas. The account's
+     entry names that profile in `alreadyLinkedTo` (show this name) and carries its id in
+     `alreadyLinkedToProfileId`. Call `list_channels` with `asProfileId` = that id to show the
+     user which profile holds it, then `AskUserQuestion`: "Keep **@{handle}** on {other profile} (Recommended)" /
      "Move it to {brand}". Only on "Move it", confirm again per the Destructive tools table,
-     call `unlink_channel` with the `platform` and `platformAccountId` from `list_channels`,
-     then start `connect_channel` fresh. Never unlink without both steps; another team may be
+     call `unlink_channel` with `asProfileId` = `alreadyLinkedToProfileId` and the `platform`
+     and `platformAccountId` from `list_channels`. Never pass `alreadyLinkedToSlug`.
+     Then start `connect_channel` fresh. Never unlink without both steps; another team may be
      relying on that connection.
    - Any other failure: report the network's reason and offer to retry or continue with the
      other channels.
@@ -652,7 +659,8 @@ pre-fills, the build, export, and the state saved.
    then D, one `AskUserQuestion` call each, skipping what the user already said. B4 with no
    products held offers web research of the brand's own site; show what it finds before using
    it. A follow-up with nothing saved collects round {n}'s lanes with the reference's template.
-4. **Plan.** Launch `atlas-ppa-pitch` in mode `plan` with the tool prefix, `profile_id`, `profile_slug`, the
+4. **Plan.** Launch `atlas-ppa-pitch` in mode `plan` with the tool prefix, `profile_id`, `profile_slug` (or
+   `profile: none` with `organization_id`, the `get_status` `organizations.selected.id`), the
    linked handles and networks, `presentation`, `recipient`, and the answers. Relay its lanes
    as a table and ask E per product, then F per lane, four per call. Changes go back to the
    agent in mode `plan` for that product or lane only. Ask its **Decisions needed** (names,
