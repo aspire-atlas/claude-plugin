@@ -20,7 +20,7 @@ Email **security@aspire.io** with a description, reproduction steps, and impact.
 
   The PPA pitch builds its PowerPoint file with the PowerPoint skill already in the session, never with a snippet of its own. For Google Slides it hands you the file to open in Google Drive, or, with a Google Slides connector you have connected, builds the deck there only after you confirm.
 
-  Content review may also use a video tool already on your computer (ffmpeg, OpenCV, or Swift on a Mac) to pull still frames from a post. It never installs one.
+  Content review and post analysis may also use a video tool already on your computer (ffmpeg, OpenCV, or Swift on a Mac) to pull still frames from a post, and post analysis may use ffmpeg to time censored words in a post's audio. Neither installs one.
 - **State changes need consent.** Every Atlas and organization admin write is confirmed through a multiple-choice question. Destructive actions each get their own confirmation. Invites to an organization never run in unattended sessions.
 - **Aspire users get no extra access.** A flow may recognize an Aspire teammate by the email domain on the Atlas account and offer them presentation options (for example, presenting a pitch as Aspire's managed service). It never unlocks data, skips a confirmation, or changes what the account's Atlas role allows.
 - **Unattended runs are constrained.** Scheduled runs never ask questions, never run destructive tools, and deliver only to Slack channels and email recipients the user saved during setup. Scheduled readouts start no discovery work at all; creator discovery is the sole agent permitted to run discovery unattended, and only under a cadence the user saved explicitly for that campaign.
