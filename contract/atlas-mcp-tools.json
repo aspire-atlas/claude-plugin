@@ -61,7 +61,6 @@
         ],
         "paths": [
           "asOrganizationId",
-          "asProfileId",
           "name"
         ]
       },
@@ -427,7 +426,6 @@
         ],
         "paths": [
           "asOrganizationId",
-          "asProfileId",
           "email"
         ]
       },
@@ -436,7 +434,6 @@
           "name"
         ],
         "paths": [
-          "asOrganizationId",
           "name"
         ]
       },
@@ -444,7 +441,6 @@
         "required": [],
         "paths": [
           "asOrganizationId",
-          "asProfileId",
           "confirmOrganizationName",
           "pendingActionId",
           "reason"
@@ -460,7 +456,6 @@
         ],
         "paths": [
           "asOrganizationId",
-          "asProfileId",
           "email",
           "role"
         ]
@@ -469,7 +464,6 @@
         "required": [],
         "paths": [
           "asOrganizationId",
-          "asProfileId",
           "confirmOrganizationName",
           "pendingActionId",
           "reason"
@@ -478,15 +472,13 @@
       "list_invitations": {
         "required": [],
         "paths": [
-          "asOrganizationId",
-          "asProfileId"
+          "asOrganizationId"
         ]
       },
       "list_members": {
         "required": [],
         "paths": [
-          "asOrganizationId",
-          "asProfileId"
+          "asOrganizationId"
         ]
       },
       "remove_member": {
@@ -495,7 +487,6 @@
         ],
         "paths": [
           "asOrganizationId",
-          "asProfileId",
           "confirmMemberEmail",
           "memberEmail",
           "pendingActionId",
@@ -509,7 +500,6 @@
         ],
         "paths": [
           "asOrganizationId",
-          "asProfileId",
           "confirmMemberEmail",
           "memberEmail",
           "pendingActionId",
@@ -523,7 +513,6 @@
         ],
         "paths": [
           "asOrganizationId",
-          "asProfileId",
           "name"
         ]
       }

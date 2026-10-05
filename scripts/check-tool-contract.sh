@@ -7,7 +7,9 @@
 # snapshot is vendored here and refreshed by hand.
 #
 #   scripts/check-tool-contract.sh
-#       Offline (CI). Every tool-shaped name in the plugin's markdown is a
+#       Offline (CI). Call examples are matched one line at a time: keep each
+#       search_creator_marketplace example on a single line so its filters are
+#       checked. Every tool-shaped name in the plugin's markdown is a
 #       tool in the snapshot, no removed argument name appears, and every
 #       instagram.filters.* / tiktok.filters.* path the plugin names exists
 #       on search_creator_marketplace.
@@ -28,10 +30,12 @@ err() { echo "FAIL $*"; fail=1; }
 # Snapshot of one golden tools list: name -> { required, paths }. `context`
 # is the analytics argument every tool requires, so it is left out. Paths
 # walk nested `properties` three levels deep (instagram.filters.creatorCountries).
+# A property the schema forbids ({"not": {}}) is not an accepted path.
 snapshot() {
   jq --arg date "$(date -u +%F)" '
     def paths3($s; $pre; $d):
-      ($s.properties // {}) | to_entries[] | ($pre + .key) as $p
+      ($s.properties // {}) | to_entries[] | select(.value != {"not": {}})
+      | ($pre + .key) as $p
       | $p, (if $d > 1 then paths3(.value; $p + "."; $d - 1) else empty end);
     def surface($tools):
       $tools | map({ key: .name, value: {
@@ -51,6 +55,7 @@ snapshot() {
 case "${1:-}" in
   --update)
     golden="${2:?usage: check-tool-contract.sh --update <tools-list.golden.json>}"
+    [[ -f "$golden" ]] || { echo "FAIL $golden not found"; exit 2; }
     tmp=$(mktemp)
     snapshot "$golden" > "$tmp"
     mv "$tmp" "$C"
@@ -59,6 +64,7 @@ case "${1:-}" in
     ;;
   --golden)
     golden="${2:?usage: check-tool-contract.sh --golden <tools-list.golden.json>}"
+    [[ -f "$golden" ]] || { echo "FAIL $golden not found"; exit 2; }
     if ! diff <(jq -S '.surfaces' "$C") <(snapshot "$golden" | jq -S '.surfaces'); then
       echo "FAIL $C differs from $golden (lines marked > are the server). Review the change, update the plugin, then run --update."
       exit 1
@@ -111,8 +117,8 @@ if grep -rnE '(^|[^.a-zA-Z])filters\.similarToCreators' plugins --include='*.md'
   err "similarToCreators lives at instagram.filters.similarToCreators"
 fi
 if grep -rnoE 'search_creator_marketplace\(\{[^`]*' plugins --include='*.md' \
-   | sed -E 's/(instagram|tiktok)[[:space:]]*:[[:space:]]*\{[[:space:]]*filters//g' \
-   | grep -E '[^A-Za-z.]filters[[:space:]]*:'; then
+   | sed -E 's/"?(instagram|tiktok)"?[[:space:]]*:[[:space:]]*\{[[:space:]]*"?filters"?//g' \
+   | grep -E '[^A-Za-z.]"?filters"?[[:space:]]*:'; then
   err "search_creator_marketplace takes instagram.filters / tiktok.filters, not top-level filters"
 fi
 
@@ -131,12 +137,12 @@ while IFS= read -r p; do
 done < <(
   { grep -rhoE '\b(instagram|tiktok)\.filters\.[A-Za-z]+' plugins --include='*.md'
     # Object form: instagram: { filters: { creatorCountries: [...], creatorMinFollowers } }
-    grep -rhoE '(instagram|tiktok)[[:space:]]*:[[:space:]]*\{[[:space:]]*filters[[:space:]]*:[[:space:]]*\{[^}]*' plugins --include='*.md' \
-      | sed -E 's/^(instagram|tiktok)[^{]*\{[^{]*\{/\1 /' \
+    grep -rhoE '"?(instagram|tiktok)"?[[:space:]]*:[[:space:]]*\{[[:space:]]*"?filters"?[[:space:]]*:[[:space:]]*\{[^}]*' plugins --include='*.md' \
+      | sed -E 's/^"?(instagram|tiktok)[^{]*\{[^{]*\{/\1 /' \
       | while read -r net body; do
           # Keys are identifiers at the start of the body or after a comma; values
           # ("[...]", strings, numbers) are dropped with the brackets they sit in.
-          sed -E 's/\[[^]]*\]//g; s/"[^"]*"//g' <<<"$body" | tr ',' '\n' \
+          sed -E 's/\[[^]]*\]//g; s/"([A-Za-z]+)"[[:space:]]*:/\1:/g; s/"[^"]*"//g' <<<"$body" | tr ',' '\n' \
             | sed -nE 's/^[[:space:]]*([A-Za-z]+).*/\1/p' | sed "s/^/$net.filters./"
         done
   } | sort -u

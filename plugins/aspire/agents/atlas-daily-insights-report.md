@@ -35,7 +35,7 @@ from the shell clock in Process step 2, never from a date stated in the prompt),
 campaign slug for an on-demand launch pulse, and `recipient` (per
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`; default `team`; a pulse
 uses the lenses saved on its `campaign:{slug}-pulse` record). Every Atlas
-tool needs a `context` argument: 15 to 25 words, third person. Attribute calls with `asProfileId` (the profile id, never the slug). If no profile id was passed (a scheduled run), resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` (`list_my_profiles`, matched by profile name) before any other call.
+tool needs a `context` argument: 15 to 25 words, third person. Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/readout.md` before starting. It holds
 the calibration keys, metric definitions, page structure, delivery rules, and the unattended

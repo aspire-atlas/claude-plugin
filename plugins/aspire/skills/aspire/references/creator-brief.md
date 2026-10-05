@@ -249,8 +249,8 @@ fetched during the run.
     ran it.
   - The result has one entry per requested network under `jobs`: `{ jobId, runId }` when it
     started, or `{ skipped: true, reason }`. Poll `get_job_status` with **each** started
-    `jobId` until `completed` or `failed`. On a skip: `rate-limited`, or `unavailable` not
-    marked `retryable: false`, retry that network once later in the run; `no-seat` after sending label ids, retry that network
+    `jobId` until `completed` or `failed`. On a skip: `rate-limited` or `unavailable`, retry
+    that network once later in the run with `networks` set to that network only; `no-seat` after sending label ids, retry that network
     without them; anything else, report the network as not searched. The call errors only
     when every requested network was skipped.
 - Marketplace results land in `search_creators` 1 to 3 minutes after each network's job

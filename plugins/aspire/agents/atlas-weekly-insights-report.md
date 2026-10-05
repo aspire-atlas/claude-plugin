@@ -34,7 +34,7 @@ optionally the target week (default: the previous Monday to Sunday in the brand'
 timezone, computed from the shell clock in Process step 2, never from a date stated in the
 prompt), and optionally `recipient` (per
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`). A passed lens leads this
-run; the saved R6 lenses follow it. Unattended runs use R6 only. Every Atlas tool needs a `context` argument: 15 to 25 words, third person. Attribute calls with `asProfileId` (the profile id, never the slug). If no profile id was passed (a scheduled run), resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` (`list_my_profiles`, matched by profile name) before any other call.
+run; the saved R6 lenses follow it. Unattended runs use R6 only. Every Atlas tool needs a `context` argument: 15 to 25 words, third person. Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/readout.md` before starting. It holds
 the calibration keys, metric definitions, page structure, the lens sections, delivery rules,

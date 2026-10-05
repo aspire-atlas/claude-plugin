@@ -33,8 +33,7 @@ and slug, the brand's handles with networks, the run mode (`interactive` or `una
 `recipient` (one or more lenses per `recipient-lens.md`; unattended runs use the saved
 `market-signal:lenses`), whether the user approved saving findings (interactive runs), and
 optionally a window strictly earlier than the shell date. Every
-Atlas tool needs a `context` argument: 15 to 25 words, third person. Attribute calls with
-`asProfileId` (the profile id, never the slug). If no profile id was passed (a scheduled run), resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` (`list_my_profiles`, matched by profile name) before any other call.
+Atlas tool needs a `context` argument: 15 to 25 words, third person. Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/market-signal.md` and
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md` before starting. They hold the

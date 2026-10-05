@@ -36,7 +36,7 @@ absent) with the lane to fill when one is named, and `recipient` (one or more le
 `campaign` or `growth` when the main thread passes one). Render for the primary lens: `growth`
 leads the summary and page with the lookalike tier and each seed's results; `campaign` leads
 with how far the pool is from the lineup the launch needs. Every Atlas tool needs a `context` argument: 15 to 25 words,
-third person. Attribute calls with `asProfileId` (the profile id, never the slug). If no profile id was passed (a scheduled run), resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` (`list_my_profiles`, matched by profile name) before any other call.
+third person. Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-discovery.md` before starting. It
 holds the campaign calibration keys, the tier model, the scoring table, the pool state

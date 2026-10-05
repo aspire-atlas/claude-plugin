@@ -353,12 +353,14 @@ call is being made. Write a fresh one per call.
      brief (see **Creator brief** below), or a re-connect for expired channels.
 
 Once a profile is chosen or created, keep its `id` in working state as `profile_id` and its
-`slug` as `profile_slug`. Every Atlas call is attributed with `asProfileId` = `profile_id`
-(or `asOrganizationId` = the org's `id` where a flow says so); tools reject slugs. The slug is
+`slug` as `profile_slug`. Pass `asProfileId` = `profile_id` to every Atlas tool whose schema
+takes it (or `asOrganizationId` = the org's `id` where a flow says so); tools reject slugs.
+`create_profile` takes `asOrganizationId` only, and `get_job_status`,
+`list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take neither. The slug is
 for naming only: record keys, file names, and the profile slug handed to agents. Never
 construct either value. When `profile_id` is missing (a resumed session, or a scheduled run
 whose prompt names only the brand), re-read it with `list_my_profiles` and match the brand by
-profile name across `organizations[].profiles[]`. An unattended run that finds no match or
+profile name (exact, ignoring case) across `organizations[].profiles[]`. An unattended run that finds no match or
 more than one publishes the "setup needed" card and stops; it never asks and never falls back
 to unattributed calls.
 
@@ -745,7 +747,7 @@ Schedule: read the times and timezone from `campaign:{slug}-cadence`, convert to
 create one task per job with the session's scheduled-task tools, confirm both in one
 `AskUserQuestion` before creating them, and tell the user the tasks run in fresh sessions so
 Aspire Atlas must be enabled for scheduled tasks. Prompts must say "do not ask questions",
-name the campaign slug, and state no date.
+name the brand by its exact Atlas profile `name` and the campaign slug, and state no date.
 
 Unattended runs never ask questions and never record a verdict; if setup is incomplete they
 publish a "setup needed" card and stop.
@@ -1093,7 +1095,8 @@ After the first successful run, or whenever the user asks to schedule, offer wit
    deliver twice. One task per cadence:
    - Name: "Atlas daily insights report: {brand}" / "Atlas weekly insights report: {brand}".
    - Prompt: the standalone templates in the README under **Scheduling the readouts**, with
-     the brand name, handles, and networks filled in. The prompt must say "do not ask
+     `{brand}` filled with the profile's exact Atlas `name` (from `get_status`), and the handles
+     and networks filled in. Runs find the profile by that name. The prompt must say "do not ask
      questions" and "use the saved readout calibrations", and must not state a date; the
      templates tell the run to read the date from the shell clock.
    - Notifications: push on.
