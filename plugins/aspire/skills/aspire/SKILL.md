@@ -181,7 +181,8 @@ per campaign, schedulable), the **Creator vetting** (approve, maybe, or reject a
 creators from an Aspire export or pasted handles, interactive only), the **CAS campaign** (a
 creator ad campaign conducted through the slate, rates, and brief gates, with **Rates and
 terms** for step 13), the **Content review** (one post or draft checked against its
-brief, interactive only), the **Readouts** (daily and weekly performance digests with a launch
+brief, interactive only), the **Post analysis** (one published post in depth for a brand
+deciding whether to sponsor, partner with, or reuse it, interactive only), the **Readouts** (daily and weekly performance digests with a launch
 pulse and a section per reader, schedulable), the **Market signal** (what creators say about
 the brand vs. competitors, schedulable), and the **Quarterly signal** (the quarter's story for
 leadership). The **Creator profile** gives one creator's full page on request, **Ad reuse**
@@ -1035,7 +1036,7 @@ that it needs a person to supply the post, and stop.
    in the same call as the **Reading the ask** confirmation (default `brand`; `performance`
    and `creative` when the ask is about reuse as an ad). Pasting the link is the approval to
    fetch that one post; Q2's "Refresh the account first" is the approval to fetch its author.
-2. Launch `atlas-post-analysis` with the tool prefix, `profile_slug`, the link, `recipient`,
+2. Launch `atlas-post-analysis` with the tool prefix, `profile_id`, `profile_slug`, the link, `recipient`,
    `baseline`, whether the user approved saving, any earlier analysis of the same post, and a
    digest of the brand's calibrations (summary, business context, competitors, partners, red
    lines, campaign briefs).

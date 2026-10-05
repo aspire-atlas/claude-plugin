@@ -21,7 +21,7 @@ transcript, or the audio, and the page says which.
 
 | Input | From |
 | ----- | ---- |
-| The post | A permalink (`instagram.com/p/…`, `/reel/…`, or `tiktok.com/@handle/video/{id}`). Pasting it is the approval to fetch it. |
+| The post | A permalink (`instagram.com/p/…`, `/reel/…`, or `tiktok.com/@handle/video/{id}`). Pasting it is the approval to fetch it. Instagram and TikTok only: for a YouTube link say in one line that post analysis covers Instagram and TikTok, and for a TikTok short link (`vm.tiktok.com`, `vt.tiktok.com`) ask for the full URL. |
 | `recipient` | **Reading the ask**. Default `brand`; `performance` and `creative` when the ask is about reuse as an ad. |
 | `baseline` | Q2 below: `held`, `refresh`, or `skip` |
 | `save` | Q3 below: whether to save the findings |
@@ -77,8 +77,9 @@ changes for a full pass:
   widen the step to duration ÷ 180). Then half-second frames around every change found.
 - **Shot changes.** With ffmpeg, use its scene filter; with OpenCV, compare consecutive frames'
   grey histograms. List the cuts with their times; they bound the brand and people ranges.
-- **Contact sheets.** Tile the frames into sheets of 20 with their timestamps and view every
-  sheet. A brand or person is placed only from frames the agent viewed.
+- **Contact sheets.** Tile the frames into sheets of 20 with their timestamps (ffmpeg's tile
+  filter, or Pillow when it imports) and view every sheet. With neither, view the frames one
+  by one. A brand or person is placed only from frames the agent viewed.
 - **Audio (ffmpeg only).** Read the audio track and scan it for censoring tones (a steady
   tone near 1 kHz) to time bleeps to the tenth of a second. Without ffmpeg, time each censored
   word from the transcript and the on-screen captions, and say the times are accurate to about
@@ -169,9 +170,9 @@ have; never drop them when the data exists.
     are a snapshot.
 
 Order for a lens: `brand` keeps the order above. `performance` and `creative` move sections 6,
-11, and 13 up after the executive summary and add the ad reuse check from
-`content-review.md` (hook by 3 seconds, brand by 3 seconds, works without sound, a standalone
-segment) with a cut list.
+11, and 13 up after the executive summary and add the ad reuse check from `ad-reuse.md`,
+**Ad reuse check (content review)**: the hook score, the hook pattern, and the cut list. It is
+advice only and never changes the safety verdict.
 
 Load `artifact-design`, and `dataviz` for the charts, before building. Embed every image with
 the snippet in `creator-card.md`, **Images**, page profile; frames the agent extracted are
@@ -188,8 +189,7 @@ Only with Q3 "Save findings". `append_insights`, `runKey`
 an unclear sponsor), `action_item` with `priority` for each recommendation (trim, disclosure
 ask, rights to clear). `detail` carries `findingType` (`performance`, `brand`, `safety`,
 `disclosure`, `rights`, `recommendation`), the evidence (timestamps, counts, the fields used),
-and `recipient`. One `idempotencyKey` per finding. YouTube posts can be analyzed but not
-saved; say so.
+and `recipient`. One `idempotencyKey` per finding.
 
 ## Rules
 
