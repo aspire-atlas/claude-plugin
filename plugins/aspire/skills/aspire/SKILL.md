@@ -94,7 +94,7 @@ time so it never goes stale; never recite it from memory.
    task's prompt and name.
 
    An agent on disk that is not in that table: run Phase 1 and Phase 2 + 3, then launch it
-   with the tool prefix, `profile_slug`, the linked handles and networks, and `recipient`
+   with the tool prefix, `profile_id`, `profile_slug`, the linked handles and networks, and `recipient`
    (**Reading the ask**), and relay
    whatever it asks the main thread to confirm.
 
@@ -343,7 +343,7 @@ call is being made. Write a fresh one per call.
 2. **Auth check.** An unauthorized error means the connector token lapsed: render one connector
    card (Phase 1 rules) with "Aspire Atlas needs a fresh sign in. Click Connect above."
 3. **Organization.** One org: use it, name it once in the summary. Several: `AskUserQuestion`
-   with the org names, then call `get_status` again with `asOrg` set to the chosen slug.
+   with the org names, then call `get_status` again with `asOrganizationId` set to the chosen org's `id`.
 4. **Route.**
    - `profiles` empty → **new org**. Go to Phase 4.
    - Profiles exist, none with a connected channel → **profile only**. Skip 4.1, go to 4.2
@@ -351,6 +351,18 @@ call is being made. Write a fresh one per call.
    - Profiles with channels → **existing**. Give a 3 to 5 bullet summary (profile, channels,
      any expired auth), then run Phase 5 gap check and offer Phase 6, the weekly creator
      brief (see **Creator brief** below), or a re-connect for expired channels.
+
+Once a profile is chosen or created, keep its `id` in working state as `profile_id` and its
+`slug` as `profile_slug`. Pass `asProfileId` = `profile_id` to every Atlas tool whose schema
+takes it (or `asOrganizationId` = the org's `id` where a flow says so); tools reject slugs.
+`create_profile` takes `asOrganizationId` only, and `get_job_status`,
+`list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take neither. The slug is
+for naming only: record keys, file names, and the profile slug handed to agents. Never
+construct either value. When `profile_id` is missing (a resumed session, or a scheduled run
+whose prompt names only the brand), re-read it with `list_my_profiles` and match the brand by
+profile name (exact, ignoring case) across `organizations[].profiles[]`. An unattended run that finds no match or
+more than one publishes the "setup needed" card and stops; it never asks and never falls back
+to unattributed calls.
 
 Speak in handles and brand names. Never surface slugs, ids, or tool names.
 
@@ -379,8 +391,9 @@ to a caller who does not have it.
    covers everything else.
 2. Confirm with `AskUserQuestion`: "Create a profile for **{name}** in {org name}?" with
    options Yes / Change the name. Only proceed on Yes.
-3. Call `create_profile` with `name` and `asOrg`. Keep the returned `slug` in working state as
-   `profile_slug`; pass it as `asProfile` on every later call. Never re-derive it.
+3. Call `create_profile` with `name` and `asOrganizationId`. Keep the returned `id` in working
+   state as `profile_id` and the `slug` as `profile_slug`; pass `profile_id` as `asProfileId` on
+   every later call.
 4. Re-sending the same name to the same org returns the existing profile rather than a
    duplicate, so a retry after a timeout is safe. If the returned slug carries a numeric suffix
    (`brand-2`), a different profile already owned the plain slug. Tell the user in one line; the
@@ -399,7 +412,7 @@ to a caller who does not have it.
 1. `AskUserQuestion`, multiSelect: which accounts to connect. Options: Instagram (channel
    `meta`), TikTok (channel `tiktok`), YouTube (channel `youtube`). Recommend Instagram or
    TikTok first: those two are what search and hashtag tracking read today.
-2. For each chosen channel, call `connect_channel` with `channel` and `profileSlug`.
+2. For each chosen channel, call `connect_channel` with `channel` and `asProfileId`.
    Show the returned `connectUrl` as the **account connection card**: an inline HTML card that
    explains the sign-in steps and carries one button that opens the link in the browser. Build
    and render it exactly per `references/connection-card.md` (widget tool, template, one-line
@@ -408,25 +421,33 @@ to a caller who does not have it.
 3. Immediately call `connect_channel` again with only `elicitationId`. Each call long-polls
    about 30 seconds. Keep calling until the response reports a terminal status or its own
    `message` says to stop and check with the user. Never stop on a fixed call count. Never
-   restart with `channel` + `profileSlug` on a timeout; that issues a second link.
+   restart with `channel` + `asProfileId` on a timeout; that issues a second link.
 4. If status is awaiting-selection, render the follow-up variant of the connection card with
    `resultUrl` and the "Finish picking accounts" button (the original link cannot be reopened).
 5. Terminal statuses:
-   - `complete`: confirm each entry in `linkedAccounts` by handle, and list any discovered
-     but unselected accounts as available to add later.
+   - `complete`: read `outcome`. Confirm each entry in `linkedAccounts` by handle, and list
+     any discovered but unselected accounts as available to add later. With `outcome`
+     `none-linked`, say plainly that nothing was connected; with `partially-linked`, name the
+     accounts in `failedAccounts` and their `error`. A `failedAccounts` entry with `error`
+     `already-linked` follows the already-linked steps below.
    - `denied-at-provider`: the link is dead. Say the provider declined, then start over with
-     `channel` + `profileSlug` to issue a fresh link. This is the one case where a new start
+     `channel` + `asProfileId` to issue a fresh link. This is the one case where a new start
      is correct.
-   - `already-linked`: the account is connected to another profile in Atlas. Call
-     `list_channels` on that profile (if the response names it) to show the user which profile
-     holds it, then `AskUserQuestion`: "Keep **@{handle}** on {other profile} (Recommended)" /
+   - Already linked (a `failedAccounts` entry with `error` `already-linked`, not a status): the
+     account is connected to another profile in Atlas. Find the same `platformAccountId` in
+     `discoveredAccounts[].accounts[]`: its `alreadyLinkedTo` names that profile (show this name)
+     and `alreadyLinkedToProfileId` is its id. Call `list_channels` with `asProfileId` = that id to show the
+     user which profile holds it, then `AskUserQuestion`: "Keep **@{handle}** on {other profile} (Recommended)" /
      "Move it to {brand}". Only on "Move it", confirm again per the Destructive tools table,
-     call `unlink_channel` with the `platform` and `platformAccountId` from `list_channels`,
-     then start `connect_channel` fresh. Never unlink without both steps; another team may be
+     call `unlink_channel` with `asProfileId` = `alreadyLinkedToProfileId` and the `platform`
+     and `platformAccountId` from `list_channels`. Never pass `alreadyLinkedToSlug`.
+     Then start `connect_channel` fresh. Never unlink without both steps; another team may be
      relying on that connection.
    - Any other failure: report the network's reason and offer to retry or continue with the
      other channels.
-6. **Do not ask any brand context questions until at least one channel reports `complete`.**
+6. **Do not ask any brand context questions until at least one channel reports `complete`
+   with at least one entry in `linkedAccounts`** (`outcome` `all-linked` or `partially-linked`).
+   A `none-linked` result does not count.
    While polling, the only user-facing output is the connection card (once per link) and, if a poll times out,
    one short line such as "Still waiting on the {network} sign in." Never fill the wait with
    questions: the user is in another tab finishing the sign in.
@@ -440,8 +461,8 @@ Instagram accepts any string. Report per-tag results, not a blanket success.
 
 ## Phase 5: Build brand context (shared brand memory)
 
-Entry condition: Phase 4.2 finished with at least one `complete` channel (or Phase 3 routed an
-existing org here). Never start before that.
+Entry condition: Phase 4.2 finished with at least one `complete` channel that linked an account
+(`linkedAccounts` not empty; `none-linked` does not count), or Phase 3 routed an existing org here. Never start before that.
 
 Brand context lives in Atlas's calibration layer, not in local notes, so every future session
 and every teammate inherits it. Ask each question with `AskUserQuestion`, one at a time, in the
@@ -474,8 +495,8 @@ the web option; only the person can answer those.
 
 Rules:
 
-- Before asking anything, call `search_calibrations` (no filter, limit 100 per page, paged to the end) for
-  `profile_slug`. Skip any question whose key is already occupied. Pass
+- Before asking anything, call `search_calibrations` (no filter, limit 100 per page, paged to the end) with
+  `asProfileId` = `profile_id`. Skip any question whose key is already occupied. Pass
   `includeSuperseded: true` so moved facts are not re-asked as new.
 - Write each answer with `append_calibration` right after it is given, `provenance:
   "interview"` (or `"web"` per the web research option above), `statement` under 280
@@ -518,7 +539,7 @@ against competitors goes to **Market signal**.
    `author.username` for each linked handle, `limit: 1`. If empty, tell the user indexing is
    still running and offer to check back; do not run the analyst on nothing. Mode `handle`
    skips this check: the agent owns resolution and the freshness check.
-4. Launch the `atlas-profile-analyst` subagent with: `profile_slug`, the tool prefix,
+4. Launch the `atlas-profile-analyst` subagent with: `profile_id`, `profile_slug`, the tool prefix,
    `target_mode`, the handles and networks for that mode, `recipient` (**Reading the ask**;
    `team` during onboarding), and a digest of the Phase 5 calibrations. In mode `handle`, state that the user approved the fetch so the agent does not
    ask again. State that the calibrations are for classification and relevance only: a named
@@ -559,7 +580,7 @@ from the **Fee calculator**.
    profile's own linked handles is an account review (Phase 6, mode `own`), not a profile.
 2. Naming the handle **is** the approval for fetching it from Atlas when the held data is
    missing or over a day old, as in Phase 6; neither the skill nor the agent asks again.
-3. Launch the `atlas-creator-profile` subagent with the tool prefix, `profile_slug`, the
+3. Launch the `atlas-creator-profile` subagent with the tool prefix, `profile_id`, `profile_slug`, the
    network and handle, any comparison accounts the user named, `recipient` (**Reading the
    ask**), and a note that the user approved the fetch. It writes nothing to Atlas, so it needs no write confirmation.
 4. Show the creator card inline from the agent's `creator-cards` block, then the page link,
@@ -585,7 +606,7 @@ both are passed by default. Detail lives in `references/ad-reuse.md`. For one po
    or typed), and the sources ("The brand's and creators' posts (Recommended)", "Only our own
    posts", "Only creators' posts about us"). Add the write confirmation as the last question:
    "Save the ranked candidates to Atlas?" (Save (Recommended) / Page only).
-2. Launch `atlas-ad-reuse` with the tool prefix, `profile_slug`,
+2. Launch `atlas-ad-reuse` with the tool prefix, `profile_id`, `profile_slug`,
    the linked handles and networks, `reuse_scope`, the window, any placements named,
    `recipient`, a digest of the brand's calibrations (competitors, red lines, partners), and
    whether the user approved the write. It reads only what Atlas holds.
@@ -613,7 +634,7 @@ campaign mode, the campaign (a saved `campaign:*-brief`, or "a new campaign", wh
 3. **Lookback and roles.** Default 90 days. Roles: collab posts, expert POV clips, customer
    features, event coverage (multiSelect).
 
-Then launch the `atlas-creator-brief` agent with: tool prefix, `profile_slug`, linked handles
+Then launch the `atlas-creator-brief` agent with: tool prefix, `profile_id`, `profile_slug`, linked handles
 and networks, `brief_mode` (`campaign` when the ask names a launch, date, or campaign;
 otherwise `week`), target week (next Monday to Friday unless given) or the campaign slug, first
 post date, and end date, `recipient` (**Reading the ask**), lookback, and the three answers. Relay its summary, the published page, and any decisions it needs (guideline
@@ -646,7 +667,8 @@ pre-fills, the build, export, and the state saved.
    then D, one `AskUserQuestion` call each, skipping what the user already said. B4 with no
    products held offers web research of the brand's own site; show what it finds before using
    it. A follow-up with nothing saved collects round {n}'s lanes with the reference's template.
-4. **Plan.** Launch `atlas-ppa-pitch` in mode `plan` with the tool prefix, `profile_slug`, the
+4. **Plan.** Launch `atlas-ppa-pitch` in mode `plan` with the tool prefix, `profile_id`, `profile_slug` (or
+   `profile: none` with `organization_id`, the `get_status` `organizations.selected.id`), the
    linked handles and networks, `presentation`, `recipient`, and the answers. Relay its lanes
    as a table and ask E per product, then F per lane, four per call. Changes go back to the
    agent in mode `plan` for that product or lane only. Ask its **Decisions needed** (names,
@@ -709,7 +731,7 @@ maintains a pipeline across weeks and teammates.
 
 Ask once with `AskUserQuestion`: "What should the discovery agent do?" Options: "Fill the shortlist to
 {target}", "Show the current shortlist", "Record decisions on the shortlist", "Change setup".
-Then launch `atlas-creator-discovery` with: tool prefix, `profile_slug`, the campaign slug, the
+Then launch `atlas-creator-discovery` with: tool prefix, `profile_id`, `profile_slug`, the campaign slug, the
 brand handles and networks, run mode `interactive`, and `recipient` (**Reading the ask**;
 `growth` when the ask is for more creators like the ones working). Relay its summary, the page link, and
 the numbered range the user can decide against. Show the candidates added this run inline as
@@ -731,7 +753,7 @@ Schedule: read the times and timezone from `campaign:{slug}-cadence`, convert to
 create one task per job with the session's scheduled-task tools, confirm both in one
 `AskUserQuestion` before creating them, and tell the user the tasks run in fresh sessions so
 Aspire Atlas must be enabled for scheduled tasks. Prompts must say "do not ask questions",
-name the campaign slug, and state no date.
+name the brand by its exact Atlas profile `name` and the campaign slug, and state no date.
 
 Unattended runs never ask questions and never record a verdict; if setup is incomplete they
 publish a "setup needed" card and stop.
@@ -776,7 +798,7 @@ creator in depth, use **Creator profile**; to find new creators, **Creator disco
    it applies (`team` by default; `brand` for "are these safe"; `campaign` when the list is a
    launch lineup). Skip R3 when Atlas holds every creator. R3 "Fetch them" approves
    `lookup_creators` for exactly the missing handles; R4 is the write confirmation.
-4. Launch `atlas-creator-vetting` with: tool prefix, `profile_slug`, brand handles and
+4. Launch `atlas-creator-vetting` with: tool prefix, `profile_id`, `profile_slug`, brand handles and
    networks, the normalized list, the list name, slug and source, the criteria source, the
    approved fetches, the R4 answer, and `recipient`. A list over 100 creators runs in batches
    of 100; say how many and launch them one at a time.
@@ -854,7 +876,8 @@ creator counts by concept, anything marked your call needed, and the campaign pa
 
 ### Run
 
-Launch what the row names, then record what came back:
+Launch what the row names, then record what came back. Every agent launch here also carries
+the tool prefix, `profile_id`, and `profile_slug`:
 
 - **Discovery** (rows 2 and 3): `atlas-creator-discovery` with the campaign slug, run mode
   `interactive`, `campaign_type` `creator-ads`, the lane to fill, and `recipient` (`campaign`).
@@ -961,7 +984,7 @@ weekly readouts.
    and the local paths of the attached media. If a video comes without a transcript, say once
    that spoken content can't be checked without one, and accept one if offered.
 2. Ask P4, the write confirmation. Run only on "Run the review".
-3. Launch `atlas-content-review` with: tool prefix, `profile_slug`, brand handles and
+3. Launch `atlas-content-review` with: tool prefix, `profile_id`, `profile_slug`, brand handles and
    networks, `stage`, the normalized deliverable, the brief source, the post inputs, and
    `recipient` (**Reading the ask**: `brand` for "is this safe" or "approve"; `performance` or
    `creative` when the user asks whether it can run as an ad, which adds the ad reuse check). For a
@@ -1007,8 +1030,8 @@ structures live in `references/readout.md`.
 Readout preferences are brand memory, not session state. Every teammate and every scheduled
 run reads the same answers, so setup always runs through Atlas calibrations:
 
-1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end, `includeSuperseded: true`) for
-   `profile_slug`. If all six readout keys are present (`policy:readout-cadence`,
+1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end, `includeSuperseded: true`) with
+   `asProfileId` = `profile_id`. If all six readout keys are present (`policy:readout-cadence`,
    `policy:readout-routing`, `guideline:readout-thresholds`, `guideline:readout-focus`,
    `policy:readout-escalation`, `guideline:readout-audience`), skip to **Run**. Tell the user
    in one line that the saved setup is being used and offer "Change setup" as an option on the
@@ -1032,7 +1055,7 @@ run reads the same answers, so setup always runs through Atlas calibrations:
 
 Ask once with `AskUserQuestion`: "Which insights report?" Options: "Weekly (last week)",
 "Daily (yesterday)", "Both now", "Change setup". Then launch `atlas-weekly-insights-report` and/or
-`atlas-daily-insights-report` with: tool prefix, `profile_slug`, linked handles and networks, run mode
+`atlas-daily-insights-report` with: tool prefix, `profile_id`, `profile_slug`, linked handles and networks, run mode
 `interactive`, `recipient` (the lens **Reading the ask** confirmed, or the saved R6 lenses
 when it found none), and the target window only if the user named one. Never pass "today" or any
 date the main thread assumed: session headers can be a day stale, and a wrong "today" shifts
@@ -1079,7 +1102,8 @@ After the first successful run, or whenever the user asks to schedule, offer wit
    deliver twice. One task per cadence:
    - Name: "Atlas daily insights report: {brand}" / "Atlas weekly insights report: {brand}".
    - Prompt: the standalone templates in the README under **Scheduling the readouts**, with
-     the brand name, handles, and networks filled in. The prompt must say "do not ask
+     `{brand}` filled with the profile's exact Atlas `name` (from `get_status`), and the handles
+     and networks filled in. Runs find the profile by that name. The prompt must say "do not ask
      questions" and "use the saved readout calibrations", and must not state a date; the
      templates tell the run to read the date from the shell clock.
    - Notifications: push on.
@@ -1125,7 +1149,7 @@ market signal looks at the conversation.
 
 ### Run
 
-Launch `atlas-market-signal` with: tool prefix, `profile_slug`, the brand handles and
+Launch `atlas-market-signal` with: tool prefix, `profile_id`, `profile_slug`, the brand handles and
 networks, run mode `interactive`, `recipient` (the lenses from **Reading the ask**, else the
 saved M3 lenses), and a window only if the user named one. Confirm the write before launching
 in the same `AskUserQuestion` call as the lens ("Save the findings to Atlas?" Save
@@ -1159,7 +1183,7 @@ detail lives in `references/quarterly-signal.md`.
    date, or typed dates or a fiscal quarter), and "Save the quarter's findings to Atlas?"
    (Save (Recommended) / Page only). If the user mentions spend, take the number as typed;
    never ask for it, and never estimate it.
-2. Launch `atlas-quarterly-signal` with: tool prefix, `profile_slug`, linked handles and
+2. Launch `atlas-quarterly-signal` with: tool prefix, `profile_id`, `profile_slug`, linked handles and
    networks, run mode `interactive`, `recipient`, the quarter, any spend given, and the write
    answer.
 3. Relay the page link, the outcome line, the KPIs, and the forward note. When the data gaps

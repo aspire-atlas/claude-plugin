@@ -1,6 +1,6 @@
 # Aspire Atlas Organization Admin tool reference
 
-Last verified 2026-09-28 against the live server, signed in: 10 tools plus `get_more_tools`,
+Last verified 2026-10-05 against the live server, signed in: 10 tools plus `get_more_tools`,
 of which the plugin uses three. Re-check before each official release.
 
 Server: `https://atlas.aspire.io/mcp/admin-organization` (streamable HTTP, OAuth), bundled as
@@ -33,9 +33,9 @@ tool on this server.
 
 | Tool | Purpose | Arguments | Confirmation |
 | ---- | ------- | --------- | ------------ |
-| `list_members` | Direct members of an organization: name, email, role, joined date, plus `pendingInvitationCount` and `yourRole` | `asOrg` | None: read only |
-| `list_invitations` | Pending invitations: email, role, who sent it, expiry | `asOrg` | None: read only |
-| `invite_member` | Invite someone by email; they join only when they accept the emailed link | `email` (required), `role` (`owner`, `admin` or `member`; default `member`), `asOrg` | `AskUserQuestion` naming the email address, the role, and the organization |
+| `list_members` | Direct members of an organization: name, email, role, joined date, plus `pendingInvitationCount` and `yourRole` | `asOrganizationId` | None: read only |
+| `list_invitations` | Pending invitations: email, role, who sent it, expiry | `asOrganizationId` | None: read only |
+| `invite_member` | Invite someone by email; they join only when they accept the emailed link | `email` (required), `role` (`owner`, `admin` or `member`; default `member`), `asOrganizationId` | `AskUserQuestion` naming the email address, the role, and the organization |
 
 Pass the `arguments` from the `get_status` link as given. Never guess an argument name; if the
 live schema differs from this table, stop and note the difference in the run summary.

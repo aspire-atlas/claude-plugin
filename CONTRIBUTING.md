@@ -83,7 +83,7 @@ It sets `main` as default, requires PRs plus the `validate` and `gate` checks on
 - Every Atlas write is confirmed through `AskUserQuestion` first. Destructive tools each get their own confirmation with the safe option listed first.
 - Unattended runs never ask and never destroy. Only `atlas-creator-discovery` may start discovery work on a schedule, under a saved cadence record.
 - Never show internal ids, slugs, or tool names to the user. Handles (`@name`) are the anchor.
-- Re-verify the tool surface against the live server before each official release and update `skills/aspire/references/atlas-tools.md` and `skills/org-admin/references/org-admin-tools.md`.
+- Re-verify the tool surface against the live server before each official release and update `skills/aspire/references/atlas-tools.md` and `skills/org-admin/references/org-admin-tools.md`. Run `bash scripts/check-tool-contract.sh --golden <path to the server's tools-list.golden.json>`: it fails when `contract/atlas-mcp-tools.json` has drifted from the server. Refresh it with `--update` and fix what `bash scripts/check-tool-contract.sh` then flags. CI runs the offline check on every push.
 - No secrets, customer names, or internal URLs in any file. CI scans for credential patterns; treat a hit as a blocker.
 
 ## Internal mirror (Aspire staff)

@@ -48,6 +48,9 @@ jobs:
       - name: Channel contract (names, pinning, CHANGELOG, version bump)
         run: bash scripts/check-channel.sh "${{ steps.channel.outputs.name }}"
 
+      - name: Atlas tool contract (tool names, removed arguments, marketplace filters)
+        run: bash scripts/check-tool-contract.sh
+
       - name: CHANGELOG is edited only on release branches
         if: steps.channel.outputs.name == 'develop'
         run: |
