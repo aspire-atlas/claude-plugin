@@ -16,6 +16,7 @@ Onboarding for the Atlas platform (https://atlas.aspire.io). Takes a new or retu
 | Agent | `atlas-creator-discovery` | Standing creator shortlist for one campaign: fills a pool of undecided candidates to a saved target in tier order (worked with the brand, posted about the brand, lookalikes of the creators already delivering, indexed in Atlas, marketplace and web), scores each with evidence, republishes one living page, and keeps decisions in Atlas. Schedulable. |
 | Agent | `atlas-creator-vetting` | Vets a list of creators from a CSV export from Aspire, pasted handles, or the Aspire app: brand fit against the saved criteria, a brand safety review per creator (industry categories, red lines, competitor partnerships, disclosure, audience signals), and Approve, Maybe, or Reject with evidence. Publishes a page, saves the recommendations as insights, and saves the team's call on each creator so future vetting and discovery use it. Interactive only. |
 | Agent | `atlas-content-review` | Reviews one creator draft or published post against its brief: brief adherence, brand guidelines, and brand safety, each check with evidence. Gives a verdict and edit notes the team can forward to the creator, publishes a review page, and learns from the team's feedback on every review. Interactive only. |
+| Agent | `atlas-post-analysis` | One published Instagram or TikTok post in depth, for a brand deciding whether to sponsor, partner with, or reuse it: reach with organic and paid boost apart, content scores, every brand on screen timed with frame stills, brand safety with each profanity instance timed and attributed, sponsor disclosure, people on screen and reuse rights, the account's baseline, and what it means for the brand. Refetches the post, publishes a page, and saves findings to Atlas when approved. Interactive only. |
 | Agent | `atlas-creator-brief` | Content creation brief for a week or a dated campaign: reviews recent posts and the latest market signal and readout findings, sets deliverables and guardrails, takes first picks from the campaign shortlist or sources creators through Aspire discovery, prices each engagement, publishes a visual brief. Campaign mode works the timeline back from the launch date |
 | Agent | `atlas-daily-insights-report` | Daily insights: what yesterday's posts tell the team against the 28-day baseline, the breakouts and misses and why, red-line hits, follower delta, what changed since the last report, each turned into a next step, and a launch pulse while a campaign window is open. Compact page, Slack and email delivery, findings saved to Atlas. Schedulable. |
 | Agent | `atlas-weekly-insights-report` | Weekly insights: the patterns behind last week's results against the prior week and 8-week median, why the top and bottom posts landed where they did, format and cadence mix, open action items, three ranked next steps. One section per saved reader: the social team, leadership, product (parity), product marketing (messaging), and growth (creator and format efficiency). Visual page, Slack and email delivery, findings saved to Atlas. Schedulable. |
@@ -46,6 +47,7 @@ Plugin skills are namespaced, so the canonical command is `/aspire:aspire`. The 
 - Content review: "review this post", "check this draft against the brief", "brand safety check on this post". The first review runs a four-question setup: what blocks a post, the disclosure rule, brand rules, and how strict the safety screen is. After that, each review asks for the brief, the deliverable, and the post (a draft with its media, or a published link, which Atlas fetches if it doesn't hold it). It ends by asking whether the calls were right. Corrections the user approves are saved as review rules, and the agent proposes hard rules (for example "paid posts carry #ad in the first line") that the user can apply to every future review in the organization. Saved reviews appear in the daily and weekly readouts: verdicts, hard-rule hits, and open edits.
 - Creator cards: every creator the plugin shows ("show me @handle", search results, the discovery shortlist, the brief's creators) is drawn with one compact card: profile picture, network chips, badges, brand safety and comment sentiment tiles, key stats, and three recent posts. Sections with no data behind them are left out. In chat the card carries three buttons: Draft Outreach writes a message for review (never sent), Add to list puts the creator on a campaign shortlist, and Save adds them to the brand's watch list ("show my watch list"). Each one asks before writing anything.
 - Fee calculator: `/aspire:aspire fee calculator` sets the brand's creator rates, offered once during onboarding. It starts from Aspire's recommended CPM ladder ($40 open, $80 target, $120 max per 1,000 views), with an optional check against current public benchmarks, and lets the team keep it or adjust it. Every fee the plugin shows (creator profiles, briefs, shortlists, outreach drafts) is the median views of a creator's last 10 posts per channel, bundled, times those rates. Carousels and image posts, which rarely carry view counts, are priced from their engagement using the same creator's own views-per-engagement on Reels, and marked as estimated. Where the data isn't there, no price is shown.
+- Post analysis: "analyze this post", "what brands are in this video", "should we sponsor this show". Paste the post's link (that approves fetching it); Claude asks who the analysis is for, whether to compare it with the account's recent posts, and whether to save the findings. The page times every brand and every censored word from the video itself, shows where the cleanest trim would fall, checks how the sponsor is disclosed, and lists what a reuse would need cleared. No brief needed; a post checked against a brief is content review.
 - Creator profiles: "full profile for @handle" or "show me @handle's portfolio" runs the `atlas-creator-profile` agent, which publishes one page per creator: the card at full width, then audience, top and lowest posts, engagement by post, comment sentiment, brand safety by category, paid partnerships kept apart from organic mentions, recommended fees from the fee calculator, a peer comparison, next steps, and data gaps. Sections with no data behind them are left out.
 - Creator vetting: "vet these creators", "which of these should we approve", "go through this Aspire export". Upload a CSV export from Aspire, paste handles, or pull the list from the Aspire app (you sign in yourself). Each creator is checked for fit and brand safety and recommended Approve, Maybe, or Reject. What you say about a creator is saved, so the next vetting and discovery run start from it.
 - Readouts: "what happened yesterday", "how did last week go", "weekly readout", "daily readout", "schedule the readouts". First use runs a six-question setup (delivery times and timezone, Slack channel and email recipients, flag thresholds, lead metric, escalation rule, and who reads the weekly: the social team, leadership, product and product marketing, growth, each optionally with its own destination). During a launch, the daily readout adds a launch pulse on how it is landing. Answers are saved to the brand's Atlas memory so every teammate and every scheduled run uses the same setup without re-asking.
@@ -79,7 +81,7 @@ Daily prompt:
 
 ```
 Run the Atlas daily insights report for {brand} (handles: {@handle1 on instagram, @handle2 on tiktok}).
-Use the Aspire Atlas connection and the brand's saved readout calibrations for the window,
+Use the Aspire Atlas connection, find {brand}'s Atlas profile by name, and use the brand's saved readout calibrations for the window,
 thresholds, lead metric, and delivery routing. Launch the atlas-daily-insights-report agent in
 unattended mode. Do not ask questions. Do not state today's date in the launch message; the
 agent reads the current date from the shell clock in the brand's saved timezone and reports
@@ -91,7 +93,7 @@ Weekly prompt:
 
 ```
 Run the Atlas weekly insights report for {brand} (handles: {@handle1 on instagram, @handle2 on tiktok})
-for the previous Monday to Sunday. Use the Aspire Atlas connection and the brand's saved
+for the previous Monday to Sunday. Use the Aspire Atlas connection, find {brand}'s Atlas profile by name, and use the brand's saved
 readout calibrations for thresholds, lead metric, audience, and delivery routing. Launch the
 atlas-weekly-insights-report agent in unattended mode. Do not ask questions. Do not state today's date
 in the launch message; the agent reads the current date from the shell clock in the brand's
@@ -113,7 +115,7 @@ The market signal runs weekly, ideally an hour before the weekly readout so the 
 
 ```
 Run the Atlas market signal for {brand} (handles: {@handle1 on instagram}). Use the Aspire
-Atlas connection and the brand's saved market signal calibrations for the competitors, topics,
+Atlas connection, find {brand}'s Atlas profile by name, and use the brand's saved market signal calibrations for the competitors, topics,
 readers, and delivery routing. Launch the atlas-market-signal agent in unattended mode. Do not
 ask questions. Do not start any discovery. Do not state today's date in the launch message;
 the agent reads the current date from the shell clock in the saved timezone and reports the
@@ -130,7 +132,7 @@ Discovery prompt:
 
 ```
 Run the Atlas creator discovery for {brand}, campaign {campaign-slug} (handles: {@handle1 on
-instagram}). Use the Aspire Atlas connection and the campaign's saved calibrations for the
+instagram}). Use the Aspire Atlas connection, find {brand}'s Atlas profile by name, and use the campaign's saved calibrations for the
 criteria, pool target, and delivery routing. Launch the atlas-creator-discovery agent in
 unattended mode to fill the shortlist back to target. Do not ask questions. Do not record
 any accept or reject verdict; only a person decides. Do not state today's date in the launch
@@ -165,7 +167,7 @@ Instagram, Meta, TikTok, YouTube, Slack, Gmail, Google Fonts, and the other name
 
 - Every action that changes Atlas state is confirmed through a multiple-choice question first, never plain text.
 - Destructive actions (`delete_profile`, `unlink_channel`, superseding or retracting a calibration, removing hashtags, changing the brand instruction) each get their own confirmation with the safe option first, and never run during onboarding on the skill's own initiative.
-- Scheduled (unattended) runs never ask questions, never run destructive tools, and deliver only to destinations saved during setup. The one exception to the no-discovery rule is `atlas-creator-discovery`: its saved cadence record is the standing approval to search Atlas and the creator marketplace on every run, including scheduled ones. Every other scheduled run starts no discovery work. Content review never runs unattended. Incomplete setup produces a "setup needed" page, not a guess.
+- Scheduled (unattended) runs never ask questions, never run destructive tools, and deliver only to destinations saved during setup. The one exception to the no-discovery rule is `atlas-creator-discovery`: its saved cadence record is the standing approval to search Atlas and the creator marketplace on every run, including scheduled ones. Every other scheduled run starts no discovery work. Content review and post analysis never run unattended. Incomplete setup produces a "setup needed" page, not a guess.
 - The tool surface is re-verified per release; unlisted tools that change state are treated as destructive until documented. See `skills/aspire/references/atlas-tools.md`.
 
 ## Changes

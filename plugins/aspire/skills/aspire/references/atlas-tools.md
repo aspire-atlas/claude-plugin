@@ -1,7 +1,7 @@
 # Atlas MCP tool reference
 
 Server: `https://atlas.aspire.io/mcp` (streamable HTTP, OAuth handled by the connector).
-Last verified 2026-09-28 against the live server: 34 tools. The surface changes without
+Last verified 2026-10-05 against the live server: 35 tools. The surface changes without
 notice; when a tool named here is missing, or an unlisted `*Aspire_Atlas*` tool appears (other than the admin connector's `*Organization_Admin*` tools), note
 it in the run summary so the plugin can be updated. Never call an unlisted tool that changes
 state without first checking the **Destructive tools** section below.
@@ -40,26 +40,35 @@ social channels and brand memory have a home in the organization."
 
 ## Attribution model
 
-- Organization → Profile → Channels. Slugs everywhere.
-- `asOrg` alone works only when the org has exactly one live profile.
-- `asProfile` alone is authorized by the caller's role in that profile's org.
+- Organization → Profile → Channels. Tools take ids, never slugs: `asOrganizationId`
+  (`org_…`, from `get_status` `organizations.selected.id` / `organizations.all[].id`) and
+  `asProfileId` (a uuid, from `get_status` `profiles[].id`, `list_my_profiles`, or
+  `create_profile`'s `id`). Slugs can change; keep them for display and for naming your
+  own records and files only.
+- `asProfileId` alone locates its own organization and is authorized by the caller's role
+  there.
+- With only `asOrganizationId`, a call is attributed to the organization; it reaches a
+  profile only when the organization has exactly one live profile. Profile-scoped reads and
+  writes need `asProfileId`.
 - Omitting both defaults to the connector's org (chosen at OAuth time).
-- Older aliases `orgSlug` / `profileSlug` still work; `connect_channel` uses `profileSlug`.
+- The old slug-era argument names (anything containing `slug`, and the short `as…` names
+  that took slugs) are rejected with `invalid-input`, and so is a slug passed where an id
+  belongs.
 
 ## Phase map
 
 | Phase | Tool | Purpose | Notes |
 | ----- | ---- | ------- | ----- |
-| 2, 3 | `get_status` | Orgs, selected org, profiles, channels, expired auths, next-step links | Call once per session. `asOrg` to switch org. |
+| 2, 3 | `get_status` | Orgs, selected org, profiles, channels, expired auths, next-step links | Call once per session. `asOrganizationId` to switch org. Keep the organization and profile `id`s it returns. |
 | 2 | `list_my_organizations` | Cheap org re-check | |
-| 3 | `list_my_profiles` | Cheap profile re-check per org | |
+| 3 | `list_my_profiles` | Cheap profile re-check | Every organization the caller can act on, each with its live profiles (`id`, `slug`, `name`) in one call |
 | 3 | `get_profile` | One profile's detail | `{found:false}` is normal |
-| 4.1 | `create_profile` | Create brand profile | `name` + `asOrg`. Returns authoritative `slug`. Re-sending the same name to the same org returns the existing profile, not a duplicate. |
+| 4.1 | `create_profile` | Create brand profile | `name` + `asOrganizationId`. Returns the profile's `id` (for `asProfileId`) and `slug` (display). Re-sending the same name to the same org returns the existing profile, not a duplicate. |
 | 4.1 | `update_profile` | Rename | Slug never changes |
 | 4.1 | `delete_profile` | Remove a profile | **Destructive, irreversible.** Refused while channels are linked. See Destructive tools. |
-| 4.2 | `connect_channel` | Start / resume social connection | Start: `channel` + `profileSlug` → `connectUrl`, `elicitationId` (show `connectUrl` via the card in `connection-card.md`). Resume: `elicitationId` only, long-polls ~30s. Channels: `meta`, `tiktok`, `tiktok_one`, `youtube`. Status `already-linked` → see `unlink_channel`. |
+| 4.2 | `connect_channel` | Start / resume social connection | Start: `channel` + `asProfileId` → `connectUrl`, `elicitationId` (show `connectUrl` via the card in `connection-card.md`). Resume: `elicitationId` only, long-polls ~30s. Channels: `meta`, `tiktok`, `tiktok_one`, `youtube`. A `complete` status carries `outcome` (`all-linked`, `partially-linked`, `none-linked`); an account another profile holds is a `failedAccounts[].error` `already-linked`, with that profile's id in `discoveredAccounts[].accounts[].alreadyLinkedToProfileId` (matched by `platformAccountId`) → see `unlink_channel`. |
 | 4.2 | `list_channels` | Live connections on a profile | Returns `platform` + `platformAccountId`; empty list is a normal first-run state. Read before `unlink_channel`. |
-| 4.2 | `unlink_channel` | Disconnect an account from a profile | **Destructive.** Needs `platform` (`instagram`, `facebook`, `tiktok`, `tiktok_one`) + `platformAccountId` from `list_channels`. Collected data is kept. See Destructive tools. |
+| 4.2 | `unlink_channel` | Disconnect an account from a profile | **Destructive.** Needs `platform` (`instagram`, `facebook`, `tiktok`, `tiktok_one`, `youtube`) + `platformAccountId` from `list_channels`. Collected data is kept. See Destructive tools. |
 | 4.3 | `add_hashtags` / `remove_hashtags` / `list_hashtags` / `list_available_hashtags` | Watch-list | Networks: `instagram`, `tiktok`. Per-row results. TikTok: 50 cap, eligibility gate, 7-day removal lock. |
 | 4.3 | `list_hashtag_posts` | Posts carrying one tracked hashtag on one network, newest first | Read only. `hashtag` + `network` (`instagram`, `tiktok`), optional `since` / `until` (default last 90 days), `sort` (`postedAt` or a metric, descending). Page with `nextCursor` → `cursor`, keeping hashtag, network and sort unchanged. `hashtag-not-tracked` and `no-linked-channel` are normal states, not failures. With a metric sort, dedupe on `externalId`. |
 | 5 | `search_calibrations` | Read brand memory | `q`, `kinds`, `keyPrefix`, `includeSuperseded`, `includeProposed`. If `unavailable`: stop, do not guess. |
@@ -71,19 +80,22 @@ social channels and brand memory have a home in the organization."
 | 6 | `list_creator_search_fields` | Live field census for accounts | |
 | 6 | `search_posts` | Posts by filter, optional semantic `queryText` | Filter-only is sub-100ms; semantic takes seconds. `aggs` on filter path only. |
 | 6 | `search_creators` | Accounts by filter | No per-post fields here |
+| Discovery | `search_creator_marketplace` | Start a creator-marketplace search on Instagram and/or TikTok | `{ keyword (required, 1 to 100 chars), networks (default both), instagram: { filters }, tiktok: { filters } }`. Each network takes its own filters; a filter block for a network not in `networks`, or any old top-level `filters`, is rejected. Returns `jobs.instagram` / `jobs.tiktok`: `{ jobId, runId }` when started (poll `get_job_status` with **each** `jobId`) or `{ skipped: true, reason }` (`no-seat`, `unavailable`, `rate-limited`, `internal-error`). Fails only when every requested network was skipped. TikTok: `countryCodes` defaults to `["US"]` (echoed in `jobs.tiktok.appliedDefaults`), only 26 supported countries (an unsupported one fails the whole call), one region per search, `stateProvinces` only with `["US"]`; `jobs.tiktok.seat` says whose TikTok One seat ran it (keyword results are personalized per seat). `instagram.filters.similarToCreators` cannot be combined with the required `keyword`, so never send it. Starts discovery work: see **Avoid in onboarding**. |
+| Discovery | `list_creator_marketplace_labels` | TikTok content and industry labels | Read only. `{ network: "tiktok" }` → `contentLabels` / `industryLabels` with `id` and `name`; pass ids as `tiktok.filters.contentLabelIds` / `industryLabelIds`. An unknown id fails the search. A search that names label ids is skipped `no-seat` when Aspire has no default TikTok One seat: retry without them. `unavailable` with `retryable: false` means no default seat is configured; search without labels, which runs only on the profile's own TikTok One seat, and if TikTok is then skipped, report it as not searched. |
 | 6 | `append_insights` | Write analyst findings | `runKey` per session; roles `account_review` (went_well / needs_improvement / action_item) |
 | 6 | `search_insights` / `list_insight_search_fields` | Read back findings | Tenant-private |
 | Content review | `search_calibrations`, `get_brand_instruction` (read only), `search_posts`, `search_creators`, `search_insights`, `append_insights`, `append_calibration` (lessons and hard rules the user saved), `lookup_posts` (one named post) | Reviews one post against a brief; reads prior reviews and feedback by `runKey` prefix `content-review-*` | Setup and lessons in `content-review.md`; interactive only |
+| Post analysis | `search_calibrations`, `list_post_search_fields`, `search_posts`, `search_creators`, `search_insights`, `lookup_posts` (the linked post), `lookup_creators` (its author, on Q2 "Refresh"), `append_insights` | `atlas-post-analysis`: one published post in depth, `runKey` prefix `post-analysis-*` | `post-analysis.md`; interactive only; no discovery |
 | Theme | `search_calibrations`, `append_calibration`, `supersede_calibration` and `retract_calibration` (Destructive tools confirmation each) | Brand colors, fonts, and logo for every page, in one `theme:brand` record | Interview and application rules in `theme.md`; main thread only, never unattended |
 | Fee calculator | `search_calibrations`, `append_calibration`, `supersede_calibration` and `retract_calibration` (Destructive tools confirmation each) | Creator rates for every fee the plugin shows, in one `fees:rate-card` record | Questionnaire, calculation, and application rules in `fees.md`; main thread only, never unattended |
 | Readouts | `search_calibrations`, `search_posts` (+ `aggs`), `search_creators`, `search_insights`, `list_hashtag_posts` (launch pulse), `append_insights` | Daily and weekly readouts read prior runs by `runKey` prefix (`readout-daily-*`, `readout-weekly-*`), and the weekly's product and PMM lenses read `market-signal-*`; they write new findings | Setup calibrations and the launch pulse in `readout.md`; unattended runs never ask or destroy |
 | Market signal | `search_calibrations`, `list_post_search_fields`, `search_posts` (+ `aggs`, + semantic), `search_creators`, `list_hashtag_posts`, `search_insights`, `append_insights` | What creators say about the brand vs. its competitors; reads prior runs by `runKey` prefix `market-signal-*` | Setup calibrations in `market-signal.md`; no discovery in any mode; unattended runs never ask or destroy |
 | Quarterly signal | `search_calibrations`, `search_posts`, `search_creators`, `search_insights`, `list_insight_search_fields`, `append_insights` | Rolls up every saved `runKey` prefix for the quarter into one page | `quarterly-signal.md`; no discovery |
 | Creator vetting | `search_calibrations`, `get_brand_instruction` (read only), `search_creators`, `search_posts`, `search_insights`, `append_insights`, `append_calibration` (creator notes and lessons the user saved), `lookup_creators` (listed handles, after R3) | Approve, Maybe, or Reject for a list of creators; `runKey` prefix `creator-vetting-*`; team calls on a creator in `creator:*` records | `creator-vetting.md`; interactive only |
-| PPA pitch | `search_calibrations`, `list_creator_search_fields`, `search_creators`, `list_post_search_fields`, `search_posts`, `search_insights`, `append_insights`, and with D4's marketplace option `search_creator_marketplace`, `get_job_status`, `lookup_creators` | `atlas-ppa-pitch`: a casting deck for paid partnership ads; `runKey` prefix `ppa-pitch-*`; reads every other prefix for pre-fill | `ppa-pitch.md`; interactive only; package prices never written
+| PPA pitch | `search_calibrations`, `list_creator_search_fields`, `search_creators`, `list_post_search_fields`, `search_posts`, `search_insights`, `append_insights`, and with D4's marketplace option `search_creator_marketplace`, `get_job_status`, `list_creator_marketplace_labels`, `lookup_creators` | `atlas-ppa-pitch`: a casting deck for paid partnership ads; `runKey` prefix `ppa-pitch-*`; reads every other prefix for pre-fill | `ppa-pitch.md`; interactive only; package prices never written
 | Ad reuse | `search_calibrations`, `list_post_search_fields`, `search_posts`, `search_creators`, `list_hashtag_posts`, `search_insights`, `append_insights` | `atlas-ad-reuse`: hook scores and cut lists, `runKey` prefix `ad-reuse-*` | `ad-reuse.md`; reads only what Atlas holds |
 | CAS campaign | `search_calibrations`, `append_calibration`, `supersede_calibration` (its own confirmation), `search_insights`, `append_insights`, `search_posts` (rates and terms) | Conducts a creator ad campaign through Gates 2 to 4; setup in `campaign:{slug}-*` records, working state on `runKey` prefix `cas-campaign-*`; launches discovery, vetting, and the brief in creator-ads mode | `cas-campaign.md`, `rates-and-terms.md`, `hooks-and-ctas.md`; main thread only; unattended runs publish and post only |
-| Avoid in onboarding | `lookup_creators`, `lookup_posts`, `start_business_discovery`, `search_creator_marketplace`, `get_job_status` | Start discovery work beyond the accounts Atlas already holds | Only on explicit user request. The one routine use is `atlas-profile-analyst` in named-handle mode: the user typing a network and handle in Phase 6 is the approval, and the agent calls `lookup_creators` only when Atlas holds nothing for that handle or the record is over 24 hours old. `lookup_creators` has no status-check tool; re-call it with the same item to re-read a `fetching` result, and `creatorDeepAnalysis` defaults to `true` there, so recent posts come with the account. It rejects `profileSlug`; attribute with `asProfile`. Creator vetting is another: R3 "Fetch them" approves `lookup_creators` for exactly the listed handles Atlas does not hold, batched up to 100 per call. The other routine use is `atlas-content-review` on a published post: pasting the link is the approval, and the agent calls `lookup_posts` once for that post only when Atlas does not hold it, with `creatorDeepAnalysis` left at its default `false`. A TikTok miss is a paid vendor call. |
+| Avoid in onboarding | `lookup_creators`, `lookup_posts`, `start_business_discovery`, `search_creator_marketplace`, `get_job_status` | Start discovery work beyond the accounts Atlas already holds | Only on explicit user request. The one routine use is `atlas-profile-analyst` in named-handle mode: the user typing a network and handle in Phase 6 is the approval, and the agent calls `lookup_creators` only when Atlas holds nothing for that handle or the record is over 24 hours old. `lookup_creators` has no status-check tool; re-call it with the same item to re-read a `fetching` result, and `creatorDeepAnalysis` defaults to `true` there, so recent posts come with the account. Attribute it with `asProfileId`. Creator vetting is another: R3 "Fetch them" approves `lookup_creators` for exactly the listed handles Atlas does not hold, batched up to 100 per call. `atlas-post-analysis` is another: pasting the post's link approves `lookup_posts` for that post, and Q2 "Refresh the account first" approves `lookup_creators` for its author only. The other routine use is `atlas-content-review` on a published post: pasting the link is the approval, and the agent calls `lookup_posts` once for that post only when Atlas does not hold it, with `creatorDeepAnalysis` left at its default `false`. A TikTok miss is a paid vendor call. |
 | Utility | `get_more_tools` | Server-side tool discovery | Do not call during onboarding; the phase map above is the supported surface. |
 
 ## Destructive tools: confirmation is mandatory
@@ -176,7 +188,13 @@ record families under its campaign slug:
 | Family | Where | Keys or prefix | Read by |
 | ------ | ----- | -------------- | ------- |
 | Setup | Calibrations | `campaign:{slug}-brief` (with `type: creator-ads`), `-criteria`, `-pool`, `-routing`, `-cadence` (shared with creator discovery), plus `-cas`, `-lane-{lane}`, `-decision-defaults`, `-terms` | The CAS campaign, and discovery, vetting, and the brief in creator-ads mode |
-| Working state | Insights | `runKey` prefix `cas-campaign-{profile}-{slug}`, `detail.recordType` `gate`, `roster`, `brief`, `hook`, `hook-review`, or `ledger` | The CAS campaign, and the brief in creator-ads mode (roster and hook log) |
+| Working state | Insights | `runKey` prefix `cas-campaign-{profile}-{slug}`, `detail.recordType` `gate` (Gates 1 to 4, and 4b per creator), `roster`, `draft`, `reply`, `brief`, `brief-revision`, `hook`, `hook-review`, or `ledger` | The CAS campaign, and the brief in creator-ads mode (roster, hook log, and a creator's brief revision) |
+| Page data | The campaign page, not Atlas | `client/*` (the client's decisions, notes, approvals, shipping edits), `edits/*` (the agency's status and ad permission edits), `agency/*` (agency-only fields), `data/users/{id}/done` (done marks per person) | The CAS campaign, through **Pulling decisions**; done marks stay on the page |
+
+The new record types: a `brief-revision` is one creator's version of the brief, per creator per
+round; a `reply` is one line in the reply log, never replaced; a `draft` is the email waiting on
+the creator's row; an agency edit from the page lands as a `roster` finding with `source`
+`page`. Done marks are never written to Atlas.
 
 The keys `-cas`, `-lane-*`, `-decision-defaults`, and `-terms` belong to the CAS campaign only.
 Every other flow drops them, as it drops `review:` and `vetting:` keys. They are never brand
