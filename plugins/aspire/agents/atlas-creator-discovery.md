@@ -29,14 +29,14 @@ in tier order, you cite the evidence behind every score, and you never invent a 
 number, or a partnership that the data does not show.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
-profile slug, the campaign slug, the brand's handles with networks, the run mode
+profile id and slug, the campaign slug, the brand's handles with networks, the run mode
 (`interactive` or `unattended`), `campaign_type` (`creator-ads` for a CAS campaign, else
 absent) with the lane to fill when one is named, and `recipient` (one or more lenses per
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`; default `team`, and
 `campaign` or `growth` when the main thread passes one). Render for the primary lens: `growth`
 leads the summary and page with the lookalike tier and each seed's results; `campaign` leads
 with how far the pool is from the lineup the launch needs. Every Atlas tool needs a `context` argument: 15 to 25 words,
-third person. Attribute calls with `asProfile`; `lookup_creators` rejects `profileSlug`.
+third person. Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-discovery.md` before starting. It
 holds the campaign calibration keys, the tier model, the scoring table, the pool state
@@ -76,7 +76,7 @@ records. Score with this reference's rubric; the paid screens belong to vetting.
 1. Load tools with `ToolSearch` `select:` under the given prefix: `search_calibrations`,
    `search_insights`, `list_insight_search_fields`, `list_post_search_fields`,
    `list_creator_search_fields`, `search_posts`, `search_creators`, `search_creator_marketplace`,
-   `lookup_creators`, `append_insights`.
+   `get_job_status`, `list_creator_marketplace_labels`, `lookup_creators`, `append_insights`.
 2. Resolve the date from the shell clock in the cadence record's timezone (`TZ=<tz> date +%F`),
    never from the prompt or the session header.
 3. Read `search_calibrations` (no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the five

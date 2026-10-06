@@ -6,6 +6,25 @@ The version lives in exactly one place: `plugins[].version` in `.claude-plugin/m
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-10-05
+
+Minor release. Works with the current Atlas server again, adds a post analysis agent, and makes the CAS campaign page the client's approval page.
+
+### Added
+- `atlas-post-analysis` agent: one published Instagram or TikTok post analyzed in depth for a brand deciding whether to sponsor, partner with, or reuse it. It covers reach and engagement with organic and paid kept apart, every brand in the video timed to the second with a still, brand safety across the industry categories with a profanity timeline and the cleanest trim, sponsor disclosure, comment sentiment, reuse rights, and the account's own baseline. Pasting the link approves fetching that one post. Findings are saved only when you approve. Interactive only.
+- CAS campaign approval page: setup starts from the approved concepts (a saved pitch, a Claude artifact link, a Google Slides link, or pasted text). The client approves creators, fees, and briefs on the campaign page, which shows a four-step progress bar, a "Needs your attention" list, and tabs for creators, fees, product shipping, briefs, delays, and budget (budget is agency only). "Pull the client's decisions" reads the decisions back, and they are recorded in Atlas only after a confirmation.
+- Negotiation drafts and replies in Rates and terms: one email draft per approved creator (offer, counter, accept, or chase). You paste replies back and confirm the record and next move. A reply that changes what the client approved goes back to the client.
+- Creator details and product shipping after fees are approved, and the creator's turn on the brief: the brief agent lists a creator's changes in plain words for the client to approve.
+
+### Changed
+- Atlas calls use organization and profile ids in place of slugs, which the server now requires. Scheduled and resumed runs look up the profile id by its exact name and publish "setup needed" when they can't find it.
+- Creator marketplace searches use the unified Instagram and TikTok search. Each network runs its own job, and a skipped network is retried or reported. TikTok searches run one region per call, in the supported countries.
+- Connecting a channel already linked to another profile is reported correctly, and a connection that linked no account is no longer reported as success.
+- SECURITY.md covers frame and audio extraction for post analysis, which uses a tool only when it is already installed.
+
+### Fixed
+- Every attributed Atlas call and every creator marketplace search was rejected by the current Atlas server. Both work again.
+
 ## [3.1.0] - 2026-10-02
 
 Minor release. Three new agents, a campaign manager for creator ad campaigns, samples of every agent's page, and an audit of the decisions behind any page.
@@ -107,7 +126,8 @@ First public release. Versioning restarts at 1.0.0; earlier 0.x builds were inte
 - Two release channels: `aspire-atlas` (official, pinned) and `aspire-atlas-beta` (tracks `develop`).
 - Apache-2.0 license.
 
-[Unreleased]: https://github.com/aspire-atlas/claude-plugin/compare/v3.1.0...HEAD
+[Unreleased]: https://github.com/aspire-atlas/claude-plugin/compare/v3.2.0...HEAD
+[3.2.0]: https://github.com/aspire-atlas/claude-plugin/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/aspire-atlas/claude-plugin/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/aspire-atlas/claude-plugin/compare/v2.0.0...v3.0.0
 [2.0.0]: https://github.com/aspire-atlas/claude-plugin/releases/tag/v2.0.0

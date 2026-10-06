@@ -125,13 +125,38 @@ on the campaign, never reuse one, and append every new one as a `hook` finding.
 
 **The page.** One page per round, a section per lane with an anchor (`#lane-{lane}`), the
 coverage result at the top of each section. Title "<Brand> Creator Ad Brief: <Campaign>, round
-{n}", republished to the same path for that round. The Gate 4 packet is this page with the gate
-header (`cas-campaign.md`, **Gate 4**). Sections 2, 5 and 6 of **Page structure** drop out: the
+{n}", republished to the same path for that round. It stays the full brief editors cut from; the
+client approves the same briefs on the campaign page's Briefs tab (`cas-campaign.md`, **Gate
+4**), which the main thread builds from this page. Sections 2, 5 and 6 of **Page structure** drop out: the
 lanes set the audience, the roster replaces the shortlist, and the gates replace the timeline.
 
 **Writes**, on the main thread's confirmation: a `brief` finding per lane (`locked: false`,
 `briefPage`, `version`), then a `hook` finding per new hook and CTA, all per
 `cas-campaign.md`, **Working state**. No `creator-brief-*` findings in this mode.
+
+### A creator's revision
+
+After the briefs are approved, a creator may reply with their own version (`cas-campaign.md`,
+**1g**). The main thread launches this mode with `revision`: the creator's handle and network,
+their concept, and their version as pasted. Then the agent compares, and does nothing else:
+
+1. Read the concept's newest locked `brief` finding and its page as the approved brief, and the
+   creator's newest `brief-revision` when one exists (a second round compares against the
+   approved brief, not the last revision).
+2. Compare field by field: each hook and CTA, the body, the beats and their seconds, each B-roll
+   shot, the product, the runtime per platform, the disclosure, and the do's and don'ts.
+3. List each difference as one plain line: what changed, the approved text, the creator's text.
+   For example "Hook B: 'Charged once Friday night, back Sunday dark' becomes 'One charge. Friday
+   to Sunday.'", "Runtime: V2 45 seconds becomes 60 seconds", "B-roll 07, the trailhead sign:
+   dropped". Wording that means the same thing is not a difference. No field names, no record
+   words.
+4. Check each difference against the rules this mode already applies: a hook or CTA in the hook
+   log, a red line, the disclosure, and the editing coverage check. A difference that breaks one
+   is marked with the rule in plain words ("drops the spoken paid partnership line").
+5. Return the list, any marked differences, and "no changes" when the versions match. Publish
+   nothing and write nothing: the main thread writes the `brief-revision` after its own
+   confirmation. When the client approves it, the creator's version becomes their locked brief;
+   any new hook in it is appended to the hook log then.
 
 ## Fit rubric
 
@@ -196,11 +221,44 @@ fetched during the run.
 - `/thumbnail` routes on `cdn.aspire.io` return 404 on image posts, where the base media URL is
   the full-size image. On video posts the base URL is the video file and `/thumbnail` is the
   full-size poster. Pass both, `mediaUrl` first, to the **Images** snippet in `creator-card.md`.
-- `search_creator_marketplace` requires `keyword` and rejects it alongside
-  `filters.similarToCreators`, so lookalike search is unreachable from the connector.
-- Marketplace results land in `search_creators` 1 to 3 minutes after `get_job_status`
-  reports `completed`. Filter on `indexedAt` gte now-2h and the country to read them; the
-  index is shared, so unrelated accounts appear in the same window.
+- **Marketplace search** (re-verified 2026-10-05). One `search_creator_marketplace` call
+  searches Instagram and/or TikTok for one keyword:
+  `search_creator_marketplace({ keyword, networks, instagram: { filters }, tiktok: { filters }, asProfileId })`.
+  Set `networks` to the networks you want (it defaults to both) and send a filter block only
+  for a network in `networks`; a block for any other network, or the old top-level `filters`,
+  fails the whole call with `invalid-input`.
+  - Instagram filters: `creatorCountries` (a list of country codes), `creatorMinFollowers`
+    (0, 10000, 25000, 50000, 75000, 100000, 250000, 1000000) and `creatorMaxFollowers` (the
+    same without 0), so round a follower band outward to the nearest allowed values;
+    `creatorLatestPostActivity` (`last_7_days`, `last_30_days`, `last_90_days`),
+    `creatorInterests` (up to five), `recommendationType`, and the rest in the tool's schema.
+    `keyword` is required and cannot be combined with `instagram.filters.similarToCreators`, so
+    never send `similarToCreators`: lookalike-by-handle is unreachable from the connector.
+  - TikTok filters are ranges and codes: `countryCodes` (defaults to `["US"]`, echoed in
+    `jobs.tiktok.appliedDefaults`; all codes from one region: US alone; DE, ES, FR, GB, IT; or
+    the rest). TikTok supports only US, DE, ES, FR, GB, IT, AE, AR, AU, BR, CA, CO, EG, ID,
+    IL, JP, KR, MX, MY, PH, SA, SG, TH, TR, TW and VN, and any other code fails the whole call,
+    Instagram included: send only supported codes, and when none of the brand's countries is
+    supported, drop `tiktok` from `networks` and report TikTok as not searched. Never omit
+    `countryCodes` to fall back on the US default. When the chosen markets span regions, the
+    first call per keyword carries one region and each further region gets its own call with
+    `networks: ["tiktok"]` only, so Instagram is searched once; any requested region left
+    unsearched is reported as not searched. `stateProvinces` (only with
+    `countryCodes` exactly `["US"]`), `minFollowers` / `maxFollowers`, `minEngagementRate` /
+    `maxEngagementRate` (0 to 1), `languages`, and `contentLabelIds` / `industryLabelIds`.
+    Label ids come only from `list_creator_marketplace_labels({ network: "tiktok" })`, matched
+    by label name; an unknown id fails the call. Keyword results are personalized per TikTok
+    One seat; `jobs.tiktok.seat` says whether the brand's (`profile`) or Aspire's (`default`)
+    ran it.
+  - The result has one entry per requested network under `jobs`: `{ jobId, runId }` when it
+    started, or `{ skipped: true, reason }`. Poll `get_job_status` with **each** started
+    `jobId` until `completed` or `failed`. On a skip: `rate-limited` or `unavailable`, retry
+    that network once later in the run with `networks` set to that network only; `no-seat`
+    after sending label ids, retry that network without them; anything else, report the network as not searched. The call errors only
+    when every requested network was skipped.
+- Marketplace results land in `search_creators` 1 to 3 minutes after each network's job
+  reports `completed`. Filter on `indexedAt` gte now-2h, the network, and the country to read
+  them; the index is shared, so unrelated accounts appear in the same window.
 - Creator co-authored (collab) posts on the brand's account carry the brand as
   `author.username`, `mediaProductType` null, and a mention of the brand handle. They are the
   strongest signal for collab performance.
