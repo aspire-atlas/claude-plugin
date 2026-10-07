@@ -3,7 +3,7 @@ name: aspire
 description: >
   Creative Intelligence for your brand on Aspire Atlas. Connect Instagram, TikTok, and
   YouTube, see what's working, benchmark competitors, and check brand safety. Find and brief
-  creators, keep a campaign shortlist, review posts, track what creators say about you vs.
+  creators, keep a campaign shortlist, review posts, run an influencer program from outreach to payments, track what creators say about you vs.
   competitors, and get daily, weekly, and quarterly reports shaped for whoever will act on
   them. Use for "/aspire", "/aspire agents", "get started with Atlas", "connect Atlas",
   "onboard my brand", "connect my Instagram", "what happened yesterday", "how did last week
@@ -13,7 +13,10 @@ description: >
   video", "show @handle's full profile", "what are creators saying about us vs {competitor}", "best hooks to reuse as
   ads", "build a PPA pitch", "casting deck for partnership ads", "how did influencer do this
   quarter", "start the CAS campaign for {brand}", "where is the {brand} campaign", "pull the
-  client's decisions", "record a reply", or "/aspire fee calculator".
+  client's decisions", "record a reply", "set up our influencer program", "where is the
+  {program} program", "write to the approved creators", "send product to the creators", "set up
+  affiliate codes", "did the creators post", "request rights", "what do we owe creators",
+  "program dashboard", or "/aspire fee calculator".
 metadata:
   author: Aspire
 ---
@@ -95,6 +98,8 @@ time so it never goes stale; never recite it from memory.
    | `atlas-content-sourcing` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Content sourcing** |
    | `atlas-deliverable-tracker` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Deliverable tracker** |
    | `atlas-roster-manager` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Roster review** |
+   | `atlas-program-dashboard` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Program dashboard** |
+   | `atlas-program-ledger` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Program ledger** |
 
    Older names still reach the renamed agents: `atlas-account-analyst` is `atlas-profile-analyst`,
    `atlas-daily-readout` is `atlas-daily-insights-report`, and `atlas-weekly-readout` is
@@ -1333,6 +1338,134 @@ say in one line that the review needs a person to approve it, and stop.
    discovery campaign first and save the slug to the program per the Phase 5 supersede rule.
 9. Sending follows **Influencer program**, Drafts: only when the user asks in this session,
    after the picker that names every recipient. "Sent them" marks drafts sent with one picker.
+
+---
+
+## Program ledger (what we owe creators, invoices, payments, and budget)
+
+Trigger when a program asks about money ("update payments", "what do we owe creators", "what's
+been paid", "where are we against budget", "how much budget is left", "which invoices are
+overdue", "these invoices came in", "mark @handle's fee paid", "export the ledger for finance"),
+attaches a payments or invoices export from the core Aspire platform or the brand's finance
+tool, a `ledger-lines` block comes back from the affiliate manager or content sourcing, or the
+**Program manager** dispatch reaches "Update payments". Requires a saved program (**Program
+setup**). Full detail lives in `references/program-ledger.md`.
+
+The ledger records; it never pays. Payments run in Aspire or the brand's finance tool. It is
+interactive only. Never schedule it; if `AskUserQuestion` is unavailable, say in one line that
+the ledger needs a person to confirm it, and stop. Every question below is one
+`AskUserQuestion` call, never plain text. Launch `atlas-program-ledger` with the tool prefix,
+`profile_id`, `profile_slug`, the program slug, the linked handles and networks, `recipient`
+(`team` by default), `connections`, `mode`, `pass`, any `ledger-lines` blocks from this
+session, and the G answers, and end with the decision-audit line.
+
+**Never keep payment details.** When the user pastes or uploads anything with bank details, tax
+ids, or card numbers, the agent strips them before reading; relay its one line ("Removed 2 bank
+details; not saved") and never repeat what was removed. Never ask for them.
+
+### Build (Update payments)
+
+1. Launch with `mode: build`, `pass: propose`. It writes nothing.
+2. Relay the page link, the headline (budget, paid, committed, product cost, forecast to term
+   end, remaining, per currency) and the overdue count. Then one call, your-call items first,
+   skipping what has nothing to ask:
+   - **G5**, header "Your call", one per item the agent raised, exactly as worded: the
+     recommended answer first (Recommended), the alternatives, "Decide later".
+   - **G1**, header "Lines": "Save these ledger lines for {program}? {n} new, {r} revised, {v}
+     void. @a: paid fee $1,200, due Nov 6; @b: October fee $800; and {n-2} more." Options: "Save
+     the lines (Recommended)", "Change something", "Page only".
+3. "Change something" relaunches `pass: propose` with the change. "Page only" stops. Otherwise
+   relaunch with `pass: record`, the `ledger-packet`, and the answers.
+4. Relay what was written, the finance CSV path, and anything overdue.
+
+### Record invoices and payments
+
+1. When nothing is attached or pasted yet, ask **G2**, header "Source": "What should I record?"
+   Options: "I'll paste invoices or payments", "I'll upload an export (CSV) from Aspire or our
+   finance tool". Then wait for the paste or the file.
+2. Launch with `mode: record`, `pass: propose`, and the pasted text or the file's path.
+3. Relay the page link, the removed-details line when there is one, the matches one per line,
+   and the unmatched rows with their reasons. Then one call, your-call items first:
+   - **G5**, header "Your call", one per item: an unmatched row with a close line, a short or
+     over payment, a reversal, a change after invoicing, a void past accrued.
+   - **G3**, CSV only (or when the rows do not say invoice or payment), header "Columns": "Read
+     the file this way? {mapping, one per line}; {match count}." Add "Are these invoices or
+     payments?" when the rows do not say. Options: "Use this mapping (Recommended)", "Change
+     something".
+   - **G4**, header "Record": "Record these {m} matches? @a September fee: paid Oct 3, ref 4471;
+     @b fee: invoiced INV-204; and {m-2} more. {u} rows did not match and stay on the page."
+     Options: "Record the matches (Recommended)", "Change something", "Page only".
+4. G3 "Change something" relaunches `pass: propose` with the change. Otherwise relaunch with
+   `pass: record`, the packet, and the answers. Never match an unmatched row yourself; the user
+   picks the line in G5 or leaves it.
+5. Relay what was written and the new headline.
+
+### Export
+
+On "export the ledger" or "send finance the CSV", launch `mode: export`. It writes nothing to
+Atlas. Relay the CSV path and the page link, and say the page has "Download finance CSV" for
+Editors. Sharing the file is the user's step.
+
+**Who sees the page.** On first publish relay once: "Share this page with your team as Editor
+to see amounts and the budget; Contributors see statuses only. Never share it with creators."
+
+---
+
+## Program dashboard (how the whole program is doing)
+
+Trigger when the user asks how a program is doing overall ("program dashboard", "how is
+{program} doing", "show the dashboard", "update the dashboard", "are we on track for our goals",
+"program overview"), when the **Program manager** dispatch reaches "Update the dashboard", or on
+"Show the dashboard" in its Next picker. Requires a saved program (**Influencer program**,
+Program setup). Full detail lives in `references/program-dashboard.md`. The quarter's story
+across everything Atlas holds stays in **Quarterly signal**.
+
+The dashboard reads and shows; it never acts. Every open item names the flow that handles it,
+and the Program manager offers that flow as the next step.
+
+### Run
+
+1. Read the program's setup records as the **Program manager** does. Missing or unparseable
+   program records: run **Program setup** first.
+2. One `AskUserQuestion` call, with the **Reading the ask** confirmation when it applies (default
+   `team`; `leadership` for "are we on track", "for my manager", "for the exec update";
+   `growth` for "where is the money going"):
+   - **B1**, header "Save": "Update the {program} dashboard and save today's numbers to Atlas?
+     The Program manager and the quarterly signal read them." Options: "Save (Recommended)",
+     "Page only".
+   - **B2**, header "Post", only when the program's routing names a Slack channel or email
+     recipients: "Post the dashboard summary to {channel} and email {recipients}?" Options:
+     "Post (Recommended)", "Page only this time".
+3. Launch `atlas-program-dashboard` with the tool prefix, `profile_id`, `profile_slug`, the
+   brand's linked handles and networks, the program slug, `mode: interactive`, `connections`,
+   `recipient`, and the B1 and B2 answers, and end with the decision-audit line. B1 is the write
+   confirmation; B2 is the delivery confirmation.
+4. Relay the page link, the headline, the attention list with each item's next step, and the
+   not-tracked list. On first publish, say once: "Share this dashboard with your team as Editor
+   to see goals and spend. Never share it with creators."
+5. Offer the first attention item as the single next step, the way the Program manager does
+   (header "Next": the step (Recommended), "Change setup"). Never launch it without the pick.
+6. **B3**, header "Schedule", only when the agent returned "Weekly task: ready to create" (P9
+   named "Weekly dashboard", the page now has a saved link, and no task named "Atlas program
+   dashboard: {brand} - {program}" exists): "Create the weekly dashboard task for {program}:
+   {day} {time} {timezone}? It republishes this page, saves the numbers, and posts to
+   {destinations}." Options: "Create the task (Recommended)", "Not now".
+
+### Schedule
+
+Follow **Readouts**, Schedule, for the mechanics, and `references/program.md` **8** for the task
+name "Atlas program dashboard: {brand} - {program}" (weekly, at the day and time saved in the
+program's cadence), launching `atlas-program-dashboard` with `mode: unattended`. Prompt:
+
+> Run the Atlas program dashboard for {brand}, program {program name}, handles {handles and
+> networks}, using the saved program records. Read the date from the shell clock. Do not ask
+> questions. Republish the dashboard, save the weekly snapshot only if the program's saved
+> schedule names the weekly dashboard, and post the summary to the saved routing.
+
+P9's "Weekly dashboard" is the standing approval for the snapshot, and P8 for the post. Create
+the task only after the dashboard has been published once interactively and its link is saved
+(B3). Scheduled runs never ask, decide, draft, or send, and show missing records as "not tracked
+yet". Aspire Atlas, and Slack or email when routed, must be enabled for scheduled tasks.
 
 ---
 

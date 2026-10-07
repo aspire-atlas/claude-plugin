@@ -418,7 +418,8 @@ one line each in the shape `program.md` sets (**Ledger lines hand-off**):
  ]}
 ```
 
-- `lineId` is `commission-{handle}-{period}`, stable across re-runs of the same month.
+- `lineId` is `commission-{handle}-{period}`, stable across re-runs of the same month, with
+  `-{currency}` added for any currency other than the program budget's.
 - `dueAt` from the deal's `payout`: `monthly` is the last day of the month after the period;
   `net-{n}` is the period's last day plus n days.
 - `revises` is the `lineId` of the line this replaces, when the month was reported before with a

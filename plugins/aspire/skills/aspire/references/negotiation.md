@@ -457,7 +457,8 @@ agreed, `needs_improvement` declined. Roster kinds the same way.
 Every agreed `terms` finding fills `program.md`'s list in full, including `postWithinDays`,
 `usageChannels`, `whitelisting` with `whitelistingDays`, and for the type `monthlyFee`,
 `termMonths` and `codeDiscountPct`, or `codeDiscountAmount` when the affiliate deal uses a
-fixed-amount code. `graceDays` and `mustInclude` are written on the deal only when they differ
+fixed-amount code. `paymentTiming` is copied from the program's terms for the type, or the user's
+number when the deal changed it. `graceDays` and `mustInclude` are written on the deal only when they differ
 from the program's type block; readers fall back to the program otherwise.
 
 **Fields this agent adds to `terms`** (beyond `program.md`'s list): `currency`, `monthly` (the

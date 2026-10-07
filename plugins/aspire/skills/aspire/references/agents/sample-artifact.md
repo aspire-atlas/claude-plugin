@@ -126,6 +126,8 @@ print(json.dumps({"holiday": name, "date": day.isoformat(), "year": day.year, "d
 | `atlas-content-sourcing` | A sourcing tracker for the holiday campaign: rights requests by status, expiring rights, an asset request, grants this month | 5 creators, 1 asset request |
 | `atlas-deliverable-tracker` | The holiday gifting and paid push's posting tracker: owed vs posted, a late Reel, a disclosure fix, a gifted post expected | 4 creators, 6 deliverables |
 | `atlas-roster-manager` | The holiday program's roster review: segment board, quota bars, renewals due, re-engage list | 6 creators, 2 renewals |
+| `atlas-program-ledger` | The holiday campaign's ledger: budget, committed, paid, remaining, burn by month, lines, an overdue invoice, an unmatched payment | 4 creators, 1 unmatched row |
+| `atlas-program-dashboard` | One sample program's dashboard: goals with pacing, the funnel, deliverables, content, performance, spend in the team view, roster health, the attention list | 8 creators, 4 posts |
 
 An agent not in this table builds its own page at the smallest scale that shows every section.
 

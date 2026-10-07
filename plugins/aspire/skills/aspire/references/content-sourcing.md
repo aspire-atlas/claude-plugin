@@ -312,7 +312,8 @@ grant or an agreed asset request with a fee or product, it returns a fenced JSON
 - `lineId` is `{kind}-{handle}-{ref}`, stable: `ref` is `{postId}-{usage}` for rights (with
   `-renewal-{n}` for the nth renewal) and the `ugcId` for UGC.
 - `kind` is `rights` for a grant or renewal, `ugc` for an asset request. Product given for UGC
-  is a `ugc` line with the catalog `value`, `ref` `{ugcId}-product`, and `basis` "product".
+  is a `product` line with the catalog `value`, `ref` `{ugcId}-product`, and `basis` "product
+  for UGC".
 - `from` is the record type and its identity. `basis` is one plain line.
 - `dueAt`: for rights, 30 days after the grant unless the user set terms; for UGC, 30 days after
   `due`, and `basis` says "on delivery".
