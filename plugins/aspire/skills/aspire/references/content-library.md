@@ -147,10 +147,11 @@ for rights, as `ad-reuse.md` does.
 
 | Status | When | Badge |
 | ------ | ---- | ----- |
-| Paid usage, Whitelisting, Organic repost | A `rights` finding with `status` granted for that usage and `expiresAt` in the future (or none set) | The usage, the channels, and "until {date}" |
+| Paid usage, Whitelisting, Organic repost | A `rights` finding with `status` granted for that usage and `expiresAt` in the future (or none set) | The usage, the channels, and "until {date}"; "Get this in writing" when `inWriting` is false |
 | From the deal | No grant for that usage, but the creator's deal includes it and the post is one of their matched deliverables. The deal is the newest agreed `terms` finding, or the program's terms for the creator's type when none exists (`program.md`, **Who owns a deal**). `usage` with `usageDays` and `usageChannels`; whitelisting when `whitelisting` is true, with `whitelistingDays` | The usage, the channels, "from the deal", and the end date: the post date plus `usageDays` (or `whitelistingDays`), or "no end date in the deal" |
 | May be covered by the deal | A roster creator's post in the deal's term that the tracker has not matched to a deliverable | "Check the deal": never shown as cleared |
 | Requested | A `rights` finding with `status` requested or renewal requested, or a creator brief deliverable that asked for rights | "Requested {date}" |
+| Countered | `status` countered: the creator answered with different terms or a fee | "Creator countered {date}" |
 | Wanted | `status` wanted | "Wanted" |
 | Declined | `status` declined | "Declined {date}" |
 | Expired | `status` expired, or a grant or deal end date in the past | "Expired {date}" |
@@ -207,7 +208,7 @@ read back in one line, and answer from the catalog:
 | Format | Reel, TikTok video, feed video, image, carousel, or "video" |
 | Theme | From the theme list |
 | Creator | A handle |
-| Rights | No rights, requested, cleared for organic, cleared for ads, paid usage, whitelisting, from the deal, expired |
+| Rights | No rights, requested, countered, cleared for organic, cleared for ads, paid usage, whitelisting, from the deal, expired |
 | Expiring | Within N days |
 | Ad readiness | A minimum score |
 | Date | Posted after or before |

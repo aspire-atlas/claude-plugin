@@ -109,8 +109,10 @@ brand's own history is the stronger signal.
 refilling the shortlist with creators like the ones already delivering.
 
 1. **Pick up to five seeds**, in this order, and stop at five: accepted creators in this
-   campaign whose posts about the brand beat their own median engagement per post; creators
-   named in `went_well` findings of the weekly readout's growth lens (`readout-weekly-{profile}`
+   campaign whose posts about the brand beat their own median engagement per post; stars in
+   the newest roster review of the program whose `discoveryCampaign` is this campaign
+   (`program-{profile}-{slug}` prefix, `roster-health` findings, newest per creator, with
+   `detail.seedEligible: true`); creators named in `went_well` findings of the weekly readout's growth lens (`readout-weekly-{profile}`
    prefix, `detail.creator` set, `detail.seedEligible: true`); `partner` creators whose collab
    posts beat the brand's median. No seed qualifies: skip the tier and say so under Gaps.
 2. **Find lookalikes three ways**, each excluding the dedupe set, the brand's handles, and

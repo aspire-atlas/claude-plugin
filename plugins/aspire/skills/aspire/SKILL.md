@@ -91,6 +91,10 @@ time so it never goes stale; never recite it from memory.
    | `atlas-creator-negotiation` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Creator negotiation** |
    | `atlas-product-fulfillment` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Product fulfillment** |
    | `atlas-content-library` | Phase 1, then Phase 2 + 3, then **Content library** (its content, save, and alert questions first) |
+   | `atlas-affiliate-manager` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Affiliate manager** |
+   | `atlas-content-sourcing` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Content sourcing** |
+   | `atlas-deliverable-tracker` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Deliverable tracker** |
+   | `atlas-roster-manager` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Roster review** |
 
    Older names still reach the renamed agents: `atlas-account-analyst` is `atlas-profile-analyst`,
    `atlas-daily-readout` is `atlas-daily-insights-report`, and `atlas-weekly-readout` is
@@ -963,12 +967,14 @@ enabled for scheduled tasks. Unattended runs follow `references/program.md` **9*
 
 ---
 
-## Creator negotiation (offers, counters, and renewals in a program)
+## Creator negotiation (offers, counters, renewals, and deal changes in a program)
 
 Trigger when a program creator needs a deal worked out: an offer for creators who said they're
-interested, an answer to a counter or a question about the deal, or an ambassador renewal
-("negotiate with @handle", "she asked for $2,000", "make offers to the creators who said yes",
-"what should we offer", "is this rate fair", "renew our ambassadors"). Also reached from the
+interested, an answer to a counter or a question about the deal, an ambassador renewal, or a
+change the brand wants to an agreed deal ("negotiate with @handle", "she asked for $2,000",
+"make offers to the creators who said yes", "what should we offer", "is this rate fair", "renew
+our ambassadors", "raise @handle's commission", "move @handle to paid", "extend usage on
+@handle's Reel"). Also reached from the
 **Program manager** dispatch. Full detail lives in `references/negotiation.md`. Requires a saved
 program (**Influencer program**, Program setup). A creator ad campaign's fees stay in **Rates and
 terms**.
@@ -981,12 +987,15 @@ one line that a deal needs a person to approve it, and stop.
 1. Read the program's setup records and working state as the **Program manager** does. Missing or
    unparseable program records: run **Program setup** first. Pick the mode: `offer` for
    interested creators with no open terms, `counter` for a counter or deal question (or a reply
-   the user pastes here), `renewal` for ambassadors the roster review handed over.
+   the user pastes here), `renewal` for ambassadors the roster review handed over (pass its
+`renewals` block), `change` for a change to an agreed deal from the affiliate manager, the roster
+manager, or the user (pass what changes, from, to, and who asked).
 2. A pasted reply that names no roster creator is asked about once. Several creators run in one
    launch.
 3. Launch `atlas-creator-negotiation` with: tool prefix, `profile_id`, `profile_slug`, brand
    handles and networks, the program slug, `mode`, `pass: propose`, the creators (and the pasted
-   reply text), `connections`, and `recipient` (`team` by default). No confirmation is needed:
+   reply text, the `renewals` block, or the change), `connections`, and `recipient` (`team` by
+   default). No confirmation is needed:
    `propose` writes nothing.
 4. Relay the page link, one line per creator (offer, counter, move, reasons), the math, and the
    drafts. Then ask the agent's questions in one `AskUserQuestion` call, skipping any with
@@ -1098,6 +1107,235 @@ nothing, and writes no `fulfillment`; it may write only the `page` finding
 
 ---
 
+## Deliverable tracker (posts owed, posted, late, missing, and disclosure)
+
+Trigger when the user asks whether program creators posted what they agreed ("check posts",
+"did everyone post", "who hasn't posted yet", "which posts are late", "are the creators
+disclosing", "what's due this week", "waive @handle's Story"), or when the **Program manager**
+dispatch reaches "Check posts". Requires a saved program (**Influencer program**, Program
+setup). Full detail lives in `references/deliverable-tracker.md`. A single post checked against
+a brief stays in **Content review**.
+
+The check is interactive in two passes; the daily posting check is its unattended form. Every
+question below is one `AskUserQuestion` call, never plain text. Launch
+`atlas-deliverable-tracker` with the tool prefix, `profile_id`, `profile_slug`, the brand's
+linked handles and networks, the program slug, `mode`, `pass`, `connections`, `recipient`
+(`team` by default), any `creators` the user named, and the approvals below, and end with the
+decision-audit line.
+
+### Run
+
+1. Read the program's setup records and working state as the **Program manager** does. Missing
+   or unparseable program records: run **Program setup** first.
+2. **Pasted links.** When the user pasted links to creators' posts, ask **T0** first, header
+   "Fetch": "Look up these {n} posts in Atlas, and fetch any it doesn't hold yet? It can take a
+   minute." Options: "Look them up (Recommended)", "Skip them". Pass the links (with the creator
+   and deliverable when the user said) and the answer.
+3. Launch with `mode: check`, `pass: propose`. No confirmation is needed: `propose` writes
+   nothing.
+4. Relay the page link, the headline, the needs-a-fix lines (missing disclosure first), late
+   and missing, and due this week. Then ask, skipping any with nothing to ask:
+   - **T2**, header "Matches" (multiSelect), only when the agent returned open matches: "Which
+     of these posts count for the deal?" One option per match, "@a: {format} {date}, as
+     {deliverable}", with the agent's description (the caption's first words and why it is
+     unsure). More than four: the first four, then the rest in the next call.
+   - **T5**, header "Your call", one per open item, exactly as the agent worded it, the
+     recommended answer first, then the alternatives and "Decide later". Posts whose only
+     unclear part is the paid partnership label come as one multiSelect for the run ("Which of
+     these posts carry it?"); Atlas can't see the label, so it is never treated as missing.
+   When T2 or T5 answers change a status, relaunch `pass: propose` with them as `overrides` and
+   relay the new counts.
+5. Then one call:
+   - **T1**, header "Save": "Save the posting check for {program}? {p} posted, {l} late, {m}
+     missing, {f} need a fix. {moves}" Options: "Save the check (Recommended)", "Change
+     something", "Page only".
+   - **T3**, header "Drafts", only when there are drafts: "Save {n} drafts for {program}?
+     Chases to @a and @b, a fix request to @c, thanks to @d." Options: "Save the drafts
+     (Recommended)", "Show them here only".
+   - **T4**, header "Mailbox", only when email is a program channel and the program's mail
+     setting names a live mailbox that can draft: "Create {n} email drafts in your {Gmail or
+     Outlook} for @a, @b and {n-2} more? Nothing is sent." Options: "Create the drafts
+     (Recommended)", "I'll copy them myself".
+6. "Change something" relaunches `pass: propose` with the change as an override. Otherwise
+   launch `pass: record` with the `tracker-packet` and T1 to T5. T1 and T3 are the write
+   confirmations; T4 is the mailbox confirmation. The agent saves the tracker page's link as a
+   `page` finding with the first approved write.
+7. Relay what was written and the drafts ready to copy. Sending follows **Influencer program**,
+   Drafts: only when the user asks in this session, after the picker that names every
+   recipient. "Sent them" marks drafts sent with one picker.
+8. **Hand-offs**, one line each, never run without the user's pick: posted posts go to the
+   content library on its next build (offer **Content library** when it has no page or is more
+   than 7 days old); "Check on brief?" posts offer **Content review**; posted paid and
+   ambassador posts are the next step for the ledger.
+
+**Waiving** is the user's alone. "Waive @a's second Story" asks T5 for that row ("Waive @a's
+{deliverable}? It stops counting as owed." Options: "Keep it owed (Recommended)", "Waive it")
+and records it through a `record` pass with T1.
+
+### Schedule
+
+Follow **Readouts**, Schedule, for the mechanics, and `program.md`, **8**, for the task name
+"Atlas program posting check: {brand} - {program}" (daily), launching
+`atlas-deliverable-tracker` with `mode: unattended`. The P9 "Daily posting check" answer is the
+standing approval: scheduled runs match new posts, save the statuses a clear match settles and late or missing from the date alone,
+republish the tracker page, and post the late, missing, and needs-a-fix counts with handles to
+the saved routing. They never ask, draft, chase, fetch a post, confirm a match, waive, or move a
+creator. Schedule it only after the tracker page has been published once interactively and its
+`page` finding exists.
+
+---
+
+## Affiliate manager (codes, sales, and commission in a program)
+
+Trigger when a program has affiliate or hybrid creators and the user asks about codes or sales
+("set up codes", "create discount codes for the creators", "affiliate report", "report sales and
+commission", "how are the affiliate codes doing", "who's driving sales", "what do we owe in
+commission", "retire the dead codes"), attaches a store or affiliate platform export, or the
+**Program manager** dispatch reaches "Set up codes" or "Report sales and commission". Requires
+a saved program (**Program setup**) with affiliate terms or a hybrid deal. Full detail lives in
+`references/affiliate.md`.
+
+The affiliate manager is interactive only. Never schedule it; if `AskUserQuestion` is
+unavailable, say in one line that codes and commission need a person to confirm them, and stop.
+Every question below is one `AskUserQuestion` call, never plain text. Launch
+`atlas-affiliate-manager` with the tool prefix, `profile_id`, `profile_slug`, the program slug,
+the linked handles and networks, `recipient` (`team` by default), `connections`, `mode`, `pass`,
+and the A answers, and end with the decision-audit line.
+
+**Say what the store can do**, once per session when a step uses it, in one line, per
+`program.md`, **4**: "I can create the percentage codes in Shopify; fixed amount codes go on a
+sheet for you to enter." Never why. When the store is missing, offer to connect it once and carry
+on with the sheet or an upload.
+
+### Codes
+
+1. Launch with `mode: codes`, `pass: propose`. It writes nothing and creates nothing.
+2. Relay the page link, one line per creator (`@a: SAM20, 20% off, in Shopify`), the sheet path
+   when there is one, and any code that collided. Then one call, skipping what has nothing to
+   ask:
+   - **Y**, header "Your call", one per item the agent raised, exactly as worded: the
+     recommended answer first (Recommended), the alternatives, "Decide later".
+   - **A1**, header "Codes": "Save these codes for {program}? @a: SAM20, 20% off; @b: ALEXTT20,
+     20% off; and {n-2} more." Options: "Save the codes (Recommended)", "Change something",
+     "Page only".
+   - **A2**, only when the store can create some of the codes, header "Store": "Create codes
+     SAM20, ALEXTT20 and {n-2} more in {store} at {discount} off?" Options: "Create the codes
+     (Recommended)", "Not yet, put them on the sheet".
+   - **A3**, only when the program's mail setting names a live mailbox that can draft and some
+     codes go live in this run, header "Mailbox": "Create {n} drafts in your {mailbox} telling
+     @a, @b and {n-2} more their code is live? Nothing is sent." Options: "Create the drafts
+     (Recommended)", "I'll copy them myself".
+3. "Change something" relaunches `pass: propose` with the change. "Page only" stops. Otherwise
+   relaunch with `pass: record`, the `affiliate-packet`, and the answers. A2 needs A1 "Save":
+   with "Page only", never create codes in the store.
+4. Relay what was written, the codes the store refused (now on the sheet), and the `code-live`
+   drafts ready to copy.
+5. **Sheet codes.** When the user says the sheet codes are in the store (or turned off), ask
+   **A4**, header "Live": "Mark SAM20, ALEXTT20 and {n-2} more live from {date}?" (or "turned
+   off from {date}"). Options: "Mark them (Recommended)", "Change something". Relaunch
+   `mode: codes`, `pass: record` with A4.
+
+### Report
+
+1. Ask in one call:
+   - **A5**, header "Period": "Which month should the affiliate report cover?" Options: "{last
+     month} (Recommended)", "{this month} so far", "Another month (type it)".
+   - **A6**, header "Sales": "Where should the sales come from?" Options: "Read orders from
+     {store} (Recommended)" (only when the store can read orders), "I'll upload an export
+     (CSV)". An export from the store or any affiliate platform works. When the user already
+     attached a file, skip A6.
+2. Launch with `mode: report`, `pass: propose`, A5, and A6 (the file's path for an upload).
+3. Relay the page link, the headline (revenue with its source and currency, orders, commission
+   owed), one line per creator, and the timeline's line: "Sales and posts on the same days are a
+   correlation, not proof." Then one call, skipping what has nothing to ask (your-call items
+   first when there are more than four questions):
+   - **A7**, export only, header "Columns": "Read the file this way? {mapping, one per line};
+     {match count}." Options: "Use this mapping (Recommended)", "Change something".
+   - **A8**, header "Save": "Save {period} sales for {n} creators to {program} and pass {k}
+     commission lines ({total}) to the ledger?" Options: "Save (Recommended)", "Page only".
+   - **A9**, only when the agent recommends retiring codes, header "Retire": "Turn off {codes} in
+     {store}?" (or "Put {codes} on the sheet to turn off?"). Options: "Not yet (Recommended)",
+     "Turn off these {n}" (or "Put them on the sheet").
+   - **Y**, header "Your call", one per item: raises, hybrid moves, promotions to paid,
+     commission figures that differ from the platform's.
+4. A7 "Change something" relaunches `pass: propose` with the change. Otherwise relaunch with
+   `pass: record`, the packet, and the answers.
+5. Relay what was written. Pass the `ledger-lines` block to `atlas-program-ledger` as its next
+   step; the affiliate manager never writes ledger lines itself.
+6. **Hand-offs.** For each your-call answer that changes a deal (a raise, hybrid, or paid), offer
+   once, header "Next": "Take @a's {change} to negotiation?" Options: "Draft it (Recommended)",
+   "Not now". The first launches `atlas-creator-negotiation` in `mode: change` with the
+   change.
+
+Sending the `code-live` drafts follows **Influencer program**, Drafts: only when the user asks in
+this session, after the picker that names every recipient.
+
+---
+
+## Roster review (renew, rebook, re-engage, or retire)
+
+Trigger when the user asks how the program's creators are doing or what to do with them next
+("review the roster", "roster health", "how are our ambassadors doing", "who should we renew",
+"who should we rebook", "which creators are slipping", "who should we drop", "ambassador
+renewals"). Also reached from the **Program manager** dispatch when ambassador renewals are
+inside the notice window. Full detail lives in `references/roster-manager.md`. Requires a saved
+program (**Influencer program**, Program setup).
+
+The roster review is interactive only. Never schedule it; if `AskUserQuestion` is unavailable,
+say in one line that the review needs a person to approve it, and stop.
+
+### Run
+
+1. Read the program's setup records and working state as the **Program manager** does. Missing
+   or unparseable program records: run **Program setup** first. A program with no creator at
+   Agreed or later: say so in one line and offer the next step from the dispatch instead.
+2. Launch `atlas-roster-manager` with: tool prefix, `profile_id`, `profile_slug`, brand handles
+   and networks, the program slug, `mode: review`, `pass: propose`, `connections`, and
+   `recipient` (`team` by default; `growth` when the ask is about where to spend). Pass
+   `creators` or `types` when the user named them. No confirmation is needed: `propose` writes
+   nothing.
+3. Relay the page link, the segment counts, one line per creator, and the drafts. Then ask, in
+   one `AskUserQuestion` call:
+   - K1, header "Review": "Save the roster review for {program}? {n} creators: {s} stars, {t}
+     steady, {u} slipping, {v} dormant, {w} to retire, {x} not enough data. {d} notes go on the
+     creators' rows." Options: "Save the review (Recommended)", "Change something", "Page only".
+   - K2, header "Your call", one per item, exactly as the agent worded it: the recommended
+     answer first (Recommended), the alternatives, "Decide later". Example: "@marco missed 3 of
+     4 posts since July and hasn't replied in 40 days. Pause him, drop him from {program}, or
+     keep him on?" Options: "Pause him (Recommended)", "Drop him from {program}", "Keep him
+     on", "Decide later".
+   More than three K2 items: ask the K2 items in their own calls of up to four, then K1.
+4. "Change something" relaunches `pass: propose` with the change as an override. Otherwise,
+   in a second `AskUserQuestion` call, skipping any with nothing to ask:
+   - K3, header "Renewals", only when the `renewals` block has entries: "Work out renewals for
+     {creators}? (@a raise, @b same terms, @c let it end)" Options: "Start the renewals
+     (Recommended)", "Not now".
+   - K4, header "Mailbox", only when K1 saved, there are email drafts, and the program's mail
+     setting names a live mailbox that can draft: "Create {n} drafts in your {mailbox} for
+     {creators}? Nothing is sent." Options: "Create the drafts (Recommended)", "I'll copy them
+     myself".
+   - K5, header "Lookalikes", only when the `lookalike-seeds` block has seeds: "Find creators
+     like {stars} for {campaign}?" Options: "Refill the shortlist with lookalikes
+     (Recommended)", "Not now". With no discovery campaign saved for the program: "Start a
+     discovery shortlist for {program}, seeded with {stars}?" Options: "Set up discovery
+     (Recommended)", "Not now".
+5. On K1 "Save the review", launch the agent again with `pass: record`, the `roster-packet`, and
+   the K1 and K4 answers. K1 is the write confirmation; K4 is the mailbox confirmation.
+6. For each K2 answer of pause or drop, write the `rosterChange` row from the packet with
+   `append_insights` as a new `roster` finding (stage Paused or Dropped, `yourCall` cleared,
+   `detail.by` "Program manager"). The K2 answer is that write's confirmation. "Keep" writes
+   nothing; "Decide later" leaves it open.
+7. On K3 "Start the renewals", launch `atlas-creator-negotiation` with `mode: renewal`, `pass:
+   propose`, the renewal creators, and the `renewals` block, after step 5 has written the review
+   (or straight away when K1 was "Page only"). Then follow **Creator negotiation**.
+8. On K5, run **Creator discovery** Run for the campaign with `recipient` `growth` and the
+   `lookalike-seeds` block (discovery also reads the saved stars itself); with no campaign, run its Setup for the program's
+   discovery campaign first and save the slug to the program per the Phase 5 supersede rule.
+9. Sending follows **Influencer program**, Drafts: only when the user asks in this session,
+   after the picker that names every recipient. "Sent them" marks drafts sent with one picker.
+
+---
+
 ## Content library (creator content about the brand, and the rights to use it)
 
 Trigger when the user wants to find, browse, or check the rights on creator content about the
@@ -1148,6 +1386,76 @@ Follow **Readouts**, Schedule, for the mechanics, and `program.md`, **8**, for t
 the standing approval; it lets scheduled runs save `asset` and `page` findings. Unattended runs
 never ask, never write rights, and post only to the saved routing. Schedule it only after the
 library has been built once interactively and its `page` finding exists.
+
+---
+
+## Content sourcing (rights to creator content, and new content from program creators)
+
+Trigger when the user wants the right to use creator content, to renew rights that are running
+out, to commission new content, or to record a creator's answer about usage ("request rights",
+"get the rights to these posts", "can we run @handle's video as an ad", "renew the rights",
+"which rights should we renew", "we need more videos of {product}", "commission UGC", "@handle
+said yes to the usage", "record the rights reply"). Also reached from the **Content library**
+hand-off ("Request rights for these {n} posts?"), from outreach triage (a reply classed rights),
+and from the **Program manager** dispatch ("Request rights"). Full detail lives in
+`references/content-sourcing.md`. Requires a saved program (**Influencer program**, Program
+setup): rights records live on a program. When the library ran for the whole brand and more
+than one program is active, ask which program the requests belong to.
+
+Content sourcing is interactive only. Never schedule it; the library's scheduled refresh posts
+the expiring-rights alert. If `AskUserQuestion` is unavailable, say in one line that rights
+requests need a person to approve them, and stop.
+
+### Run
+
+1. Read the program's setup records as the **Program manager** does. Missing or unparseable:
+   run **Program setup** first. Pick the mode: `rights` for posts the user or the library named,
+   `renewal` for what is expiring, `ugc` for new content, `record` for a creator's answer.
+2. `renewal` only, unless the user named the window: ask S0, header "Horizon": "Which rights
+   should we look at for {program}?" Options: "Ending in the next 30 days (Recommended)", "Next
+   60 days", "Next 90 days". Ask too, in the same call, header "In ads": "Are any of these
+   running in ads right now? Name them, or skip." Options: "None that I know of
+   (Recommended)", "Yes (type the creators or links)".
+3. Launch `atlas-content-sourcing` with: tool prefix, `profile_id`, `profile_slug`, brand
+   handles and networks, the program slug, `mode`, `pass: propose`, the posts (the library's
+   worth-requesting rows or the user's links), the horizon and posts in ads, the UGC focus, or
+   each reply's text, sender, channel, date and source, plus `connections` and `recipient`
+   (`team` by default; `performance` or `creative` for "what can we run"), ending with the
+   decision-audit line. No confirmation is needed: `propose` writes nothing.
+4. Relay the page link, the headline, one line per creator, what was left out as covered by a
+   deal, and the drafts. Show the `visual-data` cards per **Visual output**. Then ask in one
+   `AskUserQuestion` call, skipping any with nothing to ask:
+   - S1 (`rights`, `renewal`, `ugc`), header "Requests": "Save these {rights requests, renewals,
+     or asset requests} for {program}? {n} drafts go on the creators' rows." with each creator
+     named in one line ("@a: 2 Reels, paid usage on Meta ads for 90 days, $300"; "@b: let lapse,
+     pull from ads by Nov 3"). Options: "Save the requests (Recommended)", "Change something",
+     "Page only".
+   - S2, header "Your call", one per open item, exactly as the agent worded it: the recommended
+     answer first (Recommended), the alternatives, "Decide later".
+   - S3 (`record`), header "Record": "Record these {n} replies for {program}?" with each named
+     in one line, including the proof ("@a: granted paid usage on Meta ads for 90 days from
+     Oct 7, $250, proof: email reply Oct 7"). Options: "Record them (Recommended)", "Change
+     something".
+   - S4, header "Mailbox", only when the program's mail setting names a live mailbox that can
+     draft and some drafts go by email: "Create {n} drafts in your {Gmail or Outlook} for @a,
+     @b and {n-2} more? Nothing is sent." Options: "Create the drafts (Recommended)", "I'll
+     copy them myself".
+   More than four questions: ask the S2 items first, then S1 or S3 and S4 in a second call.
+5. "Change something" relaunches `pass: propose` with the change as an override. Otherwise
+   launch again with `pass: record`, the `sourcing-packet`, and the answers. S1 and S3 are the
+   write confirmations, and cover the sourcing page's `page` finding on first publish; S4 is
+   the mailbox confirmation.
+6. Relay what was written. Say plainly for every grant given only by DM or comment: "Get this
+   in writing before paid use." When the agent returns a `ledger-lines` block, offer once,
+   header "Ledger": "Add {n} fees owed to the {program} ledger?" Options: "Add them
+   (Recommended)", "Not now". "Add them" launches `atlas-program-ledger` with the block.
+   Sourcing never writes the ledger itself.
+7. Sending follows **Influencer program**, Drafts: only when the user asks in this session,
+   after the picker that names every recipient. "Sent them" marks drafts sent with one picker.
+   Grants recorded after this point show on the next content library run.
+
+On the first publish, say once: "Share this page with your team as Editor to see the budget.
+Never share it with creators."
 
 ---
 
@@ -1865,8 +2173,9 @@ The watch list is the brand's saved creators, outside any campaign.
   review, where pasting a post link approves `lookup_posts` for that one post; creator
   vetting, where R3 approves `lookup_creators` for the listed handles Atlas does not hold; the
   PPA pitch, where D4's marketplace option approves it for the handles the marketplace returns
-  and the handles the user types; and creator discovery, whose saved cadence record approves it
-  on every run including scheduled ones.
+  and the handles the user types; creator discovery, whose saved cadence record approves it
+  on every run including scheduled ones; and the deliverable tracker, where T0 approves
+  `lookup_posts` for the post links the user pasted, in an interactive check only.
 - **Inside a CAS campaign**, one picker confirms a whole gate batch: every accept and every
   reject is named in the question, and that one answer covers all the writes the close makes.
   The campaign's saved sync cadence (C6) is the standing approval for paid discovery on that

@@ -122,6 +122,10 @@ print(json.dumps({"holiday": name, "date": day.isoformat(), "year": day.year, "d
 | `atlas-creator-negotiation` | The holiday program's negotiation page: offer, counter and recommended move per creator, with the terms summary | 3 creators, 1 your call |
 | `atlas-product-fulfillment` | A program's order form for the holiday gifting push, with an order sheet | 4 creators, 2 sheet rows |
 | `atlas-content-library` | A content library for the holiday campaign: cleared-for-ads shelf, expiring rights, worth requesting, filterable grid | 12 assets, 3 expiring |
+| `atlas-affiliate-manager` | A month of affiliate sales for the holiday campaign: leaderboard, codes, sales and posts timeline, commission lines | 4 creators, 2 sheet rows |
+| `atlas-content-sourcing` | A sourcing tracker for the holiday campaign: rights requests by status, expiring rights, an asset request, grants this month | 5 creators, 1 asset request |
+| `atlas-deliverable-tracker` | The holiday gifting and paid push's posting tracker: owed vs posted, a late Reel, a disclosure fix, a gifted post expected | 4 creators, 6 deliverables |
+| `atlas-roster-manager` | The holiday program's roster review: segment board, quota bars, renewals due, re-engage list | 6 creators, 2 renewals |
 
 An agent not in this table builds its own page at the smallest scale that shows every section.
 

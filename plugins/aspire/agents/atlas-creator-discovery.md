@@ -98,7 +98,9 @@ records. Score with this reference's rubric; the paid screens belong to vetting.
    `partner` calibrations plus the brand's own collab posts as the whole of tier 1.
 7. Fill the quota in tier order per the reference, stopping the moment the pool is at target.
    For tier 3, pick the seeds and run the three lookalike searches per **Lookalike seeds**;
-   `search_insights` on the `readout-weekly-{profile}` prefix supplies the growth-lens seeds.
+   `search_insights` on the `readout-weekly-{profile}` prefix supplies the growth-lens seeds,
+   and on the `program-{profile}-{slug}` prefix of a program whose `discoveryCampaign` is this
+   campaign, the roster review's stars.
    Record tier, exact source, `seed` for a lookalike, and `tierScheme: 2` on every candidate. Resolve every web-sourced handle with
    `lookup_creators` before scoring it.
 8. Score each new candidate with the reference's table, naming the field behind each
