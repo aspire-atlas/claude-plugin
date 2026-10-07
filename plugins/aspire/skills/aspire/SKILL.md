@@ -40,6 +40,7 @@ Text after the command is the argument. Route on it before anything else:
 | `agents` (also `list agents`, `show agents`) | Run **List agents** below. Skip the phases unless the user picks an agent to run. |
 | `sample` (also `sample {agent}`, `show me a sample`, `example`) | Run **Sample artifacts** below. No Atlas connection is needed, so skip the phases. |
 | `fee calculator` (also `fees`, `pricing`, `rate card`, `creator rates`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Fee calculator** below. Skip the other phases. |
+| `program` (also `influencer program`, `creator program`, `ambassador program`, `affiliate program`, `gifting program`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Influencer program** below. Skip the other phases. |
 | `cas campaign` (also `creator ad campaign`, `campaign manager`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **CAS campaign** below. Skip the other phases. |
 | empty, or anything else | Run the phases in order, starting at Phase 1. Treat the text as context. |
 
@@ -825,6 +826,54 @@ Feedback about a creator outside a run ("never use @handle again", "@handle was 
 with") is saved the same way: word the note, confirm it with `AskUserQuestion` ("Save this
 about @handle for future vetting and discovery?"), then write the `creator:*` record, or offer
 the supersede when one exists.
+
+---
+
+## Influencer program (gifting, paid posts, ambassadors, affiliates)
+
+Trigger when the user asks to set up, check, or move an influencer program ("set up our
+influencer program", "start an ambassador program", "where is the {program} program", "what's
+next on {program}", "who do we need to reach out to", "record a reply", "pull the order form").
+Full detail lives in `references/program.md`: program types, page vocabulary, the state model,
+the setup interview, the dispatch table, connected tools, drafts and sending, the order form,
+and the unattended rules. A creator ad campaign is not a program: it stays in **CAS campaign**.
+Requires a brand profile with a linked Instagram or TikTok channel.
+
+Before the first program step in a session, detect the user's mail and store connections per the
+reference's **4** and keep the `connections` object for every launch. Say what a connection can
+do when a step uses it, never why it cannot do more.
+
+### Program setup
+
+1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end,
+   `includeSuperseded: true`). Several programs may be saved; ask which with `AskUserQuestion`
+   when more than one is active, with "Start a new program" as the last option.
+2. For a new program, ask P1 to P9 from the reference, one `AskUserQuestion` each, skipping what
+   does not apply. Say plainly what P7b, P8 and P9 approve.
+3. P10 confirms the batch once, then write every record with `append_calibration`. A
+   `key-exists` follows the Phase 5 supersede rule with its own confirmation.
+4. Offer to fill the roster (the reference's **Filling the roster**).
+
+### Program manager
+
+Read the setup records and the working state (`search_insights` on the program's prefix,
+paged). Show the status screen and offer the single next step from the reference's
+**3. Program manager**. Launch what the row names with the inputs listed there, relay what the
+agent asks the main thread to confirm, record the outcome, and show the new status in one line.
+
+- **Drafts** from any program agent follow the reference's **5**: shown ready to copy, created in
+  the mailbox only after their confirmation, sent only when the user asks in this session and
+  confirms the named recipients.
+- **"Sent them"** marks drafts sent with one picker (**5**, Marking sent).
+- **Pasted replies** go to `atlas-creator-outreach` in `mode: triage`.
+- **"Pull the order form"** reads the order form's page data and records it with one picker
+  (**6**, Reading it back).
+
+### Schedule
+
+Follow **Readouts**, Schedule, for the mechanics and the reference's **8** for task names. P9 is
+the standing approval for the tasks it names. Unattended runs follow the reference's **9**: they
+never ask, decide, send, create mailbox drafts, or change a store.
 
 ---
 
