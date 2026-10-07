@@ -187,7 +187,8 @@ value, no fee, no terms, no contact details.
 **Sections, in order:**
 
 1. **Header.** Brand theme per `theme.md`, **Applying the theme**. Title, then "Product orders ·
-   {n} creators · updated {time}". A status strip with counts: Waiting on details, Ready to
+   {n} creators · updated {time}". Under it, a notice that always shows: "For your team only.
+   Don't share this form with creators: everyone who can open it sees every creator's address." A status strip with counts: Waiting on details, Ready to
    order, Ordered, Shipped, Delivered, Issue.
 2. **Your to-do.** Per viewer: rows missing details, rows ready to order, parcels past their
    delivery window, issues. Each with a checkbox; done marks save to the viewer's own
@@ -203,7 +204,8 @@ value, no fee, no terms, no contact details.
 4. **Order sheet.** Shown when any row is received. The rows ready to order in the sheet's
    columns (below), built in the browser from the rows, with "Download order sheet" (the
    `downloads` capability; hidden when it is not available).
-5. **Footer.** "Addresses show only to people this form is shared with. Statuses from Atlas as
+5. **Footer.** "Addresses show to everyone this form is shared with, so share it only inside
+   your team. Statuses from Atlas as
    of {time}." Plus "Product from {store}" when a store was read.
 
 The page renders before its data loads and works with no rows. Load `artifact-design` before

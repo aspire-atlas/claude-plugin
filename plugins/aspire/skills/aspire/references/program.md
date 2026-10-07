@@ -429,8 +429,10 @@ Product details (address or pickup, size, color, product choice) are collected o
 page per program, the **order form**, shared with the user, the way the CAS campaign page
 collects the client's shipping edits (`cas-campaign.md`, **1d** and **1e**).
 
-- The order form is for the brand's team, never for creators: anyone who can save a row can
-  read every row. Creators send their details by reply; the team records them.
+- The order form is for the brand's team, never for creators: anyone it is shared with can
+  read every row, and so every creator's address. No flow suggests sharing it with a creator,
+  links it in a draft, or offers creators a way to fill in their own row. Creators send their
+  details by reply; the team records them. The form itself says so at the top.
 - `atlas-product-fulfillment` builds and republishes it. One row per creator owed product:
   handle, name, product (a picker from the catalog when the creator chooses), options (size,
   color), ship to (name, address, city, region, postal code, country) or pickup, delivery notes,
