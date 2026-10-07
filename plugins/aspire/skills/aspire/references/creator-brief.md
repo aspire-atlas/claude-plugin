@@ -100,7 +100,7 @@ uses, in the order `hooks-and-ctas.md`, **Where recommendations come from**, giv
   None saved: a bracketed blank per network, and one line asking the CM to fill it.
 - **Disclosure treatment**: the paid partnership label, plus anything `review:disclosure` says
   when it exists (read it for disclosure only).
-- **Do's and don'ts**: from saved `red_line` and `guideline` records (never `review:` keys).
+- **Do's and don'ts**: from saved `red_line` and `guideline` records (never `review:` or `program:` keys).
   When the client's own creator brief guardrails are saved (a `guideline` whose body names
   them), mirror them line for line.
 - **Delivered file naming**: `[Brand] - [Creator] - Clip [#]`, stated once per brief.
@@ -167,7 +167,7 @@ calibrations (never from Aspire's own positioning; this plugin serves any brand)
   `brand:business-context`. Write one line each, for example buyer "home cooks who buy
   premium cookware", category "consumer kitchen brands".
 - **Off-audience signals**: the content types that would not reach that buyer. Infer from the
-  buyer line and any `guideline` or `red_line` records (never `review:` keys).
+  buyer line and any `guideline` or `red_line` records (never `review:` or `program:` keys).
 - **Search vocabulary**: 3 to 6 bio keywords a creator serving that buyer would use. Derive
   from the buyer, category, and `brand:tracking-scope` hashtags. When `brand:summary` is
   missing, stop and return one question to the main thread asking for the brand's buyer in a
@@ -221,8 +221,8 @@ fetched during the run.
 - `/thumbnail` routes on `cdn.aspire.io` return 404 on image posts, where the base media URL is
   the full-size image. On video posts the base URL is the video file and `/thumbnail` is the
   full-size poster. Pass both, `mediaUrl` first, to the **Images** snippet in `creator-card.md`.
-- **Marketplace search** (re-verified 2026-10-05). One `search_creator_marketplace` call
-  searches Instagram and/or TikTok for one keyword:
+- **Marketplace search** (re-verified 2026-10-07). One `search_creator_marketplace` call
+  searches Instagram and/or TikTok for one keyword, or on filters alone:
   `search_creator_marketplace({ keyword, networks, instagram: { filters }, tiktok: { filters }, asProfileId })`.
   Set `networks` to the networks you want (it defaults to both) and send a filter block only
   for a network in `networks`; a block for any other network, or the old top-level `filters`,
@@ -231,9 +231,16 @@ fetched during the run.
     (0, 10000, 25000, 50000, 75000, 100000, 250000, 1000000) and `creatorMaxFollowers` (the
     same without 0), so round a follower band outward to the nearest allowed values;
     `creatorLatestPostActivity` (`last_7_days`, `last_30_days`, `last_90_days`),
-    `creatorInterests` (up to five), `recommendationType`, and the rest in the tool's schema.
-    `keyword` is required and cannot be combined with `instagram.filters.similarToCreators`, so
-    never send `similarToCreators`: lookalike-by-handle is unreachable from the connector.
+    `creatorInterests` (up to five), `creatorLanguage` (language codes), `recommendationType`
+    (`most_relevant_for_me`, `high_ad_performance`, `most_ads_experience`, `similar_brands`,
+    `similar_audience`, `interested_in_collaboration`), and the yes-only filters
+    `verifiedAccount`, `hasPublicContactEmail`, `hasPortfolio`, `featuredInPaidAds` (creators
+    already in partnership ads) and `excludeMessagedCreators` (leave out creators the brand has
+    already messaged).
+  - `keyword` is optional. Without one, every network in `networks` needs at least one filter
+    of its own, so a keyword-less Instagram search sends `networks: ["instagram"]`.
+    `instagram.filters.similarToCreators` (one to five handles) finds lookalikes and is sent
+    only without a keyword; the server rejects the two together.
   - TikTok filters are ranges and codes: `countryCodes` (defaults to `["US"]`, echoed in
     `jobs.tiktok.appliedDefaults`; all codes from one region: US alone; DE, ES, FR, GB, IT; or
     the rest). TikTok supports only US, DE, ES, FR, GB, IT, AE, AR, AU, BR, CA, CO, EG, ID,
