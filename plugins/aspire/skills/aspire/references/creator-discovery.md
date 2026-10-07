@@ -125,7 +125,8 @@ refilling the shortlist with creators like the ones already delivering.
    - When the seed is on Instagram: `search_creator_marketplace` with no `keyword`,
      `networks: ["instagram"]`, and `instagram: { filters: { similarToCreators: [the seed's
      handle], creatorMinFollowers, creatorMaxFollowers, excludeMessagedCreators: true } }` for
-     the band. Several Instagram seeds go in one call, up to five handles. TikTok has no
+     the band. One call per seed, never several seeds in one call, so every result is credited to the seed
+     that found it. TikTok has no
      lookalike filter, so a TikTok seed gets the first two ways only. Never send `keyword` with
      `similarToCreators`: the server rejects the two together (see `creator-brief.md`, **Atlas
      quirks**).

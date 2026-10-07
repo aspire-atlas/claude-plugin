@@ -410,7 +410,7 @@ one line each in the shape `program.md` sets (**Ledger lines hand-off**):
 
 ```json
 {"for": "atlas-program-ledger", "program": "{slug}", "period": "2026-09", "lines": [
-  {"lineId": "commission-sam.runs-2026-09", "handle": "sam.runs", "kind": "commission",
+  {"lineId": "commission-ig-sam.runs-2026-09", "handle": "sam.runs", "kind": "commission",
    "amount": 486.0, "currency": "USD", "dueAt": "2026-10-31",
    "from": "affiliate @sam.runs 2026-09",
    "basis": "15% of $3,240.00 eligible revenue, net of refunds, from Shopify orders",
@@ -418,7 +418,8 @@ one line each in the shape `program.md` sets (**Ledger lines hand-off**):
  ]}
 ```
 
-- `lineId` is `commission-{handle}-{period}`, stable across re-runs of the same month, with
+- `lineId` is `commission-{net}-{handle}-{period}` (`{net}` is `ig` or `tt`, the network the code's
+  creator is on), stable across re-runs of the same month, with
   `-{currency}` added for any currency other than the program budget's.
 - `dueAt` from the deal's `payout`: `monthly` is the last day of the month after the period;
   `net-{n}` is the period's last day plus n days.

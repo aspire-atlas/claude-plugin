@@ -696,7 +696,7 @@ Atlas** after the build. Without a brand profile, I is not asked and nothing is 
 ## Pre-fill: what Atlas already knows
 
 With a brand profile, read every calibration (paged, `includeSuperseded: true`) and these
-insights before asking B, passing the profile's id on every call. Drop `review:` and `vetting:`
+insights before asking B, passing the profile's id on every call. Drop `review:`, `vetting:` and `program:`
 keys, and `theme:` and `fees:` keys, from anything treated as a brand rule.
 
 **No brand profile for this brand:** read no calibrations and no insights at all (the tools would

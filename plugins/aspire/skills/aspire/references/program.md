@@ -194,7 +194,7 @@ reach, because Atlas holds views.
 
 | recordType | Identity | Anchor | kind | detail adds | Written by |
 | ---------- | -------- | ------ | ---- | ----------- | ---------- |
-| `roster` | the creator's account | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while active; `action_item` `low` at No reply; `went_well` complete; `needs_improvement` declined or dropped | `handle`, `network`, `name`, `type`, `stage`, `source` (discovery, vetting, typed, csv), `contact` `{email, manager, dm}`, `tier`, `lastContactAt`, `nextFollowUpAt`, `waitingOn` (brand while a draft is unsent, creator once sent), `yourCall` (the open question, while one is open), `notes` | Every program agent that moves a creator; content sourcing writes only `waitingOn` and `yourCall`; the deliverable tracker moves Posting due, Posted, and Complete; Program manager |
+| `roster` | the creator's account | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while active; `action_item` `low` at No reply; `went_well` complete; `needs_improvement` declined or dropped | `handle`, `network`, `name`, `type`, `stage`, `source` (discovery, vetting, typed, csv), `contact` `{email, manager, dm}`, `tier`, `lastContactAt`, `nextFollowUpAt`, `waitingOn` (brand while a draft is unsent, creator once sent), `yourCall` (the open question, while one is open), `yourCallDeferredAt` (when the user chose "Decide later"), `notes` | Every program agent that moves a creator; content sourcing writes only `waitingOn` and `yourCall`; the deliverable tracker moves Posting due, Posted, and Complete; Program manager |
 | `draft` | the creator + the template + the channel | The creator's account | `action_item` `low` while not sent; `went_well` once sent | `handle`, `channel` (email, dm, aspire), `template`, `subject`, `body`, `mailDraftId` (when a mailbox draft exists), `sentAt`, `sentBy` (`user` or `send-authorized`) | outreach, negotiation, fulfillment, affiliate manager, sourcing, tracker, roster manager |
 | `reply` | one per exchange, never replaced | The creator's account | `went_well` `low` | `handle`, `channel`, `receivedAt`, `summary` (one plain line), `class` (interested, accepted, question, counter, declined, details, rights, auto-reply, other; an auto-reply moves nothing and never counts as a reply), `record` (what it wrote), `nextMove`, `source` (pasted, mailbox) | outreach (triage), negotiation, fulfillment, sourcing |
 | `terms` | the creator + the deal version | The creator's account | `action_item` `medium` while negotiating; `went_well` agreed; `needs_improvement` declined | `handle`, `type`, `status` (offered, countered, agreed, declined), `version`, `offer` `{open, target, max}`, `counter`, `fee`, `productValue`, `commissionPct`, `codeDiscountPct`, `code`, `monthlyFee`, `termMonths`, `deliverables` (list: what, count, due), `postWithinDays`, `usage`, `usageDays`, `usageChannels`, `exclusivity`, `disclosure`, `whitelisting` (true or false, with `whitelistingDays`), `paymentTiming`, `termStart`, `termEnd`, `agreedAt` | negotiation |
@@ -228,7 +228,7 @@ finding across all periods.
 different currencies are never added together or converted.
 
 **Ledger lines hand-off.** Affiliate manager and content sourcing never write `ledger`. They
-return a `ledger-lines` block, one line each: `lineId` (stable, `{kind}-{handle}-{ref}`, plus `-{currency}` for any currency other than the
+return a `ledger-lines` block, one line each: `lineId` (stable, `{kind}-{net}-{handle}-{ref}`, where `{net}` is `ig` or `tt` as in `creator:` keys, so one handle on two networks never shares a line, plus `-{currency}` for any currency other than the
 program budget's),
 `handle`, `kind` (fee, product, commission, rights, ugc; product given for UGC is `product`), `amount`, `currency`, `dueAt`, `from` (the record type and identity it came
 from), `basis` (one plain line), and `revises` (the `lineId` it replaces, when it does). The
@@ -314,14 +314,14 @@ ending), and the dashboard link.
 | When | Next step | Launch |
 | ---- | --------- | ------ |
 | Setup records missing or unparseable | Finish setup | **Program setup** |
-| Your call needed on any creator | Decide on @{handle} | the section that raised it (a roster decision goes to **Roster review**, which writes the row) |
+| Your call needed on any creator, not deferred in the last 7 days (`yourCallDeferredAt`) | Decide on @{handle} | the section that raised it (a roster decision goes to **Roster review**, which writes the row) |
 | Replies pasted in this session | Record replies | `atlas-creator-outreach` (`mode: triage`) |
-| `watchReplies` on and any creator at Contacted | Check replies | `atlas-creator-outreach` (`mode: triage`, `source: mailbox`) |
+| `watchReplies` on, any creator at Contacted, and the mailbox not yet checked this session | Check replies | `atlas-creator-outreach` (`mode: triage`, `source: mailbox`) |
 | A reply classed counter or question about the deal | Answer @{handle}'s counter | `atlas-creator-negotiation` (`mode: counter`) |
 | Paid, ambassador, or affiliate creators at Replied (interested) with no offer | Make offers | `atlas-creator-negotiation` (`mode: offer`) |
 | Approved creators with no outreach draft | Write first messages | `atlas-creator-outreach` (`mode: first-touch`) |
 | Follow-ups due | Write follow-ups | `atlas-creator-outreach` (`mode: follow-up`) |
-| Agreed creators whose product is not ordered | Collect details and order product | `atlas-product-fulfillment` |
+| Agreed creators whose deal includes product (gifting; paid or ambassador with a product, `productValue`, or `productAllowance`; affiliate only when the deal names product) and whose product is not ordered | Collect details and order product | `atlas-product-fulfillment` |
 | Affiliate creators agreed without a live code | Set up codes | `atlas-affiliate-manager` (`mode: codes`) |
 | Posts due within 3 days, late, missing, or needing a fix | Check posts | `atlas-deliverable-tracker` |
 | Rights expiring within 30 days, or wanted assets | Request rights | `atlas-content-sourcing` |
@@ -333,7 +333,12 @@ ending), and the dashboard link.
 | Otherwise | Update the dashboard | `atlas-program-dashboard` |
 
 Then one `AskUserQuestion`, header "Next": the row's next step first (Recommended), plus "Show
-the dashboard" and "Change setup". Never offer more than one next step.
+other next steps" (the next three rows that also match, as one more picker) and "Change
+setup". Never recommend more than one next step.
+
+**Decide later.** Every your-call picker carries "Decide later". That answer writes the creator's
+`roster` row again with `yourCallDeferredAt` (the answer is its confirmation, as Phase 5 declines
+are), so the item stays on the status screen but stops leading the dispatch for 7 days.
 
 Every launch carries the tool prefix, `profile_id`, `profile_slug`, the program slug, the brand's
 linked handles and networks, `recipient`, `connections` (**4**), and the approvals the main

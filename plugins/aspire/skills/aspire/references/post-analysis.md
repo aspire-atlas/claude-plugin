@@ -25,7 +25,7 @@ transcript, or the audio, and the page says which.
 | `recipient` | **Reading the ask**. Default `brand`; `performance` and `creative` when the ask is about reuse as an ad. |
 | `baseline` | Q2 below: `held`, `refresh`, or `skip` |
 | `save` | Q3 below: whether to save the findings |
-| Brand digest | The requesting brand's `brand:summary`, `brand:business-context`, competitors, partners, red lines, and any `campaign:*-brief` records. Drop `review:`, `vetting:`, `creator:`, `theme:` and `fees:` keys (the theme still styles the page). |
+| Brand digest | The requesting brand's `brand:summary`, `brand:business-context`, competitors, partners, red lines, and any `campaign:*-brief` records. Drop `review:`, `vetting:`, `program:`, `creator:`, `theme:` and `fees:` keys (the theme still styles the page). |
 
 ## Questions (main thread)
 

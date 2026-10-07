@@ -149,8 +149,10 @@ A `ledger-lines` block from the affiliate manager or content sourcing carries th
 
 ## Line identity
 
-`lineId` is `{kind}-{handle}-{ref}`, lowercase, stable across runs, so a rebuild never adds a
-line twice.
+`lineId` is `{kind}-{net}-{handle}-{ref}`, lowercase, stable across runs, so a rebuild never adds a
+line twice. `{net}` is `ig` or `tt`, as in `creator:` keys: the same handle on Instagram and
+TikTok is two creators and never shares a line. A program-level line uses `brand` for
+`{net}-{handle}`.
 
 | Line | `ref` |
 | ---- | ----- |
@@ -164,7 +166,7 @@ line twice.
 
 A commission month paid in two currencies gets two lines: the program currency's keeps the
 plain `lineId`, and each other currency adds `-{currency}` in lowercase
-(`commission-sam.runs-2026-09-cad`). Amounts in different currencies are never added together
+(`commission-ig-sam.runs-2026-09-cad`). Amounts in different currencies are never added together
 or converted.
 
 **Never duplicate.** Before proposing a new line, check every existing `lineId`. Then check for
@@ -376,7 +378,7 @@ recomputes. Never put a removed detail in it.
             "mapping": {"creator": "Payee", "amount": "Paid amount", "date": "Payment date"},
             "event": "payment", "removed": {"bank": 2, "tax": 1, "card": 0}},
  "lines": [
-  {"lineId": "fee-sam.runs-d2", "handle": "sam.runs", "network": "instagram",
+  {"lineId": "fee-ig-sam.runs-d2", "handle": "sam.runs", "network": "instagram",
    "entityId": "…", "seq": 3, "basedOn": "<recordedAt of the newest finding, or null>",
    "change": "paid", "ledger": {"…": "the full ledger detail this run would write"},
    "row": 4, "yourCall": null}

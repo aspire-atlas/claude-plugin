@@ -303,13 +303,13 @@ grant or an agreed asset request with a fee or product, it returns a fenced JSON
 `ledger-lines`, one line each, with exactly the fields `program.md` lists:
 
 ```json
-[{"lineId": "rights-creatorhandle-{postId}-paid-usage",
+[{"lineId": "rights-ig-creatorhandle-{postId}-paid-usage",
   "handle": "creatorhandle", "kind": "rights", "amount": 250, "currency": "USD",
   "dueAt": "2026-11-06", "from": "rights {postId} paid usage",
   "basis": "Paid usage on Meta ads, 90 days, your usage fees", "revises": null}]
 ```
 
-- `lineId` is `{kind}-{handle}-{ref}`, stable: `ref` is `{postId}-{usage}` for rights (with
+- `lineId` is `{kind}-{net}-{handle}-{ref}` (`{net}` is `ig` or `tt`), stable: `ref` is `{postId}-{usage}` for rights (with
   `-renewal-{n}` for the nth renewal) and the `ugcId` for UGC.
 - `kind` is `rights` for a grant or renewal, `ugc` for an asset request. Product given for UGC
   is a `product` line with the catalog `value`, `ref` `{ugcId}-product`, and `basis` "product

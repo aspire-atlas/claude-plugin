@@ -881,6 +881,9 @@ agent asks the main thread to confirm, record the outcome, and show the new stat
 - **Pasted replies** go to `atlas-creator-outreach` in `mode: triage`.
 - **"Pull the order form"** reads the order form's page data and records it with one picker
   (**6**, Reading it back).
+- **"Decide later"** on any your-call picker writes the creator's roster row with
+  `yourCallDeferredAt`, so the item stays on the status screen without leading the next step for
+  7 days (**3**, Decide later).
 
 ### Schedule
 
@@ -1003,7 +1006,7 @@ manager, or the user (pass what changes, from, to, and who asked).
    default). No confirmation is needed:
    `propose` writes nothing.
 4. Relay the page link, one line per creator (offer, counter, move, reasons), the math, and the
-   drafts. Then ask the agent's questions in one `AskUserQuestion` call, skipping any with
+   drafts. Then ask the agent's questions, at most four questions per call (**Guardrails**, Pickers), skipping any with
    nothing to ask:
    - N1, header "Moves": "Save these moves for {program}? {n} drafts go on the creators' rows."
      with each move named. Options: "Save the moves (Recommended)", "Change something", "Page
@@ -1015,7 +1018,8 @@ manager, or the user (pass what changes, from, to, and who asked).
    - N4, header "Mailbox", only when the program's mail setting names a live mailbox that can
      draft: "Create {n} drafts in your {mailbox} for {creators}? Nothing is sent." Options:
      "Create the drafts (Recommended)", "I'll copy them myself".
-   More than four questions: ask N2 items first, then N1, N3 and N4 in a second call.
+   At most four questions per call: N2 items first, four per call, then N1, N3 and N4 (see
+   **Guardrails**, Pickers).
 5. "Change something" relaunches `pass: propose` with the change as an override. Otherwise
    launch it again with `pass: record`, the `negotiation-packet`, and the answers. N1 and N3 are
    the write confirmations; N4 is the mailbox confirmation.
@@ -1041,7 +1045,7 @@ the order form's data rules are in `references/program.md`, **6**.
 Fulfillment is interactive. Every question below is one `AskUserQuestion` call, never plain
 text; the tool adds its own free text field. Launch `atlas-product-fulfillment` with the tool
 prefix, `profile_id`, `profile_slug`, the program slug, the linked handles and networks,
-`recipient`, `connections`, `mode`, and the O answers below, and end with the decision-audit
+`recipient`, `connections`, `mode`, and the F answers below, and end with the decision-audit
 line.
 
 **Before any mode**, when the program has an order form: read its `rows` with the Artifact
@@ -1076,7 +1080,9 @@ Show city and region in chat, never the street.
 3. Store batch (the store can place orders): **F4** header "Orders": "Place {n} orders in
    {store}? @a: {product}, {options}, to {city}; …" Options: "Not yet (Recommended)", "Place
    these {n}". On "Place", relaunch `mode: order` with F4. Never place an order on an earlier
-   yes.
+   yes. F4 also approves recording each order it places, so a placed order is saved as ordered
+   in the same run even when F2 was never asked this session, and an order already recorded is
+   never offered again.
 4. Order sheet: relay the file path and the page link. When the user says the orders went in,
    **F6** header "Ordered": "Mark orders for @a, @b and {n-2} more as placed {date}?" Options:
    "Mark placed (Recommended)", "Change something". Relaunch `mode: order` with F6.
@@ -1150,7 +1156,7 @@ decision-audit line.
      these posts carry it?"); Atlas can't see the label, so it is never treated as missing.
    When T2 or T5 answers change a status, relaunch `pass: propose` with them as `overrides` and
    relay the new counts.
-5. Then one call:
+5. Then ask, at most four questions per call (**Guardrails**, Pickers):
    - **T1**, header "Save": "Save the posting check for {program}? {p} posted, {l} late, {m}
      missing, {f} need a fix. {moves}" Options: "Save the check (Recommended)", "Change
      something", "Page only".
@@ -1216,8 +1222,8 @@ on with the sheet or an upload.
 
 1. Launch with `mode: codes`, `pass: propose`. It writes nothing and creates nothing.
 2. Relay the page link, one line per creator (`@a: SAM20, 20% off, in Shopify`), the sheet path
-   when there is one, and any code that collided. Then one call, skipping what has nothing to
-   ask:
+   when there is one, and any code that collided. Then ask, at most four questions per call (**Guardrails**, Pickers), skipping
+   what has nothing to ask:
    - **Y**, header "Your call", one per item the agent raised, exactly as worded: the
      recommended answer first (Recommended), the alternatives, "Decide later".
    - **A1**, header "Codes": "Save these codes for {program}? @a: SAM20, 20% off; @b: ALEXTT20,
@@ -1252,8 +1258,8 @@ on with the sheet or an upload.
 2. Launch with `mode: report`, `pass: propose`, A5, and A6 (the file's path for an upload).
 3. Relay the page link, the headline (revenue with its source and currency, orders, commission
    owed), one line per creator, and the timeline's line: "Sales and posts on the same days are a
-   correlation, not proof." Then one call, skipping what has nothing to ask (your-call items
-   first when there are more than four questions):
+   correlation, not proof." Then ask, skipping what has nothing to ask, your-call items first and
+   at most four questions per call (see **Guardrails**, Pickers):
    - **A7**, export only, header "Columns": "Read the file this way? {mapping, one per line};
      {match count}." Options: "Use this mapping (Recommended)", "Change something".
    - **A8**, header "Save": "Save {period} sales for {n} creators to {program} and pass {k}
@@ -1299,8 +1305,8 @@ say in one line that the review needs a person to approve it, and stop.
    `recipient` (`team` by default; `growth` when the ask is about where to spend). Pass
    `creators` or `types` when the user named them. No confirmation is needed: `propose` writes
    nothing.
-3. Relay the page link, the segment counts, one line per creator, and the drafts. Then ask, in
-   one `AskUserQuestion` call:
+3. Relay the page link, the segment counts, one line per creator, and the drafts. Then ask,
+   at most four questions per call (**Guardrails**, Pickers):
    - K1, header "Review": "Save the roster review for {program}? {n} creators: {s} stars, {t}
      steady, {u} slipping, {v} dormant, {w} to retire, {x} not enough data. {d} notes go on the
      creators' rows." Options: "Save the review (Recommended)", "Change something", "Page only".
@@ -1367,7 +1373,7 @@ details; not saved") and never repeat what was removed. Never ask for them.
 
 1. Launch with `mode: build`, `pass: propose`. It writes nothing.
 2. Relay the page link, the headline (budget, paid, committed, product cost, forecast to term
-   end, remaining, per currency) and the overdue count. Then one call, your-call items first,
+   end, remaining, per currency) and the overdue count. Then ask, your-call items first and at most four questions per call (**Guardrails**, Pickers),
    skipping what has nothing to ask:
    - **G5**, header "Your call", one per item the agent raised, exactly as worded: the
      recommended answer first (Recommended), the alternatives, "Decide later".
@@ -1385,7 +1391,7 @@ details; not saved") and never repeat what was removed. Never ask for them.
    finance tool". Then wait for the paste or the file.
 2. Launch with `mode: record`, `pass: propose`, and the pasted text or the file's path.
 3. Relay the page link, the removed-details line when there is one, the matches one per line,
-   and the unmatched rows with their reasons. Then one call, your-call items first:
+   and the unmatched rows with their reasons. Then ask, your-call items first and at most four questions per call (**Guardrails**, Pickers):
    - **G5**, header "Your call", one per item: an unmatched row with a close line, a short or
      over payment, a reversal, a change after invoicing, a void past accrued.
    - **G3**, CSV only (or when the rows do not say invoice or payment), header "Columns": "Read
@@ -1573,7 +1579,8 @@ requests need a person to approve them, and stop.
      draft and some drafts go by email: "Create {n} drafts in your {Gmail or Outlook} for @a,
      @b and {n-2} more? Nothing is sent." Options: "Create the drafts (Recommended)", "I'll
      copy them myself".
-   More than four questions: ask the S2 items first, then S1 or S3 and S4 in a second call.
+   At most four questions per call: the S2 items first, four per call, then S1 or S3 and S4 (see
+   **Guardrails**, Pickers).
 5. "Change something" relaunches `pass: propose` with the change as an override. Otherwise
    launch again with `pass: record`, the `sourcing-packet`, and the answers. S1 and S3 are the
    write confirmations, and cover the sourcing page's `page` finding on first publish; S4 is
@@ -1975,10 +1982,13 @@ detail lives in `references/quarterly-signal.md`.
    (default `leadership`): which quarter (last completed quarter (Recommended), quarter to
    date, or typed dates or a fiscal quarter), and "Save the quarter's findings to Atlas?"
    (Save (Recommended) / Page only). If the user mentions spend, take the number as typed;
-   never ask for it, and never estimate it.
+   never ask for it, and never estimate it. When no spend was typed and a program dashboard has
+   saved ledger figures, add a third question, header "Spend": "Show the program's paid amount
+   from the ledger on this page? Everyone it's shared with will see it." Options: "Leave spend
+   out (Recommended)" / "Show it". Pass the answer as `ledger_spend` (`omit` or `show`).
 2. Launch `atlas-quarterly-signal` with: tool prefix, `profile_id`, `profile_slug`, linked handles and
-   networks, run mode `interactive`, `recipient`, the quarter, any spend given, and the write
-   answer.
+   networks, run mode `interactive`, `recipient`, the quarter, any spend given, `ledger_spend`,
+   and the write answer.
 3. Relay the page link, the outcome line, the KPIs, and the forward note. When the data gaps
    name missing readouts, offer readout setup or scheduling so next quarter has them.
 
@@ -2285,6 +2295,12 @@ The watch list is the brand's saved creators, outside any campaign.
 ---
 
 ## Guardrails
+
+- **Pickers.** `AskUserQuestion` takes one to four questions per call and two to four options
+  per question. When a flow has more questions than that (several your-call items, a match per
+  post, a confirmation per creator), ask them in order across as many calls as it takes, four at
+  a time, before relaunching the agent. Never drop a question to fit, and never merge two
+  decisions into one question to save a call.
 
 - Never fabricate org, account, or metric data. If a tool call fails, say so and stop.
 - **Every state change is confirmed through `AskUserQuestion`, never plain text.** This covers

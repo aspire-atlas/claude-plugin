@@ -20,7 +20,10 @@ never re-runs another agent.
   is the comparison.
 - **Spend** (optional): the program's spend for the quarter, as the user typed it. Without it,
   spend comes only from program snapshots that carry ledger figures (**Program dashboards**
-  below), labelled with that source. With neither, cost efficiency is a data gap, never an
+  below), labelled with that source, and only when `ledger_spend` is `show`: this page has no
+  Editor-only view, so everyone it is shared with sees what it shows, and the program keeps its
+  money for Editors. With `ledger_spend` `omit` (the default), no ledger amount and no ratio
+  built on one appears; the program row keeps pace words only. With neither, cost efficiency is a data gap, never an
   estimate presented as spend. Typed spend wins for the cost tiles; a snapshot figure shows
   beside it, labelled.
 - **Recipient:** `leadership` by default; the reader and venue when the user names them ("for
@@ -60,8 +63,8 @@ program, take the newest snapshot in the quarter and the newest before the quart
 quarter's figure for a running count (posts, engagement, assets, paid) is the first minus the
 second; a program whose first snapshot falls inside the quarter counts from its term start. A
 program with no snapshot in the quarter is a gap: "{program}: no dashboard saved this quarter".
-Spend from a snapshot is used only when its `basis` is `ledger`: the quarter's paid amount, per
-currency, labelled "paid, from the program ledger". Currencies are never added or converted.
+Spend from a snapshot is used only when its `basis` is `ledger` and `ledger_spend` is `show`: the
+quarter's paid amount, per currency, labelled "paid, from the program ledger". Currencies are never added or converted.
 Calibration reads still drop `program:*` keys; the program is named from its dashboard's page
 title.
 

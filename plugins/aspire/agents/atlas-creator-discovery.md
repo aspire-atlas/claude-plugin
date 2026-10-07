@@ -82,7 +82,7 @@ records. Score with this reference's rubric; the paid screens belong to vetting.
 3. Read `search_calibrations` (no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the five
    campaign records, plus `brand:summary`, every `competitor`, `partner`, `red_line`, and
    `guideline`. Drop every key starting `review:` (content review only) or `vetting:` (creator
-   vetting only), and the CAS keys (`-cas`, `-lane-*`, `-decision-defaults`, `-terms`) of any
+   vetting only) or `program:` (influencer program only), and the CAS keys (`-cas`, `-lane-*`, `-decision-defaults`, `-terms`) of any
    campaign other than this one. Keep `theme:brand` for the page in step 10; it is never a guideline. Keep
    every `creator:*` record apart: it is the team's call on one creator, not a criterion. Add
    each one with stance `reject` to the dedupe set, and show any other stance on that

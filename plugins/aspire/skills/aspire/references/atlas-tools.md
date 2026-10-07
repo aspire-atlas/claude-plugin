@@ -214,6 +214,12 @@ The keys `-cas`, `-lane-*`, `-decision-defaults`, and `-terms` belong to the CAS
 Every other flow drops them, as it drops `review:` and `vetting:` keys. They are never brand
 guidelines: brief conflicts, content review checks, and red-line scans leave them out.
 
+**Keys starting `program:` belong to the influencer program flows** (`program.md`): its setup,
+terms, maximums, budget, catalog and outreach voice. Every flow outside the program drops them
+when it reads guidelines, as it drops `review:` and `vetting:` keys. They are never brand
+guidelines, and a program's terms, maximums or budget never appear in a brief, a review, or a
+page for creators.
+
 **Read every page.** `limit 100` on `search_calibrations` is the page size, not a cap. Pass
 each response's `nextCursor` back as `cursor` until none is returned, then filter. Lessons,
 hard rules and superseded versions keep growing, so a single page can miss the records a

@@ -82,7 +82,7 @@ check.
 3. `search_calibrations` (no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): every `review:*`
    record, including lessons, plus `red_line`, `guideline`, `competitor`, `partner`,
    `brand:summary`, the `voice_and_content_ops` brand fact, `user:primary-contact`, and
-   `theme:brand` (page styling only, never a guideline check). Use
+   `theme:brand` (page styling only, never a guideline check). Drop every `program:` key: a program's terms are never a guideline check. Use
    only active records; superseded ones tell you what changed. Then `get_brand_instruction`
    with `agentType: "brand_safety"`.
 4. `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
