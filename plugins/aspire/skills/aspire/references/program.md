@@ -74,7 +74,7 @@ keys and prefix.
 | `program:{slug}-catalog` | `guideline` | Products creators can receive (below) | `{concern: "requirement", appliesTo: ["program", "{slug}"], body: "<catalog object, json.dumps>"}` |
 | `program:{slug}-outreach` | `guideline` | Sender, voice, channels, follow-up days, mail use (below) | `{concern: "preference", appliesTo: ["program", "{slug}"], body: "<outreach object, json.dumps>"}` |
 | `program:{slug}-routing` | `policy` | Where pages and alerts go (P8) | `{area: "routing", body: "page; slack:#channel; email:a@x.com,b@x.com"}` |
-| `program:{slug}-cadence` | `policy` | Scheduled runs this program approved (P9) | `{area: "cadence", cadence: "program", body: "dashboard weekly <DAY HH:MM>; tracker daily <HH:MM>; replies daily <HH:MM>, <IANA timezone>"}` |
+| `program:{slug}-cadence` | `policy` | Scheduled runs this program approved (P9) | `{area: "cadence", cadence: "program", body: "dashboard weekly <DAY HH:MM>; tracker daily <HH:MM>; replies daily <HH:MM>; library weekly <DAY HH:MM>; shipping daily <HH:MM>, <IANA timezone>"}` |
 
 The program object:
 
@@ -84,7 +84,7 @@ The program object:
  "goals": [{"metric": "posts", "target": 60}, {"metric": "sales", "target": 25000, "currency": "USD"}],
  "budget": {"amount": 30000, "currency": "USD"},
  "rosterTarget": 20, "discoveryCampaign": "summer-ambassadors",
- "store": "shopify", "pageUrls": {}}
+ "store": "shopify"}
 ```
 
 - `goals[].metric` is one of `posts`, `creators`, `reach`, `engagements`, `sales`, `assets`
@@ -95,30 +95,37 @@ The program object:
   (**Creator discovery** in SKILL.md), or absent.
 - `store` is `shopify`, `other` (another store connection the user named), or `none`. It
   records the user's intent, not whether the connection is live (**4**).
-- `pageUrls` holds each program page's link after its first publish, keyed by page
-  (`outreach`, `negotiation`, `orderForm`, `library`, `sourcing`, `tracker`, `roster`,
-  `ledger`, `dashboard`, `affiliate`). A publish that adds a link writes the program object
-  again through the supersede rule, batched with the agent's other writes in the same
-  confirmation.
+- Page links are not kept here. Each program page's link is a `page` finding (**Working
+  state**), so saving it never needs the supersede rule.
 
 The terms object, one block per type the program carries:
 
 ```json
 {"schema": 1,
  "paid": {"deliverables": "1 Reel + 3 Stories", "postWithinDays": 14, "usageDays": 30,
-          "usage": "organic repost", "exclusivityDays": 0, "disclosure": "paid partnership label and #ad",
+          "usage": "organic repost", "usageChannels": ["brand Instagram", "brand TikTok"],
+          "whitelisting": false, "exclusivityDays": 0,
+          "disclosure": "paid partnership label and #ad", "firstTouch": "invite",
           "offer": {"source": "fee-calculator", "maxPerCreator": 2500}},
  "gifting": {"postExpected": "loose", "postWithinDays": 21, "productValueMax": 150,
              "disclosure": "#gifted"},
  "ambassador": {"monthly": "2 Reels + 4 Stories", "termMonths": 6, "monthlyFee": 800,
-                "productAllowance": 200, "renewalNoticeDays": 30, "disclosure": "#ad"},
- "affiliate": {"commissionPct": 15, "codeDiscountPct": 20, "codePattern": "{HANDLE}20",
+                "monthlyFeeMax": 1000, "postWithinDays": 30, "productAllowance": 200,
+                "renewalNoticeDays": 30, "disclosure": "#ad", "firstTouch": "invite"},
+ "affiliate": {"commissionPct": 15, "commissionPctMax": 20, "codeDiscountPct": 20,
+               "codeDiscountPctMax": 25, "codePattern": "{HANDLE}20",
                "attributionDays": 30, "payout": "monthly", "disclosure": "#ad and code in caption"}}
 ```
 
 Every amount is in the program budget's currency. `offer.source` `fee-calculator` prices each
-creator per `fees.md`, **Applying the rates**; a typed number is the user's. `postExpected` is
-`none`, `loose` (hoped for), or `owed` (written into the terms).
+creator per `fees.md`, **Applying the rates**; a typed number is the user's. The fee calculator
+works in USD: a program in another currency uses only the numbers typed into its terms, and a
+calculator figure shows as a USD reference, never converted. `postExpected` is `none`, `loose`
+(hoped for), or `owed` (written into the terms). `firstTouch` is `invite` (the first message
+invites a conversation; the default when absent) or `open-fee` (it states the opening fee).
+The `*Max` fields are optional ceilings: without one, any ask above the standard is the user's
+call. Usage runs from the post date for `usageDays`. Ambassador `postWithinDays` counts from the
+start of each month of the term.
 
 The catalog object:
 
@@ -168,16 +175,17 @@ record type, the newest finding per identity wins, by `detail.recordedAt`.
 
 | recordType | Identity | Anchor | kind | detail adds | Written by |
 | ---------- | -------- | ------ | ---- | ----------- | ---------- |
-| `roster` | the creator's account | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while active; `went_well` complete; `needs_improvement` declined or dropped | `handle`, `network`, `name`, `type`, `stage`, `source` (discovery, vetting, typed, csv), `contact` `{email, manager, dm}`, `tier`, `lastContactAt`, `nextFollowUpAt`, `waitingOn` (brand, creator), `yourCall` (the open question, while one is open), `notes` | Every program agent that moves a creator; Program manager |
-| `draft` | the creator + the template | The creator's account | `action_item` `low` while not sent; `went_well` once sent | `handle`, `channel` (email, dm, aspire), `template`, `subject`, `body`, `mailDraftId` (when a mailbox draft exists), `sentAt`, `sentBy` (`user` or `send-authorized`) | outreach, negotiation, fulfillment, sourcing, tracker, roster manager |
-| `reply` | one per exchange, never replaced | The creator's account | `went_well` `low` | `handle`, `channel`, `receivedAt`, `summary` (one plain line), `class` (interested, question, counter, declined, details, rights, other), `record` (what it wrote), `nextMove`, `source` (pasted, mailbox) | outreach (triage), negotiation, fulfillment, sourcing |
-| `terms` | the creator + the deal version | The creator's account | `action_item` `medium` while negotiating; `went_well` agreed; `needs_improvement` declined | `handle`, `type`, `status` (offered, countered, agreed, declined), `version`, `offer` `{open, target, max}`, `counter`, `fee`, `productValue`, `commissionPct`, `code`, `deliverables` (list: what, count, due), `usage`, `usageDays`, `exclusivity`, `disclosure`, `whitelisting`, `termStart`, `termEnd`, `agreedAt` | negotiation |
-| `fulfillment` | the creator + the order | The creator's account | `action_item` `medium` until delivered; `went_well` delivered | `handle`, `product`, `options`, `value`, `status` (to request, requested, received, ordered, shipped, delivered, issue, returned), `address`, `pickup`, `carrier`, `tracking`, `orderRef`, `orderedAt`, `shippedAt`, `deliveredAt`, `postDueAt` | fulfillment |
+| `roster` | the creator's account | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while active; `action_item` `low` at No reply; `went_well` complete; `needs_improvement` declined or dropped | `handle`, `network`, `name`, `type`, `stage`, `source` (discovery, vetting, typed, csv), `contact` `{email, manager, dm}`, `tier`, `lastContactAt`, `nextFollowUpAt`, `waitingOn` (brand while a draft is unsent, creator once sent), `yourCall` (the open question, while one is open), `notes` | Every program agent that moves a creator; Program manager |
+| `draft` | the creator + the template + the channel | The creator's account | `action_item` `low` while not sent; `went_well` once sent | `handle`, `channel` (email, dm, aspire), `template`, `subject`, `body`, `mailDraftId` (when a mailbox draft exists), `sentAt`, `sentBy` (`user` or `send-authorized`) | outreach, negotiation, fulfillment, sourcing, tracker, roster manager |
+| `reply` | one per exchange, never replaced | The creator's account | `went_well` `low` | `handle`, `channel`, `receivedAt`, `summary` (one plain line), `class` (interested, accepted, question, counter, declined, details, rights, auto-reply, other; an auto-reply moves nothing and never counts as a reply), `record` (what it wrote), `nextMove`, `source` (pasted, mailbox) | outreach (triage), negotiation, fulfillment, sourcing |
+| `terms` | the creator + the deal version | The creator's account | `action_item` `medium` while negotiating; `went_well` agreed; `needs_improvement` declined | `handle`, `type`, `status` (offered, countered, agreed, declined), `version`, `offer` `{open, target, max}`, `counter`, `fee`, `productValue`, `commissionPct`, `codeDiscountPct`, `code`, `monthlyFee`, `termMonths`, `deliverables` (list: what, count, due), `postWithinDays`, `usage`, `usageDays`, `usageChannels`, `exclusivity`, `disclosure`, `whitelisting` (true or false, with `whitelistingDays`), `termStart`, `termEnd`, `agreedAt` | negotiation |
+| `fulfillment` | the creator + `orderKey` (`{YYYY-MM}` for an ambassador's monthly order, `1` otherwise) | The creator's account | `action_item` `medium` until delivered; `went_well` delivered | `handle`, `product`, `options`, `value`, `status` (to request, requested, received, ordered, shipped, delivered, issue, returned), `address`, `pickup`, `carrier`, `tracking`, `orderRef`, `orderedAt`, `shippedAt`, `deliveredAt`, `postDueAt` | fulfillment |
 | `deliverable` | the creator + the deliverable | The creator's account | `action_item` `medium` while due; `went_well` posted on time; `needs_improvement` late, missing, or needs a fix | `handle`, `what`, `due`, `status` (due, posted, late, missing, needs fix, waived), `postUrl`, `postId`, `postedAt`, `disclosure` (found, missing, unclear), `checks` (one line each), `owed` (true for terms, false for loose gifting) | deliverable tracker |
-| `asset` | the post | The creator's account | `went_well` `low` | `postUrl`, `postId`, `handle`, `network`, `format`, `products`, `themes`, `hookPattern`, `adScore`, `peopleOnScreen`, `safety`, `source` (program, tagged, mention, hashtag) | content library |
+| `asset` | the post | The creator's account | `went_well` `low` | `postUrl`, `postId`, `handle`, `network`, `format`, `products`, `themes`, `hookPattern`, `adScore`, `peopleOnScreen`, `safety`, `sources` (any of program, tagged, mention, hashtag) | content library |
 | `rights` | the post + the grant | The creator's account | `action_item` `medium` while requested; `went_well` granted; `needs_improvement` declined or expired | `postUrl`, `handle`, `status` (wanted, requested, granted, declined, expired, renewal requested), `usage` (organic repost, paid usage, whitelisting), `channels`, `startsAt`, `expiresAt`, `fee`, `requestKind` (rights, renewal, new-ugc), `assetSpec` (new UGC: what, specs, due) | content sourcing |
 | `affiliate` | the creator + the period | The creator's account | `went_well` when sales; `action_item` `low` when none | `handle`, `code`, `link`, `period` (`YYYY-MM`), `orders`, `revenue`, `aov`, `commission`, `currency`, `source` (store, csv), `codeStatus` (planned, live, retired) | affiliate manager |
 | `ledger` | one per line, never replaced | The creator's account, or the brand's for program-level lines | `action_item` `medium` while owed; `went_well` paid | `lineId`, `handle`, `kind` (fee, product, commission, rights, ugc), `amount`, `currency`, `status` (accrued, invoiced, approved, paid, void), `dueAt`, `invoiceRef`, `paidAt`, `from` (the record it came from) | program ledger |
+| `page` | the page key | The brand's own account on its first linked network | `went_well` `low` | `key` (outreach, negotiation, orderForm, library, sourcing, tracker, roster, ledger, dashboard, affiliate), `url`, `title` | The agent that first publishes the page, in the same approval as its other writes; unattended runs may write it |
 | `snapshot` | the program + the date | The brand's own account on its first linked network | `went_well` `low` | The dashboard's headline numbers: funnel counts, deliverables, assets, spend, revenue, goals vs. actual | program dashboard |
 | `roster-health` | the creator + the date | The creator's account | `went_well` star or steady; `needs_improvement` slipping, dormant, retire | `handle`, `segment` (star, steady, slipping, dormant, retire), `quotaMet`, `trend`, `costPerEngagement`, `revenue`, `renewalDueAt`, `recommendation` | roster manager |
 
@@ -187,6 +195,16 @@ its own identity. That keeps the newest finding complete on its own.
 
 An agent that needs a field this table does not hold adds it to its own record type's `detail`
 and lists it in its reference; it never writes another agent's record type.
+
+**Who owns a deal.** Negotiation writes `terms` for paid, ambassador, affiliate, and hybrid
+deals. A gifting yes needs no negotiation: outreach triage records it as `accepted` and moves
+the creator to Agreed, and every agent reads that creator's deal from the program's
+`terms.gifting`. Any agent reading a creator's deal takes the newest `terms` finding when one
+exists, and otherwise the program's terms for the creator's type.
+
+**Brand-wide library.** `atlas-content-library` also runs with no program. Its findings then go
+on runKey `content-library-{profile}-{YYYY-MM-DD}`, and it reads rights from every program's
+records.
 
 A program needs at least one linked Instagram or TikTok channel on the brand profile, because
 program-level findings are anchored to the brand's account. Without one, say so in one line and
@@ -211,12 +229,15 @@ per turn, in order. Prefill every option from what Atlas already holds: `brand:s
 | P7 | How should outreach sound, and who is it from? | Prefilled from the brand voice record; Change it (type it). Second question in the same call: channels (multiSelect: Email, Instagram or TikTok DM, Aspire message) | `outreach` |
 | P7b | Mail, only when Email was picked: "Should drafts go straight into your mailbox?" | Yes, into {Gmail or Outlook} (shown only when that connection is live); I'll copy them myself; Help me connect my mail | `outreach` (mail, watchReplies) |
 | P8 | Where should program pages and alerts go? (multiSelect) | Published page + chat (always on); Slack channel (type it); Email (type recipients) | `routing` |
-| P9 | Which should run on their own? (multiSelect) | Weekly dashboard; Daily posting check; Daily reply check (only with P7b mailbox); None for now | `cadence` |
+| P9 | Which should run on their own? (multiSelect) | Weekly dashboard; Daily posting check; Daily reply check (only with P7b mailbox); Weekly content library refresh; Daily shipping check (only with product); None for now | `cadence` |
 | P10 | Save the {program} setup for {brand}? Everyone on the team and every scheduled run will use it. | Save the program (Recommended); Change something | Every record above |
 
 Rules:
 
-- **P2 to P5** skip what does not apply: no `terms.paid` without Paid posts.
+- **P2 to P5** skip what does not apply: no `terms.paid` without Paid posts. P5 for Paid posts
+  and Ambassador also asks "State the opening fee in the first message, or invite a
+  conversation?" (Invite a conversation (Recommended); State the opening fee), and offers the
+  optional ceilings for Ambassador and Affiliate.
 - **P5** shows the standard deal in one block per type and says once where fees come from: "Fees
   come from your fee calculator" or "from Aspire's recommended rates until you set yours" (then
   make the fee calculator offer per SKILL.md after the reply).
@@ -242,7 +263,8 @@ the single next step, launches the agent, records what came back, and republishe
 
 **Status screen:** the program name and term, counts per stage, goals against actuals from the
 newest `snapshot`, anything marked your call needed, drafts waiting to send, replies waiting to
-record, posts late or missing, rights expiring within 30 days, and the dashboard link.
+record, posts late or missing, rights expiring within 30 days (granted rights and deal usage
+ending), and the dashboard link.
 
 **Dispatch** (first match from the top):
 
@@ -250,8 +272,10 @@ record, posts late or missing, rights expiring within 30 days, and the dashboard
 | ---- | --------- | ------ |
 | Setup records missing or unparseable | Finish setup | **Program setup** |
 | Your call needed on any creator | Decide on @{handle} | the section or agent that raised it |
-| Replies waiting (pasted, or found by the reply check) | Record replies | `atlas-creator-outreach` (`mode: triage`) |
-| A reply classed counter or question about the deal | Answer @{handle}'s counter | `atlas-creator-negotiation` |
+| Replies pasted in this session | Record replies | `atlas-creator-outreach` (`mode: triage`) |
+| `watchReplies` on and any creator at Contacted | Check replies | `atlas-creator-outreach` (`mode: triage`, `source: mailbox`) |
+| A reply classed counter or question about the deal | Answer @{handle}'s counter | `atlas-creator-negotiation` (`mode: counter`) |
+| Paid, ambassador, or affiliate creators at Replied (interested) with no offer | Make offers | `atlas-creator-negotiation` (`mode: offer`) |
 | Approved creators with no outreach draft | Write first messages | `atlas-creator-outreach` (`mode: first-touch`) |
 | Follow-ups due | Write follow-ups | `atlas-creator-outreach` (`mode: follow-up`) |
 | Agreed creators whose product is not ordered | Collect details and order product | `atlas-product-fulfillment` |
@@ -260,7 +284,8 @@ record, posts late or missing, rights expiring within 30 days, and the dashboard
 | Rights expiring within 30 days, or wanted assets | Request rights | `atlas-content-sourcing` |
 | A month closed for affiliate | Report sales and commission | `atlas-affiliate-manager` (`mode: report`) |
 | Ledger lines past due | Update payments | `atlas-program-ledger` |
-| Ambassador renewals within the notice window | Review the roster | `atlas-roster-manager` |
+| Ambassador renewals within the notice window | Review the roster | `atlas-roster-manager`, then `atlas-creator-negotiation` (`mode: renewal`) for the renewals the user picks |
+| No library page, or the newest `asset` finding older than 7 days | Refresh the content library | `atlas-content-library` (`mode: build`) |
 | Otherwise | Update the dashboard | `atlas-program-dashboard` |
 
 Then one `AskUserQuestion`, header "Next": the row's next step first (Recommended), plus "Show
@@ -335,8 +360,9 @@ send.
 **Marking sent.** When the user says drafts went ("sent them all", "sent Alex's"), one picker
 names the drafts and the date; the confirm writes each `draft` again with `sentAt`, and the
 creator's `roster` row with `lastContactAt`, `nextFollowUpAt` (from `outreach.followUpDays` and
-the creator's tier) and `waitingOn` creator. A draft sent through the mailbox after the send
-confirmation is marked sent in the same write.
+the creator's tier, per `outreach.md`, **Follow-up timing**) and `waitingOn` creator. A details
+request marked sent also moves the creator to Details requested. A draft sent through the mailbox
+after the send confirmation is marked sent in the same write.
 
 **Watching replies.** With `outreach.watchReplies` and a mailbox that can read threads, a flow
 may search the mailbox for threads with roster creators' email addresses since their last
@@ -358,10 +384,12 @@ Product details (address or pickup, size, color, product choice) are collected o
 page per program, the **order form**, shared with the user, the way the CAS campaign page
 collects the client's shipping edits (`cas-campaign.md`, **1d** and **1e**).
 
+- The order form is for the brand's team, never for creators: anyone who can save a row can
+  read every row. Creators send their details by reply; the team records them.
 - `atlas-product-fulfillment` builds and republishes it. One row per creator owed product:
   handle, name, product (a picker from the catalog when the creator chooses), options (size,
   color), ship to (name, address, city, region, postal code, country) or pickup, delivery notes,
-  and status (to request, requested, received, ordered, shipped, delivered, issue).
+  and status (to request, requested, received, ordered, shipped, delivered, issue, returned).
 - Publish with the Artifact tool and the page data capabilities below; load
   `artifact-capabilities` and `artifact-design` first. Apply `theme:brand` per `theme.md`.
 
@@ -371,8 +399,11 @@ collects the client's shipping edits (`cas-campaign.md`, **1d** and **1e**).
   {"path": "rows", "read": "interact", "write": "interact"},
   {"path": "data/users/{self}", "write": "interact"}
  ]},
- "user": {}}
+ "user": {}, "downloads": true}
 ```
+
+Every publish carries the whole object: restating capabilities replaces the set. `downloads`
+lets the team download the order sheet from the page.
 
 | Path | Who writes | What it holds |
 | ---- | ---------- | ------------- |
@@ -380,11 +411,13 @@ collects the client's shipping edits (`cas-campaign.md`, **1d** and **1e**).
 | `data/users/{id}/done` | Each person | Their done marks on the form's to-do list |
 
 - **Share it.** On first publish, say once: "Share this order form with your team as
-  Contributor, so their entries save. Fill in each creator's details from their reply, or share
-  it with a creator to fill in their own row." The user decides who sees it; the form never
-  shares itself.
-- **Prefill** each row from what Atlas holds and what creators' details replies said
-  (recorded as `fulfillment` with the reply picker), so the form is the one place to check.
+  Contributor, so their entries save. Only share it inside your team: everyone on it can see
+  every address." The user decides who sees it; the form never shares itself.
+- **Prefill** each row with page data writes after the publish, from what Atlas holds. Update
+  a row a person already edited only with a version check, so their edit is never overwritten.
+- **Details replies.** Outreach triage records the reply (never the address) and moves the
+  creator to Details received; fulfillment then writes the `fulfillment` finding and the
+  form row from the reply text, with its own approval.
 - **Reading it back.** On "pull the order form" (and before every fulfillment run), read `rows`
   with the Artifact tool's page data reads, compare `updatedAt` with the newest `fulfillment`
   `recordedAt`, show what changed per creator in one line each, and record it with one picker.
@@ -399,12 +432,14 @@ collects the client's shipping edits (`cas-campaign.md`, **1d** and **1e**).
 
 ## 7. Pages
 
-Each program agent publishes one page, republished to the same link (`program.pageUrls`). Load
+Each program agent publishes one page, republished to the same link (its `page` finding). Load
 `artifact-design` before building and `dataviz` for any chart; apply `theme:brand` per
 `theme.md`; draw creators with the creator card (`creator-card.md`); render for `recipient`
-(`recipient-lens.md`). A page never shows the budget maximum, another creator's terms, or an
-address to anyone the brand did not share it with, and the footer says when the numbers were
-read from Atlas.
+(`recipient-lens.md`). Program pages are for the brand's team, never for creators. Budget,
+maximums and targets live only in Editor-only page data (path `team`, read and written by
+admins only, the way the CAS page keeps `agency`), never in the page itself. Addresses appear
+only on the order form. The footer says when the numbers were read from Atlas. The page's link
+is saved as a `page` finding on first publish.
 
 ## 8. Reminders and schedules
 
@@ -417,6 +452,13 @@ state no date. P9 is the standing approval. Task names:
   `atlas-deliverable-tracker` in unattended mode.
 - "Atlas program reply check: {brand} - {program}" (daily, only with `watchReplies`),
   launching `atlas-creator-outreach` in `mode: reply-check`.
+- "Atlas program library refresh: {brand} - {program}" (weekly), launching
+  `atlas-content-library` in unattended mode.
+- "Atlas program shipping check: {brand} - {program}" (daily), launching
+  `atlas-product-fulfillment` in its read-only status mode.
+
+Schedule a task only after its page has been published once interactively and its `page`
+finding exists, so a scheduled run republishes to the same link.
 
 ## 9. Unattended runs
 
@@ -424,11 +466,12 @@ Follow the readout rules (`readout.md`, **Scheduled (unattended) runs**):
 
 - Never ask a question. Never decide: no stage move, no reply recorded, no terms, no order, no
   code, no ledger line, no pull of page data into Atlas.
-- Never send a message, never create a mailbox draft, and never change a store.
+- Never send a message to a creator, never create a mailbox draft, and never change a store.
+  Posts to the saved routing are allowed.
 - May read Atlas, read a connected mailbox for roster creators' replies (only with
   `watchReplies`), publish the program's pages, post to the saved routing, and write the agent's
-  own read-only findings (`snapshot`, `deliverable` status from matched posts) when its section
-  says so.
+  own observed findings when its cadence in P9 names it: `snapshot`, `deliverable` status from
+  matched posts, `asset`, and `page`.
 - Resolve the date from the shell clock in the cadence timezone (`TZ=<tz> date +%F`).
 - If the program records are missing, publish a one-card page titled "<Brand> {Program}: setup
   needed" listing what is missing, write nothing, and end with "Run /aspire:aspire program to
