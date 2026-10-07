@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-05",
+  "generated": "2026-10-07",
   "source": "apps/api/lib/mcp/tools-list.golden.json",
   "surfaces": {
     "/mcp": {
@@ -109,6 +109,17 @@
           "asOrganizationId",
           "asProfileId"
         ]
+      },
+      "list_ad_accounts": {
+        "required": [],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId"
+        ]
+      },
+      "list_ad_search_fields": {
+        "required": [],
+        "paths": []
       },
       "list_available_hashtags": {
         "required": [
@@ -231,6 +242,26 @@
           "visibility"
         ]
       },
+      "search_ads": {
+        "required": [],
+        "paths": [
+          "adAccountIds",
+          "adSetIds",
+          "adStatuses",
+          "asOrganizationId",
+          "asProfileId",
+          "campaignIds",
+          "creatorHandles",
+          "cursor",
+          "dateFrom",
+          "dateTo",
+          "effectiveStatuses",
+          "groupBy",
+          "igMediaIds",
+          "limit",
+          "objectives"
+        ]
+      },
       "search_calibrations": {
         "required": [],
         "paths": [
@@ -249,9 +280,7 @@
         ]
       },
       "search_creator_marketplace": {
-        "required": [
-          "keyword"
-        ],
+        "required": [],
         "paths": [
           "asOrganizationId",
           "asProfileId",
@@ -262,6 +291,7 @@
           "instagram.filters.creatorFollowerGrowth",
           "instagram.filters.creatorGender",
           "instagram.filters.creatorInterests",
+          "instagram.filters.creatorLanguage",
           "instagram.filters.creatorLatestPostActivity",
           "instagram.filters.creatorMaxEngagedAccounts",
           "instagram.filters.creatorMaxFollowers",
@@ -269,6 +299,10 @@
           "instagram.filters.creatorMinFollowers",
           "instagram.filters.creatorStates",
           "instagram.filters.customAudienceId",
+          "instagram.filters.excludeMessagedCreators",
+          "instagram.filters.featuredInPaidAds",
+          "instagram.filters.hasPortfolio",
+          "instagram.filters.hasPublicContactEmail",
           "instagram.filters.majorAudienceAgeBucket",
           "instagram.filters.majorAudienceCountries",
           "instagram.filters.majorAudienceDeviceType",
@@ -278,6 +312,7 @@
           "instagram.filters.reelsInteractionRate",
           "instagram.filters.similarToCreators",
           "instagram.filters.username",
+          "instagram.filters.verifiedAccount",
           "keyword",
           "networks",
           "tiktok",

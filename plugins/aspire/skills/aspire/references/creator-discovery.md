@@ -122,12 +122,13 @@ refilling the shortlist with creators like the ones already delivering.
      from half to double the seed's, limit 25. Collect the authors.
    - `search_creators` with `match_phrase` on the bio for the seed's recurring bio and caption
      vocabulary, in the same band.
-   - When the seed is on Instagram: `search_creator_marketplace` with `keyword` = that
-     vocabulary, `networks: ["instagram"]`, and `instagram: { filters: { recommendationType:
-     "similar_audience", creatorMinFollowers, creatorMaxFollowers } }` for the band. TikTok has
-     no audience-similarity filter, so a TikTok seed gets the first two ways only. Never send
-     `instagram.filters.similarToCreators`: the server rejects it alongside `keyword`, which is
-     required (see `creator-brief.md`, **Atlas quirks**).
+   - When the seed is on Instagram: `search_creator_marketplace` with no `keyword`,
+     `networks: ["instagram"]`, and `instagram: { filters: { similarToCreators: [the seed's
+     handle], creatorMinFollowers, creatorMaxFollowers, excludeMessagedCreators: true } }` for
+     the band. Several Instagram seeds go in one call, up to five handles. TikTok has no
+     lookalike filter, so a TikTok seed gets the first two ways only. Never send `keyword` with
+     `similarToCreators`: the server rejects the two together (see `creator-brief.md`, **Atlas
+     quirks**).
 3. Read marketplace results through `search_creators` once they land (1 to 3 minutes after
    each network's job completes, per `creator-brief.md`, **Atlas quirks**).
    Record `source` `lookalike of @{seed}` and `detail.seed` on each candidate; the card's
@@ -139,8 +140,10 @@ the call shape, polling, and skips. For tier 5:
 
 - `networks` is the saved Networks answer. A network the brand did not choose is never sent.
 - Instagram: `creatorMinFollowers` / `creatorMaxFollowers` snapped outward to the nearest
-  allowed values around the size band, `creatorCountries` from the saved countries, and
-  `creatorInterests` only when the archetype maps cleanly onto one of the enum values.
+  allowed values around the size band, `creatorCountries` from the saved countries,
+  `creatorInterests` only when the archetype maps cleanly onto one of the enum values, and
+  `excludeMessagedCreators: true` so creators the brand has already messaged don't come back.
+  A creator ad campaign adds `featuredInPaidAds: true` for the paid track record.
 - TikTok: `minFollowers` / `maxFollowers` as the exact band, and `countryCodes` from the saved
   countries TikTok supports (per the quirk). When they span regions (US; DE, ES, FR, GB, IT;
   everything else), the first call carries one region and each extra region gets its own call
