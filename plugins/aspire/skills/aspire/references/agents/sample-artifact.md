@@ -118,6 +118,10 @@ print(json.dumps({"holiday": name, "date": day.isoformat(), "year": day.year, "d
 | `atlas-market-signal` | What creators said about the sample brand against one sample competitor ("Copper Pot Co. (sample)") | 8 posts |
 | `atlas-quarterly-signal` | The quarter that held the holiday, for leadership | 3 KPIs |
 | `atlas-ppa-pitch` | A first-pitch casting deck for the holiday campaign | 2 groups, 3 lanes each |
+| `atlas-creator-outreach` | The holiday program's outreach pipeline: drafts on each channel, replies to record, reply rate | 4 creators, one per program type, 2 replies |
+| `atlas-creator-negotiation` | The holiday program's negotiation page: offer, counter and recommended move per creator, with the terms summary | 3 creators, 1 your call |
+| `atlas-product-fulfillment` | A program's order form for the holiday gifting push, with an order sheet | 4 creators, 2 sheet rows |
+| `atlas-content-library` | A content library for the holiday campaign: cleared-for-ads shelf, expiring rights, worth requesting, filterable grid | 12 assets, 3 expiring |
 
 An agent not in this table builds its own page at the smallest scale that shows every section.
 
