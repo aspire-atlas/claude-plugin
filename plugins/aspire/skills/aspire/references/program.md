@@ -106,6 +106,7 @@ The terms object, one block per type the program carries:
           "usage": "organic repost", "usageChannels": ["brand Instagram", "brand TikTok"],
           "whitelisting": false, "exclusivityDays": 0,
           "disclosure": "paid partnership label and #ad", "firstTouch": "invite",
+          "graceDays": 3, "mustInclude": ["@brand tag", "link in bio"],
           "offer": {"source": "fee-calculator", "maxPerCreator": 2500}},
  "gifting": {"postExpected": "loose", "postWithinDays": 21, "productValueMax": 150,
              "disclosure": "#gifted"},
@@ -114,7 +115,9 @@ The terms object, one block per type the program carries:
                 "renewalNoticeDays": 30, "disclosure": "#ad", "firstTouch": "invite"},
  "affiliate": {"commissionPct": 15, "commissionPctMax": 20, "codeDiscountPct": 20,
                "codeDiscountPctMax": 25, "codePattern": "{HANDLE}20",
-               "attributionDays": 30, "payout": "monthly", "disclosure": "#ad and code in caption"}}
+               "codeDiscountAmount": null, "attributionDays": 30, "payout": "monthly",
+               "disclosure": "#ad and code in caption"},
+ "rights": {"organicRepost30": 150, "paidUsage30": 400, "whitelisting30": 600}}
 ```
 
 Every amount is in the program budget's currency. `offer.source` `fee-calculator` prices each
@@ -125,7 +128,14 @@ calculator figure shows as a USD reference, never converted. `postExpected` is `
 invites a conversation; the default when absent) or `open-fee` (it states the opening fee).
 The `*Max` fields are optional ceilings: without one, any ask above the standard is the user's
 call. Usage runs from the post date for `usageDays`. Ambassador `postWithinDays` counts from the
-start of each month of the term.
+start of each month of the term. `graceDays` (default 3) is how long after the due date a post is
+still waiting rather than missing; `mustInclude` lists what each post must carry beyond the
+disclosure (a tag, a link, the code), and is optional on every block. `codeDiscountAmount` is a
+fixed-amount code instead of a percentage. `payout` is `monthly` or `net-{n}` (days after the
+month closes). The optional `rights` block holds the brand's own usage fees per 30 days, typed in
+P5; without it every rights or UGC fee is the user's number. The paid partnership label is shown
+to the creator as asked for, but Atlas cannot always see it, so trackers treat it as unclear
+rather than missing.
 
 The catalog object:
 
@@ -175,19 +185,19 @@ record type, the newest finding per identity wins, by `detail.recordedAt`.
 
 | recordType | Identity | Anchor | kind | detail adds | Written by |
 | ---------- | -------- | ------ | ---- | ----------- | ---------- |
-| `roster` | the creator's account | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while active; `action_item` `low` at No reply; `went_well` complete; `needs_improvement` declined or dropped | `handle`, `network`, `name`, `type`, `stage`, `source` (discovery, vetting, typed, csv), `contact` `{email, manager, dm}`, `tier`, `lastContactAt`, `nextFollowUpAt`, `waitingOn` (brand while a draft is unsent, creator once sent), `yourCall` (the open question, while one is open), `notes` | Every program agent that moves a creator; Program manager |
-| `draft` | the creator + the template + the channel | The creator's account | `action_item` `low` while not sent; `went_well` once sent | `handle`, `channel` (email, dm, aspire), `template`, `subject`, `body`, `mailDraftId` (when a mailbox draft exists), `sentAt`, `sentBy` (`user` or `send-authorized`) | outreach, negotiation, fulfillment, sourcing, tracker, roster manager |
+| `roster` | the creator's account | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while active; `action_item` `low` at No reply; `went_well` complete; `needs_improvement` declined or dropped | `handle`, `network`, `name`, `type`, `stage`, `source` (discovery, vetting, typed, csv), `contact` `{email, manager, dm}`, `tier`, `lastContactAt`, `nextFollowUpAt`, `waitingOn` (brand while a draft is unsent, creator once sent), `yourCall` (the open question, while one is open), `notes` | Every program agent that moves a creator; content sourcing writes only `waitingOn` and `yourCall`; the deliverable tracker moves Posting due, Posted, and Complete; Program manager |
+| `draft` | the creator + the template + the channel | The creator's account | `action_item` `low` while not sent; `went_well` once sent | `handle`, `channel` (email, dm, aspire), `template`, `subject`, `body`, `mailDraftId` (when a mailbox draft exists), `sentAt`, `sentBy` (`user` or `send-authorized`) | outreach, negotiation, fulfillment, affiliate manager, sourcing, tracker, roster manager |
 | `reply` | one per exchange, never replaced | The creator's account | `went_well` `low` | `handle`, `channel`, `receivedAt`, `summary` (one plain line), `class` (interested, accepted, question, counter, declined, details, rights, auto-reply, other; an auto-reply moves nothing and never counts as a reply), `record` (what it wrote), `nextMove`, `source` (pasted, mailbox) | outreach (triage), negotiation, fulfillment, sourcing |
 | `terms` | the creator + the deal version | The creator's account | `action_item` `medium` while negotiating; `went_well` agreed; `needs_improvement` declined | `handle`, `type`, `status` (offered, countered, agreed, declined), `version`, `offer` `{open, target, max}`, `counter`, `fee`, `productValue`, `commissionPct`, `codeDiscountPct`, `code`, `monthlyFee`, `termMonths`, `deliverables` (list: what, count, due), `postWithinDays`, `usage`, `usageDays`, `usageChannels`, `exclusivity`, `disclosure`, `whitelisting` (true or false, with `whitelistingDays`), `termStart`, `termEnd`, `agreedAt` | negotiation |
 | `fulfillment` | the creator + `orderKey` (`{YYYY-MM}` for an ambassador's monthly order, `1` otherwise) | The creator's account | `action_item` `medium` until delivered; `went_well` delivered | `handle`, `product`, `options`, `value`, `status` (to request, requested, received, ordered, shipped, delivered, issue, returned), `address`, `pickup`, `carrier`, `tracking`, `orderRef`, `orderedAt`, `shippedAt`, `deliveredAt`, `postDueAt` | fulfillment |
-| `deliverable` | the creator + the deliverable | The creator's account | `action_item` `medium` while due; `went_well` posted on time; `needs_improvement` late, missing, or needs a fix | `handle`, `what`, `due`, `status` (due, posted, late, missing, needs fix, waived), `postUrl`, `postId`, `postedAt`, `disclosure` (found, missing, unclear), `checks` (one line each), `owed` (true for terms, false for loose gifting) | deliverable tracker |
+| `deliverable` | the creator + `deliverableKey` | The creator's account | `action_item` `medium` while due; `went_well` posted on time; `needs_improvement` late, missing, or needs a fix; `action_item` `low` for an expected (loose gifting) post not made | `handle`, `what`, `due`, `status` (due, posted, late, missing, needs fix, waived; posted carries `onTime`; late means past due with nothing posted), `postUrl`, `postId`, `postedAt`, `disclosure` (found, missing, unclear), `checks` (one line each), `owed` (true for terms, false for loose gifting) | deliverable tracker |
 | `asset` | the post | The creator's account | `went_well` `low` | `postUrl`, `postId`, `handle`, `network`, `format`, `products`, `themes`, `hookPattern`, `adScore`, `peopleOnScreen`, `safety`, `sources` (any of program, tagged, mention, hashtag) | content library |
-| `rights` | the post + the grant | The creator's account | `action_item` `medium` while requested; `went_well` granted; `needs_improvement` declined or expired | `postUrl`, `handle`, `status` (wanted, requested, granted, declined, expired, renewal requested), `usage` (organic repost, paid usage, whitelisting), `channels`, `startsAt`, `expiresAt`, `fee`, `requestKind` (rights, renewal, new-ugc), `assetSpec` (new UGC: what, specs, due) | content sourcing |
+| `rights` | the post + the usage | The creator's account | `action_item` `medium` while requested; `went_well` granted; `needs_improvement` declined or expired | `postUrl`, `handle`, `status` (wanted, requested, countered, granted, declined, expired, renewal requested), `proof` (where and when the grant was given), `inWriting`, `usage` (organic repost, paid usage, whitelisting), `channels`, `startsAt`, `expiresAt`, `fee`, `requestKind` (rights, renewal, new-ugc), `assetSpec` (new UGC: what, specs, due) | content sourcing |
 | `affiliate` | the creator + the period | The creator's account | `went_well` when sales; `action_item` `low` when none | `handle`, `code`, `link`, `period` (`YYYY-MM`), `orders`, `revenue`, `aov`, `commission`, `currency`, `source` (store, csv), `codeStatus` (planned, live, retired) | affiliate manager |
 | `ledger` | one per line, never replaced | The creator's account, or the brand's for program-level lines | `action_item` `medium` while owed; `went_well` paid | `lineId`, `handle`, `kind` (fee, product, commission, rights, ugc), `amount`, `currency`, `status` (accrued, invoiced, approved, paid, void), `dueAt`, `invoiceRef`, `paidAt`, `from` (the record it came from) | program ledger |
 | `page` | the page key | The brand's own account on its first linked network | `went_well` `low` | `key` (outreach, negotiation, orderForm, library, sourcing, tracker, roster, ledger, dashboard, affiliate), `url`, `title` | The agent that first publishes the page, in the same approval as its other writes; unattended runs may write it |
 | `snapshot` | the program + the date | The brand's own account on its first linked network | `went_well` `low` | The dashboard's headline numbers: funnel counts, deliverables, assets, spend, revenue, goals vs. actual | program dashboard |
-| `roster-health` | the creator + the date | The creator's account | `went_well` star or steady; `needs_improvement` slipping, dormant, retire | `handle`, `segment` (star, steady, slipping, dormant, retire), `quotaMet`, `trend`, `costPerEngagement`, `revenue`, `renewalDueAt`, `recommendation` | roster manager |
+| `roster-health` | the creator + the date | The creator's account | `went_well` star or steady; `needs_improvement` slipping, dormant, retire | `handle`, `segment` (star, steady, slipping, dormant, retire, insufficient; insufficient is `action_item` `low`), `seedEligible`, `quotaMet`, `trend`, `costPerEngagement`, `revenue`, `renewalDueAt`, `recommendation` | roster manager |
 
 A `roster` finding carries the whole row, not only what changed: copy the newest finding's
 detail, change what moved, and write it as the new finding. Every other type does the same for
@@ -201,6 +211,26 @@ deals. A gifting yes needs no negotiation: outreach triage records it as `accept
 the creator to Agreed, and every agent reads that creator's deal from the program's
 `terms.gifting`. Any agent reading a creator's deal takes the newest `terms` finding when one
 exists, and otherwise the program's terms for the creator's type.
+
+**Current code.** A creator's current affiliate code is the one on their newest `affiliate`
+finding across all periods.
+
+**Currencies.** Sales arrive in the store's currency and are reported per currency. Amounts in
+different currencies are never added together or converted.
+
+**Ledger lines hand-off.** Affiliate manager and content sourcing never write `ledger`. They
+return a `ledger-lines` block, one line each: `lineId` (stable, `{kind}-{handle}-{ref}`),
+`handle`, `kind`, `amount`, `currency`, `dueAt`, `from` (the record type and identity it came
+from), `basis` (one plain line), and `revises` (the `lineId` it replaces, when it does). The
+program ledger builds the same lines itself from `terms`, `affiliate`, `rights` and
+`fulfillment` findings, so a block passed in only saves it a read.
+
+**Creators off the roster.** Content sourcing may draft a rights request to a creator who
+tagged or mentioned the brand without being on the roster. That is the one message any program
+flow drafts to a creator off the roster, and it never adds them to the roster.
+
+**Deal usage.** Usage granted in a creator's deal shows as "from the deal" and is never
+written as a `rights` grant. An agreed renewal of it is.
 
 **Brand-wide library.** `atlas-content-library` also runs with no program. Its findings then go
 on runKey `content-library-{profile}-{YYYY-MM-DD}`, and it reads rights from every program's
@@ -237,7 +267,8 @@ Rules:
 - **P2 to P5** skip what does not apply: no `terms.paid` without Paid posts. P5 for Paid posts
   and Ambassador also asks "State the opening fee in the first message, or invite a
   conversation?" (Invite a conversation (Recommended); State the opening fee), and offers the
-  optional ceilings for Ambassador and Affiliate.
+  optional ceilings for Ambassador and Affiliate. A last P5 turn asks for the brand's usage
+  fees (organic repost, paid usage, whitelisting, per 30 days) with "Skip for now" as an option.
 - **P5** shows the standard deal in one block per type and says once where fees come from: "Fees
   come from your fee calculator" or "from Aspire's recommended rates until you set yours" (then
   make the fee calculator offer per SKILL.md after the reply).
@@ -271,7 +302,7 @@ ending), and the dashboard link.
 | When | Next step | Launch |
 | ---- | --------- | ------ |
 | Setup records missing or unparseable | Finish setup | **Program setup** |
-| Your call needed on any creator | Decide on @{handle} | the section or agent that raised it |
+| Your call needed on any creator | Decide on @{handle} | the section that raised it (a roster decision goes to **Roster review**, which writes the row) |
 | Replies pasted in this session | Record replies | `atlas-creator-outreach` (`mode: triage`) |
 | `watchReplies` on and any creator at Contacted | Check replies | `atlas-creator-outreach` (`mode: triage`, `source: mailbox`) |
 | A reply classed counter or question about the deal | Answer @{handle}'s counter | `atlas-creator-negotiation` (`mode: counter`) |
@@ -280,11 +311,12 @@ ending), and the dashboard link.
 | Follow-ups due | Write follow-ups | `atlas-creator-outreach` (`mode: follow-up`) |
 | Agreed creators whose product is not ordered | Collect details and order product | `atlas-product-fulfillment` |
 | Affiliate creators agreed without a live code | Set up codes | `atlas-affiliate-manager` (`mode: codes`) |
-| Posts due within 3 days, late, or missing | Check posts | `atlas-deliverable-tracker` |
+| Posts due within 3 days, late, missing, or needing a fix | Check posts | `atlas-deliverable-tracker` |
 | Rights expiring within 30 days, or wanted assets | Request rights | `atlas-content-sourcing` |
-| A month closed for affiliate | Report sales and commission | `atlas-affiliate-manager` (`mode: report`) |
+| Live codes and no `affiliate` finding for the last closed month | Report sales and commission | `atlas-affiliate-manager` (`mode: report`) |
 | Ledger lines past due | Update payments | `atlas-program-ledger` |
 | Ambassador renewals within the notice window | Review the roster | `atlas-roster-manager`, then `atlas-creator-negotiation` (`mode: renewal`) for the renewals the user picks |
+| No `roster-health` finding in 30 days and creators at Agreed or later | Review the roster | `atlas-roster-manager` |
 | No library page, or the newest `asset` finding older than 7 days | Refresh the content library | `atlas-content-library` (`mode: build`) |
 | Otherwise | Update the dashboard | `atlas-program-dashboard` |
 
@@ -309,7 +341,8 @@ to every program agent as `connections`:
 ```json
 {"mail": {"provider": "gmail", "canDraft": true, "canReadThreads": true, "canSend": true},
  "store": {"provider": "shopify", "canReadProducts": true, "canReadInventory": true,
-           "canReadOrders": true, "canCreateDiscount": true, "discountKinds": ["percentage"],
+           "canReadOrders": true, "canReadDiscounts": true, "canCreateDiscount": true,
+           "canEditDiscount": false, "discountKinds": ["percentage"],
            "canCreateOrder": false}}
 ```
 
@@ -471,7 +504,7 @@ Follow the readout rules (`readout.md`, **Scheduled (unattended) runs**):
 - May read Atlas, read a connected mailbox for roster creators' replies (only with
   `watchReplies`), publish the program's pages, post to the saved routing, and write the agent's
   own observed findings when its cadence in P9 names it: `snapshot`, `deliverable` status from
-  matched posts, `asset`, and `page`.
+  strong-matched posts and from the date alone (late, missing), `asset`, and `page`.
 - Resolve the date from the shell clock in the cadence timezone (`TZ=<tz> date +%F`).
 - If the program records are missing, publish a one-card page titled "<Brand> {Program}: setup
   needed" listing what is missing, write nothing, and end with "Run /aspire:aspire program to
