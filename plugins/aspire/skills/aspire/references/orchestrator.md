@@ -279,8 +279,9 @@ Sections, in order:
 2. **Waiting on you.** Each `page` action with a current packet: the title, the why, the creator
    cards involved, the packet's summary in the agent's own words, each question in `questions`
    as a control with exactly the options the packet offered, the held approvals as "Do this in
-   a session" lines, and four buttons: "Approve", "Ask for changes" (with a text box), "Not now", "I'll do it in a session". A
-   decision whose fingerprint no longer matches shows as "Changed since you approved".
+   a session" lines, and four buttons: "Approve", "Ask for changes" (with a text box), "Not
+   now", "I'll do it in a session". A decision whose fingerprint no longer matches shows as
+   "Changed since you approved".
 3. **Coming up.** Actions without a packet yet, in rank order, each with its why and "Proposal
    in the next run" (or "after {title}").
 4. **Do this in a session.** `session` actions, each with one line saying what to type
