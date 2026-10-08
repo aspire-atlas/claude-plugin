@@ -33,9 +33,8 @@ show they can make it. You never invent a grant, a fee, a date, or a post, and y
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
 profile id and slug, the brand's handles with networks, the program slug, `mode` (`rights`,
 `renewal`, `ugc`, `replies`, or `sample`; `mode: record` is the older name for `replies`), `pass`
-(`propose`, the default, or `record`), `run` (`interactive`, the default; `unattended` is
-handled by rule 1, and older launch wording such as "unattended mode" or `mode: unattended`
-means `run: unattended`), and per
+(`propose`, the default, or `record`), `run` (`interactive` (default) or `unattended`;
+older wording means `run: unattended` (see `readout.md`, **Run flag**)), and per
 mode: for `rights`, the posts (the library's worth-requesting rows, or links the user named)
 and any usage the user asked for; for `renewal`, the S0 horizon (30, 60, or 90 days) and any
 posts the user said are running in ads; for `ugc`, any focus the user gave (products, formats)
@@ -105,7 +104,7 @@ theme**), all in the same folder.
    `connections.mail.canReadThreads` is true.
 3. `search_calibrations` (no filter, limit 100 per page, paged to the end,
    `includeSuperseded: true`). Keep the records the reference lists under **Inputs, per post or
-   creator**; drop `review:`, `vetting:`, and `campaign:` keys and other programs' keys. Parse
+   creator**; drop `review:`, `vetting:`, `library:`, and `campaign:` keys and other programs' keys. Parse
    every `program:` body with a JSON parser.
 4. `search_insights` on the prefix `program-{profile}-{slug}`, newest first, paged to the end,
    and on `content-library-{profile}` for `asset` findings. Keep the newest per identity of

@@ -43,8 +43,8 @@ content library, all programs".
 | `build` with `run: unattended` | A scheduled refresh: build, republish, and the expiring-rights alert to saved routing | `asset` findings only when the program's cadence, or `library:cadence` for the whole brand, names the library (**Unattended runs**) | The library page |
 | `sample` | The page from invented data (`agents/sample-artifact.md`) | Nothing | A sample page |
 
-`run` is `interactive` (the default) or `unattended`; older launch wording such as "unattended
-mode" or `mode: unattended` means `mode: build`, `run: unattended`.
+`run` is `interactive` (the default) or `unattended`. Older launch wording (`readout.md`, **Run
+flag**) means `mode: build`, `run: unattended`.
 
 `query` and `expiring` read the saved catalog. When no `asset` finding exists for the scope, or
 the newest is more than 14 days old, say so in one line and recommend a `build` first; still
@@ -311,11 +311,13 @@ next run without rewriting the catalog. `idempotencyKey`:
 
 ## Delivery
 
-Read `program:{slug}-routing` (for the whole brand, every active program's routing, deduped).
+Read `program:{slug}-routing`. For the whole brand, read only the `routing` saved in
+`library:cadence`; with none, or only `page`, the run is page only.
 The page and chat summary always ship. Slack and email follow `readout.md`, **Delivery**: one
 message with the counts expiring within 30 days, the five soonest (creator, usage, end date),
 anything newly cleared for ads since the last run, and the page link. Interactive runs post only
-on L3 "Post"; unattended runs post on the P8 standing approval. Never post to a destination
+on L3 "Post"; unattended runs post on the P8 standing approval (for the whole brand, the
+`library:cadence` confirm). Never post to a destination
 that is not saved. No rights expiring and nothing new: unattended runs still republish and skip
 the message.
 

@@ -64,7 +64,7 @@ exactly, and render for the primary lens per **Rendering for a lens**.
 2. When the launch carries no calibration digest, read `search_calibrations` (no filter, limit
    100 per page, paged to the end) for `competitor`, `red_line`, and `theme:brand` before
    building the pool: the pool excludes competitors, and "Ready for paid" and the no-AI-copy
-   rule need the red lines. Drop every `review:` and `program:` key, and a creator ad campaign's `campaign:{slug}-cas`, `-lane-*`, `-terms` and `-decision-defaults`.
+   rule need the red lines. Drop every `review:`, `program:` and `library:` key, and a creator ad campaign's `campaign:{slug}-cas`, `-lane-*`, `-terms` and `-decision-defaults`.
 3. Call `list_post_search_fields` once and use only field paths it returns. Never guess a path.
 4. Build the candidate pool per **Candidate pool**: the window, the sources for `reuse_scope`,
    video only, then the prefilter to the top 12. Use `search_creators` for each author's

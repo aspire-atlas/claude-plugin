@@ -579,8 +579,8 @@ against competitors goes to **Market signal**.
    rests on. In mode `handle`, lead with the account's creator card inline, before the
    summary, rendered from the agent's `creator-cards` block. When the reviewed account is a
    creator, offer its full profile in one line after the summary (**Creator profile**).
-8. Unattended run with no `AskUserQuestion` available: default to `own` mode and never start a
-   lookup.
+8. Unattended run with no `AskUserQuestion` available: default to `own` mode, never start a
+   lookup, and write nothing to Atlas; the agent returns the findings and pushes only.
 
 ---
 
@@ -752,7 +752,7 @@ maintains a pipeline across weeks and teammates.
 Ask once with `AskUserQuestion`: "What should the discovery agent do?" Options: "Fill the shortlist to
 {target}", "Show the current shortlist", "Record decisions on the shortlist", "Change setup".
 Then launch `atlas-creator-discovery` with: tool prefix, `profile_id`, `profile_slug`, the campaign slug, the
-brand handles and networks, run mode `interactive`, `job` (`shortlist` for "Show the current shortlist", else `discover`), and `recipient` (**Reading the ask**;
+brand handles and networks, run mode `interactive`, `job` (`view` for "Show the current shortlist", else `discover`), and `recipient` (**Reading the ask**;
 `growth` when the ask is for more creators like the ones working). Relay its summary, the page link, and
 the numbered range the user can decide against. Show the candidates added this run inline as
 creator cards from the agent's `creator-cards` block (top six by fit score, badged with their
@@ -802,8 +802,9 @@ creator in depth, use **Creator profile**; to find new creators, **Creator disco
 1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end,
    `includeSuperseded: true`). Setup is done when `vetting:criteria` and `vetting:thresholds`
    exist and `vetting:safety-scope` and `vetting:hard-rejects` are each saved or recorded as
-   a `decline`. Then skip to **Run**. A run against a campaign's criteria needs only
-   `vetting:thresholds`; ask it alone.
+   a `decline`. Then skip to **Run**. A run against a campaign's criteria needs no setup: it
+   uses `vetting:thresholds` when saved, else the reference's defaults (70 and 50), labelled as
+   defaults. You may offer V2 alone; it is not required.
 2. Otherwise ask the missing questions V1 to V4 from the reference, one `AskUserQuestion`
    each, in order, then confirm the batch once and write the records with
    `append_calibration`, `provenance: "interview"`. A `key-exists` follows the Phase 5
@@ -1540,13 +1541,16 @@ Unattended runs never ask, never write rights, and post only to the saved routin
 only after the library has been built once interactively and its `page` finding exists.
 
 **The whole brand.** A library built for "All our programs and everything about {brand}" has no
-P9. After its first saved build, offer once with `AskUserQuestion`, header "Schedule": "Refresh
-the {brand} content library every week on {day} at {time} {timezone}? Scheduled runs save the
-catalog to Atlas and post the expiring-rights alert to your programs' saved channels without
-asking each time." Options: "Schedule it (Recommended)", "Not now"; the free text takes another
-day or time. The confirm writes the
+P9 and no program routing. After its first saved build, offer once with `AskUserQuestion`,
+header "Schedule": "Refresh the {brand} content library every week on {day} at {time}
+{timezone}? Scheduled runs save the catalog to Atlas and post the expiring-rights alert where
+you choose next, without asking each time." Options: "Schedule it (Recommended)", "Not now";
+the free text takes another day or time. On "Schedule it", ask once, header "Alerts": "Where
+should the library alert go?" (multiSelect): Published page + chat (always on); Slack channel
+(type it); Email (type recipients). The confirm writes the
 `library:cadence` calibration with `append_calibration` (`policy`, `{area: "cadence", cadence:
-"weekly", body: "library weekly <DAY HH:MM>, <IANA timezone>"}`, `provenance: "interview"`; a
+"weekly", body: "library weekly <DAY HH:MM>, <IANA timezone>", routing: "page; slack:#channel;
+email:a@x.com"}` in the `program:{slug}-routing` body format, `provenance: "interview"`; a
 `key-exists` follows the Phase 5 supersede rule) and creates the task "Atlas content library
 refresh: {brand}", launching `atlas-content-library` with `mode: build`, `run: unattended`, and
 program `all`. That record is the standing approval for the refresh, the `asset` findings, and
@@ -1690,8 +1694,10 @@ the tool prefix, `profile_id`, and `profile_slug`:
 - **Vetting** (row 4): `atlas-creator-vetting` with the lane's pool as the list (the lane's
   undecided candidates from discovery), the lane as the criteria source, and `recipient`
   (`campaign`, then `brand`). The Run picker is the write confirmation: "Screen the {concept}
-  creators and save the results to Atlas?" If `vetting:thresholds` is missing, ask V2 from
-  `references/creator-vetting.md` first and write it with its own confirmation.
+  creators and save the results to Atlas?" If `vetting:thresholds` is missing, the run uses the
+  reference's defaults (70 and 50), labelled as defaults; you may offer V2 from
+  `references/creator-vetting.md` first and write it with its own confirmation, but it is not
+  required.
 - **Sending a step for approval** (rows 4, 7, 11): per the reference's **Gate packets**. The
   campaign page is the approval page; the CM shares it with the client as Contributor.
 - **Pull the client's decisions** (rows 5, 8, 12, 15, and whenever the CM asks "what did they

@@ -34,8 +34,7 @@ change a deal or send.
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
 profile id and slug, the brand's linked handles with networks, the program slug, `mode`
 (`codes`, `report`, or `sample`), `pass` (`propose`, the default, or `record`), `run`
-(`interactive`, the default; `unattended` is handled by rule 1, and older launch wording such
-as "unattended mode" or `mode: unattended` means `run: unattended`), `recipient` (per `recipient-lens.md`;
+(`interactive` (default) or `unattended`; older wording means `run: unattended` (see `readout.md`, **Run flag**)), `recipient` (per `recipient-lens.md`;
 default `team`), `connections` (`program.md`, **4**), and for `report` the period (A5), the
 source (A6: `store`, or `csv` with the uploaded file's path), and any mapping change the user
 typed. Named creators narrow the run. `record` adds the `affiliate-packet` from the earlier

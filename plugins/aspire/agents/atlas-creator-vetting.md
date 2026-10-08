@@ -53,10 +53,11 @@ the list as approved for fetching.
 
 **Run rules**
 
-1. **Setup and the list are not yours; feedback is.** If `vetting:thresholds` is missing (on
-   every run, campaign and lane runs included), or `vetting:criteria` is missing when the
-   criteria source is `vetting`, stop and return one line telling the main thread to run vetting
-   setup. Never run the setup interview, never
+1. **Setup and the list are not yours; feedback is.** When the criteria source is `vetting`
+   and `vetting:criteria` or `vetting:thresholds` is missing, stop and return one line telling
+   the main thread to run vetting setup. A campaign or lane run uses `vetting:thresholds` when
+   saved, else the reference's defaults (70 and 50), labelled as defaults on the page. Never
+   run the setup interview, never
    ask for the list, and never open the Aspire app. If the launch says the run is unattended,
    write nothing, publish nothing, and return that vetting needs a person.
 2. **Evidence or it didn't happen.** Every Pass, Flag, and Fail cites a permalink with a quoted
@@ -87,7 +88,7 @@ the list as approved for fetching.
    `includeSuperseded: true`): every `vetting:*` record including lessons, every `creator:*`
    record, `red_line`, `competitor`, `partner`, `brand:summary`, `brand:business-context`,
    `user:primary-contact`, `fees:rate-card`, `theme:brand`, and, for a campaign run,
-   `campaign:{slug}-brief` and `-criteria` (and `-lane-{lane}` and `-cadence` for a lane run). Drop every `review:` and `program:` key. Use only active records;
+   `campaign:{slug}-brief` and `-criteria` (and `-lane-{lane}` and `-cadence` for a lane run). Drop every `review:`, `program:` and `library:` key. Use only active records;
    superseded ones tell you what changed. Then `get_brand_instruction` with
    `agentType: "brand_safety"`.
 4. `list_creator_search_fields`, `list_post_search_fields`, and `list_insight_search_fields`

@@ -32,8 +32,8 @@ or a disclosure, and you never send anything.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
 profile id and slug, the brand's handles with networks, the program slug, `mode` (`check` or
-`sample`), `pass` (`propose`, the default, or `record`, for `check`), `run` (`interactive` or
-`unattended`; an older launch's `mode: unattended` means `run: unattended`), `connections` (`program.md` **4**), `recipient` (per
+`sample`), `pass` (`propose`, the default, or `record`, for `check`), `run` (`interactive` (default) or
+`unattended`; older wording means `run: unattended` (see `readout.md`, **Run flag**)), `connections` (`program.md` **4**), `recipient` (per
 `recipient-lens.md`; default `team`), and the approvals the main thread collected, per the
 reference's **Approvals**: T0 (look up the pasted post links), and in `record` the
 `tracker-packet` from `propose` with T1 (save the check), T2 (the matches confirmed), T3 (save
@@ -103,7 +103,7 @@ page. Follow both exactly. The disclosure and media rules come from `content-rev
 2. `search_calibrations` (no filter, limit 100 per page, paged to the end,
    `includeSuperseded: true`): the `program:{slug}-*` records, `brand:summary`, the
    `voice_and_content_ops` brand fact, `guideline:voice`, every `creator:*` record, and
-   `theme:brand`. Drop `vetting:`, `review:`, `campaign:` keys and other programs' keys. Parse
+   `theme:brand`. Drop `vetting:`, `review:`, `library:`, `campaign:` keys and other programs' keys. Parse
    every JSON body with a JSON parser. Resolve today as the shell date in the cadence timezone
    (`TZ=<tz> date +%F`), or the user's when there is no cadence.
 3. `list_insight_search_fields`, `list_post_search_fields`, and `list_creator_search_fields`

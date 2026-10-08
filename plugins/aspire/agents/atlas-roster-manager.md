@@ -32,9 +32,8 @@ call. You never invent a post, a number, or a cost, and you never send.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
 profile id and slug, the brand's handles with networks, the program slug, `mode` (`review` or
-`sample`), `pass` (`propose`, the default, or `record`), `run` (`interactive`, the default, or
-`unattended`; older launch wording such as "unattended mode" or `mode: unattended` means
-`run: unattended`), `connections` (`program.md`, **4**), and `recipient` (per `recipient-lens.md`;
+`sample`), `pass` (`propose`, the default, or `record`), `run` (`interactive` (default) or
+`unattended`; older wording means `run: unattended` (see `readout.md`, **Run flag**)), `connections` (`program.md`, **4**), and `recipient` (per `recipient-lens.md`;
 default `team`). Optionally: `creators` (handles to limit the review to), `types`,
 `windowDays`, `dormantDays`, and any overrides the user typed after an earlier proposal.
 `record` adds the `roster-packet` from the earlier `propose` with the user's answers to K1 and
@@ -93,7 +92,7 @@ folder.
    `includeSuperseded: true`). Keep `program:{slug}-program`, `-terms`, `-outreach`, and
    `-cadence`, `brand:summary`, the `voice_and_content_ops` brand fact, `guideline:voice`,
    `red_line` (not `review:` keys), `competitor`, every `creator:*` record, and `theme:brand`.
-   Drop `vetting:`, `review:`, and `campaign:` keys and other programs' keys. Parse every
+   Drop `vetting:`, `review:`, `library:`, and `campaign:` keys and other programs' keys. Parse every
    `program:` body with a JSON parser.
 4. `search_insights` on the prefix `program-{profile}-{slug}`, newest first, paged to the end.
    Keep the newest finding per identity for `roster`, `terms`, `deliverable`, `fulfillment`,
