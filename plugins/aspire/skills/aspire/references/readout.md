@@ -79,7 +79,7 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
    source: open `action_item` findings, last follower count, last flagged posts. The weekly
    also reads `creator-brief-{profile}` and the account review's content pushes (`action_item`
    findings with `detail.push: true` under `onboarding-{profile}` and
-   `account-review-{profile}-own`) on the same path, as open items.
+   `account-review-{profile}-own-`) on the same path, as open items.
 6b. Content reviews: `search_insights` with a `prefix` filter on
    `detail.account_review.runKey` = `content-review-{profile}`, newest first, paged. Group the
    findings by `runKey` (one review each) and keep the reviews whose `detail.reviewedAt` (UTC) falls
@@ -283,6 +283,11 @@ Read `policy:readout-routing`. The page and chat summary always ship. Then:
   names a new destination mid-run, update the calibration first (supersede, with confirmation).
 
 ## Scheduled (unattended) runs
+
+**Run flag.** Every agent takes `run`: `interactive` (the default) or `unattended`. Launch
+messages and scheduled tasks written before the flag say "unattended mode" or `mode:
+unattended`; both mean `run: unattended`, and the launch's other `mode` is the agent's default.
+An agent that maps older wording further says so in its own inputs.
 
 A scheduled run starts a fresh session with no memory of the setup conversation and nobody
 to answer questions. The scheduled task prompt must therefore be standalone (templates in the

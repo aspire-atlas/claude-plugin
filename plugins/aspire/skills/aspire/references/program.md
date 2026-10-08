@@ -249,8 +249,10 @@ on runKey `content-library-{profile}-{YYYY-MM-DD}`, and it reads rights from eve
 records. Program flows that read `asset` findings or the library `page` finding (the dispatch,
 the dashboard) also read the newest of each on the prefix `content-library-{profile}`, so a
 brand-wide refresh counts for every program. Its scheduled refresh is approved by the
-`library:cadence` calibration (**8**), not by a program's P9. Only the library and the
-**Content library** section read that key; every other flow drops it.
+`library:cadence` calibration (**8**), not by a program's P9. `library:cadence` is a
+`policy` record: flows that read only `guideline` and `red_line` records never see it, and
+every flow that reads calibrations more broadly names `library:` in its drop list. Only the
+library and the **Content library** section read it.
 
 A program needs at least one linked Instagram or TikTok channel on the brand profile, because
 program-level findings are anchored to the brand's account. Without one, say so in one line and

@@ -141,6 +141,10 @@ decides.
 3. **Offer** (`offer` mode): open the deal at open. Ambassador at the calculator's monthly
    open, affiliate at the standard commission and code discount, all with the standard terms.
 4. **A reply classed `accepted` to our latest offer**: accept at that offer. It is agreement, asked in N3.
+   With no `terms` finding (an `open-fee` first touch), our offer is the opening fee stated in
+   the `body` of the sent first-touch `draft` (`step` 1, `offerShown` `open-fee`): record the
+   terms from that amount plus the program's standard terms. A draft that states no amount
+   makes the move your call; never invent a number.
 5. **Their number at or under room**: accept.
 6. **Their number above room, at or under max**: counter at room, with one lever from
    **Levers** that costs nothing outside bounds.

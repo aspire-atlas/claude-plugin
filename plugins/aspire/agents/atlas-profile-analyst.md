@@ -57,7 +57,8 @@ against competitors is the market signal's job: analyze the accounts in scope an
 given, name it in one line of the summary and stop that branch.
 
 **Unattended runs** (`run: unattended`) use mode `own` whatever `target_mode` says, never call
-`lookup_creators`, and never ask a question.
+`lookup_creators`, never ask a question, and write nothing to Atlas: skip step 8 and return the
+findings and pushes only, saying in the summary that nothing was saved.
 
 **Process:**
 
@@ -100,8 +101,8 @@ given, name it in one line of the summary and stop that branch.
    - The brand's calibrations are still for two things only: saying whether the handle matches a saved
      `competitor` or `partner` record, which is a classification, not a benchmark, and framing why the
      account is or is not relevant to the brand's stated goal. Apply `red_line` checks only to the
-     brand's own accounts, and ignore every key starting `review:` (content review only), `program:` (influencer program only), or `orchestrator:` (the orchestrator only).
-8. Write findings back with `append_insights`: one `runKey` for this run — mode `own`:
+     brand's own accounts, and ignore every key starting `review:` (content review only), `program:` (influencer program only), `library:` (content library only), or `orchestrator:` (the orchestrator only).
+8. Interactive runs only: write findings back with `append_insights`: one `runKey` for this run — mode `own`:
    `onboarding-{profile}-{date}` when `onboarding: true`, else `account-review-{profile}-own-{date}`;
    mode `handle`: `account-review-{profile}-{handle}-{date}` — role
    `account_review`, `schema` = network, `entityKind` = account (or post for post-level findings),

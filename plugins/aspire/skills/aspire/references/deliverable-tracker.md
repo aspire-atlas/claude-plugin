@@ -38,7 +38,7 @@ It reuses the checks of other flows rather than defining its own:
 `check` runs in two passes. **Pass `propose`** reads, builds the owed list, matches, checks,
 drafts, and publishes the page with every change marked proposed; it writes nothing to Atlas and
 returns the `tracker-packet`. The main thread asks T1 to T5. **Pass `record`** writes what was
-approved and republishes. An unattended launch (`run: unattended`, or the older `mode: unattended`) runs the
+approved and republishes. An unattended launch (`run: unattended`, or older wording per `readout.md`, **Run flag**) runs the
 unattended row whatever mode it names.
 
 ## Approvals (asked by the main thread)

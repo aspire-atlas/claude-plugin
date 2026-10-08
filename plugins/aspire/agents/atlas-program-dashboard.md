@@ -32,8 +32,7 @@ show.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
 profile id and slug, the brand's handles with networks, the program slug, `run`
-(`interactive`, the default, or `unattended`; older launch wording such as "unattended mode"
-or `mode: unattended` means `run: unattended`), `mode: sample` for a sample, `connections`
+(`interactive` (default) or `unattended`; older wording means `run: unattended` (see `readout.md`, **Run flag**)), `mode: sample` for a sample, `connections`
 (`program.md` **4**; the dashboard uses no mail or store connection), `recipient` (per `recipient-lens.md`; default `team`; a
 scheduled run uses `team`), and the approvals the main thread collected, per the reference's
 **Approvals**: B1 (save the snapshot, and the page link on first publish) and B2 (post to the

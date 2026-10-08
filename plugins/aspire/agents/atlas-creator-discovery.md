@@ -31,8 +31,8 @@ number, or a partnership that the data does not show.
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
 profile id and slug, the campaign slug, the brand's handles with networks, the run mode
 (`interactive` or `unattended`), `job` (`discover`, the default: fill the pool, score, and
-publish; or `shortlist`: no sourcing, re-score and republish only; per **Jobs and task names**
-in the reference), `campaign_type` (`creator-ads` for a CAS campaign, else
+publish; `shortlist`: no sourcing, re-score and republish only; or `view`: read only, per
+**Jobs and task names** in the reference), `campaign_type` (`creator-ads` for a CAS campaign, else
 absent) with the lane to fill when one is named, and `recipient` (one or more lenses per
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`; default `team`, and
 `campaign` or `growth` when the main thread passes one). Render for the primary lens: `growth`
@@ -83,8 +83,8 @@ records. Score with this reference's rubric; the paid screens belong to vetting.
    never from the prompt or the session header.
 3. Read `search_calibrations` (no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the five
    campaign records, plus `brand:summary`, every `competitor`, `partner`, `red_line`, and
-   `guideline`. Drop every key starting `review:` (content review only) `vetting:` (creator
-   vetting only), `program:` (influencer program only), or `orchestrator:` (the orchestrator only), and the CAS keys (`-cas`, `-lane-*`, `-decision-defaults`, `-terms`) of any
+   `guideline`. Drop every key starting `review:` (content review only), `vetting:` (creator
+   vetting only), `program:` (influencer program only), `library:` (content library only), or `orchestrator:` (the orchestrator only), and the CAS keys (`-cas`, `-lane-*`, `-decision-defaults`, `-terms`) of any
    campaign other than this one. Keep `theme:brand` for the page in step 10; it is never a guideline. Keep
    every `creator:*` record apart: it is the team's call on one creator, not a criterion. Add
    each one with stance `reject` to the dedupe set, and show any other stance on that
@@ -93,7 +93,9 @@ records. Score with this reference's rubric; the paid screens belong to vetting.
    `creator-discovery-{profile}-{campaign}`, newest first, paged. Newest record per `entityId`
    wins. Count undecided against the pool target; that gap is this run's fill quota. With
    `job: shortlist` the quota is zero: re-score in step 5, skip steps 7 and 8 (no sourcing), then
-   write the re-scores and publish.
+   write the re-scores and publish. With `job: view`, skip steps 5 to 9 and the delivery in
+   step 10: republish the page from the newest pool state as it stands, write nothing to
+   Atlas, and return the summary.
 5. Re-score every undecided candidate against current data before sourcing new ones — a
    candidate who went dormant or dropped engagement should fall before a new one is added.
 6. Call `list_post_search_fields` and `list_creator_search_fields` once each; use only paths

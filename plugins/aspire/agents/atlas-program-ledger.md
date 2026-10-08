@@ -33,9 +33,8 @@ move money, never invent an amount, and never keep bank details, tax ids, or car
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
 profile id and slug, the brand's linked handles with networks, the program slug, `mode`
 (`build`, `payments`, `export`, or `sample`; `mode: record` is the older name for `payments`),
-`pass` (`propose`, the default, or `record`), `run` (`interactive`, the default; `unattended`
-is handled by rule 1, and older launch wording such as "unattended mode" or
-`mode: unattended` means `run: unattended`), `recipient` (per
+`pass` (`propose`, the default, or `record`), `run` (`interactive` (default) or `unattended`;
+older wording means `run: unattended` (see `readout.md`, **Run flag**)), `recipient` (per
 `recipient-lens.md`; default `team`), `connections` (`program.md`, **4**), any `ledger-lines`
 blocks from this session, and for `payments` mode the source (G2: the pasted text, or `csv` with
 the uploaded file's path) and any mapping change or event the user gave (G3). Named creators

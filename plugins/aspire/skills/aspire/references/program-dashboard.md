@@ -26,7 +26,7 @@ it stands.
 | `run: unattended` | The scheduled "Atlas program dashboard: {brand} - {program}" (P9 "Weekly dashboard") | The `snapshot` finding, only when `program:{slug}-cadence` names `dashboard weekly` | The dashboard page and its `team` page data; a three-line post to the saved routing |
 | `mode: sample` | Anyone, before running it for real | Nothing | A sample page (**Sample mode**) |
 
-Older launch wording such as "unattended mode" or `mode: unattended` means `run: unattended`.
+Older launch wording means `run: unattended` (see `readout.md`, **Run flag**).
 
 One pass. The dashboard asks no question of its own, so it needs no `propose` and `record`
 passes: the main thread asks B1 and B2 before the launch, and the agent does what they allow.
@@ -57,7 +57,7 @@ in.
 `search_calibrations` (no filter, limit 100 per page, paged to the end,
 `includeSuperseded: true`). Keep `program:{slug}-program`, `-terms`, `-catalog`, `-outreach`,
 `-routing`, `-cadence`, `brand:summary`, `competitor`, `red_line` (not `review:` keys), and
-`theme:brand`. Drop `vetting:`, `review:`, `campaign:` keys and other programs' keys. Parse every
+`theme:brand`. Drop `vetting:`, `review:`, `library:`, `campaign:` keys and other programs' keys. Parse every
 `program:` body with a JSON parser. A missing or unparseable `-program` or `-terms` record means
 setup needs fixing (**Run rules** in the agent).
 
@@ -364,6 +364,22 @@ day, the newer `recordedAt` wins.
 
 Every count that was not tracked is null, never 0. The snapshot holds amounts because it lives
 in Atlas, for the team; amounts never go on the page itself or in a channel post.
+
+**Older snapshots.** A snapshot saved before item names were used keys `attention` by the old
+item number. When comparing with one, map each number to its name below; a number with no name
+shows as "not compared".
+
+| Old # | Name | Old # | Name |
+| ----- | ---- | ----- | ---- |
+| 1 | `setup-needs-fixing` | 10 | `codes-to-set-up` |
+| 2 | `your-call-needed` | 11 | `posts-late-missing-or-needing-a-fix` |
+| 3 | `replies-to-check` | 12 | `rights-expiring` |
+| 4 | `counters-to-answer` | 13 | `sales-to-report` |
+| 5 | `offers-to-make` | 14 | none (was "Payments overdue") |
+| 6 | `first-messages-to-write` | 15 | `renewals-due` |
+| 7 | `drafts-waiting-to-send` | 16 | `roster-review-due` |
+| 8 | `follow-ups-due` | 17 | `library-out-of-date` |
+| 9 | `product-to-order` | | |
 
 **The `page` finding.** On a first publish (no `page` finding with key `dashboard`), write one in
 the same `append_insights` call: `recordType` `page`, `key` `dashboard`, `url`, `title`, anchored

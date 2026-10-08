@@ -44,7 +44,7 @@ the prior quarter:
 | Creator discovery | `creator-discovery-{profile}` | Candidates surfaced, accepted, rejected per campaign |
 | Market signal | `market-signal-{profile}` | Share of voice by week, features won and lost |
 | Ad reuse | `ad-reuse-{profile}` | Licensing candidates |
-| Account reviews | `onboarding-{profile}` and `account-review-{profile}` | Account health findings, content pushes (`detail.push: true`) and whether a weekly readout closed them |
+| Account reviews | `onboarding-{profile}-` and `account-review-{profile}-own-` | Account health findings, content pushes (`detail.push: true`) and whether a weekly readout closed them |
 | Post analyses | `post-analysis-{profile}` | Posts analyzed for sponsorship or reuse, and their verdicts |
 | Program dashboards | `program-{profile}-` (every program), `detail.recordType` `snapshot` only | Per program: posts, creators, engagement, deliverables on time, assets cleared for ads, ledger figures and sales per currency, goals with pace |
 
@@ -67,7 +67,7 @@ second; a program whose first snapshot falls inside the quarter counts from its 
 program with no snapshot in the quarter is a gap: "{program}: no dashboard saved this quarter".
 Spend from a snapshot is used only when its `basis` is `ledger` and `ledger_spend` is `show`: the
 quarter's paid amount, per currency, labelled "paid, from the program ledger". Currencies are never added or converted.
-Calibration reads still drop `program:*` keys; the program is named from its dashboard's page
+Calibration reads still drop `program:*` and `library:*` keys; the program is named from its dashboard's page
 title.
 
 ## The page: one page, outcome first

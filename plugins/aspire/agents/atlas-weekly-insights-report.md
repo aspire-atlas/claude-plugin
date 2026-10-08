@@ -89,7 +89,7 @@ and the unattended run rules. Follow it exactly. Read `recipient-lens.md` too.
    and creator-brief insights (`runKey` prefixes `readout-weekly-{profile}`,
    `readout-daily-{profile}`, `creator-brief-{profile}`), the account review's content pushes
    (`action_item` findings with `detail.push: true` under the `onboarding-{profile}` and
-   `account-review-{profile}-own` prefixes), last week's content reviews
+   `account-review-{profile}-own-` prefixes), last week's content reviews
    (`content-review-{profile}`, step 6b of the data pull), and one semantic red-line scan per
    `red_line` (skipping `review:` keys, per the data pull). For the `product` and `pmm`
    lenses, the market signal findings covering the week (`market-signal-{profile}` prefix).

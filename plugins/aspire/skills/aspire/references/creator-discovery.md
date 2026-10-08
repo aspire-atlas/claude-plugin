@@ -264,11 +264,14 @@ record.
 
 ## Jobs and task names
 
-Every run does one of two jobs, passed to the agent as `job`:
+Every run does one of three jobs, passed to the agent as `job`:
 
 - `discover` (default): fill the pool to target in tier order, re-score, publish, and deliver.
 - `shortlist`: no sourcing. Re-score the undecided candidates already in the pool, republish
-  the page, and deliver. "Show the current shortlist" runs this job.
+  the page, and deliver.
+- `view`: read only. Read the newest pool state, republish the page and return the shortlist
+  as it stands: no re-score, no Atlas write, no delivery. "Show the current shortlist" runs
+  this job. It is never scheduled.
 
 S9 sets a time for each. The scheduled tasks are named "Atlas creator discovery: {brand} -
 {campaign}" (`job: discover`) and "Atlas creator shortlist: {brand} - {campaign}" (`job:

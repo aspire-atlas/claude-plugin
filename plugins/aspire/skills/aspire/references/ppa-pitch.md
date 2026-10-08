@@ -697,8 +697,8 @@ Atlas** after the build. Without a brand profile, I is not asked and nothing is 
 ## Pre-fill: what Atlas already knows
 
 With a brand profile, read every calibration (paged, `includeSuperseded: true`) and these
-insights before asking B, passing the profile's id on every call. Drop `review:`, `vetting:`, `program:` and `orchestrator:`
-keys, `theme:` and `fees:` keys, and a creator ad campaign's own keys (`campaign:{slug}-cas`,
+insights before asking B, passing the profile's id on every call. Drop `review:`, `vetting:`, `program:`, `library:` and
+`orchestrator:` keys, `theme:` and `fees:` keys, and a creator ad campaign's own keys (`campaign:{slug}-cas`,
 `-lane-*`, `-terms`, `-decision-defaults`) from anything treated as a brand rule.
 
 **No brand profile for this brand:** read no calibrations and no insights at all (the tools would

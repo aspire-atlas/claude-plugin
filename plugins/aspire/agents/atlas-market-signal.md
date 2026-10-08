@@ -70,7 +70,7 @@ findings, delivery, and the unattended rules. Follow them exactly.
    per the reference. Record the shell date, timezone, and window in the footer and summary.
 3. `search_calibrations` (no filter, limit 100 per page, paged to the end,
    `includeSuperseded: true`): the market signal records, `brand:summary`, every `competitor`
-   (with `spellingVariants`), `red_line`, and `theme:brand`. Drop every `review:`, `program:`, and `orchestrator:` key.
+   (with `spellingVariants`), `red_line`, and `theme:brand`. Drop every `review:`, `program:`, `library:` and `orchestrator:` key.
 4. **Duplicate-window guard** per the reference, before pulling data.
 5. `list_post_search_fields` once; use only paths it returns. Find the partnership marker, the
    transcript, overlay text, tone, and featured-brand fields; name any missing under gaps.
