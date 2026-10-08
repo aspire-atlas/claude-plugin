@@ -20,10 +20,14 @@ carries one button that opens the link through the app's link dialog.
    {network}. I'll keep watching for it to finish." Do not repeat the steps in text; the card
    already shows them.
 
-**Fallback (no widget tool, for example Claude Code).** If `ToolSearch` finds no
-`mcp__visualize__show_widget` tool, or the call fails, show the link as plain text instead.
-Never use Markdown link syntax (`[label](url)`): a terminal shows only the label, so the user
-never sees the link. Never stall onboarding waiting for the widget. See **Text fallback**.
+**Fallback.** Never stall onboarding waiting for the widget, and never use Markdown link
+syntax (`[label](url)`): a terminal shows only the label, so the user never sees the link.
+
+- **No widget tool** (`ToolSearch` finds no `mcp__visualize__show_widget`, as in Claude Code):
+  use **Text fallback** below, with the URL in a code block so it can be copied whole.
+- **The widget tool exists but the call fails** (a host that renders Markdown): use the same
+  text, but put the URL on its own line as plain text instead of in a code block, so it shows as
+  a clickable link.
 
 ## Text fallback
 
@@ -48,8 +52,10 @@ expires if nobody opens it soon; ask me for a fresh one if it stops working.
 ````
 
 - `{URL}` is `connectUrl` or `resultUrl` exactly as returned, with nothing else on its line and
-  no spaces or line breaks added. Never shorten, wrap, or re-encode it.
-- The steps are the step sets below, as plain text without the `<li>` tags.
+  no spaces or line breaks added. Never shorten, wrap, or re-encode it. The code block starts at
+  the beginning of a line, never indented inside a list, so it copies as one line.
+- The steps are the step sets below, as plain text without the `<li>` tags. Text has no button,
+  so in the follow-up set step 1 reads "Reopen the connection page with the link above".
 - The same text covers the start link, the awaiting-selection follow-up (`resultUrl`), and a
   fresh link issued after one expired or the provider declined.
 - After it, say nothing more until a poll reports something, as with the card.
@@ -117,7 +123,8 @@ browser through its link dialog, so no script is needed.
   Without the card, the code block in **Text fallback** is the single path.
 - Never modify the URL. It carries a one-time token.
 - Keep the reply after the card to one line. While polling, the only other output allowed is
-  the short "Still waiting on the {network} sign in." line from Phase 4.2.
+  the short "Still waiting on the {network} sign in." line from Phase 4.2, and the **Expired
+  links** question below, the one question allowed during the wait.
 - If the provider declines (`denied-at-provider`), the old card's link is dead: issue a fresh
   start and render a fresh start card.
 - **Expired links.** When a poll's `message` says to stop and check with the user (nobody has
@@ -125,4 +132,6 @@ browser through its link dialog, so no script is needed.
   "Send a fresh {NETWORK} link?" Options: "Send a fresh link (Recommended)" / "I opened it, keep
   waiting" / "Skip {NETWORK} for now". A fresh link is a new start with `channel` and
   `asProfileId`, shown as a new start card or text fallback. "Keep waiting" resumes polling the
-  same `elicitationId`.
+  same `elicitationId`, and is offered once per link: when the stop message comes back for the
+  same link, ask again with only "Send a fresh link (Recommended)" and "Skip {NETWORK} for now".
+  "Skip" ends that channel as skipped (Phase 4.2, steps 6 and 7).

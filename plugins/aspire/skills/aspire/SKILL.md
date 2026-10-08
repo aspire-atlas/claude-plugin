@@ -434,9 +434,7 @@ to a caller who does not have it.
    explains the sign-in steps and carries one button that opens the link in the browser. Build
    and render it exactly per `references/connection-card.md` (widget tool, template, one-line
    follow-up text). Never paste the raw link into the reply when the card rendered. If the widget
-   tool is unavailable (Claude Code has none), use the card's **Text fallback**: the full URL on
-   its own line in a code block, then the steps in plain text. Never a Markdown link, which a
-   terminal shows as its label only.
+   tool is unavailable or fails, use the card's **Fallback** (plain text, never a Markdown link).
 3. Immediately call `connect_channel` again with only `elicitationId`. Each call long-polls
    about 30 seconds. Keep calling until the response reports a terminal status or its own
    `message` says to stop and check with the user. Never stop on a fixed call count. Never
@@ -472,8 +470,14 @@ to a caller who does not have it.
    A `none-linked` result does not count.
    While polling, the only user-facing output is the connection card (once per link) and, if a poll times out,
    one short line such as "Still waiting on the {network} sign in." Never fill the wait with
-   questions: the user is in another tab finishing the sign in.
-7. When every requested channel has reached a terminal status, proceed to Phase 5.
+   questions: the user is in another tab finishing the sign in. The one exception is the card's
+   **Expired links** question, asked only when a poll's `message` says to stop.
+7. When every requested channel has reached a terminal status, or the user chose to skip it
+   (**Expired links** in the card's reference), proceed to Phase 5 if at least one channel is
+   `complete` with a linked account. If none is, say nothing was connected and ask with
+   `AskUserQuestion`: "Try connecting again (Recommended)" / "Connect later". "Connect later"
+   ends onboarding here with one line: "Run /aspire:aspire when you're ready to connect an
+   account." Never move on to Phase 5 without a linked account.
 
 ### 4.3 Seed the watch-list (optional, quick)
 
