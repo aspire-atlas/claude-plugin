@@ -434,13 +434,18 @@ to a caller who does not have it.
    explains the sign-in steps and carries one button that opens the link in the browser. Build
    and render it exactly per `references/connection-card.md` (widget tool, template, one-line
    follow-up text). Never paste the raw link into the reply when the card rendered. If the widget
-   tool is unavailable, fall back to a plain clickable link with the same one-line instruction.
+   tool is unavailable (Claude Code has none), use the card's **Text fallback**: the full URL on
+   its own line in a code block, then the steps in plain text. Never a Markdown link, which a
+   terminal shows as its label only.
 3. Immediately call `connect_channel` again with only `elicitationId`. Each call long-polls
    about 30 seconds. Keep calling until the response reports a terminal status or its own
    `message` says to stop and check with the user. Never stop on a fixed call count. Never
-   restart with `channel` + `asProfileId` on a timeout; that issues a second link.
+   restart with `channel` + `asProfileId` on a timeout; that issues a second link. When the
+   `message` says to stop, follow the card's **Expired links** rule: say the link may have
+   expired and offer a fresh one.
 4. If status is awaiting-selection, render the follow-up variant of the connection card with
-   `resultUrl` and the "Finish picking accounts" button (the original link cannot be reopened).
+   `resultUrl` and the "Finish picking accounts" button (the original link cannot be reopened),
+   or its text fallback with `resultUrl` in the code block.
 5. Terminal statuses:
    - `complete`: read `outcome`. Confirm each entry in `linkedAccounts` by handle, and list
      any discovered but unselected accounts as available to add later. With `outcome`
