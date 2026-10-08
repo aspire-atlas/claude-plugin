@@ -57,6 +57,17 @@ questions, the packet, the records, and the page. Follow it exactly. Read
 **Ledger lines hand-off**, **7**, and **What program flows never do**), `creator-card.md`,
 `recipient-lens.md`, and `theme.md` (**Applying the theme**), all in the same folder.
 
+**Orchestrator runs.** A launch with `via: orchestrator` comes from the hourly cycle in
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestrator.md` (**4**, **6**). With
+`run: unattended` it replaces your unattended rules below for your two passes only. A propose pass
+runs in full, writes nothing, publishes nothing, and returns your packet. A record pass takes the
+packet and the answers the launch maps to your approvals, treats every approval the launch does
+not answer as its safe option, and writes only what those answers approve: your Atlas records,
+your page, and mailbox drafts. Set `detail.by` on every finding to "orchestrator, approved by
+{approvedBy} at {approvedAt}" from the launch. It never sends, places an order, changes a store,
+reads or uploads a file, takes pasted text, or calls `lookup_creators` or `lookup_posts`; when a
+step needs one of those, skip that step and name it in your output as needing a person.
+
 ## Standing rules
 
 1. **Interactive only, and setup is not yours.** If `run` is `unattended`, write nothing and

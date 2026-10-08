@@ -33,6 +33,7 @@ Onboarding for the Atlas platform (https://atlas.aspire.io). Takes a new or retu
 | Agent | `atlas-roster-manager` | Reviews the program's roster: quota delivered, results against each creator's own baseline, cost, sales, and responsiveness. Groups creators into rebook, renew, re-engage, or retire, lists renewals due, and hands top creators to discovery as lookalikes. Interactive only. |
 | Agent | `atlas-program-ledger` | Records what the program owes creators (fees, commission, rights, product cost), the invoices and payments you paste or upload, and the budget used and left, per currency. Exports a finance CSV. Record only: it never pays and never keeps bank or tax details. Interactive only. |
 | Agent | `atlas-program-dashboard` | One page for the whole program: goals and pace, the creator funnel, posts delivered, content and rights, results, spend and return, roster health, and what needs attention next. Money shows only to the team's editors. Schedulable weekly. |
+| Agent | `atlas-campaign-orchestrator` | Works out what to do next across every program, creator ad campaign, discovery campaign, and report, ranked on one Next actions page. Editors approve proposals on the page; the hourly run saves the approved records and mailbox drafts and reports in Slack. It never sends, orders, or changes a store. Runs hourly. |
 
 ## Setup
 
@@ -176,12 +177,28 @@ Nothing goes to Slack or email unless you saved that destination during setup. A
 
 Instagram, Meta, TikTok, YouTube, Slack, Gmail, Google Fonts, and the other names above are trademarks of their owners. They're listed here to explain what the plugin does. Listing a service doesn't mean it endorses Aspire or this plugin.
 
+## Scheduling the orchestrator
+
+`/aspire:aspire next` sets up the orchestrator and offers its hourly task after the first run. The manual path: create a scheduled task named `Atlas next actions: {brand}`, repeating hourly in the hours saved in setup, with the prompt below. Same prerequisites as the readouts, plus Slack enabled for scheduled tasks when a channel is saved.
+
+```
+Run /aspire:aspire next for {brand} as the unattended hourly run. Use the Aspire Atlas
+connection, find {brand}'s Atlas profile by name, and use the saved orchestrator records. Do
+not ask questions. Read the date and time from the shell clock in the saved timezone; do not
+trust any date in this prompt. Carry out only what an Editor approved on the Next actions page,
+within the saved execution policy. Never send a message, place an order, or change a store.
+If setup is incomplete or Atlas needs a fresh sign in, publish the "setup needed" card and stop.
+Post only to the Slack channel and people saved in the orchestrator routing.
+```
+
+Anyone you share the Next actions page with as an Editor can approve. Approved records and mailbox drafts are written by the hourly run under the account that owns the task, so share the page only with people who should decide. Pause the task to stop it.
+
 ## Safety rules
 
-- Every action that changes Atlas state is confirmed through a multiple-choice question first, never plain text.
+- Every action that changes Atlas state is confirmed through a multiple-choice question first, never plain text. The one exception is the orchestrator's hourly run: an Editor's approval on the Next actions page stands in for the question, and covers only Atlas records and mailbox drafts.
 - Destructive actions (`delete_profile`, `unlink_channel`, superseding or retracting a calibration, removing hashtags, changing the brand instruction) each get their own confirmation with the safe option first, and never run during onboarding on the skill's own initiative.
 - Scheduled (unattended) runs never ask questions, never run destructive tools, and deliver only to destinations saved during setup. The one exception to the no-discovery rule is `atlas-creator-discovery`: its saved cadence record is the standing approval to search Atlas and the creator marketplace on every run, including scheduled ones. Every other scheduled run starts no discovery work. Content review and post analysis never run unattended. Incomplete setup produces a "setup needed" page, not a guess.
-- Influencer program flows draft every message and never send one unless you ask in that session and confirm the named recipients. Mailbox drafts, discount codes, and store orders each need their own confirmation, and scheduled runs never send, draft, or change your store. Creator addresses stay on the team's order form and in Atlas. Everyone the order form is shared with sees every address, so share it only inside your team; creators send their details by reply, never through the form.
+- Influencer program flows draft every message and never send one unless you ask in that session and confirm the named recipients. Mailbox drafts, discount codes, and store orders each need their own confirmation, and scheduled runs never send or change your store. They create mailbox drafts only when an Editor approved them on the Next actions page. Creator addresses stay on the team's order form and in Atlas. Everyone the order form is shared with sees every address, so share it only inside your team; creators send their details by reply, never through the form.
 - The tool surface is re-verified per release; unlisted tools that change state are treated as destructive until documented. See `skills/aspire/references/atlas-tools.md`.
 
 ## Changes

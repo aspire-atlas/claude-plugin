@@ -543,6 +543,9 @@ Follow the readout rules (`readout.md`, **Scheduled (unattended) runs**):
   library) names it: `snapshot`, `deliverable` status from
   strong-matched posts and from the date alone (late, missing), `asset`, and `page`. Publishing includes
   the page's Editor-only `team` page data.
+- **Orchestrator runs** (`via: orchestrator`) are the one exception: an Editor's approval on the
+  Next actions page lets an agent's record pass write its records and create mailbox drafts,
+  per `orchestrator.md` **4**. They still never send, order, or change a store.
 - Resolve the date from the shell clock in the cadence timezone (`TZ=<tz> date +%F`).
 - If the program records are missing, publish a one-card page titled "<Brand> {Program}: setup
   needed" listing what is missing, write nothing, and end with "Run /aspire:aspire program to
