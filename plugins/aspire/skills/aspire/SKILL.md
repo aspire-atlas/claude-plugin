@@ -871,8 +871,10 @@ Requires a brand profile with a linked Instagram or TikTok channel.
 1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end). If the four
    `orchestrator:*` records exist, skip to **Run**.
 2. Ask X1 to X5 from the reference, one `AskUserQuestion` each, and say plainly what X4 and X5
-   approve. X6 confirms the batch once, then write every record with `append_calibration`. A
-   `key-exists` follows the Phase 5 supersede rule with its own confirmation.
+   approve. X6 confirms the batch once, then write every record with `append_calibration`. X6
+   is also the standing approval for the orchestrator's own bookkeeping findings (`run`, `plan`,
+   `packet`, `execution`, `page` on the `orchestrator-` prefix); say so at X6. A `key-exists`
+   follows the Phase 5 supersede rule with its own confirmation.
 3. Run the cycle once interactively to publish the page, then offer the schedule.
 
 ### Run
@@ -890,7 +892,7 @@ The scheduled task runs the same cycle unattended. It never asks. It carries out
 Editor approved on the Next actions page, and only within `orchestrator:execution` and the
 reference's **4**: record passes and mailbox drafts under `page-approved`, nothing under
 `suggest`. It launches each agent with `run: unattended` and `via: orchestrator`, saves the
-packets and outcomes, republishes the page, and posts to Slack only on a change (**8**).
+packets and outcomes under X6's standing approval, republishes the page, and posts to Slack only on a change (**8**).
 
 ### Schedule
 
@@ -2426,7 +2428,11 @@ The watch list is the brand's saved creators, outside any campaign.
   the Next actions page stands in for `AskUserQuestion`, under the saved
   `orchestrator:execution` level and only for the approvals `references/orchestrator.md` **4**
   allows: Atlas records and mailbox drafts. Sending, orders, store changes, files, lookups,
-  discovery, setup records, and destructive tools always need a person in a session.
+  discovery, setup records, and destructive tools always need a person in a session, and so do
+  deals over a maximum, over budget, outside the standard terms, or changing the deal type. The
+  run's own bookkeeping findings on the `orchestrator-` prefix (`run`, `plan`, `packet`,
+  `execution`, `page`) are written without asking: X6 at setup is their standing approval, as a
+  cadence record is for its flow.
 - Every agent launch carries `recipient` (**Reading the ask**). A lens changes what is
   selected, the order, and the wording, never a number, and never adds a claim the data does
   not support. What a reader needs that Atlas does not hold (spend, conversions, usage rights)

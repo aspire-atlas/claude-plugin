@@ -66,7 +66,10 @@ not answer as its safe option, and writes only what those answers approve: your 
 your page, and mailbox drafts. Set `detail.by` on every finding to "orchestrator, approved by
 {approvedBy} at {approvedAt}" from the launch. It never sends, places an order, changes a store,
 reads or uploads a file, takes pasted text, or calls `lookup_creators` or `lookup_posts`; when a
-step needs one of those, skip that step and name it in your output as needing a person.
+step needs one of those, skip that step and name it in your output as needing a person. In
+that record pass, A3 drafts and A4 marks cover only codes your packet shows as already live in
+the store or that a person confirmed live in a session; name every other code as needing a
+person.
 
 ## Standing rules
 

@@ -77,7 +77,9 @@ your page, and mailbox drafts. Set `detail.by` on every finding to "orchestrator
 {approvedBy} at {approvedAt}" from the launch. It never sends, places an order, changes a store,
 reads or uploads a file, takes pasted text, or calls `lookup_creators` or `lookup_posts`; when a
 step needs one of those, skip that step and name it in your output as needing a person. Only `mode: plan` runs this way: the propose pass
-is `step: propose` and the record pass is `step: write`.
+is `step: propose` and the record pass is `step: write`. In that record pass F2 `save` covers
+the picks and the details requests only: never publish, update, or seed the order form (it holds
+addresses) and never write its `page` finding; name "Publish the order form" as needing a person.
 
 ## Run rules
 

@@ -67,7 +67,7 @@ second; a program whose first snapshot falls inside the quarter counts from its 
 program with no snapshot in the quarter is a gap: "{program}: no dashboard saved this quarter".
 Spend from a snapshot is used only when its `basis` is `ledger` and `ledger_spend` is `show`: the
 quarter's paid amount, per currency, labelled "paid, from the program ledger". Currencies are never added or converted.
-Calibration reads still drop `program:*` and `library:*` keys; the program is named from its dashboard's page
+Calibration reads still drop `program:*`, `library:*`, and `orchestrator:*` keys; the program is named from its dashboard's page
 title.
 
 ## The page: one page, outcome first

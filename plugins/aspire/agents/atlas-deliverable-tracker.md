@@ -114,7 +114,7 @@ step needs one of those, skip that step and name it in your output as needing a 
 2. `search_calibrations` (no filter, limit 100 per page, paged to the end,
    `includeSuperseded: true`): the `program:{slug}-*` records, `brand:summary`, the
    `voice_and_content_ops` brand fact, `guideline:voice`, every `creator:*` record, and
-   `theme:brand`. Drop `vetting:`, `review:`, `library:`, `campaign:` keys and other programs' keys. Parse
+   `theme:brand`. Drop `vetting:`, `review:`, `library:`, `orchestrator:`, `campaign:` keys and other programs' keys. Parse
    every JSON body with a JSON parser. Resolve today as the shell date in the cadence timezone
    (`TZ=<tz> date +%F`), or the user's when there is no cadence.
 3. `list_insight_search_fields`, `list_post_search_fields`, and `list_creator_search_fields`

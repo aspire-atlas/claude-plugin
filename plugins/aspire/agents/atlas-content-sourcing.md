@@ -115,7 +115,7 @@ step needs one of those, skip that step and name it in your output as needing a 
    `connections.mail.canReadThreads` is true.
 3. `search_calibrations` (no filter, limit 100 per page, paged to the end,
    `includeSuperseded: true`). Keep the records the reference lists under **Inputs, per post or
-   creator**; drop `review:`, `vetting:`, `library:`, and `campaign:` keys and other programs' keys. Parse
+   creator**; drop `review:`, `vetting:`, `library:`, `orchestrator:`, and `campaign:` keys and other programs' keys. Parse
    every `program:` body with a JSON parser.
 4. `search_insights` on the prefix `program-{profile}-{slug}`, newest first, paged to the end,
    and on `content-library-{profile}` for `asset` findings. Keep the newest per identity of

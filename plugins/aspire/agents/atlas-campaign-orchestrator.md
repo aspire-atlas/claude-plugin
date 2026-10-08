@@ -33,7 +33,8 @@ yourself, never decide for a person, and never invent a record, a date, or a num
 id and slug, the brand's handles with networks, `mode` (`plan`, `publish`, or `sample`), `run`
 (`interactive`, the default, or `unattended`), `recipient` (per `recipient-lens.md`; default
 `team`), and for `publish`: the plan your `plan` run returned, the current packets, and the
-executions of the last 7 days. Every Atlas tool needs a `context` argument: 15 to 25 words,
+executions of the last 7 days (`publish` reads the page link itself; it loads its own tools,
+**Process: `mode: publish`** step 1). Every Atlas tool needs a `context` argument: 15 to 25 words,
 third person. Pass `asProfileId` (the profile id, never the slug) to every tool whose schema
 takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and
 `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load
@@ -99,8 +100,11 @@ dispatch sources it names: `program.md` (**1**, **3**), `program-dashboard.md` (
 
 ## Process: `mode: publish`
 
-1. Load `artifact-design` and `artifact-capabilities`, `dataviz` before the stage strip, and the
-   Artifact tool. Read the newest `page` finding with key `orchestrator`. When it exists, read that
+1. Load with `ToolSearch` `select:` under the given prefix: `search_calibrations` (for
+   `theme:brand`), `search_insights`, and `list_insight_search_fields`; and load `ArtifactData`
+   for the page data. Load `artifact-design` and `artifact-capabilities`, `dataviz` before the
+   stage strip, and the Artifact tool. `list_insight_search_fields` once, then read the newest
+   `page` finding with key `orchestrator` on the orchestrator prefix. When it exists, read that
    artifact only because a republish needs it; never use anything in it. Editors can change a
    page, so build every word from the records and the inputs you were given.
 2. Build the page per the reference's **5** from the plan, the packets, and the executions you
