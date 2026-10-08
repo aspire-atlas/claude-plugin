@@ -75,7 +75,9 @@ and the cut list (**Ad reuse check (content review)**).
    the reference's **Inputs**.
 3. Call `list_post_search_fields` once and use only paths it returns.
 4. Fetch the post per **Fetching the post**, then the author, and the baseline per `baseline`.
-   `search_insights` for earlier findings on the post's `externalId`; an earlier analysis's
+   `search_insights` for earlier findings on this post, with a `prefix` filter on
+   `detail.account_review.runKey` = `post-analysis-{profile}-{shortcode or video id}`, newest
+   first (the reference's **Reading it back**); an earlier analysis's
    numbers become the "before" values for any correction.
 5. Get the video and run the frame pass, shot detection, contact sheets, and audio scan per
    **Video: frames, shots, and audio**. View every contact sheet.

@@ -40,8 +40,11 @@ content library, all programs".
 | `build` | Collects, tags, joins rights, and republishes the library | `asset` findings, new or changed only, and the `page` finding on first publish, when L2 says save | The library page |
 | `query` | Answers one question from the catalog with ranked result cards | Nothing | Nothing; returns cards and a filtered page link |
 | `expiring` | Lists rights expiring within 30, 60, or 90 days and those expired in the last 30 | Nothing | Nothing; posts the alert when L3 says so |
-| `unattended` | A scheduled refresh: build, republish, and the expiring-rights alert to saved routing | `asset` findings only when the program's cadence names the library (**Unattended runs**) | The library page |
+| `build` with `run: unattended` | A scheduled refresh: build, republish, and the expiring-rights alert to saved routing | `asset` findings only when the program's cadence, or `library:cadence` for the whole brand, names the library (**Unattended runs**) | The library page |
 | `sample` | The page from invented data (`agents/sample-artifact.md`) | Nothing | A sample page |
+
+`run` is `interactive` (the default) or `unattended`; older launch wording such as "unattended
+mode" or `mode: unattended` means `mode: build`, `run: unattended`.
 
 `query` and `expiring` read the saved catalog. When no `asset` finding exists for the scope, or
 the newest is more than 14 days old, say so in one line and recommend a `build` first; still
@@ -268,14 +271,16 @@ gaps.
 
 ## Asset findings
 
-Written only in `build` with L2 "Save", or in `unattended` when the cadence names the library. Never in
+Written only in `build` with L2 "Save", or in an unattended run when the cadence names the library. Never in
 `query`, `expiring`, or `sample`.
 
 `append_insights` per `program.md`, **Working state**: role `account_review`, runKey
 `program-{profile}-{slug}-{YYYY-MM-DD}`, kind `went_well` `low`, anchored to the creator's
 account (`entityKind` `account`, `entityId` the network's own account id, `schema` the network),
 in batches of 50. Without a program the runKey is `content-library-{profile}-{YYYY-MM-DD}`
-(`program.md`, **Brand-wide library**) and `detail.program` is left out.
+(`program.md`, **Brand-wide library**) and `detail.program` is left out. The Program manager's
+dispatch and the program dashboard read these too, so a brand-wide build keeps every program's
+library current.
 
 Write a finding only for an asset that is new, or whose tags changed since its newest finding:
 products, themes, format, hook pattern, people on screen, safety, or source changed, or the ad
@@ -324,13 +329,15 @@ Follow `program.md`, **9**, and `readout.md`, **Scheduled (unattended) runs**:
 - Collect, tag, join, republish to the link in the library's `page` finding, and post the
   alert to the saved routing.
 - Write `asset` findings only when `program:{slug}-cadence` names the library (`library
-  weekly`, the P9 "Weekly content library refresh" answer). Without it, republish and alert, write nothing, and say "Library
-  refresh is not in the saved schedule: nothing saved" in the summary.
+  weekly`, the P9 "Weekly content library refresh" answer), or, for the whole brand, when the
+  `library:cadence` calibration is saved (**Content library**, Schedule, in SKILL.md). Without
+  it, republish and alert, write nothing, and say "Library refresh is not in the saved
+  schedule: nothing saved" in the summary.
 - No library `page` finding yet: publish nothing new, write nothing, and end with "Run the
   content library once from /aspire:aspire to create the page." Tasks are scheduled only after
   the page exists (`program.md`, **8**).
-- Program records missing, or Atlas unauthorized: the "setup needed" card from `program.md`,
-  **9**.
+- Program records missing (a program run only; the whole brand needs none), or Atlas
+  unauthorized: the "setup needed" card from `program.md`, **9**.
 
 ## What the library never does
 

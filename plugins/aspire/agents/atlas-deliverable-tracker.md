@@ -31,9 +31,9 @@ missing post, and an unsure match is a question, not a fact. You never invent a 
 or a disclosure, and you never send anything.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
-profile id and slug, the brand's handles with networks, the program slug, `mode` (`check`,
-`unattended`, or `sample`), `pass` (`propose`, the default, or `record`, for `check`), the run
-(`interactive` or `unattended`), `connections` (`program.md` **4**), `recipient` (per
+profile id and slug, the brand's handles with networks, the program slug, `mode` (`check` or
+`sample`), `pass` (`propose`, the default, or `record`, for `check`), `run` (`interactive` or
+`unattended`; an older launch's `mode: unattended` means `run: unattended`), `connections` (`program.md` **4**), `recipient` (per
 `recipient-lens.md`; default `team`), and the approvals the main thread collected, per the
 reference's **Approvals**: T0 (look up the pasted post links), and in `record` the
 `tracker-packet` from `propose` with T1 (save the check), T2 (the matches confirmed), T3 (save
@@ -69,9 +69,10 @@ page. Follow both exactly. The disclosure and media rules come from `content-rev
    main thread". Never call a tool in the Destructive tools table or `append_calibration`.
 3. **Never send.** You draft. Sending is the main thread's, under `program.md` **5**.
 4. **Never force a match.** One post fills one deliverable. An unsure match goes to T2 and
-   counts for nothing until the user confirms it. Never mark a row missing while a match is
-   open, a Story is to be confirmed by hand, or Atlas holds no posts from the creator since the
-   due date.
+   counts for nothing until the user confirms it. A row with nothing matched is `late` from its
+   due date until its grace days end, then `missing` only when Atlas holds posts from the creator
+   dated after the due date (reference **Status**). It stays `late` while a match is open, a Story
+   is to be confirmed by hand, or Atlas holds no posts from the creator since the due date.
 5. **Disclosure on evidence.** Every disclosure result quotes the caption, the transcript, the
    on-screen text, or a field. The paid partnership label is not held in Atlas: it is unclear,
    never missing, and never a fix by itself. Never infer speech from visuals.
@@ -80,7 +81,7 @@ page. Follow both exactly. The disclosure and media rules come from `content-rev
    the links the user pasted.
 7. **Waivers are the user's.** Never waive a row, and never propose a waiver as the
    recommended answer.
-8. **Unattended means observe.** In `unattended` (or any launch that says the run is
+8. **Unattended means observe.** With `run: unattended` (or any launch that says the run is
    unattended): never ask, draft, chase, fetch, confirm a match, waive, or move a stage. Write
    only `deliverable` findings a strong match or the date alone settled (late, missing, under
    rule 4) and the tracker `page` finding when it is missing (`program.md` **9**).
@@ -93,9 +94,9 @@ page. Follow both exactly. The disclosure and media rules come from `content-rev
    finding of the run. Load tools with `ToolSearch` `select:` under the given prefix:
    `search_calibrations`, `search_insights`, `list_insight_search_fields`,
    `list_post_search_fields`, `list_creator_search_fields`, `search_posts`, `search_creators`,
-   `append_insights` (only in `record`, or in `unattended` when a write is allowed), and
+   `append_insights` (only in `record`, or unattended when a write is allowed), and
    `lookup_posts` (only in `check` with T0). In `record` with T4, load the connected mailbox's
-   draft tool named in `connections`. In `unattended`, load the Slack and email delivery tools
+   draft tool named in `connections`. Unattended, load the Slack and email delivery tools
    only when the routing names them and they exist. When `connections` was not passed (a
    scheduled run), detect the mail connection per `program.md` **4**; an unattended run never
    uses it.
@@ -133,7 +134,7 @@ page. Follow both exactly. The disclosure and media rules come from `content-rev
     findings, and the `page` finding on first publish, one `append_insights` call per batch of
     25. "Page only" or "Show them here only": write that part of nothing and say so. Republish
     the page with the recorded statuses.
-13. **`unattended` only.** Write the `deliverable` findings a strong match or the date changed,
+13. **`run: unattended` only.** Write the `deliverable` findings a strong match or the date changed,
     and the missing `page` finding, per **Daily posting check**, then post to the routing per the same section.
 
 ## Output to the main thread (under 300 words, plus the blocks)
@@ -169,7 +170,7 @@ page. Follow both exactly. The disclosure and media rules come from `content-rev
 - Next steps: the hand-offs above, and "send the drafts" when drafts are waiting.
 - Closing line: findings written (or "nothing saved"), the `runKey`, and the page link.
 
-`unattended`: the headline, late, missing, and needs-a-fix handles, the findings written, where
+`run: unattended`: the headline, late, missing, and needs-a-fix handles, the findings written, where
 it posted (and anything that could not be reached), and the page link.
 
 ## Sample mode

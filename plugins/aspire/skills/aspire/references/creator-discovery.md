@@ -200,7 +200,7 @@ handle or uuid), `idempotencyKey` per candidate per run.
 `detail` carries: `campaign`, `tier`, `source`, `fitScore`, the per-component breakdown,
 `evidence` (permalinks and the profile URL), `riskFlags`, `verdict`, `verdictAt` when
 decided, `seed` for a lookalike, and `tierScheme: 2`. Records without `tierScheme` were written
-before the lookalike tier: read their tier 3 as tier 4 and their tier 4 as tier 5. Reading state back: `search_insights` filtered on the `runKey` prefix
+before the lookalike tier: read their tier 3 as tier 4 and their tier 4 as tier 5. Reading state back: `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
 `creator-discovery-{profile}-{campaign}`, newest first, paged; the newest record per `entityId`
 wins. `search_insights` returns findings tenant-wide, so always filter on the prefix.
 
@@ -262,12 +262,25 @@ bullets, and the page link; interactive runs confirm the send once; the S8 confi
 standing approval for unattended runs; never send to a destination that is not in the routing
 record.
 
+## Jobs and task names
+
+Every run does one of two jobs, passed to the agent as `job`:
+
+- `discover` (default): fill the pool to target in tier order, re-score, publish, and deliver.
+- `shortlist`: no sourcing. Re-score the undecided candidates already in the pool, republish
+  the page, and deliver. "Show the current shortlist" runs this job.
+
+S9 sets a time for each. The scheduled tasks are named "Atlas creator discovery: {brand} -
+{campaign}" (`job: discover`) and "Atlas creator shortlist: {brand} - {campaign}" (`job:
+shortlist`). A task with the older bare name "Atlas creator discovery" runs `job: discover`,
+and one named "Atlas creator discovery digest: {brand} - {campaign}" runs `job: shortlist`.
+
 ## Scheduled (unattended) runs
 
 A scheduled run starts a fresh session with nobody to answer questions.
 
-- Never ask a question. If `campaign:{slug}-brief`, `-criteria`, `-pool`, or `-cadence` is
-  missing, publish a one-card page titled "<Brand> Creator Discovery: setup needed" listing what
+- Never ask a question. If `campaign:{slug}-brief`, `-criteria`, `-pool`, `-routing`, or
+  `-cadence` is missing, publish a one-card page titled "<Brand> Creator Discovery: setup needed" listing what
   is missing, write nothing to Atlas, and end with "Run /aspire:aspire and ask for creator
   discovery setup."
 - **Discovery is allowed unattended for this agent**, and only this agent: the S9 cadence

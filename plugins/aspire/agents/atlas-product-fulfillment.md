@@ -32,11 +32,11 @@ tracking number, or a creator's history.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
 profile id and slug, the brand's linked handles with networks, the program slug, `mode` (`plan`,
-`order`, `track`, `status`, or `sample`), `step` in plan mode (`propose` or `write`), the run
-mode (`interactive`, or `unattended` for the scheduled shipping check, which is always `mode:
+`order`, `track`, `status`, or `sample`), `step` in plan mode (`propose` or `write`), `run`
+(`interactive`, or `unattended` for the scheduled shipping check, which is always `mode:
 status`), `recipient` (default `team`),
 `connections` (`program.md`, **4**), and the approvals the main thread collected, each by its
-O-number from the **Product fulfillment** section of SKILL.md:
+F-number from the **Product fulfillment** section of SKILL.md:
 
 - **F1 picks**: the confirmed product per creator (product, options when known, value), or
   `creator-choice` for named creators, or `same:{product}` for everyone.
@@ -116,8 +116,10 @@ lens.
 1. Read the clock: `date -u +%FT%TZ` for `recordedAt` and `started`; the cadence timezone's date
    (`TZ=<tz> date +%F`, or the user's) for the `runKey`.
 2. Load tools with `ToolSearch` `select:` under the given prefix: `search_calibrations`,
-   `search_insights`, `list_insight_search_fields`, `list_post_search_fields`, `search_posts`,
-   `search_creators`, and `append_insights` (with F2 `save`, or for a status run's `page` finding). Load `ArtifactData` for the
+   `search_insights`, `list_insight_search_fields`, `list_post_search_fields`,
+   `list_creator_search_fields`, `search_posts`, `search_creators`, and `append_insights` (with
+   F2 `save`, or for a status run's `page` finding). Call the three `list_*_search_fields` tools
+   once each before the first search and use only paths they return. Load `ArtifactData` for the
    order form's page data. Load the mail and store tools only for what `connections` lists and
    this run uses.
 3. `search_calibrations` (no filter, limit 100 per page, paged to the end,
@@ -176,7 +178,7 @@ lens.
   Gifting rows add the posting odds and their evidence in a few words.
 - Late or issues: the creators past the delivery window, and each issue in one line.
 - Needs confirmation: each item worded as its picker (question, options, the named creators),
-  grouped by O-number: picks over the value limit or out of stock, order form changes, the store
+  grouped by F-number: picks over the value limit or out of stock, order form changes, the store
   order batch, orders placed from the sheet.
 - Needs the main thread: a catalog that differs from the store, and any your-call question, as `what | current | proposed | why`. Leave the line
   out when there are none.

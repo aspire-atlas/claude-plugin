@@ -129,6 +129,9 @@ Rules:
 - **Keys `campaign:{slug}-cas`, `-lane-*`, `-decision-defaults` and `-terms` belong to the CAS
   campaign** and the three agents in creator-ads mode. Every other flow drops them, as it drops
   `review:` and `vetting:` keys. They are never brand guidelines.
+- **A CAS campaign's discovery runs only from this flow** (rows 2 and 3, under C6). A separate
+  "Atlas creator discovery" schedule never runs on a CAS campaign's slug: when someone asks to
+  schedule discovery for one, offer the weekly call (C6) instead.
 
 ### Working state (findings)
 
@@ -212,8 +215,25 @@ by the client's lead"; the real answer goes in the free text.
   Confirm them with the client before the campaign starts.") and stop setup until the CM says
   they are confirmed.
 
+**Carrying the pitch forward.** When the concepts come from the saved pitch, setup also carries
+what the pitch already settled, so the CM confirms it instead of answering again. Each carried
+answer is the first option, marked "(from the pitch, Recommended)", and only what the pitch's
+`summary` holds is carried:
+
+- **C1**: the package as the pitch's cast count times its variants (G1), and the usage term from
+  its term with its whitelisting days (G3), for example "{Brand} spring launch, 9 creators x 5
+  variants, 90-day term (from the pitch)".
+- **Terms** (`rates-and-terms.md`, **Terms, asked once per campaign**): T1 offers the pitch's
+  organic posts (G4) as its first option.
+- **Pools**: each concept's cast creators from the pitch's `cast` findings go into that
+  concept's pool as undecided candidates, `tier` `manual` and `source` `pitch`
+  (`creator-discovery.md`, **Added by the team**), never a creator the brand rejected since. Row
+  2's discovery then tops each pool up instead of starting over.
+
 C0 writes, at C7: `campaign:{slug}-lane-{lane}` per concept with its `source`, the pool targets,
-and a Gate 1 finding: `gate` 1, `status` cleared, `clearedBy`, `clearedAt`, `source`.
+the pitch's creators as candidates (one discovery finding each, with `detail.lane`, per
+`creator-discovery.md`, **State written to Atlas**), and a Gate 1 finding: `gate` 1, `status`
+cleared, `clearedBy`, `clearedAt`, `source`.
 
 ### The questions
 
@@ -276,9 +296,9 @@ current round only. Status lines use the page vocabulary.
 | 11 | Brief drafted, Gate 4 not sent | "{n} concept briefs drafted." | Send the briefs for approval | **Gate 4 packet** below | Gate 4 `open` | Reminder at its due time |
 | 12 | Gate 4 open | "Briefs with {approver}. Due {due}." | Pull the client's decisions | **CAS campaign**, Run, **Pulling decisions** | `brief` locked per lane, Gate 4 `cleared`; a `ledger` line when late | Removes the reminder |
 | 13 | Gate 4 cleared, briefs not sent to creators | "Briefs approved. Not sent to creators yet." | Send the briefs to creators | **1g. The creator's turn on the brief** | A `brief` draft per creator, roster `briefState` sent | None |
-| 14 | Briefs sent, replies waiting | "{a} accepted, {c} changed, {w} waiting." | Record a reply | **1g**, Replies | `reply`, roster `briefState` accepted, or a `brief-revision` and Gate 4b `open` for that creator | None, unless setup asked for one |
-| 15 | A Gate 4b open for any creator | "{n} creator changes with {approver}." | Pull the client's decisions | **CAS campaign**, Run, **Pulling decisions** | `brief-revision` approved and locked, or a `brief-notes` draft; Gate 4b `cleared` per creator | None |
-| 16 | Every creator's brief accepted or locked | "In production. Hands to the content review flow." | Review a creator's draft. Once creators have posted: review the round's hooks. | **Content review**; the hook review in `hooks-and-ctas.md` | Content review's own findings; `hook-review` findings | None. Offer once to keep or stop the weekly call. |
+| 14 | Briefs sent, replies waiting | "{a} accepted, {c} changed, {w} waiting." | Record a reply | **1g**, Replies | `reply`, roster `briefState` accepted, or a `brief-revision` and Gate 4b `open` for that creator | Reminder at that creator's Gate 4b due time |
+| 15 | A Gate 4b open for any creator | "{n} creator changes with {approver}." | Pull the client's decisions | **CAS campaign**, Run, **Pulling decisions** | `brief-revision` approved and locked, or a `brief-notes` draft; Gate 4b `cleared` per creator | Removes that creator's reminder |
+| 16 | Every creator's brief accepted or locked | "In production. Hands to the content review flow." | Review a creator's draft. Once creators have posted: review the round's hooks. | **Content review**, with the creator ad campaign brief as P1's source (`content-review.md`, **Normalizing the brief**: the concept's locked `brief`, or the creator's approved `brief-revision`); the hook review in `hooks-and-ctas.md` | Content review's own findings; `hook-review` findings | None. Offer once to keep or stop the weekly call. |
 
 Rules:
 
@@ -591,23 +611,26 @@ After Gate 4 clears, each creator gets their concept's locked brief.
 2. **The creator replies by email; the CM pastes it.** Read it against the locked brief:
    - **Accepted as is.** The reply picker proposes "brief accepted". The confirm writes roster
      `briefState` accepted. Nothing goes to the client.
-   - **Changed.** Launch `atlas-creator-brief` in creator-ads mode with the tool prefix, `profile_id`,
-     `profile_slug`, and `revision` (the
-     creator's handle, their concept, and their version as pasted). It returns the differences in
-     plain words (hook text, runtime, a B-roll shot dropped or added, a CTA change). The reply
+   - **Changed.** Launch `atlas-creator-brief` with the tool prefix, `profile_id`,
+     `profile_slug`, `brief_mode` `creator-ads`, the campaign slug, the current round, and
+     `revision` (the creator's handle and network, their concept, and their version as
+     pasted). It returns the differences in plain words (hook text, runtime, a B-roll shot
+     dropped or added, a CTA change). The reply
      picker names them: "@a changed the {concept} brief: Hook B now 'One charge. Friday to
-     Sunday.', V2 60 seconds instead of 45, B-roll shot 07 dropped. Send these to the client?"
+     Sunday.', V2 60 seconds instead of 45, B-roll shot 07 dropped. Send these to the client,
+     due {due}? A reminder will post to {channel} at that time."
      The confirm writes a `brief-revision` (`status` waiting), roster `briefState` changed and
-     `yourCall`, and Gate 4b `open` for that creator, then republishes. The client sees the block
-     on the Briefs tab and the item in their attention list.
+     `yourCall`, and Gate 4b `open` for that creator with `sentAt` and `dueAt` (sent plus Gate
+     4's turnaround), creates its reminder (**Reminders**), then republishes. The client sees
+     the block on the Briefs tab and the item in their attention list.
 3. **The client decides on the page**, read back by **Pulling decisions**:
    - **Approved.** The creator's version becomes their locked brief: `brief-revision` approved
      and `locked`, roster `briefState` locked, Gate 4b `cleared` for that creator.
    - **Notes.** Write a `brief-notes` draft to the creator from the client's notes, and the
      revision `status` notes sent. The loop runs once more from step 2.
 
-Gate 4b is recorded per creator, not per round. It has no reminder of its own unless the
-campaign's setup asks for one.
+Gate 4b is recorded per creator, not per round, and each creator's Gate 4b has its own
+reminder under C6, like every other open approval.
 
 ## Agency edits on the page
 
@@ -627,7 +650,7 @@ without a second question; the send confirmation names the reminder.
 - **Approval reminder.** One task per open gate, named
   "Atlas CAS reminder: {brand} - {campaign} - {step name}", firing once at the gate's due time. Use a one-time schedule when the tools
   offer one; otherwise a cron pinned to that date and time, which the close removes. Gate 4b has
-  none unless setup asked for one.
+  one per creator, its step name "creator changes @{handle}".
 - **Weekly call.** One task named "Atlas CAS weekly sync: {brand} - {campaign}" at the C6 slot,
   converted to UTC cron (`M H * * D`, shifting the weekday when the conversion crosses
   midnight). It republishes the page and posts the agenda: where we are, what is blocking, and

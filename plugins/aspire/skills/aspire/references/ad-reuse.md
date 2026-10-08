@@ -68,10 +68,24 @@ One row per recommended cut, at most three cuts per candidate:
 | Lengths | The cut lengths the segment supports: 6s bumper, 15s, 30s |
 | Placements and specs | 9:16 at 1080x1920 for Reels, Stories and TikTok; 4:5 at 1080x1350 for feed; 1:1 at 1080x1080 where the framing allows. Note when key text sits outside the safe zone |
 | Sound | Original audio, voiceover, or music; "music rights unknown" when music is present |
-| Rights | From a saved record or a creator brief deliverable that requested rights (`search_insights` on `creator-brief-{profile}` for that creator); otherwise "Not held in Atlas: confirm usage rights before paid use" |
+| Rights | From a saved record (below, **Rights sources**); otherwise "Not held in Atlas: confirm usage rights before paid use" |
 
 Brand-owned posts show rights "Brand-owned". Creator posts never show rights as cleared
 unless a saved record says so.
+
+**Rights sources**, each read with `search_insights` on its prefix, newest first, paged to the
+end, newest finding per identity:
+
+- `creator-brief-{profile}`: a deliverable for that creator that requested rights.
+- `program-{profile}-`: the post's `rights` finding (`status` granted, with `usage`, `channels`
+  and `expiresAt`), and the creator's agreed `terms` (`usage`, `usageDays`, `usageChannels`,
+  `whitelisting`) for a post matched to their deal (`program.md`, **Working state**).
+- `cas-campaign-{profile}-`: the creator's `roster` finding with `rate` agreed, its `usage` and
+  `adPermissions` (`cas-campaign.md`, **Working state**). Usage counts only for the clips made
+  for that campaign; ad permissions "pending" is not cleared.
+
+Show which record the rights came from and the end date when it has one. A grant past its end
+date shows as expired.
 
 ## Output for each lens
 

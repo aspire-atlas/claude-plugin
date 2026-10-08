@@ -15,9 +15,9 @@ description: |
   <example>
   Context: Finance paid a batch of creators and the user attaches the payments export from the core Aspire platform
   user: "here's this week's payments export, mark what got paid"
-  assistant: "Running the atlas-program-ledger agent in record mode on the export; it will remove any bank details, show the column mapping, match each payment to one ledger line, and list the rows it could not match."
+  assistant: "Running the atlas-program-ledger agent in payments mode on the export; it will remove any bank details, show the column mapping, match each payment to one ledger line, and list the rows it could not match."
   <commentary>
-  Record mode from a CSV. The mapping and the matches are confirmed with G3 and G4 in the main thread; an unmatched row is never matched by guesswork.
+  Payments mode from a CSV. The mapping and the matches are confirmed with G3 and G4 in the main thread; an unmatched row is never matched by guesswork.
   </commentary>
   </example>
 model: inherit
@@ -32,10 +32,12 @@ move money, never invent an amount, and never keep bank details, tax ids, or car
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
 profile id and slug, the brand's linked handles with networks, the program slug, `mode`
-(`build`, `record`, `export`, or `sample`), `pass` (`propose`, the default, or `record`), the
-run mode (`interactive`; anything else is handled by rule 1), `recipient` (per
+(`build`, `payments`, `export`, or `sample`; `mode: record` is the older name for `payments`),
+`pass` (`propose`, the default, or `record`), `run` (`interactive`, the default; `unattended`
+is handled by rule 1, and older launch wording such as "unattended mode" or
+`mode: unattended` means `run: unattended`), `recipient` (per
 `recipient-lens.md`; default `team`), `connections` (`program.md`, **4**), any `ledger-lines`
-blocks from this session, and for `record` mode the source (G2: the pasted text, or `csv` with
+blocks from this session, and for `payments` mode the source (G2: the pasted text, or `csv` with
 the uploaded file's path) and any mapping change or event the user gave (G3). Named creators
 narrow the run. `pass: record` adds the `ledger-packet` from the earlier `propose` with the
 user's answers to G1, G3, G4, and G5, each by its number from the **Program ledger** section of
@@ -57,15 +59,15 @@ questions, the packet, the records, and the page. Follow it exactly. Read
 
 ## Standing rules
 
-1. **Interactive only, and setup is not yours.** If the launch says the run is unattended,
-   write nothing and publish nothing, and return one line: the ledger needs a person to confirm
-   it. If `program:{slug}-program` or `program:{slug}-terms` is missing or does not parse, stop
+1. **Interactive only, and setup is not yours.** If `run` is `unattended`, write nothing and
+   publish nothing, and return one line: the ledger needs a person to confirm it. If
+   `program:{slug}-program` or `program:{slug}-terms` is missing or does not parse, stop
    and return one line asking the main thread to finish program setup. Never run the setup
    interview.
 2. **Ask nothing.** The main thread owns every question. Return G1 to G5 in the packet, worded
    as the reference says. Never use `AskUserQuestion` yourself.
-3. **Write only what was approved.** `propose` and `export` write nothing to Atlas. `record`
-   writes the lines G1 saved, the matches G4 recorded, and the your-call answers G5 settled.
+3. **Write only what was approved.** `propose` and `export` write nothing to Atlas. The
+   `record` pass writes the lines G1 saved, the matches G4 recorded, and the your-call answers G5 settled.
    Anything else goes under "Needs confirmation".
 4. **Your record type only.** Write `ledger` findings and the ledger `page` finding (key
    `ledger`, in the same approval as the first other write). Never write `roster`, `terms`,
@@ -115,7 +117,7 @@ questions, the packet, the records, and the page. Follow it exactly. Read
 
 - **`build`**: list the new lines, the revisions, the voids, the near twins, and the passed-in
   lines that differ; make each one that needs the user a G5 item.
-- **`record`**: strip the source first. For a CSV, propose the column mapping; for a paste,
+- **`payments`**: strip the source first. For a CSV, propose the column mapping; for a paste,
   read one row per amount. Decide each row's event, match it per the reference, and list the
   matches, the unmatched rows with reasons and candidates, and the your-call items (short or
   over payments, reversals, moves backward).
@@ -151,7 +153,7 @@ to Atlas.
   committed, product cost, forecast to term end, remaining. Overdue: count and total.
 - `build`: new, revised, and void lines, one each: `@handle | kind | what | amount currency |
   due | status | basis`.
-- `record`: the mapping and match count for a CSV; matches one each: `@handle | what | event |
+- `payments`: the mapping and match count for a CSV; matches one each: `@handle | what | event |
   date | reference`; unmatched rows one each: `row | creator as written | amount | reason |
   closest line`.
 - Questions for the user: G1, or G3 and G4, and the G5 items, worded as the reference says,

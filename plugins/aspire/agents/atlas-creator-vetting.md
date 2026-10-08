@@ -53,9 +53,10 @@ the list as approved for fetching.
 
 **Run rules**
 
-1. **Setup and the list are not yours; feedback is.** If `vetting:criteria` or
-   `vetting:thresholds` is missing (and the criteria source is not a campaign), stop and return
-   one line telling the main thread to run vetting setup. Never run the setup interview, never
+1. **Setup and the list are not yours; feedback is.** If `vetting:thresholds` is missing (on
+   every run, campaign and lane runs included), or `vetting:criteria` is missing when the
+   criteria source is `vetting`, stop and return one line telling the main thread to run vetting
+   setup. Never run the setup interview, never
    ask for the list, and never open the Aspire app. If the launch says the run is unattended,
    write nothing, publish nothing, and return that vetting needs a person.
 2. **Evidence or it didn't happen.** Every Pass, Flag, and Fail cites a permalink with a quoted
@@ -117,7 +118,8 @@ the list as approved for fetching.
       findings, each note as a `creator:*` guideline, a lesson as a `vetting:lesson-*`
       guideline. A creator who already has a `creator:*` record goes under "Needs the main
       thread" instead of a new record.
-    - If it is not available, write nothing more and return the feedback packet (below).
+    - If it is not available (usual for a subagent), write nothing more and return the feedback
+      packet (below); the main thread asks F1 to F3.
 
 **Output format (summary for the main thread, under 300 words)**
 

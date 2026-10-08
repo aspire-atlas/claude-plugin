@@ -67,7 +67,7 @@ Asked by the main thread for every review. Skip any the user already answered.
 
 | # | Question | Options |
 | - | -------- | ------- |
-| P1 | Which brief should the post be checked against? | 1) The latest creator brief for {brand} (only when one exists in Atlas); 2) A campaign saved in Atlas (only when a `campaign:*-brief` exists); 3) Paste or attach the brief |
+| P1 | Which brief should the post be checked against? | 1) The latest creator brief for {brand} (only when one exists in Atlas); 2) A campaign saved in Atlas (only when a `campaign:*-brief` exists); 3) The creator's approved brief in a creator ad campaign (only when a CAS campaign has a locked brief for the creator's concept); 4) Paste or attach the brief |
 | P2 | Which deliverable is this post for? | One option per deliverable in the chosen brief, up to four, labelled by day and format. Skip when the brief has one. |
 | P3 | What are we reviewing? | 1) A creator's draft (attach the media and paste the caption); 2) A published post (paste the link). The description of option 2 says: "If Atlas doesn't hold the post yet, it fetches it. A TikTok post Atlas doesn't hold costs one paid lookup." |
 | P4 | Review {post} against {deliverable}? Findings are saved to {brand}'s Atlas memory. | 1) Run the review (Recommended); 2) Change the brief or the post |
@@ -84,6 +84,12 @@ text, whatever the source:
   finding. If the user has the brief's page link, read it with the Artifact tool's `read`
   action for the full spec grid.
 - **Campaign brief:** `campaign:{slug}-brief` plus `campaign:{slug}-criteria`.
+- **Creator ad campaign brief:** on the `cas-campaign-{profile}-{slug}` prefix (`cas-campaign.md`,
+  **Working state**), the creator's concept from their newest `roster` finding, then the newest
+  `brief` finding for that concept with `locked: true`. When the creator's newest
+  `brief-revision` is approved and `locked`, it replaces the concept's brief for that creator.
+  Read the brief page (`briefPage`) with the Artifact tool's `read` action for the full brief.
+  Never treat `campaign:{slug}-cas`, `-lane-*`, `-terms` or `-decision-defaults` as guidelines.
 - **Pasted or attached:** read it as given.
 
 Fields: `format` (and length), `angle`, `mustInclude[]`, `avoid[]`, `hashtags[]`,

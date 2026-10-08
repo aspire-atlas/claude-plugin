@@ -558,7 +558,7 @@ against competitors goes to **Market signal**.
    skips this check: the agent owns resolution and the freshness check.
 4. Launch the `atlas-profile-analyst` subagent with: `profile_id`, `profile_slug`, the tool prefix,
    `target_mode`, the handles and networks for that mode, `recipient` (**Reading the ask**;
-   `team` during onboarding), and a digest of the Phase 5 calibrations. In mode `handle`, state that the user approved the fetch so the agent does not
+   `team` during onboarding), `onboarding: true` when this is the first run at the end of onboarding, `run: unattended` for a scheduled run, and a digest of the Phase 5 calibrations. In mode `handle`, state that the user approved the fetch so the agent does not
    ask again. State that the calibrations are for classification and relevance only: a named
    account is never benchmarked against the brand's own account or the brand's competitors.
    It is compared against its **own** peers — accounts the user named, or "like" accounts in the
@@ -568,7 +568,7 @@ against competitors goes to **Market signal**.
    `list_post_search_fields` first for the live field census), resolves and refreshes a named
    handle with `lookup_creators` when Atlas holds nothing or the record is over 24 hours old,
    then writes findings back with `append_insights` under one `runKey` per run (`own`:
-   `onboarding-{profile}-{date}`; `handle`: `account-review-{profile}-{handle}-{date}`).
+   `onboarding-{profile}-{date}` for the onboarding run, else `account-review-{profile}-own-{date}`; `handle`: `account-review-{profile}-{handle}-{date}`).
 6. Present the subagent's executive summary: headline, 3 to 5 insights with numbers, next
    week's three content pushes (mode `own`), 2 to 3 ranked next steps, data gaps. Offer the
    creator brief in one line when a push needs creators. In mode `handle`, lead the data gaps with the freshness the
@@ -660,6 +660,9 @@ conflicts, budget tier). Show the first-pick creators inline as creator cards fr
 In campaign mode, after the brief, offer the launch pulse (**Readouts**, **Launch pulse**) and
 say that each draft can go through **Content review** as it arrives.
 
+A CAS campaign's master briefs use `brief_mode` `creator-ads`, launched only from **CAS
+campaign**, Run, row 10 (`references/cas-campaign.md`).
+
 ---
 
 ## PPA pitch (casting deck for paid partnership ads)
@@ -749,7 +752,7 @@ maintains a pipeline across weeks and teammates.
 Ask once with `AskUserQuestion`: "What should the discovery agent do?" Options: "Fill the shortlist to
 {target}", "Show the current shortlist", "Record decisions on the shortlist", "Change setup".
 Then launch `atlas-creator-discovery` with: tool prefix, `profile_id`, `profile_slug`, the campaign slug, the
-brand handles and networks, run mode `interactive`, and `recipient` (**Reading the ask**;
+brand handles and networks, run mode `interactive`, `job` (`shortlist` for "Show the current shortlist", else `discover`), and `recipient` (**Reading the ask**;
 `growth` when the ask is for more creators like the ones working). Relay its summary, the page link, and
 the numbered range the user can decide against. Show the candidates added this run inline as
 creator cards from the agent's `creator-cards` block (top six by fit score, badged with their
@@ -763,11 +766,15 @@ never reappear; accepted ones free their slot for the next run.
 
 ### Schedule (two schedules, one pass)
 
+A CAS campaign's discovery runs only from **CAS campaign** (`references/cas-campaign.md`): when
+the campaign's `campaign:{slug}-brief` has the `type: creator-ads` line, never schedule
+discovery for it; offer the CAS weekly call instead.
+
 After the first successful run, or whenever the user asks, offer with `AskUserQuestion`: "Set
 up the recurring discovery now?" Options: "Yes, discovery and shortlist (Recommended)", "Discovery
 only", "Shortlist only", "Not now". On yes, follow the same mechanics as **Readouts**,
 Schedule: read the times and timezone from `campaign:{slug}-cadence`, convert to UTC cron,
-create one task per job with the session's scheduled-task tools, confirm both in one
+create one task per job with the session's scheduled-task tools, named "Atlas creator discovery: {brand} - {campaign}" (`job: discover`) and "Atlas creator shortlist: {brand} - {campaign}" (`job: shortlist`) per `references/creator-discovery.md`, **Jobs and task names**, confirm both in one
 `AskUserQuestion` before creating them, and tell the user the tasks run in fresh sessions so
 Aspire Atlas must be enabled for scheduled tasks. Prompts must say "do not ask questions",
 name the brand by its exact Atlas profile `name` and the campaign slug, and state no date.
@@ -919,8 +926,8 @@ setup records. Full detail lives in `references/outreach.md`.
    When the mailbox is not connected, say once: "Drafts will be ready to copy here and on the
    outreach page." and offer the connection per `references/program.md` **4**.
 3. Launch `atlas-creator-outreach` with: tool prefix, `profile_id`, `profile_slug`, brand
-   handles and networks, the program slug, `mode` (`first-touch` or `follow-up`), run
-   `interactive`, `connections`, `recipient`, and the O1 and O2 answers with the named creators.
+   handles and networks, the program slug, `mode` (`first-touch` or `follow-up`),
+   `run: interactive`, `connections`, `recipient`, and the O1 and O2 answers with the named creators.
 4. Relay the page link and the headline, show each draft ready to copy from the `drafts` block
    (one block per creator and channel), and name any bracketed blanks to fill. When the agent
    returns a `mail-drafts` block, ask O2 then, create the drafts in the mailbox yourself, and
@@ -954,9 +961,12 @@ sent in the same write.
    answer. It writes the `reply` and `roster` findings and republishes the outreach page.
 5. Offer the single next move from the packet: "Make offers" (`atlas-creator-negotiation`,
    `mode: offer`, for interested paid, ambassador, and affiliate creators), "Answer @handle's
-   counter" (`atlas-creator-negotiation`, `mode: counter`), "Collect @handle's details"
+   counter" (`atlas-creator-negotiation`, `mode: counter`), "Record @handle's deal"
+   (`atlas-creator-negotiation`, `mode: counter`, for paid, ambassador, and affiliate creators
+   who accepted the offer), "Collect @handle's details"
    (`atlas-product-fulfillment`, with the reply text, for details replies and gifting creators
-   who accepted), "Request rights from @handle" (`atlas-content-sourcing`), or the answer to a
+   who accepted), "Record @handle's rights answer" (`atlas-content-sourcing`, `mode: replies`;
+   `mode: rights` when no request is open yet), or the answer to a
    question the user types.
 
 **Schedule**
@@ -994,10 +1004,11 @@ one line that a deal needs a person to approve it, and stop.
 
 1. Read the program's setup records and working state as the **Program manager** does. Missing or
    unparseable program records: run **Program setup** first. Pick the mode: `offer` for
-   interested creators with no open terms, `counter` for a counter or deal question (or a reply
-   the user pastes here), `renewal` for ambassadors the roster review handed over (pass its
-`renewals` block), `change` for a change to an agreed deal from the affiliate manager, the roster
-manager, or the user (pass what changes, from, to, and who asked).
+   interested creators with no open terms, `counter` for a counter or deal question, an accepted
+   offer to record as the deal (or a reply the user pastes here), `renewal` for ambassadors the
+   roster review handed over (pass its `renewals` block), `change` for a change to an agreed
+   deal from the affiliate manager, the roster manager, or the user (pass what changes, from,
+   to, and who asked).
 2. A pasted reply that names no roster creator is asked about once. Several creators run in one
    launch.
 3. Launch `atlas-creator-negotiation` with: tool prefix, `profile_id`, `profile_slug`, brand
@@ -1110,8 +1121,7 @@ channel post.
 parcels past their window. Offer **Track** to record them.
 
 **Schedule.** P9 "Daily shipping check (only with product)" creates "Atlas program shipping
-check: {brand} - {program}" (`program.md`, **8**), launching the agent with `mode: status`, run
-mode `unattended`. It reads Atlas, the store's orders, and the order form, republishes the order
+check: {brand} - {program}" (`program.md`, **8**), launching the agent with `mode: status`, `run: unattended`. It reads Atlas, the store's orders, and the order form, republishes the order
 form, and posts the counts to the saved routing. It records nothing, drafts nothing, places
 nothing, and writes no `fulfillment`; it may write only the `page` finding
 (`fulfillment.md`, **Status mode**).
@@ -1187,7 +1197,7 @@ and records it through a `record` pass with T1.
 
 Follow **Readouts**, Schedule, for the mechanics, and `program.md`, **8**, for the task name
 "Atlas program posting check: {brand} - {program}" (daily), launching
-`atlas-deliverable-tracker` with `mode: unattended`. The P9 "Daily posting check" answer is the
+`atlas-deliverable-tracker` with `run: unattended`. The P9 "Daily posting check" answer is the
 standing approval: scheduled runs match new posts, save the statuses a clear match settles and late or missing from the date alone,
 republish the tracker page, and post the late, missing, and needs-a-fix counts with handles to
 the saved routing. They never ask, draft, chase, fetch a post, confirm a match, waive, or move a
@@ -1297,9 +1307,10 @@ say in one line that the review needs a person to approve it, and stop.
 
 ### Run
 
-1. Read the program's setup records and working state as the **Program manager** does. Missing
-   or unparseable program records: run **Program setup** first. A program with no creator at
-   Agreed or later: say so in one line and offer the next step from the dispatch instead.
+1. Read the program's setup records and working state as the **Program manager** does. The
+   review needs the program, terms, and outreach records (`-program`, `-terms`, `-outreach`);
+   missing or unparseable: run **Program setup** first. A program with no creator at Agreed or
+   later: say so in one line and offer the next step from the dispatch instead.
 2. Launch `atlas-roster-manager` with: tool prefix, `profile_id`, `profile_slug`, brand handles
    and networks, the program slug, `mode: review`, `pass: propose`, `connections`, and
    `recipient` (`team` by default; `growth` when the ask is about where to spend). Pass
@@ -1335,7 +1346,8 @@ say in one line that the review needs a person to approve it, and stop.
 6. For each K2 answer of pause or drop, write the `rosterChange` row from the packet with
    `append_insights` as a new `roster` finding (stage Paused or Dropped, `yourCall` cleared,
    `detail.by` "Program manager"). The K2 answer is that write's confirmation. "Keep" writes
-   nothing; "Decide later" leaves it open.
+   nothing. "Decide later" writes the creator's newest `roster` row again with `yourCall` set to
+   the question and `yourCallDeferredAt` (**Influencer program**, Decide later).
 7. On K3 "Start the renewals", launch `atlas-creator-negotiation` with `mode: renewal`, `pass:
    propose`, the renewal creators, and the `renewals` block, after step 5 has written the review
    (or straight away when K1 was "Page only"). Then follow **Creator negotiation**.
@@ -1389,7 +1401,7 @@ details; not saved") and never repeat what was removed. Never ask for them.
 1. When nothing is attached or pasted yet, ask **G2**, header "Source": "What should I record?"
    Options: "I'll paste invoices or payments", "I'll upload an export (CSV) from Aspire or our
    finance tool". Then wait for the paste or the file.
-2. Launch with `mode: record`, `pass: propose`, and the pasted text or the file's path.
+2. Launch with `mode: payments`, `pass: propose`, and the pasted text or the file's path.
 3. Relay the page link, the removed-details line when there is one, the matches one per line,
    and the unmatched rows with their reasons. Then ask, your-call items first and at most four questions per call (**Guardrails**, Pickers):
    - **G5**, header "Your call", one per item: an unmatched row with a close line, a short or
@@ -1443,7 +1455,7 @@ and the Program manager offers that flow as the next step.
      recipients: "Post the dashboard summary to {channel} and email {recipients}?" Options:
      "Post (Recommended)", "Page only this time".
 3. Launch `atlas-program-dashboard` with the tool prefix, `profile_id`, `profile_slug`, the
-   brand's linked handles and networks, the program slug, `mode: interactive`, `connections`,
+   brand's linked handles and networks, the program slug, `run: interactive`, `connections`,
    `recipient`, and the B1 and B2 answers, and end with the decision-audit line. B1 is the write
    confirmation; B2 is the delivery confirmation.
 4. Relay the page link, the headline, the attention list with each item's next step, and the
@@ -1461,7 +1473,7 @@ and the Program manager offers that flow as the next step.
 
 Follow **Readouts**, Schedule, for the mechanics, and `references/program.md` **8** for the task
 name "Atlas program dashboard: {brand} - {program}" (weekly, at the day and time saved in the
-program's cadence), launching `atlas-program-dashboard` with `mode: unattended`. Prompt:
+program's cadence), launching `atlas-program-dashboard` with `run: unattended`. Prompt:
 
 > Run the Atlas program dashboard for {brand}, program {program name}, handles {handles and
 > networks}, using the saved program records. Read the date from the shell clock. Do not ask
@@ -1515,16 +1527,35 @@ rights. Full detail lives in `references/content-library.md`.
 6. **Hand-offs.** When the agent lists assets worth requesting or rights to renew, offer once
    with `AskUserQuestion`, header "Next": "Request rights for these {n} posts?" Options:
    "Request rights (Recommended)", "Not now". The first launches `atlas-content-sourcing` with
-   the asset list. The library never drafts a request itself.
+   the asset list: `mode: rights` for the worth-requesting rows, `mode: renewal` for the rights
+   to renew. The library never drafts a request itself.
 
 ### Schedule
 
 Follow **Readouts**, Schedule, for the mechanics, and `program.md`, **8**, for the task name
 "Atlas program library refresh: {brand} - {program}" (weekly), launching
-`atlas-content-library` in unattended mode. The P9 "Weekly content library refresh" answer is
-the standing approval; it lets scheduled runs save `asset` and `page` findings. Unattended runs
-never ask, never write rights, and post only to the saved routing. Schedule it only after the
-library has been built once interactively and its `page` finding exists.
+`atlas-content-library` with `mode: build`, `run: unattended`. The P9 "Weekly content library
+refresh" answer is the standing approval; it lets scheduled runs save `asset` findings.
+Unattended runs never ask, never write rights, and post only to the saved routing. Schedule it
+only after the library has been built once interactively and its `page` finding exists.
+
+**The whole brand.** A library built for "All our programs and everything about {brand}" has no
+P9. After its first saved build, offer once with `AskUserQuestion`, header "Schedule": "Refresh
+the {brand} content library every week on {day} at {time} {timezone}? Scheduled runs save the
+catalog to Atlas and post the expiring-rights alert to your programs' saved channels without
+asking each time." Options: "Schedule it (Recommended)", "Not now"; the free text takes another
+day or time. The confirm writes the
+`library:cadence` calibration with `append_calibration` (`policy`, `{area: "cadence", cadence:
+"weekly", body: "library weekly <DAY HH:MM>, <IANA timezone>"}`, `provenance: "interview"`; a
+`key-exists` follows the Phase 5 supersede rule) and creates the task "Atlas content library
+refresh: {brand}", launching `atlas-content-library` with `mode: build`, `run: unattended`, and
+program `all`. That record is the standing approval for the refresh, the `asset` findings, and
+the alert. Prompt:
+
+> Run the Atlas content library for {brand}, all programs, handles {handles and networks}.
+> Launch atlas-content-library with mode build, run unattended, program all. Use the saved
+> records. Read the date from the shell clock. Do not ask questions. Write no rights records
+> and send nothing to creators.
 
 ---
 
@@ -1549,7 +1580,7 @@ requests need a person to approve them, and stop.
 
 1. Read the program's setup records as the **Program manager** does. Missing or unparseable:
    run **Program setup** first. Pick the mode: `rights` for posts the user or the library named,
-   `renewal` for what is expiring, `ugc` for new content, `record` for a creator's answer.
+   `renewal` for what is expiring, `ugc` for new content, `replies` for a creator's answer.
 2. `renewal` only, unless the user named the window: ask S0, header "Horizon": "Which rights
    should we look at for {program}?" Options: "Ending in the next 30 days (Recommended)", "Next
    60 days", "Next 90 days". Ask too, in the same call, header "In ads": "Are any of these
@@ -1571,8 +1602,9 @@ requests need a person to approve them, and stop.
      "Page only".
    - S2, header "Your call", one per open item, exactly as the agent worded it: the recommended
      answer first (Recommended), the alternatives, "Decide later".
-   - S3 (`record`), header "Record": "Record these {n} replies for {program}?" with each named
-     in one line, including the proof ("@a: granted paid usage on Meta ads for 90 days from
+   - S3 (`replies`), header "Record": "Record these {n} replies for {program}?" (add "and pass
+     {k} fees owed to the ledger" when a grant carries a fee) with each named in one line,
+     including the proof ("@a: granted paid usage on Meta ads for 90 days from
      Oct 7, $250, proof: email reply Oct 7"). Options: "Record them (Recommended)", "Change
      something".
    - S4, header "Mailbox", only when the program's mail setting names a live mailbox that can
@@ -1586,10 +1618,10 @@ requests need a person to approve them, and stop.
    write confirmations, and cover the sourcing page's `page` finding on first publish; S4 is
    the mailbox confirmation.
 6. Relay what was written. Say plainly for every grant given only by DM or comment: "Get this
-   in writing before paid use." When the agent returns a `ledger-lines` block, offer once,
-   header "Ledger": "Add {n} fees owed to the {program} ledger?" Options: "Add them
-   (Recommended)", "Not now". "Add them" launches `atlas-program-ledger` with the block.
-   Sourcing never writes the ledger itself.
+   in writing before paid use." When the agent returns a `ledger-lines` block, pass it to
+   `atlas-program-ledger` as its next step, as the affiliate manager's are: S3 approved the
+   hand-off, so there is no extra picker, and the ledger's G1 confirms the lines before
+   they are saved. Sourcing never writes the ledger itself.
 7. Sending follows **Influencer program**, Drafts: only when the user asks in this session,
    after the picker that names every recipient. "Sent them" marks drafts sent with one picker.
    Grants recorded after this point show on the next content library run.

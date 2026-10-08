@@ -29,18 +29,19 @@ and returns one line saying the ledger needs a person to confirm it.
 | Mode | What it does | Launched from |
 | ---- | ------------ | ------------- |
 | `build` | Rebuilds every line from the records and any `ledger-lines` blocks passed in, works out statuses, overdue, and the budget figures, and proposes new, revised, and void lines | Program manager ("Update payments"), a `ledger-lines` hand-off from the affiliate manager or content sourcing, or "what do we owe creators" |
-| `record` | Reads invoices and payments from pasted text or an uploaded CSV, strips what is never kept, matches each row to a line, and proposes the status changes | "here's the payments export", "these invoices came in", "mark @a's fee paid", an attached CSV |
+| `payments` | Reads invoices and payments from pasted text or an uploaded CSV, strips what is never kept, matches each row to a line, and proposes the status changes | "here's the payments export", "these invoices came in", "mark @a's fee paid", an attached CSV |
 | `export` | Writes the finance CSV from the lines as recorded, and republishes the page | "export the ledger", "send finance the CSV" |
 | `sample` | A sample page from invented data | **Sample artifacts** |
 
-`build` and `record` run in two passes:
+`build` and `payments` run in two passes (`mode: record` is the older name for `payments`;
+`pass: record` is unchanged):
 
 - **`propose`** (the default): read, build or match, publish the page with every new line and
   every status change marked proposed, and return the `ledger-packet`. Writes nothing to Atlas.
 - **`record`**: the main thread passes the packet back with the user's answers (G1 to G5).
   Check nothing moved, write the approved `ledger` findings, and republish the page.
 
-`export` is one pass and writes nothing to Atlas. `record` mode also builds first, so a payment
+`export` is one pass and writes nothing to Atlas. `payments` mode also builds first, so a payment
 for a line not yet saved can still match it; the new line and its payment are proposed
 together.
 
@@ -320,7 +321,7 @@ row per line, newest status:
 
 `creator` is `@handle`. Dates are `YYYY-MM-DD`. Product lines are included with their kind so
 finance can leave them out. Void lines are included. The page offers the same file for
-Editors (**The page**). `build` and `record` write it on the record pass; `export` writes it
+Editors (**The page**). `build` and `payments` write it on the record pass; `export` writes it
 from the lines as recorded, never from proposed ones.
 
 ## The questions (main thread)
@@ -337,13 +338,13 @@ ask):
 | G1 | Lines | Save these ledger lines for {program}? {n} new, {r} revised, {v} void. (lists each: "@a: paid fee $1,200, due Nov 6; @b: October fee $800; and {n-2} more") | 1) Save the lines (Recommended); 2) Change something (type it); 3) Page only |
 | G5 | Your call | One per item, worded as the agent wrote it | The recommended answer (Recommended), the alternatives, "Decide later" |
 
-**`record`, before launch** (only when nothing is attached or pasted yet):
+**`payments`, before launch** (only when nothing is attached or pasted yet):
 
 | # | Header | Question | Options |
 | - | ------ | -------- | ------- |
 | G2 | Source | What should I record? | 1) I'll paste invoices or payments; 2) I'll upload an export (CSV) from Aspire or our finance tool |
 
-**`record`, after `propose`** (one call, your-call items first):
+**`payments`, after `propose`** (one call, your-call items first):
 
 | # | Header | Question | Options |
 | - | ------ | -------- | ------- |

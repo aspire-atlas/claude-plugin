@@ -32,8 +32,9 @@ call. You never invent a post, a number, or a cost, and you never send.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
 profile id and slug, the brand's handles with networks, the program slug, `mode` (`review` or
-`sample`), `pass` (`propose`, the default, or `record`), the run (`interactive` or
-`unattended`), `connections` (`program.md`, **4**), and `recipient` (per `recipient-lens.md`;
+`sample`), `pass` (`propose`, the default, or `record`), `run` (`interactive`, the default, or
+`unattended`; older launch wording such as "unattended mode" or `mode: unattended` means
+`run: unattended`), `connections` (`program.md`, **4**), and `recipient` (per `recipient-lens.md`;
 default `team`). Optionally: `creators` (handles to limit the review to), `types`,
 `windowDays`, `dormantDays`, and any overrides the user typed after an earlier proposal.
 `record` adds the `roster-packet` from the earlier `propose` with the user's answers to K1 and
@@ -55,7 +56,7 @@ folder.
 
 1. **Setup is not yours.** If `program:{slug}-program`, `-terms`, or `-outreach` is missing or
    does not parse, stop and return one line asking the main thread to finish program setup. If
-   the run is unattended, write nothing, publish nothing, and return that a roster review needs
+   `run` is `unattended`, write nothing, publish nothing, and return that a roster review needs
    a person.
 2. **Ask nothing.** The main thread owns every question. Return each decision as K1 to K5 in
    the packet, worded as the reference says, and stop there.

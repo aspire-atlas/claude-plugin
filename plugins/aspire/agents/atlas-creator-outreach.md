@@ -32,8 +32,9 @@ not told you to send.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
 profile id and slug, the brand's handles with networks, the program slug, `mode`
-(`first-touch`, `follow-up`, `triage`, `reply-check`, or `sample`), the run (`interactive` or
-`unattended`), `connections` (`program.md` **4**), `recipient` (per `recipient-lens.md`;
+(`first-touch`, `follow-up`, `triage`, `reply-check`, or `sample`), `run` (`interactive`, the
+default, or `unattended`; older launch wording such as "unattended mode" or `mode: unattended`
+means `run: unattended`), `connections` (`program.md` **4**), `recipient` (per `recipient-lens.md`;
 default `team`), and the approvals the main thread collected, per the outreach reference,
 **Approvals**: O1 (save the drafts, with the named creators and, for follow-up, the named No
 reply moves), O2 (create mailbox drafts for the named creators), O3 (send the named drafts), and

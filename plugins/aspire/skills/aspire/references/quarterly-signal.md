@@ -44,6 +44,8 @@ the prior quarter:
 | Creator discovery | `creator-discovery-{profile}` | Candidates surfaced, accepted, rejected per campaign |
 | Market signal | `market-signal-{profile}` | Share of voice by week, features won and lost |
 | Ad reuse | `ad-reuse-{profile}` | Licensing candidates |
+| Account reviews | `onboarding-{profile}` and `account-review-{profile}` | Account health findings, content pushes (`detail.push: true`) and whether a weekly readout closed them |
+| Post analyses | `post-analysis-{profile}` | Posts analyzed for sponsorship or reuse, and their verdicts |
 | Program dashboards | `program-{profile}-` (every program), `detail.recordType` `snapshot` only | Per program: posts, creators, engagement, deliverables on time, assets cleared for ads, ledger figures and sales per currency, goals with pace |
 
 Fresh aggregates, filter path:
@@ -109,6 +111,9 @@ Unattended runs publish the page and write nothing, because no setup step approv
 findings; they deliver nowhere.
 
 ## Unattended runs
+
+No setup step or scheduled task creates one today. A run is unattended only when a scheduled
+task launches the agent with `run: unattended`; every other run is interactive.
 
 Never ask, never write findings, never deliver. Default to the last completed calendar quarter. No spend means the cost tiles are
 left out and named as a gap. No discovery, no destruction. An unauthorized error publishes a

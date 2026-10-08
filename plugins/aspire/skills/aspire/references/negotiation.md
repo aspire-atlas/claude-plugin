@@ -22,7 +22,7 @@ Interactive only. No schedule runs it, and an unattended run never does.
 
 | Mode | Who it covers | Launched from |
 | ---- | ------------- | ------------- |
-| `offer` | Approved creators whose newest `reply` is classed interested, on a paid, ambassador or affiliate deal, with no open `terms` yet | Program manager |
+| `offer` | Creators at Replied whose newest `reply` is classed interested, on a paid, ambassador or affiliate deal, with no open `terms` yet | Program manager |
 | `counter` | Creators whose newest `reply` is classed counter or question about the deal, or `accepted` while our offer is out, or a reply the user pastes straight in | Program manager, or the user pasting a reply |
 | `renewal` | Ambassadors handed over by `atlas-roster-manager` with a renewal inside the notice window | Program manager, after the roster review |
 | `change` | Creators with an agreed deal the brand wants to change: raise commission, move to hybrid, promote an affiliate to paid, extend usage | `atlas-affiliate-manager`, `atlas-roster-manager`, or the user |
