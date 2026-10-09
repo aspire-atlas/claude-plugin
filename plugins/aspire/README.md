@@ -8,6 +8,7 @@ Onboarding for the Atlas platform (https://atlas.aspire.io). Takes a new or retu
 | --------- | ---- | ------- |
 | MCP server | `Aspire Atlas` | Atlas data connection at `https://atlas.aspire.io/mcp` (HTTP, OAuth). Tools appear as `mcp__Aspire_Atlas__*`. |
 | MCP server | `Aspire Atlas Organization Admin` | Support only. Organization members at `https://atlas.aspire.io/mcp/admin-organization` (HTTP, OAuth). Tools appear as `mcp__Aspire_Atlas_Organization_Admin__*`. Used only when someone asks; every invite is confirmed. |
+| MCP server | `Meta Ads` | Optional. Meta's hosted ads MCP server at `https://mcp.facebook.com/ads` (HTTP, OAuth with Facebook through Aspire's Meta app). Run by Meta, not Aspire. Tools appear as `mcp__Meta_Ads__*`. |
 | Skill | `/aspire:aspire` | Six phase onboarding flow: connection check, auth and org selection, org status, profile and social connect, brand context capture, first insights |
 | Skill | `/aspire:org-admin` | Support only. Lists organization members and pending invitations and sends confirmed invitations when someone asks. Uses Aspire Atlas Organization Admin |
 | Agent | `atlas-profile-analyst` | Analyzes an account handle the brand manages and ideates next week's content pushes: cadence, engagement, top posts and what they share, format mix, rate benchmarks against competitors Atlas indexes, then three pushes with day, format, angle, and target. Runs for first insights in Phase 6 and any time after. Also reviews any public Instagram or TikTok handle the user names, resolving and refreshing it in Atlas when the held data is over a day old. |
@@ -36,10 +37,10 @@ Onboarding for the Atlas platform (https://atlas.aspire.io). Takes a new or retu
 
 ## Setup
 
-1. Install the plugin. The Aspire Atlas and Aspire Atlas Organization Admin connectors are bundled; do not add either again as a custom connector.
+1. Install the plugin. The Aspire Atlas, Aspire Atlas Organization Admin, and Meta Ads connectors are bundled; do not add any of them again as a custom connector.
 2. Start a new chat with Aspire Atlas enabled, sign in when prompted, and type `/aspire:aspire`.
 
-No environment variables are required. Authentication is handled by each connector's OAuth flow. Aspire Atlas Organization Admin only needs a sign in when someone lists or invites members; onboarding and every other flow use Aspire Atlas alone.
+No environment variables are required. Authentication is handled by each connector's OAuth flow. Aspire Atlas Organization Admin only needs a sign in when someone lists or invites members; onboarding and every other flow use Aspire Atlas alone. Meta Ads is optional and only needs a Facebook sign in if you want Meta's ads tools; it shows as needing authentication until then.
 
 On a Team or Enterprise plan, a Claude workspace admin adds each bundled connector once for the team: Customize, then Plugins, then Aspire Atlas, then the Connectors tab, then **Add for your team**. Until that's done, `/aspire:org-admin` explains the step instead of listing members.
 
@@ -158,7 +159,7 @@ Unlike the readouts, a scheduled discovery run does start discovery work in Atla
 
 ## Other services this plugin works with
 
-Aspire Atlas works alongside other apps and services you already use. The plugin bundles only Aspire's own connectors. It reaches everything else through connections, tools, and accounts you set up and control, and each of those services has its own terms and privacy policy.
+Aspire Atlas works alongside other apps and services you already use. The plugin bundles Aspire's own connectors and, as an optional extra, Meta's ads MCP server (Meta Ads), which Meta runs under its own terms. It reaches everything else through connections, tools, and accounts you set up and control, and each of those services has its own terms and privacy policy.
 
 | Service | What the plugin uses it for | When |
 | ------- | --------------------------- | ---- |
