@@ -439,13 +439,16 @@ to a caller who does not have it.
    explains the sign-in steps and carries one button that opens the link in the browser. Build
    and render it exactly per `references/connection-card.md` (widget tool, template, one-line
    follow-up text). Never paste the raw link into the reply when the card rendered. If the widget
-   tool is unavailable, fall back to a plain clickable link with the same one-line instruction.
+   tool is unavailable or fails, use the card's **Fallback** (plain text, never a Markdown link).
 3. Immediately call `connect_channel` again with only `elicitationId`. Each call long-polls
    about 30 seconds. Keep calling until the response reports a terminal status or its own
    `message` says to stop and check with the user. Never stop on a fixed call count. Never
-   restart with `channel` + `asProfileId` on a timeout; that issues a second link.
+   restart with `channel` + `asProfileId` on a timeout; that issues a second link. When the
+   `message` says to stop, follow the card's **Expired links** rule: say the link may have
+   expired and offer a fresh one.
 4. If status is awaiting-selection, render the follow-up variant of the connection card with
-   `resultUrl` and the "Finish picking accounts" button (the original link cannot be reopened).
+   `resultUrl` and the "Finish picking accounts" button (the original link cannot be reopened),
+   or its text fallback with `resultUrl` in the code block.
 5. Terminal statuses:
    - `complete`: read `outcome`. Confirm each entry in `linkedAccounts` by handle, and list
      any discovered but unselected accounts as available to add later. With `outcome`
@@ -472,8 +475,14 @@ to a caller who does not have it.
    A `none-linked` result does not count.
    While polling, the only user-facing output is the connection card (once per link) and, if a poll times out,
    one short line such as "Still waiting on the {network} sign in." Never fill the wait with
-   questions: the user is in another tab finishing the sign in.
-7. When every requested channel has reached a terminal status, proceed to Phase 5.
+   questions: the user is in another tab finishing the sign in. The one exception is the card's
+   **Expired links** question, asked only when a poll's `message` says to stop.
+7. When every requested channel has reached a terminal status, or the user chose to skip it
+   (**Expired links** in the card's reference), proceed to Phase 5 if at least one channel is
+   `complete` with a linked account. If none is, say nothing was connected and ask with
+   `AskUserQuestion`: "Try connecting again (Recommended)" / "Connect later". "Connect later"
+   ends onboarding here with one line: "Run /aspire:aspire when you're ready to connect an
+   account." Never move on to Phase 5 without a linked account.
 
 ### 4.3 Seed the watch-list (optional, quick)
 
