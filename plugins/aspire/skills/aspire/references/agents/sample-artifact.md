@@ -118,6 +118,17 @@ print(json.dumps({"holiday": name, "date": day.isoformat(), "year": day.year, "d
 | `atlas-market-signal` | What creators said about the sample brand against one sample competitor ("Copper Pot Co. (sample)") | 8 posts |
 | `atlas-quarterly-signal` | The quarter that held the holiday, for leadership | 3 KPIs |
 | `atlas-ppa-pitch` | A first-pitch casting deck for the holiday campaign | 2 groups, 3 lanes each |
+| `atlas-creator-outreach` | The holiday program's outreach pipeline: drafts on each channel, replies to record, reply rate | 4 creators, one per program type, 2 replies |
+| `atlas-creator-negotiation` | The holiday program's negotiation page: offer, counter and recommended move per creator, with the terms summary | 3 creators, 1 your call |
+| `atlas-product-fulfillment` | A program's order form for the holiday gifting push, with an order sheet | 4 creators, 2 sheet rows |
+| `atlas-content-library` | A content library for the holiday campaign: cleared-for-ads shelf, expiring rights, worth requesting, filterable grid | 12 assets, 3 expiring |
+| `atlas-affiliate-manager` | A month of affiliate sales for the holiday campaign: leaderboard, codes, sales and posts timeline, commission lines | 4 creators, 2 sheet rows |
+| `atlas-content-sourcing` | A sourcing tracker for the holiday campaign: rights requests by status, expiring rights, an asset request, grants this month | 5 creators, 1 asset request |
+| `atlas-deliverable-tracker` | The holiday gifting and paid push's posting tracker: owed vs posted, a late Reel, a disclosure fix, a gifted post expected | 4 creators, 6 deliverables |
+| `atlas-roster-manager` | The holiday program's roster review: segment board, quota bars, renewals due, re-engage list | 6 creators, 2 renewals |
+| `atlas-program-ledger` | The holiday campaign's ledger: budget, committed, paid, remaining, burn by month, lines, an overdue invoice, an unmatched payment | 4 creators, 1 unmatched row |
+| `atlas-campaign-orchestrator` | The holiday brand's Next actions: one program and one creator ad campaign, actions across the buckets, two waiting on a decision, one done, one changed since approval, the stage strips | 8 actions |
+| `atlas-program-dashboard` | One sample program's dashboard: goals with pacing, the funnel, deliverables, content, performance, spend in the team view, roster health, the attention list | 8 creators, 4 posts |
 
 An agent not in this table builds its own page at the smallest scale that shows every section.
 

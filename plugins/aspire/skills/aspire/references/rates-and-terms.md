@@ -35,6 +35,10 @@ questions, one `AskUserQuestion` each, then confirm the pair once and write the 
 | T1 | What do creators post organically on their own accounts? | 1) Nothing organic, ads only (Recommended); 2) One organic post of one clip; 3) I'll set the terms (type them) |
 | T2 | What uplift does whitelisting add to a creator's fee? | 1) 20% of the fee (Recommended); 2) 30% of the fee; 3) No uplift, included in the fee |
 
+When the campaign's concepts came from a saved pitch (`cas-campaign.md`, **Carrying the pitch
+forward**), T1's first option is the pitch's organic posts, marked "(from the pitch,
+Recommended)", and "Nothing organic, ads only" follows without the Recommended mark.
+
 The terms object:
 
 ```json

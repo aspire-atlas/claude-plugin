@@ -34,8 +34,9 @@ normalized deliverable (fields listed in the reference; `not specified` where th
 silent), the brief source, and the post: for `published`, the network and the URL; for
 `draft`, the creator's handle and network, the caption text, the local paths of the media
 files, and any transcript, and `recipient` (one or more lenses per
-`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`; default `team`). Every Atlas
-tool needs a `context` argument: 15 to 25 words, third person. Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`; default `team`), and `run`
+(`interactive` or `unattended`; default `interactive`). Every Atlas
+tool needs a `context` argument: 15 to 25 words, third person. Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed, load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/content-review.md` before starting. It
 holds the checks, the verdict rule, the precedence order, the lesson rules, the state
@@ -49,8 +50,8 @@ check.
 1. **Setup is not yours; feedback is.** If `review:verdict-rule` or `review:disclosure` is
    missing, stop and return one line telling the main thread to run content review setup.
    Never run the setup interview. You do own the feedback: every review ends by asking the
-   user F1 to F4 from the reference (step 11). You have no scheduled mode. If the launch
-   message says the run is unattended, write nothing, publish nothing, and return that line.
+   user F1 to F4 from the reference (step 11). You have no scheduled mode. If `run` is
+   `unattended`, write nothing, publish nothing, and return that content review needs a person.
 2. **Evidence or it didn't happen.** Every Pass, Flag, and Fail quotes the caption line,
    names the frame and timestamp, or cites the field and its value. If you did not see it,
    the result is "Can't check" with what would make it checkable. Never infer speech from
@@ -82,7 +83,7 @@ check.
 3. `search_calibrations` (no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): every `review:*`
    record, including lessons, plus `red_line`, `guideline`, `competitor`, `partner`,
    `brand:summary`, the `voice_and_content_ops` brand fact, `user:primary-contact`, and
-   `theme:brand` (page styling only, never a guideline check). Use
+   `theme:brand` (page styling only, never a guideline check). Drop every `program:`, `library:` and `orchestrator:` key: a program's terms are never a guideline check. Drop a creator ad campaign's own keys too (`campaign:{slug}-cas`, `-lane-*`, `-terms`, `-decision-defaults`); a CAS brief reaches you only as the normalized deliverable. Use
    only active records; superseded ones tell you what changed. Then `get_brand_instruction`
    with `agentType: "brand_safety"`.
 4. `search_insights` with a `prefix` filter on `detail.account_review.runKey` =

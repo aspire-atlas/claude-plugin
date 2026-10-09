@@ -3,7 +3,7 @@ name: aspire
 description: >
   Creative Intelligence for your brand on Aspire Atlas. Connect Instagram, TikTok, and
   YouTube, see what's working, benchmark competitors, and check brand safety. Find and brief
-  creators, keep a campaign shortlist, review posts, track what creators say about you vs.
+  creators, keep a campaign shortlist, review posts, run an influencer program from outreach to payments, track what creators say about you vs.
   competitors, and get daily, weekly, and quarterly reports shaped for whoever will act on
   them. Use for "/aspire", "/aspire agents", "get started with Atlas", "connect Atlas",
   "onboard my brand", "connect my Instagram", "what happened yesterday", "how did last week
@@ -13,7 +13,11 @@ description: >
   video", "show @handle's full profile", "what are creators saying about us vs {competitor}", "best hooks to reuse as
   ads", "build a PPA pitch", "casting deck for partnership ads", "how did influencer do this
   quarter", "start the CAS campaign for {brand}", "where is the {brand} campaign", "pull the
-  client's decisions", "record a reply", or "/aspire fee calculator".
+  client's decisions", "record a reply", "set up our influencer program", "where is the
+  {program} program", "write to the approved creators", "send product to the creators", "set up
+  affiliate codes", "did the creators post", "request rights", "what do we owe creators",
+  "program dashboard", "what's next", "what should we do next", "next actions", or "/aspire fee
+  calculator".
 metadata:
   author: Aspire
 ---
@@ -40,6 +44,8 @@ Text after the command is the argument. Route on it before anything else:
 | `agents` (also `list agents`, `show agents`) | Run **List agents** below. Skip the phases unless the user picks an agent to run. |
 | `sample` (also `sample {agent}`, `show me a sample`, `example`) | Run **Sample artifacts** below. No Atlas connection is needed, so skip the phases. |
 | `fee calculator` (also `fees`, `pricing`, `rate card`, `creator rates`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Fee calculator** below. Skip the other phases. |
+| `program` (also `influencer program`, `creator program`, `ambassador program`, `affiliate program`, `gifting program`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Influencer program** below. Skip the other phases. |
+| `next` (also `what's next`, `next actions`, `orchestrator`, and the hourly "Atlas next actions" task) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Orchestrator** below. Skip the other phases. |
 | `cas campaign` (also `creator ad campaign`, `campaign manager`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **CAS campaign** below. Skip the other phases. |
 | empty, or anything else | Run the phases in order, starting at Phase 1. Treat the text as context. |
 
@@ -86,6 +92,17 @@ time so it never goes stale; never recite it from memory.
    | `atlas-market-signal` | Phase 1, then Phase 2 + 3, then **Market signal**, Setup if it has never run, then Run |
    | `atlas-quarterly-signal` | Phase 1, then Phase 2 + 3, then **Quarterly signal** |
    | `atlas-ppa-pitch` | Phase 1, then Phase 2 + 3, then **PPA pitch** (its questionnaire first) |
+   | `atlas-creator-outreach` | Phase 1, then Phase 2 + 3, then **Influencer program**: **Program setup** if no program is saved, then **Creator outreach** (it names the creators and asks the drafts and mailbox questions first) |
+   | `atlas-creator-negotiation` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Creator negotiation** |
+   | `atlas-product-fulfillment` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Product fulfillment** |
+   | `atlas-content-library` | Phase 1, then Phase 2 + 3, then **Content library** (its content, save, and alert questions first) |
+   | `atlas-affiliate-manager` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Affiliate manager** |
+   | `atlas-content-sourcing` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Content sourcing** |
+   | `atlas-deliverable-tracker` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Deliverable tracker** |
+   | `atlas-roster-manager` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Roster review** |
+   | `atlas-program-dashboard` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Program dashboard** |
+   | `atlas-program-ledger` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Program ledger** |
+   | `atlas-campaign-orchestrator` | Phase 1, then Phase 2 + 3, then **Orchestrator** (Setup if it has never run) |
 
    Older names still reach the renamed agents: `atlas-account-analyst` is `atlas-profile-analyst`,
    `atlas-daily-readout` is `atlas-daily-insights-report`, and `atlas-weekly-readout` is
@@ -139,6 +156,7 @@ team catalog, and how agents render for a lens are in `references/recipient-lens
    | `brand`, `campaign` | Which creators on a list to approve | **Creator vetting** |
    | `performance`, `creative` | Hooks, ads, licensing, a cut list | **Ad reuse**; for one post, **Content review** with the ad reuse check |
    | `leadership`, `performance` | A pitch or casting deck for partnership ads, whitelisting, creators to license | **PPA pitch** |
+   | Any | What to do next across everything, what needs me, where everything stands | **Orchestrator** |
    | `team` | Anything | The flow the ask names |
 
 4. **Pass it on.** Every agent launch below includes `recipient` (the confirmed lens or lenses,
@@ -187,7 +205,8 @@ pulse and a section per reader, schedulable), the **Market signal** (what creato
 the brand vs. competitors, schedulable), and the **Quarterly signal** (the quarter's story for
 leadership). The **Creator profile** gives one creator's full page on request, **Ad reuse**
 ranks hooks and builds a cut list, and the **PPA pitch** builds a casting deck for paid
-partnership ads. Every request is read for who will act on it first
+partnership ads. The **Orchestrator** checks in every hour, ranks what to do next across
+all of it on one Next actions page, and carries out what an Editor approves there. Every request is read for who will act on it first
 (**Reading the ask**). Each is routed from its own
 section below. The **Theme** section brands all of their pages,
 and the **Fee calculator** sets the creator rates behind every fee they show.
@@ -420,13 +439,16 @@ to a caller who does not have it.
    explains the sign-in steps and carries one button that opens the link in the browser. Build
    and render it exactly per `references/connection-card.md` (widget tool, template, one-line
    follow-up text). Never paste the raw link into the reply when the card rendered. If the widget
-   tool is unavailable, fall back to a plain clickable link with the same one-line instruction.
+   tool is unavailable or fails, use the card's **Fallback** (plain text, never a Markdown link).
 3. Immediately call `connect_channel` again with only `elicitationId`. Each call long-polls
    about 30 seconds. Keep calling until the response reports a terminal status or its own
    `message` says to stop and check with the user. Never stop on a fixed call count. Never
-   restart with `channel` + `asProfileId` on a timeout; that issues a second link.
+   restart with `channel` + `asProfileId` on a timeout; that issues a second link. When the
+   `message` says to stop, follow the card's **Expired links** rule: say the link may have
+   expired and offer a fresh one.
 4. If status is awaiting-selection, render the follow-up variant of the connection card with
-   `resultUrl` and the "Finish picking accounts" button (the original link cannot be reopened).
+   `resultUrl` and the "Finish picking accounts" button (the original link cannot be reopened),
+   or its text fallback with `resultUrl` in the code block.
 5. Terminal statuses:
    - `complete`: read `outcome`. Confirm each entry in `linkedAccounts` by handle, and list
      any discovered but unselected accounts as available to add later. With `outcome`
@@ -453,8 +475,14 @@ to a caller who does not have it.
    A `none-linked` result does not count.
    While polling, the only user-facing output is the connection card (once per link) and, if a poll times out,
    one short line such as "Still waiting on the {network} sign in." Never fill the wait with
-   questions: the user is in another tab finishing the sign in.
-7. When every requested channel has reached a terminal status, proceed to Phase 5.
+   questions: the user is in another tab finishing the sign in. The one exception is the card's
+   **Expired links** question, asked only when a poll's `message` says to stop.
+7. When every requested channel has reached a terminal status, or the user chose to skip it
+   (**Expired links** in the card's reference), proceed to Phase 5 if at least one channel is
+   `complete` with a linked account. If none is, say nothing was connected and ask with
+   `AskUserQuestion`: "Try connecting again (Recommended)" / "Connect later". "Connect later"
+   ends onboarding here with one line: "Run /aspire:aspire when you're ready to connect an
+   account." Never move on to Phase 5 without a linked account.
 
 ### 4.3 Seed the watch-list (optional, quick)
 
@@ -544,7 +572,7 @@ against competitors goes to **Market signal**.
    skips this check: the agent owns resolution and the freshness check.
 4. Launch the `atlas-profile-analyst` subagent with: `profile_id`, `profile_slug`, the tool prefix,
    `target_mode`, the handles and networks for that mode, `recipient` (**Reading the ask**;
-   `team` during onboarding), and a digest of the Phase 5 calibrations. In mode `handle`, state that the user approved the fetch so the agent does not
+   `team` during onboarding), `onboarding: true` when this is the first run at the end of onboarding, `run: unattended` for a scheduled run, and a digest of the Phase 5 calibrations. In mode `handle`, state that the user approved the fetch so the agent does not
    ask again. State that the calibrations are for classification and relevance only: a named
    account is never benchmarked against the brand's own account or the brand's competitors.
    It is compared against its **own** peers — accounts the user named, or "like" accounts in the
@@ -554,7 +582,7 @@ against competitors goes to **Market signal**.
    `list_post_search_fields` first for the live field census), resolves and refreshes a named
    handle with `lookup_creators` when Atlas holds nothing or the record is over 24 hours old,
    then writes findings back with `append_insights` under one `runKey` per run (`own`:
-   `onboarding-{profile}-{date}`; `handle`: `account-review-{profile}-{handle}-{date}`).
+   `onboarding-{profile}-{date}` for the onboarding run, else `account-review-{profile}-own-{date}`; `handle`: `account-review-{profile}-{handle}-{date}`).
 6. Present the subagent's executive summary: headline, 3 to 5 insights with numbers, next
    week's three content pushes (mode `own`), 2 to 3 ranked next steps, data gaps. Offer the
    creator brief in one line when a push needs creators. In mode `handle`, lead the data gaps with the freshness the
@@ -565,8 +593,8 @@ against competitors goes to **Market signal**.
    rests on. In mode `handle`, lead with the account's creator card inline, before the
    summary, rendered from the agent's `creator-cards` block. When the reviewed account is a
    creator, offer its full profile in one line after the summary (**Creator profile**).
-8. Unattended run with no `AskUserQuestion` available: default to `own` mode and never start a
-   lookup.
+8. Unattended run with no `AskUserQuestion` available: default to `own` mode, never start a
+   lookup, and write nothing to Atlas; the agent returns the findings and pushes only.
 
 ---
 
@@ -645,6 +673,9 @@ conflicts, budget tier). Show the first-pick creators inline as creator cards fr
 
 In campaign mode, after the brief, offer the launch pulse (**Readouts**, **Launch pulse**) and
 say that each draft can go through **Content review** as it arrives.
+
+A CAS campaign's master briefs use `brief_mode` `creator-ads`, launched only from **CAS
+campaign**, Run, row 10 (`references/cas-campaign.md`).
 
 ---
 
@@ -735,7 +766,7 @@ maintains a pipeline across weeks and teammates.
 Ask once with `AskUserQuestion`: "What should the discovery agent do?" Options: "Fill the shortlist to
 {target}", "Show the current shortlist", "Record decisions on the shortlist", "Change setup".
 Then launch `atlas-creator-discovery` with: tool prefix, `profile_id`, `profile_slug`, the campaign slug, the
-brand handles and networks, run mode `interactive`, and `recipient` (**Reading the ask**;
+brand handles and networks, run mode `interactive`, `job` (`view` for "Show the current shortlist", else `discover`), and `recipient` (**Reading the ask**;
 `growth` when the ask is for more creators like the ones working). Relay its summary, the page link, and
 the numbered range the user can decide against. Show the candidates added this run inline as
 creator cards from the agent's `creator-cards` block (top six by fit score, badged with their
@@ -749,11 +780,15 @@ never reappear; accepted ones free their slot for the next run.
 
 ### Schedule (two schedules, one pass)
 
+A CAS campaign's discovery runs only from **CAS campaign** (`references/cas-campaign.md`): when
+the campaign's `campaign:{slug}-brief` has the `type: creator-ads` line, never schedule
+discovery for it; offer the CAS weekly call instead.
+
 After the first successful run, or whenever the user asks, offer with `AskUserQuestion`: "Set
 up the recurring discovery now?" Options: "Yes, discovery and shortlist (Recommended)", "Discovery
 only", "Shortlist only", "Not now". On yes, follow the same mechanics as **Readouts**,
 Schedule: read the times and timezone from `campaign:{slug}-cadence`, convert to UTC cron,
-create one task per job with the session's scheduled-task tools, confirm both in one
+create one task per job with the session's scheduled-task tools, named "Atlas creator discovery: {brand} - {campaign}" (`job: discover`) and "Atlas creator shortlist: {brand} - {campaign}" (`job: shortlist`) per `references/creator-discovery.md`, **Jobs and task names**, confirm both in one
 `AskUserQuestion` before creating them, and tell the user the tasks run in fresh sessions so
 Aspire Atlas must be enabled for scheduled tasks. Prompts must say "do not ask questions",
 name the brand by its exact Atlas profile `name` and the campaign slug, and state no date.
@@ -781,8 +816,9 @@ creator in depth, use **Creator profile**; to find new creators, **Creator disco
 1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end,
    `includeSuperseded: true`). Setup is done when `vetting:criteria` and `vetting:thresholds`
    exist and `vetting:safety-scope` and `vetting:hard-rejects` are each saved or recorded as
-   a `decline`. Then skip to **Run**. A run against a campaign's criteria needs only
-   `vetting:thresholds`; ask it alone.
+   a `decline`. Then skip to **Run**. A run against a campaign's criteria needs no setup: it
+   uses `vetting:thresholds` when saved, else the reference's defaults (70 and 50), labelled as
+   defaults. You may offer V2 alone; it is not required.
 2. Otherwise ask the missing questions V1 to V4 from the reference, one `AskUserQuestion`
    each, in order, then confirm the batch once and write the records with
    `append_calibration`, `provenance: "interview"`. A `key-exists` follows the Phase 5
@@ -825,6 +861,838 @@ Feedback about a creator outside a run ("never use @handle again", "@handle was 
 with") is saved the same way: word the note, confirm it with `AskUserQuestion` ("Save this
 about @handle for future vetting and discovery?"), then write the `creator:*` record, or offer
 the supersede when one exists.
+
+---
+
+## Orchestrator (what to do next across the brand)
+
+Trigger when the user asks what to do next across their creator marketing ("what's next", "what
+should we do next", "what needs me", "next actions", "where does everything stand"), or when the
+hourly task "Atlas next actions: {brand}" fires. Full detail lives in
+`references/orchestrator.md`: the lifecycle, the records, the action catalog and ranking, the
+execution policy, the Next actions page, the cycle, Slack, the setup interview, the schedule, and
+the unattended rules. The orchestrator reads the Program manager's and the CAS Campaign Manager's
+dispatch tables; it never replaces them, and each flow keeps its own section and confirmations.
+Requires a brand profile with a linked Instagram or TikTok channel.
+
+### Setup
+
+1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end). If the four
+   `orchestrator:*` records exist, skip to **Run**.
+2. Ask X1 to X5 from the reference, one `AskUserQuestion` each, and say plainly what X4 and X5
+   approve. X6 confirms the batch once, then write every record with `append_calibration`. X6
+   is also the standing approval for the orchestrator's own bookkeeping findings (`run`, `plan`,
+   `packet`, `execution`, `page` on the `orchestrator-` prefix); say so at X6. A `key-exists`
+   follows the Phase 5 supersede rule with its own confirmation.
+3. Run the cycle once interactively to publish the page, then offer the schedule.
+
+### Run
+
+Run the reference's **6**, the cycle, with the interactive differences in **7**: the status
+screen, the approvals already waiting on the page, then one `AskUserQuestion`, header "Next",
+with the top action first (Recommended), "Show the next three", and "Change setup". The pick runs
+through that flow's own section with every confirmation it asks. Every launch carries the tool
+prefix, `profile_id`, `profile_slug`, the brand's linked handles and networks, `recipient`, and
+`connections` (`program.md` **4**) when the flow is a program flow.
+
+### Monitor (the hourly run)
+
+The scheduled task runs the same cycle unattended. It never asks. It carries out only what an
+Editor approved on the Next actions page, and only within `orchestrator:execution` and the
+reference's **4**: record passes and mailbox drafts under `page-approved`, nothing under
+`suggest`. It launches each agent with `run: unattended` and `via: orchestrator`, saves the
+packets and outcomes under X6's standing approval, republishes the page, and posts to Slack only on a change (**8**).
+
+### Schedule
+
+Follow **Readouts**, Schedule, for the mechanics and the reference's **11** for the task name,
+the cron, and the prompt. X6 is the standing approval. If the scheduled-task tools are missing,
+say so and stop; never fake a schedule.
+
+---
+
+## Influencer program (gifting, paid posts, ambassadors, affiliates)
+
+Trigger when the user asks to set up, check, or move an influencer program ("set up our
+influencer program", "start an ambassador program", "where is the {program} program", "what's
+next on {program}", "who do we need to reach out to", "record a reply", "pull the order form").
+Full detail lives in `references/program.md`: program types, page vocabulary, the state model,
+the setup interview, the dispatch table, connected tools, drafts and sending, the order form,
+and the unattended rules. A creator ad campaign is not a program: it stays in **CAS campaign**.
+Requires a brand profile with a linked Instagram or TikTok channel.
+
+Before the first program step in a session, detect the user's mail and store connections per the
+reference's **4** and keep the `connections` object for every launch. Say what a connection can
+do when a step uses it, never why it cannot do more.
+
+### Program setup
+
+1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end,
+   `includeSuperseded: true`). Several programs may be saved; ask which with `AskUserQuestion`
+   when more than one is active, with "Start a new program" as the last option.
+2. For a new program, ask P1 to P9 from the reference, one `AskUserQuestion` each, skipping what
+   does not apply. Say plainly what P7b, P8 and P9 approve.
+3. P10 confirms the batch once, then write every record with `append_calibration`. A
+   `key-exists` follows the Phase 5 supersede rule with its own confirmation.
+4. Offer to fill the roster (the reference's **Filling the roster**).
+
+### Program manager
+
+Read the setup records and the working state (`search_insights` on the program's prefix,
+paged). Show the status screen and offer the single next step from the reference's
+**3. Program manager**. Launch what the row names with the inputs listed there, relay what the
+agent asks the main thread to confirm, record the outcome, and show the new status in one line.
+
+- **Drafts** from any program agent follow the reference's **5**: shown ready to copy, created in
+  the mailbox only after their confirmation, sent only when the user asks in this session and
+  confirms the named recipients.
+- **"Sent them"** marks drafts sent with one picker (**5**, Marking sent).
+- **Pasted replies** go to `atlas-creator-outreach` in `mode: triage`.
+- **"Pull the order form"** reads the order form's page data and records it with one picker
+  (**6**, Reading it back).
+- **"Decide later"** on any your-call picker writes the creator's roster row with
+  `yourCallDeferredAt`, so the item stays on the status screen without leading the next step for
+  7 days (**3**, Decide later).
+
+### Schedule
+
+Follow **Readouts**, Schedule, for the mechanics and the reference's **8** for task names. P9 is
+the standing approval for the tasks it names. Unattended runs follow the reference's **9**: they
+never ask, decide, send, create mailbox drafts, or change a store.
+
+---
+
+## Creator outreach (first messages, follow-ups, replies)
+
+Trigger when the user wants to write to a program's approved creators, follow up with ones who
+have not answered, or record what a creator said ("write to the approved creators", "draft
+outreach for {program}", "follow up with the ones who haven't replied", "here's what @handle
+said", "record a reply", "who replied", "check replies"), or when the Program manager's next
+step is "Write first messages", "Write follow-ups", or "Record replies". Requires the program's
+setup records. Full detail lives in `references/outreach.md`.
+
+**Write first messages or follow-ups**
+
+1. Read the roster and drafts (`search_insights` on the program prefix, paged). Name the
+   creators the run covers: stage Approved with no unsent first-touch draft, or stage Contacted
+   with a follow-up due (`references/outreach.md`, **Who gets a message**). None: say so and
+   stop.
+2. One `AskUserQuestion` call with O1, plus O2 when email is a program channel, the mail
+   connection can create drafts, and the outreach record names that mailbox:
+   - O1, header "Drafts": "Write {first messages or follow-ups} to {n} creators for {program}
+     and save the drafts? @a, @b and 4 more." For follow-ups add the creators moving to No
+     reply. Options: "Save the drafts (Recommended)", "Show them here only".
+   - O2, header "Mailbox": "Create {n} email drafts in your {Gmail or Outlook} for @a, @b and 4
+     more? Nothing is sent." Options: "Create the drafts (Recommended)", "I'll copy them
+     myself".
+   When the mailbox is not connected, say once: "Drafts will be ready to copy here and on the
+   outreach page." and offer the connection per `references/program.md` **4**.
+3. Launch `atlas-creator-outreach` with: tool prefix, `profile_id`, `profile_slug`, brand
+   handles and networks, the program slug, `mode` (`first-touch` or `follow-up`),
+   `run: interactive`, `connections`, `recipient`, and the O1 and O2 answers with the named creators.
+4. Relay the page link and the headline, show each draft ready to copy from the `drafts` block
+   (one block per creator and channel), and name any bracketed blanks to fill. When the agent
+   returns a `mail-drafts` block, ask O2 then, create the drafts in the mailbox yourself, and
+   write each `draft` again with `mailDraftId`. The agent saves the outreach page link itself
+   as a `page` finding under O1.
+5. Say once: "Send them yourself, then tell me 'sent them' and I'll start the follow-up clock."
+   On "sent them", mark sent per `references/program.md` **5**, with `nextFollowUpAt` from
+   `references/outreach.md`, **Follow-up timing**.
+
+**Send from the mailbox** (only when the user asks to send in this session)
+
+Ask O3 with `AskUserQuestion`, header "Send": "Send these {n} drafts from {mailbox} now?" with
+every recipient named as @handle and template. Options: "Keep them as drafts (Recommended)",
+"Send these {n}". Only email drafts already in the mailbox can be sent; DMs and Aspire messages
+are always sent by the user. On "Send", relaunch the agent in the drafts' mode with `creators`
+set to the named creators and the O3 answer. It reads each draft back, sends it, and marks it
+sent in the same write.
+
+**Record replies**
+
+1. Pasted replies: collect each reply's text, who it is from, the channel, and the date when the
+   user gives it. Mailbox: only when the outreach record's `watchReplies` is on and the mailbox
+   can read threads; otherwise ask the user to paste them.
+2. Launch the agent in `mode: triage` (pass 1) with the replies or `source: mailbox`. It returns
+   a reply packet and writes nothing.
+3. Ask O4, header "Replies": "Record these {n} replies for {program}?" with one line per reply:
+   @handle, class, the record, the next move. Options: "Record them (Recommended)", "Change
+   something". On "Change something", reword the packet from the user's words and ask once more.
+   Several replies are one picker.
+4. On "Record them", relaunch the agent in `mode: triage` (pass 2) with the packet and the O4
+   answer. It writes the `reply` and `roster` findings and republishes the outreach page.
+5. Offer the single next move from the packet: "Make offers" (`atlas-creator-negotiation`,
+   `mode: offer`, for interested paid, ambassador, and affiliate creators), "Answer @handle's
+   counter" (`atlas-creator-negotiation`, `mode: counter`), "Record @handle's deal"
+   (`atlas-creator-negotiation`, `mode: counter`, for paid, ambassador, and affiliate creators
+   who accepted the offer), "Collect @handle's details"
+   (`atlas-product-fulfillment`, with the reply text, for details replies and gifting creators
+   who accepted), "Record @handle's rights answer" (`atlas-content-sourcing`, `mode: replies`;
+   `mode: rights` when no request is open yet), or the answer to a
+   question the user types.
+
+**Schedule**
+
+The daily reply check runs only when P9 approved it, `watchReplies` is on, and the outreach
+page has been published once interactively (its `page` finding exists). Task name "Atlas
+program reply check: {brand} - {program}", per `references/program.md` **8**. Prompt:
+
+> Run the Atlas program reply check for {brand}, program {program name}, handles {handles and
+> networks}. Launch atlas-creator-outreach in mode reply-check, run unattended. Use the saved
+> program records. Read the date from the shell clock. Do not ask questions. Record no replies,
+> create no mailbox drafts, and send nothing to creators.
+
+The task needs Aspire Atlas and the user's mail connection (plus Slack or email, when routed)
+enabled for scheduled tasks. Unattended runs follow `references/program.md` **9**.
+
+---
+
+## Creator negotiation (offers, counters, renewals, and deal changes in a program)
+
+Trigger when a program creator needs a deal worked out: an offer for creators who said they're
+interested, an answer to a counter or a question about the deal, an ambassador renewal, or a
+change the brand wants to an agreed deal ("negotiate with @handle", "she asked for $2,000",
+"make offers to the creators who said yes", "what should we offer", "is this rate fair", "renew
+our ambassadors", "raise @handle's commission", "move @handle to paid", "extend usage on
+@handle's Reel"). Also reached from the
+**Program manager** dispatch. Full detail lives in `references/negotiation.md`. Requires a saved
+program (**Influencer program**, Program setup). A creator ad campaign's fees stay in **Rates and
+terms**.
+
+Negotiation is interactive only. Never schedule it; if `AskUserQuestion` is unavailable, say in
+one line that a deal needs a person to approve it, and stop.
+
+### Run
+
+1. Read the program's setup records and working state as the **Program manager** does. Missing or
+   unparseable program records: run **Program setup** first. Pick the mode: `offer` for
+   interested creators with no open terms, `counter` for a counter or deal question, an accepted
+   offer to record as the deal (or a reply the user pastes here), `renewal` for ambassadors the
+   roster review handed over (pass its `renewals` block), `change` for a change to an agreed
+   deal from the affiliate manager, the roster manager, or the user (pass what changes, from,
+   to, and who asked).
+2. A pasted reply that names no roster creator is asked about once. Several creators run in one
+   launch.
+3. Launch `atlas-creator-negotiation` with: tool prefix, `profile_id`, `profile_slug`, brand
+   handles and networks, the program slug, `mode`, `pass: propose`, the creators (and the pasted
+   reply text, the `renewals` block, or the change), `connections`, and `recipient` (`team` by
+   default). No confirmation is needed:
+   `propose` writes nothing.
+4. Relay the page link, one line per creator (offer, counter, move, reasons), the math, and the
+   drafts. Then ask the agent's questions, at most four questions per call (**Guardrails**, Pickers), skipping any with
+   nothing to ask:
+   - N1, header "Moves": "Save these moves for {program}? {n} drafts go on the creators' rows."
+     with each move named. Options: "Save the moves (Recommended)", "Change something", "Page
+     only".
+   - N2, header "Your call", one per open item, exactly as the agent worded it: the recommended
+     answer first (Recommended), the alternatives, "Decide later".
+   - N3, header "Deal": "Record the deal with {creators}? This marks them Agreed." with each deal
+     named. Options: "Record the deals (Recommended)", "Change something".
+   - N4, header "Mailbox", only when the program's mail setting names a live mailbox that can
+     draft: "Create {n} drafts in your {mailbox} for {creators}? Nothing is sent." Options:
+     "Create the drafts (Recommended)", "I'll copy them myself".
+   At most four questions per call: N2 items first, four per call, then N1, N3 and N4 (see
+   **Guardrails**, Pickers).
+5. "Change something" relaunches `pass: propose` with the change as an override. Otherwise
+   launch it again with `pass: record`, the `negotiation-packet`, and the answers. N1 and N3 are
+   the write confirmations; N4 is the mailbox confirmation.
+6. Relay what was written, the terms summary links, and the next steps. The agent saves the
+   negotiation page's link as a `page` finding with the first approved write.
+7. Sending follows **Influencer program**, Drafts: only when the user asks in this session, after
+   the picker that names every recipient. "Sent them" marks drafts sent with one picker.
+
+When the fees used the Aspire recommended rates, make the fee calculator offer from **Fee
+calculator**, Offers, after the reply.
+
+---
+
+## Product fulfillment (product picks, the order form, shipping)
+
+Trigger when a program has creators owed product, or the user asks about it ("collect details
+and order product", "send product to the creators", "what should we send @handle", "order the
+product", "where are the packages", "did the product arrive", "pull the order form"), or when
+the Program manager's dispatch reaches "Collect details and order product". Requires a saved
+program (**Program setup**) with a catalog. Full detail lives in `references/fulfillment.md`;
+the order form's data rules are in `references/program.md`, **6**.
+
+Fulfillment is interactive. Every question below is one `AskUserQuestion` call, never plain
+text; the tool adds its own free text field. Launch `atlas-product-fulfillment` with the tool
+prefix, `profile_id`, `profile_slug`, the program slug, the linked handles and networks,
+`recipient`, `connections`, `mode`, and the F answers below, and end with the decision-audit
+line.
+
+**Before any mode**, when the program has an order form: read its `rows` with the Artifact
+tool's page data reads, compare each row's `updatedAt` with the creator's newest `fulfillment`,
+and show one line per changed creator ("@a: size M, ships to Austin, TX"). Ask F5 with them.
+Show city and region in chat, never the street.
+
+**Plan** (who gets what, and the details requests)
+
+1. Launch with `mode: plan`, `step: propose`. It writes nothing.
+2. Show its picks as a short list (`@a: {product}, {reason}`), the creators skipped and why, and
+   any item over the value limit or out of stock. Then one call with up to three questions:
+   - **F1** header "Product": "Send these products?" Options: "Use these picks (Recommended)",
+     "Let each creator choose from the catalog", "Same product for everyone (type it)". The free
+     text field takes changes ("@b gets the knife set").
+   - **F2** header "Save": "Save the picks to {program}, publish the order form, and write the
+     details requests?" Options: "Save and publish (Recommended)", "Page only".
+   - **F3**, only when the program's mail setting names a live mailbox and some requests go by
+     email, header "Mailbox": "Create {n} drafts in your {Gmail or Outlook} for @a, @b and {n-2}
+     more? Nothing is sent." Options: "Create the drafts (Recommended)", "I'll copy them".
+3. Launch with `step: write` and the answers. Relay the order form link, the drafts ready to
+   copy, and, on the first publish, the share line: "Share this order form with your team as
+   Contributor, so their entries save. Only share it inside your team: everyone on it can see
+   every address." The agent saves the form's link as a `page` finding under F2.
+
+**Order** (after details arrive)
+
+1. F5 first when there are details replies (recorded by outreach triage) or order form changes: header "Record": "Record these
+   details?" naming each creator in one line. Options: "Record them (Recommended)", "Change
+   something".
+2. Launch with `mode: order`, F2 and F5. It returns either the store batch or the order sheet.
+3. Store batch (the store can place orders): **F4** header "Orders": "Place {n} orders in
+   {store}? @a: {product}, {options}, to {city}; …" Options: "Not yet (Recommended)", "Place
+   these {n}". On "Place", relaunch `mode: order` with F4. Never place an order on an earlier
+   yes. F4 also approves recording each order it places, so a placed order is saved as ordered
+   in the same run even when F2 was never asked this session, and an order already recorded is
+   never offered again.
+4. Order sheet: relay the file path and the page link. When the user says the orders went in,
+   **F6** header "Ordered": "Mark orders for @a, @b and {n-2} more as placed {date}?" Options:
+   "Mark placed (Recommended)", "Change something". Relaunch `mode: order` with F6.
+
+**Track** (shipping, arrival, the posting clock)
+
+1. One call: F5 for pasted tracking and order form changes, and, when the store can read orders,
+   header "Store": "Record the shipping and delivery {store} reports for {program}, and start the
+   posting window for what arrived?" Options: "Record them (Recommended)", "Show me first". "Show
+   me first" launches with F2 `page-only` and asks again with the agent's list.
+2. Launch with `mode: track`. Relay arrivals, late parcels, and the check-in drafts. Offer F3
+   for check-ins going by email.
+3. Hand the creators who arrived to `atlas-deliverable-tracker` with their posting dates, as the
+   next step in one line. For gifting, show each creator's posting odds with its evidence.
+
+**Say what the store can do**, once per session when a step uses it, in one line, per
+`program.md`, **4**. Never why it cannot do more.
+
+**Addresses** show only on the order form, in the order sheet, in a confirmed store order, and
+in the `fulfillment` record. Never in chat beyond city and region, on another page, or in a
+channel post.
+
+**Status** (read-only). "Where are the packages?" with nothing to record launches
+`mode: status`: counts, parcels the store shows delivered that Atlas has not recorded, and
+parcels past their window. Offer **Track** to record them.
+
+**Schedule.** P9 "Daily shipping check (only with product)" creates "Atlas program shipping
+check: {brand} - {program}" (`program.md`, **8**), launching the agent with `mode: status`, `run: unattended`. It reads Atlas, the store's orders, and the order form, republishes the order
+form, and posts the counts to the saved routing. It records nothing, drafts nothing, places
+nothing, and writes no `fulfillment`; it may write only the `page` finding
+(`fulfillment.md`, **Status mode**).
+
+---
+
+## Deliverable tracker (posts owed, posted, late, missing, and disclosure)
+
+Trigger when the user asks whether program creators posted what they agreed ("check posts",
+"did everyone post", "who hasn't posted yet", "which posts are late", "are the creators
+disclosing", "what's due this week", "waive @handle's Story"), or when the **Program manager**
+dispatch reaches "Check posts". Requires a saved program (**Influencer program**, Program
+setup). Full detail lives in `references/deliverable-tracker.md`. A single post checked against
+a brief stays in **Content review**.
+
+The check is interactive in two passes; the daily posting check is its unattended form. Every
+question below is one `AskUserQuestion` call, never plain text. Launch
+`atlas-deliverable-tracker` with the tool prefix, `profile_id`, `profile_slug`, the brand's
+linked handles and networks, the program slug, `mode`, `pass`, `connections`, `recipient`
+(`team` by default), any `creators` the user named, and the approvals below, and end with the
+decision-audit line.
+
+### Run
+
+1. Read the program's setup records and working state as the **Program manager** does. Missing
+   or unparseable program records: run **Program setup** first.
+2. **Pasted links.** When the user pasted links to creators' posts, ask **T0** first, header
+   "Fetch": "Look up these {n} posts in Atlas, and fetch any it doesn't hold yet? It can take a
+   minute." Options: "Look them up (Recommended)", "Skip them". Pass the links (with the creator
+   and deliverable when the user said) and the answer.
+3. Launch with `mode: check`, `pass: propose`. No confirmation is needed: `propose` writes
+   nothing.
+4. Relay the page link, the headline, the needs-a-fix lines (missing disclosure first), late
+   and missing, and due this week. Then ask, skipping any with nothing to ask:
+   - **T2**, header "Matches" (multiSelect), only when the agent returned open matches: "Which
+     of these posts count for the deal?" One option per match, "@a: {format} {date}, as
+     {deliverable}", with the agent's description (the caption's first words and why it is
+     unsure). More than four: the first four, then the rest in the next call.
+   - **T5**, header "Your call", one per open item, exactly as the agent worded it, the
+     recommended answer first, then the alternatives and "Decide later". Posts whose only
+     unclear part is the paid partnership label come as one multiSelect for the run ("Which of
+     these posts carry it?"); Atlas can't see the label, so it is never treated as missing.
+   When T2 or T5 answers change a status, relaunch `pass: propose` with them as `overrides` and
+   relay the new counts.
+5. Then ask, at most four questions per call (**Guardrails**, Pickers):
+   - **T1**, header "Save": "Save the posting check for {program}? {p} posted, {l} late, {m}
+     missing, {f} need a fix. {moves}" Options: "Save the check (Recommended)", "Change
+     something", "Page only".
+   - **T3**, header "Drafts", only when there are drafts: "Save {n} drafts for {program}?
+     Chases to @a and @b, a fix request to @c, thanks to @d." Options: "Save the drafts
+     (Recommended)", "Show them here only".
+   - **T4**, header "Mailbox", only when email is a program channel and the program's mail
+     setting names a live mailbox that can draft: "Create {n} email drafts in your {Gmail or
+     Outlook} for @a, @b and {n-2} more? Nothing is sent." Options: "Create the drafts
+     (Recommended)", "I'll copy them myself".
+6. "Change something" relaunches `pass: propose` with the change as an override. Otherwise
+   launch `pass: record` with the `tracker-packet` and T1 to T5. T1 and T3 are the write
+   confirmations; T4 is the mailbox confirmation. The agent saves the tracker page's link as a
+   `page` finding with the first approved write.
+7. Relay what was written and the drafts ready to copy. Sending follows **Influencer program**,
+   Drafts: only when the user asks in this session, after the picker that names every
+   recipient. "Sent them" marks drafts sent with one picker.
+8. **Hand-offs**, one line each, never run without the user's pick: posted posts go to the
+   content library on its next build (offer **Content library** when it has no page or is more
+   than 7 days old); "Check on brief?" posts offer **Content review**; posted paid and
+   ambassador posts are the next step for the ledger.
+
+**Waiving** is the user's alone. "Waive @a's second Story" asks T5 for that row ("Waive @a's
+{deliverable}? It stops counting as owed." Options: "Keep it owed (Recommended)", "Waive it")
+and records it through a `record` pass with T1.
+
+### Schedule
+
+Follow **Readouts**, Schedule, for the mechanics, and `program.md`, **8**, for the task name
+"Atlas program posting check: {brand} - {program}" (daily), launching
+`atlas-deliverable-tracker` with `run: unattended`. The P9 "Daily posting check" answer is the
+standing approval: scheduled runs match new posts, save the statuses a clear match settles and late or missing from the date alone,
+republish the tracker page, and post the late, missing, and needs-a-fix counts with handles to
+the saved routing. They never ask, draft, chase, fetch a post, confirm a match, waive, or move a
+creator. Schedule it only after the tracker page has been published once interactively and its
+`page` finding exists.
+
+---
+
+## Affiliate manager (codes, sales, and commission in a program)
+
+Trigger when a program has affiliate or hybrid creators and the user asks about codes or sales
+("set up codes", "create discount codes for the creators", "affiliate report", "report sales and
+commission", "how are the affiliate codes doing", "who's driving sales", "what do we owe in
+commission", "retire the dead codes"), attaches a store or affiliate platform export, or the
+**Program manager** dispatch reaches "Set up codes" or "Report sales and commission". Requires
+a saved program (**Program setup**) with affiliate terms or a hybrid deal. Full detail lives in
+`references/affiliate.md`.
+
+The affiliate manager is interactive only. Never schedule it; if `AskUserQuestion` is
+unavailable, say in one line that codes and commission need a person to confirm them, and stop.
+Every question below is one `AskUserQuestion` call, never plain text. Launch
+`atlas-affiliate-manager` with the tool prefix, `profile_id`, `profile_slug`, the program slug,
+the linked handles and networks, `recipient` (`team` by default), `connections`, `mode`, `pass`,
+and the A answers, and end with the decision-audit line.
+
+**Say what the store can do**, once per session when a step uses it, in one line, per
+`program.md`, **4**: "I can create the percentage codes in Shopify; fixed amount codes go on a
+sheet for you to enter." Never why. When the store is missing, offer to connect it once and carry
+on with the sheet or an upload.
+
+### Codes
+
+1. Launch with `mode: codes`, `pass: propose`. It writes nothing and creates nothing.
+2. Relay the page link, one line per creator (`@a: SAM20, 20% off, in Shopify`), the sheet path
+   when there is one, and any code that collided. Then ask, at most four questions per call (**Guardrails**, Pickers), skipping
+   what has nothing to ask:
+   - **Y**, header "Your call", one per item the agent raised, exactly as worded: the
+     recommended answer first (Recommended), the alternatives, "Decide later".
+   - **A1**, header "Codes": "Save these codes for {program}? @a: SAM20, 20% off; @b: ALEXTT20,
+     20% off; and {n-2} more." Options: "Save the codes (Recommended)", "Change something",
+     "Page only".
+   - **A2**, only when the store can create some of the codes, header "Store": "Create codes
+     SAM20, ALEXTT20 and {n-2} more in {store} at {discount} off?" Options: "Create the codes
+     (Recommended)", "Not yet, put them on the sheet".
+   - **A3**, only when the program's mail setting names a live mailbox that can draft and some
+     codes go live in this run, header "Mailbox": "Create {n} drafts in your {mailbox} telling
+     @a, @b and {n-2} more their code is live? Nothing is sent." Options: "Create the drafts
+     (Recommended)", "I'll copy them myself".
+3. "Change something" relaunches `pass: propose` with the change. "Page only" stops. Otherwise
+   relaunch with `pass: record`, the `affiliate-packet`, and the answers. A2 needs A1 "Save":
+   with "Page only", never create codes in the store.
+4. Relay what was written, the codes the store refused (now on the sheet), and the `code-live`
+   drafts ready to copy.
+5. **Sheet codes.** When the user says the sheet codes are in the store (or turned off), ask
+   **A4**, header "Live": "Mark SAM20, ALEXTT20 and {n-2} more live from {date}?" (or "turned
+   off from {date}"). Options: "Mark them (Recommended)", "Change something". Relaunch
+   `mode: codes`, `pass: record` with A4.
+
+### Report
+
+1. Ask in one call:
+   - **A5**, header "Period": "Which month should the affiliate report cover?" Options: "{last
+     month} (Recommended)", "{this month} so far", "Another month (type it)".
+   - **A6**, header "Sales": "Where should the sales come from?" Options: "Read orders from
+     {store} (Recommended)" (only when the store can read orders), "I'll upload an export
+     (CSV)". An export from the store or any affiliate platform works. When the user already
+     attached a file, skip A6.
+2. Launch with `mode: report`, `pass: propose`, A5, and A6 (the file's path for an upload).
+3. Relay the page link, the headline (revenue with its source and currency, orders, commission
+   owed), one line per creator, and the timeline's line: "Sales and posts on the same days are a
+   correlation, not proof." Then ask, skipping what has nothing to ask, your-call items first and
+   at most four questions per call (see **Guardrails**, Pickers):
+   - **A7**, export only, header "Columns": "Read the file this way? {mapping, one per line};
+     {match count}." Options: "Use this mapping (Recommended)", "Change something".
+   - **A8**, header "Save": "Save {period} sales for {n} creators to {program} and pass {k}
+     commission lines ({total}) to the ledger?" Options: "Save (Recommended)", "Page only".
+   - **A9**, only when the agent recommends retiring codes, header "Retire": "Turn off {codes} in
+     {store}?" (or "Put {codes} on the sheet to turn off?"). Options: "Not yet (Recommended)",
+     "Turn off these {n}" (or "Put them on the sheet").
+   - **Y**, header "Your call", one per item: raises, hybrid moves, promotions to paid,
+     commission figures that differ from the platform's.
+4. A7 "Change something" relaunches `pass: propose` with the change. Otherwise relaunch with
+   `pass: record`, the packet, and the answers.
+5. Relay what was written. Pass the `ledger-lines` block to `atlas-program-ledger` as its next
+   step; the affiliate manager never writes ledger lines itself.
+6. **Hand-offs.** For each your-call answer that changes a deal (a raise, hybrid, or paid), offer
+   once, header "Next": "Take @a's {change} to negotiation?" Options: "Draft it (Recommended)",
+   "Not now". The first launches `atlas-creator-negotiation` in `mode: change` with the
+   change.
+
+Sending the `code-live` drafts follows **Influencer program**, Drafts: only when the user asks in
+this session, after the picker that names every recipient.
+
+---
+
+## Roster review (renew, rebook, re-engage, or retire)
+
+Trigger when the user asks how the program's creators are doing or what to do with them next
+("review the roster", "roster health", "how are our ambassadors doing", "who should we renew",
+"who should we rebook", "which creators are slipping", "who should we drop", "ambassador
+renewals"). Also reached from the **Program manager** dispatch when ambassador renewals are
+inside the notice window. Full detail lives in `references/roster-manager.md`. Requires a saved
+program (**Influencer program**, Program setup).
+
+The roster review is interactive only. Never schedule it; if `AskUserQuestion` is unavailable,
+say in one line that the review needs a person to approve it, and stop.
+
+### Run
+
+1. Read the program's setup records and working state as the **Program manager** does. The
+   review needs the program, terms, and outreach records (`-program`, `-terms`, `-outreach`);
+   missing or unparseable: run **Program setup** first. A program with no creator at Agreed or
+   later: say so in one line and offer the next step from the dispatch instead.
+2. Launch `atlas-roster-manager` with: tool prefix, `profile_id`, `profile_slug`, brand handles
+   and networks, the program slug, `mode: review`, `pass: propose`, `connections`, and
+   `recipient` (`team` by default; `growth` when the ask is about where to spend). Pass
+   `creators` or `types` when the user named them. No confirmation is needed: `propose` writes
+   nothing.
+3. Relay the page link, the segment counts, one line per creator, and the drafts. Then ask,
+   at most four questions per call (**Guardrails**, Pickers):
+   - K1, header "Review": "Save the roster review for {program}? {n} creators: {s} stars, {t}
+     steady, {u} slipping, {v} dormant, {w} to retire, {x} not enough data. {d} notes go on the
+     creators' rows." Options: "Save the review (Recommended)", "Change something", "Page only".
+   - K2, header "Your call", one per item, exactly as the agent worded it: the recommended
+     answer first (Recommended), the alternatives, "Decide later". Example: "@marco missed 3 of
+     4 posts since July and hasn't replied in 40 days. Pause him, drop him from {program}, or
+     keep him on?" Options: "Pause him (Recommended)", "Drop him from {program}", "Keep him
+     on", "Decide later".
+   More than three K2 items: ask the K2 items in their own calls of up to four, then K1.
+4. "Change something" relaunches `pass: propose` with the change as an override. Otherwise,
+   in a second `AskUserQuestion` call, skipping any with nothing to ask:
+   - K3, header "Renewals", only when the `renewals` block has entries: "Work out renewals for
+     {creators}? (@a raise, @b same terms, @c let it end)" Options: "Start the renewals
+     (Recommended)", "Not now".
+   - K4, header "Mailbox", only when K1 saved, there are email drafts, and the program's mail
+     setting names a live mailbox that can draft: "Create {n} drafts in your {mailbox} for
+     {creators}? Nothing is sent." Options: "Create the drafts (Recommended)", "I'll copy them
+     myself".
+   - K5, header "Lookalikes", only when the `lookalike-seeds` block has seeds: "Find creators
+     like {stars} for {campaign}?" Options: "Refill the shortlist with lookalikes
+     (Recommended)", "Not now". With no discovery campaign saved for the program: "Start a
+     discovery shortlist for {program}, seeded with {stars}?" Options: "Set up discovery
+     (Recommended)", "Not now".
+5. On K1 "Save the review", launch the agent again with `pass: record`, the `roster-packet`, and
+   the K1 and K4 answers. K1 is the write confirmation; K4 is the mailbox confirmation.
+6. For each K2 answer of pause or drop, write the `rosterChange` row from the packet with
+   `append_insights` as a new `roster` finding (stage Paused or Dropped, `yourCall` cleared,
+   `detail.by` "Program manager"). The K2 answer is that write's confirmation. "Keep" writes
+   nothing. "Decide later" writes the creator's newest `roster` row again with `yourCall` set to
+   the question and `yourCallDeferredAt` (**Influencer program**, Decide later).
+7. On K3 "Start the renewals", launch `atlas-creator-negotiation` with `mode: renewal`, `pass:
+   propose`, the renewal creators, and the `renewals` block, after step 5 has written the review
+   (or straight away when K1 was "Page only"). Then follow **Creator negotiation**.
+8. On K5, run **Creator discovery** Run for the campaign with `recipient` `growth` and the
+   `lookalike-seeds` block (discovery also reads the saved stars itself); with no campaign, run its Setup for the program's
+   discovery campaign first and save the slug to the program per the Phase 5 supersede rule.
+9. Sending follows **Influencer program**, Drafts: only when the user asks in this session,
+   after the picker that names every recipient. "Sent them" marks drafts sent with one picker.
+
+---
+
+## Program ledger (what we owe creators, invoices, payments, and budget)
+
+Trigger when a program asks about money ("update payments", "what do we owe creators", "what's
+been paid", "where are we against budget", "how much budget is left", "which invoices are
+overdue", "these invoices came in", "mark @handle's fee paid", "export the ledger for finance"),
+attaches a payments or invoices export from the core Aspire platform or the brand's finance
+tool, a `ledger-lines` block comes back from the affiliate manager or content sourcing, or the
+**Program manager** dispatch reaches "Update payments". Requires a saved program (**Program
+setup**). Full detail lives in `references/program-ledger.md`.
+
+The ledger records; it never pays. Payments run in Aspire or the brand's finance tool. It is
+interactive only. Never schedule it; if `AskUserQuestion` is unavailable, say in one line that
+the ledger needs a person to confirm it, and stop. Every question below is one
+`AskUserQuestion` call, never plain text. Launch `atlas-program-ledger` with the tool prefix,
+`profile_id`, `profile_slug`, the program slug, the linked handles and networks, `recipient`
+(`team` by default), `connections`, `mode`, `pass`, any `ledger-lines` blocks from this
+session, and the G answers, and end with the decision-audit line.
+
+**Never keep payment details.** When the user pastes or uploads anything with bank details, tax
+ids, or card numbers, the agent strips them before reading; relay its one line ("Removed 2 bank
+details; not saved") and never repeat what was removed. Never ask for them.
+
+### Build (Update payments)
+
+1. Launch with `mode: build`, `pass: propose`. It writes nothing.
+2. Relay the page link, the headline (budget, paid, committed, product cost, forecast to term
+   end, remaining, per currency) and the overdue count. Then ask, your-call items first and at most four questions per call (**Guardrails**, Pickers),
+   skipping what has nothing to ask:
+   - **G5**, header "Your call", one per item the agent raised, exactly as worded: the
+     recommended answer first (Recommended), the alternatives, "Decide later".
+   - **G1**, header "Lines": "Save these ledger lines for {program}? {n} new, {r} revised, {v}
+     void. @a: paid fee $1,200, due Nov 6; @b: October fee $800; and {n-2} more." Options: "Save
+     the lines (Recommended)", "Change something", "Page only".
+3. "Change something" relaunches `pass: propose` with the change. "Page only" stops. Otherwise
+   relaunch with `pass: record`, the `ledger-packet`, and the answers.
+4. Relay what was written, the finance CSV path, and anything overdue.
+
+### Record invoices and payments
+
+1. When nothing is attached or pasted yet, ask **G2**, header "Source": "What should I record?"
+   Options: "I'll paste invoices or payments", "I'll upload an export (CSV) from Aspire or our
+   finance tool". Then wait for the paste or the file.
+2. Launch with `mode: payments`, `pass: propose`, and the pasted text or the file's path.
+3. Relay the page link, the removed-details line when there is one, the matches one per line,
+   and the unmatched rows with their reasons. Then ask, your-call items first and at most four questions per call (**Guardrails**, Pickers):
+   - **G5**, header "Your call", one per item: an unmatched row with a close line, a short or
+     over payment, a reversal, a change after invoicing, a void past accrued.
+   - **G3**, CSV only (or when the rows do not say invoice or payment), header "Columns": "Read
+     the file this way? {mapping, one per line}; {match count}." Add "Are these invoices or
+     payments?" when the rows do not say. Options: "Use this mapping (Recommended)", "Change
+     something".
+   - **G4**, header "Record": "Record these {m} matches? @a September fee: paid Oct 3, ref 4471;
+     @b fee: invoiced INV-204; and {m-2} more. {u} rows did not match and stay on the page."
+     Options: "Record the matches (Recommended)", "Change something", "Page only".
+4. G3 "Change something" relaunches `pass: propose` with the change. Otherwise relaunch with
+   `pass: record`, the packet, and the answers. Never match an unmatched row yourself; the user
+   picks the line in G5 or leaves it.
+5. Relay what was written and the new headline.
+
+### Export
+
+On "export the ledger" or "send finance the CSV", launch `mode: export`. It writes nothing to
+Atlas. Relay the CSV path and the page link, and say the page has "Download finance CSV" for
+Editors. Sharing the file is the user's step.
+
+**Who sees the page.** On first publish relay once: "Share this page with your team as Editor
+to see amounts and the budget; Contributors see statuses only. Never share it with creators."
+
+---
+
+## Program dashboard (how the whole program is doing)
+
+Trigger when the user asks how a program is doing overall ("program dashboard", "how is
+{program} doing", "show the dashboard", "update the dashboard", "are we on track for our goals",
+"program overview"), when the **Program manager** dispatch reaches "Update the dashboard", or on
+"Show the dashboard" in its Next picker. Requires a saved program (**Influencer program**,
+Program setup). Full detail lives in `references/program-dashboard.md`. The quarter's story
+across everything Atlas holds stays in **Quarterly signal**.
+
+The dashboard reads and shows; it never acts. Every open item names the flow that handles it,
+and the Program manager offers that flow as the next step.
+
+### Run
+
+1. Read the program's setup records as the **Program manager** does. Missing or unparseable
+   program records: run **Program setup** first.
+2. One `AskUserQuestion` call, with the **Reading the ask** confirmation when it applies (default
+   `team`; `leadership` for "are we on track", "for my manager", "for the exec update";
+   `growth` for "where is the money going"):
+   - **B1**, header "Save": "Update the {program} dashboard and save today's numbers to Atlas?
+     The Program manager and the quarterly signal read them." Options: "Save (Recommended)",
+     "Page only".
+   - **B2**, header "Post", only when the program's routing names a Slack channel or email
+     recipients: "Post the dashboard summary to {channel} and email {recipients}?" Options:
+     "Post (Recommended)", "Page only this time".
+3. Launch `atlas-program-dashboard` with the tool prefix, `profile_id`, `profile_slug`, the
+   brand's linked handles and networks, the program slug, `run: interactive`, `connections`,
+   `recipient`, and the B1 and B2 answers, and end with the decision-audit line. B1 is the write
+   confirmation; B2 is the delivery confirmation.
+4. Relay the page link, the headline, the attention list with each item's next step, and the
+   not-tracked list. On first publish, say once: "Share this dashboard with your team as Editor
+   to see goals and spend. Never share it with creators."
+5. Offer the first attention item as the single next step, the way the Program manager does
+   (header "Next": the step (Recommended), "Change setup"). Never launch it without the pick.
+6. **B3**, header "Schedule", only when the agent returned "Weekly task: ready to create" (P9
+   named "Weekly dashboard", the page now has a saved link, and no task named "Atlas program
+   dashboard: {brand} - {program}" exists): "Create the weekly dashboard task for {program}:
+   {day} {time} {timezone}? It republishes this page, saves the numbers, and posts to
+   {destinations}." Options: "Create the task (Recommended)", "Not now".
+
+### Schedule
+
+Follow **Readouts**, Schedule, for the mechanics, and `references/program.md` **8** for the task
+name "Atlas program dashboard: {brand} - {program}" (weekly, at the day and time saved in the
+program's cadence), launching `atlas-program-dashboard` with `run: unattended`. Prompt:
+
+> Run the Atlas program dashboard for {brand}, program {program name}, handles {handles and
+> networks}, using the saved program records. Read the date from the shell clock. Do not ask
+> questions. Republish the dashboard, save the weekly snapshot only if the program's saved
+> schedule names the weekly dashboard, and post the summary to the saved routing.
+
+P9's "Weekly dashboard" is the standing approval for the snapshot, and P8 for the post. Create
+the task only after the dashboard has been published once interactively and its link is saved
+(B3). Scheduled runs never ask, decide, draft, or send, and show missing records as "not tracked
+yet". Aspire Atlas, and Slack or email when routed, must be enabled for scheduled tasks.
+
+---
+
+## Content library (creator content about the brand, and the rights to use it)
+
+Trigger when the user wants to find, browse, or check the rights on creator content about the
+brand ("content library", "what creator content do we have", "find unboxing videos of
+{product}", "what's cleared for ads", "what can we use in ads", "which rights expire soon",
+"update the content library"). Requires a brand profile with a linked Instagram or TikTok
+channel. A program is optional: without one, the library covers the whole brand, rights come
+from every program's records, and a post no program holds a record or a deal for shows No
+rights. Full detail lives in `references/content-library.md`.
+
+### Run
+
+1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end,
+   `includeSuperseded: true`) and keep the active `program:*-program` records. Pick the mode from
+   the ask: a question about specific content is `query`; "what expires" is `expiring`;
+   "build", "update", or a first run is `build`.
+2. Ask in one `AskUserQuestion` call, with the **Reading the ask** confirmation (`team` by
+   default; `performance` and `creative` for "cleared for ads" or "what can we run"; `brand`
+   for "is any of it risky"), skipping what the user already said:
+   - L1, header "Content": "Which content?" One option per active program (up to three), and
+     "All our programs and everything about {brand}" (Recommended when there is no program or
+     several). For `build`, a second question, header "Window": "Last 180 days (Recommended)",
+     "Everything Atlas holds", or typed. For `expiring`, header "Horizon": "Next 30 days
+     (Recommended)", "Next 60 days", "Next 90 days".
+   - L2 (`build` only), header "Save": "Save the catalog and the page link to Atlas, so the
+     team and scheduled runs can search it?" Options: "Save (Recommended)", "Page only".
+   - L3 (`build` and `expiring`, only when the program's routing names Slack or email), header
+     "Alert": "Post the expiring-rights alert to {channel} and email {recipients}?" Options:
+     "Post (Recommended)", "Page only this time".
+3. Launch `atlas-content-library` with the tool prefix, `profile_id`, `profile_slug`, the
+   linked handles and networks, `mode`, the program slug or `all`, L1 to L3, the user's question
+   for `query`, `connections`, and `recipient`, ending with the decision-audit line.
+4. Relay the page link, the headline, and the cards from the agent's `visual-data` block per
+   **Visual output**. Say once that rights shown come from the brand's records and agreed deals,
+   and that the signed agreement decides paid use.
+5. **Needs the main thread.** Relay any proposal for content sourcing as a line, never as a
+   write. The library saves its own page link as a `page` finding under L2.
+6. **Hand-offs.** When the agent lists assets worth requesting or rights to renew, offer once
+   with `AskUserQuestion`, header "Next": "Request rights for these {n} posts?" Options:
+   "Request rights (Recommended)", "Not now". The first launches `atlas-content-sourcing` with
+   the asset list: `mode: rights` for the worth-requesting rows, `mode: renewal` for the rights
+   to renew. The library never drafts a request itself.
+
+### Schedule
+
+Follow **Readouts**, Schedule, for the mechanics, and `program.md`, **8**, for the task name
+"Atlas program library refresh: {brand} - {program}" (weekly), launching
+`atlas-content-library` with `mode: build`, `run: unattended`. The P9 "Weekly content library
+refresh" answer is the standing approval; it lets scheduled runs save `asset` findings.
+Unattended runs never ask, never write rights, and post only to the saved routing. Schedule it
+only after the library has been built once interactively and its `page` finding exists.
+
+**The whole brand.** A library built for "All our programs and everything about {brand}" has no
+P9 and no program routing. After its first saved build, offer once with `AskUserQuestion`,
+header "Schedule": "Refresh the {brand} content library every week on {day} at {time}
+{timezone}? Scheduled runs save the catalog to Atlas and post the expiring-rights alert where
+you choose next, without asking each time." Options: "Schedule it (Recommended)", "Not now";
+the free text takes another day or time. On "Schedule it", ask once, header "Alerts": "Where
+should the library alert go?" (multiSelect): Published page + chat (always on); Slack channel
+(type it); Email (type recipients). The confirm writes the
+`library:cadence` calibration with `append_calibration` (`policy`, `{area: "cadence", cadence:
+"weekly", body: "library weekly <DAY HH:MM>, <IANA timezone>", routing: "page; slack:#channel;
+email:a@x.com"}` in the `program:{slug}-routing` body format, `provenance: "interview"`; a
+`key-exists` follows the Phase 5 supersede rule) and creates the task "Atlas content library
+refresh: {brand}", launching `atlas-content-library` with `mode: build`, `run: unattended`, and
+program `all`. That record is the standing approval for the refresh, the `asset` findings, and
+the alert. Prompt:
+
+> Run the Atlas content library for {brand}, all programs, handles {handles and networks}.
+> Launch atlas-content-library with mode build, run unattended, program all. Use the saved
+> records. Read the date from the shell clock. Do not ask questions. Write no rights records
+> and send nothing to creators.
+
+---
+
+## Content sourcing (rights to creator content, and new content from program creators)
+
+Trigger when the user wants the right to use creator content, to renew rights that are running
+out, to commission new content, or to record a creator's answer about usage ("request rights",
+"get the rights to these posts", "can we run @handle's video as an ad", "renew the rights",
+"which rights should we renew", "we need more videos of {product}", "commission UGC", "@handle
+said yes to the usage", "record the rights reply"). Also reached from the **Content library**
+hand-off ("Request rights for these {n} posts?"), from outreach triage (a reply classed rights),
+and from the **Program manager** dispatch ("Request rights"). Full detail lives in
+`references/content-sourcing.md`. Requires a saved program (**Influencer program**, Program
+setup): rights records live on a program. When the library ran for the whole brand and more
+than one program is active, ask which program the requests belong to.
+
+Content sourcing is interactive only. Never schedule it; the library's scheduled refresh posts
+the expiring-rights alert. If `AskUserQuestion` is unavailable, say in one line that rights
+requests need a person to approve them, and stop.
+
+### Run
+
+1. Read the program's setup records as the **Program manager** does. Missing or unparseable:
+   run **Program setup** first. Pick the mode: `rights` for posts the user or the library named,
+   `renewal` for what is expiring, `ugc` for new content, `replies` for a creator's answer.
+2. `renewal` only, unless the user named the window: ask S0, header "Horizon": "Which rights
+   should we look at for {program}?" Options: "Ending in the next 30 days (Recommended)", "Next
+   60 days", "Next 90 days". Ask too, in the same call, header "In ads": "Are any of these
+   running in ads right now? Name them, or skip." Options: "None that I know of
+   (Recommended)", "Yes (type the creators or links)".
+3. Launch `atlas-content-sourcing` with: tool prefix, `profile_id`, `profile_slug`, brand
+   handles and networks, the program slug, `mode`, `pass: propose`, the posts (the library's
+   worth-requesting rows or the user's links), the horizon and posts in ads, the UGC focus, or
+   each reply's text, sender, channel, date and source, plus `connections` and `recipient`
+   (`team` by default; `performance` or `creative` for "what can we run"), ending with the
+   decision-audit line. No confirmation is needed: `propose` writes nothing.
+4. Relay the page link, the headline, one line per creator, what was left out as covered by a
+   deal, and the drafts. Show the `visual-data` cards per **Visual output**. Then ask in one
+   `AskUserQuestion` call, skipping any with nothing to ask:
+   - S1 (`rights`, `renewal`, `ugc`), header "Requests": "Save these {rights requests, renewals,
+     or asset requests} for {program}? {n} drafts go on the creators' rows." with each creator
+     named in one line ("@a: 2 Reels, paid usage on Meta ads for 90 days, $300"; "@b: let lapse,
+     pull from ads by Nov 3"). Options: "Save the requests (Recommended)", "Change something",
+     "Page only".
+   - S2, header "Your call", one per open item, exactly as the agent worded it: the recommended
+     answer first (Recommended), the alternatives, "Decide later".
+   - S3 (`replies`), header "Record": "Record these {n} replies for {program}?" (add "and pass
+     {k} fees owed to the ledger" when a grant carries a fee) with each named in one line,
+     including the proof ("@a: granted paid usage on Meta ads for 90 days from
+     Oct 7, $250, proof: email reply Oct 7"). Options: "Record them (Recommended)", "Change
+     something".
+   - S4, header "Mailbox", only when the program's mail setting names a live mailbox that can
+     draft and some drafts go by email: "Create {n} drafts in your {Gmail or Outlook} for @a,
+     @b and {n-2} more? Nothing is sent." Options: "Create the drafts (Recommended)", "I'll
+     copy them myself".
+   At most four questions per call: the S2 items first, four per call, then S1 or S3 and S4 (see
+   **Guardrails**, Pickers).
+5. "Change something" relaunches `pass: propose` with the change as an override. Otherwise
+   launch again with `pass: record`, the `sourcing-packet`, and the answers. S1 and S3 are the
+   write confirmations, and cover the sourcing page's `page` finding on first publish; S4 is
+   the mailbox confirmation.
+6. Relay what was written. Say plainly for every grant given only by DM or comment: "Get this
+   in writing before paid use." When the agent returns a `ledger-lines` block, pass it to
+   `atlas-program-ledger` as its next step, as the affiliate manager's are: S3 approved the
+   hand-off, so there is no extra picker, and the ledger's G1 confirms the lines before
+   they are saved. Sourcing never writes the ledger itself.
+7. Sending follows **Influencer program**, Drafts: only when the user asks in this session,
+   after the picker that names every recipient. "Sent them" marks drafts sent with one picker.
+   Grants recorded after this point show on the next content library run.
+
+On the first publish, say once: "Share this page with your team as Editor to see the budget.
+Never share it with creators."
 
 ---
 
@@ -887,8 +1755,10 @@ the tool prefix, `profile_id`, and `profile_slug`:
 - **Vetting** (row 4): `atlas-creator-vetting` with the lane's pool as the list (the lane's
   undecided candidates from discovery), the lane as the criteria source, and `recipient`
   (`campaign`, then `brand`). The Run picker is the write confirmation: "Screen the {concept}
-  creators and save the results to Atlas?" If `vetting:thresholds` is missing, ask V2 from
-  `references/creator-vetting.md` first and write it with its own confirmation.
+  creators and save the results to Atlas?" If `vetting:thresholds` is missing, the run uses the
+  reference's defaults (70 and 50), labelled as defaults; you may offer V2 from
+  `references/creator-vetting.md` first and write it with its own confirmation, but it is not
+  required.
 - **Sending a step for approval** (rows 4, 7, 11): per the reference's **Gate packets**. The
   campaign page is the approval page; the CM shares it with the client as Contributor.
 - **Pull the client's decisions** (rows 5, 8, 12, 15, and whenever the CM asks "what did they
@@ -1211,10 +2081,13 @@ detail lives in `references/quarterly-signal.md`.
    (default `leadership`): which quarter (last completed quarter (Recommended), quarter to
    date, or typed dates or a fiscal quarter), and "Save the quarter's findings to Atlas?"
    (Save (Recommended) / Page only). If the user mentions spend, take the number as typed;
-   never ask for it, and never estimate it.
+   never ask for it, and never estimate it. When no spend was typed and a program dashboard has
+   saved ledger figures, add a third question, header "Spend": "Show the program's paid amount
+   from the ledger on this page? Everyone it's shared with will see it." Options: "Leave spend
+   out (Recommended)" / "Show it". Pass the answer as `ledger_spend` (`omit` or `show`).
 2. Launch `atlas-quarterly-signal` with: tool prefix, `profile_id`, `profile_slug`, linked handles and
-   networks, run mode `interactive`, `recipient`, the quarter, any spend given, and the write
-   answer.
+   networks, run mode `interactive`, `recipient`, the quarter, any spend given, `ledger_spend`,
+   and the write answer.
 3. Relay the page link, the outcome line, the KPIs, and the forward note. When the data gaps
    name missing readouts, offer readout setup or scheduling so next quarter has them.
 
@@ -1522,6 +2395,12 @@ The watch list is the brand's saved creators, outside any campaign.
 
 ## Guardrails
 
+- **Pickers.** `AskUserQuestion` takes one to four questions per call and two to four options
+  per question. When a flow has more questions than that (several your-call items, a match per
+  post, a confirmation per creator), ask them in order across as many calls as it takes, four at
+  a time, before relaunching the agent. Never drop a question to fit, and never merge two
+  decisions into one question to save a call.
+
 - Never fabricate org, account, or metric data. If a tool call fails, say so and stop.
 - **Every state change is confirmed through `AskUserQuestion`, never plain text.** This covers
   creating a profile, starting a channel connection, writing a calibration, adding hashtags,
@@ -1542,8 +2421,9 @@ The watch list is the brand's saved creators, outside any campaign.
   review, where pasting a post link approves `lookup_posts` for that one post; creator
   vetting, where R3 approves `lookup_creators` for the listed handles Atlas does not hold; the
   PPA pitch, where D4's marketplace option approves it for the handles the marketplace returns
-  and the handles the user types; and creator discovery, whose saved cadence record approves it
-  on every run including scheduled ones.
+  and the handles the user types; creator discovery, whose saved cadence record approves it
+  on every run including scheduled ones; and the deliverable tracker, where T0 approves
+  `lookup_posts` for the post links the user pasted, in an interactive check only.
 - **Inside a CAS campaign**, one picker confirms a whole gate batch: every accept and every
   reject is named in the question, and that one answer covers all the writes the close makes.
   The campaign's saved sync cadence (C6) is the standing approval for paid discovery on that
@@ -1553,6 +2433,15 @@ The watch list is the brand's saved creators, outside any campaign.
 - Web research is a proposal, never a write: findings are always shown and confirmed before
   any calibration is recorded from them.
 - Posts and creators are shown, not just described: see **Visual output**.
+- **Approvals on the Next actions page.** In the hourly orchestrator run, an Editor's approval on
+  the Next actions page stands in for `AskUserQuestion`, under the saved
+  `orchestrator:execution` level and only for the approvals `references/orchestrator.md` **4**
+  allows: Atlas records and mailbox drafts. Sending, orders, store changes, files, lookups,
+  discovery, setup records, and destructive tools always need a person in a session, and so do
+  deals over a maximum, over budget, outside the standard terms, or changing the deal type. The
+  run's own bookkeeping findings on the `orchestrator-` prefix (`run`, `plan`, `packet`,
+  `execution`, `page`) are written without asking: X6 at setup is their standing approval, as a
+  cadence record is for its flow.
 - Every agent launch carries `recipient` (**Reading the ask**). A lens changes what is
   selected, the order, and the wording, never a number, and never adds a claim the data does
   not support. What a reader needs that Atlas does not hold (spend, conversions, usage rights)

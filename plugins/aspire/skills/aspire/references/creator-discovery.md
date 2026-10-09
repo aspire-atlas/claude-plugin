@@ -109,8 +109,10 @@ brand's own history is the stronger signal.
 refilling the shortlist with creators like the ones already delivering.
 
 1. **Pick up to five seeds**, in this order, and stop at five: accepted creators in this
-   campaign whose posts about the brand beat their own median engagement per post; creators
-   named in `went_well` findings of the weekly readout's growth lens (`readout-weekly-{profile}`
+   campaign whose posts about the brand beat their own median engagement per post; stars in
+   the newest roster review of the program whose `discoveryCampaign` is this campaign
+   (`program-{profile}-{slug}` prefix, `roster-health` findings, newest per creator, with
+   `detail.seedEligible: true`); creators named in `went_well` findings of the weekly readout's growth lens (`readout-weekly-{profile}`
    prefix, `detail.creator` set, `detail.seedEligible: true`); `partner` creators whose collab
    posts beat the brand's median. No seed qualifies: skip the tier and say so under Gaps.
 2. **Find lookalikes three ways**, each excluding the dedupe set, the brand's handles, and
@@ -120,12 +122,14 @@ refilling the shortlist with creators like the ones already delivering.
      from half to double the seed's, limit 25. Collect the authors.
    - `search_creators` with `match_phrase` on the bio for the seed's recurring bio and caption
      vocabulary, in the same band.
-   - When the seed is on Instagram: `search_creator_marketplace` with `keyword` = that
-     vocabulary, `networks: ["instagram"]`, and `instagram: { filters: { recommendationType:
-     "similar_audience", creatorMinFollowers, creatorMaxFollowers } }` for the band. TikTok has
-     no audience-similarity filter, so a TikTok seed gets the first two ways only. Never send
-     `instagram.filters.similarToCreators`: the server rejects it alongside `keyword`, which is
-     required (see `creator-brief.md`, **Atlas quirks**).
+   - When the seed is on Instagram: `search_creator_marketplace` with no `keyword`,
+     `networks: ["instagram"]`, and `instagram: { filters: { similarToCreators: [the seed's
+     handle], creatorMinFollowers, creatorMaxFollowers, excludeMessagedCreators: true } }` for
+     the band. One call per seed, never several seeds in one call, so every result is credited to the seed
+     that found it. TikTok has no
+     lookalike filter, so a TikTok seed gets the first two ways only. Never send `keyword` with
+     `similarToCreators`: the server rejects the two together (see `creator-brief.md`, **Atlas
+     quirks**).
 3. Read marketplace results through `search_creators` once they land (1 to 3 minutes after
    each network's job completes, per `creator-brief.md`, **Atlas quirks**).
    Record `source` `lookalike of @{seed}` and `detail.seed` on each candidate; the card's
@@ -137,8 +141,10 @@ the call shape, polling, and skips. For tier 5:
 
 - `networks` is the saved Networks answer. A network the brand did not choose is never sent.
 - Instagram: `creatorMinFollowers` / `creatorMaxFollowers` snapped outward to the nearest
-  allowed values around the size band, `creatorCountries` from the saved countries, and
-  `creatorInterests` only when the archetype maps cleanly onto one of the enum values.
+  allowed values around the size band, `creatorCountries` from the saved countries,
+  `creatorInterests` only when the archetype maps cleanly onto one of the enum values, and
+  `excludeMessagedCreators: true` so creators the brand has already messaged don't come back.
+  A creator ad campaign adds `featuredInPaidAds: true` for the paid track record.
 - TikTok: `minFollowers` / `maxFollowers` as the exact band, and `countryCodes` from the saved
   countries TikTok supports (per the quirk). When they span regions (US; DE, ES, FR, GB, IT;
   everything else), the first call carries one region and each extra region gets its own call
@@ -194,7 +200,7 @@ handle or uuid), `idempotencyKey` per candidate per run.
 `detail` carries: `campaign`, `tier`, `source`, `fitScore`, the per-component breakdown,
 `evidence` (permalinks and the profile URL), `riskFlags`, `verdict`, `verdictAt` when
 decided, `seed` for a lookalike, and `tierScheme: 2`. Records without `tierScheme` were written
-before the lookalike tier: read their tier 3 as tier 4 and their tier 4 as tier 5. Reading state back: `search_insights` filtered on the `runKey` prefix
+before the lookalike tier: read their tier 3 as tier 4 and their tier 4 as tier 5. Reading state back: `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
 `creator-discovery-{profile}-{campaign}`, newest first, paged; the newest record per `entityId`
 wins. `search_insights` returns findings tenant-wide, so always filter on the prefix.
 
@@ -256,12 +262,28 @@ bullets, and the page link; interactive runs confirm the send once; the S8 confi
 standing approval for unattended runs; never send to a destination that is not in the routing
 record.
 
+## Jobs and task names
+
+Every run does one of three jobs, passed to the agent as `job`:
+
+- `discover` (default): fill the pool to target in tier order, re-score, publish, and deliver.
+- `shortlist`: no sourcing. Re-score the undecided candidates already in the pool, republish
+  the page, and deliver.
+- `view`: read only. Read the newest pool state, republish the page and return the shortlist
+  as it stands: no re-score, no Atlas write, no delivery. "Show the current shortlist" runs
+  this job. It is never scheduled.
+
+S9 sets a time for each. The scheduled tasks are named "Atlas creator discovery: {brand} -
+{campaign}" (`job: discover`) and "Atlas creator shortlist: {brand} - {campaign}" (`job:
+shortlist`). A task with the older bare name "Atlas creator discovery" runs `job: discover`,
+and one named "Atlas creator discovery digest: {brand} - {campaign}" runs `job: shortlist`.
+
 ## Scheduled (unattended) runs
 
 A scheduled run starts a fresh session with nobody to answer questions.
 
-- Never ask a question. If `campaign:{slug}-brief`, `-criteria`, `-pool`, or `-cadence` is
-  missing, publish a one-card page titled "<Brand> Creator Discovery: setup needed" listing what
+- Never ask a question. If `campaign:{slug}-brief`, `-criteria`, `-pool`, `-routing`, or
+  `-cadence` is missing, publish a one-card page titled "<Brand> Creator Discovery: setup needed" listing what
   is missing, write nothing to Atlas, and end with "Run /aspire:aspire and ask for creator
   discovery setup."
 - **Discovery is allowed unattended for this agent**, and only this agent: the S9 cadence
