@@ -48,7 +48,8 @@ Notes:
 ## Requirements
 
 - An Aspire Atlas account. The Atlas connector points at `https://atlas.aspire.io/mcp`, and the organization admin connector at `https://atlas.aspire.io/mcp/admin-organization`. Both authenticate with OAuth; no API keys or environment variables are needed.
-- Do not add either connector a second time as a custom connector. The plugin bundles both.
+- Optional: a Meta account with access to the brand's ad accounts, for the Meta Ads connector. It points at Meta's ads MCP server, `https://mcp.facebook.com/ads`, and signs in with Facebook through Aspire's Meta app. Connect it only if you want Meta's own ads tools in Claude; every Atlas flow works without it.
+- Do not add any bundled connector a second time as a custom connector. The plugin bundles all three.
 
 ## Safety
 
