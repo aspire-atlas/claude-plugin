@@ -32,13 +32,14 @@ It reuses the checks of other flows rather than defining its own:
 | Mode | Who runs it | Reads | Writes (with approval) |
 | ---- | ----------- | ----- | ---------------------- |
 | `check` | The user, or the Program manager's "Check posts" | Setup records, working state, Atlas posts, posts the user pasted | `propose`: nothing. `record`: `deliverable`, `roster`, `draft`, and the tracker `page` finding, only what T1 and T3 approved |
-| `unattended` | The scheduled "Atlas program posting check" (P9 "Daily posting check") | The same, Atlas only | `deliverable` findings from strong matches and from the date alone (late, missing), and the tracker `page` finding when missing. Publishes the page and posts to the saved routing |
+| `run: unattended` | The scheduled "Atlas program posting check" (P9 "Daily posting check") | The same, Atlas only | `deliverable` findings from strong matches and from the date alone (late, missing), and the tracker `page` finding when missing. Publishes the page and posts to the saved routing |
 | `sample` | Anyone, before running it for real | Nothing | Nothing. Publishes the sample page |
 
 `check` runs in two passes. **Pass `propose`** reads, builds the owed list, matches, checks,
 drafts, and publishes the page with every change marked proposed; it writes nothing to Atlas and
 returns the `tracker-packet`. The main thread asks T1 to T5. **Pass `record`** writes what was
-approved and republishes. An unattended launch runs `unattended` whatever mode it names.
+approved and republishes. An unattended launch (`run: unattended`, or older wording per `readout.md`, **Run flag**) runs the
+unattended row whatever mode it names.
 
 ## Approvals (asked by the main thread)
 
@@ -153,8 +154,9 @@ Atlas holds the Story. Otherwise it shows "confirm by hand" and never becomes `m
 silence: the user marks it posted or missing (T5).
 
 **Atlas has not seen the creator lately.** When the newest post Atlas holds from the creator is
-older than the row's due date, a row past due is `late` with "Atlas has no posts from @a since
-{date}", never `missing`. In `check`, ask for the post's link (T0 on the next run). Never call
+older than the row's due date, a row past due carries the note "Atlas has no posts from @a since
+{date}" and stays `late` past the grace days, never `missing`: Atlas may not have indexed them
+yet. In `check`, ask for the post's link (T0 on the next run). Never call
 `lookup_creators`.
 
 **Posts the user pasted.** Only in `check`, with T0. For each link: `search_posts` on the URL or
@@ -233,14 +235,15 @@ item on the page, as in content review.
 | ------ | ---- | ---- |
 | `due` | Not yet due, or due with no date, and not matched | `action_item` `medium` |
 | `posted` | Matched, disclosure found, every required item present. `onTime` says whether it was on time | `went_well` when on time; `needs_improvement` when late |
-| `late` | Past due, no match yet, and inside the grace days; or past grace with an open match, a "confirm by hand" Story, or Atlas silent on the creator | `needs_improvement` |
-| `missing` | Past due plus grace days, no match, no open match, and Atlas holds posts from the creator after the due date | `needs_improvement` |
+| `late` | Past due, no match yet, and inside the grace days; or past grace with an open match, a "confirm by hand" Story, or no posts from the creator in Atlas since the due date | `needs_improvement` |
+| `missing` | Past due plus grace days, no match, no open match, not a "confirm by hand" Story, and Atlas holds posts from the creator dated after the due date | `needs_improvement` |
 | `needs fix` | Matched, and disclosure is missing or a required item is missing | `needs_improvement` |
 | `waived` | The user waived it (**Waived**) | `went_well` `low` |
 
 Expected posts (`owed` false) use only `due`, `posted`, `needs fix`, and `missing`, never
-`late`. `missing` on an expected post means the window passed with no post: shown as "No post
-(not owed)", kind `action_item` `low`, never chased, never in an alert. Fulfillment reads it for
+`late`: an expected post stays `due` until its window plus the grace days has passed, then is
+`missing` only when Atlas holds posts from the creator dated after the window (otherwise it stays
+`due` with the "Atlas has no posts" note), shown as "No post (not owed)", kind `action_item` `low`, never chased, never in an alert. Fulfillment reads it for
 posting odds.
 
 A `needs fix` post that is fixed later moves to `posted` on the run that sees the fix (its
@@ -411,7 +414,7 @@ calibration.
 ## Daily posting check (unattended)
 
 The scheduled task "Atlas program posting check: {brand} - {program}" (`program.md` **8**)
-launches `mode: unattended`. It follows `program.md` **9**:
+launches with `run: unattended`. It follows `program.md` **9**:
 
 - Never ask, decide, draft, send, create a mailbox draft, move a stage, confirm an open match,
   waive, or fetch a post. Never call `lookup_posts`.
@@ -419,7 +422,8 @@ launches `mode: unattended`. It follows `program.md` **9**:
   holds.
 - Write `deliverable` findings for rows that changed by a `strong` match (`posted`, `needs fix`)
   or by the date alone (`due` to `late`, `late` to `missing`, under **Status**: never `missing`
-  while a match is open, a Story is to confirm by hand, or Atlas is silent on the creator).
+  while a match is open, a Story is to confirm by hand, or Atlas holds no posts from the creator
+  since the due date).
   Never write a row an open match, a confirmation, or a waiver would decide. Write the tracker
   `page` finding only when it is missing (`program.md` **9**).
 - Republish the tracker page to the link in the newest `page` finding with key `tracker`. The
@@ -478,8 +482,8 @@ address, or a street address. More than 12 creators: the headline and section 7 
 ## What the tracker never does
 
 - Send a message, or create a mailbox draft without T4. Never a draft in an unattended run.
-- Force a match, count an open match as posted, or mark a row missing while Atlas is silent on
-  the creator or a match is open.
+- Force a match, count an open match as posted, or mark a row missing inside its grace days,
+  while a match is open, or while Atlas holds no posts from the creator since the due date.
 - Call the paid partnership label absent because Atlas does not hold it.
 - Waive a deliverable, or propose a waiver as the default.
 - Fetch a post the user did not paste, fetch anything in an unattended run, or start discovery

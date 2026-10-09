@@ -291,8 +291,8 @@ on every finding of one run), `handle`, `network`, `name` (from the list, when g
 component breakdown, `safety` (`{category: result}` plus red line, scope, competitor,
 disclosure, and audience checks), `redLineHits[]`, `hardRejectHits[]`, `riskFlags[]`,
 `calibrationsApplied[]` (the keys that shaped the call), `lessonsApplied[]`, `evidence[]`,
-`estFee` when the calculator gives one, `listName`, `listSource` (`csv`, `pasted`, or
-`aspire-app`), `campaign` when R2 named one, `reviewPage`, and `recipient`
+`estFee` when the calculator gives one, `listName`, `listSource` (`csv`, `pasted`,
+`aspire-app`, or `cas-lane`), `campaign` when R2 named one, `reviewPage`, and `recipient`
 (`recipient-lens.md`). A `feedback` finding adds `userVerdict`, `agentVerdict`, and the user's
 words verbatim. Supply an `idempotencyKey` per finding (`vet-{list-slug}-{entityId}-{findingType}`).
 

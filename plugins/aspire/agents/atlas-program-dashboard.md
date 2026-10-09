@@ -31,9 +31,9 @@ never show a missing number as zero, never add currencies together, and never ac
 show.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
-profile id and slug, the brand's handles with networks, the program slug, `mode`
-(`interactive`, `unattended`, or `sample`), `connections` (`program.md` **4**; the dashboard
-uses no mail or store connection), `recipient` (per `recipient-lens.md`; default `team`; a
+profile id and slug, the brand's handles with networks, the program slug, `run`
+(`interactive` (default) or `unattended`; older wording means `run: unattended` (see `readout.md`, **Run flag**)), `mode: sample` for a sample, `connections`
+(`program.md` **4**; the dashboard uses no mail or store connection), `recipient` (per `recipient-lens.md`; default `team`; a
 scheduled run uses `team`), and the approvals the main thread collected, per the reference's
 **Approvals**: B1 (save the snapshot, and the page link on first publish) and B2 (post to the
 saved routing). Every Atlas tool needs a `context` argument: 15 to 25 words, third person. Pass
@@ -95,7 +95,9 @@ come from `content-library.md` (**Rights**, **Expiring rights**) and the statuse
 4. **Read the program state** per **Working state**: `search_insights` on the prefix
    `program-{profile}-{slug}`, newest first, paged to the end. Keep the newest finding per
    identity per record type, every `roster` finding per creator for the funnel history, every
-   `ledger` finding, every `snapshot` in the term, and the newest `page` finding per key.
+   `ledger` finding, every `snapshot` in the term, and the newest `page` finding per key. Then
+   the brand-wide library's `asset` and `page` findings on the prefix
+   `content-library-{profile}`, per the same section.
 5. **Read performance** per **Atlas performance**: the program posts with `aggs`, each posting
    creator's own baseline in batches of ten, and the follower counts. `search_creators` on the
    brand's own handle for the snapshot's anchor.

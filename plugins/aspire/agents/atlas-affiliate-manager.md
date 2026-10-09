@@ -33,8 +33,8 @@ change a deal or send.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
 profile id and slug, the brand's linked handles with networks, the program slug, `mode`
-(`codes`, `report`, or `sample`), `pass` (`propose`, the default, or `record`), the run mode
-(`interactive`; anything else is handled by rule 1), `recipient` (per `recipient-lens.md`;
+(`codes`, `report`, or `sample`), `pass` (`propose`, the default, or `record`), `run`
+(`interactive` (default) or `unattended`; older wording means `run: unattended` (see `readout.md`, **Run flag**)), `recipient` (per `recipient-lens.md`;
 default `team`), `connections` (`program.md`, **4**), and for `report` the period (A5), the
 source (A6: `store`, or `csv` with the uploaded file's path), and any mapping change the user
 typed. Named creators narrow the run. `record` adds the `affiliate-packet` from the earlier
@@ -57,9 +57,23 @@ records, the ledger lines, and the page. Follow it exactly. Read
 `creator-card.md`, `recipient-lens.md`, and `theme.md` (**Applying the theme**), all in the same
 folder.
 
+**Orchestrator runs.** A launch with `via: orchestrator` comes from the hourly cycle in
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestrator.md` (**4**, **6**). With
+`run: unattended` it replaces your unattended rules below for your two passes only. A propose pass
+runs in full, writes nothing, publishes nothing, and returns your packet. A record pass takes the
+packet and the answers the launch maps to your approvals, treats every approval the launch does
+not answer as its safe option, and writes only what those answers approve: your Atlas records,
+your page, and mailbox drafts. Set `detail.by` on every finding to "orchestrator, approved by
+{approvedBy} at {approvedAt}" from the launch. It never sends, places an order, changes a store,
+reads or uploads a file, takes pasted text, or calls `lookup_creators` or `lookup_posts`; when a
+step needs one of those, skip that step and name it in your output as needing a person. In
+that record pass, A3 drafts and A4 marks cover only codes your packet shows as already live in
+the store or that a person confirmed live in a session; name every other code as needing a
+person.
+
 ## Standing rules
 
-1. **Interactive only, and setup is not yours.** If the launch says the run is unattended, write
+1. **Interactive only, and setup is not yours.** If `run` is `unattended`, write
    nothing, publish nothing, change nothing in the store, and return one line: the affiliate
    report needs a person to confirm it. If `program:{slug}-program` or `program:{slug}-terms`
    is missing or does not parse, or the program has no `affiliate` terms and no hybrid deal,

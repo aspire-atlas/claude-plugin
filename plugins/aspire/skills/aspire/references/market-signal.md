@@ -17,6 +17,7 @@ same run feeds several readers (`recipient-lens.md`):
 - **Performance and Creative** get reuse candidates: the comparison videos with the strongest
   openings, handed to the `atlas-ad-reuse` agent for the cut list.
 - **Campaign** gets a brief update: what the brand won on, so the next brief leads with it.
+  The `atlas-creator-brief` agent reads these findings when it plans the next brief.
 
 It runs weekly on a schedule, so the tracking leads with what changed since the last run.
 The weekly readout's product and PMM lenses read its findings rather than re-running it.
@@ -165,8 +166,8 @@ unattended runs send on the M3 and M4 standing approval. Never send anywhere els
 
 ## Scheduled (unattended) runs
 
-- Never ask a question. If `market-signal:scope`, `-topics`, `-lenses`, or `-routing` is
-  missing, publish a one-card page "<Brand> Market Signal: setup needed" listing what is
+- Never ask a question. If `market-signal:scope`, `-topics`, `-lenses`, `-routing`, or
+  `-cadence` is missing, publish a one-card page "<Brand> Market Signal: setup needed" listing what is
   missing, write nothing, and end with "Run /aspire:aspire and ask for market signal setup."
 - No discovery and no destruction: never call `lookup_*`, `search_creator_marketplace`,
   `start_business_discovery`, `add_hashtags`, or any Destructive tool.

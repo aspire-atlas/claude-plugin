@@ -22,7 +22,7 @@ Interactive only. No schedule runs it, and an unattended run never does.
 
 | Mode | Who it covers | Launched from |
 | ---- | ------------- | ------------- |
-| `offer` | Approved creators whose newest `reply` is classed interested, on a paid, ambassador or affiliate deal, with no open `terms` yet | Program manager |
+| `offer` | Creators at Replied whose newest `reply` is classed interested, on a paid, ambassador or affiliate deal, with no open `terms` yet | Program manager |
 | `counter` | Creators whose newest `reply` is classed counter or question about the deal, or `accepted` while our offer is out, or a reply the user pastes straight in | Program manager, or the user pasting a reply |
 | `renewal` | Ambassadors handed over by `atlas-roster-manager` with a renewal inside the notice window | Program manager, after the roster review |
 | `change` | Creators with an agreed deal the brand wants to change: raise commission, move to hybrid, promote an affiliate to paid, extend usage | `atlas-affiliate-manager`, `atlas-roster-manager`, or the user |
@@ -141,6 +141,10 @@ decides.
 3. **Offer** (`offer` mode): open the deal at open. Ambassador at the calculator's monthly
    open, affiliate at the standard commission and code discount, all with the standard terms.
 4. **A reply classed `accepted` to our latest offer**: accept at that offer. It is agreement, asked in N3.
+   With no `terms` finding (an `open-fee` first touch), our offer is the opening fee stated in
+   the `body` of the sent first-touch `draft` (`step` 1, `offerShown` `open-fee`): record the
+   terms from that amount plus the program's standard terms. A draft that states no amount
+   makes the move your call; never invent a number.
 5. **Their number at or under room**: accept.
 6. **Their number above room, at or under max**: counter at room, with one lever from
    **Levers** that costs nothing outside bounds.

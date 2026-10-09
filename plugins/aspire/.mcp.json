@@ -7,6 +7,14 @@
     "Aspire Atlas Organization Admin": {
       "type": "http",
       "url": "https://atlas.aspire.io/mcp/admin-organization"
+    },
+    "Meta Ads": {
+      "type": "http",
+      "url": "https://mcp.facebook.com/ads",
+      "oauth": {
+        "clientId": "2875840562772069",
+        "callbackPort": 8765
+      }
     }
   }
 }

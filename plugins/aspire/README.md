@@ -8,6 +8,7 @@ Onboarding for the Atlas platform (https://atlas.aspire.io). Takes a new or retu
 | --------- | ---- | ------- |
 | MCP server | `Aspire Atlas` | Atlas data connection at `https://atlas.aspire.io/mcp` (HTTP, OAuth). Tools appear as `mcp__Aspire_Atlas__*`. |
 | MCP server | `Aspire Atlas Organization Admin` | Support only. Organization members at `https://atlas.aspire.io/mcp/admin-organization` (HTTP, OAuth). Tools appear as `mcp__Aspire_Atlas_Organization_Admin__*`. Used only when someone asks; every invite is confirmed. |
+| MCP server | `Meta Ads` | Optional. Meta's hosted ads MCP server at `https://mcp.facebook.com/ads` (HTTP, OAuth with Facebook through Aspire's Meta app). Run by Meta, not Aspire. Tools appear as `mcp__Meta_Ads__*`. |
 | Skill | `/aspire:aspire` | Six phase onboarding flow: connection check, auth and org selection, org status, profile and social connect, brand context capture, first insights |
 | Skill | `/aspire:org-admin` | Support only. Lists organization members and pending invitations and sends confirmed invitations when someone asks. Uses Aspire Atlas Organization Admin |
 | Agent | `atlas-profile-analyst` | Analyzes an account handle the brand manages and ideates next week's content pushes: cadence, engagement, top posts and what they share, format mix, rate benchmarks against competitors Atlas indexes, then three pushes with day, format, angle, and target. Runs for first insights in Phase 6 and any time after. Also reviews any public Instagram or TikTok handle the user names, resolving and refreshing it in Atlas when the held data is over a day old. |
@@ -24,22 +25,23 @@ Onboarding for the Atlas platform (https://atlas.aspire.io). Takes a new or retu
 | Agent | `atlas-ppa-pitch` | Casting deck for paid partnership ads: persona lanes per product, one creator cast against each with Meta hook rate, interaction, median views, reach ratio and engagement, a variant set per creator from one shoot, the groups and schedule, what is produced, the rights package, and the investment. Publishes a slide deck as an artifact first, then exports it to PowerPoint and Google Slides on request. Follow-up rounds build on the previous pitch. Interactive only. |
 | Agent | `atlas-quarterly-signal` | The quarter's one-page story for leadership: the outcome first, three KPIs against the prior quarter, the trend, headline insights, what the program delivered, and next quarter's priorities, rolled up from the findings already saved in Atlas. |
 | Agent | `atlas-creator-outreach` | First messages, follow-ups, and reply sorting for an influencer program: one personal message per approved creator, naming a real post and the offer for their deal type, drafted for email, Instagram or TikTok DM, and Aspire messages. Creates drafts in a connected Gmail or Outlook after a confirmation and never sends unless you ask. Interactive, plus an optional daily reply check that records nothing. |
-| Agent | `atlas-creator-negotiation` | Offers, counters, renewals, and deal changes for program creators, priced from the fee calculator, the program's standard terms and ceilings, and the creator's own results. Recommends one move per creator with the math, sends anything over the limits to you, records agreed deals, and gives a terms summary for the agreement. Interactive only. |
+| Agent | `atlas-creator-negotiation` | Offers, counters, renewals, and deal changes for program creators, priced from the fee calculator, the program's standard terms and ceilings, and the creator's own results. Recommends one move per creator with the math, sends anything over the limits to you, records agreed deals, and gives a terms summary for the agreement. Interactive, or on an Editor's approval on the Next actions page for deals within the program's limits. |
 | Agent | `atlas-product-fulfillment` | Picks a product per creator from the program's catalog, drafts details requests, keeps a team-only order form for sizes and shipping, places orders in a connected store after a confirmation or gives an order sheet, and tracks shipping and arrival. Interactive, plus an optional daily shipping check that records nothing. |
-| Agent | `atlas-affiliate-manager` | Plans one code per affiliate creator and creates them in a connected store after a confirmation or on a code sheet, then reports each month's orders, revenue, and commission from the store or an uploaded export, with sales drawn against each creator's posts. Interactive only. |
+| Agent | `atlas-affiliate-manager` | Plans one code per affiliate creator and creates them in a connected store after a confirmation or on a code sheet, then reports each month's orders, revenue, and commission from the store or an uploaded export, with sales drawn against each creator's posts. Interactive, or on an Editor's approval on the Next actions page. |
 | Agent | `atlas-content-library` | One searchable library of creator content about the brand: program creators' posts, tags, mentions, and tracked hashtags, tagged by product, format, hook, ad readiness, and safety, with the rights on record and the usage from each deal, what's cleared for ads, and what expires soon. Schedulable weekly. |
-| Agent | `atlas-content-sourcing` | Requests usage rights on posts worth reusing, renews rights before they expire, and commissions new content from program creators with a shot list, specs, and a due date. Records each grant with where it was given and when it ends. Interactive only. |
+| Agent | `atlas-content-sourcing` | Requests usage rights on posts worth reusing, renews rights before they expire, and commissions new content from program creators with a shot list, specs, and a due date. Records each grant with where it was given and when it ends. Interactive, or on an Editor's approval on the Next actions page. |
 | Agent | `atlas-deliverable-tracker` | Checks every creator's agreed posts against what went live: on time, the right format, disclosure, and the required tags or codes. Drafts chases, fix requests, and thank-yous. Interactive, plus an optional daily posting check. |
-| Agent | `atlas-roster-manager` | Reviews the program's roster: quota delivered, results against each creator's own baseline, cost, sales, and responsiveness. Groups creators into rebook, renew, re-engage, or retire, lists renewals due, and hands top creators to discovery as lookalikes. Interactive only. |
-| Agent | `atlas-program-ledger` | Records what the program owes creators (fees, commission, rights, product cost), the invoices and payments you paste or upload, and the budget used and left, per currency. Exports a finance CSV. Record only: it never pays and never keeps bank or tax details. Interactive only. |
+| Agent | `atlas-roster-manager` | Reviews the program's roster: quota delivered, results against each creator's own baseline, cost, sales, and responsiveness. Groups creators into rebook, renew, re-engage, or retire, lists renewals due, and hands top creators to discovery as lookalikes. Interactive, or on an Editor's approval on the Next actions page. |
+| Agent | `atlas-program-ledger` | Records what the program owes creators (fees, commission, rights, product cost), the invoices and payments you paste or upload, and the budget used and left, per currency. Exports a finance CSV. Record only: it never pays and never keeps bank or tax details. Interactive, or on an Editor's approval on the Next actions page. |
 | Agent | `atlas-program-dashboard` | One page for the whole program: goals and pace, the creator funnel, posts delivered, content and rights, results, spend and return, roster health, and what needs attention next. Money shows only to the team's editors. Schedulable weekly. |
+| Agent | `atlas-campaign-orchestrator` | Works out what to do next across every program, creator ad campaign, discovery campaign, and report, ranked on one Next actions page. Editors approve proposals on the page; the hourly run saves the approved records and mailbox drafts and reports in Slack. It never sends, orders, or changes a store. Runs hourly. |
 
 ## Setup
 
-1. Install the plugin. The Aspire Atlas and Aspire Atlas Organization Admin connectors are bundled; do not add either again as a custom connector.
+1. Install the plugin. The Aspire Atlas, Aspire Atlas Organization Admin, and Meta Ads connectors are bundled; do not add any of them again as a custom connector.
 2. Start a new chat with Aspire Atlas enabled, sign in when prompted, and type `/aspire:aspire`.
 
-No environment variables are required. Authentication is handled by each connector's OAuth flow. Aspire Atlas Organization Admin only needs a sign in when someone lists or invites members; onboarding and every other flow use Aspire Atlas alone.
+No environment variables are required. Authentication is handled by each connector's OAuth flow. Aspire Atlas Organization Admin only needs a sign in when someone lists or invites members; onboarding and every other flow use Aspire Atlas alone. Meta Ads is optional and only needs a Facebook sign in if you want Meta's ads tools; it shows as needing authentication until then.
 
 On a Team or Enterprise plan, a Claude workspace admin adds each bundled connector once for the team: Customize, then Plugins, then Aspire Atlas, then the Connectors tab, then **Add for your team**. Until that's done, `/aspire:org-admin` explains the step instead of listing members.
 
@@ -137,7 +139,7 @@ and readers.
 
 ## Scheduling creator discovery
 
-The discovery agent runs on its own two schedules, set from `campaign:{slug}-cadence`: a discovery run that refills the shortlist, and a shortlist run that republishes and delivers it. Same prerequisites as the readouts, plus campaign setup completed once for that campaign. Name the tasks `Atlas creator discovery: {brand} - {campaign}` (discovery) and `Atlas creator discovery digest: {brand} - {campaign}`.
+The discovery agent runs on its own two schedules, set from `campaign:{slug}-cadence`: a discovery run that refills the shortlist, and a shortlist run that republishes and delivers it. Same prerequisites as the readouts, plus campaign setup completed once for that campaign. Name the tasks `Atlas creator discovery: {brand} - {campaign}` (discovery) and `Atlas creator shortlist: {brand} - {campaign}` (shortlist). Tasks with the older names `Atlas creator discovery` and `Atlas creator discovery digest: {brand} - {campaign}` still run as discovery and shortlist.
 
 Discovery prompt:
 
@@ -145,20 +147,20 @@ Discovery prompt:
 Run the Atlas creator discovery for {brand}, campaign {campaign-slug} (handles: {@handle1 on
 instagram}). Use the Aspire Atlas connection, find {brand}'s Atlas profile by name, and use the campaign's saved calibrations for the
 criteria, pool target, and delivery routing. Launch the atlas-creator-discovery agent in
-unattended mode to fill the shortlist back to target. Do not ask questions. Do not record
+unattended mode with job discover to fill the shortlist back to target. Do not ask questions. Do not record
 any accept or reject verdict; only a person decides. Do not state today's date in the launch
 message; the agent reads the current date from the shell clock in the campaign's saved
 timezone. If setup is incomplete or Atlas needs a fresh sign in, publish the "setup needed"
 card and stop. Deliver only to the destinations saved in the campaign routing.
 ```
 
-Shortlist prompt: the same text, with "to fill the shortlist back to target" replaced by "to re-score the current shortlist and republish it without adding candidates".
+Shortlist prompt: the same text, with "with job discover to fill the shortlist back to target" replaced by "with job shortlist to re-score the current shortlist and republish it without adding candidates".
 
 Unlike the readouts, a scheduled discovery run does start discovery work in Atlas and the creator marketplace. Setting the cadence is what approves that, and it is the only scheduled run in this plugin permitted to do it. Pause the discovery task to stop it.
 
 ## Other services this plugin works with
 
-Aspire Atlas works alongside other apps and services you already use. The plugin bundles only Aspire's own connectors. It reaches everything else through connections, tools, and accounts you set up and control, and each of those services has its own terms and privacy policy.
+Aspire Atlas works alongside other apps and services you already use. The plugin bundles Aspire's own connectors and, as an optional extra, Meta's ads MCP server (Meta Ads), which Meta runs under its own terms. It reaches everything else through connections, tools, and accounts you set up and control, and each of those services has its own terms and privacy policy.
 
 | Service | What the plugin uses it for | When |
 | ------- | --------------------------- | ---- |
@@ -176,12 +178,28 @@ Nothing goes to Slack or email unless you saved that destination during setup. A
 
 Instagram, Meta, TikTok, YouTube, Slack, Gmail, Google Fonts, and the other names above are trademarks of their owners. They're listed here to explain what the plugin does. Listing a service doesn't mean it endorses Aspire or this plugin.
 
+## Scheduling the orchestrator
+
+`/aspire:aspire next` sets up the orchestrator and offers its hourly task after the first run. The manual path: create a scheduled task named `Atlas next actions: {brand}`, repeating hourly in the hours saved in setup, with the prompt below. Same prerequisites as the readouts, plus Slack enabled for scheduled tasks when a channel is saved.
+
+```
+Run /aspire:aspire next for {brand} as the unattended hourly run. Use the Aspire Atlas
+connection, find {brand}'s Atlas profile by name, and use the saved orchestrator records. Do
+not ask questions. Read the date and time from the shell clock in the saved timezone; do not
+trust any date in this prompt. Carry out only what an Editor approved on the Next actions page,
+within the saved execution policy. Never send a message, place an order, or change a store.
+If setup is incomplete or Atlas needs a fresh sign in, publish the "setup needed" card and stop.
+Post only to the Slack channel and people saved in the orchestrator routing.
+```
+
+Anyone you share the Next actions page with as an Editor can approve. Approved records and mailbox drafts are written by the hourly run under the account that owns the task, so share the page only with people who should decide. Pause the task to stop it.
+
 ## Safety rules
 
-- Every action that changes Atlas state is confirmed through a multiple-choice question first, never plain text.
+- Every action that changes Atlas state is confirmed through a multiple-choice question first, never plain text. The one exception is the orchestrator's hourly run: an Editor's approval on the Next actions page stands in for the question, and covers only Atlas records and mailbox drafts. Deals over a maximum, over budget, outside the standard terms, or changing the deal type still need you in a session.
 - Destructive actions (`delete_profile`, `unlink_channel`, superseding or retracting a calibration, removing hashtags, changing the brand instruction) each get their own confirmation with the safe option first, and never run during onboarding on the skill's own initiative.
 - Scheduled (unattended) runs never ask questions, never run destructive tools, and deliver only to destinations saved during setup. The one exception to the no-discovery rule is `atlas-creator-discovery`: its saved cadence record is the standing approval to search Atlas and the creator marketplace on every run, including scheduled ones. Every other scheduled run starts no discovery work. Content review and post analysis never run unattended. Incomplete setup produces a "setup needed" page, not a guess.
-- Influencer program flows draft every message and never send one unless you ask in that session and confirm the named recipients. Mailbox drafts, discount codes, and store orders each need their own confirmation, and scheduled runs never send, draft, or change your store. Creator addresses stay on the team's order form and in Atlas. Everyone the order form is shared with sees every address, so share it only inside your team; creators send their details by reply, never through the form.
+- Influencer program flows draft every message and never send one unless you ask in that session and confirm the named recipients. Mailbox drafts, discount codes, and store orders each need their own confirmation, and scheduled runs never send or change your store. They create mailbox drafts only when an Editor approved them on the Next actions page. Creator addresses stay on the team's order form and in Atlas. Everyone the order form is shared with sees every address, so share it only inside your team; creators send their details by reply, never through the form.
 - The tool surface is re-verified per release; unlisted tools that change state are treated as destructive until documented. See `skills/aspire/references/atlas-tools.md`.
 
 ## Changes

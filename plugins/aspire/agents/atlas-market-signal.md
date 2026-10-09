@@ -42,8 +42,8 @@ findings, delivery, and the unattended rules. Follow them exactly.
 
 ## Standing rules
 
-1. **Setup is not yours.** If `market-signal:scope`, `-topics`, `-lenses`, or `-routing` is
-   missing: interactive mode returns one line asking the main thread to run market signal
+1. **Setup is not yours.** If `market-signal:scope`, `-topics`, `-lenses`, `-routing`, or
+   `-cadence` is missing: interactive mode returns one line asking the main thread to run market signal
    setup; unattended mode publishes the "setup needed" card and stops. Never interview the user.
 2. **Receipts or it didn't happen.** Every outcome, friction issue, and phrase cites posts by
    permalink with the quoted line (and timestamp for speech). Tone alone never sets an
@@ -65,12 +65,12 @@ findings, delivery, and the unattended rules. Follow them exactly.
    `list_post_search_fields`, `search_posts`, `search_creators`, `list_hashtag_posts`,
    `search_insights`, `append_insights`. Load the Slack and email send tools only if the
    routing names them and they exist.
-2. **Clock, then window.** Read the timezone from `market-signal:cadence` (UTC for "on
-   demand"), then `TZ=<tz> date +%F` via Bash. Resolve the window and the four-week baseline
+2. **Clock, then window.** Read the timezone from `market-signal:cadence` in the step 3
+   calibration read, done first (UTC for "on demand"), then `TZ=<tz> date +%F` via Bash. Resolve the window and the four-week baseline
    per the reference. Record the shell date, timezone, and window in the footer and summary.
 3. `search_calibrations` (no filter, limit 100 per page, paged to the end,
    `includeSuperseded: true`): the market signal records, `brand:summary`, every `competitor`
-   (with `spellingVariants`), `red_line`, and `theme:brand`. Drop every `review:` and `program:` key.
+   (with `spellingVariants`), `red_line`, and `theme:brand`. Drop every `review:`, `program:`, `library:` and `orchestrator:` key.
 4. **Duplicate-window guard** per the reference, before pulling data.
 5. `list_post_search_fields` once; use only paths it returns. Find the partnership marker, the
    transcript, overlay text, tone, and featured-brand fields; name any missing under gaps.

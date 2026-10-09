@@ -379,6 +379,10 @@ period.
 | A8, a report | Every figure in **Per creator, per period**, `source`, `sourceLabel`, `partial` | `went_well` with sales; `action_item` `low` with none |
 | A9, turned off in the store | `codeStatus` `retired`, `retiredAt` | `action_item` `low` |
 
+Only an A8 report finding carries `source` (store or csv). A code finding copies the code
+fields, never `source` or a period's figures, and never counts as a report: the Program manager's "Report sales and commission" row and the dashboard's "Sales to
+report" item look for a report finding for the last closed month.
+
 **Fields this agent adds to `affiliate`** (beyond `program.md`'s list): `type` (`affiliate` or
 `hybrid`), `commissionPct`, `discountKind`, `discountValue`, `codeMethod` (`store`, `sheet`),
 `codeCreatedAt`, `retiredAt`, `storeRef`, `eligibleRevenue`, `refunds`, `netOfRefunds`,
