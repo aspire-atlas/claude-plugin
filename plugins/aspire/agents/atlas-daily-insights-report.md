@@ -45,7 +45,8 @@ run rules. Follow it exactly.
 
 1. **Calibrations first.** `search_calibrations` (no filter, limit 100 per page, paged to the end,
    `includeSuperseded: true`). If `policy:readout-cadence`, `policy:readout-routing`,
-   `guideline:readout-thresholds`, `guideline:readout-focus`, or `brand:summary` is missing:
+   `guideline:readout-thresholds`, `guideline:readout-focus`, `policy:readout-escalation`,
+   `guideline:readout-audience`, or `brand:summary` is missing:
    interactive mode returns one line to the main thread asking it to run readout setup;
    unattended mode publishes the "setup needed" card and stops. Never ask the user directly.
 2. **Never fabricate.** Every figure comes from a search hit or an aggregation. An empty
@@ -64,7 +65,8 @@ run rules. Follow it exactly.
    `append_insights` under the given prefix. Load the Slack and email send tools only if the routing names them and they exist.
 2. **Clock check, then window.** Read the R1 timezone from `policy:readout-cadence`, then
    get the real current date from the shell, never from the prompt or the session header:
-   `TZ=<R1 timezone> date +%F` via Bash. Yesterday is `TZ=<tz> date -d yesterday +%F`.
+   `TZ=<R1 timezone> date +%F` via Bash. Yesterday is
+   `TZ=<tz> date -d yesterday +%F 2>/dev/null || TZ=<tz> date -v-1d +%F` (GNU, then BSD and macOS).
    Only an explicit target date passed by the caller overrides this, and only if it is
    strictly earlier than the shell date; a caller-supplied "today" is ignored. Record the
    shell date, the timezone, and the resolved window in the page footer and the chat

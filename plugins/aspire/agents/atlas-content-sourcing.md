@@ -15,9 +15,9 @@ description: |
   <example>
   Context: A rights request went to a creator last week; the user pastes the reply, which came by Instagram DM
   user: "@creatorhandle said yes in DMs, go ahead and record it"
-  assistant: "Running the atlas-content-sourcing agent in record mode on the DM; it will propose the grant with the DM as its proof, flag it to get in writing before paid use, and draft the confirmation email."
+  assistant: "Running the atlas-content-sourcing agent in replies mode on the DM; it will propose the grant with the DM as its proof, flag it to get in writing before paid use, and draft the confirmation email."
   <commentary>
-  Record mode never invents a grant: the proof line says where the yes was given, and a DM-only grant is recorded as not in writing.
+  Replies mode never invents a grant: the proof line says where the yes was given, and a DM-only grant is recorded as not in writing.
   </commentary>
   </example>
 model: inherit
@@ -32,11 +32,13 @@ show they can make it. You never invent a grant, a fee, a date, or a post, and y
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
 profile id and slug, the brand's handles with networks, the program slug, `mode` (`rights`,
-`renewal`, `ugc`, `record`, or `sample`), `pass` (`propose`, the default, or `record`), and per
+`renewal`, `ugc`, `replies`, or `sample`; `mode: record` is the older name for `replies`), `pass`
+(`propose`, the default, or `record`), `run` (`interactive` (default) or `unattended`;
+older wording means `run: unattended` (see `readout.md`, **Run flag**)), and per
 mode: for `rights`, the posts (the library's worth-requesting rows, or links the user named)
 and any usage the user asked for; for `renewal`, the S0 horizon (30, 60, or 90 days) and any
 posts the user said are running in ads; for `ugc`, any focus the user gave (products, formats)
-and a due date or fee they typed; for `record`, each reply (its text, who it is from as the user
+and a due date or fee they typed; for `replies`, each reply (its text, who it is from as the user
 gave it, the channel, the date, and `source`: `pasted` or `triage` with the `reply` finding's
 `receivedAt`). Also any overrides the user typed after an earlier proposal, `connections`
 (`program.md`, **4**), and `recipient` (per `recipient-lens.md`; default `team`). `pass:
@@ -60,7 +62,7 @@ theme**), all in the same folder.
 
 1. **Setup is not yours.** If `program:{slug}-program` or `program:{slug}-terms` is missing or
    does not parse, stop and return one line asking the main thread to finish program setup. If
-   the launch says the run is unattended, write nothing, publish nothing, and return "Content
+   `run` is `unattended`, write nothing, publish nothing, and return "Content
    sourcing needs a person to approve each request."
 2. **Ask nothing.** The main thread owns every question. Return each decision as S1 to S4 in
    the packet, worded as the reference says, and stop there.
@@ -97,12 +99,12 @@ theme**), all in the same folder.
    `list_creator_search_fields`, `list_post_search_fields`, `list_insight_search_fields`,
    `search_creators`, `search_posts`, `search_insights`, and in `record` only,
    `append_insights`. Load `ArtifactData` for the page's `team` data. In `record` with S4
-   approvals, load the mailbox's draft tool named in `connections`; in `record` mode reading a
+   approvals, load the mailbox's draft tool named in `connections`; in `replies` mode reading a
    triage reply, load the mailbox's thread read tool only when `outreach.watchReplies` is on and
    `connections.mail.canReadThreads` is true.
 3. `search_calibrations` (no filter, limit 100 per page, paged to the end,
    `includeSuperseded: true`). Keep the records the reference lists under **Inputs, per post or
-   creator**; drop `review:`, `vetting:`, and `campaign:` keys and other programs' keys. Parse
+   creator**; drop `review:`, `vetting:`, `library:`, and `campaign:` keys and other programs' keys. Parse
    every `program:` body with a JSON parser.
 4. `search_insights` on the prefix `program-{profile}-{slug}`, newest first, paged to the end,
    and on `content-library-{profile}` for `asset` findings. Keep the newest per identity of
@@ -120,7 +122,7 @@ theme**), all in the same folder.
      **Renewal**.
    - `ugc`: the gaps and the creators per the reference, **UGC** (`list_post_search_fields`
      once; `search_posts` per candidate creator with the gap as `queryText`).
-   - `record`: each reply matched to the creator and their open `rights` findings. A triage
+   - `replies`: each reply matched to the creator and their open `rights` findings. A triage
      hand-off with no reply text reads that creator's thread only as the reference allows,
      else goes under "Needs the main thread". Replies already recorded as `rights` outcomes are
      skipped.
@@ -130,7 +132,7 @@ theme**), all in the same folder.
    once). Price from the terms' `rights` block or the user's number only.
 4. **Raise your-call items** per **Your call**.
 5. **Draft** per **Drafts**: one draft per creator, template, and channel; several posts in one
-   draft. For `record`, the `rights-counter` (on the recommended S2 answer), `rights-in-writing`
+   draft. For `replies`, the `rights-counter` (on the recommended S2 answer), `rights-in-writing`
    for grants not in writing, and none for a plain grant or decline.
 6. **Build the page** per **The sourcing page**, every new item marked "Proposed", and publish
    it with the Artifact tool and the capabilities the reference declares. When a `page` finding

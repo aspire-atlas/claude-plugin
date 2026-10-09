@@ -194,12 +194,12 @@ reach, because Atlas holds views.
 
 | recordType | Identity | Anchor | kind | detail adds | Written by |
 | ---------- | -------- | ------ | ---- | ----------- | ---------- |
-| `roster` | the creator's account | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while active; `action_item` `low` at No reply; `went_well` complete; `needs_improvement` declined or dropped | `handle`, `network`, `name`, `type`, `stage`, `source` (discovery, vetting, typed, csv), `contact` `{email, manager, dm}`, `tier`, `lastContactAt`, `nextFollowUpAt`, `waitingOn` (brand while a draft is unsent, creator once sent), `yourCall` (the open question, while one is open), `yourCallDeferredAt` (when the user chose "Decide later"), `notes` | Every program agent that moves a creator; content sourcing writes only `waitingOn` and `yourCall`; the deliverable tracker moves Posting due, Posted, and Complete; Program manager |
+| `roster` | the creator's account | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while active; `action_item` `low` at No reply; `went_well` complete; `needs_improvement` declined or dropped | `handle`, `network`, `name`, `type`, `stage`, `source` (discovery, vetting, typed, csv), `contact` `{email, manager, dm}`, `tier`, `lastContactAt`, `nextFollowUpAt`, `waitingOn` (brand while a draft is unsent, creator once sent), `yourCall` (the open question, while one is open), `yourCallDeferredAt` (when the user chose "Decide later"), `notes` | Every program agent that moves a creator; content sourcing writes only `waitingOn` and `yourCall`; fulfillment moves Delivered to Posting due on delivery; the deliverable tracker moves Posting due only when no product ships, and moves Posted and Complete; Program manager |
 | `draft` | the creator + the template + the channel | The creator's account | `action_item` `low` while not sent; `went_well` once sent | `handle`, `channel` (email, dm, aspire), `template`, `subject`, `body`, `mailDraftId` (when a mailbox draft exists), `sentAt`, `sentBy` (`user` or `send-authorized`) | outreach, negotiation, fulfillment, affiliate manager, sourcing, tracker, roster manager |
-| `reply` | one per exchange, never replaced | The creator's account | `went_well` `low` | `handle`, `channel`, `receivedAt`, `summary` (one plain line), `class` (interested, accepted, question, counter, declined, details, rights, auto-reply, other; an auto-reply moves nothing and never counts as a reply), `record` (what it wrote), `nextMove`, `source` (pasted, mailbox) | outreach (triage), negotiation, fulfillment, sourcing |
+| `reply` | one per exchange, never replaced | The creator's account | `went_well` `low` | `handle`, `channel`, `receivedAt`, `summary` (one plain line), `class` (interested, accepted, question, counter, declined, details, rights, auto-reply, other; an auto-reply moves nothing and never counts as a reply), `record` (what it wrote), `nextMove`, `source` (pasted, mailbox) | outreach (triage), negotiation, sourcing |
 | `terms` | the creator + the deal version | The creator's account | `action_item` `medium` while negotiating; `went_well` agreed; `needs_improvement` declined | `handle`, `type`, `status` (offered, countered, agreed, declined), `version`, `offer` `{open, target, max}`, `counter`, `fee`, `productValue`, `commissionPct`, `codeDiscountPct`, `code`, `monthlyFee`, `termMonths`, `deliverables` (list: what, count, due), `postWithinDays`, `usage`, `usageDays`, `usageChannels`, `exclusivity`, `disclosure`, `whitelisting` (true or false, with `whitelistingDays`), `paymentTiming`, `termStart`, `termEnd`, `agreedAt` | negotiation |
 | `fulfillment` | the creator + `orderKey` (`{YYYY-MM}` for an ambassador's monthly order, `1` otherwise) | The creator's account | `action_item` `medium` until delivered; `went_well` delivered | `handle`, `product`, `options`, `value`, `status` (to request, requested, received, ordered, shipped, delivered, issue, returned), `address`, `pickup`, `carrier`, `tracking`, `orderRef`, `orderedAt`, `shippedAt`, `deliveredAt`, `postDueAt` | fulfillment |
-| `deliverable` | the creator + `deliverableKey` | The creator's account | `action_item` `medium` while due; `went_well` posted on time; `needs_improvement` late, missing, or needs a fix; `action_item` `low` for an expected (loose gifting) post not made | `handle`, `what`, `due`, `status` (due, posted, late, missing, needs fix, waived; posted carries `onTime`; late means past due with nothing posted), `postUrl`, `postId`, `postedAt`, `disclosure` (found, missing, unclear), `checks` (one line each), `owed` (true for terms, false for loose gifting) | deliverable tracker |
+| `deliverable` | the creator + `deliverableKey` | The creator's account | `action_item` `medium` while due; `went_well` posted on time; `needs_improvement` late, missing, or needs a fix; `action_item` `low` for an expected (loose gifting) post not made | `handle`, `what`, `due`, `status` (due, posted, late, missing, needs fix, waived; posted carries `onTime`; late means past due and inside the grace days with nothing posted, or past them while Atlas holds no posts from the creator since the due date), `postUrl`, `postId`, `postedAt`, `disclosure` (found, missing, unclear), `checks` (one line each), `owed` (true for terms, false for loose gifting) | deliverable tracker |
 | `asset` | the post | The creator's account | `went_well` `low` | `postUrl`, `postId`, `handle`, `network`, `format`, `products`, `themes`, `hookPattern`, `adScore`, `peopleOnScreen`, `safety`, `sources` (any of program, tagged, mention, hashtag) | content library |
 | `rights` | the post + the usage | The creator's account | `action_item` `medium` while requested; `went_well` granted; `needs_improvement` declined or expired | `postUrl`, `handle`, `status` (wanted, requested, countered, granted, declined, expired, renewal requested), `proof` (where and when the grant was given), `inWriting`, `usage` (organic repost, paid usage, whitelisting), `channels`, `startsAt`, `expiresAt`, `fee`, `requestKind` (rights, renewal, new-ugc), `assetSpec` (new UGC: what, specs, due) | content sourcing |
 | `affiliate` | the creator + the period | The creator's account | `went_well` when sales; `action_item` `low` when none | `handle`, `code`, `link`, `period` (`YYYY-MM`), `orders`, `revenue`, `aov`, `commission`, `currency`, `source` (store, csv), `codeStatus` (planned, live, retired) | affiliate manager |
@@ -246,7 +246,13 @@ written as a `rights` grant. An agreed renewal of it is.
 
 **Brand-wide library.** `atlas-content-library` also runs with no program. Its findings then go
 on runKey `content-library-{profile}-{YYYY-MM-DD}`, and it reads rights from every program's
-records.
+records. Program flows that read `asset` findings or the library `page` finding (the dispatch,
+the dashboard) also read the newest of each on the prefix `content-library-{profile}`, so a
+brand-wide refresh counts for every program. Its scheduled refresh is approved by the
+`library:cadence` calibration (**8**), not by a program's P9. `library:cadence` is a
+`policy` record: flows that read only `guideline` and `red_line` records never see it, and
+every flow that reads calibrations more broadly names `library:` in its drop list. Only the
+library and the **Content library** section read it.
 
 A program needs at least one linked Instagram or TikTok channel on the brand profile, because
 program-level findings are anchored to the brand's account. Without one, say so in one line and
@@ -296,7 +302,8 @@ Rules:
   a discovery shortlist (Recommended)", "Vet a list I have", "I'll add creators myself". The
   first runs **Creator discovery** Setup for the slug in `discoveryCampaign`; the second runs
   **Creator vetting**. Approved creators from either become `roster` findings at stage
-  Approved, with one confirmation naming them.
+  Approved, with one confirmation naming them. Later, the dispatch's "Add creators" row (**3**)
+  does the same whenever the roster is below `rosterTarget`.
 
 ## 3. Program manager (status and next step)
 
@@ -317,19 +324,25 @@ ending), and the dashboard link.
 | Your call needed on any creator, not deferred in the last 7 days (`yourCallDeferredAt`) | Decide on @{handle} | the section that raised it (a roster decision goes to **Roster review**, which writes the row) |
 | Replies pasted in this session | Record replies | `atlas-creator-outreach` (`mode: triage`) |
 | `watchReplies` on, any creator at Contacted, and the mailbox not yet checked this session | Check replies | `atlas-creator-outreach` (`mode: triage`, `source: mailbox`) |
-| A reply classed counter or question about the deal | Answer @{handle}'s counter | `atlas-creator-negotiation` (`mode: counter`) |
+| A reply classed accepted from a paid, ambassador, or affiliate creator, newer than the creator's newest `terms`, with no agreed `terms` | Record @{handle}'s deal: they accepted the offer | `atlas-creator-negotiation` (`mode: counter`) |
+| A reply classed counter or question about the deal, newer than the creator's newest `terms` | Answer @{handle}'s counter | `atlas-creator-negotiation` (`mode: counter`) |
+| A reply classed rights, newer than the creator's newest `rights` finding | Record @{handle}'s rights answer | `atlas-content-sourcing` (`mode: replies`; `mode: rights` when no request is open) |
+| `rights` at countered with no `rights-counter` draft since | Answer @{handle}'s rights counter | `atlas-content-sourcing` (`mode: replies`, with the recorded counter) |
 | Paid, ambassador, or affiliate creators at Replied (interested) with no offer | Make offers | `atlas-creator-negotiation` (`mode: offer`) |
 | Approved creators with no outreach draft | Write first messages | `atlas-creator-outreach` (`mode: first-touch`) |
 | Follow-ups due | Write follow-ups | `atlas-creator-outreach` (`mode: follow-up`) |
+| `rights` at requested or renewal requested for 14 days or more with no answer | Follow up on rights requests | `atlas-content-sourcing` (`mode: rights`, or `renewal` for renewals) |
 | Agreed creators whose deal includes product (gifting; paid or ambassador with a product, `productValue`, or `productAllowance`; affiliate only when the deal names product) and whose product is not ordered | Collect details and order product | `atlas-product-fulfillment` |
-| Affiliate creators agreed without a live code | Set up codes | `atlas-affiliate-manager` (`mode: codes`) |
+| Affiliate or hybrid creators at Agreed with no code planned or live | Set up codes | `atlas-affiliate-manager` (`mode: codes`) |
+| Codes on the sheet still `planned` for creators at Agreed | Mark the sheet codes live | `atlas-affiliate-manager` (`mode: codes`, after A4) |
 | Posts due within 3 days, late, missing, or needing a fix | Check posts | `atlas-deliverable-tracker` |
 | Rights expiring within 30 days, or wanted assets | Request rights | `atlas-content-sourcing` |
-| Live codes and no `affiliate` finding for the last closed month | Report sales and commission | `atlas-affiliate-manager` (`mode: report`) |
+| Live codes and no report finding (an `affiliate` finding with `source` store or csv) for the last closed month | Report sales and commission | `atlas-affiliate-manager` (`mode: report`) |
 | Ledger lines past due, or agreed deals, ordered product, or closed commission with no ledger line | Update payments | `atlas-program-ledger` |
 | Ambassador renewals within the notice window | Review the roster | `atlas-roster-manager`, then `atlas-creator-negotiation` (`mode: renewal`) for the renewals the user picks |
+| Fewer creators on the roster than `rosterTarget` (Declined and Dropped left out) | Add creators | Accepted candidates in the `discoveryCampaign` not on the roster: add them at Approved with one confirmation naming them (**Filling the roster**). Otherwise **Creator discovery** Run to refill the shortlist (its Setup first when no campaign is saved) |
 | No `roster-health` finding in 30 days and creators at Agreed or later | Review the roster | `atlas-roster-manager` |
-| No library page, or the newest `asset` finding older than 7 days | Refresh the content library | `atlas-content-library` (`mode: build`) |
+| No library `page` finding, or the newest `asset` finding older than 7 days, counting the program's library and the brand-wide one (**Brand-wide library**) | Refresh the content library | `atlas-content-library` (`mode: build`) |
 | Otherwise | Update the dashboard | `atlas-program-dashboard` |
 
 Then one `AskUserQuestion`, header "Next": the row's next step first (Recommended), plus "Show
@@ -499,13 +512,19 @@ Same mechanics as **Readouts**, Schedule, in SKILL.md: the session's scheduled-t
 local cron; list existing tasks first; standalone prompts that say "do not ask questions" and
 state no date. P9 is the standing approval. Task names:
 
-- "Atlas program dashboard: {brand} - {program}" (weekly), launching `atlas-program-dashboard`.
+- "Atlas program dashboard: {brand} - {program}" (weekly), launching `atlas-program-dashboard`
+  with `run: unattended`.
 - "Atlas program posting check: {brand} - {program}" (daily), launching
   `atlas-deliverable-tracker` in unattended mode.
 - "Atlas program reply check: {brand} - {program}" (daily, only with `watchReplies`),
-  launching `atlas-creator-outreach` in `mode: reply-check`.
+  launching `atlas-creator-outreach` with `mode: reply-check`, `run: unattended`.
 - "Atlas program library refresh: {brand} - {program}" (weekly), launching
-  `atlas-content-library` in unattended mode.
+  `atlas-content-library` with `mode: build`, `run: unattended`.
+- "Atlas content library refresh: {brand}" (weekly), the brand-wide library, launching
+  `atlas-content-library` with `mode: build`, `run: unattended`, and program `all`. Its standing
+  approval is the `library:cadence` calibration (`policy`, `{area: "cadence", cadence: "weekly",
+  body: "library weekly <DAY HH:MM>, <IANA timezone>"}`), saved in the **Content library**
+  section's Schedule, not P9.
 - "Atlas program shipping check: {brand} - {program}" (daily), launching
   `atlas-product-fulfillment` in its read-only status mode.
 
@@ -522,7 +541,8 @@ Follow the readout rules (`readout.md`, **Scheduled (unattended) runs**):
   Posts to the saved routing are allowed.
 - May read Atlas, read a connected mailbox for roster creators' replies (only with
   `watchReplies`), publish the program's pages, post to the saved routing, and write the agent's
-  own observed findings when its cadence in P9 names it: `snapshot`, `deliverable` status from
+  own observed findings when its cadence in P9 (or `library:cadence`, for the brand-wide
+  library) names it: `snapshot`, `deliverable` status from
   strong-matched posts and from the date alone (late, missing), `asset`, and `page`. Publishing includes
   the page's Editor-only `team` page data.
 - Resolve the date from the shell clock in the cadence timezone (`TZ=<tz> date +%F`).

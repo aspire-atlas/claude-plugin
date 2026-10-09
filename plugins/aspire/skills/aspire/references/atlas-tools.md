@@ -220,6 +220,9 @@ when it reads guidelines, as it drops `review:` and `vetting:` keys. They are ne
 guidelines, and a program's terms, maximums or budget never appear in a brief, a review, or a
 page for creators.
 
+**The key `library:cadence` belongs to the content library** (`program.md`, **Brand-wide
+library**). It is a `policy` record; every other flow drops `library:` keys the same way.
+
 **Read every page.** `limit 100` on `search_calibrations` is the page size, not a cap. Pass
 each response's `nextCursor` back as `cursor` until none is returned, then filter. Lessons,
 hard rules and superseded versions keep growing, so a single page can miss the records a

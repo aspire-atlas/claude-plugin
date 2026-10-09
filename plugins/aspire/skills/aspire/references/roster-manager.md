@@ -199,8 +199,10 @@ clause: "@marco missed 3 of 4 posts since July and hasn't replied in 40 days. Pa
 
 The **Roster review** section writes the answer (`program.md`, **3**): a pause or a drop is a
 new `roster` finding at Paused or Dropped, copied from the newest row with `yourCall` cleared. The packet carries that row ready
-to write (`rosterChange`). "Keep" writes nothing on the roster. "Decide later" leaves the call
-open on the page and in the `roster-health` finding.
+to write (`rosterChange`). "Keep" writes nothing on the roster. "Decide later" follows
+`program.md`, **3**, Decide later: the section writes the creator's newest `roster` row again
+with `yourCall` set to the question and `yourCallDeferredAt`, so the call stays on the status
+screen and the page without leading the next step for 7 days.
 
 ## Renewals
 
@@ -395,7 +397,8 @@ the K2 items first, then K3 to K5.
 - K1 approves the `roster-health` findings, the `draft` findings, and the `page` finding.
   "Change something" relaunches `propose` with the change as an override (a segment the user
   moves, a creator to leave out). "Page only" writes nothing.
-- K2 answers are written by the **Roster review** section from `rosterChange`, one `roster`
+- K2 answers are written by the **Roster review** section from `rosterChange` (or, for
+  "Decide later", the newest row with `yourCall` and `yourCallDeferredAt`), one `roster`
   finding each, in the same confirmation. The agent never writes a `roster` finding.
 - K3 "Start the renewals" launches `atlas-creator-negotiation` with `mode: renewal`, `pass:
   propose`, and the `renewals` block, after the `record` pass when K1 saved.

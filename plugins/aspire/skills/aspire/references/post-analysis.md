@@ -25,7 +25,7 @@ transcript, or the audio, and the page says which.
 | `recipient` | **Reading the ask**. Default `brand`; `performance` and `creative` when the ask is about reuse as an ad. |
 | `baseline` | Q2 below: `held`, `refresh`, or `skip` |
 | `save` | Q3 below: whether to save the findings |
-| Brand digest | The requesting brand's `brand:summary`, `brand:business-context`, competitors, partners, red lines, and any `campaign:*-brief` records. Drop `review:`, `vetting:`, `program:`, `creator:`, `theme:` and `fees:` keys (the theme still styles the page). |
+| Brand digest | The requesting brand's `brand:summary`, `brand:business-context`, competitors, partners, red lines, and any `campaign:*-brief` records. Drop `review:`, `vetting:`, `program:`, `library:`, `creator:`, `theme:` and `fees:` keys, and a creator ad campaign's `campaign:{slug}-cas`, `-lane-*`, `-terms` and `-decision-defaults` (the theme still styles the page). |
 
 ## Questions (main thread)
 
@@ -190,6 +190,10 @@ an unclear sponsor), `action_item` with `priority` for each recommendation (trim
 ask, rights to clear). `detail` carries `findingType` (`performance`, `brand`, `safety`,
 `disclosure`, `rights`, `recommendation`), the evidence (timestamps, counts, the fields used),
 and `recipient`. One `idempotencyKey` per finding.
+
+**Reading it back**: `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
+`post-analysis-{profile}-{shortcode or video id}`, newest first; the newest run's findings are
+the earlier analysis of this post. A bare `runKey` filter is rejected as unmapped.
 
 ## Rules
 

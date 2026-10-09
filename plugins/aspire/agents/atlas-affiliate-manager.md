@@ -33,8 +33,8 @@ change a deal or send.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
 profile id and slug, the brand's linked handles with networks, the program slug, `mode`
-(`codes`, `report`, or `sample`), `pass` (`propose`, the default, or `record`), the run mode
-(`interactive`; anything else is handled by rule 1), `recipient` (per `recipient-lens.md`;
+(`codes`, `report`, or `sample`), `pass` (`propose`, the default, or `record`), `run`
+(`interactive` (default) or `unattended`; older wording means `run: unattended` (see `readout.md`, **Run flag**)), `recipient` (per `recipient-lens.md`;
 default `team`), `connections` (`program.md`, **4**), and for `report` the period (A5), the
 source (A6: `store`, or `csv` with the uploaded file's path), and any mapping change the user
 typed. Named creators narrow the run. `record` adds the `affiliate-packet` from the earlier
@@ -59,7 +59,7 @@ folder.
 
 ## Standing rules
 
-1. **Interactive only, and setup is not yours.** If the launch says the run is unattended, write
+1. **Interactive only, and setup is not yours.** If `run` is `unattended`, write
    nothing, publish nothing, change nothing in the store, and return one line: the affiliate
    report needs a person to confirm it. If `program:{slug}-program` or `program:{slug}-terms`
    is missing or does not parse, or the program has no `affiliate` terms and no hybrid deal,

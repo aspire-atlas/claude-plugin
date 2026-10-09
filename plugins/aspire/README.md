@@ -138,7 +138,7 @@ and readers.
 
 ## Scheduling creator discovery
 
-The discovery agent runs on its own two schedules, set from `campaign:{slug}-cadence`: a discovery run that refills the shortlist, and a shortlist run that republishes and delivers it. Same prerequisites as the readouts, plus campaign setup completed once for that campaign. Name the tasks `Atlas creator discovery: {brand} - {campaign}` (discovery) and `Atlas creator discovery digest: {brand} - {campaign}`.
+The discovery agent runs on its own two schedules, set from `campaign:{slug}-cadence`: a discovery run that refills the shortlist, and a shortlist run that republishes and delivers it. Same prerequisites as the readouts, plus campaign setup completed once for that campaign. Name the tasks `Atlas creator discovery: {brand} - {campaign}` (discovery) and `Atlas creator shortlist: {brand} - {campaign}` (shortlist). Tasks with the older names `Atlas creator discovery` and `Atlas creator discovery digest: {brand} - {campaign}` still run as discovery and shortlist.
 
 Discovery prompt:
 
@@ -146,14 +146,14 @@ Discovery prompt:
 Run the Atlas creator discovery for {brand}, campaign {campaign-slug} (handles: {@handle1 on
 instagram}). Use the Aspire Atlas connection, find {brand}'s Atlas profile by name, and use the campaign's saved calibrations for the
 criteria, pool target, and delivery routing. Launch the atlas-creator-discovery agent in
-unattended mode to fill the shortlist back to target. Do not ask questions. Do not record
+unattended mode with job discover to fill the shortlist back to target. Do not ask questions. Do not record
 any accept or reject verdict; only a person decides. Do not state today's date in the launch
 message; the agent reads the current date from the shell clock in the campaign's saved
 timezone. If setup is incomplete or Atlas needs a fresh sign in, publish the "setup needed"
 card and stop. Deliver only to the destinations saved in the campaign routing.
 ```
 
-Shortlist prompt: the same text, with "to fill the shortlist back to target" replaced by "to re-score the current shortlist and republish it without adding candidates".
+Shortlist prompt: the same text, with "with job discover to fill the shortlist back to target" replaced by "with job shortlist to re-score the current shortlist and republish it without adding candidates".
 
 Unlike the readouts, a scheduled discovery run does start discovery work in Atlas and the creator marketplace. Setting the cadence is what approves that, and it is the only scheduled run in this plugin permitted to do it. Pause the discovery task to stop it.
 

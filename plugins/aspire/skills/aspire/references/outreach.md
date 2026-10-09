@@ -26,8 +26,8 @@ People send. Outreach drafts, tracks, and proposes.
 | `reply-check` | The daily scheduled run | The same as triage, from the mailbox only | Nothing but the page's `page` finding when it is missing. Publishes the page and posts to the saved routing |
 | `sample` | Anyone, before running it for real | Nothing | Nothing. Publishes the sample page |
 
-Every mode publishes the outreach page (**The page**). An unattended launch runs `reply-check`
-whatever mode it names.
+Every mode publishes the outreach page (**The page**). A launch with `run: unattended` runs
+`reply-check` whatever mode it names.
 
 ## Approvals (asked by the main thread)
 
@@ -346,6 +346,7 @@ For each reply:
    | `counter` | Names a fee, asks for more, or wants different terms | Stage Negotiating, `waitingOn` brand | `atlas-creator-negotiation` (`mode: counter`) |
    | `details` | Sends shipping details, sizes, or a product choice | Stage Details received, `waitingOn` brand. The summary never holds the address | `atlas-product-fulfillment`, which records the details from the reply text the main thread passes |
    | `accepted` | A gifting creator says yes to the product (`program.md`, **Who owns a deal**) | Stage Agreed, `waitingOn` brand. No `terms` finding: the deal is the program's `terms.gifting` | `atlas-product-fulfillment` (details request) |
+   | `accepted` | A paid, ambassador, or affiliate creator says yes to our offer as it stands (negotiation's offer, or the opening fee in an `open-fee` first message) | Stage Negotiating, `waitingOn` brand. No `terms` finding: Agreed comes when negotiation records the deal | `atlas-creator-negotiation` (`mode: counter`), which records the deal with N3 (with no `terms`, from the fee stated in the sent first-touch `draft`) |
    | `rights` | Answers or asks about using their content (usage, whitelisting, a license) | Stage unchanged, `waitingOn` brand | `atlas-content-sourcing` |
    | `question` | Asks something before deciding | Stage Replied, `waitingOn` brand. A question the program records cannot answer also sets `yourCall` with the question | Deal questions: `atlas-creator-negotiation` (`mode: counter`). Anything else: an answer the user types |
    | `interested` | Yes, tell me more, sounds great, from a paid, ambassador, or affiliate creator; or a gifting creator who wants to know more before saying yes | Stage Replied, `waitingOn` brand | Paid, ambassador, affiliate: `atlas-creator-negotiation` (`mode: offer`). Gifting: an answer the user types |
@@ -367,7 +368,7 @@ because a reply asked.
 ## Daily reply check (unattended)
 
 The scheduled task "Atlas program reply check: {brand} - {program}" (`program.md` **8**)
-launches `mode: reply-check`. It follows `program.md` **9**:
+launches `mode: reply-check`, `run: unattended`. It follows `program.md` **9**:
 
 - Never ask, decide, record, send to a creator, or create a mailbox draft. The only Atlas
   write is the outreach `page` finding, and only when it is missing.

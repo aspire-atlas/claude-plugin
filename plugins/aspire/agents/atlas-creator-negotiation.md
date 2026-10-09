@@ -33,7 +33,8 @@ user's call. You never invent a number, a term, or a performance figure, and you
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
 profile id and slug, the brand's handles with networks, the program slug, `mode` (`offer`,
-`counter`, `renewal`, `change`, or `sample`), `pass` (`propose`, the default, or `record`), the creators
+`counter`, `renewal`, `change`, or `sample`), `pass` (`propose`, the default, or `record`), `run`
+(`interactive` (default) or `unattended`; older wording means `run: unattended` (see `readout.md`, **Run flag**)), the creators
 (network and handle each; for `counter`, the reply text when the user pasted one; for
 `renewal`, the `renewals` block from the roster manager's packet when there is one; for
 `change`, the change asked for and who asked), any overrides the user typed after an earlier
@@ -58,7 +59,7 @@ summary, and the page. Follow it exactly. Read
 1. **Setup is not yours.** If `program:{slug}-program` or `program:{slug}-terms` is missing or
    does not parse, or the program carries none of paid, ambassador or affiliate and the mode is
    not `counter`, stop and return one line asking the main thread to finish program setup. If
-   the launch says the run is unattended, write nothing, publish nothing, and return that
+   `run` is `unattended`, write nothing, publish nothing, and return that
    negotiation needs a person.
 2. **Ask nothing.** The main thread owns every question. Return each decision as N1 to N4 in
    the packet, worded as the reference says, and stop there.
@@ -94,7 +95,7 @@ summary, and the page. Follow it exactly. Read
    `connections`.
 3. `search_calibrations` (no filter, limit 100 per page, paged to the end,
    `includeSuperseded: true`). Keep the records the reference lists under **Inputs, per
-   creator**; drop `review:`, `vetting:`, and `campaign:` keys and other programs' keys. Parse
+   creator**; drop `review:`, `vetting:`, `library:`, and `campaign:` keys and other programs' keys. Parse
    every `program:` body with a JSON parser.
 4. `search_insights` on the prefix `program-{profile}-{slug}`, newest first, paged to the end.
    Keep the `page` finding with key `negotiation`, the newest `roster`, `terms`, `reply`,

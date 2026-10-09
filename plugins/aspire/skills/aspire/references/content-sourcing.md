@@ -31,13 +31,14 @@ is missing. People send. Sourcing drafts, records, and proposes.
 | `rights` | Proposes terms and drafts a request for existing posts: the library's worth-requesting list, or links the user names | `rights` (wanted or requested), `draft`, the `page` finding |
 | `renewal` | Grants and deal usage ending within 30, 60, or 90 days: renew or let lapse, with renewal drafts | `rights` (renewal requested), `draft`, the `page` finding |
 | `ugc` | Finds gaps in the library, picks program creators who fit, and drafts short asset requests | `rights` (`requestKind` `new-ugc`, requested), `draft`, the `page` finding |
-| `record` | Records a creator's answer to a rights, renewal, or asset request: granted, declined, or countered | `rights`, `reply` (when pasted straight in), `roster` (only `waitingOn` and `yourCall`), `draft`, the `page` finding |
+| `replies` | Records a creator's answer to a rights, renewal, or asset request: granted, declined, or countered | `rights`, `reply` (when pasted straight in), `roster` (only `waitingOn` and `yourCall`), `draft`, the `page` finding |
 | `sample` | The page from invented data (`agents/sample-artifact.md`) | Nothing |
 
 Every mode runs in two passes. **`propose`** reads, works out terms, drafts, publishes the page
 with every item marked "Proposed", writes nothing, and returns the `sourcing-packet`. The main
 thread asks S1 to S4 and launches **`record`** with the packet and the answers; `record` writes
-only what was approved. `sample` is one pass.
+only what was approved. `sample` is one pass. `mode: record` is the older name for `replies`;
+`pass: record` is unchanged.
 
 Sourcing is interactive. Unattended runs are not part of it: the library's scheduled refresh
 posts the expiring-rights alert. A launch marked unattended writes nothing, publishes nothing,
@@ -53,7 +54,7 @@ the answers in.
 | S0 | Before a `renewal` launch, unless the user named the window | header "Horizon": "Which rights should we look at for {program}?" | "Ending in the next 30 days (Recommended)", "Next 60 days", "Next 90 days" |
 | S1 | After `propose` in `rights`, `renewal`, or `ugc` | header "Requests": "Save these {rights requests, renewals, or asset requests} for {program}? {n} drafts go on the creators' rows." Then one line per creator: "@a: 2 Reels, paid usage on Meta ads for 90 days, $300" or "@b: let lapse, pull from ads by Nov 3" | "Save the requests (Recommended)", "Change something", "Page only" |
 | S2 | One per your-call item | Worded as in **Your call** | The recommended answer (Recommended), the alternatives, "Decide later" |
-| S3 | After `propose` in `record` | header "Record": "Record these {n} replies for {program}?" Then one line per reply: "@a: granted paid usage on Meta ads for 90 days from Oct 7, $250, proof: email reply Oct 7" | "Record them (Recommended)", "Change something" |
+| S3 | After `propose` in `replies` | header "Record": "Record these {n} replies for {program}?", adding "and pass {k} fees owed to the ledger" when a grant carries a fee. Then one line per reply: "@a: granted paid usage on Meta ads for 90 days from Oct 7, $250, proof: email reply Oct 7" | "Record them (Recommended)", "Change something" |
 | S4 | When drafts go by email, `connections.mail.canDraft` is true, and `outreach.mail` names that mailbox | header "Mailbox": "Create {n} drafts in your {Gmail or Outlook} for @a, @b and {n-2} more? Nothing is sent." | "Create the drafts (Recommended)", "I'll copy them myself" |
 
 Rules:
@@ -96,7 +97,9 @@ A post or creator is skipped, and listed with the reason, when:
 - a `creator:*` calibration has stance `reject`;
 - the asset's safety is `block`, or a `red_line` names the creator;
 - a `rights` finding for the same post and usage is requested and under 14 days old (show it
-  again, never draft a second request), or was declined in the last 90 days;
+  again, never draft a second request), or was declined in the last 90 days. From 14 days with
+  no answer, the new draft is a follow-up: the same template and terms, opening "Following up
+  on my note from {date}";
 - the roster row has `yourCall` open;
 - there is no channel with a route (**Drafts**, Channels).
 
@@ -287,18 +290,18 @@ in the request it answers; say so in the proposal.
 - Dates: `startsAt` is the date of the yes, unless the creator named another. `expiresAt` is
   `startsAt` plus the duration asked, or what the creator stated. Never longer than they said.
 
-**Roster.** For a roster creator, `record` writes the `roster` row only to set `waitingOn` (brand
+**Roster.** For a roster creator, the `record` pass writes the `roster` row only to set `waitingOn` (brand
 while a sourcing draft is unsent; `none` when nothing more is owed on the rights) and `yourCall`
 (on "Decide later", with the question; cleared when decided). Stage never changes.
 
-**Delivered UGC.** When the user says the assets arrived, `record` writes the `rights` finding
-again with `assetSpec.deliveredAt` and `assetSpec.files` (where the user says they are, as
-given). A late asset (past `due`, none delivered) shows on the page as "overdue"; the chase is a
+**Delivered UGC.** When the user says the assets arrived, `replies` records it: the `record`
+pass writes the `rights` finding again with `assetSpec.deliveredAt` and `assetSpec.files`
+(where the user says they are, as given). A late asset (past `due`, none delivered) shows on the page as "overdue"; the chase is a
 `ugc-chase` draft.
 
 ## Fees owed: the ledger hand-off
 
-Sourcing never writes `ledger` (`program.md`, **Ledger lines hand-off**). When `record` writes a
+Sourcing never writes `ledger` (`program.md`, **Ledger lines hand-off**). When the `record` pass writes a
 grant or an agreed asset request with a fee or product, it returns a fenced JSON block labelled
 `ledger-lines`, one line each, with exactly the fields `program.md` lists:
 
@@ -320,6 +323,9 @@ grant or an agreed asset request with a fee or product, it returns a fenced JSON
 - `revises` names the `lineId` it replaces when a fee changed after a counter; otherwise null.
 - A grant with no fee returns no line. The ledger can build the same lines from `rights`
   findings, so the block only saves it a read.
+- S3 approves handing the lines to the ledger, as A8 does for commission. The main thread
+  passes the block to `atlas-program-ledger` as its next step, with no picker of its own; the
+  ledger's G1 confirms the lines before anything is saved.
 
 ## Drafts
 
@@ -496,7 +502,7 @@ needs, so `record` never proposes again:
    "roster": {"…": "the full roster detail, when it changes"},
    "draft": {"template": "rights-request", "channel": "email", "to": "creator",
              "subject": "…", "body": "…", "blanks": []},
-   "ledger": [{"…": "the ledger-lines entries this would return, record mode only"}]}
+   "ledger": [{"…": "the ledger-lines entries this would return, replies mode only"}]}
  ]}
 ```
 

@@ -40,7 +40,9 @@ handle.
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand profile id and slug,
 `target_mode` (`own` or `handle`), the handles and networks for that mode (mode `own`: every
 linked handle; mode `handle`: exactly one network, `instagram` or `tiktok`, and one handle), `recipient` (one or more lenses per
-`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`; default `team`), and a digest of
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`; default `team`), `run`
+(`interactive`, the default, or `unattended`), `onboarding: true` when the launch is the first
+insights at the end of onboarding, and a digest of
 the brand's calibrations (summary, goals, competitors, red lines, partners). Every Atlas tool needs a
 `context` argument: 15 to 25 words, third person. Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
 
@@ -50,6 +52,13 @@ ads, or a cut list, is the `atlas-ad-reuse` agent's job: do not run it here; nam
 in one line and stop. A `product` or `pmm` lens asking what creators say about the brand
 against competitors is the market signal's job: analyze the accounts in scope and name
 `atlas-market-signal` in one line of the summary.
+
+**Ask nothing.** The main thread owns every question. When you need a decision you were not
+given, name it in one line of the summary and stop that branch.
+
+**Unattended runs** (`run: unattended`) use mode `own` whatever `target_mode` says, never call
+`lookup_creators`, never ask a question, and write nothing to Atlas: skip step 8 and return the
+findings and pushes only, saying in the summary that nothing was saved.
 
 **Process:**
 
@@ -92,13 +101,15 @@ against competitors is the market signal's job: analyze the accounts in scope an
    - The brand's calibrations are still for two things only: saying whether the handle matches a saved
      `competitor` or `partner` record, which is a classification, not a benchmark, and framing why the
      account is or is not relevant to the brand's stated goal. Apply `red_line` checks only to the
-     brand's own accounts, and ignore every key starting `review:` (content review only) or `program:` (influencer program only).
-8. Write findings back with `append_insights`: one `runKey` for this run — mode `own`:
-   `onboarding-{profile}-{date}`; mode `handle`: `account-review-{profile}-{handle}-{date}` — role
+     brand's own accounts, and ignore every key starting `review:` (content review only) `program:` (influencer program only), or `library:` (content library only).
+8. Interactive runs only: write findings back with `append_insights`: one `runKey` for this run — mode `own`:
+   `onboarding-{profile}-{date}` when `onboarding: true`, else `account-review-{profile}-own-{date}`;
+   mode `handle`: `account-review-{profile}-{handle}-{date}` — role
    `account_review`, `schema` = network, `entityKind` = account (or post for post-level findings),
    `entityId` = the network's own id from the search hit (never a handle or uuid). Kind `went_well`,
    `needs_improvement`, or `action_item` (action items require `priority`). Each content push is an
-   `action_item` with `detail.push: true`, the target week, the day, and the target. Include `rationale` and
+   `action_item` with `detail.push: true`, the target week, the day, and the target; the weekly
+   insights report tracks it and closes it once met. Include `rationale` and
    `evidence` in `detail`, and `recipient` per `recipient-lens.md`. Supply an `idempotencyKey` per
    finding.
 9. Never invent data. If a search returns nothing, report indexing as still in progress and stop without

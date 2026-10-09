@@ -32,8 +32,8 @@ not told you to send.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
 profile id and slug, the brand's handles with networks, the program slug, `mode`
-(`first-touch`, `follow-up`, `triage`, `reply-check`, or `sample`), the run (`interactive` or
-`unattended`), `connections` (`program.md` **4**), `recipient` (per `recipient-lens.md`;
+(`first-touch`, `follow-up`, `triage`, `reply-check`, or `sample`), `run` (`interactive`
+(default) or `unattended`; older wording means `run: unattended` (see `readout.md`, **Run flag**)), `connections` (`program.md` **4**), `recipient` (per `recipient-lens.md`;
 default `team`), and the approvals the main thread collected, per the outreach reference,
 **Approvals**: O1 (save the drafts, with the named creators and, for follow-up, the named No
 reply moves), O2 (create mailbox drafts for the named creators), O3 (send the named drafts), and
@@ -99,7 +99,7 @@ primary lens.
    `includeSuperseded: true`): the `program:{slug}-*` records, `brand:summary`,
    `brand:business-context`, the `voice_and_content_ops` brand fact, `guideline:voice`,
    `red_line` (not `review:` keys), `competitor`, `partner`, every `creator:*` record,
-   `fees:rate-card`, and `theme:brand`. Drop `vetting:`, `review:`, and `campaign:` keys.
+   `fees:rate-card`, and `theme:brand`. Drop `vetting:`, `review:`, `library:`, and `campaign:` keys.
    Parse every JSON body with a JSON parser. Resolve today as the shell date in the cadence
    timezone (`TZ=<tz> date +%F`), or the user's when there is no cadence.
 3. `list_insight_search_fields`, `list_post_search_fields`, and `list_creator_search_fields`

@@ -577,7 +577,8 @@ A1 "{brand}'s own team" sets the brand-team defaults and skips A2 to A4.
 
 **Follow-up with a saved pitch:** one more question, "Which creators from round {n} actually
 ran?" Options: All of them (Recommended when content reviews or readouts show their posts) / None
-/ Some of them (name them).
+/ Some of them (name them). When a creator ad campaign ran the pitch, the creators it agreed fees
+with are named in the question and pre-selected.
 
 **Follow-up with nothing saved:** ask for round {n}'s lanes in one plain message with a template,
 then echo them back as a table and confirm with `AskUserQuestion` (Use these (Recommended) /
@@ -696,8 +697,9 @@ Atlas** after the build. Without a brand profile, I is not asked and nothing is 
 ## Pre-fill: what Atlas already knows
 
 With a brand profile, read every calibration (paged, `includeSuperseded: true`) and these
-insights before asking B, passing the profile's id on every call. Drop `review:`, `vetting:` and `program:`
-keys, and `theme:` and `fees:` keys, from anything treated as a brand rule.
+insights before asking B, passing the profile's id on every call. Drop `review:`, `vetting:`, `program:` and
+`library:` keys, `theme:` and `fees:` keys, and a creator ad campaign's own keys (`campaign:{slug}-cas`,
+`-lane-*`, `-terms`, `-decision-defaults`) from anything treated as a brand rule.
 
 **No brand profile for this brand:** read no calibrations and no insights at all (the tools would
 fall back to another profile), say so in one line, use D3 as the buyer line in place of
@@ -720,6 +722,7 @@ recommended rates, and use the `neutral` look unless the presenter picked `aspir
 | `content-review-{profile}`, `review:lesson-*` | Round lessons (G6), claim issues |
 | `creator-brief-{profile}` | Windows and deliverables already planned |
 | `ppa-pitch-{profile}` | The previous round: lanes, cast, groups, screens |
+| `cas-campaign-{profile}` (newest finding per identity, per `cas-campaign.md`, **Working state**) | Who ran: a `roster` creator with `rate` agreed marks the lane `RAN` (B1's "who ran" question defaults to them); which hooks led: `hook` lines and `hook-review` results (`led` first, `lagged` and `not used` last) order V2 to V5 and shape tension lines |
 | `fees:rate-card` | Creator fees (H1) |
 | `theme:brand` | The `theme` look |
 | `decline:*` | Questions not to ask again |

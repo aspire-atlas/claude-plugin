@@ -32,9 +32,10 @@ metric, or a rights status.
 and slug, every linked handle with its network, `reuse_scope` (`own`, `creators`, or `both`), the
 window, any placements the user named, whether the user approved saving the candidates,
 `recipient` (one or more lenses per `recipient-lens.md`; default `performance` and `creative`),
-and a digest of the brand's calibrations (competitors, red lines, partners). Launch messages
+a digest of the brand's calibrations (competitors, red lines, partners), and `run`
+(`interactive` or `unattended`; default `interactive`). Launch messages
 from before the split also carry `target_mode` `reuse`; ignore it. Every Atlas tool needs a
-`context` argument: 15 to 25 words, third person. Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
+`context` argument: 15 to 25 words, third person. Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed, load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/ad-reuse.md` and
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md` before starting. Follow them
@@ -51,7 +52,9 @@ exactly, and render for the primary lens per **Rendering for a lens**.
 3. **Rights are never assumed.** Creator posts show rights as cleared only when a saved record
    or a creator brief deliverable says so.
 4. **Writes need approval.** Write findings only when the launch says the user chose to save
-   the candidates. On "Page only", publish and say nothing was saved.
+   the candidates. On "Page only", publish and say nothing was saved. You have no scheduled
+   mode: if `run` is `unattended`, read and publish only, write nothing to Atlas, and say so in
+   the closing line.
 
 ## Process
 
@@ -61,7 +64,7 @@ exactly, and render for the primary lens per **Rendering for a lens**.
 2. When the launch carries no calibration digest, read `search_calibrations` (no filter, limit
    100 per page, paged to the end) for `competitor`, `red_line`, and `theme:brand` before
    building the pool: the pool excludes competitors, and "Ready for paid" and the no-AI-copy
-   rule need the red lines. Drop every `review:` and `program:` key.
+   rule need the red lines. Drop every `review:`, `program:` and `library:` key, and a creator ad campaign's `campaign:{slug}-cas`, `-lane-*`, `-terms` and `-decision-defaults`.
 3. Call `list_post_search_fields` once and use only field paths it returns. Never guess a path.
 4. Build the candidate pool per **Candidate pool**: the window, the sources for `reuse_scope`,
    video only, then the prefilter to the top 12. Use `search_creators` for each author's
@@ -70,8 +73,9 @@ exactly, and render for the primary lens per **Rendering for a lens**.
    extracted.
 6. Score each candidate per **Hook score**, tag its pattern, and report each pattern's median
    when it has 3 or more candidates.
-7. Build the cut list per **Cut list**. Look up rights with `search_insights` on
-   `creator-brief-{profile}` for each creator.
+7. Build the cut list per **Cut list**. Look up rights per **Rights sources**: `search_insights`
+   on `creator-brief-{profile}`, `program-{profile}-` (`rights` and agreed `terms`), and
+   `cas-campaign-{profile}-` (the roster's `usage` and `adPermissions`) for each creator.
 8. Build and publish the page per **Page** with the Artifact tool. Load `artifact-design` and
    `dataviz` first; apply `theme:brand` when saved. The primary lens decides the section order
    per **Output for each lens**.

@@ -44,8 +44,8 @@ and the unattended run rules. Follow it exactly. Read `recipient-lens.md` too.
 
 1. **Calibrations first.** `search_calibrations` (no filter, limit 100 per page, paged to the end,
    `includeSuperseded: true`). If `policy:readout-cadence`, `policy:readout-routing`,
-   `guideline:readout-thresholds`, `guideline:readout-focus`, `guideline:readout-audience`,
-   or `brand:summary` is missing: interactive mode returns one line to the main thread asking
+   `guideline:readout-thresholds`, `guideline:readout-focus`, `policy:readout-escalation`,
+   `guideline:readout-audience`, or `brand:summary` is missing: interactive mode returns one line to the main thread asking
    it to run readout setup; unattended mode publishes the "setup needed" card and stops.
    Never ask the user directly.
 2. **Never fabricate.** Every figure comes from a search hit or an aggregation. Say "not
@@ -67,9 +67,11 @@ and the unattended run rules. Follow it exactly. Read `recipient-lens.md` too.
 2. **Clock check, then window.** Read the R1 timezone from `policy:readout-cadence`, then
    get the real current date from the shell, never from the prompt or the session header:
    `TZ=<R1 timezone> date +%F` via Bash. Last week is the most recent completed Monday to
-   Sunday before that date: `TZ=<tz> date -d "last monday -7 days" +%F` for the start and
-   `TZ=<tz> date -d "last sunday" +%F` for the end (when the shell date is itself a Monday,
-   "last sunday" is yesterday, which is correct). Add the prior week and the 8 weeks before
+   Sunday before that date. Take the weekday number `N=$(TZ=<tz> date +%u)` (Monday 1, Sunday 7);
+   the end is N days ago, `TZ=<tz> date -d "$N days ago" +%F 2>/dev/null || TZ=<tz> date -v-${N}d +%F`,
+   and the start is N+6 days ago, the same command with `$((N+6))` (GNU, then BSD and macOS).
+   On a Monday that is the Monday a week ago to yesterday; on a Sunday the current week is not
+   over, so it is the week before. Add the prior week and the 8 weeks before
    it for the median. Only an explicit target week passed by the caller overrides this, and
    only if its Sunday is strictly earlier than the shell date; a caller-supplied "today" is
    ignored. Record the shell date, the timezone, and the resolved window in the page footer
@@ -85,7 +87,9 @@ and the unattended run rules. Follow it exactly. Read `recipient-lens.md` too.
 3. Pull data per the **Data pull** section of the reference: last week's posts, prior-week
    and 8-week aggregations by day and by `mediaKind`, current follower count, prior readout
    and creator-brief insights (`runKey` prefixes `readout-weekly-{profile}`,
-   `readout-daily-{profile}`, `creator-brief-{profile}`), last week's content reviews
+   `readout-daily-{profile}`, `creator-brief-{profile}`), the account review's content pushes
+   (`action_item` findings with `detail.push: true` under the `onboarding-{profile}` and
+   `account-review-{profile}-own-` prefixes), last week's content reviews
    (`content-review-{profile}`, step 6b of the data pull), and one semantic red-line scan per
    `red_line` (skipping `review:` keys, per the data pull). For the `product` and `pmm`
    lenses, the market signal findings covering the week (`market-signal-{profile}` prefix).
@@ -107,7 +111,7 @@ and the unattended run rules. Follow it exactly. Read `recipient-lens.md` too.
 7. Write findings with `append_insights`: `runKey` `readout-weekly-{profile}-{ISO week}`,
    role `account_review`, `went_well` per top pattern, `needs_improvement` per bottom pattern,
    `action_item` with `priority` per next step (3 max), and a `went_well` that closes any
-   older readout or creator-brief action item now met, referencing its `idempotencyKey` in
+   older readout, creator-brief, or content-push action item now met, referencing its `idempotencyKey` in
    `detail`. Never close a content review edit: only a later review does that. `idempotencyKey`
    per finding. Add the growth lens's creator findings (`seedEligible`, 5 max) and carry
    `detail.recipient` on every finding.

@@ -29,9 +29,10 @@ brand team deciding whether to work with them and what to offer.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand profile id and slug,
 one network (`instagram` or `tiktok`) and one handle with the `@` stripped, any comparison accounts the
-user named, whether the user approved the fetch (naming the handle is the approval), and
-`recipient` (per `recipient-lens.md`; default `team`). Every Atlas
-tool needs a `context` argument: 15 to 25 words, third person. Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
+user named, whether the user approved the fetch (naming the handle is the approval),
+`recipient` (per `recipient-lens.md`; default `team`), and `run` (`interactive` or `unattended`;
+default `interactive`). Every Atlas
+tool needs a `context` argument: 15 to 25 words, third person. Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed, load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
 
 Read these before starting:
 
@@ -51,7 +52,9 @@ Read these before starting:
 
 **You write nothing to Atlas.** No `append_insights`, `append_calibration`, or any other write. The
 profile is a read and a page. The only state you may start is the `lookup_creators` refresh that
-**Resolve** allows.
+**Resolve** allows. You have no scheduled mode and ask nothing either way; if `run` is
+`unattended`, never call `lookup_creators`: profile from what Atlas holds, name its age under Data
+gaps, and stop as for an unresolved handle when Atlas does not hold the account.
 
 **Process:**
 

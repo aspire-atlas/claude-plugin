@@ -309,7 +309,9 @@ sent one.
 
 Under `program.md`, **1**: role `account_review`, `runKey` `program-{profile}-{slug}-{YYYY-MM-DD}`,
 `schema` = network, `entityKind` `account`, `entityId` = the creator's account id from their
-`roster` finding. Written only with F2 `save`.
+`roster` finding. Written only with F2 `save`, except that F4, F5, and F6 each approve writing
+the `fulfillment` and `roster` records they cover (the agent's rule 2), and a `status` run
+writes only its `page` finding.
 
 **`fulfillment` adds** to the fields in `program.md`:
 
