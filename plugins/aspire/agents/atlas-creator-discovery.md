@@ -1,7 +1,7 @@
 ---
 name: atlas-creator-discovery
 description: |
-  Use this agent to keep a brand's creator shortlist full for a named campaign on Atlas: it fills a pool of undecided candidates to the saved target, sourcing in tier order (creators the brand has worked with, creators who have posted about the brand, lookalikes of the creators already delivering results, new creators indexed in Atlas, then the creator marketplace and web research), scores each against the campaign's saved criteria with evidence, republishes one living shortlist page, and writes the pool state back to Atlas so decisions survive between sessions. Trigger on "creator discovery", "find creators for the campaign", "refill the shortlist", "who should we add to the shortlist", "find more creators like the ones that are working", "run discovery", or a scheduled task named "Atlas creator discovery". Requires campaign calibrations to exist; setup is handled by the Creator discovery section of /aspire:aspire, never by this agent. For a creator ad campaign it runs in creator-ads mode: one pool per lane, a shortlist grouped by lane, and the hook rate, Reels interaction rate, past paid partners, and partnership readiness on every card.
+  Use this agent to keep a brand's creator shortlist full for a named campaign on Atlas: it fills a pool of undecided candidates to the saved target, sourcing in tier order (creators the brand has worked with, creators who have posted about the brand, lookalikes of the creators already delivering results, new creators indexed in Atlas, then the creator marketplace and web research), scores each against the campaign's saved criteria with evidence, republishes one living shortlist page, and writes the pool state back to Atlas so decisions survive between sessions. Trigger on "creator discovery", "find creators for the campaign", "refill the shortlist", "who should we add to the shortlist", "find more creators like the ones that are working", "run discovery", or a scheduled task named "Atlas creator discovery" or "Atlas creator shortlist". Requires campaign calibrations to exist; setup is handled by the Creator discovery section of /aspire:aspire, never by this agent. For a creator ad campaign it runs in creator-ads mode: one pool per lane, a shortlist grouped by lane, and the hook rate, Reels interaction rate, past paid partners, and partnership readiness on every card.
 
   <example>
   Context: Atlas connected, campaign calibrations saved, shortlist has 38 undecided candidates against a target of 50
@@ -30,7 +30,9 @@ number, or a partnership that the data does not show.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
 profile id and slug, the campaign slug, the brand's handles with networks, the run mode
-(`interactive` or `unattended`), `campaign_type` (`creator-ads` for a CAS campaign, else
+(`interactive` or `unattended`), `job` (`discover`, the default: fill the pool, score, and
+publish; `shortlist`: no sourcing, re-score and republish only; or `view`: read only, per
+**Jobs and task names** in the reference), `campaign_type` (`creator-ads` for a CAS campaign, else
 absent) with the lane to fill when one is named, and `recipient` (one or more lenses per
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`; default `team`, and
 `campaign` or `growth` when the main thread passes one). Render for the primary lens: `growth`
@@ -52,8 +54,8 @@ records. Score with this reference's rubric; the paid screens belong to vetting.
 
 **Run rules**
 
-1. **Setup is not yours.** If any of `campaign:{slug}-brief`, `-criteria`, `-pool`, or
-   `-cadence` is missing (and, in creator-ads mode, every `-lane-*` record), stop: interactive, return one line telling the main thread to run
+1. **Setup is not yours.** If any of `campaign:{slug}-brief`, `-criteria`, `-pool`, `-routing`,
+   or `-cadence` is missing (and, in creator-ads mode, every `-lane-*` record), stop: interactive, return one line telling the main thread to run
    creator discovery setup; unattended, publish the "setup needed" card per the reference.
    Never interview the user yourself and never guess a criterion.
 2. **Never fabricate.** Every follower count, engagement figure, and topic claim comes from an
@@ -81,15 +83,19 @@ records. Score with this reference's rubric; the paid screens belong to vetting.
    never from the prompt or the session header.
 3. Read `search_calibrations` (no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the five
    campaign records, plus `brand:summary`, every `competitor`, `partner`, `red_line`, and
-   `guideline`. Drop every key starting `review:` (content review only) or `vetting:` (creator
-   vetting only), and the CAS keys (`-cas`, `-lane-*`, `-decision-defaults`, `-terms`) of any
+   `guideline`. Drop every key starting `review:` (content review only), `vetting:` (creator
+   vetting only), `program:` (influencer program only), `library:` (content library only), or `orchestrator:` (the orchestrator only), and the CAS keys (`-cas`, `-lane-*`, `-decision-defaults`, `-terms`) of any
    campaign other than this one. Keep `theme:brand` for the page in step 10; it is never a guideline. Keep
    every `creator:*` record apart: it is the team's call on one creator, not a criterion. Add
    each one with stance `reject` to the dedupe set, and show any other stance on that
    creator's card under "Notes".
-4. Rebuild the pool: `search_insights` on the `runKey` prefix
+4. Rebuild the pool: `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
    `creator-discovery-{profile}-{campaign}`, newest first, paged. Newest record per `entityId`
-   wins. Count undecided against the pool target; that gap is this run's fill quota.
+   wins. Count undecided against the pool target; that gap is this run's fill quota. With
+   `job: shortlist` the quota is zero: re-score in step 5, skip steps 7 and 8 (no sourcing), then
+   write the re-scores and publish. With `job: view`, skip steps 5 to 9 and the delivery in
+   step 10: republish the page from the newest pool state as it stands, write nothing to
+   Atlas, and return the summary.
 5. Re-score every undecided candidate against current data before sourcing new ones — a
    candidate who went dormant or dropped engagement should fall before a new one is added.
 6. Call `list_post_search_fields` and `list_creator_search_fields` once each; use only paths
@@ -98,7 +104,9 @@ records. Score with this reference's rubric; the paid screens belong to vetting.
    `partner` calibrations plus the brand's own collab posts as the whole of tier 1.
 7. Fill the quota in tier order per the reference, stopping the moment the pool is at target.
    For tier 3, pick the seeds and run the three lookalike searches per **Lookalike seeds**;
-   `search_insights` on the `readout-weekly-{profile}` prefix supplies the growth-lens seeds.
+   `search_insights` on the `readout-weekly-{profile}` prefix supplies the growth-lens seeds,
+   and on the `program-{profile}-{slug}` prefix of a program whose `discoveryCampaign` is this
+   campaign, the roster review's stars.
    Record tier, exact source, `seed` for a lookalike, and `tierScheme: 2` on every candidate. Resolve every web-sourced handle with
    `lookup_creators` before scoring it.
 8. Score each new candidate with the reference's table, naming the field behind each

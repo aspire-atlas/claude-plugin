@@ -73,9 +73,13 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
    (day) with sum of likes, comments, saves, shares, views; `terms` on `mediaKind`.
 5. `search_creators` filtered on the username for the current follower count. Compare with the
    follower count stored in the last readout's insights, if any.
-6. `search_insights` filtered on `runKey` prefix `readout-daily-{profile}` or
-   `readout-weekly-{profile}`, sorted newest first, limit 50. This is the "since last time"
-   source: open `action_item` findings, last follower count, last flagged posts.
+6. `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
+   `readout-daily-{profile}` or `readout-weekly-{profile}` (a bare `runKey` filter is rejected as
+   unmapped), sorted newest first, limit 50. This is the "since last time"
+   source: open `action_item` findings, last follower count, last flagged posts. The weekly
+   also reads `creator-brief-{profile}` and the account review's content pushes (`action_item`
+   findings with `detail.push: true` under `onboarding-{profile}` and
+   `account-review-{profile}-own-`) on the same path, as open items.
 6b. Content reviews: `search_insights` with a `prefix` filter on
    `detail.account_review.runKey` = `content-review-{profile}`, newest first, paged. Group the
    findings by `runKey` (one review each) and keep the reviews whose `detail.reviewedAt` (UTC) falls
@@ -190,7 +194,7 @@ bullets per other saved lens:
 - What worked: top 3 posts with metric and the pattern they share (format, theme, day, hook).
 - What did not: bottom 2 posts and the likely reason in one clause each.
 - Mix: format split and cadence vs the prior week.
-- Open items: action items from prior readouts, briefs, and content reviews still open, with
+- Open items: action items from prior readouts, briefs, content pushes, and content reviews still open, with
   age in weeks.
 - Content reviews: reviews run by verdict, the most common failed check, and creators
   reviewed more than once. For reviewed published posts, the lead metric against the
@@ -226,7 +230,7 @@ Page, sections in order:
 3. Lead-metric line chart, 9 weeks, last week highlighted.
 4. Top 3 and bottom 2 post cards with media, metric row, takeaway.
 5. Format and theme mix: one small-multiple bar pair (this week vs prior).
-6. Open action items table: item, source run (readout, creator brief, or content review), age,
+6. Open action items table: item, source run (readout, creator brief, account review, or content review), age,
    owner if known.
 6b. Content reviews: verdict counts as a small bar, the three most failed checks, and a row
    per review with creator, verdict chip, open edits, and the review page link.
@@ -237,7 +241,7 @@ Page, sections in order:
 Insights written: `runKey` `readout-weekly-{profile}-{ISO week, e.g. 2026-W38}`, role
 `account_review`. Kinds: `went_well` per top post pattern, `needs_improvement` per bottom
 pattern, `action_item` with `priority` per next step (3 max). Mark an older open action item
-from a readout or a creator brief as resolved by writing a new `went_well` that references its
+from a readout, a creator brief, or an account review's content push as resolved by writing a new `went_well` that references its
 `idempotencyKey` in `detail`. Content review edits are never resolved here; only a later
 review closes them (step 6b). Every finding carries `detail.recipient` (the primary lens); lens
 findings carry `detail.lens`. Growth creator findings are outside the 3 next-step cap, at most 5.
@@ -280,6 +284,11 @@ Read `policy:readout-routing`. The page and chat summary always ship. Then:
 
 ## Scheduled (unattended) runs
 
+**Run flag.** Every agent takes `run`: `interactive` (the default) or `unattended`. Launch
+messages and scheduled tasks written before the flag say "unattended mode" or `mode:
+unattended`; both mean `run: unattended`, and the launch's other `mode` is the agent's default.
+An agent that maps older wording further says so in its own inputs.
+
 A scheduled run starts a fresh session with no memory of the setup conversation and nobody
 to answer questions. The scheduled task prompt must therefore be standalone (templates in the
 README). Rules for the agents:
@@ -299,5 +308,5 @@ README). Rules for the agents:
 Inherited from `creator-brief.md`: project the `media` and `instagram.account` containers, not
 leaf URLs; exclude stories with `exists mediaKind`; `/thumbnail` routes 404 on image posts; published
 pages cannot load `cdn.aspire.io` images. New for readouts: `search_insights` returns findings
-tenant-wide, so always filter on the `runKey` prefix; and `aggs` only work on the filter path,
+tenant-wide, so always filter on the `detail.account_review.runKey` prefix; and `aggs` only work on the filter path,
 so run the red-line semantic query as a separate call.

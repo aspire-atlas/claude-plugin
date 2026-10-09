@@ -6,6 +6,22 @@ The version lives in exactly one place: `plugins[].version` in `.claude-plugin/m
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-10-09
+
+Minor release. Adds the influencer program flows, a campaign orchestrator, and an optional Meta Ads connector, and fixes findings from an audit of the agents.
+
+### Added
+- Influencer program, from outreach to payments. Program setup and Program manager sections in `/aspire:aspire`, plus ten agents: `atlas-creator-outreach`, `atlas-creator-negotiation`, `atlas-product-fulfillment`, `atlas-affiliate-manager`, `atlas-content-library`, `atlas-content-sourcing`, `atlas-deliverable-tracker`, `atlas-roster-manager`, `atlas-program-ledger`, and `atlas-program-dashboard`. Connected mail and stores are used for drafts only; nothing is sent or ordered without an explicit confirmation. The order form page is for the team only.
+- `atlas-campaign-orchestrator` agent and Orchestrator section: one hourly Next actions page across every program, creator ad campaign, discovery campaign, and report. People approve on the page; the next hourly run carries out what an Editor approved, within the limits saved at setup, and reports back in Slack.
+- Optional Meta Ads connector for the brand's own paid results, alongside the Aspire Atlas connectors. Connecting it is not required for any flow.
+- Atlas tool contract refreshed for `search_ads`, `list_ad_search_fields`, `list_ad_accounts`, and the new creator marketplace filters.
+
+### Changed
+- The channel connect link is shown as a plain URL when there is no widget tool, so it can be opened in Claude Code.
+
+### Fixed
+- Findings from an audit of the agents across the program, CAS campaign, and reporting flows, and the review findings on the orchestrator.
+
 ## [3.2.0] - 2026-10-05
 
 Minor release. Works with the current Atlas server again, adds a post analysis agent, and makes the CAS campaign page the client's approval page.
@@ -126,7 +142,8 @@ First public release. Versioning restarts at 1.0.0; earlier 0.x builds were inte
 - Two release channels: `aspire-atlas` (official, pinned) and `aspire-atlas-beta` (tracks `develop`).
 - Apache-2.0 license.
 
-[Unreleased]: https://github.com/aspire-atlas/claude-plugin/compare/v3.2.0...HEAD
+[Unreleased]: https://github.com/aspire-atlas/claude-plugin/compare/v3.3.0...HEAD
+[3.3.0]: https://github.com/aspire-atlas/claude-plugin/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/aspire-atlas/claude-plugin/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/aspire-atlas/claude-plugin/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/aspire-atlas/claude-plugin/compare/v2.0.0...v3.0.0
