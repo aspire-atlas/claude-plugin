@@ -16,7 +16,8 @@ description: >
   client's decisions", "record a reply", "set up our influencer program", "where is the
   {program} program", "write to the approved creators", "send product to the creators", "set up
   affiliate codes", "did the creators post", "request rights", "what do we owe creators",
-  "program dashboard", or "/aspire fee calculator".
+  "program dashboard", "what's next", "what should we do next", "next actions", or "/aspire fee
+  calculator".
 metadata:
   author: Aspire
 ---
@@ -44,6 +45,7 @@ Text after the command is the argument. Route on it before anything else:
 | `sample` (also `sample {agent}`, `show me a sample`, `example`) | Run **Sample artifacts** below. No Atlas connection is needed, so skip the phases. |
 | `fee calculator` (also `fees`, `pricing`, `rate card`, `creator rates`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Fee calculator** below. Skip the other phases. |
 | `program` (also `influencer program`, `creator program`, `ambassador program`, `affiliate program`, `gifting program`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Influencer program** below. Skip the other phases. |
+| `next` (also `what's next`, `next actions`, `orchestrator`, and the hourly "Atlas next actions" task) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Orchestrator** below. Skip the other phases. |
 | `cas campaign` (also `creator ad campaign`, `campaign manager`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **CAS campaign** below. Skip the other phases. |
 | empty, or anything else | Run the phases in order, starting at Phase 1. Treat the text as context. |
 
@@ -100,6 +102,7 @@ time so it never goes stale; never recite it from memory.
    | `atlas-roster-manager` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Roster review** |
    | `atlas-program-dashboard` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Program dashboard** |
    | `atlas-program-ledger` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Program ledger** |
+   | `atlas-campaign-orchestrator` | Phase 1, then Phase 2 + 3, then **Orchestrator** (Setup if it has never run) |
 
    Older names still reach the renamed agents: `atlas-account-analyst` is `atlas-profile-analyst`,
    `atlas-daily-readout` is `atlas-daily-insights-report`, and `atlas-weekly-readout` is
@@ -153,6 +156,7 @@ team catalog, and how agents render for a lens are in `references/recipient-lens
    | `brand`, `campaign` | Which creators on a list to approve | **Creator vetting** |
    | `performance`, `creative` | Hooks, ads, licensing, a cut list | **Ad reuse**; for one post, **Content review** with the ad reuse check |
    | `leadership`, `performance` | A pitch or casting deck for partnership ads, whitelisting, creators to license | **PPA pitch** |
+   | Any | What to do next across everything, what needs me, where everything stands | **Orchestrator** |
    | `team` | Anything | The flow the ask names |
 
 4. **Pass it on.** Every agent launch below includes `recipient` (the confirmed lens or lenses,
@@ -201,7 +205,8 @@ pulse and a section per reader, schedulable), the **Market signal** (what creato
 the brand vs. competitors, schedulable), and the **Quarterly signal** (the quarter's story for
 leadership). The **Creator profile** gives one creator's full page on request, **Ad reuse**
 ranks hooks and builds a cut list, and the **PPA pitch** builds a casting deck for paid
-partnership ads. Every request is read for who will act on it first
+partnership ads. The **Orchestrator** checks in every hour, ranks what to do next across
+all of it on one Next actions page, and carries out what an Editor approves there. Every request is read for who will act on it first
 (**Reading the ask**). Each is routed from its own
 section below. The **Theme** section brands all of their pages,
 and the **Fee calculator** sets the creator rates behind every fee they show.
@@ -847,6 +852,53 @@ Feedback about a creator outside a run ("never use @handle again", "@handle was 
 with") is saved the same way: word the note, confirm it with `AskUserQuestion` ("Save this
 about @handle for future vetting and discovery?"), then write the `creator:*` record, or offer
 the supersede when one exists.
+
+---
+
+## Orchestrator (what to do next across the brand)
+
+Trigger when the user asks what to do next across their creator marketing ("what's next", "what
+should we do next", "what needs me", "next actions", "where does everything stand"), or when the
+hourly task "Atlas next actions: {brand}" fires. Full detail lives in
+`references/orchestrator.md`: the lifecycle, the records, the action catalog and ranking, the
+execution policy, the Next actions page, the cycle, Slack, the setup interview, the schedule, and
+the unattended rules. The orchestrator reads the Program manager's and the CAS Campaign Manager's
+dispatch tables; it never replaces them, and each flow keeps its own section and confirmations.
+Requires a brand profile with a linked Instagram or TikTok channel.
+
+### Setup
+
+1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end). If the four
+   `orchestrator:*` records exist, skip to **Run**.
+2. Ask X1 to X5 from the reference, one `AskUserQuestion` each, and say plainly what X4 and X5
+   approve. X6 confirms the batch once, then write every record with `append_calibration`. X6
+   is also the standing approval for the orchestrator's own bookkeeping findings (`run`, `plan`,
+   `packet`, `execution`, `page` on the `orchestrator-` prefix); say so at X6. A `key-exists`
+   follows the Phase 5 supersede rule with its own confirmation.
+3. Run the cycle once interactively to publish the page, then offer the schedule.
+
+### Run
+
+Run the reference's **6**, the cycle, with the interactive differences in **7**: the status
+screen, the approvals already waiting on the page, then one `AskUserQuestion`, header "Next",
+with the top action first (Recommended), "Show the next three", and "Change setup". The pick runs
+through that flow's own section with every confirmation it asks. Every launch carries the tool
+prefix, `profile_id`, `profile_slug`, the brand's linked handles and networks, `recipient`, and
+`connections` (`program.md` **4**) when the flow is a program flow.
+
+### Monitor (the hourly run)
+
+The scheduled task runs the same cycle unattended. It never asks. It carries out only what an
+Editor approved on the Next actions page, and only within `orchestrator:execution` and the
+reference's **4**: record passes and mailbox drafts under `page-approved`, nothing under
+`suggest`. It launches each agent with `run: unattended` and `via: orchestrator`, saves the
+packets and outcomes under X6's standing approval, republishes the page, and posts to Slack only on a change (**8**).
+
+### Schedule
+
+Follow **Readouts**, Schedule, for the mechanics and the reference's **11** for the task name,
+the cron, and the prompt. X6 is the standing approval. If the scheduled-task tools are missing,
+say so and stop; never fake a schedule.
 
 ---
 
@@ -2372,6 +2424,15 @@ The watch list is the brand's saved creators, outside any campaign.
 - Web research is a proposal, never a write: findings are always shown and confirmed before
   any calibration is recorded from them.
 - Posts and creators are shown, not just described: see **Visual output**.
+- **Approvals on the Next actions page.** In the hourly orchestrator run, an Editor's approval on
+  the Next actions page stands in for `AskUserQuestion`, under the saved
+  `orchestrator:execution` level and only for the approvals `references/orchestrator.md` **4**
+  allows: Atlas records and mailbox drafts. Sending, orders, store changes, files, lookups,
+  discovery, setup records, and destructive tools always need a person in a session, and so do
+  deals over a maximum, over budget, outside the standard terms, or changing the deal type. The
+  run's own bookkeeping findings on the `orchestrator-` prefix (`run`, `plan`, `packet`,
+  `execution`, `page`) are written without asking: X6 at setup is their standing approval, as a
+  cadence record is for its flow.
 - Every agent launch carries `recipient` (**Reading the ask**). A lens changes what is
   selected, the order, and the wording, never a number, and never adds a claim the data does
   not support. What a reader needs that Atlas does not hold (spend, conversions, usage rights)

@@ -55,6 +55,21 @@ records you write, and the page. Follow both exactly. Read
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md` too and render for the
 primary lens.
 
+**Orchestrator runs.** A launch with `via: orchestrator` comes from the hourly cycle in
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestrator.md` (**4**, **6**). With
+`run: unattended` it replaces your unattended rules below for your two passes only. A propose pass
+runs in full, writes nothing, publishes nothing, and returns your packet. A record pass takes the
+packet and the answers the launch maps to your approvals, treats every approval the launch does
+not answer as its safe option, and writes only what those answers approve: your Atlas records,
+your page, and mailbox drafts. Set `detail.by` on every finding to "orchestrator, approved by
+{approvedBy} at {approvedAt}" from the launch. It never sends, places an order, changes a store,
+reads or uploads a file, takes pasted text, or calls `lookup_creators` or `lookup_posts`; when a
+step needs one of those, skip that step and name it in your output as needing a person. In `first-touch` and
+`follow-up`, an orchestrator launch carries `pass`: `propose` writes the drafts into your packet
+and saves nothing; `record` saves exactly the packet's drafts with O1, and creates the mailbox
+drafts with O2, without writing them again. `triage` with `source: mailbox` uses its own two
+passes.
+
 ## Run rules
 
 1. **Setup is not yours.** If `program:{slug}-program`, `-terms`, or `-outreach` is missing or
@@ -77,7 +92,8 @@ primary lens.
    a phone number, or a payment detail in a summary, a finding, the page, or a post.
 7. **Read only what Atlas holds.** Never call `lookup_creators`, `lookup_posts`,
    `search_creator_marketplace`, or `start_business_discovery`.
-8. **Unattended means read only.** Any unattended launch runs `reply-check`: it never asks,
+8. **Unattended means read only.** Any unattended launch without `via: orchestrator` runs
+   `reply-check`: it never asks,
    records a reply, moves a creator, creates a mailbox draft, or sends to a creator
    (`program.md` **9**). Its one possible Atlas write is the outreach `page` finding when it is
    missing.
@@ -99,7 +115,7 @@ primary lens.
    `includeSuperseded: true`): the `program:{slug}-*` records, `brand:summary`,
    `brand:business-context`, the `voice_and_content_ops` brand fact, `guideline:voice`,
    `red_line` (not `review:` keys), `competitor`, `partner`, every `creator:*` record,
-   `fees:rate-card`, and `theme:brand`. Drop `vetting:`, `review:`, `library:`, and `campaign:` keys.
+   `fees:rate-card`, and `theme:brand`. Drop `vetting:`, `review:`, `library:`, `orchestrator:`, and `campaign:` keys.
    Parse every JSON body with a JSON parser. Resolve today as the shell date in the cadence
    timezone (`TZ=<tz> date +%F`), or the user's when there is no cadence.
 3. `list_insight_search_fields`, `list_post_search_fields`, and `list_creator_search_fields`
