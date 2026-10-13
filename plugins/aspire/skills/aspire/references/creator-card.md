@@ -547,6 +547,30 @@ rule in the data table says so, and drop the comments themselves. Repeat `.ac-ne
 `{ICON_SAFETY}` is `{ICON_SHIELD_CHECK}` when brand safe and `{ICON_SHIELD_ALERT}` otherwise.
 `{DETAILS}` is `<dt>`/`<dd>` pairs, for example `<dt>Angle</dt><dd>…</dd>`.
 
+### Creator-ads details
+
+A creator ad campaign's discovery card (`creator-discovery.md`, **Creator-ads mode**) puts the
+ad figures in `{DETAILS}`, one `<dt>`/`<dd>` pair each, in this order and with these labels:
+
+| Label | Value |
+| ----- | ----- |
+| Hook rate | Rate, one decimal |
+| Reels interaction rate | Rate, one decimal |
+| Past paid partners | Up to five names, comma separated |
+| Partnership readiness | Ready, Partly, or Not yet |
+| Views (Meta) | Number, card number format |
+| Interactions (Meta) | Number, card number format |
+| Reach (Meta) | Number, card number format |
+| Category | One chip; add "matches your interest filter" or "outside your interest filter" when the search sent one |
+| Contact route | Email on profile, Partnership messages on, or No route in Atlas |
+| Meta recommends | One chip per ranking: High ad performance, Most ads experience, Similar brands. Leave the pair out when there are none |
+
+Chips inside a `<dd>` are `<span class="ac-badge ac-outline">` in a `<span class="ac-badges">`.
+A figure Atlas does not hold reads "Not in Atlas", never a guess. Never add a period to views or
+interactions ("30-day", "lifetime"): Atlas reports none. A TikTok card shows one line instead,
+"Hook rate is not available on TikTok." These labels are the only words the card shows; the
+field names stay in the references.
+
 ## Icons
 
 Paste as-is. 24px viewBox, stroke icons, `currentColor`.
