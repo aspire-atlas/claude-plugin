@@ -394,7 +394,7 @@ from the shell clock, `date -u +%FT%TZ`, the same value on every finding of one 
 `check`, `result`, `severity`, `stage` (`draft` or `published`), `creator` (the handle),
 `deliverable`, `lessonsApplied[]`, and `recipient` (`recipient-lens.md`). An Ad reuse result is
 one `went_well` or `needs_improvement` finding with `findingType: "check"`, `dimension:
-"ad-reuse"`, and the hook score, pattern, and cuts in `detail`; it is never an edit. Supply an `idempotencyKey` per finding.
+"ad-reuse"`, and the hook score, pattern, cuts, and the retention keys from `ad-reuse.md`, **Findings**, in `detail`; it is never an edit. Supply an `idempotencyKey` per finding.
 
 The verdict finding also carries what the readouts need, so they never have to re-derive a
 review: `postedAt` and `permalink` (the post's own URL) for a published post, `reviewPage`

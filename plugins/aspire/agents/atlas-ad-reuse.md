@@ -67,12 +67,17 @@ exactly, and render for the primary lens per **Rendering for a lens**.
    rule need the red lines. Drop every `review:`, `program:`, `library:` and `orchestrator:` key, and a creator ad campaign's `campaign:{slug}-cas`, `-lane-*`, `-terms` and `-decision-defaults`.
 3. Call `list_post_search_fields` once and use only field paths it returns. Never guess a path.
 4. Build the candidate pool per **Candidate pool**: the window, the sources for `reuse_scope`,
-   video only, then the prefilter to the top 12. Use `search_creators` for each author's
-   follower count and `search_posts` for each author's own median.
+   video only, then the prefilter to the top 12, ranked in the retention level order (measured
+   on the post, then the creator average, then views per follower). Use `search_creators` for
+   each author's follower count and creator figures, and `search_posts` for each author's own
+   median. Count the candidates with measured data.
 5. Read and frame each candidate per **What to read per candidate**. View every frame
    extracted.
-6. Score each candidate per **Hook score**, tag its pattern, and report each pattern's median
-   when it has 3 or more candidates.
+6. Score each candidate per **Hook score**. Score Retention from the first level in
+   **Retention levels** that has data, and label it "Measured", "Creator average, not this
+   post", or "Proxy" on the card and in the finding. Cite any measured early rate per **Hook
+   evidence**; numbers decide the hook score, frames decide the pattern tag. Report each
+   pattern's medians and level mix when it has 3 or more candidates.
 7. Build the cut list per **Cut list**. Look up rights per **Rights sources**: `search_insights`
    on `creator-brief-{profile}`, `program-{profile}-` (`rights` and agreed `terms`), and
    `cas-campaign-{profile}-` (the roster's `usage` and `adPermissions`) for each creator.
@@ -87,20 +92,21 @@ exactly, and render for the primary lens per **Rendering for a lens**.
 
 - The page link, on its own line.
 - Headline: the top pattern and the top candidate, in one sentence.
-- Top patterns: up to three, each with its median hook score and retention proxy, or "not
-  measurable yet".
-- Top candidates: up to five, each with hook score, pattern, and the first cut's timestamps.
+- Top patterns: up to three, each with its median hook score, median retention and level mix,
+  or "not measurable yet".
+- Top candidates: up to five, each with hook score, retention level (Measured, Creator
+  average, or Proxy), pattern, and the first cut's timestamps.
 - Rights: one line; creator posts show "Not held in Atlas: confirm usage rights before paid
   use" unless a record says otherwise.
-- Data gaps: candidates left out (non-video, cover only, no metrics) and how many were
-  considered.
+- Data gaps: candidates left out (non-video, cover only, no metrics), how many were
+  considered, and how many candidates had no measured data.
 - Also for {lens}: two bullets per extra lens, when more than one was passed.
 - Forward note: two or three lines the requester can paste to the reader.
 - Closing line: how many findings were saved to Atlas under this run and the `runKey`, or
   "nothing saved".
 - Visual payload, after the summary, as a fenced JSON block labelled `visual-data`: the top
   five candidates with `permalink`, `mediaUrl`, `thumbnailUrl`, `profilePictureUrl`,
-  `postedAt`, `mediaProductType`, caption excerpt (120 chars), hook score, pattern, and the
+  `postedAt`, `mediaProductType`, caption excerpt (120 chars), hook score, pattern, `retentionSource`, and the
   metric values used. Project `media.mediaUrl`, `media.thumbnailUrl` and
   `instagram.account.profilePictureUrl` in `search_posts` to fill it. The main thread renders
   this as post cards.
@@ -111,7 +117,9 @@ When the launch message says `mode: sample`, skip the Atlas reads, writes, and d
 process and build a sample of your page instead, following
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/sample-artifact.md`: invented data with
 hyphenated sample handles, the most recent US holiday's sample brand, campaign, and colors, every
-section of your real page at a small scale, and a sample banner. Call no Atlas tool, ask nothing,
+section of your real page at a small scale, and a sample banner. Give the sample candidates all
+three retention labels ("Measured", "Creator average, not this post", "Proxy") and one measured
+early rate cited beside an opening frame. Call no Atlas tool, ask nothing,
 and return that file's short output instead of your normal one (no audit trail block).
 
 ## Audit trail
