@@ -43,7 +43,7 @@ Onboarding for the Atlas platform (https://atlas.aspire.io). Takes a new or retu
 
 No environment variables are required. Authentication is handled by each connector's OAuth flow. Aspire Atlas Organization Admin only needs a sign in when someone lists or invites members; onboarding and every other flow use Aspire Atlas alone. Meta Ads is optional and only needs a Facebook sign in if you want Meta's ads tools; it shows as needing authentication until then.
 
-On a Team or Enterprise plan, a Claude workspace admin adds each bundled connector once for the team: Customize, then Plugins, then Aspire Atlas, then the Connectors tab, then **Add for your team**. Until that's done, `/aspire:org-admin` explains the step instead of listing members.
+On a Team or Enterprise plan, a Claude workspace admin adds each bundled connector once for the team: Customize, then Plugins, then Aspire Atlas, then the Connectors tab, then **Add for your team**. Until that's done, `/aspire:org-admin` explains the step instead of listing members. For Meta Ads, read the next paragraph before adding it.
 
 Meta Ads signs in through Aspire's Meta app. Claude Code reads the app's client ID from the plugin. Claude on the web (claude.ai) and Cowork do not. If the workspace already has a custom connector for `https://mcp.facebook.com/ads`, remove it first: the plugin attaches to an existing connector with the same URL and uses that connector's settings. Then, when you add Meta Ads for your team, keep **Use your own OAuth client** selected, enter `2875840562772069` as the OAuth client ID, and leave the client secret blank. Don't choose **Register automatically**: it signs in through Meta's own app instead of Aspire's.
 
