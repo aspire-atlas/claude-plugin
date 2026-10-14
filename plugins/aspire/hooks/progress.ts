@@ -11,6 +11,7 @@
 import type { AgentRun, OrgState, Progress, ProgressTask } from '../types'
 import type { AtlasOrgReading } from './atlas-usage'
 import { clip } from './format'
+import type { PlanView } from './plan'
 
 /** Onboarding checkpoints: 4 visible in get_status, 2 more only through reported progress. */
 export const STEPS = 6
@@ -95,8 +96,8 @@ export type Shown = {
   /** Tick marks: the steps of the run. */
   total: number
   isFinished: boolean
-  /** Where the reading comes from: the skill's report, the agents that ran, or the get_status baseline. */
-  source: 'skill' | 'agents' | 'baseline'
+  /** Where the reading comes from: the skill's report, the agent's own steps, the agents that ran, or the get_status baseline. */
+  source: 'skill' | 'plan' | 'agents' | 'baseline'
   /** True once the skill reported. */
   isReported: boolean
 }
@@ -134,7 +135,7 @@ const shown = (ratio: number, label: string, total: number, isFinished: boolean,
  * that ran are the steps (done out of started). With neither, the bar reads
  * Initializing… at 0% until the first tasks arrive.
  */
-export const shownOf = (p: Progress | null, o: OrgState, runs: readonly Run[] = []): Shown => {
+export const shownOf = (p: Progress | null, o: OrgState, runs: readonly Run[] = [], plan: PlanView | null = null): Shown => {
   const running = runs.filter(r => r.status === 'running')
   if (p && !p.isFinished) {
     const doneByAgent = (t: ProgressTask): boolean => runs.some(r => r.status === 'done' && norm(r.description) === norm(t.title))
@@ -145,6 +146,8 @@ export const shownOf = (p: Progress | null, o: OrgState, runs: readonly Run[] = 
     const phase = p.phase || live || (total ? 'Step' : INITIALIZING)
     return shown(total ? Math.min(1, done / total) : 0, [phase, total ? `${done}/${total}` : ''].filter(Boolean).join(' '), total, false, 'skill')
   }
+  // The agent's own task list: its steps and the estimate for the one in flight.
+  if (plan) return shown(plan.frac, plan.state === 'work' ? plan.label : (plan.badge ?? plan.label), plan.total, plan.state !== 'work', 'plan')
   if (p || runs.length) {
     const isRunsLive = running.length > 0
     if (p && !isRunsLive) return shown(1, AWAITING, p.total, true, 'skill')

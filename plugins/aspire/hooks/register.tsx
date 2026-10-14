@@ -45,6 +45,33 @@
 //   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //   SOFTWARE.
 //
+// The steps behind the progress bar (the agent's task list, the estimate for the
+// step in flight, and the Progress section's view) are adapted from plain-view in
+// claude-code-mods, https://github.com/ice-lfernandes/claude-code-mods, used under
+// the MIT License (hooks/plan.ts):
+//
+//   MIT License
+//
+//   Copyright (c) 2026 Lucas Fernandes
+//
+//   Permission is hereby granted, free of charge, to any person obtaining a copy
+//   of this software and associated documentation files (the "Software"), to deal
+//   in the Software without restriction, including without limitation the rights
+//   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//   copies of the Software, and to permit persons to whom the Software is
+//   furnished to do so, subject to the following conditions:
+//
+//   The above copyright notice and this permission notice shall be included in all
+//   copies or substantial portions of the Software.
+//
+//   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+//   SOFTWARE.
+//
 // What changed from the kit: the bar reports the aspire skill (the
 // aspire_progress tool, or a baseline from Atlas get_status before the skill
 // reports) instead of savvy-flow, with the organization's name as its title
@@ -58,13 +85,15 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
-import type { AgentRun, AtlasCreditsReading, AtlasReading, BandStats, OrgState, Panel, Progress, Seen, Trigger, TriggerKind } from '../types'
+import type { AgentRun, AtlasCreditsReading, AtlasReading, BandStats, Item, OrgState, Panel, Progress, Seen, Trigger, TriggerKind, Turn } from '../types'
 import { creditsView, fmtAtlasUsage, fmtCredits, isAtlasStatusCall, isAtlasToolName, readAtlasCredits, readAtlasOrg, readAtlasUsage } from './atlas-usage'
 import type { CreditsView } from './atlas-usage'
 import { ASPIRE, CRAB_CSS, breathOf, characterOf, crab } from './characters'
 import { GROUPS, ROSTER } from './roster'
 import type { RosterEntry } from './roster'
 import { clip, fitText, fmtTime, fmtTokens, modelName, textWidth, windowOf, xml } from './format'
+import { applyTask, countCall, endTurn, isTaskTool, planOf, startTurn, touch } from './plan'
+import type { PlanView } from './plan'
 import type { ProgressInput, Shown } from './progress'
 import { barText, mergeProgress, orgStateFrom, percentOf, shownOf, titleOf } from './progress'
 
@@ -86,6 +115,8 @@ const isActive = atom({ plugin: 'aspire', key: 'isActive' } as const, false)
 const trigger = atom({ plugin: 'aspire', key: 'trigger' } as const, null as Trigger | null)
 const seen = atom({ plugin: 'aspire', key: 'seen' } as const, BLANK_SEEN)
 const progress = atom({ plugin: 'aspire', key: 'progress' } as const, null as Progress | null)
+const turn = atom({ plugin: 'aspire', key: 'turn' } as const, null as Turn | null)
+const items = atom({ plugin: 'aspire', key: 'items' } as const, [] as Item[])
 const org = atom({ plugin: 'aspire', key: 'org' } as const, BLANK_ORG)
 const atlas = atom({ plugin: 'aspire', key: 'atlas' } as const, null as AtlasReading | null)
 const creditsAtom = atom({ plugin: 'aspire', key: 'credits' } as const, null as AtlasCreditsReading | null)
@@ -127,7 +158,8 @@ const band: { renders: number; surface: string | null } = { renders: 0, surface:
 
 const tick = async ($: EngineInterface): Promise<void> => {
   const at = await $.clock.now()
-  if ((await read($, agents)).some(a => a.status === 'running')) await update($, now, () => at)
+  const t = await read($, turn)
+  if ((await read($, agents)).some(a => a.status === 'running') || (t && t.end === undefined)) await update($, now, () => at)
 }
 
 const startTicking = ($: EngineInterface): void => {
@@ -161,6 +193,8 @@ async function reset($: EngineInterface): Promise<void> {
   await update($, seen, () => BLANK_SEEN)
   await update($, progress, () => null)
   await update($, org, () => BLANK_ORG)
+  await update($, turn, () => null)
+  await update($, items, () => [])
   await update($, atlas, () => null)
   await update($, creditsAtom, () => null)
   await update($, stats, () => ({ turn: 0, speed: null, context: 0 }))
@@ -439,6 +473,67 @@ const progressBodySvg = (W: number, title: string, shown: Shown, tasks: { title:
       .join('')}`,
   )
 
+/** The progress section's body for the agent's own plan: the request and its time, the step bar, then a row and a bar for each step. */
+const PLAN_HEAD_H = 26
+const PLAN_ROW_H = 24
+const PLAN_NOTE_H = 18
+const STOPPED = '#8a8f8c'
+const planH = (view: PlanView): number =>
+  PLAN_HEAD_H +
+  PROGRESS_H -
+  4 +
+  (view.before ? PLAN_NOTE_H : 0) +
+  view.rows.reduce((n, r) => n + PLAN_ROW_H + (r.kind === 'now' && r.doing ? 16 : 0), 0) +
+  (view.after ? PLAN_NOTE_H : 0) +
+  (view.files ? PLAN_NOTE_H : 0)
+const planBodySvg = (W: number, title: string, shown: Shown, view: PlanView, tail: number): string => {
+  const accent = view.state === 'stopped' ? STOPPED : view.state === 'done' ? DONE : ASPIRE
+  const badgeW = view.badge ? textWidth(`✓ ${view.badge}`, 12) + 8 : 0
+  const timeW = textWidth(view.time, 11) + 8
+  const font = `font-family="${FONT}"`
+  let y = PLAN_HEAD_H + PROGRESS_H - 4
+  const parts: string[] = [
+    `<text x="16" y="18" ${font} font-size="12" font-weight="500">${
+      view.badge ? `<tspan fill="${accent}" font-weight="600">${view.state === 'done' ? '✓' : '■'} ${xml(view.badge)}</tspan><tspan class="t" dx="8">${xml(fitText(view.title, 12, W - 32 - badgeW - timeW))}</tspan>` : `<tspan fill="${accent}">✦ </tspan><tspan class="t">${xml(fitText(view.title, 12, W - 32 - timeW - 16))}</tspan>`
+    }</text>
+<text class="s" x="${W - 16}" y="18" text-anchor="end" ${font} font-size="11" font-variant-numeric="tabular-nums">${xml(view.time)}</text>
+<style>${twinkleCss(shown)}</style><g transform="translate(16,${PLAN_HEAD_H - 2})">${barShapes(title, shown, W - 32)}</g>`,
+  ]
+  const note = (text: string) => {
+    parts.push(`<text class="s" x="36" y="${y + 13}" ${font} font-size="11">${xml(text)}</text>`)
+    y += PLAN_NOTE_H
+  }
+  if (view.before) note(`✓ ${view.before}`)
+  const statusW = 46
+  const miniW = 40
+  const barX = W - 16 - statusW - 6 - miniW
+  for (const r of view.rows) {
+    const color = r.kind === 'done' ? DONE : r.kind === 'now' ? ASPIRE : STOPPED
+    const cy = y + 12
+    const icon =
+      r.kind === 'done'
+        ? `<path d="M18 ${cy}l3 3 5-6" fill="none" stroke="${DONE}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`
+        : r.kind === 'now'
+          ? `<circle cx="22" cy="${cy}" r="4" fill="${ASPIRE}"/>`
+          : r.kind === 'halted'
+            ? `<rect x="18.5" y="${cy - 3.5}" width="7" height="7" rx="1.5" fill="${STOPPED}"/>`
+            : `<circle class="cv" cx="22" cy="${cy}" r="3.5" fill="none" stroke-width="1.2"/>`
+    parts.push(
+      `${icon}<text class="${r.kind === 'now' ? 't' : r.kind === 'done' ? 't' : 's'}" x="36" y="${y + 16}" ${font} font-size="12"${r.kind === 'now' ? ' font-weight="600"' : ''}>${xml(fitText(r.text, 12, barX - 36 - 10))}</text>
+<rect class="k" x="${barX}" y="${y + 10}" width="${miniW}" height="4" rx="2"/>${r.frac > 0 ? `<rect x="${barX}" y="${y + 10}" width="${Math.max(3, Math.round(miniW * r.frac))}" height="4" rx="2" fill="${color}"/>` : ''}
+<text ${r.kind === 'now' ? `fill="${ASPIRE}" font-weight="600"` : 'class="s"'} x="${W - 16}" y="${y + 15}" text-anchor="end" ${font} font-size="11" font-variant-numeric="tabular-nums">${xml(r.status)}</text>`,
+    )
+    y += PLAN_ROW_H
+    if (r.kind === 'now' && r.doing) {
+      parts.push(`<text class="s" x="36" y="${y + 3}" ${font} font-size="11">${xml(fitText(r.doing, 11, W - 36 - 16))}</text>`)
+      y += 16
+    }
+  }
+  if (view.after) note(`○ ${view.after}`)
+  if (view.files) note(view.files)
+  return rowSvg(W, planH(view), false, tail, parts.join('\n'))
+}
+
 const OVER = '#D0453F'
 
 /** The credits card, fixed at the top and not collapsible: the Aspire mark and the organization's credits from the latest get_status. */
@@ -610,8 +705,9 @@ async function statusText($: EngineInterface): Promise<string> {
     s.lastStatusAt === null
       ? 'Last get_status: none yet.'
       : `Last get_status ${ago(at - s.lastStatusAt)}: ${credits ? `${fmtCredits(credits.credits.remaining)} credits left` : reading ? `${fmtAtlasUsage(reading.costs)} Atlas tokens` : 'no credits in it'}, organization ${o.name ?? 'not picked yet'}.`
-  const shown = shownOf(p, o, await read($, agents))
-  const bar = isOnNow ? `Bar: ${titleOf(o)}, ${shown.label}, ${percentOf(shown)} (${shown.source === 'skill' ? 'reported by the skill' : shown.source === 'agents' ? 'from the running agents' : 'initializing, no report from the skill yet'}).` : 'Bar: not shown until the mod is on.'
+  const at2 = await $.clock.now()
+  const shown = shownOf(p, o, await read($, agents), planOf(await read($, turn), await read($, items), at2))
+  const bar = isOnNow ? `Bar: ${titleOf(o)}, ${shown.label}, ${percentOf(shown)} (${shown.source === 'skill' ? 'reported by the skill' : shown.source === 'plan' ? "from the agent's own steps" : shown.source === 'agents' ? 'from the running agents' : 'initializing, no report from the skill yet'}).` : 'Bar: not shown until the mod is on.'
   const b = band
   const drawn = b.renders > 0 ? `Band: drawn ${b.renders} times, last on ${b.surface ?? 'unknown'}.` : 'Band: never drawn on this surface.'
   return [state, counts, status, bar, drawn, `Claude Code ${version} on ${surfaces}.`].join('\n')
@@ -753,7 +849,7 @@ export const register: Register = on => {
       await activate($, 'progress', 'aspire_progress')
       await count($, 'progressReports')
       const p = await update($, progress, prev => mergeProgress(prev, e as unknown as ProgressInput))
-      const shown = shownOf(p, await read($, org), await read($, agents))
+      const shown = shownOf(p, await read($, org), await read($, agents), planOf(await read($, turn), await read($, items), await $.clock.now()))
       const b = band
       const hidden = await read($, isBandHidden)
       const visibility = hidden ? 'hidden-by-user' : b.renders > 0 ? `visible on ${b.surface ?? 'unknown'}` : 'not-drawn'
@@ -845,9 +941,59 @@ export const register: Register = on => {
   }).catch(() => ({ text: 'The Aspire agents panel could not be drawn here.' }))
 
   on('turn.start', async ($, e, next) => {
-    if (await isOn($)) await update($, stats, s => ({ ...s, turn: s.turn + 1 })).catch(() => undefined)
+    try {
+      if (await isOn($)) {
+        await update($, stats, s => ({ ...s, turn: s.turn + 1 }))
+        // A new request: a fresh turn for the steps, and the agent's task list kept only while a task is open.
+        const at = await $.clock.now()
+        const fresh = startTurn(await read($, turn), await read($, items), typeof e.text === 'string' ? e.text : '', at)
+        await update($, turn, () => fresh.turn)
+        await update($, items, () => fresh.items)
+        await update($, now, () => at)
+      }
+    } catch {
+      // The steps are a convenience: the turn starts whatever happens here.
+    }
     return next(e)
   })
+
+  // The agent's own task list and tool calls, for the steps behind the bar. An observer: the call
+  // and its result pass through unchanged, and the call is never run twice.
+  on('tool.call', async ($, e, next) => {
+    if (e.agentId || !(await isOn($))) return next(e)
+    const tool = String(e.tool)
+    if (tool === PROGRESS_TOOL || tool === STEP_TOOL) return next(e)
+    const input = e as unknown as Readonly<Record<string, unknown>>
+    if (isTaskTool(tool)) {
+      const result = await next(e)
+      try {
+        // TaskUpdate reports a refused change in its result ({ success: false }).
+        const refused = (result.result as { success?: unknown } | undefined)?.success === false
+        if (result.deny === undefined && !result.isError && !refused) await update($, items, list => applyTask(list, tool, input, result.result))
+      } catch {
+        // As above.
+      }
+      return result
+    }
+    let isCounted = false
+    try {
+      const t = await read($, turn)
+      isCounted = !!t && t.end === undefined
+      if (isCounted) {
+        await update($, turn, v => (v ? touch(v, tool, input, null) : v))
+        await update($, items, countCall)
+      }
+    } catch {
+      // As above.
+    }
+    const result = await next(e)
+    try {
+      if (isCounted) await update($, turn, v => (v ? touch(v, tool, input, result.deny === undefined && !result.isError) : v))
+    } catch {
+      // As above.
+    }
+    return result
+  }).catch(($, e, next) => next(e))
 
   on('agent.spawn', async ($, e, next) => {
     const started = await next(e)
@@ -950,6 +1096,7 @@ export const register: Register = on => {
       if (!(await isOn($))) return result
       const at = await $.clock.now()
       if (e.agentId === undefined) {
+        await update($, turn, v => (v && v.end === undefined ? endTurn(v, e.reason, at) : v))
         await refreshContext($)
       } else {
         const agentId = e.agentId
@@ -981,7 +1128,8 @@ export const register: Register = on => {
 
     const o = await read($, org)
     const list = await read($, agents)
-    const shown = shownOf(await read($, progress), o, list)
+    const clockNow = Math.max(await read($, now), (await read($, turn))?.startedAt ?? 0)
+    const shown = shownOf(await read($, progress), o, list, planOf(await read($, turn), await read($, items), clockNow))
     const title = titleOf(o)
     const percent = percentOf(shown)
 
@@ -1050,7 +1198,9 @@ export const register: Register = on => {
     const view = creditsView((await read($, creditsAtom))?.credits ?? null, (await read($, atlas))?.costs ?? null)
     const o = await read($, org)
     const report = await read($, progress)
-    const shown = shownOf(report, o, list)
+    const planTurn = await read($, turn)
+    const plan = planOf(planTurn, await read($, items), Math.max(at, planTurn?.startedAt ?? 0))
+    const shown = shownOf(report, o, list, plan)
     const title = titleOf(o)
     const percent = percentOf(shown)
     const tasks = (report?.tasks ?? []).slice(0, 8)
@@ -1143,21 +1293,46 @@ export const register: Register = on => {
         key: 'progress',
         title: 'Progress',
         summary: `${shown.label} · ${percent}`,
-        rows: [
-          { id: 'progress', h: PROGRESS_H + tasks.length * TASK_H, alt: `${title}: ${shown.label}, ${percent}`, draw: (W, tail) => progressBodySvg(W, title, shown, tasks, tail) },
-        ],
-        text: () => (
-          <Box flexDirection="column">
-            <Text wrap="truncate-end">
-              <Text color={shown.isFinished ? DONE : ASPIRE}>{barText(shown.ratio, 12)}</Text> <Text bold>{shown.label}</Text> <Text dimColor>{percent}</Text>
-            </Text>
-            {tasks.map(t => (
-              <Text key={t.title} wrap="truncate-end" dimColor={!t.isDone}>
-                {t.isDone ? '✓' : '○'} {t.title}
+        rows:
+          plan && !(report && !report.isFinished)
+            ? [{ id: 'progress', h: planH(plan), alt: `${title}: ${shown.label}, ${percent}`, draw: (W, tail) => planBodySvg(W, title, shown, plan, tail) }]
+            : [
+                { id: 'progress', h: PROGRESS_H + tasks.length * TASK_H, alt: `${title}: ${shown.label}, ${percent}`, draw: (W, tail) => progressBodySvg(W, title, shown, tasks, tail) },
+              ],
+        text: () =>
+          plan && !(report && !report.isFinished) ? (
+            <Box flexDirection="column">
+              <Text wrap="truncate-end">
+                {plan.badge ? <Text color={plan.state === 'done' ? DONE : undefined} bold>{plan.state === 'done' ? '✓' : '■'} {plan.badge} </Text> : null}
+                <Text bold>{plan.title}</Text> <Text dimColor>{plan.time}</Text>
               </Text>
-            ))}
-          </Box>
-        ),
+              <Text wrap="truncate-end">
+                <Text color={shown.isFinished ? DONE : ASPIRE}>{barText(shown.ratio, 12)}</Text> <Text bold>{shown.label}</Text> <Text dimColor>{percent}</Text>
+              </Text>
+              {plan.before ? <Text dimColor>{`✓ ${plan.before}`}</Text> : null}
+              {plan.rows.map(r => (
+                <Box key={r.text} flexDirection="column">
+                  <Text wrap="truncate-end" dimColor={r.kind === 'next' || r.kind === 'later'} bold={r.kind === 'now'}>
+                    {`${r.kind === 'done' ? '✓' : r.kind === 'now' ? '●' : r.kind === 'halted' ? '■' : '○'} ${r.text} · ${r.status}`}
+                  </Text>
+                  {r.kind === 'now' && r.doing ? <Text dimColor wrap="truncate-end">{'    '}{r.doing}</Text> : null}
+                </Box>
+              ))}
+              {plan.after ? <Text dimColor>{`○ ${plan.after}`}</Text> : null}
+              {plan.files ? <Text dimColor>{plan.files}</Text> : null}
+            </Box>
+          ) : (
+            <Box flexDirection="column">
+              <Text wrap="truncate-end">
+                <Text color={shown.isFinished ? DONE : ASPIRE}>{barText(shown.ratio, 12)}</Text> <Text bold>{shown.label}</Text> <Text dimColor>{percent}</Text>
+              </Text>
+              {tasks.map(t => (
+                <Text key={t.title} wrap="truncate-end" dimColor={!t.isDone}>
+                  {t.isDone ? '✓' : '○'} {t.title}
+                </Text>
+              ))}
+            </Box>
+          ),
       },
       {
         key: 'running',
