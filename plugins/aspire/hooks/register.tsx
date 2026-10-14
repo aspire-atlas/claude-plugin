@@ -1024,16 +1024,11 @@ export const register: Register = on => {
     )
 
     const setTab = (tab: Panel['tab']) => () => void update($, panel, prev => ({ ...prev, tab }))
-    // Tabs read as tabs: the open one is bracketed and bright, the other dim with a pointer, and a
-    // rule runs under both. Pressing the dim one opens it.
-    const tabLabel = (name: string, tab: Panel['tab']): string => (p.tab === tab ? `[ ${name} ]` : `  ${name} ›`)
+    // Two buttons switch the view: the open one is the primary button, the other secondary.
     const tabs = (
-      <Box flexDirection="column">
-        <Box flexDirection="row" gap={2}>
-          <Button key="tab-live" label={tabLabel('Live', 'live')} plain dimColor={p.tab !== 'live'} onPress={setTab('live')} />
-          <Button key="tab-agents" label={tabLabel(`Agents · ${ROSTER.length}`, 'agents')} plain dimColor={p.tab !== 'agents'} onPress={setTab('agents')} />
-        </Box>
-        <Text dimColor>{'─'.repeat(Math.max(10, Math.min(60, (e.props.bodyColumns || 40) - 2)))}</Text>
+      <Box flexDirection="row" gap={1}>
+        <Button key="tab-live" label="Live" variant={p.tab === 'live' ? 'primary' : 'secondary'} onPress={setTab('live')} />
+        <Button key="tab-agents" label={`Agents · ${ROSTER.length}`} variant={p.tab === 'agents' ? 'primary' : 'secondary'} onPress={setTab('agents')} />
       </Box>
     )
     // Pressing an agent drafts its start in the prompt box and does not send it: the person reads it and presses Enter.
