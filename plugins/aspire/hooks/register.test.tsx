@@ -168,9 +168,13 @@ test('desktop: the bar is one Svg with the crab', async ($, on) => {
   const bar = svgs.find(s => s.includes('Aspire: Sample Brand'))
   expect(bar).toBeDefined()
   expect(bar).toContain('#3B8A82')
-  // The crab is a pressable glyph beside the count, not part of the drawing.
-  expect(bar).not.toContain('c-other')
-  expect(await ui.find({ type: 'Text', text: /🦀/ })).toBeDefined()
+  // The agent counter is drawn in the same Svg: a walking crab and the count.
+  expect(bar).toContain('class="c-')
+  expect(bar).toContain('×0')
+  expect(bar).not.toContain('✕')
+  // Two blank press areas lie over it: the title and the rest.
+  expect(await ui.find({ key: 'aspire-org' })).toBeDefined()
+  expect(await ui.find({ key: 'aspire-agents' })).toBeDefined()
   expect(bar).not.toContain('undefined')
   expect(bar).not.toContain('NaN')
   expect(svgs.length).toBeGreaterThanOrEqual(1)
@@ -503,12 +507,10 @@ test('desktop panel draws one Svg per agent', async ($, on) => {
   expect(drawn).not.toContain('[object')
 })
 
-test('the bar and band hide with ✕ and come back with /aspire-agents-info band', async ($, on) => {
+test('the bar and band hide and come back with /aspire-agents-info band', async ($, on) => {
   world(on, () => WITH_COSTS)
   await typeAspire($)
-  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'terminal', component: 'AbovePrompt', props: band as never })
-  await ui.press({ key: 'aspire-band-hide' })
-  await ui.unmount()
+  expect(await $.command.run({ command: 'aspire-agents-info', args: 'band' } as never)).toMatchObject({ text: 'Aspire band hidden.' })
   expect(await barShows($, 'terminal', 'Aspire')).toBe(false)
   expect(await $.command.run({ command: 'aspire-agents-info', args: 'band' } as never)).toMatchObject({ text: 'Aspire band shown.' })
   expect(await barShows($, 'terminal', 'Aspire')).toBe(true)
