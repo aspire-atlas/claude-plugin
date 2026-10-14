@@ -318,7 +318,10 @@ test('the Agents tab shows a crab card for every agent type, and marks the ones 
   await spawn($, 'aspire:atlas-market-signal', 'Signal for the week')
   const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
   await ui.press({ key: 'tab-agents' })
-  const cards = (await ui.findAll({ type: 'Svg' })).map(el => String(el.props.source))
+  const svgs = await ui.findAll({ type: 'Svg' })
+  // The dotted grid backs the Agents tab: one tile, under everything else.
+  expect(svgs.filter(el => el.props.alt === 'dotted grid')).toHaveLength(1)
+  const cards = svgs.filter(el => el.props.alt !== 'dotted grid').map(el => String(el.props.source))
   // One credits card above the tabs, then a card per agent type.
   expect(cards).toHaveLength(26)
   expect(cards.filter(c => c.includes('Market signal'))[0]).toContain('running')
@@ -391,6 +394,54 @@ test('the Live button is as wide as the Aspire mark', async ($, on) => {
   const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
   // The mark is 56px wide, seven 8px columns; the Live button's box is seven columns.
   expect((await ui.findAll({ type: 'Box' })).some(b => b.props.width === 7 && b.children.some(c => (c as { props?: { key?: string } }).props?.key === 'tab-live'))).toBe(true)
+  await ui.unmount()
+})
+
+test('the dotted grid backs the Agents tab and not the Live tab', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  await spawn($, 'aspire:atlas-market-signal', 'Signal for the week')
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  const grids = async () => (await ui.findAll({ type: 'Svg' })).filter(el => el.props.alt === 'dotted grid').length
+  expect(await grids()).toBe(0)
+  await ui.press({ key: 'tab-agents' })
+  expect(await grids()).toBe(1)
+  await ui.press({ key: 'tab-live' })
+  expect(await grids()).toBe(0)
+  await ui.unmount()
+})
+
+// The text inside every `@media (prefers-color-scheme: dark){...}` block, braces matched.
+const darkBlocks = (source: string): string => {
+  const open = '@media (prefers-color-scheme: dark){'
+  let out = ''
+  for (let i = source.indexOf(open); i !== -1; i = source.indexOf(open, i + 1)) {
+    let depth = 1
+    let j = i + open.length
+    while (j < source.length && depth > 0) depth += source[j] === '{' ? 1 : source[j] === '}' ? -1 : 0, j++
+    out += source.slice(i + open.length, j - 1)
+  }
+  return out
+}
+
+test('every colour in the desktop panel has a light and a dark value', async ($, on) => {
+  world(on, () => ({ ...WITH_COSTS, credits: CREDITS }))
+  await spawn($, 'aspire:atlas-market-signal', 'Signal for the week')
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  for (const tab of ['tab-live', 'tab-agents']) {
+    await ui.press({ key: tab })
+    for (const el of await ui.findAll({ type: 'Svg' })) {
+      const source = String(el.props.source)
+      // The classes that paint a surface or text take their value from the light and the dark block alike.
+      const used = new Set([...source.matchAll(/class="([^"]+)"/g)].flatMap(m => m[1].split(' ')))
+      const themed = ['t', 's', 'm', 'k', 'tk', 'ln', 'tile', 'd'].filter(c => used.has(c))
+      const dark = darkBlocks(source)
+      for (const c of themed) {
+        const light = new RegExp(`(^|[^\\w-])\\.${c}\\{`).test(source.split('@media (prefers-color-scheme: dark)')[0])
+        expect({ tab, class: c, light }).toEqual({ tab, class: c, light: true })
+        expect({ tab, class: c, dark: dark.includes(`.${c}{`) }).toEqual({ tab, class: c, dark: true })
+      }
+    }
+  }
   await ui.unmount()
 })
 

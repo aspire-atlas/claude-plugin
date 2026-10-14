@@ -1065,29 +1065,36 @@ export const register: Register = on => {
       if (e.surface === 'desktop' && 'Svg' in ui) {
         const { Svg } = ui
         const W = Math.max(240, Math.min(900, (e.props.bodyColumns || 40) * 8 - 8))
+        // The dotted grid backs the whole list: credits, buttons, group titles, and every card.
+        const gridH = CREDIT_H + 2 * LINE_H + GROUPS.length * LINE_H + ROSTER.length * CARD_H
         return (
           <Box flexDirection="column">
-            <Svg source={creditsCardSvg(W, view)} alt={summary} width={W} height={CREDIT_H} />
-            {tabs}
-            {GROUPS.map(g => {
-              const entries = ROSTER.filter(r => r.group === g.key)
-              return (
-                <Box key={g.key} flexDirection="column">
-                  <Text dimColor>{`${g.title} · ${entries.length}`}</Text>
-                  {entries.map(r => (
-                    <Box key={r.type} flexDirection="column">
-                      <Svg source={cardSvg(W, r, list, p.leaving === r.type)} alt={`${r.name}: ${r.blurb}`} width={W} height={CARD_H} />
-                      {/* A Button holds text only and an Svg takes no press, so three rows of blank Buttons lie over the card: a press anywhere on it drafts the start. */}
-                      <Box position="absolute" top={0} left={0} flexDirection="column">
-                        {[0, 1, 2].map(row => (
-                          <Button key={`start-${r.type}-${row}`} label={'\u00a0'.repeat(Math.floor(W / 8))} plain onPress={startAgent(r)} />
-                        ))}
+            {gridTiles(gridH).map((tileH, i) => (
+              <Svg key={`grid-${i}`} source={gridSvg(W, tileH)} alt="dotted grid" width={W} height={tileH} />
+            ))}
+            <Box flexDirection="column" position="absolute" top={0} left={0} right={0}>
+              <Svg source={creditsCardSvg(W, view)} alt={summary} width={W} height={CREDIT_H} />
+              {tabs}
+              {GROUPS.map(g => {
+                const entries = ROSTER.filter(r => r.group === g.key)
+                return (
+                  <Box key={g.key} flexDirection="column">
+                    <Text dimColor>{`${g.title} · ${entries.length}`}</Text>
+                    {entries.map(r => (
+                      <Box key={r.type} flexDirection="column">
+                        <Svg source={cardSvg(W, r, list, p.leaving === r.type)} alt={`${r.name}: ${r.blurb}`} width={W} height={CARD_H} />
+                        {/* A Button holds text only and an Svg takes no press, so three rows of blank Buttons lie over the card: a press anywhere on it drafts the start. */}
+                        <Box position="absolute" top={0} left={0} flexDirection="column">
+                          {[0, 1, 2].map(row => (
+                            <Button key={`start-${r.type}-${row}`} label={'\u00a0'.repeat(Math.floor(W / 8))} plain onPress={startAgent(r)} />
+                          ))}
+                        </Box>
                       </Box>
-                    </Box>
-                  ))}
-                </Box>
-              )
-            })}
+                    ))}
+                  </Box>
+                )
+              })}
+            </Box>
           </Box>
         )
       }
@@ -1123,30 +1130,21 @@ export const register: Register = on => {
           </Box>
         )
       }
-      const shownDone = p.isDoneCollapsed ? 0 : finished.length
-      const lines = 2 + (isEmpty ? 1 : 0) + (running.length > 0 ? 1 : 0) + (finished.length > 0 ? 1 : 0)
-      const gridH = CREDIT_H + lines * LINE_H + (running.length + shownDone) * ROW_H
       return (
         <Box flexDirection="column">
-          {/* The grid sizes the pane; the content is placed over it. */}
-          {gridTiles(gridH).map((tileH, i) => (
-            <Svg key={`grid-${i}`} source={gridSvg(W, tileH)} alt="dotted grid" width={W} height={tileH} />
+          <Svg source={creditsCardSvg(W, view)} alt={summary} width={W} height={CREDIT_H} />
+          {tabs}
+          {toggleCompact}
+          {isEmpty && <Text dimColor>{empty}</Text>}
+          {running.length > 0 && <Text dimColor>{`Running · ${running.length}`}</Text>}
+          {running.map(a => (
+            <Svg key={a.id} source={agentSvg(W, a, at)} alt={`${a.description}: ${modelName(a.model)}, running`} width={W} height={ROW_H} />
           ))}
-          <Box flexDirection="column" position="absolute" top={0} left={0} right={0}>
-            <Svg source={creditsCardSvg(W, view)} alt={summary} width={W} height={CREDIT_H} />
-            {tabs}
-            {toggleCompact}
-            {isEmpty && <Text dimColor>{empty}</Text>}
-            {running.length > 0 && <Text dimColor>{`Running · ${running.length}`}</Text>}
-            {running.map(a => (
-              <Svg key={a.id} source={agentSvg(W, a, at)} alt={`${a.description}: ${modelName(a.model)}, running`} width={W} height={ROW_H} />
+          {finished.length > 0 && toggleDone}
+          {!p.isDoneCollapsed &&
+            finished.map(a => (
+              <Svg key={a.id} source={agentSvg(W, a, at)} alt={`${a.description}: ${modelName(a.model)}, finished`} width={W} height={ROW_H} />
             ))}
-            {finished.length > 0 && toggleDone}
-            {!p.isDoneCollapsed &&
-              finished.map(a => (
-                <Svg key={a.id} source={agentSvg(W, a, at)} alt={`${a.description}: ${modelName(a.model)}, finished`} width={W} height={ROW_H} />
-              ))}
-          </Box>
         </Box>
       )
     }
