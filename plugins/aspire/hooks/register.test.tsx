@@ -34,8 +34,9 @@ const mcpResult = (body: unknown) => {
 // The world beneath the plugin: a clock, prompts, the skill's own prompt, the
 // Skill tool, an Atlas get_status that answers `status()`, another connector,
 // and subagents that start on Opus.
+let clock: ReturnType<typeof mock.clock>
 const world = (on: On, status: () => unknown, opened: string[] = []) => {
-  mock.clock(on, { now: Date.parse('2026-10-14T09:00:00Z') })
+  clock = mock.clock(on, { now: Date.parse('2026-10-14T09:00:00Z') })
   on('ui.open', (_$, e) => {
     opened.push(e.id)
     return { value: { isPlaced: true } }
@@ -321,7 +322,7 @@ test('the Agents tab shows a crab card for every agent type, and marks the ones 
   // One credits card above the tabs, then a card per agent type.
   expect(cards).toHaveLength(26)
   expect(cards.filter(c => c.includes('Market signal'))[0]).toContain('running')
-  expect(cards.filter(c => c.includes('Orchestrator'))[0]).toContain('ready')
+  expect(cards.filter(c => c.includes('Orchestrator'))[0]).not.toContain('ready')
   expect(cards.join('')).not.toContain('undefined')
   await ui.press({ key: 'tab-live' })
   expect(await ui.find({ type: 'Svg' })).toBeDefined()
@@ -355,6 +356,28 @@ test('the tabs read as tabs, and pressing an agent drafts its start in the promp
   await ui.unmount()
   expect(drafts).toHaveLength(1)
   expect(drafts[0]).toMatchObject({ text: '/aspire:aspire run atlas-creator-vetting', mode: 'replace' })
+})
+
+test('on the desktop the pressed crab walks off its card, then the start is drafted', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  const drafts: string[] = []
+  on('prompt.fill', (_$, e) => {
+    drafts.push((e as { text: string }).text)
+    return { isFilled: true, text: (e as { text: string }).text, cursor: 0 } as never
+  })
+  await typeAspire($)
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  await ui.press({ key: 'tab-agents' })
+  const card = async () => (await ui.findAll({ type: 'Svg' })).map(el => String(el.props.source)).find(c => c.includes('Creator vetting')) ?? ''
+  // Idle crabs breathe; none walks yet.
+  expect(await card()).toContain('idle')
+  expect(await card()).not.toContain(' go')
+  await ui.press({ key: 'start-aspire:atlas-creator-vetting-0' })
+  expect(drafts).toEqual([])
+  expect(await card()).toContain(' go')
+  await clock.advance(1000)
+  await ui.unmount()
+  expect(drafts).toEqual(['/aspire:aspire run atlas-creator-vetting'])
 })
 
 test('an agent step call from an unknown agent changes nothing and does not switch the mod on', async ($, on) => {

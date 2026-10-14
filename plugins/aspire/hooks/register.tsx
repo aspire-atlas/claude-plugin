@@ -92,7 +92,7 @@ const creditsAtom = atom({ plugin: 'aspire', key: 'credits' } as const, null as 
 const stats = atom({ plugin: 'aspire', key: 'stats' } as const, { turn: 0, speed: null, context: 0 } as BandStats)
 const isBandHidden = atom({ plugin: 'aspire', key: 'isBandHidden' } as const, false)
 const agents = atom({ plugin: 'aspire', key: 'agents' } as const, [] as AgentRun[])
-const panel = atom({ plugin: 'aspire', key: 'panel' } as const, { isCompact: false, isDoneCollapsed: false, isAutoOpened: false, tab: 'live' } as Panel)
+const panel = atom({ plugin: 'aspire', key: 'panel' } as const, { isCompact: false, isDoneCollapsed: false, isAutoOpened: false, tab: 'live', leaving: null } as Panel)
 const now = atom({ plugin: 'aspire', key: 'now' } as const, 0)
 
 /** The aspire skill: `/aspire`, `/aspire:aspire`, or the Skill tool's `aspire:aspire`. */
@@ -166,7 +166,7 @@ async function reset($: EngineInterface): Promise<void> {
   band.renders = 0
   band.surface = null
   await update($, agents, () => [])
-  await update($, panel, () => ({ isCompact: false, isDoneCollapsed: false, isAutoOpened: false, tab: 'live' }))
+  await update($, panel, () => ({ isCompact: false, isDoneCollapsed: false, isAutoOpened: false, tab: 'live', leaving: null }))
 }
 
 const isOn = async ($: EngineInterface): Promise<boolean> => {
@@ -437,21 +437,21 @@ ${statusMark(W - 8, 16, a.status, character.color)}
 const CARD_H = 60
 
 /** A crab card for one agent type: its costume, name, what it makes, and whether it ran this session. */
-const cardSvg = (W: number, entry: RosterEntry, list: AgentRun[]): string => {
+const cardSvg = (W: number, entry: RosterEntry, list: AgentRun[], isLeaving = false): string => {
   const character = characterOf({ type: entry.type, model: '' })
   const runs = list.filter(a => a.type === entry.type)
   const isRunning = runs.some(a => a.status === 'running')
-  const state = isRunning ? 'running' : runs.length ? `ran ${runs.length}\u00d7` : 'ready'
+  const state = isRunning ? 'running' : runs.length ? `ran ${runs.length}\u00d7` : ''
   const textW = W - 42 - 74
   return svg(
     W,
     CARD_H,
     `<rect class="tile" x="0.5" y="2.5" width="${W - 1}" height="${CARD_H - 6}" rx="10"/>
-${crab(8, 10, character, false, isRunning)}
+${crab(8, 10, character, false, isRunning || isLeaving, undefined, isRunning || isLeaving ? undefined : [...entry.type].reduce((n, c) => (n * 31 + c.charCodeAt(0)) % 26, 0) / 10, isLeaving)}
 <text class="t" x="50" y="25" font-family="${FONT}" font-size="13" font-weight="600">${xml(fitText(entry.name, 13, textW))}</text>
 <text class="s" x="50" y="42" font-family="${FONT}" font-size="11">${xml(fitText(entry.blurb, 11, textW))}</text>
 ${isRunning ? `<circle class="live" cx="${W - 66}" cy="22" r="3.5" fill="${character.color}"/>` : runs.length ? `<path d="M${W - 70} 22l3.5 3.5 6.5-7" fill="none" stroke="#3B9C5F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
-<text class="${isRunning || runs.length ? 's' : 'm'}" x="${W - 12}" y="26" text-anchor="end" font-family="${FONT}" font-size="11">${state}</text>`,
+${state ? `<text class="s" x="${W - 12}" y="26" text-anchor="end" font-family="${FONT}" font-size="11">${state}</text>` : ''}`,
   )
 }
 
@@ -1037,8 +1037,16 @@ export const register: Register = on => {
       </Box>
     )
     // Pressing an agent drafts its start in the prompt box and does not send it: the person reads it and presses Enter.
+    // The crab walks off its card first (about a second), then the draft lands in the prompt.
     const startAgent = (r: RosterEntry) => () =>
-      void $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: `/aspire:aspire run ${r.type.replace(/^aspire:/, '')}`, mode: 'replace' } as never).catch(() => undefined)
+      void (async () => {
+        if (e.surface === 'desktop') {
+          await update($, panel, prev => ({ ...prev, leaving: r.type }))
+          await $.clock.sleep(900)
+          await update($, panel, prev => ({ ...prev, leaving: null }))
+        }
+        await $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: `/aspire:aspire run ${r.type.replace(/^aspire:/, '')}`, mode: 'replace' } as never)
+      })().catch(() => undefined)
     const stateOf = (entry: RosterEntry): string => {
       const runs = list.filter(a => a.type === entry.type)
       return runs.some(a => a.status === 'running') ? '●' : runs.length ? '✓' : '○'
@@ -1059,9 +1067,12 @@ export const register: Register = on => {
                   <Text dimColor>{`${g.title} · ${entries.length}`}</Text>
                   {entries.map(r => (
                     <Box key={r.type} flexDirection="column">
-                      <Svg source={cardSvg(W, r, list)} alt={`${r.name}: ${r.blurb}`} width={W} height={CARD_H} />
-                      <Box position="absolute" top={0} right={1}>
-                        <Button key={`start-${r.type}`} label={`Start ▸`} plain onPress={startAgent(r)} />
+                      <Svg source={cardSvg(W, r, list, p.leaving === r.type)} alt={`${r.name}: ${r.blurb}`} width={W} height={CARD_H} />
+                      {/* A Button holds text only and an Svg takes no press, so three rows of blank Buttons lie over the card: a press anywhere on it drafts the start. */}
+                      <Box position="absolute" top={0} left={0} flexDirection="column">
+                        {[0, 1, 2].map(row => (
+                          <Button key={`start-${r.type}-${row}`} label={'\u00a0'.repeat(Math.floor(W / 8))} plain onPress={startAgent(r)} />
+                        ))}
                       </Box>
                     </Box>
                   ))}
