@@ -120,6 +120,8 @@ export type Panel = {
   isAutoOpened: boolean
   /** `live`: this session's agents; `agents`: a card for each agent type the plugin ships. */
   tab: 'live' | 'agents'
+  /** The agent type whose crab is walking off its card after a press, until its start is drafted. */
+  leaving: string | null
 }
 
 /** One step the skill reported. */
