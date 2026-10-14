@@ -228,8 +228,20 @@ phase with `title: "Onboarding"`, `total: 6`, `done`, and `phase`:
 | 6 | 5 | `First insights` |
 
 Call it once more with `finished: true` when onboarding closes, or when a routed flow takes
-over after Phase 2 + 3. Any other flow in the main session may report its own steps the
-same way under its own `title`; agents never call it (a subagent's call is ignored).
+over after Phase 2 + 3. Agents never call it (a subagent's call is ignored).
+
+**Every other flow reports its own steps, never onboarding's.** When a flow starts (the creator
+brief, discovery, vetting, a review, a readout, the orchestrator, a program step, and the rest),
+call it once with that flow's name as `title` and the steps this run will actually take as
+`tasks`, in order, a few words each ("Read the account", "Find creators", "Publish the brief").
+A new `title` starts a new run, so the onboarding steps are gone. Call it again as each step
+finishes with `done` (or the list with `done: true` on finished steps), and with `phase` naming
+the step in progress. Re-send `tasks` when the plan changes, for example when a question adds
+or drops a step. Call it with `finished: true` when the flow ends.
+
+Launch each agent with an Agent `description` equal to the task it runs. The bar then marks that
+task done when the agent finishes and names it while it runs, even if you forget to report. A
+session that never reports still shows the agents that ran as its steps.
 
 The bar shows only where the host draws the slot above the prompt, so the tool's result ends
 with `band: ...`. Decide the channel once per run, from the first call:

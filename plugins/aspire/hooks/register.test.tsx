@@ -210,7 +210,7 @@ test('status: counts, the last get_status, the bar, and the version line', async
   const text = await status($)
   expect(text).toMatch(/Seen: 1 \/aspire prompt, 1 skill\.prompt, 0 Skill tool calls, 0 progress reports, 1 Atlas result, 1 agent\./)
   expect(text).toMatch(/Last get_status 0s ago: 12k \/ 50k Atlas tokens, organization Sample Brand\./)
-  expect(text).toMatch(/Bar: Aspire: Sample Brand, Onboarding 4\/6, 67% \(baseline from get_status\)\./)
+  expect(text).toMatch(/Bar: Aspire: Sample Brand, market signal 0\/1, 0% \(from the running agents\)\./)
   expect(text).toMatch(/^Claude Code .+ on .+\.$/m)
   expect(text.split('\n')).toHaveLength(6)
 })

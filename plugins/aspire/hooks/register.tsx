@@ -503,8 +503,8 @@ async function statusText($: EngineInterface): Promise<string> {
     s.lastStatusAt === null
       ? 'Last get_status: none yet.'
       : `Last get_status ${ago(at - s.lastStatusAt)}: ${reading ? `${fmtAtlasUsage(reading.costs)} Atlas tokens` : 'no token costs in it'}, organization ${o.name ?? 'not picked yet'}.`
-  const shown = shownOf(p, o)
-  const bar = isOnNow ? `Bar: ${titleOf(o)}, ${shown.label}, ${percentOf(shown)} (${shown.isReported ? 'reported by the skill' : 'baseline from get_status'}).` : 'Bar: not shown until the mod is on.'
+  const shown = shownOf(p, o, await read($, agents))
+  const bar = isOnNow ? `Bar: ${titleOf(o)}, ${shown.label}, ${percentOf(shown)} (${shown.source === 'skill' ? 'reported by the skill' : shown.source === 'agents' ? 'from the running agents' : 'baseline from get_status'}).` : 'Bar: not shown until the mod is on.'
   const b = band
   const drawn = b.renders > 0 ? `Band: drawn ${b.renders} times, last on ${b.surface ?? 'unknown'}.` : 'Band: never drawn on this surface.'
   return [state, counts, status, bar, drawn, `Claude Code ${version} on ${surfaces}.`].join('\n')
@@ -627,7 +627,7 @@ export const register: Register = on => {
       await activate($, 'progress', 'aspire_progress')
       await count($, 'progressReports')
       const p = await update($, progress, prev => mergeProgress(prev, e as unknown as ProgressInput))
-      const shown = shownOf(p, await read($, org))
+      const shown = shownOf(p, await read($, org), await read($, agents))
       const b = band
       const hidden = await read($, isBandHidden)
       const visibility = hidden ? 'hidden-by-user' : b.renders > 0 ? `visible on ${b.surface ?? 'unknown'}` : 'not-drawn'
@@ -827,8 +827,8 @@ export const register: Register = on => {
     const s = await read($, stats)
     const reading = await read($, atlas)
     const o = await read($, org)
-    const shown = shownOf(await read($, progress), o)
     const list = await read($, agents)
+    const shown = shownOf(await read($, progress), o, list)
     const title = titleOf(o)
     const percent = percentOf(shown)
     const isWorking = e.props.isWorking || list.some(a => a.status === 'running')

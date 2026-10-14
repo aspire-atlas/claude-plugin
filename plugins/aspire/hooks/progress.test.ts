@@ -1,7 +1,7 @@
 // Run with: claude plugin test plugins/aspire
 import { expect, test } from 'claude-code/testing'
 
-import { barText, mergeProgress, orgStateFrom, percentOf, shownOf, titleOf } from './progress'
+import { agentName, barText, mergeProgress, orgStateFrom, percentOf, shownOf, titleOf } from './progress'
 
 const NO_ORG = { name: null, checkpoints: 0 }
 
@@ -64,4 +64,34 @@ test('titleOf and barText', () => {
   expect(barText(0.5, 10)).toBe('█████░░░░░')
   expect(barText(2, 4)).toBe('████')
   expect(barText(-1, 3)).toBe('░░░')
+})
+
+const run = (type: string, description: string, status: 'running' | 'done' | 'failed') => ({ type, description, status })
+
+test('shownOf: reported tasks follow the agents that ran them', () => {
+  const p = mergeProgress(null, { title: 'Creator brief', tasks: ['Read the account', 'Find creators', 'Publish the brief'] })
+  const runs = [run('aspire:atlas-profile-analyst', 'Read the account', 'done'), run('aspire:atlas-creator-brief', 'Find creators', 'running')]
+  const s = shownOf(p, NO_ORG, runs)
+  expect(s).toMatchObject({ label: 'Find creators 1/3', total: 3, source: 'skill' })
+  // A running agent names the phase when the skill gave none; the report's phase wins when it did.
+  expect(shownOf(mergeProgress(p, { phase: 'Briefing' }), NO_ORG, runs).label).toBe('Briefing 1/3')
+  expect(shownOf(mergeProgress(p, { tasks: [{ title: 'Read the account', done: true }, { title: 'Find creators', done: true }, 'Publish the brief'] }), NO_ORG, []).label).toBe('Step 2/3')
+})
+
+test('shownOf: with no report the agents are the steps', () => {
+  const runs = [run('aspire:atlas-creator-vetting', 'Vet list', 'done'), run('aspire:atlas-content-review', 'Review draft', 'running')]
+  expect(shownOf(null, NO_ORG, runs)).toMatchObject({ label: 'content review 1/2', ratio: 0.5, source: 'agents', isReported: false })
+  expect(shownOf(null, NO_ORG, [run('aspire:atlas-ad-reuse', 'x', 'done')])).toMatchObject({ label: 'Done', isFinished: true, source: 'agents' })
+  // No report and no agents: the baseline.
+  expect(shownOf(null, NO_ORG, [])).toMatchObject({ source: 'baseline' })
+})
+
+test('shownOf: a finished run shows Done, and agents started after it take the bar over', () => {
+  const finished = mergeProgress(mergeProgress(null, { title: 'Readout', total: 2, done: 1 }), { finished: true })
+  expect(shownOf(finished, NO_ORG, [])).toMatchObject({ label: 'Done', isFinished: true })
+  expect(shownOf(finished, NO_ORG, [run('aspire:atlas-market-signal', 'Signal', 'running')])).toMatchObject({ label: 'market signal 0/1', source: 'agents' })
+})
+
+test('agentName', () => {
+  expect(agentName('aspire:atlas-creator-brief')).toBe('creator brief')
 })
