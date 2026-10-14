@@ -69,6 +69,11 @@ export type AgentRun = {
   contextTokens: number
   contextMax: number
   round: number
+  /** Steps the agent reported through `aspire_step`; absent until it reports. */
+  stepTotal?: number
+  stepDone?: number
+  /** The step in progress, a few words. */
+  stepNote?: string
 }
 
 export type Panel = {

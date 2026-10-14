@@ -60,7 +60,7 @@ import type { EngineInterface, Register } from 'claude-code'
 
 import type { AgentRun, AtlasReading, BandStats, OrgState, Panel, Progress, Seen, Trigger, TriggerKind } from '../types'
 import { ATLAS_ABSENT, ATLAS_ABSENT_HINT, fmtAtlasUsage, isAtlasStatusCall, isAtlasToolName, readAtlasOrg, readAtlasUsage } from './atlas-usage'
-import { ASPIRE, CRAB_CSS, PLAIN_CRAB, characterOf, crab } from './characters'
+import { ASPIRE, CRAB_CSS, characterOf, crab } from './characters'
 import { clip, fitText, fmtTime, fmtTokens, modelName, textWidth, windowOf, xml } from './format'
 import type { ProgressInput, Shown } from './progress'
 import { barText, mergeProgress, orgStateFrom, percentOf, shownOf, titleOf } from './progress'
@@ -103,6 +103,7 @@ const PANE_TITLE = 'Aspire agents'
 const MAX_RUNS = 200
 // The progress tool as the model calls it: mcp__<plugin>__<name>.
 const PROGRESS_TOOL = 'mcp__aspire__aspire_progress'
+const STEP_TOOL = 'mcp__aspire__aspire_step'
 
 // ---------------------------------------------------------------------------
 // Switching on.
@@ -183,7 +184,7 @@ const DONE = '#4caf6e'
 // count and the dismiss are Buttons beside it.
 const BAR_ROW_H = 22
 const BAR_H = 16
-const CRAB_W = 26
+const CRAB_W = 0
 const CELL = 3
 
 // Deterministic noise so the dither does not shimmer between redraws.
@@ -192,7 +193,7 @@ const noise = (x: number, y: number): number => {
   return s - Math.floor(s)
 }
 
-const barSvg = (title: string, shown: Shown, W: number, isWorking: boolean): string => {
+const barSvg = (title: string, shown: Shown, W: number): string => {
   // The title takes what it needs, up to 40% of the row; the bar takes the rest.
   const label = fitText(title, 13, Math.max(60, W * 0.4))
   const BAR_X = Math.round(16 + textWidth(label, 13) + 12)
@@ -244,7 +245,6 @@ const barSvg = (title: string, shown: Shown, W: number, isWorking: boolean): str
 <text x="${pillX + pillW / 2}" y="${BAR_H / 2 + 4}" text-anchor="middle" font-family="${FONT}" font-size="11" font-weight="600" fill="#ffffff">${xml(pill)}</text>
 </g>
 <text class="m" x="${W - CRAB_W - 6}" y="${BAR_ROW_H / 2 + 4.5}" text-anchor="end" font-family="${FONT}" font-size="12.5" font-variant-numeric="tabular-nums">${percentOf(shown)}</text>
-${CRAB_CSS}${crab(W - CRAB_W + 1, 0, PLAIN_CRAB, false, isWorking, 0.8)}
 </svg>`
 }
 
@@ -385,6 +385,10 @@ const headerSvg = (W: number, count: number, time: number): string => {
   return svg(W, HEADER_H, `${tile(0, 'Agents', String(count))}${tile(1, 'Time', fmtTime(time))}`)
 }
 
+/** What an agent reported through aspire_step: `2/5 reading posts`, and the fraction. */
+const stepsOf = (a: AgentRun): { text: string; ratio: number } | null =>
+  a.stepTotal ? { text: `${a.stepDone ?? 0}/${a.stepTotal}${a.stepNote ? ` ${a.stepNote}` : ''}`, ratio: Math.min(1, (a.stepDone ?? 0) / a.stepTotal) } : null
+
 const agentSvg = (W: number, a: AgentRun, at: number): string => {
   const character = characterOf(a)
   const ctx = ctxOf(a)
@@ -392,9 +396,10 @@ const agentSvg = (W: number, a: AgentRun, at: number): string => {
   const meta = [runModel(a)]
   if (a.round > 1) meta.push(`round ${a.round}`)
   if (a.status === 'failed') meta.push('error')
-  const stats = `ctx ${ctx}% · ${fmtTokens(a.contextTokens)}  ${fmtTime(elapsed(a, at))}`
-  // A finished run is a full bar; a running one shows its context fill, grey.
-  const progress = a.status === 'done' ? 1 : null
+  const steps = stepsOf(a)
+  const stats = `${steps ? `${steps.text} · ` : ''}ctx ${ctx}% · ${fmtTokens(a.contextTokens)}  ${fmtTime(elapsed(a, at))}`
+  // A finished run is a full bar; a running one shows its reported steps, else its context fill, grey.
+  const progress = a.status === 'done' ? 1 : steps ? steps.ratio : null
   const fillW = Math.round(textW * (progress ?? ctx / 100))
   return svg(
     W,
@@ -559,6 +564,25 @@ export const register: Register = on => {
       // Without the tool the bar falls back to the get_status baseline.
     }
     try {
+      await $.tool.register({
+        name: 'aspire_step',
+        description:
+          'Report an Aspire agent\'s own steps to the agents panel. It only draws a bar on that agent\'s row: it reads and changes nothing else. ' +
+          'Right after reading the brief, call it with total (your plan in 3 to 8 steps) and done: 0; call it again with done and a note ' +
+          '(the step in progress, a few words) as each step finishes. For agents only: a call from the main session is ignored.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            total: { type: 'integer', minimum: 1, description: 'Steps planned; may change if the plan changes.' },
+            done: { type: 'integer', minimum: 0, description: 'Steps finished so far.' },
+            note: { type: 'string', description: 'The step in progress, a few words.' },
+          },
+        },
+      })
+    } catch {
+      // Agents show their context fill instead.
+    }
+    try {
       // A reload (or a resumed process) keeps $.state: pick the timer back up.
       if (await isOn($)) startTicking($)
     } catch {
@@ -637,6 +661,33 @@ export const register: Register = on => {
     }
   }).catch(() => ({ result: 'ok; band: unknown' }))
 
+  // An agent's own steps, drawn on its row in the panel. The call runs in the
+  // agent's loop, so agentId names it; the main session and an unknown agent
+  // change nothing, and it never switches the mod on.
+  on('tool.call', { tool: STEP_TOOL }, async ($, e) => {
+    const agentId = (e as { agentId?: string }).agentId
+    if (!agentId) return { result: 'ignored: only agents report steps' }
+    try {
+      if (!(await isOn($))) return { result: 'ok' }
+      const input = e as unknown as { total?: unknown; done?: unknown; note?: unknown }
+      const num = (v: unknown): number | undefined => (typeof v === 'number' && Number.isFinite(v) ? Math.max(0, Math.round(v)) : undefined)
+      const note = typeof input.note === 'string' ? clip(input.note.trim(), 40) : undefined
+      let isKnown = false
+      await update($, agents, list =>
+        list.map(a => {
+          if (a.agentId !== agentId) return a
+          isKnown = true
+          const total = num(input.total) ?? a.stepTotal ?? 0
+          const done = num(input.done) ?? a.stepDone ?? 0
+          return { ...a, stepTotal: total, stepDone: total ? Math.min(total, done) : done, stepNote: note === undefined ? a.stepNote : note || undefined }
+        }),
+      )
+      return { result: isKnown ? 'ok' : 'ok: not listed in the panel' }
+    } catch {
+      return { result: 'ok' }
+    }
+  }).catch(() => ({ result: 'ok' }))
+
   // Atlas tool results: any one switches the mod on; a get_status result also
   // gives the token costs, the organization, and the onboarding baseline. The
   // call and its result are never changed; a get_status without token costs
@@ -646,7 +697,7 @@ export const register: Register = on => {
     try {
       if (result.deny !== undefined || result.isError) return result
       const tool = String(e.tool)
-      if (tool === PROGRESS_TOOL) return result
+      if (tool === PROGRESS_TOOL || tool === STEP_TOOL) return result
       const payload = { result: result.result, text: result.text }
       const isStatus = isAtlasStatusCall(tool, payload)
       if (!isStatus && !isAtlasToolName(tool)) return result
@@ -831,14 +882,19 @@ export const register: Register = on => {
     const shown = shownOf(await read($, progress), o, list)
     const title = titleOf(o)
     const percent = percentOf(shown)
-    const isWorking = e.props.isWorking || list.some(a => a.status === 'running')
 
     const ui = $.ui.resolve(e)
     const { Box, Button, Text } = ui
     // The terminal's element table has an Svg that draws nothing: test the surface too.
     const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
 
-    const agentsButton = <Button key="aspire-agents" label={`×${list.length}`} plain onPress={() => void togglePane($)} />
+    // The crab and the count are one control: pressing either opens the agents panel. A Button holds
+    // only text, so the crab here is the glyph, not the drawing (an Svg cannot be pressed).
+    const agentsButton = (
+      <Button key="aspire-agents" label={`×${list.length}`} plain onPress={() => void togglePane($)}>
+        <Text color={ASPIRE}>🦀</Text> ×{list.length}
+      </Button>
+    )
     const dismiss = <Button key="aspire-band-hide" label="✕" role="dismiss" plain dimColor onPress={() => update($, isBandHidden, () => true)} />
 
     // Desktop: one Svg row, about 8 CSS px per reported column; the rest is the
@@ -850,7 +906,7 @@ export const register: Register = on => {
     const barColor = shown.isFinished ? DONE : ASPIRE
     const barRow = Svg ? (
       <Box flexDirection="row" alignItems="center" gap={1}>
-        <Svg source={barSvg(title, shown, svgW, isWorking)} alt={`${title}: ${shown.label}, ${percent}`} width={svgW} height={BAR_ROW_H} />
+        <Svg source={barSvg(title, shown, svgW)} alt={`${title}: ${shown.label}, ${percent}`} width={svgW} height={BAR_ROW_H} />
         {agentsButton}
         {dismiss}
       </Box>
@@ -863,7 +919,6 @@ export const register: Register = on => {
         <Text color={barColor}>{barText(shown.ratio, textBarW)}</Text>
         <Text bold>{shown.label}</Text>
         <Text dimColor>{percent}</Text>
-        <Text color={ASPIRE}>▣</Text>
         {agentsButton}
         {dismiss}
       </Box>
@@ -1010,10 +1065,16 @@ export const register: Register = on => {
           </Text>
           <Text wrap="truncate-end">
             {'  '}
-            {a.status === 'done' ? <Text color={character.color}>{ctxBar(100, barW)}</Text> : <Text dimColor>{ctxBar(ctx, barW)}</Text>}
+            {a.status === 'done' ? (
+              <Text color={character.color}>{ctxBar(100, barW)}</Text>
+            ) : stepsOf(a) ? (
+              <Text color={character.color}>{ctxBar(Math.round((stepsOf(a)?.ratio ?? 0) * 100), barW)}</Text>
+            ) : (
+              <Text dimColor>{ctxBar(ctx, barW)}</Text>
+            )}
             <Text dimColor>
               {' '}
-              ctx {ctx}% · {fmtTokens(a.contextTokens)} {fmtTime(elapsed(a, at))}
+              {stepsOf(a) ? `${stepsOf(a)?.text} · ` : ''}ctx {ctx}% · {fmtTokens(a.contextTokens)} {fmtTime(elapsed(a, at))}
             </Text>
           </Text>
         </Box>

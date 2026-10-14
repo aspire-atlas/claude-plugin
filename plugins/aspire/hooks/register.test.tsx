@@ -157,9 +157,10 @@ test('desktop: the bar is one Svg with the crab; the band row keeps its icons', 
   const svgs = (await ui.findAll({ type: 'Svg' })).map(el => String(el.props.source))
   const bar = svgs.find(s => s.includes('Aspire: Sample Brand'))
   expect(bar).toBeDefined()
-  // The plain crab in Aspire green, at the end of the bar.
   expect(bar).toContain('#3B8A82')
-  expect(bar).toContain('c-other')
+  // The crab is a pressable glyph beside the count, not part of the drawing.
+  expect(bar).not.toContain('c-other')
+  expect(await ui.find({ type: 'Text', text: /🦀/ })).toBeDefined()
   expect(bar).not.toContain('undefined')
   expect(bar).not.toContain('NaN')
   expect(svgs.length).toBeGreaterThan(1)
@@ -283,6 +284,29 @@ test("the bar's agents button opens the panel", async ($, on) => {
   await ui.press({ key: 'aspire-agents' })
   await ui.unmount()
   expect(opened).toEqual(['aspire-agents'])
+})
+
+test('an agent reports its steps; the panel draws them, and the main session cannot', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  await spawn($, 'aspire:atlas-market-signal', 'Signal for the week')
+  const STEP_TOOL = 'mcp__aspire__aspire_step'
+  const agentId = 'agent-Signal-for-the-week'
+  expect(await $.tool.call({ tool: STEP_TOOL, total: 5, done: 2, note: 'reading posts' } as never)).toMatchObject({ result: 'ignored: only agents report steps' })
+  expect(await $.tool.call({ tool: STEP_TOOL, agentId, total: 5, done: 2, note: 'reading posts' } as never)).toMatchObject({ result: 'ok' })
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  const drawn = (await ui.findAll({ type: 'Svg' })).map(el => String(el.props.source)).join('')
+  expect(drawn).toContain('2/5 reading posts')
+  await ui.unmount()
+  // done never passes total; a note left out keeps the last one.
+  await $.tool.call({ tool: STEP_TOOL, agentId, done: 99 } as never)
+  const again = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  expect((await again.findAll({ type: 'Svg' })).map(el => String(el.props.source)).join('')).toContain('5/5 reading posts')
+})
+
+test('an agent step call from an unknown agent changes nothing and does not switch the mod on', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  expect(await $.tool.call({ tool: 'mcp__aspire__aspire_step', agentId: 'ghost', total: 3 } as never)).toMatchObject({ result: 'ok' })
+  expect(await status($)).toMatch(/Aspire mod: loaded, off/)
 })
 
 test('desktop panel draws one Svg per agent', async ($, on) => {

@@ -228,7 +228,7 @@ phase with `title: "Onboarding"`, `total: 6`, `done`, and `phase`:
 | 6 | 5 | `First insights` |
 
 Call it once more with `finished: true` when onboarding closes, or when a routed flow takes
-over after Phase 2 + 3. Agents never call it (a subagent's call is ignored).
+over after Phase 2 + 3. Agents never call it (a subagent's call is ignored); they report their own steps on their panel row with `mcp__aspire__aspire_step`, which the agent files describe.
 
 **Every other flow reports its own steps, never onboarding's.** When a flow starts (the creator
 brief, discovery, vetting, a review, a readout, the orchestrator, a program step, and the rest),
