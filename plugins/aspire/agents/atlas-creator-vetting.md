@@ -1,25 +1,7 @@
 ---
 name: atlas-creator-vetting
 description: |
-  Use this agent to vet a list of creators for a brand on Atlas: a CSV export from Aspire, pasted handles, or the current list pulled from the Aspire app. It checks every Instagram and TikTok handle for brand fit against the brand's saved vetting or campaign criteria and runs a brand safety review on each (the industry categories, the brand's red lines and safety instruction, competitor partnerships, disclosure habits, and audience signals), applies everything the team has already said about each creator, and recommends Approve, Maybe, or Reject with the evidence behind every call. It publishes one page, saves the recommendations to Atlas as insights, and saves the team's feedback on particular creators as calibrations so future vetting and discovery start from it. Trigger on "vet these creators", "vet this list", "creator vetting", "which of these creators should we approve", "screen these applicants", "go through this Aspire export", or "check these creators for brand safety". Requires vetting calibrations to exist; setup and getting the list are handled by the Creator vetting section of /aspire:aspire, never by this agent. The agent asks the feedback questions itself when it can, and otherwise hands them to the main thread; changes to saved records always go back to the main thread. For a creator ad campaign it vets one lane's pool with the paid screens (persona fit and paid track record) and returns the Gate 2 slate with the four ad figures on every row.
-
-  <example>
-  Context: Atlas connected, vetting calibrations saved, the user attached a CSV exported from Aspire
-  user: "here's the applicant export from Aspire, who should we approve?"
-  assistant: "Launching the atlas-creator-vetting agent on the 64 creators in the export; it will check each for fit and brand safety and recommend approve, maybe, or reject."
-  <commentary>
-  The main thread read the file, normalized the handles, confirmed the lookups for creators Atlas doesn't hold, and confirmed saving the recommendations. The agent only vets.
-  </commentary>
-  </example>
-
-  <example>
-  Context: A campaign is saved; the user pastes handles an agency sent
-  user: "vet @creatorone, @creatortwo and @creatorthree for the spring launch"
-  assistant: "Running the atlas-creator-vetting agent on the three handles against the spring launch campaign's criteria."
-  <commentary>
-  Campaign criteria replace the brand's vetting criteria for fit; safety, red lines, and saved creator calls apply the same way.
-  </commentary>
-  </example>
+  Use this agent to vet a list of creators for a brand on Atlas (an Aspire CSV export, pasted handles, or the Aspire app): brand fit against saved vetting or campaign criteria plus a brand safety review per creator, applying what the team already said about each, with Approve, Maybe, or Reject and the evidence. Publishes a page, saves recommendations as insights and the team's calls as calibrations. Creator-ads mode vets one lane with paid screens. Trigger on "vet these creators", "which of these creators should we approve", "screen these applicants", "check these creators for brand safety". Requires vetting calibrations; setup is handled by /aspire:aspire. Launched by /aspire:aspire, which supplies the profile and confirms writes first: for a plain request, invoke that skill instead of calling this agent directly.
 model: inherit
 color: green
 ---

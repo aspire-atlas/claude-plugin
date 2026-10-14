@@ -1,25 +1,7 @@
 ---
 name: atlas-ad-reuse
 description: |
-  Use this agent to find the brand's and creators' videos on Atlas that will work as ads: it ranks them on a hook score (hook by 3 seconds, brand by 3 seconds, works without sound, retention, a standalone segment, ready for paid), tags each with its hook pattern, and builds a cut list with timestamps, cut lengths, placements, and rights status for performance and creative teams. It reads only what Atlas holds, publishes one page, and writes the ranked candidates back to Atlas when the user approved it. Trigger on "best hooks", "pull the best hooks from last month's creator posts", "can we reuse creator content as ads", "what should we license", "send creative the good stuff to cut down", or "cut list". Launch messages created before the split name `atlas-profile-analyst` with `target_mode` `reuse`; they mean this agent, so launch it with the same inputs.
-
-  <example>
-  Context: Atlas connected, the ask reads as performance marketing handing off to creative
-  user: "pull the best hooks from last month's creator posts about us"
-  assistant: "Launching the atlas-ad-reuse agent for the last 30 days; it will rank licensing candidates for performance and build a cut list with timestamps for creative."
-  <commentary>
-  The main thread confirmed the window, the sources, the readers, and the write. The agent reads only what Atlas holds and publishes the cut list page.
-  </commentary>
-  </example>
-
-  <example>
-  Context: The market signal listed comparison videos with strong openings
-  user: "get creative a cut list from those comparison videos"
-  assistant: "Running the atlas-ad-reuse agent on creators' posts about the brand for the same window, with creative as the primary reader."
-  <commentary>
-  A hand-off from the market signal's reuse candidates. The cut list is this agent's job, not the market signal's.
-  </commentary>
-  </example>
+  Use this agent to find the brand's and creators' Atlas videos that will work as ads: it ranks them on a hook score (hook and brand by 3 seconds, works without sound, retention, standalone segment, ready for paid), tags each hook pattern, and builds a cut list with timestamps, lengths, placements, and rights status for performance and creative teams. Reads only what Atlas holds, publishes one page, and writes ranked candidates back only when the user approved. Trigger on "best hooks", "can we reuse creator content as ads", "what should we license", "cut list". Launch messages created before the split name `atlas-profile-analyst` with `target_mode` `reuse`; they mean this agent. Launched by /aspire:aspire, which supplies the profile and confirms writes first: for a plain request, invoke that skill instead of calling this agent directly.
 model: inherit
 color: yellow
 ---

@@ -1,34 +1,7 @@
 ---
 name: atlas-profile-analyst
 description: |
-  Use this agent to analyze an account handle you manage and ideate on next week's content pushes. It reviews the brand's own Instagram or TikTok accounts (cadence, engagement against followers, top posts and what they share, format mix, red-line risks), benchmarks them on rates against competitors Atlas already indexes, and turns the patterns into three content pushes for next week, each with the format, the angle, the day, and a target from the account's own medians. It runs at the end of /aspire:aspire onboarding for first insights and any time after. It can also review a public Instagram or TikTok handle the user names (resolving and refreshing it in Atlas when the held data is stale). Ranking videos as ads and building a cut list is the `atlas-ad-reuse` agent's job. It renders for the reader the main thread names and writes its findings back to Atlas as insights. Trigger on "analyze @ourhandle", "review our account", "how is our Instagram doing", "what should we push next week", or "content ideas for next week". Launch messages and scheduled tasks created before the rename name the older `atlas-account-analyst` agent; they mean this agent, so launch it with the same inputs.
-
-  <example>
-  Context: /aspire:aspire Phase 6, Instagram linked and posts present in search
-  user: "Instagram is connected"
-  assistant: "Launching the atlas-profile-analyst agent to review @brandhandle, draft first insights, and suggest next week's content pushes."
-  <commentary>
-  Onboarding reached the insights phase; the agent runs the evaluation so the main thread stays responsive.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Atlas connected, the brand's TikTok is linked and indexed
-  user: "look at @brandhandle on TikTok and tell me what we should push next week"
-  assistant: "Launching the atlas-profile-analyst agent on @brandhandle; it will analyze the last 90 days and propose three content pushes for next week."
-  <commentary>
-  The core job: a handle the user manages, analyzed, then turned into next week's pushes. A plan with creators and fees is the creator brief's job; the agent offers it.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Atlas connected, brand profile exists, user names an account that is not theirs
-  user: "run the account review on @competitorhandle on TikTok"
-  assistant: "Launching the atlas-profile-analyst agent on @competitorhandle (TikTok); it will resolve and refresh the account in Atlas before analyzing."
-  <commentary>
-  Named-handle mode: the agent owns resolution and the freshness check, then reviews the account like any other.
-  </commentary>
-  </example>
+  Use this agent to analyze an account handle you manage and ideate next week's content pushes on Atlas: cadence, engagement against followers, top posts and what they share, format mix, and red-line risks, benchmarked against competitors Atlas indexes, then three content pushes with format, angle, day, and a target from the account's own medians. Runs at the end of /aspire:aspire onboarding and any time after; can also review a public handle the user names, refreshing it when stale. Writes findings to Atlas as insights. Trigger on "analyze @ourhandle", "review our account", "how is our Instagram doing", "what should we push next week", "content ideas for next week". Launch messages and tasks created before the rename name `atlas-account-analyst`; they mean this agent. Ranking videos as ads is atlas-ad-reuse's job. Launched by /aspire:aspire, which supplies the profile and confirms writes first: for a plain request, invoke that skill instead of calling this agent directly.
 model: inherit
 color: cyan
 ---

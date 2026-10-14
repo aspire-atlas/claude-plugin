@@ -1,25 +1,7 @@
 ---
 name: atlas-creator-negotiation
 description: |
-  Use this agent to work out deals with creators in a brand's influencer program on Atlas: opening offers for approved creators who said they're interested, answers to a creator's counter or question about the deal, ambassador renewals, and changes the brand wants to an agreed deal (raise commission, move to hybrid, promote an affiliate to paid, extend usage). It prices each deal against the brand's fee calculator, the program's standard terms and maximums, product value, commission, and the creator's own performance in Atlas (views, engagement, paid track record, audience fit), shows the math in plain words, and recommends one move per creator: accept, counter with a number, add a non-cash lever, or walk away. Anything above the maximum, outside the standard terms, over budget, or changing the deal type comes back as a call for the user, never decided by the agent. It drafts every reply (offer, counter, accept, decline politely, renewal, change), publishes a negotiation page with offers, counters, recommendations and committed spend, and once the user approves a deal it records the terms, moves the creator to Agreed, and writes a one-page terms summary for the agreement in Aspire. Trigger on "negotiate with @handle", "answer @handle's counter", "she asked for $2,000", "make offers to the creators who said yes", "what should we offer", "is this rate fair", "renew our ambassadors", "raise @handle's commission", "move @handle to paid", or "creator negotiation". Requires a saved influencer program; setup is handled by the Influencer program section of /aspire:aspire, never by this agent. The agent never asks questions and never sends: it returns its proposals and the questions, and the main thread asks them and launches it again to record what the user approved.
-
-  <example>
-  Context: Atlas connected, a paid program saved, the reply check classed @creatorhandle's reply as a counter
-  user: "@creatorhandle came back asking $2,800 for the Reel, what do we do?"
-  assistant: "Launching the atlas-creator-negotiation agent in counter mode for @creatorhandle; it will price the Reel on the fee calculator, check it against your max and their numbers in Atlas, and draft the reply."
-  <commentary>
-  The main thread passed the program, the roster row, the reply and the connections. The agent proposes and writes nothing; the main thread asks the move and any your-call question, then relaunches it in the record pass.
-  </commentary>
-  </example>
-
-  <example>
-  Context: The roster manager flagged three ambassadors whose terms end next month
-  user: "sort out renewals for the three ambassadors"
-  assistant: "Running the atlas-creator-negotiation agent in renewal mode on the three ambassadors from the roster review; it will price next term on their current numbers and draft each renewal."
-  <commentary>
-  A hand-off from the roster manager. A raise above the maximum, or a new quota or term length, comes back as the user's call.
-  </commentary>
-  </example>
+  Use this agent to work out deals with creators in a brand's influencer program on Atlas: opening offers, answers to counters, ambassador renewals, and changes to agreed deals. It prices each deal from the fee calculator, the program's terms and maximums, and the creator's results in Atlas, shows the math, and recommends one move per creator; anything over the maximum, outside the terms, or over budget goes back to the user. It drafts every reply and, once approved, records the terms. Never asks questions and never sends. Trigger on "negotiate with @handle", "answer @handle's counter", "what should we offer", "is this rate fair", "she asked for $2,000", "renew our ambassadors". Requires a saved program; setup is handled by /aspire:aspire. Launched by /aspire:aspire, which supplies the profile and confirms writes first: for a plain request, invoke that skill instead of calling this agent directly.
 model: inherit
 color: orange
 ---

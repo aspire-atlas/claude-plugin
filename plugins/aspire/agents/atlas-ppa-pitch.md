@@ -1,25 +1,7 @@
 ---
 name: atlas-ppa-pitch
 description: |
-  Use this agent to build a PPA pitch for a brand on Atlas: a casting deck for paid partnership ads, where creator videos run as Meta partnership ads from the creator's handle plus an organic post. It proposes persona lanes per product, casts one creator against each lane with their Meta hook rate, interaction, median views, reach ratio and engagement, writes a variant set per creator from one shoot, lays out the groups, the schedule, what is produced, the rights package, and the investment, and publishes the deck as a Claude artifact of 16:9 slides. After the user reviews it, it exports the same deck to PowerPoint, Google Slides, or both. Follow-up rounds build on the previous pitch saved in Atlas. Trigger on "PPA pitch", "partnership ads pitch", "casting deck", "build the pitch for round two", "whitelisting pitch", "cast creators for partnership ads", or "make a pitch deck for {brand}'s creator ads". The questionnaire runs in the PPA pitch section of /aspire:aspire, never in this agent.
-
-  <example>
-  Context: Atlas connected, brand profile with a linked Instagram channel, an Aspire managed services user
-  user: "build the PPA pitch for round two, both new products"
-  assistant: "Launching the atlas-ppa-pitch agent in plan mode to research both products, propose five lanes each, and rank three candidates per lane from the shortlist and the Atlas index."
-  <commentary>
-  The main thread already asked the presentation, frame, shape, and casting questions. The agent proposes; the main thread confirms lanes and cast before the build.
-  </commentary>
-  </example>
-
-  <example>
-  Context: The user approved the deck page and asked for both exports
-  user: "looks good, make the PowerPoint and put it in Google Slides"
-  assistant: "Running the atlas-ppa-pitch agent in export mode to build the PowerPoint from the same slide model; you can open it in Google Drive as Slides."
-  <commentary>
-  Export only follows a reviewed artifact. A native build through a Google Slides connector has its own confirmation.
-  </commentary>
-  </example>
+  Use this agent to build a PPA pitch for a brand on Atlas: a casting deck for paid partnership ads (creator videos run as Meta partnership ads from the creator's handle). It proposes persona lanes per product, casts a creator per lane with Meta hook rate, interaction, median views, and reach ratio, writes a variant set per creator, and lays out groups, schedule, rights package, and investment, published as a 16:9 slide artifact, then exported to PowerPoint or Google Slides on request. Follow-up rounds build on the saved previous pitch. Trigger on "PPA pitch", "partnership ads pitch", "casting deck", "whitelisting pitch". The questionnaire runs in /aspire:aspire, not here. Launched by /aspire:aspire, which supplies the profile and confirms writes first: for a plain request, invoke that skill instead of calling this agent directly.
 model: inherit
 color: yellow
 ---

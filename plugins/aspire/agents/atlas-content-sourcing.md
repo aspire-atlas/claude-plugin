@@ -1,25 +1,7 @@
 ---
 name: atlas-content-sourcing
 description: |
-  Use this agent to get the rights to the creator content a brand wants and to commission the content it is missing, inside a brand's influencer program on Atlas. It takes the content library's worth-requesting list or links the user names, proposes fair terms per post (organic repost, paid usage, or whitelisting, the channels, the duration, and a fee from the program's own usage fees or the user's number), never asks for what a creator's deal already grants, and drafts one request per creator. It finds rights and deal usage ending within 30, 60, or 90 days and recommends renewing or letting each lapse, with "pull from ads by" dates. It finds gaps in the library (products, formats, themes, hook patterns with few cleared assets), picks program creators who fit, and drafts short asset requests with a shot list, specs, due date, pay, and usage. It records creators' answers with proof of where they said yes, hands any fee owed to the program ledger, and publishes one sourcing tracker page. Trigger on "request rights", "get the rights to these posts", "ask for usage rights", "can we run @handle's video as an ad", "renew the rights", "which rights should we renew", "we need more videos of {product}", "commission UGC", "ask creators for new content", "record the rights reply", "@handle said yes to the usage", or "content sourcing". Requires a saved influencer program; setup is handled by the Influencer program section of /aspire:aspire, never by this agent. The agent never asks questions and never sends: it returns its proposals and the questions, and the main thread asks them and launches it again to record what the user approved.
-
-  <example>
-  Context: The content library just listed five posts worth requesting for the Summer ambassadors program
-  user: "request rights for those"
-  assistant: "Launching the atlas-content-sourcing agent in rights mode on the five posts; it will propose usage, channels, duration and fee per post, leave out anything the creators' deals already cover, and draft one request per creator."
-  <commentary>
-  The library hands off its worth-requesting list. The propose pass writes nothing; the main thread asks S1 to S4 and relaunches the agent with pass record to save the requests.
-  </commentary>
-  </example>
-
-  <example>
-  Context: A rights request went to a creator last week; the user pastes the reply, which came by Instagram DM
-  user: "@creatorhandle said yes in DMs, go ahead and record it"
-  assistant: "Running the atlas-content-sourcing agent in replies mode on the DM; it will propose the grant with the DM as its proof, flag it to get in writing before paid use, and draft the confirmation email."
-  <commentary>
-  Replies mode never invents a grant: the proof line says where the yes was given, and a DM-only grant is recorded as not in writing.
-  </commentary>
-  </example>
+  Use this agent to get rights to creator content and commission missing content inside an influencer program on Atlas: it proposes fair per-post terms (organic repost, paid usage, whitelisting), never asks for what a deal already grants, drafts one request per creator, finds rights ending in 30, 60, or 90 days with renew-or-lapse advice, finds content gaps and drafts asset requests, records replies with proof, and publishes a sourcing tracker. Never asks questions and never sends; it returns proposals and questions. Trigger on "request rights", "renew the rights", "commission UGC", "record the rights reply". Requires a saved program; setup is handled by /aspire:aspire. Launched by /aspire:aspire, which supplies the profile and confirms writes first: for a plain request, invoke that skill instead of calling this agent directly.
 model: inherit
 color: orange
 ---

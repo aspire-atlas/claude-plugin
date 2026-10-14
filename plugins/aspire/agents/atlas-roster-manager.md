@@ -1,25 +1,7 @@
 ---
 name: atlas-roster-manager
 description: |
-  Use this agent to keep a brand's always-on and ambassador roster healthy in its influencer program on Atlas: who to renew, rebook, re-engage, or retire. For every creator on an active or recent deal it reads quota delivered against agreed, how their program posts did against their own posts and the rest of the roster, cost per engagement from the ledger or the agreed deal, affiliate sales, comment sentiment, how fast they reply, and any red line or brand safety flag. It puts each creator in one segment (star, steady, slipping, dormant, retire, or not enough data) with the evidence behind it, lists ambassador renewals coming due with a recommendation for negotiation, drafts re-engagement notes and thank-you notes with a rebook invite, offers the stars as lookalike seeds for discovery, and publishes one roster health page. Trigger on "review the roster", "roster health", "how are our ambassadors doing", "who should we renew", "who should we rebook", "which creators are slipping", "who should we drop", "ambassador renewals", or "roster review". Requires a saved influencer program; setup is handled by the Influencer program section of /aspire:aspire, never by this agent. The agent never asks questions, never moves a creator's stage, and never sends: it returns its review and the questions, and the main thread asks them and launches it again to record what the user approved.
-
-  <example>
-  Context: Atlas connected, the "Summer ambassadors" program is saved with 14 ambassadors and 6 paid creators, three ambassador terms end next month
-  user: "how are our ambassadors doing? who should we renew?"
-  assistant: "Launching the atlas-roster-manager agent to review the Summer ambassadors roster; it will segment every creator with the evidence, list the three renewals due with a recommendation, and draft notes for anyone slipping."
-  <commentary>
-  The propose pass writes nothing. The main thread relays the page and asks K1 (save the review), a K2 per retire or pause call, then K3 (hand renewals to negotiation), K4 (mailbox drafts) and K5 (lookalikes), and relaunches the agent with pass record.
-  </commentary>
-  </example>
-
-  <example>
-  Context: The Program manager's dispatch reached "Ambassador renewals within the notice window"
-  user: "what's next on Summer ambassadors?"
-  assistant: "Two ambassador renewals are inside the notice window. Running the atlas-roster-manager agent first so negotiation starts from each creator's segment and numbers."
-  <commentary>
-  The roster review comes before renewal pricing. Its renewals block goes to atlas-creator-negotiation in renewal mode for the renewals the user picks.
-  </commentary>
-  </example>
+  Use this agent to keep a brand's always-on and ambassador roster healthy in its influencer program on Atlas: for every creator on an active or recent deal it reads quota delivered, performance against their own baseline and the roster, cost per engagement, affiliate sales, sentiment, responsiveness, and red-line flags, then segments each (star, steady, slipping, dormant, retire, not enough data) with evidence, lists renewals due, drafts re-engagement and thank-you notes, and offers stars as lookalike seeds. Never moves a creator's stage or sends. Trigger on "roster review", "who should we renew", "which creators are slipping", "ambassador renewals". Requires a saved program; setup is handled by /aspire:aspire. Launched by /aspire:aspire, which supplies the profile and confirms writes first: for a plain request, invoke that skill instead of calling this agent directly.
 model: inherit
 color: green
 ---

@@ -1,25 +1,7 @@
 ---
 name: atlas-quarterly-signal
 description: |
-  Use this agent to build the quarter's one-page story for leadership for a brand on Atlas: the business outcome first, the trend against the prior quarter, two or three headline insights, what the program delivered, and three recommendations for next quarter. It rolls up the weekly and daily readouts, creator briefs, content reviews, discovery shortlists, market signal runs, and influencer program dashboards already saved in Atlas, adds fresh quarter aggregates, publishes one page, and writes a short set of findings back to Atlas. Trigger on "how did influencer do this quarter", "quarterly review", "QBR", "quarter in review", "put together the quarter for leadership", or "is our creator program working".
-
-  <example>
-  Context: Atlas connected, a quarter of weekly readouts saved
-  user: "can you put together how influencer did this quarter?"
-  assistant: "Launching the atlas-quarterly-signal agent for last quarter; it will roll up the saved readouts into one outcome-first page for the QBR."
-  <commentary>
-  The main thread read the ask as leadership, confirmed it in one line, and asked whether to save the quarter's findings. The agent only reads what was saved and adds fresh aggregates.
-  </commentary>
-  </example>
-
-  <example>
-  Context: The user has the program's spend
-  user: "QBR for Q3, we spent $180k on creators"
-  assistant: "Running the atlas-quarterly-signal agent for Q3 with the spend you gave, so the page can show cost per engagement."
-  <commentary>
-  The number the user typed is used and labelled as theirs. A program dashboard's paid figure from the ledger shows beside it, labelled, only when the user chose to show it.
-  </commentary>
-  </example>
+  Use this agent to build the quarter's one-page story for leadership for a brand on Atlas: the business outcome first, the trend against the prior quarter, two or three headline insights, what the program delivered, and three recommendations for next quarter. Rolls up the weekly and daily readouts, briefs, reviews, shortlists, market signal runs, and program dashboards already saved in Atlas plus fresh aggregates, publishes one page, and writes findings back. Trigger on "how did influencer do this quarter", "quarterly review", "QBR", "is our creator program working". Launched by /aspire:aspire, which supplies the profile and confirms writes first: for a plain request, invoke that skill instead of calling this agent directly.
 model: inherit
 color: pink
 ---

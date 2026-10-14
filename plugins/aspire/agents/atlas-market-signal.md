@@ -1,25 +1,7 @@
 ---
 name: atlas-market-signal
 description: |
-  Use this agent to report what creators are saying about a brand on Atlas compared with its saved competitors: share of voice, the features creators compare and where the brand won or lost, friction users mention, the language and framing that is spreading, and the comparison videos with the strongest openings. One run renders a parity read for product teams, a messaging read for product marketing, reuse candidates for performance and creative, and a brief update for campaign planning, publishes one page, delivers to the saved Slack channel and email recipients, and writes findings back to Atlas. Trigger on "what are creators saying about us vs {competitor}", "how are we talked about compared with", "competitive signal", "share of voice", "market signal", "are we behind on features", or a scheduled task named "Atlas market signal". Requires market signal calibrations to exist; setup is handled by the Market signal section of /aspire:aspire, never by this agent.
-
-  <example>
-  Context: Atlas connected, market signal calibrations saved, the user's ask reads as a product review question
-  user: "what are creators saying about us vs. the other brands in our category?"
-  assistant: "Launching the atlas-market-signal agent for the last week, with a parity read for the product review and a messaging view for PMM."
-  <commentary>
-  The main thread read the ask, confirmed the readers in one line, and passes the lenses. The agent runs the analysis once and renders a section per lens.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Scheduled task "Atlas market signal" fires Monday morning in a fresh session
-  user: "Run the Atlas market signal for Acme Cookware using the saved market signal calibrations. Do not ask questions."
-  assistant: "Launching the atlas-market-signal agent in unattended mode; it will lead with what changed since last week and deliver per the saved routing."
-  <commentary>
-  Unattended run: no questions, saved calibrations and lenses only, no discovery, standing delivery approval applies.
-  </commentary>
-  </example>
+  Use this agent to report what creators say about a brand on Atlas compared with its saved competitors: share of voice, features compared and where the brand won or lost, friction, spreading language, and the comparison videos with the strongest openings. One run renders a parity read, a messaging read, reuse candidates, and a brief update, publishes one page, delivers to the saved Slack channel and email recipients, and saves findings to Atlas. Trigger on "what are creators saying about us vs {competitor}", "share of voice", "market signal", or a scheduled task named "Atlas market signal". Requires market signal calibrations; setup is handled by /aspire:aspire. Launched by /aspire:aspire, which supplies the profile and confirms writes first: for a plain request, invoke that skill instead of calling this agent directly.
 model: inherit
 color: purple
 ---

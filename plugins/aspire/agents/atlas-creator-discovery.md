@@ -1,25 +1,7 @@
 ---
 name: atlas-creator-discovery
 description: |
-  Use this agent to keep a brand's creator shortlist full for a named campaign on Atlas: it fills a pool of undecided candidates to the saved target, sourcing in tier order (creators the brand has worked with, creators who have posted about the brand, lookalikes of the creators already delivering results, new creators indexed in Atlas, then the creator marketplace and web research), scores each against the campaign's saved criteria with evidence, republishes one living shortlist page, and writes the pool state back to Atlas so decisions survive between sessions. Trigger on "creator discovery", "find creators for the campaign", "refill the shortlist", "who should we add to the shortlist", "find more creators like the ones that are working", "run discovery", or a scheduled task named "Atlas creator discovery" or "Atlas creator shortlist". Requires campaign calibrations to exist; setup is handled by the Creator discovery section of /aspire:aspire, never by this agent. For a creator ad campaign it runs in creator-ads mode: one pool per lane, a shortlist grouped by lane, and the hook rate, Reels interaction rate, past paid partners, and partnership readiness on every card.
-
-  <example>
-  Context: Atlas connected, campaign calibrations saved, shortlist has 38 undecided candidates against a target of 50
-  user: "refill the shortlist for the Atlas launch campaign"
-  assistant: "Running the atlas-creator-discovery agent to add 12 candidates in tier order and republish the shortlist."
-  <commentary>
-  The pool is below target and the campaign is already defined, so the discovery agent tops it up rather than starting over.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Scheduled task "Atlas creator discovery" fires in a fresh session
-  user: "Run the Atlas creator discovery for Acme Cookware, campaign spring-launch, using the saved campaign calibrations. Do not ask questions."
-  assistant: "Launching the atlas-creator-discovery agent in unattended mode; it will discover, re-score, and publish per the saved routing."
-  <commentary>
-  Unattended run: no questions, saved calibrations only, discovery allowed by the saved cadence approval, no verdicts recorded.
-  </commentary>
-  </example>
+  Use this agent to keep a brand's creator shortlist full for a named campaign on Atlas: it fills a pool of undecided candidates to the saved target in tier order (worked with the brand, posted about the brand, lookalikes of creators delivering results, new indexed creators, marketplace and web), scores each against the saved criteria with evidence, republishes one living shortlist page, and writes pool state back to Atlas. Creator-ads mode keeps one pool per lane. Trigger on "find creators for the campaign", "refill the shortlist", "run discovery", or a scheduled task named "Atlas creator discovery" or "Atlas creator shortlist". Requires campaign calibrations; setup is handled by /aspire:aspire. Launched by /aspire:aspire, which supplies the profile and confirms writes first: for a plain request, invoke that skill instead of calling this agent directly.
 model: inherit
 color: magenta
 ---
