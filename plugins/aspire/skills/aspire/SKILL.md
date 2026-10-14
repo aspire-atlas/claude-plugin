@@ -42,6 +42,7 @@ Text after the command is the argument. Route on it before anything else:
 | Argument | Action |
 | -------- | ------ |
 | `agents` (also `list agents`, `show agents`) | Run **List agents** below. Skip the phases unless the user picks an agent to run. |
+| `run {agent}` (an agent name from the list, with or without the `aspire:` prefix; the agents panel drafts this when someone presses an agent) | Skip steps 1 to 4 of **List agents** and start at step 5 for that agent: the sample question, then its hand-off row. An unknown name: run **List agents** from step 1. |
 | `sample` (also `sample {agent}`, `show me a sample`, `example`) | Run **Sample artifacts** below. No Atlas connection is needed, so skip the phases. |
 | `fee calculator` (also `fees`, `pricing`, `rate card`, `creator rates`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Fee calculator** below. Skip the other phases. |
 | `program` (also `influencer program`, `creator program`, `ambassador program`, `affiliate program`, `gifting program`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Influencer program** below. Skip the other phases. |
@@ -212,6 +213,56 @@ all of it on one Next actions page, and carries out what an Editor approves ther
 (**Reading the ask**). Each is routed from its own
 section below. The **Theme** section brands all of their pages,
 and the **Fee calculator** sets the creator rates behind every fee they show.
+
+## Progress bar
+
+In Claude Code, the plugin can draw an Aspire progress bar above the prompt. If the tool
+`mcp__aspire__aspire_progress` appears among your tools, including as a deferred tool, it is
+available: a deferred tool only needs loading first with ToolSearch
+(`select:mcp__aspire__aspire_progress`). When running the phases, report them as three groups,
+one run each. A new `title` starts a new run, so each group's bar starts over at 0%. Send the
+group's `tasks` in order when it starts, then call again as each task finishes with `done` and
+`phase` naming the task in progress:
+
+| Group | `title` | `tasks` | Runs |
+| ----- | ------- | ------- | ---- |
+| 1 | `Connecting` | `Verify Aspire Atlas` (Phase 1), `Get organizations`, `Pick the organization`, `Get status` (Phase 2 + 3) | Every run. Mark `Pick the organization` done at once when there is one organization. |
+| 2 | `Onboarding` | `Create the brand profile` (4.1), `Connect a social account` (4.2), `Confirm the account` (4.2 terminal status) | Only when Phase 3 routed to Phase 4. Drop `Create the brand profile` when the profile exists. Skip the group for an existing org with a connected channel. |
+| 3 | `Brand questions` | One task per Phase 5 question still to ask (skip keys already saved), then `Theme and rates offers` and `First insights` (Phase 6) | Optional. Start it only when Phase 5 runs. A declined question is marked done, not left open. |
+
+Finish each group with `finished: true` before starting the next. A group that does not run is
+never reported, so the bar never shows steps the run skips. Call it once more with
+`finished: true` when onboarding closes, or when a routed flow takes over after Phase 2 + 3.
+Agents never call it (a subagent's call is ignored); they report their own steps on their panel row with `mcp__aspire__aspire_step`, which the agent files describe.
+
+**Every other flow reports its own steps, never onboarding's.** When a flow starts (the creator
+brief, discovery, vetting, a review, a readout, the orchestrator, a program step, and the rest),
+call it once with that flow's name as `title` and the steps this run will actually take as
+`tasks`, in order, a few words each ("Read the account", "Find creators", "Publish the brief").
+A new `title` starts a new run, so the onboarding steps are gone. Call it again as each step
+finishes with `done` (or the list with `done: true` on finished steps), and with `phase` naming
+the step in progress. Re-send `tasks` when the plan changes, for example when a question adds
+or drops a step. Call it with `finished: true` when the flow ends.
+
+Launch each agent with an Agent `description` equal to the task it runs. The bar then marks that
+task done when the agent finishes and names it while it runs, even if you forget to report. A
+session that never reports still shows the agents that ran as its steps.
+
+The bar shows only where the host draws the slot above the prompt, so the tool's result ends
+with `band: ...`. Decide the channel once per run, from the first call:
+
+| Result | Channel |
+| ------ | ------- |
+| `band: visible on ...` | The bar only |
+| `band: hidden-by-user` | Nothing extra |
+| `band: not-drawn` or `band: unknown` | The task list if `TaskCreate` and `TaskUpdate` exist, else a chat line |
+| Tool missing | The task list if available, else a chat line |
+
+- **Task list:** six tasks (Connection, Organization, Profile and channel, Brand context, First
+  insights, Wrap up), updated at the start of each phase.
+- **Chat line,** once per phase: `Connecting: step 2 of 4, Get organizations ▰▰▱▱ 50%`.
+- Keep calling the progress tool every phase, even when falling back.
+- Subagents never report. Never name the tool or the fallback to the user.
 
 ---
 
