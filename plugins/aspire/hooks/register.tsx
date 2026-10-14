@@ -58,8 +58,9 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
-import type { AgentRun, AtlasReading, BandStats, OrgState, Panel, Progress, Seen, Trigger, TriggerKind } from '../types'
-import { ATLAS_ABSENT, ATLAS_ABSENT_HINT, fmtAtlasUsage, isAtlasStatusCall, isAtlasToolName, readAtlasOrg, readAtlasUsage } from './atlas-usage'
+import type { AgentRun, AtlasCreditsReading, AtlasReading, BandStats, OrgState, Panel, Progress, Seen, Trigger, TriggerKind } from '../types'
+import { creditsView, fmtAtlasUsage, fmtCredits, isAtlasStatusCall, isAtlasToolName, readAtlasCredits, readAtlasOrg, readAtlasUsage } from './atlas-usage'
+import type { CreditsView } from './atlas-usage'
 import { ASPIRE, CRAB_CSS, characterOf, crab } from './characters'
 import { GROUPS, ROSTER } from './roster'
 import type { RosterEntry } from './roster'
@@ -87,6 +88,7 @@ const seen = atom({ plugin: 'aspire', key: 'seen' } as const, BLANK_SEEN)
 const progress = atom({ plugin: 'aspire', key: 'progress' } as const, null as Progress | null)
 const org = atom({ plugin: 'aspire', key: 'org' } as const, BLANK_ORG)
 const atlas = atom({ plugin: 'aspire', key: 'atlas' } as const, null as AtlasReading | null)
+const creditsAtom = atom({ plugin: 'aspire', key: 'credits' } as const, null as AtlasCreditsReading | null)
 const stats = atom({ plugin: 'aspire', key: 'stats' } as const, { turn: 0, speed: null, context: 0 } as BandStats)
 const isBandHidden = atom({ plugin: 'aspire', key: 'isBandHidden' } as const, false)
 const agents = atom({ plugin: 'aspire', key: 'agents' } as const, [] as AgentRun[])
@@ -158,6 +160,7 @@ async function reset($: EngineInterface): Promise<void> {
   await update($, progress, () => null)
   await update($, org, () => BLANK_ORG)
   await update($, atlas, () => null)
+  await update($, creditsAtom, () => null)
   await update($, stats, () => ({ turn: 0, speed: null, context: 0 }))
   await update($, isBandHidden, () => false)
   band.renders = 0
@@ -374,17 +377,32 @@ const statusMark = (x: number, y: number, status: string, color: string): string
   return `<path d="M${x - 4} ${y - 4}l8 8M${x + 4} ${y - 4}l-8 8" stroke="#D0453F" stroke-width="1.8" stroke-linecap="round"/>`
 }
 
-const HEADER_H = 44
+// One card, always at the top of the panel: the organization's credits from the latest get_status.
+const CREDIT_H = 78
+const OVER = '#D0453F'
 
-// Two tiles: how many agents ran, and the time from the first start to the last end.
-const headerSvg = (W: number, count: number, time: number): string => {
-  const gap = 6
-  const tw = (W - gap) / 2
-  const tile = (i: number, k: string, v: string) =>
-    `<rect class="tile" x="${i * (tw + gap)}" y="0" width="${tw}" height="40" rx="8"/>
-<text class="s" x="${i * (tw + gap) + 9}" y="16" font-family="${FONT}" font-size="11">${k}</text>
-<text class="t" x="${i * (tw + gap) + 9}" y="33" font-family="${FONT}" font-size="15" font-weight="600" font-variant-numeric="tabular-nums">${v}</text>`
-  return svg(W, HEADER_H, `${tile(0, 'Agents', String(count))}${tile(1, 'Time', fmtTime(time))}`)
+const creditsCardSvg = (W: number, v: CreditsView): string => {
+  const pad = 10
+  const barW = W - pad * 2
+  const fill = Math.round(barW * v.ratio)
+  const color = v.isOver ? OVER : ASPIRE
+  const text = (x: number, y: number, cls: string, size: number, body: string, extra = '') =>
+    `<text class="${cls}" x="${x}" y="${y}" ${extra} font-family="${FONT}" font-size="${size}" font-variant-numeric="tabular-nums">${xml(body)}</text>`
+  const bigX = pad
+  const bigW = textWidth(v.big, 22) + 6
+  return svg(
+    W,
+    CREDIT_H,
+    `<rect class="tile" x="0" y="0" width="${W}" height="${CREDIT_H - 4}" rx="8"/>
+${text(pad, 17, 's', 11, v.title)}
+${v.tag ? text(W - pad, 17, 's', 11, v.tag, 'text-anchor="end"') : ''}
+<text class="t" x="${bigX}" y="42" font-family="${FONT}" font-size="22" font-weight="600" font-variant-numeric="tabular-nums" ${v.isOver ? `fill="${OVER}"` : ''}>${xml(v.big)}</text>
+${v.sub ? text(bigX + bigW, 42, 's', 12, v.sub) : ''}
+<rect class="k" x="${pad}" y="50" width="${barW}" height="4" rx="2"/>
+${v.ratio > 0 ? `<rect x="${pad}" y="50" width="${Math.max(3, fill)}" height="4" rx="2" fill="${color}"/>` : ''}
+${v.metaLeft ? text(pad, 68, 's', 11, v.metaLeft) : ''}
+${v.metaRight ? text(W - pad, 68, 's', 11, v.metaRight, 'text-anchor="end"') : ''}`,
+  )
 }
 
 /** What an agent reported through aspire_step: `2/5 reading posts`, and the fraction. */
@@ -437,7 +455,7 @@ ${isRunning ? `<circle class="live" cx="${W - 66}" cy="22" r="3.5" fill="${chara
   )
 }
 
-const compactSvg = (W: number, list: AgentRun[], time: number): string => {
+const compactSvg = (W: number, list: AgentRun[]): string => {
   const icons = [...list.filter(a => a.status === 'running'), ...list.filter(a => a.status !== 'running')]
   const fit = Math.max(1, Math.floor((W - 150) / 36))
   const shown = icons.slice(0, fit)
@@ -454,7 +472,7 @@ const compactSvg = (W: number, list: AgentRun[], time: number): string => {
     W,
     32,
     `${body}${more ? `<text class="s" x="${x}" y="21" font-family="${FONT}" font-size="12">+${more}</text>` : ''}
-<text class="s" x="${W}" y="21" text-anchor="end" font-family="${FONT}" font-size="12" font-variant-numeric="tabular-nums">${fmtCount(list.length, 'agent', 'agents')} · ${fmtTime(time)}</text>`,
+<text class="s" x="${W}" y="21" text-anchor="end" font-family="${FONT}" font-size="12" font-variant-numeric="tabular-nums">${fmtCount(list.length, 'agent', 'agents')}</text>`,
   )
 }
 
@@ -503,6 +521,7 @@ async function statusText($: EngineInterface): Promise<string> {
   const t = await read($, trigger)
   const s = await read($, seen)
   const reading = await read($, atlas)
+  const credits = await read($, creditsAtom)
   const o = await read($, org)
   const p = await read($, progress)
   let version = 'unknown'
@@ -530,9 +549,9 @@ async function statusText($: EngineInterface): Promise<string> {
   const status =
     s.lastStatusAt === null
       ? 'Last get_status: none yet.'
-      : `Last get_status ${ago(at - s.lastStatusAt)}: ${reading ? `${fmtAtlasUsage(reading.costs)} Atlas tokens` : 'no token costs in it'}, organization ${o.name ?? 'not picked yet'}.`
+      : `Last get_status ${ago(at - s.lastStatusAt)}: ${credits ? `${fmtCredits(credits.credits.remaining)} credits left` : reading ? `${fmtAtlasUsage(reading.costs)} Atlas tokens` : 'no credits in it'}, organization ${o.name ?? 'not picked yet'}.`
   const shown = shownOf(p, o, await read($, agents))
-  const bar = isOnNow ? `Bar: ${titleOf(o)}, ${shown.label}, ${percentOf(shown)} (${shown.source === 'skill' ? 'reported by the skill' : shown.source === 'agents' ? 'from the running agents' : 'baseline from get_status'}).` : 'Bar: not shown until the mod is on.'
+  const bar = isOnNow ? `Bar: ${titleOf(o)}, ${shown.label}, ${percentOf(shown)} (${shown.source === 'skill' ? 'reported by the skill' : shown.source === 'agents' ? 'from the running agents' : 'initializing, no report from the skill yet'}).` : 'Bar: not shown until the mod is on.'
   const b = band
   const drawn = b.renders > 0 ? `Band: drawn ${b.renders} times, last on ${b.surface ?? 'unknown'}.` : 'Band: never drawn on this surface.'
   return [state, counts, status, bar, drawn, `Claude Code ${version} on ${surfaces}.`].join('\n')
@@ -730,6 +749,8 @@ export const register: Register = on => {
         const at = await $.clock.now()
         const costs = readAtlasUsage(payload)
         await update($, atlas, () => (costs ? { costs, at } : null))
+        const credits = readAtlasCredits(payload)
+        await update($, creditsAtom, () => (credits ? { credits, at } : null))
         await update($, seen, s => ({ ...s, statusReads: s.statusReads + 1, lastStatusAt: at }))
         const isOrgNamed = typeof (e as { asOrganizationId?: unknown }).asOrganizationId === 'string'
         const reading = readAtlasOrg(payload)
@@ -898,8 +919,6 @@ export const register: Register = on => {
     const drawn = await Promise.resolve(next(e)).catch(() => null)
     const below = drawn && typeof drawn === 'object' && (drawn as { type?: string }).type !== 'engine' ? drawn : null
 
-    const s = await read($, stats)
-    const reading = await read($, atlas)
     const o = await read($, org)
     const list = await read($, agents)
     const shown = shownOf(await read($, progress), o, list)
@@ -925,7 +944,11 @@ export const register: Register = on => {
     const cols = e.props.bodyColumns
     const svgW = Math.max(180, Math.min(1600, (cols || 100) * 8 - 96))
     const titleW = Math.max(8, Math.min(30, title.length + 2, Math.floor(cols / 3)))
-    const textBarW = Math.max(6, Math.min(40, cols - titleW - 32))
+    // The row's other cells, widths measured: label, percent, crab and count (about 4 + digits),
+    // dismiss, and the gaps between the six cells. The bar takes what is left and is dropped
+    // when under 6 cells, so the row never wraps in a narrow terminal.
+    const fixedW = shown.label.length + percent.length + 4 + String(list.length).length + 1 + 2 * 5 + 2
+    const textBarW = Math.min(40, (cols || 100) - titleW - fixedW)
     const barColor = shown.isFinished ? DONE : ASPIRE
     const barRow = Svg ? (
       <Box flexDirection="row" alignItems="center" gap={1}>
@@ -939,59 +962,17 @@ export const register: Register = on => {
           <Text color={barColor}>● </Text>
           <Text wrap="truncate-end">{title}</Text>
         </Box>
-        <Text color={barColor}>{barText(shown.ratio, textBarW)}</Text>
-        <Text bold>{shown.label}</Text>
+        {textBarW >= 6 ? <Text color={barColor}>{barText(shown.ratio, textBarW)}</Text> : null}
+        <Text bold wrap="truncate-end">{shown.label}</Text>
         <Text dimColor>{percent}</Text>
         {agentsButton}
         {dismiss}
       </Box>
     )
 
-    const tier = tierFor(e.props.bodyColumns)
-    const icon = tier >= 3 ? 18 : 22
-    const speed = s.speed === null ? '—' : tier <= 1 ? `${s.speed} tok/s` : `${s.speed}/s`
-    const atlasText = reading ? fmtAtlasUsage(reading.costs) : tier <= 1 ? ATLAS_ABSENT_HINT : ATLAS_ABSENT
-    const atlasLabel = tier <= 1 ? 'Atlas tokens' : 'Atlas'
-
-    const statsRow = (
-      <Box
-        flexDirection="row"
-        alignItems="center"
-        columnGap={GAPS[tier]}
-        flexWrap="nowrap"
-        overflow="hidden"
-        paddingX={1}
-      >
-        {tier <= 2 ? (
-          <Box flexDirection="row" alignItems="center" columnGap={1} flexShrink={0}>
-            {tier <= 1 ? <Text dimColor>Turn</Text> : <Text dimColor>#</Text>}
-            <Text bold>{String(s.turn)}</Text>
-          </Box>
-        ) : null}
-        {tier <= 3 ? (
-          <Box flexDirection="row" alignItems="center" columnGap={1} flexShrink={0}>
-            {Svg ? <Svg source={SPEED_ICON} alt="speed" width={icon} height={icon} /> : <Text color={SPEED}>⚡</Text>}
-            <Text bold wrap="truncate-end">{speed}</Text>
-          </Box>
-        ) : null}
-        <Box flexDirection="row" alignItems="center" columnGap={1} flexShrink={0}>
-          {Svg ? <Svg source={ATLAS_ICON} alt="Atlas tokens" width={icon} height={icon} /> : <Text color={ATLAS}>A</Text>}
-          <Text dimColor>{atlasLabel}</Text>
-          <Text bold color={reading ? ATLAS : undefined}>{atlasText}</Text>
-        </Box>
-        <Box flexGrow={1} flexShrink={1} />
-        <Box flexDirection="row" alignItems="center" columnGap={1} flexShrink={0}>
-          {Svg ? <Svg source={contextIcon(s.context)} alt="context" width={icon} height={icon} /> : null}
-          {Svg && tier === 0 ? <Svg source={contextBar(s.context)} alt={`context ${s.context}%`} width={80} height={6} /> : null}
-          <Text bold>{`${s.context}%`}</Text>
-        </Box>
-      </Box>
-    )
-
     return (
       <Box flexDirection="column">
         {barRow}
-        {statsRow}
         {below}
       </Box>
     )
@@ -1006,8 +987,22 @@ export const register: Register = on => {
 
     const running = list.filter(a => a.status === 'running').reverse()
     const finished = list.filter(a => a.status !== 'running').reverse()
-    const time = spanOf(list, at)
-    const summary = `${fmtCount(list.length, 'agent', 'agents')}, ${fmtTime(time)}`
+    const view = creditsView((await read($, creditsAtom))?.credits ?? null, (await read($, atlas))?.costs ?? null)
+    const summary = `${view.title} ${view.big} ${view.sub}`.trim()
+    const creditsBox = (
+      <Box flexDirection="column" marginBottom={1}>
+        <Text wrap="truncate-end">
+          <Text dimColor>{view.title} </Text>
+          <Text bold color={view.isOver ? 'red' : undefined}>{view.big}</Text> <Text dimColor>{[view.sub, view.tag].filter(Boolean).join(' · ')}</Text>
+        </Text>
+        {view.ratio > 0 || view.metaLeft ? (
+          <Text wrap="truncate-end">
+            <Text color={view.isOver ? 'red' : ASPIRE}>{ctxBar(Math.round(view.ratio * 100), 12)}</Text> <Text dimColor>{[view.metaLeft, view.grants].filter(Boolean).join(' · ')}</Text>
+          </Text>
+        ) : null}
+        {view.metaRight ? <Text dimColor wrap="truncate-end">{view.metaRight}</Text> : null}
+      </Box>
+    )
     const isEmpty = list.length === 0
     const empty = 'No agents yet. Aspire agents show here as they start.'
 
@@ -1029,12 +1024,21 @@ export const register: Register = on => {
     )
 
     const setTab = (tab: Panel['tab']) => () => void update($, panel, prev => ({ ...prev, tab }))
+    // Tabs read as tabs: the open one is bracketed and bright, the other dim with a pointer, and a
+    // rule runs under both. Pressing the dim one opens it.
+    const tabLabel = (name: string, tab: Panel['tab']): string => (p.tab === tab ? `[ ${name} ]` : `  ${name} ›`)
     const tabs = (
-      <Box flexDirection="row" gap={2}>
-        <Button key="tab-live" label="Live" plain dimColor={p.tab !== 'live'} onPress={setTab('live')} />
-        <Button key="tab-agents" label={`Agents · ${ROSTER.length}`} plain dimColor={p.tab !== 'agents'} onPress={setTab('agents')} />
+      <Box flexDirection="column">
+        <Box flexDirection="row" gap={2}>
+          <Button key="tab-live" label={tabLabel('Live', 'live')} plain dimColor={p.tab !== 'live'} onPress={setTab('live')} />
+          <Button key="tab-agents" label={tabLabel(`Agents · ${ROSTER.length}`, 'agents')} plain dimColor={p.tab !== 'agents'} onPress={setTab('agents')} />
+        </Box>
+        <Text dimColor>{'─'.repeat(Math.max(10, Math.min(60, (e.props.bodyColumns || 40) - 2)))}</Text>
       </Box>
     )
+    // Pressing an agent drafts its start in the prompt box and does not send it: the person reads it and presses Enter.
+    const startAgent = (r: RosterEntry) => () =>
+      void $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: `/aspire:aspire run ${r.type.replace(/^aspire:/, '')}`, mode: 'replace' } as never).catch(() => undefined)
     const stateOf = (entry: RosterEntry): string => {
       const runs = list.filter(a => a.type === entry.type)
       return runs.some(a => a.status === 'running') ? '●' : runs.length ? '✓' : '○'
@@ -1046,6 +1050,7 @@ export const register: Register = on => {
         const W = Math.max(240, Math.min(900, (e.props.bodyColumns || 40) * 8 - 8))
         return (
           <Box flexDirection="column">
+            <Svg source={creditsCardSvg(W, view)} alt={summary} width={W} height={CREDIT_H} />
             {tabs}
             {GROUPS.map(g => {
               const entries = ROSTER.filter(r => r.group === g.key)
@@ -1053,7 +1058,12 @@ export const register: Register = on => {
                 <Box key={g.key} flexDirection="column">
                   <Text dimColor>{`${g.title} · ${entries.length}`}</Text>
                   {entries.map(r => (
-                    <Svg key={r.type} source={cardSvg(W, r, list)} alt={`${r.name}: ${r.blurb}`} width={W} height={CARD_H} />
+                    <Box key={r.type} flexDirection="column">
+                      <Svg source={cardSvg(W, r, list)} alt={`${r.name}: ${r.blurb}`} width={W} height={CARD_H} />
+                      <Box position="absolute" top={0} right={1}>
+                        <Button key={`start-${r.type}`} label={`Start ▸`} plain onPress={startAgent(r)} />
+                      </Box>
+                    </Box>
                   ))}
                 </Box>
               )
@@ -1063,14 +1073,16 @@ export const register: Register = on => {
       }
       return (
         <Box flexDirection="column">
+          {creditsBox}
           {tabs}
+          <Text dimColor>Press an agent to draft its start in the prompt.</Text>
           {GROUPS.map(g => (
             <Box key={g.key} flexDirection="column" marginTop={1}>
               <Text dimColor>{`${g.title} · ${ROSTER.filter(r => r.group === g.key).length}`}</Text>
               {ROSTER.filter(r => r.group === g.key).map(r => (
-                <Text key={r.type} wrap="truncate-end">
+                <Button key={r.type} label={`${stateOf(r)} ${r.name}`} plain onPress={startAgent(r)}>
                   <Text color={characterOf({ type: r.type, model: '' }).color}>{stateOf(r)}</Text> <Text bold>{r.name}</Text> <Text dimColor>{r.blurb}</Text>
-                </Text>
+                </Button>
               ))}
             </Box>
           ))}
@@ -1084,15 +1096,16 @@ export const register: Register = on => {
       if (p.isCompact) {
         return (
           <Box flexDirection="column" gap={1}>
+            <Svg source={creditsCardSvg(W, view)} alt={summary} width={W} height={CREDIT_H} />
             {tabs}
-            <Svg source={compactSvg(W, list, time)} alt={summary} width={W} height={32} />
+            <Svg source={compactSvg(W, list)} alt={summary} width={W} height={32} />
             {toggleCompact}
           </Box>
         )
       }
       const shownDone = p.isDoneCollapsed ? 0 : finished.length
       const lines = 2 + (isEmpty ? 1 : 0) + (running.length > 0 ? 1 : 0) + (finished.length > 0 ? 1 : 0)
-      const gridH = HEADER_H + lines * LINE_H + (running.length + shownDone) * ROW_H
+      const gridH = CREDIT_H + lines * LINE_H + (running.length + shownDone) * ROW_H
       return (
         <Box flexDirection="column">
           {/* The grid sizes the pane; the content is placed over it. */}
@@ -1100,7 +1113,7 @@ export const register: Register = on => {
             <Svg key={`grid-${i}`} source={gridSvg(W, tileH)} alt="dotted grid" width={W} height={tileH} />
           ))}
           <Box flexDirection="column" position="absolute" top={0} left={0} right={0}>
-            <Svg source={headerSvg(W, list.length, time)} alt={summary} width={W} height={HEADER_H} />
+            <Svg source={creditsCardSvg(W, view)} alt={summary} width={W} height={CREDIT_H} />
             {tabs}
             {toggleCompact}
             {isEmpty && <Text dimColor>{empty}</Text>}
@@ -1158,9 +1171,10 @@ export const register: Register = on => {
 
     return (
       <Box flexDirection="column">
+        {creditsBox}
         {tabs}
         <Box flexDirection="row" justifyContent="space-between">
-          <Text dimColor>{summary}</Text>
+          <Text dimColor>{fmtCount(list.length, 'agent', 'agents')}</Text>
           {toggleCompact}
         </Box>
         {p.isCompact ? (

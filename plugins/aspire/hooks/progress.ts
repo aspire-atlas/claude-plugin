@@ -109,6 +109,12 @@ const norm = (s: string): string => s.toLowerCase().replace(/\s+/g, ' ').trim()
 /** `aspire:atlas-creator-brief` as a few words: `creator brief`. */
 export const agentName = (type: string): string => type.replace(/^aspire:/, '').replace(/^atlas-/, '').replace(/-/g, ' ')
 
+/** What the bar says until the skill reports its first tasks. */
+export const INITIALIZING = 'Initializing…'
+
+/** What the bar says when no set of tasks is in process: the last run finished and nothing is running. */
+export const AWAITING = 'Awaiting next assignment'
+
 const shown = (ratio: number, label: string, total: number, isFinished: boolean, source: Shown['source']): Shown => ({
   ratio,
   label,
@@ -122,8 +128,8 @@ const shown = (ratio: number, label: string, total: number, isFinished: boolean,
  * The skill's report wins and follows the agents it launched: a task whose
  * title equals a finished agent's description counts as done, and a running
  * agent names the phase when the skill gave none. With no report, the agents
- * that ran are the steps (done out of started). With neither, the get_status
- * baseline out of STEPS.
+ * that ran are the steps (done out of started). With neither, the bar reads
+ * Initializing… at 0% until the first tasks arrive.
  */
 export const shownOf = (p: Progress | null, o: OrgState, runs: readonly Run[] = []): Shown => {
   const running = runs.filter(r => r.status === 'running')
@@ -133,20 +139,20 @@ export const shownOf = (p: Progress | null, o: OrgState, runs: readonly Run[] = 
     const total = Math.max(p.total, p.tasks.length)
     const done = Math.min(total, Math.max(p.done, doneTasks))
     const live = p.tasks.find(t => running.some(r => norm(r.description) === norm(t.title)))?.title ?? (running[0] ? agentName(running[0].type) : '')
-    const phase = p.phase || live || (total ? 'Step' : 'Started')
+    const phase = p.phase || live || (total ? 'Step' : INITIALIZING)
     return shown(total ? Math.min(1, done / total) : 0, [phase, total ? `${done}/${total}` : ''].filter(Boolean).join(' '), total, false, 'skill')
   }
   if (p || runs.length) {
     const isRunsLive = running.length > 0
-    if (p && !isRunsLive) return shown(1, 'Done', p.total, true, 'skill')
+    if (p && !isRunsLive) return shown(1, AWAITING, p.total, true, 'skill')
     if (runs.length) {
       const total = runs.length
       const done = total - running.length
-      if (!isRunsLive) return shown(1, 'Done', total, true, 'agents')
+      if (!isRunsLive) return shown(1, AWAITING, total, true, 'agents')
       return shown(done / total, `${agentName(running[0]!.type)} ${done}/${total}`, total, false, 'agents')
     }
   }
-  return shown(o.checkpoints / STEPS, `Onboarding ${o.checkpoints}/${STEPS}`, STEPS, false, 'baseline')
+  return shown(0, INITIALIZING, STEPS, false, 'baseline')
 }
 
 export const percentOf = (s: Shown): string => `${Math.round(s.ratio * 100)}%`
