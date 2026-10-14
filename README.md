@@ -63,7 +63,7 @@ Full details in the [plugin README](plugins/aspire/README.md).
 
 ## Band and agents panel in Claude Code
 
-From 4.0.0, once `/aspire` runs in a Claude Code session, the plugin shows a band above the prompt (Atlas token costs, response speed, prompt cache, context) and an Aspire agents panel (`/aspire-agents-info`). It reads only what already passes through the session and makes no network, file, or process calls. Details in the [plugin README](plugins/aspire/README.md#band-and-agents-panel-claude-code).
+From 4.0.0, once `/aspire` runs in a Claude Code session, the plugin shows a progress bar above the prompt (`Aspire: {organization}` and onboarding progress), a band under it (Atlas token costs, response speed, prompt cache, context), and an Aspire agents panel (`/aspire-agents-info`; `/aspire-agents-info status` checks that the mod is on). It reads only what already passes through the session and makes no network, file, or process calls. Details in the [plugin README](plugins/aspire/README.md#band-and-agents-panel-claude-code).
 
 ## Support
 

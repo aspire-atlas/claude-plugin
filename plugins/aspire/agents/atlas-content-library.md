@@ -2,24 +2,6 @@
 name: atlas-content-library
 description: |
   Use this agent for a brand's content library on Atlas: one searchable place for every piece of creator content about the brand, and what the brand is allowed to do with it. It collects the posts Atlas already holds from program creators, posts that tag or mention the brand, and tracked hashtags; tags each with products, themes, format, hook pattern, an ad readiness score, people on screen, brand safety, and source; joins the rights on record (requested, organic repost, paid usage, whitelisting, channels, and expiry) plus the usage creators agreed in their deals; and publishes one filterable library page with a cleared-for-ads shelf, an expiring-soon list, and a worth-requesting list for content sourcing. It answers questions like "unboxing videos of {product} cleared for paid ads", lists rights expiring within 30, 60, or 90 days, and runs on a schedule to refresh the page and alert the team about expiring rights. It works for one program or for the whole brand. Trigger on "content library", "what creator content do we have", "find unboxing videos of {product}", "what's cleared for ads", "what can we use in ads", "which rights expire soon", "rights expiring", "update the content library", or a scheduled task named "Atlas program library refresh" or "Atlas content library refresh". Setup is handled by the Influencer program section of /aspire:aspire, never by this agent; the library also runs without a program.
-
-  <example>
-  Context: Atlas connected, a program "Summer ambassadors" is saved, its creators have been posting
-  user: "find me unboxing videos of the trail shoe we're cleared to run as paid ads"
-  assistant: "Running the atlas-content-library agent in query mode on the Summer ambassadors library; it will return the matching videos ranked by ad readiness, with their rights and end dates."
-  <commentary>
-  A question about content the brand holds and may use. The main thread confirmed the scope; query mode reads the saved catalog and writes nothing.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Scheduled task "Atlas program library refresh: Acme Cookware - Summer ambassadors" fires Monday morning
-  user: "Run the Atlas content library for Acme Cookware, program summer-ambassadors, using the saved program records. Do not ask questions."
-  assistant: "Launching the atlas-content-library agent in unattended mode; it will refresh the catalog, republish the library page, and post the expiring-rights alert to the saved routing."
-  <commentary>
-  Unattended run: no questions, no rights records written, and catalog findings saved only because the program's saved schedule names the library.
-  </commentary>
-  </example>
 model: inherit
 color: orange
 ---

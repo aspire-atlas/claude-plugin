@@ -54,7 +54,7 @@ export type Character = {
 }
 
 // Aspire green: the brand teal of the starter page (#1E5C58 light, #5DB3A9 dark), mid-tone so it reads on both.
-const ASPIRE = '#3B8A82'
+export const ASPIRE = '#3B8A82'
 const INK = '#1F1E1D'
 
 const stamp = (f: Fill, x: number, y: number, rows: string[], map: Record<string, string>, cls?: string): void =>
@@ -189,6 +189,9 @@ export const CHARACTERS: readonly Character[] = [
 const FALLBACK: Character = CHARACTERS[CHARACTERS.length - 1] as Character
 
 export const characterOf = (run: CharacterRun): Character => CHARACTERS.find(c => c.matches(run)) ?? FALLBACK
+
+/** The plain Aspire-green crab, the one the progress bar carries. */
+export const PLAIN_CRAB: Character = FALLBACK
 
 /** The grid is 30 units wide, props included. */
 export const CRAB_BOX = 30

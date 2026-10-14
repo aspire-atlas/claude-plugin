@@ -1,9 +1,9 @@
-// Atlas token costs, read from Atlas `get_status` results.
+// Atlas token costs and the organization, read from Atlas `get_status` results.
 //
 // This file is the one adapter between the Atlas server's get_status result
-// and the band above the prompt. Nothing else in the mod reads token costs,
-// and nothing here falls back to Claude's own usage: no reading means the band
-// shows a dash.
+// and the band above the prompt. Nothing else in the mod reads token costs or
+// the organization, and nothing here falls back to Claude's own usage: no
+// reading means the band shows a dash.
 //
 // TODO(atlas-server): the server change that adds token costs to get_status
 // has not shipped and its shape is unknown. The shape below is ASSUMED. When
@@ -174,6 +174,86 @@ export const readAtlasUsage = (result: unknown): AtlasTokenCosts | null => {
     for (const root of roots) {
       const costs = findContainer(root)
       if (costs) return costs
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+// ---------------------------------------------------------------------------
+// The organization and the onboarding checkpoints, read from the same result.
+
+/** What a get_status result says about where onboarding stands. */
+export type AtlasOrgReading = {
+  /** The selected organization's name; absent when the result names none. */
+  name?: string
+  /** How many organizations the caller belongs to (0 when the result lists none). */
+  orgCount: number
+  /** Brand profiles in the result. */
+  profileCount: number
+  /** At least one profile has a channel linked (an expired one counts). */
+  hasChannel: boolean
+}
+
+const NAME_KEYS = ['name', 'displayname', 'title'] as const
+const ORG_KEYS = ['organizations', 'organization', 'orgs', 'org'] as const
+const SELECTED_KEYS = ['selected', 'current', 'active'] as const
+const ALL_KEYS = ['all', 'items', 'list'] as const
+const PROFILE_KEYS = ['profiles', 'brandprofiles', 'brands'] as const
+const CHANNEL_KEYS = ['channels', 'linkedaccounts', 'connectedchannels', 'accounts'] as const
+
+const nameOf = (v: unknown): string | undefined => (isRecord(v) ? toLabel(field(v, NAME_KEYS)) : undefined)
+
+const listOf = (v: unknown): unknown[] => (Array.isArray(v) ? v : [])
+
+/** A non-empty channel list or map on a profile. */
+const hasChannels = (profile: unknown): boolean => {
+  if (!isRecord(profile)) return false
+  const channels = field(profile, CHANNEL_KEYS)
+  if (Array.isArray(channels)) return channels.length > 0
+  return isRecord(channels) && Object.keys(channels).length > 0
+}
+
+/** The selected organization, its siblings, and the profiles it carries, from one JSON root. */
+const orgFrom = (root: unknown): AtlasOrgReading | null => {
+  if (!isRecord(root)) return null
+  const orgs = field(root, ORG_KEYS)
+  if (orgs === undefined) return null
+  let selected: unknown
+  let all: unknown[] = []
+  if (Array.isArray(orgs)) {
+    all = orgs
+    selected = orgs.length === 1 ? orgs[0] : orgs.find(o => isRecord(o) && (o.selected === true || o.isSelected === true))
+  } else if (isRecord(orgs)) {
+    selected = field(orgs, SELECTED_KEYS)
+    all = listOf(field(orgs, ALL_KEYS))
+    // A bare organization object ({ id, name }) is the selected one.
+    if (selected === undefined && nameOf(orgs) !== undefined) selected = orgs
+  } else {
+    return null
+  }
+  const profiles = [...listOf(field(root, PROFILE_KEYS)), ...(isRecord(selected) ? listOf(field(selected, PROFILE_KEYS)) : [])]
+  const out: AtlasOrgReading = {
+    orgCount: all.length || (selected !== undefined ? 1 : 0),
+    profileCount: profiles.length,
+    hasChannel: profiles.some(hasChannels),
+  }
+  const name = nameOf(selected)
+  if (name !== undefined) out.name = name
+  return out
+}
+
+/**
+ * The organization a get_status result names, how many the caller has, and
+ * whether a brand profile and a linked channel exist. Accepts the same inputs
+ * as readAtlasUsage; null when the result carries no organizations. Never throws.
+ */
+export const readAtlasOrg = (result: unknown): AtlasOrgReading | null => {
+  try {
+    for (const root of rootsOf(result)) {
+      const reading = orgFrom(root)
+      if (reading) return reading
     }
     return null
   } catch {

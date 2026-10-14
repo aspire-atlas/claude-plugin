@@ -2,24 +2,6 @@
 name: atlas-daily-insights-report
 description: |
   Use this agent for a brand's daily insights report on Atlas: what yesterday's posts tell the team, not only what they scored. It surfaces the insights behind the numbers (which post broke out against the 28-day baseline and why, what underperformed, any red-line hit that needs action, and what changed since the last report) and turns each into a next step. While a campaign window is open it adds launch insights: how the launch is landing with creators, mentions and tracked hashtags, and draft verdicts, for campaign and product readers. It reads with the Atlas search tools, republishes a compact page, delivers to the Slack channel and email recipients saved in the brand's readout calibrations, and saves its insights to Atlas. Trigger on "daily insights", "daily insights report", "daily readout", "what happened yesterday on our accounts", "yesterday's numbers", "run the daily", "launch pulse", "how is the launch landing", or a scheduled task named "Atlas daily insights report" (or the older "Atlas daily readout"). Launch messages and scheduled tasks created before the rename name the older `atlas-daily-readout` agent; they mean this agent, so launch it with the same inputs. Requires readout calibrations to exist; setup is handled by the Readouts section of /aspire:aspire, never by this agent.
-
-  <example>
-  Context: Atlas connected, readout calibrations saved, brand has a linked Instagram channel
-  user: "what happened on @brandhandle yesterday?"
-  assistant: "Running the atlas-daily-insights-report agent for @brandhandle against the 28-day baseline."
-  <commentary>
-  A yesterday-scoped performance question with calibrations in place maps directly to the daily insights report.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Scheduled task "Atlas daily insights report" fires in a fresh session
-  user: "Run the Atlas daily insights report for Acme Cookware using the saved readout calibrations. Do not ask questions."
-  assistant: "Launching the atlas-daily-insights-report agent in unattended mode; it will deliver per the saved routing."
-  <commentary>
-  Unattended run: the agent must not ask anything and must rely entirely on saved calibrations.
-  </commentary>
-  </example>
 model: inherit
 color: yellow
 ---

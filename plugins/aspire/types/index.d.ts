@@ -1,5 +1,5 @@
-// State contract of the Aspire mod (hooks/register.tsx): the band above the
-// prompt and the agents panel. `claude plugin validate plugins/aspire` holds
+// State contract of the Aspire mod (hooks/register.tsx): the progress bar and
+// band above the prompt, and the agents panel. `claude plugin validate plugins/aspire` holds
 // every $.state key the module names to this file.
 
 /**
@@ -83,11 +83,98 @@ export type Panel = {
   isAutoOpened: boolean
 }
 
+/** One step the skill reported. */
+export type ProgressTask = {
+  title: string
+  isDone: boolean
+}
+
+/**
+ * The aspire skill's progress, as the bar draws it.
+ *
+ * The skill reports through the mod's `aspire_progress` tool
+ * (`mcp__aspire__aspire_progress`; the main session only, a subagent's call is
+ * ignored). Until it reports, the bar shows a baseline from the latest Atlas
+ * `get_status` result (OrgState.checkpoints): onboarding checkpoints done out
+ * of 6, where 1 is Atlas answered, 2 an organization selected, 3 a brand
+ * profile exists, 4 a channel is linked, and 5 (brand context) and 6 (first
+ * insights) come only from reported progress. Once the skill reports, its
+ * done and total win.
+ */
+export type Progress = {
+  /** A few words; empty when the skill gave none. */
+  title: string
+  total: number
+  done: number
+  /** The phase in progress, a few words; empty when none was given. */
+  phase: string
+  isFinished: boolean
+  tasks: ProgressTask[]
+}
+
+/** What the latest Atlas `get_status` result said about the organization. */
+export type OrgState = {
+  /**
+   * The selected organization's name: `organizations.selected.name`, read when
+   * the caller has one organization or the call named one (`asOrganizationId`).
+   * Null until one is known; the bar's label is then just `Aspire`.
+   */
+  name: string | null
+  /** Onboarding checkpoints the result shows, 0 to 4 (see Progress). */
+  checkpoints: number
+}
+
+/**
+ * What switched the mod on. `prompt`: a prompt typed as `/aspire` or
+ * `/aspire:aspire`. `skill`: the aspire skill's prompt was expanded.
+ * `skill-tool`: the Skill tool ran the aspire skill. `progress`: the skill
+ * reported progress. `atlas-tool`: an Atlas connector tool answered. `agent`:
+ * an `aspire:*` agent started.
+ */
+export type TriggerKind = 'prompt' | 'skill' | 'skill-tool' | 'progress' | 'atlas-tool' | 'agent'
+
+/** The first Aspire event of the session, the one that switched the mod on. */
+export type Trigger = {
+  kind: TriggerKind
+  /** The skill, tool, or agent type that did it (`/aspire:aspire`, `get_status`, `aspire:atlas-creator-brief`). */
+  detail: string
+  /** $.clock.now() when the mod switched on. */
+  at: number
+}
+
+/**
+ * Aspire events the mod has seen this session, for `/aspire-agents-info
+ * status`. Only Aspire events are counted; anything else passes unrecorded.
+ */
+export type Seen = {
+  /** Prompts typed as `/aspire` or `/aspire:aspire`. */
+  prompts: number
+  /** Expansions of the aspire skill's prompt (`skill.prompt`). */
+  skillPrompts: number
+  /** Skill tool calls that ran the aspire skill. */
+  skillTools: number
+  /** Progress reports through `aspire_progress` (main session). */
+  progressReports: number
+  /** Atlas connector tool results. */
+  atlasResults: number
+  /** Atlas `get_status` results among them. */
+  statusReads: number
+  /** $.clock.now() of the latest Atlas `get_status` result, or null. */
+  lastStatusAt: number | null
+  /** Agents listed in the panel. */
+  agents: number
+}
+
 declare module 'claude-code' {
   interface PluginState {
     aspire: {
-      /** False until /aspire runs or an aspire:* agent starts; every hook passes through until then. */
+      /** False until an Aspire event (see Trigger); every hook passes through until then. */
       isActive: boolean
+      trigger: Trigger | null
+      seen: Seen
+      /** Null until the skill reports through `aspire_progress`. */
+      progress: Progress | null
+      org: OrgState
       atlas: AtlasReading | null
       stats: BandStats
       cache: Cache
