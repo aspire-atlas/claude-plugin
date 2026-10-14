@@ -61,7 +61,7 @@ import type { EngineInterface, Register } from 'claude-code'
 import type { AgentRun, AtlasCreditsReading, AtlasReading, BandStats, OrgState, Panel, Progress, Seen, Trigger, TriggerKind } from '../types'
 import { creditsView, fmtAtlasUsage, fmtCredits, isAtlasStatusCall, isAtlasToolName, readAtlasCredits, readAtlasOrg, readAtlasUsage } from './atlas-usage'
 import type { CreditsView } from './atlas-usage'
-import { ASPIRE, CRAB_CSS, characterOf, crab } from './characters'
+import { ASPIRE, CRAB_CSS, breathOf, characterOf, crab } from './characters'
 import { GROUPS, ROSTER } from './roster'
 import type { RosterEntry } from './roster'
 import { clip, fitText, fmtTime, fmtTokens, modelName, textWidth, windowOf, xml } from './format'
@@ -447,7 +447,7 @@ const cardSvg = (W: number, entry: RosterEntry, list: AgentRun[], isLeaving = fa
     W,
     CARD_H,
     `<rect class="tile" x="0.5" y="2.5" width="${W - 1}" height="${CARD_H - 6}" rx="10"/>
-${crab(8, 10, character, false, isRunning || isLeaving, undefined, isRunning || isLeaving ? undefined : [...entry.type].reduce((n, c) => (n * 31 + c.charCodeAt(0)) % 26, 0) / 10, isLeaving)}
+${crab(8, 10, character, false, isRunning || isLeaving, undefined, isRunning || isLeaving ? undefined : breathOf(entry.type), isLeaving)}
 <text class="t" x="50" y="25" font-family="${FONT}" font-size="13" font-weight="600">${xml(fitText(entry.name, 13, textW))}</text>
 <text class="s" x="50" y="42" font-family="${FONT}" font-size="11">${xml(fitText(entry.blurb, 11, textW))}</text>
 ${isRunning ? `<circle class="live" cx="${W - 66}" cy="22" r="3.5" fill="${character.color}"/>` : runs.length ? `<path d="M${W - 70} 22l3.5 3.5 6.5-7" fill="none" stroke="#3B9C5F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>` : ''}

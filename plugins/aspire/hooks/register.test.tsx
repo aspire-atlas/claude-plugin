@@ -383,6 +383,27 @@ test('on the desktop the pressed crab walks off its card, then the start is draf
   expect(drafts).toEqual(['/aspire:aspire run atlas-creator-vetting'])
 })
 
+test('idle crabs breathe at their own rate and start at their own point', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  await typeAspire($)
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  await ui.press({ key: 'tab-agents' })
+  const breaths = (await ui.findAll({ type: 'Svg' }))
+    .map(el => /--d:-([\d.]+)s;--p:([\d.]+)s/.exec(String(el.props.source)))
+    .filter((m): m is RegExpExecArray => m !== null)
+    .map(m => ({ delay: Number(m[1]), period: Number(m[2]) }))
+  expect(breaths).toHaveLength(25)
+  expect(new Set(breaths.map(b => `${b.delay}/${b.period}`)).size).toBe(25)
+  expect(new Set(breaths.map(b => b.period)).size).toBeGreaterThanOrEqual(20)
+  expect(new Set(breaths.map(b => b.delay)).size).toBeGreaterThanOrEqual(20)
+  for (const b of breaths) {
+    expect(b.period).toBeGreaterThanOrEqual(2.2)
+    expect(b.period).toBeLessThanOrEqual(3.4)
+    expect(b.delay).toBeLessThan(3)
+  }
+  await ui.unmount()
+})
+
 test('an agent step call from an unknown agent changes nothing and does not switch the mod on', async ($, on) => {
   world(on, () => WITH_COSTS)
   expect(await $.tool.call({ tool: 'mcp__aspire__aspire_step', agentId: 'ghost', total: 3 } as never)).toMatchObject({ result: 'ok' })

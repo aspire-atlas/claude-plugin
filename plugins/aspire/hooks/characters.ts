@@ -214,7 +214,7 @@ export const CRAB_CSS = `<style>
 .run .la{animation:st .5s steps(1) infinite}.run .lb{animation:st .5s steps(1) infinite -.25s}
 .run .bd{animation:bob .5s steps(1) infinite -.125s}
 .run g,.idle g,.go{transform-box:fill-box}
-.idle .bd{animation:breathe 2.6s ease-in-out infinite;animation-delay:var(--d,0s)}
+.idle .bd{animation:breathe var(--p,2.6s) ease-in-out infinite;animation-delay:var(--d,0s)}
 .go{animation:out .9s cubic-bezier(.4,0,1,1) forwards}
 @keyframes breathe{50%{transform:translateY(-1px)}}@keyframes out{to{transform:translateX(380px);opacity:0}}
 @media (prefers-reduced-motion: reduce){.idle .bd,.go{animation:none}}
@@ -225,11 +225,21 @@ ${VARIANT_CHARACTERS.map(c => c.css).join('\n')}
 @media (prefers-reduced-motion: reduce){.run,.run g{animation:none!important}}
 </style>`
 
+/** One idle crab's breathing: how long a breath takes and where in it the crab starts, in seconds. */
+export type Breath = { period: number; delay: number }
+
+/** A stable rate and start for an agent type, so the crabs in a list never breathe in step. */
+export const breathOf = (type: string): Breath => {
+  let h = 2166136261
+  for (const c of type) h = Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0
+  return { period: 2.2 + (h % 121) / 100, delay: ((h >>> 7) % 300) / 100 }
+}
+
 /**
  * One character as SVG markup at (x, y). Body and props nest inside `bd` so a
  * prop rides the bob and adds its own motion; legs stay outside it.
  */
-export const crab = (x: number, y: number, character: Character, dim = false, isWalking = false, scale = CRAB_SCALE, breathe?: number, isLeaving = false): string => {
+export const crab = (x: number, y: number, character: Character, dim = false, isWalking = false, scale = CRAB_SCALE, breathe?: Breath, isLeaving = false): string => {
   const groups = new Map<string, string[]>([['bd', []]])
   const f: Fill = (cx, cy, w, h, c, cls = 'bd') => {
     if (!groups.has(cls)) groups.set(cls, [])
@@ -239,5 +249,5 @@ export const crab = (x: number, y: number, character: Character, dim = false, is
   const group = (cls: string) => `<g class="${cls}">${(groups.get(cls) ?? []).join('')}</g>`
   const props = [...groups.keys()].filter(k => k !== 'bd' && k !== 'la' && k !== 'lb')
   const body = `<g class="bd">${(groups.get('bd') ?? []).join('')}${props.map(group).join('')}</g>`
-  return `<g transform="translate(${x},${y}) scale(${scale})" opacity="${dim ? 0.45 : 1}" shape-rendering="crispEdges"><g class="c-${character.key}${isWalking ? ' run' : breathe === undefined ? '' : ' idle'}${isLeaving ? ' go' : ''}"${breathe === undefined ? '' : ` style="--d:-${breathe}s"`}>${body}${group('la')}${group('lb')}</g></g>`
+  return `<g transform="translate(${x},${y}) scale(${scale})" opacity="${dim ? 0.45 : 1}" shape-rendering="crispEdges"><g class="c-${character.key}${isWalking ? ' run' : breathe === undefined ? '' : ' idle'}${isLeaving ? ' go' : ''}"${breathe === undefined ? '' : ` style="--d:-${breathe.delay}s;--p:${breathe.period}s"`}>${body}${group('la')}${group('lb')}</g></g>`
 }
