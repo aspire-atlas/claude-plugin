@@ -30,11 +30,15 @@
 // and effort instead of by savvy-flow tier names, the right-to-left mirroring
 // is gone, and every costume lives in the one CHARACTERS table below.
 
+import { AGENT_CHARACTERS, COSTUME_KEYFRAMES, VARIANT_CHARACTERS } from './costumes'
+
 /** What picks a character: the agent type and what the run is on. */
 export type CharacterRun = {
   type: string
   model: string
   effort?: string
+  /** Which concurrent run of the same agent this is; from the second, an Aspire agent wears a variant costume. */
+  round?: number
 }
 
 /** Puts one pixel rect in a named group: `bd` (default) is the body, `la`/`lb` the legs, anything else a prop. */
@@ -84,6 +88,7 @@ const isOpusAt = (run: CharacterRun, efforts: readonly string[]): boolean =>
  * color, and its motion while the agent runs (`css`).
  */
 export const CHARACTERS: readonly Character[] = [
+  ...AGENT_CHARACTERS,
   {
     // Pirate scouting the code (the Explore agent); the cutlass fences.
     key: 'explore',
@@ -188,7 +193,12 @@ export const CHARACTERS: readonly Character[] = [
 
 const FALLBACK: Character = CHARACTERS[CHARACTERS.length - 1] as Character
 
-export const characterOf = (run: CharacterRun): Character => CHARACTERS.find(c => c.matches(run)) ?? FALLBACK
+export const characterOf = (run: CharacterRun): Character => {
+  const own = CHARACTERS.find(c => c.matches(run)) ?? FALLBACK
+  // A second run of the same Aspire agent wears a variant, so the two are told apart in the panel.
+  if (run.round && run.round > 1 && AGENT_CHARACTERS.includes(own)) return VARIANT_CHARACTERS[(run.round - 2) % VARIANT_CHARACTERS.length] ?? own
+  return own
+}
 
 /** The plain Aspire-green crab, the one the progress bar carries. */
 export const PLAIN_CRAB: Character = FALLBACK
@@ -205,7 +215,9 @@ export const CRAB_CSS = `<style>
 .run .bd{animation:bob .5s steps(1) infinite -.125s}
 .run g{transform-box:fill-box}
 @keyframes st{50%{transform:translateY(-1px)}}@keyframes bob{50%{transform:translateY(1px)}}
+${COSTUME_KEYFRAMES}
 ${CHARACTERS.map(c => c.css).filter(Boolean).join('\n')}
+${VARIANT_CHARACTERS.map(c => c.css).join('\n')}
 @media (prefers-reduced-motion: reduce){.run,.run g{animation:none!important}}
 </style>`
 

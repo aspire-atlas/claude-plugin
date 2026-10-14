@@ -2,6 +2,8 @@
 import { expect, test } from 'claude-code/testing'
 
 import { CHARACTERS, CRAB_CSS, characterOf, crab } from './characters'
+import { AGENT_CHARACTERS, COSTUMES, VARIANT_CHARACTERS } from './costumes'
+import { ROSTER } from './roster'
 import { fitText, fmtTime, fmtTokens, modelName, windowOf, xml } from './format'
 
 test('fmtTime, fmtTokens', () => {
@@ -28,9 +30,9 @@ test('xml and fitText', () => {
 
 test('characters: one table, first match wins, a catch-all last', () => {
   expect(characterOf({ type: 'Explore', model: 'claude-opus-5-5', effort: 'high' }).key).toBe('explore')
-  expect(characterOf({ type: 'aspire:atlas-market-signal', model: 'claude-fable-5' }).key).toBe('fable')
-  expect(characterOf({ type: 'aspire:atlas-creator-brief', model: 'claude-opus-5-5', effort: 'xhigh' }).key).toBe('heavy')
-  expect(characterOf({ type: 'aspire:atlas-creator-brief', model: 'claude-opus-5-5', effort: 'high' }).key).toBe('careful')
+  expect(characterOf({ type: 'general-purpose', model: 'claude-fable-5' }).key).toBe('fable')
+  expect(characterOf({ type: 'general-purpose', model: 'claude-opus-5-5', effort: 'xhigh' }).key).toBe('heavy')
+  expect(characterOf({ type: 'general-purpose', model: 'claude-opus-5-5', effort: 'high' }).key).toBe('careful')
   expect(characterOf({ type: 'general-purpose', model: 'claude-opus-5-5', effort: 'medium' }).key).toBe('medium')
   expect(characterOf({ type: 'general-purpose', model: 'claude-opus-5-5', effort: 'low' }).key).toBe('light')
   expect(characterOf({ type: 'general-purpose', model: 'claude-opus-5-5' }).key).toBe('other')
@@ -47,4 +49,26 @@ test('characters: each draws, and a running one walks', () => {
     expect(crab(0, 0, c, false, true)).toContain(`class="c-${c.key} run"`)
   }
   expect(CRAB_CSS).toContain('@keyframes blink')
+})
+
+test('costumes: every Aspire agent has its own influencer costume, and a second run wears a variant', () => {
+  expect(COSTUMES).toHaveLength(31)
+  expect(AGENT_CHARACTERS).toHaveLength(24)
+  expect(VARIANT_CHARACTERS).toHaveLength(7)
+  for (const entry of ROSTER) expect(characterOf({ type: entry.type, model: '' }).key).toMatch(/^inf-/)
+  expect(new Set(ROSTER.map(r => characterOf({ type: r.type, model: '' }).key)).size).toBe(ROSTER.length)
+  // The model no longer decides an Aspire agent's costume.
+  expect(characterOf({ type: 'aspire:atlas-creator-brief', model: 'claude-opus-5-5', effort: 'xhigh' }).key).toBe('inf-clapper')
+  const second = characterOf({ type: 'aspire:atlas-creator-brief', model: '', round: 2 })
+  expect(second.key).toMatch(/^inf-/)
+  expect(second.key).not.toBe('inf-clapper')
+  // Not an Aspire agent: round changes nothing.
+  expect(characterOf({ type: 'general-purpose', model: 'claude-opus-5-5', effort: 'low', round: 3 }).key).toBe('light')
+  // Every costume's props draw inside the grid.
+  for (const c of COSTUMES) {
+    for (const rows of [c.held, c.head]) {
+      for (const r of rows ?? []) expect(r).toMatch(/^[kwgdyarbltponv.]+$/)
+    }
+    expect((c.held ?? []).length === 0 || (c.held ?? []).length === 9).toBe(true)
+  }
 })

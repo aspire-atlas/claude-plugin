@@ -420,8 +420,7 @@ const CARD_H = 60
 
 /** A crab card for one agent type: its costume, name, what it makes, and whether it ran this session. */
 const cardSvg = (W: number, entry: RosterEntry, list: AgentRun[]): string => {
-  const group = GROUPS.find(g => g.key === entry.group)
-  const character = characterOf(group?.costume ?? { type: entry.type, model: '' })
+  const character = characterOf({ type: entry.type, model: '' })
   const runs = list.filter(a => a.type === entry.type)
   const isRunning = runs.some(a => a.status === 'running')
   const state = isRunning ? 'running' : runs.length ? `ran ${runs.length}\u00d7` : 'ready'
@@ -1070,7 +1069,7 @@ export const register: Register = on => {
               <Text dimColor>{`${g.title} · ${ROSTER.filter(r => r.group === g.key).length}`}</Text>
               {ROSTER.filter(r => r.group === g.key).map(r => (
                 <Text key={r.type} wrap="truncate-end">
-                  <Text color={characterOf(g.costume).color}>{stateOf(r)}</Text> <Text bold>{r.name}</Text> <Text dimColor>{r.blurb}</Text>
+                  <Text color={characterOf({ type: r.type, model: '' }).color}>{stateOf(r)}</Text> <Text bold>{r.name}</Text> <Text dimColor>{r.blurb}</Text>
                 </Text>
               ))}
             </Box>

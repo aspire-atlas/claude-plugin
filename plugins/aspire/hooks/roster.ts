@@ -2,13 +2,9 @@
 // hand beside `agents/*.md`: the mod makes no file calls, so it cannot read the
 // folder. Add a line here when an agent is added or renamed.
 
-import type { CharacterRun } from './characters'
-
 export type RosterGroup = {
   key: string
   title: string
-  /** The costume the group's crabs wear, picked the way a run's is: by model and effort. */
-  costume: CharacterRun
 }
 
 export type RosterEntry = {
@@ -22,11 +18,11 @@ export type RosterEntry = {
 }
 
 export const GROUPS: readonly RosterGroup[] = [
-  { key: 'insights', title: 'Insights and reports', costume: { type: 'roster', model: 'opus', effort: 'xhigh' } },
-  { key: 'discover', title: 'Find and vet creators', costume: { type: 'roster', model: 'fable' } },
-  { key: 'create', title: 'Plan and review content', costume: { type: 'roster', model: 'opus', effort: 'medium' } },
-  { key: 'program', title: 'Run the program', costume: { type: 'roster', model: 'opus', effort: 'high' } },
-  { key: 'measure', title: 'Measure and decide next', costume: { type: 'roster', model: 'opus', effort: 'low' } },
+  { key: 'insights', title: 'Insights and reports' },
+  { key: 'discover', title: 'Find and vet creators' },
+  { key: 'create', title: 'Plan and review content' },
+  { key: 'program', title: 'Run the program' },
+  { key: 'measure', title: 'Measure and decide next' },
 ]
 
 export const ROSTER: readonly RosterEntry[] = [
