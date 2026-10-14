@@ -385,6 +385,8 @@ const OVER = '#D0453F'
 const LOGO = `<rect width="512" height="512" rx="96" fill="#0B4545"/><path fill="#fff" fill-rule="evenodd" d="M62 413 L183 98 L236 98 L356 413 L296 413 L275 354 C235 392 190 413 130 413 Z M212 185 L257 296 C225 330 185 354 145 358 Z"/><rect x="365" y="98" width="64" height="316" fill="#fff"/>`
 const LOGO_SIZE = 56
 const LOGO_GAP = 10
+/** The mark's width in terminal columns, at the 8px a column the desktop grid is sized by. */
+const LOGO_COLS = Math.round(LOGO_SIZE / 8)
 
 const creditsCardSvg = (W: number, v: CreditsView): string => {
   const pad = 10
@@ -1036,7 +1038,10 @@ export const register: Register = on => {
     // Two buttons switch the view: the open one is the primary button, the other secondary.
     const tabs = (
       <Box flexDirection="row" gap={1}>
-        <Button key="tab-live" label="Live" variant={p.tab === 'live' ? 'primary' : 'secondary'} onPress={setTab('live')} />
+        {/* The Live button is as wide as the Aspire mark above it: 8px a column. */}
+        <Box width={LOGO_COLS} justifyContent="center">
+          <Button key="tab-live" label="Live" variant={p.tab === 'live' ? 'primary' : 'secondary'} onPress={setTab('live')} />
+        </Box>
         <Button key="tab-agents" label={`Agents · ${ROSTER.length}`} variant={p.tab === 'agents' ? 'primary' : 'secondary'} onPress={setTab('agents')} />
       </Box>
     )

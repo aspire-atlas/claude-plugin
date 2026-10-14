@@ -385,6 +385,15 @@ test('on the desktop the pressed crab walks off its card, then the start is draf
   expect(drafts).toEqual(['/aspire:aspire run atlas-creator-vetting'])
 })
 
+test('the Live button is as wide as the Aspire mark', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  await typeAspire($)
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  // The mark is 56px wide, seven 8px columns; the Live button's box is seven columns.
+  expect((await ui.findAll({ type: 'Box' })).some(b => b.props.width === 7 && b.children.some(c => (c as { props?: { key?: string } }).props?.key === 'tab-live'))).toBe(true)
+  await ui.unmount()
+})
+
 test('idle crabs breathe at their own rate and start at their own point', async ($, on) => {
   world(on, () => WITH_COSTS)
   await typeAspire($)
