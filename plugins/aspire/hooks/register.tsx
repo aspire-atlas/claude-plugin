@@ -45,6 +45,33 @@
 //   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //   SOFTWARE.
 //
+// The steps behind the progress bar (the agent's task list, the estimate for the
+// step in flight, and the Progress section's view) are adapted from plain-view in
+// claude-code-mods, https://github.com/ice-lfernandes/claude-code-mods, used under
+// the MIT License (hooks/plan.ts):
+//
+//   MIT License
+//
+//   Copyright (c) 2026 Lucas Fernandes
+//
+//   Permission is hereby granted, free of charge, to any person obtaining a copy
+//   of this software and associated documentation files (the "Software"), to deal
+//   in the Software without restriction, including without limitation the rights
+//   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//   copies of the Software, and to permit persons to whom the Software is
+//   furnished to do so, subject to the following conditions:
+//
+//   The above copyright notice and this permission notice shall be included in all
+//   copies or substantial portions of the Software.
+//
+//   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+//   SOFTWARE.
+//
 // What changed from the kit: the bar reports the aspire skill (the
 // aspire_progress tool, or a baseline from Atlas get_status before the skill
 // reports) instead of savvy-flow, with the organization's name as its title
@@ -58,15 +85,17 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
-import type { AgentRun, AtlasCreditsReading, AtlasReading, BandStats, OrgState, Panel, Progress, Seen, Trigger, TriggerKind } from '../types'
+import type { AgentRun, AtlasCreditsReading, AtlasReading, BandStats, Item, OrgState, Panel, Progress, Seen, Trigger, TriggerKind, Turn } from '../types'
 import { creditsView, fmtAtlasUsage, fmtCredits, isAtlasStatusCall, isAtlasToolName, readAtlasCredits, readAtlasOrg, readAtlasUsage } from './atlas-usage'
 import type { CreditsView } from './atlas-usage'
 import { ASPIRE, CRAB_CSS, breathOf, characterOf, crab } from './characters'
 import { GROUPS, ROSTER } from './roster'
 import type { RosterEntry } from './roster'
 import { clip, fitText, fmtTime, fmtTokens, modelName, textWidth, windowOf, xml } from './format'
+import { applyTask, countCall, endTurn, isTaskTool, planOf, startTurn, stepsOf as stepsFromItems, touch } from './plan'
+import type { PlanView } from './plan'
 import type { ProgressInput, Shown } from './progress'
-import { barText, mergeProgress, orgStateFrom, percentOf, shownOf, titleOf } from './progress'
+import { barText, isReportLeading, mergeProgress, orgStateFrom, percentOf, shownOf, titleOf } from './progress'
 
 const PLUGIN = 'aspire'
 
@@ -86,13 +115,17 @@ const isActive = atom({ plugin: 'aspire', key: 'isActive' } as const, false)
 const trigger = atom({ plugin: 'aspire', key: 'trigger' } as const, null as Trigger | null)
 const seen = atom({ plugin: 'aspire', key: 'seen' } as const, BLANK_SEEN)
 const progress = atom({ plugin: 'aspire', key: 'progress' } as const, null as Progress | null)
+const turn = atom({ plugin: 'aspire', key: 'turn' } as const, null as Turn | null)
+const items = atom({ plugin: 'aspire', key: 'items' } as const, [] as Item[])
 const org = atom({ plugin: 'aspire', key: 'org' } as const, BLANK_ORG)
 const atlas = atom({ plugin: 'aspire', key: 'atlas' } as const, null as AtlasReading | null)
 const creditsAtom = atom({ plugin: 'aspire', key: 'credits' } as const, null as AtlasCreditsReading | null)
 const stats = atom({ plugin: 'aspire', key: 'stats' } as const, { turn: 0, speed: null, context: 0 } as BandStats)
 const isBandHidden = atom({ plugin: 'aspire', key: 'isBandHidden' } as const, false)
 const agents = atom({ plugin: 'aspire', key: 'agents' } as const, [] as AgentRun[])
-const panel = atom({ plugin: 'aspire', key: 'panel' } as const, { isCompact: false, isDoneCollapsed: false, isAutoOpened: false, tab: 'live', leaving: null } as Panel)
+/** The cards that start open; the agent roster's groups start collapsed. */
+const DEFAULT_OPEN = ['progress', 'running', 'finished', 'agents']
+const panel = atom({ plugin: 'aspire', key: 'panel' } as const, { isAutoOpened: false, open: DEFAULT_OPEN, leaving: null } as Panel)
 const now = atom({ plugin: 'aspire', key: 'now' } as const, 0)
 
 /** The aspire skill: `/aspire`, `/aspire:aspire`, or the Skill tool's `aspire:aspire`. */
@@ -125,7 +158,8 @@ const band: { renders: number; surface: string | null } = { renders: 0, surface:
 
 const tick = async ($: EngineInterface): Promise<void> => {
   const at = await $.clock.now()
-  if ((await read($, agents)).some(a => a.status === 'running')) await update($, now, () => at)
+  const t = await read($, turn)
+  if ((await read($, agents)).some(a => a.status === 'running') || (t && t.end === undefined)) await update($, now, () => at)
 }
 
 const startTicking = ($: EngineInterface): void => {
@@ -159,6 +193,8 @@ async function reset($: EngineInterface): Promise<void> {
   await update($, seen, () => BLANK_SEEN)
   await update($, progress, () => null)
   await update($, org, () => BLANK_ORG)
+  await update($, turn, () => null)
+  await update($, items, () => [])
   await update($, atlas, () => null)
   await update($, creditsAtom, () => null)
   await update($, stats, () => ({ turn: 0, speed: null, context: 0 }))
@@ -166,7 +202,7 @@ async function reset($: EngineInterface): Promise<void> {
   band.renders = 0
   band.surface = null
   await update($, agents, () => [])
-  await update($, panel, () => ({ isCompact: false, isDoneCollapsed: false, isAutoOpened: false, tab: 'live', leaving: null }))
+  await update($, panel, () => ({ isAutoOpened: false, open: DEFAULT_OPEN, leaving: null }))
 }
 
 const isOn = async ($: EngineInterface): Promise<boolean> => {
@@ -198,7 +234,14 @@ const noise = (x: number, y: number): number => {
   return s - Math.floor(s)
 }
 
-const barSvg = (title: string, shown: Shown, W: number): string => {
+/** Pixels twinkle in four out-of-phase groups; a finished bar settles to a slow glow. */
+const twinkleCss = (shown: Shown): string => `.t0,.t1,.t2,.t3{animation:tw ${shown.isFinished ? 3.2 : 2.2}s ease-in-out infinite}
+.t1{animation-duration:${shown.isFinished ? 3.8 : 2.8}s;animation-delay:-.7s}.t2{animation-duration:${shown.isFinished ? 4.4 : 1.9}s;animation-delay:-1.3s}.t3{animation-duration:${shown.isFinished ? 3.5 : 3.3}s;animation-delay:-.4s}
+@keyframes tw{0%,100%{opacity:1}50%{opacity:${shown.isFinished ? 0.8 : 0.3}}}
+@media (prefers-reduced-motion: reduce){.t0,.t1,.t2,.t3{animation:none}}`
+
+/** The bar row's shapes, without a style block: the band wraps them in their own, the panel's progress card in the panel's. */
+const barShapes = (title: string, shown: Shown, W: number): string => {
   // The title takes what it needs, up to 40% of the row; the bar takes the rest.
   const label = fitText(title, 13, Math.max(60, W * 0.4))
   const BAR_X = Math.round(16 + textWidth(label, 13) + 12)
@@ -227,17 +270,7 @@ const barSvg = (title: string, shown: Shown, W: number): string => {
   const pillW = Math.min(BAR_W, Math.round(18 + textWidth(pill, 11)))
   const pillX = Math.max(0, Math.min(BAR_W - pillW, fillW - pillW))
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}">
-<style>
-.t{fill:#1f1f1f}.m{fill:#8a8a8a}.k{fill:#e4e4e2}.tk{fill:#b4b4b0}
-@media (prefers-color-scheme: dark){.t{fill:#ececec}.m{fill:#9a9a9a}.k{fill:#2c2c2c}.tk{fill:#5a5a5a}}
-/* Pixels twinkle in four out-of-phase groups; a finished bar settles to a slow glow. */
-.t0,.t1,.t2,.t3{animation:tw ${shown.isFinished ? 3.2 : 2.2}s ease-in-out infinite}
-.t1{animation-duration:${shown.isFinished ? 3.8 : 2.8}s;animation-delay:-.7s}.t2{animation-duration:${shown.isFinished ? 4.4 : 1.9}s;animation-delay:-1.3s}.t3{animation-duration:${shown.isFinished ? 3.5 : 3.3}s;animation-delay:-.4s}
-@keyframes tw{0%,100%{opacity:1}50%{opacity:${shown.isFinished ? 0.8 : 0.3}}}
-@media (prefers-reduced-motion: reduce){.t0,.t1,.t2,.t3{animation:none}}
-</style>
-<defs><clipPath id="aspire-bar-clip"><rect x="0" y="0" width="${BAR_W}" height="${BAR_H}" rx="${BAR_H / 2}"/></clipPath></defs>
+  return `<defs><clipPath id="aspire-bar-clip"><rect x="0" y="0" width="${BAR_W}" height="${BAR_H}" rx="${BAR_H / 2}"/></clipPath></defs>
 <circle cx="5" cy="${BAR_ROW_H / 2}" r="4" fill="${color}"/>
 <text class="t" x="16" y="${BAR_ROW_H / 2 + 4.5}" font-family="${FONT}" font-size="13" font-weight="500">${xml(label)}</text>
 <g transform="translate(${BAR_X},${y0})">
@@ -250,8 +283,17 @@ const barSvg = (title: string, shown: Shown, W: number): string => {
 <text x="${pillX + pillW / 2}" y="${BAR_H / 2 + 4}" text-anchor="middle" font-family="${FONT}" font-size="11" font-weight="600" fill="#ffffff">${xml(pill)}</text>
 </g>
 <text class="m" x="${W - CRAB_W - 6}" y="${BAR_ROW_H / 2 + 4.5}" text-anchor="end" font-family="${FONT}" font-size="12.5" font-variant-numeric="tabular-nums">${percentOf(shown)}</text>
-</svg>`
+`
 }
+
+const barSvg = (title: string, shown: Shown, W: number): string => `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}">
+<style>
+.t{fill:#1f1f1f}.m{fill:#8a8a8a}.k{fill:#e4e4e2}.tk{fill:#b4b4b0}
+@media (prefers-color-scheme: dark){.t{fill:#ececec}.m{fill:#9a9a9a}.k{fill:#2c2c2c}.tk{fill:#5a5a5a}}
+${twinkleCss(shown)}
+</style>
+${barShapes(title, shown, W)}
+</svg>`
 
 // ---------------------------------------------------------------------------
 // The band above the prompt (from session-band), now the bar's second row.
@@ -347,23 +389,18 @@ const norm = (s: string): string => s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, 
 
 const FONT = "-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif"
 
-// The pane's backdrop: a dotted grid as tall as the content laid over it.
-const GRID_STEP = 16
-// A Text or Button row on the desktop is about 20px; the grid errs taller.
-const LINE_H = 24
-// The engine refuses an Svg taller than 4096px, so a long grid is stacked from tiles.
-const GRID_TILE = 4096
-const ROW_H = 66
-const gridTiles = (H: number) => Array.from({ length: Math.ceil(H / GRID_TILE) }, (_, i) => Math.min(GRID_TILE, H - i * GRID_TILE))
-const gridSvg = (W: number, H: number) => `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
-<style>.d{fill:#d9d8d4}@media (prefers-color-scheme: dark){.d{fill:#3a3a38}}</style>
-<defs><pattern id="g" width="${GRID_STEP}" height="${GRID_STEP}" patternUnits="userSpaceOnUse"><circle class="d" cx="${GRID_STEP / 2}" cy="${GRID_STEP / 2}" r="1"/></pattern></defs>
-<rect width="${W}" height="${H}" fill="url(#g)"/>
-</svg>`
+// The panel is one accordion, in the look of Claude's own sidebar: sections that show
+// only their top edge (a thin line that curves down at both ends), a small title with a
+// light chevron after it, a muted value on the right, and sub-accordions inside.
+const ROW_H = 62
+const HEADER_H = 40
+const SUB_H = 28
+const CARD_R = 12
+const TAIL = 8
 
 const PANE_CSS = `<style>
-.t{fill:#1f1f1f}.s{fill:#6b6b68}.m{fill:#9a9a96}.k{fill:#ecebe8}.ln{stroke:#e4e4e1}.tile{fill:#f4f3f0}
-@media (prefers-color-scheme: dark){.t{fill:#ececec}.s{fill:#a8a8a4}.m{fill:#7d7d79}.k{fill:#2c2c2b}.ln{stroke:#333331}.tile{fill:#262625}}
+.t{fill:#1f1f1f}.s{fill:#6b6b68}.m{fill:#9a9a96}.k{fill:#ecebe8}.tk{fill:#b4b4b0}.ln{stroke:#e4e4e1}.cv{stroke:#b4b4b0}.sw{fill:#d4d4d0}.tile{fill:#f4f3f0}
+@media (prefers-color-scheme: dark){.t{fill:#ececec}.s{fill:#8f8f8b}.m{fill:#7d7d79}.k{fill:#2c2c2b}.tk{fill:#5a5a5a}.ln{stroke:#2c2c2b}.cv{stroke:#6f6f6b}.sw{fill:#3d3d3b}.tile{fill:#262625}}
 .live{animation:p 1.6s ease-in-out infinite}@keyframes p{50%{opacity:.3}}
 @media (prefers-reduced-motion: reduce){.live{animation:none}}
 </style>`
@@ -377,9 +414,130 @@ const statusMark = (x: number, y: number, status: string, color: string): string
   return `<path d="M${x - 4} ${y - 4}l8 8M${x + 4} ${y - 4}l-8 8" stroke="#D0453F" stroke-width="1.8" stroke-linecap="round"/>`
 }
 
-// One card, always at the top of the panel: the organization's credits from the latest get_status.
-const CREDIT_H = 78
+/** One drawn row of the accordion; `edge` draws a section's top edge, `tail` is the space left under a section's last row. */
+const rowSvg = (W: number, H: number, edge: boolean, tail: number, body: string): string =>
+  svg(
+    W,
+    H + tail,
+    `${edge ? `<path class="ln" fill="none" stroke-width="1" d="M0.5 ${CARD_R}A${CARD_R} ${CARD_R} 0 0 1 ${CARD_R} 0.5H${W - CARD_R}A${CARD_R} ${CARD_R} 0 0 1 ${W - 0.5} ${CARD_R}"/>` : ''}${body}`,
+  )
+
+/** A thin chevron: down when open, right when collapsed, with its tip near (x, y). */
+const chevron = (x: number, y: number, isOpen: boolean): string =>
+  `<path class="cv" fill="none" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" d="${isOpen ? `M${x} ${y - 2}l3.5 3.5 3.5-3.5` : `M${x + 1.5} ${y - 4}l3.5 3.5-3.5 3.5`}"/>`
+
+/** A section's header: the title, a light chevron right after it, and a muted value on the right. */
+const headerSvg = (W: number, title: string, summary: string, isOpen: boolean, edge: boolean, tail: number): string => {
+  const shownTitle = fitText(title, 13, W - 90)
+  const tx = 16 + textWidth(shownTitle, 13) + 7
+  const room = Math.max(0, W - 16 - (tx + 12) - 8)
+  return rowSvg(
+    W,
+    HEADER_H,
+    edge,
+    tail,
+    `<text class="t" x="16" y="${edge ? 26 : 24}" font-family="${FONT}" font-size="13" font-weight="500">${xml(shownTitle)}</text>
+${chevron(tx, edge ? 24 : 22, isOpen)}
+${summary && room > 24 ? `<text class="s" x="${W - 16}" y="${edge ? 26 : 24}" text-anchor="end" font-family="${FONT}" font-size="12" font-variant-numeric="tabular-nums">${xml(fitText(summary, 12, room))}</text>` : ''}`,
+  )
+}
+
+/** A sub-accordion's header: a chevron on the left, the label, and a count on the right. */
+const subHeaderSvg = (W: number, title: string, count: string, isOpen: boolean, tail: number): string =>
+  rowSvg(
+    W,
+    SUB_H,
+    false,
+    tail,
+    `${chevron(16, 14, isOpen)}
+<text class="t" x="36" y="18" font-family="${FONT}" font-size="12">${xml(fitText(title, 12, W - 100))}</text>
+<text class="s" x="${W - 16}" y="18" text-anchor="end" font-family="${FONT}" font-size="12" font-variant-numeric="tabular-nums">${xml(count)}</text>`,
+  )
+
+/** The progress section's body: the bar the band shows, then one row for each task the skill reported. */
+const PROGRESS_H = 34
+const TASK_H = 22
+const progressBodySvg = (W: number, title: string, shown: Shown, tasks: { title: string; isDone: boolean }[], tail: number): string =>
+  rowSvg(
+    W,
+    PROGRESS_H + tasks.length * TASK_H,
+    false,
+    tail,
+    `<style>${twinkleCss(shown)}</style><g transform="translate(16,${(PROGRESS_H - BAR_ROW_H) / 2 - 2})">${barShapes(title, shown, W - 32)}</g>${tasks
+      .map(
+        (t, i) =>
+          `<rect ${t.isDone ? `fill="${DONE}"` : 'class="sw"'} x="16" y="${PROGRESS_H + i * TASK_H + 6}" width="10" height="10" rx="2.5"/>
+<text class="${t.isDone ? 't' : 's'}" x="36" y="${PROGRESS_H + i * TASK_H + 15}" font-family="${FONT}" font-size="12">${xml(fitText(t.title, 12, W - 100))}</text>
+<text class="s" x="${W - 16}" y="${PROGRESS_H + i * TASK_H + 15}" text-anchor="end" font-family="${FONT}" font-size="11">${t.isDone ? 'done' : ''}</text>`,
+      )
+      .join('')}`,
+  )
+
+/** The progress section's body for the agent's own plan: the request and its time, the step bar, then a row and a bar for each step. */
+const PLAN_HEAD_H = 26
+const PLAN_ROW_H = 24
+const PLAN_NOTE_H = 18
+const STOPPED = '#8a8f8c'
+const planH = (view: PlanView): number =>
+  PLAN_HEAD_H +
+  PROGRESS_H -
+  4 +
+  (view.before ? PLAN_NOTE_H : 0) +
+  view.rows.reduce((n, r) => n + PLAN_ROW_H + (r.kind === 'now' && r.doing ? 16 : 0), 0) +
+  (view.after ? PLAN_NOTE_H : 0) +
+  (view.files ? PLAN_NOTE_H : 0)
+const planBodySvg = (W: number, title: string, shown: Shown, view: PlanView, tail: number): string => {
+  const accent = view.state === 'stopped' ? STOPPED : view.state === 'done' ? DONE : ASPIRE
+  const badgeW = view.badge ? textWidth(`✓ ${view.badge}`, 12) + 8 : 0
+  const timeW = textWidth(view.time, 11) + 8
+  const font = `font-family="${FONT}"`
+  let y = PLAN_HEAD_H + PROGRESS_H - 4
+  const parts: string[] = [
+    `<text x="16" y="18" ${font} font-size="12" font-weight="500">${
+      view.badge ? `<tspan fill="${accent}" font-weight="600">${view.state === 'done' ? '✓' : '■'} ${xml(view.badge)}</tspan><tspan class="t" dx="8">${xml(fitText(view.title, 12, W - 32 - badgeW - timeW))}</tspan>` : `<tspan fill="${accent}">✦ </tspan><tspan class="t">${xml(fitText(view.title, 12, W - 32 - timeW - 16))}</tspan>`
+    }</text>
+<text class="s" x="${W - 16}" y="18" text-anchor="end" ${font} font-size="11" font-variant-numeric="tabular-nums">${xml(view.time)}</text>
+<style>${twinkleCss(shown)}</style><g transform="translate(16,${PLAN_HEAD_H - 2})">${barShapes(title, shown, W - 32)}</g>`,
+  ]
+  const note = (text: string) => {
+    parts.push(`<text class="s" x="36" y="${y + 13}" ${font} font-size="11">${xml(text)}</text>`)
+    y += PLAN_NOTE_H
+  }
+  if (view.before) note(`✓ ${view.before}`)
+  const statusW = 46
+  const miniW = 40
+  const barX = W - 16 - statusW - 6 - miniW
+  for (const r of view.rows) {
+    const color = r.kind === 'done' ? DONE : r.kind === 'now' ? ASPIRE : STOPPED
+    const cy = y + 12
+    const icon =
+      r.kind === 'done'
+        ? `<path d="M18 ${cy}l3 3 5-6" fill="none" stroke="${DONE}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`
+        : r.kind === 'now'
+          ? `<circle cx="22" cy="${cy}" r="4" fill="${ASPIRE}"/>`
+          : r.kind === 'halted'
+            ? `<rect x="18.5" y="${cy - 3.5}" width="7" height="7" rx="1.5" fill="${STOPPED}"/>`
+            : `<circle class="cv" cx="22" cy="${cy}" r="3.5" fill="none" stroke-width="1.2"/>`
+    parts.push(
+      `${icon}<text class="${r.kind === 'now' ? 't' : r.kind === 'done' ? 't' : 's'}" x="36" y="${y + 16}" ${font} font-size="12"${r.kind === 'now' ? ' font-weight="600"' : ''}>${xml(fitText(r.text, 12, barX - 36 - 10))}</text>
+<rect class="k" x="${barX}" y="${y + 10}" width="${miniW}" height="4" rx="2"/>${r.frac > 0 ? `<rect x="${barX}" y="${y + 10}" width="${Math.max(3, Math.round(miniW * r.frac))}" height="4" rx="2" fill="${color}"/>` : ''}
+<text ${r.kind === 'now' ? `fill="${ASPIRE}" font-weight="600"` : 'class="s"'} x="${W - 16}" y="${y + 15}" text-anchor="end" ${font} font-size="11" font-variant-numeric="tabular-nums">${xml(r.status)}</text>`,
+    )
+    y += PLAN_ROW_H
+    if (r.kind === 'now' && r.doing) {
+      parts.push(`<text class="s" x="36" y="${y + 3}" ${font} font-size="11">${xml(fitText(r.doing, 11, W - 36 - 16))}</text>`)
+      y += 16
+    }
+  }
+  if (view.after) note(`○ ${view.after}`)
+  if (view.files) note(view.files)
+  return rowSvg(W, planH(view), false, tail, parts.join('\n'))
+}
+
 const OVER = '#D0453F'
+
+/** The credits card, fixed at the top and not collapsible: the Aspire mark and the organization's credits from the latest get_status. */
+const CREDIT_H = 78
 
 /** The Aspire mark (the plugin's icon), drawn in a 512 box: a deep green tile with the A and the I in white. */
 const LOGO = `<rect width="512" height="512" rx="96" fill="#0B4545"/><path fill="#fff" fill-rule="evenodd" d="M62 413 L183 98 L236 98 L356 413 L296 413 L275 354 C235 392 190 413 130 413 Z M212 185 L257 296 C225 330 185 354 145 358 Z"/><rect x="365" y="98" width="64" height="316" fill="#fff"/>`
@@ -402,7 +560,7 @@ const creditsCardSvg = (W: number, v: CreditsView): string => {
   const bigW = textWidth(v.big, 22) + 6
   return svg(
     W,
-    CREDIT_H,
+    CREDIT_H + 4,
     `<g transform="translate(0,${Math.round((CREDIT_H - 4 - LOGO_SIZE) / 2)}) scale(${LOGO_SIZE / 512})"><title>Aspire</title>${LOGO}</g>
 <rect class="tile" x="${x0}" y="0" width="${cardW}" height="${CREDIT_H - 4}" rx="8"/>
 ${text(left, 17, 's', 11, v.title)}
@@ -416,14 +574,19 @@ ${v.metaRight ? text(right, 68, 's', 11, v.metaRight, 'text-anchor="end"') : ''}
   )
 }
 
+/** One line of muted text, for a section with nothing in it yet. */
+const NOTE_H = 28
+const noteSvg = (W: number, note: string, tail: number): string =>
+  rowSvg(W, NOTE_H, false, tail, `<text class="s" x="16" y="18" font-family="${FONT}" font-size="12">${xml(fitText(note, 12, W - 32))}</text>`)
+
 /** What an agent reported through aspire_step: `2/5 reading posts`, and the fraction. */
 const stepsOf = (a: AgentRun): { text: string; ratio: number } | null =>
   a.stepTotal ? { text: `${a.stepDone ?? 0}/${a.stepTotal}${a.stepNote ? ` ${a.stepNote}` : ''}`, ratio: Math.min(1, (a.stepDone ?? 0) / a.stepTotal) } : null
 
-const agentSvg = (W: number, a: AgentRun, at: number): string => {
+const agentSvg = (W: number, a: AgentRun, at: number, tail: number): string => {
   const character = characterOf(a)
   const ctx = ctxOf(a)
-  const textW = W - 42 - 22
+  const textW = W - 50 - 16 - 24
   const meta = [runModel(a)]
   if (a.round > 1) meta.push(`round ${a.round}`)
   if (a.status === 'failed') meta.push('error')
@@ -432,58 +595,39 @@ const agentSvg = (W: number, a: AgentRun, at: number): string => {
   // A finished run is a full bar; a running one shows its reported steps, else its context fill, grey.
   const progress = a.status === 'done' ? 1 : steps ? steps.ratio : null
   const fillW = Math.round(textW * (progress ?? ctx / 100))
-  return svg(
+  return rowSvg(
     W,
     ROW_H,
-    `${crab(0, 14, character, false, a.status === 'running')}
-<text class="t" x="42" y="18" font-family="${FONT}" font-size="13" font-weight="600">${xml(fitText(a.description || a.type, 13, textW))}</text>
-<text x="42" y="34" font-family="${FONT}" font-size="11"><tspan fill="${character.color}">${xml(fitText(a.type, 11, textW / 2))}</tspan><tspan class="s">  ${xml(meta.join('  ·  '))}</tspan></text>
-<text class="s" x="${42 + textW}" y="49" text-anchor="end" font-family="${FONT}" font-size="11" font-variant-numeric="tabular-nums">${stats}</text>
-<rect class="k" x="42" y="55" width="${textW}" height="4" rx="2"/><rect${progress === null ? ' class="m"' : ''} x="42" y="55" width="${fillW}" height="4" rx="2"${progress === null ? '' : ` fill="${character.color}"`}/>
-${statusMark(W - 8, 16, a.status, character.color)}
-<line class="ln" x1="0" y1="65.5" x2="${W}" y2="65.5"/>`,
+    false,
+    tail,
+    `${crab(10, 12, character, false, a.status === 'running')}
+<text class="t" x="50" y="18" font-family="${FONT}" font-size="12" font-weight="500">${xml(fitText(a.description || a.type, 12, textW))}</text>
+<text x="50" y="33" font-family="${FONT}" font-size="11"><tspan fill="${character.color}">${xml(fitText(a.type, 11, textW / 2))}</tspan><tspan class="s">  ${xml(meta.join('  ·  '))}</tspan></text>
+<text class="s" x="${50 + textW}" y="47" text-anchor="end" font-family="${FONT}" font-size="11" font-variant-numeric="tabular-nums">${stats}</text>
+<rect class="k" x="50" y="52" width="${textW}" height="4" rx="2"/><rect${progress === null ? ' class="m"' : ''} x="50" y="52" width="${fillW}" height="4" rx="2"${progress === null ? '' : ` fill="${character.color}"`}/>
+${statusMark(W - 22, 14, a.status, character.color)}`,
   )
 }
 
-const CARD_H = 60
+const CARD_H = 52
 
-/** A crab card for one agent type: its costume, name, what it makes, and whether it ran this session. */
-const cardSvg = (W: number, entry: RosterEntry, list: AgentRun[], isLeaving = false): string => {
+/** A crab row for one agent type, indented under its group: costume, name, what it makes, and whether it ran this session. */
+const cardSvg = (W: number, entry: RosterEntry, list: AgentRun[], tail: number, isLeaving = false): string => {
   const character = characterOf({ type: entry.type, model: '' })
   const runs = list.filter(a => a.type === entry.type)
   const isRunning = runs.some(a => a.status === 'running')
-  const state = isRunning ? 'running' : runs.length ? `ran ${runs.length}\u00d7` : ''
-  const textW = W - 42 - 74
-  return svg(
+  const state = isRunning ? 'running' : runs.length ? `ran ${runs.length}×` : ''
+  const textW = W - 62 - 84
+  return rowSvg(
     W,
     CARD_H,
-    `<rect class="tile" x="0.5" y="2.5" width="${W - 1}" height="${CARD_H - 6}" rx="10"/>
-${crab(8, 10, character, false, isRunning || isLeaving, undefined, isRunning || isLeaving ? undefined : breathOf(entry.type), isLeaving)}
-<text class="t" x="50" y="25" font-family="${FONT}" font-size="13" font-weight="600">${xml(fitText(entry.name, 13, textW))}</text>
-<text class="s" x="50" y="42" font-family="${FONT}" font-size="11">${xml(fitText(entry.blurb, 11, textW))}</text>
-${isRunning ? `<circle class="live" cx="${W - 66}" cy="22" r="3.5" fill="${character.color}"/>` : runs.length ? `<path d="M${W - 70} 22l3.5 3.5 6.5-7" fill="none" stroke="#3B9C5F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
-${state ? `<text class="s" x="${W - 12}" y="26" text-anchor="end" font-family="${FONT}" font-size="11">${state}</text>` : ''}`,
-  )
-}
-
-const compactSvg = (W: number, list: AgentRun[]): string => {
-  const icons = [...list.filter(a => a.status === 'running'), ...list.filter(a => a.status !== 'running')]
-  const fit = Math.max(1, Math.floor((W - 150) / 36))
-  const shown = icons.slice(0, fit)
-  const more = icons.length - shown.length
-  const body = shown
-    .map((a, i) => {
-      const character = characterOf(a)
-      const isRunning = a.status === 'running'
-      return crab(i * 36, 0, character, false, isRunning) + (isRunning ? `<circle class="live" cx="${i * 36 + 32}" cy="4" r="3" fill="${character.color}"/>` : '')
-    })
-    .join('')
-  const x = shown.length * 36 + (more ? 4 : 0)
-  return svg(
-    W,
-    32,
-    `${body}${more ? `<text class="s" x="${x}" y="21" font-family="${FONT}" font-size="12">+${more}</text>` : ''}
-<text class="s" x="${W}" y="21" text-anchor="end" font-family="${FONT}" font-size="12" font-variant-numeric="tabular-nums">${fmtCount(list.length, 'agent', 'agents')}</text>`,
+    false,
+    tail,
+    `${crab(24, 8, character, false, isRunning || isLeaving, undefined, isRunning || isLeaving ? undefined : breathOf(entry.type), isLeaving)}
+<text class="t" x="62" y="22" font-family="${FONT}" font-size="12" font-weight="500">${xml(fitText(entry.name, 12, textW))}</text>
+<text class="s" x="62" y="38" font-family="${FONT}" font-size="11">${xml(fitText(entry.blurb, 11, textW))}</text>
+${isRunning ? `<circle class="live" cx="${W - 76}" cy="20" r="3.5" fill="${character.color}"/>` : runs.length ? `<path d="M${W - 80} 20l3.5 3.5 6.5-7" fill="none" stroke="#3B9C5F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
+${state ? `<text class="s" x="${W - 16}" y="24" text-anchor="end" font-family="${FONT}" font-size="11">${state}</text>` : ''}`,
   )
 }
 
@@ -561,8 +705,9 @@ async function statusText($: EngineInterface): Promise<string> {
     s.lastStatusAt === null
       ? 'Last get_status: none yet.'
       : `Last get_status ${ago(at - s.lastStatusAt)}: ${credits ? `${fmtCredits(credits.credits.remaining)} credits left` : reading ? `${fmtAtlasUsage(reading.costs)} Atlas tokens` : 'no credits in it'}, organization ${o.name ?? 'not picked yet'}.`
-  const shown = shownOf(p, o, await read($, agents))
-  const bar = isOnNow ? `Bar: ${titleOf(o)}, ${shown.label}, ${percentOf(shown)} (${shown.source === 'skill' ? 'reported by the skill' : shown.source === 'agents' ? 'from the running agents' : 'initializing, no report from the skill yet'}).` : 'Bar: not shown until the mod is on.'
+  const at2 = await $.clock.now()
+  const shown = shownOf(p, o, await read($, agents), planOf(await read($, turn), await read($, items), at2))
+  const bar = isOnNow ? `Bar: ${titleOf(o)}, ${shown.label}, ${percentOf(shown)} (${shown.source === 'skill' ? 'reported by the skill' : shown.source === 'plan' ? "from the agent's own steps" : shown.source === 'agents' ? 'from the running agents' : 'initializing, no report from the skill yet'}).` : 'Bar: not shown until the mod is on.'
   const b = band
   const drawn = b.renders > 0 ? `Band: drawn ${b.renders} times, last on ${b.surface ?? 'unknown'}.` : 'Band: never drawn on this surface.'
   return [state, counts, status, bar, drawn, `Claude Code ${version} on ${surfaces}.`].join('\n')
@@ -704,7 +849,7 @@ export const register: Register = on => {
       await activate($, 'progress', 'aspire_progress')
       await count($, 'progressReports')
       const p = await update($, progress, prev => mergeProgress(prev, e as unknown as ProgressInput))
-      const shown = shownOf(p, await read($, org), await read($, agents))
+      const shown = shownOf(p, await read($, org), await read($, agents), planOf(await read($, turn), await read($, items), await $.clock.now()))
       const b = band
       const hidden = await read($, isBandHidden)
       const visibility = hidden ? 'hidden-by-user' : b.renders > 0 ? `visible on ${b.surface ?? 'unknown'}` : 'not-drawn'
@@ -730,6 +875,8 @@ export const register: Register = on => {
         list.map(a => {
           if (a.agentId !== agentId) return a
           isKnown = true
+          // An agent that keeps a task list: that list is its steps.
+          if (a.items?.length) return a
           const total = num(input.total) ?? a.stepTotal ?? 0
           const done = num(input.done) ?? a.stepDone ?? 0
           return { ...a, stepTotal: total, stepDone: total ? Math.min(total, done) : done, stepNote: note === undefined ? a.stepNote : note || undefined }
@@ -796,9 +943,81 @@ export const register: Register = on => {
   }).catch(() => ({ text: 'The Aspire agents panel could not be drawn here.' }))
 
   on('turn.start', async ($, e, next) => {
-    if (await isOn($)) await update($, stats, s => ({ ...s, turn: s.turn + 1 })).catch(() => undefined)
+    try {
+      if (await isOn($)) {
+        await update($, stats, s => ({ ...s, turn: s.turn + 1 }))
+        // A new request: a fresh turn for the steps, and the agent's task list kept only while a task is open.
+        const at = await $.clock.now()
+        const fresh = startTurn(await read($, turn), await read($, items), typeof e.text === 'string' ? e.text : '', at)
+        await update($, turn, () => fresh.turn)
+        await update($, items, () => fresh.items)
+        await update($, now, () => at)
+      }
+    } catch {
+      // The steps are a convenience: the turn starts whatever happens here.
+    }
     return next(e)
   })
+
+  // The agent's own task list and tool calls, for the steps behind the bar. An observer: the call
+  // and its result pass through unchanged, and the call is never run twice.
+  on('tool.call', async ($, e, next) => {
+    if (!(await isOn($))) return next(e)
+    const tool = String(e.tool)
+    if (tool === PROGRESS_TOOL || tool === STEP_TOOL) return next(e)
+    const input = e as unknown as Readonly<Record<string, unknown>>
+    // An agent that keeps a task list: its steps and the bar on its row in the panel.
+    const agentId = e.agentId
+    if (agentId) {
+      if (!isTaskTool(tool)) return next(e)
+      const result = await next(e)
+      try {
+        const refused = (result.result as { success?: unknown } | undefined)?.success === false
+        if (result.deny === undefined && !result.isError && !refused) {
+          await update($, agents, list =>
+            list.map((a): AgentRun => {
+              if (a.agentId !== agentId) return a
+              const own = applyTask(a.items ?? [], tool, input, result.result)
+              const steps = stepsFromItems(own)
+              return { ...a, items: own, stepTotal: steps.total, stepDone: steps.done, stepNote: steps.note || undefined }
+            }),
+          )
+        }
+      } catch {
+        // The row is a convenience: the call's result stands as it came.
+      }
+      return result
+    }
+    if (isTaskTool(tool)) {
+      const result = await next(e)
+      try {
+        // TaskUpdate reports a refused change in its result ({ success: false }).
+        const refused = (result.result as { success?: unknown } | undefined)?.success === false
+        if (result.deny === undefined && !result.isError && !refused) await update($, items, list => applyTask(list, tool, input, result.result))
+      } catch {
+        // As above.
+      }
+      return result
+    }
+    let isCounted = false
+    try {
+      const t = await read($, turn)
+      isCounted = !!t && t.end === undefined
+      if (isCounted) {
+        await update($, turn, v => (v ? touch(v, tool, input, null) : v))
+        await update($, items, countCall)
+      }
+    } catch {
+      // As above.
+    }
+    const result = await next(e)
+    try {
+      if (isCounted) await update($, turn, v => (v ? touch(v, tool, input, result.deny === undefined && !result.isError) : v))
+    } catch {
+      // As above.
+    }
+    return result
+  }).catch(($, e, next) => next(e))
 
   on('agent.spawn', async ($, e, next) => {
     const started = await next(e)
@@ -901,6 +1120,7 @@ export const register: Register = on => {
       if (!(await isOn($))) return result
       const at = await $.clock.now()
       if (e.agentId === undefined) {
+        await update($, turn, v => (v && v.end === undefined ? endTurn(v, e.reason, at) : v))
         await refreshContext($)
       } else {
         const agentId = e.agentId
@@ -932,7 +1152,8 @@ export const register: Register = on => {
 
     const o = await read($, org)
     const list = await read($, agents)
-    const shown = shownOf(await read($, progress), o, list)
+    const clockNow = Math.max(await read($, now), (await read($, turn))?.startedAt ?? 0)
+    const shown = shownOf(await read($, progress), o, list, planOf(await read($, turn), await read($, items), clockNow))
     const title = titleOf(o)
     const percent = percentOf(shown)
 
@@ -999,52 +1220,23 @@ export const register: Register = on => {
     const running = list.filter(a => a.status === 'running').reverse()
     const finished = list.filter(a => a.status !== 'running').reverse()
     const view = creditsView((await read($, creditsAtom))?.credits ?? null, (await read($, atlas))?.costs ?? null)
+    const o = await read($, org)
+    const report = await read($, progress)
+    const planTurn = await read($, turn)
+    const plan = planOf(planTurn, await read($, items), Math.max(at, planTurn?.startedAt ?? 0))
+    const shown = shownOf(report, o, list, plan)
+    const title = titleOf(o)
+    const percent = percentOf(shown)
+    const tasks = (report?.tasks ?? []).slice(0, 8)
     const summary = `${view.title} ${view.big} ${view.sub}`.trim()
-    const creditsBox = (
-      <Box flexDirection="column" marginBottom={1}>
-        <Text wrap="truncate-end">
-          <Text dimColor>{view.title} </Text>
-          <Text bold color={view.isOver ? 'red' : undefined}>{view.big}</Text> <Text dimColor>{[view.sub, view.tag].filter(Boolean).join(' · ')}</Text>
-        </Text>
-        {view.ratio > 0 || view.metaLeft ? (
-          <Text wrap="truncate-end">
-            <Text color={view.isOver ? 'red' : ASPIRE}>{ctxBar(Math.round(view.ratio * 100), 12)}</Text> <Text dimColor>{[view.metaLeft, view.grants].filter(Boolean).join(' · ')}</Text>
-          </Text>
-        ) : null}
-        {view.metaRight ? <Text dimColor wrap="truncate-end">{view.metaRight}</Text> : null}
-      </Box>
-    )
-    const isEmpty = list.length === 0
-    const empty = 'No agents yet. Aspire agents show here as they start.'
+    const openKeys = Array.isArray(p.open) ? p.open : DEFAULT_OPEN
+    const isOpen = (key: string): boolean => openKeys.includes(key)
+    const toggle = (key: string) => () =>
+      void update($, panel, prev => {
+        const open = Array.isArray(prev.open) ? prev.open : DEFAULT_OPEN
+        return { ...prev, open: open.includes(key) ? open.filter(k => k !== key) : [...open, key] }
+      })
 
-    const toggleCompact = (
-      <Button
-        key="compact"
-        label={p.isCompact ? 'Expand' : 'Collapse'}
-        plain
-        onPress={() => update($, panel, prev => ({ ...prev, isCompact: !prev.isCompact }))}
-      />
-    )
-    const toggleDone = (
-      <Button
-        key="done"
-        label={`${p.isDoneCollapsed ? '▸' : '▾'} Finished · ${finished.length}`}
-        plain
-        onPress={() => update($, panel, prev => ({ ...prev, isDoneCollapsed: !prev.isDoneCollapsed }))}
-      />
-    )
-
-    const setTab = (tab: Panel['tab']) => () => void update($, panel, prev => ({ ...prev, tab }))
-    // Two buttons switch the view: the open one is the primary button, the other secondary.
-    const tabs = (
-      <Box flexDirection="row" gap={1}>
-        {/* The Live button is as wide as the Aspire mark above it: 8px a column. */}
-        <Box width={LOGO_COLS} justifyContent="center">
-          <Button key="tab-live" label="Live" variant={p.tab === 'live' ? 'primary' : 'secondary'} onPress={setTab('live')} />
-        </Box>
-        <Button key="tab-agents" label={`Agents · ${ROSTER.length}`} variant={p.tab === 'agents' ? 'primary' : 'secondary'} onPress={setTab('agents')} />
-      </Box>
-    )
     // Pressing an agent drafts its start in the prompt box and does not send it: the person reads it and presses Enter.
     // The crab walks off its card first (about a second), then the draft lands in the prompt.
     const startAgent = (r: RosterEntry) => () =>
@@ -1061,95 +1253,13 @@ export const register: Register = on => {
       return runs.some(a => a.status === 'running') ? '●' : runs.length ? '✓' : '○'
     }
 
-    if (p.tab === 'agents') {
-      if (e.surface === 'desktop' && 'Svg' in ui) {
-        const { Svg } = ui
-        const W = Math.max(240, Math.min(900, (e.props.bodyColumns || 40) * 8 - 8))
-        // The dotted grid backs the whole list: credits, buttons, group titles, and every card.
-        const gridH = CREDIT_H + 2 * LINE_H + GROUPS.length * LINE_H + ROSTER.length * CARD_H
-        return (
-          <Box flexDirection="column">
-            {gridTiles(gridH).map((tileH, i) => (
-              <Svg key={`grid-${i}`} source={gridSvg(W, tileH)} alt="dotted grid" width={W} height={tileH} />
-            ))}
-            <Box flexDirection="column" position="absolute" top={0} left={0} right={0}>
-              <Svg source={creditsCardSvg(W, view)} alt={summary} width={W} height={CREDIT_H} />
-              {tabs}
-              {GROUPS.map(g => {
-                const entries = ROSTER.filter(r => r.group === g.key)
-                return (
-                  <Box key={g.key} flexDirection="column">
-                    <Text dimColor>{`${g.title} · ${entries.length}`}</Text>
-                    {entries.map(r => (
-                      <Box key={r.type} flexDirection="column">
-                        <Svg source={cardSvg(W, r, list, p.leaving === r.type)} alt={`${r.name}: ${r.blurb}`} width={W} height={CARD_H} />
-                        {/* A Button holds text only and an Svg takes no press, so three rows of blank Buttons lie over the card: a press anywhere on it drafts the start. */}
-                        <Box position="absolute" top={0} left={0} flexDirection="column">
-                          {[0, 1, 2].map(row => (
-                            <Button key={`start-${r.type}-${row}`} label={'\u00a0'.repeat(Math.floor(W / 8))} plain onPress={startAgent(r)} />
-                          ))}
-                        </Box>
-                      </Box>
-                    ))}
-                  </Box>
-                )
-              })}
-            </Box>
-          </Box>
-        )
-      }
-      return (
-        <Box flexDirection="column">
-          {creditsBox}
-          {tabs}
-          <Text dimColor>Press an agent to draft its start in the prompt.</Text>
-          {GROUPS.map(g => (
-            <Box key={g.key} flexDirection="column" marginTop={1}>
-              <Text dimColor>{`${g.title} · ${ROSTER.filter(r => r.group === g.key).length}`}</Text>
-              {ROSTER.filter(r => r.group === g.key).map(r => (
-                <Button key={r.type} label={`${stateOf(r)} ${r.name}`} plain onPress={startAgent(r)}>
-                  <Text color={characterOf({ type: r.type, model: '' }).color}>{stateOf(r)}</Text> <Text bold>{r.name}</Text> <Text dimColor>{r.blurb}</Text>
-                </Button>
-              ))}
-            </Box>
-          ))}
-        </Box>
-      )
-    }
-
-    if (e.surface === 'desktop' && 'Svg' in ui) {
-      const { Svg } = ui
-      const W = Math.max(240, Math.min(900, (e.props.bodyColumns || 40) * 8 - 8))
-      if (p.isCompact) {
-        return (
-          <Box flexDirection="column" gap={1}>
-            <Svg source={creditsCardSvg(W, view)} alt={summary} width={W} height={CREDIT_H} />
-            {tabs}
-            <Svg source={compactSvg(W, list)} alt={summary} width={W} height={32} />
-            {toggleCompact}
-          </Box>
-        )
-      }
-      return (
-        <Box flexDirection="column">
-          <Svg source={creditsCardSvg(W, view)} alt={summary} width={W} height={CREDIT_H} />
-          {tabs}
-          {toggleCompact}
-          {isEmpty && <Text dimColor>{empty}</Text>}
-          {running.length > 0 && <Text dimColor>{`Running · ${running.length}`}</Text>}
-          {running.map(a => (
-            <Svg key={a.id} source={agentSvg(W, a, at)} alt={`${a.description}: ${modelName(a.model)}, running`} width={W} height={ROW_H} />
-          ))}
-          {finished.length > 0 && toggleDone}
-          {!p.isDoneCollapsed &&
-            finished.map(a => (
-              <Svg key={a.id} source={agentSvg(W, a, at)} alt={`${a.description}: ${modelName(a.model)}, finished`} width={W} height={ROW_H} />
-            ))}
-        </Box>
-      )
-    }
-
-    // Terminal and the other surfaces: the same content in text rows.
+    // Each section: a header that opens and closes it, then rows (desktop drawings) or text (terminal and the rest).
+    // A row may be a sub-accordion's header (`h` is its height); its children follow only while it is open.
+    type Row = { id: string; h: number; alt: string; draw: (W: number, tail: number) => string; onPress?: () => void }
+    type Section = { key: string; title: string; summary: string; rows: Row[]; text: () => JSX.Element }
+    const empty = 'No agents yet. Aspire agents show here as they start.'
+    const agentRows = (items: AgentRun[], state: string): Row[] =>
+      items.map(a => ({ id: a.id, h: ROW_H, alt: `${a.description}: ${modelName(a.model)}, ${state}`, draw: (W, tail) => agentSvg(W, a, at, tail) }))
     const cols = Math.max(24, e.props.bodyColumns || 40)
     const barW = Math.max(6, Math.min(20, cols - 34))
     const row = (a: AgentRun) => {
@@ -1187,31 +1297,170 @@ export const register: Register = on => {
       )
     }
 
+    const creditsBox = (
+      <Box flexDirection="column" marginBottom={1}>
+        <Text wrap="truncate-end">
+          <Text dimColor>{view.title} </Text>
+          <Text bold color={view.isOver ? 'red' : undefined}>{view.big}</Text> <Text dimColor>{[view.sub, view.tag].filter(Boolean).join(' · ')}</Text>
+        </Text>
+        {view.ratio > 0 || view.metaLeft ? (
+          <Text wrap="truncate-end">
+            <Text color={view.isOver ? 'red' : ASPIRE}>{ctxBar(Math.round(view.ratio * 100), 12)}</Text> <Text dimColor>{[view.metaLeft, view.grants].filter(Boolean).join(' · ')}</Text>
+          </Text>
+        ) : null}
+        {view.metaRight ? <Text dimColor wrap="truncate-end">{view.metaRight}</Text> : null}
+      </Box>
+    )
+
+    const sections: Section[] = [
+      {
+        key: 'progress',
+        title: 'Progress',
+        summary: `${shown.label} · ${percent}`,
+        rows:
+          plan && !isReportLeading(report, plan)
+            ? [{ id: 'progress', h: planH(plan), alt: `${title}: ${shown.label}, ${percent}`, draw: (W, tail) => planBodySvg(W, title, shown, plan, tail) }]
+            : [
+                { id: 'progress', h: PROGRESS_H + tasks.length * TASK_H, alt: `${title}: ${shown.label}, ${percent}`, draw: (W, tail) => progressBodySvg(W, title, shown, tasks, tail) },
+              ],
+        text: () =>
+          plan && !isReportLeading(report, plan) ? (
+            <Box flexDirection="column">
+              <Text wrap="truncate-end">
+                {plan.badge ? <Text color={plan.state === 'done' ? DONE : undefined} bold>{plan.state === 'done' ? '✓' : '■'} {plan.badge} </Text> : null}
+                <Text bold>{plan.title}</Text> <Text dimColor>{plan.time}</Text>
+              </Text>
+              <Text wrap="truncate-end">
+                <Text color={shown.isFinished ? DONE : ASPIRE}>{barText(shown.ratio, 12)}</Text> <Text bold>{shown.label}</Text> <Text dimColor>{percent}</Text>
+              </Text>
+              {plan.before ? <Text dimColor>{`✓ ${plan.before}`}</Text> : null}
+              {plan.rows.map(r => (
+                <Box key={r.text} flexDirection="column">
+                  <Text wrap="truncate-end" dimColor={r.kind === 'next' || r.kind === 'later'} bold={r.kind === 'now'}>
+                    {`${r.kind === 'done' ? '✓' : r.kind === 'now' ? '●' : r.kind === 'halted' ? '■' : '○'} ${r.text} · ${r.status}`}
+                  </Text>
+                  {r.kind === 'now' && r.doing ? <Text dimColor wrap="truncate-end">{'    '}{r.doing}</Text> : null}
+                </Box>
+              ))}
+              {plan.after ? <Text dimColor>{`○ ${plan.after}`}</Text> : null}
+              {plan.files ? <Text dimColor>{plan.files}</Text> : null}
+            </Box>
+          ) : (
+            <Box flexDirection="column">
+              <Text wrap="truncate-end">
+                <Text color={shown.isFinished ? DONE : ASPIRE}>{barText(shown.ratio, 12)}</Text> <Text bold>{shown.label}</Text> <Text dimColor>{percent}</Text>
+              </Text>
+              {tasks.map(t => (
+                <Text key={t.title} wrap="truncate-end" dimColor={!t.isDone}>
+                  {t.isDone ? '✓' : '○'} {t.title}
+                </Text>
+              ))}
+            </Box>
+          ),
+      },
+      {
+        key: 'running',
+        title: `Running · ${running.length}`,
+        summary: list.length ? `${fmtCount(list.length, 'agent', 'agents')} · ${fmtTime(spanOf(list, at))}` : '',
+        rows: running.length
+          ? agentRows(running, 'running')
+          : [{ id: 'running-note', h: NOTE_H, alt: empty, draw: (W, tail) => noteSvg(W, list.length ? 'Nothing running right now.' : empty, tail) }],
+        text: () => <Box flexDirection="column">{running.length ? running.map(row) : <Text dimColor>{list.length ? 'Nothing running right now.' : empty}</Text>}</Box>,
+      },
+      ...(finished.length
+        ? [{ key: 'finished', title: `Finished · ${finished.length}`, summary: '', rows: agentRows(finished, 'finished'), text: () => <Box flexDirection="column">{finished.map(row)}</Box> }]
+        : []),
+      {
+        key: 'agents',
+        title: `Agents · ${ROSTER.length}`,
+        summary: running.length ? `${running.length} running` : '',
+        rows: GROUPS.flatMap((g): Row[] => {
+          const entries = ROSTER.filter(r => r.group === g.key)
+          const groupOpen = isOpen(`group:${g.key}`)
+          return [
+            { id: `group:${g.key}`, h: SUB_H, alt: `${g.title}, ${entries.length}, ${groupOpen ? 'open' : 'collapsed'}`, draw: (W, tail) => subHeaderSvg(W, g.title, String(entries.length), groupOpen, tail), onPress: toggle(`group:${g.key}`) },
+            ...(groupOpen
+              ? entries.map(r => ({ id: `start-${r.type}`, h: CARD_H, alt: `${r.name}: ${r.blurb}`, draw: (W: number, tail: number) => cardSvg(W, r, list, tail, p.leaving === r.type), onPress: startAgent(r) }))
+              : []),
+          ]
+        }),
+        text: () => (
+          <Box flexDirection="column">
+            {GROUPS.map(g => {
+              const entries = ROSTER.filter(r => r.group === g.key)
+              const groupOpen = isOpen(`group:${g.key}`)
+              return (
+                <Box key={g.key} flexDirection="column">
+                  <Button key={`card-group:${g.key}`} label={`${groupOpen ? '▾' : '▸'} ${g.title} · ${entries.length}`} plain onPress={toggle(`group:${g.key}`)} />
+                  {groupOpen
+                    ? entries.map(r => (
+                        <Button key={r.type} label={`${stateOf(r)} ${r.name}`} plain onPress={startAgent(r)}>
+                          <Text color={characterOf({ type: r.type, model: '' }).color}>{stateOf(r)}</Text> <Text bold>{r.name}</Text> <Text dimColor>{r.blurb}</Text>
+                        </Button>
+                      ))
+                    : null}
+                </Box>
+              )
+            })}
+          </Box>
+        ),
+      },
+    ]
+
+    if (e.surface === 'desktop' && 'Svg' in ui) {
+      const { Svg } = ui
+      const W = Math.max(240, Math.min(900, (e.props.bodyColumns || 40) * 8 - 8))
+      // A Button holds text only and an Svg takes no press, so rows of blank Buttons lie over a drawing: a press anywhere on it fires.
+      const pressable = (key: string, height: number, onPress: () => void) => (
+        <Box position="absolute" top={0} left={0} flexDirection="column">
+          {Array.from({ length: Math.ceil(height / 20) }, (_, n) => (
+            <Button key={`${key}-${n}`} label={' '.repeat(Math.floor(W / 8))} plain onPress={onPress} />
+          ))}
+        </Box>
+      )
+      return (
+        <Box flexDirection="column">
+          <Svg source={creditsCardSvg(W, view)} alt={summary} width={W} height={CREDIT_H + 4} />
+          {sections.map((c, si) => {
+            const open = isOpen(c.key)
+            return (
+              <Box key={c.key} flexDirection="column">
+                <Box flexDirection="column">
+                  <Svg source={headerSvg(W, c.title, c.summary, open, true, 0)} alt={`${c.title}${c.summary ? `, ${c.summary}` : ''}, ${open ? 'open' : 'collapsed'}`} width={W} height={HEADER_H} />
+                  {pressable(`card-${c.key}`, HEADER_H, toggle(c.key))}
+                </Box>
+                {open &&
+                  c.rows.map((r, i) => {
+                    const tail = i === c.rows.length - 1 ? TAIL : 0
+                    return (
+                      <Box key={r.id} flexDirection="column">
+                        <Svg source={r.draw(W, tail)} alt={r.alt} width={W} height={r.h + tail} />
+                        {r.onPress ? pressable(r.id, r.h, r.onPress) : null}
+                      </Box>
+                    )
+                  })}
+              </Box>
+            )
+          })}
+        </Box>
+      )
+    }
+
+    // Terminal and the other surfaces: the same sections in text rows.
     return (
       <Box flexDirection="column">
         {creditsBox}
-        {tabs}
-        <Box flexDirection="row" justifyContent="space-between">
-          <Text dimColor>{fmtCount(list.length, 'agent', 'agents')}</Text>
-          {toggleCompact}
+        <Box flexDirection="column" gap={1}>
+        {sections.map(c => {
+          const open = isOpen(c.key)
+          return (
+            <Box key={c.key} flexDirection="column">
+              <Button key={`card-${c.key}`} label={`${open ? '▾' : '▸'} ${c.title}${c.summary ? ` · ${c.summary}` : ''}`} plain onPress={toggle(c.key)} />
+              {open ? c.text() : null}
+            </Box>
+          )
+        })}
         </Box>
-        {p.isCompact ? (
-          <Text wrap="truncate-end">
-            {[...running, ...finished].map(a => (
-              <Text key={a.id} color={characterOf(a).color}>
-                {STATUS_GLYPH[a.status]}{' '}
-              </Text>
-            ))}
-          </Text>
-        ) : (
-          <Box flexDirection="column" marginTop={1}>
-            {isEmpty && <Text dimColor>{empty}</Text>}
-            {running.length > 0 && <Text dimColor>{`Running · ${running.length}`}</Text>}
-            {running.map(row)}
-            {finished.length > 0 && toggleDone}
-            {!p.isDoneCollapsed && finished.map(row)}
-          </Box>
-        )}
       </Box>
     )
   })

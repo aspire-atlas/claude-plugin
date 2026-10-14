@@ -1,16 +1,19 @@
 // Run with: claude plugin test plugins/aspire
 import { expect, test } from 'claude-code/testing'
 
-import { agentName, barText, mergeProgress, orgStateFrom, percentOf, shownOf, titleOf } from './progress'
+import { planOf } from './plan'
+import { agentName, barText, isReportLeading, mergeProgress, orgStateFrom, percentOf, shownOf, titleOf } from './progress'
 
 const NO_ORG = { name: null, checkpoints: 0 }
 
-test('shownOf: before the skill reports its first tasks, the bar reads Initializing… at 0%', () => {
-  expect(shownOf(null, NO_ORG)).toMatchObject({ ratio: 0, label: 'Initializing…', isReported: false })
-  // get_status checkpoints no longer move the bar; only the skill's report does.
+test('shownOf: before the skill reports, the bar follows get_status and reads Initializing… until Atlas answers', () => {
+  expect(shownOf(null, NO_ORG)).toMatchObject({ ratio: 0, label: 'Initializing…', isReported: false, source: 'baseline' })
+  // The skill may never call the progress tool: what get_status shows still moves the bar.
+  const one = shownOf(null, { name: null, checkpoints: 1 })
+  expect(one).toMatchObject({ label: 'Atlas connected 1/6', source: 'baseline', isReported: false })
   const four = shownOf(null, { name: 'Sample Brand', checkpoints: 4 })
-  expect(four).toMatchObject({ ratio: 0, label: 'Initializing…' })
-  expect(percentOf(four)).toBe('0%')
+  expect(four).toMatchObject({ label: 'Channel linked 4/6', total: 6 })
+  expect(percentOf(four)).toBe('67%')
 })
 
 test('shownOf: the reported done and total win over the baseline', () => {
@@ -95,4 +98,18 @@ test('shownOf: a finished run shows Done, and agents started after it take the b
 
 test('agentName', () => {
   expect(agentName('aspire:atlas-creator-brief')).toBe('creator brief')
+})
+
+test("a bare report gives way to the agent's own steps; a report with tasks keeps the bar", () => {
+  const turn = { title: 'T', startedAt: 0, calls: 0, changed: [], read: [] }
+  const plan = planOf(turn, [{ subject: 'A', status: 'completed', calls: 1 }, { subject: 'B', status: 'in_progress', calls: 0 }, { subject: 'C', status: 'pending', calls: 0 }], 1000)
+  const bare = mergeProgress(null, { title: 'Onboarding', total: 6, done: 1, phase: 'Connection' })
+  expect(isReportLeading(bare, plan)).toBe(false)
+  expect(shownOf(bare, NO_ORG, [], plan)).toMatchObject({ label: 'Step 2 of 3', source: 'plan' })
+  // With no task list, the bare report leads as before.
+  expect(shownOf(bare, NO_ORG, [], null)).toMatchObject({ label: 'Connection 1/6', source: 'skill' })
+  const tasked = mergeProgress(null, { title: 'Brief', tasks: ['Read', 'Find', 'Publish'] })
+  expect(isReportLeading(tasked, plan)).toBe(true)
+  expect(shownOf(tasked, NO_ORG, [], plan).source).toBe('skill')
+  expect(isReportLeading(mergeProgress(tasked, { finished: true }), plan)).toBe(false)
 })

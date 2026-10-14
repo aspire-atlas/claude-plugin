@@ -111,15 +111,15 @@ export type AgentRun = {
   stepDone?: number
   /** The step in progress, a few words. */
   stepNote?: string
+  /** The agent's own task list, when it keeps one; it sets the steps above and wins over `aspire_step`. */
+  items?: Item[]
 }
 
 export type Panel = {
-  isCompact: boolean
-  isDoneCollapsed: boolean
   /** The panel opened by itself once this session (first aspire:* agent). */
   isAutoOpened: boolean
-  /** `live`: this session's agents; `agents`: a card for each agent type the plugin ships. */
-  tab: 'live' | 'agents'
+  /** The ids of the cards that are open (progress, running, finished, agents, group:<key>); the rest are collapsed. */
+  open: string[]
   /** The agent type whose crab is walking off its card after a press, until its start is drafted. */
   leaving: string | null
 }
@@ -151,6 +151,35 @@ export type Progress = {
   phase: string
   isFinished: boolean
   tasks: ProgressTask[]
+}
+
+/** One task of the agent's own task list: TaskCreate and TaskUpdate, TodoWrite, or the desktop app's update_plan. */
+export type Item = {
+  /** TaskCreate's id; absent for the other tools' entries. */
+  id?: string
+  subject: string
+  status: 'pending' | 'in_progress' | 'completed'
+  /** Tool calls made while this task was the current one: what the step's estimate reads. */
+  calls: number
+}
+
+/** How a turn ended: the model answered, the person interrupted, or an error stopped it. */
+export type End = 'answer' | 'aborted' | 'error'
+
+/** The request the steps follow, from its turn.start to the next one. Times are epoch milliseconds. */
+export type Turn = {
+  /** The request's first line, or the last title when a turn starts with no text. */
+  title: string
+  startedAt: number
+  endedAt?: number
+  end?: End
+  /** Tool calls on the main loop this turn, task tools left out. */
+  calls: number
+  /** The tool call in flight, in a few words. */
+  doing?: string
+  /** Files an Edit, Write or NotebookEdit changed, and files a Read read. */
+  changed: string[]
+  read: string[]
 }
 
 /** What the latest Atlas `get_status` result said about the organization. */
@@ -215,6 +244,9 @@ declare module 'claude-code' {
       seen: Seen
       /** Null until the skill reports through `aspire_progress`. */
       progress: Progress | null
+      /** The request the steps follow, and the agent's own task list. */
+      turn: Turn | null
+      items: Item[]
       org: OrgState
       atlas: AtlasReading | null
       /** The organization's credits from the latest get_status; null when it gave none. */
