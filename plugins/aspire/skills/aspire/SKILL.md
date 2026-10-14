@@ -58,7 +58,7 @@ Text after the command is the argument. Route on it before anything else:
 | Argument | Action |
 | -------- | ------ |
 | `agents` (also `list agents`, `show agents`) | Run **List agents** below. Skip the phases unless the user picks an agent to run. |
-| `run {agent}` (an agent name from the list, with or without the `aspire:` prefix; the agents panel drafts this when someone presses an agent) | Skip steps 1 to 4 of **List agents** and start at step 5 for that agent: the sample question, then its hand-off row. An unknown name: run **List agents** from step 1. |
+| `run {agent}` (an agent name from the list, with or without the `aspire:` prefix; the agents panel drafts this when someone presses an agent) | Skip steps 1 to 4 of **List agents** and start at step 5 for that agent: the sample question, then its hand-off row. The agent itself always starts in a subagent (**Running agents**). An unknown name: run **List agents** from step 1. |
 | `sample` (also `sample {agent}`, `show me a sample`, `example`) | Run **Sample artifacts** below. No Atlas connection is needed, so skip the phases. |
 | `fee calculator` (also `fees`, `pricing`, `rate card`, `creator rates`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Fee calculator** below. Skip the other phases. |
 | `program` (also `influencer program`, `creator program`, `ambassador program`, `affiliate program`, `gifting program`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Influencer program** below. Skip the other phases. |
@@ -139,6 +139,41 @@ Listing needs no Atlas connection, so do not run Phase 1 and do not render a con
 before the question; run Phase 1 only once an agent is picked. If the `agents/` folder is
 missing or empty, say so in one line and stop; never invent an agent and never offer one that
 is not on disk.
+
+---
+
+## Running agents (always in a subagent)
+
+Every Atlas agent runs in a subagent, never in the main thread, so the user can start another
+agent, or ask anything else, while one works. This holds for every launch in this skill: a
+direct ask, `/aspire:aspire run {agent}`, a hand-off from **List agents**, a second pass
+(`propose` then `record`, `plan` then `build`), a relaunch, and a scheduled run.
+
+1. **Launch.** Use the Agent tool with `subagent_type` `aspire:{agent}` (the name without the
+   prefix gets it added), a `description` equal to the task it runs (**Progress bar**), the
+   inputs the flow lists, and `run_in_background: true`. Where plugin agents do not load,
+   launch a general-purpose subagent told to read and follow `agents/{agent}.md` from the
+   plugin, as **Sample artifacts** does. Never do an agent's work in the main thread, and never
+   call the Atlas tools an agent owns to stand in for one. Only a session with no subagent tool
+   at all may follow the agent's file itself, and says so in one line.
+2. **Say it started.** One line after the launch: which agent, what it is doing, and that the
+   user can keep going ("Profile analyst is running in the background. Ask for anything else
+   meanwhile."). Then end the turn. Never wait on it, poll it, or sleep.
+3. **Ask before, never during.** Every question, write confirmation, and picker the flow lists
+   for the launch is asked first, in the main thread, because agents never ask. Questions an
+   agent raises come back in its result and are asked when it arrives.
+4. **When it finishes.** Its result arrives as a task notification. Treat it as the agent's
+   report: relay the summary, page link, and decisions it needs, then run the flow's next step
+   (the questions after a `propose` pass, then the `record` launch, which is another subagent).
+   Check the result before telling the user it is done.
+5. **Several at once.** Different agents, and a second run of the same agent for another brand,
+   handle, or campaign, may run together. Keep one decision log line per launch and return, and
+   the audit trail blocks per run (**Decision audit**). When several results arrive close
+   together, relay them one at a time, oldest first, and ask each one's questions in its own
+   call. Two runs never write the same record: for the same profile and the same agent, say
+   one is already running and ask whether to wait or run the other anyway.
+6. **Unattended runs** (scheduled tasks) are already a session of their own: they launch the
+   agent as a subagent and wait for it, since nothing else is happening there.
 
 ---
 
@@ -2578,3 +2613,6 @@ The watch list is the brand's saved creators, outside any campaign.
   the data behind it is missing.
 - After an agent's work ends in a published page, offer the decision audit (**Decision audit**).
   The audit records what happened; it never re-decides, re-runs, or writes to Atlas.
+- Every agent runs in a subagent (**Running agents**), started in the background so the user
+  can run more than one in the thread. Questions and write confirmations stay in the main
+  thread, before the launch or when the result arrives.
