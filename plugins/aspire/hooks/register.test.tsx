@@ -376,6 +376,9 @@ test('on the desktop the pressed crab walks off its card, then the start is draf
   expect(drafts).toEqual([])
   expect(await card()).toContain(' go')
   await clock.advance(1000)
+  // The crab is back on its card, breathing, once the start is drafted.
+  expect(await card()).toContain('idle')
+  expect(await card()).not.toContain(' go')
   await ui.unmount()
   expect(drafts).toEqual(['/aspire:aspire run atlas-creator-vetting'])
 })
