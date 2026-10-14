@@ -34,8 +34,9 @@ const mcpResult = (body: unknown) => {
 // The world beneath the plugin: a clock, prompts, the skill's own prompt, the
 // Skill tool, an Atlas get_status that answers `status()`, another connector,
 // and subagents that start on Opus.
+let clock: ReturnType<typeof mock.clock>
 const world = (on: On, status: () => unknown, opened: string[] = []) => {
-  mock.clock(on, { now: Date.parse('2026-10-14T09:00:00Z') })
+  clock = mock.clock(on, { now: Date.parse('2026-10-14T09:00:00Z') })
   on('ui.open', (_$, e) => {
     opened.push(e.id)
     return { value: { isPlaced: true } }
@@ -317,11 +318,14 @@ test('the Agents tab shows a crab card for every agent type, and marks the ones 
   await spawn($, 'aspire:atlas-market-signal', 'Signal for the week')
   const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
   await ui.press({ key: 'tab-agents' })
-  const cards = (await ui.findAll({ type: 'Svg' })).map(el => String(el.props.source))
+  const svgs = await ui.findAll({ type: 'Svg' })
+  // The dotted grid backs the Agents tab: one tile, under everything else.
+  expect(svgs.filter(el => el.props.alt === 'dotted grid')).toHaveLength(1)
+  const cards = svgs.filter(el => el.props.alt !== 'dotted grid').map(el => String(el.props.source))
   // One credits card above the tabs, then a card per agent type.
   expect(cards).toHaveLength(26)
   expect(cards.filter(c => c.includes('Market signal'))[0]).toContain('running')
-  expect(cards.filter(c => c.includes('Orchestrator'))[0]).toContain('ready')
+  expect(cards.filter(c => c.includes('Orchestrator'))[0]).not.toContain('ready')
   expect(cards.join('')).not.toContain('undefined')
   await ui.press({ key: 'tab-live' })
   expect(await ui.find({ type: 'Svg' })).toBeDefined()
@@ -347,14 +351,135 @@ test('the tabs read as tabs, and pressing an agent drafts its start in the promp
   })
   await typeAspire($)
   const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'terminal', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
-  expect((await ui.find({ key: 'tab-live' }))?.props.label).toBe('[ Live ]')
-  expect(String((await ui.find({ key: 'tab-agents' }))?.props.label)).toMatch(/^ {2}Agents · \d+ ›$/)
+  expect((await ui.find({ key: 'tab-live' }))?.props).toMatchObject({ label: 'Live', variant: 'primary' })
+  expect((await ui.find({ key: 'tab-agents' }))?.props).toMatchObject({ variant: 'secondary' })
+  expect(String((await ui.find({ key: 'tab-agents' }))?.props.label)).toMatch(/^Agents · \d+$/)
   await ui.press({ key: 'tab-agents' })
-  expect(String((await ui.find({ key: 'tab-agents' }))?.props.label)).toMatch(/^\[ Agents · \d+ \]$/)
+  expect((await ui.find({ key: 'tab-agents' }))?.props).toMatchObject({ variant: 'primary' })
+  expect((await ui.find({ key: 'tab-live' }))?.props).toMatchObject({ variant: 'secondary' })
   await ui.press({ key: 'aspire:atlas-creator-vetting' })
   await ui.unmount()
   expect(drafts).toHaveLength(1)
   expect(drafts[0]).toMatchObject({ text: '/aspire:aspire run atlas-creator-vetting', mode: 'replace' })
+})
+
+test('on the desktop the pressed crab walks off its card, then the start is drafted', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  const drafts: string[] = []
+  on('prompt.fill', (_$, e) => {
+    drafts.push((e as { text: string }).text)
+    return { isFilled: true, text: (e as { text: string }).text, cursor: 0 } as never
+  })
+  await typeAspire($)
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  await ui.press({ key: 'tab-agents' })
+  const card = async () => (await ui.findAll({ type: 'Svg' })).map(el => String(el.props.source)).find(c => c.includes('Creator vetting')) ?? ''
+  // Idle crabs breathe; none walks yet.
+  expect(await card()).toContain('idle')
+  expect(await card()).not.toContain(' go')
+  await ui.press({ key: 'start-aspire:atlas-creator-vetting-0' })
+  expect(drafts).toEqual([])
+  expect(await card()).toContain(' go')
+  await clock.advance(1000)
+  // The crab is back on its card, breathing, once the start is drafted.
+  expect(await card()).toContain('idle')
+  expect(await card()).not.toContain(' go')
+  await ui.unmount()
+  expect(drafts).toEqual(['/aspire:aspire run atlas-creator-vetting'])
+})
+
+test('the Live button is as wide as the Aspire mark', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  await typeAspire($)
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  // The mark is 56px wide, seven 8px columns; the Live button's box is seven columns.
+  expect((await ui.findAll({ type: 'Box' })).some(b => b.props.width === 7 && b.children.some(c => (c as { props?: { key?: string } }).props?.key === 'tab-live'))).toBe(true)
+  await ui.unmount()
+})
+
+test('the dotted grid backs the Agents tab and not the Live tab', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  await spawn($, 'aspire:atlas-market-signal', 'Signal for the week')
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  const grids = async () => (await ui.findAll({ type: 'Svg' })).filter(el => el.props.alt === 'dotted grid').length
+  expect(await grids()).toBe(0)
+  await ui.press({ key: 'tab-agents' })
+  expect(await grids()).toBe(1)
+  await ui.press({ key: 'tab-live' })
+  expect(await grids()).toBe(0)
+  await ui.unmount()
+})
+
+// The text inside every `@media (prefers-color-scheme: dark){...}` block, braces matched.
+const darkBlocks = (source: string): string => {
+  const open = '@media (prefers-color-scheme: dark){'
+  let out = ''
+  for (let i = source.indexOf(open); i !== -1; i = source.indexOf(open, i + 1)) {
+    let depth = 1
+    let j = i + open.length
+    while (j < source.length && depth > 0) depth += source[j] === '{' ? 1 : source[j] === '}' ? -1 : 0, j++
+    out += source.slice(i + open.length, j - 1)
+  }
+  return out
+}
+
+test('every colour in the desktop panel has a light and a dark value', async ($, on) => {
+  world(on, () => ({ ...WITH_COSTS, credits: CREDITS }))
+  await spawn($, 'aspire:atlas-market-signal', 'Signal for the week')
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  for (const tab of ['tab-live', 'tab-agents']) {
+    await ui.press({ key: tab })
+    for (const el of await ui.findAll({ type: 'Svg' })) {
+      const source = String(el.props.source)
+      // The classes that paint a surface or text take their value from the light and the dark block alike.
+      const used = new Set([...source.matchAll(/class="([^"]+)"/g)].flatMap(m => m[1].split(' ')))
+      const themed = ['t', 's', 'm', 'k', 'tk', 'ln', 'tile', 'd'].filter(c => used.has(c))
+      const dark = darkBlocks(source)
+      for (const c of themed) {
+        const light = new RegExp(`(^|[^\\w-])\\.${c}\\{`).test(source.split('@media (prefers-color-scheme: dark)')[0])
+        expect({ tab, class: c, light }).toEqual({ tab, class: c, light: true })
+        expect({ tab, class: c, dark: dark.includes(`.${c}{`) }).toEqual({ tab, class: c, dark: true })
+      }
+    }
+  }
+  await ui.unmount()
+})
+
+test('idle crabs breathe at their own rate and start at their own point', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  await typeAspire($)
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  await ui.press({ key: 'tab-agents' })
+  const breaths = (await ui.findAll({ type: 'Svg' }))
+    .map(el => /--d:-([\d.]+)s;--p:([\d.]+)s/.exec(String(el.props.source)))
+    .filter((m): m is RegExpExecArray => m !== null)
+    .map(m => ({ delay: Number(m[1]), period: Number(m[2]) }))
+  expect(breaths).toHaveLength(25)
+  expect(new Set(breaths.map(b => `${b.delay}/${b.period}`)).size).toBe(25)
+  expect(new Set(breaths.map(b => b.period)).size).toBeGreaterThanOrEqual(20)
+  expect(new Set(breaths.map(b => b.delay)).size).toBeGreaterThanOrEqual(20)
+  for (const b of breaths) {
+    expect(b.period).toBeGreaterThanOrEqual(2.2)
+    expect(b.period).toBeLessThanOrEqual(3.4)
+    expect(b.delay).toBeLessThan(3)
+  }
+  await ui.unmount()
+})
+
+test('the Aspire mark sits to the left of the credits card on both desktop tabs', async ($, on) => {
+  world(on, () => ({ ...WITH_COSTS, credits: CREDITS }))
+  await typeAspire($)
+  await getStatus($)
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  for (const tab of ['tab-live', 'tab-agents']) {
+    await ui.press({ key: tab })
+    const card = (await ui.findAll({ type: 'Svg' })).map(el => String(el.props.source)).find(c => c.includes('<title>Aspire</title>')) ?? ''
+    expect(card).toContain('<title>Aspire</title>')
+    // The mark comes before the card's own tile, so it draws on the left.
+    expect(card.indexOf('<title>Aspire</title>')).toBeLessThan(card.indexOf('class="tile"'))
+    expect(card).toContain('996.2')
+  }
+  await ui.unmount()
 })
 
 test('an agent step call from an unknown agent changes nothing and does not switch the mod on', async ($, on) => {
