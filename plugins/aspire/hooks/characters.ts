@@ -53,7 +53,8 @@ export type Character = {
   css: string
 }
 
-const CLAY = '#D97757'
+// Aspire green: the brand teal of the starter page (#1E5C58 light, #5DB3A9 dark), mid-tone so it reads on both.
+const ASPIRE = '#3B8A82'
 const INK = '#1F1E1D'
 
 const stamp = (f: Fill, x: number, y: number, rows: string[], map: Record<string, string>, cls?: string): void =>
@@ -61,15 +62,15 @@ const stamp = (f: Fill, x: number, y: number, rows: string[], map: Record<string
 
 // `armCls` lets a raised claw travel with the prop it holds.
 const crabBody = (f: Fill, armFront = 0, armCls?: string): void => {
-  f(7, 10, 16, 12, CLAY)
-  f(3, 14, 4, 4, CLAY)
-  f(23, 14 + armFront, 4, 4, CLAY, armCls)
+  f(7, 10, 16, 12, ASPIRE)
+  f(3, 14, 4, 4, ASPIRE)
+  f(23, 14 + armFront, 4, 4, ASPIRE, armCls)
   f(9, 12, 2, 2, INK)
   f(19, 12, 2, 2, INK)
-  f(7, 22, 2, 4, CLAY, 'la')
-  f(17, 22, 2, 4, CLAY, 'la')
-  f(11, 22, 2, 4, CLAY, 'lb')
-  f(21, 22, 2, 4, CLAY, 'lb')
+  f(7, 22, 2, 4, ASPIRE, 'la')
+  f(17, 22, 2, 4, ASPIRE, 'la')
+  f(11, 22, 2, 4, ASPIRE, 'lb')
+  f(21, 22, 2, 4, ASPIRE, 'lb')
 }
 
 const isFamily = (run: CharacterRun, re: RegExp): boolean => re.test(run.model)
