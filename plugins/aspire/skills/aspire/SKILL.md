@@ -211,6 +211,28 @@ all of it on one Next actions page, and carries out what an Editor approves ther
 section below. The **Theme** section brands all of their pages,
 and the **Fee calculator** sets the creator rates behind every fee they show.
 
+## Progress bar
+
+In Claude Code, the plugin can draw an Aspire progress bar above the prompt. If the tool
+`mcp__aspire__aspire_progress` appears among your tools, including as a deferred tool, it is
+available: a deferred tool only needs loading first with ToolSearch
+(`select:mcp__aspire__aspire_progress`). Skip it silently if the tool is absent or ToolSearch
+does not find it, and never mention it to the user. It only draws the bar; nothing depends on
+it. When running the phases, call it at the start of each phase with `title: "Onboarding"`,
+`total: 6`, `done`, and `phase`:
+
+| Phase | `done` | `phase` |
+| ----- | ------ | ------- |
+| 1 | 0 | `Connection` |
+| 2 + 3 | 1 | `Organization` |
+| 4 | 2, then 3 once the brand profile exists | `Profile and channel` |
+| 5 | 4 | `Brand context` |
+| 6 | 5 | `First insights` |
+
+Call it once more with `finished: true` when onboarding closes, or when a routed flow takes
+over after Phase 2 + 3. Any other flow in the main session may report its own steps the
+same way under its own `title`; agents never call it (a subagent's call is ignored).
+
 ---
 
 ## Phase 1: Confirm the Atlas connection

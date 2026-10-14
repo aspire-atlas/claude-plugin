@@ -5,28 +5,35 @@ import type { Engine } from 'claude-code/testing'
 
 const PLUGIN = 'aspire'
 const STATUS_TOOL = 'mcp__Aspire_Atlas__get_status'
+const PROGRESS_TOOL = 'mcp__aspire__aspire_progress'
 const band = { hasSurvey: false, isWorking: false, maxRows: 4, bodyColumns: 120, scroll: { offset: 0, bodyRows: 4 }, view: {} } as const
 const pane = { title: '', isFocused: false, bodyColumns: 60, placement: 'dock', scroll: { offset: 0, bodyRows: 30 }, view: {} } as const
 
+const ORGS = { selected: { id: 'org_1', name: 'Sample Brand', role: 'owner' }, all: [{ id: 'org_1', name: 'Sample Brand' }] }
+const PROFILES = [{ id: 'p1', name: 'Sample', channels: [{ network: 'instagram' }] }]
 const WITH_COSTS = {
-  organizations: { selected: { id: 'org_1', tokenCosts: { used: 12400, limit: 50000, unit: 'tokens' } }, all: [{ id: 'org_1' }] },
-  profiles: [],
+  organizations: { ...ORGS, selected: { ...ORGS.selected, tokenCosts: { used: 12400, limit: 50000, unit: 'tokens' } } },
+  profiles: PROFILES,
 }
-const WITHOUT_COSTS = { organizations: { selected: { id: 'org_1' }, all: [{ id: 'org_1' }] }, profiles: [] }
+const WITHOUT_COSTS = { organizations: ORGS, profiles: PROFILES }
 
 const mcpResult = (body: unknown) => {
   const text = JSON.stringify(body)
   return { result: { content: [{ type: 'text', text }] }, text }
 }
 
-// The world beneath the plugin: a clock, the skill's own prompt, an Atlas
-// get_status that answers `status()`, and subagents that start on Opus.
+// The world beneath the plugin: a clock, prompts, the skill's own prompt, the
+// Skill tool, an Atlas get_status that answers `status()`, another connector,
+// and subagents that start on Opus.
 const world = (on: On, status: () => unknown, opened: string[] = []) => {
   mock.clock(on, { now: Date.parse('2026-10-14T09:00:00Z') })
   on('ui.open', (_$, e) => {
     opened.push(e.id)
     return { value: { isPlaced: true } }
   })
+  on('ui.panes', () => ({ value: opened.map(id => ({ id })) }) as never)
+  on('ui.close', () => ({ value: undefined }) as never)
+  on('prompt.submit', (_$, e) => ({ text: e.text }) as never)
   on('skill.prompt', (_$, e) => ({ text: e.text }))
   // Another band beneath the mod's (Claude Code's own, or another mod's).
   on('ui.render', { component: 'AbovePrompt' }, ($, e) => {
@@ -36,19 +43,37 @@ const world = (on: On, status: () => unknown, opened: string[] = []) => {
   on('turn.complete', () => ({ text: '' }) as never)
   on('turn.start', (_$, e) => ({ turnId: e.turnId }))
   on('tool.call', { tool: STATUS_TOOL }, () => mcpResult(status()) as never)
+  on('tool.call', { tool: 'mcp__linear__get_status' }, () => mcpResult({ tokenCosts: { used: 999, limit: 1000 } }) as never)
+  on('tool.call', { tool: 'mcp__linear__list_issues' }, () => mcpResult({ issues: [] }) as never)
+  on('tool.call', { tool: 'Skill' }, () => ({ result: { success: true, commandName: 'x' }, text: 'Launching skill' }) as never)
   on('agent.spawn', (_$, e) => ({ model: 'claude-opus-5-5', agentId: `agent-${e.description.replace(/\W+/g, '-')}` }))
 }
 
-const runAspire = ($: Engine) => $.skill.prompt({ skill: 'aspire:aspire', text: 'The aspire skill.' })
-const getStatus = ($: Engine) => $.tool.call({ tool: STATUS_TOOL, context: 'Checking the session.' } as never)
+const typeAspire = ($: Engine, text = '/aspire:aspire') => ($.prompt.submit as (e: unknown) => Promise<unknown>)({ text, wait: false })
+const runSkill = ($: Engine) => $.skill.prompt({ skill: 'aspire:aspire', text: 'The aspire skill.' })
+const getStatus = ($: Engine, extra: Record<string, unknown> = {}) => $.tool.call({ tool: STATUS_TOOL, context: 'Checking the session.', ...extra } as never)
+const report = ($: Engine, input: Record<string, unknown>) => $.tool.call({ tool: PROGRESS_TOOL, ...input } as never)
 const spawn = ($: Engine, subagentType: string, description: string) =>
   $.agent.spawn({ tool_use_id: `t-${description}`, prompt: 'p', description, subagentType, provider: { plugin: 'engine', tier: 'core' }, parentModel: 'claude-opus-5-5', background: false, fork: false } as never)
+const status = async ($: Engine) => String(((await $.command.run({ command: 'aspire-agents-info', args: 'status' } as never)) as { text?: string }).text)
 
 const bandShows = async ($: Engine, surface: 'terminal' | 'desktop', text: RegExp) => {
   const ui = await $.ui.mount({ plugin: PLUGIN, surface, component: 'AbovePrompt', props: band as never })
   const found = await ui.find({ type: 'Text', text })
   await ui.unmount()
   return found !== undefined
+}
+
+/** The progress bar's row: the terminal's texts, or the desktop's one Svg (its alt and source). */
+const barShows = async ($: Engine, surface: 'terminal' | 'desktop', text: string) => {
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface, component: 'AbovePrompt', props: band as never })
+  try {
+    if (surface === 'terminal') return (await ui.find({ type: 'Text', text: new RegExp(`^${text.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')}$`) })) !== undefined
+    const drawn = (await ui.findAll({ type: 'Svg' })).map(el => `${String(el.props.alt)}\n${String(el.props.source)}`).join('\n')
+    return drawn.includes(text)
+  } finally {
+    await ui.unmount()
+  }
 }
 
 const panelShows = async ($: Engine, text: RegExp) => {
@@ -59,51 +84,161 @@ const panelShows = async ($: Engine, text: RegExp) => {
 }
 
 for (const surface of ['terminal', 'desktop'] as const) {
-  test(`${surface}: inert until /aspire runs`, async ($, on) => {
+  test(`${surface}: inert until an Aspire event, then the bar appears`, async ($, on) => {
     const opened: string[] = []
     world(on, () => WITH_COSTS, opened)
 
-    // Before /aspire: no band, no reading, no panel rows, no pane.
-    await getStatus($)
+    // Before /aspire: unrelated prompts, skills, tools, and agents switch nothing on.
+    await typeAspire($, 'what is /aspire for?')
+    await typeAspire($, '/aspire-agents-info')
+    await $.skill.prompt({ skill: 'commit', text: 'Commit.' })
+    await $.tool.call({ tool: 'Skill', skill: 'commit' } as never)
+    await $.tool.call({ tool: 'mcp__linear__get_status' } as never)
+    await $.tool.call({ tool: 'mcp__linear__list_issues' } as never)
     await spawn($, 'general-purpose', 'Unrelated work')
     expect(await bandShows($, surface, /Atlas/)).toBe(false)
-    const answer = await $.command.run({ command: 'aspire-agents-info', args: '' } as never)
-    expect(answer).toMatchObject({ text: 'The Aspire agents panel starts once /aspire runs in this session.' })
+    expect(await barShows($, surface, 'Aspire')).toBe(false)
+    expect(await $.command.run({ command: 'aspire-agents-info', args: '' } as never)).toMatchObject({
+      text: 'The Aspire agents panel starts once /aspire runs in this session.',
+    })
+    expect(await status($)).toMatch(/^Aspire mod: loaded, off\./)
+    expect(await status($)).toMatch(/Seen: 0 \/aspire prompts, 0 skill\.prompt, 0 Skill tool calls, 0 progress reports, 0 Atlas results, 0 agents\./)
     expect(opened).toEqual([])
 
-    // /aspire switches it on. The get_status before it was not recorded, and
-    // the band never makes a figure up: a dash and how to get one.
-    await runAspire($)
+    // A typed /aspire switches it on: the bar shows at once, before any get_status.
+    await typeAspire($)
+    expect(await barShows($, surface, 'Aspire')).toBe(true)
+    expect(await barShows($, surface, 'Onboarding 0/6')).toBe(true)
+    expect(await barShows($, surface, '0%')).toBe(true)
+    // The band's row is still there, with no Atlas figure made up.
     expect(await bandShows($, surface, /^Atlas tokens$/)).toBe(true)
     expect(await bandShows($, surface, /^—, run \/aspire to refresh$/)).toBe(true)
-    expect(await bandShows($, surface, /12k/)).toBe(false)
     expect(await panelShows($, /Unrelated work/)).toBe(false)
+    expect(await status($)).toMatch(/^Aspire mod: on since 0s ago, switched on by a typed \/aspire \(\/aspire:aspire\)\./)
   })
 
-  test(`${surface}: the band shows Atlas token costs from the latest get_status`, async ($, on) => {
-    let status: unknown = WITH_COSTS
-    world(on, () => status)
-    await runAspire($)
+  test(`${surface}: get_status names the organization and sets the baseline; the skill's report wins`, async ($, on) => {
+    let body: unknown = WITH_COSTS
+    world(on, () => body)
+    await typeAspire($)
 
     const result = await getStatus($)
     // The call's result passes through untouched.
     expect(result).toMatchObject({ text: JSON.stringify(WITH_COSTS) })
+    expect(await barShows($, surface, 'Aspire: Sample Brand')).toBe(true)
+    // Atlas answered, an organization, a profile, a channel: 4 of 6.
+    expect(await barShows($, surface, 'Onboarding 4/6')).toBe(true)
+    expect(await barShows($, surface, '67%')).toBe(true)
     expect(await bandShows($, surface, /^12k \/ 50k$/)).toBe(true)
 
+    // The skill reports: its count wins.
+    expect(await report($, { title: 'Onboarding', total: 6, done: 4, phase: 'Brand context' })).toMatchObject({ result: 'ok: Brand context 4/6, 67%' })
+    expect(await barShows($, surface, 'Brand context 4/6')).toBe(true)
+    await report($, { done: 5, phase: 'First insights' })
+    expect(await barShows($, surface, 'First insights 5/6')).toBe(true)
+    expect(await barShows($, surface, '83%')).toBe(true)
+    await report($, { finished: true })
+    expect(await barShows($, surface, 'Done')).toBe(true)
+    expect(await barShows($, surface, '100%')).toBe(true)
+
     // A later get_status without token costs clears the figure rather than keep a stale one.
-    status = WITHOUT_COSTS
+    body = WITHOUT_COSTS
     await getStatus($)
     expect(await bandShows($, surface, /12k/)).toBe(false)
     expect(await bandShows($, surface, /^—, run \/aspire to refresh$/)).toBe(true)
   })
 }
 
+test('desktop: the bar is one Svg with the crab; the band row keeps its icons', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  await typeAspire($)
+  await getStatus($)
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'AbovePrompt', props: band as never })
+  const svgs = (await ui.findAll({ type: 'Svg' })).map(el => String(el.props.source))
+  const bar = svgs.find(s => s.includes('Aspire: Sample Brand'))
+  expect(bar).toBeDefined()
+  // The plain crab in Aspire green, at the end of the bar.
+  expect(bar).toContain('#3B8A82')
+  expect(bar).toContain('c-other')
+  expect(bar).not.toContain('undefined')
+  expect(bar).not.toContain('NaN')
+  expect(svgs.length).toBeGreaterThan(1)
+  await ui.unmount()
+})
+
+test('several organizations: no name until the call picks one', async ($, on) => {
+  const several = { organizations: { selected: { id: 'org_1', name: 'Default Org' }, all: [{ id: 'org_1' }, { id: 'org_2' }] }, profiles: [] }
+  let body: unknown = several
+  world(on, () => body)
+  await typeAspire($)
+  await getStatus($)
+  expect(await barShows($, 'terminal', 'Aspire')).toBe(true)
+  expect(await barShows($, 'terminal', 'Onboarding 1/6')).toBe(true)
+  body = { ...several, organizations: { ...several.organizations, selected: { id: 'org_2', name: 'Picked Org' } } }
+  await getStatus($, { asOrganizationId: 'org_2' })
+  expect(await barShows($, 'terminal', 'Aspire: Picked Org')).toBe(true)
+  expect(await barShows($, 'terminal', 'Onboarding 2/6')).toBe(true)
+})
+
+test('each Aspire event switches the mod on and says which', async ($, on) => {
+  const cases: [string, ($: Engine) => Promise<unknown>, RegExp][] = [
+    ['prompt', $ => typeAspire($, '/aspire agents'), /a typed \/aspire \(\/aspire\)/],
+    ['skill.prompt', runSkill, /the aspire skill \(skill\.prompt\) \(aspire:aspire\)/],
+    ['Skill tool', $ => $.tool.call({ tool: 'Skill', skill: 'aspire:aspire' } as never), /the Skill tool running the aspire skill \(aspire:aspire\)/],
+    ['progress', $ => report($, { title: 'Onboarding', total: 6, done: 0 }), /a progress report from the skill/],
+    ['get_status', getStatus, /an Atlas tool result \(get_status\)/],
+    ['agent', $ => spawn($, 'aspire:atlas-creator-brief', 'Brief'), /an aspire agent starting \(aspire:atlas-creator-brief\)/],
+  ]
+  world(on, () => WITH_COSTS)
+  on('session.end', () => ({ sessionId: 's1' }) as never)
+  for (const [, fire, says] of cases) {
+    await $.session.end({ reason: 'clear', sessionId: 's1', resume: { id: 's1' } } as never)
+    expect(await status($)).toMatch(/^Aspire mod: loaded, off\./)
+    await fire($)
+    const text = await status($)
+    expect(text).toMatch(says)
+    expect(await barShows($, 'terminal', 'Aspire') || (await barShows($, 'terminal', 'Aspire: Sample Brand'))).toBe(true)
+  }
+})
+
+test('status: counts, the last get_status, the bar, and the version line', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  await typeAspire($)
+  await runSkill($)
+  await getStatus($)
+  await spawn($, 'aspire:atlas-market-signal', 'Market signal')
+  const text = await status($)
+  expect(text).toMatch(/Seen: 1 \/aspire prompt, 1 skill\.prompt, 0 Skill tool calls, 0 progress reports, 1 Atlas result, 1 agent\./)
+  expect(text).toMatch(/Last get_status 0s ago: 12k \/ 50k Atlas tokens, organization Sample Brand\./)
+  expect(text).toMatch(/Bar: Aspire: Sample Brand, Onboarding 4\/6, 67% \(baseline from get_status\)\./)
+  expect(text).toMatch(/^Claude Code .+ on .+\.$/m)
+  expect(text.split('\n')).toHaveLength(5)
+})
+
+test('a subagent cannot report the progress', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  await typeAspire($)
+  await report($, { title: 'Onboarding', total: 6, done: 2, phase: 'Organization' })
+  expect(await report($, { agentId: 'a1', title: 'Hijacked', total: 9, done: 9, finished: true })).toMatchObject({
+    result: 'ignored: only the main session reports Aspire progress',
+  })
+  expect(await barShows($, 'desktop', 'Organization 2/6')).toBe(true)
+  expect(await barShows($, 'desktop', 'Hijacked')).toBe(false)
+  expect(await barShows($, 'desktop', 'Done')).toBe(false)
+})
+
+test('a subagent cannot switch the mod on through the progress tool', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  await report($, { agentId: 'a1', title: 'Hijacked', total: 2 })
+  expect(await status($)).toMatch(/^Aspire mod: loaded, off\./)
+})
+
 test('a get_status from another connector is never read', async ($, on) => {
   world(on, () => WITHOUT_COSTS)
-  on('tool.call', { tool: 'mcp__linear__get_status' }, () => mcpResult({ tokenCosts: { used: 999, limit: 1000 } }) as never)
-  await runAspire($)
+  await typeAspire($)
   await $.tool.call({ tool: 'mcp__linear__get_status' } as never)
   expect(await bandShows($, 'terminal', /999/)).toBe(false)
+  expect(await status($)).toMatch(/0 Atlas results/)
 })
 
 test('an aspire agent switches the mod on, lists in the panel, and opens it once', async ($, on) => {
@@ -131,9 +266,23 @@ test('an aspire agent switches the mod on, lists in the panel, and opens it once
   await ui.unmount()
   expect(await panelShows($, /\$/)).toBe(false)
 
-  // The band is on, too, with the band beneath it kept.
+  // The bar is on, too, with its agents count, and the band beneath it kept.
+  expect(await barShows($, 'terminal', 'Aspire')).toBe(true)
+  const bar = await $.ui.mount({ plugin: PLUGIN, surface: 'terminal', component: 'AbovePrompt', props: band as never })
+  expect((await bar.find({ key: 'aspire-agents' }))?.props.label).toBe('×3')
+  await bar.unmount()
   expect(await bandShows($, 'terminal', /^Atlas tokens$/)).toBe(true)
   expect(await bandShows($, 'terminal', /^band beneath$/)).toBe(true)
+})
+
+test("the bar's agents button opens the panel", async ($, on) => {
+  const opened: string[] = []
+  world(on, () => WITH_COSTS, opened)
+  await typeAspire($)
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'AbovePrompt', props: band as never })
+  await ui.press({ key: 'aspire-agents' })
+  await ui.unmount()
+  expect(opened).toEqual(['aspire-agents'])
 })
 
 test('desktop panel draws one Svg per agent', async ($, on) => {
@@ -147,15 +296,17 @@ test('desktop panel draws one Svg per agent', async ($, on) => {
   expect(drawn).not.toContain('[object')
 })
 
-test('the band hides with × and comes back with /aspire-agents-info band', async ($, on) => {
+test('the bar and band hide with ✕ and come back with /aspire-agents-info band', async ($, on) => {
   world(on, () => WITH_COSTS)
-  await runAspire($)
+  await typeAspire($)
   const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'terminal', component: 'AbovePrompt', props: band as never })
   await ui.press({ key: 'aspire-band-hide' })
   await ui.unmount()
   expect(await bandShows($, 'terminal', /Atlas/)).toBe(false)
+  expect(await barShows($, 'terminal', 'Aspire')).toBe(false)
   expect(await $.command.run({ command: 'aspire-agents-info', args: 'band' } as never)).toMatchObject({ text: 'Aspire band shown.' })
   expect(await bandShows($, 'terminal', /Atlas/)).toBe(true)
+  expect(await barShows($, 'terminal', 'Aspire')).toBe(true)
 })
 
 test('a subagent step shows its model, effort and context fill; the stream passes through', async ($, on) => {
@@ -181,25 +332,30 @@ test('a subagent step shows its model, effort and context fill; the stream passe
 test('a /clear puts the mod back to sleep until /aspire runs again', async ($, on) => {
   world(on, () => WITH_COSTS)
   on('session.end', () => ({ sessionId: 's1' }) as never)
-  await runAspire($)
+  await typeAspire($)
   await getStatus($)
+  await report($, { title: 'Onboarding', total: 6, done: 3 })
   await spawn($, 'aspire:atlas-creator-brief', 'Brief for next week')
   expect(await bandShows($, 'terminal', /^12k \/ 50k$/)).toBe(true)
 
   await $.session.end({ reason: 'clear', sessionId: 's1', resume: { id: 's1' } } as never)
   expect(await bandShows($, 'terminal', /Atlas/)).toBe(false)
+  expect(await barShows($, 'terminal', 'Aspire: Sample Brand')).toBe(false)
   expect(await panelShows($, /Brief for next week/)).toBe(false)
   expect(await $.command.run({ command: 'aspire-agents-info', args: '' } as never)).toMatchObject({
     text: 'The Aspire agents panel starts once /aspire runs in this session.',
   })
+  // Back on, the bar starts over: no organization, no reported progress.
+  await typeAspire($)
+  expect(await barShows($, 'terminal', 'Onboarding 0/6')).toBe(true)
 })
 
 test('turns count from the one that ran /aspire', async ($, on) => {
   world(on, () => WITH_COSTS)
-  // A typed /aspire: the skill expands before its turn starts.
+  // A typed /aspire switches the mod on before its turn starts.
   await ($.turn.start as (e: unknown) => Promise<unknown>)({ text: 'earlier', turnId: 't0' })
-  await runAspire($)
-  await ($.turn.start as (e: unknown) => Promise<unknown>)({ text: '/aspire', turnId: 't1' })
+  await typeAspire($)
+  await ($.turn.start as (e: unknown) => Promise<unknown>)({ text: '/aspire:aspire', turnId: 't1' })
   const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'terminal', component: 'AbovePrompt', props: band as never })
   expect(await ui.find({ type: 'Text', text: /^1$/ })).toBeDefined()
   await ui.unmount()

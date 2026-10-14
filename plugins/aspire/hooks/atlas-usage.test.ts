@@ -1,7 +1,7 @@
 // Run with: claude plugin test plugins/aspire
 import { expect, test } from 'claude-code/testing'
 
-import { fmtAmount, fmtAtlasUsage, isAtlasStatusCall, parseTokenCosts, readAtlasUsage, toAmount } from './atlas-usage'
+import { fmtAmount, fmtAtlasUsage, isAtlasStatusCall, isAtlasToolName, parseTokenCosts, readAtlasOrg, readAtlasUsage, toAmount } from './atlas-usage'
 
 // What an MCP get_status result looks like as the tool.call hook sees it: the
 // tool's record (`content` blocks of JSON text) and the text the model reads.
@@ -101,4 +101,42 @@ test('fmtAmount and fmtAtlasUsage', () => {
   expect(fmtAtlasUsage({ used: 12400 })).toBe('12k')
   expect(fmtAtlasUsage({ used: 12.4, limit: 50, unit: 'USD' })).toBe('12.4 / 50 USD')
   expect(fmtAtlasUsage({ used: 300, limit: 1000, unit: 'credits' })).toBe('300 / 1k credits')
+})
+
+test('readAtlasOrg: the selected organization, how many there are, profiles and channels', () => {
+  const body = {
+    organizations: { selected: { id: 'org_1', name: 'Sample Brand', role: 'owner' }, all: [{ id: 'org_1' }, { id: 'org_2' }, { id: 'org_3' }] },
+    profiles: [{ id: 'p1', name: 'Brand A', channels: [] }, { id: 'p2', name: 'Brand B', channels: [{ network: 'instagram' }] }],
+  }
+  expect(readAtlasOrg(asToolResult(body))).toEqual({ name: 'Sample Brand', orgCount: 3, profileCount: 2, hasChannel: true })
+  // The same from the MCP record alone, parsed JSON, or JSON text.
+  expect(readAtlasOrg(asToolResult(body).result)?.name).toBe('Sample Brand')
+  expect(readAtlasOrg(body)?.orgCount).toBe(3)
+  expect(readAtlasOrg(JSON.stringify(body))?.profileCount).toBe(2)
+})
+
+test('readAtlasOrg: tolerates other shapes and never throws', () => {
+  // A list of organizations with one marked selected; profiles under the organization.
+  expect(readAtlasOrg({ organizations: [{ name: 'One' }, { name: 'Two', selected: true, profiles: [{ channels: { instagram: {} } }] }] })).toEqual({
+    name: 'Two',
+    orgCount: 2,
+    profileCount: 1,
+    hasChannel: true,
+  })
+  // A single organization object; `displayName` for the name.
+  expect(readAtlasOrg({ organization: { id: 'o', displayName: 'Solo' } })).toEqual({ name: 'Solo', orgCount: 1, profileCount: 0, hasChannel: false })
+  // No selection yet: no name.
+  expect(readAtlasOrg({ organizations: { all: [{ name: 'A' }, { name: 'B' }] }, profiles: [] })).toEqual({ orgCount: 2, profileCount: 0, hasChannel: false })
+  // Nothing about organizations, or junk: null.
+  for (const junk of [null, undefined, 42, 'text', '{not json', {}, { profiles: [] }, { organizations: 'x' }]) expect(readAtlasOrg(junk)).toBeNull()
+  // A name that is not a short string is not used.
+  expect(readAtlasOrg({ organizations: { selected: { name: 7 } } })?.name).toBeUndefined()
+})
+
+test('isAtlasToolName: the Atlas connectors by name, never the admin connector or Atlassian', () => {
+  expect(isAtlasToolName('mcp__claude_ai_Aspire_Atlas__search_posts')).toBe(true)
+  expect(isAtlasToolName('mcp__plugin_aspire_Aspire_Atlas__get_status')).toBe(true)
+  expect(isAtlasToolName('mcp__Aspire_Atlas_Organization_Admin__list_members')).toBe(false)
+  expect(isAtlasToolName('mcp__claude_ai_Atlassian__getJiraIssue')).toBe(false)
+  expect(isAtlasToolName('mcp__aspire__aspire_progress')).toBe(false)
 })
