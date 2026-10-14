@@ -11,6 +11,8 @@ Onboarding for the Atlas platform (https://atlas.aspire.io). Takes a new or retu
 | MCP server | `Meta Ads` | Optional. Meta's hosted ads MCP server at `https://mcp.facebook.com/ads` (HTTP, OAuth with Facebook through Aspire's Meta app). Run by Meta, not Aspire. Tools appear as `mcp__Meta_Ads__*`. |
 | Skill | `/aspire:aspire` | Six phase onboarding flow: connection check, auth and org selection, org status, profile and social connect, brand context capture, first insights |
 | Skill | `/aspire:org-admin` | Support only. Lists organization members and pending invitations and sends confirmed invitations when someone asks. Uses Aspire Atlas Organization Admin |
+| Mod | Band above the prompt | Claude Code only, from 4.0.0. Once `/aspire` runs: turn, response speed, Atlas token costs from `get_status`, prompt cache countdown, and context fill. See [Band and agents panel](#band-and-agents-panel-claude-code). |
+| Mod | `/aspire-agents-info` | Claude Code only, from 4.0.0. Shows or hides the Aspire agents panel: running and finished agents with model, context fill, and time. |
 | Agent | `atlas-profile-analyst` | Analyzes an account handle the brand manages and ideates next week's content pushes: cadence, engagement, top posts and what they share, format mix, rate benchmarks against competitors Atlas indexes, then three pushes with day, format, angle, and target. Runs for first insights in Phase 6 and any time after. Also reviews any public Instagram or TikTok handle the user names, resolving and refreshing it in Atlas when the held data is over a day old. |
 | Agent | `atlas-ad-reuse` | Ranks the brand's and creators' videos on the hooks that work as ads (hook by 3 seconds, brand by 3 seconds, works without sound, retention, standalone segment, ready for paid) and publishes a cut list with timestamps, lengths, placements, and rights status for performance and creative. Reads only what Atlas holds |
 | Agent | `atlas-creator-profile` | Full-page profile of one Instagram or TikTok creator: the creator card at full width, audience, top and lowest posts, engagement, sentiment, brand safety, partnerships, recommended fees from the fee calculator, peers, and next steps. Refreshes the handle in Atlas when the held data is over a day old. Publishes a page and writes nothing to Atlas |
@@ -201,6 +203,37 @@ Anyone you share the Next actions page with as an Editor can approve. Approved r
 - Scheduled (unattended) runs never ask questions, never run destructive tools, and deliver only to destinations saved during setup. The one exception to the no-discovery rule is `atlas-creator-discovery`: its saved cadence record is the standing approval to search Atlas and the creator marketplace on every run, including scheduled ones. Every other scheduled run starts no discovery work. Content review and post analysis never run unattended. Incomplete setup produces a "setup needed" page, not a guess.
 - Influencer program flows draft every message and never send one unless you ask in that session and confirm the named recipients. Mailbox drafts, discount codes, and store orders each need their own confirmation, and scheduled runs never send or change your store. They create mailbox drafts only when an Editor approved them on the Next actions page. Creator addresses stay on the team's order form and in Atlas. Everyone the order form is shared with sees every address, so share it only inside your team; creators send their details by reply, never through the form.
 - The tool surface is re-verified per release; unlisted tools that change state are treated as destructive until documented. See `skills/aspire/references/atlas-tools.md`.
+
+## Band and agents panel (Claude Code)
+
+From 4.0.0 the plugin includes a Claude Code mod built on function hooks, an early-access Claude Code API (tested on Claude Code 2.1.295). It does nothing until `/aspire` runs in a session or an `aspire:*` agent starts, and goes back to sleep after `/clear`. Then:
+
+- **Band above the prompt**: the turn number since `/aspire`, the speed of the last response, Atlas token costs (`Atlas tokens: used / limit`), the prompt cache countdown, and the context fill. The Atlas figure comes only from the latest Atlas `get_status` result. Without one the band shows `—, run /aspire to refresh`, never an estimate and never Claude's own usage. `×` hides the band for the session; `/aspire-agents-info band` brings it back.
+- **Aspire agents panel**: every `aspire:*` agent, plus any other subagent started after the mod switched on, running and finished, with model and effort, context fill, and time. It opens by itself once, when the first `aspire:*` agent starts. `/aspire-agents-info` shows or hides it, and `/aspire-agents-info open` brings it forward. It shows no cost, because Atlas does not report token costs per agent. The command is not `/aspire agents`, which lists the plugin's agents and starts one.
+- **Characters**: the panel's pixel crabs come from the mod it is adapted from, one costume per model and effort. To swap them, edit the `CHARACTERS` table in `hooks/characters.ts`; nothing else draws them.
+
+The mod reads only what already passes through the session and makes no network, file, or process calls; see [SECURITY.md](../../SECURITY.md). Its tests run with `claude plugin test plugins/aspire`.
+
+### Atlas token costs in get_status
+
+TODO: confirm with the Atlas server team. The server change has not shipped, so this is the shape the mod assumes; `hooks/atlas-usage.ts` is the only code that reads it, and `types/index.d.ts` documents it too.
+
+The mod looks for an object named `tokenCosts` anywhere in the `get_status` result JSON. When there are several, the one under `organizations.selected` wins, then the shallowest:
+
+```json
+{ "organizations": { "selected": { "id": "org_…", "tokenCosts": {
+    "used": 12400, "limit": 50000, "remaining": 37600,
+    "period": "2026-10", "unit": "tokens" } } } }
+```
+
+- `used` (number) is required: what the period has used. Without it, `limit - remaining` is used when both are present; otherwise there is no reading.
+- `limit` and `remaining` (numbers), `period` and `unit` (strings; leave `unit` out for plain tokens) are optional.
+- Also accepted: `token_costs`, `tokenCost`, or `tokenUsage` for the object; `usedTokens`, `tokensUsed`, `consumed`, or `spent` for `used`; `quota`, `allowance`, or `cap` for `limit`; `left`, `balance`, or `available` for `remaining`; plain numeric strings for numbers.
+- A `get_status` result without it clears the band's figure.
+
+### Third-party code
+
+The band and the panel are adapted from the session-band and savvy-progress mods in [claude-kit](https://github.com/johnnyvizz/claude-kit), Copyright (c) 2026 johnnyvizz, under the MIT License. The MIT notice is kept at the top of `hooks/register.tsx` and `hooks/characters.ts`. MIT code can ship inside this Apache-2.0 plugin as long as that notice stays with it.
 
 ## Changes
 

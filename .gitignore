@@ -18,6 +18,11 @@ notes.md
 .claude/settings.local.json
 CLAUDE.local.md
 
+# Type declarations Claude Code writes beside a mod it loads from a folder
+# (claude --plugin-dir plugins/aspire). Generated per machine; never shipped.
+plugins/*/.claude-plugin/types/
+plugins/*/tsconfig.json
+
 # Logs and dependencies
 *.log
 node_modules/
