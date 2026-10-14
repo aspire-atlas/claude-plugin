@@ -381,27 +381,36 @@ const statusMark = (x: number, y: number, status: string, color: string): string
 const CREDIT_H = 78
 const OVER = '#D0453F'
 
+/** The Aspire mark (the plugin's icon), drawn in a 512 box: a deep green tile with the A and the I in white. */
+const LOGO = `<rect width="512" height="512" rx="96" fill="#0B4545"/><path fill="#fff" fill-rule="evenodd" d="M62 413 L183 98 L236 98 L356 413 L296 413 L275 354 C235 392 190 413 130 413 Z M212 185 L257 296 C225 330 185 354 145 358 Z"/><rect x="365" y="98" width="64" height="316" fill="#fff"/>`
+const LOGO_SIZE = 56
+const LOGO_GAP = 10
+
 const creditsCardSvg = (W: number, v: CreditsView): string => {
   const pad = 10
-  const barW = W - pad * 2
+  const x0 = LOGO_SIZE + LOGO_GAP
+  const cardW = W - x0
+  const barW = cardW - pad * 2
   const fill = Math.round(barW * v.ratio)
   const color = v.isOver ? OVER : ASPIRE
+  const left = x0 + pad
+  const right = W - pad
   const text = (x: number, y: number, cls: string, size: number, body: string, extra = '') =>
     `<text class="${cls}" x="${x}" y="${y}" ${extra} font-family="${FONT}" font-size="${size}" font-variant-numeric="tabular-nums">${xml(body)}</text>`
-  const bigX = pad
   const bigW = textWidth(v.big, 22) + 6
   return svg(
     W,
     CREDIT_H,
-    `<rect class="tile" x="0" y="0" width="${W}" height="${CREDIT_H - 4}" rx="8"/>
-${text(pad, 17, 's', 11, v.title)}
-${v.tag ? text(W - pad, 17, 's', 11, v.tag, 'text-anchor="end"') : ''}
-<text class="t" x="${bigX}" y="42" font-family="${FONT}" font-size="22" font-weight="600" font-variant-numeric="tabular-nums" ${v.isOver ? `fill="${OVER}"` : ''}>${xml(v.big)}</text>
-${v.sub ? text(bigX + bigW, 42, 's', 12, v.sub) : ''}
-<rect class="k" x="${pad}" y="50" width="${barW}" height="4" rx="2"/>
-${v.ratio > 0 ? `<rect x="${pad}" y="50" width="${Math.max(3, fill)}" height="4" rx="2" fill="${color}"/>` : ''}
-${v.metaLeft ? text(pad, 68, 's', 11, v.metaLeft) : ''}
-${v.metaRight ? text(W - pad, 68, 's', 11, v.metaRight, 'text-anchor="end"') : ''}`,
+    `<g transform="translate(0,${Math.round((CREDIT_H - 4 - LOGO_SIZE) / 2)}) scale(${LOGO_SIZE / 512})"><title>Aspire</title>${LOGO}</g>
+<rect class="tile" x="${x0}" y="0" width="${cardW}" height="${CREDIT_H - 4}" rx="8"/>
+${text(left, 17, 's', 11, v.title)}
+${v.tag ? text(right, 17, 's', 11, v.tag, 'text-anchor="end"') : ''}
+<text class="t" x="${left}" y="42" font-family="${FONT}" font-size="22" font-weight="600" font-variant-numeric="tabular-nums" ${v.isOver ? `fill="${OVER}"` : ''}>${xml(v.big)}</text>
+${v.sub ? text(left + bigW, 42, 's', 12, v.sub) : ''}
+<rect class="k" x="${left}" y="50" width="${barW}" height="4" rx="2"/>
+${v.ratio > 0 ? `<rect x="${left}" y="50" width="${Math.max(3, fill)}" height="4" rx="2" fill="${color}"/>` : ''}
+${v.metaLeft ? text(left, 68, 's', 11, v.metaLeft) : ''}
+${v.metaRight ? text(right, 68, 's', 11, v.metaRight, 'text-anchor="end"') : ''}`,
   )
 }
 

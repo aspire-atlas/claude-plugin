@@ -406,6 +406,22 @@ test('idle crabs breathe at their own rate and start at their own point', async 
   await ui.unmount()
 })
 
+test('the Aspire mark sits to the left of the credits card on both desktop tabs', async ($, on) => {
+  world(on, () => ({ ...WITH_COSTS, credits: CREDITS }))
+  await typeAspire($)
+  await getStatus($)
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  for (const tab of ['tab-live', 'tab-agents']) {
+    await ui.press({ key: tab })
+    const card = (await ui.findAll({ type: 'Svg' })).map(el => String(el.props.source)).find(c => c.includes('<title>Aspire</title>')) ?? ''
+    expect(card).toContain('<title>Aspire</title>')
+    // The mark comes before the card's own tile, so it draws on the left.
+    expect(card.indexOf('<title>Aspire</title>')).toBeLessThan(card.indexOf('class="tile"'))
+    expect(card).toContain('996.2')
+  }
+  await ui.unmount()
+})
+
 test('an agent step call from an unknown agent changes nothing and does not switch the mod on', async ($, on) => {
   world(on, () => WITH_COSTS)
   expect(await $.tool.call({ tool: 'mcp__aspire__aspire_step', agentId: 'ghost', total: 3 } as never)).toMatchObject({ result: 'ok' })
