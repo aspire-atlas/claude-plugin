@@ -10,7 +10,7 @@
 // the server ships, confirm it, adjust CONTAINER_KEYS / FIELD_KEYS, and update
 // the AtlasTokenCosts doc in ../types/index.d.ts and the plugin README.
 
-import type { AtlasTokenCosts } from '../types'
+import type { AtlasCredits, AtlasTokenCosts } from '../types'
 
 // Keys are compared lower-cased with `_` and `-` removed, so `tokenCosts`,
 // `token_costs` and `Token-Costs` are one key.
@@ -311,3 +311,176 @@ export const fmtAtlasUsage = (c: AtlasTokenCosts): string => {
 /** What the band shows with no reading: a dash, and at full width how to get one. */
 export const ATLAS_ABSENT = '—'
 export const ATLAS_ABSENT_HINT = '—, run /aspire to refresh'
+
+
+// ---------------------------------------------------------------------------
+// Credits: the `credits` block of get_status.
+
+const num = (v: unknown): number | undefined => toAmount(v)
+
+const postsOf = (v: unknown): { count: number; credits: number } | undefined => {
+  if (!isRecord(v)) return undefined
+  const count = num(v.count)
+  const credits = num(v.credits)
+  return count !== undefined && credits !== undefined ? { count, credits } : undefined
+}
+
+/** Reads one credits block; null when it holds no usable balance. */
+export const parseCredits = (raw: unknown): AtlasCredits | null => {
+  if (!isRecord(raw) || !isRecord(raw.balance)) return null
+  const b = raw.balance
+  const granted = num(b.granted)
+  const consumed = num(b.consumed)
+  let remaining = num(b.remaining)
+  if (remaining === undefined && granted !== undefined && consumed !== undefined) remaining = Math.max(0, granted - consumed)
+  if (remaining === undefined) return null
+  const out: AtlasCredits = {
+    estimate: raw.estimate === true,
+    granted: granted ?? remaining + (consumed ?? 0),
+    consumed: consumed ?? 0,
+    remaining,
+    overage: num(b.overage) ?? 0,
+    periodConsumed: 0,
+    grants: [],
+  }
+  if (isRecord(raw.period) && typeof raw.period.start === 'string' && typeof raw.period.end === 'string') {
+    out.period = { start: raw.period.start, end: raw.period.end }
+  }
+  if (isRecord(raw.thisPeriod)) {
+    out.periodConsumed = num(raw.thisPeriod.consumed) ?? 0
+    const np = postsOf(raw.thisPeriod.newPosts)
+    if (np) out.newPosts = np
+    const rp = postsOf(raw.thisPeriod.retrievedPosts)
+    if (rp) out.retrievedPosts = rp
+  }
+  if (Array.isArray(raw.grants)) {
+    for (const g of raw.grants.slice(0, 20)) {
+      if (!isRecord(g)) continue
+      const credits = num(g.credits)
+      const kind = toLabel(g.kind)
+      if (credits !== undefined && kind !== undefined) out.grants.push({ kind, credits, expiresAt: typeof g.expiresAt === 'string' ? g.expiresAt : null })
+    }
+  }
+  return out
+}
+
+/** Breadth-first: the shallowest `credits` block under `root`. */
+const findCredits = (root: unknown): AtlasCredits | null => {
+  const queue: [unknown, number][] = [[root, 0]]
+  const seen = new Set<unknown>()
+  let nodes = 0
+  while (queue.length && nodes++ < MAX_NODES) {
+    const [v, depth] = queue.shift() as [unknown, number]
+    if (typeof v !== 'object' || v === null || seen.has(v) || depth > MAX_DEPTH) continue
+    seen.add(v)
+    if (Array.isArray(v)) {
+      for (const item of v) queue.push([item, depth + 1])
+      continue
+    }
+    for (const [k, child] of Object.entries(v)) {
+      if (norm(k) === 'credits') {
+        const credits = parseCredits(child)
+        if (credits) return credits
+      }
+    }
+    for (const child of Object.values(v)) queue.push([child, depth + 1])
+  }
+  return null
+}
+
+/**
+ * The organization's credits from a get_status tool result, or null when it
+ * carries none. Same inputs as readAtlasUsage; the block under
+ * `organizations.selected` wins. Never throws.
+ */
+export const readAtlasCredits = (result: unknown): AtlasCredits | null => {
+  try {
+    const roots = rootsOf(result)
+    for (const root of roots) {
+      const selected = selectedOrg(root)
+      if (selected !== undefined) {
+        const credits = findCredits(selected)
+        if (credits) return credits
+      }
+    }
+    for (const root of roots) {
+      const credits = findCredits(root)
+      if (credits) return credits
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+/** Credits for people: whole numbers with separators, one decimal otherwise (996.2, 1,000, 3.8). */
+export const fmtCredits = (n: number): string => {
+  const [whole, frac] = String(Number(n.toFixed(1))).split('.')
+  return (whole ?? '0').replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (frac ? `.${frac}` : '')
+}
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const
+
+/** `Nov 1` from an ISO date, in UTC; empty when it is not a date. */
+export const fmtDay = (iso: string): string => {
+  const d = new Date(iso)
+  return Number.isNaN(d.getTime()) ? '' : `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`
+}
+
+/** What the one card in the sidebar shows, whatever the surface draws it with. */
+export type CreditsView = {
+  title: string
+  /** The big figure: credits left. */
+  big: string
+  /** After it: "of 1,000 left". */
+  sub: string
+  /** Share of the grants consumed, 0 to 1. */
+  ratio: number
+  /** Credits ran past the grants. */
+  isOver: boolean
+  /** Under the bar, left. */
+  metaLeft: string
+  /** Under the bar, right; posts counted this period. */
+  metaRight: string
+  /** Top right: "estimate · resets Nov 1". */
+  tag: string
+  /** Bottom right: the grants. */
+  grants: string
+}
+
+const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`
+
+/**
+ * The card's content from the latest credits reading, else the older token-cost
+ * reading, else a dash. Pure.
+ */
+export const creditsView = (c: AtlasCredits | null, costs: AtlasTokenCosts | null): CreditsView => {
+  if (c) {
+    const tag = [c.estimate ? 'estimate' : '', c.period ? `resets ${fmtDay(c.period.end)}` : ''].filter(Boolean).join(' · ')
+    const posts = [
+      c.newPosts ? plural(c.newPosts.count, 'new post', 'new posts') : '',
+      c.retrievedPosts ? `${c.retrievedPosts.count} retrieved` : '',
+    ].filter(Boolean)
+    const trial = c.grants.length === 1 ? c.grants[0]! : undefined
+    const grants = trial
+      ? `${trial.kind[0]!.toUpperCase()}${trial.kind.slice(1)} · ${trial.expiresAt ? `ends ${fmtDay(trial.expiresAt)}` : 'no expiry'}`
+      : c.grants.length
+        ? plural(c.grants.length, 'grant', 'grants')
+        : ''
+    return {
+      title: 'Credits',
+      big: c.overage > 0 ? `${fmtCredits(c.overage)} over` : fmtCredits(c.remaining),
+      sub: c.overage > 0 ? `of ${fmtCredits(c.granted)} used up` : `of ${fmtCredits(c.granted)} left`,
+      ratio: c.granted > 0 ? Math.min(1, c.consumed / c.granted) : c.overage > 0 ? 1 : 0,
+      isOver: c.overage > 0,
+      metaLeft: `${fmtCredits(c.periodConsumed)} used this period`,
+      metaRight: posts.join(' · '),
+      tag,
+      grants,
+    }
+  }
+  if (costs) {
+    return { title: 'Atlas tokens', big: fmtAtlasUsage(costs), sub: '', ratio: costs.limit ? Math.min(1, costs.used / costs.limit) : 0, isOver: false, metaLeft: '', metaRight: '', tag: '', grants: '' }
+  }
+  return { title: 'Credits', big: ATLAS_ABSENT, sub: 'run /aspire to refresh', ratio: 0, isOver: false, metaLeft: '', metaRight: '', tag: '', grants: '' }
+}

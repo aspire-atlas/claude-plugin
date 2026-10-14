@@ -11,6 +11,15 @@ const pane = { title: '', isFocused: false, bodyColumns: 60, placement: 'dock', 
 
 const ORGS = { selected: { id: 'org_1', name: 'Sample Brand', role: 'owner' }, all: [{ id: 'org_1', name: 'Sample Brand' }] }
 const PROFILES = [{ id: 'p1', name: 'Sample', channels: [{ network: 'instagram' }] }]
+const CREDITS = {
+  estimate: true,
+  organizationId: 'org_z54dtf9al5vg5v92',
+  period: { start: '2026-10-01T00:00:00.000Z', end: '2026-11-01T00:00:00.000Z' },
+  thisPeriod: { consumed: 3.8, newPosts: { count: 25, rate: 0.1, credits: 2.5 }, retrievedPosts: { count: 26, rate: 0.05, credits: 1.3 } },
+  balance: { granted: 1000, consumed: 3.8, remaining: 996.2, overage: 0 },
+  grants: [{ kind: 'trial', credits: 1000, startsAt: '2026-07-07T20:59:42.673Z', expiresAt: null }],
+}
+
 const WITH_COSTS = {
   organizations: { ...ORGS, selected: { ...ORGS.selected, tokenCosts: { used: 12400, limit: 50000, unit: 'tokens' } } },
   profiles: PROFILES,
@@ -112,7 +121,7 @@ for (const surface of ['terminal', 'desktop'] as const) {
     expect(await barShows($, surface, '0%')).toBe(true)
     // The band has no stats row; the panel's summary carries the Atlas figure, none made up.
     expect(await bandShows($, surface, /^Atlas tokens$/)).toBe(false)
-    expect(await panelShows($, /Atlas tokens —$/)).toBe(true)
+    expect(await panelShows($, /^run \/aspire to refresh$/)).toBe(true)
     expect(await panelShows($, /Unrelated work/)).toBe(false)
     expect(await status($)).toMatch(/^Aspire mod: on since 0s ago, switched on by a typed \/aspire \(\/aspire:aspire\)\./)
   })
@@ -129,7 +138,7 @@ for (const surface of ['terminal', 'desktop'] as const) {
     // Atlas answered, but only the skill's report moves the bar.
     expect(await barShows($, surface, 'Initializing…')).toBe(true)
     expect(await barShows($, surface, '0%')).toBe(true)
-    expect(await panelShows($, /Atlas tokens 12k \/ 50k$/)).toBe(true)
+    expect(await panelShows($, /^12k \/ 50k$/)).toBe(true)
 
     // The skill reports: its count wins.
     expect(await report($, { title: 'Onboarding', total: 6, done: 4, phase: 'Brand context' })).toMatchObject({ result: `ok: Brand context 4/6, 67%; band: visible on ${surface}` })
@@ -145,7 +154,7 @@ for (const surface of ['terminal', 'desktop'] as const) {
     body = WITHOUT_COSTS
     await getStatus($)
     expect(await panelShows($, /12k/)).toBe(false)
-    expect(await panelShows($, /Atlas tokens —$/)).toBe(true)
+    expect(await panelShows($, /^run \/aspire to refresh$/)).toBe(true)
   })
 }
 
@@ -309,7 +318,8 @@ test('the Agents tab shows a crab card for every agent type, and marks the ones 
   const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
   await ui.press({ key: 'tab-agents' })
   const cards = (await ui.findAll({ type: 'Svg' })).map(el => String(el.props.source))
-  expect(cards).toHaveLength(24)
+  // One credits card above the tabs, then a card per agent type.
+  expect(cards).toHaveLength(25)
   expect(cards.filter(c => c.includes('Market signal'))[0]).toContain('running')
   expect(cards.filter(c => c.includes('Orchestrator'))[0]).toContain('ready')
   expect(cards.join('')).not.toContain('undefined')
@@ -326,6 +336,25 @@ test('the Agents tab on the terminal lists every agent type in text', async ($, 
   expect(await ui.find({ type: 'Text', text: /Creator vetting/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /Orchestrator/ })).toBeDefined()
   await ui.unmount()
+})
+
+test('the tabs read as tabs, and pressing an agent drafts its start in the prompt without sending it', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  const drafts: { text?: string; mode?: string }[] = []
+  on('prompt.fill', (_$, e) => {
+    drafts.push(e as never)
+    return { isFilled: true, text: (e as { text: string }).text, cursor: 0 } as never
+  })
+  await typeAspire($)
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'terminal', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  expect((await ui.find({ key: 'tab-live' }))?.props.label).toBe('[ Live ]')
+  expect(String((await ui.find({ key: 'tab-agents' }))?.props.label)).toMatch(/^ {2}Agents · \d+ ›$/)
+  await ui.press({ key: 'tab-agents' })
+  expect(String((await ui.find({ key: 'tab-agents' }))?.props.label)).toMatch(/^\[ Agents · \d+ \]$/)
+  await ui.press({ key: 'aspire:atlas-creator-vetting' })
+  await ui.unmount()
+  expect(drafts).toHaveLength(1)
+  expect(drafts[0]).toMatchObject({ text: '/aspire:aspire run atlas-creator-vetting', mode: 'replace' })
 })
 
 test('an agent step call from an unknown agent changes nothing and does not switch the mod on', async ($, on) => {
@@ -383,10 +412,10 @@ test('a /clear puts the mod back to sleep until /aspire runs again', async ($, o
   await getStatus($)
   await report($, { title: 'Onboarding', total: 6, done: 3 })
   await spawn($, 'aspire:atlas-creator-brief', 'Brief for next week')
-  expect(await panelShows($, /Atlas tokens 12k \/ 50k$/)).toBe(true)
+  expect(await panelShows($, /^12k \/ 50k$/)).toBe(true)
 
   await $.session.end({ reason: 'clear', sessionId: 's1', resume: { id: 's1' } } as never)
-  expect(await panelShows($, /Atlas tokens 12k/)).toBe(false)
+  expect(await panelShows($, /^12k/)).toBe(false)
   expect(await barShows($, 'terminal', 'Aspire: Sample Brand')).toBe(false)
   expect(await panelShows($, /Brief for next week/)).toBe(false)
   expect(await $.command.run({ command: 'aspire-agents-info', args: '' } as never)).toMatchObject({
@@ -439,3 +468,26 @@ test('renders while the mod is off still count, and /clear resets the count', as
   expect(await status($)).toMatch(/Band: never drawn on this surface\./)
 })
 
+
+test('one credits card tops the panel on both tabs and replaces the agents and time tiles', async ($, on) => {
+  world(on, () => ({ ...WITH_COSTS, credits: CREDITS }))
+  await typeAspire($)
+  await getStatus($)
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'terminal', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  for (const tab of ['tab-live', 'tab-agents']) {
+    await ui.press({ key: tab })
+    expect(await ui.find({ type: 'Text', text: /^996\.2$/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /of 1,000 left · estimate · resets Nov 1/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /3\.8 used this period · Trial · no expiry/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /^25 new posts · 26 retrieved$/ })).toBeDefined()
+  }
+  await ui.unmount()
+  const desktop = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  const drawn = (await desktop.findAll({ type: 'Svg' })).map(el => String(el.props.source)).join('\n')
+  expect(drawn).toContain('996.2')
+  expect(drawn).toContain('of 1,000 left')
+  expect(drawn).not.toContain('>Time<')
+  expect(drawn).not.toContain('NaN')
+  await desktop.unmount()
+  expect(await status($)).toMatch(/996\.2 credits left/)
+})

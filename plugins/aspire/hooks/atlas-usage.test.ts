@@ -1,7 +1,7 @@
 // Run with: claude plugin test plugins/aspire
 import { expect, test } from 'claude-code/testing'
 
-import { fmtAmount, fmtAtlasUsage, isAtlasStatusCall, isAtlasToolName, parseTokenCosts, readAtlasOrg, readAtlasUsage, toAmount } from './atlas-usage'
+import { creditsView, fmtAmount, fmtAtlasUsage, fmtCredits, fmtDay, readAtlasCredits, isAtlasStatusCall, isAtlasToolName, parseTokenCosts, readAtlasOrg, readAtlasUsage, toAmount } from './atlas-usage'
 
 // What an MCP get_status result looks like as the tool.call hook sees it: the
 // tool's record (`content` blocks of JSON text) and the text the model reads.
@@ -139,4 +139,54 @@ test('isAtlasToolName: the Atlas connectors by name, never the admin connector o
   expect(isAtlasToolName('mcp__Aspire_Atlas_Organization_Admin__list_members')).toBe(false)
   expect(isAtlasToolName('mcp__claude_ai_Atlassian__getJiraIssue')).toBe(false)
   expect(isAtlasToolName('mcp__aspire__aspire_progress')).toBe(false)
+})
+
+const CREDITS_BLOCK = {
+  estimate: true,
+  organizationId: 'org_z54dtf9al5vg5v92',
+  period: { start: '2026-10-01T00:00:00.000Z', end: '2026-11-01T00:00:00.000Z' },
+  thisPeriod: { consumed: 3.8, newPosts: { count: 25, rate: 0.1, credits: 2.5 }, retrievedPosts: { count: 26, rate: 0.05, credits: 1.3 } },
+  balance: { granted: 1000, consumed: 3.8, remaining: 996.2, overage: 0 },
+  grants: [{ kind: 'trial', credits: 1000, startsAt: '2026-07-07T20:59:42.673Z', expiresAt: null }],
+}
+
+test('readAtlasCredits: the credits block, top level or under the selected organization', () => {
+  const want = {
+    estimate: true,
+    granted: 1000,
+    consumed: 3.8,
+    remaining: 996.2,
+    overage: 0,
+    period: { start: '2026-10-01T00:00:00.000Z', end: '2026-11-01T00:00:00.000Z' },
+    periodConsumed: 3.8,
+    newPosts: { count: 25, credits: 2.5 },
+    retrievedPosts: { count: 26, credits: 1.3 },
+    grants: [{ kind: 'trial', credits: 1000, expiresAt: null }],
+  }
+  expect(readAtlasCredits(asToolResult({ credits: CREDITS_BLOCK }))).toEqual(want)
+  expect(readAtlasCredits(asToolResult({ organizations: { selected: { id: 'org_1', credits: CREDITS_BLOCK } } }))).toEqual(want)
+})
+
+test('readAtlasCredits: no balance is no reading; a missing remaining is worked out', () => {
+  expect(readAtlasCredits(asToolResult({ credits: { estimate: true } }))).toBeNull()
+  expect(readAtlasCredits(asToolResult({ organizations: {} }))).toBeNull()
+  expect(readAtlasCredits(asToolResult({ credits: { balance: { granted: 100, consumed: 30 } } }))?.remaining).toBe(70)
+})
+
+test('fmtCredits and fmtDay', () => {
+  expect(fmtCredits(996.2)).toBe('996.2')
+  expect(fmtCredits(1000)).toBe('1,000')
+  expect(fmtCredits(12345.67)).toBe('12,345.7')
+  expect(fmtCredits(3.8)).toBe('3.8')
+  expect(fmtDay('2026-11-01T00:00:00.000Z')).toBe('Nov 1')
+  expect(fmtDay('nope')).toBe('')
+})
+
+test('creditsView: trial with usage, over the grants, token costs only, nothing', () => {
+  const c = readAtlasCredits({ credits: CREDITS_BLOCK })
+  expect(creditsView(c, null)).toMatchObject({ big: '996.2', sub: 'of 1,000 left', isOver: false, metaLeft: '3.8 used this period', metaRight: '25 new posts · 26 retrieved', tag: 'estimate · resets Nov 1', grants: 'Trial · no expiry' })
+  const over = readAtlasCredits({ credits: { ...CREDITS_BLOCK, balance: { granted: 1000, consumed: 1042.5, remaining: 0, overage: 42.5 } } })
+  expect(creditsView(over, null)).toMatchObject({ big: '42.5 over', sub: 'of 1,000 used up', isOver: true, ratio: 1 })
+  expect(creditsView(null, { used: 12000, limit: 50000 })).toMatchObject({ title: 'Atlas tokens', big: '12k / 50k' })
+  expect(creditsView(null, null)).toMatchObject({ title: 'Credits', big: '—', sub: 'run /aspire to refresh' })
 })

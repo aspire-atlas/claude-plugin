@@ -38,6 +38,43 @@ export type AtlasTokenCosts = {
   unit?: string
 }
 
+/**
+ * The organization's credits, from the `credits` block of an Atlas `get_status`
+ * result (under `organizations.selected` or at the top level):
+ *
+ *   { "credits": { "estimate": true, "period": { "start", "end" },
+ *       "thisPeriod": { "consumed": 3.8,
+ *         "newPosts": { "count": 25, "rate": 0.1, "credits": 2.5 },
+ *         "retrievedPosts": { "count": 26, "rate": 0.05, "credits": 1.3 } },
+ *       "balance": { "granted": 1000, "consumed": 3.8, "remaining": 996.2, "overage": 0 },
+ *       "grants": [ { "kind": "trial", "credits": 1000, "startsAt", "expiresAt": null } ] } }
+ *
+ * No `balance` with a `remaining`, or a `granted` and a `consumed` to work it out from, is no reading.
+ */
+export type AtlasCredits = {
+  /** The server says the figures are estimates. */
+  estimate: boolean
+  granted: number
+  /** Consumed over the life of the grants. */
+  consumed: number
+  remaining: number
+  /** Credits used past the grants; 0 when none. */
+  overage: number
+  /** The current period, ISO dates; `end` is when it resets. */
+  period?: { start: string; end: string }
+  /** Credits consumed in the current period. */
+  periodConsumed: number
+  newPosts?: { count: number; credits: number }
+  retrievedPosts?: { count: number; credits: number }
+  grants: { kind: string; credits: number; expiresAt: string | null }[]
+}
+
+/** The last Atlas credits reading, and when. */
+export type AtlasCreditsReading = {
+  credits: AtlasCredits
+  at: number
+}
+
 /** The last Atlas reading: what the latest Atlas get_status said, and when. */
 export type AtlasReading = {
   costs: AtlasTokenCosts
