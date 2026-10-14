@@ -132,7 +132,7 @@ for (const surface of ['terminal', 'desktop'] as const) {
     expect(await bandShows($, surface, /^12k \/ 50k$/)).toBe(true)
 
     // The skill reports: its count wins.
-    expect(await report($, { title: 'Onboarding', total: 6, done: 4, phase: 'Brand context' })).toMatchObject({ result: 'ok: Brand context 4/6, 67%' })
+    expect(await report($, { title: 'Onboarding', total: 6, done: 4, phase: 'Brand context' })).toMatchObject({ result: `ok: Brand context 4/6, 67%; band: visible on ${surface}` })
     expect(await barShows($, surface, 'Brand context 4/6')).toBe(true)
     await report($, { done: 5, phase: 'First insights' })
     expect(await barShows($, surface, 'First insights 5/6')).toBe(true)
@@ -212,7 +212,7 @@ test('status: counts, the last get_status, the bar, and the version line', async
   expect(text).toMatch(/Last get_status 0s ago: 12k \/ 50k Atlas tokens, organization Sample Brand\./)
   expect(text).toMatch(/Bar: Aspire: Sample Brand, Onboarding 4\/6, 67% \(baseline from get_status\)\./)
   expect(text).toMatch(/^Claude Code .+ on .+\.$/m)
-  expect(text.split('\n')).toHaveLength(5)
+  expect(text.split('\n')).toHaveLength(6)
 })
 
 test('a subagent cannot report the progress', async ($, on) => {
@@ -348,6 +348,48 @@ test('a /clear puts the mod back to sleep until /aspire runs again', async ($, o
   // Back on, the bar starts over: no organization, no reported progress.
   await typeAspire($)
   expect(await barShows($, 'terminal', 'Onboarding 0/6')).toBe(true)
+})
+
+const mountBand = async ($: Engine, surface: 'terminal' | 'desktop') => {
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface, component: 'AbovePrompt', props: band as never })
+  await ui.unmount()
+}
+
+test('the progress result says the band was not drawn when nothing rendered it', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  await typeAspire($)
+  const out = await report($, { title: 'Onboarding', total: 6, done: 1, phase: 'Organization' })
+  expect(String((out as { result?: unknown }).result)).toMatch(/; band: not-drawn$/)
+  expect(await status($)).toMatch(/Band: never drawn on this surface\./)
+})
+
+test('the progress result says the band is visible once the slot rendered', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  await typeAspire($)
+  await mountBand($, 'terminal')
+  const out = await report($, { title: 'Onboarding', total: 6, done: 1, phase: 'Organization' })
+  expect(String((out as { result?: unknown }).result)).toMatch(/; band: visible on terminal$/)
+  expect(await status($)).toMatch(/Band: drawn 1 times, last on terminal\./)
+})
+
+test('the progress result says hidden-by-user after the band is dismissed', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  await typeAspire($)
+  await mountBand($, 'terminal')
+  await $.command.run({ command: 'aspire-agents-info', args: 'band' } as never)
+  await mountBand($, 'terminal')
+  const out = await report($, { title: 'Onboarding', total: 6, done: 1, phase: 'Organization' })
+  expect(String((out as { result?: unknown }).result)).toMatch(/; band: hidden-by-user$/)
+})
+
+test('renders while the mod is off still count, and /clear resets the count', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  on('session.end', () => ({ sessionId: 's1' }) as never)
+  await mountBand($, 'desktop')
+  await mountBand($, 'desktop')
+  expect(await status($)).toMatch(/Band: drawn 2 times, last on desktop\./)
+  await $.session.end({ reason: 'clear', sessionId: 's1', resume: { id: 's1' } } as never)
+  expect(await status($)).toMatch(/Band: never drawn on this surface\./)
 })
 
 test('turns count from the one that ran /aspire', async ($, on) => {

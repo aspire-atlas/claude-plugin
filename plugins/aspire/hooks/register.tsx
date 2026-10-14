@@ -114,6 +114,11 @@ const isAspireAgent = (type: string, plugin: string | undefined): boolean => typ
 // the mod switches on, never before; a reload starts it again from session.start.
 let ticker: { cancel: () => void } | null = null
 
+// Whether the AbovePrompt slot is drawn at all on this surface. A render hook
+// never writes $.state (drawing is pure), so the count is a module variable: it
+// starts over on a hot reload and on /clear, and the next render counts again.
+const band: { renders: number; surface: string | null } = { renders: 0, surface: null }
+
 const tick = async ($: EngineInterface): Promise<void> => {
   const at = await $.clock.now()
   const c = await read($, cache)
@@ -159,6 +164,8 @@ async function reset($: EngineInterface): Promise<void> {
   await update($, stats, () => ({ turn: 0, speed: null, context: 0 }))
   await update($, cache, () => ({ expiresAt: null, secondsLeft: null }))
   await update($, isBandHidden, () => false)
+  band.renders = 0
+  band.surface = null
   await update($, agents, () => [])
   await update($, panel, () => ({ isCompact: false, isDoneCollapsed: false, isAutoOpened: false }))
 }
@@ -521,7 +528,9 @@ async function statusText($: EngineInterface): Promise<string> {
       : `Last get_status ${ago(at - s.lastStatusAt)}: ${reading ? `${fmtAtlasUsage(reading.costs)} Atlas tokens` : 'no token costs in it'}, organization ${o.name ?? 'not picked yet'}.`
   const shown = shownOf(p, o)
   const bar = isOnNow ? `Bar: ${titleOf(o)}, ${shown.label}, ${percentOf(shown)} (${shown.isReported ? 'reported by the skill' : 'baseline from get_status'}).` : 'Bar: not shown until the mod is on.'
-  return [state, counts, status, bar, `Claude Code ${version} on ${surfaces}.`].join('\n')
+  const b = band
+  const drawn = b.renders > 0 ? `Band: drawn ${b.renders} times, last on ${b.surface ?? 'unknown'}.` : 'Band: never drawn on this surface.'
+  return [state, counts, status, bar, drawn, `Claude Code ${version} on ${surfaces}.`].join('\n')
 }
 
 // ---------------------------------------------------------------------------
@@ -547,7 +556,8 @@ export const register: Register = on => {
           'Report the /aspire skill\'s progress to the Aspire progress bar above the prompt. It only draws the bar: it reads and changes nothing else. ' +
           'Call it at the start of each step with done (steps finished) and total (steps planned), with phase naming the step in a few words, ' +
           'and once at the end with finished: true. Fields left out keep their previous value; a new title starts a new run. ' +
-          'For the main session only: a call from a subagent is ignored.',
+          'For the main session only: a call from a subagent is ignored. ' +
+          'The result ends with `band: visible`, `not-drawn`, `hidden-by-user` or `unknown`. When it is not `visible`, show the progress another way.',
         inputSchema: {
           type: 'object',
           properties: {
@@ -641,11 +651,14 @@ export const register: Register = on => {
       await count($, 'progressReports')
       const p = await update($, progress, prev => mergeProgress(prev, e as unknown as ProgressInput))
       const shown = shownOf(p, await read($, org))
-      return { result: `ok: ${shown.label}, ${percentOf(shown)}` }
+      const b = band
+      const hidden = await read($, isBandHidden)
+      const visibility = hidden ? 'hidden-by-user' : b.renders > 0 ? `visible on ${b.surface ?? 'unknown'}` : 'not-drawn'
+      return { result: `ok: ${shown.label}, ${percentOf(shown)}; band: ${visibility}` }
     } catch {
-      return { result: 'ok' }
+      return { result: 'ok; band: unknown' }
     }
-  }).catch(() => ({ result: 'ok' }))
+  }).catch(() => ({ result: 'ok; band: unknown' }))
 
   // Atlas tool results: any one switches the mod on; a get_status result also
   // gives the token costs, the organization, and the onboarding baseline. The
@@ -827,6 +840,9 @@ export const register: Register = on => {
   // Above the prompt: the progress bar (from savvy-progress), then the band's
   // row (from session-band), then whatever other mods draw beneath.
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
+    // Counted before any early return, so the progress tool can tell whether this surface draws the slot at all.
+    band.renders += 1
+    band.surface = e.surface ?? null
     if (e.props.hasSurvey || !(await isOn($)) || (await read($, isBandHidden))) return next(e)
     // Claude Code's own placeholder ({ type: 'engine' }) is never nested: the desktop drops a band that nests it.
     const drawn = await Promise.resolve(next(e)).catch(() => null)

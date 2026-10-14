@@ -11,7 +11,7 @@ Onboarding for the Atlas platform (https://atlas.aspire.io). Takes a new or retu
 | MCP server | `Meta Ads` | Optional. Meta's hosted ads MCP server at `https://mcp.facebook.com/ads` (HTTP, OAuth with Facebook through Aspire's Meta app). Run by Meta, not Aspire. Tools appear as `mcp__Meta_Ads__*`. |
 | Skill | `/aspire:aspire` | Six phase onboarding flow: connection check, auth and org selection, org status, profile and social connect, brand context capture, first insights |
 | Skill | `/aspire:org-admin` | Support only. Lists organization members and pending invitations and sends confirmed invitations when someone asks. Uses Aspire Atlas Organization Admin |
-| Mod | Band above the prompt | Claude Code only, from 4.0.0. Once `/aspire` runs: a progress bar (`Aspire: {organization}`, onboarding progress, percent), then turn, response speed, Atlas token costs from `get_status`, prompt cache countdown, and context fill. See [Band and agents panel](#band-and-agents-panel-claude-code). |
+| Mod | Band above the prompt | Claude Code terminal and desktop app, from 4.0.0; elsewhere the skill shows its progress another way (see the surface table below). Once `/aspire` runs: a progress bar (`Aspire: {organization}`, onboarding progress, percent), then turn, response speed, Atlas token costs from `get_status`, prompt cache countdown, and context fill. See [Band and agents panel](#band-and-agents-panel-claude-code). |
 | Mod | `/aspire-agents-info` | Claude Code only, from 4.0.0. Shows or hides the Aspire agents panel: running and finished agents with model, context fill, and time. `/aspire-agents-info status` says whether the mod is on, what switched it on, and what it has seen. |
 | Agent | `atlas-profile-analyst` | Analyzes an account handle the brand manages and ideates next week's content pushes: cadence, engagement, top posts and what they share, format mix, rate benchmarks against competitors Atlas indexes, then three pushes with day, format, angle, and target. Runs for first insights in Phase 6 and any time after. Also reviews any public Instagram or TikTok handle the user names, resolving and refreshing it in Atlas when the held data is over a day old. |
 | Agent | `atlas-ad-reuse` | Ranks the brand's and creators' videos on the hooks that work as ads (hook by 3 seconds, brand by 3 seconds, works without sound, retention, standalone segment, ready for paid) and publishes a cut list with timestamps, lengths, placements, and rights status for performance and creative. Reads only what Atlas holds |
@@ -213,9 +213,23 @@ From 4.0.0 the plugin includes a Claude Code mod built on function hooks, an ear
 - **Aspire agents panel**: every `aspire:*` agent, plus any other subagent started after the mod switched on, running and finished, with model and effort, context fill, and time. It opens by itself once, when the first `aspire:*` agent starts. `/aspire-agents-info` shows or hides it, and `/aspire-agents-info open` brings it forward. It shows no cost, because Atlas does not report token costs per agent. The command is not `/aspire agents`, which lists the plugin's agents and starts one.
 - **Characters**: the panel's pixel crabs come from the mod it is adapted from, one costume per model and effort. To swap them, edit the `CHARACTERS` table in `hooks/characters.ts`; nothing else draws them.
 
-- **Checking it**: `/aspire-agents-info status` prints whether the mod is on, what switched it on and when, how many Aspire events it has seen (typed `/aspire` prompts, skill prompts, Skill tool calls, progress reports, Atlas results, agents), the last `get_status` reading, what the bar shows, and the Claude Code version and surface. It works before `/aspire` too, so it shows whether the mod loaded at all.
+- **Checking it**: `/aspire-agents-info status` prints whether the mod is on, what switched it on and when, how many Aspire events it has seen (typed `/aspire` prompts, skill prompts, Skill tool calls, progress reports, Atlas results, agents), the last `get_status` reading, what the bar shows, whether the band has been drawn on this surface, and the Claude Code version and surface. It works before `/aspire` too, so it shows whether the mod loaded at all.
 
 The mod reads only what already passes through the session and makes no network, file, or process calls; see [SECURITY.md](../../SECURITY.md). Its tests run with `claude plugin test plugins/aspire`.
+
+### Where progress shows
+
+The bar and band draw only where the host renders the slot above the prompt. The `aspire_progress` result ends with `band: visible on {surface}`, `not-drawn`, `hidden-by-user` or `unknown`, and the skill picks its channel from that, once per run.
+
+| Surface | Progress shows as |
+| --- | --- |
+| Claude Code, terminal | The bar |
+| Claude Code, desktop app | The bar |
+| Cowork, desktop app | The Cowork task list |
+| Cowork, phone or web (untested) | The Cowork task list |
+| claude.ai chat (skill only, no plugin hooks) | One progress line per phase |
+
+Dismissing the bar with `✕` starts no fallback. `/aspire-agents-info status` adds a `Band:` line: how many times the slot has been drawn and on which surface, or that it never was.
 
 ### Atlas token costs in get_status
 
