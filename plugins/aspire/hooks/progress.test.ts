@@ -1,7 +1,8 @@
 // Run with: claude plugin test plugins/aspire
 import { expect, test } from 'claude-code/testing'
 
-import { agentName, barText, mergeProgress, orgStateFrom, percentOf, shownOf, titleOf } from './progress'
+import { planOf } from './plan'
+import { agentName, barText, isReportLeading, mergeProgress, orgStateFrom, percentOf, shownOf, titleOf } from './progress'
 
 const NO_ORG = { name: null, checkpoints: 0 }
 
@@ -97,4 +98,18 @@ test('shownOf: a finished run shows Done, and agents started after it take the b
 
 test('agentName', () => {
   expect(agentName('aspire:atlas-creator-brief')).toBe('creator brief')
+})
+
+test("a bare report gives way to the agent's own steps; a report with tasks keeps the bar", () => {
+  const turn = { title: 'T', startedAt: 0, calls: 0, changed: [], read: [] }
+  const plan = planOf(turn, [{ subject: 'A', status: 'completed', calls: 1 }, { subject: 'B', status: 'in_progress', calls: 0 }, { subject: 'C', status: 'pending', calls: 0 }], 1000)
+  const bare = mergeProgress(null, { title: 'Onboarding', total: 6, done: 1, phase: 'Connection' })
+  expect(isReportLeading(bare, plan)).toBe(false)
+  expect(shownOf(bare, NO_ORG, [], plan)).toMatchObject({ label: 'Step 2 of 3', source: 'plan' })
+  // With no task list, the bare report leads as before.
+  expect(shownOf(bare, NO_ORG, [], null)).toMatchObject({ label: 'Connection 1/6', source: 'skill' })
+  const tasked = mergeProgress(null, { title: 'Brief', tasks: ['Read', 'Find', 'Publish'] })
+  expect(isReportLeading(tasked, plan)).toBe(true)
+  expect(shownOf(tasked, NO_ORG, [], plan).source).toBe('skill')
+  expect(isReportLeading(mergeProgress(tasked, { finished: true }), plan)).toBe(false)
 })

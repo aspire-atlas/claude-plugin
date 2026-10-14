@@ -135,9 +135,15 @@ const shown = (ratio: number, label: string, total: number, isFinished: boolean,
  * that ran are the steps (done out of started). With neither, the bar reads
  * Initializing… at 0% until the first tasks arrive.
  */
+/**
+ * Whether the skill's unfinished report leads the bar: it has tasks of its own, or the agent
+ * keeps no task list. A bare report (a title, a count) gives way to the agent's own steps.
+ */
+export const isReportLeading = (p: Progress | null, plan: PlanView | null): p is Progress => !!p && !p.isFinished && (p.tasks.length > 0 || !plan)
+
 export const shownOf = (p: Progress | null, o: OrgState, runs: readonly Run[] = [], plan: PlanView | null = null): Shown => {
   const running = runs.filter(r => r.status === 'running')
-  if (p && !p.isFinished) {
+  if (isReportLeading(p, plan)) {
     const doneByAgent = (t: ProgressTask): boolean => runs.some(r => r.status === 'done' && norm(r.description) === norm(t.title))
     const doneTasks = p.tasks.filter(t => t.isDone || doneByAgent(t)).length
     const total = Math.max(p.total, p.tasks.length)

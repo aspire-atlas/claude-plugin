@@ -95,7 +95,7 @@ import { clip, fitText, fmtTime, fmtTokens, modelName, textWidth, windowOf, xml 
 import { applyTask, countCall, endTurn, isTaskTool, planOf, startTurn, stepsOf as stepsFromItems, touch } from './plan'
 import type { PlanView } from './plan'
 import type { ProgressInput, Shown } from './progress'
-import { barText, mergeProgress, orgStateFrom, percentOf, shownOf, titleOf } from './progress'
+import { barText, isReportLeading, mergeProgress, orgStateFrom, percentOf, shownOf, titleOf } from './progress'
 
 const PLUGIN = 'aspire'
 
@@ -1318,13 +1318,13 @@ export const register: Register = on => {
         title: 'Progress',
         summary: `${shown.label} · ${percent}`,
         rows:
-          plan && !(report && !report.isFinished)
+          plan && !isReportLeading(report, plan)
             ? [{ id: 'progress', h: planH(plan), alt: `${title}: ${shown.label}, ${percent}`, draw: (W, tail) => planBodySvg(W, title, shown, plan, tail) }]
             : [
                 { id: 'progress', h: PROGRESS_H + tasks.length * TASK_H, alt: `${title}: ${shown.label}, ${percent}`, draw: (W, tail) => progressBodySvg(W, title, shown, tasks, tail) },
               ],
         text: () =>
-          plan && !(report && !report.isFinished) ? (
+          plan && !isReportLeading(report, plan) ? (
             <Box flexDirection="column">
               <Text wrap="truncate-end">
                 {plan.badge ? <Text color={plan.state === 'done' ? DONE : undefined} bold>{plan.state === 'done' ? '✓' : '■'} {plan.badge} </Text> : null}
