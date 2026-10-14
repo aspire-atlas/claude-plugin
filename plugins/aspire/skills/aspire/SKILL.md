@@ -16,8 +16,8 @@ description: >
   client's decisions", "record a reply", "set up our influencer program", "where is the
   {program} program", "write to the approved creators", "send product to the creators", "set up
   affiliate codes", "did the creators post", "request rights", "what do we owe creators",
-  "program dashboard", "what's next", "what should we do next", "next actions", or "/aspire fee
-  calculator".
+  "set up Instagram Shop", "TikTok Shop", "sell on TikTok", "program dashboard", "what's
+  next", "what should we do next", "next actions", or "/aspire fee calculator".
 metadata:
   author: Aspire
 ---
@@ -48,6 +48,7 @@ Text after the command is the argument. Route on it before anything else:
 | `program` (also `influencer program`, `creator program`, `ambassador program`, `affiliate program`, `gifting program`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Influencer program** below. Skip the other phases. |
 | `next` (also `what's next`, `next actions`, `orchestrator`, and the hourly "Atlas next actions" task) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Orchestrator** below. Skip the other phases. |
 | `cas campaign` (also `creator ad campaign`, `campaign manager`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **CAS campaign** below. Skip the other phases. |
+| `shops` (also `shop`, `instagram shop`, `tiktok shop`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Shops** below. Skip the other phases. |
 | empty, or anything else | Run the phases in order, starting at Phase 1. Treat the text as context. |
 
 ### List agents
@@ -104,6 +105,7 @@ time so it never goes stale; never recite it from memory.
    | `atlas-program-dashboard` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Program dashboard** |
    | `atlas-program-ledger` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Program ledger** |
    | `atlas-campaign-orchestrator` | Phase 1, then Phase 2 + 3, then **Orchestrator** (Setup if it has never run) |
+   | `atlas-shops` | Phase 1, then Phase 2 + 3, then **Shops** (its shop and stage questions first) |
 
    Older names still reach the renamed agents: `atlas-account-analyst` is `atlas-profile-analyst`,
    `atlas-daily-readout` is `atlas-daily-insights-report`, and `atlas-weekly-readout` is
@@ -1965,6 +1967,52 @@ that it needs a person to supply the post, and stop.
    trim, any corrections to an earlier analysis, and the data gaps. Offer **Content review**
    when the user has a brief for the post, and **Ad reuse** when they want hooks across many
    posts.
+
+---
+
+## Shops (Instagram Shop and TikTok Shop setup and management)
+
+Trigger when the user wants to set up, open, or run an Instagram Shop or a TikTok Shop, sell
+through Instagram or TikTok, or work out which posts and creators should drive shop sales ("set
+up Instagram Shop", "open a TikTok Shop", "sell on TikTok", "should we open a TikTok Shop",
+"tag products on Instagram", "TikTok Shop affiliates", "manage our TikTok Shop"). Requires a
+brand profile; a linked Instagram or TikTok channel gives the plan its posts and lets it save.
+Full detail lives in `references/shops.md`.
+
+The plan is guidance. Claude never signs in to, submits, or changes anything in Commerce
+Manager, Seller Center, a shop, or a store, and never asks for business documents, tax ids, or
+payout details; the brand's team does each step. Shops is interactive only. Never schedule it;
+with no `AskUserQuestion`, say in one line that the shops plan needs a person to answer its
+questions, and stop.
+
+1. **Connections.** Detect a store connection per `references/program.md` **4** and pass
+   `connections`. The plan only reads products and stock from it. Without one, say once in one
+   line that a connected store lets the plan check products and stock, and go on.
+2. **Ask** W1 and W2 from the reference in one `AskUserQuestion` call with the **Reading the
+   ask** confirmation (`team` by default; `leadership` for "should we open one"; `growth` for
+   which creators or products should drive shop sales; `campaign` when a launch date is named),
+   skipping what the user already said. With no linked channel, say the plan will have no posts
+   to work from and can't be saved, offer Phase 4.2 in one line, and go on page only if the user
+   wants.
+3. Launch `atlas-shops` with the tool prefix, `profile_id`, `profile_slug`, the linked handles
+   and networks, `pass: propose`, W1 and W2, anything the user named (launch date, products,
+   markets, fulfillment, owner, commission), `connections`, and `recipient`, ending with the
+   decision-audit line. No confirmation is needed: `propose` writes nothing.
+4. Relay the page link, the headline, one readiness line per shop, the first three steps, and
+   the top creators as creator cards from the agent's `creator-cards` block. Then ask, four per
+   `AskUserQuestion` call, the W3 your-call items exactly as the agent worded them, then W4
+   (save). Skip W4 when the profile has no linked channel.
+5. "Change something" relaunches `pass: propose` with the change as an override. Otherwise
+   launch again with `pass: record`, the `shops-packet`, and the answers. W4 "Save the plan" is
+   the write confirmation and covers the page finding; "Page only" writes nothing.
+6. Relay what was written, then offer the agent's hand-offs once as W5, header "Next": up to
+   three as the agent worded them, and "Not now". Each runs through its own section with its own
+   confirmations (**Creator discovery**, **Content sourcing**, **Ad reuse**, **PPA pitch**,
+   **Influencer program**). The plan never starts discovery, drafts outreach, or requests rights
+   itself.
+
+On the first publish, say once: "Requirements change. Commerce Manager and Seller Center show
+the current ones for your market."
 
 ---
 
