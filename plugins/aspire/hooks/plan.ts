@@ -239,3 +239,9 @@ export const planOf = (turn: Turn | null, items: readonly Item[], now: number): 
     total,
   }
 }
+
+/** An agent's steps from its own task list: how many tasks, how many are done, and the one in progress. */
+export const stepsOf = (items: readonly Item[]): { total: number; done: number; note: string } => {
+  const at = currentOf(items)
+  return { total: items.length, done: items.filter(i => i.status === 'completed').length, note: at >= 0 ? clip(items[at]!.subject, 40) : '' }
+}

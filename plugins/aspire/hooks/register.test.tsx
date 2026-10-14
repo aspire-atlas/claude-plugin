@@ -664,3 +664,31 @@ test("the agent's task list is not read before /aspire runs", async ($, on) => {
   await typeAspire($)
   expect(await barShows($, 'terminal', 'Initializing…')).toBe(true)
 })
+
+test("an agent's own task list draws its steps on its row, and wins over aspire_step", async ($, on) => {
+  world(on, () => WITH_COSTS)
+  for (const tool of ['TaskCreate', 'TaskUpdate', 'TodoWrite']) on('tool.call', { tool }, () => ({ result: { task: { id: tool === 'TaskCreate' ? '1' : undefined } }, text: 'ok' }) as never)
+  await spawn($, 'aspire:atlas-market-signal', 'Signal for the week')
+  const agentId = 'agent-Signal-for-the-week'
+  await $.tool.call({ tool: 'TodoWrite', agentId, todos: [{ content: 'Read the posts', status: 'completed' }, { content: 'Compare the competitors', status: 'in_progress' }, { content: 'Publish the page', status: 'pending' }] } as never)
+  const drawn = async () => {
+    const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+    const out = (await ui.findAll({ type: 'Svg' })).map(el => String(el.props.source)).join('')
+    await ui.unmount()
+    return out
+  }
+  expect(await drawn()).toContain('1/3 Compare the competitors')
+  // aspire_step does not override the list.
+  await $.tool.call({ tool: 'mcp__aspire__aspire_step', agentId, total: 9, done: 8, note: 'other' } as never)
+  expect(await drawn()).toContain('1/3 Compare the competitors')
+  // A main-session call never touches the agent's row; another agent's does not either.
+  await $.tool.call({ tool: 'TodoWrite', todos: [{ content: 'Main task', status: 'pending' }] } as never)
+  await $.tool.call({ tool: 'TodoWrite', agentId: 'ghost', todos: [{ content: 'Ghost', status: 'pending' }] } as never)
+  expect(await drawn()).not.toContain('Ghost')
+  // TaskCreate and TaskUpdate work the same way.
+  await spawn($, 'aspire:atlas-ad-reuse', 'Hooks for the month')
+  const second = 'agent-Hooks-for-the-month'
+  await $.tool.call({ tool: 'TaskCreate', agentId: second, subject: 'Rank the hooks' } as never)
+  await $.tool.call({ tool: 'TaskUpdate', agentId: second, taskId: '1', status: 'in_progress' } as never)
+  expect(await drawn()).toContain('0/1 Rank the hooks')
+})

@@ -36,6 +36,21 @@ any instruction that tells the user to re-run the skill.
 The `agents` argument (`/aspire:aspire agents`) lists the plugin's subagents and offers to
 run one; it starts no phase until an agent is picked.
 
+## Before anything else: progress
+
+Every run that goes past listing agents or showing a sample starts here, before Phase 1 and
+before routing the argument. Do both of these in your first tool calls:
+
+1. **Load the progress tool.** Call `ToolSearch` with `select:mcp__aspire__aspire_progress`
+   (put it in the same call as any other load). It is a deferred tool, so it cannot be called
+   until it is loaded. Skip it silently when ToolSearch does not find it.
+2. **Keep the session's task list.** One task per step you report (the steps of the group now
+   running, **Progress bar** below), with whichever task tool the session has: `TaskCreate` and
+   `TaskUpdate`, `TodoWrite`, or the desktop app's own plan tool. Mark a task in
+   progress when it starts and done when it ends, and replace the list when a new group starts or
+   the plan changes. The Aspire bar reads that list as its steps, so it moves even when a progress
+   report is missed; the progress tool adds the title and the phase.
+
 ## Arguments
 
 Text after the command is the argument. Route on it before anything else:
@@ -256,11 +271,10 @@ with `band: ...`. Decide the channel once per run, from the first call:
 | ------ | ------- |
 | `band: visible on ...` | The bar only |
 | `band: hidden-by-user` | Nothing extra |
-| `band: not-drawn` or `band: unknown` | The task list if `TaskCreate` and `TaskUpdate` exist, else a chat line |
-| Tool missing | The task list if available, else a chat line |
+| `band: not-drawn` or `band: unknown` | The task list you already keep; a chat line when the session has none |
+| Tool missing | The task list you already keep; a chat line when the session has none |
 
-- **Task list:** six tasks (Connection, Organization, Profile and channel, Brand context, First
-  insights, Wrap up), updated at the start of each phase.
+- **Task list:** the one kept from the top, one task per step of the group now running, replaced when the next group starts. It shows in the host wherever the bar does not.
 - **Chat line,** once per phase: `Connecting: step 2 of 4, Get organizations ▰▰▱▱ 50%`.
 - Keep calling the progress tool every phase, even when falling back.
 - Subagents never report. Never name the tool or the fallback to the user.

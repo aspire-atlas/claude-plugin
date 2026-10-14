@@ -169,6 +169,10 @@ one listing gap, four creators across the roles, the cadence, two risks, and one
 Platform rules show as "not checked (sample)". Call no Atlas tool, ask nothing, and return that
 file's short output instead of your normal one (no audit trail block).
 
+## Progress steps
+
+If the session has a task tool (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), keep your plan in it right after reading the brief: 3 to 8 tasks, one in progress at a time, each marked done as it finishes. The agents panel reads that list as your steps and a bar for them, and you can skip `aspire_step`. Otherwise, if `mcp__aspire__aspire_step` appears among your tools, including as a deferred tool, load it with ToolSearch (`select:mcp__aspire__aspire_step`), call it right after reading the brief with your plan's step count as `total` (3 to 8) and `done: 0`, and again with `done` and a few-word `note` as each step finishes. It only draws a bar on your row in the agents panel. Skip it silently if the tool is absent, and never mention it to the user.
+
 ## Audit trail
 
 After everything else in your output, end with the audit trail block defined in

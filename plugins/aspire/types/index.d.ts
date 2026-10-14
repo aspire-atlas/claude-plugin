@@ -111,6 +111,8 @@ export type AgentRun = {
   stepDone?: number
   /** The step in progress, a few words. */
   stepNote?: string
+  /** The agent's own task list, when it keeps one; it sets the steps above and wins over `aspire_step`. */
+  items?: Item[]
 }
 
 export type Panel = {

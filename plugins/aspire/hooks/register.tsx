@@ -92,7 +92,7 @@ import { ASPIRE, CRAB_CSS, breathOf, characterOf, crab } from './characters'
 import { GROUPS, ROSTER } from './roster'
 import type { RosterEntry } from './roster'
 import { clip, fitText, fmtTime, fmtTokens, modelName, textWidth, windowOf, xml } from './format'
-import { applyTask, countCall, endTurn, isTaskTool, planOf, startTurn, touch } from './plan'
+import { applyTask, countCall, endTurn, isTaskTool, planOf, startTurn, stepsOf as stepsFromItems, touch } from './plan'
 import type { PlanView } from './plan'
 import type { ProgressInput, Shown } from './progress'
 import { barText, mergeProgress, orgStateFrom, percentOf, shownOf, titleOf } from './progress'
@@ -875,6 +875,8 @@ export const register: Register = on => {
         list.map(a => {
           if (a.agentId !== agentId) return a
           isKnown = true
+          // An agent that keeps a task list: that list is its steps.
+          if (a.items?.length) return a
           const total = num(input.total) ?? a.stepTotal ?? 0
           const done = num(input.done) ?? a.stepDone ?? 0
           return { ...a, stepTotal: total, stepDone: total ? Math.min(total, done) : done, stepNote: note === undefined ? a.stepNote : note || undefined }
@@ -960,10 +962,32 @@ export const register: Register = on => {
   // The agent's own task list and tool calls, for the steps behind the bar. An observer: the call
   // and its result pass through unchanged, and the call is never run twice.
   on('tool.call', async ($, e, next) => {
-    if (e.agentId || !(await isOn($))) return next(e)
+    if (!(await isOn($))) return next(e)
     const tool = String(e.tool)
     if (tool === PROGRESS_TOOL || tool === STEP_TOOL) return next(e)
     const input = e as unknown as Readonly<Record<string, unknown>>
+    // An agent that keeps a task list: its steps and the bar on its row in the panel.
+    const agentId = e.agentId
+    if (agentId) {
+      if (!isTaskTool(tool)) return next(e)
+      const result = await next(e)
+      try {
+        const refused = (result.result as { success?: unknown } | undefined)?.success === false
+        if (result.deny === undefined && !result.isError && !refused) {
+          await update($, agents, list =>
+            list.map((a): AgentRun => {
+              if (a.agentId !== agentId) return a
+              const own = applyTask(a.items ?? [], tool, input, result.result)
+              const steps = stepsFromItems(own)
+              return { ...a, items: own, stepTotal: steps.total, stepDone: steps.done, stepNote: steps.note || undefined }
+            }),
+          )
+        }
+      } catch {
+        // The row is a convenience: the call's result stands as it came.
+      }
+      return result
+    }
     if (isTaskTool(tool)) {
       const result = await next(e)
       try {
