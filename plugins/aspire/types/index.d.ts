@@ -116,7 +116,7 @@ export type AgentRun = {
 export type Panel = {
   /** The panel opened by itself once this session (first aspire:* agent). */
   isAutoOpened: boolean
-  /** The ids of the cards that are open (progress, running, finished, group:<key>); the rest are collapsed. */
+  /** The ids of the cards that are open (progress, running, finished, agents, group:<key>); the rest are collapsed. */
   open: string[]
   /** The agent type whose crab is walking off its card after a press, until its start is drafted. */
   leaving: string | null

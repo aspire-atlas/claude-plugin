@@ -321,7 +321,7 @@ test('an agent reports its steps; the panel draws them, and the main session can
 
 const GROUP_KEYS = ['insights', 'discover', 'create', 'program', 'measure']
 const openGroups = async (ui: { press: (q: { key: string }) => Promise<unknown> }, surface: 'desktop' | 'terminal') => {
-  for (const g of GROUP_KEYS) await ui.press({ key: surface === 'desktop' ? `card-group:${g}-0` : `card-group:${g}` })
+  for (const g of GROUP_KEYS) await ui.press({ key: surface === 'desktop' ? `group:${g}-0` : `card-group:${g}` })
 }
 
 test('the agent roster is a collapsed card per group; opening them shows a crab row for every agent type', async ($, on) => {
@@ -453,7 +453,7 @@ test('every colour in the desktop panel has a light and a dark value', async ($,
       const source = String(el.props.source)
       // The classes that paint a surface or text take their value from the light and the dark block alike.
       const used = new Set([...source.matchAll(/class="([^"]+)"/g)].flatMap(m => m[1].split(' ')))
-      const themed = ['t', 's', 'm', 'k', 'tk', 'ln', 'card', 'cv'].filter(c => used.has(c))
+      const themed = ['t', 's', 'm', 'k', 'tk', 'ln', 'cv', 'sw'].filter(c => used.has(c))
       const dark = darkBlocks(source)
       for (const c of themed) {
         const light = new RegExp(`(^|[^\\w-])\\.${c}\\{`).test(source.split('@media (prefers-color-scheme: dark)')[0])

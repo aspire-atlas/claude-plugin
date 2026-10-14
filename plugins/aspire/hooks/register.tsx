@@ -93,7 +93,7 @@ const stats = atom({ plugin: 'aspire', key: 'stats' } as const, { turn: 0, speed
 const isBandHidden = atom({ plugin: 'aspire', key: 'isBandHidden' } as const, false)
 const agents = atom({ plugin: 'aspire', key: 'agents' } as const, [] as AgentRun[])
 /** The cards that start open; the agent roster's groups start collapsed. */
-const DEFAULT_OPEN = ['progress', 'running', 'finished']
+const DEFAULT_OPEN = ['progress', 'running', 'finished', 'agents']
 const panel = atom({ plugin: 'aspire', key: 'panel' } as const, { isAutoOpened: false, open: DEFAULT_OPEN, leaving: null } as Panel)
 const now = atom({ plugin: 'aspire', key: 'now' } as const, 0)
 
@@ -355,16 +355,18 @@ const norm = (s: string): string => s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, 
 
 const FONT = "-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif"
 
-// The panel is a stack of collapsible cards, in the look of Claude's own sidebar:
-// a rounded, bordered card per section, its header a title, a muted summary and a chevron.
-const ROW_H = 66
+// The panel is one accordion, in the look of Claude's own sidebar: sections that show
+// only their top edge (a thin line that curves down at both ends), a small title with a
+// light chevron after it, a muted value on the right, and sub-accordions inside.
+const ROW_H = 62
 const HEADER_H = 40
-const GAP = 8
-const CARD_R = 10
+const SUB_H = 28
+const CARD_R = 12
+const TAIL = 8
 
 const PANE_CSS = `<style>
-.t{fill:#1f1f1f}.s{fill:#6b6b68}.m{fill:#9a9a96}.k{fill:#ecebe8}.tk{fill:#b4b4b0}.ln{stroke:#e4e4e1}.card{fill:#ffffff}.tile{fill:#f4f3f0}.cv{stroke:#8a8a86}
-@media (prefers-color-scheme: dark){.t{fill:#ececec}.s{fill:#a8a8a4}.m{fill:#7d7d79}.k{fill:#2c2c2b}.tk{fill:#5a5a5a}.ln{stroke:#333331}.card{fill:#1f1f1e}.tile{fill:#262625}.cv{stroke:#9a9a96}}
+.t{fill:#1f1f1f}.s{fill:#6b6b68}.m{fill:#9a9a96}.k{fill:#ecebe8}.tk{fill:#b4b4b0}.ln{stroke:#e4e4e1}.cv{stroke:#b4b4b0}.sw{fill:#d4d4d0}.tile{fill:#f4f3f0}
+@media (prefers-color-scheme: dark){.t{fill:#ececec}.s{fill:#8f8f8b}.m{fill:#7d7d79}.k{fill:#2c2c2b}.tk{fill:#5a5a5a}.ln{stroke:#2c2c2b}.cv{stroke:#6f6f6b}.sw{fill:#3d3d3b}.tile{fill:#262625}}
 .live{animation:p 1.6s ease-in-out infinite}@keyframes p{50%{opacity:.3}}
 @media (prefers-reduced-motion: reduce){.live{animation:none}}
 </style>`
@@ -378,70 +380,69 @@ const statusMark = (x: number, y: number, status: string, color: string): string
   return `<path d="M${x - 4} ${y - 4}l8 8M${x + 4} ${y - 4}l-8 8" stroke="#D0453F" stroke-width="1.8" stroke-linecap="round"/>`
 }
 
-/** Where a drawing sits in its card: the whole card, its top, its middle, or its bottom. */
-type Slot = 'only' | 'top' | 'mid' | 'bottom'
+/** One drawn row of the accordion; `edge` draws a section's top edge, `tail` is the space left under a section's last row. */
+const rowSvg = (W: number, H: number, edge: boolean, tail: number, body: string): string =>
+  svg(
+    W,
+    H + tail,
+    `${edge ? `<path class="ln" fill="none" stroke-width="1" d="M0.5 ${CARD_R}A${CARD_R} ${CARD_R} 0 0 1 ${CARD_R} 0.5H${W - CARD_R}A${CARD_R} ${CARD_R} 0 0 1 ${W - 0.5} ${CARD_R}"/>` : ''}${body}`,
+  )
 
-/** The card's rounded, bordered tile behind one row of it; stacked rows read as one card. */
-const frame = (W: number, H: number, slot: Slot): string => {
-  const top = slot === 'only' || slot === 'top'
-  const bot = slot === 'only' || slot === 'bottom'
-  const r = CARD_R
-  const x0 = 0.5
-  const x1 = W - 0.5
-  const y0 = top ? 0.5 : 0
-  const y1 = bot ? H - 0.5 : H
-  const a = top ? r : 0
-  const b = bot ? r : 0
-  const arc = (x: number, y: number) => `A${r} ${r} 0 0 1 ${x} ${y}`
-  const path = [
-    `M${x0} ${y1 - b}V${y0 + a}`,
-    top ? `${arc(x0 + r, y0)}H${x1 - r}${arc(x1, y0 + r)}` : `V${y0}H${x1}`,
-    `V${y1 - b}`,
-    bot ? `${arc(x1 - r, y1)}H${x0 + r}${arc(x0, y1 - r)}` : `V${y1}H${x0}`,
-    'Z',
-  ].join('')
-  const border = [
-    `M${x0} ${y1 - b}V${y0 + a}`,
-    top ? `${arc(x0 + r, y0)}H${x1 - r}${arc(x1, y0 + r)}` : `M${x1} ${y0}`,
-    `V${y1 - b}`,
-    bot ? `${arc(x1 - r, y1)}H${x0 + r}${arc(x0, y1 - r)}` : '',
-  ].join('')
-  return `<path class="card" d="${path}"/><path class="ln" fill="none" stroke-width="1" d="${border}"/>`
-}
+/** A thin chevron: down when open, right when collapsed, with its tip near (x, y). */
+const chevron = (x: number, y: number, isOpen: boolean): string =>
+  `<path class="cv" fill="none" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" d="${isOpen ? `M${x} ${y - 2}l3.5 3.5 3.5-3.5` : `M${x + 1.5} ${y - 4}l3.5 3.5-3.5 3.5`}"/>`
 
-/** One drawn row of a card: its frame, then its content; `gap` is the space left under the card's last row. */
-const rowSvg = (W: number, H: number, slot: Slot, gap: number, body: string): string => svg(W, H + gap, `${frame(W, H, slot)}${body}`)
-
-/** A card's header: the title, a muted summary, and the chevron (down when open, right when collapsed). */
-const headerSvg = (W: number, title: string, summary: string, isOpen: boolean, gap: number): string => {
-  const titleW = textWidth(title, 13)
-  const room = Math.max(0, W - 14 - titleW - 12 - 34)
-  const chevron = isOpen ? `M${W - 24} 17l5 5 5-5` : `M${W - 22} 15l5 5-5 5`
+/** A section's header: the title, a light chevron right after it, and a muted value on the right. */
+const headerSvg = (W: number, title: string, summary: string, isOpen: boolean, edge: boolean, tail: number): string => {
+  const shownTitle = fitText(title, 13, W - 90)
+  const tx = 16 + textWidth(shownTitle, 13) + 7
+  const room = Math.max(0, W - 16 - (tx + 12) - 8)
   return rowSvg(
     W,
     HEADER_H,
-    isOpen ? 'top' : 'only',
-    gap,
-    `<text class="t" x="14" y="25" font-family="${FONT}" font-size="13" font-weight="600">${xml(fitText(title, 13, W - 60))}</text>
-${summary && room > 24 ? `<text class="s" x="${W - 34}" y="25" text-anchor="end" font-family="${FONT}" font-size="12" font-variant-numeric="tabular-nums">${xml(fitText(summary, 12, room))}</text>` : ''}
-<path class="cv" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="${chevron}"/>`,
+    edge,
+    tail,
+    `<text class="t" x="16" y="${edge ? 26 : 24}" font-family="${FONT}" font-size="13" font-weight="500">${xml(shownTitle)}</text>
+${chevron(tx, edge ? 24 : 22, isOpen)}
+${summary && room > 24 ? `<text class="s" x="${W - 16}" y="${edge ? 26 : 24}" text-anchor="end" font-family="${FONT}" font-size="12" font-variant-numeric="tabular-nums">${xml(fitText(summary, 12, room))}</text>` : ''}`,
   )
 }
 
-/** The progress card's body: the bar the band shows, drawn inside the card. */
-const PROGRESS_H = 44
-const progressBodySvg = (W: number, title: string, shown: Shown, slot: Slot, gap: number): string =>
+/** A sub-accordion's header: a chevron on the left, the label, and a count on the right. */
+const subHeaderSvg = (W: number, title: string, count: string, isOpen: boolean, tail: number): string =>
   rowSvg(
     W,
-    PROGRESS_H,
-    slot,
-    gap,
-    `<style>${twinkleCss(shown)}</style><g transform="translate(14,${(PROGRESS_H - BAR_ROW_H) / 2})">${barShapes(title, shown, W - 28)}</g>`,
+    SUB_H,
+    false,
+    tail,
+    `${chevron(16, 14, isOpen)}
+<text class="t" x="36" y="18" font-family="${FONT}" font-size="12">${xml(fitText(title, 12, W - 100))}</text>
+<text class="s" x="${W - 16}" y="18" text-anchor="end" font-family="${FONT}" font-size="12" font-variant-numeric="tabular-nums">${xml(count)}</text>`,
   )
 
-/** The credits card, always at the top of the panel and not collapsible: the Aspire mark and the organization's credits from the latest get_status. */
-const CREDIT_H = 78
+/** The progress section's body: the bar the band shows, then one row for each task the skill reported. */
+const PROGRESS_H = 34
+const TASK_H = 22
+const progressBodySvg = (W: number, title: string, shown: Shown, tasks: { title: string; isDone: boolean }[], tail: number): string =>
+  rowSvg(
+    W,
+    PROGRESS_H + tasks.length * TASK_H,
+    false,
+    tail,
+    `<style>${twinkleCss(shown)}</style><g transform="translate(16,${(PROGRESS_H - BAR_ROW_H) / 2 - 2})">${barShapes(title, shown, W - 32)}</g>${tasks
+      .map(
+        (t, i) =>
+          `<rect ${t.isDone ? `fill="${DONE}"` : 'class="sw"'} x="16" y="${PROGRESS_H + i * TASK_H + 6}" width="10" height="10" rx="2.5"/>
+<text class="${t.isDone ? 't' : 's'}" x="36" y="${PROGRESS_H + i * TASK_H + 15}" font-family="${FONT}" font-size="12">${xml(fitText(t.title, 12, W - 100))}</text>
+<text class="s" x="${W - 16}" y="${PROGRESS_H + i * TASK_H + 15}" text-anchor="end" font-family="${FONT}" font-size="11">${t.isDone ? 'done' : ''}</text>`,
+      )
+      .join('')}`,
+  )
+
 const OVER = '#D0453F'
+
+/** The credits card, fixed at the top and not collapsible: the Aspire mark and the organization's credits from the latest get_status. */
+const CREDIT_H = 78
 
 /** The Aspire mark (the plugin's icon), drawn in a 512 box: a deep green tile with the A and the I in white. */
 const LOGO = `<rect width="512" height="512" rx="96" fill="#0B4545"/><path fill="#fff" fill-rule="evenodd" d="M62 413 L183 98 L236 98 L356 413 L296 413 L275 354 C235 392 190 413 130 413 Z M212 185 L257 296 C225 330 185 354 145 358 Z"/><rect x="365" y="98" width="64" height="316" fill="#fff"/>`
@@ -464,7 +465,7 @@ const creditsCardSvg = (W: number, v: CreditsView): string => {
   const bigW = textWidth(v.big, 22) + 6
   return svg(
     W,
-    CREDIT_H + GAP - 4,
+    CREDIT_H + 4,
     `<g transform="translate(0,${Math.round((CREDIT_H - 4 - LOGO_SIZE) / 2)}) scale(${LOGO_SIZE / 512})"><title>Aspire</title>${LOGO}</g>
 <rect class="tile" x="${x0}" y="0" width="${cardW}" height="${CREDIT_H - 4}" rx="8"/>
 ${text(left, 17, 's', 11, v.title)}
@@ -478,19 +479,19 @@ ${v.metaRight ? text(right, 68, 's', 11, v.metaRight, 'text-anchor="end"') : ''}
   )
 }
 
-/** A card's one line of muted text, for a section with nothing in it yet. */
-const NOTE_H = 36
-const noteSvg = (W: number, note: string, slot: Slot, gap: number): string =>
-  rowSvg(W, NOTE_H, slot, gap, `<text class="s" x="14" y="23" font-family="${FONT}" font-size="12">${xml(fitText(note, 12, W - 28))}</text>`)
+/** One line of muted text, for a section with nothing in it yet. */
+const NOTE_H = 28
+const noteSvg = (W: number, note: string, tail: number): string =>
+  rowSvg(W, NOTE_H, false, tail, `<text class="s" x="16" y="18" font-family="${FONT}" font-size="12">${xml(fitText(note, 12, W - 32))}</text>`)
 
 /** What an agent reported through aspire_step: `2/5 reading posts`, and the fraction. */
 const stepsOf = (a: AgentRun): { text: string; ratio: number } | null =>
   a.stepTotal ? { text: `${a.stepDone ?? 0}/${a.stepTotal}${a.stepNote ? ` ${a.stepNote}` : ''}`, ratio: Math.min(1, (a.stepDone ?? 0) / a.stepTotal) } : null
 
-const agentSvg = (W: number, a: AgentRun, at: number, slot: Slot, gap: number): string => {
+const agentSvg = (W: number, a: AgentRun, at: number, tail: number): string => {
   const character = characterOf(a)
   const ctx = ctxOf(a)
-  const textW = W - 42 - 22 - 12
+  const textW = W - 50 - 16 - 24
   const meta = [runModel(a)]
   if (a.round > 1) meta.push(`round ${a.round}`)
   if (a.status === 'failed') meta.push('error')
@@ -502,36 +503,36 @@ const agentSvg = (W: number, a: AgentRun, at: number, slot: Slot, gap: number): 
   return rowSvg(
     W,
     ROW_H,
-    slot,
-    gap,
-    `${crab(8, 14, character, false, a.status === 'running')}
-<text class="t" x="50" y="18" font-family="${FONT}" font-size="13" font-weight="600">${xml(fitText(a.description || a.type, 13, textW))}</text>
-<text x="50" y="34" font-family="${FONT}" font-size="11"><tspan fill="${character.color}">${xml(fitText(a.type, 11, textW / 2))}</tspan><tspan class="s">  ${xml(meta.join('  ·  '))}</tspan></text>
-<text class="s" x="${50 + textW}" y="49" text-anchor="end" font-family="${FONT}" font-size="11" font-variant-numeric="tabular-nums">${stats}</text>
-<rect class="k" x="50" y="55" width="${textW}" height="4" rx="2"/><rect${progress === null ? ' class="m"' : ''} x="50" y="55" width="${fillW}" height="4" rx="2"${progress === null ? '' : ` fill="${character.color}"`}/>
-${statusMark(W - 18, 16, a.status, character.color)}`,
+    false,
+    tail,
+    `${crab(10, 12, character, false, a.status === 'running')}
+<text class="t" x="50" y="18" font-family="${FONT}" font-size="12" font-weight="500">${xml(fitText(a.description || a.type, 12, textW))}</text>
+<text x="50" y="33" font-family="${FONT}" font-size="11"><tspan fill="${character.color}">${xml(fitText(a.type, 11, textW / 2))}</tspan><tspan class="s">  ${xml(meta.join('  ·  '))}</tspan></text>
+<text class="s" x="${50 + textW}" y="47" text-anchor="end" font-family="${FONT}" font-size="11" font-variant-numeric="tabular-nums">${stats}</text>
+<rect class="k" x="50" y="52" width="${textW}" height="4" rx="2"/><rect${progress === null ? ' class="m"' : ''} x="50" y="52" width="${fillW}" height="4" rx="2"${progress === null ? '' : ` fill="${character.color}"`}/>
+${statusMark(W - 22, 14, a.status, character.color)}`,
   )
 }
 
-const CARD_H = 60
+const CARD_H = 52
 
-/** A crab row for one agent type: its costume, name, what it makes, and whether it ran this session. */
-const cardSvg = (W: number, entry: RosterEntry, list: AgentRun[], slot: Slot, gap: number, isLeaving = false): string => {
+/** A crab row for one agent type, indented under its group: costume, name, what it makes, and whether it ran this session. */
+const cardSvg = (W: number, entry: RosterEntry, list: AgentRun[], tail: number, isLeaving = false): string => {
   const character = characterOf({ type: entry.type, model: '' })
   const runs = list.filter(a => a.type === entry.type)
   const isRunning = runs.some(a => a.status === 'running')
-  const state = isRunning ? 'running' : runs.length ? `ran ${runs.length}\u00d7` : ''
-  const textW = W - 50 - 84
+  const state = isRunning ? 'running' : runs.length ? `ran ${runs.length}×` : ''
+  const textW = W - 62 - 84
   return rowSvg(
     W,
     CARD_H,
-    slot,
-    gap,
-    `${crab(8, 10, character, false, isRunning || isLeaving, undefined, isRunning || isLeaving ? undefined : breathOf(entry.type), isLeaving)}
-<text class="t" x="50" y="25" font-family="${FONT}" font-size="13" font-weight="600">${xml(fitText(entry.name, 13, textW))}</text>
-<text class="s" x="50" y="42" font-family="${FONT}" font-size="11">${xml(fitText(entry.blurb, 11, textW))}</text>
-${isRunning ? `<circle class="live" cx="${W - 76}" cy="22" r="3.5" fill="${character.color}"/>` : runs.length ? `<path d="M${W - 80} 22l3.5 3.5 6.5-7" fill="none" stroke="#3B9C5F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
-${state ? `<text class="s" x="${W - 18}" y="26" text-anchor="end" font-family="${FONT}" font-size="11">${state}</text>` : ''}${slot === 'bottom' ? '' : `<line class="ln" x1="14" y1="${CARD_H - 0.5}" x2="${W - 14}" y2="${CARD_H - 0.5}"/>`}`,
+    false,
+    tail,
+    `${crab(24, 8, character, false, isRunning || isLeaving, undefined, isRunning || isLeaving ? undefined : breathOf(entry.type), isLeaving)}
+<text class="t" x="62" y="22" font-family="${FONT}" font-size="12" font-weight="500">${xml(fitText(entry.name, 12, textW))}</text>
+<text class="s" x="62" y="38" font-family="${FONT}" font-size="11">${xml(fitText(entry.blurb, 11, textW))}</text>
+${isRunning ? `<circle class="live" cx="${W - 76}" cy="20" r="3.5" fill="${character.color}"/>` : runs.length ? `<path d="M${W - 80} 20l3.5 3.5 6.5-7" fill="none" stroke="#3B9C5F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
+${state ? `<text class="s" x="${W - 16}" y="24" text-anchor="end" font-family="${FONT}" font-size="11">${state}</text>` : ''}`,
   )
 }
 
@@ -1048,9 +1049,11 @@ export const register: Register = on => {
     const finished = list.filter(a => a.status !== 'running').reverse()
     const view = creditsView((await read($, creditsAtom))?.credits ?? null, (await read($, atlas))?.costs ?? null)
     const o = await read($, org)
-    const shown = shownOf(await read($, progress), o, list)
+    const report = await read($, progress)
+    const shown = shownOf(report, o, list)
     const title = titleOf(o)
     const percent = percentOf(shown)
+    const tasks = (report?.tasks ?? []).slice(0, 8)
     const summary = `${view.title} ${view.big} ${view.sub}`.trim()
     const openKeys = Array.isArray(p.open) ? p.open : DEFAULT_OPEN
     const isOpen = (key: string): boolean => openKeys.includes(key)
@@ -1076,17 +1079,13 @@ export const register: Register = on => {
       return runs.some(a => a.status === 'running') ? '●' : runs.length ? '✓' : '○'
     }
 
-    // Each card: a header that opens and closes it, and rows (desktop drawings) or text (terminal and the rest).
-    type Row = { id: string; h: number; alt: string; draw: (W: number, slot: Slot, gap: number) => string; onPress?: () => void }
-    type CardDef = { key: string; title: string; summary: string; rows: Row[]; text: () => JSX.Element }
+    // Each section: a header that opens and closes it, then rows (desktop drawings) or text (terminal and the rest).
+    // A row may be a sub-accordion's header (`h` is its height); its children follow only while it is open.
+    type Row = { id: string; h: number; alt: string; draw: (W: number, tail: number) => string; onPress?: () => void }
+    type Section = { key: string; title: string; summary: string; rows: Row[]; text: () => JSX.Element }
     const empty = 'No agents yet. Aspire agents show here as they start.'
     const agentRows = (items: AgentRun[], state: string): Row[] =>
-      items.map(a => ({
-        id: a.id,
-        h: ROW_H,
-        alt: `${a.description}: ${modelName(a.model)}, ${state}`,
-        draw: (W, slot, gap) => agentSvg(W, a, at, slot, gap),
-      }))
+      items.map(a => ({ id: a.id, h: ROW_H, alt: `${a.description}: ${modelName(a.model)}, ${state}`, draw: (W, tail) => agentSvg(W, a, at, tail) }))
     const cols = Math.max(24, e.props.bodyColumns || 40)
     const barW = Math.max(6, Math.min(20, cols - 34))
     const row = (a: AgentRun) => {
@@ -1139,16 +1138,25 @@ export const register: Register = on => {
       </Box>
     )
 
-    const cards: CardDef[] = [
+    const sections: Section[] = [
       {
         key: 'progress',
         title: 'Progress',
         summary: `${shown.label} · ${percent}`,
-        rows: [{ id: 'progress', h: PROGRESS_H, alt: `${title}: ${shown.label}, ${percent}`, draw: (W, slot, gap) => progressBodySvg(W, title, shown, slot, gap) }],
+        rows: [
+          { id: 'progress', h: PROGRESS_H + tasks.length * TASK_H, alt: `${title}: ${shown.label}, ${percent}`, draw: (W, tail) => progressBodySvg(W, title, shown, tasks, tail) },
+        ],
         text: () => (
-          <Text wrap="truncate-end">
-            <Text color={shown.isFinished ? DONE : ASPIRE}>{barText(shown.ratio, 12)}</Text> <Text bold>{shown.label}</Text> <Text dimColor>{percent}</Text>
-          </Text>
+          <Box flexDirection="column">
+            <Text wrap="truncate-end">
+              <Text color={shown.isFinished ? DONE : ASPIRE}>{barText(shown.ratio, 12)}</Text> <Text bold>{shown.label}</Text> <Text dimColor>{percent}</Text>
+            </Text>
+            {tasks.map(t => (
+              <Text key={t.title} wrap="truncate-end" dimColor={!t.isDone}>
+                {t.isDone ? '✓' : '○'} {t.title}
+              </Text>
+            ))}
+          </Box>
         ),
       },
       {
@@ -1157,45 +1165,47 @@ export const register: Register = on => {
         summary: list.length ? `${fmtCount(list.length, 'agent', 'agents')} · ${fmtTime(spanOf(list, at))}` : '',
         rows: running.length
           ? agentRows(running, 'running')
-          : [{ id: 'running-note', h: NOTE_H, alt: empty, draw: (W, slot, gap) => noteSvg(W, list.length ? 'Nothing running right now.' : empty, slot, gap) }],
+          : [{ id: 'running-note', h: NOTE_H, alt: empty, draw: (W, tail) => noteSvg(W, list.length ? 'Nothing running right now.' : empty, tail) }],
         text: () => <Box flexDirection="column">{running.length ? running.map(row) : <Text dimColor>{list.length ? 'Nothing running right now.' : empty}</Text>}</Box>,
       },
       ...(finished.length
-        ? [
-            {
-              key: 'finished',
-              title: `Finished · ${finished.length}`,
-              summary: '',
-              rows: agentRows(finished, 'finished'),
-              text: () => <Box flexDirection="column">{finished.map(row)}</Box>,
-            },
-          ]
+        ? [{ key: 'finished', title: `Finished · ${finished.length}`, summary: '', rows: agentRows(finished, 'finished'), text: () => <Box flexDirection="column">{finished.map(row)}</Box> }]
         : []),
-      ...GROUPS.map((g): CardDef => {
-        const entries = ROSTER.filter(r => r.group === g.key)
-        const busy = entries.filter(r => list.some(a => a.type === r.type && a.status === 'running')).length
-        return {
-          key: `group:${g.key}`,
-          title: `${g.title} · ${entries.length}`,
-          summary: busy ? `${busy} running` : '',
-          rows: entries.map(r => ({
-            id: `start-${r.type}`,
-            h: CARD_H,
-            alt: `${r.name}: ${r.blurb}`,
-            draw: (W, slot, gap) => cardSvg(W, r, list, slot, gap, p.leaving === r.type),
-            onPress: startAgent(r),
-          })),
-          text: () => (
-            <Box flexDirection="column">
-              {entries.map(r => (
-                <Button key={r.type} label={`${stateOf(r)} ${r.name}`} plain onPress={startAgent(r)}>
-                  <Text color={characterOf({ type: r.type, model: '' }).color}>{stateOf(r)}</Text> <Text bold>{r.name}</Text> <Text dimColor>{r.blurb}</Text>
-                </Button>
-              ))}
-            </Box>
-          ),
-        }
-      }),
+      {
+        key: 'agents',
+        title: `Agents · ${ROSTER.length}`,
+        summary: running.length ? `${running.length} running` : '',
+        rows: GROUPS.flatMap((g): Row[] => {
+          const entries = ROSTER.filter(r => r.group === g.key)
+          const groupOpen = isOpen(`group:${g.key}`)
+          return [
+            { id: `group:${g.key}`, h: SUB_H, alt: `${g.title}, ${entries.length}, ${groupOpen ? 'open' : 'collapsed'}`, draw: (W, tail) => subHeaderSvg(W, g.title, String(entries.length), groupOpen, tail), onPress: toggle(`group:${g.key}`) },
+            ...(groupOpen
+              ? entries.map(r => ({ id: `start-${r.type}`, h: CARD_H, alt: `${r.name}: ${r.blurb}`, draw: (W: number, tail: number) => cardSvg(W, r, list, tail, p.leaving === r.type), onPress: startAgent(r) }))
+              : []),
+          ]
+        }),
+        text: () => (
+          <Box flexDirection="column">
+            {GROUPS.map(g => {
+              const entries = ROSTER.filter(r => r.group === g.key)
+              const groupOpen = isOpen(`group:${g.key}`)
+              return (
+                <Box key={g.key} flexDirection="column">
+                  <Button key={`card-group:${g.key}`} label={`${groupOpen ? '▾' : '▸'} ${g.title} · ${entries.length}`} plain onPress={toggle(`group:${g.key}`)} />
+                  {groupOpen
+                    ? entries.map(r => (
+                        <Button key={r.type} label={`${stateOf(r)} ${r.name}`} plain onPress={startAgent(r)}>
+                          <Text color={characterOf({ type: r.type, model: '' }).color}>{stateOf(r)}</Text> <Text bold>{r.name}</Text> <Text dimColor>{r.blurb}</Text>
+                        </Button>
+                      ))
+                    : null}
+                </Box>
+              )
+            })}
+          </Box>
+        ),
+      },
     ]
 
     if (e.surface === 'desktop' && 'Svg' in ui) {
@@ -1211,22 +1221,21 @@ export const register: Register = on => {
       )
       return (
         <Box flexDirection="column">
-          <Svg source={creditsCardSvg(W, view)} alt={summary} width={W} height={CREDIT_H + GAP - 4} />
-          {cards.map(c => {
+          <Svg source={creditsCardSvg(W, view)} alt={summary} width={W} height={CREDIT_H + 4} />
+          {sections.map((c, si) => {
             const open = isOpen(c.key)
             return (
               <Box key={c.key} flexDirection="column">
                 <Box flexDirection="column">
-                  <Svg source={headerSvg(W, c.title, c.summary, open, open ? 0 : GAP)} alt={`${c.title}${c.summary ? `, ${c.summary}` : ''}, ${open ? 'open' : 'collapsed'}`} width={W} height={HEADER_H + (open ? 0 : GAP)} />
+                  <Svg source={headerSvg(W, c.title, c.summary, open, true, 0)} alt={`${c.title}${c.summary ? `, ${c.summary}` : ''}, ${open ? 'open' : 'collapsed'}`} width={W} height={HEADER_H} />
                   {pressable(`card-${c.key}`, HEADER_H, toggle(c.key))}
                 </Box>
                 {open &&
                   c.rows.map((r, i) => {
-                    const last = i === c.rows.length - 1
-                    const gap = last ? GAP : 0
+                    const tail = i === c.rows.length - 1 ? TAIL : 0
                     return (
                       <Box key={r.id} flexDirection="column">
-                        <Svg source={r.draw(W, last ? 'bottom' : 'mid', gap)} alt={r.alt} width={W} height={r.h + gap} />
+                        <Svg source={r.draw(W, tail)} alt={r.alt} width={W} height={r.h + tail} />
                         {r.onPress ? pressable(r.id, r.h, r.onPress) : null}
                       </Box>
                     )
@@ -1238,12 +1247,12 @@ export const register: Register = on => {
       )
     }
 
-    // Terminal and the other surfaces: the same cards in text rows.
+    // Terminal and the other surfaces: the same sections in text rows.
     return (
       <Box flexDirection="column">
         {creditsBox}
         <Box flexDirection="column" gap={1}>
-        {cards.map(c => {
+        {sections.map(c => {
           const open = isOpen(c.key)
           return (
             <Box key={c.key} flexDirection="column">
