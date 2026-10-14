@@ -49,8 +49,8 @@
 // aspire_progress tool, or a baseline from Atlas get_status before the skill
 // reports) instead of savvy-flow, with the organization's name as its title
 // and no planned-task layer; the band's cost shows Atlas token costs from
-// get_status (./atlas-usage.ts) instead of Claude's own cost; the cache warning
-// notifications (a helper app, Claude Code's push notification, the desktop
+// get_status (./atlas-usage.ts) instead of Claude's own cost; the cache
+// countdown and its warning notifications (a helper app, Claude Code's push notification, the desktop
 // session file read) are gone; the panel drops savvy-flow's plan, its step
 // tool, the Claude price table and every cost figure, and its Russian and
 // Hebrew strings (English only); the characters moved to ./characters.ts.
@@ -58,10 +58,10 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
-import type { AgentRun, AtlasReading, BandStats, Cache, OrgState, Panel, Progress, Seen, Trigger, TriggerKind } from '../types'
+import type { AgentRun, AtlasReading, BandStats, OrgState, Panel, Progress, Seen, Trigger, TriggerKind } from '../types'
 import { ATLAS_ABSENT, ATLAS_ABSENT_HINT, fmtAtlasUsage, isAtlasStatusCall, isAtlasToolName, readAtlasOrg, readAtlasUsage } from './atlas-usage'
 import { ASPIRE, CRAB_CSS, PLAIN_CRAB, characterOf, crab } from './characters'
-import { clip, fitText, fmtCountdown, fmtTime, fmtTokens, modelName, textWidth, windowOf, xml } from './format'
+import { clip, fitText, fmtTime, fmtTokens, modelName, textWidth, windowOf, xml } from './format'
 import type { ProgressInput, Shown } from './progress'
 import { barText, mergeProgress, orgStateFrom, percentOf, shownOf, titleOf } from './progress'
 
@@ -86,7 +86,6 @@ const progress = atom({ plugin: 'aspire', key: 'progress' } as const, null as Pr
 const org = atom({ plugin: 'aspire', key: 'org' } as const, BLANK_ORG)
 const atlas = atom({ plugin: 'aspire', key: 'atlas' } as const, null as AtlasReading | null)
 const stats = atom({ plugin: 'aspire', key: 'stats' } as const, { turn: 0, speed: null, context: 0 } as BandStats)
-const cache = atom({ plugin: 'aspire', key: 'cache' } as const, { expiresAt: null, secondsLeft: null } as Cache)
 const isBandHidden = atom({ plugin: 'aspire', key: 'isBandHidden' } as const, false)
 const agents = atom({ plugin: 'aspire', key: 'agents' } as const, [] as AgentRun[])
 const panel = atom({ plugin: 'aspire', key: 'panel' } as const, { isCompact: false, isDoneCollapsed: false, isAutoOpened: false } as Panel)
@@ -110,7 +109,7 @@ const PROGRESS_TOOL = 'mcp__aspire__aspire_progress'
 
 const isAspireAgent = (type: string, plugin: string | undefined): boolean => type.startsWith('aspire:') || plugin === PLUGIN
 
-// The one timer: the cache countdown and running agents' clocks. Started when
+// The one timer: running agents' clocks. Started when
 // the mod switches on, never before; a reload starts it again from session.start.
 let ticker: { cancel: () => void } | null = null
 
@@ -121,11 +120,6 @@ const band: { renders: number; surface: string | null } = { renders: 0, surface:
 
 const tick = async ($: EngineInterface): Promise<void> => {
   const at = await $.clock.now()
-  const c = await read($, cache)
-  if (c.expiresAt !== null) {
-    const left = Math.max(0, Math.floor((c.expiresAt - at) / 1000))
-    if (left !== c.secondsLeft) await update($, cache, prev => ({ ...prev, secondsLeft: left }))
-  }
   if ((await read($, agents)).some(a => a.status === 'running')) await update($, now, () => at)
 }
 
@@ -162,7 +156,6 @@ async function reset($: EngineInterface): Promise<void> {
   await update($, org, () => BLANK_ORG)
   await update($, atlas, () => null)
   await update($, stats, () => ({ turn: 0, speed: null, context: 0 }))
-  await update($, cache, () => ({ expiresAt: null, secondsLeft: null }))
   await update($, isBandHidden, () => false)
   band.renders = 0
   band.surface = null
@@ -264,16 +257,10 @@ const MIN_TOKENS = 20
 const MIN_SECONDS = 0.5
 const MAX_SPEED = 1000
 
-// The prompt cache lives an hour after the last answer, as Claude Code writes it on a subscription.
-const CACHE_TTL_MS = 60 * 60 * 1000
-const CACHE_WARN_S = 20 * 60
-const CACHE_ALERT_S = 10 * 60
-
 const SPEED = '#8b8cf8'
 const ATLAS = '#4caf6e'
 const MUTED = '#8a8f8c'
 const CONTEXT = '#5fa8d3'
-const CACHE = '#4fb3a9'
 const WARN = '#e2a94e'
 const ALERT = '#e0846b'
 
@@ -306,16 +293,6 @@ const contextIcon = (percent: number) => {
       <path d="M8.5 9h7M8.5 12h7M8.5 15h4.5"/>
     </g></svg>`
 }
-
-// An hourglass: the prompt cache running out.
-const cacheIcon = (color: string) =>
-  ring(
-    color,
-    `<g fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
-       <path d="M8.5 6.5h7M8.5 17.5h7"/>
-       <path d="M9.5 6.5c0 3 5 3.5 5 5.5s-5 2.5-5 5.5M14.5 6.5c0 3-5 3.5-5 5.5s5 2.5 5 5.5"/>
-     </g>`,
-  )
 
 const contextBar = (percent: number) => {
   const color = percent >= 85 ? ALERT : percent >= 65 ? WARN : ATLAS
@@ -818,7 +795,6 @@ export const register: Register = on => {
       if (!(await isOn($))) return result
       const at = await $.clock.now()
       if (e.agentId === undefined) {
-        await update($, cache, () => ({ expiresAt: at + CACHE_TTL_MS, secondsLeft: CACHE_TTL_MS / 1000 }))
         await refreshContext($)
       } else {
         const agentId = e.agentId
@@ -850,7 +826,6 @@ export const register: Register = on => {
 
     const s = await read($, stats)
     const reading = await read($, atlas)
-    const { secondsLeft } = await read($, cache)
     const o = await read($, org)
     const shown = shownOf(await read($, progress), o)
     const list = await read($, agents)
@@ -900,11 +875,6 @@ export const register: Register = on => {
     const atlasText = reading ? fmtAtlasUsage(reading.costs) : tier <= 1 ? ATLAS_ABSENT_HINT : ATLAS_ABSENT
     const atlasLabel = tier <= 1 ? 'Atlas tokens' : 'Atlas'
 
-    const level =
-      e.props.isWorking || secondsLeft === null ? null : secondsLeft <= CACHE_ALERT_S ? ALERT : secondsLeft <= CACHE_WARN_S ? WARN : null
-    const cacheColor = level ?? CACHE
-    const cacheText = e.props.isWorking ? '…' : secondsLeft === null ? '—' : fmtCountdown(secondsLeft)
-
     const statsRow = (
       <Box
         flexDirection="row"
@@ -913,7 +883,6 @@ export const register: Register = on => {
         flexWrap="nowrap"
         overflow="hidden"
         paddingX={1}
-        {...(level ? { borderStyle: 'round', borderColor: level } : {})}
       >
         {tier <= 2 ? (
           <Box flexDirection="row" alignItems="center" columnGap={1} flexShrink={0}>
@@ -931,10 +900,6 @@ export const register: Register = on => {
           {Svg ? <Svg source={ATLAS_ICON} alt="Atlas tokens" width={icon} height={icon} /> : <Text color={ATLAS}>A</Text>}
           <Text dimColor>{atlasLabel}</Text>
           <Text bold color={reading ? ATLAS : undefined}>{atlasText}</Text>
-        </Box>
-        <Box flexDirection="row" alignItems="center" columnGap={1} flexShrink={0}>
-          {Svg ? <Svg source={cacheIcon(cacheColor)} alt="cache" width={icon} height={icon} /> : <Text color={cacheColor}>⧗</Text>}
-          <Text bold color={level ?? undefined}>{cacheText}</Text>
         </Box>
         <Box flexGrow={1} flexShrink={1} />
         <Box flexDirection="row" alignItems="center" columnGap={1} flexShrink={0}>

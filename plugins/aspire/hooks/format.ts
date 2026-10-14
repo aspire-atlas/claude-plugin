@@ -56,6 +56,3 @@ export const windowOf = (model: string): number => (/haiku-4|claude-3/i.test(mod
 
 export const pad2 = (n: number): string => String(n).padStart(2, '0')
 
-/** The cache countdown: 59:12, or "expired". */
-export const fmtCountdown = (secondsLeft: number): string =>
-  secondsLeft <= 0 ? 'expired' : `${pad2(Math.floor(secondsLeft / 60))}:${pad2(secondsLeft % 60)}`

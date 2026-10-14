@@ -2,11 +2,10 @@
 import { expect, test } from 'claude-code/testing'
 
 import { CHARACTERS, CRAB_CSS, characterOf, crab } from './characters'
-import { fitText, fmtCountdown, fmtTime, fmtTokens, modelName, windowOf, xml } from './format'
+import { fitText, fmtTime, fmtTokens, modelName, windowOf, xml } from './format'
 
-test('fmtTime, fmtCountdown, fmtTokens', () => {
+test('fmtTime, fmtTokens', () => {
   expect([0, 42_000, 725_000, 3_729_000].map(fmtTime)).toEqual(['0:00', '0:42', '12:05', '1:02:09'])
-  expect([3600, 59 * 60 + 12, 5, 0].map(fmtCountdown)).toEqual(['60:00', '59:12', '00:05', 'expired'])
   expect([950, 12_400, 1_200_000].map(fmtTokens)).toEqual(['950', '12k', '1.2M'])
 })
 

@@ -54,11 +54,6 @@ export type BandStats = {
   context: number
 }
 
-export type Cache = {
-  expiresAt: number | null
-  secondsLeft: number | null
-}
-
 export type AgentStatus = 'running' | 'done' | 'failed'
 
 export type AgentRun = {
@@ -177,7 +172,6 @@ declare module 'claude-code' {
       org: OrgState
       atlas: AtlasReading | null
       stats: BandStats
-      cache: Cache
       isBandHidden: boolean
       agents: AgentRun[]
       panel: Panel
