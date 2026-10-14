@@ -129,6 +129,7 @@ print(json.dumps({"holiday": name, "date": day.isoformat(), "year": day.year, "d
 | `atlas-program-ledger` | The holiday campaign's ledger: budget, committed, paid, remaining, burn by month, lines, an overdue invoice, an unmatched payment | 4 creators, 1 unmatched row |
 | `atlas-campaign-orchestrator` | The holiday brand's Next actions: one program and one creator ad campaign, actions across the buckets, two waiting on a decision, one done, one changed since approval, the stage strips | 8 actions |
 | `atlas-program-dashboard` | One sample program's dashboard: goals with pacing, the funnel, deliverables, content, performance, spend in the team view, roster health, the attention list | 8 creators, 4 posts |
+| `atlas-shops` | The sample brand's shops plan for the holiday: readiness for Instagram Shop and TikTok Shop, the step order, lead products and posts to tag, creators for the shop by role, the running cadence | 2 shops, 4 creators |
 
 An agent not in this table builds its own page at the smallest scale that shows every section.
 
