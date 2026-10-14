@@ -49,8 +49,8 @@
 // aspire_progress tool, or a baseline from Atlas get_status before the skill
 // reports) instead of savvy-flow, with the organization's name as its title
 // and no planned-task layer; the band's cost shows Atlas token costs from
-// get_status (./atlas-usage.ts) instead of Claude's own cost; the cache warning
-// notifications (a helper app, Claude Code's push notification, the desktop
+// get_status (./atlas-usage.ts) instead of Claude's own cost; the cache
+// countdown and its warning notifications (a helper app, Claude Code's push notification, the desktop
 // session file read) are gone; the panel drops savvy-flow's plan, its step
 // tool, the Claude price table and every cost figure, and its Russian and
 // Hebrew strings (English only); the characters moved to ./characters.ts.
@@ -58,10 +58,12 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
-import type { AgentRun, AtlasReading, BandStats, Cache, OrgState, Panel, Progress, Seen, Trigger, TriggerKind } from '../types'
+import type { AgentRun, AtlasReading, BandStats, OrgState, Panel, Progress, Seen, Trigger, TriggerKind } from '../types'
 import { ATLAS_ABSENT, ATLAS_ABSENT_HINT, fmtAtlasUsage, isAtlasStatusCall, isAtlasToolName, readAtlasOrg, readAtlasUsage } from './atlas-usage'
-import { ASPIRE, CRAB_CSS, PLAIN_CRAB, characterOf, crab } from './characters'
-import { clip, fitText, fmtCountdown, fmtTime, fmtTokens, modelName, textWidth, windowOf, xml } from './format'
+import { ASPIRE, CRAB_CSS, characterOf, crab } from './characters'
+import { GROUPS, ROSTER } from './roster'
+import type { RosterEntry } from './roster'
+import { clip, fitText, fmtTime, fmtTokens, modelName, textWidth, windowOf, xml } from './format'
 import type { ProgressInput, Shown } from './progress'
 import { barText, mergeProgress, orgStateFrom, percentOf, shownOf, titleOf } from './progress'
 
@@ -86,10 +88,9 @@ const progress = atom({ plugin: 'aspire', key: 'progress' } as const, null as Pr
 const org = atom({ plugin: 'aspire', key: 'org' } as const, BLANK_ORG)
 const atlas = atom({ plugin: 'aspire', key: 'atlas' } as const, null as AtlasReading | null)
 const stats = atom({ plugin: 'aspire', key: 'stats' } as const, { turn: 0, speed: null, context: 0 } as BandStats)
-const cache = atom({ plugin: 'aspire', key: 'cache' } as const, { expiresAt: null, secondsLeft: null } as Cache)
 const isBandHidden = atom({ plugin: 'aspire', key: 'isBandHidden' } as const, false)
 const agents = atom({ plugin: 'aspire', key: 'agents' } as const, [] as AgentRun[])
-const panel = atom({ plugin: 'aspire', key: 'panel' } as const, { isCompact: false, isDoneCollapsed: false, isAutoOpened: false } as Panel)
+const panel = atom({ plugin: 'aspire', key: 'panel' } as const, { isCompact: false, isDoneCollapsed: false, isAutoOpened: false, tab: 'live' } as Panel)
 const now = atom({ plugin: 'aspire', key: 'now' } as const, 0)
 
 /** The aspire skill: `/aspire`, `/aspire:aspire`, or the Skill tool's `aspire:aspire`. */
@@ -104,23 +105,24 @@ const PANE_TITLE = 'Aspire agents'
 const MAX_RUNS = 200
 // The progress tool as the model calls it: mcp__<plugin>__<name>.
 const PROGRESS_TOOL = 'mcp__aspire__aspire_progress'
+const STEP_TOOL = 'mcp__aspire__aspire_step'
 
 // ---------------------------------------------------------------------------
 // Switching on.
 
 const isAspireAgent = (type: string, plugin: string | undefined): boolean => type.startsWith('aspire:') || plugin === PLUGIN
 
-// The one timer: the cache countdown and running agents' clocks. Started when
+// The one timer: running agents' clocks. Started when
 // the mod switches on, never before; a reload starts it again from session.start.
 let ticker: { cancel: () => void } | null = null
 
+// Whether the AbovePrompt slot is drawn at all on this surface. A render hook
+// never writes $.state (drawing is pure), so the count is a module variable: it
+// starts over on a hot reload and on /clear, and the next render counts again.
+const band: { renders: number; surface: string | null } = { renders: 0, surface: null }
+
 const tick = async ($: EngineInterface): Promise<void> => {
   const at = await $.clock.now()
-  const c = await read($, cache)
-  if (c.expiresAt !== null) {
-    const left = Math.max(0, Math.floor((c.expiresAt - at) / 1000))
-    if (left !== c.secondsLeft) await update($, cache, prev => ({ ...prev, secondsLeft: left }))
-  }
   if ((await read($, agents)).some(a => a.status === 'running')) await update($, now, () => at)
 }
 
@@ -157,10 +159,11 @@ async function reset($: EngineInterface): Promise<void> {
   await update($, org, () => BLANK_ORG)
   await update($, atlas, () => null)
   await update($, stats, () => ({ turn: 0, speed: null, context: 0 }))
-  await update($, cache, () => ({ expiresAt: null, secondsLeft: null }))
   await update($, isBandHidden, () => false)
+  band.renders = 0
+  band.surface = null
   await update($, agents, () => [])
-  await update($, panel, () => ({ isCompact: false, isDoneCollapsed: false, isAutoOpened: false }))
+  await update($, panel, () => ({ isCompact: false, isDoneCollapsed: false, isAutoOpened: false, tab: 'live' }))
 }
 
 const isOn = async ($: EngineInterface): Promise<boolean> => {
@@ -183,7 +186,7 @@ const DONE = '#4caf6e'
 // count and the dismiss are Buttons beside it.
 const BAR_ROW_H = 22
 const BAR_H = 16
-const CRAB_W = 26
+const CRAB_W = 0
 const CELL = 3
 
 // Deterministic noise so the dither does not shimmer between redraws.
@@ -192,7 +195,7 @@ const noise = (x: number, y: number): number => {
   return s - Math.floor(s)
 }
 
-const barSvg = (title: string, shown: Shown, W: number, isWorking: boolean): string => {
+const barSvg = (title: string, shown: Shown, W: number): string => {
   // The title takes what it needs, up to 40% of the row; the bar takes the rest.
   const label = fitText(title, 13, Math.max(60, W * 0.4))
   const BAR_X = Math.round(16 + textWidth(label, 13) + 12)
@@ -244,7 +247,6 @@ const barSvg = (title: string, shown: Shown, W: number, isWorking: boolean): str
 <text x="${pillX + pillW / 2}" y="${BAR_H / 2 + 4}" text-anchor="middle" font-family="${FONT}" font-size="11" font-weight="600" fill="#ffffff">${xml(pill)}</text>
 </g>
 <text class="m" x="${W - CRAB_W - 6}" y="${BAR_ROW_H / 2 + 4.5}" text-anchor="end" font-family="${FONT}" font-size="12.5" font-variant-numeric="tabular-nums">${percentOf(shown)}</text>
-${CRAB_CSS}${crab(W - CRAB_W + 1, 0, PLAIN_CRAB, false, isWorking, 0.8)}
 </svg>`
 }
 
@@ -257,16 +259,10 @@ const MIN_TOKENS = 20
 const MIN_SECONDS = 0.5
 const MAX_SPEED = 1000
 
-// The prompt cache lives an hour after the last answer, as Claude Code writes it on a subscription.
-const CACHE_TTL_MS = 60 * 60 * 1000
-const CACHE_WARN_S = 20 * 60
-const CACHE_ALERT_S = 10 * 60
-
 const SPEED = '#8b8cf8'
 const ATLAS = '#4caf6e'
 const MUTED = '#8a8f8c'
 const CONTEXT = '#5fa8d3'
-const CACHE = '#4fb3a9'
 const WARN = '#e2a94e'
 const ALERT = '#e0846b'
 
@@ -299,16 +295,6 @@ const contextIcon = (percent: number) => {
       <path d="M8.5 9h7M8.5 12h7M8.5 15h4.5"/>
     </g></svg>`
 }
-
-// An hourglass: the prompt cache running out.
-const cacheIcon = (color: string) =>
-  ring(
-    color,
-    `<g fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
-       <path d="M8.5 6.5h7M8.5 17.5h7"/>
-       <path d="M9.5 6.5c0 3 5 3.5 5 5.5s-5 2.5-5 5.5M14.5 6.5c0 3-5 3.5-5 5.5s5 2.5 5 5.5"/>
-     </g>`,
-  )
 
 const contextBar = (percent: number) => {
   const color = percent >= 85 ? ALERT : percent >= 65 ? WARN : ATLAS
@@ -401,6 +387,10 @@ const headerSvg = (W: number, count: number, time: number): string => {
   return svg(W, HEADER_H, `${tile(0, 'Agents', String(count))}${tile(1, 'Time', fmtTime(time))}`)
 }
 
+/** What an agent reported through aspire_step: `2/5 reading posts`, and the fraction. */
+const stepsOf = (a: AgentRun): { text: string; ratio: number } | null =>
+  a.stepTotal ? { text: `${a.stepDone ?? 0}/${a.stepTotal}${a.stepNote ? ` ${a.stepNote}` : ''}`, ratio: Math.min(1, (a.stepDone ?? 0) / a.stepTotal) } : null
+
 const agentSvg = (W: number, a: AgentRun, at: number): string => {
   const character = characterOf(a)
   const ctx = ctxOf(a)
@@ -408,9 +398,10 @@ const agentSvg = (W: number, a: AgentRun, at: number): string => {
   const meta = [runModel(a)]
   if (a.round > 1) meta.push(`round ${a.round}`)
   if (a.status === 'failed') meta.push('error')
-  const stats = `ctx ${ctx}% · ${fmtTokens(a.contextTokens)}  ${fmtTime(elapsed(a, at))}`
-  // A finished run is a full bar; a running one shows its context fill, grey.
-  const progress = a.status === 'done' ? 1 : null
+  const steps = stepsOf(a)
+  const stats = `${steps ? `${steps.text} · ` : ''}ctx ${ctx}% · ${fmtTokens(a.contextTokens)}  ${fmtTime(elapsed(a, at))}`
+  // A finished run is a full bar; a running one shows its reported steps, else its context fill, grey.
+  const progress = a.status === 'done' ? 1 : steps ? steps.ratio : null
   const fillW = Math.round(textW * (progress ?? ctx / 100))
   return svg(
     W,
@@ -422,6 +413,27 @@ const agentSvg = (W: number, a: AgentRun, at: number): string => {
 <rect class="k" x="42" y="55" width="${textW}" height="4" rx="2"/><rect${progress === null ? ' class="m"' : ''} x="42" y="55" width="${fillW}" height="4" rx="2"${progress === null ? '' : ` fill="${character.color}"`}/>
 ${statusMark(W - 8, 16, a.status, character.color)}
 <line class="ln" x1="0" y1="65.5" x2="${W}" y2="65.5"/>`,
+  )
+}
+
+const CARD_H = 60
+
+/** A crab card for one agent type: its costume, name, what it makes, and whether it ran this session. */
+const cardSvg = (W: number, entry: RosterEntry, list: AgentRun[]): string => {
+  const character = characterOf({ type: entry.type, model: '' })
+  const runs = list.filter(a => a.type === entry.type)
+  const isRunning = runs.some(a => a.status === 'running')
+  const state = isRunning ? 'running' : runs.length ? `ran ${runs.length}\u00d7` : 'ready'
+  const textW = W - 42 - 74
+  return svg(
+    W,
+    CARD_H,
+    `<rect class="tile" x="0.5" y="2.5" width="${W - 1}" height="${CARD_H - 6}" rx="10"/>
+${crab(8, 10, character, false, isRunning)}
+<text class="t" x="50" y="25" font-family="${FONT}" font-size="13" font-weight="600">${xml(fitText(entry.name, 13, textW))}</text>
+<text class="s" x="50" y="42" font-family="${FONT}" font-size="11">${xml(fitText(entry.blurb, 11, textW))}</text>
+${isRunning ? `<circle class="live" cx="${W - 66}" cy="22" r="3.5" fill="${character.color}"/>` : runs.length ? `<path d="M${W - 70} 22l3.5 3.5 6.5-7" fill="none" stroke="#3B9C5F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
+<text class="${isRunning || runs.length ? 's' : 'm'}" x="${W - 12}" y="26" text-anchor="end" font-family="${FONT}" font-size="11">${state}</text>`,
   )
 }
 
@@ -519,9 +531,11 @@ async function statusText($: EngineInterface): Promise<string> {
     s.lastStatusAt === null
       ? 'Last get_status: none yet.'
       : `Last get_status ${ago(at - s.lastStatusAt)}: ${reading ? `${fmtAtlasUsage(reading.costs)} Atlas tokens` : 'no token costs in it'}, organization ${o.name ?? 'not picked yet'}.`
-  const shown = shownOf(p, o)
-  const bar = isOnNow ? `Bar: ${titleOf(o)}, ${shown.label}, ${percentOf(shown)} (${shown.isReported ? 'reported by the skill' : 'baseline from get_status'}).` : 'Bar: not shown until the mod is on.'
-  return [state, counts, status, bar, `Claude Code ${version} on ${surfaces}.`].join('\n')
+  const shown = shownOf(p, o, await read($, agents))
+  const bar = isOnNow ? `Bar: ${titleOf(o)}, ${shown.label}, ${percentOf(shown)} (${shown.source === 'skill' ? 'reported by the skill' : shown.source === 'agents' ? 'from the running agents' : 'baseline from get_status'}).` : 'Bar: not shown until the mod is on.'
+  const b = band
+  const drawn = b.renders > 0 ? `Band: drawn ${b.renders} times, last on ${b.surface ?? 'unknown'}.` : 'Band: never drawn on this surface.'
+  return [state, counts, status, bar, drawn, `Claude Code ${version} on ${surfaces}.`].join('\n')
 }
 
 // ---------------------------------------------------------------------------
@@ -547,7 +561,8 @@ export const register: Register = on => {
           'Report the /aspire skill\'s progress to the Aspire progress bar above the prompt. It only draws the bar: it reads and changes nothing else. ' +
           'Call it at the start of each step with done (steps finished) and total (steps planned), with phase naming the step in a few words, ' +
           'and once at the end with finished: true. Fields left out keep their previous value; a new title starts a new run. ' +
-          'For the main session only: a call from a subagent is ignored.',
+          'For the main session only: a call from a subagent is ignored. ' +
+          'The result ends with `band: visible`, `not-drawn`, `hidden-by-user` or `unknown`. When it is not `visible`, show the progress another way.',
         inputSchema: {
           type: 'object',
           properties: {
@@ -570,6 +585,25 @@ export const register: Register = on => {
       })
     } catch {
       // Without the tool the bar falls back to the get_status baseline.
+    }
+    try {
+      await $.tool.register({
+        name: 'aspire_step',
+        description:
+          'Report an Aspire agent\'s own steps to the agents panel. It only draws a bar on that agent\'s row: it reads and changes nothing else. ' +
+          'Right after reading the brief, call it with total (your plan in 3 to 8 steps) and done: 0; call it again with done and a note ' +
+          '(the step in progress, a few words) as each step finishes. For agents only: a call from the main session is ignored.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            total: { type: 'integer', minimum: 1, description: 'Steps planned; may change if the plan changes.' },
+            done: { type: 'integer', minimum: 0, description: 'Steps finished so far.' },
+            note: { type: 'string', description: 'The step in progress, a few words.' },
+          },
+        },
+      })
+    } catch {
+      // Agents show their context fill instead.
     }
     try {
       // A reload (or a resumed process) keeps $.state: pick the timer back up.
@@ -640,8 +674,38 @@ export const register: Register = on => {
       await activate($, 'progress', 'aspire_progress')
       await count($, 'progressReports')
       const p = await update($, progress, prev => mergeProgress(prev, e as unknown as ProgressInput))
-      const shown = shownOf(p, await read($, org))
-      return { result: `ok: ${shown.label}, ${percentOf(shown)}` }
+      const shown = shownOf(p, await read($, org), await read($, agents))
+      const b = band
+      const hidden = await read($, isBandHidden)
+      const visibility = hidden ? 'hidden-by-user' : b.renders > 0 ? `visible on ${b.surface ?? 'unknown'}` : 'not-drawn'
+      return { result: `ok: ${shown.label}, ${percentOf(shown)}; band: ${visibility}` }
+    } catch {
+      return { result: 'ok; band: unknown' }
+    }
+  }).catch(() => ({ result: 'ok; band: unknown' }))
+
+  // An agent's own steps, drawn on its row in the panel. The call runs in the
+  // agent's loop, so agentId names it; the main session and an unknown agent
+  // change nothing, and it never switches the mod on.
+  on('tool.call', { tool: STEP_TOOL }, async ($, e) => {
+    const agentId = (e as { agentId?: string }).agentId
+    if (!agentId) return { result: 'ignored: only agents report steps' }
+    try {
+      if (!(await isOn($))) return { result: 'ok' }
+      const input = e as unknown as { total?: unknown; done?: unknown; note?: unknown }
+      const num = (v: unknown): number | undefined => (typeof v === 'number' && Number.isFinite(v) ? Math.max(0, Math.round(v)) : undefined)
+      const note = typeof input.note === 'string' ? clip(input.note.trim(), 40) : undefined
+      let isKnown = false
+      await update($, agents, list =>
+        list.map(a => {
+          if (a.agentId !== agentId) return a
+          isKnown = true
+          const total = num(input.total) ?? a.stepTotal ?? 0
+          const done = num(input.done) ?? a.stepDone ?? 0
+          return { ...a, stepTotal: total, stepDone: total ? Math.min(total, done) : done, stepNote: note === undefined ? a.stepNote : note || undefined }
+        }),
+      )
+      return { result: isKnown ? 'ok' : 'ok: not listed in the panel' }
     } catch {
       return { result: 'ok' }
     }
@@ -656,7 +720,7 @@ export const register: Register = on => {
     try {
       if (result.deny !== undefined || result.isError) return result
       const tool = String(e.tool)
-      if (tool === PROGRESS_TOOL) return result
+      if (tool === PROGRESS_TOOL || tool === STEP_TOOL) return result
       const payload = { result: result.result, text: result.text }
       const isStatus = isAtlasStatusCall(tool, payload)
       if (!isStatus && !isAtlasToolName(tool)) return result
@@ -805,7 +869,6 @@ export const register: Register = on => {
       if (!(await isOn($))) return result
       const at = await $.clock.now()
       if (e.agentId === undefined) {
-        await update($, cache, () => ({ expiresAt: at + CACHE_TTL_MS, secondsLeft: CACHE_TTL_MS / 1000 }))
         await refreshContext($)
       } else {
         const agentId = e.agentId
@@ -827,6 +890,9 @@ export const register: Register = on => {
   // Above the prompt: the progress bar (from savvy-progress), then the band's
   // row (from session-band), then whatever other mods draw beneath.
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
+    // Counted before any early return, so the progress tool can tell whether this surface draws the slot at all.
+    band.renders += 1
+    band.surface = e.surface ?? null
     if (e.props.hasSurvey || !(await isOn($)) || (await read($, isBandHidden))) return next(e)
     // Claude Code's own placeholder ({ type: 'engine' }) is never nested: the desktop drops a band that nests it.
     const drawn = await Promise.resolve(next(e)).catch(() => null)
@@ -834,20 +900,24 @@ export const register: Register = on => {
 
     const s = await read($, stats)
     const reading = await read($, atlas)
-    const { secondsLeft } = await read($, cache)
     const o = await read($, org)
-    const shown = shownOf(await read($, progress), o)
     const list = await read($, agents)
+    const shown = shownOf(await read($, progress), o, list)
     const title = titleOf(o)
     const percent = percentOf(shown)
-    const isWorking = e.props.isWorking || list.some(a => a.status === 'running')
 
     const ui = $.ui.resolve(e)
     const { Box, Button, Text } = ui
     // The terminal's element table has an Svg that draws nothing: test the surface too.
     const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
 
-    const agentsButton = <Button key="aspire-agents" label={`×${list.length}`} plain onPress={() => void togglePane($)} />
+    // The crab and the count are one control: pressing either opens the agents panel. A Button holds
+    // only text, so the crab here is the glyph, not the drawing (an Svg cannot be pressed).
+    const agentsButton = (
+      <Button key="aspire-agents" label={`×${list.length}`} plain onPress={() => void togglePane($)}>
+        <Text color={ASPIRE}>🦀</Text> ×{list.length}
+      </Button>
+    )
     const dismiss = <Button key="aspire-band-hide" label="✕" role="dismiss" plain dimColor onPress={() => update($, isBandHidden, () => true)} />
 
     // Desktop: one Svg row, about 8 CSS px per reported column; the rest is the
@@ -859,7 +929,7 @@ export const register: Register = on => {
     const barColor = shown.isFinished ? DONE : ASPIRE
     const barRow = Svg ? (
       <Box flexDirection="row" alignItems="center" gap={1}>
-        <Svg source={barSvg(title, shown, svgW, isWorking)} alt={`${title}: ${shown.label}, ${percent}`} width={svgW} height={BAR_ROW_H} />
+        <Svg source={barSvg(title, shown, svgW)} alt={`${title}: ${shown.label}, ${percent}`} width={svgW} height={BAR_ROW_H} />
         {agentsButton}
         {dismiss}
       </Box>
@@ -872,7 +942,6 @@ export const register: Register = on => {
         <Text color={barColor}>{barText(shown.ratio, textBarW)}</Text>
         <Text bold>{shown.label}</Text>
         <Text dimColor>{percent}</Text>
-        <Text color={ASPIRE}>▣</Text>
         {agentsButton}
         {dismiss}
       </Box>
@@ -884,11 +953,6 @@ export const register: Register = on => {
     const atlasText = reading ? fmtAtlasUsage(reading.costs) : tier <= 1 ? ATLAS_ABSENT_HINT : ATLAS_ABSENT
     const atlasLabel = tier <= 1 ? 'Atlas tokens' : 'Atlas'
 
-    const level =
-      e.props.isWorking || secondsLeft === null ? null : secondsLeft <= CACHE_ALERT_S ? ALERT : secondsLeft <= CACHE_WARN_S ? WARN : null
-    const cacheColor = level ?? CACHE
-    const cacheText = e.props.isWorking ? '…' : secondsLeft === null ? '—' : fmtCountdown(secondsLeft)
-
     const statsRow = (
       <Box
         flexDirection="row"
@@ -897,7 +961,6 @@ export const register: Register = on => {
         flexWrap="nowrap"
         overflow="hidden"
         paddingX={1}
-        {...(level ? { borderStyle: 'round', borderColor: level } : {})}
       >
         {tier <= 2 ? (
           <Box flexDirection="row" alignItems="center" columnGap={1} flexShrink={0}>
@@ -915,10 +978,6 @@ export const register: Register = on => {
           {Svg ? <Svg source={ATLAS_ICON} alt="Atlas tokens" width={icon} height={icon} /> : <Text color={ATLAS}>A</Text>}
           <Text dimColor>{atlasLabel}</Text>
           <Text bold color={reading ? ATLAS : undefined}>{atlasText}</Text>
-        </Box>
-        <Box flexDirection="row" alignItems="center" columnGap={1} flexShrink={0}>
-          {Svg ? <Svg source={cacheIcon(cacheColor)} alt="cache" width={icon} height={icon} /> : <Text color={cacheColor}>⧗</Text>}
-          <Text bold color={level ?? undefined}>{cacheText}</Text>
         </Box>
         <Box flexGrow={1} flexShrink={1} />
         <Box flexDirection="row" alignItems="center" columnGap={1} flexShrink={0}>
@@ -969,19 +1028,70 @@ export const register: Register = on => {
       />
     )
 
+    const setTab = (tab: Panel['tab']) => () => void update($, panel, prev => ({ ...prev, tab }))
+    const tabs = (
+      <Box flexDirection="row" gap={2}>
+        <Button key="tab-live" label="Live" plain dimColor={p.tab !== 'live'} onPress={setTab('live')} />
+        <Button key="tab-agents" label={`Agents · ${ROSTER.length}`} plain dimColor={p.tab !== 'agents'} onPress={setTab('agents')} />
+      </Box>
+    )
+    const stateOf = (entry: RosterEntry): string => {
+      const runs = list.filter(a => a.type === entry.type)
+      return runs.some(a => a.status === 'running') ? '●' : runs.length ? '✓' : '○'
+    }
+
+    if (p.tab === 'agents') {
+      if (e.surface === 'desktop' && 'Svg' in ui) {
+        const { Svg } = ui
+        const W = Math.max(240, Math.min(900, (e.props.bodyColumns || 40) * 8 - 8))
+        return (
+          <Box flexDirection="column">
+            {tabs}
+            {GROUPS.map(g => {
+              const entries = ROSTER.filter(r => r.group === g.key)
+              return (
+                <Box key={g.key} flexDirection="column">
+                  <Text dimColor>{`${g.title} · ${entries.length}`}</Text>
+                  {entries.map(r => (
+                    <Svg key={r.type} source={cardSvg(W, r, list)} alt={`${r.name}: ${r.blurb}`} width={W} height={CARD_H} />
+                  ))}
+                </Box>
+              )
+            })}
+          </Box>
+        )
+      }
+      return (
+        <Box flexDirection="column">
+          {tabs}
+          {GROUPS.map(g => (
+            <Box key={g.key} flexDirection="column" marginTop={1}>
+              <Text dimColor>{`${g.title} · ${ROSTER.filter(r => r.group === g.key).length}`}</Text>
+              {ROSTER.filter(r => r.group === g.key).map(r => (
+                <Text key={r.type} wrap="truncate-end">
+                  <Text color={characterOf({ type: r.type, model: '' }).color}>{stateOf(r)}</Text> <Text bold>{r.name}</Text> <Text dimColor>{r.blurb}</Text>
+                </Text>
+              ))}
+            </Box>
+          ))}
+        </Box>
+      )
+    }
+
     if (e.surface === 'desktop' && 'Svg' in ui) {
       const { Svg } = ui
       const W = Math.max(240, Math.min(900, (e.props.bodyColumns || 40) * 8 - 8))
       if (p.isCompact) {
         return (
           <Box flexDirection="column" gap={1}>
+            {tabs}
             <Svg source={compactSvg(W, list, time)} alt={summary} width={W} height={32} />
             {toggleCompact}
           </Box>
         )
       }
       const shownDone = p.isDoneCollapsed ? 0 : finished.length
-      const lines = 1 + (isEmpty ? 1 : 0) + (running.length > 0 ? 1 : 0) + (finished.length > 0 ? 1 : 0)
+      const lines = 2 + (isEmpty ? 1 : 0) + (running.length > 0 ? 1 : 0) + (finished.length > 0 ? 1 : 0)
       const gridH = HEADER_H + lines * LINE_H + (running.length + shownDone) * ROW_H
       return (
         <Box flexDirection="column">
@@ -991,6 +1101,7 @@ export const register: Register = on => {
           ))}
           <Box flexDirection="column" position="absolute" top={0} left={0} right={0}>
             <Svg source={headerSvg(W, list.length, time)} alt={summary} width={W} height={HEADER_H} />
+            {tabs}
             {toggleCompact}
             {isEmpty && <Text dimColor>{empty}</Text>}
             {running.length > 0 && <Text dimColor>{`Running · ${running.length}`}</Text>}
@@ -1029,10 +1140,16 @@ export const register: Register = on => {
           </Text>
           <Text wrap="truncate-end">
             {'  '}
-            {a.status === 'done' ? <Text color={character.color}>{ctxBar(100, barW)}</Text> : <Text dimColor>{ctxBar(ctx, barW)}</Text>}
+            {a.status === 'done' ? (
+              <Text color={character.color}>{ctxBar(100, barW)}</Text>
+            ) : stepsOf(a) ? (
+              <Text color={character.color}>{ctxBar(Math.round((stepsOf(a)?.ratio ?? 0) * 100), barW)}</Text>
+            ) : (
+              <Text dimColor>{ctxBar(ctx, barW)}</Text>
+            )}
             <Text dimColor>
               {' '}
-              ctx {ctx}% · {fmtTokens(a.contextTokens)} {fmtTime(elapsed(a, at))}
+              {stepsOf(a) ? `${stepsOf(a)?.text} · ` : ''}ctx {ctx}% · {fmtTokens(a.contextTokens)} {fmtTime(elapsed(a, at))}
             </Text>
           </Text>
         </Box>
@@ -1041,6 +1158,7 @@ export const register: Register = on => {
 
     return (
       <Box flexDirection="column">
+        {tabs}
         <Box flexDirection="row" justifyContent="space-between">
           <Text dimColor>{summary}</Text>
           {toggleCompact}

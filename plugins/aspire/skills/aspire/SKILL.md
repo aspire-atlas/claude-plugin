@@ -216,10 +216,8 @@ and the **Fee calculator** sets the creator rates behind every fee they show.
 In Claude Code, the plugin can draw an Aspire progress bar above the prompt. If the tool
 `mcp__aspire__aspire_progress` appears among your tools, including as a deferred tool, it is
 available: a deferred tool only needs loading first with ToolSearch
-(`select:mcp__aspire__aspire_progress`). Skip it silently if the tool is absent or ToolSearch
-does not find it, and never mention it to the user. It only draws the bar; nothing depends on
-it. When running the phases, call it at the start of each phase with `title: "Onboarding"`,
-`total: 6`, `done`, and `phase`:
+(`select:mcp__aspire__aspire_progress`). When running the phases, call it at the start of each
+phase with `title: "Onboarding"`, `total: 6`, `done`, and `phase`:
 
 | Phase | `done` | `phase` |
 | ----- | ------ | ------- |
@@ -230,8 +228,36 @@ it. When running the phases, call it at the start of each phase with `title: "On
 | 6 | 5 | `First insights` |
 
 Call it once more with `finished: true` when onboarding closes, or when a routed flow takes
-over after Phase 2 + 3. Any other flow in the main session may report its own steps the
-same way under its own `title`; agents never call it (a subagent's call is ignored).
+over after Phase 2 + 3. Agents never call it (a subagent's call is ignored); they report their own steps on their panel row with `mcp__aspire__aspire_step`, which the agent files describe.
+
+**Every other flow reports its own steps, never onboarding's.** When a flow starts (the creator
+brief, discovery, vetting, a review, a readout, the orchestrator, a program step, and the rest),
+call it once with that flow's name as `title` and the steps this run will actually take as
+`tasks`, in order, a few words each ("Read the account", "Find creators", "Publish the brief").
+A new `title` starts a new run, so the onboarding steps are gone. Call it again as each step
+finishes with `done` (or the list with `done: true` on finished steps), and with `phase` naming
+the step in progress. Re-send `tasks` when the plan changes, for example when a question adds
+or drops a step. Call it with `finished: true` when the flow ends.
+
+Launch each agent with an Agent `description` equal to the task it runs. The bar then marks that
+task done when the agent finishes and names it while it runs, even if you forget to report. A
+session that never reports still shows the agents that ran as its steps.
+
+The bar shows only where the host draws the slot above the prompt, so the tool's result ends
+with `band: ...`. Decide the channel once per run, from the first call:
+
+| Result | Channel |
+| ------ | ------- |
+| `band: visible on ...` | The bar only |
+| `band: hidden-by-user` | Nothing extra |
+| `band: not-drawn` or `band: unknown` | The task list if `TaskCreate` and `TaskUpdate` exist, else a chat line |
+| Tool missing | The task list if available, else a chat line |
+
+- **Task list:** six tasks (Connection, Organization, Profile and channel, Brand context, First
+  insights, Wrap up), updated at the start of each phase.
+- **Chat line,** once per phase: `Onboarding: step 2 of 6, Organization ▰▰▱▱▱▱ 33%`.
+- Keep calling the progress tool every phase, even when falling back.
+- Subagents never report. Never name the tool or the fallback to the user.
 
 ---
 

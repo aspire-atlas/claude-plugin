@@ -8,7 +8,7 @@
 // https://github.com/johnnyvizz/claude-kit, MIT License,
 // Copyright (c) 2026 johnnyvizz. The full notice is in ./register.tsx.
 
-import type { OrgState, Progress, ProgressTask } from '../types'
+import type { AgentRun, OrgState, Progress, ProgressTask } from '../types'
 import type { AtlasOrgReading } from './atlas-usage'
 import { clip } from './format'
 
@@ -95,24 +95,58 @@ export type Shown = {
   /** Tick marks: the steps of the run. */
   total: number
   isFinished: boolean
-  /** True once the skill reported; false while the bar shows the get_status baseline. */
+  /** Where the reading comes from: the skill's report, the agents that ran, or the get_status baseline. */
+  source: 'skill' | 'agents' | 'baseline'
+  /** True once the skill reported. */
   isReported: boolean
 }
 
-/** The skill's report wins; before one, the get_status baseline out of STEPS. */
-export const shownOf = (p: Progress | null, o: OrgState): Shown => {
-  if (p) {
-    if (p.isFinished) return { ratio: 1, label: 'Done', total: p.total, isFinished: true, isReported: true }
-    const counted = p.total ? `${p.done}/${p.total}` : ''
-    return {
-      ratio: p.total ? Math.min(1, p.done / p.total) : 0,
-      label: [p.phase || (p.total ? 'Step' : 'Started'), counted].filter(Boolean).join(' '),
-      total: p.total,
-      isFinished: false,
-      isReported: true,
+/** The agents the bar reads: only their type, description and status. */
+export type Run = Pick<AgentRun, 'type' | 'description' | 'status'>
+
+const norm = (s: string): string => s.toLowerCase().replace(/\s+/g, ' ').trim()
+
+/** `aspire:atlas-creator-brief` as a few words: `creator brief`. */
+export const agentName = (type: string): string => type.replace(/^aspire:/, '').replace(/^atlas-/, '').replace(/-/g, ' ')
+
+const shown = (ratio: number, label: string, total: number, isFinished: boolean, source: Shown['source']): Shown => ({
+  ratio,
+  label,
+  total,
+  isFinished,
+  source,
+  isReported: source === 'skill',
+})
+
+/**
+ * The skill's report wins and follows the agents it launched: a task whose
+ * title equals a finished agent's description counts as done, and a running
+ * agent names the phase when the skill gave none. With no report, the agents
+ * that ran are the steps (done out of started). With neither, the get_status
+ * baseline out of STEPS.
+ */
+export const shownOf = (p: Progress | null, o: OrgState, runs: readonly Run[] = []): Shown => {
+  const running = runs.filter(r => r.status === 'running')
+  if (p && !p.isFinished) {
+    const doneByAgent = (t: ProgressTask): boolean => runs.some(r => r.status === 'done' && norm(r.description) === norm(t.title))
+    const doneTasks = p.tasks.filter(t => t.isDone || doneByAgent(t)).length
+    const total = Math.max(p.total, p.tasks.length)
+    const done = Math.min(total, Math.max(p.done, doneTasks))
+    const live = p.tasks.find(t => running.some(r => norm(r.description) === norm(t.title)))?.title ?? (running[0] ? agentName(running[0].type) : '')
+    const phase = p.phase || live || (total ? 'Step' : 'Started')
+    return shown(total ? Math.min(1, done / total) : 0, [phase, total ? `${done}/${total}` : ''].filter(Boolean).join(' '), total, false, 'skill')
+  }
+  if (p || runs.length) {
+    const isRunsLive = running.length > 0
+    if (p && !isRunsLive) return shown(1, 'Done', p.total, true, 'skill')
+    if (runs.length) {
+      const total = runs.length
+      const done = total - running.length
+      if (!isRunsLive) return shown(1, 'Done', total, true, 'agents')
+      return shown(done / total, `${agentName(running[0]!.type)} ${done}/${total}`, total, false, 'agents')
     }
   }
-  return { ratio: o.checkpoints / STEPS, label: `Onboarding ${o.checkpoints}/${STEPS}`, total: STEPS, isFinished: false, isReported: false }
+  return shown(o.checkpoints / STEPS, `Onboarding ${o.checkpoints}/${STEPS}`, STEPS, false, 'baseline')
 }
 
 export const percentOf = (s: Shown): string => `${Math.round(s.ratio * 100)}%`

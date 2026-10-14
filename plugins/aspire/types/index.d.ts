@@ -54,11 +54,6 @@ export type BandStats = {
   context: number
 }
 
-export type Cache = {
-  expiresAt: number | null
-  secondsLeft: number | null
-}
-
 export type AgentStatus = 'running' | 'done' | 'failed'
 
 export type AgentRun = {
@@ -74,6 +69,11 @@ export type AgentRun = {
   contextTokens: number
   contextMax: number
   round: number
+  /** Steps the agent reported through `aspire_step`; absent until it reports. */
+  stepTotal?: number
+  stepDone?: number
+  /** The step in progress, a few words. */
+  stepNote?: string
 }
 
 export type Panel = {
@@ -81,6 +81,8 @@ export type Panel = {
   isDoneCollapsed: boolean
   /** The panel opened by itself once this session (first aspire:* agent). */
   isAutoOpened: boolean
+  /** `live`: this session's agents; `agents`: a card for each agent type the plugin ships. */
+  tab: 'live' | 'agents'
 }
 
 /** One step the skill reported. */
@@ -177,7 +179,6 @@ declare module 'claude-code' {
       org: OrgState
       atlas: AtlasReading | null
       stats: BandStats
-      cache: Cache
       isBandHidden: boolean
       agents: AgentRun[]
       panel: Panel
