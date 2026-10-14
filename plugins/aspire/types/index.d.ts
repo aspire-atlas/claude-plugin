@@ -215,6 +215,8 @@ declare module 'claude-code' {
       progress: Progress | null
       org: OrgState
       atlas: AtlasReading | null
+      /** The organization's credits from the latest get_status; null when it gave none. */
+      credits: AtlasCreditsReading | null
       stats: BandStats
       isBandHidden: boolean
       agents: AgentRun[]
