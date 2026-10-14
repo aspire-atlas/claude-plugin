@@ -18,7 +18,7 @@ test('shownOf: the reported done and total win over the baseline', () => {
   const s = shownOf(p, { name: 'Sample Brand', checkpoints: 2 })
   expect(s).toMatchObject({ label: 'Brand context 4/6', isReported: true, total: 6 })
   expect(percentOf(s)).toBe('67%')
-  expect(shownOf(mergeProgress(p, { finished: true }), NO_ORG)).toMatchObject({ ratio: 1, label: 'Done', isFinished: true })
+  expect(shownOf(mergeProgress(p, { finished: true }), NO_ORG)).toMatchObject({ ratio: 1, label: 'Awaiting next assignment', isFinished: true })
 })
 
 test('mergeProgress: fields left out keep their value; a finished run or a new title starts over', () => {
@@ -82,14 +82,14 @@ test('shownOf: reported tasks follow the agents that ran them', () => {
 test('shownOf: with no report the agents are the steps', () => {
   const runs = [run('aspire:atlas-creator-vetting', 'Vet list', 'done'), run('aspire:atlas-content-review', 'Review draft', 'running')]
   expect(shownOf(null, NO_ORG, runs)).toMatchObject({ label: 'content review 1/2', ratio: 0.5, source: 'agents', isReported: false })
-  expect(shownOf(null, NO_ORG, [run('aspire:atlas-ad-reuse', 'x', 'done')])).toMatchObject({ label: 'Done', isFinished: true, source: 'agents' })
+  expect(shownOf(null, NO_ORG, [run('aspire:atlas-ad-reuse', 'x', 'done')])).toMatchObject({ label: 'Awaiting next assignment', isFinished: true, source: 'agents' })
   // No report and no agents: the baseline.
   expect(shownOf(null, NO_ORG, [])).toMatchObject({ source: 'baseline' })
 })
 
 test('shownOf: a finished run shows Done, and agents started after it take the bar over', () => {
   const finished = mergeProgress(mergeProgress(null, { title: 'Readout', total: 2, done: 1 }), { finished: true })
-  expect(shownOf(finished, NO_ORG, [])).toMatchObject({ label: 'Done', isFinished: true })
+  expect(shownOf(finished, NO_ORG, [])).toMatchObject({ label: 'Awaiting next assignment', isFinished: true })
   expect(shownOf(finished, NO_ORG, [run('aspire:atlas-market-signal', 'Signal', 'running')])).toMatchObject({ label: 'market signal 0/1', source: 'agents' })
 })
 

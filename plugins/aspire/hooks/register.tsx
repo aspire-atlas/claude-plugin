@@ -376,15 +376,15 @@ const statusMark = (x: number, y: number, status: string, color: string): string
 
 const HEADER_H = 44
 
-// Two tiles: how many agents ran, and the time from the first start to the last end.
-const headerSvg = (W: number, count: number, time: number): string => {
+// Two tiles: how many agents ran, and the Atlas token costs from the latest get_status.
+const headerSvg = (W: number, count: number, atlasText: string): string => {
   const gap = 6
   const tw = (W - gap) / 2
   const tile = (i: number, k: string, v: string) =>
     `<rect class="tile" x="${i * (tw + gap)}" y="0" width="${tw}" height="40" rx="8"/>
 <text class="s" x="${i * (tw + gap) + 9}" y="16" font-family="${FONT}" font-size="11">${k}</text>
 <text class="t" x="${i * (tw + gap) + 9}" y="33" font-family="${FONT}" font-size="15" font-weight="600" font-variant-numeric="tabular-nums">${v}</text>`
-  return svg(W, HEADER_H, `${tile(0, 'Agents', String(count))}${tile(1, 'Time', fmtTime(time))}`)
+  return svg(W, HEADER_H, `${tile(0, 'Agents', String(count))}${tile(1, 'Atlas tokens', atlasText)}`)
 }
 
 /** What an agent reported through aspire_step: `2/5 reading posts`, and the fraction. */
@@ -437,7 +437,7 @@ ${isRunning ? `<circle class="live" cx="${W - 66}" cy="22" r="3.5" fill="${chara
   )
 }
 
-const compactSvg = (W: number, list: AgentRun[], time: number): string => {
+const compactSvg = (W: number, list: AgentRun[], atlasText: string): string => {
   const icons = [...list.filter(a => a.status === 'running'), ...list.filter(a => a.status !== 'running')]
   const fit = Math.max(1, Math.floor((W - 150) / 36))
   const shown = icons.slice(0, fit)
@@ -454,7 +454,7 @@ const compactSvg = (W: number, list: AgentRun[], time: number): string => {
     W,
     32,
     `${body}${more ? `<text class="s" x="${x}" y="21" font-family="${FONT}" font-size="12">+${more}</text>` : ''}
-<text class="s" x="${W}" y="21" text-anchor="end" font-family="${FONT}" font-size="12" font-variant-numeric="tabular-nums">${fmtCount(list.length, 'agent', 'agents')} · ${fmtTime(time)}</text>`,
+<text class="s" x="${W}" y="21" text-anchor="end" font-family="${FONT}" font-size="12" font-variant-numeric="tabular-nums">${fmtCount(list.length, 'agent', 'agents')} · Atlas ${atlasText}</text>`,
   )
 }
 
@@ -898,8 +898,6 @@ export const register: Register = on => {
     const drawn = await Promise.resolve(next(e)).catch(() => null)
     const below = drawn && typeof drawn === 'object' && (drawn as { type?: string }).type !== 'engine' ? drawn : null
 
-    const s = await read($, stats)
-    const reading = await read($, atlas)
     const o = await read($, org)
     const list = await read($, agents)
     const shown = shownOf(await read($, progress), o, list)
@@ -925,7 +923,11 @@ export const register: Register = on => {
     const cols = e.props.bodyColumns
     const svgW = Math.max(180, Math.min(1600, (cols || 100) * 8 - 96))
     const titleW = Math.max(8, Math.min(30, title.length + 2, Math.floor(cols / 3)))
-    const textBarW = Math.max(6, Math.min(40, cols - titleW - 32))
+    // The row's other cells, widths measured: label, percent, crab and count (about 4 + digits),
+    // dismiss, and the gaps between the six cells. The bar takes what is left and is dropped
+    // when under 6 cells, so the row never wraps in a narrow terminal.
+    const fixedW = shown.label.length + percent.length + 4 + String(list.length).length + 1 + 2 * 5 + 2
+    const textBarW = Math.min(40, (cols || 100) - titleW - fixedW)
     const barColor = shown.isFinished ? DONE : ASPIRE
     const barRow = Svg ? (
       <Box flexDirection="row" alignItems="center" gap={1}>
@@ -939,59 +941,17 @@ export const register: Register = on => {
           <Text color={barColor}>● </Text>
           <Text wrap="truncate-end">{title}</Text>
         </Box>
-        <Text color={barColor}>{barText(shown.ratio, textBarW)}</Text>
-        <Text bold>{shown.label}</Text>
+        {textBarW >= 6 ? <Text color={barColor}>{barText(shown.ratio, textBarW)}</Text> : null}
+        <Text bold wrap="truncate-end">{shown.label}</Text>
         <Text dimColor>{percent}</Text>
         {agentsButton}
         {dismiss}
       </Box>
     )
 
-    const tier = tierFor(e.props.bodyColumns)
-    const icon = tier >= 3 ? 18 : 22
-    const speed = s.speed === null ? '—' : tier <= 1 ? `${s.speed} tok/s` : `${s.speed}/s`
-    const atlasText = reading ? fmtAtlasUsage(reading.costs) : tier <= 1 ? ATLAS_ABSENT_HINT : ATLAS_ABSENT
-    const atlasLabel = tier <= 1 ? 'Atlas tokens' : 'Atlas'
-
-    const statsRow = (
-      <Box
-        flexDirection="row"
-        alignItems="center"
-        columnGap={GAPS[tier]}
-        flexWrap="nowrap"
-        overflow="hidden"
-        paddingX={1}
-      >
-        {tier <= 2 ? (
-          <Box flexDirection="row" alignItems="center" columnGap={1} flexShrink={0}>
-            {tier <= 1 ? <Text dimColor>Turn</Text> : <Text dimColor>#</Text>}
-            <Text bold>{String(s.turn)}</Text>
-          </Box>
-        ) : null}
-        {tier <= 3 ? (
-          <Box flexDirection="row" alignItems="center" columnGap={1} flexShrink={0}>
-            {Svg ? <Svg source={SPEED_ICON} alt="speed" width={icon} height={icon} /> : <Text color={SPEED}>⚡</Text>}
-            <Text bold wrap="truncate-end">{speed}</Text>
-          </Box>
-        ) : null}
-        <Box flexDirection="row" alignItems="center" columnGap={1} flexShrink={0}>
-          {Svg ? <Svg source={ATLAS_ICON} alt="Atlas tokens" width={icon} height={icon} /> : <Text color={ATLAS}>A</Text>}
-          <Text dimColor>{atlasLabel}</Text>
-          <Text bold color={reading ? ATLAS : undefined}>{atlasText}</Text>
-        </Box>
-        <Box flexGrow={1} flexShrink={1} />
-        <Box flexDirection="row" alignItems="center" columnGap={1} flexShrink={0}>
-          {Svg ? <Svg source={contextIcon(s.context)} alt="context" width={icon} height={icon} /> : null}
-          {Svg && tier === 0 ? <Svg source={contextBar(s.context)} alt={`context ${s.context}%`} width={80} height={6} /> : null}
-          <Text bold>{`${s.context}%`}</Text>
-        </Box>
-      </Box>
-    )
-
     return (
       <Box flexDirection="column">
         {barRow}
-        {statsRow}
         {below}
       </Box>
     )
@@ -1006,8 +966,9 @@ export const register: Register = on => {
 
     const running = list.filter(a => a.status === 'running').reverse()
     const finished = list.filter(a => a.status !== 'running').reverse()
-    const time = spanOf(list, at)
-    const summary = `${fmtCount(list.length, 'agent', 'agents')}, ${fmtTime(time)}`
+    const reading = await read($, atlas)
+    const atlasText = reading ? fmtAtlasUsage(reading.costs) : ATLAS_ABSENT
+    const summary = `${fmtCount(list.length, 'agent', 'agents')}, Atlas tokens ${atlasText}`
     const isEmpty = list.length === 0
     const empty = 'No agents yet. Aspire agents show here as they start.'
 
@@ -1085,7 +1046,7 @@ export const register: Register = on => {
         return (
           <Box flexDirection="column" gap={1}>
             {tabs}
-            <Svg source={compactSvg(W, list, time)} alt={summary} width={W} height={32} />
+            <Svg source={compactSvg(W, list, atlasText)} alt={summary} width={W} height={32} />
             {toggleCompact}
           </Box>
         )
@@ -1100,7 +1061,7 @@ export const register: Register = on => {
             <Svg key={`grid-${i}`} source={gridSvg(W, tileH)} alt="dotted grid" width={W} height={tileH} />
           ))}
           <Box flexDirection="column" position="absolute" top={0} left={0} right={0}>
-            <Svg source={headerSvg(W, list.length, time)} alt={summary} width={W} height={HEADER_H} />
+            <Svg source={headerSvg(W, list.length, atlasText)} alt={summary} width={W} height={HEADER_H} />
             {tabs}
             {toggleCompact}
             {isEmpty && <Text dimColor>{empty}</Text>}

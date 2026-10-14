@@ -112,6 +112,9 @@ export const agentName = (type: string): string => type.replace(/^aspire:/, '').
 /** What the bar says until the skill reports its first tasks. */
 export const INITIALIZING = 'Initializing…'
 
+/** What the bar says when no set of tasks is in process: the last run finished and nothing is running. */
+export const AWAITING = 'Awaiting next assignment'
+
 const shown = (ratio: number, label: string, total: number, isFinished: boolean, source: Shown['source']): Shown => ({
   ratio,
   label,
@@ -141,11 +144,11 @@ export const shownOf = (p: Progress | null, o: OrgState, runs: readonly Run[] = 
   }
   if (p || runs.length) {
     const isRunsLive = running.length > 0
-    if (p && !isRunsLive) return shown(1, 'Done', p.total, true, 'skill')
+    if (p && !isRunsLive) return shown(1, AWAITING, p.total, true, 'skill')
     if (runs.length) {
       const total = runs.length
       const done = total - running.length
-      if (!isRunsLive) return shown(1, 'Done', total, true, 'agents')
+      if (!isRunsLive) return shown(1, AWAITING, total, true, 'agents')
       return shown(done / total, `${agentName(running[0]!.type)} ${done}/${total}`, total, false, 'agents')
     }
   }
