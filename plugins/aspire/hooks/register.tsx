@@ -92,7 +92,9 @@ const creditsAtom = atom({ plugin: 'aspire', key: 'credits' } as const, null as 
 const stats = atom({ plugin: 'aspire', key: 'stats' } as const, { turn: 0, speed: null, context: 0 } as BandStats)
 const isBandHidden = atom({ plugin: 'aspire', key: 'isBandHidden' } as const, false)
 const agents = atom({ plugin: 'aspire', key: 'agents' } as const, [] as AgentRun[])
-const panel = atom({ plugin: 'aspire', key: 'panel' } as const, { isCompact: false, isDoneCollapsed: false, isAutoOpened: false, tab: 'live', leaving: null } as Panel)
+/** The cards that start open; the agent roster's groups start collapsed. */
+const DEFAULT_OPEN = ['progress', 'credits', 'running', 'finished']
+const panel = atom({ plugin: 'aspire', key: 'panel' } as const, { isAutoOpened: false, open: DEFAULT_OPEN, leaving: null } as Panel)
 const now = atom({ plugin: 'aspire', key: 'now' } as const, 0)
 
 /** The aspire skill: `/aspire`, `/aspire:aspire`, or the Skill tool's `aspire:aspire`. */
@@ -166,7 +168,7 @@ async function reset($: EngineInterface): Promise<void> {
   band.renders = 0
   band.surface = null
   await update($, agents, () => [])
-  await update($, panel, () => ({ isCompact: false, isDoneCollapsed: false, isAutoOpened: false, tab: 'live', leaving: null }))
+  await update($, panel, () => ({ isAutoOpened: false, open: DEFAULT_OPEN, leaving: null }))
 }
 
 const isOn = async ($: EngineInterface): Promise<boolean> => {
@@ -198,7 +200,14 @@ const noise = (x: number, y: number): number => {
   return s - Math.floor(s)
 }
 
-const barSvg = (title: string, shown: Shown, W: number): string => {
+/** Pixels twinkle in four out-of-phase groups; a finished bar settles to a slow glow. */
+const twinkleCss = (shown: Shown): string => `.t0,.t1,.t2,.t3{animation:tw ${shown.isFinished ? 3.2 : 2.2}s ease-in-out infinite}
+.t1{animation-duration:${shown.isFinished ? 3.8 : 2.8}s;animation-delay:-.7s}.t2{animation-duration:${shown.isFinished ? 4.4 : 1.9}s;animation-delay:-1.3s}.t3{animation-duration:${shown.isFinished ? 3.5 : 3.3}s;animation-delay:-.4s}
+@keyframes tw{0%,100%{opacity:1}50%{opacity:${shown.isFinished ? 0.8 : 0.3}}}
+@media (prefers-reduced-motion: reduce){.t0,.t1,.t2,.t3{animation:none}}`
+
+/** The bar row's shapes, without a style block: the band wraps them in their own, the panel's progress card in the panel's. */
+const barShapes = (title: string, shown: Shown, W: number): string => {
   // The title takes what it needs, up to 40% of the row; the bar takes the rest.
   const label = fitText(title, 13, Math.max(60, W * 0.4))
   const BAR_X = Math.round(16 + textWidth(label, 13) + 12)
@@ -227,17 +236,7 @@ const barSvg = (title: string, shown: Shown, W: number): string => {
   const pillW = Math.min(BAR_W, Math.round(18 + textWidth(pill, 11)))
   const pillX = Math.max(0, Math.min(BAR_W - pillW, fillW - pillW))
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}">
-<style>
-.t{fill:#1f1f1f}.m{fill:#8a8a8a}.k{fill:#e4e4e2}.tk{fill:#b4b4b0}
-@media (prefers-color-scheme: dark){.t{fill:#ececec}.m{fill:#9a9a9a}.k{fill:#2c2c2c}.tk{fill:#5a5a5a}}
-/* Pixels twinkle in four out-of-phase groups; a finished bar settles to a slow glow. */
-.t0,.t1,.t2,.t3{animation:tw ${shown.isFinished ? 3.2 : 2.2}s ease-in-out infinite}
-.t1{animation-duration:${shown.isFinished ? 3.8 : 2.8}s;animation-delay:-.7s}.t2{animation-duration:${shown.isFinished ? 4.4 : 1.9}s;animation-delay:-1.3s}.t3{animation-duration:${shown.isFinished ? 3.5 : 3.3}s;animation-delay:-.4s}
-@keyframes tw{0%,100%{opacity:1}50%{opacity:${shown.isFinished ? 0.8 : 0.3}}}
-@media (prefers-reduced-motion: reduce){.t0,.t1,.t2,.t3{animation:none}}
-</style>
-<defs><clipPath id="aspire-bar-clip"><rect x="0" y="0" width="${BAR_W}" height="${BAR_H}" rx="${BAR_H / 2}"/></clipPath></defs>
+  return `<defs><clipPath id="aspire-bar-clip"><rect x="0" y="0" width="${BAR_W}" height="${BAR_H}" rx="${BAR_H / 2}"/></clipPath></defs>
 <circle cx="5" cy="${BAR_ROW_H / 2}" r="4" fill="${color}"/>
 <text class="t" x="16" y="${BAR_ROW_H / 2 + 4.5}" font-family="${FONT}" font-size="13" font-weight="500">${xml(label)}</text>
 <g transform="translate(${BAR_X},${y0})">
@@ -250,8 +249,17 @@ const barSvg = (title: string, shown: Shown, W: number): string => {
 <text x="${pillX + pillW / 2}" y="${BAR_H / 2 + 4}" text-anchor="middle" font-family="${FONT}" font-size="11" font-weight="600" fill="#ffffff">${xml(pill)}</text>
 </g>
 <text class="m" x="${W - CRAB_W - 6}" y="${BAR_ROW_H / 2 + 4.5}" text-anchor="end" font-family="${FONT}" font-size="12.5" font-variant-numeric="tabular-nums">${percentOf(shown)}</text>
-</svg>`
+`
 }
+
+const barSvg = (title: string, shown: Shown, W: number): string => `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}">
+<style>
+.t{fill:#1f1f1f}.m{fill:#8a8a8a}.k{fill:#e4e4e2}.tk{fill:#b4b4b0}
+@media (prefers-color-scheme: dark){.t{fill:#ececec}.m{fill:#9a9a9a}.k{fill:#2c2c2c}.tk{fill:#5a5a5a}}
+${twinkleCss(shown)}
+</style>
+${barShapes(title, shown, W)}
+</svg>`
 
 // ---------------------------------------------------------------------------
 // The band above the prompt (from session-band), now the bar's second row.
@@ -347,23 +355,16 @@ const norm = (s: string): string => s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, 
 
 const FONT = "-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif"
 
-// The pane's backdrop: a dotted grid as tall as the content laid over it.
-const GRID_STEP = 16
-// A Text or Button row on the desktop is about 20px; the grid errs taller.
-const LINE_H = 24
-// The engine refuses an Svg taller than 4096px, so a long grid is stacked from tiles.
-const GRID_TILE = 4096
+// The panel is a stack of collapsible cards, in the look of Claude's own sidebar:
+// a rounded, bordered card per section, its header a title, a muted summary and a chevron.
 const ROW_H = 66
-const gridTiles = (H: number) => Array.from({ length: Math.ceil(H / GRID_TILE) }, (_, i) => Math.min(GRID_TILE, H - i * GRID_TILE))
-const gridSvg = (W: number, H: number) => `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
-<style>.d{fill:#d9d8d4}@media (prefers-color-scheme: dark){.d{fill:#3a3a38}}</style>
-<defs><pattern id="g" width="${GRID_STEP}" height="${GRID_STEP}" patternUnits="userSpaceOnUse"><circle class="d" cx="${GRID_STEP / 2}" cy="${GRID_STEP / 2}" r="1"/></pattern></defs>
-<rect width="${W}" height="${H}" fill="url(#g)"/>
-</svg>`
+const HEADER_H = 40
+const GAP = 8
+const CARD_R = 10
 
 const PANE_CSS = `<style>
-.t{fill:#1f1f1f}.s{fill:#6b6b68}.m{fill:#9a9a96}.k{fill:#ecebe8}.ln{stroke:#e4e4e1}.tile{fill:#f4f3f0}
-@media (prefers-color-scheme: dark){.t{fill:#ececec}.s{fill:#a8a8a4}.m{fill:#7d7d79}.k{fill:#2c2c2b}.ln{stroke:#333331}.tile{fill:#262625}}
+.t{fill:#1f1f1f}.s{fill:#6b6b68}.m{fill:#9a9a96}.k{fill:#ecebe8}.tk{fill:#b4b4b0}.ln{stroke:#e4e4e1}.card{fill:#ffffff}.cv{stroke:#8a8a86}
+@media (prefers-color-scheme: dark){.t{fill:#ececec}.s{fill:#a8a8a4}.m{fill:#7d7d79}.k{fill:#2c2c2b}.tk{fill:#5a5a5a}.ln{stroke:#333331}.card{fill:#1f1f1e}.cv{stroke:#9a9a96}}
 .live{animation:p 1.6s ease-in-out infinite}@keyframes p{50%{opacity:.3}}
 @media (prefers-reduced-motion: reduce){.live{animation:none}}
 </style>`
@@ -377,53 +378,108 @@ const statusMark = (x: number, y: number, status: string, color: string): string
   return `<path d="M${x - 4} ${y - 4}l8 8M${x + 4} ${y - 4}l-8 8" stroke="#D0453F" stroke-width="1.8" stroke-linecap="round"/>`
 }
 
-// One card, always at the top of the panel: the organization's credits from the latest get_status.
-const CREDIT_H = 78
+/** Where a drawing sits in its card: the whole card, its top, its middle, or its bottom. */
+type Slot = 'only' | 'top' | 'mid' | 'bottom'
+
+/** The card's rounded, bordered tile behind one row of it; stacked rows read as one card. */
+const frame = (W: number, H: number, slot: Slot): string => {
+  const top = slot === 'only' || slot === 'top'
+  const bot = slot === 'only' || slot === 'bottom'
+  const r = CARD_R
+  const x0 = 0.5
+  const x1 = W - 0.5
+  const y0 = top ? 0.5 : 0
+  const y1 = bot ? H - 0.5 : H
+  const a = top ? r : 0
+  const b = bot ? r : 0
+  const arc = (x: number, y: number) => `A${r} ${r} 0 0 1 ${x} ${y}`
+  const path = [
+    `M${x0} ${y1 - b}V${y0 + a}`,
+    top ? `${arc(x0 + r, y0)}H${x1 - r}${arc(x1, y0 + r)}` : `V${y0}H${x1}`,
+    `V${y1 - b}`,
+    bot ? `${arc(x1 - r, y1)}H${x0 + r}${arc(x0, y1 - r)}` : `V${y1}H${x0}`,
+    'Z',
+  ].join('')
+  const border = [
+    `M${x0} ${y1 - b}V${y0 + a}`,
+    top ? `${arc(x0 + r, y0)}H${x1 - r}${arc(x1, y0 + r)}` : `M${x1} ${y0}`,
+    `V${y1 - b}`,
+    bot ? `${arc(x1 - r, y1)}H${x0 + r}${arc(x0, y1 - r)}` : '',
+  ].join('')
+  return `<path class="card" d="${path}"/><path class="ln" fill="none" stroke-width="1" d="${border}"/>`
+}
+
+/** One drawn row of a card: its frame, then its content; `gap` is the space left under the card's last row. */
+const rowSvg = (W: number, H: number, slot: Slot, gap: number, body: string): string => svg(W, H + gap, `${frame(W, H, slot)}${body}`)
+
+/** A card's header: the title, a muted summary, and the chevron (down when open, right when collapsed). */
+const headerSvg = (W: number, title: string, summary: string, isOpen: boolean, gap: number): string => {
+  const titleW = textWidth(title, 13)
+  const room = Math.max(0, W - 14 - titleW - 12 - 34)
+  const chevron = isOpen ? `M${W - 24} 17l5 5 5-5` : `M${W - 22} 15l5 5-5 5`
+  return rowSvg(
+    W,
+    HEADER_H,
+    isOpen ? 'top' : 'only',
+    gap,
+    `<text class="t" x="14" y="25" font-family="${FONT}" font-size="13" font-weight="600">${xml(fitText(title, 13, W - 60))}</text>
+${summary && room > 24 ? `<text class="s" x="${W - 34}" y="25" text-anchor="end" font-family="${FONT}" font-size="12" font-variant-numeric="tabular-nums">${xml(fitText(summary, 12, room))}</text>` : ''}
+<path class="cv" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="${chevron}"/>`,
+  )
+}
+
+/** The progress card's body: the bar the band shows, drawn inside the card. */
+const PROGRESS_H = 44
+const progressBodySvg = (W: number, title: string, shown: Shown, slot: Slot, gap: number): string =>
+  rowSvg(
+    W,
+    PROGRESS_H,
+    slot,
+    gap,
+    `<style>${twinkleCss(shown)}</style><g transform="translate(14,${(PROGRESS_H - BAR_ROW_H) / 2})">${barShapes(title, shown, W - 28)}</g>`,
+  )
+
+/** The credits card's body: the organization's credits from the latest get_status. */
+const CREDIT_H = 70
 const OVER = '#D0453F'
 
-/** The Aspire mark (the plugin's icon), drawn in a 512 box: a deep green tile with the A and the I in white. */
-const LOGO = `<rect width="512" height="512" rx="96" fill="#0B4545"/><path fill="#fff" fill-rule="evenodd" d="M62 413 L183 98 L236 98 L356 413 L296 413 L275 354 C235 392 190 413 130 413 Z M212 185 L257 296 C225 330 185 354 145 358 Z"/><rect x="365" y="98" width="64" height="316" fill="#fff"/>`
-const LOGO_SIZE = 56
-const LOGO_GAP = 10
-/** The mark's width in terminal columns, at the 8px a column the desktop grid is sized by. */
-const LOGO_COLS = Math.round(LOGO_SIZE / 8)
-
-const creditsCardSvg = (W: number, v: CreditsView): string => {
-  const pad = 10
-  const x0 = LOGO_SIZE + LOGO_GAP
-  const cardW = W - x0
-  const barW = cardW - pad * 2
+const creditsBodySvg = (W: number, v: CreditsView, slot: Slot, gap: number): string => {
+  const pad = 14
+  const barW = W - pad * 2
   const fill = Math.round(barW * v.ratio)
   const color = v.isOver ? OVER : ASPIRE
-  const left = x0 + pad
   const right = W - pad
   const text = (x: number, y: number, cls: string, size: number, body: string, extra = '') =>
     `<text class="${cls}" x="${x}" y="${y}" ${extra} font-family="${FONT}" font-size="${size}" font-variant-numeric="tabular-nums">${xml(body)}</text>`
   const bigW = textWidth(v.big, 22) + 6
-  return svg(
+  return rowSvg(
     W,
     CREDIT_H,
-    `<g transform="translate(0,${Math.round((CREDIT_H - 4 - LOGO_SIZE) / 2)}) scale(${LOGO_SIZE / 512})"><title>Aspire</title>${LOGO}</g>
-<rect class="tile" x="${x0}" y="0" width="${cardW}" height="${CREDIT_H - 4}" rx="8"/>
-${text(left, 17, 's', 11, v.title)}
-${v.tag ? text(right, 17, 's', 11, v.tag, 'text-anchor="end"') : ''}
-<text class="t" x="${left}" y="42" font-family="${FONT}" font-size="22" font-weight="600" font-variant-numeric="tabular-nums" ${v.isOver ? `fill="${OVER}"` : ''}>${xml(v.big)}</text>
-${v.sub ? text(left + bigW, 42, 's', 12, v.sub) : ''}
-<rect class="k" x="${left}" y="50" width="${barW}" height="4" rx="2"/>
-${v.ratio > 0 ? `<rect x="${left}" y="50" width="${Math.max(3, fill)}" height="4" rx="2" fill="${color}"/>` : ''}
-${v.metaLeft ? text(left, 68, 's', 11, v.metaLeft) : ''}
-${v.metaRight ? text(right, 68, 's', 11, v.metaRight, 'text-anchor="end"') : ''}`,
+    slot,
+    gap,
+    `<text class="t" x="${pad}" y="27" font-family="${FONT}" font-size="22" font-weight="600" font-variant-numeric="tabular-nums" ${v.isOver ? `fill="${OVER}"` : ''}>${xml(v.big)}</text>
+${v.sub ? text(pad + bigW, 27, 's', 12, v.sub) : ''}
+${v.tag ? text(right, 27, 's', 11, v.tag, 'text-anchor="end"') : ''}
+<rect class="k" x="${pad}" y="38" width="${barW}" height="4" rx="2"/>
+${v.ratio > 0 ? `<rect x="${pad}" y="38" width="${Math.max(3, fill)}" height="4" rx="2" fill="${color}"/>` : ''}
+${v.metaLeft ? text(pad, 58, 's', 11, v.metaLeft) : ''}
+${v.metaRight ? text(right, 58, 's', 11, v.metaRight, 'text-anchor="end"') : ''}`,
   )
 }
+
+/** A card's one line of muted text, for a section with nothing in it yet. */
+const NOTE_H = 36
+const noteSvg = (W: number, note: string, slot: Slot, gap: number): string =>
+  rowSvg(W, NOTE_H, slot, gap, `<text class="s" x="14" y="23" font-family="${FONT}" font-size="12">${xml(fitText(note, 12, W - 28))}</text>`)
 
 /** What an agent reported through aspire_step: `2/5 reading posts`, and the fraction. */
 const stepsOf = (a: AgentRun): { text: string; ratio: number } | null =>
   a.stepTotal ? { text: `${a.stepDone ?? 0}/${a.stepTotal}${a.stepNote ? ` ${a.stepNote}` : ''}`, ratio: Math.min(1, (a.stepDone ?? 0) / a.stepTotal) } : null
 
-const agentSvg = (W: number, a: AgentRun, at: number): string => {
+const agentSvg = (W: number, a: AgentRun, at: number, slot: Slot, gap: number): string => {
   const character = characterOf(a)
   const ctx = ctxOf(a)
-  const textW = W - 42 - 22
+  const textW = W - 42 - 22 - 12
   const meta = [runModel(a)]
   if (a.round > 1) meta.push(`round ${a.round}`)
   if (a.status === 'failed') meta.push('error')
@@ -432,58 +488,39 @@ const agentSvg = (W: number, a: AgentRun, at: number): string => {
   // A finished run is a full bar; a running one shows its reported steps, else its context fill, grey.
   const progress = a.status === 'done' ? 1 : steps ? steps.ratio : null
   const fillW = Math.round(textW * (progress ?? ctx / 100))
-  return svg(
+  return rowSvg(
     W,
     ROW_H,
-    `${crab(0, 14, character, false, a.status === 'running')}
-<text class="t" x="42" y="18" font-family="${FONT}" font-size="13" font-weight="600">${xml(fitText(a.description || a.type, 13, textW))}</text>
-<text x="42" y="34" font-family="${FONT}" font-size="11"><tspan fill="${character.color}">${xml(fitText(a.type, 11, textW / 2))}</tspan><tspan class="s">  ${xml(meta.join('  ·  '))}</tspan></text>
-<text class="s" x="${42 + textW}" y="49" text-anchor="end" font-family="${FONT}" font-size="11" font-variant-numeric="tabular-nums">${stats}</text>
-<rect class="k" x="42" y="55" width="${textW}" height="4" rx="2"/><rect${progress === null ? ' class="m"' : ''} x="42" y="55" width="${fillW}" height="4" rx="2"${progress === null ? '' : ` fill="${character.color}"`}/>
-${statusMark(W - 8, 16, a.status, character.color)}
-<line class="ln" x1="0" y1="65.5" x2="${W}" y2="65.5"/>`,
+    slot,
+    gap,
+    `${crab(8, 14, character, false, a.status === 'running')}
+<text class="t" x="50" y="18" font-family="${FONT}" font-size="13" font-weight="600">${xml(fitText(a.description || a.type, 13, textW))}</text>
+<text x="50" y="34" font-family="${FONT}" font-size="11"><tspan fill="${character.color}">${xml(fitText(a.type, 11, textW / 2))}</tspan><tspan class="s">  ${xml(meta.join('  ·  '))}</tspan></text>
+<text class="s" x="${50 + textW}" y="49" text-anchor="end" font-family="${FONT}" font-size="11" font-variant-numeric="tabular-nums">${stats}</text>
+<rect class="k" x="50" y="55" width="${textW}" height="4" rx="2"/><rect${progress === null ? ' class="m"' : ''} x="50" y="55" width="${fillW}" height="4" rx="2"${progress === null ? '' : ` fill="${character.color}"`}/>
+${statusMark(W - 18, 16, a.status, character.color)}`,
   )
 }
 
 const CARD_H = 60
 
-/** A crab card for one agent type: its costume, name, what it makes, and whether it ran this session. */
-const cardSvg = (W: number, entry: RosterEntry, list: AgentRun[], isLeaving = false): string => {
+/** A crab row for one agent type: its costume, name, what it makes, and whether it ran this session. */
+const cardSvg = (W: number, entry: RosterEntry, list: AgentRun[], slot: Slot, gap: number, isLeaving = false): string => {
   const character = characterOf({ type: entry.type, model: '' })
   const runs = list.filter(a => a.type === entry.type)
   const isRunning = runs.some(a => a.status === 'running')
   const state = isRunning ? 'running' : runs.length ? `ran ${runs.length}\u00d7` : ''
-  const textW = W - 42 - 74
-  return svg(
+  const textW = W - 50 - 84
+  return rowSvg(
     W,
     CARD_H,
-    `<rect class="tile" x="0.5" y="2.5" width="${W - 1}" height="${CARD_H - 6}" rx="10"/>
-${crab(8, 10, character, false, isRunning || isLeaving, undefined, isRunning || isLeaving ? undefined : breathOf(entry.type), isLeaving)}
+    slot,
+    gap,
+    `${crab(8, 10, character, false, isRunning || isLeaving, undefined, isRunning || isLeaving ? undefined : breathOf(entry.type), isLeaving)}
 <text class="t" x="50" y="25" font-family="${FONT}" font-size="13" font-weight="600">${xml(fitText(entry.name, 13, textW))}</text>
 <text class="s" x="50" y="42" font-family="${FONT}" font-size="11">${xml(fitText(entry.blurb, 11, textW))}</text>
-${isRunning ? `<circle class="live" cx="${W - 66}" cy="22" r="3.5" fill="${character.color}"/>` : runs.length ? `<path d="M${W - 70} 22l3.5 3.5 6.5-7" fill="none" stroke="#3B9C5F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
-${state ? `<text class="s" x="${W - 12}" y="26" text-anchor="end" font-family="${FONT}" font-size="11">${state}</text>` : ''}`,
-  )
-}
-
-const compactSvg = (W: number, list: AgentRun[]): string => {
-  const icons = [...list.filter(a => a.status === 'running'), ...list.filter(a => a.status !== 'running')]
-  const fit = Math.max(1, Math.floor((W - 150) / 36))
-  const shown = icons.slice(0, fit)
-  const more = icons.length - shown.length
-  const body = shown
-    .map((a, i) => {
-      const character = characterOf(a)
-      const isRunning = a.status === 'running'
-      return crab(i * 36, 0, character, false, isRunning) + (isRunning ? `<circle class="live" cx="${i * 36 + 32}" cy="4" r="3" fill="${character.color}"/>` : '')
-    })
-    .join('')
-  const x = shown.length * 36 + (more ? 4 : 0)
-  return svg(
-    W,
-    32,
-    `${body}${more ? `<text class="s" x="${x}" y="21" font-family="${FONT}" font-size="12">+${more}</text>` : ''}
-<text class="s" x="${W}" y="21" text-anchor="end" font-family="${FONT}" font-size="12" font-variant-numeric="tabular-nums">${fmtCount(list.length, 'agent', 'agents')}</text>`,
+${isRunning ? `<circle class="live" cx="${W - 76}" cy="22" r="3.5" fill="${character.color}"/>` : runs.length ? `<path d="M${W - 80} 22l3.5 3.5 6.5-7" fill="none" stroke="#3B9C5F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
+${state ? `<text class="s" x="${W - 18}" y="26" text-anchor="end" font-family="${FONT}" font-size="11">${state}</text>` : ''}${slot === 'bottom' ? '' : `<line class="ln" x1="14" y1="${CARD_H - 0.5}" x2="${W - 14}" y2="${CARD_H - 0.5}"/>`}`,
   )
 }
 
@@ -999,52 +1036,19 @@ export const register: Register = on => {
     const running = list.filter(a => a.status === 'running').reverse()
     const finished = list.filter(a => a.status !== 'running').reverse()
     const view = creditsView((await read($, creditsAtom))?.credits ?? null, (await read($, atlas))?.costs ?? null)
+    const o = await read($, org)
+    const shown = shownOf(await read($, progress), o, list)
+    const title = titleOf(o)
+    const percent = percentOf(shown)
     const summary = `${view.title} ${view.big} ${view.sub}`.trim()
-    const creditsBox = (
-      <Box flexDirection="column" marginBottom={1}>
-        <Text wrap="truncate-end">
-          <Text dimColor>{view.title} </Text>
-          <Text bold color={view.isOver ? 'red' : undefined}>{view.big}</Text> <Text dimColor>{[view.sub, view.tag].filter(Boolean).join(' · ')}</Text>
-        </Text>
-        {view.ratio > 0 || view.metaLeft ? (
-          <Text wrap="truncate-end">
-            <Text color={view.isOver ? 'red' : ASPIRE}>{ctxBar(Math.round(view.ratio * 100), 12)}</Text> <Text dimColor>{[view.metaLeft, view.grants].filter(Boolean).join(' · ')}</Text>
-          </Text>
-        ) : null}
-        {view.metaRight ? <Text dimColor wrap="truncate-end">{view.metaRight}</Text> : null}
-      </Box>
-    )
-    const isEmpty = list.length === 0
-    const empty = 'No agents yet. Aspire agents show here as they start.'
+    const openKeys = Array.isArray(p.open) ? p.open : DEFAULT_OPEN
+    const isOpen = (key: string): boolean => openKeys.includes(key)
+    const toggle = (key: string) => () =>
+      void update($, panel, prev => {
+        const open = Array.isArray(prev.open) ? prev.open : DEFAULT_OPEN
+        return { ...prev, open: open.includes(key) ? open.filter(k => k !== key) : [...open, key] }
+      })
 
-    const toggleCompact = (
-      <Button
-        key="compact"
-        label={p.isCompact ? 'Expand' : 'Collapse'}
-        plain
-        onPress={() => update($, panel, prev => ({ ...prev, isCompact: !prev.isCompact }))}
-      />
-    )
-    const toggleDone = (
-      <Button
-        key="done"
-        label={`${p.isDoneCollapsed ? '▸' : '▾'} Finished · ${finished.length}`}
-        plain
-        onPress={() => update($, panel, prev => ({ ...prev, isDoneCollapsed: !prev.isDoneCollapsed }))}
-      />
-    )
-
-    const setTab = (tab: Panel['tab']) => () => void update($, panel, prev => ({ ...prev, tab }))
-    // Two buttons switch the view: the open one is the primary button, the other secondary.
-    const tabs = (
-      <Box flexDirection="row" gap={1}>
-        {/* The Live button is as wide as the Aspire mark above it: 8px a column. */}
-        <Box width={LOGO_COLS} justifyContent="center">
-          <Button key="tab-live" label="Live" variant={p.tab === 'live' ? 'primary' : 'secondary'} onPress={setTab('live')} />
-        </Box>
-        <Button key="tab-agents" label={`Agents · ${ROSTER.length}`} variant={p.tab === 'agents' ? 'primary' : 'secondary'} onPress={setTab('agents')} />
-      </Box>
-    )
     // Pressing an agent drafts its start in the prompt box and does not send it: the person reads it and presses Enter.
     // The crab walks off its card first (about a second), then the draft lands in the prompt.
     const startAgent = (r: RosterEntry) => () =>
@@ -1061,95 +1065,17 @@ export const register: Register = on => {
       return runs.some(a => a.status === 'running') ? '●' : runs.length ? '✓' : '○'
     }
 
-    if (p.tab === 'agents') {
-      if (e.surface === 'desktop' && 'Svg' in ui) {
-        const { Svg } = ui
-        const W = Math.max(240, Math.min(900, (e.props.bodyColumns || 40) * 8 - 8))
-        // The dotted grid backs the whole list: credits, buttons, group titles, and every card.
-        const gridH = CREDIT_H + 2 * LINE_H + GROUPS.length * LINE_H + ROSTER.length * CARD_H
-        return (
-          <Box flexDirection="column">
-            {gridTiles(gridH).map((tileH, i) => (
-              <Svg key={`grid-${i}`} source={gridSvg(W, tileH)} alt="dotted grid" width={W} height={tileH} />
-            ))}
-            <Box flexDirection="column" position="absolute" top={0} left={0} right={0}>
-              <Svg source={creditsCardSvg(W, view)} alt={summary} width={W} height={CREDIT_H} />
-              {tabs}
-              {GROUPS.map(g => {
-                const entries = ROSTER.filter(r => r.group === g.key)
-                return (
-                  <Box key={g.key} flexDirection="column">
-                    <Text dimColor>{`${g.title} · ${entries.length}`}</Text>
-                    {entries.map(r => (
-                      <Box key={r.type} flexDirection="column">
-                        <Svg source={cardSvg(W, r, list, p.leaving === r.type)} alt={`${r.name}: ${r.blurb}`} width={W} height={CARD_H} />
-                        {/* A Button holds text only and an Svg takes no press, so three rows of blank Buttons lie over the card: a press anywhere on it drafts the start. */}
-                        <Box position="absolute" top={0} left={0} flexDirection="column">
-                          {[0, 1, 2].map(row => (
-                            <Button key={`start-${r.type}-${row}`} label={'\u00a0'.repeat(Math.floor(W / 8))} plain onPress={startAgent(r)} />
-                          ))}
-                        </Box>
-                      </Box>
-                    ))}
-                  </Box>
-                )
-              })}
-            </Box>
-          </Box>
-        )
-      }
-      return (
-        <Box flexDirection="column">
-          {creditsBox}
-          {tabs}
-          <Text dimColor>Press an agent to draft its start in the prompt.</Text>
-          {GROUPS.map(g => (
-            <Box key={g.key} flexDirection="column" marginTop={1}>
-              <Text dimColor>{`${g.title} · ${ROSTER.filter(r => r.group === g.key).length}`}</Text>
-              {ROSTER.filter(r => r.group === g.key).map(r => (
-                <Button key={r.type} label={`${stateOf(r)} ${r.name}`} plain onPress={startAgent(r)}>
-                  <Text color={characterOf({ type: r.type, model: '' }).color}>{stateOf(r)}</Text> <Text bold>{r.name}</Text> <Text dimColor>{r.blurb}</Text>
-                </Button>
-              ))}
-            </Box>
-          ))}
-        </Box>
-      )
-    }
-
-    if (e.surface === 'desktop' && 'Svg' in ui) {
-      const { Svg } = ui
-      const W = Math.max(240, Math.min(900, (e.props.bodyColumns || 40) * 8 - 8))
-      if (p.isCompact) {
-        return (
-          <Box flexDirection="column" gap={1}>
-            <Svg source={creditsCardSvg(W, view)} alt={summary} width={W} height={CREDIT_H} />
-            {tabs}
-            <Svg source={compactSvg(W, list)} alt={summary} width={W} height={32} />
-            {toggleCompact}
-          </Box>
-        )
-      }
-      return (
-        <Box flexDirection="column">
-          <Svg source={creditsCardSvg(W, view)} alt={summary} width={W} height={CREDIT_H} />
-          {tabs}
-          {toggleCompact}
-          {isEmpty && <Text dimColor>{empty}</Text>}
-          {running.length > 0 && <Text dimColor>{`Running · ${running.length}`}</Text>}
-          {running.map(a => (
-            <Svg key={a.id} source={agentSvg(W, a, at)} alt={`${a.description}: ${modelName(a.model)}, running`} width={W} height={ROW_H} />
-          ))}
-          {finished.length > 0 && toggleDone}
-          {!p.isDoneCollapsed &&
-            finished.map(a => (
-              <Svg key={a.id} source={agentSvg(W, a, at)} alt={`${a.description}: ${modelName(a.model)}, finished`} width={W} height={ROW_H} />
-            ))}
-        </Box>
-      )
-    }
-
-    // Terminal and the other surfaces: the same content in text rows.
+    // Each card: a header that opens and closes it, and rows (desktop drawings) or text (terminal and the rest).
+    type Row = { id: string; h: number; alt: string; draw: (W: number, slot: Slot, gap: number) => string; onPress?: () => void }
+    type CardDef = { key: string; title: string; summary: string; rows: Row[]; text: () => JSX.Element }
+    const empty = 'No agents yet. Aspire agents show here as they start.'
+    const agentRows = (items: AgentRun[], state: string): Row[] =>
+      items.map(a => ({
+        id: a.id,
+        h: ROW_H,
+        alt: `${a.description}: ${modelName(a.model)}, ${state}`,
+        draw: (W, slot, gap) => agentSvg(W, a, at, slot, gap),
+      }))
     const cols = Math.max(24, e.props.bodyColumns || 40)
     const barW = Math.max(6, Math.min(20, cols - 34))
     const row = (a: AgentRun) => {
@@ -1187,31 +1113,136 @@ export const register: Register = on => {
       )
     }
 
-    return (
-      <Box flexDirection="column">
-        {creditsBox}
-        {tabs}
-        <Box flexDirection="row" justifyContent="space-between">
-          <Text dimColor>{fmtCount(list.length, 'agent', 'agents')}</Text>
-          {toggleCompact}
-        </Box>
-        {p.isCompact ? (
+    const cards: CardDef[] = [
+      {
+        key: 'progress',
+        title: 'Progress',
+        summary: `${shown.label} · ${percent}`,
+        rows: [{ id: 'progress', h: PROGRESS_H, alt: `${title}: ${shown.label}, ${percent}`, draw: (W, slot, gap) => progressBodySvg(W, title, shown, slot, gap) }],
+        text: () => (
           <Text wrap="truncate-end">
-            {[...running, ...finished].map(a => (
-              <Text key={a.id} color={characterOf(a).color}>
-                {STATUS_GLYPH[a.status]}{' '}
-              </Text>
-            ))}
+            <Text color={shown.isFinished ? DONE : ASPIRE}>{barText(shown.ratio, 12)}</Text> <Text bold>{shown.label}</Text> <Text dimColor>{percent}</Text>
           </Text>
-        ) : (
-          <Box flexDirection="column" marginTop={1}>
-            {isEmpty && <Text dimColor>{empty}</Text>}
-            {running.length > 0 && <Text dimColor>{`Running · ${running.length}`}</Text>}
-            {running.map(row)}
-            {finished.length > 0 && toggleDone}
-            {!p.isDoneCollapsed && finished.map(row)}
+        ),
+      },
+      {
+        key: 'credits',
+        title: 'Credits',
+        summary: view.big,
+        rows: [{ id: 'credits', h: CREDIT_H, alt: summary, draw: (W, slot, gap) => creditsBodySvg(W, view, slot, gap) }],
+        text: () => (
+          <Box flexDirection="column">
+            <Text wrap="truncate-end">
+              <Text dimColor>{view.title} </Text>
+              <Text bold color={view.isOver ? 'red' : undefined}>{view.big}</Text> <Text dimColor>{[view.sub, view.tag].filter(Boolean).join(' · ')}</Text>
+            </Text>
+            {view.ratio > 0 || view.metaLeft ? (
+              <Text wrap="truncate-end">
+                <Text color={view.isOver ? 'red' : ASPIRE}>{ctxBar(Math.round(view.ratio * 100), 12)}</Text> <Text dimColor>{[view.metaLeft, view.grants].filter(Boolean).join(' · ')}</Text>
+              </Text>
+            ) : null}
+            {view.metaRight ? <Text dimColor wrap="truncate-end">{view.metaRight}</Text> : null}
           </Box>
-        )}
+        ),
+      },
+      {
+        key: 'running',
+        title: `Running · ${running.length}`,
+        summary: list.length ? `${fmtCount(list.length, 'agent', 'agents')} · ${fmtTime(spanOf(list, at))}` : '',
+        rows: running.length
+          ? agentRows(running, 'running')
+          : [{ id: 'running-note', h: NOTE_H, alt: empty, draw: (W, slot, gap) => noteSvg(W, list.length ? 'Nothing running right now.' : empty, slot, gap) }],
+        text: () => <Box flexDirection="column">{running.length ? running.map(row) : <Text dimColor>{list.length ? 'Nothing running right now.' : empty}</Text>}</Box>,
+      },
+      ...(finished.length
+        ? [
+            {
+              key: 'finished',
+              title: `Finished · ${finished.length}`,
+              summary: '',
+              rows: agentRows(finished, 'finished'),
+              text: () => <Box flexDirection="column">{finished.map(row)}</Box>,
+            },
+          ]
+        : []),
+      ...GROUPS.map((g): CardDef => {
+        const entries = ROSTER.filter(r => r.group === g.key)
+        const busy = entries.filter(r => list.some(a => a.type === r.type && a.status === 'running')).length
+        return {
+          key: `group:${g.key}`,
+          title: `${g.title} · ${entries.length}`,
+          summary: busy ? `${busy} running` : '',
+          rows: entries.map(r => ({
+            id: `start-${r.type}`,
+            h: CARD_H,
+            alt: `${r.name}: ${r.blurb}`,
+            draw: (W, slot, gap) => cardSvg(W, r, list, slot, gap, p.leaving === r.type),
+            onPress: startAgent(r),
+          })),
+          text: () => (
+            <Box flexDirection="column">
+              {entries.map(r => (
+                <Button key={r.type} label={`${stateOf(r)} ${r.name}`} plain onPress={startAgent(r)}>
+                  <Text color={characterOf({ type: r.type, model: '' }).color}>{stateOf(r)}</Text> <Text bold>{r.name}</Text> <Text dimColor>{r.blurb}</Text>
+                </Button>
+              ))}
+            </Box>
+          ),
+        }
+      }),
+    ]
+
+    if (e.surface === 'desktop' && 'Svg' in ui) {
+      const { Svg } = ui
+      const W = Math.max(240, Math.min(900, (e.props.bodyColumns || 40) * 8 - 8))
+      // A Button holds text only and an Svg takes no press, so rows of blank Buttons lie over a drawing: a press anywhere on it fires.
+      const pressable = (key: string, height: number, onPress: () => void) => (
+        <Box position="absolute" top={0} left={0} flexDirection="column">
+          {Array.from({ length: Math.ceil(height / 20) }, (_, n) => (
+            <Button key={`${key}-${n}`} label={' '.repeat(Math.floor(W / 8))} plain onPress={onPress} />
+          ))}
+        </Box>
+      )
+      return (
+        <Box flexDirection="column">
+          {cards.map(c => {
+            const open = isOpen(c.key)
+            return (
+              <Box key={c.key} flexDirection="column">
+                <Box flexDirection="column">
+                  <Svg source={headerSvg(W, c.title, c.summary, open, open ? 0 : GAP)} alt={`${c.title}${c.summary ? `, ${c.summary}` : ''}, ${open ? 'open' : 'collapsed'}`} width={W} height={HEADER_H + (open ? 0 : GAP)} />
+                  {pressable(`card-${c.key}`, HEADER_H, toggle(c.key))}
+                </Box>
+                {open &&
+                  c.rows.map((r, i) => {
+                    const last = i === c.rows.length - 1
+                    const gap = last ? GAP : 0
+                    return (
+                      <Box key={r.id} flexDirection="column">
+                        <Svg source={r.draw(W, last ? 'bottom' : 'mid', gap)} alt={r.alt} width={W} height={r.h + gap} />
+                        {r.onPress ? pressable(r.id, r.h, r.onPress) : null}
+                      </Box>
+                    )
+                  })}
+              </Box>
+            )
+          })}
+        </Box>
+      )
+    }
+
+    // Terminal and the other surfaces: the same cards in text rows.
+    return (
+      <Box flexDirection="column" gap={1}>
+        {cards.map(c => {
+          const open = isOpen(c.key)
+          return (
+            <Box key={c.key} flexDirection="column">
+              <Button key={`card-${c.key}`} label={`${open ? '▾' : '▸'} ${c.title}${c.summary ? ` · ${c.summary}` : ''}`} plain onPress={toggle(c.key)} />
+              {open ? c.text() : null}
+            </Box>
+          )
+        })}
       </Box>
     )
   })

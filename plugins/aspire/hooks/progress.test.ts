@@ -5,12 +5,14 @@ import { agentName, barText, mergeProgress, orgStateFrom, percentOf, shownOf, ti
 
 const NO_ORG = { name: null, checkpoints: 0 }
 
-test('shownOf: before the skill reports its first tasks, the bar reads Initializing… at 0%', () => {
-  expect(shownOf(null, NO_ORG)).toMatchObject({ ratio: 0, label: 'Initializing…', isReported: false })
-  // get_status checkpoints no longer move the bar; only the skill's report does.
+test('shownOf: before the skill reports, the bar follows get_status and reads Initializing… until Atlas answers', () => {
+  expect(shownOf(null, NO_ORG)).toMatchObject({ ratio: 0, label: 'Initializing…', isReported: false, source: 'baseline' })
+  // The skill may never call the progress tool: what get_status shows still moves the bar.
+  const one = shownOf(null, { name: null, checkpoints: 1 })
+  expect(one).toMatchObject({ label: 'Atlas connected 1/6', source: 'baseline', isReported: false })
   const four = shownOf(null, { name: 'Sample Brand', checkpoints: 4 })
-  expect(four).toMatchObject({ ratio: 0, label: 'Initializing…' })
-  expect(percentOf(four)).toBe('0%')
+  expect(four).toMatchObject({ label: 'Channel linked 4/6', total: 6 })
+  expect(percentOf(four)).toBe('67%')
 })
 
 test('shownOf: the reported done and total win over the baseline', () => {

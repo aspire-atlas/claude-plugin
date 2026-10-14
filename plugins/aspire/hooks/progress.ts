@@ -112,6 +112,9 @@ export const agentName = (type: string): string => type.replace(/^aspire:/, '').
 /** What the bar says until the skill reports its first tasks. */
 export const INITIALIZING = 'Initializing…'
 
+/** What the bar says for each onboarding checkpoint the mod sees in get_status, until the skill reports its own tasks. */
+export const CHECKPOINT_LABELS = ['', 'Atlas connected', 'Organization picked', 'Profile ready', 'Channel linked'] as const
+
 /** What the bar says when no set of tasks is in process: the last run finished and nothing is running. */
 export const AWAITING = 'Awaiting next assignment'
 
@@ -151,6 +154,13 @@ export const shownOf = (p: Progress | null, o: OrgState, runs: readonly Run[] = 
       if (!isRunsLive) return shown(1, AWAITING, total, true, 'agents')
       return shown(done / total, `${agentName(running[0]!.type)} ${done}/${total}`, total, false, 'agents')
     }
+  }
+  // Nothing reported and nothing running: what get_status shows. The skill may never call the
+  // progress tool, so the bar still moves with what the mod sees (Atlas answered, an organization
+  // picked, a profile, a channel); a report from the skill replaces it.
+  if (o.checkpoints > 0) {
+    const n = Math.min(STEPS, o.checkpoints)
+    return shown(n / STEPS, `${CHECKPOINT_LABELS[Math.min(n, CHECKPOINT_LABELS.length - 1)]} ${n}/${STEPS}`, STEPS, false, 'baseline')
   }
   return shown(0, INITIALIZING, STEPS, false, 'baseline')
 }

@@ -114,12 +114,10 @@ export type AgentRun = {
 }
 
 export type Panel = {
-  isCompact: boolean
-  isDoneCollapsed: boolean
   /** The panel opened by itself once this session (first aspire:* agent). */
   isAutoOpened: boolean
-  /** `live`: this session's agents; `agents`: a card for each agent type the plugin ships. */
-  tab: 'live' | 'agents'
+  /** The ids of the cards that are open (progress, credits, running, finished, group:<key>); the rest are collapsed. */
+  open: string[]
   /** The agent type whose crab is walking off its card after a press, until its start is drafted. */
   leaving: string | null
 }
