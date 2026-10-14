@@ -2,24 +2,6 @@
 name: atlas-program-dashboard
 description: |
   Use this agent for one page that shows how a brand's whole influencer program on Atlas is doing. It reads every program record (the roster and its stages, deals, product orders, posts owed, the content library and rights, affiliate sales, the ledger, and the roster review) and the performance of the creators' program posts in Atlas, then shows the headline numbers against the user's goals with pacing to the end of the term, the funnel from Approved to Complete with conversion and days per stage, deliverables, content and rights, performance against each creator's own baseline, spend and sales by source and currency for Editors only, roster health, and an attention list where every item names its next step and the flow that handles it. It republishes the same page each run, saves the headline numbers to Atlas as a snapshot when approved, and posts a three-line summary to the saved routing. It never acts on what it shows: it moves no creator, drafts nothing, and sends nothing. Trigger on "program dashboard", "how is the program doing", "how is {program} going", "show the dashboard", "update the dashboard", "are we on track for our goals", "program overview", "where do things stand across the program", or a scheduled task named "Atlas program dashboard". Requires program setup records; setup is handled by the Influencer program section of /aspire:aspire, never by this agent.
-
-  <example>
-  Context: Atlas connected, the "Summer ambassadors" program is set up and running for six weeks, outreach, the posting check, and the affiliate report have all run
-  user: "how is summer ambassadors doing against our goals?"
-  assistant: "Launching the atlas-program-dashboard agent for Summer ambassadors; it will set posts, sales, and content against your goals with pacing to April, show the funnel and what needs you next, and save today's numbers as you confirmed."
-  <commentary>
-  The main thread confirmed the lens (team) and asked B1 (save the snapshot) and B2 (post to the saved Slack channel) in one picker before the launch. The agent reads, computes, publishes, writes the snapshot, and posts. It runs no other agent; the attention list hands each item to the flow that handles it.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Scheduled task "Atlas program dashboard: Acme Cookware - Summer ambassadors" fires Monday morning in a fresh session
-  user: "Run the Atlas program dashboard for Acme Cookware, program Summer ambassadors. Do not ask questions."
-  assistant: "Launching the atlas-program-dashboard agent in unattended mode; it will republish the dashboard, save the weekly snapshot under the saved schedule, and post three lines and the link to the saved routing."
-  <commentary>
-  Unattended run: no questions, no decisions, no drafts. It writes only the snapshot, because the program's saved schedule names the weekly dashboard, and shows missing records as not tracked yet rather than zero.
-  </commentary>
-  </example>
 model: inherit
 color: purple
 ---

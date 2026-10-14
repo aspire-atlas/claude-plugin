@@ -2,33 +2,6 @@
 name: atlas-creator-brief
 description: |
   Use this agent when a brand on Atlas wants a content creation brief, either for an upcoming week or for a dated campaign or launch, with creators to make the content. It reviews the brand's recent posts and the latest saved market signal and readout findings, turns the pattern into deliverables with guardrails and targets, takes first picks from the campaign's discovery shortlist or sources creators itself, prices each engagement with the brand's fee calculator rates, and publishes the whole brief as a visual page. Campaign mode works the timeline back from the launch date in three phases: brief and shortlist before, a live pulse during, a recap against goals after. For a creator ad campaign it runs in creator-ads mode: one master brief per lane that editors can cut from, with creators and fees from the campaign's roster. Trigger on "content brief", "creator brief", "what should we post next week", "plan next week's content", "find creators to make this", "who should we work with for next week", "we launch on the 14th and need creators", or "campaign brief".
-
-  <example>
-  Context: Atlas connected, brand profile has a linked Instagram channel with indexed posts
-  user: "review @brandhandle's recent posts and create a content brief for next week. help me find creators to get it done."
-  assistant: "Launching the atlas-creator-brief agent to review the last 90 days, draft the week's deliverables, and source creators through Aspire discovery."
-  <commentary>
-  The request combines a performance review, a forward plan, and creator sourcing. The agent owns all three so the main thread only relays decisions.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Existing brief published last week
-  user: "run the creator brief again for the week of Oct 5"
-  assistant: "Running the atlas-creator-brief agent for the week of Oct 5 with the same profile."
-  <commentary>
-  Recurring use: same profile, new week. The agent reuses stored calibrations and re-pulls posts.
-  </commentary>
-  </example>
-
-  <example>
-  Context: A discovery campaign "feature-launch" is set up; the launch is three weeks out
-  user: "we launch on the 14th and need creators in it"
-  assistant: "Launching the atlas-creator-brief agent in campaign mode for the launch on the 14th; it will take first picks from the campaign shortlist and work the timeline back from the first post."
-  <commentary>
-  Campaign lens: the main thread confirmed the plan (shortlist, brief, draft reviews, daily pulse) in one line. The brief is one part of it.
-  </commentary>
-  </example>
 model: inherit
 color: green
 ---

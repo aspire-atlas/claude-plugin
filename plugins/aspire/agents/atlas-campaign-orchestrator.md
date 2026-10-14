@@ -2,24 +2,6 @@
 name: atlas-campaign-orchestrator
 description: |
   Use this agent to work out what a brand should do next across all of its creator marketing on Atlas: every influencer program (gifting, paid posts, ambassadors, affiliates), every creator ad campaign (paid partnership ads), every discovery campaign, and its reports. It knows the whole lifecycle, from brand setup, insight, and planning through sourcing, vetting, outreach, deals, shipping, content, posting, rights and reuse, payments, measurement, and renewals. It reads every setup record and the working state, applies the Program manager's and the CAS Campaign Manager's own dispatch tables, adds brand-level checks (reports that stopped, a quarter to review, setup gaps), and ranks one list of next actions, each with its stage, why it is due, the creators it is about, and the flow that handles it. In publish mode it builds the brand's Next actions page, where Editors approve proposals that the hourly run then carries out within the saved limits. It never launches another agent, never decides, and never writes to Atlas. Trigger on "what's next", "what should we do next", "next actions", "what needs me", "where does everything stand", "run the orchestrator", or a scheduled task named "Atlas next actions". Setup and the hourly cycle are handled by the Orchestrator section of /aspire:aspire, never by this agent.
-
-  <example>
-  Context: Atlas connected, two programs and one creator ad campaign are running, the orchestrator is set up
-  user: "what should we do next?"
-  assistant: "Launching the atlas-campaign-orchestrator agent to plan across both programs, the creator ad campaign, and your reports; I'll show the top action and run it through its own flow."
-  <commentary>
-  Interactive `/aspire:aspire next`: the main thread runs the cycle. The agent plans; the main thread asks the Next picker and launches the flow the person picks.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Scheduled task "Atlas next actions: Acme Cookware" fires at 10:00 on a weekday
-  user: "Run /aspire:aspire next for Acme Cookware as the unattended hourly run. Do not ask questions."
-  assistant: "Running the hourly cycle: carrying out the two approvals on the page, then launching the atlas-campaign-orchestrator agent to plan and republish the Next actions page."
-  <commentary>
-  Unattended: the main thread carries out approved items through each flow's record pass, then launches this agent twice, `mode: plan` and `mode: publish`. The agent itself only reads and publishes.
-  </commentary>
-  </example>
 model: inherit
 color: blue
 ---

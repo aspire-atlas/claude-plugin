@@ -2,24 +2,6 @@
 name: atlas-creator-profile
 description: |
   Use this agent to build the full-page profile of one creator for a brand on Atlas: the creator card at full width, then audience, top and lowest posts, engagement by post, comment sentiment, brand safety by category, paid partnerships kept apart from organic mentions, recommended fees from the brand's fee calculator, a peer comparison, next steps, and data gaps. It resolves and refreshes the Instagram or TikTok handle in Atlas when the held data is stale, publishes the profile as a page, and writes nothing to Atlas. Trigger on "full profile for @handle", "creator profile", "show me @handle's portfolio", "deep dive on @handle", or "what would @handle cost".
-
-  <example>
-  Context: Atlas connected, brand profile exists, user names a creator
-  user: "pull up the full profile for @creatorhandle on Instagram"
-  assistant: "Launching the atlas-creator-profile agent on @creatorhandle (Instagram); it will refresh the account in Atlas if needed and publish the profile page with recommended fees."
-  <commentary>
-  A full-profile request for one creator: the agent owns resolution, the reads, pricing, and the page. The main thread shows the compact card inline and links the page.
-  </commentary>
-  </example>
-
-  <example>
-  Context: A discovery shortlist is published; the user wants depth on one candidate
-  user: "deep dive on #4 from the shortlist, @creatorhandle on TikTok"
-  assistant: "Running the atlas-creator-profile agent on @creatorhandle (TikTok) for the full profile."
-  <commentary>
-  Another flow's creator, looked at in depth. The profile is read-only, so it never changes the shortlist.
-  </commentary>
-  </example>
 model: inherit
 color: orange
 ---

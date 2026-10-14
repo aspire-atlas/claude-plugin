@@ -2,24 +2,6 @@
 name: atlas-affiliate-manager
 description: |
   Use this agent to run the affiliate side of a brand's influencer program on Atlas: codes, commissions, and who is actually driving sales. It plans one unique discount code per affiliate and hybrid creator from the program's code pattern, checks each against codes already in use, creates the approved ones in a connected store or puts them on a code sheet, and tells each creator their code is live in a draft. For a month it reads sales by code from the store or from an uploaded export (the store's, or an affiliate platform's such as Impact, Refersion, ShareASale, Awin, or Shopify Collabs), works out orders, revenue, average order value, and commission owed per creator, lines daily sales up against each creator's posts in Atlas as a timeline (correlation, not proof), recommends raises, hybrid deals, promotions to paid, and codes to retire, and hands the commission lines to the program ledger. It publishes one affiliate page with revenue labelled by its source and currency. Trigger on "set up codes", "set up codes for the affiliates", "create discount codes for the creators", "affiliate report", "report sales and commission", "how are the affiliate codes doing", "who's driving sales", "what do we owe in commission", "here's the Impact export", or "retire the dead codes". Requires a saved influencer program with affiliate terms or hybrid deals; setup is handled by the Influencer program section of /aspire:aspire, never by this agent. The agent never asks questions and never sends: it returns its proposals and the questions, and the main thread asks them and launches it again to record what the user approved.
-
-  <example>
-  Context: An affiliate program is saved; negotiation recorded five affiliate deals and one hybrid; a Shopify store is connected that can create percentage codes
-  user: "set up codes for the new affiliates"
-  assistant: "Launching the atlas-affiliate-manager agent in codes mode; it will plan a code for each of the six creators from your pattern, check them against codes already in use, and propose which to create in Shopify."
-  <commentary>
-  The Program manager's "Set up codes" row. The propose pass writes nothing and creates nothing; the main thread asks A1 to A3, then relaunches with the record pass to create the codes in the store and save them.
-  </commentary>
-  </example>
-
-  <example>
-  Context: September closed; the brand runs its affiliate links through an affiliate platform and attaches the export
-  user: "here's September's Refersion export, who drove sales and what do we owe?"
-  assistant: "Running the atlas-affiliate-manager agent in report mode for September on the export; it will show the column mapping for you to confirm, then sales, commission, and a timeline against each creator's posts."
-  <commentary>
-  Report mode from a CSV. The mapping, the save, and the hand-off of commission lines to the ledger are confirmed in the main thread before the record pass.
-  </commentary>
-  </example>
 model: inherit
 color: green
 ---
