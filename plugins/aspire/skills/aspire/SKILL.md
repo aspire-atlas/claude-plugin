@@ -17,8 +17,8 @@ description: >
   client's decisions", "record a reply", "set up our influencer program", "where is the
   {program} program", "write to the approved creators", "send product to the creators", "set up
   affiliate codes", "did the creators post", "request rights", "what do we owe creators",
-  "program dashboard", "what's next", "what should we do next", "next actions", or "/aspire fee
-  calculator".
+  "set up Instagram Shop", "TikTok Shop", "sell on TikTok", "program dashboard", "what's
+  next", "what should we do next", "next actions", or "/aspire fee calculator".
 metadata:
   author: Aspire
 ---
@@ -43,11 +43,13 @@ Text after the command is the argument. Route on it before anything else:
 | Argument | Action |
 | -------- | ------ |
 | `agents` (also `list agents`, `show agents`) | Run **List agents** below. Skip the phases unless the user picks an agent to run. |
+| `run {agent}` (an agent name from the list, with or without the `aspire:` prefix; the agents panel drafts this when someone presses an agent) | Skip steps 1 to 4 of **List agents** and start at step 5 for that agent: the sample question, then its hand-off row. An unknown name: run **List agents** from step 1. |
 | `sample` (also `sample {agent}`, `show me a sample`, `example`) | Run **Sample artifacts** below. No Atlas connection is needed, so skip the phases. |
 | `fee calculator` (also `fees`, `pricing`, `rate card`, `creator rates`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Fee calculator** below. Skip the other phases. |
 | `program` (also `influencer program`, `creator program`, `ambassador program`, `affiliate program`, `gifting program`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Influencer program** below. Skip the other phases. |
 | `next` (also `what's next`, `next actions`, `orchestrator`, and the hourly "Atlas next actions" task) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Orchestrator** below. Skip the other phases. |
 | `cas campaign` (also `creator ad campaign`, `campaign manager`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **CAS campaign** below. Skip the other phases. |
+| `shops` (also `shop`, `instagram shop`, `tiktok shop`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Shops** below. Skip the other phases. |
 | empty, or anything else | Run the phases in order, starting at Phase 1. Treat the text as context. On an unconfigured organization, Phase 2 + 3 publishes the first-run guide before the next phase (**First-run guide** there). |
 
 ### List agents
@@ -104,6 +106,7 @@ time so it never goes stale; never recite it from memory.
    | `atlas-program-dashboard` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Program dashboard** |
    | `atlas-program-ledger` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Program ledger** |
    | `atlas-campaign-orchestrator` | Phase 1, then Phase 2 + 3, then **Orchestrator** (Setup if it has never run) |
+   | `atlas-shops` | Phase 1, then Phase 2 + 3, then **Shops** (its shop and stage questions first) |
 
    Older names still reach the renamed agents: `atlas-account-analyst` is `atlas-profile-analyst`,
    `atlas-daily-readout` is `atlas-daily-insights-report`, and `atlas-weekly-readout` is
@@ -211,6 +214,56 @@ all of it on one Next actions page, and carries out what an Editor approves ther
 (**Reading the ask**). Each is routed from its own
 section below. The **Theme** section brands all of their pages,
 and the **Fee calculator** sets the creator rates behind every fee they show.
+
+## Progress bar
+
+In Claude Code, the plugin can draw an Aspire progress bar above the prompt. If the tool
+`mcp__aspire__aspire_progress` appears among your tools, including as a deferred tool, it is
+available: a deferred tool only needs loading first with ToolSearch
+(`select:mcp__aspire__aspire_progress`). When running the phases, report them as three groups,
+one run each. A new `title` starts a new run, so each group's bar starts over at 0%. Send the
+group's `tasks` in order when it starts, then call again as each task finishes with `done` and
+`phase` naming the task in progress:
+
+| Group | `title` | `tasks` | Runs |
+| ----- | ------- | ------- | ---- |
+| 1 | `Connecting` | `Verify Aspire Atlas` (Phase 1), `Get organizations`, `Pick the organization`, `Get status` (Phase 2 + 3) | Every run. Mark `Pick the organization` done at once when there is one organization. |
+| 2 | `Onboarding` | `Create the brand profile` (4.1), `Connect a social account` (4.2), `Confirm the account` (4.2 terminal status) | Only when Phase 3 routed to Phase 4. Drop `Create the brand profile` when the profile exists. Skip the group for an existing org with a connected channel. |
+| 3 | `Brand questions` | One task per Phase 5 question still to ask (skip keys already saved), then `Theme and rates offers` and `First insights` (Phase 6) | Optional. Start it only when Phase 5 runs. A declined question is marked done, not left open. |
+
+Finish each group with `finished: true` before starting the next. A group that does not run is
+never reported, so the bar never shows steps the run skips. Call it once more with
+`finished: true` when onboarding closes, or when a routed flow takes over after Phase 2 + 3.
+Agents never call it (a subagent's call is ignored); they report their own steps on their panel row with `mcp__aspire__aspire_step`, which the agent files describe.
+
+**Every other flow reports its own steps, never onboarding's.** When a flow starts (the creator
+brief, discovery, vetting, a review, a readout, the orchestrator, a program step, and the rest),
+call it once with that flow's name as `title` and the steps this run will actually take as
+`tasks`, in order, a few words each ("Read the account", "Find creators", "Publish the brief").
+A new `title` starts a new run, so the onboarding steps are gone. Call it again as each step
+finishes with `done` (or the list with `done: true` on finished steps), and with `phase` naming
+the step in progress. Re-send `tasks` when the plan changes, for example when a question adds
+or drops a step. Call it with `finished: true` when the flow ends.
+
+Launch each agent with an Agent `description` equal to the task it runs. The bar then marks that
+task done when the agent finishes and names it while it runs, even if you forget to report. A
+session that never reports still shows the agents that ran as its steps.
+
+The bar shows only where the host draws the slot above the prompt, so the tool's result ends
+with `band: ...`. Decide the channel once per run, from the first call:
+
+| Result | Channel |
+| ------ | ------- |
+| `band: visible on ...` | The bar only |
+| `band: hidden-by-user` | Nothing extra |
+| `band: not-drawn` or `band: unknown` | The task list if `TaskCreate` and `TaskUpdate` exist, else a chat line |
+| Tool missing | The task list if available, else a chat line |
+
+- **Task list:** six tasks (Connection, Organization, Profile and channel, Brand context, First
+  insights, Wrap up), updated at the start of each phase.
+- **Chat line,** once per phase: `Connecting: step 2 of 4, Get organizations ▰▰▱▱ 50%`.
+- Keep calling the progress tool every phase, even when falling back.
+- Subagents never report. Never name the tool or the fallback to the user.
 
 ---
 
@@ -1926,6 +1979,52 @@ that it needs a person to supply the post, and stop.
    trim, any corrections to an earlier analysis, and the data gaps. Offer **Content review**
    when the user has a brief for the post, and **Ad reuse** when they want hooks across many
    posts.
+
+---
+
+## Shops (Instagram Shop and TikTok Shop setup and management)
+
+Trigger when the user wants to set up, open, or run an Instagram Shop or a TikTok Shop, sell
+through Instagram or TikTok, or work out which posts and creators should drive shop sales ("set
+up Instagram Shop", "open a TikTok Shop", "sell on TikTok", "should we open a TikTok Shop",
+"tag products on Instagram", "TikTok Shop affiliates", "manage our TikTok Shop"). Requires a
+brand profile; a linked Instagram or TikTok channel gives the plan its posts and lets it save.
+Full detail lives in `references/shops.md`.
+
+The plan is guidance. Claude never signs in to, submits, or changes anything in Commerce
+Manager, Seller Center, a shop, or a store, and never asks for business documents, tax ids, or
+payout details; the brand's team does each step. Shops is interactive only. Never schedule it;
+with no `AskUserQuestion`, say in one line that the shops plan needs a person to answer its
+questions, and stop.
+
+1. **Connections.** Detect a store connection per `references/program.md` **4** and pass
+   `connections`. The plan only reads products and stock from it. Without one, say once in one
+   line that a connected store lets the plan check products and stock, and go on.
+2. **Ask** W1 and W2 from the reference in one `AskUserQuestion` call with the **Reading the
+   ask** confirmation (`team` by default; `leadership` for "should we open one"; `growth` for
+   which creators or products should drive shop sales; `campaign` when a launch date is named),
+   skipping what the user already said. With no linked channel, say the plan will have no posts
+   to work from and can't be saved, offer Phase 4.2 in one line, and go on page only if the user
+   wants.
+3. Launch `atlas-shops` with the tool prefix, `profile_id`, `profile_slug`, the linked handles
+   and networks, `pass: propose`, W1 and W2, anything the user named (launch date, products,
+   markets, fulfillment, owner, commission), `connections`, and `recipient`, ending with the
+   decision-audit line. No confirmation is needed: `propose` writes nothing.
+4. Relay the page link, the headline, one readiness line per shop, the first three steps, and
+   the top creators as creator cards from the agent's `creator-cards` block. Then ask, four per
+   `AskUserQuestion` call, the W3 your-call items exactly as the agent worded them, then W4
+   (save). Skip W4 when the profile has no linked channel.
+5. "Change something" relaunches `pass: propose` with the change as an override. Otherwise
+   launch again with `pass: record`, the `shops-packet`, and the answers. W4 "Save the plan" is
+   the write confirmation and covers the page finding; "Page only" writes nothing.
+6. Relay what was written, then offer the agent's hand-offs once as W5, header "Next": up to
+   three as the agent worded them, and "Not now". Each runs through its own section with its own
+   confirmations (**Creator discovery**, **Content sourcing**, **Ad reuse**, **PPA pitch**,
+   **Influencer program**). The plan never starts discovery, drafts outreach, or requests rights
+   itself.
+
+On the first publish, say once: "Requirements change. Commerce Manager and Seller Center show
+the current ones for your market."
 
 ---
 
