@@ -319,7 +319,7 @@ test('the Agents tab shows a crab card for every agent type, and marks the ones 
   await ui.press({ key: 'tab-agents' })
   const cards = (await ui.findAll({ type: 'Svg' })).map(el => String(el.props.source))
   // One credits card above the tabs, then a card per agent type.
-  expect(cards).toHaveLength(25)
+  expect(cards).toHaveLength(26)
   expect(cards.filter(c => c.includes('Market signal'))[0]).toContain('running')
   expect(cards.filter(c => c.includes('Orchestrator'))[0]).toContain('ready')
   expect(cards.join('')).not.toContain('undefined')

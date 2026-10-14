@@ -1,4 +1,4 @@
-// Influencer-marketing costumes for the crabs: one per Aspire agent type (24), and
+// Influencer-marketing costumes for the crabs: one per Aspire agent type (25), and
 // seven variants worn by the second and later concurrent runs of the same agent.
 // Each costume is a pixel prop held in the right claw (8 by 9 cells, drawn at
 // 22,5) and, for some, a head piece (14 wide, at its own position). They are
@@ -541,6 +541,26 @@ export const COSTUMES: readonly Costume[] = [
     headAt: [8, 3],
   },
   {
+    key: 'shopping-bag',
+    name: 'Shopping bag',
+    agent: 'aspire:atlas-shops',
+    color: '#7F77DD',
+    anim: 'sway',
+    held: [
+      '..dddd..',
+      '.d....d.',
+      '.d....d.',
+      'vvvvvvvv',
+      'vvvvvvvv',
+      'vvwwwwvv',
+      'vvvvvvvv',
+      'vvvvvvvv',
+      'vvvvvvvv',
+    ],
+    head: null,
+    headAt: [8, 3],
+  },
+  {
     key: 'mic',
     name: 'Podcast mic',
     agent: null,
@@ -688,7 +708,7 @@ const toCharacter = (c: Costume): Character => ({
   css: `.c-inf-${c.key}.run .it,.c-inf-${c.key}.run .hd{${ANIM_CSS[c.anim]}}`,
 })
 
-/** The 24 agent costumes, in table order: first in CHARACTERS. */
+/** The 25 agent costumes, in table order: first in CHARACTERS. */
 export const AGENT_CHARACTERS: readonly Character[] = COSTUMES.filter(c => c.agent !== null).map(toCharacter)
 
 /** The variants a second or later concurrent run of the same agent wears. */
