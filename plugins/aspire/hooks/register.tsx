@@ -93,7 +93,7 @@ const stats = atom({ plugin: 'aspire', key: 'stats' } as const, { turn: 0, speed
 const isBandHidden = atom({ plugin: 'aspire', key: 'isBandHidden' } as const, false)
 const agents = atom({ plugin: 'aspire', key: 'agents' } as const, [] as AgentRun[])
 /** The cards that start open; the agent roster's groups start collapsed. */
-const DEFAULT_OPEN = ['progress', 'credits', 'running', 'finished']
+const DEFAULT_OPEN = ['progress', 'running', 'finished']
 const panel = atom({ plugin: 'aspire', key: 'panel' } as const, { isAutoOpened: false, open: DEFAULT_OPEN, leaving: null } as Panel)
 const now = atom({ plugin: 'aspire', key: 'now' } as const, 0)
 
@@ -363,8 +363,8 @@ const GAP = 8
 const CARD_R = 10
 
 const PANE_CSS = `<style>
-.t{fill:#1f1f1f}.s{fill:#6b6b68}.m{fill:#9a9a96}.k{fill:#ecebe8}.tk{fill:#b4b4b0}.ln{stroke:#e4e4e1}.card{fill:#ffffff}.cv{stroke:#8a8a86}
-@media (prefers-color-scheme: dark){.t{fill:#ececec}.s{fill:#a8a8a4}.m{fill:#7d7d79}.k{fill:#2c2c2b}.tk{fill:#5a5a5a}.ln{stroke:#333331}.card{fill:#1f1f1e}.cv{stroke:#9a9a96}}
+.t{fill:#1f1f1f}.s{fill:#6b6b68}.m{fill:#9a9a96}.k{fill:#ecebe8}.tk{fill:#b4b4b0}.ln{stroke:#e4e4e1}.card{fill:#ffffff}.tile{fill:#f4f3f0}.cv{stroke:#8a8a86}
+@media (prefers-color-scheme: dark){.t{fill:#ececec}.s{fill:#a8a8a4}.m{fill:#7d7d79}.k{fill:#2c2c2b}.tk{fill:#5a5a5a}.ln{stroke:#333331}.card{fill:#1f1f1e}.tile{fill:#262625}.cv{stroke:#9a9a96}}
 .live{animation:p 1.6s ease-in-out infinite}@keyframes p{50%{opacity:.3}}
 @media (prefers-reduced-motion: reduce){.live{animation:none}}
 </style>`
@@ -439,31 +439,42 @@ const progressBodySvg = (W: number, title: string, shown: Shown, slot: Slot, gap
     `<style>${twinkleCss(shown)}</style><g transform="translate(14,${(PROGRESS_H - BAR_ROW_H) / 2})">${barShapes(title, shown, W - 28)}</g>`,
   )
 
-/** The credits card's body: the organization's credits from the latest get_status. */
-const CREDIT_H = 70
+/** The credits card, always at the top of the panel and not collapsible: the Aspire mark and the organization's credits from the latest get_status. */
+const CREDIT_H = 78
 const OVER = '#D0453F'
 
-const creditsBodySvg = (W: number, v: CreditsView, slot: Slot, gap: number): string => {
-  const pad = 14
-  const barW = W - pad * 2
+/** The Aspire mark (the plugin's icon), drawn in a 512 box: a deep green tile with the A and the I in white. */
+const LOGO = `<rect width="512" height="512" rx="96" fill="#0B4545"/><path fill="#fff" fill-rule="evenodd" d="M62 413 L183 98 L236 98 L356 413 L296 413 L275 354 C235 392 190 413 130 413 Z M212 185 L257 296 C225 330 185 354 145 358 Z"/><rect x="365" y="98" width="64" height="316" fill="#fff"/>`
+const LOGO_SIZE = 56
+const LOGO_GAP = 10
+/** The mark's width in terminal columns, at the 8px a column the desktop grid is sized by. */
+const LOGO_COLS = Math.round(LOGO_SIZE / 8)
+
+const creditsCardSvg = (W: number, v: CreditsView): string => {
+  const pad = 10
+  const x0 = LOGO_SIZE + LOGO_GAP
+  const cardW = W - x0
+  const barW = cardW - pad * 2
   const fill = Math.round(barW * v.ratio)
   const color = v.isOver ? OVER : ASPIRE
+  const left = x0 + pad
   const right = W - pad
   const text = (x: number, y: number, cls: string, size: number, body: string, extra = '') =>
     `<text class="${cls}" x="${x}" y="${y}" ${extra} font-family="${FONT}" font-size="${size}" font-variant-numeric="tabular-nums">${xml(body)}</text>`
   const bigW = textWidth(v.big, 22) + 6
-  return rowSvg(
+  return svg(
     W,
-    CREDIT_H,
-    slot,
-    gap,
-    `<text class="t" x="${pad}" y="27" font-family="${FONT}" font-size="22" font-weight="600" font-variant-numeric="tabular-nums" ${v.isOver ? `fill="${OVER}"` : ''}>${xml(v.big)}</text>
-${v.sub ? text(pad + bigW, 27, 's', 12, v.sub) : ''}
-${v.tag ? text(right, 27, 's', 11, v.tag, 'text-anchor="end"') : ''}
-<rect class="k" x="${pad}" y="38" width="${barW}" height="4" rx="2"/>
-${v.ratio > 0 ? `<rect x="${pad}" y="38" width="${Math.max(3, fill)}" height="4" rx="2" fill="${color}"/>` : ''}
-${v.metaLeft ? text(pad, 58, 's', 11, v.metaLeft) : ''}
-${v.metaRight ? text(right, 58, 's', 11, v.metaRight, 'text-anchor="end"') : ''}`,
+    CREDIT_H + GAP - 4,
+    `<g transform="translate(0,${Math.round((CREDIT_H - 4 - LOGO_SIZE) / 2)}) scale(${LOGO_SIZE / 512})"><title>Aspire</title>${LOGO}</g>
+<rect class="tile" x="${x0}" y="0" width="${cardW}" height="${CREDIT_H - 4}" rx="8"/>
+${text(left, 17, 's', 11, v.title)}
+${v.tag ? text(right, 17, 's', 11, v.tag, 'text-anchor="end"') : ''}
+<text class="t" x="${left}" y="42" font-family="${FONT}" font-size="22" font-weight="600" font-variant-numeric="tabular-nums" ${v.isOver ? `fill="${OVER}"` : ''}>${xml(v.big)}</text>
+${v.sub ? text(left + bigW, 42, 's', 12, v.sub) : ''}
+<rect class="k" x="${left}" y="50" width="${barW}" height="4" rx="2"/>
+${v.ratio > 0 ? `<rect x="${left}" y="50" width="${Math.max(3, fill)}" height="4" rx="2" fill="${color}"/>` : ''}
+${v.metaLeft ? text(left, 68, 's', 11, v.metaLeft) : ''}
+${v.metaRight ? text(right, 68, 's', 11, v.metaRight, 'text-anchor="end"') : ''}`,
   )
 }
 
@@ -1113,6 +1124,21 @@ export const register: Register = on => {
       )
     }
 
+    const creditsBox = (
+      <Box flexDirection="column" marginBottom={1}>
+        <Text wrap="truncate-end">
+          <Text dimColor>{view.title} </Text>
+          <Text bold color={view.isOver ? 'red' : undefined}>{view.big}</Text> <Text dimColor>{[view.sub, view.tag].filter(Boolean).join(' · ')}</Text>
+        </Text>
+        {view.ratio > 0 || view.metaLeft ? (
+          <Text wrap="truncate-end">
+            <Text color={view.isOver ? 'red' : ASPIRE}>{ctxBar(Math.round(view.ratio * 100), 12)}</Text> <Text dimColor>{[view.metaLeft, view.grants].filter(Boolean).join(' · ')}</Text>
+          </Text>
+        ) : null}
+        {view.metaRight ? <Text dimColor wrap="truncate-end">{view.metaRight}</Text> : null}
+      </Box>
+    )
+
     const cards: CardDef[] = [
       {
         key: 'progress',
@@ -1123,26 +1149,6 @@ export const register: Register = on => {
           <Text wrap="truncate-end">
             <Text color={shown.isFinished ? DONE : ASPIRE}>{barText(shown.ratio, 12)}</Text> <Text bold>{shown.label}</Text> <Text dimColor>{percent}</Text>
           </Text>
-        ),
-      },
-      {
-        key: 'credits',
-        title: 'Credits',
-        summary: view.big,
-        rows: [{ id: 'credits', h: CREDIT_H, alt: summary, draw: (W, slot, gap) => creditsBodySvg(W, view, slot, gap) }],
-        text: () => (
-          <Box flexDirection="column">
-            <Text wrap="truncate-end">
-              <Text dimColor>{view.title} </Text>
-              <Text bold color={view.isOver ? 'red' : undefined}>{view.big}</Text> <Text dimColor>{[view.sub, view.tag].filter(Boolean).join(' · ')}</Text>
-            </Text>
-            {view.ratio > 0 || view.metaLeft ? (
-              <Text wrap="truncate-end">
-                <Text color={view.isOver ? 'red' : ASPIRE}>{ctxBar(Math.round(view.ratio * 100), 12)}</Text> <Text dimColor>{[view.metaLeft, view.grants].filter(Boolean).join(' · ')}</Text>
-              </Text>
-            ) : null}
-            {view.metaRight ? <Text dimColor wrap="truncate-end">{view.metaRight}</Text> : null}
-          </Box>
         ),
       },
       {
@@ -1205,6 +1211,7 @@ export const register: Register = on => {
       )
       return (
         <Box flexDirection="column">
+          <Svg source={creditsCardSvg(W, view)} alt={summary} width={W} height={CREDIT_H + GAP - 4} />
           {cards.map(c => {
             const open = isOpen(c.key)
             return (
@@ -1233,7 +1240,9 @@ export const register: Register = on => {
 
     // Terminal and the other surfaces: the same cards in text rows.
     return (
-      <Box flexDirection="column" gap={1}>
+      <Box flexDirection="column">
+        {creditsBox}
+        <Box flexDirection="column" gap={1}>
         {cards.map(c => {
           const open = isOpen(c.key)
           return (
@@ -1243,6 +1252,7 @@ export const register: Register = on => {
             </Box>
           )
         })}
+        </Box>
       </Box>
     )
   })
