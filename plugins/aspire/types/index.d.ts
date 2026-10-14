@@ -81,6 +81,8 @@ export type Panel = {
   isDoneCollapsed: boolean
   /** The panel opened by itself once this session (first aspire:* agent). */
   isAutoOpened: boolean
+  /** `live`: this session's agents; `agents`: a card for each agent type the plugin ships. */
+  tab: 'live' | 'agents'
 }
 
 /** One step the skill reported. */

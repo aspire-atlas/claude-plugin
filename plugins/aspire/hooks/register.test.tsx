@@ -303,6 +303,31 @@ test('an agent reports its steps; the panel draws them, and the main session can
   expect((await again.findAll({ type: 'Svg' })).map(el => String(el.props.source)).join('')).toContain('5/5 reading posts')
 })
 
+test('the Agents tab shows a crab card for every agent type, and marks the ones that ran', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  await spawn($, 'aspire:atlas-market-signal', 'Signal for the week')
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  await ui.press({ key: 'tab-agents' })
+  const cards = (await ui.findAll({ type: 'Svg' })).map(el => String(el.props.source))
+  expect(cards).toHaveLength(24)
+  expect(cards.filter(c => c.includes('Market signal'))[0]).toContain('running')
+  expect(cards.filter(c => c.includes('Orchestrator'))[0]).toContain('ready')
+  expect(cards.join('')).not.toContain('undefined')
+  await ui.press({ key: 'tab-live' })
+  expect(await ui.find({ type: 'Svg' })).toBeDefined()
+  await ui.unmount()
+})
+
+test('the Agents tab on the terminal lists every agent type in text', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  await typeAspire($)
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'terminal', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  await ui.press({ key: 'tab-agents' })
+  expect(await ui.find({ type: 'Text', text: /Creator vetting/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /Orchestrator/ })).toBeDefined()
+  await ui.unmount()
+})
+
 test('an agent step call from an unknown agent changes nothing and does not switch the mod on', async ($, on) => {
   world(on, () => WITH_COSTS)
   expect(await $.tool.call({ tool: 'mcp__aspire__aspire_step', agentId: 'ghost', total: 3 } as never)).toMatchObject({ result: 'ok' })

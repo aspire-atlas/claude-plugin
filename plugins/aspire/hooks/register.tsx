@@ -61,6 +61,8 @@ import type { EngineInterface, Register } from 'claude-code'
 import type { AgentRun, AtlasReading, BandStats, OrgState, Panel, Progress, Seen, Trigger, TriggerKind } from '../types'
 import { ATLAS_ABSENT, ATLAS_ABSENT_HINT, fmtAtlasUsage, isAtlasStatusCall, isAtlasToolName, readAtlasOrg, readAtlasUsage } from './atlas-usage'
 import { ASPIRE, CRAB_CSS, characterOf, crab } from './characters'
+import { GROUPS, ROSTER } from './roster'
+import type { RosterEntry } from './roster'
 import { clip, fitText, fmtTime, fmtTokens, modelName, textWidth, windowOf, xml } from './format'
 import type { ProgressInput, Shown } from './progress'
 import { barText, mergeProgress, orgStateFrom, percentOf, shownOf, titleOf } from './progress'
@@ -88,7 +90,7 @@ const atlas = atom({ plugin: 'aspire', key: 'atlas' } as const, null as AtlasRea
 const stats = atom({ plugin: 'aspire', key: 'stats' } as const, { turn: 0, speed: null, context: 0 } as BandStats)
 const isBandHidden = atom({ plugin: 'aspire', key: 'isBandHidden' } as const, false)
 const agents = atom({ plugin: 'aspire', key: 'agents' } as const, [] as AgentRun[])
-const panel = atom({ plugin: 'aspire', key: 'panel' } as const, { isCompact: false, isDoneCollapsed: false, isAutoOpened: false } as Panel)
+const panel = atom({ plugin: 'aspire', key: 'panel' } as const, { isCompact: false, isDoneCollapsed: false, isAutoOpened: false, tab: 'live' } as Panel)
 const now = atom({ plugin: 'aspire', key: 'now' } as const, 0)
 
 /** The aspire skill: `/aspire`, `/aspire:aspire`, or the Skill tool's `aspire:aspire`. */
@@ -161,7 +163,7 @@ async function reset($: EngineInterface): Promise<void> {
   band.renders = 0
   band.surface = null
   await update($, agents, () => [])
-  await update($, panel, () => ({ isCompact: false, isDoneCollapsed: false, isAutoOpened: false }))
+  await update($, panel, () => ({ isCompact: false, isDoneCollapsed: false, isAutoOpened: false, tab: 'live' }))
 }
 
 const isOn = async ($: EngineInterface): Promise<boolean> => {
@@ -411,6 +413,28 @@ const agentSvg = (W: number, a: AgentRun, at: number): string => {
 <rect class="k" x="42" y="55" width="${textW}" height="4" rx="2"/><rect${progress === null ? ' class="m"' : ''} x="42" y="55" width="${fillW}" height="4" rx="2"${progress === null ? '' : ` fill="${character.color}"`}/>
 ${statusMark(W - 8, 16, a.status, character.color)}
 <line class="ln" x1="0" y1="65.5" x2="${W}" y2="65.5"/>`,
+  )
+}
+
+const CARD_H = 60
+
+/** A crab card for one agent type: its costume, name, what it makes, and whether it ran this session. */
+const cardSvg = (W: number, entry: RosterEntry, list: AgentRun[]): string => {
+  const group = GROUPS.find(g => g.key === entry.group)
+  const character = characterOf(group?.costume ?? { type: entry.type, model: '' })
+  const runs = list.filter(a => a.type === entry.type)
+  const isRunning = runs.some(a => a.status === 'running')
+  const state = isRunning ? 'running' : runs.length ? `ran ${runs.length}\u00d7` : 'ready'
+  const textW = W - 42 - 74
+  return svg(
+    W,
+    CARD_H,
+    `<rect class="tile" x="0.5" y="2.5" width="${W - 1}" height="${CARD_H - 6}" rx="10"/>
+${crab(8, 10, character, false, isRunning)}
+<text class="t" x="50" y="25" font-family="${FONT}" font-size="13" font-weight="600">${xml(fitText(entry.name, 13, textW))}</text>
+<text class="s" x="50" y="42" font-family="${FONT}" font-size="11">${xml(fitText(entry.blurb, 11, textW))}</text>
+${isRunning ? `<circle class="live" cx="${W - 66}" cy="22" r="3.5" fill="${character.color}"/>` : runs.length ? `<path d="M${W - 70} 22l3.5 3.5 6.5-7" fill="none" stroke="#3B9C5F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
+<text class="${isRunning || runs.length ? 's' : 'm'}" x="${W - 12}" y="26" text-anchor="end" font-family="${FONT}" font-size="11">${state}</text>`,
   )
 }
 
@@ -1005,19 +1029,70 @@ export const register: Register = on => {
       />
     )
 
+    const setTab = (tab: Panel['tab']) => () => void update($, panel, prev => ({ ...prev, tab }))
+    const tabs = (
+      <Box flexDirection="row" gap={2}>
+        <Button key="tab-live" label="Live" plain dimColor={p.tab !== 'live'} onPress={setTab('live')} />
+        <Button key="tab-agents" label={`Agents · ${ROSTER.length}`} plain dimColor={p.tab !== 'agents'} onPress={setTab('agents')} />
+      </Box>
+    )
+    const stateOf = (entry: RosterEntry): string => {
+      const runs = list.filter(a => a.type === entry.type)
+      return runs.some(a => a.status === 'running') ? '●' : runs.length ? '✓' : '○'
+    }
+
+    if (p.tab === 'agents') {
+      if (e.surface === 'desktop' && 'Svg' in ui) {
+        const { Svg } = ui
+        const W = Math.max(240, Math.min(900, (e.props.bodyColumns || 40) * 8 - 8))
+        return (
+          <Box flexDirection="column">
+            {tabs}
+            {GROUPS.map(g => {
+              const entries = ROSTER.filter(r => r.group === g.key)
+              return (
+                <Box key={g.key} flexDirection="column">
+                  <Text dimColor>{`${g.title} · ${entries.length}`}</Text>
+                  {entries.map(r => (
+                    <Svg key={r.type} source={cardSvg(W, r, list)} alt={`${r.name}: ${r.blurb}`} width={W} height={CARD_H} />
+                  ))}
+                </Box>
+              )
+            })}
+          </Box>
+        )
+      }
+      return (
+        <Box flexDirection="column">
+          {tabs}
+          {GROUPS.map(g => (
+            <Box key={g.key} flexDirection="column" marginTop={1}>
+              <Text dimColor>{`${g.title} · ${ROSTER.filter(r => r.group === g.key).length}`}</Text>
+              {ROSTER.filter(r => r.group === g.key).map(r => (
+                <Text key={r.type} wrap="truncate-end">
+                  <Text color={characterOf(g.costume).color}>{stateOf(r)}</Text> <Text bold>{r.name}</Text> <Text dimColor>{r.blurb}</Text>
+                </Text>
+              ))}
+            </Box>
+          ))}
+        </Box>
+      )
+    }
+
     if (e.surface === 'desktop' && 'Svg' in ui) {
       const { Svg } = ui
       const W = Math.max(240, Math.min(900, (e.props.bodyColumns || 40) * 8 - 8))
       if (p.isCompact) {
         return (
           <Box flexDirection="column" gap={1}>
+            {tabs}
             <Svg source={compactSvg(W, list, time)} alt={summary} width={W} height={32} />
             {toggleCompact}
           </Box>
         )
       }
       const shownDone = p.isDoneCollapsed ? 0 : finished.length
-      const lines = 1 + (isEmpty ? 1 : 0) + (running.length > 0 ? 1 : 0) + (finished.length > 0 ? 1 : 0)
+      const lines = 2 + (isEmpty ? 1 : 0) + (running.length > 0 ? 1 : 0) + (finished.length > 0 ? 1 : 0)
       const gridH = HEADER_H + lines * LINE_H + (running.length + shownDone) * ROW_H
       return (
         <Box flexDirection="column">
@@ -1027,6 +1102,7 @@ export const register: Register = on => {
           ))}
           <Box flexDirection="column" position="absolute" top={0} left={0} right={0}>
             <Svg source={headerSvg(W, list.length, time)} alt={summary} width={W} height={HEADER_H} />
+            {tabs}
             {toggleCompact}
             {isEmpty && <Text dimColor>{empty}</Text>}
             {running.length > 0 && <Text dimColor>{`Running · ${running.length}`}</Text>}
@@ -1083,6 +1159,7 @@ export const register: Register = on => {
 
     return (
       <Box flexDirection="column">
+        {tabs}
         <Box flexDirection="row" justifyContent="space-between">
           <Text dimColor>{summary}</Text>
           {toggleCompact}
