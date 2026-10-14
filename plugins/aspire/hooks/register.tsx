@@ -466,24 +466,31 @@ const progressBodySvg = (W: number, title: string, shown: Shown, tasks: { title:
     `<style>${twinkleCss(shown)}</style><g transform="translate(16,${(PROGRESS_H - BAR_ROW_H) / 2 - 2})">${barShapes(title, shown, W - 32)}</g>${tasks
       .map(
         (t, i) =>
-          `<rect ${t.isDone ? `fill="${DONE}"` : 'class="sw"'} x="16" y="${PROGRESS_H + i * TASK_H + 6}" width="10" height="10" rx="2.5"/>
-<text class="${t.isDone ? 't' : 's'}" x="36" y="${PROGRESS_H + i * TASK_H + 15}" font-family="${FONT}" font-size="12">${xml(fitText(t.title, 12, W - 100))}</text>
+          `<rect ${t.isDone ? `fill="${DONE}"` : 'class="sw"'} x="${HEAD_TEXT_X}" y="${PROGRESS_H + i * TASK_H + 6}" width="10" height="10" rx="2.5"/>
+<text class="${t.isDone ? 't' : 's'}" x="${HEAD_TEXT_X + 17}" y="${PROGRESS_H + i * TASK_H + 15}" font-family="${FONT}" font-size="12">${xml(fitText(t.title, 12, W - 117))}</text>
 <text class="s" x="${W - 16}" y="${PROGRESS_H + i * TASK_H + 15}" text-anchor="end" font-family="${FONT}" font-size="11">${t.isDone ? 'done' : ''}</text>`,
       )
       .join('')}`,
   )
 
 /** The progress section's body for the agent's own plan: the request and its time, the step bar, then a row and a bar for each step. */
-const PLAN_HEAD_H = 26
+const PLAN_HEAD_H = 28
+const PLAN_TOP = PLAN_HEAD_H + PROGRESS_H - 12
 const PLAN_ROW_H = 24
 const PLAN_NOTE_H = 18
+const PLAN_DOING_H = 20
+// The bar's bullet sits at x 21 with its label at 32; the heading's star shares that centre and the title that
+// edge, and a step's bullet is centred under the label's first letter, with the same 7px from bullet to text.
+const MARK_X = 21
+const HEAD_TEXT_X = 32
+const STEP_X = 36
+const STEP_TEXT_X = 47
 const STOPPED = '#8a8f8c'
 const planH = (view: PlanView): number =>
-  PLAN_HEAD_H +
-  PROGRESS_H -
-  4 +
+  PLAN_TOP +
+  6 +
   (view.before ? PLAN_NOTE_H : 0) +
-  view.rows.reduce((n, r) => n + PLAN_ROW_H + (r.kind === 'now' && r.doing ? 16 : 0), 0) +
+  view.rows.reduce((n, r) => n + PLAN_ROW_H + (r.kind === 'now' && r.doing ? PLAN_DOING_H : 0), 0) +
   (view.after ? PLAN_NOTE_H : 0) +
   (view.files ? PLAN_NOTE_H : 0)
 const planBodySvg = (W: number, title: string, shown: Shown, view: PlanView, tail: number): string => {
@@ -491,16 +498,19 @@ const planBodySvg = (W: number, title: string, shown: Shown, view: PlanView, tai
   const badgeW = view.badge ? textWidth(`✓ ${view.badge}`, 12) + 8 : 0
   const timeW = textWidth(view.time, 11) + 8
   const font = `font-family="${FONT}"`
-  let y = PLAN_HEAD_H + PROGRESS_H - 4
+  let y = PLAN_TOP
   const parts: string[] = [
-    `<text x="16" y="18" ${font} font-size="12" font-weight="500">${
-      view.badge ? `<tspan fill="${accent}" font-weight="600">${view.state === 'done' ? '✓' : '■'} ${xml(view.badge)}</tspan><tspan class="t" dx="8">${xml(fitText(view.title, 12, W - 32 - badgeW - timeW))}</tspan>` : `<tspan fill="${accent}">✦ </tspan><tspan class="t">${xml(fitText(view.title, 12, W - 32 - timeW - 16))}</tspan>`
-    }</text>
+    `${
+      view.badge
+        ? `<text x="16" y="18" ${font} font-size="12" font-weight="500"><tspan fill="${accent}" font-weight="600">${view.state === 'done' ? '✓' : '■'} ${xml(view.badge)}</tspan><tspan class="t" dx="8">${xml(fitText(view.title, 12, W - 32 - badgeW - timeW))}</tspan></text>`
+        : `<text x="${MARK_X}" y="18" text-anchor="middle" fill="${accent}" ${font} font-size="11">✦</text>
+<text class="t" x="${HEAD_TEXT_X}" y="18" ${font} font-size="12" font-weight="500">${xml(fitText(view.title, 12, W - HEAD_TEXT_X - 16 - timeW))}</text>`
+    }
 <text class="s" x="${W - 16}" y="18" text-anchor="end" ${font} font-size="11" font-variant-numeric="tabular-nums">${xml(view.time)}</text>
 <style>${twinkleCss(shown)}</style><g transform="translate(16,${PLAN_HEAD_H - 2})">${barShapes(title, shown, W - 32)}</g>`,
   ]
   const note = (text: string) => {
-    parts.push(`<text class="s" x="36" y="${y + 13}" ${font} font-size="11">${xml(text)}</text>`)
+    parts.push(`<text class="s" x="${STEP_TEXT_X}" y="${y + 13}" ${font} font-size="11">${xml(text)}</text>`)
     y += PLAN_NOTE_H
   }
   if (view.before) note(`✓ ${view.before}`)
@@ -512,21 +522,21 @@ const planBodySvg = (W: number, title: string, shown: Shown, view: PlanView, tai
     const cy = y + 12
     const icon =
       r.kind === 'done'
-        ? `<path d="M18 ${cy}l3 3 5-6" fill="none" stroke="${DONE}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`
+        ? `<path d="M${STEP_X - 4} ${cy}l3 3 5-6" fill="none" stroke="${DONE}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`
         : r.kind === 'now'
-          ? `<circle cx="22" cy="${cy}" r="4" fill="${ASPIRE}"/>`
+          ? `<circle cx="${STEP_X}" cy="${cy}" r="4" fill="${ASPIRE}"/>`
           : r.kind === 'halted'
-            ? `<rect x="18.5" y="${cy - 3.5}" width="7" height="7" rx="1.5" fill="${STOPPED}"/>`
-            : `<circle class="cv" cx="22" cy="${cy}" r="3.5" fill="none" stroke-width="1.2"/>`
+            ? `<rect x="${STEP_X - 3.5}" y="${cy - 3.5}" width="7" height="7" rx="1.5" fill="${STOPPED}"/>`
+            : `<circle class="cv" cx="${STEP_X}" cy="${cy}" r="3.5" fill="none" stroke-width="1.2"/>`
     parts.push(
-      `${icon}<text class="${r.kind === 'now' ? 't' : r.kind === 'done' ? 't' : 's'}" x="36" y="${y + 16}" ${font} font-size="12"${r.kind === 'now' ? ' font-weight="600"' : ''}>${xml(fitText(r.text, 12, barX - 36 - 10))}</text>
+      `${icon}<text class="${r.kind === 'now' ? 't' : r.kind === 'done' ? 't' : 's'}" x="${STEP_TEXT_X}" y="${y + 16}" ${font} font-size="12"${r.kind === 'now' ? ' font-weight="600"' : ''}>${xml(fitText(r.text, 12, barX - STEP_TEXT_X - 10))}</text>
 <rect class="k" x="${barX}" y="${y + 10}" width="${miniW}" height="4" rx="2"/>${r.frac > 0 ? `<rect x="${barX}" y="${y + 10}" width="${Math.max(3, Math.round(miniW * r.frac))}" height="4" rx="2" fill="${color}"/>` : ''}
 <text ${r.kind === 'now' ? `fill="${ASPIRE}" font-weight="600"` : 'class="s"'} x="${W - 16}" y="${y + 15}" text-anchor="end" ${font} font-size="11" font-variant-numeric="tabular-nums">${xml(r.status)}</text>`,
     )
     y += PLAN_ROW_H
     if (r.kind === 'now' && r.doing) {
-      parts.push(`<text class="s" x="36" y="${y + 3}" ${font} font-size="11">${xml(fitText(r.doing, 11, W - 36 - 16))}</text>`)
-      y += 16
+      parts.push(`<text class="s" x="${STEP_TEXT_X}" y="${y + 6}" ${font} font-size="11">${xml(fitText(r.doing, 11, W - STEP_TEXT_X - 16))}</text>`)
+      y += PLAN_DOING_H
     }
   }
   if (view.after) note(`○ ${view.after}`)
