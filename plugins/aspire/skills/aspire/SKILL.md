@@ -5,7 +5,8 @@ description: >
   YouTube, see what's working, benchmark competitors, and check brand safety. Find and brief
   creators, keep a campaign shortlist, review posts, run an influencer program from outreach to payments, track what creators say about you vs.
   competitors, and get daily, weekly, and quarterly reports shaped for whoever will act on
-  them. Use for "/aspire", "/aspire agents", "get started with Atlas", "connect Atlas",
+  them. Use for "/aspire", "/aspire agents", "get started with Atlas", "what can /aspire do",
+  "first time with Atlas", "connect Atlas",
   "onboard my brand", "connect my Instagram", "what happened yesterday", "how did last week
   go", "schedule the weekly readout", "find creators for the campaign", "refill the
   shortlist", "vet these creators", "which of these creators should we approve", "we launch on the 14th and need creators", "review this post", "check this
@@ -49,7 +50,7 @@ Text after the command is the argument. Route on it before anything else:
 | `next` (also `what's next`, `next actions`, `orchestrator`, and the hourly "Atlas next actions" task) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Orchestrator** below. Skip the other phases. |
 | `cas campaign` (also `creator ad campaign`, `campaign manager`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **CAS campaign** below. Skip the other phases. |
 | `shops` (also `shop`, `instagram shop`, `tiktok shop`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Shops** below. Skip the other phases. |
-| empty, or anything else | Run the phases in order, starting at Phase 1. Treat the text as context. |
+| empty, or anything else | Run the phases in order, starting at Phase 1. Treat the text as context. On an unconfigured organization, Phase 2 + 3 publishes the first-run guide before the next phase (**First-run guide** there). |
 
 ### List agents
 
@@ -426,6 +427,17 @@ call is being made. Write a fresh one per call.
    - Profiles with channels → **existing**. Give a 3 to 5 bullet summary (profile, channels,
      any expired auth), then run Phase 5 gap check and offer Phase 6, the weekly creator
      brief (see **Creator brief** below), or a re-connect for expired channels.
+     **Reserved:** a later release will publish a dashboard of the organization's current
+     state when `/aspire:aspire` runs bare on a configured organization. Until then this
+     route gives the status summary above, unchanged.
+5. **First-run guide.** When the phases run from the top (empty argument or onboarding
+   context, never a named flow) and the organization is unconfigured (new org, profile only,
+   or existing with no brand context on any linked profile, from the Phase 5 calibration
+   read), publish the starter page in `references/first-run.md` once per organization per
+   session, say one line with the link, and continue at the phase the route names in the same
+   reply. It runs only after `get_status` answered: when Phase 1 finds Atlas not connected, the
+   guided add comes alone, with no page. It never blocks or replaces a phase, and never runs
+   unattended. The reference holds the trigger rules, the page, and the re-run rules.
 
 Once a profile is chosen or created, keep its `id` in working state as `profile_id` and its
 `slug` as `profile_slug`. Pass `asProfileId` = `profile_id` to every Atlas tool whose schema
@@ -2304,8 +2316,9 @@ most recent US holiday. Full rules are in `references/agents/sample-artifact.md`
 name ("what does the vetting agent do?", "what's a PPA pitch?"), answer in two or three plain
 sentences, then ask with `AskUserQuestion`, header "Sample": "Would you like a sample
 {page name} to see what it makes?" Options: "Show me a sample (Recommended)" / "Not now". For a
-question about Atlas as a whole, ask which agent's sample to show instead, up to four agents as
-options with the rest named in the question text. Ask at most once per agent per session, never
+question about Atlas as a whole ("what can /aspire do"), publish the starter page from
+`references/first-run.md` (**7**, on request), then ask which agent's sample to show instead, up
+to four agents as options with the rest named in the question text. Ask at most once per agent per session, never
 in the middle of a running flow, and never in an unattended run.
 
 **Running it.** No Atlas connection, profile, or Phase 1 is needed, and nothing is confirmed,
