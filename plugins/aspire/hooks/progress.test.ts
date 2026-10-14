@@ -5,11 +5,12 @@ import { agentName, barText, mergeProgress, orgStateFrom, percentOf, shownOf, ti
 
 const NO_ORG = { name: null, checkpoints: 0 }
 
-test('shownOf: before the skill reports, the get_status baseline out of 6', () => {
-  expect(shownOf(null, NO_ORG)).toMatchObject({ ratio: 0, label: 'Onboarding 0/6', isReported: false })
-  const two = shownOf(null, { name: 'Sample Brand', checkpoints: 2 })
-  expect(percentOf(two)).toBe('33%')
-  expect(percentOf(shownOf(null, { name: 'Sample Brand', checkpoints: 4 }))).toBe('67%')
+test('shownOf: before the skill reports its first tasks, the bar reads Initializing… at 0%', () => {
+  expect(shownOf(null, NO_ORG)).toMatchObject({ ratio: 0, label: 'Initializing…', isReported: false })
+  // get_status checkpoints no longer move the bar; only the skill's report does.
+  const four = shownOf(null, { name: 'Sample Brand', checkpoints: 4 })
+  expect(four).toMatchObject({ ratio: 0, label: 'Initializing…' })
+  expect(percentOf(four)).toBe('0%')
 })
 
 test('shownOf: the reported done and total win over the baseline', () => {

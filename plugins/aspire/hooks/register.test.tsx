@@ -108,7 +108,7 @@ for (const surface of ['terminal', 'desktop'] as const) {
     // A typed /aspire switches it on: the bar shows at once, before any get_status.
     await typeAspire($)
     expect(await barShows($, surface, 'Aspire')).toBe(true)
-    expect(await barShows($, surface, 'Onboarding 0/6')).toBe(true)
+    expect(await barShows($, surface, 'Initializing…')).toBe(true)
     expect(await barShows($, surface, '0%')).toBe(true)
     // The band's row is still there, with no Atlas figure made up.
     expect(await bandShows($, surface, /^Atlas tokens$/)).toBe(true)
@@ -126,9 +126,9 @@ for (const surface of ['terminal', 'desktop'] as const) {
     // The call's result passes through untouched.
     expect(result).toMatchObject({ text: JSON.stringify(WITH_COSTS) })
     expect(await barShows($, surface, 'Aspire: Sample Brand')).toBe(true)
-    // Atlas answered, an organization, a profile, a channel: 4 of 6.
-    expect(await barShows($, surface, 'Onboarding 4/6')).toBe(true)
-    expect(await barShows($, surface, '67%')).toBe(true)
+    // Atlas answered, but only the skill's report moves the bar.
+    expect(await barShows($, surface, 'Initializing…')).toBe(true)
+    expect(await barShows($, surface, '0%')).toBe(true)
     expect(await bandShows($, surface, /^12k \/ 50k$/)).toBe(true)
 
     // The skill reports: its count wins.
@@ -174,11 +174,11 @@ test('several organizations: no name until the call picks one', async ($, on) =>
   await typeAspire($)
   await getStatus($)
   expect(await barShows($, 'terminal', 'Aspire')).toBe(true)
-  expect(await barShows($, 'terminal', 'Onboarding 1/6')).toBe(true)
+  expect(await barShows($, 'terminal', 'Initializing…')).toBe(true)
   body = { ...several, organizations: { ...several.organizations, selected: { id: 'org_2', name: 'Picked Org' } } }
   await getStatus($, { asOrganizationId: 'org_2' })
   expect(await barShows($, 'terminal', 'Aspire: Picked Org')).toBe(true)
-  expect(await barShows($, 'terminal', 'Onboarding 2/6')).toBe(true)
+  expect(await barShows($, 'terminal', 'Initializing…')).toBe(true)
 })
 
 test('each Aspire event switches the mod on and says which', async ($, on) => {
@@ -396,7 +396,7 @@ test('a /clear puts the mod back to sleep until /aspire runs again', async ($, o
   })
   // Back on, the bar starts over: no organization, no reported progress.
   await typeAspire($)
-  expect(await barShows($, 'terminal', 'Onboarding 0/6')).toBe(true)
+  expect(await barShows($, 'terminal', 'Initializing…')).toBe(true)
 })
 
 const mountBand = async ($: Engine, surface: 'terminal' | 'desktop') => {
