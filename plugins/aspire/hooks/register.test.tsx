@@ -420,6 +420,54 @@ test('pressing an agent toasts that it is queued in the prompt box', async ($, o
   expect(toasts[0].text).toMatch(/^◆ Aspire · .+ is queued in the prompt box\. Press Enter to run it\.$/)
 })
 
+test('desktop: pressing an agent shows the branded notice with its crab above the bar, clears after 6s, and does not also toast', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  const toasts: string[] = []
+  on('ui.toast', (_$, e) => {
+    toasts.push((e as { text: string }).text)
+    return { value: undefined } as never
+  })
+  on('prompt.fill', () => ({ isFilled: true, text: '', cursor: 0 }) as never)
+  await typeAspire($)
+  await getStatus($)
+  const bar = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'AbovePrompt', props: band as never })
+  expect(await bar.findAll({ type: 'Svg' })).toHaveLength(1)
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  await openGroups(ui, 'desktop')
+  await ui.press({ key: 'start-aspire:atlas-creator-vetting-0' })
+  await clock.advance(1000)
+  await ui.unmount()
+  const svgs = await bar.findAll({ type: 'Svg' })
+  expect(svgs).toHaveLength(2)
+  const source = String(svgs[0].props.source)
+  expect(source).toContain('is queued in the prompt box. Press Enter to run it.')
+  expect(source).toContain('prefers-color-scheme: dark')
+  expect(source).toContain('prefers-reduced-motion')
+  expect(source).toContain('#3B8A82')
+  expect(toasts).toHaveLength(0)
+  await clock.advance(6100)
+  expect(await bar.findAll({ type: 'Svg' })).toHaveLength(1)
+  await bar.unmount()
+})
+
+test('desktop: the notice clears when the prompt is submitted', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  on('ui.toast', () => ({ value: undefined }) as never)
+  on('prompt.fill', () => ({ isFilled: true, text: '', cursor: 0 }) as never)
+  await typeAspire($)
+  await getStatus($)
+  const bar = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'AbovePrompt', props: band as never })
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  await openGroups(ui, 'desktop')
+  await ui.press({ key: 'start-aspire:atlas-creator-vetting-0' })
+  await clock.advance(1000)
+  await ui.unmount()
+  expect(await bar.findAll({ type: 'Svg' })).toHaveLength(2)
+  await $.prompt.submit({ text: '/aspire:aspire run atlas-creator-vetting' } as never)
+  expect(await bar.findAll({ type: 'Svg' })).toHaveLength(1)
+  await bar.unmount()
+})
+
 test('on the desktop the pressed crab walks off its card, then the start is drafted', async ($, on) => {
   world(on, () => WITH_COSTS)
   const drafts: string[] = []

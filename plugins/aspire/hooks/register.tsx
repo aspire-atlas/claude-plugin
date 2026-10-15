@@ -85,7 +85,7 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
-import type { AgentRun, AtlasCreditsReading, AtlasReading, BandStats, Item, OrgState, Panel, Progress, Seen, Trigger, TriggerKind, Turn } from '../types'
+import type { AgentRun, AtlasCreditsReading, AtlasReading, BandStats, Item, Notice, OrgState, Panel, Progress, Seen, Trigger, TriggerKind, Turn } from '../types'
 import { creditsView, fmtAtlasUsage, fmtCredits, isAtlasStatusCall, isAtlasToolName, readAtlasCredits, readAtlasOrg, readAtlasUsage } from './atlas-usage'
 import type { CreditsView } from './atlas-usage'
 import { ASPIRE, CRAB_CSS, breathOf, characterOf, crab } from './characters'
@@ -129,6 +129,10 @@ const agents = atom({ plugin: 'aspire', key: 'agents' } as const, [] as AgentRun
 const DEFAULT_OPEN = ['progress', 'running', 'finished', 'agents']
 const panel = atom({ plugin: 'aspire', key: 'panel' } as const, { isAutoOpened: false, open: DEFAULT_OPEN, leaving: null } as Panel)
 const now = atom({ plugin: 'aspire', key: 'now' } as const, 0)
+/** The "queued in the prompt box" notice above the prompt (desktop); null when none shows. */
+const notice = atom({ plugin: 'aspire', key: 'notice' } as const, null as Notice | null)
+/** How long the notice stays, in milliseconds. */
+const NOTICE_MS = 6000
 
 /** The aspire skill: `/aspire`, `/aspire:aspire`, or the Skill tool's `aspire:aspire`. */
 const ASPIRE_SKILL = /^(aspire:)?aspire$/
@@ -321,6 +325,28 @@ const panelIcon = (x: number): string => {
   return `<g transform="translate(${x},${y})"><rect class="pk" x="0.75" y="0.75" width="18.5" height="12.5" rx="2.5" fill="none" stroke-width="1.5"/><path class="pf" d="M12 1.5h5.5a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H12z"/></g>`
 }
 const countWidth = (count: number): number => Math.ceil(8 + textWidth(`×${count}`, 12.5) + 4 + BAND_CRAB_W + 10)
+
+/**
+ * The queued notice: one Svg row with the pressed agent's own animated crab, the Aspire teal mark and the text.
+ * Light and dark values come from the media query; the crab's motion stops under prefers-reduced-motion (CRAB_CSS).
+ */
+const NOTICE_H = 26
+const noticeText = (name: string): string => `${name} is queued in the prompt box. Press Enter to run it.`
+const noticeSvg = (character: Character, name: string, W: number): string => {
+  const scale = 0.7
+  const textX = 10 + 36 * scale + 10 + 14
+  const text = fitText(noticeText(name), 13, Math.max(40, W - textX - 8))
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${NOTICE_H}" viewBox="0 0 ${W} ${NOTICE_H}">
+<style>
+.nt{fill:#1f1f1f}.nm{fill:#3B8A82}
+@media (prefers-color-scheme: dark){.nt{fill:#ececec}.nm{fill:#5fb5ab}}
+</style>
+${CRAB_CSS}
+${crab(10, (NOTICE_H - 30 * scale) / 2, character, false, true, scale)}
+<text class="nm" x="${10 + 36 * scale + 8}" y="${NOTICE_H / 2 + 4.5}" font-family="${FONT}" font-size="13" font-weight="700">◆</text>
+<text class="nt" x="${textX}" y="${NOTICE_H / 2 + 4.5}" font-family="${FONT}" font-size="13" font-weight="500">${xml(text)}</text>
+</svg>`
+}
 
 /** The band's whole row in one drawing: title, bar, percent, and the agent counter with its crab. */
 const bandSvg = (title: string, shown: Shown, W: number, count: number, character: Character): string => `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}">
@@ -901,6 +927,7 @@ export const register: Register = on => {
   // unchanged; switching on first lets turn.start count the /aspire turn.
   on('prompt.submit', async ($, e, next) => {
     try {
+      if ((await read($, notice)) !== null) await update($, notice, () => null)
       if (typeof e.text === 'string' && ASPIRE_PROMPT.test(e.text)) {
         await activate($, 'prompt', e.text.trim().split(/\s/, 1)[0] ?? '/aspire')
         await count($, 'prompts')
@@ -1296,8 +1323,23 @@ export const register: Register = on => {
       </Box>
     )
 
+    // The queued notice sits above the bar row, desktop only: a single Svg row (no press, nothing overlaid).
+    const queued = Svg ? await read($, notice) : null
+    const noticeW = Math.max(240, Math.min(720, Math.round((cols || 100) * 8)))
+    const noticeRow =
+      Svg && queued ? (
+        <Svg
+          key="aspire-queued"
+          source={noticeSvg(characterOf({ type: queued.type, model: '' }), queued.name, noticeW)}
+          alt={`Aspire: ${noticeText(queued.name)}`}
+          width={noticeW}
+          height={NOTICE_H}
+        />
+      ) : null
+
     return (
       <Box flexDirection="column">
+        {noticeRow}
         {barRow}
         {below}
       </Box>
@@ -1341,8 +1383,18 @@ export const register: Register = on => {
           await update($, panel, prev => ({ ...prev, leaving: null }))
         }
         await $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: `/aspire:aspire run ${r.type.replace(/^aspire:/, '')}`, mode: 'replace' } as never)
-        // The SDK's toast is plain text (no colour or art), so the brand is the mark and the name: shown on desktop and terminal alike.
-        $.ui.toast(`◆ Aspire · ${r.name} is queued in the prompt box. Press Enter to run it.`, { timeoutMs: 6000 })
+        // On the desktop, with the band drawn, the notice is a branded row above the bar with the agent's own crab; it clears itself.
+        // Anywhere else (the terminal, a hidden band, no Svg) the SDK's plain-text toast carries it.
+        const isShown = e.surface === 'desktop' && band.renders > 0 && !(await read($, isBandHidden)) && (await isOn($))
+        if (isShown) {
+          const id = await $.clock.now()
+          await update($, notice, () => ({ type: r.type, name: r.name, id }))
+          $.clock.after(NOTICE_MS, () => {
+            update($, notice, prev => (prev && prev.id === id ? null : prev)).catch(() => undefined)
+          })
+        } else {
+          $.ui.toast(`◆ Aspire · ${r.name} is queued in the prompt box. Press Enter to run it.`, { timeoutMs: NOTICE_MS })
+        }
       })().catch(() => undefined)
     const stateOf = (entry: RosterEntry): string => {
       const runs = list.filter(a => a.type === entry.type)
