@@ -85,7 +85,7 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
-import type { AgentRun, AtlasCreditsReading, AtlasReading, BandStats, Item, OrgState, Panel, Progress, Seen, Trigger, TriggerKind, Turn } from '../types'
+import type { AgentRun, AtlasCreditsReading, AtlasReading, BandStats, Item, Notice, OrgState, Panel, Progress, Seen, Trigger, TriggerKind, Turn } from '../types'
 import { creditsView, fmtAtlasUsage, fmtCredits, isAtlasStatusCall, isAtlasToolName, readAtlasCredits, readAtlasOrg, readAtlasUsage } from './atlas-usage'
 import type { CreditsView } from './atlas-usage'
 import { ASPIRE, CRAB_CSS, breathOf, characterOf, crab } from './characters'
@@ -129,6 +129,10 @@ const agents = atom({ plugin: 'aspire', key: 'agents' } as const, [] as AgentRun
 const DEFAULT_OPEN = ['progress', 'running', 'finished', 'agents']
 const panel = atom({ plugin: 'aspire', key: 'panel' } as const, { isAutoOpened: false, open: DEFAULT_OPEN, leaving: null } as Panel)
 const now = atom({ plugin: 'aspire', key: 'now' } as const, 0)
+/** The "queued in the prompt box" notice above the prompt (desktop); null when none shows. */
+const notice = atom({ plugin: 'aspire', key: 'notice' } as const, null as Notice | null)
+/** How long the notice stays, in milliseconds. */
+const NOTICE_MS = 6000
 
 /** The aspire skill: `/aspire`, `/aspire:aspire`, or the Skill tool's `aspire:aspire`. */
 const ASPIRE_SKILL = /^(aspire:)?aspire$/
@@ -206,6 +210,7 @@ async function reset($: EngineInterface): Promise<void> {
   band.renders = 0
   band.surface = null
   band.crab = null
+  published.clear()
   await update($, agents, () => [])
   await update($, panel, () => ({ isAutoOpened: false, open: DEFAULT_OPEN, leaving: null }))
 }
@@ -222,6 +227,16 @@ const isOn = async ($: EngineInterface): Promise<boolean> => {
 const shortTool = (tool: string): string => tool.replace(/^mcp__.*__/, '')
 
 // ---------------------------------------------------------------------------
+// The Artifact card: the transcript's result row for a published Artifact.
+
+/** What a publish call said about its page, by the call's id: the result carries the URL, the call carries the title and description. */
+const published = new Map<string, { title?: string; description?: string; file?: string }>()
+const MAX_PUBLISHED = 50
+const str = (v: unknown): string | undefined => (typeof v === 'string' && v.trim() ? v.trim() : undefined)
+const slackDraft = (url: string): string =>
+  `Share this artifact on Slack: ${url}. Ask me with AskUserQuestion which channel or person, write a short message, show it, and post only after I confirm.`
+
+// ---------------------------------------------------------------------------
 // The progress bar (from savvy-progress): title, bar, percent, and the crab.
 
 const DONE = '#4caf6e'
@@ -229,6 +244,31 @@ const DONE = '#4caf6e'
 // so title, bar, percent, and the agent counter with its crab live in one
 // drawing, with blank Buttons laid over it to take the presses.
 const BAR_ROW_H = 22
+/** The Artifact card's document icon, after the Claude Docs artifact icon: a page whose lines, letter and check draw in one after another, then rest, then repeat. */
+const DOC_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="46" viewBox="0 0 40 46">
+<style>
+.pg{fill:#E8F4F2;stroke:#7DB8B1}.ln{fill:#3B8A82}.ls{fill:#A9D3CE}.ab{fill:#2E6E67}.ck{fill:#3B8A82}.cm{stroke:#fff}
+@media (prefers-color-scheme: dark){.pg{fill:#1E3431;stroke:#3B8A82}.ln{fill:#5FB5AB}.ls{fill:#3E6B66}.ab{fill:#5FB5AB}.ck{fill:#5FB5AB}.cm{stroke:#1E3431}}
+.d{transform-box:fill-box;transform-origin:0 50%;animation:dr 3.6s ease-out infinite both}
+.d2{animation-delay:.25s}.d3{animation-delay:.5s}.d4{animation-delay:.75s}.d5{animation-delay:1s}
+.pp{transform-box:fill-box;transform-origin:50% 50%;animation:pp 3.6s ease-out infinite both;animation-delay:.6s}
+.fa{animation:fa 3.6s ease-out infinite both;animation-delay:.3s}
+@keyframes dr{0%,4%{transform:scaleX(0)}22%,86%{transform:scaleX(1)}96%,100%{transform:scaleX(1);opacity:0}}
+@keyframes pp{0%,10%{transform:scale(0)}26%{transform:scale(1.25)}34%,86%{transform:scale(1)}96%,100%{transform:scale(1);opacity:0}}
+@keyframes fa{0%,6%{opacity:0}22%,86%{opacity:1}96%,100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.d,.pp,.fa{animation:none}}
+</style>
+<rect class="pg" x="2" y="1" width="36" height="44" rx="7" stroke-width="0.6"/>
+<rect class="ln d" x="9" y="7" width="14" height="3.4" rx="1.7"/>
+<text class="ab fa" x="8.5" y="26" font-family="Georgia,serif" font-size="15" font-weight="600">A</text>
+<rect class="ls d d2" x="19" y="15" width="13" height="2.6" rx="1.3"/>
+<rect class="ls d d3" x="19" y="20.5" width="11" height="2.6" rx="1.3"/>
+<rect class="ls d d3" x="9" y="28" width="23" height="2.6" rx="1.3"/>
+<g class="pp"><circle class="ck" cx="11" cy="35.5" r="2.8"/><path class="cm" d="M9.6 35.6l1.1 1.1 2-2.2" fill="none" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/></g>
+<rect class="ls d d4" x="15.5" y="34.2" width="12" height="2.6" rx="1.3"/>
+</svg>`
+/** The Slack mark (four coloured pill pairs), its own brand colours in light and dark. */
+const SLACK_MARK = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="60 60 150 150"><path fill="#E01E5A" d="M99.4,151.2c0,7.1-5.8,12.9-12.9,12.9c-7.1,0-12.9-5.8-12.9-12.9c0-7.1,5.8-12.9,12.9-12.9h12.9V151.2z"/><path fill="#E01E5A" d="M105.9,151.2c0-7.1,5.8-12.9,12.9-12.9s12.9,5.8,12.9,12.9v32.3c0,7.1-5.8,12.9-12.9,12.9s-12.9-5.8-12.9-12.9V151.2z"/><path fill="#36C5F0" d="M118.8,99.4c-7.1,0-12.9-5.8-12.9-12.9c0-7.1,5.8-12.9,12.9-12.9s12.9,5.8,12.9,12.9v12.9H118.8z"/><path fill="#36C5F0" d="M118.8,105.9c7.1,0,12.9,5.8,12.9,12.9s-5.8,12.9-12.9,12.9H86.5c-7.1,0-12.9-5.8-12.9-12.9s5.8-12.9,12.9-12.9H118.8z"/><path fill="#2EB67D" d="M170.6,118.8c0-7.1,5.8-12.9,12.9-12.9c7.1,0,12.9,5.8,12.9,12.9s-5.8,12.9-12.9,12.9h-12.9V118.8z"/><path fill="#2EB67D" d="M164.1,118.8c0,7.1-5.8,12.9-12.9,12.9c-7.1,0-12.9-5.8-12.9-12.9V86.5c0-7.1,5.8-12.9,12.9-12.9c7.1,0,12.9,5.8,12.9,12.9V118.8z"/><path fill="#ECB22E" d="M151.2,170.6c7.1,0,12.9,5.8,12.9,12.9c0,7.1-5.8,12.9-12.9,12.9c-7.1,0-12.9-5.8-12.9-12.9v-12.9H151.2z"/><path fill="#ECB22E" d="M151.2,164.1c-7.1,0-12.9-5.8-12.9-12.9c0-7.1,5.8-12.9,12.9-12.9h32.3c7.1,0,12.9,5.8,12.9,12.9c0,7.1-5.8,12.9-12.9,12.9H151.2z"/></svg>`
 const BAR_H = 16
 const CRAB_W = 0
 const CELL = 3
@@ -245,14 +285,9 @@ const twinkleCss = (shown: Shown): string => `.t0,.t1,.t2,.t3{animation:tw ${sho
 @keyframes tw{0%,100%{opacity:1}50%{opacity:${shown.isFinished ? 0.8 : 0.3}}}
 @media (prefers-reduced-motion: reduce){.t0,.t1,.t2,.t3{animation:none}}`
 
-/** The bar row's shapes, without a style block: the band wraps them in their own, the panel's progress card in the panel's. */
-const barShapes = (title: string, shown: Shown, W: number): string => {
-  // The title takes what it needs, up to 40% of the row; the bar takes the rest.
-  const label = fitText(title, 13, Math.max(60, W * 0.4))
-  const BAR_X = Math.round(16 + textWidth(label, 13) + 12)
-  const BAR_W = Math.max(60, W - BAR_X - 46 - CRAB_W)
+/** The dithered bar and its step pill at (0,0): BAR_W wide, BAR_H tall. */
+const meterGroup = (shown: Shown, BAR_W: number): string => {
   const color = shown.isFinished ? DONE : ASPIRE
-  const y0 = (BAR_ROW_H - BAR_H) / 2
   const fillW = Math.round(BAR_W * shown.ratio)
 
   // Dithered fill: sparse at the start, dense toward the head.
@@ -276,20 +311,44 @@ const barShapes = (title: string, shown: Shown, W: number): string => {
   const pillX = Math.max(0, Math.min(BAR_W - pillW, fillW - pillW))
 
   return `<defs><clipPath id="aspire-bar-clip"><rect x="0" y="0" width="${BAR_W}" height="${BAR_H}" rx="${BAR_H / 2}"/></clipPath></defs>
-<circle cx="5" cy="${BAR_ROW_H / 2}" r="4" fill="${color}"/>
-<text class="t" x="16" y="${BAR_ROW_H / 2 + 4.5}" font-family="${FONT}" font-size="13" font-weight="500">${xml(label)}</text>
-<g transform="translate(${BAR_X},${y0})">
 <rect class="k" width="${BAR_W}" height="${BAR_H}" rx="${BAR_H / 2}"/>
 <g clip-path="url(#aspire-bar-clip)">
 <g fill="${color}">${dots.join('')}</g>
 <g class="tk">${ticks.join('')}</g>
 </g>
 <rect x="${pillX}" width="${pillW}" height="${BAR_H}" rx="${BAR_H / 2}" fill="${color}"/>
-<text x="${pillX + pillW / 2}" y="${BAR_H / 2 + 4}" text-anchor="middle" font-family="${FONT}" font-size="11" font-weight="600" fill="#ffffff">${xml(pill)}</text>
+<text x="${pillX + pillW / 2}" y="${BAR_H / 2 + 4}" text-anchor="middle" font-family="${FONT}" font-size="11" font-weight="600" fill="#ffffff">${xml(pill)}</text>`
+}
+
+/** The bar row's shapes, without a style block: the band wraps them in their own, the panel's progress card in the panel's. */
+const barShapes = (title: string, shown: Shown, W: number): string => {
+  // The title takes what it needs, up to 40% of the row; the bar takes the rest.
+  const label = fitText(title, 13, Math.max(60, W * 0.4))
+  const BAR_X = Math.round(16 + textWidth(label, 13) + 12)
+  const BAR_W = Math.max(60, W - BAR_X - 46 - CRAB_W)
+  const color = shown.isFinished ? DONE : ASPIRE
+  const y0 = (BAR_ROW_H - BAR_H) / 2
+
+  return `<circle cx="5" cy="${BAR_ROW_H / 2}" r="4" fill="${color}"/>
+<text class="t" x="16" y="${BAR_ROW_H / 2 + 4.5}" font-family="${FONT}" font-size="13" font-weight="500">${xml(label)}</text>
+<g transform="translate(${BAR_X},${y0})">
+${meterGroup(shown, BAR_W)}
 </g>
 <text class="m" x="${W - CRAB_W - 6}" y="${BAR_ROW_H / 2 + 4.5}" text-anchor="end" font-family="${FONT}" font-size="12.5" font-variant-numeric="tabular-nums">${percentOf(shown)}</text>
 `
 }
+
+/** Only the dithered bar and its step pill, for the band's row, where Buttons carry the text either side of it. */
+const meterSvg = (shown: Shown, W: number): string => `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}">
+<style>
+.k{fill:#e4e4e2}.tk{fill:#b4b4b0}
+@media (prefers-color-scheme: dark){.k{fill:#2c2c2c}.tk{fill:#5a5a5a}}
+${twinkleCss(shown)}
+</style>
+<g transform="translate(0,${(BAR_ROW_H - BAR_H) / 2})">
+${meterGroup(shown, W)}
+</g>
+</svg>`
 
 // The band's right edge: the agent counter (a walking crab and the count) after the percent.
 const BAND_CRAB_SCALE = 0.6
@@ -302,6 +361,28 @@ const panelIcon = (x: number): string => {
   return `<g transform="translate(${x},${y})"><rect class="pk" x="0.75" y="0.75" width="18.5" height="12.5" rx="2.5" fill="none" stroke-width="1.5"/><path class="pf" d="M12 1.5h5.5a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H12z"/></g>`
 }
 const countWidth = (count: number): number => Math.ceil(8 + textWidth(`×${count}`, 12.5) + 4 + BAND_CRAB_W + 10)
+
+/**
+ * The queued notice: one Svg row with the pressed agent's own animated crab, the Aspire teal mark and the text.
+ * Light and dark values come from the media query; the crab's motion stops under prefers-reduced-motion (CRAB_CSS).
+ */
+const NOTICE_H = 26
+const noticeText = (name: string): string => `${name} is queued in the prompt box. Press Enter to run it.`
+const noticeSvg = (character: Character, name: string, W: number): string => {
+  const scale = 0.7
+  const textX = 10 + 36 * scale + 10 + 14
+  const text = fitText(noticeText(name), 13, Math.max(40, W - textX - 8))
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${NOTICE_H}" viewBox="0 0 ${W} ${NOTICE_H}">
+<style>
+.nt{fill:#1f1f1f}.nm{fill:#3B8A82}
+@media (prefers-color-scheme: dark){.nt{fill:#ececec}.nm{fill:#5fb5ab}}
+</style>
+${CRAB_CSS}
+${crab(10, (NOTICE_H - 30 * scale) / 2, character, false, true, scale)}
+<text class="nm" x="${10 + 36 * scale + 8}" y="${NOTICE_H / 2 + 4.5}" font-family="${FONT}" font-size="13" font-weight="700">◆</text>
+<text class="nt" x="${textX}" y="${NOTICE_H / 2 + 4.5}" font-family="${FONT}" font-size="13" font-weight="500">${xml(text)}</text>
+</svg>`
+}
 
 /** The band's whole row in one drawing: title, bar, percent, and the agent counter with its crab. */
 const bandSvg = (title: string, shown: Shown, W: number, count: number, character: Character): string => `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}">
@@ -882,6 +963,7 @@ export const register: Register = on => {
   // unchanged; switching on first lets turn.start count the /aspire turn.
   on('prompt.submit', async ($, e, next) => {
     try {
+      if ((await read($, notice)) !== null) await update($, notice, () => null)
       if (typeof e.text === 'string' && ASPIRE_PROMPT.test(e.text)) {
         await activate($, 'prompt', e.text.trim().split(/\s/, 1)[0] ?? '/aspire')
         await count($, 'prompts')
@@ -1003,6 +1085,22 @@ export const register: Register = on => {
       // The bar is a convenience: the call's result stands as it came.
     }
     return result
+  }).catch(($, e, next) => next(e))
+
+  // A published Artifact: remember its title and description from the call, for the card that draws its result row. An
+  // observer: the call and its result pass through unchanged, and nothing is stored but those strings.
+  on('tool.call', { tool: 'Artifact' }, async ($, e, next) => {
+    try {
+      const input = e as unknown as Readonly<Record<string, unknown>>
+      const isPublish = (input.action === undefined || input.action === 'publish') && input.asset !== true && !input.from_url
+      if (isPublish && (await isOn($)) && typeof e.tool_use_id === 'string') {
+        published.set(e.tool_use_id, { title: str(input.title), description: str(input.description), file: str(input.file_path) })
+        if (published.size > MAX_PUBLISHED) published.delete(published.keys().next().value as string)
+      }
+    } catch {
+      // The card is a convenience.
+    }
+    return next(e)
   }).catch(($, e, next) => next(e))
 
   on('command.run', { command: 'aspire-agents-info' }, async ($, e) => {
@@ -1224,6 +1322,55 @@ export const register: Register = on => {
     return result
   })
 
+  // The result row of a published Artifact (the ToolResult under the `Artifact(...)` row; the ToolUse row is left as it is): a
+  // card with an icon on the left that opens the page, and on the right its title, description and a reminder to share it.
+  // Any other tool's result, an Artifact call that is not a publish, and an error are passed on untouched. Display only: the
+  // one press drafts a Slack prompt in the prompt box and never sends it.
+  on('ui.render', { component: 'ToolResult' }, async ($, e, next) => {
+    if (e.props.tool !== 'Artifact' || e.props.isErrored || !(await isOn($))) return next(e)
+    const out = (e.props.output ?? {}) as Readonly<Record<string, unknown>>
+    const url = str(out.url)
+    const meta = published.get(e.props.tool_use_id)
+    if (!url || !/^https:\/\//.test(url) || out.opened === true || !meta) return next(e)
+    const title = str(out.title) ?? meta.title ?? (meta.file ? meta.file.replace(/^.*\//, '').replace(/\.[^.]+$/, '') : undefined) ?? 'Artifact'
+    const description = str(out.description) ?? meta.description
+    const ui = $.ui.resolve(e)
+    const { Box, Button, Text, Link } = ui
+    // The card's icon on the desktop is the animated document, with the Slack mark beside the share Button. An Svg takes no press
+    // and a Button or Link holds text only, so the page opens from the title and the share press stays on the text Button; the
+    // terminal keeps a text glyph.
+    const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
+    // The icon is the card's full height: border, title, the description's wrapped lines (about 70 characters a line), the
+    // reminder and the button row, in CSS pixels, since an Svg takes a size and not a percentage.
+    const iconH = 2 + 22 + (description ? Math.min(4, Math.ceil(clip(description, 240).length / 70)) * 20 : 0) + 52 + 10
+    const share = () => {
+      void $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: slackDraft(url), mode: 'replace' } as never).catch(() => undefined)
+      $.ui.toast('◆ Aspire · A Slack message is drafted in the prompt box. Press Enter to ask Claude to share it.', { timeoutMs: 6000 })
+    }
+    return (
+      <Box flexDirection="row" gap={2} borderStyle="round" borderColor={ASPIRE} paddingX={1}>
+        <Box flexDirection="column">
+          {Svg ? <Svg source={DOC_ICON} alt="Artifact" width={Math.round((iconH * 40) / 46)} height={iconH} /> : <Text color={ASPIRE} bold>◆</Text>}
+        </Box>
+        <Box flexDirection="column" flexGrow={1} flexShrink={1} minWidth={0}>
+          <Link href={url}>
+            <Text bold wrap="truncate-end">{title}</Text>
+          </Link>
+          {description ? <Text wrap="wrap">{clip(description, 240)}</Text> : null}
+          {/* A light info box: the friendly reminder, then the share control (the Slack mark and the Button; a Button holds text only, so the
+              mark itself cannot take the press), in the Aspire teal on a dim border (a fixed fill could not follow light and dark). */}
+          <Box flexDirection="row" alignItems="center" width="100%" gap={1} borderStyle="round" borderColor={ASPIRE} borderDimColor paddingX={1}>
+            <Box flexGrow={1} flexShrink={1} minWidth={0}>
+              <Text color={ASPIRE} wrap="wrap">ⓘ Friendly reminder: Share this artifact with your team.</Text>
+            </Box>
+            {Svg ? <Svg source={SLACK_MARK} alt="Slack" width={18} height={18} /> : null}
+            <Button key="aspire-artifact-slack" label="Post to Slack" onPress={share} />
+          </Box>
+        </Box>
+      </Box>
+    )
+  })
+
   // Above the prompt: the progress bar (from savvy-progress), then the band's
   // row (from session-band), then whatever other mods draw beneath.
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
@@ -1259,12 +1406,16 @@ export const register: Register = on => {
     // and presses Enter, and the skill asks which organization with a question.
     const changeOrg = () =>
       void $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: '/aspire:aspire org', mode: 'replace' } as never).catch(() => undefined)
+    // The desktop draws the bar itself as an Svg (the dithered fill and step pill), between a title Button and an agents Button.
+    // An Svg takes no press and the host ignores absolute, so nothing lies over it: the presses sit on the Buttons beside it.
+    const meterW = Math.max(120, Math.min(360, Math.round(((cols || 100) * 8) / 3)))
     const barRow = (
       <Box flexDirection="row" gap={2}>
         <Button key="aspire-org" label={`● ${title}`} plain onPress={changeOrg} />
+        {Svg ? <Svg source={meterSvg(shown, meterW)} alt={`${shown.label}, ${percent}`} width={meterW} height={BAR_ROW_H} /> : null}
         <Button
           key="aspire-agents"
-          label={`${textBarW >= 6 ? `${barText(shown.ratio, textBarW)} ` : ''}${shown.label} ${percent} 🦀 ×${list.length}`}
+          label={`${Svg || textBarW < 6 ? '' : `${barText(shown.ratio, textBarW)} `}${Svg ? '' : `${shown.label} `}${percent} 🦀 ×${list.length}`}
           plain
           onPress={() => void togglePane($)}
         />
@@ -1273,8 +1424,23 @@ export const register: Register = on => {
       </Box>
     )
 
+    // The queued notice sits above the bar row, desktop only: a single Svg row (no press, nothing overlaid).
+    const queued = Svg ? await read($, notice) : null
+    const noticeW = Math.max(240, Math.min(720, Math.round((cols || 100) * 8)))
+    const noticeRow =
+      Svg && queued ? (
+        <Svg
+          key="aspire-queued"
+          source={noticeSvg(characterOf({ type: queued.type, model: '' }), queued.name, noticeW)}
+          alt={`Aspire: ${noticeText(queued.name)}`}
+          width={noticeW}
+          height={NOTICE_H}
+        />
+      ) : null
+
     return (
       <Box flexDirection="column">
+        {noticeRow}
         {barRow}
         {below}
       </Box>
@@ -1318,6 +1484,18 @@ export const register: Register = on => {
           await update($, panel, prev => ({ ...prev, leaving: null }))
         }
         await $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: `/aspire:aspire run ${r.type.replace(/^aspire:/, '')}`, mode: 'replace' } as never)
+        // On the desktop, with the band drawn, the notice is a branded row above the bar with the agent's own crab; it clears itself.
+        // Anywhere else (the terminal, a hidden band, no Svg) the SDK's plain-text toast carries it.
+        const isShown = e.surface === 'desktop' && band.renders > 0 && !(await read($, isBandHidden)) && (await isOn($))
+        if (isShown) {
+          const id = await $.clock.now()
+          await update($, notice, () => ({ type: r.type, name: r.name, id }))
+          $.clock.after(NOTICE_MS, () => {
+            update($, notice, prev => (prev && prev.id === id ? null : prev)).catch(() => undefined)
+          })
+        } else {
+          $.ui.toast(`◆ Aspire · ${r.name} is queued in the prompt box. Press Enter to run it.`, { timeoutMs: NOTICE_MS })
+        }
       })().catch(() => undefined)
     const stateOf = (entry: RosterEntry): string => {
       const runs = list.filter(a => a.type === entry.type)
