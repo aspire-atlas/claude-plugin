@@ -206,6 +206,7 @@ async function reset($: EngineInterface): Promise<void> {
   band.renders = 0
   band.surface = null
   band.crab = null
+  published.clear()
   await update($, agents, () => [])
   await update($, panel, () => ({ isAutoOpened: false, open: DEFAULT_OPEN, leaving: null }))
 }
@@ -220,6 +221,16 @@ const isOn = async ($: EngineInterface): Promise<boolean> => {
 
 /** `get_status` from `mcp__<server>__get_status`, for the status line. */
 const shortTool = (tool: string): string => tool.replace(/^mcp__.*__/, '')
+
+// ---------------------------------------------------------------------------
+// The Artifact card: the transcript's result row for a published Artifact.
+
+/** What a publish call said about its page, by the call's id: the result carries the URL, the call carries the title and description. */
+const published = new Map<string, { title?: string; description?: string; file?: string }>()
+const MAX_PUBLISHED = 50
+const str = (v: unknown): string | undefined => (typeof v === 'string' && v.trim() ? v.trim() : undefined)
+const slackDraft = (url: string): string =>
+  `Share this artifact on Slack: ${url}. Ask me with AskUserQuestion which channel or person, write a short message, show it, and post only after I confirm.`
 
 // ---------------------------------------------------------------------------
 // The progress bar (from savvy-progress): title, bar, percent, and the crab.
@@ -1024,6 +1035,22 @@ export const register: Register = on => {
     return result
   }).catch(($, e, next) => next(e))
 
+  // A published Artifact: remember its title and description from the call, for the card that draws its result row. An
+  // observer: the call and its result pass through unchanged, and nothing is stored but those strings.
+  on('tool.call', { tool: 'Artifact' }, async ($, e, next) => {
+    try {
+      const input = e as unknown as Readonly<Record<string, unknown>>
+      const isPublish = (input.action === undefined || input.action === 'publish') && input.asset !== true && !input.from_url
+      if (isPublish && (await isOn($)) && typeof e.tool_use_id === 'string') {
+        published.set(e.tool_use_id, { title: str(input.title), description: str(input.description), file: str(input.file_path) })
+        if (published.size > MAX_PUBLISHED) published.delete(published.keys().next().value as string)
+      }
+    } catch {
+      // The card is a convenience.
+    }
+    return next(e)
+  }).catch(($, e, next) => next(e))
+
   on('command.run', { command: 'aspire-agents-info' }, async ($, e) => {
     try {
       const arg = e.args.trim()
@@ -1241,6 +1268,42 @@ export const register: Register = on => {
       // Readings are best effort.
     }
     return result
+  })
+
+  // The result row of a published Artifact (the ToolResult under the `Artifact(...)` row; the ToolUse row is left as it is): a
+  // card with an icon on the left that opens the page, and on the right its title, description and a reminder to share it.
+  // Any other tool's result, an Artifact call that is not a publish, and an error are passed on untouched. Display only: the
+  // one press drafts a Slack prompt in the prompt box and never sends it.
+  on('ui.render', { component: 'ToolResult' }, async ($, e, next) => {
+    if (e.props.tool !== 'Artifact' || e.props.isErrored || !(await isOn($))) return next(e)
+    const out = (e.props.output ?? {}) as Readonly<Record<string, unknown>>
+    const url = str(out.url)
+    const meta = published.get(e.props.tool_use_id)
+    if (!url || !/^https:\/\//.test(url) || out.opened === true || !meta) return next(e)
+    const title = str(out.title) ?? meta.title ?? (meta.file ? meta.file.replace(/^.*\//, '').replace(/\.[^.]+$/, '') : undefined) ?? 'Artifact'
+    const description = str(out.description) ?? meta.description
+    const { Box, Button, Text, Link } = $.ui.resolve(e)
+    const share = () => {
+      void $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: slackDraft(url), mode: 'replace' } as never).catch(() => undefined)
+      $.ui.toast('◆ Aspire · A Slack message is drafted in the prompt box. Press Enter to ask Claude to share it.', { timeoutMs: 6000 })
+    }
+    return (
+      <Box flexDirection="row" gap={2} borderStyle="round" borderColor={ASPIRE} paddingX={1}>
+        <Box flexDirection="column">
+          <Link href={url}>
+            <Text color={ASPIRE} bold>◆</Text>
+          </Link>
+        </Box>
+        <Box flexDirection="column" flexGrow={1}>
+          <Text bold wrap="truncate-end">{title}</Text>
+          {description ? <Text wrap="wrap">{clip(description, 240)}</Text> : null}
+          <Text dimColor wrap="wrap">Share this artifact with your team.</Text>
+          <Box flexDirection="row" gap={2}>
+            <Button key="aspire-artifact-slack" label="Post to Slack" onPress={share} />
+          </Box>
+        </Box>
+      </Box>
+    )
   })
 
   // Above the prompt: the progress bar (from savvy-progress), then the band's
