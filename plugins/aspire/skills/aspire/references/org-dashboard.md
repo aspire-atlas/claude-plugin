@@ -78,14 +78,23 @@ Everything below is read at build time to bake in a snapshot, and again by the p
 | Tracked hashtags and their posts | `list_hashtags`, `list_hashtag_posts` (per profile, `asProfileId`) | Hashtag chart on each profile tab |
 | Latest findings per area | `search_insights` on the prefixes: `readout-` (daily and weekly report runs), `orchestrator-{profile}`, `program-{profile}-`, `creator-discovery-{profile}`, `market-signal-{profile}`, `quarterly-signal-{profile}`, `cas-` | Latest report links, Next actions, program and campaign state |
 
-Insights have no key field of their own: filter on `idempotencyKey` with a `prefix` clause per
-area, `limit` 20, and project only `idempotencyKey` and `createdAt` first (an unfiltered read is
-over 100k characters), then read the `detail` of the findings you need. Account reviews are keyed
-`ar-own-` and `onb-{profile}-` (the older `account-review-` and `onboarding-` names count too).
-Read the `page` and `snapshot` findings each flow's reference names rather than recomputing them.
+Insights have no key field of their own: filter on `idempotencyKey` with a `prefix` clause, `limit` 20,
+and project only `idempotencyKey`, `createdAt`, and `summary` first (an unfiltered read is over 100k
+characters), then read the `detail` of the findings you need. Send one query per prefix: a single
+`should` of many prefixes is rejected. Real keys use short prefixes (`rw-`, `ms-`, `cb-`, `cd-`,
+`arl-`, `ar-own-`, `onb-`, `readout-daily-`, `orchestrator-`, and `<campaign>-<date>-<handle>` for
+discovery), and the long names (`market-signal-`, `creator-discovery-`) appear only in
+`detail.account_review.runKey`, so group runs by that field (a `terms` aggregation on it lists the
+runs). Findings keyed `insights:analyze-page:` are per-creator or per-post brand-safety verdicts, in
+the tens of thousands: never show them as agent output. Most agents save no `page` finding, so their
+cards have no link; the Next actions page is the exception (`orchestrator-page-`, with its URL in
+`detailBody`, which is not queryable: find it by its summary text "page published"). A card without
+a link says "Saved in Atlas, no page link". Account reviews are keyed as above (the older
+`account-review-` and `onboarding-` names count too).
 Programs are the `program:{slug}-program` calibrations, discovery campaigns and creator ad
 campaigns are the `campaign:{slug}-brief` calibrations (a `type: creator-ads` line marks a creator
-ad campaign). A flow with no record is "Not set up", never zero.
+ad campaign); a campaign belongs to the profile named in its brief statement or in its discovery
+run key. A flow with no record is "Not set up", never zero.
 
 ## 4. Sections
 
@@ -159,11 +168,29 @@ Calibrations are organization-wide (one read, any `asProfileId`), so assign a re
 the profile's name token in its key (`david-protein-` for the profile "David Protein", from the
 name, not the slug, which can carry a numeric suffix); records with no profile token (theme, report
 recipients, fees) belong to Overview. Posts, hashtags, and findings are read per profile with its own
-`asProfileId`; findings that carry no profile (for example `insights:analyze-page:` ones) are not attributed to a profile and are not shown as agent output. A tag whose `list_hashtag_posts` answers `no-linked-channel` shows as "Waiting for a channel" with no bar. With no totals, tags show in list order. The page registers a watch for every tool it declares. Organization-wide setup rows (theme, rates, readouts, orchestrator) show on Overview,
+`asProfileId`; findings that carry no profile (for example `insights:analyze-page:` ones) are not attributed to a profile and are not shown as agent output. A tag whose `list_hashtag_posts` answers `no-linked-channel` shows as "Waiting for a channel" with no bar. With no totals, tags show in list order. The page registers a watch for every tool it declares, including `search_calibrations` (paged with its cursor until none is left). Organization-wide setup rows (theme, rates, readouts, orchestrator) show on Overview,
 and brand context shows on each profile's strip. A profile with no linked channel but a saved
 baseline shows the saved figure labelled "saved, not measured", never as live data; the agent never
 searches a handle that is not linked. The Next step on Overview is the highest-ranked step across all
 profiles.
+
+### Data rules
+
+- **Posts per day.** Atlas has no date histogram: read the posts with one `search_posts` (the 56
+  days, `postedAt` descending, only the fields you draw) and count per UTC day in code, labelled
+  "UTC". Page past 100 hits with `nextCursor` at build time.
+- **Empty stored posts.** Some stored posts hold no data at all (every metric null). Count them
+  apart, leave them out of medians, engagement, and the image grid, and say how many were left out.
+- **Engagement.** Likes plus comments plus shares, over followers, per post; a median over the
+  posts with data. A comment count of at least 100 and at least 4 times the likes is shown as a
+  spam signal only when a saved review or readout says so, else as a plain observation.
+- **Credits.** With `balance.remaining` 0 and an `overage`, show "{used} used, {overage} over the
+  grant" under the bar (a full bar), never a negative or "0 of 1,000 left" alone. Usage, never money.
+- **Hashtags.** `list_hashtag_posts` windows that reach before the account's first full ingestion
+  can fail with `internal-error`; treat any failed read as "n/a", never zero, and count the last 28
+  days only. A tag's total comes from `totalHits`.
+- **Live and snapshot.** Images are embedded in the snapshot only. A post that first appears in a
+  live read shows the placeholder tile until the next rebuild.
 
 ## 5. The next step
 
