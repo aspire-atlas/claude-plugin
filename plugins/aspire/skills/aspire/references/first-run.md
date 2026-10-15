@@ -134,9 +134,9 @@ Text fallback, when there is no page:
 - Never in the middle of a running flow's questions, and never in an unattended run.
 - Never blocks onboarding: whatever happens to the page, the next phase still starts.
 
-**Reserved.** A later release will publish a dashboard of the organization's current state
-when `/aspire:aspire` runs bare on a configured organization. Today that case gives the status
-summary from Phase 2 + 3, and this page is not shown.
+**The dashboard.** On a configured organization a bare `/aspire:aspire` opens the organization
+dashboard instead (`org-dashboard.md`), and this page is not shown. An unconfigured one gets this
+page first, and the dashboard is offered once brand context is saved.
 
 ## 8. The page
 
