@@ -1340,6 +1340,9 @@ export const register: Register = on => {
     // and a Button or Link holds text only, so the page opens from the title and the share press stays on the text Button; the
     // terminal keeps a text glyph.
     const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
+    // The icon is the card's full height: border, title, the description's wrapped lines (about 70 characters a line), the
+    // reminder and the button row, in CSS pixels, since an Svg takes a size and not a percentage.
+    const iconH = 2 + 22 + (description ? Math.min(4, Math.ceil(clip(description, 240).length / 70)) * 20 : 0) + 20 + 32
     const share = () => {
       void $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: slackDraft(url), mode: 'replace' } as never).catch(() => undefined)
       $.ui.toast('◆ Aspire · A Slack message is drafted in the prompt box. Press Enter to ask Claude to share it.', { timeoutMs: 6000 })
@@ -1347,7 +1350,7 @@ export const register: Register = on => {
     return (
       <Box flexDirection="row" gap={2} borderStyle="round" borderColor={ASPIRE} paddingX={1}>
         <Box flexDirection="column">
-          {Svg ? <Svg source={DOC_ICON} alt="Artifact" width={40} height={46} /> : <Text color={ASPIRE} bold>◆</Text>}
+          {Svg ? <Svg source={DOC_ICON} alt="Artifact" width={Math.round((iconH * 40) / 46)} height={iconH} /> : <Text color={ASPIRE} bold>◆</Text>}
         </Box>
         <Box flexDirection="column" flexGrow={1}>
           <Link href={url}>
