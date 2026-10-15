@@ -244,6 +244,31 @@ const DONE = '#4caf6e'
 // so title, bar, percent, and the agent counter with its crab live in one
 // drawing, with blank Buttons laid over it to take the presses.
 const BAR_ROW_H = 22
+/** The Artifact card's document icon, after the Claude Docs artifact icon: a page whose lines, letter and check draw in one after another, then rest, then repeat. */
+const DOC_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="46" viewBox="0 0 40 46">
+<style>
+.pg{fill:#E9EEFA;stroke:#9DB4E6}.ln{fill:#6C8FD9}.ls{fill:#B4C5EE}.ab{fill:#4F74C8}.ck{fill:#4F74C8}.cm{stroke:#fff}
+@media (prefers-color-scheme: dark){.pg{fill:#2A3348;stroke:#4A5C86}.ln{fill:#7FA2E8}.ls{fill:#566890}.ab{fill:#7FA2E8}.ck{fill:#7FA2E8}.cm{stroke:#1F2638}}
+.d{transform-box:fill-box;transform-origin:0 50%;animation:dr 3.6s ease-out infinite both}
+.d2{animation-delay:.25s}.d3{animation-delay:.5s}.d4{animation-delay:.75s}.d5{animation-delay:1s}
+.pp{transform-box:fill-box;transform-origin:50% 50%;animation:pp 3.6s ease-out infinite both;animation-delay:.6s}
+.fa{animation:fa 3.6s ease-out infinite both;animation-delay:.3s}
+@keyframes dr{0%,4%{transform:scaleX(0)}22%,86%{transform:scaleX(1)}96%,100%{transform:scaleX(1);opacity:0}}
+@keyframes pp{0%,10%{transform:scale(0)}26%{transform:scale(1.25)}34%,86%{transform:scale(1)}96%,100%{transform:scale(1);opacity:0}}
+@keyframes fa{0%,6%{opacity:0}22%,86%{opacity:1}96%,100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.d,.pp,.fa{animation:none}}
+</style>
+<rect class="pg" x="2" y="1" width="36" height="44" rx="7" stroke-width="1"/>
+<rect class="ln d" x="9" y="7" width="14" height="3.4" rx="1.7"/>
+<text class="ab fa" x="8.5" y="26" font-family="Georgia,serif" font-size="15" font-weight="600">A</text>
+<rect class="ls d d2" x="19" y="15" width="13" height="2.6" rx="1.3"/>
+<rect class="ls d d3" x="19" y="20.5" width="11" height="2.6" rx="1.3"/>
+<rect class="ls d d3" x="9" y="28" width="23" height="2.6" rx="1.3"/>
+<g class="pp"><circle class="ck" cx="11" cy="35.5" r="2.8"/><path class="cm" d="M9.6 35.6l1.1 1.1 2-2.2" fill="none" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/></g>
+<rect class="ls d d4" x="15.5" y="34.2" width="12" height="2.6" rx="1.3"/>
+</svg>`
+/** The Slack mark (four coloured pill pairs), its own brand colours in light and dark. */
+const SLACK_MARK = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="60 60 150 150"><path fill="#E01E5A" d="M99.4,151.2c0,7.1-5.8,12.9-12.9,12.9c-7.1,0-12.9-5.8-12.9-12.9c0-7.1,5.8-12.9,12.9-12.9h12.9V151.2z"/><path fill="#E01E5A" d="M105.9,151.2c0-7.1,5.8-12.9,12.9-12.9s12.9,5.8,12.9,12.9v32.3c0,7.1-5.8,12.9-12.9,12.9s-12.9-5.8-12.9-12.9V151.2z"/><path fill="#36C5F0" d="M118.8,99.4c-7.1,0-12.9-5.8-12.9-12.9c0-7.1,5.8-12.9,12.9-12.9s12.9,5.8,12.9,12.9v12.9H118.8z"/><path fill="#36C5F0" d="M118.8,105.9c7.1,0,12.9,5.8,12.9,12.9s-5.8,12.9-12.9,12.9H86.5c-7.1,0-12.9-5.8-12.9-12.9s5.8-12.9,12.9-12.9H118.8z"/><path fill="#2EB67D" d="M170.6,118.8c0-7.1,5.8-12.9,12.9-12.9c7.1,0,12.9,5.8,12.9,12.9s-5.8,12.9-12.9,12.9h-12.9V118.8z"/><path fill="#2EB67D" d="M164.1,118.8c0,7.1-5.8,12.9-12.9,12.9c-7.1,0-12.9-5.8-12.9-12.9V86.5c0-7.1,5.8-12.9,12.9-12.9c7.1,0,12.9,5.8,12.9,12.9V118.8z"/><path fill="#ECB22E" d="M151.2,170.6c7.1,0,12.9,5.8,12.9,12.9c0,7.1-5.8,12.9-12.9,12.9c-7.1,0-12.9-5.8-12.9-12.9v-12.9H151.2z"/><path fill="#ECB22E" d="M151.2,164.1c-7.1,0-12.9-5.8-12.9-12.9c0-7.1,5.8-12.9,12.9-12.9h32.3c7.1,0,12.9,5.8,12.9,12.9c0,7.1-5.8,12.9-12.9,12.9H151.2z"/></svg>`
 const BAR_H = 16
 const CRAB_W = 0
 const CELL = 3
@@ -1309,7 +1334,12 @@ export const register: Register = on => {
     if (!url || !/^https:\/\//.test(url) || out.opened === true || !meta) return next(e)
     const title = str(out.title) ?? meta.title ?? (meta.file ? meta.file.replace(/^.*\//, '').replace(/\.[^.]+$/, '') : undefined) ?? 'Artifact'
     const description = str(out.description) ?? meta.description
-    const { Box, Button, Text, Link } = $.ui.resolve(e)
+    const ui = $.ui.resolve(e)
+    const { Box, Button, Text, Link } = ui
+    // The card's icon on the desktop is the animated document, with the Slack mark beside the share Button. An Svg takes no press
+    // and a Button or Link holds text only, so the page opens from the title and the share press stays on the text Button; the
+    // terminal keeps a text glyph.
+    const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
     const share = () => {
       void $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: slackDraft(url), mode: 'replace' } as never).catch(() => undefined)
       $.ui.toast('◆ Aspire · A Slack message is drafted in the prompt box. Press Enter to ask Claude to share it.', { timeoutMs: 6000 })
@@ -1317,15 +1347,16 @@ export const register: Register = on => {
     return (
       <Box flexDirection="row" gap={2} borderStyle="round" borderColor={ASPIRE} paddingX={1}>
         <Box flexDirection="column">
-          <Link href={url}>
-            <Text color={ASPIRE} bold>◆</Text>
-          </Link>
+          {Svg ? <Svg source={DOC_ICON} alt="Artifact" width={40} height={46} /> : <Text color={ASPIRE} bold>◆</Text>}
         </Box>
         <Box flexDirection="column" flexGrow={1}>
-          <Text bold wrap="truncate-end">{title}</Text>
+          <Link href={url}>
+            <Text bold wrap="truncate-end">{title}</Text>
+          </Link>
           {description ? <Text wrap="wrap">{clip(description, 240)}</Text> : null}
           <Text dimColor wrap="wrap">Share this artifact with your team.</Text>
           <Box flexDirection="row" gap={2}>
+            {Svg ? <Svg source={SLACK_MARK} alt="Slack" width={18} height={18} /> : null}
             <Button key="aspire-artifact-slack" label="Post to Slack" onPress={share} />
           </Box>
         </Box>
