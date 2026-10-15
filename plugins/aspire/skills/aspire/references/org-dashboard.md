@@ -229,7 +229,7 @@ the last 28 days" with the date of the newest post Atlas holds, never a zero.
 
 Load `artifact-design` and `artifact-capabilities` first, `dataviz` before the first chart. Apply
 `theme:brand` per `theme.md`, **Applying the theme**; draw posts per `creator-card.md`,
-**Images**. Title "{Brand} Atlas dashboard" (an organization with several brands uses the organization name). The page works at phone width. Status colors keep
+**Images**. Title "{Brand} Atlas dashboard" (an organization with several brands uses the organization name). The page source is ASCII only: write every symbol (a dash, a status glyph such as a check, a circle or a half circle, a letter with an accent) as an HTML entity in markup (`&#x2014;`) or a `\uXXXX` escape in script strings, never as a raw character, because the page can be served without a charset and a raw symbol then shows as garbled text (`a€”`). After building, confirm no byte above 127 is in the file. The page works at phone width. Status colors keep
 their meaning under any theme, with an icon and a label.
 
 Declare, on every publish (the whole object):
