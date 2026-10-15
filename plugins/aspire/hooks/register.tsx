@@ -135,6 +135,8 @@ const notice = atom({ plugin: 'aspire', key: 'notice' } as const, null as Notice
 const NOTICE_MS = 6000
 /** The prompt coach card above the bar; null when none shows. Set only by the skill's progress report. */
 const coach = atom({ plugin: 'aspire', key: 'coach' } as const, null as Coach | null)
+/** The progress line last put under the prompt (undefined when none), kept in session state so a module reload still knows to clear it. */
+const statusLine = atom({ plugin: 'aspire', key: 'statusLine' } as const, null as string | null)
 /** How long the coach card stays without a new report, in milliseconds. */
 const COACH_MS = 5 * 60 * 1000
 
@@ -218,17 +220,17 @@ async function reset($: EngineInterface): Promise<void> {
   band.crab = null
   published.clear()
   loggedLinks.clear()
-  setStatus($, undefined)
+  await setStatus($, undefined, true)
   await update($, agents, () => [])
   await update($, panel, () => ({ isAutoOpened: false, open: DEFAULT_OPEN, leaving: null }))
 }
 
 // The progress line under the prompt, for when the band is not drawn. One per plugin; cleared as soon as the band shows or the run ends.
-let lineShown: string | undefined
-const setStatus = ($: EngineInterface, text: string | undefined): void => {
-  if (text === lineShown) return
-  lineShown = text
+const setStatus = async ($: EngineInterface, text: string | undefined, force = false): Promise<void> => {
   try {
+    if (!force && (text ?? null) === (await read($, statusLine))) return
+    // The state holds JSON, so "no line" is null there.
+    await update($, statusLine, () => text ?? null)
     $.ui.status(text)
   } catch {
     // A convenience.
@@ -238,7 +240,7 @@ const syncStatus = async ($: EngineInterface): Promise<void> => {
   try {
     const p = (await isOn($)) ? await read($, progress) : null
     const isFallback = !!p && !p.isFinished && band.renders === 0 && !(await read($, isBandHidden))
-    if (!isFallback || !p) return setStatus($, undefined)
+    if (!isFallback || !p) return await setStatus($, undefined)
     const total = Math.max(p.total, p.tasks.length)
     const done = Math.min(total, Math.max(p.done, p.tasks.filter(t => t.isDone).length))
     const ratio = total ? done / total : 0
@@ -250,7 +252,7 @@ const syncStatus = async ($: EngineInterface): Promise<void> => {
       p.phase ? `, ${p.phase}` : '',
       total ? ` ${'▰'.repeat(filled)}${'▱'.repeat(cells - filled)} ${Math.round(ratio * 100)}%` : '',
     ].join(' ').replace(/ ,/g, ',').replace(/ +/g, ' ')
-    setStatus($, clip(text, 160))
+    await setStatus($, clip(text, 160))
   } catch {
     // A convenience.
   }
@@ -299,14 +301,6 @@ const ARTIFACT_URL_RE = /https:\/\/claude\.ai\/(?:code\/)?artifact\/[A-Za-z0-9_-
 /** Artifact links a subagent hand-back has already logged, bounded. */
 const loggedLinks = new Set<string>()
 const MAX_LOGGED = 100
-/** A quoted or bold title just before the link in a hand-back, when there is one; no match is the plain `Artifact published`. */
-const titleNear = (text: string, url: string): string | undefined => {
-  const at = text.indexOf(url)
-  const before = text.slice(Math.max(0, at - 120), at)
-  const m = before.match(/["“*]([^"”*\n]{3,80})["”*]\s*(?:\(|[-–—:]|at|is|published)?\s*$/)
-  return m?.[1]?.trim()
-}
-/** The page link in an Artifact result, whatever shape the row hands over: an object with a `url`, the tool's plain text ("Published ... at https://claude.ai/artifact/..."), or text blocks. */
 const artifactUrl = (out: unknown, depth = 0): string | undefined => {
   if (typeof out === 'string') return out.match(ARTIFACT_URL_RE)?.[0]
   if (!out || typeof out !== 'object' || depth > 3) return undefined
@@ -1287,7 +1281,7 @@ export const register: Register = on => {
           if (loggedLinks.has(url)) continue
           loggedLinks.add(url)
           if (loggedLinks.size > MAX_LOGGED) loggedLinks.delete(loggedLinks.values().next().value as string)
-          $.ui.log(`◆ Aspire · ${titleNear(e.text, url) ?? 'Artifact published'}: ${url}`)
+          $.ui.log(`◆ Aspire · Artifact published: ${url}`)
         }
       }
     } catch {
@@ -1590,11 +1584,11 @@ export const register: Register = on => {
     // The desktop draws the bar itself as an Svg (the dithered fill and step pill), between a title Button and an agents Button.
     // An Svg takes no press and the host ignores absolute, so nothing lies over it: the presses sit on the Buttons beside it.
     if (band.crab === null) band.crab = pickCrab()
-    // The bar takes every column the row's other items leave (8px a column, the estimate the notice and coach rows use), so it fills
+    // The bar takes every column the row's other items leave (7px a column, a little under the 8px the notice and coach rows use, so a misjudged width leaves the bar short instead of wrapping the row), so it fills
     // the row on one line; the percent, crab, count and panel icon sit together in a right group that ends at the icon.
     const countText = `×${list.length}`
     const fixedCols = title.length + percent.length + countText.length + 26
-    const meterW = Math.max(60, Math.round(((cols || 100) - fixedCols) * 8))
+    const meterW = Math.max(60, Math.round(((cols || 100) - fixedCols) * 7))
     const barRow = (
       <Box flexDirection="row" width="100%" gap={2}>
         {Svg ? <Svg source={dotSvg(shown)} alt="" width={12} height={BAR_ROW_H} /> : null}
