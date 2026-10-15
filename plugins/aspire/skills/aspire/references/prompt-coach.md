@@ -89,6 +89,10 @@ Report with the progress tool: title `Prompt coach`, tasks `Read the ask`, `Ask 
    "Copy it and stop".
 5. **Stop** when no critical input is missing, after round 3, or when the user picks "Run it now"
    or "Copy it and stop". Clear the card (`coach: null`) and finish the `Prompt coach` bar run.
+   Blanks the rewrite still holds are asked by the flow as `AskUserQuestion` setup questions,
+   each with suggested options and the free text field (SKILL.md, **Question format rule**,
+   Follow-ups and missing details). Never ask the user to type the `[placeholders]` back in chat
+   or through a reply button, and never carry a `[placeholder]` reply forward as an answer.
 
 "Run it now" hands the rewritten ask to the flow it names, at that flow's own section, through
 **Carry-over** below. The coach never launches an agent itself.

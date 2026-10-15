@@ -723,6 +723,19 @@ option where the reference file lists it. Open questions (brand summary, competi
 get options: the options are starting points, and the free text field carries the real answer.
 If a question truly has one path, state it and continue; do not ask.
 
+**Follow-ups and missing details use the same tool.** A question stays an `AskUserQuestion` when
+it is a follow-up, when an earlier answer left a detail open (a product name, a date, a niche, a
+handle), and when the answer was only an option with no typed detail. Never ask it as chat text,
+never ask it through a `wrap_up` reply button, and never hand the user a template to fill in.
+Every such question comes with suggestions and a blank: 2 to 4 options inferred from brand
+memory, earlier answers in this session, the saved calibrations, or a quick web check of the
+brand's own site, each worded as a complete answer (for example a real product from the site, or
+"No date yet"), plus the tool's free text field for anything else. Put what the free text field
+is for in the question ("Type the product name and date, or pick the closest option"). When a
+reply still holds a `[placeholder]` or an empty field, it is not an answer: ask again with
+better suggestions, and never invent the missing value. A question that waits on the user is
+asked with the tool, so it stays visible and answerable where the user is looking.
+
 **Web research option (brand-facing questions):** every question marked `web: yes` in the
 reference file carries a "Research it on the web" option in its option set. When the user
 picks it:
@@ -2706,6 +2719,10 @@ The watch list is the brand's saved creators, outside any campaign.
 
 ## Guardrails
 
+- **Every question, follow-ups included, is an `AskUserQuestion`** with suggested options and the
+  free text field as the blank (**Question format rule**, Follow-ups and missing details). Never
+  ask in chat text, never through a `wrap_up` reply button, and never ask the user to retype a
+  template with `[placeholders]` in it.
 - **Pickers.** `AskUserQuestion` takes one to four questions per call and two to four options
   per question. When a flow has more questions than that (several your-call items, a match per
   post, a confirmation per creator), ask them in order across as many calls as it takes, four at
