@@ -1,6 +1,6 @@
 # Organization dashboard (the page a bare /aspire opens)
 
-One live page per brand profile that says where the organization stands and what to do next,
+One live page per organization, in tabs (an overview and one per brand profile), that says where the organization stands and what to do next,
 shaped for the person looking at it. The main thread (`SKILL.md`, **Organization dashboard**)
 asks the questions and launches `atlas-org-dashboard`; the agent reads, builds, and publishes.
 The page shows and recommends; it never acts. Every open item names the flow that handles it.
@@ -44,10 +44,12 @@ The link is brand memory, so teammates and later sessions find it without being 
 
 | Scope | Calibration | kind | key | detail |
 | ----- | ----------- | ---- | --- | ------ |
-| Shared | One per profile | `brand_fact` | `brand:dashboard` | `{section: "dashboard", url, title, publishedAt, by: "atlas-org-dashboard", layout: 1}` |
+| Shared | One per organization | `brand_fact` | `brand:dashboard` | `{section: "dashboard", url, title, publishedAt, by: "atlas-org-dashboard", layout: 1}` |
 | Personal | One per person | `user_fact` | `user:{slug}-dashboard` | `{url, title, publishedAt, layout: 1, basedOn: "shared"|"own"}` |
 
-`{slug}` is the slug of the person's own `user:` record (`onboarding-questions.md`, question 11),
+The page covers the whole organization, so there is one shared link per organization. Calibrations are
+organization-wide: a read with any `asProfileId` returns the same records, so write and read them
+without expecting a per-profile split. `{slug}` is the slug of the person's own `user:` record (`onboarding-questions.md`, question 11),
 else the local part of their email, lowercased, with non-letters turned into hyphens. Write with
 `append_calibration`, `provenance: "interview"`, `statement` under 280 characters. A `key-exists`
 follows the Phase 5 supersede rule with its own confirmation (a rebuild keeps the same link, so
@@ -112,6 +114,24 @@ In this order for every view; the view changes emphasis (**6**), never what is t
    data behind it says so and names the flow that would measure it.
 8. **Footer.** Data as of, the snapshot's time, what the page reads, and the refresh command.
 
+### Tabs
+
+The page covers the whole organization, in tabs: **Overview** first, then one tab per brand profile
+(the profile switcher becomes the tab bar). Overview holds the Header, Next step, Organization,
+and Setup sections for the organization as a whole, plus one summary row per profile (channels
+and their state, the profile's own next step, and a link to its tab). Each profile tab holds that
+profile's Performance, Programs and campaigns, and Goals sections, and its own setup rows. With
+one profile, the tabs collapse to a single page. The Next step on Overview is the highest-ranked
+step across all profiles, naming the profile it is for. Calibrations are organization-wide (one read, any `asProfileId`), so assign a record to a profile by
+the profile's name token in its key (`david-protein-` for the profile "David Protein", from the
+name, not the slug, which can carry a numeric suffix); records with no profile token (theme, report
+recipients, fees) belong to Overview. Posts and findings are read per profile with its own
+`asProfileId`. Every profile tab keeps all three sections; with no channel they read "Not set up
+yet" and each profile tab opens with its own Setup rows. Organization-wide setup rows (theme,
+rates, readouts, orchestrator) show on Overview, and brand context shows as "{n} of {m} profiles".
+A profile with no linked channel but a saved baseline shows the saved figure labelled "saved, not
+measured", never as live data; the agent never searches a handle that is not linked.
+
 ## 5. The next step
 
 One step, chosen in this order; the first that applies wins. Each names the flow in `SKILL.md`
@@ -120,10 +140,10 @@ that handles it.
 | # | Condition | Step | Flow |
 | - | --------- | ---- | ---- |
 | 1 | A channel's authorization has lapsed | Reconnect {handle} | Phase 4.2 |
-| 2 | No profile, or no linked channel | Create the profile and connect an account | Phase 4 |
+| 2 | No profile, or a profile with no linked channel | "Create the profile and connect an account" with no profile, else "Connect an account to {profile}"; with several profiles tied, the one with the most saved brand context | Phase 4 |
 | 3 | Fewer than 3 core brand answers saved (a "none yet" record such as `brand:partners-none` counts as an answer, a `decline:` record does not) | Finish brand context | Phase 5 |
 | 4 | The orchestrator is set up and its newest `plan` finding names a top action | That action, as the orchestrator worded it | **Orchestrator** |
-| 5 | No account review run (no `ar-own-`, `onb-` , `onboarding-`, or `account-review-` findings) | Get first insights | Phase 6 |
+| 5 | A linked channel and no account review run (no `ar-own-`, `onb-` , `onboarding-`, or `account-review-` findings) | Get first insights | Phase 6 |
 | 6 | Readouts are set up and the newest report is older than its cadence | Run the {daily or weekly} report | **Readouts** |
 | 7 | Readouts are not set up | Set up daily and weekly reports | **Readouts** |
 | 8 | A program has an attention item (its newest snapshot lists any) | The program dashboard's first item | **Program dashboard** |
@@ -145,7 +165,7 @@ The dashboard uses what onboarding already collected; it asks nothing itself.
 | Goals | `brand:business-context` (`business_context`), `target:weekly-health`, `policy:readout-audience` lenses | The Goals section, and which lens (`recipient-lens.md`) orders the sections |
 | The person's choice | `data/users/{id}/view` in page data (`db`) | A view the person picked wins over the default, on their own device and account only |
 
-Match the viewer to a `user:` record by the Atlas caller's name or email in `get_status`; a record
+The seven core answers are the rows of the Phase 5 core set in `onboarding-questions.md`; a profile is done when all seven are saved or declined (**5**, row 3). Match the viewer to a `user:` record by the Atlas caller's name or email in `get_status`; a record
 that carries neither (`user:primary-contact`) belongs to the person who answered onboarding, so use
 it only for the caller who is the profile's owner, and show "based on your saved role". A person
 with no record gets the role default and a one-line offer to tell Claude their role (the main
@@ -179,7 +199,7 @@ the last 28 days" with the date of the newest post Atlas holds, never a zero.
 
 Load `artifact-design` and `artifact-capabilities` first, `dataviz` before the first chart. Apply
 `theme:brand` per `theme.md`, **Applying the theme**; draw posts per `creator-card.md`,
-**Images**. Title "{Brand}: Atlas dashboard". The page works at phone width. Status colors keep
+**Images**. Title "{Brand} Atlas dashboard" (an organization with several brands uses the organization name). The page works at phone width. Status colors keep
 their meaning under any theme, with an icon and a label.
 
 Declare, on every publish (the whole object):
