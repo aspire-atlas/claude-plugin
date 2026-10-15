@@ -403,6 +403,23 @@ test('pressing an agent drafts its start in the prompt without sending it', asyn
   expect(drafts[0]).toMatchObject({ text: '/aspire:aspire run atlas-creator-vetting', mode: 'replace' })
 })
 
+test('pressing an agent toasts that it is queued in the prompt box', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  const toasts: { text?: string; timeoutMs?: number }[] = []
+  on('ui.toast', (_$, e) => {
+    toasts.push(e as never)
+    return { value: undefined } as never
+  })
+  on('prompt.fill', () => ({ isFilled: true, text: '', cursor: 0 }) as never)
+  await typeAspire($)
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'terminal', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  await openGroups(ui, 'terminal')
+  await ui.press({ key: 'aspire:atlas-creator-vetting' })
+  await ui.unmount()
+  expect(toasts).toHaveLength(1)
+  expect(toasts[0].text).toMatch(/^◆ Aspire · .+ is queued in the prompt box\. Press Enter to run it\.$/)
+})
+
 test('on the desktop the pressed crab walks off its card, then the start is drafted', async ($, on) => {
   world(on, () => WITH_COSTS)
   const drafts: string[] = []
