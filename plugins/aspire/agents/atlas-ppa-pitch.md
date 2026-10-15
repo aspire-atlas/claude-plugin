@@ -2,24 +2,6 @@
 name: atlas-ppa-pitch
 description: |
   Use this agent to build a PPA pitch for a brand on Atlas: a casting deck for paid partnership ads, where creator videos run as Meta partnership ads from the creator's handle plus an organic post. It proposes persona lanes per product, casts one creator against each lane with their Meta hook rate, interaction, median views, reach ratio and engagement, writes a variant set per creator from one shoot, lays out the groups, the schedule, what is produced, the rights package, and the investment, and publishes the deck as a Claude artifact of 16:9 slides. After the user reviews it, it exports the same deck to PowerPoint, Google Slides, or both. Follow-up rounds build on the previous pitch saved in Atlas. Trigger on "PPA pitch", "partnership ads pitch", "casting deck", "build the pitch for round two", "whitelisting pitch", "cast creators for partnership ads", or "make a pitch deck for {brand}'s creator ads". The questionnaire runs in the PPA pitch section of /aspire:aspire, never in this agent.
-
-  <example>
-  Context: Atlas connected, brand profile with a linked Instagram channel, an Aspire managed services user
-  user: "build the PPA pitch for round two, both new products"
-  assistant: "Launching the atlas-ppa-pitch agent in plan mode to research both products, propose five lanes each, and rank three candidates per lane from the shortlist and the Atlas index."
-  <commentary>
-  The main thread already asked the presentation, frame, shape, and casting questions. The agent proposes; the main thread confirms lanes and cast before the build.
-  </commentary>
-  </example>
-
-  <example>
-  Context: The user approved the deck page and asked for both exports
-  user: "looks good, make the PowerPoint and put it in Google Slides"
-  assistant: "Running the atlas-ppa-pitch agent in export mode to build the PowerPoint from the same slide model; you can open it in Google Drive as Slides."
-  <commentary>
-  Export only follows a reviewed artifact. A native build through a Google Slides connector has its own confirmation.
-  </commentary>
-  </example>
 model: inherit
 color: yellow
 ---
@@ -90,6 +72,10 @@ process and build a sample of your page instead, following
 hyphenated sample handles, the most recent US holiday's sample brand, campaign, and colors, every
 section of your real page at a small scale, and a sample banner. Call no Atlas tool, ask nothing,
 and return that file's short output instead of your normal one (no audit trail block).
+
+## Progress steps
+
+If the session has a task tool (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), keep your plan in it right after reading the brief: 3 to 8 tasks, one in progress at a time, each marked done as it finishes. The agents panel reads that list as your steps and a bar for them, and you can skip `aspire_step`. Otherwise, if `mcp__aspire__aspire_step` appears among your tools, including as a deferred tool, it is available: a deferred tool only needs loading first with ToolSearch (`select:mcp__aspire__aspire_step`). Right after reading the brief, call it with your plan's step count as `total` (3 to 8) and `done: 0`; call it again with `done` and a few-word `note` as each step finishes. It only draws a bar on your row in the agents panel. Skip it silently if the tool is absent or ToolSearch does not find it, and never mention it to the user.
 
 ## Audit trail
 
