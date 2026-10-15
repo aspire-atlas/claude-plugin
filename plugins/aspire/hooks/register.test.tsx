@@ -788,3 +788,87 @@ test('pressing a running agent opens its task list, on desktop and in the termin
   expect(await term.find({ type: 'Text', text: /reading posts/ })).toBeDefined()
   await term.unmount()
 })
+
+// The Artifact card: the transcript's ToolResult row for a published Artifact.
+const ARTIFACT_URL = 'https://claude.ai/artifact/abc123'
+const publish = ($: Engine, id: string, extra: Record<string, unknown> = {}) =>
+  $.tool.call({ tool: 'Artifact', tool_use_id: id, file_path: '/tmp/weekly-readout.html', title: 'Weekly readout', description: 'Last week against the 8-week median.', ...extra } as never)
+/** The engine's own row beneath the mod's hook, so a pass-through has something to draw. */
+const engineRow = (on: On) =>
+  on('ui.render', { component: 'ToolResult' }, ($, e) => {
+    const { Text } = $.ui.resolve(e)
+    return <Text>engine row</Text>
+  })
+const artifactRow = ($: Engine, surface: 'terminal' | 'desktop', id: string, output: unknown, isErrored = false, tool = 'Artifact') =>
+  $.ui.mount({ plugin: PLUGIN, surface, component: 'ToolResult', props: { tool_use_id: id, tool, output, isErrored } as never })
+
+for (const surface of ['terminal', 'desktop'] as const) {
+  test(`${surface}: a published Artifact's result row is a card with the title, description, a reminder, and a link on the icon`, async ($, on) => {
+    world(on, () => WITH_COSTS)
+    engineRow(on)
+    on('tool.call', { tool: 'Artifact' }, () => ({ result: { url: ARTIFACT_URL, path: '/tmp/weekly-readout.html' }, text: 'Published' }) as never)
+    await typeAspire($)
+    await publish($, 'art-1')
+    const ui = await artifactRow($, surface, 'art-1', { url: ARTIFACT_URL, path: '/tmp/weekly-readout.html' })
+    expect(await ui.find({ type: 'Text', text: /^Weekly readout$/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /8-week median/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /Share this artifact with your team/ })).toBeDefined()
+    const links = await ui.findAll({ type: 'Link' })
+    expect(links.map(l => l.props.href)).toEqual([ARTIFACT_URL])
+    expect((await ui.findAll({ type: 'Button' })).map(b => b.props.label)).toEqual(['Post to Slack'])
+    await ui.unmount()
+  })
+}
+
+test('Post to Slack only drafts a prompt (with the URL and the ask-first wording) and toasts; nothing is submitted', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  engineRow(on)
+  on('tool.call', { tool: 'Artifact' }, () => ({ result: { url: ARTIFACT_URL }, text: 'Published' }) as never)
+  const drafts: { text?: string; mode?: string }[] = []
+  const toasts: string[] = []
+  on('prompt.fill', (_$, e) => {
+    drafts.push(e as never)
+    return { isFilled: true, text: '', cursor: 0 } as never
+  })
+  on('ui.toast', (_$, e) => {
+    toasts.push((e as { text: string }).text)
+    return { value: undefined } as never
+  })
+  await typeAspire($)
+  await publish($, 'art-2')
+  const ui = await artifactRow($, 'terminal', 'art-2', { url: ARTIFACT_URL })
+  await ui.press({ key: 'aspire-artifact-slack' })
+  await ui.unmount()
+  expect(drafts).toHaveLength(1)
+  expect(drafts[0].mode).toBe('replace')
+  expect(drafts[0].text).toContain(`Share this artifact on Slack: ${ARTIFACT_URL}.`)
+  expect(drafts[0].text).toContain('AskUserQuestion')
+  expect(drafts[0].text).toContain('post only after I confirm')
+  expect(toasts).toHaveLength(1)
+})
+
+test('the Artifact card is inert until the mod is on, and only for a published Artifact', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  on('tool.call', { tool: 'Artifact' }, () => ({ result: { url: ARTIFACT_URL }, text: 'Published' }) as never)
+  engineRow(on)
+  const cardShown = async (id: string, output: unknown, isErrored = false, tool = 'Artifact') => {
+    const ui = await artifactRow($, 'terminal', id, output, isErrored, tool)
+    const card = (await ui.find({ type: 'Button' })) !== undefined
+    await ui.unmount()
+    return card
+  }
+  // Off: the call is recorded for nothing, and the row is the engine's.
+  await publish($, 'off-1')
+  expect(await cardShown('off-1', { url: ARTIFACT_URL })).toBe(false)
+  await typeAspire($)
+  // On: a publish gets the card; an error, an open, a call never seen as a publish, an unrelated tool's result do not.
+  await publish($, 'on-1')
+  expect(await cardShown('on-1', { url: ARTIFACT_URL })).toBe(true)
+  expect(await cardShown('on-1', { url: ARTIFACT_URL }, true)).toBe(false)
+  expect(await cardShown('on-1', { opened: true, url: ARTIFACT_URL })).toBe(false)
+  expect(await cardShown('on-1', { url: 'http://insecure.example/x' })).toBe(false)
+  expect(await cardShown('unseen', { url: ARTIFACT_URL })).toBe(false)
+  await publish($, 'list-1', { action: 'list' })
+  expect(await cardShown('list-1', { url: ARTIFACT_URL })).toBe(false)
+  expect(await cardShown('on-1', { url: ARTIFACT_URL }, false, 'Bash')).toBe(false)
+})
