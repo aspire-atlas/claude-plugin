@@ -11,10 +11,11 @@ customer flows.
 - **On request.** The `polish` argument, or "improve my prompt", "coach", "tighten this prompt".
   With no ask pasted, ask for it with `AskUserQuestion` (header "Ask", options "Paste the ask",
   "Use my last message").
-- **As an offer.** When **Reading the ask** maps the ask to a flow and finds 2 or more critical
-  inputs (below) missing, offer once, in one `AskUserQuestion` (header "Coach"): "Tighten this ask
-  first? It takes about a minute." Options: "Tighten it (Recommended)", "Run it as is". Once per
-  request; "Run it as is" ends the offer for the rest of the conversation's request.
+- **Automatically.** When **Reading the ask** maps the ask to a flow and finds 2 or more critical
+  inputs (below) missing, the coach runs on its own, with no offer question and no `polish`
+  argument: it starts at step 2, the verdict and the coach card. Once per request; after "Run it
+  now" or "Copy it and stop" the same ask is not coached again. A user who says to just run it
+  skips the coach and the flow runs with its own setup questions.
 - **Never** in an unattended run, for a routine ask the team already runs ("run the daily", a
   scheduled task's prompt, a `run {agent}` from the panel), when 0 or 1 input is missing, or when
   the user says to just run it.

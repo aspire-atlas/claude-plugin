@@ -18,7 +18,8 @@ description: >
   {program} program", "write to the approved creators", "send product to the creators", "set up
   affiliate codes", "did the creators post", "request rights", "what do we owe creators",
   "set up Instagram Shop", "TikTok Shop", "sell on TikTok", "program dashboard", "what's
-  next", "what should we do next", "next actions", or "/aspire fee calculator".
+  next", "what should we do next", "next actions", "/aspire fee calculator", or any short, vague ask about creators, posts, or
+  reports ("find me people", "get me creators"), which the prompt coach tightens first.
 metadata:
   author: Aspire
 ---
@@ -279,9 +280,13 @@ team catalog, and how agents render for a lens are in `references/recipient-lens
 5. **Keep the record.** From the first question of any flow that launches an Atlas agent, keep
    the running decision log and ask every agent for its audit trail block, per **Decision
    audit**.
-6. **Offer the coach.** When the ask maps to a flow and misses 2 or more of that flow's
-   critical inputs, offer **Prompt coach** once, in one line, before launching. Never in an
-   unattended run or for a routine ask ("run the daily").
+6. **Run the coach on a weak ask.** When the ask maps to a flow and misses 2 or more of that
+   flow's critical inputs, run **Prompt coach** before launching, without being asked and
+   without the `polish` argument: no offer question first, the coach card and its gap questions
+   are the first thing the user sees. Once per request; after "Run it now" or "Copy it and stop"
+   the same ask is not coached again. Skip it, and run the flow, in an unattended run, for a
+   routine ask ("run the daily"), when 0 or 1 inputs are missing, and when the user says to just
+   run it.
 
 **Campaign plan.** A launch ask ("we launch on the 14th and need creators") spans four agents.
 Propose the sequence in the confirmation line ("I'll start a shortlist and brief for the
@@ -292,8 +297,8 @@ the pulse offer (**Readouts**, **Launch pulse**), and **Content review** as draf
 
 ## Prompt coach (make a weak ask strong before it runs)
 
-Trigger on the `polish` argument ("improve my prompt", "coach", "tighten this prompt"), or by the
-offer in **Reading the ask**, step 6. It reviews an ask against what this plugin's flows need and
+Trigger on the `polish` argument ("improve my prompt", "coach", "tighten this prompt"), and
+automatically on every weak ask, as **Reading the ask**, step 6 says. It reviews an ask against what this plugin's flows need and
 rewrites it. It launches no agent, writes nothing to Atlas, saves no templates, and runs only in
 a session with a person (`AskUserQuestion`); never in an unattended run, and never for a routine
 ask. Detail - the rubric, each flow's critical inputs, the loop, the card, the rewrite format, and
