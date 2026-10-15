@@ -624,6 +624,41 @@ const noteSvg = (W: number, note: string, tail: number): string =>
 const stepsOf = (a: AgentRun): { text: string; ratio: number } | null =>
   a.stepTotal ? { text: `${a.stepDone ?? 0}/${a.stepTotal}${a.stepNote ? ` ${a.stepNote}` : ''}`, ratio: Math.min(1, (a.stepDone ?? 0) / a.stepTotal) } : null
 
+/** An agent's task list for its open row: its own task list when it keeps one, else the steps it reported, else nothing yet. */
+type AgentTask = { text: string; kind: 'done' | 'now' | 'todo' }
+const agentTasks = (a: AgentRun): AgentTask[] => {
+  if (a.items?.length) return a.items.map(i => ({ text: i.subject, kind: i.status === 'completed' ? 'done' : i.status === 'in_progress' ? 'now' : 'todo' }))
+  if (!a.stepTotal) return []
+  const done = Math.min(a.stepDone ?? 0, a.stepTotal)
+  return Array.from({ length: a.stepTotal }, (_, n): AgentTask => {
+    const kind = n < done ? 'done' : n === done && a.status === 'running' ? 'now' : 'todo'
+    return { text: kind === 'now' && a.stepNote ? a.stepNote : `Step ${n + 1}`, kind }
+  })
+}
+const AGENT_TASK_H = 22
+const agentTasksH = (tasks: AgentTask[]): number => Math.max(1, tasks.length) * AGENT_TASK_H + 8
+/** The task rows under an agent's row, drawn like the Progress section's: a bullet, the task, and done on the right. */
+const agentTasksSvg = (W: number, a: AgentRun, tasks: AgentTask[], tail: number): string => {
+  const color = characterOf(a).color
+  const font = `font-family="${FONT}"`
+  const body = tasks.length
+    ? tasks
+        .map((t, i) => {
+          const y = 4 + i * AGENT_TASK_H
+          const mark =
+            t.kind === 'done'
+              ? `<rect fill="${DONE}" x="50" y="${y + 6}" width="10" height="10" rx="2.5"/>`
+              : t.kind === 'now'
+                ? `<rect fill="${color}" x="50" y="${y + 6}" width="10" height="10" rx="2.5"/>`
+                : `<rect class="sw" x="50" y="${y + 6}" width="10" height="10" rx="2.5"/>`
+          return `${mark}<text class="${t.kind === 'todo' ? 's' : 't'}" x="67" y="${y + 15}" ${font} font-size="12"${t.kind === 'now' ? ' font-weight="600"' : ''}>${xml(fitText(t.text, 12, W - 67 - 60))}</text>
+<text class="s" x="${W - 16}" y="${y + 15}" text-anchor="end" ${font} font-size="11">${t.kind === 'done' ? 'done' : t.kind === 'now' ? 'now' : ''}</text>`
+        })
+        .join('')
+    : `<text class="s" x="50" y="19" ${font} font-size="12">No tasks reported yet.</text>`
+  return rowSvg(W, agentTasksH(tasks), false, tail, body)
+}
+
 const agentSvg = (W: number, a: AgentRun, at: number, tail: number): string => {
   const character = characterOf(a)
   const ctx = ctxOf(a)
@@ -1294,10 +1329,22 @@ export const register: Register = on => {
     type Row = { id: string; h: number; alt: string; draw: (W: number, tail: number) => string; onPress?: () => void }
     type Section = { key: string; title: string; summary: string; rows: Row[]; text: () => JSX.Element }
     const empty = 'No agents yet. Aspire agents show here as they start.'
+    // Pressing an agent opens its task list under it; pressing again closes it.
     const agentRows = (items: AgentRun[], state: string): Row[] =>
-      items.map(a => ({ id: a.id, h: ROW_H, alt: `${a.description}: ${modelName(a.model)}, ${state}`, draw: (W, tail) => agentSvg(W, a, at, tail) }))
+      items.flatMap((a): Row[] => {
+        const key = `agent:${a.id}`
+        const tasks = agentTasks(a)
+        const isTasksOpen = isOpen(key)
+        return [
+          { id: a.id, h: ROW_H, alt: `${a.description}: ${modelName(a.model)}, ${state}, ${isTasksOpen ? 'tasks open' : 'tasks collapsed'}`, draw: (W, tail) => agentSvg(W, a, at, tail), onPress: toggle(key) },
+          ...(isTasksOpen
+            ? [{ id: `${a.id}-tasks`, h: agentTasksH(tasks), alt: `${a.description} tasks: ${tasks.map(t => `${t.kind === 'done' ? 'done' : t.kind === 'now' ? 'now' : 'to do'} ${t.text}`).join(', ') || 'none reported yet'}`, draw: (W: number, tail: number) => agentTasksSvg(W, a, tasks, tail) }]
+            : []),
+        ]
+      })
     const cols = Math.max(24, e.props.bodyColumns || 40)
     const barW = Math.max(6, Math.min(20, cols - 34))
+    const tasksOf = agentTasks
     const row = (a: AgentRun) => {
       const character = characterOf(a)
       const ctx = ctxOf(a)
@@ -1329,6 +1376,17 @@ export const register: Register = on => {
               {stepsOf(a) ? `${stepsOf(a)?.text} · ` : ''}ctx {ctx}% · {fmtTokens(a.contextTokens)} {fmtTime(elapsed(a, at))}
             </Text>
           </Text>
+          <Button key={`agent-tasks-${a.id}`} label={`${isOpen(`agent:${a.id}`) ? '▾' : '▸'} Tasks${tasksOf(a).length ? ` · ${tasksOf(a).filter(t => t.kind === 'done').length}/${tasksOf(a).length}` : ''}`} plain onPress={toggle(`agent:${a.id}`)} />
+          {isOpen(`agent:${a.id}`)
+            ? tasksOf(a).length
+              ? tasksOf(a).map((t, n) => (
+                  <Text key={`${a.id}-${n}`} wrap="truncate-end" dimColor={t.kind === 'todo'} bold={t.kind === 'now'}>
+                    {'  '}
+                    {t.kind === 'done' ? '✓' : t.kind === 'now' ? '●' : '○'} {t.text}
+                  </Text>
+                ))
+              : <Text dimColor>{'  '}No tasks reported yet.</Text>
+            : null}
         </Box>
       )
     }
