@@ -21,6 +21,8 @@ export const STEPS = 6
 const MAX_TASKS = 50
 const MAX_TITLE = 80
 const MAX_PHASE = 40
+const MAX_COACH_VERDICT = 140
+const MAX_COACH_STEP = 30
 
 /** An aspire_progress call's arguments, unchecked. */
 export type ProgressInput = {
@@ -30,6 +32,7 @@ export type ProgressInput = {
   phase?: unknown
   finished?: unknown
   tasks?: unknown
+  coach?: unknown
 }
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)
@@ -51,6 +54,19 @@ const blank = (): Progress => ({ title: '', total: 0, done: 0, phase: '', isFini
 // A finished run, or a new title, starts over: counters never carry over.
 const isNewRun = (prev: Progress | null, title: string | undefined): boolean =>
   !prev || prev.isFinished || (title !== undefined && title !== '' && title !== prev.title)
+
+/**
+ * The prompt coach field of a report: `null` clears the card, a valid object sets it, anything else (absent, malformed, or a
+ * verdict with no text left once control characters are gone) is undefined and changes nothing. Text only, bounded, one line.
+ */
+export const coachOf = (v: unknown): { verdict: string; step: string | null } | null | undefined => {
+  if (v === null) return null
+  if (!isRecord(v)) return undefined
+  const line = (x: unknown, max: number): string => (typeof x === 'string' ? clip(x.replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]+/g, ' ').replace(/\s+/g, ' ').trim(), max) : '')
+  const verdict = line(v.verdict, MAX_COACH_VERDICT)
+  if (!verdict) return undefined
+  return { verdict, step: line(v.step, MAX_COACH_STEP) || null }
+}
 
 /** One report merged into the last: fields left out keep their previous value. */
 export const mergeProgress = (prev: Progress | null, input: ProgressInput): Progress => {

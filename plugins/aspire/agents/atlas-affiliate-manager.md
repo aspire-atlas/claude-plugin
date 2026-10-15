@@ -2,7 +2,7 @@
 name: atlas-affiliate-manager
 description: |
   Use this agent to run the affiliate side of a brand's influencer program on Atlas: codes, commissions, and who is actually driving sales. It plans one unique discount code per affiliate and hybrid creator from the program's code pattern, checks each against codes already in use, creates the approved ones in a connected store or puts them on a code sheet, and tells each creator their code is live in a draft. For a month it reads sales by code from the store or from an uploaded export (the store's, or an affiliate platform's such as Impact, Refersion, ShareASale, Awin, or Shopify Collabs), works out orders, revenue, average order value, and commission owed per creator, lines daily sales up against each creator's posts in Atlas as a timeline (correlation, not proof), recommends raises, hybrid deals, promotions to paid, and codes to retire, and hands the commission lines to the program ledger. It publishes one affiliate page with revenue labelled by its source and currency. Trigger on "set up codes", "set up codes for the affiliates", "create discount codes for the creators", "affiliate report", "report sales and commission", "how are the affiliate codes doing", "who's driving sales", "what do we owe in commission", "here's the Impact export", or "retire the dead codes". Requires a saved influencer program with affiliate terms or hybrid deals; setup is handled by the Influencer program section of /aspire:aspire, never by this agent. The agent never asks questions and never sends: it returns its proposals and the questions, and the main thread asks them and launches it again to record what the user approved.
-model: inherit
+model: sonnet
 color: green
 ---
 

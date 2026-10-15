@@ -2,7 +2,7 @@
 name: atlas-product-fulfillment
 description: |
   Use this agent to get the right product to every creator in a brand's influencer program on Atlas and to know it arrived. It works out who is owed product (creators at Agreed: paid and ambassador deals with product, and gifting creators who said yes), picks a product per creator from the program's catalog matched to their content and audience and inside the program's value limits, checks stock when a store is connected, drafts the details requests, keeps one order form page per program where the team fills in sizes and shipping, records the details, places the orders through a connected store or produces an order sheet, tracks shipping and delivery, drafts "did it arrive?" check-ins, and on delivery starts each creator's posting clock and hands them to the deliverable tracker. For gifting it shows how likely a post is from what Atlas holds about the creator's earlier gifted posts. Trigger on "collect details and order product", "send product to the creators", "what should we send @handle", "order the product", "place the gifting orders", "where are the packages", "did the product arrive", "track the shipments", "pull the order form", or a scheduled task named "Atlas program shipping check". Requires a saved program; setup is handled by the Influencer program section of /aspire:aspire, never by this agent. Every Atlas, mailbox, and store write is confirmed in the main thread before this agent runs; questions it cannot settle go back to the main thread.
-model: inherit
+model: sonnet
 color: orange
 ---
 

@@ -200,6 +200,28 @@ export const characterOf = (run: CharacterRun): Character => {
   return own
 }
 
+/**
+ * The prompt coach: a crab in a blue coach cap with a whistle on a red lanyard and a clipboard whose pencil taps.
+ * Not an agent and not in CHARACTERS (characterOf never returns it); only the coach card draws it.
+ */
+export const COACH_CRAB: Character = {
+  key: 'coach',
+  color: '#378ADD',
+  matches: () => false,
+  draw: f => {
+    crabBody(f)
+    stamp(f, 8, 7, ['..bbbbbbbbbb..', '.bbbbbwwbbbbb.', 'bbbbbbbbbbbbbb'], { b: '#378ADD', w: '#F8F6F1' }, 'hd')
+    stamp(f, 4, 9, ['wwwww'], { w: '#F8F6F1' }, 'hd')
+    stamp(f, 12, 14, ['r......r', '.r....r.', '..r..r..', '...rr...'], { r: '#E24B4A' })
+    stamp(f, 13, 18, ['yyyyy', 'ykyyy', 'yyyy.'], { y: '#F5C542', k: INK }, 'wh')
+    stamp(f, 22, 5, ['..gggg..', 'nnnnnnnn', 'nwwwwwwn', 'nwkkkkwn', 'nwwwwwwn', 'nwkkkwwn', 'nwwwwwwn', 'nwwwwwwn', 'nnnnnnnn'], { g: '#C9CCD2', n: '#7A4A26', w: '#F8F6F1', k: '#55514C' }, 'it')
+    stamp(f, 24, 11, ['....p', '...y.', '..y..', '.y...', 'k....'], { p: '#D4537E', y: '#F5C542', k: INK }, 'pn')
+  },
+  css: `.c-coach.run .pn{animation:tap .5s steps(1) infinite}
+.c-coach.run .wh{animation:swing .5s ease-in-out infinite}
+@keyframes tap{50%{transform:translate(-1px,1px)}}@keyframes swing{50%{transform:translateY(1px)}}`,
+}
+
 /** The plain Aspire-green crab, the one the progress bar carries. */
 export const PLAIN_CRAB: Character = FALLBACK
 
@@ -221,6 +243,7 @@ export const CRAB_CSS = `<style>
 @keyframes st{50%{transform:translateY(-1px)}}@keyframes bob{50%{transform:translateY(1px)}}
 ${COSTUME_KEYFRAMES}
 ${CHARACTERS.map(c => c.css).filter(Boolean).join('\n')}
+${COACH_CRAB.css}
 ${VARIANT_CHARACTERS.map(c => c.css).join('\n')}
 @media (prefers-reduced-motion: reduce){.run,.run g{animation:none!important}}
 </style>`

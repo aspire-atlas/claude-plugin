@@ -113,10 +113,16 @@ export type AgentRun = {
   stepNote?: string
   /** The agent's own task list, when it keeps one; it sets the steps above and wins over `aspire_step`. */
   items?: Item[]
+  /** What the agent's latest tool call is doing, a few words, and how many calls it made; shown while it keeps no task list. */
+  doing?: string
+  calls?: number
 }
 
 /** The queued notice above the prompt: the pressed agent and the clock time it was set. */
 export type Notice = { type: string; name: string; id: number }
+
+/** The prompt coach card above the bar (desktop; one text line on the terminal): the skill's verdict, an optional round label, and the clock time it was set. */
+export type Coach = { verdict: string; step: string | null; id: number }
 
 export type Panel = {
   /** The panel opened by itself once this session (first aspire:* agent). */
@@ -261,6 +267,8 @@ declare module 'claude-code' {
       now: number
       /** The queued notice above the prompt; null when none shows. `id` is the clock time it was set. */
       notice: Notice | null
+      /** The prompt coach card above the bar; null when none shows. Set only by the main session's aspire_progress `coach` field. */
+      coach: Coach | null
     }
   }
 }

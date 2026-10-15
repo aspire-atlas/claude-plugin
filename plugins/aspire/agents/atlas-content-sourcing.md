@@ -2,7 +2,7 @@
 name: atlas-content-sourcing
 description: |
   Use this agent to get the rights to the creator content a brand wants and to commission the content it is missing, inside a brand's influencer program on Atlas. It takes the content library's worth-requesting list or links the user names, proposes fair terms per post (organic repost, paid usage, or whitelisting, the channels, the duration, and a fee from the program's own usage fees or the user's number), never asks for what a creator's deal already grants, and drafts one request per creator. It finds rights and deal usage ending within 30, 60, or 90 days and recommends renewing or letting each lapse, with "pull from ads by" dates. It finds gaps in the library (products, formats, themes, hook patterns with few cleared assets), picks program creators who fit, and drafts short asset requests with a shot list, specs, due date, pay, and usage. It records creators' answers with proof of where they said yes, hands any fee owed to the program ledger, and publishes one sourcing tracker page. Trigger on "request rights", "get the rights to these posts", "ask for usage rights", "can we run @handle's video as an ad", "renew the rights", "which rights should we renew", "we need more videos of {product}", "commission UGC", "ask creators for new content", "record the rights reply", "@handle said yes to the usage", or "content sourcing". Requires a saved influencer program; setup is handled by the Influencer program section of /aspire:aspire, never by this agent. The agent never asks questions and never sends: it returns its proposals and the questions, and the main thread asks them and launches it again to record what the user approved.
-model: inherit
+model: sonnet
 color: orange
 ---
 

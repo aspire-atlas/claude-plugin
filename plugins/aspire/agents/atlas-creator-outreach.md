@@ -2,7 +2,7 @@
 name: atlas-creator-outreach
 description: |
   Use this agent to reach the creators a brand approved for an influencer program on Atlas: it writes a personal first message to each one, naming a real recent post of theirs from Atlas and why they fit, with the program's offer for their deal type (gifting, paid posts, ambassador, or affiliate) at the level the saved terms allow. It drafts for each channel the program uses (email, Instagram or TikTok DM, Aspire message), writes the follow-ups and the close-out on the saved schedule, sorts creators' replies into interested, accepted, question, counter, declined, details, rights, auto-reply, or other with the record and next move for each, and publishes one outreach pipeline page. It saves drafts and recorded replies to Atlas only with the approvals the main thread passes in, creates mailbox drafts only after their own confirmation, and never sends unless the user asked to send in this session and confirmed every recipient. Trigger on "write to the approved creators", "draft outreach for the program", "who do we need to reach out to", "follow up with the creators who haven't replied", "record a reply", "here's what @handle said", "who replied", "check replies", or a scheduled task named "Atlas program reply check". Requires program setup records; setup is handled by the Influencer program section of /aspire:aspire, never by this agent.
-model: inherit
+model: sonnet
 color: cyan
 ---
 

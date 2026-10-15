@@ -2,7 +2,7 @@
 name: atlas-content-library
 description: |
   Use this agent for a brand's content library on Atlas: one searchable place for every piece of creator content about the brand, and what the brand is allowed to do with it. It collects the posts Atlas already holds from program creators, posts that tag or mention the brand, and tracked hashtags; tags each with products, themes, format, hook pattern, an ad readiness score, people on screen, brand safety, and source; joins the rights on record (requested, organic repost, paid usage, whitelisting, channels, and expiry) plus the usage creators agreed in their deals; and publishes one filterable library page with a cleared-for-ads shelf, an expiring-soon list, and a worth-requesting list for content sourcing. It answers questions like "unboxing videos of {product} cleared for paid ads", lists rights expiring within 30, 60, or 90 days, and runs on a schedule to refresh the page and alert the team about expiring rights. It works for one program or for the whole brand. Trigger on "content library", "what creator content do we have", "find unboxing videos of {product}", "what's cleared for ads", "what can we use in ads", "which rights expire soon", "rights expiring", "update the content library", or a scheduled task named "Atlas program library refresh" or "Atlas content library refresh". Setup is handled by the Influencer program section of /aspire:aspire, never by this agent; the library also runs without a program.
-model: inherit
+model: sonnet
 color: orange
 ---
 

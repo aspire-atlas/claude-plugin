@@ -1,7 +1,7 @@
 // Run with: claude plugin test plugins/aspire
 import { expect, test } from 'claude-code/testing'
 
-import { CHARACTERS, CRAB_CSS, characterOf, crab } from './characters'
+import { CHARACTERS, COACH_CRAB, CRAB_CSS, PLAIN_CRAB, characterOf, crab } from './characters'
 import { AGENT_CHARACTERS, COSTUMES, VARIANT_CHARACTERS } from './costumes'
 import { ROSTER } from './roster'
 import { fitText, fmtTime, fmtTokens, modelName, windowOf, xml } from './format'
@@ -49,6 +49,18 @@ test('characters: each draws, and a running one walks', () => {
     expect(crab(0, 0, c, false, true)).toContain(`class="c-${c.key} run"`)
   }
   expect(CRAB_CSS).toContain('@keyframes blink')
+})
+
+test('coach crab: drawn with its class, its props and its motion, outside the agent cast', () => {
+  const svg = crab(0, 0, COACH_CRAB, false, true)
+  expect(svg).toContain('class="c-coach run"')
+  for (const g of ['hd', 'wh', 'it', 'pn']) expect(svg).toContain(`<g class="${g}">`)
+  expect(svg).not.toContain('undefined')
+  expect(svg).not.toBe(crab(0, 0, PLAIN_CRAB, false, true))
+  expect(CRAB_CSS).toContain('.c-coach.run .pn{animation:tap')
+  expect(CRAB_CSS).toContain('prefers-reduced-motion')
+  expect(CHARACTERS).not.toContain(COACH_CRAB)
+  expect(characterOf({ type: 'aspire:aspire', model: '' })).not.toBe(COACH_CRAB)
 })
 
 test('costumes: every Aspire agent has its own influencer costume, and a second run wears a variant', () => {

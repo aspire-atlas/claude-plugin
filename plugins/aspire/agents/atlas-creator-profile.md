@@ -2,7 +2,7 @@
 name: atlas-creator-profile
 description: |
   Use this agent to build the full-page profile of one creator for a brand on Atlas: the creator card at full width, then audience, top and lowest posts, engagement by post, comment sentiment, brand safety by category, paid partnerships kept apart from organic mentions, recommended fees from the brand's fee calculator, a peer comparison, next steps, and data gaps. It resolves and refreshes the Instagram or TikTok handle in Atlas when the held data is stale, publishes the profile as a page, and writes nothing to Atlas. Trigger on "full profile for @handle", "creator profile", "show me @handle's portfolio", "deep dive on @handle", or "what would @handle cost".
-model: inherit
+model: sonnet
 color: orange
 ---
 

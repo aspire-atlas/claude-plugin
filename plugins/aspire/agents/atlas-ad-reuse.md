@@ -2,7 +2,7 @@
 name: atlas-ad-reuse
 description: |
   Use this agent to find the brand's and creators' videos on Atlas that will work as ads: it ranks them on a hook score (hook by 3 seconds, brand by 3 seconds, works without sound, retention, a standalone segment, ready for paid), tags each with its hook pattern, and builds a cut list with timestamps, cut lengths, placements, and rights status for performance and creative teams. It reads only what Atlas holds, publishes one page, and writes the ranked candidates back to Atlas when the user approved it. Trigger on "best hooks", "pull the best hooks from last month's creator posts", "can we reuse creator content as ads", "what should we license", "send creative the good stuff to cut down", or "cut list". Launch messages created before the split name `atlas-profile-analyst` with `target_mode` `reuse`; they mean this agent, so launch it with the same inputs.
-model: inherit
+model: sonnet
 color: yellow
 ---
 

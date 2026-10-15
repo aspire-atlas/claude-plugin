@@ -85,19 +85,19 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
-import type { AgentRun, AtlasCreditsReading, AtlasReading, BandStats, Item, Notice, OrgState, Panel, Progress, Seen, Trigger, TriggerKind, Turn } from '../types'
+import type { AgentRun, AtlasCreditsReading, AtlasReading, BandStats, Coach, Item, Notice, OrgState, Panel, Progress, Seen, Trigger, TriggerKind, Turn } from '../types'
 import { creditsView, fmtAtlasUsage, fmtCredits, isAtlasStatusCall, isAtlasToolName, readAtlasCredits, readAtlasOrg, readAtlasUsage } from './atlas-usage'
 import type { CreditsView } from './atlas-usage'
-import { ASPIRE, CRAB_CSS, breathOf, characterOf, crab } from './characters'
+import { ASPIRE, COACH_CRAB, CRAB_CSS, breathOf, characterOf, crab } from './characters'
 import type { Character } from './characters'
 import { AGENT_CHARACTERS } from './costumes'
 import { GROUPS, ROSTER } from './roster'
 import type { RosterEntry } from './roster'
 import { clip, fitText, fmtTime, fmtTokens, modelName, textWidth, windowOf, xml } from './format'
-import { applyTask, countCall, endTurn, isTaskTool, planOf, startTurn, stepsOf as stepsFromItems, touch } from './plan'
+import { applyTask, countCall, doingOf, endTurn, isTaskTool, planOf, startTurn, stepsOf as stepsFromItems, touch } from './plan'
 import type { PlanView } from './plan'
 import type { ProgressInput, Shown } from './progress'
-import { barText, isReportLeading, mergeProgress, orgStateFrom, percentOf, shownOf, titleOf } from './progress'
+import { barText, coachOf, isReportLeading, mergeProgress, orgStateFrom, percentOf, shownOf, titleOf } from './progress'
 
 const PLUGIN = 'aspire'
 
@@ -133,6 +133,10 @@ const now = atom({ plugin: 'aspire', key: 'now' } as const, 0)
 const notice = atom({ plugin: 'aspire', key: 'notice' } as const, null as Notice | null)
 /** How long the notice stays, in milliseconds. */
 const NOTICE_MS = 6000
+/** The prompt coach card above the bar; null when none shows. Set only by the skill's progress report. */
+const coach = atom({ plugin: 'aspire', key: 'coach' } as const, null as Coach | null)
+/** How long the coach card stays without a new report, in milliseconds. */
+const COACH_MS = 5 * 60 * 1000
 
 /** The aspire skill: `/aspire`, `/aspire:aspire`, or the Skill tool's `aspire:aspire`. */
 const ASPIRE_SKILL = /^(aspire:)?aspire$/
@@ -200,6 +204,7 @@ async function reset($: EngineInterface): Promise<void> {
   await update($, trigger, () => null)
   await update($, seen, () => BLANK_SEEN)
   await update($, progress, () => null)
+  await update($, coach, () => null)
   await update($, org, () => BLANK_ORG)
   await update($, turn, () => null)
   await update($, items, () => [])
@@ -363,24 +368,44 @@ const panelIcon = (x: number): string => {
 const countWidth = (count: number): number => Math.ceil(8 + textWidth(`×${count}`, 12.5) + 4 + BAND_CRAB_W + 10)
 
 /**
- * The queued notice: one Svg row with the pressed agent's own animated crab, the Aspire teal mark and the text.
+ * The queued notice: one Svg row with the pressed agent's own animated crab, and the text.
  * Light and dark values come from the media query; the crab's motion stops under prefers-reduced-motion (CRAB_CSS).
  */
 const NOTICE_H = 26
 const noticeText = (name: string): string => `${name} is queued in the prompt box. Press Enter to run it.`
 const noticeSvg = (character: Character, name: string, W: number): string => {
   const scale = 0.7
-  const textX = 10 + 36 * scale + 10 + 14
+  const textX = 10 + 36 * scale + 8
   const text = fitText(noticeText(name), 13, Math.max(40, W - textX - 8))
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${NOTICE_H}" viewBox="0 0 ${W} ${NOTICE_H}">
 <style>
-.nt{fill:#1f1f1f}.nm{fill:#3B8A82}
-@media (prefers-color-scheme: dark){.nt{fill:#ececec}.nm{fill:#5fb5ab}}
+.nt{fill:#1f1f1f}
+@media (prefers-color-scheme: dark){.nt{fill:#ececec}}
 </style>
 ${CRAB_CSS}
 ${crab(10, (NOTICE_H - 30 * scale) / 2, character, false, true, scale)}
-<text class="nm" x="${10 + 36 * scale + 8}" y="${NOTICE_H / 2 + 4.5}" font-family="${FONT}" font-size="13" font-weight="700">◆</text>
 <text class="nt" x="${textX}" y="${NOTICE_H / 2 + 4.5}" font-family="${FONT}" font-size="13" font-weight="500">${xml(text)}</text>
+</svg>`
+}
+
+/**
+ * The prompt coach card: one Svg row like the notice, with the coach crab, the round label (when there is one) and the verdict.
+ * Same light and dark teal; the crab's motion stops under prefers-reduced-motion (CRAB_CSS).
+ */
+const COACH_H = 26
+const coachLabel = (verdict: string, step: string | null): string => (step ? `${step} · ${verdict}` : verdict)
+const coachSvg = (verdict: string, step: string | null, W: number): string => {
+  const scale = 0.7
+  const textX = 10 + 36 * scale + 8
+  const text = fitText(coachLabel(verdict, step), 13, Math.max(40, W - textX - 8))
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${COACH_H}" viewBox="0 0 ${W} ${COACH_H}">
+<style>
+.ct{fill:#1f1f1f}
+@media (prefers-color-scheme: dark){.ct{fill:#ececec}}
+</style>
+${CRAB_CSS}
+${crab(10, (COACH_H - 30 * scale) / 2, COACH_CRAB, false, true, scale)}
+<text class="ct" x="${textX}" y="${COACH_H / 2 + 4.5}" font-family="${FONT}" font-size="13" font-weight="500">${xml(text)}</text>
 </svg>`
 }
 
@@ -397,6 +422,24 @@ ${crab(W - EDGE_W - countWidth(count) + 10, (BAR_ROW_H - 30 * BAND_CRAB_SCALE) /
 <text class="m" x="${W - EDGE_W - 8}" y="${BAR_ROW_H / 2 + 4.5}" text-anchor="end" font-family="${FONT}" font-size="12.5" font-variant-numeric="tabular-nums">×${count}</text>
 ${panelIcon(W - EDGE_W + 4)}
 </svg>`
+
+/** The bar's agent counter crab alone, for the band's row between the percent Button and the count Button: an animated, randomly drawn crab. */
+const crabSvg = (character: Character): string => {
+  const W = Math.ceil(BAND_CRAB_W + 4)
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}">
+${CRAB_CSS}
+${crab(2, (BAR_ROW_H - 30 * BAND_CRAB_SCALE) / 2, character, false, true, BAND_CRAB_SCALE)}
+</svg>`
+}
+
+/** The title's bullet as a tiny Svg (a Button holds only text, so its dot would be plain white): Aspire teal, the done green once finished. */
+const dotSvg = (shown: Shown): string => {
+  const fill = shown.isFinished ? `fill="${DONE}"` : `class="dt"`
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="${BAR_ROW_H}" viewBox="0 0 12 ${BAR_ROW_H}">
+<style>.dt{fill:#3B8A82}@media (prefers-color-scheme: dark){.dt{fill:#5fb5ab}}</style>
+<circle ${fill} cx="6" cy="${BAR_ROW_H / 2}" r="4"/>
+</svg>`
+}
 
 const barSvg = (title: string, shown: Shown, W: number): string => `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}">
 <style>
@@ -716,6 +759,9 @@ const agentTasks = (a: AgentRun): AgentTask[] => {
     return { text: kind === 'now' && a.stepNote ? a.stepNote : `Step ${n + 1}`, kind }
   })
 }
+/** The line under an open row that has no task list: what it is doing now while it runs, else that it reported none. */
+const noTasksText = (a: AgentRun): string =>
+  a.status === 'running' && a.doing ? `No task list from this agent. Working: ${a.doing} · ${a.calls ?? 0} calls` : 'No tasks reported yet.'
 const AGENT_TASK_H = 22
 const agentTasksH = (tasks: AgentTask[]): number => Math.max(1, tasks.length) * AGENT_TASK_H + 8
 /** The task rows under an agent's row, drawn like the Progress section's: a bullet, the task, and done on the right. */
@@ -736,7 +782,7 @@ const agentTasksSvg = (W: number, a: AgentRun, tasks: AgentTask[], tail: number)
 <text class="s" x="${W - 16}" y="${y + 15}" text-anchor="end" ${font} font-size="11">${t.kind === 'done' ? 'done' : t.kind === 'now' ? 'now' : ''}</text>`
         })
         .join('')
-    : `<text class="s" x="50" y="19" ${font} font-size="12">No tasks reported yet.</text>`
+    : `<text class="s" x="50" y="19" ${font} font-size="12">${xml(fitText(noTasksText(a), 12, W - 50 - 16))}</text>`
   return rowSvg(W, agentTasksH(tasks), false, tail, body)
 }
 
@@ -900,6 +946,7 @@ export const register: Register = on => {
           'Report the /aspire skill\'s progress to the Aspire progress bar above the prompt. It only draws the bar: it reads and changes nothing else. ' +
           'Call it at the start of each step with done (steps finished) and total (steps planned), with phase naming the step in a few words, ' +
           'and once at the end with finished: true. Fields left out keep their previous value; a new title starts a new run. ' +
+          'Optional coach: { verdict, step? } draws the prompt coach card above the bar (verdict: one short line, 140 characters at most; step: a round label such as "Round 1 of 3", 30 at most); coach: null or finished: true clears it, and it clears itself after five minutes. Text only: it changes nothing else. ' +
           'For the main session only: a call from a subagent is ignored. ' +
           'The result ends with `band: visible`, `not-drawn`, `hidden-by-user` or `unknown`. When it is not `visible`, show the progress another way.',
         inputSchema: {
@@ -919,6 +966,15 @@ export const register: Register = on => {
               },
             },
             finished: { type: 'boolean', description: 'True once the run is over.' },
+            coach: {
+              type: ['object', 'null'],
+              description: 'The prompt coach card above the bar; null clears it.',
+              properties: {
+                verdict: { type: 'string', maxLength: 140, description: 'One short line, for example "3 of 6 inputs for Ad reuse: missing window, reader, save".' },
+                step: { type: 'string', maxLength: 30, description: 'Optional round label, for example "Round 1 of 3".' },
+              },
+              required: ['verdict'],
+            },
           },
         },
       })
@@ -1016,6 +1072,17 @@ export const register: Register = on => {
       const before = await read($, progress)
       const p = await update($, progress, prev => mergeProgress(prev, e as unknown as ProgressInput))
       if (!before || before.isFinished || before.title !== p?.title) band.crab = null
+      // The coach card: a finished run or a new title clears it; then this report's own `coach` field sets or clears it.
+      if (!before || before.isFinished || before.title !== p?.title || p?.isFinished) await update($, coach, () => null)
+      const asked = coachOf((e as unknown as ProgressInput).coach)
+      if (asked === null) await update($, coach, () => null)
+      else if (asked && !p?.isFinished) {
+        const id = await $.clock.now()
+        await update($, coach, () => ({ ...asked, id }))
+        $.clock.after(COACH_MS, () => {
+          update($, coach, prev => (prev && prev.id === id ? null : prev)).catch(() => undefined)
+        })
+      }
       const shown = shownOf(p, await read($, org), await read($, agents), planOf(await read($, turn), await read($, items), await $.clock.now()))
       const b = band
       const hidden = await read($, isBandHidden)
@@ -1152,7 +1219,15 @@ export const register: Register = on => {
     // An agent that keeps a task list: its steps and the bar on its row in the panel.
     const agentId = e.agentId
     if (agentId) {
-      if (!isTaskTool(tool)) return next(e)
+      if (!isTaskTool(tool)) {
+        // Not a task call: note what the agent is doing, for its open row while it keeps no list. Display only.
+        try {
+          await update($, agents, list => list.map(a => (a.agentId === agentId ? { ...a, doing: doingOf(tool, input), calls: (a.calls ?? 0) + 1 } : a)))
+        } catch {
+          // The row is a convenience.
+        }
+        return next(e)
+      }
       const result = await next(e)
       try {
         const refused = (result.result as { success?: unknown } | undefined)?.success === false
@@ -1408,17 +1483,21 @@ export const register: Register = on => {
       void $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: '/aspire:aspire org', mode: 'replace' } as never).catch(() => undefined)
     // The desktop draws the bar itself as an Svg (the dithered fill and step pill), between a title Button and an agents Button.
     // An Svg takes no press and the host ignores absolute, so nothing lies over it: the presses sit on the Buttons beside it.
+    if (band.crab === null) band.crab = pickCrab()
     const meterW = Math.max(120, Math.min(360, Math.round(((cols || 100) * 8) / 3)))
     const barRow = (
       <Box flexDirection="row" gap={2}>
-        <Button key="aspire-org" label={`● ${title}`} plain onPress={changeOrg} />
+        {Svg ? <Svg source={dotSvg(shown)} alt="" width={12} height={BAR_ROW_H} /> : null}
+        <Button key="aspire-org" label={Svg ? title : `● ${title}`} plain onPress={changeOrg} />
         {Svg ? <Svg source={meterSvg(shown, meterW)} alt={`${shown.label}, ${percent}`} width={meterW} height={BAR_ROW_H} /> : null}
         <Button
           key="aspire-agents"
-          label={`${Svg || textBarW < 6 ? '' : `${barText(shown.ratio, textBarW)} `}${Svg ? '' : `${shown.label} `}${percent} 🦀 ×${list.length}`}
+          label={`${Svg || textBarW < 6 ? '' : `${barText(shown.ratio, textBarW)} `}${Svg ? '' : `${shown.label} `}${percent}${Svg ? '' : ' 🦀'}${Svg ? '' : ` ×${list.length}`}`}
           plain
           onPress={() => void togglePane($)}
         />
+        {Svg ? <Svg source={crabSvg(band.crab)} alt="Aspire crab" width={Math.ceil(BAND_CRAB_W + 4)} height={BAR_ROW_H} /> : null}
+        {Svg ? <Button key="aspire-agent-count" label={`×${list.length}`} plain onPress={() => void togglePane($)} /> : null}
         <Box flexGrow={1} />
         <Button key="aspire-open-panel" label="◨" plain onPress={() => void openPane($).catch(() => undefined)} />
       </Box>
@@ -1438,8 +1517,23 @@ export const register: Register = on => {
         />
       ) : null
 
+    // The prompt coach card sits above the notice and the bar: an Svg row on the desktop, one Text line elsewhere.
+    const coached = await read($, coach)
+    const coachRow = !coached ? null : Svg ? (
+      <Svg
+        key="aspire-coach"
+        source={coachSvg(coached.verdict, coached.step, noticeW)}
+        alt={`Aspire prompt coach: ${coachLabel(coached.verdict, coached.step)}`}
+        width={noticeW}
+        height={COACH_H}
+      />
+    ) : (
+      <Text key="aspire-coach">{`Prompt coach: ${coached.verdict}`}</Text>
+    )
+
     return (
       <Box flexDirection="column">
+        {coachRow}
         {noticeRow}
         {barRow}
         {below}
@@ -1563,7 +1657,7 @@ export const register: Register = on => {
                     {t.kind === 'done' ? '✓' : t.kind === 'now' ? '●' : '○'} {t.text}
                   </Text>
                 ))
-              : <Text dimColor>{'  '}No tasks reported yet.</Text>
+              : <Text dimColor wrap="truncate-end">{'  '}{noTasksText(a)}</Text>
             : null}
         </Box>
       )

@@ -20,7 +20,7 @@ description: |
   A management ask. The commission comes from the program's saved terms, labelled so; the agent never suggests a rate of its own and never invites anyone in Seller Center.
   </commentary>
   </example>
-model: inherit
+model: sonnet
 color: green
 ---
 
