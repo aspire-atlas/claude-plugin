@@ -8,15 +8,15 @@ what is still open.
 
 | Question | Decision |
 | -------- | -------- |
-| How is it live? | The page refreshes on open through the viewer's own Aspire Atlas connection (`mcp` capability, four read tools), with a snapshot embedded at build time as the fallback. |
+| How is it live? | The page refreshes on open through the viewer's own Aspire Atlas connection (`mcp` capability, six read tools), with a snapshot embedded at build time as the fallback. |
 | Who builds it? | A new agent, `atlas-org-dashboard`, in a subagent like every Atlas agent. |
 | Where is it kept? | One calibration per scope: `brand:dashboard` (shared, one per profile) and `user:{slug}-dashboard` (personal). Brand memory, so teammates and later sessions find it. |
-| Sharing | One shared page per brand with personal views; anyone can opt into their own copy. |
+| Sharing | One shared page per organization, built from the publisher's role and goals. No view switcher: anyone who wants a different emphasis makes their own copy. |
 | Role and goals | Read from what onboarding saved (`user:` record, `brand:business-context`, `target:*`, readout lenses) and the Atlas role. The page asks nothing. |
-| Content | Organization summary, setup checklist, performance snapshot, programs and campaigns, goals, one ranked next step. |
+| Content | Tabs: Overview (next step, credits bar, profile cards, setup strip, programs and campaigns, footnote) and a media-led tab per profile (recent posts, ingestion and hashtag charts, other agents' output, things of interest, goals). Organization and person details only in the footnote. |
 | Next step | Shown on the page; `/aspire` also offers it as one picker that launches that flow with its usual confirmations. |
 | First-run guide | Unconfigured organizations still get the guide on a bare run; the dashboard is offered after brand context is saved, or on `/aspire:aspire dashboard`. Configured organizations get the dashboard. |
-| Empty state | Same layout, setup checklist first, sections marked not set up yet. |
+| Empty state | Same layout, sections marked not set up yet, the setup strip first on each tab. |
 
 ## Consequences to know
 

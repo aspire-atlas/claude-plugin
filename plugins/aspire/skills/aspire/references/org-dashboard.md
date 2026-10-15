@@ -72,9 +72,10 @@ Everything below is read at build time to bake in a snapshot, and again by the p
 
 | Read | Tool | Used for |
 | ---- | ---- | -------- |
-| Organizations, role, profiles, channels, authorization state, credits | `get_status` (selected organization, then `asProfileId` for the brand) | Organization summary, setup checklist |
+| Organizations, role, profiles, channels, authorization state, credits | `get_status` (selected organization, then `asProfileId` for the brand) | Credits, profile cards, setup strip |
 | All calibrations | `search_calibrations`, no filter, limit 100, paged to the end, `includeSuperseded: false` | Brand context, goals, the viewer's `user:` record, readouts and other setup state, programs, campaigns, the saved links |
 | Recent posts and the baseline | `search_posts` on the brand's linked handles, last 28 days and the 28 before | Performance snapshot |
+| Tracked hashtags and their posts | `list_hashtags`, `list_hashtag_posts` (per profile, `asProfileId`) | Hashtag chart on each profile tab |
 | Latest findings per area | `search_insights` on the prefixes: `readout-` (daily and weekly report runs), `orchestrator-{profile}`, `program-{profile}-`, `creator-discovery-{profile}`, `market-signal-{profile}`, `quarterly-signal-{profile}`, `cas-` | Latest report links, Next actions, program and campaign state |
 
 Insights have no key field of their own: filter on `idempotencyKey` with a `prefix` clause per
@@ -88,49 +89,81 @@ ad campaign). A flow with no record is "Not set up", never zero.
 
 ## 4. Sections
 
-In this order for every view; the view changes emphasis (**6**), never what is true.
+The page is organization-wide, in tabs. **Overview** is always the first tab. With one profile there
+is still an Overview and one profile tab; with several there is one tab per profile after it.
 
-1. **Header.** Brand, organization, the person's name and role, the profile switcher when the
-   organization has several, a freshness chip ("Live", "Snapshot from {time}"), and the view
-   switcher.
-2. **Next step.** The one ranked step (**5**), with why, who it is for, and the command that
-   starts it. Two more steps underneath, collapsed.
-3. **Organization.** Profiles and their channels with authorization state (a lapsed one is a
-   warning with "Reconnect with /aspire:aspire"), organization credits used this month and,
-   when `get_status` returns it, what is left, and the role the person has. Credits are usage,
-   never money. Never list members or invitations here.
-4. **Setup.** The checklist: profile, a connected channel, brand context (the seven core answers),
-   theme, creator rates, readouts, orchestrator. Each row is done, partly done, or not started, with
-   the flow that moves it. Hidden behind a "Setup complete" line when everything is done.
-5. **Performance.** Last 28 days against the 28 before: posts, median engagement rate, views,
-   followers when held; the top and the lowest post as post cards (`creator-card.md`, **Images**);
-   links to the newest daily report, weekly report, market signal, and quarterly signal pages.
-6. **Programs and campaigns.** One row per saved influencer program (type, stage counts, the
-   newest dashboard snapshot's pace words, link to its dashboard), per discovery campaign (pool
-   against target, link), per creator ad campaign (step now, due date), and the Next actions page
-   link. No amounts: spend, budget, and sales stay on each program's own dashboard.
-7. **Goals.** The brand's goals as saved (`brand:business-context`, `target:*`), with the
-   evidence the page holds for each in words ("posting 4 times a week, target 5"). A goal with no
-   data behind it says so and names the flow that would measure it.
-8. **Footer.** Data as of, the snapshot's time, what the page reads, and the refresh command.
+### Header
 
-### Tabs
+The brand logo mark and the page title, nothing else: no organization, person, role, or view
+text, and no view switcher. A small freshness chip ("Live, updated {time}" or "Snapshot from
+{time}") sits at the right.
 
-The page covers the whole organization, in tabs: **Overview** first, then one tab per brand profile
-(the profile switcher becomes the tab bar). Overview holds the Header, Next step, Organization,
-and Setup sections for the organization as a whole, plus one summary row per profile (channels
-and their state, the profile's own next step, and a link to its tab). Each profile tab holds that
-profile's Performance, Programs and campaigns, and Goals sections, and its own setup rows. With
-one profile, the tabs collapse to a single page. The Next step on Overview is the highest-ranked
-step across all profiles, naming the profile it is for. Calibrations are organization-wide (one read, any `asProfileId`), so assign a record to a profile by
+### Overview tab, in this order
+
+1. **Next step.** The one ranked step (**5**) naming the profile it is for, why, and the command
+   that starts it, with two more steps underneath, collapsed.
+2. **Credits.** A credits bar like the one in the Aspire sidebar: a large "{left} of {granted} left"
+   figure with a thin progress bar of credits used, "estimate" and "resets {first of next month}" on
+   the top right, "{used} used this period" under the bar on the left and "{n} new posts, {n}
+   retrieved" on the right (from `get_status` `credits`). When `balance.remaining` is not returned,
+   show only "{used} used this period" and the counts. Credits are usage, never money.
+3. **Profiles.** One card per profile, the most visible block on the page: its latest post image
+   when held, its linked channels with state (a lapsed one is a warning with "Reconnect with
+   /aspire:aspire"), the last 28 days in three numbers (posts collected, median engagement rate,
+   views), a sparkline of posts collected per day, its own next step, and a button to its tab.
+   A profile with no channel shows "No account connected" and its connect step.
+4. **Setup.** A compact progress strip, never a table: one line "{done} of {total} set up" with a
+   segmented bar and, only for what is not done, up to four chips each naming the step and its flow
+   ("Creator rates", "Daily and weekly reports"). A row is done, partly done, or not started; the
+   chips are the not-done ones. Hidden behind "Setup complete" when everything is done.
+5. **Programs and campaigns.** Cards for every program, discovery campaign, and creator ad campaign
+   across the organization (type, where it stands in words, link to its own page), and the Next actions
+   page link. No amounts: spend, budget, and sales stay on each program's own dashboard.
+6. **Footnote.** Everything about the organization and the person lives only here, in small type: the
+   organization name and the person's name and Atlas role, the saved goals as one line each, data as
+   of, what the page reads, and the refresh command. No other place on the page repeats it.
+
+### Profile tab, in this order
+
+Highlights come first, and the tab is visual: media-led, not text rows.
+
+1. **Recently collected.** The newest posts Atlas holds for the profile's linked handles as an image
+   grid (`creator-card.md`, **Images**, `post@240`), each with the handle, format, date, views and
+   engagement, and a badge for the top performer and any post that beat the account's median by
+   more than 2x. Posts with no media use the placeholder tile. With no channel, "No account connected"
+   and the connect step.
+2. **Ingestion and hashtags.** Two charts. Posts collected per day over the last 28 days as a bar
+   chart, with the previous 28 days as a faint comparison line; and the profile's tracked hashtags
+   (`list_hashtags`) as a ranked bar of posts collected per tag (`list_hashtag_posts` totals, or
+   `search_posts` on the tag), with the tag's state (active, paused, over the cap) as a chip. No
+   tracked hashtags: "No hashtags tracked" and the flow that adds them (`add_hashtags` through
+   Phase 5 question 7).
+3. **Other agent output.** A strip of cards, one per page an agent saved for this profile: the daily
+   and weekly reports, market signal, quarterly signal, creator briefs, discovery shortlists,
+   content reviews, vetting runs, the content library, creator profiles, and shops plans. Each card
+   shows the title, the agent's name in plain words, how long ago, a one-line headline from the
+   finding's detail when it holds one, and a link. Read the newest `page` finding per key on each
+   flow's prefix (**3**). Nothing found: one line naming the flows that would fill it.
+4. **Things of interest.** Three to five callouts picked from the data, each a sentence with a small
+   visual: the top post and why it did well, a hashtag or format growing against the prior 28 days, a
+   creator or partner mentioned most, a red-line or safety flag from a saved review, or a quiet period
+   ("no posts in 14 days"). Each states its number and window; one with no data behind it is left
+   out, never invented.
+5. **Setup for this profile.** The same compact progress strip as Overview, for this profile's own
+   rows.
+6. **Goals.** The brand's saved goals (`brand:business-context`, `target:*`) with the evidence the
+   page holds in words ("posting 4 times a week, target 5"); a goal with no data says so and names the
+   flow that would measure it.
+
+Calibrations are organization-wide (one read, any `asProfileId`), so assign a record to a profile by
 the profile's name token in its key (`david-protein-` for the profile "David Protein", from the
 name, not the slug, which can carry a numeric suffix); records with no profile token (theme, report
-recipients, fees) belong to Overview. Posts and findings are read per profile with its own
-`asProfileId`. Every profile tab keeps all three sections; with no channel they read "Not set up
-yet" and each profile tab opens with its own Setup rows. Organization-wide setup rows (theme,
-rates, readouts, orchestrator) show on Overview, and brand context shows as "{n} of {m} profiles".
-A profile with no linked channel but a saved baseline shows the saved figure labelled "saved, not
-measured", never as live data; the agent never searches a handle that is not linked.
+recipients, fees) belong to Overview. Posts, hashtags, and findings are read per profile with its own
+`asProfileId`. Organization-wide setup rows (theme, rates, readouts, orchestrator) show on Overview,
+and brand context shows on each profile's strip. A profile with no linked channel but a saved
+baseline shows the saved figure labelled "saved, not measured", never as live data; the agent never
+searches a handle that is not linked. The Next step on Overview is the highest-ranked step across all
+profiles.
 
 ## 5. The next step
 
@@ -156,25 +189,22 @@ hides row 1 or 2.
 
 ## 6. Role and goals
 
-The dashboard uses what onboarding already collected; it asks nothing itself.
+The dashboard is built for the person who publishes it, from what onboarding already collected; it
+asks nothing itself, and the page has no view switcher. Someone who wants a different emphasis makes
+their own copy (**2**), which is built from their own role and goals.
 
-| Signal | Source | Effect |
-| ------ | ------ | ------ |
-| Atlas role: owner, admin, member | `get_status` `organizations.selected.role` | Owner and admin see Organization and Setup expanded; a member sees them collapsed |
-| Relationship: in house, agency, owner | The person's `user:` record (`detail.relationship`) | Agency view leads with Programs and campaigns and shows the client's goals; in house leads with Performance; owner leads with Goals and the quarter |
-| Goals | `brand:business-context` (`business_context`), `target:weekly-health`, `policy:readout-audience` lenses | The Goals section, and which lens (`recipient-lens.md`) orders the sections |
-| The person's choice | `data/users/{id}/view` in page data (`db`) | A view the person picked wins over the default, on their own device and account only |
+| Signal | Source | Effect at build time |
+| ------ | ------ | -------------------- |
+| Atlas role: owner, admin, member | `get_status` `organizations.selected.role` | Owner and admin: Setup and Programs are expanded; a member: they start collapsed |
+| Relationship: in house, agency, owner | The publisher's `user:` record (`detail.relationship`) | Agency: the Programs and campaigns block sits above Profiles and the Goals show the client's; in house: Profiles lead; owner: Goals and the quarter's signal lead |
+| Goals | `brand:business-context`, `target:weekly-health`, `policy:readout-audience` lenses | The Goals lines, and which lens (`recipient-lens.md`) words the next step |
 
-The seven core answers are the rows of the Phase 5 core set in `onboarding-questions.md`; a profile is done when all seven are saved or declined (**5**, row 3). Match the viewer to a `user:` record by the Atlas caller's name or email in `get_status`; a record
-that carries neither (`user:primary-contact`) belongs to the person who answered onboarding, so use
-it only for the caller who is the profile's owner, and show "based on your saved role". A person
-with no record gets the role default and a one-line offer to tell Claude their role (the main
-thread asks question 2 from `onboarding-questions.md` on the next `/aspire:aspire`, never the
-page).
-
-Views: **Brand team** (Performance, Programs, Goals), **Agency** (Programs, Performance, Goals),
-**Leadership** (Goals, Performance, Programs). Organization, Setup, and Next step are always
-present. A lens never changes a number.
+The seven core answers are the rows of the Phase 5 core set in `onboarding-questions.md`; a profile
+is done when all seven are saved or declined (**5**, row 3). Match the publisher to a `user:` record
+by the Atlas caller's name or email in `get_status`; a record that carries neither
+(`user:primary-contact`) belongs to the person who answered onboarding, so use it only for the caller
+who is the profile's owner. A person with no record gets the role default. Never show the role, the
+relationship, or the matching on the page outside the footnote. A lens never changes a number.
 
 Post cards and charts are drawn only when a window has posts. A window with none shows "No posts in
 the last 28 days" with the date of the newest post Atlas holds, never a zero.
@@ -182,7 +212,7 @@ the last 28 days" with the date of the newest post Atlas holds, never a zero.
 ## 7. Live and snapshot
 
 - **Live.** The page declares `mcp` for the viewer's Aspire Atlas connection with exactly the tools
-  it reads (`get_status`, `search_calibrations`, `search_posts`, `search_insights`). It registers
+  it reads (`get_status`, `search_calibrations`, `search_posts`, `search_insights`, `list_hashtags`, `list_hashtag_posts`). It registers
   one `watchTool` per read and re-renders each section when its read returns, with the cache's
   `storedAt` as the freshness chip. Read each tool's input schema from this session's loaded
   tool definition before writing a call; never guess an argument, and never call a tool the
@@ -206,15 +236,13 @@ Declare, on every publish (the whole object):
 
 ```json
 {"mcp": {"servers": [{"server": "Aspire Atlas",
-   "tools": ["get_status", "search_calibrations", "search_posts", "search_insights"]}]},
- "db": {"rules": [
-   {"path": "data/users/{self}", "write": "interact"}]},
- "user": {}}
+   "tools": ["get_status", "search_calibrations", "search_posts", "search_insights",
+             "list_hashtags", "list_hashtag_posts"]}]}}
 ```
 
-`mcp` is a viewer-consented grant, which bars public sharing; `db` holds only each person's own
-view choice and done marks. Handle `null` from `claude.use("mcp")`, `db`, and `user`: render the
-snapshot and the default view. Never put a secret or an email in the page. The two ids the live reads
+`mcp` is a viewer-consented grant, which bars public sharing, and is the only capability the page
+declares: it stores nothing and asks nothing. Handle `null` from `claude.use("mcp")`: render the
+snapshot. Never put a secret or an email in the page. The two ids the live reads
 need (`asOrganizationId`, `asProfileId`) are the only Atlas ids it may hold; they grant nothing,
 because every read runs as the viewer. The snapshot holds names, counts, and links only.
 
@@ -225,7 +253,7 @@ D1 "Save".
 ## 9. Empty and unconfigured organizations
 
 The same layout, never a different page. Sections with no data show "Not set up yet" with the
-flow that fills them; the Setup checklist leads and is expanded. With no profile, the page is a
+flow that fills them; the Setup strip leads and is expanded. With no profile, the page is a
 setup page for the organization, shows no profile switcher, and is saved only as a personal page.
 Not tracked is never zero.
 
@@ -238,7 +266,7 @@ dashboard. A person can ask for the dashboard on an unconfigured organization wi
 
 Follow `agents/sample-artifact.md`: invented data, hyphenated sample handles, the most recent US
 holiday's sample brand and colors, every section at a small scale (two profiles, four setup
-rows, six posts, two programs, one discovery campaign), all three views, and a sample banner.
+rows, six posts, two programs, one discovery campaign), an Overview and two profile tabs, every section, and a sample banner.
 Declare no capability. Call no Atlas tool.
 
 ## 11. What it never does
