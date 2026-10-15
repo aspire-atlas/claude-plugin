@@ -89,6 +89,8 @@ import type { AgentRun, AtlasCreditsReading, AtlasReading, BandStats, Item, OrgS
 import { creditsView, fmtAtlasUsage, fmtCredits, isAtlasStatusCall, isAtlasToolName, readAtlasCredits, readAtlasOrg, readAtlasUsage } from './atlas-usage'
 import type { CreditsView } from './atlas-usage'
 import { ASPIRE, CRAB_CSS, breathOf, characterOf, crab } from './characters'
+import type { Character } from './characters'
+import { AGENT_CHARACTERS } from './costumes'
 import { GROUPS, ROSTER } from './roster'
 import type { RosterEntry } from './roster'
 import { clip, fitText, fmtTime, fmtTokens, modelName, textWidth, windowOf, xml } from './format'
@@ -154,7 +156,9 @@ let ticker: { cancel: () => void } | null = null
 // Whether the AbovePrompt slot is drawn at all on this surface. A render hook
 // never writes $.state (drawing is pure), so the count is a module variable: it
 // starts over on a hot reload and on /clear, and the next render counts again.
-const band: { renders: number; surface: string | null } = { renders: 0, surface: null }
+// `crab` is the bar's agent counter character: drawn at random from the agents' crabs when the bar loads or a new run starts.
+const band: { renders: number; surface: string | null; crab: Character | null } = { renders: 0, surface: null, crab: null }
+const pickCrab = (): Character => AGENT_CHARACTERS[Math.floor(Math.random() * AGENT_CHARACTERS.length)] as Character
 
 const tick = async ($: EngineInterface): Promise<void> => {
   const at = await $.clock.now()
@@ -201,6 +205,7 @@ async function reset($: EngineInterface): Promise<void> {
   await update($, isBandHidden, () => false)
   band.renders = 0
   band.surface = null
+  band.crab = null
   await update($, agents, () => [])
   await update($, panel, () => ({ isAutoOpened: false, open: DEFAULT_OPEN, leaving: null }))
 }
@@ -221,8 +226,8 @@ const shortTool = (tool: string): string => tool.replace(/^mcp__.*__/, '')
 
 const DONE = '#4caf6e'
 // The whole row is one SVG: the desktop wraps sibling elements onto new lines,
-// so title, bar, percent and the crab live in one drawing; only the agents
-// count and the dismiss are Buttons beside it.
+// so title, bar, percent, and the agent counter with its crab live in one
+// drawing, with blank Buttons laid over it to take the presses.
 const BAR_ROW_H = 22
 const BAR_H = 16
 const CRAB_W = 0
@@ -285,6 +290,23 @@ const barShapes = (title: string, shown: Shown, W: number): string => {
 <text class="m" x="${W - CRAB_W - 6}" y="${BAR_ROW_H / 2 + 4.5}" text-anchor="end" font-family="${FONT}" font-size="12.5" font-variant-numeric="tabular-nums">${percentOf(shown)}</text>
 `
 }
+
+// The band's right edge: the agent counter (a walking crab and the count) after the percent.
+const COUNT_W = 64
+const BAND_CRAB_SCALE = 0.6
+
+/** The band's whole row in one drawing: title, bar, percent, and the agent counter with its crab. */
+const bandSvg = (title: string, shown: Shown, W: number, count: number, character: Character): string => `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}">
+<style>
+.t{fill:#1f1f1f}.m{fill:#8a8a8a}.k{fill:#e4e4e2}.tk{fill:#b4b4b0}
+@media (prefers-color-scheme: dark){.t{fill:#ececec}.m{fill:#9a9a9a}.k{fill:#2c2c2c}.tk{fill:#5a5a5a}}
+${twinkleCss(shown)}
+</style>
+${CRAB_CSS}
+${barShapes(title, shown, W - COUNT_W)}
+${crab(W - COUNT_W + 4, (BAR_ROW_H - 30 * BAND_CRAB_SCALE) / 2, character, false, true, BAND_CRAB_SCALE)}
+<text class="m" x="${W - 8}" y="${BAR_ROW_H / 2 + 4.5}" text-anchor="end" font-family="${FONT}" font-size="12.5" font-variant-numeric="tabular-nums">×${count}</text>
+</svg>`
 
 const barSvg = (title: string, shown: Shown, W: number): string => `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}">
 <style>
@@ -858,7 +880,9 @@ export const register: Register = on => {
     try {
       await activate($, 'progress', 'aspire_progress')
       await count($, 'progressReports')
+      const before = await read($, progress)
       const p = await update($, progress, prev => mergeProgress(prev, e as unknown as ProgressInput))
+      if (!before || before.isFinished || before.title !== p?.title) band.crab = null
       const shown = shownOf(p, await read($, org), await read($, agents), planOf(await read($, turn), await read($, items), await $.clock.now()))
       const b = band
       const hidden = await read($, isBandHidden)
@@ -1172,31 +1196,39 @@ export const register: Register = on => {
     // The terminal's element table has an Svg that draws nothing: test the surface too.
     const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
 
-    // The crab and the count are one control: pressing either opens the agents panel. A Button holds
-    // only text, so the crab here is the glyph, not the drawing (an Svg cannot be pressed).
+    // Desktop: one Svg row, about 8 CSS px per reported column, with two invisible press areas over it: the title
+    // (change organization) and everything to its right (toggle the agents panel). Terminal: the same row as text.
+    const cols = e.props.bodyColumns
+    const svgW = Math.max(180, Math.min(1600, (cols || 100) * 8 - 16))
+    const titleW = Math.max(8, Math.min(30, title.length + 2, Math.floor(cols / 3)))
+    // The row's other cells, widths measured: label, percent, crab and count (about 4 + digits),
+    // and the gaps between the five cells. The bar takes what is left and is dropped
+    // when under 6 cells, so the row never wraps in a narrow terminal.
+    const fixedW = shown.label.length + percent.length + 4 + String(list.length).length + 2 * 4 + 2
+    const textBarW = Math.min(40, (cols || 100) - titleW - fixedW)
+    const barColor = shown.isFinished ? DONE : ASPIRE
+    // Pressing the title drafts the organization change in the prompt, as pressing an agent drafts its start: the person reads it
+    // and presses Enter, and the skill asks which organization with a question.
+    const changeOrg = () =>
+      void $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: '/aspire:aspire org', mode: 'replace' } as never).catch(() => undefined)
     const agentsButton = (
       <Button key="aspire-agents" label={`×${list.length}`} plain onPress={() => void togglePane($)}>
         <Text color={ASPIRE}>🦀</Text> ×{list.length}
       </Button>
     )
-    const dismiss = <Button key="aspire-band-hide" label="✕" role="dismiss" plain dimColor onPress={() => update($, isBandHidden, () => true)} />
-
-    // Desktop: one Svg row, about 8 CSS px per reported column; the rest is the
-    // count, the dismiss and their gaps. Terminal: the same row as text.
-    const cols = e.props.bodyColumns
-    const svgW = Math.max(180, Math.min(1600, (cols || 100) * 8 - 96))
-    const titleW = Math.max(8, Math.min(30, title.length + 2, Math.floor(cols / 3)))
-    // The row's other cells, widths measured: label, percent, crab and count (about 4 + digits),
-    // dismiss, and the gaps between the six cells. The bar takes what is left and is dropped
-    // when under 6 cells, so the row never wraps in a narrow terminal.
-    const fixedW = shown.label.length + percent.length + 4 + String(list.length).length + 1 + 2 * 5 + 2
-    const textBarW = Math.min(40, (cols || 100) - titleW - fixedW)
-    const barColor = shown.isFinished ? DONE : ASPIRE
+    // A Button holds text only and an Svg takes no press, so a blank Button lies over each part of the drawing, clipped to the row.
+    const overlay = (key: string, left: number, width: number, onPress: () => void) => (
+      <Box position="absolute" top={0} left={left} width={width} height={BAR_ROW_H} overflow="hidden" flexDirection="column">
+        <Button key={key} label={' '.repeat(Math.max(1, Math.floor(width / 8)))} plain onPress={onPress} />
+      </Box>
+    )
+    if (band.crab === null) band.crab = pickCrab()
+    const titleEnd = Math.min(svgW - 40, Math.round(16 + textWidth(fitText(title, 13, Math.max(60, (svgW - COUNT_W) * 0.4)), 13) + 8))
     const barRow = Svg ? (
-      <Box flexDirection="row" alignItems="center" gap={1}>
-        <Svg source={barSvg(title, shown, svgW)} alt={`${title}: ${shown.label}, ${percent}`} width={svgW} height={BAR_ROW_H} />
-        {agentsButton}
-        {dismiss}
+      <Box flexDirection="column">
+        <Svg source={bandSvg(title, shown, svgW, list.length, band.crab)} alt={`${title}: ${shown.label}, ${percent}, ${list.length} agents`} width={svgW} height={BAR_ROW_H} />
+        {overlay('aspire-org', 0, titleEnd, changeOrg)}
+        {overlay('aspire-agents', titleEnd, svgW - titleEnd, () => void togglePane($))}
       </Box>
     ) : (
       <Box flexDirection="row" gap={2}>
@@ -1208,7 +1240,6 @@ export const register: Register = on => {
         <Text bold wrap="truncate-end">{shown.label}</Text>
         <Text dimColor>{percent}</Text>
         {agentsButton}
-        {dismiss}
       </Box>
     )
 
@@ -1421,8 +1452,10 @@ export const register: Register = on => {
       const { Svg } = ui
       const W = Math.max(240, Math.min(900, (e.props.bodyColumns || 40) * 8 - 8))
       // A Button holds text only and an Svg takes no press, so rows of blank Buttons lie over a drawing: a press anywhere on it fires.
+      // Buttons are about 20px each, so the stack is clipped to the drawing's own height and width: otherwise a row's last Button
+      // overshoots into the next row and its hover highlight lands off the row it belongs to.
       const pressable = (key: string, height: number, onPress: () => void) => (
-        <Box position="absolute" top={0} left={0} flexDirection="column">
+        <Box position="absolute" top={0} left={0} width={W} height={height} overflow="hidden" flexDirection="column">
           {Array.from({ length: Math.ceil(height / 20) }, (_, n) => (
             <Button key={`${key}-${n}`} label={' '.repeat(Math.floor(W / 8))} plain onPress={onPress} />
           ))}
