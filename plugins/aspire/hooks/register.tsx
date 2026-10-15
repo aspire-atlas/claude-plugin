@@ -258,7 +258,7 @@ const DOC_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="46"
 @keyframes fa{0%,6%{opacity:0}22%,86%{opacity:1}96%,100%{opacity:0}}
 @media (prefers-reduced-motion: reduce){.d,.pp,.fa{animation:none}}
 </style>
-<rect class="pg" x="2" y="1" width="36" height="44" rx="7" stroke-width="1"/>
+<rect class="pg" x="2" y="1" width="36" height="44" rx="7" stroke-width="0.6"/>
 <rect class="ln d" x="9" y="7" width="14" height="3.4" rx="1.7"/>
 <text class="ab fa" x="8.5" y="26" font-family="Georgia,serif" font-size="15" font-weight="600">A</text>
 <rect class="ls d d2" x="19" y="15" width="13" height="2.6" rx="1.3"/>
@@ -1342,7 +1342,7 @@ export const register: Register = on => {
     const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
     // The icon is the card's full height: border, title, the description's wrapped lines (about 70 characters a line), the
     // reminder and the button row, in CSS pixels, since an Svg takes a size and not a percentage.
-    const iconH = 2 + 22 + (description ? Math.min(4, Math.ceil(clip(description, 240).length / 70)) * 20 : 0) + 52 + 32
+    const iconH = 2 + 22 + (description ? Math.min(4, Math.ceil(clip(description, 240).length / 70)) * 20 : 0) + 52 + 10
     const share = () => {
       void $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: slackDraft(url), mode: 'replace' } as never).catch(() => undefined)
       $.ui.toast('◆ Aspire · A Slack message is drafted in the prompt box. Press Enter to ask Claude to share it.', { timeoutMs: 6000 })
@@ -1352,19 +1352,19 @@ export const register: Register = on => {
         <Box flexDirection="column">
           {Svg ? <Svg source={DOC_ICON} alt="Artifact" width={Math.round((iconH * 40) / 46)} height={iconH} /> : <Text color={ASPIRE} bold>◆</Text>}
         </Box>
-        <Box flexDirection="column" flexGrow={1}>
+        <Box flexDirection="column" flexGrow={1} flexShrink={1} minWidth={0}>
           <Link href={url}>
             <Text bold wrap="truncate-end">{title}</Text>
           </Link>
           {description ? <Text wrap="wrap">{clip(description, 240)}</Text> : null}
-          {/* The Slack mark, then the text Button (a Button holds text only, so the mark itself cannot take the press). */}
-          <Box flexDirection="row" gap={1}>
+          {/* A light info box: the friendly reminder, then the share control (the Slack mark and the Button; a Button holds text only, so the
+              mark itself cannot take the press), in the Aspire teal on a dim border (a fixed fill could not follow light and dark). */}
+          <Box flexDirection="row" alignItems="center" width="100%" gap={1} borderStyle="round" borderColor={ASPIRE} borderDimColor paddingX={1}>
+            <Box flexGrow={1} flexShrink={1} minWidth={0}>
+              <Text color={ASPIRE} wrap="wrap">ⓘ Friendly reminder: Share this artifact with your team.</Text>
+            </Box>
             {Svg ? <Svg source={SLACK_MARK} alt="Slack" width={18} height={18} /> : null}
-            <Button key="aspire-artifact-slack" label="Post to Slack" onPress={share} />
-          </Box>
-          {/* A light info box: the friendly reminder, in the Aspire teal on a dim border (a fixed fill could not follow light and dark). */}
-          <Box borderStyle="round" borderColor={ASPIRE} borderDimColor paddingX={1}>
-            <Text color={ASPIRE} wrap="wrap">ⓘ Friendly reminder: Share this artifact with your team.</Text>
+            <Button key="aspire-artifact-slack" label="Post to Slack" onPress={share}>Post to Slack ↗</Button>
           </Box>
         </Box>
       </Box>
