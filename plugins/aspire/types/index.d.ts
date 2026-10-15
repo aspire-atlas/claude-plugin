@@ -115,6 +115,9 @@ export type AgentRun = {
   items?: Item[]
 }
 
+/** The queued notice above the prompt: the pressed agent and the clock time it was set. */
+export type Notice = { type: string; name: string; id: number }
+
 export type Panel = {
   /** The panel opened by itself once this session (first aspire:* agent). */
   isAutoOpened: boolean
@@ -256,6 +259,8 @@ declare module 'claude-code' {
       agents: AgentRun[]
       panel: Panel
       now: number
+      /** The queued notice above the prompt; null when none shows. `id` is the clock time it was set. */
+      notice: Notice | null
     }
   }
 }
