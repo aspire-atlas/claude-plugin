@@ -978,6 +978,31 @@ for (const surface of ['terminal', 'desktop'] as const) {
   })
 }
 
+test("the Artifact card finds the page link in the tool's plain text and in text blocks, not only in an object", async ($, on) => {
+  world(on, () => WITH_COSTS)
+  engineRow(on)
+  on('tool.call', { tool: 'Artifact' }, () => ({ result: { url: ARTIFACT_URL }, text: 'Published' }) as never)
+  await typeAspire($)
+  const card = async (id: string, output: unknown) => {
+    const ui = await artifactRow($, 'terminal', id, output)
+    const links = (await ui.findAll({ type: 'Link' })).map(l => l.props.href)
+    await ui.unmount()
+    return links
+  }
+  const text = `Published /tmp/weekly-readout.html at ${ARTIFACT_URL} (Version 2, version id 1792096198-22a2)\n\nLive subscription: already connected.`
+  await publish($, 'txt-1')
+  expect(await card('txt-1', text)).toEqual([ARTIFACT_URL])
+  await publish($, 'txt-2')
+  expect(await card('txt-2', [{ type: 'text', text }])).toEqual([ARTIFACT_URL])
+  await publish($, 'txt-3')
+  expect(await card('txt-3', { content: [{ type: 'text', text }] })).toEqual([ARTIFACT_URL])
+  // Text with no Artifact link, or a link to another site, is not a card.
+  await publish($, 'txt-4')
+  expect(await card('txt-4', 'Published, no link here')).toEqual([])
+  await publish($, 'txt-5')
+  expect(await card('txt-5', 'See https://example.com/artifact/abc123')).toEqual([])
+})
+
 test('Post to Slack only drafts a prompt (with the URL and the ask-first wording) and toasts; nothing is submitted', async ($, on) => {
   world(on, () => WITH_COSTS)
   engineRow(on)

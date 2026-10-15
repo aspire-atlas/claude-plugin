@@ -294,19 +294,7 @@ const shortTool = (tool: string): string => tool.replace(/^mcp__.*__/, '')
 const published = new Map<string, { title?: string; description?: string; file?: string }>()
 const MAX_PUBLISHED = 50
 const str = (v: unknown): string | undefined => (typeof v === 'string' && v.trim() ? v.trim() : undefined)
-const ARTIFACT_URL_RE = /https:\/\/claude\.ai\/artifact\/[A-Za-z0-9_-]+/g
-/** The first claude.ai artifact link in a plain-text tool result (a string, or an object with `text`, or content blocks of text). */
-const artifactUrlIn = (v: unknown): string | undefined => {
-  if (typeof v === 'string') return v.match(ARTIFACT_URL_RE)?.[0]
-  if (!v || typeof v !== 'object') return undefined
-  const o = v as Readonly<Record<string, unknown>>
-  if (typeof o.text === 'string') return artifactUrlIn(o.text)
-  if (Array.isArray(o.content)) for (const b of o.content) {
-    const u = artifactUrlIn((b as { text?: unknown } | null)?.text)
-    if (u) return u
-  }
-  return undefined
-}
+const ARTIFACT_URL_RE = /https:\/\/claude\.ai\/(?:code\/)?artifact\/[A-Za-z0-9_-]+/g
 /** Artifact links a subagent hand-back has already logged, bounded. */
 const loggedLinks = new Set<string>()
 const MAX_LOGGED = 100
@@ -316,6 +304,19 @@ const titleNear = (text: string, url: string): string | undefined => {
   const before = text.slice(Math.max(0, at - 120), at)
   const m = before.match(/["“*]([^"”*\n]{3,80})["”*]\s*(?:\(|[-–—:]|at|is|published)?\s*$/)
   return m?.[1]?.trim()
+}
+const ARTIFACT_LINK = /https:\/\/claude\.ai\/(?:code\/)?artifact\/[A-Za-z0-9_-]+/
+/** The page link in an Artifact result, whatever shape the row hands over: an object with a `url`, the tool's plain text ("Published ... at https://claude.ai/artifact/..."), or text blocks. */
+const artifactUrl = (out: unknown, depth = 0): string | undefined => {
+  if (typeof out === 'string') return out.match(ARTIFACT_LINK)?.[0]
+  if (!out || typeof out !== 'object' || depth > 3) return undefined
+  const direct = str((out as Record<string, unknown>).url)
+  if (direct) return direct
+  for (const v of Array.isArray(out) ? out : Object.values(out)) {
+    const found = artifactUrl(v, depth + 1)
+    if (found) return found
+  }
+  return undefined
 }
 const slackDraft = (url: string): string =>
   `Share this artifact on Slack: ${url}. Ask me with AskUserQuestion which channel or person, write a short message, show it, and post only after I confirm.`
@@ -1508,10 +1509,8 @@ export const register: Register = on => {
   // one press drafts a Slack prompt in the prompt box and never sends it.
   on('ui.render', { component: 'ToolResult' }, async ($, e, next) => {
     if (e.props.tool !== 'Artifact' || e.props.isErrored || !(await isOn($))) return next(e)
-    // The host passes the result as plain text ("Published ... at https://claude.ai/artifact/ID (Version 1 ...)"), or as an object with a `url`.
-    const raw = e.props.output
-    const out = (raw && typeof raw === 'object' ? raw : {}) as Readonly<Record<string, unknown>>
-    const url = str(out.url) ?? artifactUrlIn(raw)
+    const out = (e.props.output !== null && typeof e.props.output === 'object' && !Array.isArray(e.props.output) ? e.props.output : {}) as Readonly<Record<string, unknown>>
+    const url = artifactUrl(e.props.output)
     const meta = published.get(e.props.tool_use_id)
     if (!url || !/^https:\/\//.test(url) || out.opened === true || !meta) return next(e)
     const title = str(out.title) ?? meta.title ?? (meta.file ? meta.file.replace(/^.*\//, '').replace(/\.[^.]+$/, '') : undefined) ?? 'Artifact'
