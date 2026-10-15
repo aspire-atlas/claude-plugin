@@ -306,6 +306,22 @@ test("the bar's agents button opens the panel", async ($, on) => {
   expect(opened).toEqual(['aspire-agents'])
 })
 
+test("the right-panel icon at the bar's far right opens the panel, on desktop and in the terminal", async ($, on) => {
+  const opened: string[] = []
+  world(on, () => WITH_COSTS, opened)
+  await typeAspire($)
+  for (const surface of ['desktop', 'terminal'] as const) {
+    const ui = await $.ui.mount({ plugin: PLUGIN, surface, component: 'AbovePrompt', props: band as never })
+    if (surface === 'desktop') {
+      const sources = (await ui.findAll({ type: 'Svg' })).map(el => String(el.props.source))
+      expect(sources.some(src => src.includes('<rect class="pk"'))).toBe(true)
+    }
+    await ui.press({ key: 'aspire-open-panel' })
+    await ui.unmount()
+  }
+  expect(opened).toEqual(['aspire-agents', 'aspire-agents'])
+})
+
 test('an agent reports its steps; the panel draws them, and the main session cannot', async ($, on) => {
   world(on, () => WITH_COSTS)
   await spawn($, 'aspire:atlas-market-signal', 'Signal for the week')

@@ -295,19 +295,26 @@ const barShapes = (title: string, shown: Shown, W: number): string => {
 const BAND_CRAB_SCALE = 0.6
 const BAND_CRAB_W = 36 * BAND_CRAB_SCALE
 /** The crab and the count sit together at the row's right edge: this is the room they take, gaps included. */
+/** The far right edge: the right-panel icon that opens the side panel. */
+const EDGE_W = 30
+const panelIcon = (x: number): string => {
+  const y = (BAR_ROW_H - 14) / 2
+  return `<g transform="translate(${x},${y})"><rect class="pk" x="0.75" y="0.75" width="18.5" height="12.5" rx="2.5" fill="none" stroke-width="1.5"/><path class="pf" d="M12 1.5h5.5a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H12z"/></g>`
+}
 const countWidth = (count: number): number => Math.ceil(8 + textWidth(`×${count}`, 12.5) + 4 + BAND_CRAB_W + 10)
 
 /** The band's whole row in one drawing: title, bar, percent, and the agent counter with its crab. */
 const bandSvg = (title: string, shown: Shown, W: number, count: number, character: Character): string => `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}">
 <style>
-.t{fill:#1f1f1f}.m{fill:#8a8a8a}.k{fill:#e4e4e2}.tk{fill:#b4b4b0}
-@media (prefers-color-scheme: dark){.t{fill:#ececec}.m{fill:#9a9a9a}.k{fill:#2c2c2c}.tk{fill:#5a5a5a}}
+.t{fill:#1f1f1f}.m{fill:#8a8a8a}.k{fill:#e4e4e2}.tk{fill:#b4b4b0}.pk{stroke:#8a8a8a}.pf{fill:#8a8a8a}
+@media (prefers-color-scheme: dark){.t{fill:#ececec}.m{fill:#9a9a9a}.k{fill:#2c2c2c}.tk{fill:#5a5a5a}.pk{stroke:#9a9a9a}.pf{fill:#9a9a9a}}
 ${twinkleCss(shown)}
 </style>
 ${CRAB_CSS}
-${barShapes(title, shown, W - countWidth(count))}
-${crab(W - countWidth(count) + 10, (BAR_ROW_H - 30 * BAND_CRAB_SCALE) / 2, character, false, true, BAND_CRAB_SCALE)}
-<text class="m" x="${W - 8}" y="${BAR_ROW_H / 2 + 4.5}" text-anchor="end" font-family="${FONT}" font-size="12.5" font-variant-numeric="tabular-nums">×${count}</text>
+${barShapes(title, shown, W - EDGE_W - countWidth(count))}
+${crab(W - EDGE_W - countWidth(count) + 10, (BAR_ROW_H - 30 * BAND_CRAB_SCALE) / 2, character, false, true, BAND_CRAB_SCALE)}
+<text class="m" x="${W - EDGE_W - 8}" y="${BAR_ROW_H / 2 + 4.5}" text-anchor="end" font-family="${FONT}" font-size="12.5" font-variant-numeric="tabular-nums">×${count}</text>
+${panelIcon(W - EDGE_W + 4)}
 </svg>`
 
 const barSvg = (title: string, shown: Shown, W: number): string => `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}">
@@ -747,7 +754,21 @@ async function statusText($: EngineInterface): Promise<string> {
   return [state, counts, status, bar, drawn, `Claude Code ${version} on ${surfaces}.`].join('\n')
 }
 
+// Opens the agents pane and leaves it open when it already is.
+async function openPane($: EngineInterface): Promise<void> {
+  const at = await $.clock.now()
+  await update($, now, () => at)
+  await $.ui.open({ id: PANE, title: PANE_TITLE })
+}
+
 // ---------------------------------------------------------------------------
+
+// Opens the agents pane and leaves it open when it already is.
+async function openPane($: EngineInterface): Promise<void> {
+  const at = await $.clock.now()
+  await update($, now, () => at)
+  await $.ui.open({ id: PANE, title: PANE_TITLE })
+}
 
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
@@ -1225,12 +1246,13 @@ export const register: Register = on => {
       </Box>
     )
     if (band.crab === null) band.crab = pickCrab()
-    const titleEnd = Math.min(svgW - 40, Math.round(16 + textWidth(fitText(title, 13, Math.max(60, (svgW - countWidth(list.length)) * 0.4)), 13) + 8))
+    const titleEnd = Math.min(svgW - EDGE_W - 40, Math.round(16 + textWidth(fitText(title, 13, Math.max(60, (svgW - EDGE_W - countWidth(list.length)) * 0.4)), 13) + 8))
     const barRow = Svg ? (
       <Box flexDirection="column">
         <Svg source={bandSvg(title, shown, svgW, list.length, band.crab)} alt={`${title}: ${shown.label}, ${percent}, ${list.length} agents`} width={svgW} height={BAR_ROW_H} />
         {overlay('aspire-org', 0, titleEnd, changeOrg)}
-        {overlay('aspire-agents', titleEnd, svgW - titleEnd, () => void togglePane($))}
+        {overlay('aspire-agents', titleEnd, svgW - EDGE_W - titleEnd, () => void togglePane($))}
+        {overlay('aspire-open-panel', svgW - EDGE_W, EDGE_W, () => void openPane($).catch(() => undefined))}
       </Box>
     ) : (
       <Box flexDirection="row" gap={2}>
@@ -1242,6 +1264,8 @@ export const register: Register = on => {
         <Text bold wrap="truncate-end">{shown.label}</Text>
         <Text dimColor>{percent}</Text>
         {agentsButton}
+        <Box flexGrow={1} />
+        <Button key="aspire-open-panel" label="◨" plain onPress={() => void openPane($).catch(() => undefined)} />
       </Box>
     )
 
