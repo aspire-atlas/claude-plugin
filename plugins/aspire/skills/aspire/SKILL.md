@@ -5,7 +5,8 @@ description: >
   YouTube, see what's working, benchmark competitors, and check brand safety. Find and brief
   creators, keep a campaign shortlist, review posts, run an influencer program from outreach to payments, track what creators say about you vs.
   competitors, and get daily, weekly, and quarterly reports shaped for whoever will act on
-  them. Use for "/aspire", "/aspire agents", "get started with Atlas", "connect Atlas",
+  them. Use for "/aspire", "/aspire agents", "get started with Atlas", "what can /aspire do",
+  "first time with Atlas", "connect Atlas",
   "onboard my brand", "connect my Instagram", "what happened yesterday", "how did last week
   go", "schedule the weekly readout", "find creators for the campaign", "refill the
   shortlist", "vet these creators", "which of these creators should we approve", "we launch on the 14th and need creators", "review this post", "check this
@@ -16,8 +17,8 @@ description: >
   client's decisions", "record a reply", "set up our influencer program", "where is the
   {program} program", "write to the approved creators", "send product to the creators", "set up
   affiliate codes", "did the creators post", "request rights", "what do we owe creators",
-  "program dashboard", "what's next", "what should we do next", "next actions", or "/aspire fee
-  calculator".
+  "set up Instagram Shop", "TikTok Shop", "sell on TikTok", "program dashboard", "what's
+  next", "what should we do next", "next actions", or "/aspire fee calculator".
 metadata:
   author: Aspire
 ---
@@ -47,7 +48,8 @@ Text after the command is the argument. Route on it before anything else:
 | `program` (also `influencer program`, `creator program`, `ambassador program`, `affiliate program`, `gifting program`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Influencer program** below. Skip the other phases. |
 | `next` (also `what's next`, `next actions`, `orchestrator`, and the hourly "Atlas next actions" task) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Orchestrator** below. Skip the other phases. |
 | `cas campaign` (also `creator ad campaign`, `campaign manager`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **CAS campaign** below. Skip the other phases. |
-| empty, or anything else | Run the phases in order, starting at Phase 1. Treat the text as context. |
+| `shops` (also `shop`, `instagram shop`, `tiktok shop`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Shops** below. Skip the other phases. |
+| empty, or anything else | Run the phases in order, starting at Phase 1. Treat the text as context. On an unconfigured organization, Phase 2 + 3 publishes the first-run guide before the next phase (**First-run guide** there). |
 
 ### List agents
 
@@ -103,6 +105,7 @@ time so it never goes stale; never recite it from memory.
    | `atlas-program-dashboard` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Program dashboard** |
    | `atlas-program-ledger` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Program ledger** |
    | `atlas-campaign-orchestrator` | Phase 1, then Phase 2 + 3, then **Orchestrator** (Setup if it has never run) |
+   | `atlas-shops` | Phase 1, then Phase 2 + 3, then **Shops** (its shop and stage questions first) |
 
    Older names still reach the renamed agents: `atlas-account-analyst` is `atlas-profile-analyst`,
    `atlas-daily-readout` is `atlas-daily-insights-report`, and `atlas-weekly-readout` is
@@ -373,6 +376,17 @@ call is being made. Write a fresh one per call.
    - Profiles with channels → **existing**. Give a 3 to 5 bullet summary (profile, channels,
      any expired auth), then run Phase 5 gap check and offer Phase 6, the weekly creator
      brief (see **Creator brief** below), or a re-connect for expired channels.
+     **Reserved:** a later release will publish a dashboard of the organization's current
+     state when `/aspire:aspire` runs bare on a configured organization. Until then this
+     route gives the status summary above, unchanged.
+5. **First-run guide.** When the phases run from the top (empty argument or onboarding
+   context, never a named flow) and the organization is unconfigured (new org, profile only,
+   or existing with no brand context on any linked profile, from the Phase 5 calibration
+   read), publish the starter page in `references/first-run.md` once per organization per
+   session, say one line with the link, and continue at the phase the route names in the same
+   reply. It runs only after `get_status` answered: when Phase 1 finds Atlas not connected, the
+   guided add comes alone, with no page. It never blocks or replaces a phase, and never runs
+   unattended. The reference holds the trigger rules, the page, and the re-run rules.
 
 Once a profile is chosen or created, keep its `id` in working state as `profile_id` and its
 `slug` as `profile_slug`. Pass `asProfileId` = `profile_id` to every Atlas tool whose schema
@@ -583,16 +597,24 @@ against competitors goes to **Market signal**.
    handle with `lookup_creators` when Atlas holds nothing or the record is over 24 hours old,
    then writes findings back with `append_insights` under one `runKey` per run (`own`:
    `onboarding-{profile}-{date}` for the onboarding run, else `account-review-{profile}-own-{date}`; `handle`: `account-review-{profile}-{handle}-{date}`).
-6. Present the subagent's executive summary: headline, 3 to 5 insights with numbers, next
-   week's three content pushes (mode `own`), 2 to 3 ranked next steps, data gaps. Offer the
-   creator brief in one line when a push needs creators. In mode `handle`, lead the data gaps with the freshness the
-   agent reports (indexed through {timestamp}, refreshed or not). Offer to go deeper on any
-   item, and mention the findings are saved in Atlas and searchable later.
-7. Deliver the summary visually per the **Visual output** rule below: a card view of the top
-   and bottom posts with their media, and one chart of the engagement pattern the headline
-   rests on. In mode `handle`, lead with the account's creator card inline, before the
-   summary, rendered from the agent's `creator-cards` block. When the reviewed account is a
-   creator, offer its full profile in one line after the summary (**Creator profile**).
+6. **The page is the main thread's job, and the reply waits for it.** The agent never
+   publishes: it returns the summary and a `visual-data` block (and a `creator-cards` block in
+   mode `handle`). When its result arrives, build and publish the page from that block per
+   **Visual output** (and the saved theme) **before** writing the reply. Never relay the summary
+   first and offer the page afterwards, and never ask whether the user wants it: the page is part
+   of the deliverable. Only a session with no page tool (no Artifact, no `SendUserFile`) falls
+   back to inline cards in the reply, and says so in one line.
+7. Present the page link, then the agent's executive summary: headline, 3 to 5 insights with
+   numbers, next week's three content pushes (mode `own`), 2 to 3 ranked next steps, data
+   gaps. The page holds a card view of the top and bottom posts with their media, and one
+   chart of the engagement pattern the headline rests on. In mode `handle`, lead with the
+   account's creator card inline, before the summary, rendered from the agent's
+   `creator-cards` block. Offer the creator brief in one line when a push needs creators. In
+   mode `handle`, lead the data gaps with the freshness the agent reports (indexed through
+   {timestamp}, refreshed or not). Offer to go deeper on any item, mention the findings are
+   saved in Atlas and searchable later, and when the reviewed account is a creator, offer its
+   full profile in one line (**Creator profile**). Then offer the decision audit (**Decision
+   audit**).
 8. Unattended run with no `AskUserQuestion` available: default to `own` mode, never start a
    lookup, and write nothing to Atlas; the agent returns the findings and pushes only.
 
@@ -1917,6 +1939,52 @@ that it needs a person to supply the post, and stop.
 
 ---
 
+## Shops (Instagram Shop and TikTok Shop setup and management)
+
+Trigger when the user wants to set up, open, or run an Instagram Shop or a TikTok Shop, sell
+through Instagram or TikTok, or work out which posts and creators should drive shop sales ("set
+up Instagram Shop", "open a TikTok Shop", "sell on TikTok", "should we open a TikTok Shop",
+"tag products on Instagram", "TikTok Shop affiliates", "manage our TikTok Shop"). Requires a
+brand profile; a linked Instagram or TikTok channel gives the plan its posts and lets it save.
+Full detail lives in `references/shops.md`.
+
+The plan is guidance. Claude never signs in to, submits, or changes anything in Commerce
+Manager, Seller Center, a shop, or a store, and never asks for business documents, tax ids, or
+payout details; the brand's team does each step. Shops is interactive only. Never schedule it;
+with no `AskUserQuestion`, say in one line that the shops plan needs a person to answer its
+questions, and stop.
+
+1. **Connections.** Detect a store connection per `references/program.md` **4** and pass
+   `connections`. The plan only reads products and stock from it. Without one, say once in one
+   line that a connected store lets the plan check products and stock, and go on.
+2. **Ask** W1 and W2 from the reference in one `AskUserQuestion` call with the **Reading the
+   ask** confirmation (`team` by default; `leadership` for "should we open one"; `growth` for
+   which creators or products should drive shop sales; `campaign` when a launch date is named),
+   skipping what the user already said. With no linked channel, say the plan will have no posts
+   to work from and can't be saved, offer Phase 4.2 in one line, and go on page only if the user
+   wants.
+3. Launch `atlas-shops` with the tool prefix, `profile_id`, `profile_slug`, the linked handles
+   and networks, `pass: propose`, W1 and W2, anything the user named (launch date, products,
+   markets, fulfillment, owner, commission), `connections`, and `recipient`, ending with the
+   decision-audit line. No confirmation is needed: `propose` writes nothing.
+4. Relay the page link, the headline, one readiness line per shop, the first three steps, and
+   the top creators as creator cards from the agent's `creator-cards` block. Then ask, four per
+   `AskUserQuestion` call, the W3 your-call items exactly as the agent worded them, then W4
+   (save). Skip W4 when the profile has no linked channel.
+5. "Change something" relaunches `pass: propose` with the change as an override. Otherwise
+   launch again with `pass: record`, the `shops-packet`, and the answers. W4 "Save the plan" is
+   the write confirmation and covers the page finding; "Page only" writes nothing.
+6. Relay what was written, then offer the agent's hand-offs once as W5, header "Next": up to
+   three as the agent worded them, and "Not now". Each runs through its own section with its own
+   confirmations (**Creator discovery**, **Content sourcing**, **Ad reuse**, **PPA pitch**,
+   **Influencer program**). The plan never starts discovery, drafts outreach, or requests rights
+   itself.
+
+On the first publish, say once: "Requirements change. Commerce Manager and Seller Center show
+the current ones for your market."
+
+---
+
 ## Readouts (daily and weekly performance digests)
 
 Trigger when the user asks for a daily or weekly readout, "what happened yesterday", "how
@@ -2205,8 +2273,9 @@ most recent US holiday. Full rules are in `references/agents/sample-artifact.md`
 name ("what does the vetting agent do?", "what's a PPA pitch?"), answer in two or three plain
 sentences, then ask with `AskUserQuestion`, header "Sample": "Would you like a sample
 {page name} to see what it makes?" Options: "Show me a sample (Recommended)" / "Not now". For a
-question about Atlas as a whole, ask which agent's sample to show instead, up to four agents as
-options with the rest named in the question text. Ask at most once per agent per session, never
+question about Atlas as a whole ("what can /aspire do"), publish the starter page from
+`references/first-run.md` (**7**, on request), then ask which agent's sample to show instead, up
+to four agents as options with the rest named in the question text. Ask at most once per agent per session, never
 in the middle of a running flow, and never in an unattended run.
 
 **Running it.** No Atlas connection, profile, or Phase 1 is needed, and nothing is confirmed,

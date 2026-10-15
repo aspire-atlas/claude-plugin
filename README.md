@@ -61,6 +61,10 @@ Notes:
 
 Full details in the [plugin README](plugins/aspire/README.md).
 
+## Band and agents panel in Claude Code
+
+From 4.0.0, once `/aspire` runs in a Claude Code session, the plugin shows a band above the prompt (Atlas token costs, response speed, prompt cache, context) and an Aspire agents panel (`/aspire-agents-info`). It reads only what already passes through the session and makes no network, file, or process calls. Details in the [plugin README](plugins/aspire/README.md#band-and-agents-panel-claude-code).
+
 ## Support
 
 - Maintainers: [docs/PLUGIN-LIFECYCLE.md](docs/PLUGIN-LIFECYCLE.md) and [CONTRIBUTING.md](CONTRIBUTING.md)
@@ -70,4 +74,4 @@ Full details in the [plugin README](plugins/aspire/README.md).
 
 ## License
 
-[Apache-2.0](LICENSE). Copyright Aspire.
+[Apache-2.0](LICENSE). Copyright Aspire. The Claude Code mod includes code adapted from [claude-kit](https://github.com/johnnyvizz/claude-kit) under the MIT License; its notice is kept in the files that carry that code.
