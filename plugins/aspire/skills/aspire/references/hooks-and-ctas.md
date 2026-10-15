@@ -92,7 +92,7 @@ Atlas holds: no lookups, no marketplace, no discovery.
    `search_posts` with `queryText` set to the hook's "Said" line, filtered to the creator, helps
    when the transcript is missing. No match: the post is "off brief" for this review.
 3. **Score each hook.** Per hook, the matched posts' views per follower against each creator's
-   own median (the ad reuse retention proxy). A hook with 3 or more matched posts gets a
+   own median (the engagement proxy behind ad reuse's Retention score). A hook with 3 or more matched posts gets a
    result: **led** at 1.5x the median or more, **lagged** under 1x, **held** between. Fewer is
    "not measurable yet". A hook no creator used is **not used**.
 4. **Show it.** One table per lane on the campaign page, under the brief: hook, pattern,

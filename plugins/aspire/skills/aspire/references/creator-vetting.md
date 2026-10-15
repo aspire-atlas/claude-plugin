@@ -359,6 +359,10 @@ lanes (SKILL.md, **Guardrails**). R4 is answered by the CAS Run picker.
 - A component Atlas holds no data for scores zero and is listed as missing. The one exception
   is hook rate on TikTok, which Atlas does not report: score the other four out of 75, scale
   to 100, and say so on the card ("Scored without hook rate, which TikTok doesn't report").
+- For the paid track record, read the discovery finding's `detail.recommendationTypes` when
+  present. It is supporting evidence, never a score of its own: cite it in plain words, for
+  example "Meta ranks this creator under high ad performance", and leave the points above as
+  they are.
 - Brand safety runs exactly as today, and every hard stop still decides first.
 
 **The recommendation is the slate call.** Approve, Maybe, or Reject, by **The recommendation**
