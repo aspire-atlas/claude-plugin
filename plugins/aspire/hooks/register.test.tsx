@@ -78,7 +78,8 @@ const bandShows = async ($: Engine, surface: 'terminal' | 'desktop', text: RegEx
 const barShows = async ($: Engine, surface: 'terminal' | 'desktop', text: string) => {
   const ui = await $.ui.mount({ plugin: PLUGIN, surface, component: 'AbovePrompt', props: band as never })
   try {
-    return (await ui.findAll({ type: 'Button' })).some(el => String(el.props.label).includes(text))
+    const drawn = [...(await ui.findAll({ type: 'Button' })).map(el => el.props.label), ...(await ui.findAll({ type: 'Svg' })).map(el => el.props.alt)]
+    return drawn.some(d => String(d).includes(text))
   } finally {
     await ui.unmount()
   }
@@ -157,12 +158,14 @@ for (const surface of ['terminal', 'desktop'] as const) {
   })
 }
 
-test('desktop: the bar is a row of Buttons holding its items, with no Svg and no overlays', async ($, on) => {
+test('desktop: the bar is a row of Buttons with the dithered meter Svg between them, and no overlays', async ($, on) => {
   world(on, () => WITH_COSTS)
   await typeAspire($)
   await getStatus($)
   const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'AbovePrompt', props: band as never })
-  expect(await ui.findAll({ type: 'Svg' })).toHaveLength(0)
+  const svgs = await ui.findAll({ type: 'Svg' })
+  expect(svgs).toHaveLength(1)
+  expect(String(svgs[0].props.source)).toContain('#3B8A82')
   expect(String((await ui.find({ key: 'aspire-org' }))?.props.label)).toBe('● Aspire: Sample Brand')
   const agents = String((await ui.find({ key: 'aspire-agents' }))?.props.label)
   expect(agents).toContain('🦀 ×0')
@@ -304,7 +307,6 @@ test("the right-panel icon at the bar's far right opens the panel, on desktop an
   for (const surface of ['desktop', 'terminal'] as const) {
     const ui = await $.ui.mount({ plugin: PLUGIN, surface, component: 'AbovePrompt', props: band as never })
     expect(await ui.find({ key: 'aspire-open-panel' })).toBeTruthy()
-    expect(await ui.findAll({ type: 'Svg' })).toHaveLength(0)
     await ui.press({ key: 'aspire-open-panel' })
     await ui.unmount()
   }

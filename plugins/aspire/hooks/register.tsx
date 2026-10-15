@@ -245,14 +245,9 @@ const twinkleCss = (shown: Shown): string => `.t0,.t1,.t2,.t3{animation:tw ${sho
 @keyframes tw{0%,100%{opacity:1}50%{opacity:${shown.isFinished ? 0.8 : 0.3}}}
 @media (prefers-reduced-motion: reduce){.t0,.t1,.t2,.t3{animation:none}}`
 
-/** The bar row's shapes, without a style block: the band wraps them in their own, the panel's progress card in the panel's. */
-const barShapes = (title: string, shown: Shown, W: number): string => {
-  // The title takes what it needs, up to 40% of the row; the bar takes the rest.
-  const label = fitText(title, 13, Math.max(60, W * 0.4))
-  const BAR_X = Math.round(16 + textWidth(label, 13) + 12)
-  const BAR_W = Math.max(60, W - BAR_X - 46 - CRAB_W)
+/** The dithered bar and its step pill at (0,0): BAR_W wide, BAR_H tall. */
+const meterGroup = (shown: Shown, BAR_W: number): string => {
   const color = shown.isFinished ? DONE : ASPIRE
-  const y0 = (BAR_ROW_H - BAR_H) / 2
   const fillW = Math.round(BAR_W * shown.ratio)
 
   // Dithered fill: sparse at the start, dense toward the head.
@@ -276,20 +271,44 @@ const barShapes = (title: string, shown: Shown, W: number): string => {
   const pillX = Math.max(0, Math.min(BAR_W - pillW, fillW - pillW))
 
   return `<defs><clipPath id="aspire-bar-clip"><rect x="0" y="0" width="${BAR_W}" height="${BAR_H}" rx="${BAR_H / 2}"/></clipPath></defs>
-<circle cx="5" cy="${BAR_ROW_H / 2}" r="4" fill="${color}"/>
-<text class="t" x="16" y="${BAR_ROW_H / 2 + 4.5}" font-family="${FONT}" font-size="13" font-weight="500">${xml(label)}</text>
-<g transform="translate(${BAR_X},${y0})">
 <rect class="k" width="${BAR_W}" height="${BAR_H}" rx="${BAR_H / 2}"/>
 <g clip-path="url(#aspire-bar-clip)">
 <g fill="${color}">${dots.join('')}</g>
 <g class="tk">${ticks.join('')}</g>
 </g>
 <rect x="${pillX}" width="${pillW}" height="${BAR_H}" rx="${BAR_H / 2}" fill="${color}"/>
-<text x="${pillX + pillW / 2}" y="${BAR_H / 2 + 4}" text-anchor="middle" font-family="${FONT}" font-size="11" font-weight="600" fill="#ffffff">${xml(pill)}</text>
+<text x="${pillX + pillW / 2}" y="${BAR_H / 2 + 4}" text-anchor="middle" font-family="${FONT}" font-size="11" font-weight="600" fill="#ffffff">${xml(pill)}</text>`
+}
+
+/** The bar row's shapes, without a style block: the band wraps them in their own, the panel's progress card in the panel's. */
+const barShapes = (title: string, shown: Shown, W: number): string => {
+  // The title takes what it needs, up to 40% of the row; the bar takes the rest.
+  const label = fitText(title, 13, Math.max(60, W * 0.4))
+  const BAR_X = Math.round(16 + textWidth(label, 13) + 12)
+  const BAR_W = Math.max(60, W - BAR_X - 46 - CRAB_W)
+  const color = shown.isFinished ? DONE : ASPIRE
+  const y0 = (BAR_ROW_H - BAR_H) / 2
+
+  return `<circle cx="5" cy="${BAR_ROW_H / 2}" r="4" fill="${color}"/>
+<text class="t" x="16" y="${BAR_ROW_H / 2 + 4.5}" font-family="${FONT}" font-size="13" font-weight="500">${xml(label)}</text>
+<g transform="translate(${BAR_X},${y0})">
+${meterGroup(shown, BAR_W)}
 </g>
 <text class="m" x="${W - CRAB_W - 6}" y="${BAR_ROW_H / 2 + 4.5}" text-anchor="end" font-family="${FONT}" font-size="12.5" font-variant-numeric="tabular-nums">${percentOf(shown)}</text>
 `
 }
+
+/** Only the dithered bar and its step pill, for the band's row, where Buttons carry the text either side of it. */
+const meterSvg = (shown: Shown, W: number): string => `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}">
+<style>
+.k{fill:#e4e4e2}.tk{fill:#b4b4b0}
+@media (prefers-color-scheme: dark){.k{fill:#2c2c2c}.tk{fill:#5a5a5a}}
+${twinkleCss(shown)}
+</style>
+<g transform="translate(0,${(BAR_ROW_H - BAR_H) / 2})">
+${meterGroup(shown, W)}
+</g>
+</svg>`
 
 // The band's right edge: the agent counter (a walking crab and the count) after the percent.
 const BAND_CRAB_SCALE = 0.6
@@ -1259,12 +1278,16 @@ export const register: Register = on => {
     // and presses Enter, and the skill asks which organization with a question.
     const changeOrg = () =>
       void $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: '/aspire:aspire org', mode: 'replace' } as never).catch(() => undefined)
+    // The desktop draws the bar itself as an Svg (the dithered fill and step pill), between a title Button and an agents Button.
+    // An Svg takes no press and the host ignores absolute, so nothing lies over it: the presses sit on the Buttons beside it.
+    const meterW = Math.max(120, Math.min(360, Math.round(((cols || 100) * 8) / 3)))
     const barRow = (
       <Box flexDirection="row" gap={2}>
         <Button key="aspire-org" label={`● ${title}`} plain onPress={changeOrg} />
+        {Svg ? <Svg source={meterSvg(shown, meterW)} alt={`${shown.label}, ${percent}`} width={meterW} height={BAR_ROW_H} /> : null}
         <Button
           key="aspire-agents"
-          label={`${textBarW >= 6 ? `${barText(shown.ratio, textBarW)} ` : ''}${shown.label} ${percent} 🦀 ×${list.length}`}
+          label={`${Svg || textBarW < 6 ? '' : `${barText(shown.ratio, textBarW)} `}${Svg ? '' : `${shown.label} `}${percent} 🦀 ×${list.length}`}
           plain
           onPress={() => void togglePane($)}
         />
