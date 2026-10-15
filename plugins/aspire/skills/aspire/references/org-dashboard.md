@@ -75,8 +75,14 @@ Everything below is read at build time to bake in a snapshot, and again by the p
 | Recent posts and the baseline | `search_posts` on the brand's linked handles, last 28 days and the 28 before | Performance snapshot |
 | Latest findings per area | `search_insights` on the prefixes: `readout-` (daily and weekly report runs), `orchestrator-{profile}`, `program-{profile}-`, `creator-discovery-{profile}`, `market-signal-{profile}`, `quarterly-signal-{profile}`, `cas-` | Latest report links, Next actions, program and campaign state |
 
-Prefixes are the ones each flow's reference defines; read the `page` and `snapshot` findings those
-references name rather than recomputing them. A flow with no record is "Not set up", never zero.
+Insights have no key field of their own: filter on `idempotencyKey` with a `prefix` clause per
+area, `limit` 20, and project only `idempotencyKey` and `createdAt` first (an unfiltered read is
+over 100k characters), then read the `detail` of the findings you need. Account reviews are keyed
+`ar-own-` and `onb-{profile}-` (the older `account-review-` and `onboarding-` names count too).
+Read the `page` and `snapshot` findings each flow's reference names rather than recomputing them.
+Programs are the `program:{slug}-program` calibrations, discovery campaigns and creator ad
+campaigns are the `campaign:{slug}-brief` calibrations (a `type: creator-ads` line marks a creator
+ad campaign). A flow with no record is "Not set up", never zero.
 
 ## 4. Sections
 
@@ -115,9 +121,9 @@ that handles it.
 | - | --------- | ---- | ---- |
 | 1 | A channel's authorization has lapsed | Reconnect {handle} | Phase 4.2 |
 | 2 | No profile, or no linked channel | Create the profile and connect an account | Phase 4 |
-| 3 | Fewer than 3 core brand answers saved | Finish brand context | Phase 5 |
+| 3 | Fewer than 3 core brand answers saved (a "none yet" record such as `brand:partners-none` counts as an answer, a `decline:` record does not) | Finish brand context | Phase 5 |
 | 4 | The orchestrator is set up and its newest `plan` finding names a top action | That action, as the orchestrator worded it | **Orchestrator** |
-| 5 | No account review run (no `onboarding-` or `account-review-` findings) | Get first insights | Phase 6 |
+| 5 | No account review run (no `ar-own-`, `onb-` , `onboarding-`, or `account-review-` findings) | Get first insights | Phase 6 |
 | 6 | Readouts are set up and the newest report is older than its cadence | Run the {daily or weekly} report | **Readouts** |
 | 7 | Readouts are not set up | Set up daily and weekly reports | **Readouts** |
 | 8 | A program has an attention item (its newest snapshot lists any) | The program dashboard's first item | **Program dashboard** |
@@ -139,7 +145,9 @@ The dashboard uses what onboarding already collected; it asks nothing itself.
 | Goals | `brand:business-context` (`business_context`), `target:weekly-health`, `policy:readout-audience` lenses | The Goals section, and which lens (`recipient-lens.md`) orders the sections |
 | The person's choice | `data/users/{id}/view` in page data (`db`) | A view the person picked wins over the default, on their own device and account only |
 
-Match the viewer to a `user:` record by the Atlas caller's name or email in `get_status`; a person
+Match the viewer to a `user:` record by the Atlas caller's name or email in `get_status`; a record
+that carries neither (`user:primary-contact`) belongs to the person who answered onboarding, so use
+it only for the caller who is the profile's owner, and show "based on your saved role". A person
 with no record gets the role default and a one-line offer to tell Claude their role (the main
 thread asks question 2 from `onboarding-questions.md` on the next `/aspire:aspire`, never the
 page).
@@ -147,6 +155,9 @@ page).
 Views: **Brand team** (Performance, Programs, Goals), **Agency** (Programs, Performance, Goals),
 **Leadership** (Goals, Performance, Programs). Organization, Setup, and Next step are always
 present. A lens never changes a number.
+
+Post cards and charts are drawn only when a window has posts. A window with none shows "No posts in
+the last 28 days" with the date of the newest post Atlas holds, never a zero.
 
 ## 7. Live and snapshot
 
@@ -183,8 +194,9 @@ Declare, on every publish (the whole object):
 
 `mcp` is a viewer-consented grant, which bars public sharing; `db` holds only each person's own
 view choice and done marks. Handle `null` from `claude.use("mcp")`, `db`, and `user`: render the
-snapshot and the default view. Never put a secret, an email, or an Atlas id in the page; the
-snapshot holds names, counts, and links only.
+snapshot and the default view. Never put a secret or an email in the page. The two ids the live reads
+need (`asOrganizationId`, `asProfileId`) are the only Atlas ids it may hold; they grant nothing,
+because every read runs as the viewer. The snapshot holds names, counts, and links only.
 
 Publish to the link in the saved calibration (read that artifact first) or as a new page when
 none exists. On `build`, write the calibration in the same step as the first publish, only with

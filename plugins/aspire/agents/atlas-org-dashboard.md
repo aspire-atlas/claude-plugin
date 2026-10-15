@@ -67,7 +67,7 @@ folder, and the `page` and `snapshot` sections of `program-dashboard.md`, `orche
 6. **Write** the link calibration per **2** on `build` with a save answer. On a `key-exists`
    response, stop and return both versions to the main thread; never supersede.
 7. Verify once: read the published page back with the Artifact tool, confirm the declared
-   capabilities, and confirm no amount, member, email, or id is in the page source.
+   capabilities, and confirm no amount, member, or email is in the page source and that the only Atlas ids are the organization and profile ids the live reads need.
 
 ## Output to the main thread (under 200 words)
 
