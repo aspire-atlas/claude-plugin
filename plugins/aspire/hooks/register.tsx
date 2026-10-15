@@ -763,13 +763,6 @@ async function openPane($: EngineInterface): Promise<void> {
 
 // ---------------------------------------------------------------------------
 
-// Opens the agents pane and leaves it open when it already is.
-async function openPane($: EngineInterface): Promise<void> {
-  const at = await $.clock.now()
-  await update($, now, () => at)
-  await $.ui.open({ id: PANE, title: PANE_TITLE })
-}
-
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     const started = await next(e)
