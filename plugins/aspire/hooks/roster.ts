@@ -53,6 +53,7 @@ export const ROSTER: readonly RosterEntry[] = [
   { type: 'aspire:atlas-content-sourcing', name: 'Content sourcing', blurb: 'Usage rights and new content from creators', group: 'program' },
 
   { type: 'aspire:atlas-program-ledger', name: 'Program ledger', blurb: 'What you owe, invoices, payments and budget', group: 'measure' },
+  { type: 'aspire:atlas-org-dashboard', name: 'Organization dashboard', blurb: 'A live page on where you stand and what to do next', group: 'measure' },
   { type: 'aspire:atlas-program-dashboard', name: 'Program dashboard', blurb: 'One page on how the whole program is doing', group: 'measure' },
   { type: 'aspire:atlas-campaign-orchestrator', name: 'Orchestrator', blurb: 'What to do next across everything', group: 'measure' },
 ]
