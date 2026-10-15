@@ -292,8 +292,10 @@ const barShapes = (title: string, shown: Shown, W: number): string => {
 }
 
 // The band's right edge: the agent counter (a walking crab and the count) after the percent.
-const COUNT_W = 64
 const BAND_CRAB_SCALE = 0.6
+const BAND_CRAB_W = 36 * BAND_CRAB_SCALE
+/** The crab and the count sit together at the row's right edge: this is the room they take, gaps included. */
+const countWidth = (count: number): number => Math.ceil(8 + textWidth(`×${count}`, 12.5) + 4 + BAND_CRAB_W + 10)
 
 /** The band's whole row in one drawing: title, bar, percent, and the agent counter with its crab. */
 const bandSvg = (title: string, shown: Shown, W: number, count: number, character: Character): string => `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}">
@@ -303,8 +305,8 @@ const bandSvg = (title: string, shown: Shown, W: number, count: number, characte
 ${twinkleCss(shown)}
 </style>
 ${CRAB_CSS}
-${barShapes(title, shown, W - COUNT_W)}
-${crab(W - COUNT_W + 4, (BAR_ROW_H - 30 * BAND_CRAB_SCALE) / 2, character, false, true, BAND_CRAB_SCALE)}
+${barShapes(title, shown, W - countWidth(count))}
+${crab(W - countWidth(count) + 10, (BAR_ROW_H - 30 * BAND_CRAB_SCALE) / 2, character, false, true, BAND_CRAB_SCALE)}
 <text class="m" x="${W - 8}" y="${BAR_ROW_H / 2 + 4.5}" text-anchor="end" font-family="${FONT}" font-size="12.5" font-variant-numeric="tabular-nums">×${count}</text>
 </svg>`
 
@@ -1223,7 +1225,7 @@ export const register: Register = on => {
       </Box>
     )
     if (band.crab === null) band.crab = pickCrab()
-    const titleEnd = Math.min(svgW - 40, Math.round(16 + textWidth(fitText(title, 13, Math.max(60, (svgW - COUNT_W) * 0.4)), 13) + 8))
+    const titleEnd = Math.min(svgW - 40, Math.round(16 + textWidth(fitText(title, 13, Math.max(60, (svgW - countWidth(list.length)) * 0.4)), 13) + 8))
     const barRow = Svg ? (
       <Box flexDirection="column">
         <Svg source={bandSvg(title, shown, svgW, list.length, band.crab)} alt={`${title}: ${shown.label}, ${percent}, ${list.length} agents`} width={svgW} height={BAR_ROW_H} />
