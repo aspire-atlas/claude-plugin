@@ -247,8 +247,8 @@ const BAR_ROW_H = 22
 /** The Artifact card's document icon, after the Claude Docs artifact icon: a page whose lines, letter and check draw in one after another, then rest, then repeat. */
 const DOC_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="46" viewBox="0 0 40 46">
 <style>
-.pg{fill:#E9EEFA;stroke:#9DB4E6}.ln{fill:#6C8FD9}.ls{fill:#B4C5EE}.ab{fill:#4F74C8}.ck{fill:#4F74C8}.cm{stroke:#fff}
-@media (prefers-color-scheme: dark){.pg{fill:#2A3348;stroke:#4A5C86}.ln{fill:#7FA2E8}.ls{fill:#566890}.ab{fill:#7FA2E8}.ck{fill:#7FA2E8}.cm{stroke:#1F2638}}
+.pg{fill:#E8F4F2;stroke:#7DB8B1}.ln{fill:#3B8A82}.ls{fill:#A9D3CE}.ab{fill:#2E6E67}.ck{fill:#3B8A82}.cm{stroke:#fff}
+@media (prefers-color-scheme: dark){.pg{fill:#1E3431;stroke:#3B8A82}.ln{fill:#5FB5AB}.ls{fill:#3E6B66}.ab{fill:#5FB5AB}.ck{fill:#5FB5AB}.cm{stroke:#1E3431}}
 .d{transform-box:fill-box;transform-origin:0 50%;animation:dr 3.6s ease-out infinite both}
 .d2{animation-delay:.25s}.d3{animation-delay:.5s}.d4{animation-delay:.75s}.d5{animation-delay:1s}
 .pp{transform-box:fill-box;transform-origin:50% 50%;animation:pp 3.6s ease-out infinite both;animation-delay:.6s}
@@ -1342,7 +1342,7 @@ export const register: Register = on => {
     const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
     // The icon is the card's full height: border, title, the description's wrapped lines (about 70 characters a line), the
     // reminder and the button row, in CSS pixels, since an Svg takes a size and not a percentage.
-    const iconH = 2 + 22 + (description ? Math.min(4, Math.ceil(clip(description, 240).length / 70)) * 20 : 0) + 20 + 32
+    const iconH = 2 + 22 + (description ? Math.min(4, Math.ceil(clip(description, 240).length / 70)) * 20 : 0) + 52 + 32
     const share = () => {
       void $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: slackDraft(url), mode: 'replace' } as never).catch(() => undefined)
       $.ui.toast('◆ Aspire · A Slack message is drafted in the prompt box. Press Enter to ask Claude to share it.', { timeoutMs: 6000 })
@@ -1357,12 +1357,15 @@ export const register: Register = on => {
             <Text bold wrap="truncate-end">{title}</Text>
           </Link>
           {description ? <Text wrap="wrap">{clip(description, 240)}</Text> : null}
-          {/* Words off the share control: the Slack mark, then one glyph Button named "Post to Slack" (a Button holds text only, so the mark itself cannot take the press). */}
+          {/* The Slack mark, then the text Button (a Button holds text only, so the mark itself cannot take the press). */}
           <Box flexDirection="row" gap={1}>
             {Svg ? <Svg source={SLACK_MARK} alt="Slack" width={18} height={18} /> : null}
-            <Button key="aspire-artifact-slack" label="Post to Slack" onPress={share}>↗</Button>
+            <Button key="aspire-artifact-slack" label="Post to Slack" onPress={share} />
           </Box>
-          <Text dimColor italic wrap="wrap">Share this artifact with your team.</Text>
+          {/* A light info box: the friendly reminder, in the Aspire teal on a dim border (a fixed fill could not follow light and dark). */}
+          <Box borderStyle="round" borderColor={ASPIRE} borderDimColor paddingX={1}>
+            <Text color={ASPIRE} wrap="wrap">ⓘ Friendly reminder: Share this artifact with your team.</Text>
+          </Box>
         </Box>
       </Box>
     )
