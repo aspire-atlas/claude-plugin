@@ -1212,14 +1212,11 @@ export const register: Register = on => {
     // The terminal's element table has an Svg that draws nothing: test the surface too.
     const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
 
-    // Desktop: one Svg row, about 8 CSS px per reported column, with two invisible press areas over it: the title
-    // (change organization) and everything to its right (toggle the agents panel). Terminal: the same row as text.
+    // One row of Buttons on every surface, each holding the bar's own items (title, bar and step, agents, panel icon). The desktop
+    // used to draw the row as an Svg with blank absolute Buttons over it; the host ignores absolute, so those Buttons stacked
+    // below the Svg, made the band taller than its rows (it scrolled) and sat out of sight. Items inside the Buttons cannot drift.
     const cols = e.props.bodyColumns
-    const svgW = Math.max(180, Math.min(1600, (cols || 100) * 8 - 16))
-    const titleW = Math.max(8, Math.min(30, title.length + 2, Math.floor(cols / 3)))
-    // The row's other cells, widths measured: label, percent, crab and count (about 4 + digits),
-    // and the gaps between the five cells. The bar takes what is left and is dropped
-    // when under 6 cells, so the row never wraps in a narrow terminal.
+    const titleW = Math.max(8, Math.min(30, title.length + 2, Math.floor((cols || 100) / 3)))
     const fixedW = shown.label.length + percent.length + 4 + String(list.length).length + 2 * 4 + 2
     const textBarW = Math.min(40, (cols || 100) - titleW - fixedW)
     const barColor = shown.isFinished ? DONE : ASPIRE
@@ -1227,36 +1224,15 @@ export const register: Register = on => {
     // and presses Enter, and the skill asks which organization with a question.
     const changeOrg = () =>
       void $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: '/aspire:aspire org', mode: 'replace' } as never).catch(() => undefined)
-    const agentsButton = (
-      <Button key="aspire-agents" label={`×${list.length}`} plain onPress={() => void togglePane($)}>
-        <Text color={ASPIRE}>🦀</Text> ×{list.length}
-      </Button>
-    )
-    // A Button holds text only and an Svg takes no press, so a blank Button lies over each part of the drawing, clipped to the row.
-    const overlay = (key: string, left: number, width: number, onPress: () => void) => (
-      <Box position="absolute" top={0} left={left} width={width} height={BAR_ROW_H} overflow="hidden" flexDirection="column">
-        <Button key={key} label={' '.repeat(Math.max(1, Math.floor(width / 8)))} plain onPress={onPress} />
-      </Box>
-    )
-    if (band.crab === null) band.crab = pickCrab()
-    const titleEnd = Math.min(svgW - EDGE_W - 40, Math.round(16 + textWidth(fitText(title, 13, Math.max(60, (svgW - EDGE_W - countWidth(list.length)) * 0.4)), 13) + 8))
-    const barRow = Svg ? (
-      <Box flexDirection="column">
-        <Svg source={bandSvg(title, shown, svgW, list.length, band.crab)} alt={`${title}: ${shown.label}, ${percent}, ${list.length} agents`} width={svgW} height={BAR_ROW_H} />
-        {overlay('aspire-org', 0, titleEnd, changeOrg)}
-        {overlay('aspire-agents', titleEnd, svgW - EDGE_W - titleEnd, () => void togglePane($))}
-        {overlay('aspire-open-panel', svgW - EDGE_W, EDGE_W, () => void openPane($).catch(() => undefined))}
-      </Box>
-    ) : (
+    const barRow = (
       <Box flexDirection="row" gap={2}>
-        <Box width={titleW} flexShrink={0}>
-          <Text color={barColor}>● </Text>
-          <Text wrap="truncate-end">{title}</Text>
-        </Box>
-        {textBarW >= 6 ? <Text color={barColor}>{barText(shown.ratio, textBarW)}</Text> : null}
-        <Text bold wrap="truncate-end">{shown.label}</Text>
-        <Text dimColor>{percent}</Text>
-        {agentsButton}
+        <Button key="aspire-org" label={`● ${title}`} plain onPress={changeOrg} />
+        <Button
+          key="aspire-agents"
+          label={`${textBarW >= 6 ? `${barText(shown.ratio, textBarW)} ` : ''}${shown.label} ${percent} 🦀 ×${list.length}`}
+          plain
+          onPress={() => void togglePane($)}
+        />
         <Box flexGrow={1} />
         <Button key="aspire-open-panel" label="◨" plain onPress={() => void openPane($).catch(() => undefined)} />
       </Box>
