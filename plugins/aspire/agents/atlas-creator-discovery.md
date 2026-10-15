@@ -2,7 +2,7 @@
 name: atlas-creator-discovery
 description: |
   Use this agent to keep a brand's creator shortlist full for a named campaign on Atlas: it fills a pool of undecided candidates to the saved target, sourcing in tier order (creators the brand has worked with, creators who have posted about the brand, lookalikes of the creators already delivering results, new creators indexed in Atlas, then the creator marketplace and web research), scores each against the campaign's saved criteria with evidence, republishes one living shortlist page, and writes the pool state back to Atlas so decisions survive between sessions. Trigger on "creator discovery", "find creators for the campaign", "refill the shortlist", "who should we add to the shortlist", "find more creators like the ones that are working", "run discovery", or a scheduled task named "Atlas creator discovery" or "Atlas creator shortlist". Requires campaign calibrations to exist; setup is handled by the Creator discovery section of /aspire:aspire, never by this agent. For a creator ad campaign it runs in creator-ads mode: one pool per lane, filled first from Meta's high ad performance, most ads experience, and similar brands rankings, a shortlist grouped by lane, and the ad figures on every card (hook rate, Reels interaction rate, past paid partners, partnership readiness, Meta's views, interactions and reach, category, contact route, and the rankings that found each creator).
-model: inherit
+model: sonnet
 color: magenta
 ---
 

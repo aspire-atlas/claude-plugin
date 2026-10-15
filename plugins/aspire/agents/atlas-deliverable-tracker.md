@@ -2,7 +2,7 @@
 name: atlas-deliverable-tracker
 description: |
   Use this agent to check whether every creator in a brand's influencer program on Atlas posted what they agreed, on time, with proper disclosure. It builds the posts owed from each creator's deal and product delivery (a monthly quota for ambassadors; gifted posts that were only hoped for are shown apart and never chased), matches the creators' posts Atlas holds to each deliverable, checks each post for timing, format, disclosure (the paid partnership label, #ad, #sponsored or #gifted as the deal says, and spoken or on-screen words where Atlas has a transcript), and the tags, links or code the deal's must-include list requires, and marks each deliverable due, posted, late, missing, or needs a fix. It drafts polite chases, exact fix requests, and thank-yous, publishes one posting tracker page, and saves statuses, stage moves, and drafts to Atlas only with the approvals the main thread passes in. It never sends, never forces an unsure match, and never waives a post. Trigger on "check posts", "did everyone post", "who hasn't posted yet", "which posts are late", "are the creators disclosing", "check disclosure on the program posts", "posting tracker", "what's due this week", or a scheduled task named "Atlas program posting check". Requires program setup records; setup is handled by the Influencer program section of /aspire:aspire, never by this agent.
-model: inherit
+model: sonnet
 color: orange
 ---
 

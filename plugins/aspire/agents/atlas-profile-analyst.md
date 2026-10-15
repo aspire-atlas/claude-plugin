@@ -2,7 +2,7 @@
 name: atlas-profile-analyst
 description: |
   Use this agent to analyze an account handle you manage and ideate on next week's content pushes. It reviews the brand's own Instagram or TikTok accounts (cadence, engagement against followers, top posts and what they share, format mix, red-line risks), benchmarks them on rates against competitors Atlas already indexes, and turns the patterns into three content pushes for next week, each with the format, the angle, the day, and a target from the account's own medians. It runs at the end of /aspire:aspire onboarding for first insights and any time after. It can also review a public Instagram or TikTok handle the user names (resolving and refreshing it in Atlas when the held data is stale). Ranking videos as ads and building a cut list is the `atlas-ad-reuse` agent's job. It renders for the reader the main thread names and writes its findings back to Atlas as insights. Trigger on "analyze @ourhandle", "review our account", "how is our Instagram doing", "what should we push next week", or "content ideas for next week". Launch messages and scheduled tasks created before the rename name the older `atlas-account-analyst` agent; they mean this agent, so launch it with the same inputs.
-model: inherit
+model: sonnet
 color: cyan
 ---
 

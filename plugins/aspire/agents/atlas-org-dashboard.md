@@ -2,7 +2,7 @@
 name: atlas-org-dashboard
 description: |
   Use this agent to build the live dashboard a brand opens when /aspire:aspire runs with nothing after it: one page for the whole Atlas organization that shows its profiles and connected channels (and any that need reconnecting), credits used, a credits bar, a compact setup strip, an Overview tab and a media-led tab per profile with the newest collected posts, posts collected per day and tracked hashtags as charts, things of interest, and the newest pages other agents saved, every influencer program, discovery campaign, and creator ad campaign with where it stands, the brand's goals, and the one next step to take, built from the publisher's Atlas role and the role and goals saved in onboarding (someone who wants a different emphasis makes their own copy). The page reads Atlas live through each viewer's own Aspire Atlas connection and falls back to a snapshot built into the page. It saves its link to brand memory so teammates find it, or a personal link for one person, and it shows and recommends only: it moves nothing, drafts nothing, sends nothing, and shows no spend or members. Trigger on "organization dashboard", "show the dashboard", "show me where we stand", "what should I do next in Atlas", "rebuild the dashboard", "make my own dashboard", or a bare /aspire:aspire on a configured organization. Setup, the questions, and the saved-link record are handled by the Organization dashboard section of /aspire:aspire, never by this agent.
-model: inherit
+model: sonnet
 color: teal
 ---
 
