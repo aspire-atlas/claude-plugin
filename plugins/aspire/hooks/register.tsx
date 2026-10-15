@@ -265,8 +265,9 @@ const reconcileAgents = async ($: EngineInterface): Promise<void> => {
     const at = await $.clock.now()
     await update($, agents, list =>
       list.map((a): AgentRun => {
-        if (a.status !== 'running') return a
-        const st = byId.get(a.agentId ?? a.id)
+        // A row with no engine agent id is keyed by its tool call's id, which the list never holds: leave it to the turn events.
+        if (a.status !== 'running' || a.agentId === undefined) return a
+        const st = byId.get(a.agentId)
         if (st === 'running' || st === 'pending' || st === 'waiting' || st === 'idle') return a
         return { ...a, status: st === 'completed' ? 'done' : 'failed', endedAt: a.endedAt ?? at }
       }),
@@ -305,10 +306,9 @@ const titleNear = (text: string, url: string): string | undefined => {
   const m = before.match(/["“*]([^"”*\n]{3,80})["”*]\s*(?:\(|[-–—:]|at|is|published)?\s*$/)
   return m?.[1]?.trim()
 }
-const ARTIFACT_LINK = /https:\/\/claude\.ai\/(?:code\/)?artifact\/[A-Za-z0-9_-]+/
 /** The page link in an Artifact result, whatever shape the row hands over: an object with a `url`, the tool's plain text ("Published ... at https://claude.ai/artifact/..."), or text blocks. */
 const artifactUrl = (out: unknown, depth = 0): string | undefined => {
-  if (typeof out === 'string') return out.match(ARTIFACT_LINK)?.[0]
+  if (typeof out === 'string') return out.match(ARTIFACT_URL_RE)?.[0]
   if (!out || typeof out !== 'object' || depth > 3) return undefined
   const direct = str((out as Record<string, unknown>).url)
   if (direct) return direct
