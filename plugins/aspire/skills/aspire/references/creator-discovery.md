@@ -105,6 +105,10 @@ brand's own history is the stronger signal.
 | 4 | New creators already indexed in Atlas | `search_creators` filtered on the saved criteria (network, follower range, country, verification), then `search_posts` per shortlisted handle for topic evidence. |
 | 5 | New creators from outside the index | `search_creator_marketplace` against the criteria (one call per keyword, `networks` = the campaign's Networks answer, each network's filters mapped from the size band and countries, TikTok topic labels from `list_creator_marketplace_labels`; see **Marketplace search** below), and `WebSearch` / `WebFetch` for creators covering the campaign's topic. Resolve every web-sourced handle with `lookup_creators` before scoring it; an unresolvable handle is dropped, never scored from web copy alone. |
 
+In creator-ads mode only, the **Recommendation passes** (under **Creator-ads mode** below) run
+after tier 3 and before tier 4's own search. They add no tier: each creator they return is
+credited to tier 4 or tier 5 by the rule there. A regular campaign never runs them.
+
 **Lookalike seeds.** Tier 3 answers the growth question "where should the next dollar go?" by
 refilling the shortlist with creators like the ones already delivering.
 
@@ -129,7 +133,8 @@ refilling the shortlist with creators like the ones already delivering.
      that found it. TikTok has no
      lookalike filter, so a TikTok seed gets the first two ways only. Never send `keyword` with
      `similarToCreators`: the server rejects the two together (see `creator-brief.md`, **Atlas
-     quirks**).
+     quirks**). Never add `recommendationType` to this call either, in any mode: the server
+     accepts the pair but returns nothing.
 3. Read marketplace results through `search_creators` once they land (1 to 3 minutes after
    each network's job completes, per `creator-brief.md`, **Atlas quirks**).
    Record `source` `lookalike of @{seed}` and `detail.seed` on each candidate; the card's
@@ -144,7 +149,11 @@ the call shape, polling, and skips. For tier 5:
   allowed values around the size band, `creatorCountries` from the saved countries,
   `creatorInterests` only when the archetype maps cleanly onto one of the enum values, and
   `excludeMessagedCreators: true` so creators the brand has already messaged don't come back.
-  A creator ad campaign adds `featuredInPaidAds: true` for the paid track record.
+  A creator ad campaign adds `featuredInPaidAds: true` for the paid track record, and may add
+  `recommendationType: "high_ad_performance"` to each keyword call (see **Recommendation
+  passes**), and `creatorLanguage` only when the lane or campaign criteria name a language in
+  the enum (`creator-brief.md`, **Atlas quirks**). Yes-only filters are sent as `true` or left
+  out, never `false`.
 - TikTok: `minFollowers` / `maxFollowers` as the exact band, and `countryCodes` from the saved
   countries TikTok supports (per the quirk). When they span regions (US; DE, ES, FR, GB, IT;
   everything else), the first call carries one region and each extra region gets its own call
@@ -199,7 +208,8 @@ handle or uuid), `idempotencyKey` per candidate per run.
 
 `detail` carries: `campaign`, `tier`, `source`, `fitScore`, the per-component breakdown,
 `evidence` (permalinks and the profile URL), `riskFlags`, `verdict`, `verdictAt` when
-decided, `seed` for a lookalike, and `tierScheme: 2`. Records without `tierScheme` were written
+decided, `seed` for a lookalike, `recommendationTypes` (creator-ads mode, every Meta ranking
+that returned the creator, per **Recommendation passes**), and `tierScheme: 2`. Records without `tierScheme` were written
 before the lookalike tier: read their tier 3 as tier 4 and their tier 4 as tier 5. Reading state back: `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
 `creator-discovery-{profile}-{campaign}`, newest first, paged; the newest record per `entityId`
 wins. `search_insights` returns findings tenant-wide, so always filter on the prefix.
@@ -323,17 +333,30 @@ Everything above applies, with these changes:
   discovery; it runs when the CM picks it.
 - **Scoring stays this reference's rubric.** The paid screens (persona fit and paid track
   record) are vetting's job (`creator-vetting.md`, **Creator-ads lanes**).
-- **Four figures on every card**, in `{DETAILS}` and in `detail.adFigures`:
+- **Recommendation passes** fill each lane from Meta's own rankings, per the block below.
+- **Ad figures on every card**, in `{DETAILS}` and in `detail.adFigures`, drawn per
+  `creator-card.md`, **Creator-ads details**:
   - Hook rate (`instagram.reelsHookRate`)
   - Reels interaction rate (`instagram.reelsInteractionRate`)
   - Past paid partners (`instagram.pastBrandPartnershipPartners`, named, at most five)
   - Partnership readiness: "Ready" when `isPaidPartnershipMessagesEnabled` is true and the
     creator has partnership experience, "Partly" when only one holds, "Not yet" when neither
     does
+  - Total views (`instagram.totalViews`), labelled "Views (Meta)"
+  - Account interactions (`instagram.accountInteractions`), labelled "Interactions (Meta)"
+  - Marketplace reach (`instagram.creatorMarketplaceReach`), labelled "Reach (Meta)"
+  - Category (`instagram.category`), as a chip. When the call that found the creator sent
+    `creatorInterests`, say whether the category matched it.
+  - Contact route: "Email on profile" when `instagram.email` is held, else "Partnership
+    messages on" when `instagram.isPaidPartnershipMessagesEnabled` is true, else "No route in
+    Atlas"
+  - Meta recommends: `detail.recommendationTypes` as chips in plain words ("High ad
+    performance", "Most ads experience", "Similar brands"); left out when empty
 
   Project the `instagram` container to read them, per `creator-brief.md`, **Atlas quirks**. A
-  figure Atlas does not hold shows "Not in Atlas", never a guess. TikTok cards carry one plain
-  line: "Hook rate is not available on TikTok."
+  figure Atlas does not hold shows "Not in Atlas", never a guess. Atlas gives no period for
+  views or interactions, so never call them "30-day" or "lifetime". TikTok cards carry one
+  plain line: "Hook rate is not available on TikTok."
 - **The page groups by lane.** The shortlist section becomes one group per lane, in the order
   the lanes were saved, each headed with the lane name, persona, and "{undecided} of {target}".
   Inside a lane, tiers and fit score sort as above. Numbering still runs from 1 across the whole
@@ -341,6 +364,53 @@ Everything above applies, with these changes:
 - **Decisions come from Gate 2.** The main thread writes the verdicts when the client's slate
   decisions close Gate 2 (`cas-campaign.md`, **Gate 2**). The agent still writes only undecided
   findings.
+
+### Recommendation passes
+
+Creator-ads mode only. Meta ranks marketplace creators for the brand in several ways, and three
+of them are the strongest paid signal the marketplace offers: `high_ad_performance`,
+`most_ads_experience` and `similar_brands`. Each returns a different set from Meta's default
+ranking, so each is its own pass. A regular campaign never runs them and never sends
+`recommendationType`.
+
+**When.** Per lane, after tier 3 and before tier 4's own `search_creators` pass, tier 5's
+keyword passes, and web research. Run the three in this order: `high_ad_performance`, then
+`most_ads_experience`, then `similar_brands`. Stop the moment the lane is at its target, and
+skip any pass left once it is. Tier 4's search and tier 5's keyword and web passes still run
+after, if the lane is still short.
+
+**The call.** One `search_creator_marketplace` per pass per lane, with no `keyword`:
+
+- `networks: ["instagram"]`; the recommendation type is the keyword-less anchor.
+- `instagram.filters`: `recommendationType`, the lane's `creatorCountries`,
+  `creatorMinFollowers` / `creatorMaxFollowers` snapped outward from the lane's size band,
+  `featuredInPaidAds: true`, `excludeMessagedCreators: true`, and `creatorLanguage` only when
+  the lane or campaign criteria name a language in the enum.
+- Never `similarToCreators` (the pair returns nothing), never `keyword`, and never `false` for
+  a yes-only filter.
+
+Poll each job and read its results through `search_creators` per `creator-brief.md`, **Atlas
+quirks** (1 to 3 minutes after the job completes). `excludeMessagedCreators` is best effort, so
+the campaign dedupe set is still what keeps decided creators out. `most_ads_experience` can
+return nothing for a brand: that is a valid result, not an error.
+
+**Tier and source.** No new tier, and `tierScheme` stays 2. Note the time each pass starts. A
+returned creator counts as already indexed when Atlas holds a post by them indexed before that
+time (the `search_posts` call for topic evidence answers it); they are tier 4. Anyone else
+entered the index through this pass and is tier 5. The `source` names the pass either way:
+`Meta: high ad performance`, `Meta: most ads experience`, or `Meta: similar brands`.
+
+**Keyword passes.** A creator-ads tier 5 keyword call may carry
+`recommendationType: "high_ad_performance"` beside the keyword; the pair works. Its source is
+`Meta: keyword "{kw}" + high ad performance`.
+
+**Provenance, not points.** Record `detail.recommendationTypes` on every candidate any pass
+returned, listing each ranking that returned them. A creator two passes return keeps both and is
+written once, with the source of the first pass that found them. Recommendation types add
+nothing to the fit score.
+
+**In the summary.** Per lane: which passes ran and how many creators each returned. A pass that
+returned nothing is named under Gaps as a gap line, never as an error.
 
 ## Atlas quirks that apply here
 

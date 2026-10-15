@@ -235,16 +235,26 @@ fetched during the run.
     (0, 10000, 25000, 50000, 75000, 100000, 250000, 1000000) and `creatorMaxFollowers` (the
     same without 0), so round a follower band outward to the nearest allowed values;
     `creatorLatestPostActivity` (`last_7_days`, `last_30_days`, `last_90_days`),
-    `creatorInterests` (up to five), `creatorLanguage` (language codes), `recommendationType`
-    (`most_relevant_for_me`, `high_ad_performance`, `most_ads_experience`, `similar_brands`,
-    `similar_audience`, `interested_in_collaboration`), and the yes-only filters
-    `verifiedAccount`, `hasPublicContactEmail`, `hasPortfolio`, `featuredInPaidAds` (creators
-    already in partnership ads) and `excludeMessagedCreators` (leave out creators the brand has
-    already messaged).
+    `creatorInterests` (up to five), `creatorLanguage` (a list of ISO 639-1 codes from a closed
+    set of 24: `ar`, `as`, `bn`, `nl`, `en`, `fr`, `de`, `gu`, `hi`, `id`, `ja`, `kn`, `ko`,
+    `ml`, `mr`, `or`, `pt`, `pa`, `es`, `zh`, `ta`, `te`, `tr`, `ur`; send it only when the
+    criteria name a language in the set), `recommendationType` (`most_relevant_for_me`,
+    `high_ad_performance`, `most_ads_experience`, `similar_brands`, `similar_audience`,
+    `interested_in_collaboration`), and the yes-only filters `verifiedAccount`,
+    `hasPublicContactEmail`, `hasPortfolio`, `featuredInPaidAds` (creators already in
+    partnership ads) and `excludeMessagedCreators` (leave out creators the brand has already
+    messaged; best effort, so the campaign's own dedupe still decides). Send a yes-only filter
+    as `true` or not at all: `false` on `hasPortfolio` or `hasPublicContactEmail` is an inverse
+    filter that keeps only creators without one.
   - `keyword` is optional. Without one, every network in `networks` needs at least one filter
     of its own, so a keyword-less Instagram search sends `networks: ["instagram"]`.
+    `recommendationType` counts as that filter. `most_relevant_for_me` is Meta's default
+    ranking, the same set a call with no ranking returns. `most_ads_experience` can return no
+    creators for a brand; that is a valid result.
     `instagram.filters.similarToCreators` (one to five handles) finds lookalikes and is sent
     only without a keyword; the server rejects the two together.
+  - `recommendationType` combines with `keyword`, `creatorCountries` and the follower band.
+    Never send it with `similarToCreators`: the server accepts the pair and returns nothing.
   - TikTok filters are ranges and codes: `countryCodes` (defaults to `["US"]`, echoed in
     `jobs.tiktok.appliedDefaults`; all codes from one region: US alone; DE, ES, FR, GB, IT; or
     the rest). TikTok supports only US, DE, ES, FR, GB, IT, AE, AR, AU, BR, CA, CO, EG, ID,
