@@ -1357,11 +1357,12 @@ export const register: Register = on => {
             <Text bold wrap="truncate-end">{title}</Text>
           </Link>
           {description ? <Text wrap="wrap">{clip(description, 240)}</Text> : null}
-          <Text dimColor wrap="wrap">Share this artifact with your team.</Text>
-          <Box flexDirection="row" gap={2}>
+          {/* Words off the share control: the Slack mark, then one glyph Button named "Post to Slack" (a Button holds text only, so the mark itself cannot take the press). */}
+          <Box flexDirection="row" gap={1}>
             {Svg ? <Svg source={SLACK_MARK} alt="Slack" width={18} height={18} /> : null}
-            <Button key="aspire-artifact-slack" label="Post to Slack" onPress={share} />
+            <Button key="aspire-artifact-slack" label="Post to Slack" onPress={share}>↗</Button>
           </Box>
+          <Text dimColor italic wrap="wrap">Share this artifact with your team.</Text>
         </Box>
       </Box>
     )
