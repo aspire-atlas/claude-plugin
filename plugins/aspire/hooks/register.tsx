@@ -1341,6 +1341,8 @@ export const register: Register = on => {
           await update($, panel, prev => ({ ...prev, leaving: null }))
         }
         await $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: `/aspire:aspire run ${r.type.replace(/^aspire:/, '')}`, mode: 'replace' } as never)
+        // The SDK's toast is plain text (no colour or art), so the brand is the mark and the name: shown on desktop and terminal alike.
+        $.ui.toast(`◆ Aspire · ${r.name} is queued in the prompt box. Press Enter to run it.`, { timeoutMs: 6000 })
       })().catch(() => undefined)
     const stateOf = (entry: RosterEntry): string => {
       const runs = list.filter(a => a.type === entry.type)
