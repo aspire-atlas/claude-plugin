@@ -269,6 +269,8 @@ declare module 'claude-code' {
       notice: Notice | null
       /** The prompt coach card above the bar; null when none shows. Set only by the main session's aspire_progress `coach` field. */
       coach: Coach | null
+      /** The progress line last put under the prompt while the band is not drawn; null when none shows. */
+      statusLine: string | null
     }
   }
 }
