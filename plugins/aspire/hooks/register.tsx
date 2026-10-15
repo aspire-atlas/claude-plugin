@@ -170,6 +170,7 @@ const pickCrab = (): Character => AGENT_CHARACTERS[Math.floor(Math.random() * AG
 
 const tick = async ($: EngineInterface): Promise<void> => {
   const at = await $.clock.now()
+  await syncStatus($)
   const t = await read($, turn)
   if ((await read($, agents)).some(a => a.status === 'running') || (t && t.end === undefined)) await update($, now, () => at)
 }
@@ -216,8 +217,63 @@ async function reset($: EngineInterface): Promise<void> {
   band.surface = null
   band.crab = null
   published.clear()
+  loggedLinks.clear()
+  setStatus($, undefined)
   await update($, agents, () => [])
   await update($, panel, () => ({ isAutoOpened: false, open: DEFAULT_OPEN, leaving: null }))
+}
+
+// The progress line under the prompt, for when the band is not drawn. One per plugin; cleared as soon as the band shows or the run ends.
+let lineShown: string | undefined
+const setStatus = ($: EngineInterface, text: string | undefined): void => {
+  if (text === lineShown) return
+  lineShown = text
+  try {
+    $.ui.status(text)
+  } catch {
+    // A convenience.
+  }
+}
+const syncStatus = async ($: EngineInterface): Promise<void> => {
+  try {
+    const p = (await isOn($)) ? await read($, progress) : null
+    const isFallback = !!p && !p.isFinished && band.renders === 0 && !(await read($, isBandHidden))
+    if (!isFallback || !p) return setStatus($, undefined)
+    const total = Math.max(p.total, p.tasks.length)
+    const done = Math.min(total, Math.max(p.done, p.tasks.filter(t => t.isDone).length))
+    const ratio = total ? done / total : 0
+    const cells = Math.min(10, Math.max(1, total))
+    const filled = Math.round(cells * ratio)
+    const text = [
+      p.title ? `${p.title}:` : 'Progress:',
+      total ? `step ${done} of ${total}` : 'working',
+      p.phase ? `, ${p.phase}` : '',
+      total ? ` ${'▰'.repeat(filled)}${'▱'.repeat(cells - filled)} ${Math.round(ratio * 100)}%` : '',
+    ].join(' ').replace(/ ,/g, ',').replace(/ +/g, ' ')
+    setStatus($, clip(text, 160))
+  } catch {
+    // A convenience.
+  }
+}
+
+/** Panel rows still `running` that the engine no longer lists end here: done when it says completed, failed otherwise. */
+const reconcileAgents = async ($: EngineInterface): Promise<void> => {
+  try {
+    if (!(await read($, agents)).some(a => a.status === 'running')) return
+    const listed = await $.agent.list()
+    const byId = new Map(listed.map(a => [a.id, a.status]))
+    const at = await $.clock.now()
+    await update($, agents, list =>
+      list.map((a): AgentRun => {
+        if (a.status !== 'running') return a
+        const st = byId.get(a.agentId ?? a.id)
+        if (st === 'running' || st === 'pending' || st === 'waiting' || st === 'idle') return a
+        return { ...a, status: st === 'completed' ? 'done' : 'failed', endedAt: a.endedAt ?? at }
+      }),
+    )
+  } catch {
+    // An engine without $.agent.list: the rows keep what the turn events said.
+  }
 }
 
 const isOn = async ($: EngineInterface): Promise<boolean> => {
@@ -238,6 +294,29 @@ const shortTool = (tool: string): string => tool.replace(/^mcp__.*__/, '')
 const published = new Map<string, { title?: string; description?: string; file?: string }>()
 const MAX_PUBLISHED = 50
 const str = (v: unknown): string | undefined => (typeof v === 'string' && v.trim() ? v.trim() : undefined)
+const ARTIFACT_URL_RE = /https:\/\/claude\.ai\/artifact\/[A-Za-z0-9_-]+/g
+/** The first claude.ai artifact link in a plain-text tool result (a string, or an object with `text`, or content blocks of text). */
+const artifactUrlIn = (v: unknown): string | undefined => {
+  if (typeof v === 'string') return v.match(ARTIFACT_URL_RE)?.[0]
+  if (!v || typeof v !== 'object') return undefined
+  const o = v as Readonly<Record<string, unknown>>
+  if (typeof o.text === 'string') return artifactUrlIn(o.text)
+  if (Array.isArray(o.content)) for (const b of o.content) {
+    const u = artifactUrlIn((b as { text?: unknown } | null)?.text)
+    if (u) return u
+  }
+  return undefined
+}
+/** Artifact links a subagent hand-back has already logged, bounded. */
+const loggedLinks = new Set<string>()
+const MAX_LOGGED = 100
+/** A quoted or bold title just before the link in a hand-back, when there is one; no match is the plain `Artifact published`. */
+const titleNear = (text: string, url: string): string | undefined => {
+  const at = text.indexOf(url)
+  const before = text.slice(Math.max(0, at - 120), at)
+  const m = before.match(/["“*]([^"”*\n]{3,80})["”*]\s*(?:\(|[-–—:]|at|is|published)?\s*$/)
+  return m?.[1]?.trim()
+}
 const slackDraft = (url: string): string =>
   `Share this artifact on Slack: ${url}. Ask me with AskUserQuestion which channel or person, write a short message, show it, and post only after I confirm.`
 
@@ -848,6 +927,7 @@ async function togglePane($: EngineInterface): Promise<boolean> {
     await $.ui.close({ id: PANE })
     return false
   }
+  await reconcileAgents($)
   const at = await $.clock.now()
   await update($, now, () => at)
   await $.ui.open({ id: PANE, title: PANE_TITLE })
@@ -918,6 +998,7 @@ async function statusText($: EngineInterface): Promise<string> {
 
 // Opens the agents pane and leaves it open when it already is.
 async function openPane($: EngineInterface): Promise<void> {
+  await reconcileAgents($)
   const at = await $.clock.now()
   await update($, now, () => at)
   await $.ui.open({ id: PANE, title: PANE_TITLE })
@@ -934,6 +1015,7 @@ export const register: Register = on => {
         description:
           'Show or hide the Aspire agents panel once /aspire has run; `band` shows or hides the bar above the prompt; `status` says whether the Aspire mod is on and what it has seen',
         argumentHint: '[open|band|status]',
+        immediate: true,
       })
     } catch {
       // The command is a convenience; the session goes on without it.
@@ -1083,6 +1165,7 @@ export const register: Register = on => {
           update($, coach, prev => (prev && prev.id === id ? null : prev)).catch(() => undefined)
         })
       }
+      await syncStatus($)
       const shown = shownOf(p, await read($, org), await read($, agents), planOf(await read($, turn), await read($, items), await $.clock.now()))
       const b = band
       const hidden = await read($, isBandHidden)
@@ -1181,6 +1264,7 @@ export const register: Register = on => {
         return { text: hidden ? 'Aspire band hidden.' : 'Aspire band shown.' }
       }
       if (arg === 'open') {
+        await reconcileAgents($)
         const at = await $.clock.now()
         await update($, now, () => at)
         await $.ui.open({ id: PANE, title: PANE_TITLE })
@@ -1192,6 +1276,25 @@ export const register: Register = on => {
     }
   }).catch(() => ({ text: 'The Aspire agents panel could not be drawn here.' }))
 
+  // A subagent's Artifact publish never draws a card in the main transcript; its hand-back arrives as text. Log each new
+  // claude.ai artifact link in it once, as a dim line. An observer: the message is passed on unchanged and never consumed.
+  on('session.receive', async ($, e, next) => {
+    try {
+      const kind = String(e.origin?.kind ?? '')
+      if ((kind === 'task-notification' || kind === 'peer' || kind === 'peer-send-message') && typeof e.text === 'string' && (await isOn($))) {
+        for (const url of new Set(e.text.match(ARTIFACT_URL_RE) ?? [])) {
+          if (loggedLinks.has(url)) continue
+          loggedLinks.add(url)
+          if (loggedLinks.size > MAX_LOGGED) loggedLinks.delete(loggedLinks.values().next().value as string)
+          $.ui.log(`◆ Aspire · ${titleNear(e.text, url) ?? 'Artifact published'}: ${url}`)
+        }
+      }
+    } catch {
+      // The line is a convenience.
+    }
+    return next(e)
+  }).catch(($, e, next) => next(e))
+
   on('turn.start', async ($, e, next) => {
     try {
       if (await isOn($)) {
@@ -1202,6 +1305,7 @@ export const register: Register = on => {
         await update($, turn, () => fresh.turn)
         await update($, items, () => fresh.items)
         await update($, now, () => at)
+        await reconcileAgents($)
       }
     } catch {
       // The steps are a convenience: the turn starts whatever happens here.
@@ -1380,6 +1484,7 @@ export const register: Register = on => {
       if (e.agentId === undefined) {
         await update($, turn, v => (v && v.end === undefined ? endTurn(v, e.reason, at) : v))
         await refreshContext($)
+        await syncStatus($)
       } else {
         const agentId = e.agentId
         await update($, agents, list =>
@@ -1403,8 +1508,10 @@ export const register: Register = on => {
   // one press drafts a Slack prompt in the prompt box and never sends it.
   on('ui.render', { component: 'ToolResult' }, async ($, e, next) => {
     if (e.props.tool !== 'Artifact' || e.props.isErrored || !(await isOn($))) return next(e)
-    const out = (e.props.output ?? {}) as Readonly<Record<string, unknown>>
-    const url = str(out.url)
+    // The host passes the result as plain text ("Published ... at https://claude.ai/artifact/ID (Version 1 ...)"), or as an object with a `url`.
+    const raw = e.props.output
+    const out = (raw && typeof raw === 'object' ? raw : {}) as Readonly<Record<string, unknown>>
+    const url = str(out.url) ?? artifactUrlIn(raw)
     const meta = published.get(e.props.tool_use_id)
     if (!url || !/^https:\/\//.test(url) || out.opened === true || !meta) return next(e)
     const title = str(out.title) ?? meta.title ?? (meta.file ? meta.file.replace(/^.*\//, '').replace(/\.[^.]+$/, '') : undefined) ?? 'Artifact'
@@ -1484,22 +1591,29 @@ export const register: Register = on => {
     // The desktop draws the bar itself as an Svg (the dithered fill and step pill), between a title Button and an agents Button.
     // An Svg takes no press and the host ignores absolute, so nothing lies over it: the presses sit on the Buttons beside it.
     if (band.crab === null) band.crab = pickCrab()
-    const meterW = Math.max(120, Math.min(360, Math.round(((cols || 100) * 8) / 3)))
+    // The bar takes every column the row's other items leave (8px a column, the estimate the notice and coach rows use), so it fills
+    // the row on one line; the percent, crab, count and panel icon sit together in a right group that ends at the icon.
+    const countText = `×${list.length}`
+    const fixedCols = title.length + percent.length + countText.length + 26
+    const meterW = Math.max(60, Math.round(((cols || 100) - fixedCols) * 8))
     const barRow = (
-      <Box flexDirection="row" gap={2}>
+      <Box flexDirection="row" width="100%" gap={2}>
         {Svg ? <Svg source={dotSvg(shown)} alt="" width={12} height={BAR_ROW_H} /> : null}
         <Button key="aspire-org" label={Svg ? title : `● ${title}`} plain onPress={changeOrg} />
-        {Svg ? <Svg source={meterSvg(shown, meterW)} alt={`${shown.label}, ${percent}`} width={meterW} height={BAR_ROW_H} /> : null}
-        <Button
-          key="aspire-agents"
-          label={`${Svg || textBarW < 6 ? '' : `${barText(shown.ratio, textBarW)} `}${Svg ? '' : `${shown.label} `}${percent}${Svg ? '' : ' 🦀'}${Svg ? '' : ` ×${list.length}`}`}
-          plain
-          onPress={() => void togglePane($)}
-        />
-        {Svg ? <Svg source={crabSvg(band.crab)} alt="Aspire crab" width={Math.ceil(BAND_CRAB_W + 4)} height={BAR_ROW_H} /> : null}
-        {Svg ? <Button key="aspire-agent-count" label={`×${list.length}`} plain onPress={() => void togglePane($)} /> : null}
-        <Box flexGrow={1} />
-        <Button key="aspire-open-panel" label="◨" plain onPress={() => void openPane($).catch(() => undefined)} />
+        <Box flexGrow={1} flexShrink={1} minWidth={0}>
+          {Svg ? <Svg source={meterSvg(shown, meterW)} alt={`${shown.label}, ${percent}`} width={meterW} height={BAR_ROW_H} /> : null}
+        </Box>
+        <Box flexDirection="row" flexShrink={0} gap={1}>
+          <Button
+            key="aspire-agents"
+            label={`${Svg || textBarW < 6 ? '' : `${barText(shown.ratio, textBarW)} `}${Svg ? '' : `${shown.label} `}${percent}${Svg ? '' : ' 🦀'}${Svg ? '' : ` ${countText}`}`}
+            plain
+            onPress={() => void togglePane($)}
+          />
+          {Svg ? <Svg source={crabSvg(band.crab)} alt="Aspire crab" width={Math.ceil(BAND_CRAB_W + 4)} height={BAR_ROW_H} /> : null}
+          {Svg ? <Button key="aspire-agent-count" label={countText} plain onPress={() => void togglePane($)} /> : null}
+          <Button key="aspire-open-panel" label="◨" plain onPress={() => void openPane($).catch(() => undefined)} />
+        </Box>
       </Box>
     )
 
@@ -1574,8 +1688,13 @@ export const register: Register = on => {
       void (async () => {
         if (e.surface === 'desktop') {
           await update($, panel, prev => ({ ...prev, leaving: r.type }))
-          await $.clock.sleep(900)
-          await update($, panel, prev => ({ ...prev, leaving: null }))
+          // The Pane handler is a render hook with no `next`, and a press runs outside any dispatch, so no signal reaches this wait;
+          // whatever ends it, the crab is put back.
+          try {
+            await $.clock.sleep(900)
+          } finally {
+            await update($, panel, prev => ({ ...prev, leaving: null }))
+          }
         }
         await $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: `/aspire:aspire run ${r.type.replace(/^aspire:/, '')}`, mode: 'replace' } as never)
         // On the desktop, with the band drawn, the notice is a branded row above the bar with the agent's own crab; it clears itself.

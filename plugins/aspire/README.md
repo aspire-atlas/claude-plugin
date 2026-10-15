@@ -230,7 +230,7 @@ The mod reads only what already passes through the session and makes no network,
 
 ### Where progress shows
 
-The bar and band draw only where the host renders the slot above the prompt. The `aspire_progress` result ends with `band: visible on {surface}`, `not-drawn`, `hidden-by-user` or `unknown`, and the skill picks its channel from that, once per run.
+The bar and band draw only where the host renders the slot above the prompt. The `aspire_progress` result ends with `band: visible on {surface}`, `not-drawn`, `hidden-by-user` or `unknown`, and the skill picks its channel from that, once per run. Where the bar is not drawn (and not hidden by you), the mod shows the same progress as one line under the prompt (`Connecting: step 2 of 4, Get organizations ▰▰▱▱ 50%`) and clears it when the run finishes or the bar appears. When an `aspire:*` agent's hand-back mentions a claude.ai artifact link (a subagent's publish draws no card in the main transcript), the mod logs one dim line per new link, `◆ Aspire · Artifact published: {link}`.
 
 | Surface | Progress shows as |
 | --- | --- |

@@ -410,11 +410,10 @@ with `band: ...`. Decide the channel once per run, from the first call:
 | ------ | ------- |
 | `band: visible on ...` | The bar only |
 | `band: hidden-by-user` | Nothing extra |
-| `band: not-drawn` or `band: unknown` | The task list you already keep; a chat line when the session has none |
-| Tool missing | The task list you already keep; a chat line when the session has none |
+| `band: not-drawn` or `band: unknown` | The task list you already keep. The mod shows a one-line progress under the prompt itself, so write no progress line in chat. |
+| Tool missing | The task list you already keep |
 
 - **Task list:** the one kept from the top, one task per step of the group now running, replaced when the next group starts. It shows in the host wherever the bar does not.
-- **Chat line,** once per phase: `Connecting: step 2 of 4, Get organizations ▰▰▱▱ 50%`.
 - Keep calling the progress tool every phase, even when falling back.
 - Subagents never report. Never name the tool or the fallback to the user.
 - **Coach card.** The tool's optional `coach` field (`{ verdict, step }`, at most 140 and 30
