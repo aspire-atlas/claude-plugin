@@ -1364,7 +1364,7 @@ export const register: Register = on => {
               <Text color={ASPIRE} wrap="wrap">ⓘ Friendly reminder: Share this artifact with your team.</Text>
             </Box>
             {Svg ? <Svg source={SLACK_MARK} alt="Slack" width={18} height={18} /> : null}
-            <Button key="aspire-artifact-slack" label="Post to Slack" onPress={share}>Post to Slack ↗</Button>
+            <Button key="aspire-artifact-slack" label="Post to Slack" onPress={share} />
           </Box>
         </Box>
       </Box>
