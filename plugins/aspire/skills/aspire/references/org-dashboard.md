@@ -159,7 +159,7 @@ Calibrations are organization-wide (one read, any `asProfileId`), so assign a re
 the profile's name token in its key (`david-protein-` for the profile "David Protein", from the
 name, not the slug, which can carry a numeric suffix); records with no profile token (theme, report
 recipients, fees) belong to Overview. Posts, hashtags, and findings are read per profile with its own
-`asProfileId`. Organization-wide setup rows (theme, rates, readouts, orchestrator) show on Overview,
+`asProfileId`; findings that carry no profile (for example `insights:analyze-page:` ones) are not attributed to a profile and are not shown as agent output. A tag whose `list_hashtag_posts` answers `no-linked-channel` shows as "Waiting for a channel" with no bar. With no totals, tags show in list order. The page registers a watch for every tool it declares. Organization-wide setup rows (theme, rates, readouts, orchestrator) show on Overview,
 and brand context shows on each profile's strip. A profile with no linked channel but a saved
 baseline shows the saved figure labelled "saved, not measured", never as live data; the agent never
 searches a handle that is not linked. The Next step on Overview is the highest-ranked step across all
@@ -196,7 +196,7 @@ their own copy (**2**), which is built from their own role and goals.
 | Signal | Source | Effect at build time |
 | ------ | ------ | -------------------- |
 | Atlas role: owner, admin, member | `get_status` `organizations.selected.role` | Owner and admin: Setup and Programs are expanded; a member: they start collapsed |
-| Relationship: in house, agency, owner | The publisher's `user:` record (`detail.relationship`) | Agency: the Programs and campaigns block sits above Profiles and the Goals show the client's; in house: Profiles lead; owner: Goals and the quarter's signal lead |
+| Relationship: in house, agency, owner | The publisher's `user:` record (`detail.relationship`) | Agency: Programs and campaigns is expanded and the Goals show the client's; in house: Performance numbers lead each profile card; owner: Goals and the quarter's signal lead. Profiles always stay above Programs and campaigns |
 | Goals | `brand:business-context`, `target:weekly-health`, `policy:readout-audience` lenses | The Goals lines, and which lens (`recipient-lens.md`) words the next step |
 
 The seven core answers are the rows of the Phase 5 core set in `onboarding-questions.md`; a profile
