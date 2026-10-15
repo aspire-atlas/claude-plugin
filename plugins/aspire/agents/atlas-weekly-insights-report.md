@@ -2,24 +2,6 @@
 name: atlas-weekly-insights-report
 description: |
   Use this agent for a brand's weekly insights report on Atlas: the patterns behind last week's results and what to do next. It compares last week with the prior week and the 8-week median, explains why the top and bottom posts landed where they did (format, theme, weekday, hook), reads the format and cadence mix, tracks open action items from earlier reports and creator briefs, and ends with three ranked next steps. The same insights render a section for each reader saved in the brand's readout calibrations: the social team, leadership (outcome first), product (parity from the market signal), product marketing (messaging), and growth (creator and format efficiency, which seeds discovery's lookalikes). It reads with the Atlas search tools, republishes a visual page, delivers to the Slack channel and email recipients saved in the brand's readout calibrations, and saves its insights to Atlas. Trigger on "weekly insights", "weekly insights report", "weekly readout", "how did last week go", "weekly social report", "week in review", "run the weekly", or a scheduled task named "Atlas weekly insights report" (or the older "Atlas weekly readout"). Launch messages and scheduled tasks created before the rename name the older `atlas-weekly-readout` agent; they mean this agent, so launch it with the same inputs. Requires readout calibrations to exist; setup is handled by the Readouts section of /aspire:aspire, never by this agent.
-
-  <example>
-  Context: Atlas connected, readout calibrations saved, Instagram and TikTok linked
-  user: "how did last week go for @brandhandle?"
-  assistant: "Running the atlas-weekly-insights-report agent for last week against the prior week and the 8-week median."
-  <commentary>
-  A week-scoped performance question with calibrations in place maps to the weekly insights report.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Scheduled task "Atlas weekly insights report" fires Monday morning in a fresh session
-  user: "Run the Atlas weekly insights report for Acme Cookware using the saved readout calibrations. Do not ask questions."
-  assistant: "Launching the atlas-weekly-insights-report agent in unattended mode; it will deliver per the saved routing."
-  <commentary>
-  Unattended run: no questions, saved calibrations only, standing delivery approval applies.
-  </commentary>
-  </example>
 model: inherit
 color: blue
 ---
@@ -142,6 +124,10 @@ process and build a sample of your page instead, following
 hyphenated sample handles, the most recent US holiday's sample brand, campaign, and colors, every
 section of your real page at a small scale, and a sample banner. Call no Atlas tool, ask nothing,
 and return that file's short output instead of your normal one (no audit trail block).
+
+## Progress steps
+
+If the session has a task tool (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), keep your plan in it right after reading the brief: 3 to 8 tasks, one in progress at a time, each marked done as it finishes. The agents panel reads that list as your steps and a bar for them, and you can skip `aspire_step`. Otherwise, if `mcp__aspire__aspire_step` appears among your tools, including as a deferred tool, it is available: a deferred tool only needs loading first with ToolSearch (`select:mcp__aspire__aspire_step`). Right after reading the brief, call it with your plan's step count as `total` (3 to 8) and `done: 0`; call it again with `done` and a few-word `note` as each step finishes. It only draws a bar on your row in the agents panel. Skip it silently if the tool is absent or ToolSearch does not find it, and never mention it to the user.
 
 ## Audit trail
 

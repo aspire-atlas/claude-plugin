@@ -2,24 +2,6 @@
 name: atlas-product-fulfillment
 description: |
   Use this agent to get the right product to every creator in a brand's influencer program on Atlas and to know it arrived. It works out who is owed product (creators at Agreed: paid and ambassador deals with product, and gifting creators who said yes), picks a product per creator from the program's catalog matched to their content and audience and inside the program's value limits, checks stock when a store is connected, drafts the details requests, keeps one order form page per program where the team fills in sizes and shipping, records the details, places the orders through a connected store or produces an order sheet, tracks shipping and delivery, drafts "did it arrive?" check-ins, and on delivery starts each creator's posting clock and hands them to the deliverable tracker. For gifting it shows how likely a post is from what Atlas holds about the creator's earlier gifted posts. Trigger on "collect details and order product", "send product to the creators", "what should we send @handle", "order the product", "place the gifting orders", "where are the packages", "did the product arrive", "track the shipments", "pull the order form", or a scheduled task named "Atlas program shipping check". Requires a saved program; setup is handled by the Influencer program section of /aspire:aspire, never by this agent. Every Atlas, mailbox, and store write is confirmed in the main thread before this agent runs; questions it cannot settle go back to the main thread.
-
-  <example>
-  Context: A gifting and paid program is saved; four creators agreed and two gifting creators replied yes; a Shopify store is connected and can read products and inventory
-  user: "collect details and order product for the summer program"
-  assistant: "Launching the atlas-product-fulfillment agent in plan mode; it will propose a product for each of the six creators from your catalog, checked against stock, and draft the details requests."
-  <commentary>
-  The Program manager's dispatch row. The first pass only proposes; the main thread confirms the picks, the save, and the mailbox drafts in one question set, then relaunches the agent to write.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Orders went out last week; the user pastes two tracking numbers
-  user: "here's tracking for Maya and Dev, and did the rest arrive?"
-  assistant: "Running the atlas-product-fulfillment agent in track mode with the two tracking numbers you confirmed; it will read order status from the store, draft check-ins for anything past the delivery window, and start the posting clock for what arrived."
-  <commentary>
-  Track mode. Recording the pasted tracking and the deliveries was confirmed in the main thread; the agent hands delivered creators to the deliverable tracker.
-  </commentary>
-  </example>
 model: inherit
 color: orange
 ---
@@ -211,6 +193,10 @@ order, one shipped, one delivered with its posting date; an order sheet of two r
 addresses that are plainly fake, such as "100 Sample St"), and a sample banner. Declare no page
 data capability on the sample and seed no rows. Call no Atlas tool, ask nothing, and return that
 file's short output instead of your normal one (no audit trail block).
+
+## Progress steps
+
+If the session has a task tool (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), keep your plan in it right after reading the brief: 3 to 8 tasks, one in progress at a time, each marked done as it finishes. The agents panel reads that list as your steps and a bar for them, and you can skip `aspire_step`. Otherwise, if `mcp__aspire__aspire_step` appears among your tools, including as a deferred tool, it is available: a deferred tool only needs loading first with ToolSearch (`select:mcp__aspire__aspire_step`). Right after reading the brief, call it with your plan's step count as `total` (3 to 8) and `done: 0`; call it again with `done` and a few-word `note` as each step finishes. It only draws a bar on your row in the agents panel. Skip it silently if the tool is absent or ToolSearch does not find it, and never mention it to the user.
 
 ## Audit trail
 
