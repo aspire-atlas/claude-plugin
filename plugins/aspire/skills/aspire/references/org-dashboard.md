@@ -118,7 +118,7 @@ text, and no view switcher. A small freshness chip ("Live, updated {time}" or "S
    chips are the not-done ones. Hidden behind "Setup complete" when everything is done.
 5. **Programs and campaigns.** Cards for every program, discovery campaign, and creator ad campaign
    across the organization (type, where it stands in words, link to its own page), and the Next actions
-   page link. No amounts: spend, budget, and sales stay on each program's own dashboard.
+   page link. A not-set-up tile says how to start it in the person's words ("Set up with /aspire:aspire program", "/aspire:aspire cas campaign", "/aspire:aspire next", and for discovery \"ask /aspire:aspire to find creators for a campaign\"), never an internal flow name. No amounts: spend, budget, and sales stay on each program's own dashboard.
 6. **Footnote.** Everything about the organization and the person lives only here, in small type: the
    organization name and the person's name and Atlas role, the saved goals as one line each, data as
    of, what the page reads, and the refresh command. No other place on the page repeats it.
@@ -221,6 +221,13 @@ the last 28 days" with the date of the newest post Atlas holds, never a zero.
   page works with no connector, shows its age, and is complete on a first paint. A viewer who has
   not allowed the connector, or who has none, sees the snapshot with "Snapshot from {time}. Connect
   Aspire Atlas for live data."
+- **Snapshot first, never blank.** Draw the whole page from the embedded snapshot before any
+  live read is registered, keep the snapshot in memory, and overlay live data on a copy. Wrap the
+  render in a try and catch: when a live overlay makes it throw (an unexpected response shape), drop
+  that overlay and redraw from the snapshot alone, with the freshness chip saying the live read
+  failed. A live read that fails, returns nothing, or returns a shape the page does not recognize
+  never clears or blanks a section. Test the page with the live handlers fed an empty result, an
+  error, and a malformed result before publishing.
 - **One organization.** A viewer outside the brand's organization gets errors from the reads;
   the page then shows the snapshot, labelled, and never the other organization's data.
 - Re-read on open, then every 5 minutes while the page is visible; never on a tight loop.
