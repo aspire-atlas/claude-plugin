@@ -78,9 +78,7 @@ const bandShows = async ($: Engine, surface: 'terminal' | 'desktop', text: RegEx
 const barShows = async ($: Engine, surface: 'terminal' | 'desktop', text: string) => {
   const ui = await $.ui.mount({ plugin: PLUGIN, surface, component: 'AbovePrompt', props: band as never })
   try {
-    if (surface === 'terminal') return (await ui.find({ type: 'Text', text: new RegExp(`^${text.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')}$`) })) !== undefined
-    const drawn = (await ui.findAll({ type: 'Svg' })).map(el => `${String(el.props.alt)}\n${String(el.props.source)}`).join('\n')
-    return drawn.includes(text)
+    return (await ui.findAll({ type: 'Button' })).some(el => String(el.props.label).includes(text))
   } finally {
     await ui.unmount()
   }
@@ -159,25 +157,18 @@ for (const surface of ['terminal', 'desktop'] as const) {
   })
 }
 
-test('desktop: the bar is one Svg with the crab', async ($, on) => {
+test('desktop: the bar is a row of Buttons holding its items, with no Svg and no overlays', async ($, on) => {
   world(on, () => WITH_COSTS)
   await typeAspire($)
   await getStatus($)
   const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'AbovePrompt', props: band as never })
-  const svgs = (await ui.findAll({ type: 'Svg' })).map(el => String(el.props.source))
-  const bar = svgs.find(s => s.includes('Aspire: Sample Brand'))
-  expect(bar).toBeDefined()
-  expect(bar).toContain('#3B8A82')
-  // The agent counter is drawn in the same Svg: a walking crab and the count.
-  expect(bar).toContain('class="c-')
-  expect(bar).toContain('×0')
-  expect(bar).not.toContain('✕')
-  // Two blank press areas lie over it: the title and the rest.
-  expect(await ui.find({ key: 'aspire-org' })).toBeDefined()
-  expect(await ui.find({ key: 'aspire-agents' })).toBeDefined()
-  expect(bar).not.toContain('undefined')
-  expect(bar).not.toContain('NaN')
-  expect(svgs.length).toBeGreaterThanOrEqual(1)
+  expect(await ui.findAll({ type: 'Svg' })).toHaveLength(0)
+  expect(String((await ui.find({ key: 'aspire-org' }))?.props.label)).toBe('● Aspire: Sample Brand')
+  const agents = String((await ui.find({ key: 'aspire-agents' }))?.props.label)
+  expect(agents).toContain('🦀 ×0')
+  expect(agents).not.toContain('undefined')
+  expect(agents).not.toContain('NaN')
+  expect(await ui.find({ key: 'aspire-open-panel' })).toBeDefined()
   await ui.unmount()
 })
 
@@ -290,7 +281,7 @@ test('an aspire agent switches the mod on, lists in the panel, and opens it once
   // The bar is on, too, with its agents count, and the band beneath it kept.
   expect(await barShows($, 'terminal', 'Aspire')).toBe(true)
   const bar = await $.ui.mount({ plugin: PLUGIN, surface: 'terminal', component: 'AbovePrompt', props: band as never })
-  expect((await bar.find({ key: 'aspire-agents' }))?.props.label).toBe('×3')
+  expect(String((await bar.find({ key: 'aspire-agents' }))?.props.label)).toMatch(/×3$/)
   await bar.unmount()
   expect(await bandShows($, 'terminal', /^Atlas tokens$/)).toBe(false)
   expect(await bandShows($, 'terminal', /^band beneath$/)).toBe(true)
@@ -312,10 +303,8 @@ test("the right-panel icon at the bar's far right opens the panel, on desktop an
   await typeAspire($)
   for (const surface of ['desktop', 'terminal'] as const) {
     const ui = await $.ui.mount({ plugin: PLUGIN, surface, component: 'AbovePrompt', props: band as never })
-    if (surface === 'desktop') {
-      const sources = (await ui.findAll({ type: 'Svg' })).map(el => String(el.props.source))
-      expect(sources.some(src => src.includes('<rect class="pk"'))).toBe(true)
-    }
+    expect(await ui.find({ key: 'aspire-open-panel' })).toBeTruthy()
+    expect(await ui.findAll({ type: 'Svg' })).toHaveLength(0)
     await ui.press({ key: 'aspire-open-panel' })
     await ui.unmount()
   }
@@ -709,4 +698,26 @@ test("an agent's own task list draws its steps on its row, and wins over aspire_
   await $.tool.call({ tool: 'TaskCreate', agentId: second, subject: 'Rank the hooks' } as never)
   await $.tool.call({ tool: 'TaskUpdate', agentId: second, taskId: '1', status: 'in_progress' } as never)
   expect(await drawn()).toContain('0/1 Rank the hooks')
+})
+
+test('pressing a running agent opens its task list, on desktop and in the terminal', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  await spawn($, 'aspire:atlas-market-signal', 'Signal for the week')
+  const agentId = 'agent-Signal-for-the-week'
+  await $.tool.call({ tool: 'mcp__aspire__aspire_step', agentId, total: 3, done: 1, note: 'reading posts' } as never)
+  const desktop = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  const sources = async () => (await desktop.findAll({ type: 'Svg' })).map(el => String(el.props.source)).join('')
+  expect(await sources()).not.toContain('reading posts<')
+  await desktop.press({ key: `${agentId}-0` })
+  const drawn = await sources()
+  expect(drawn).toContain('Step 1')
+  expect(drawn).toContain('reading posts')
+  expect(drawn).toContain('Step 3')
+  await desktop.press({ key: `${agentId}-0` })
+  expect(await sources()).not.toContain('Step 3')
+  await desktop.unmount()
+  const term = await $.ui.mount({ plugin: PLUGIN, surface: 'terminal', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  await term.press({ key: `agent-tasks-${agentId}` })
+  expect(await term.find({ type: 'Text', text: /reading posts/ })).toBeDefined()
+  await term.unmount()
 })

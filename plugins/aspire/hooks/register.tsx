@@ -624,6 +624,41 @@ const noteSvg = (W: number, note: string, tail: number): string =>
 const stepsOf = (a: AgentRun): { text: string; ratio: number } | null =>
   a.stepTotal ? { text: `${a.stepDone ?? 0}/${a.stepTotal}${a.stepNote ? ` ${a.stepNote}` : ''}`, ratio: Math.min(1, (a.stepDone ?? 0) / a.stepTotal) } : null
 
+/** An agent's task list for its open row: its own task list when it keeps one, else the steps it reported, else nothing yet. */
+type AgentTask = { text: string; kind: 'done' | 'now' | 'todo' }
+const agentTasks = (a: AgentRun): AgentTask[] => {
+  if (a.items?.length) return a.items.map(i => ({ text: i.subject, kind: i.status === 'completed' ? 'done' : i.status === 'in_progress' ? 'now' : 'todo' }))
+  if (!a.stepTotal) return []
+  const done = Math.min(a.stepDone ?? 0, a.stepTotal)
+  return Array.from({ length: a.stepTotal }, (_, n): AgentTask => {
+    const kind = n < done ? 'done' : n === done && a.status === 'running' ? 'now' : 'todo'
+    return { text: kind === 'now' && a.stepNote ? a.stepNote : `Step ${n + 1}`, kind }
+  })
+}
+const AGENT_TASK_H = 22
+const agentTasksH = (tasks: AgentTask[]): number => Math.max(1, tasks.length) * AGENT_TASK_H + 8
+/** The task rows under an agent's row, drawn like the Progress section's: a bullet, the task, and done on the right. */
+const agentTasksSvg = (W: number, a: AgentRun, tasks: AgentTask[], tail: number): string => {
+  const color = characterOf(a).color
+  const font = `font-family="${FONT}"`
+  const body = tasks.length
+    ? tasks
+        .map((t, i) => {
+          const y = 4 + i * AGENT_TASK_H
+          const mark =
+            t.kind === 'done'
+              ? `<rect fill="${DONE}" x="50" y="${y + 6}" width="10" height="10" rx="2.5"/>`
+              : t.kind === 'now'
+                ? `<rect fill="${color}" x="50" y="${y + 6}" width="10" height="10" rx="2.5"/>`
+                : `<rect class="sw" x="50" y="${y + 6}" width="10" height="10" rx="2.5"/>`
+          return `${mark}<text class="${t.kind === 'todo' ? 's' : 't'}" x="67" y="${y + 15}" ${font} font-size="12"${t.kind === 'now' ? ' font-weight="600"' : ''}>${xml(fitText(t.text, 12, W - 67 - 60))}</text>
+<text class="s" x="${W - 16}" y="${y + 15}" text-anchor="end" ${font} font-size="11">${t.kind === 'done' ? 'done' : t.kind === 'now' ? 'now' : ''}</text>`
+        })
+        .join('')
+    : `<text class="s" x="50" y="19" ${font} font-size="12">No tasks reported yet.</text>`
+  return rowSvg(W, agentTasksH(tasks), false, tail, body)
+}
+
 const agentSvg = (W: number, a: AgentRun, at: number, tail: number): string => {
   const character = characterOf(a)
   const ctx = ctxOf(a)
@@ -1212,14 +1247,11 @@ export const register: Register = on => {
     // The terminal's element table has an Svg that draws nothing: test the surface too.
     const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
 
-    // Desktop: one Svg row, about 8 CSS px per reported column, with two invisible press areas over it: the title
-    // (change organization) and everything to its right (toggle the agents panel). Terminal: the same row as text.
+    // One row of Buttons on every surface, each holding the bar's own items (title, bar and step, agents, panel icon). The desktop
+    // used to draw the row as an Svg with blank absolute Buttons over it; the host ignores absolute, so those Buttons stacked
+    // below the Svg, made the band taller than its rows (it scrolled) and sat out of sight. Items inside the Buttons cannot drift.
     const cols = e.props.bodyColumns
-    const svgW = Math.max(180, Math.min(1600, (cols || 100) * 8 - 16))
-    const titleW = Math.max(8, Math.min(30, title.length + 2, Math.floor(cols / 3)))
-    // The row's other cells, widths measured: label, percent, crab and count (about 4 + digits),
-    // and the gaps between the five cells. The bar takes what is left and is dropped
-    // when under 6 cells, so the row never wraps in a narrow terminal.
+    const titleW = Math.max(8, Math.min(30, title.length + 2, Math.floor((cols || 100) / 3)))
     const fixedW = shown.label.length + percent.length + 4 + String(list.length).length + 2 * 4 + 2
     const textBarW = Math.min(40, (cols || 100) - titleW - fixedW)
     const barColor = shown.isFinished ? DONE : ASPIRE
@@ -1227,36 +1259,15 @@ export const register: Register = on => {
     // and presses Enter, and the skill asks which organization with a question.
     const changeOrg = () =>
       void $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: '/aspire:aspire org', mode: 'replace' } as never).catch(() => undefined)
-    const agentsButton = (
-      <Button key="aspire-agents" label={`×${list.length}`} plain onPress={() => void togglePane($)}>
-        <Text color={ASPIRE}>🦀</Text> ×{list.length}
-      </Button>
-    )
-    // A Button holds text only and an Svg takes no press, so a blank Button lies over each part of the drawing, clipped to the row.
-    const overlay = (key: string, left: number, width: number, onPress: () => void) => (
-      <Box position="absolute" top={0} left={left} width={width} height={BAR_ROW_H} overflow="hidden" flexDirection="column">
-        <Button key={key} label={' '.repeat(Math.max(1, Math.floor(width / 8)))} plain onPress={onPress} />
-      </Box>
-    )
-    if (band.crab === null) band.crab = pickCrab()
-    const titleEnd = Math.min(svgW - EDGE_W - 40, Math.round(16 + textWidth(fitText(title, 13, Math.max(60, (svgW - EDGE_W - countWidth(list.length)) * 0.4)), 13) + 8))
-    const barRow = Svg ? (
-      <Box flexDirection="column">
-        <Svg source={bandSvg(title, shown, svgW, list.length, band.crab)} alt={`${title}: ${shown.label}, ${percent}, ${list.length} agents`} width={svgW} height={BAR_ROW_H} />
-        {overlay('aspire-org', 0, titleEnd, changeOrg)}
-        {overlay('aspire-agents', titleEnd, svgW - EDGE_W - titleEnd, () => void togglePane($))}
-        {overlay('aspire-open-panel', svgW - EDGE_W, EDGE_W, () => void openPane($).catch(() => undefined))}
-      </Box>
-    ) : (
+    const barRow = (
       <Box flexDirection="row" gap={2}>
-        <Box width={titleW} flexShrink={0}>
-          <Text color={barColor}>● </Text>
-          <Text wrap="truncate-end">{title}</Text>
-        </Box>
-        {textBarW >= 6 ? <Text color={barColor}>{barText(shown.ratio, textBarW)}</Text> : null}
-        <Text bold wrap="truncate-end">{shown.label}</Text>
-        <Text dimColor>{percent}</Text>
-        {agentsButton}
+        <Button key="aspire-org" label={`● ${title}`} plain onPress={changeOrg} />
+        <Button
+          key="aspire-agents"
+          label={`${textBarW >= 6 ? `${barText(shown.ratio, textBarW)} ` : ''}${shown.label} ${percent} 🦀 ×${list.length}`}
+          plain
+          onPress={() => void togglePane($)}
+        />
         <Box flexGrow={1} />
         <Button key="aspire-open-panel" label="◨" plain onPress={() => void openPane($).catch(() => undefined)} />
       </Box>
@@ -1318,10 +1329,22 @@ export const register: Register = on => {
     type Row = { id: string; h: number; alt: string; draw: (W: number, tail: number) => string; onPress?: () => void }
     type Section = { key: string; title: string; summary: string; rows: Row[]; text: () => JSX.Element }
     const empty = 'No agents yet. Aspire agents show here as they start.'
+    // Pressing an agent opens its task list under it; pressing again closes it.
     const agentRows = (items: AgentRun[], state: string): Row[] =>
-      items.map(a => ({ id: a.id, h: ROW_H, alt: `${a.description}: ${modelName(a.model)}, ${state}`, draw: (W, tail) => agentSvg(W, a, at, tail) }))
+      items.flatMap((a): Row[] => {
+        const key = `agent:${a.id}`
+        const tasks = agentTasks(a)
+        const isTasksOpen = isOpen(key)
+        return [
+          { id: a.id, h: ROW_H, alt: `${a.description}: ${modelName(a.model)}, ${state}, ${isTasksOpen ? 'tasks open' : 'tasks collapsed'}`, draw: (W, tail) => agentSvg(W, a, at, tail), onPress: toggle(key) },
+          ...(isTasksOpen
+            ? [{ id: `${a.id}-tasks`, h: agentTasksH(tasks), alt: `${a.description} tasks: ${tasks.map(t => `${t.kind === 'done' ? 'done' : t.kind === 'now' ? 'now' : 'to do'} ${t.text}`).join(', ') || 'none reported yet'}`, draw: (W: number, tail: number) => agentTasksSvg(W, a, tasks, tail) }]
+            : []),
+        ]
+      })
     const cols = Math.max(24, e.props.bodyColumns || 40)
     const barW = Math.max(6, Math.min(20, cols - 34))
+    const tasksOf = agentTasks
     const row = (a: AgentRun) => {
       const character = characterOf(a)
       const ctx = ctxOf(a)
@@ -1353,6 +1376,17 @@ export const register: Register = on => {
               {stepsOf(a) ? `${stepsOf(a)?.text} · ` : ''}ctx {ctx}% · {fmtTokens(a.contextTokens)} {fmtTime(elapsed(a, at))}
             </Text>
           </Text>
+          <Button key={`agent-tasks-${a.id}`} label={`${isOpen(`agent:${a.id}`) ? '▾' : '▸'} Tasks${tasksOf(a).length ? ` · ${tasksOf(a).filter(t => t.kind === 'done').length}/${tasksOf(a).length}` : ''}`} plain onPress={toggle(`agent:${a.id}`)} />
+          {isOpen(`agent:${a.id}`)
+            ? tasksOf(a).length
+              ? tasksOf(a).map((t, n) => (
+                  <Text key={`${a.id}-${n}`} wrap="truncate-end" dimColor={t.kind === 'todo'} bold={t.kind === 'now'}>
+                    {'  '}
+                    {t.kind === 'done' ? '✓' : t.kind === 'now' ? '●' : '○'} {t.text}
+                  </Text>
+                ))
+              : <Text dimColor>{'  '}No tasks reported yet.</Text>
+            : null}
         </Box>
       )
     }
