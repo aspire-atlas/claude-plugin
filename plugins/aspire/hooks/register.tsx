@@ -238,6 +238,19 @@ const shortTool = (tool: string): string => tool.replace(/^mcp__.*__/, '')
 const published = new Map<string, { title?: string; description?: string; file?: string }>()
 const MAX_PUBLISHED = 50
 const str = (v: unknown): string | undefined => (typeof v === 'string' && v.trim() ? v.trim() : undefined)
+const ARTIFACT_LINK = /https:\/\/claude\.ai\/(?:code\/)?artifact\/[A-Za-z0-9_-]+/
+/** The page link in an Artifact result, whatever shape the row hands over: an object with a `url`, the tool's plain text ("Published ... at https://claude.ai/artifact/..."), or text blocks. */
+const artifactUrl = (out: unknown, depth = 0): string | undefined => {
+  if (typeof out === 'string') return out.match(ARTIFACT_LINK)?.[0]
+  if (!out || typeof out !== 'object' || depth > 3) return undefined
+  const direct = str((out as Record<string, unknown>).url)
+  if (direct) return direct
+  for (const v of Array.isArray(out) ? out : Object.values(out)) {
+    const found = artifactUrl(v, depth + 1)
+    if (found) return found
+  }
+  return undefined
+}
 const slackDraft = (url: string): string =>
   `Share this artifact on Slack: ${url}. Ask me with AskUserQuestion which channel or person, write a short message, show it, and post only after I confirm.`
 
@@ -1403,8 +1416,8 @@ export const register: Register = on => {
   // one press drafts a Slack prompt in the prompt box and never sends it.
   on('ui.render', { component: 'ToolResult' }, async ($, e, next) => {
     if (e.props.tool !== 'Artifact' || e.props.isErrored || !(await isOn($))) return next(e)
-    const out = (e.props.output ?? {}) as Readonly<Record<string, unknown>>
-    const url = str(out.url)
+    const out = (e.props.output !== null && typeof e.props.output === 'object' && !Array.isArray(e.props.output) ? e.props.output : {}) as Readonly<Record<string, unknown>>
+    const url = artifactUrl(e.props.output)
     const meta = published.get(e.props.tool_use_id)
     if (!url || !/^https:\/\//.test(url) || out.opened === true || !meta) return next(e)
     const title = str(out.title) ?? meta.title ?? (meta.file ? meta.file.replace(/^.*\//, '').replace(/\.[^.]+$/, '') : undefined) ?? 'Artifact'
