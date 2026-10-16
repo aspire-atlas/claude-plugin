@@ -57,6 +57,36 @@ ${animated ? `${ANIMATED}\n${REDUCED}` : STILL}
 <g clip-path="url(#lgsq)"><rect class="lgk" width="512" height="512"/><g class="lgg">${dots(grid)}</g></g>
 <g fill="#fff" fill-rule="evenodd"><path d="M62 413 L183 98 L236 98 L356 413 L296 413 L275 354 C235 392 190 413 130 413 Z M212 185 L257 296 C225 330 185 354 145 358 Z"/><rect x="365" y="98" width="64" height="316"/></g>`
 
+// The twin-comet spinner the Atlas tool row shows while a call runs: the A and the I over the edge ring of the same 10 by 10 grid,
+// with two lime comets chasing each other round it. assets/aspire-spinner-twin.svg is the page version of this mark (its colors
+// are CSS variables a page can set); here the colors are fixed, because an Svg row is drawn as an image and takes no page styles.
+const RING: Array<[number, number]> = []
+for (let c = 0; c < SMALL_GRID; c++) RING.push([c, 0])
+for (let r = 1; r < SMALL_GRID; r++) RING.push([SMALL_GRID - 1, r])
+for (let c = SMALL_GRID - 2; c >= 0; c--) RING.push([c, SMALL_GRID - 1])
+for (let r = SMALL_GRID - 2; r > 0; r--) RING.push([0, r])
+const SPINNER_LOOP = 0.8
+
+/** The twin-comet spinner as a square Svg document, `size` CSS pixels a side. Still arcs for people who ask for less motion. */
+export const spinnerSvg = (size: number): string => {
+  const cell = 512 / SMALL_GRID
+  const sq = (cell * 0.8).toFixed(1)
+  const half = RING.length / 2
+  const path = (c: number, r: number, style = ''): string =>
+    `<path${style} d="M${(c * cell + cell * 0.1).toFixed(1)} ${(r * cell + cell * 0.1).toFixed(1)}h${sq}v${sq}h-${sq}z"/>`
+  const track = RING.map(([c, r]) => path(c, r)).join('')
+  const comets = RING.map(([c, r], i) => path(c, r, ` style="animation-delay:-${(SPINNER_LOOP * (1 - (i % half) / half)).toFixed(3)}s"`)).join('')
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 512 512" role="img" aria-label="Loading"><style>
+.skt{fill:#1c2b2a}.skb{fill:#C8E36B;opacity:.2}.skg{fill:#C8E36B}
+.skg path{animation:skc ${SPINNER_LOOP}s linear infinite both}
+@keyframes skc{0%{opacity:1}4%{opacity:1}50%{opacity:0}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.skg path{animation:none;opacity:0}.skg path:nth-child(-n+3),.skg path:nth-child(n+19):nth-child(-n+21){opacity:1}}
+</style>
+<defs><clipPath id="sksq"><rect width="512" height="512" rx="96"/></clipPath></defs>
+<g clip-path="url(#sksq)"><rect class="skt" width="512" height="512"/><g class="skb">${track}</g><g class="skg">${comets}</g></g>
+<g fill="#fff" fill-rule="evenodd" transform="translate(256 256) scale(.74) translate(-245.5 -255.5)"><path d="M62 413 L183 98 L236 98 L356 413 L296 413 L275 354 C235 392 190 413 130 413 Z M212 185 L257 296 C225 330 185 354 145 358 Z"/><rect x="365" y="98" width="64" height="316"/></g></svg>`
+}
+
 /** The logo as a square Svg document, `size` CSS pixels a side. */
 export const logoSvg = (size: number, animated = true, grid = SMALL_GRID): string =>
   `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 512 512" role="img" aria-label="Aspire Atlas">${logoMarkup(animated, grid)}</svg>`
