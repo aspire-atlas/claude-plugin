@@ -2,8 +2,8 @@
 
 Used by **Phase 2 + 3** of SKILL.md when `/aspire:aspire` runs on an organization that has not
 finished onboarding, and by **Sample artifacts** when someone asks what /aspire can do. It is
-one published page that explains /aspire, the jobs it does and who each is for, how setup
-works, what stays safe, and what to try first. Onboarding then carries on exactly as before:
+one published page that explains /aspire, how setup works, the jobs it does and who each is
+for, what stays safe, and what to try first. Onboarding then carries on exactly as before:
 the page leads the phases, it never replaces or skips one.
 
 The page is about Atlas, not the brand, so it holds no Atlas data beyond the organization and
@@ -106,8 +106,8 @@ without a connection (**7**), use none of them.
 4. The page always uses the Aspire default look in the template, never `theme:brand`: it
    describes Atlas itself, and a first run has no theme yet.
 5. Write the file to the session's scratch folder as `atlas-starter-guide.html` and publish it
-   with the Artifact tool: private, `icon` `guide`, description "What /aspire does, who each
-   agent is for, and the five setup steps." Republishing in the same session reuses the path.
+   with the Artifact tool: private, `icon` `guide`, description "What /aspire does, the five
+   setup steps, and who each agent is for." Republishing in the same session reuses the path.
    One pass: no preview, no layout loop. The user is waiting to start setup.
 6. No Artifact tool: send the HTML with `SendUserFile` when the session has it. Otherwise, or
    when the publish fails, skip the page and use the one-line text fallback in **6**. Never
@@ -152,12 +152,13 @@ page first, and the dashboard is offered once brand context is saved.
 Sections, in order: header (the mark at upper left, what /aspire is, and a sample chat and
 dashboard), how to get started (the five real phases as a stepper, at most three cards per row,
 each with a small sample screen and what /aspire asks), what you can do (job cards grouped by who
-they are for, each with a thumbnail of the page it makes), what stays safe (a confirm-before-write flow, then icon rows, true to
-`SECURITY.md`), and try these first (five prompts). Every figure is drawn from invented data and
-carries a "Sample" tag; illustrations are CSS and inline SVG, marked `aria-hidden`, with no images
-and no script beyond the copy buttons. The page never names Claude, a model, or an assistant: the
-copy says "/aspire". Copy is fixed: keep it plain and change only the placeholders. If an agent is
-renamed or a flow changes, update the copy and its thumbnail here in the same change.
+they are for, each with a thumbnail of the page it makes), what stays safe (a confirm-before-write
+flow, then icon rows, true to `SECURITY.md`), and try these first (five prompts). Every figure is
+drawn from invented data and carries a "Sample" tag; illustrations are CSS and inline SVG, marked
+`aria-hidden`, with no images and no script beyond the copy buttons. The page never names Claude, a
+model, or an assistant: the copy says "/aspire". Copy is fixed: keep it plain and change only the
+placeholders. If an agent is renamed or a flow changes, update the copy and its thumbnail here in
+the same change.
 
 Never add a support-only connector or skill, prices, customer names, or internal tools to this
 page.
