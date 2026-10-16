@@ -2,8 +2,8 @@
 
 Used by **Phase 2 + 3** of SKILL.md when `/aspire:aspire` runs on an organization that has not
 finished onboarding, and by **Sample artifacts** when someone asks what /aspire can do. It is
-one published page that explains /aspire, the jobs it does and who each is for, how setup
-works, what stays safe, and what to try first. Onboarding then carries on exactly as before:
+one published page that explains /aspire, how setup works, the jobs it does and who each is
+for, what stays safe, and what to try first. Onboarding then carries on exactly as before:
 the page leads the phases, it never replaces or skips one.
 
 The page is about Atlas, not the brand, so it holds no Atlas data beyond the organization and
@@ -106,8 +106,8 @@ without a connection (**7**), use none of them.
 4. The page always uses the Aspire default look in the template, never `theme:brand`: it
    describes Atlas itself, and a first run has no theme yet.
 5. Write the file to the session's scratch folder as `atlas-starter-guide.html` and publish it
-   with the Artifact tool: private, `icon` `guide`, description "What /aspire does, who each
-   agent is for, and the five setup steps." Republishing in the same session reuses the path.
+   with the Artifact tool: private, `icon` `guide`, description "What /aspire does, the five
+   setup steps, and who each agent is for." Republishing in the same session reuses the path.
    One pass: no preview, no layout loop. The user is waiting to start setup.
 6. No Artifact tool: send the HTML with `SendUserFile` when the session has it. Otherwise, or
    when the publish fails, skip the page and use the one-line text fallback in **6**. Never
@@ -150,14 +150,15 @@ page first, and the dashboard is offered once brand context is saved.
 ## 8. The page
 
 Sections, in order: header (the mark at upper left, what /aspire is, and a sample chat and
-dashboard), what you can do (job cards grouped by who they are for, each with a thumbnail of the
-page it makes), how to get started (the five real phases as a stepper, each with a small sample
-screen and what /aspire asks), what stays safe (a confirm-before-write flow, then icon rows, true to
-`SECURITY.md`), and try these first (five prompts). Every figure is drawn from invented data and
-carries a "Sample" tag; illustrations are CSS and inline SVG, marked `aria-hidden`, with no images
-and no script beyond the copy buttons. The page never names Claude, a model, or an assistant: the
-copy says "/aspire". Copy is fixed: keep it plain and change only the placeholders. If an agent is
-renamed or a flow changes, update the copy and its thumbnail here in the same change.
+dashboard), how to get started (the five real phases as a stepper, at most three cards per row,
+each with a small sample screen and what /aspire asks), what you can do (job cards grouped by who
+they are for, each with a thumbnail of the page it makes), what stays safe (a confirm-before-write
+flow, then icon rows, true to `SECURITY.md`), and try these first (five prompts). Every figure is
+drawn from invented data and carries a "Sample" tag; illustrations are CSS and inline SVG, marked
+`aria-hidden`, with no images and no script beyond the copy buttons. The page never names Claude, a
+model, or an assistant: the copy says "/aspire". Copy is fixed: keep it plain and change only the
+placeholders. If an agent is renamed or a flow changes, update the copy and its thumbnail here in
+the same change.
 
 Never add a support-only connector or skill, prices, customer names, or internal tools to this
 page.
@@ -168,7 +169,7 @@ page.
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&display=swap">
 <style>
-/* Layout: header with the mark at upper left and a sample chat + dashboard; job cards each with a sample thumbnail; a five-card stepper; a confirm-before-write flow; copyable prompts. */
+/* Layout: header with the mark at upper left and a sample chat + dashboard; a five-card stepper, at most three per row; job cards each with a sample thumbnail; a confirm-before-write flow; copyable prompts. */
 :root{
   --bg:#F5F7F7;--surface:#FFFFFF;--text:#152022;--muted:#56656A;--border:#D8E0E1;
   --brand:#1E5C58;--on-brand:#FFFFFF;--brand-ink:#1B5652;--tint:#E6F0EE;--code-bg:#EEF2F2;
@@ -253,8 +254,8 @@ section{display:grid;gap:20px}
 .agent code{font-size:.78rem}
 .steps{list-style:none;margin:0;padding:0;display:grid;gap:12px}
 @media (min-width:640px){.steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (min-width:1000px){.steps{grid-template-columns:repeat(5,minmax(0,1fr));gap:22px}
-  .step:not(:last-child)::after{content:"\2192";position:absolute;right:-18px;top:18px;color:var(--muted)}}
+@media (min-width:1000px){.steps{grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+  .step:not(:last-child):not(:nth-child(3n))::after{content:"\2192";position:absolute;right:-18px;top:18px;color:var(--muted)}}
 .step{position:relative;display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;min-width:0}
 .step:has(.next:not([hidden])){border-color:var(--brand);box-shadow:0 0 0 1px var(--brand)}
 .step-head{display:flex;align-items:center;gap:10px}
@@ -338,6 +339,20 @@ footer{border-top:1px solid var(--border);padding-top:20px;color:var(--muted);fo
   </div>
 </header>
 
+<section aria-labelledby="h-start">
+  <div class="sec-head">
+    <h2 id="h-start">How to get started</h2>
+    <p>Type /aspire (or /aspire:aspire). It walks through these steps in order and picks up where you left off. Every question comes with options to pick from. Each small screen below is a sample of what you will see.</p>
+  </div>
+  <ol class="steps">
+    <li class="step" id="step-connect"><div class="step-head"><span class="num">1</span><h3>Connect Aspire Atlas<span class="next" hidden>Next up</span></h3></div><figure class="screen" aria-hidden="true"><span class="sample">Sample</span><small>Aspire Atlas</small><b>Not connected yet</b><span class="btn">Connect</span></figure><p>/aspire checks the connection. If it isn't on, you get a Connect button.</p><p class="asked"><strong>You'll be asked:</strong> to sign in with your Atlas account, and which organization to use if you belong to more than one.</p></li>
+    <li class="step" id="step-profile"><div class="step-head"><span class="num">2</span><h3>Set up your brand profile<span class="next" hidden>Next up</span></h3></div><figure class="screen" aria-hidden="true"><span class="sample">Sample</span><small>Brand name</small><span class="field">Northwind Coffee<span class="caret"></span></span><span class="btn">Create profile</span></figure><p>The profile holds your accounts and everything Atlas learns about the brand, for your whole team.</p><p class="asked"><strong>You'll be asked:</strong> the brand name as customers know it, then to confirm creating the profile.</p></li>
+    <li class="step" id="step-accounts"><div class="step-head"><span class="num">3</span><h3>Link Instagram, TikTok, or YouTube<span class="next" hidden>Next up</span></h3></div><figure class="screen" aria-hidden="true"><span class="sample">Sample</span><small>Accounts to link</small><span class="pick on"><i></i>Instagram</span><span class="pick on"><i></i>TikTok</span><span class="pick"><i></i>YouTube</span></figure><p>You sign in to each network in your browser, and Atlas starts reading your posts. Instagram and TikTok feed search and hashtag tracking.</p><p class="asked"><strong>You'll be asked:</strong> which accounts to connect.</p></li>
+    <li class="step" id="step-context"><div class="step-head"><span class="num">4</span><h3>Tell Atlas about the brand<span class="next" hidden>Next up</span></h3></div><figure class="screen" aria-hidden="true"><span class="sample">Sample</span><small>Your goal for the next 90 days</small><span class="chips"><span>Grow reach</span><span>Drive sales</span><span>Skip</span></span></figure><p>About seven short questions, saved to the brand's Atlas memory so teammates and later runs never ask again. Some offer to research the answer on the web; you see what it found before anything is saved. Then two optional offers: your brand's colors on Atlas pages, and your creator rates.</p><p class="asked"><strong>You'll be asked:</strong> what you sell and to whom, your role, competitors to watch, your goal for the next 90 days, any hard no's, creators you already work with, and hashtags to track. Most have a Skip option.</p></li>
+    <li class="step" id="step-insights"><div class="step-head"><span class="num">5</span><h3>Get first insights<span class="next" hidden>Next up</span></h3></div><figure class="screen" aria-hidden="true"><span class="sample">Sample</span><small>Three pushes for next week</small><ol class="pushes"><li>Reel: behind the scenes</li><li>Carousel: top five picks</li><li>Story: a poll</li></ol></figure><p>/aspire reviews your linked accounts and shows what's working, with three content pushes for next week. The findings are saved in Atlas for your team.</p><p class="asked"><strong>You'll be asked:</strong> which account to review: your own, or another handle you name.</p></li>
+  </ol>
+</section>
+
 <section aria-labelledby="h-do">
   <div class="sec-head">
     <h2 id="h-do">What you can do</h2>
@@ -391,20 +406,6 @@ footer{border-top:1px solid var(--border);padding-top:20px;color:var(--muted);fo
       <article class="case"><figure class="thumb" aria-hidden="true"><svg viewBox="0 0 200 84"><rect class="l" x="10" y="72" width="180" height="1.5"/><rect class="a" x="20" y="32" width="14" height="40"/><rect class="b" x="38" y="42" width="14" height="30"/><rect class="a" x="66" y="46" width="14" height="26"/><rect class="b" x="84" y="28" width="14" height="44"/><rect class="a" x="112" y="22" width="14" height="50"/><rect class="b" x="130" y="36" width="14" height="36"/><rect class="a" x="158" y="38" width="14" height="34"/><rect class="b" x="176" y="44" width="14" height="28"/></svg><figcaption class="sample">Sample</figcaption></figure><h4>Compare your accounts with competitors'</h4><p class="job">Engagement and format benchmarks against the competitor accounts Atlas indexes.</p><p class="say">review our account against competitors</p><p class="agent">Profile analyst &middot; <code>atlas-profile-analyst</code></p></article>
     </div>
   </div>
-</section>
-
-<section aria-labelledby="h-start">
-  <div class="sec-head">
-    <h2 id="h-start">How to get started</h2>
-    <p>Type /aspire (or /aspire:aspire). It walks through these steps in order and picks up where you left off. Every question comes with options to pick from. Each small screen below is a sample of what you will see.</p>
-  </div>
-  <ol class="steps">
-    <li class="step" id="step-connect"><div class="step-head"><span class="num">1</span><h3>Connect Aspire Atlas<span class="next" hidden>Next up</span></h3></div><figure class="screen" aria-hidden="true"><span class="sample">Sample</span><small>Aspire Atlas</small><b>Not connected yet</b><span class="btn">Connect</span></figure><p>/aspire checks the connection. If it isn't on, you get a Connect button.</p><p class="asked"><strong>You'll be asked:</strong> to sign in with your Atlas account, and which organization to use if you belong to more than one.</p></li>
-    <li class="step" id="step-profile"><div class="step-head"><span class="num">2</span><h3>Set up your brand profile<span class="next" hidden>Next up</span></h3></div><figure class="screen" aria-hidden="true"><span class="sample">Sample</span><small>Brand name</small><span class="field">Northwind Coffee<span class="caret"></span></span><span class="btn">Create profile</span></figure><p>The profile holds your accounts and everything Atlas learns about the brand, for your whole team.</p><p class="asked"><strong>You'll be asked:</strong> the brand name as customers know it, then to confirm creating the profile.</p></li>
-    <li class="step" id="step-accounts"><div class="step-head"><span class="num">3</span><h3>Link Instagram, TikTok, or YouTube<span class="next" hidden>Next up</span></h3></div><figure class="screen" aria-hidden="true"><span class="sample">Sample</span><small>Accounts to link</small><span class="pick on"><i></i>Instagram</span><span class="pick on"><i></i>TikTok</span><span class="pick"><i></i>YouTube</span></figure><p>You sign in to each network in your browser, and Atlas starts reading your posts. Instagram and TikTok feed search and hashtag tracking.</p><p class="asked"><strong>You'll be asked:</strong> which accounts to connect.</p></li>
-    <li class="step" id="step-context"><div class="step-head"><span class="num">4</span><h3>Tell Atlas about the brand<span class="next" hidden>Next up</span></h3></div><figure class="screen" aria-hidden="true"><span class="sample">Sample</span><small>Your goal for the next 90 days</small><span class="chips"><span>Grow reach</span><span>Drive sales</span><span>Skip</span></span></figure><p>About seven short questions, saved to the brand's Atlas memory so teammates and later runs never ask again. Some offer to research the answer on the web; you see what it found before anything is saved. Then two optional offers: your brand's colors on Atlas pages, and your creator rates.</p><p class="asked"><strong>You'll be asked:</strong> what you sell and to whom, your role, competitors to watch, your goal for the next 90 days, any hard no's, creators you already work with, and hashtags to track. Most have a Skip option.</p></li>
-    <li class="step" id="step-insights"><div class="step-head"><span class="num">5</span><h3>Get first insights<span class="next" hidden>Next up</span></h3></div><figure class="screen" aria-hidden="true"><span class="sample">Sample</span><small>Three pushes for next week</small><ol class="pushes"><li>Reel: behind the scenes</li><li>Carousel: top five picks</li><li>Story: a poll</li></ol></figure><p>/aspire reviews your linked accounts and shows what's working, with three content pushes for next week. The findings are saved in Atlas for your team.</p><p class="asked"><strong>You'll be asked:</strong> which account to review: your own, or another handle you name.</p></li>
-  </ol>
 </section>
 
 <section aria-labelledby="h-safe">
