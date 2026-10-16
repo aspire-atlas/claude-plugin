@@ -169,7 +169,7 @@ test('desktop: the bar is a row of Buttons with the dithered meter Svg between t
   const sources = svgs.map(s => String(s.props.source))
   const dot = sources.find(s => s.includes('class="dt"'))
   expect(dot).toContain('#3B8A82')
-  expect(dot).toContain('#5fb5ab')
+  expect(dot).toContain('#5FB5AB')
   expect(sources.some(s => s.includes('#3B8A82') && s.includes('class="t0"'))).toBe(true)
   const crabs = svgs.filter(s => s.props.alt === 'Aspire crab')
   expect(crabs).toHaveLength(1)
@@ -183,9 +183,9 @@ test('desktop: the bar is a row of Buttons with the dithered meter Svg between t
   expect(agents).not.toContain('undefined')
   expect(agents).not.toContain('NaN')
   expect(await ui.find({ key: 'aspire-open-panel' })).toBeDefined()
-  // One line: the row is full width and the meter Svg fills what the other items leave (a 120-column band, not the old 360px cap).
+  // One line: the row is full width and the meter Svg is laid out for what the other items leave (a 120-column band, not the old 360px cap), then cropped by the host.
   const meter = svgs.find(s => String(s.props.source).includes('class="t0"'))
-  expect(Number(meter?.props.width)).toBeGreaterThan(360)
+  expect(Number(/viewBox="0 0 (\d+) /.exec(String(meter?.props.source))?.[1])).toBeGreaterThan(360)
   const rows = await ui.findAll({ type: 'Box' })
   expect(rows.some(r => r.props.width === '100%' && r.props.flexDirection === 'row')).toBe(true)
   // The percent, crab and count sit together in one right group that ends at the panel icon.
@@ -201,7 +201,7 @@ test('desktop: the dot turns done-green when finished; the terminal keeps the te
   await report($, { title: 'Onboarding', total: 6, done: 6, finished: true })
   const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'AbovePrompt', props: band as never })
   const dot = (await ui.findAll({ type: 'Svg' })).map(s => String(s.props.source)).find(s => s.includes('<circle'))
-  expect(dot).toContain('#4caf6e')
+  expect(dot).toContain('#4CAF6E')
   expect(dot).not.toContain('class="dt"')
   await ui.unmount()
   const term = await $.ui.mount({ plugin: PLUGIN, surface: 'terminal', component: 'AbovePrompt', props: band as never })
@@ -210,6 +210,27 @@ test('desktop: the dot turns done-green when finished; the terminal keeps the te
   expect(String((await term.find({ key: 'aspire-agents' }))?.props.label)).toContain('🦀 ×0')
   expect(await term.find({ key: 'aspire-agent-count' })).toBeUndefined()
   await term.unmount()
+})
+
+test('desktop: the band bar is drawn at its natural size and cropped to the room the row leaves it, never stretched', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  await typeAspire($)
+  await getStatus($)
+  await report($, { title: 'Onboarding', total: 6, done: 6, finished: true })
+  for (const bodyColumns of [60, 120, 400]) {
+    const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'AbovePrompt', props: { ...band, bodyColumns } as never })
+    const meter = (await ui.findAll({ type: 'Svg' })).find(s => String(s.props.alt).includes('Awaiting next assignment'))
+    expect(meter).toBeDefined()
+    // No pixel width on the element: the host takes the markup's own width up to its slot, and the markup asks for more than any slot.
+    expect(meter!.props.width).toBeUndefined()
+    const source = String(meter!.props.source)
+    expect(source).toContain('preserveAspectRatio="xMinYMid slice"')
+    expect(source).not.toContain('preserveAspectRatio="none"')
+    expect(source).toMatch(/<svg [^>]*width="4000"/)
+    // The layout still tracks the column count: the size the bar is drawn at before the host crops it.
+    expect(source).toMatch(/viewBox="0 0 \d+ 22"/)
+    await ui.unmount()
+  }
 })
 
 test('several organizations: no name until the call picks one', async ($, on) => {
@@ -858,6 +879,57 @@ test('credits are shown only for the selected organization', async ($, on) => {
   await getStatus($, { asOrganizationId: 'org_1' })
   expect(await panelShows($, /^996\.2$/)).toBe(false)
   expect(await status($)).not.toMatch(/credits left/)
+})
+
+test("a default get_status after a pick leaves the picked organization's name and credits alone", async ($, on) => {
+  const orgs = { selected: { id: 'org_2', name: 'Picked Org' }, all: [{ id: 'org_1', name: 'Default Org' }, { id: 'org_2', name: 'Picked Org' }] }
+  let body: unknown = { organizations: orgs, profiles: PROFILES, credits: { ...CREDITS, organizationId: 'org_2' } }
+  world(on, () => body)
+  await typeAspire($)
+  await getStatus($, { asOrganizationId: 'org_2' })
+  expect(await barShows($, 'terminal', 'Aspire: Picked Org')).toBe(true)
+  expect(await status($)).toMatch(/996\.2 credits left/)
+  // A later call names nothing and returns the connector's default organization with its own credits.
+  body = { organizations: { ...orgs, selected: { id: 'org_1', name: 'Default Org' } }, profiles: PROFILES, credits: { ...CREDITS, organizationId: 'org_1', balance: { ...CREDITS.balance, remaining: 0 } } }
+  await getStatus($)
+  expect(await barShows($, 'terminal', 'Aspire: Picked Org')).toBe(true)
+  expect(await status($)).toMatch(/996\.2 credits left/)
+  // Naming the default organization is a pick: the name and the credits follow it.
+  await getStatus($, { asOrganizationId: 'org_1' })
+  expect(await barShows($, 'terminal', 'Aspire: Default Org')).toBe(true)
+  expect(await status($)).not.toMatch(/996\.2 credits left/)
+})
+
+test("a default get_status that returns the picked organization's own credits refreshes them", async ($, on) => {
+  const orgs = { selected: { id: 'org_2', name: 'Picked Org' }, all: [{ id: 'org_1', name: 'Default Org' }, { id: 'org_2', name: 'Picked Org' }] }
+  let body: unknown = { organizations: orgs, profiles: PROFILES, credits: { ...CREDITS, organizationId: 'org_2' } }
+  world(on, () => body)
+  await typeAspire($)
+  await getStatus($, { asOrganizationId: 'org_2' })
+  expect(await status($)).toMatch(/996\.2 credits left/)
+  body = { organizations: orgs, profiles: PROFILES, credits: { ...CREDITS, organizationId: 'org_2', balance: { ...CREDITS.balance, remaining: 500 } } }
+  await getStatus($)
+  expect(await status($)).toMatch(/500 credits left/)
+})
+
+test('an unparseable get_status after a pick clears the figures', async ($, on) => {
+  const orgs = { selected: { id: 'org_2', name: 'Picked Org' }, all: [{ id: 'org_1' }, { id: 'org_2' }] }
+  let body: unknown = { organizations: orgs, profiles: PROFILES, credits: { ...CREDITS, organizationId: 'org_2' } }
+  world(on, () => body)
+  await typeAspire($)
+  await getStatus($, { asOrganizationId: 'org_2' })
+  expect(await status($)).toMatch(/996\.2 credits left/)
+  body = { error: 'unavailable' }
+  await getStatus($)
+  expect(await status($)).not.toMatch(/credits left/)
+})
+
+test('the organization named under the call input counts as named', async ($, on) => {
+  const several = { organizations: { selected: { id: 'org_2', name: 'Picked Org' }, all: [{ id: 'org_1' }, { id: 'org_2' }] }, profiles: [] }
+  world(on, () => several)
+  await typeAspire($)
+  await getStatus($, { input: { asOrganizationId: 'org_2' } })
+  expect(await barShows($, 'terminal', 'Aspire: Picked Org')).toBe(true)
 })
 
 test("the agent's own task list moves the bar and fills the Progress section, then ends as All done", async ($, on) => {
