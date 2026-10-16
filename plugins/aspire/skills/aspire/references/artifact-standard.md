@@ -24,17 +24,19 @@ source in the hand-off message instead.
 ## 1. The mark
 
 - Full pages: paste `${CLAUDE_PLUGIN_ROOT}/assets/aspire-animated.svg` inline (read the file; about
-  44KB, ASCII) as an inline `<svg>`, 40px square, in the header's right-hand group, with
+  27KB, ASCII) as an inline `<svg>`, 40px square, in the header's right-hand group, with
   `role="img"` and `aria-label="Aspire Atlas"` kept as the file has them. One copy per page.
 - Widgets, slides, and anything with several copies or a 300KB budget (the inline creator card):
-  paste `${CLAUDE_PLUGIN_ROOT}/assets/aspire-animated-small.svg` (about 6KB), 28px.
+  paste `${CLAUDE_PLUGIN_ROOT}/assets/aspire-animated-small.svg` (about 8KB), 28px.
 - Never load it from a URL: published pages and widgets cannot load outside images. Never recolor,
   restyle, or replace it, and never let the brand theme recolor it; it keeps its own dark tile. Give
   it a 1px `var(--border)` outline so its edge shows on a dark page.
 - It sits at the opposite end from the brand's own logo (theme.md puts that at the start of the
   header). When a header already has a right-hand item (a freshness chip, a "Saved to Atlas" chip),
   put the mark at the far right and the chip to its left.
-- Its animation honors `prefers-reduced-motion` already. Do not add script.
+- Its squares shuffle slowly, each on its own cycle of 7 to 23 seconds, so the pattern keeps changing
+  and takes minutes to repeat. It honors `prefers-reduced-motion` already (the squares hold still).
+  Do not add script, and do not edit the file: it is generated from `hooks/logo.ts`.
 - A deck exported to PowerPoint or Google Slides cannot play the animation: the pptx skill draws the
   small mark as a static image in the top right of each slide; if it cannot, it leaves the mark off
   the export and says so in the hand-off. The HTML deck always carries it.
@@ -103,7 +105,7 @@ check script finds it in this file only.
    the page names no Claude, model, assistant, requester, email, or id.
 3. The header carries the "Prepared for" chip (recipient-lens.md) so the page says who it is for.
 4. The audience line matches who will see the page.
-5. The page source stays ASCII and keeps its size budget (the full mark is about 44KB of the page's
+5. The page source stays ASCII and keeps its size budget (the full mark is about 27KB of the page's
    budget).
 
 ## 5. For new agents and new kinds of page
