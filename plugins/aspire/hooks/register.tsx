@@ -779,6 +779,8 @@ const planBodySvg = (W: number, title: string, shown: Shown, view: PlanView, tai
 }
 
 const OVER = '#D0453F'
+/** The credits bar's amber and red, with dark-mode variants (teal is ASPIRE above 25% left, amber at 25% or less, red at 10% or less or when out). */
+const BAR_CSS = '.cb-low{fill:#B86E00}.cb-critical{fill:#D0453F}@media (prefers-color-scheme: dark){.cb-low{fill:#F2B134}.cb-critical{fill:#F0706A}}'
 
 /** The credits card, fixed at the top and not collapsible: the Aspire mark and the organization's credits from the latest get_status. */
 const CREDIT_H = 78
@@ -796,7 +798,6 @@ const creditsCardSvg = (W: number, v: CreditsView): string => {
   const cardW = W - x0
   const barW = cardW - pad * 2
   const fill = Math.round(barW * v.ratio)
-  const color = v.isOver ? OVER : ASPIRE
   const left = x0 + pad
   const right = W - pad
   const text = (x: number, y: number, cls: string, size: number, body: string, extra = '') =>
@@ -805,14 +806,14 @@ const creditsCardSvg = (W: number, v: CreditsView): string => {
   return svg(
     W,
     CREDIT_H + 4,
-    `<g transform="translate(0,${Math.round((CREDIT_H - 4 - LOGO_SIZE) / 2)}) scale(${LOGO_SIZE / 512})"><title>Aspire</title>${LOGO}</g>
+    `<style>${BAR_CSS}</style><g transform="translate(0,${Math.round((CREDIT_H - 4 - LOGO_SIZE) / 2)}) scale(${LOGO_SIZE / 512})"><title>Aspire</title>${LOGO}</g>
 <rect class="tile" x="${x0}" y="0" width="${cardW}" height="${CREDIT_H - 4}" rx="8"/>
 ${text(left, 17, 's', 11, v.title)}
 ${v.tag ? text(right, 17, 's', 11, v.tag, 'text-anchor="end"') : ''}
 <text class="t" x="${left}" y="42" font-family="${FONT}" font-size="22" font-weight="600" font-variant-numeric="tabular-nums" ${v.isOver ? `fill="${OVER}"` : ''}>${xml(v.big)}</text>
 ${v.sub ? text(left + bigW, 42, 's', 12, v.sub) : ''}
 <rect class="k" x="${left}" y="50" width="${barW}" height="4" rx="2"/>
-${v.ratio > 0 ? `<rect x="${left}" y="50" width="${Math.max(3, fill)}" height="4" rx="2" fill="${color}"/>` : ''}
+${v.ratio > 0 ? `<rect ${v.tone === 'ok' ? `fill="${ASPIRE}"` : `class="cb-${v.tone}"`} x="${left}" y="50" width="${Math.max(3, fill)}" height="4" rx="2"/>` : ''}
 ${v.metaLeft ? text(left, 68, 's', 11, v.metaLeft) : ''}
 ${v.metaRight ? text(right, 68, 's', 11, v.metaRight, 'text-anchor="end"') : ''}`,
   )
@@ -1819,7 +1820,7 @@ export const register: Register = on => {
         </Text>
         {view.ratio > 0 || view.metaLeft ? (
           <Text wrap="truncate-end">
-            <Text color={view.isOver ? 'red' : ASPIRE}>{ctxBar(Math.round(view.ratio * 100), 12)}</Text> <Text dimColor>{[view.metaLeft, view.grants].filter(Boolean).join(' · ')}</Text>
+            <Text color={view.tone === 'critical' ? 'red' : view.tone === 'low' ? 'yellow' : ASPIRE}>{ctxBar(Math.round(view.ratio * 100), 12)}</Text> <Text dimColor>{[view.metaLeft, view.grants].filter(Boolean).join(' · ')}</Text>
           </Text>
         ) : null}
         {view.metaRight ? <Text dimColor wrap="truncate-end">{view.metaRight}</Text> : null}
