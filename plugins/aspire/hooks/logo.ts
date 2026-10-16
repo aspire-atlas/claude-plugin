@@ -97,12 +97,16 @@ const TERMINAL_MARK = ['▚▒░▞', '░▞▒▚']
 const MARK_TILE = 0x1c2b2a
 const MARK_TEAL = 0x3b8a82
 
-/** The terminal mark as a Raster's props: columns, rows and the base64 cells (code point, foreground, background for each). */
+let cachedMark: { columns: number; rows: number; cells: string } | undefined
+
+/** The terminal mark as a Raster's props: columns, rows and the base64 cells (code point, foreground, background for each). Built once. */
 export const terminalMark = (): { columns: number; rows: number; cells: string } => {
+  if (cachedMark) return cachedMark
   const words: number[] = []
   for (const row of TERMINAL_MARK) for (const ch of row) words.push(ch.codePointAt(0) ?? 0x20, MARK_TEAL, MARK_TILE)
   const bytes = new Uint8Array(new Uint32Array(words).buffer)
   let binary = ''
   for (const b of bytes) binary += String.fromCharCode(b)
-  return { columns: TERMINAL_MARK[0].length, rows: TERMINAL_MARK.length, cells: btoa(binary) }
+  cachedMark = { columns: TERMINAL_MARK[0].length, rows: TERMINAL_MARK.length, cells: btoa(binary) }
+  return cachedMark
 }

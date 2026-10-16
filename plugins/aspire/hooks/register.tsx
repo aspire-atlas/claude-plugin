@@ -1310,6 +1310,7 @@ export const register: Register = on => {
     const { Box, Text } = ui
     const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
     const theirs = await next(e)
+    // Anything but an engine reference (a node another mod already drew, nothing at all) passes as it came: only the engine drawing is wrapped.
     if (!theirs || typeof theirs !== 'object' || (theirs as { type?: string }).type !== 'engine') return theirs
     return (
       <Box flexDirection="column">
@@ -1328,70 +1329,68 @@ export const register: Register = on => {
     const flow = await flowOf($)
     if (!flow) return next(e)
     const tail = ` · Aspire Atlas${flow.phase ? ` · ${flow.phase}` : ''}`
-    return next({ ...e, props: { ...e.props, suffix: `${e.props.suffix ?? '…'}${tail}` } })
+    const own = e.props.suffix ?? ''
+    if (own.includes(' · Aspire Atlas')) return next(e)
+    return next({ ...e, props: { ...e.props, suffix: `${own}${tail}` } })
   })
 
-  // The line that closes a turn (terminal): Claude Code's own line, then where the flow stands.
+  // The line that closes a turn (terminal): Claude Code's own line, then where the running flow stands.
   on('ui.render', { component: 'TurnDuration' }, async ($, e, next) => {
-    const p = await read($, progress)
-    if (!p || p.total === 0 || !(await isOn($))) return next(e)
-    const { Box, Text } = $.ui.resolve(e)
+    const flow = await flowOf($)
+    if (!flow || flow.total === 0 || !(await isOn($))) return next(e)
     const theirs = await next(e)
+    if (!theirs) return theirs
+    const { Box, Text } = $.ui.resolve(e)
     return (
       <Box flexDirection="row">
         {theirs}
-        <Text dimColor>{` · Aspire Atlas · ${p.isFinished ? 'done' : `step ${Math.min(p.done + 1, p.total)} of ${p.total}`}`}</Text>
+        <Text dimColor>{` · Aspire Atlas · step ${Math.min(flow.done + 1, flow.total)} of ${flow.total}`}</Text>
       </Box>
     )
   })
 
-  // A collapsed run of Atlas calls: one row with the mark and the count, in place of a line that names no one. A group that holds any
-  // other tool, and a group the person expanded, keep Claude Code's own drawing.
+  // A collapsed run of Atlas calls: the mark beside Claude Code's own group row, which keeps its descriptions, results and failures. A
+  // group that holds any other tool, and a group the person expanded, keep Claude Code's own drawing alone.
   on('ui.render', { component: 'ToolGroup' }, async ($, e, next) => {
     const calls = e.props.calls
     if (e.props.isExpanded || calls.length === 0 || !calls.every(c => isAtlasTool(String(c.tool))) || !(await isOn($))) return next(e)
     const ui = $.ui.resolve(e)
-    const { Box, Text } = ui
+    const { Box } = ui
     const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
     const Raster = e.surface === 'terminal' && 'Raster' in ui ? ui.Raster : null
     if (!Svg && !Raster) return next(e)
+    const theirs = await next(e)
+    if (!theirs) return theirs
     const running = calls.some(c => c.isRunning)
-    const names = [...new Set(calls.map(c => shortTool(String(c.tool)).replace(/_/g, ' ')))]
-    const shown = clip(names.slice(0, 3).join(', ') + (names.length > 3 ? ` +${names.length - 3}` : ''), 90)
     return (
       <Box flexDirection="row" gap={1}>
         {Svg ? <Svg source={running ? spinnerSvg(18) : logoSvg(18, false)} alt="Aspire Atlas" width={18} height={18} /> : Raster ? <Raster key="aspire-mark" {...terminalMark()} /> : null}
-        <Box flexDirection="column" flexGrow={1} flexShrink={1} minWidth={0}>
-          <Box flexDirection="row" gap={1}>
-            <Text bold>Aspire Atlas</Text>
-            <Text dimColor>{`${calls.length} ${calls.length === 1 ? 'call' : 'calls'}`}</Text>
-            {running ? <Text dimColor>running</Text> : null}
-          </Box>
-          <Text dimColor wrap="truncate">{shown}</Text>
-        </Box>
+        {theirs}
       </Box>
     )
   })
 
   // The hint under the prompt (terminal): Claude Code's own line, then the way back to the guide, once the mod is on and the prompt is idle.
   on('ui.render', { component: 'PromptHint' }, async ($, e, next) => {
-    if (e.props.isDraft || e.props.isWorking || !(await isOn($))) return next(e)
-    return next({ ...e, props: { ...e.props, hint: `${e.props.hint} · /aspire help` } })
+    const hint = typeof e.props.hint === 'string' ? e.props.hint : ''
+    if (!hint || hint.includes('/aspire help') || e.props.isDraft || e.props.isWorking || !(await isOn($))) return next(e)
+    return next({ ...e, props: { ...e.props, hint: `${hint} · /aspire help` } })
   })
 
-  // What the plugin's own command printed: the mark beside it.
+  // What the plugin's own command printed: the mark beside Claude Code's own drawing of it.
   on('ui.render', { component: 'CommandOutput' }, async ($, e, next) => {
     if (e.props.command !== 'aspire-agents-info' || e.props.isErrored || !(await isOn($))) return next(e)
     const ui = $.ui.resolve(e)
-    const { Box, Text } = ui
+    const { Box } = ui
     const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
     const Raster = e.surface === 'terminal' && 'Raster' in ui ? ui.Raster : null
+    if (!Svg && !Raster) return next(e)
+    const theirs = await next(e)
+    if (!theirs) return theirs
     return (
       <Box flexDirection="row" gap={1}>
         {Svg ? <Svg source={logoSvg(22, false)} alt="Aspire Atlas" width={22} height={22} /> : Raster ? <Raster key="aspire-mark" {...terminalMark()} /> : null}
-        <Box flexDirection="column" flexGrow={1} flexShrink={1} minWidth={0}>
-          <Text wrap="wrap">{e.props.text}</Text>
-        </Box>
+        {theirs}
       </Box>
     )
   })

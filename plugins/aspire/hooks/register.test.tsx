@@ -1325,18 +1325,24 @@ test('the turn line and the prompt hint carry the brand only once the mod is on'
   const after = await siteOf($, 'terminal', 'PromptHint', hint)
   expect(await after.find({ type: 'Text', text: /hint beneath/ })).toBeDefined()
   await after.unmount()
+  const empty = await siteOf($, 'terminal', 'PromptHint', { isDraft: false, isWorking: false, hint: '' })
+  expect(await empty.find({ type: 'Text', text: /hint beneath/ })).toBeDefined()
+  await empty.unmount()
 })
 
-test('a collapsed group of Atlas calls is one branded row; a mixed or expanded group keeps the engine row', async ($, on) => {
+test('a collapsed group of Atlas calls gets the mark beside the engine row; a mixed or expanded group keeps the engine row', async ($, on) => {
   world(on, () => WITH_COSTS)
   engineSite(on, 'ToolGroup', 'engine group')
   await typeAspire($)
   const call = (tool: string, isRunning = false) => ({ tool, input: {}, isRunning, isErrored: false })
   const atlas = await siteOf($, 'desktop', 'ToolGroup', { calls: [call('mcp__Aspire_Atlas__search_posts'), call('mcp__Aspire_Atlas__search_creators', true)], isActive: true, isExpanded: false })
-  expect(await atlas.find({ type: 'Text', text: /^Aspire Atlas$/ })).toBeDefined()
-  expect(await atlas.find({ type: 'Text', text: /^2 calls$/ })).toBeDefined()
+  expect(await atlas.find({ type: 'Text', text: /^engine group$/ })).toBeDefined()
   expect(String((await atlas.find({ type: 'Svg' })).props.source)).toContain('@keyframes skc')
   await atlas.unmount()
+  const cells = await siteOf($, 'terminal', 'ToolGroup', { calls: [call('mcp__Aspire_Atlas__search_posts')], isActive: false, isExpanded: false })
+  expect(await cells.find({ type: 'Raster' })).toBeDefined()
+  expect(await cells.find({ type: 'Text', text: /^engine group$/ })).toBeDefined()
+  await cells.unmount()
   for (const props of [
     { calls: [call('Bash'), call('mcp__Aspire_Atlas__search_posts')], isActive: false, isExpanded: false },
     { calls: [call('mcp__Aspire_Atlas__search_posts')], isActive: false, isExpanded: true },
@@ -1352,7 +1358,7 @@ test('the plugin command output carries the mark; another command\'s output is l
   engineSite(on, 'CommandOutput', 'engine output')
   await typeAspire($)
   const own = await siteOf($, 'desktop', 'CommandOutput', { command: 'aspire-agents-info', args: 'status', text: 'Aspire mod: on.', isErrored: false })
-  expect(await own.find({ type: 'Text', text: /^Aspire mod: on\.$/ })).toBeDefined()
+  expect(await own.find({ type: 'Text', text: /^engine output$/ })).toBeDefined()
   expect(await own.find({ type: 'Svg' })).toBeDefined()
   await own.unmount()
   const other = await siteOf($, 'desktop', 'CommandOutput', { command: 'help', args: '', text: 'x', isErrored: false })
@@ -1392,6 +1398,11 @@ test('the turn line says where the flow stands, and the terminal Atlas row gets 
   const line = await siteOf($, 'terminal', 'TurnDuration', { word: 'Baked', durationMs: 3000 })
   expect(await line.find({ type: 'Text', text: /^ · Aspire Atlas · step 2 of 2$/ })).toBeDefined()
   await line.unmount()
+  await report($, { finished: true })
+  const after = await siteOf($, 'terminal', 'TurnDuration', { word: 'Baked', durationMs: 3000 })
+  expect(await after.find({ type: 'Text', text: / · Aspire Atlas/ })).toBeUndefined()
+  await after.unmount()
+  await startFlow($)
   const row = await toolRow($, 'terminal', 'mcp__Aspire_Atlas__search_posts')
   expect(await row.find({ type: 'Raster' })).toBeDefined()
   expect(await row.find({ type: 'Text', text: /^engine row$/ })).toBeDefined()
