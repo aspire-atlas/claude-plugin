@@ -899,6 +899,18 @@ test("a default get_status after a pick leaves the picked organization's name an
   expect(await status($)).not.toMatch(/996\.2 credits left/)
 })
 
+test("a default get_status that returns the picked organization's own credits refreshes them", async ($, on) => {
+  const orgs = { selected: { id: 'org_2', name: 'Picked Org' }, all: [{ id: 'org_1', name: 'Default Org' }, { id: 'org_2', name: 'Picked Org' }] }
+  let body: unknown = { organizations: orgs, profiles: PROFILES, credits: { ...CREDITS, organizationId: 'org_2' } }
+  world(on, () => body)
+  await typeAspire($)
+  await getStatus($, { asOrganizationId: 'org_2' })
+  expect(await status($)).toMatch(/996\.2 credits left/)
+  body = { organizations: orgs, profiles: PROFILES, credits: { ...CREDITS, organizationId: 'org_2', balance: { ...CREDITS.balance, remaining: 500 } } }
+  await getStatus($)
+  expect(await status($)).toMatch(/500 credits left/)
+})
+
 test('an unparseable get_status after a pick clears the figures', async ($, on) => {
   const orgs = { selected: { id: 'org_2', name: 'Picked Org' }, all: [{ id: 'org_1' }, { id: 'org_2' }] }
   let body: unknown = { organizations: orgs, profiles: PROFILES, credits: { ...CREDITS, organizationId: 'org_2' } }

@@ -112,7 +112,7 @@ export const CHARACTERS: readonly Character[] = [
     draw: (f, t) => {
       crabBody(f)
       f(6, 7, 18, 1, I.frost); f(5, 8, 1, 14, I.frost); f(24, 8, 1, 14, I.frost); f(6, 22, 18, 1, I.steel)
-      f(6, 8, 18, 14, 'rgba(169,214,245,.32)'); f(8, 9, 2, 1, I.white); f(8, 10, 1, 2, I.white)
+      f(6, 8, 18, 14, I.glass); f(8, 9, 2, 1, I.white); f(8, 10, 1, 2, I.white)
       f(14, 4, 2, 3, I.steel); f(14, 2, 2, 2, t, 'ant'); f(13, 18, 4, 2, t)
       f(27, 3, 1, 3, I.gold, 'star'); f(26, 4, 3, 1, I.gold, 'star')
     },
@@ -132,7 +132,7 @@ export const CHARACTERS: readonly Character[] = [
       stamp(f, 6, 3, ['......bbbbbb......', '....bbcbbcbbbb....', '...bbbbbbbbbbbb...', '..bcbbcbbcbbcbbb..', '.bbbbbbbbbbbbbbbb.', 'dddddddddddddddddd'], { b: I.wood, c: I.tan, d: I.walnut })
       f(6, 9, 18, 1, t)
       stamp(f, 23, 1, ['.kkk.', 'k...k', 'k...k', 'k...k', '.kkk.'], { k: I.graphite }, 'it')
-      f(24, 2, 3, 3, 'rgba(169,214,245,.7)', 'it'); f(25, 6, 1, 4, I.wood, 'it'); f(24, 2, 1, 1, I.white, 'gl')
+      f(24, 2, 3, 3, I.lens, 'it'); f(25, 6, 1, 4, I.wood, 'it'); f(24, 2, 1, 1, I.white, 'gl')
     },
     css: `.c-heavy.run .it{animation:scan 1s steps(1) infinite}
 .c-heavy.run .gl{animation:blink 1s steps(1) infinite -.5s}

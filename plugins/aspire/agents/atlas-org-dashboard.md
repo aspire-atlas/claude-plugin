@@ -62,8 +62,10 @@ folder, and the `page` and `snapshot` sections of `program-dashboard.md`, `orche
    post in the form `post@240=<mediaUrl>|<thumbnailUrl>` from its `media.mediaUrl` and
    `media.thumbnailUrl`, with output to a scratch file. Match each output line to its post by
    position, and put each `dataUri` in that post's snapshot record. Keep the images under that
-   section's budget (8MB in all) with its ordered reductions, and cap the posts per profile so
-   the total across profiles fits. If Python 3 or Pillow is not already installed, install
+   section's budget (8,000,000 characters of data URI in all). Embed in rounds so profiles stay even:
+   the newest post of every profile, then the second newest of every profile, and so on up to 12 per
+   profile, stopping when the running total of `dataUri` lengths would pass the budget; the posts
+   not reached get the placeholder tile. If Python 3 or Pillow is not already installed, install
    nothing: every post gets the placeholder tile. Never leave a `cdn.aspire.io` URL in the page. A
    post whose embed returns `ok:false` gets the placeholder tile; count those, and say why in the
    report. Never skip this step silently.

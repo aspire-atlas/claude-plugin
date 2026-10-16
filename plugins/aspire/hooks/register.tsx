@@ -90,7 +90,7 @@ import type { EngineInterface, Register } from 'claude-code'
 import type { AgentRun, AtlasCreditsReading, AtlasReading, BandStats, Coach, Item, Notice, OrgState, Panel, Progress, Seen, Trigger, TriggerKind, Turn } from '../types'
 import { creditsOf, isOrgSelected, creditsView, fmtAtlasUsage, fmtCredits, isAtlasStatusCall, isAtlasToolName, readAtlasCredits, readAtlasOrg, readAtlasUsage } from './atlas-usage'
 import type { CreditsView } from './atlas-usage'
-import { BRAND, DOC, NEUTRAL, SEMANTIC, THIRD_PARTY, pairCss } from './palette'
+import { ACCENT, BRAND, DOC, NEUTRAL, SEMANTIC, THIRD_PARTY, pairCss } from './palette'
 import { ASPIRE, COACH_CRAB, CRAB_CSS, breathOf, characterOf, crab } from './characters'
 import type { Character } from './characters'
 import { AGENT_CHARACTERS } from './costumes'
@@ -344,14 +344,14 @@ const DONE = SEMANTIC.done
 
 // The classes each drawing's <style> block switches between light and dark, all from the palette.
 const METER_CSS = pairCss({ k: ['fill', NEUTRAL.track], tk: ['fill', NEUTRAL.tick] })
-const BAR_ROW_CSS = pairCss({ t: ['fill', NEUTRAL.ink], m: ['fill', NEUTRAL.muted], k: ['fill', NEUTRAL.track], tk: ['fill', NEUTRAL.tick] })
+const BAR_ROW_CSS = pairCss({ t: ['fill', NEUTRAL.ink], m: ['fill', NEUTRAL.soft], k: ['fill', NEUTRAL.track], tk: ['fill', NEUTRAL.tick] })
 const BAND_CSS = pairCss({
   t: ['fill', NEUTRAL.ink],
-  m: ['fill', NEUTRAL.muted],
+  m: ['fill', NEUTRAL.soft],
   k: ['fill', NEUTRAL.track],
   tk: ['fill', NEUTRAL.tick],
-  pk: ['stroke', NEUTRAL.muted],
-  pf: ['fill', NEUTRAL.muted],
+  pk: ['stroke', NEUTRAL.soft],
+  pf: ['fill', NEUTRAL.soft],
 })
 const PANE_THEME_CSS = pairCss({
   t: ['fill', NEUTRAL.ink],
@@ -360,9 +360,11 @@ const PANE_THEME_CSS = pairCss({
   k: ['fill', NEUTRAL.track],
   tk: ['fill', NEUTRAL.tick],
   ln: ['stroke', NEUTRAL.track],
-  cv: ['stroke', NEUTRAL.tick],
+  cv: ['stroke', NEUTRAL.muted],
   sw: ['fill', NEUTRAL.swatch],
   tile: ['fill', NEUTRAL.surface],
+  er: ['stroke', SEMANTIC.error],
+  ef: ['fill', SEMANTIC.error],
 })
 // The whole row is one SVG: the desktop wraps sibling elements onto new lines,
 // so title, bar, percent, and the agent counter with its crab live in one
@@ -563,7 +565,7 @@ ${crab(2, (BAR_ROW_H - 30 * BAND_CRAB_SCALE) / 2, character, false, true, BAND_C
 const dotSvg = (shown: Shown): string => {
   const fill = shown.isFinished ? `fill="${DONE}"` : `class="dt"`
   return `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="${BAR_ROW_H}" viewBox="0 0 12 ${BAR_ROW_H}">
-<style>${pairCss({ dt: ['fill', { light: BRAND.teal, dark: BRAND.tealLift }] })}</style>
+<style>${pairCss({ dt: ['fill', ACCENT] })}</style>
 <circle ${fill} cx="6" cy="${BAR_ROW_H / 2}" r="4"/>
 </svg>`
 }
@@ -646,7 +648,7 @@ const svg = (W: number, H: number, body: string): string =>
 const statusMark = (x: number, y: number, status: string, color: string): string => {
   if (status === 'running') return `<circle class="live" cx="${x}" cy="${y}" r="3.5" fill="${color}"/>`
   if (status === 'done') return `<path d="M${x - 5} ${y}l3.5 3.5 6.5-7" fill="none" stroke="${DONE}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`
-  return `<path d="M${x - 4} ${y - 4}l8 8M${x + 4} ${y - 4}l-8 8" stroke="${OVER}" stroke-width="1.8" stroke-linecap="round"/>`
+  return `<path d="M${x - 4} ${y - 4}l8 8M${x + 4} ${y - 4}l-8 8" class="er" stroke-width="1.8" stroke-linecap="round"/>`
 }
 
 /** One drawn row of the accordion; `edge` draws a section's top edge, `tail` is the space left under a section's last row. */
@@ -779,7 +781,6 @@ const planBodySvg = (W: number, title: string, shown: Shown, view: PlanView, tai
   return rowSvg(W, planH(view), false, tail, parts.join('\n'))
 }
 
-const OVER = SEMANTIC.error.light
 /** The credits bar's amber and red, with dark-mode variants (teal is ASPIRE above 25% left, amber at 25% or less, red at 10% or less or when out). */
 const BAR_CSS = pairCss({ 'cb-low': ['fill', SEMANTIC.warn], 'cb-critical': ['fill', SEMANTIC.error] })
 
@@ -811,7 +812,7 @@ const creditsCardSvg = (W: number, v: CreditsView): string => {
 <rect class="tile" x="${x0}" y="0" width="${cardW}" height="${CREDIT_H - 4}" rx="8"/>
 ${text(left, 17, 's', 11, v.title)}
 ${v.tag ? text(right, 17, 's', 11, v.tag, 'text-anchor="end"') : ''}
-<text class="t" x="${left}" y="42" font-family="${FONT}" font-size="22" font-weight="600" font-variant-numeric="tabular-nums" ${v.isOver ? `fill="${OVER}"` : ''}>${xml(v.big)}</text>
+<text class="${v.isOver ? 'ef' : 't'}" x="${left}" y="42" font-family="${FONT}" font-size="22" font-weight="600" font-variant-numeric="tabular-nums">${xml(v.big)}</text>
 ${v.sub ? text(left + bigW, 42, 's', 12, v.sub) : ''}
 <rect class="k" x="${left}" y="50" width="${barW}" height="4" rx="2"/>
 ${v.ratio > 0 ? `<rect ${v.tone === 'ok' ? `fill="${ASPIRE}"` : `class="cb-${v.tone}"`} x="${left}" y="50" width="${Math.max(3, fill)}" height="4" rx="2"/>` : ''}
@@ -1239,7 +1240,10 @@ export const register: Register = on => {
         const isPick = reading?.name !== undefined && (reading.orgCount <= 1 || isOrgNamed)
         // Kept only for a reading that is the default: it parsed, several organizations, none named. An
         // unparseable result, or a named call whose result has no name, clears the figures as before.
-        const isKept = holdsPick && !isPick && reading !== null && reading.orgCount > 1 && !isOrgNamed
+        // When the default's credits are the held organization's own (same id), they are that organization's fresh figures: taken, not kept.
+        const held = (await read($, creditsAtom))?.credits
+        const isHeldOrg = credits?.organizationId !== undefined && credits.organizationId === held?.organizationId
+        const isKept = holdsPick && !isPick && reading !== null && reading.orgCount > 1 && !isOrgNamed && !isHeldOrg
         await update($, atlas, prev => (isKept ? prev : costs ? { costs, at } : null))
         await update($, creditsAtom, prev => (isKept ? prev : credits ? { credits, at } : null))
         await update($, seen, s => ({ ...s, statusReads: s.statusReads + 1, lastStatusAt: at }))

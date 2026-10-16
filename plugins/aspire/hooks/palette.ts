@@ -1,6 +1,6 @@
 /**
  * The one palette every drawing in the mod takes its colors from. Nothing else in the hooks writes a hex: a color is added here, with
- * a role, or it is not used (palette.test.ts reads every hooks source and fails on a hex this file does not hold).
+ * a role, or it is not used (scripts/check-palette.sh, run in CI, reads every hooks source and fails on a color this file does not hold).
  *
  * Sections:
  * - BRAND: the Aspire Atlas look. The mark's dark tile and teal, and the lime accent (the atlas.aspire.io call-to-action color) for
@@ -26,14 +26,17 @@ export const BRAND = {
   white: '#FFFFFF',
 } as const
 
+/** The teal accent as a light and dark pair: the status dot, the page icon's lines and check. */
+export const ACCENT: Pair = { light: BRAND.teal, dark: BRAND.tealLift }
+
 /** The teal tints the artifact page icon is drawn in. */
 export const DOC = {
   page: { light: '#E8F4F2', dark: BRAND.tile },
   pageEdge: { light: '#7DB8B1', dark: BRAND.teal },
-  line: { light: BRAND.teal, dark: BRAND.tealLift },
+  line: ACCENT,
   faint: { light: '#A9D3CE', dark: '#3E6B66' },
   accent: { light: '#2E6E67', dark: BRAND.tealLift },
-  check: { light: BRAND.teal, dark: BRAND.tealLift },
+  check: ACCENT,
   checkMark: { light: BRAND.white, dark: BRAND.tile },
 } as const satisfies Record<string, Pair>
 
@@ -44,6 +47,8 @@ export const NEUTRAL = {
   subtle: { light: '#6B6B68', dark: '#8F8F8B' },
   /** Tertiary text and thin icons. */
   muted: { light: '#9A9A96', dark: '#7D7D79' },
+  /** The band's secondary labels and its small strokes (a shade off `muted`, kept for contrast on both themes). */
+  soft: { light: '#8A8A8A', dark: '#9A9A9A' },
   /** A bar's empty track and a section's edge line. */
   track: { light: '#E4E4E1', dark: '#2C2C2B' },
   /** A bar's step ticks and a chevron. */
@@ -105,6 +110,9 @@ export const ILLUSTRATION = {
   tan: '#A0703F',
   walnut: '#5A3519',
   white: '#FFFFFF',
+  /** The dome glass and the magnifier lens: pale blue, see-through. */
+  glass: 'rgba(169,214,245,.32)',
+  lens: 'rgba(169,214,245,.7)',
 } as const
 
 /** `prefers-color-scheme` rules for classes that switch between a pair's light and dark values: `{ t: ['fill', NEUTRAL.ink] }` is `.t{fill:…}` and its dark twin. */
@@ -118,7 +126,7 @@ export const pairCss = (rules: Readonly<Record<string, readonly [prop: string, c
 const values = (o: object): string[] =>
   Object.values(o).flatMap(v => (typeof v === 'string' ? [v] : typeof v === 'object' && v !== null ? values(v) : []))
 
-/** Every hex the palette holds, lower case: what palette.test.ts holds the hooks' sources to. */
+/** Every hex the palette holds, lower case (the rgba() illustration tints are not hexes). */
 export const PALETTE_HEX: ReadonlySet<string> = new Set(
-  [BRAND, DOC, NEUTRAL, SEMANTIC, THIRD_PARTY, ILLUSTRATION].flatMap(values).map(h => h.toLowerCase()),
+  [BRAND, DOC, NEUTRAL, SEMANTIC, THIRD_PARTY, ILLUSTRATION].flatMap(values).filter(h => h.startsWith('#')).map(h => h.toLowerCase()),
 )
