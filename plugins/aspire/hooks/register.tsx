@@ -1257,7 +1257,7 @@ export const register: Register = on => {
     const description = str(input.context)
     return (
       <Box flexDirection="row" gap={1}>
-        <Svg source={logoSvg(18)} alt="Aspire Atlas" width={18} height={18} />
+        <Svg source={logoSvg(18, Boolean(e.props.isRunning))} alt="Aspire Atlas" width={18} height={18} />
         <Box flexDirection="column" flexGrow={1} flexShrink={1} minWidth={0}>
           <Box flexDirection="row" gap={1}>
             <Text bold>Aspire Atlas</Text>
