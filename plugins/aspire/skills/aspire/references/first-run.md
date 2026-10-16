@@ -96,8 +96,7 @@ without a connection (**7**), use none of them.
      continues at: `step-profile` (new org), `step-accounts` (profile only), `step-context`
      (existing, no brand context). On request, leave every one hidden.
 3. The hero carries the animated Aspire Atlas mark at the top right, and the footer keeps its two
-   existing lines and adds the footnote's first and second lines with the "No Atlas data on this
-   page" variant ([`artifact-standard.md`](artifact-standard.md)).
+   existing lines and adds the "No Atlas data on this page" source line ([`artifact-standard.md`](artifact-standard.md)).
 4. The page always uses the Aspire default look in the template, never `theme:brand`: it
    describes Atlas itself, and a first run has no theme yet.
 4. Write the file to the session's scratch folder as `atlas-starter-guide.html` and publish it

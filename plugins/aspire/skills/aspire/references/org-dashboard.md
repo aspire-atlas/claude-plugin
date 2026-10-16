@@ -132,8 +132,8 @@ right, to the left of the Aspire mark.
 6. **Footnote.** Everything about the organization and the person lives only here, in small type: the
    organization name and the person's name and Atlas role, the saved goals as one line each, data as
    of, what the page reads, and the refresh command. No other place on the page repeats it. Under
-   those lines sits the artifact-standard footnote (`artifact-standard.md`); its "Prepared by" holds
-   the person's name only, never their role or email.
+   those lines sits the artifact-standard source line (`artifact-standard.md`), which names no
+   person.
 
 ### Profile tab, in this order
 

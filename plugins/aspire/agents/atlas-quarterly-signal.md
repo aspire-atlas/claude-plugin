@@ -85,11 +85,11 @@ If the session has a task tool (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), 
 ## Artifact standard
 
 Every page, deck, or card you publish carries the animated Aspire Atlas mark at the top right and
-the footnote (who prepared it, when, for whom, and the source), as
+one source line at the end, as
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md` sets out: the mark and the
-variants in sections 1 and 3, the footnote in section 2. Take both dates from the shell clock; on a
-republish keep the first prepared date and change the update. A sample page follows the sample
-variant. Files for import (CSV) and chat or mail text carry neither.
+variants in sections 1 and 3, the source line in section 2. Take the as-of time from the shell clock
+and change it on every republish. Never name Claude, a model, or the requester on a page. A sample
+page follows the sample variant. Files for import (CSV) and chat or mail text carry neither.
 
 ## Audit trail
 

@@ -331,8 +331,8 @@ Follow `program.md`, **9**, and `readout.md`, **Scheduled (unattended) runs**:
   creator.
 - Resolve the date from the shell clock in the cadence timezone.
 - Collect, tag, join, republish to the link in the library's `page` finding, and post the
-  alert to the saved routing. The republish is silent, so each run refreshes the footnote's update
-  date and keeps its prepared date (`artifact-standard.md`).
+  alert to the saved routing. The republish is silent, so each run refreshes the source line's as-of
+  time (`artifact-standard.md`).
 - Write `asset` findings only when `program:{slug}-cadence` names the library (`library
   weekly`, the P9 "Weekly content library refresh" answer), or, for the whole brand, when the
   `library:cadence` calibration is saved (**Content library**, Schedule, in SKILL.md). Without

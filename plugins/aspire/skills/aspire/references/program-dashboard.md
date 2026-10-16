@@ -523,7 +523,7 @@ runs**:
 - Resolve the date from the shell clock in the cadence timezone.
 - Read, compute, republish the page to the link in the `page` finding with key `dashboard`,
   write `team` page data, and post the three lines to the saved routing. The republish is silent,
-  so each run refreshes the footnote's update date and keeps its prepared date
+  so each run refreshes the source line's as-of time
   (`artifact-standard.md`).
 - Write the `snapshot` finding only when `program:{slug}-cadence` names `dashboard weekly`.
   Without it: republish and post, write nothing, and say "The weekly dashboard is not in the

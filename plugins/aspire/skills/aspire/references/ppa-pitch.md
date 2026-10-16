@@ -775,15 +775,13 @@ Mode `build` renders the deck from the confirmed answers.
    entry per slide, in deck order:
 
    ```text
-   {deck: {title, brand, round, presentation, recipient, currency, rateLabel, metricsAt,
-           preparedBy, preparedAt, updatedAt},
+   {deck: {title, brand, round, presentation, recipient, currency, rateLabel, metricsAt, readAt},
     slides: [{n, type, canvas, eyebrow, footer: {left, right}, fields: {…}, notes, sources: {field: source}}],
     creators: [{handle, network, name, metrics…, postsCounted, metricsAt, heroEvidence: [permalinks]}],
     brollSetups: [{n, setup}]}
    ```
 
-   `preparedBy` and the dates follow `artifact-standard.md`: name only, dates from the shell clock,
-   `preparedAt` kept from the earlier publish on a revision and `updatedAt` changed.
+   `readAt` follows `artifact-standard.md`: the shell clock at the read, changed on every revision.
    Images are file paths in the scratch folder (write each data URI's bytes to a file) plus the
    data URI's `bytes`. The page and every export read this model, so they never disagree.
 3. Render the page per the `artifact-design` contract (load it first): each slide a `<section

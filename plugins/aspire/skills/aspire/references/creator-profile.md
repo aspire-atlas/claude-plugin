@@ -385,8 +385,8 @@ percentages of the axis or the largest value, written inline.
     <ul><!-- one per gap, freshness first --><li>{GAP}</li></ul>
   </section>
 
-  <footer class="atlas-footnote acp-foot" data-prepared="{PREPARED_ISO}" data-updated="{UPDATED_ISO}">
-    <!-- the images-are-a-snapshot note, then the footnote lines from artifact-standard.md -->{FOOTNOTE}
+  <footer class="atlas-footnote acp-foot" data-updated="{UPDATED_ISO}">
+    <!-- the images-are-a-snapshot note, then the source line from artifact-standard.md -->{FOOTNOTE}
   </footer>
 </main>
 ```

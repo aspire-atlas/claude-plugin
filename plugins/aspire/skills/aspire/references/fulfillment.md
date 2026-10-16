@@ -209,8 +209,7 @@ value, no fee, no terms, no contact details.
    your team. Statuses from Atlas as
    of {time}." Plus "Product from {store}" when a store was read. Then the footnote from
    [`artifact-standard.md`](artifact-standard.md) with the team audience line. Contributors edit this
-   page, so its update stamp reads "Last edited {time}" from the page data `updatedAt` instead of a
-   fixed time. The "For your team only" notice in the header stays.
+   page, so its header shows "Last edited {time}" from the page data `updatedAt` beside the freshness chip. The "For your team only" notice in the header stays.
 
 The page renders before its data loads and works with no rows. Load `artifact-design` before
 building.

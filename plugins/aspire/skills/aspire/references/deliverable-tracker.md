@@ -428,7 +428,7 @@ launches with `run: unattended`. It follows `program.md` **9**:
   `page` finding only when it is missing (`program.md` **9**).
 - Republish the tracker page to the link in the newest `page` finding with key `tracker`. The
   task is scheduled only after that finding exists (`program.md` **8**). The republish is silent,
-  so each run refreshes the footnote's update date and keeps its prepared date
+  so each run refreshes the source line's as-of time
   (`artifact-standard.md`).
 - Post to the routing in `program:{slug}-routing` when at least one row is late, missing, or
   needs a fix, or a new post was matched: "{program} posting check: {l} late (@a, @b), {m}

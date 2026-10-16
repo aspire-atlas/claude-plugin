@@ -21,8 +21,14 @@ for f in "$P/assets/aspire-animated.svg" "$P/assets/aspire-animated-small.svg"; 
   [ -f "$f" ] || err "$f is missing (the standard pastes it into pages)"
 done
 
+# The canonical agent block lives in the standard; every agent carries it verbatim.
+canon=$(awk '/<!-- agent-block -->/{f=1;next} /<!-- \/agent-block -->/{f=0} f' "$STD" | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}')
+[ -n "$canon" ] || err "the standard has no <!-- agent-block --> section"
 for f in "$P"/agents/*.md; do
-  grep -q 'references/artifact-standard.md' "$f" || err "$(basename "$f" .md) does not link artifact-standard.md"
+  name=$(basename "$f" .md)
+  mine=$(awk '/^## Artifact standard$/{f=1;print;next} f&&/^## /{f=0} f' "$f" | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}')
+  [ -n "$mine" ] || { err "$name has no '## Artifact standard' block (copy it from artifact-standard.md, section 5)"; continue; }
+  [ "$mine" = "$canon" ] || err "$name's Artifact standard block differs from the one in artifact-standard.md"
 done
 
 # The wording lives in the standard only.
