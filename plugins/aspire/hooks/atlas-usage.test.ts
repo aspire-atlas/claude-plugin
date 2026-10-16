@@ -1,7 +1,7 @@
 // Run with: claude plugin test plugins/aspire
 import { expect, test } from 'claude-code/testing'
 
-import { creditsOf, creditsView, isOrgSelected, fmtAmount, fmtAtlasUsage, fmtCredits, fmtDay, readAtlasCredits, isAtlasStatusCall, isAtlasToolName, parseTokenCosts, readAtlasOrg, readAtlasUsage, toAmount } from './atlas-usage'
+import { creditsBar, creditsOf, creditsView, isOrgSelected, fmtAmount, fmtAtlasUsage, fmtCredits, fmtDay, readAtlasCredits, isAtlasStatusCall, isAtlasToolName, parseTokenCosts, readAtlasOrg, readAtlasUsage, toAmount } from './atlas-usage'
 
 // What an MCP get_status result looks like as the tool.call hook sees it: the
 // tool's record (`content` blocks of JSON text) and the text the model reads.
@@ -187,7 +187,7 @@ test('creditsView: trial with usage, over the grants, token costs only, nothing'
   const c = readAtlasCredits({ credits: CREDITS_BLOCK })
   expect(creditsView(c, null)).toMatchObject({ big: '996.2', sub: 'of 1,000 left', isOver: false, metaLeft: '3.8 used this period', metaRight: '25 new posts · 26 retrieved', tag: 'estimate · resets Nov 1', grants: 'Trial · no expiry' })
   const over = readAtlasCredits({ credits: { ...CREDITS_BLOCK, balance: { granted: 1000, consumed: 1042.5, remaining: 0, overage: 42.5 } } })
-  expect(creditsView(over, null)).toMatchObject({ big: '42.5 over', sub: 'of 1,000 used up', isOver: true, ratio: 1 })
+  expect(creditsView(over, null)).toMatchObject({ big: '42.5 over', sub: 'of 1,000 used up', isOver: true, ratio: 0, tone: 'critical' })
   expect(creditsView(null, { used: 12000, limit: 50000 })).toMatchObject({ title: 'Atlas tokens', big: '12k / 50k' })
   expect(creditsView(null, null)).toMatchObject({ title: 'Credits', big: '—', sub: 'run /aspire to refresh' })
 })
@@ -208,4 +208,26 @@ test('creditsOf: credits belong to the selected organization only', () => {
   // Credits of another organization: hidden.
   expect(creditsOf({ name: 'Brand', id: 'org_other' }, c)).toBeNull()
   expect(creditsOf({ name: 'Brand' }, null)).toBeNull()
+})
+
+test('creditsBar: fills by what remains, teal above 25%, amber at 25%, red at 10%, empty when out or unknown', () => {
+  const bar = (granted: number, remaining: number, overage = 0) => creditsBar({ granted, remaining, overage })
+  const full = bar(1000, 993.3)
+  expect(Math.round(full.ratio * 10000)).toBe(9933)
+  expect(full.tone).toBe('ok')
+  expect(bar(1000, 251).tone).toBe('ok')
+  expect(bar(1000, 250)).toEqual({ ratio: 0.25, tone: 'low' })
+  expect(bar(1000, 101).tone).toBe('low')
+  expect(bar(1000, 100)).toEqual({ ratio: 0.1, tone: 'critical' })
+  expect(bar(1000, 0)).toEqual({ ratio: 0, tone: 'critical' })
+  expect(bar(1000, 0, 42.5)).toEqual({ ratio: 0, tone: 'critical' })
+  expect(bar(0, 0)).toEqual({ ratio: 0, tone: 'ok' })
+  expect(bar(Number.NaN, 5)).toEqual({ ratio: 0, tone: 'ok' })
+  expect(bar(1000, 1200).ratio).toBe(1)
+  const c = readAtlasCredits({ credits: { ...CREDITS_BLOCK, balance: { granted: 1000, consumed: 6.7, remaining: 993.3, overage: 0 } } })
+  const v = creditsView(c, null)
+  expect(v.big).toBe('993.3')
+  expect(v.sub).toBe('of 1,000 left')
+  expect(Math.round(v.ratio * 10000)).toBe(9933)
+  expect(v.tone).toBe('ok')
 })
