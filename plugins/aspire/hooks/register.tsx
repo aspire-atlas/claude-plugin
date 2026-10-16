@@ -91,7 +91,7 @@ import type { CreditsView } from './atlas-usage'
 import { ASPIRE, COACH_CRAB, CRAB_CSS, breathOf, characterOf, crab } from './characters'
 import type { Character } from './characters'
 import { AGENT_CHARACTERS } from './costumes'
-import { logoMarkup, logoSvg } from './logo'
+import { logoMarkup, logoSvg, spinnerSvg } from './logo'
 import { GROUPS, ROSTER } from './roster'
 import type { RosterEntry } from './roster'
 import { clip, fitText, fmtTime, fmtTokens, modelName, textWidth, windowOf, xml } from './format'
@@ -1258,7 +1258,7 @@ export const register: Register = on => {
     const description = str(input.context)
     return (
       <Box flexDirection="row" gap={1}>
-        <Svg source={logoSvg(18, Boolean(e.props.isRunning))} alt="Aspire Atlas" width={18} height={18} />
+        <Svg source={e.props.isRunning ? spinnerSvg(18) : logoSvg(18, false)} alt="Aspire Atlas" width={18} height={18} />
         <Box flexDirection="column" flexGrow={1} flexShrink={1} minWidth={0}>
           <Box flexDirection="row" gap={1}>
             <Text bold>Aspire Atlas</Text>

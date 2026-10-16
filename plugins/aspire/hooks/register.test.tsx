@@ -121,7 +121,7 @@ for (const surface of ['terminal', 'desktop'] as const) {
     expect(await barShows($, surface, '0%')).toBe(true)
     // The band has no stats row; the panel's summary carries the Atlas figure, none made up.
     expect(await bandShows($, surface, /^Atlas tokens$/)).toBe(false)
-    expect(await panelShows($, /^run \/aspire to refresh$/)).toBe(true)
+    expect(await panelShows($, /run \/aspire to refresh/)).toBe(false)
     expect(await panelShows($, /Unrelated work/)).toBe(false)
     expect(await status($)).toMatch(/^Aspire mod: on since 0s ago, switched on by a typed \/aspire \(\/aspire:aspire\)\./)
   })
@@ -154,7 +154,7 @@ for (const surface of ['terminal', 'desktop'] as const) {
     body = WITHOUT_COSTS
     await getStatus($)
     expect(await panelShows($, /12k/)).toBe(false)
-    expect(await panelShows($, /^run \/aspire to refresh$/)).toBe(true)
+    expect(await panelShows($, /run \/aspire to refresh/)).toBe(false)
   })
 }
 
@@ -1240,8 +1240,11 @@ test('desktop: an Atlas tool row is the animated mark and the call name; the ter
   expect(await atlas.find({ type: 'Text', text: /^search posts$/ })).toBeDefined()
   expect(await atlas.find({ type: 'Text', text: /^running$/ })).toBeDefined()
   const svg = await atlas.find({ type: 'Svg' })
-  expect(String(svg.props.source)).toContain('@keyframes lga')
+  expect(String(svg.props.source)).toContain('@keyframes skc')
   await atlas.unmount()
+  const done = await toolRow($, 'desktop', 'mcp__Aspire_Atlas__search_posts', { isRunning: false })
+  expect(String((await done.find({ type: 'Svg' })).props.source)).not.toContain('@keyframes')
+  await done.unmount()
   for (const [surface, tool] of [['terminal', 'mcp__Aspire_Atlas__search_posts'], ['desktop', 'Bash'], ['desktop', 'mcp__Aspire_Atlas_Organization_Admin__list_members']] as const) {
     const row = await toolRow($, surface, tool)
     expect(await row.find({ type: 'Text', text: /^engine row$/ })).toBeDefined()
