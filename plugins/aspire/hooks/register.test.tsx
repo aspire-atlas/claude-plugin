@@ -183,7 +183,7 @@ test('desktop: the bar is a row of Buttons with the dithered meter Svg between t
   expect(agents).not.toContain('undefined')
   expect(agents).not.toContain('NaN')
   expect(await ui.find({ key: 'aspire-open-panel' })).toBeDefined()
-  // One line: the row is full width and the meter Svg is laid out for what the other items leave (a 120-column band, not the old 360px cap), then stretched by the host.
+  // One line: the row is full width and the meter Svg is laid out for what the other items leave (a 120-column band, not the old 360px cap), then cropped by the host.
   const meter = svgs.find(s => String(s.props.source).includes('class="t0"'))
   expect(Number(/viewBox="0 0 (\d+) /.exec(String(meter?.props.source))?.[1])).toBeGreaterThan(360)
   const rows = await ui.findAll({ type: 'Box' })
@@ -212,7 +212,7 @@ test('desktop: the dot turns done-green when finished; the terminal keeps the te
   await term.unmount()
 })
 
-test('desktop: the band bar is drawn to stretch to the room the row leaves it, not at a guessed pixel width', async ($, on) => {
+test('desktop: the band bar is drawn at its natural size and cropped to the room the row leaves it, never stretched', async ($, on) => {
   world(on, () => WITH_COSTS)
   await typeAspire($)
   await getStatus($)
@@ -224,9 +224,10 @@ test('desktop: the band bar is drawn to stretch to the room the row leaves it, n
     // No pixel width on the element: the host takes the markup's own width up to its slot, and the markup asks for more than any slot.
     expect(meter!.props.width).toBeUndefined()
     const source = String(meter!.props.source)
-    expect(source).toContain('preserveAspectRatio="none"')
+    expect(source).toContain('preserveAspectRatio="xMinYMid slice"')
+    expect(source).not.toContain('preserveAspectRatio="none"')
     expect(source).toMatch(/<svg [^>]*width="4000"/)
-    // The layout still tracks the column count, as the guess the host stretches from.
+    // The layout still tracks the column count: the size the bar is drawn at before the host crops it.
     expect(source).toMatch(/viewBox="0 0 \d+ 22"/)
     await ui.unmount()
   }

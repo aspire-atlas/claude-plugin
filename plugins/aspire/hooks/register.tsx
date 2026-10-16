@@ -468,16 +468,19 @@ ${meterGroup(shown, BAR_W)}
 const METER_SLOT_MAX = 4000
 /** The widest layout the band's bar is drawn for: its dots stay well under the host's cap on an Svg's source. */
 const METER_LAYOUT_MAX = 1000
+/** How much of the estimated room the bar is laid out for: under 1, so a misjudged column width crops nothing off the fill or the pill. */
+const METER_FIT = 0.85
 
 /**
  * Only the dithered bar and its step pill, for the band's row, where Buttons carry the text either side of it.
  *
  * The host takes a drawing's own width up to its slot, and the band cannot know that room in pixels (a column's width differs by
- * font and screen). So the markup is laid out for `W`, the best guess from the column count, but declares a width past any slot with
- * `preserveAspectRatio="none"`: the host clamps it to the room the row actually leaves and stretches the layout to fill it. A guess
- * that runs short is stretched, not left as a short bar; one that runs long is shrunk, never wraps the row.
+ * font and screen). So the markup is laid out at `W`, a deliberately low guess from the column count, at its natural pixel size, and
+ * declares a width past any slot with `preserveAspectRatio="xMinYMid slice"`: the host clamps it to the room the row leaves, and
+ * `slice` crops what overflows on the right instead of scaling, so the pill's text and corners are never stretched. The guess runs
+ * low (METER_FIT) so the crop is rare; a bar that falls short of the slot stays a whole, undistorted bar.
  */
-const meterSvg = (shown: Shown, W: number): string => `<svg xmlns="http://www.w3.org/2000/svg" width="${METER_SLOT_MAX}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}" preserveAspectRatio="none">
+const meterSvg = (shown: Shown, W: number): string => `<svg xmlns="http://www.w3.org/2000/svg" width="${METER_SLOT_MAX}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}" preserveAspectRatio="xMinYMid slice">
 <style>
 ${METER_CSS}
 ${twinkleCss(shown)}
@@ -1746,14 +1749,14 @@ export const register: Register = on => {
     // The desktop draws the bar itself as an Svg (the dithered fill and step pill), between a title Button and an agents Button.
     // An Svg takes no press and the host ignores absolute, so nothing lies over it: the presses sit on the Buttons beside it.
     if (band.crab === null) band.crab = pickCrab()
-    // The bar is laid out for the columns the row's other items leave (8px a column, as the notice and coach rows use), and the
-    // drawing itself stretches to the room the host gives it (see meterSvg), so a misjudged width no longer leaves it short or wraps the
-    // row. The percent, crab, count and panel icon sit together in a right group that ends at the icon.
+    // The bar is laid out for most of the columns the row's other items leave (8px a column, as the notice and coach rows use; see
+    // meterSvg), and the host crops, never stretches, what overflows, so a misjudged width neither distorts it nor wraps the row.
+    // The percent, crab, count and panel icon sit together in a right group that ends at the icon.
     const countText = `×${list.length}`
     const fixedCols = title.length + percent.length + countText.length + 22
-    // The layout width is only what the host stretches from, and a long dithered fill must stay under the host's 131072-character cap
+    // The layout width is the bar's real size, and a long dithered fill must stay under the host's 131072-character cap
     // on an Svg's source, so a very wide band lays out no wider than METER_LAYOUT_MAX.
-    const meterW = Math.min(METER_LAYOUT_MAX, Math.max(60, Math.round(((cols || 100) - fixedCols) * 8)))
+    const meterW = Math.min(METER_LAYOUT_MAX, Math.max(60, Math.round(((cols || 100) - fixedCols) * 8 * METER_FIT)))
     const barRow = (
       <Box flexDirection="row" width="100%" gap={2}>
         {Svg ? <Svg source={dotSvg(shown)} alt="" width={12} height={BAR_ROW_H} /> : null}
