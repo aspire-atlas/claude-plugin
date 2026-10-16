@@ -183,6 +183,14 @@ test('desktop: the bar is a row of Buttons with the dithered meter Svg between t
   expect(agents).not.toContain('undefined')
   expect(agents).not.toContain('NaN')
   expect(await ui.find({ key: 'aspire-open-panel' })).toBeDefined()
+  // One line: the row is full width and the meter Svg fills what the other items leave (a 120-column band, not the old 360px cap).
+  const meter = svgs.find(s => String(s.props.source).includes('class="t0"'))
+  expect(Number(meter?.props.width)).toBeGreaterThan(360)
+  const rows = await ui.findAll({ type: 'Box' })
+  expect(rows.some(r => r.props.width === '100%' && r.props.flexDirection === 'row')).toBe(true)
+  // The percent, crab and count sit together in one right group that ends at the panel icon.
+  const group = rows.find(r => r.props.flexDirection === 'row' && r.props.flexShrink === 0)
+  expect(group).toBeDefined()
   await ui.unmount()
 })
 
@@ -1046,4 +1054,146 @@ test('the Artifact card is inert until the mod is on, and only for a published A
   await publish($, 'list-1', { action: 'list' })
   expect(await cardShown('list-1', { url: ARTIFACT_URL })).toBe(false)
   expect(await cardShown('on-1', { url: ARTIFACT_URL }, false, 'Bash')).toBe(false)
+})
+
+// Artifact links from a subagent's hand-back, and the card's plain-text result.
+const PLAIN = `Published /tmp/weekly-readout.html at ${ARTIFACT_URL} (Version 1, private)`
+
+for (const [name, output] of [
+  ['a plain-text result', PLAIN],
+  ['an object with text', { text: PLAIN }],
+  ['content blocks', { content: [{ type: 'text', text: PLAIN }] }],
+  ['an object with a url', { url: ARTIFACT_URL }],
+] as const) {
+  test(`the Artifact card reads the link from ${name}`, async ($, on) => {
+    world(on, () => WITH_COSTS)
+    engineRow(on)
+    on('tool.call', { tool: 'Artifact' }, () => ({ result: { url: ARTIFACT_URL }, text: 'Published' }) as never)
+    await typeAspire($)
+    await publish($, 'plain-1')
+    const ui = await artifactRow($, 'terminal', 'plain-1', output)
+    expect((await ui.findAll({ type: 'Link' })).map(l => l.props.href)).toEqual([ARTIFACT_URL])
+    await ui.unmount()
+  })
+}
+
+test('a plain-text result keeps the card rules: no card for an open, an error, or a non-artifact link', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  engineRow(on)
+  on('tool.call', { tool: 'Artifact' }, () => ({ result: { url: ARTIFACT_URL }, text: 'Published' }) as never)
+  await typeAspire($)
+  await publish($, 'plain-2')
+  const shown = async (output: unknown, isErrored = false) => {
+    const ui = await artifactRow($, 'terminal', 'plain-2', output, isErrored)
+    const card = (await ui.find({ type: 'Button' })) !== undefined
+    await ui.unmount()
+    return card
+  }
+  expect(await shown(PLAIN)).toBe(true)
+  expect(await shown(PLAIN, true)).toBe(false)
+  expect(await shown('Published at http://claude.ai/artifact/abc')).toBe(false)
+  expect(await shown('Nothing to see')).toBe(false)
+  expect(await shown({ opened: true, url: ARTIFACT_URL })).toBe(false)
+})
+
+const receive = ($: Engine, kind: string, text: string) =>
+  ($.session.receive as (e: unknown) => Promise<unknown>)({ origin: { kind }, text } as never)
+
+test('session.receive: one dim line per new artifact link from a hand-back; the message passes unchanged', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  const logs: string[] = []
+  on('ui.log', (_$, e) => {
+    logs.push((e as { text: string }).text)
+    return { value: undefined } as never
+  })
+  const seenText: string[] = []
+  on('session.receive', (_$, e) => {
+    seenText.push(e.text)
+    return { text: e.text } as never
+  })
+  // Off: nothing logged.
+  await receive($, 'task-notification', `Done: ${ARTIFACT_URL}`)
+  expect(logs).toEqual([])
+  await typeAspire($)
+  await receive($, 'task-notification', `Done: ${ARTIFACT_URL} and https://claude.ai/artifact/second-2`)
+  expect(logs).toEqual([`◆ Aspire · Artifact published: ${ARTIFACT_URL}`, '◆ Aspire · Artifact published: https://claude.ai/artifact/second-2'])
+  // Repeats are not logged again; other origins and links are ignored.
+  await receive($, 'task-notification', `Again ${ARTIFACT_URL}`)
+  await receive($, 'scheduled-trigger', 'https://claude.ai/artifact/third-3')
+  await receive($, 'peer', 'No link here')
+  expect(logs).toHaveLength(2)
+  await receive($, 'peer', 'https://claude.ai/artifact/fourth-4')
+  expect(logs).toHaveLength(3)
+  expect(seenText).toHaveLength(6)
+  expect(seenText[1]).toContain('second-2')
+})
+
+test('progress fallback: the band not drawn sets one status line, replaced as progress moves and cleared at the end', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  const lines: (string | undefined)[] = []
+  on('ui.status', (_$, e) => {
+    lines.push((e as { text?: string }).text)
+    return { value: undefined } as never
+  })
+  await typeAspire($)
+  await report($, { title: 'Connecting', total: 4, done: 2, phase: 'Get organizations' })
+  expect(lines.at(-1)).toBe('Connecting: step 2 of 4, Get organizations ▰▰▱▱ 50%'.replace('▰▰▱▱', '▰▰▱▱'))
+  await report($, { done: 3 })
+  expect(lines.at(-1)).toContain('step 3 of 4')
+  await report($, { finished: true })
+  expect(lines.at(-1)).toBeUndefined()
+})
+
+test('progress fallback: not called when the band is drawn or hidden by the user', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  const lines: (string | undefined)[] = []
+  on('ui.status', (_$, e) => {
+    lines.push((e as { text?: string }).text)
+    return { value: undefined } as never
+  })
+  await typeAspire($)
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'terminal', component: 'AbovePrompt', props: band as never })
+  await report($, { title: 'Connecting', total: 4, done: 1, phase: 'Get organizations' })
+  expect(lines.filter(l => l !== undefined)).toEqual([])
+  await ui.unmount()
+  await $.command.run({ command: 'aspire-agents-info', args: 'band' } as never)
+  await report($, { done: 2 })
+  expect(lines.filter(l => l !== undefined)).toEqual([])
+})
+
+test('the panel command is registered to run while Claude is working', async ($, on) => {
+  const registered: unknown[] = []
+  on('command.register', (_$, e) => {
+    registered.push(e)
+    return { value: undefined } as never
+  })
+  world(on, () => WITH_COSTS)
+  on('session.start', (_$, e) => e as never)
+  await $.session.start({ cwd: '/tmp' } as never)
+  expect(registered.some(r => (r as { name?: string }).name === 'aspire-agents-info' && (r as { immediate?: unknown }).immediate === true)).toBe(true)
+})
+
+test('a running row the engine no longer lists is finished on the next turn; listed ones stay running', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  on('agent.list', () => ({ value: [{ id: 'agent-Keep', description: 'Keep', type: 'aspire:atlas-creator-brief', status: 'running' }] }) as never)
+  await typeAspire($)
+  await spawn($, 'aspire:atlas-creator-brief', 'Keep')
+  await spawn($, 'aspire:atlas-creator-vetting', 'Lost')
+  expect(await status($)).toContain('2 agents')
+  await $.turn.start({ turnId: 't2', text: 'next' } as never)
+  const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'terminal', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
+  expect(String((await ui.find({ key: 'card-running' }))?.props.label)).toMatch(/^▾ Running · 1/)
+  expect(String((await ui.find({ key: 'card-finished' }))?.props.label)).toMatch(/Finished · 1/)
+  await ui.unmount()
+})
+
+test('an engine without $.agent.list leaves the rows as they are', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  on('agent.list', () => {
+    throw new Error('no agent.list')
+  })
+  await typeAspire($)
+  await spawn($, 'aspire:atlas-creator-brief', 'Keep')
+  await $.turn.start({ turnId: 't2', text: 'next' } as never)
+  expect(await status($)).toContain('Aspire')
 })
