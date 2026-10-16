@@ -57,14 +57,21 @@ folder, and the `page` and `snapshot` sections of `program-dashboard.md`, `orche
 3. `list_insight_search_fields` and `list_post_search_fields` once; use only paths they return.
    Read the posts and the findings per **3**.
 4. Compute each section per **4**, the next step per **5**, and the build-time emphasis per **6**.
-5. **Build the page** per **8** (load `artifact-design` and `artifact-capabilities` first,
+5. **Embed the images.** For each profile's newest posts (at most 12 per profile), run the
+   `embed_media.py` snippet in `creator-card.md`, **Images** (`post@240`, page profile), passing each
+   post's `media.mediaUrl` and `media.thumbnailUrl`, with output to a scratch file. If Python 3 or
+   Pillow is missing, install Pillow in a virtual environment in the scratch folder and retry. Put
+   each `dataUri` in that post's snapshot record. Never leave a `cdn.aspire.io` URL in the page. A
+   post whose embed returns `ok:false` gets the placeholder tile; count those, and say why in the
+   report. Never skip this step silently.
+6. **Build the page** per **8** (load `artifact-design` and `artifact-capabilities` first,
    `dataviz` before the first chart; apply `theme:brand`). Embed the snapshot as data, render every
    section from it, then register the live reads per **7**. Publish with the Artifact tool and the
    declared capabilities: to the saved link on `refresh`, else as a new page.
-6. **Write** the link calibration per **2** on `build` with a save answer. On a `key-exists`
+7. **Write** the link calibration per **2** on `build` with a save answer. On a `key-exists`
    response, stop and return both versions to the main thread; never supersede.
-7. Verify once: read the published page back with the Artifact tool, confirm the declared
-   capabilities, and confirm the page source is ASCII only (the reference's **8**) and that no amount, member, or email is in it and that the only Atlas ids are the organization and profile ids the live reads need.
+8. Verify once: read the published page back with the Artifact tool, confirm the declared
+   capabilities, and confirm the page source is ASCII only (the reference's **8**) and that no amount, member, or email is in it and that the only Atlas ids are the organization and profile ids the live reads need. Confirm every snapshot post tile has a data URI, and report the count embedded against the count shown as the placeholder; if none embedded, say so as a failure, not a layout choice.
 
 ## Output to the main thread (under 200 words)
 

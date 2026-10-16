@@ -1242,12 +1242,20 @@ export const register: Register = on => {
       if (isStatus) {
         const at = await $.clock.now()
         const costs = readAtlasUsage(payload)
-        await update($, atlas, () => (costs ? { costs, at } : null))
         const credits = readAtlasCredits(payload)
-        await update($, creditsAtom, () => (credits ? { credits, at } : null))
-        await update($, seen, s => ({ ...s, statusReads: s.statusReads + 1, lastStatusAt: at }))
-        const isOrgNamed = typeof (e as { asOrganizationId?: unknown }).asOrganizationId === 'string'
         const reading = readAtlasOrg(payload)
+        // The call names its organization flat or under `input`.
+        const asked = (e as { asOrganizationId?: unknown; input?: { asOrganizationId?: unknown } })
+        const isOrgNamed = typeof asked.asOrganizationId === 'string' || typeof asked.input?.asOrganizationId === 'string'
+        // A result that is only get_status's default (several organizations, none named) is not a pick and
+        // leaves the held organization alone; so it must leave that organization's costs and credits alone too,
+        // or the figures of the default organization would replace, and then be hidden against, the picked one's.
+        const holdsPick = (await read($, org)).name !== null
+        const isPick = reading?.name !== undefined && (reading.orgCount <= 1 || isOrgNamed)
+        const isKept = holdsPick && !isPick
+        await update($, atlas, prev => (isKept ? prev : costs ? { costs, at } : null))
+        await update($, creditsAtom, prev => (isKept ? prev : credits ? { credits, at } : null))
+        await update($, seen, s => ({ ...s, statusReads: s.statusReads + 1, lastStatusAt: at }))
         await update($, org, prev => orgStateFrom(prev, reading, isOrgNamed))
       }
     } catch {

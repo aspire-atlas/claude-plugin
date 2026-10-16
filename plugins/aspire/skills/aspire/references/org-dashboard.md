@@ -142,7 +142,7 @@ Highlights come first, and the tab is visual: media-led, not text rows.
 1. **Recently collected.** The newest posts Atlas holds for the profile's linked handles as an image
    grid (`creator-card.md`, **Images**, `post@240`), each with the handle, format, date, views and
    engagement, and a badge for the top performer and any post that beat the account's median by
-   more than 2x. Posts with no media use the placeholder tile. With no channel, "No account connected"
+   more than 2x. Posts with no media, or whose image failed to embed, use the placeholder tile, captioned "No preview" and never worded as waiting for a rebuild. With no channel, "No account connected"
    and the connect step.
 2. **Ingestion and hashtags.** Two charts. Posts collected per day over the last 28 days as a bar
    chart, with the previous 28 days as a faint comparison line; and the profile's tracked hashtags
@@ -192,8 +192,9 @@ profiles.
 - **Hashtags.** `list_hashtag_posts` windows that reach before the account's first full ingestion
   can fail with `internal-error`; treat any failed read as "n/a", never zero, and count the last 28
   days only. A tag's total comes from `totalHits`.
-- **Live and snapshot.** Images are embedded in the snapshot only. A post that first appears in a
-  live read shows the placeholder tile until the next rebuild.
+- **Live and snapshot.** Images are embedded in the snapshot only. The placeholder tile ("No preview")
+  is only for a post whose image failed to embed, a post with no media, or a post that first appears
+  in a live read; it never stands in for a snapshot post whose image could be fetched.
 
 ## 5. The next step
 
@@ -281,7 +282,7 @@ Declare, on every publish (the whole object):
 declares: it stores nothing and asks nothing. Handle `null` from `claude.use("mcp")`: render the
 snapshot. Never put a secret or an email in the page. The two ids the live reads
 need (`asOrganizationId`, `asProfileId`) are the only Atlas ids it may hold; they grant nothing,
-because every read runs as the viewer. The snapshot holds names, counts, and links only.
+because every read runs as the viewer. The snapshot holds names, counts, links, and the posts' embedded image data URIs.
 
 Publish to the link in the saved calibration (read that artifact first) or as a new page when
 none exists. On `build`, write the calibration in the same step as the first publish, only with

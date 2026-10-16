@@ -860,6 +860,33 @@ test('credits are shown only for the selected organization', async ($, on) => {
   expect(await status($)).not.toMatch(/credits left/)
 })
 
+test("a default get_status after a pick leaves the picked organization's name and credits alone", async ($, on) => {
+  const orgs = { selected: { id: 'org_2', name: 'Picked Org' }, all: [{ id: 'org_1', name: 'Default Org' }, { id: 'org_2', name: 'Picked Org' }] }
+  let body: unknown = { organizations: orgs, profiles: PROFILES, credits: { ...CREDITS, organizationId: 'org_2' } }
+  world(on, () => body)
+  await typeAspire($)
+  await getStatus($, { asOrganizationId: 'org_2' })
+  expect(await barShows($, 'terminal', 'Aspire: Picked Org')).toBe(true)
+  expect(await status($)).toMatch(/996\.2 credits left/)
+  // A later call names nothing and returns the connector's default organization with its own credits.
+  body = { organizations: { ...orgs, selected: { id: 'org_1', name: 'Default Org' } }, profiles: PROFILES, credits: { ...CREDITS, organizationId: 'org_1', balance: { ...CREDITS.balance, remaining: 0 } } }
+  await getStatus($)
+  expect(await barShows($, 'terminal', 'Aspire: Picked Org')).toBe(true)
+  expect(await status($)).toMatch(/996\.2 credits left/)
+  // Naming the default organization is a pick: the name and the credits follow it.
+  await getStatus($, { asOrganizationId: 'org_1' })
+  expect(await barShows($, 'terminal', 'Aspire: Default Org')).toBe(true)
+  expect(await status($)).not.toMatch(/996\.2 credits left/)
+})
+
+test('the organization named under the call input counts as named', async ($, on) => {
+  const several = { organizations: { selected: { id: 'org_2', name: 'Picked Org' }, all: [{ id: 'org_1' }, { id: 'org_2' }] }, profiles: [] }
+  world(on, () => several)
+  await typeAspire($)
+  await getStatus($, { input: { asOrganizationId: 'org_2' } })
+  expect(await barShows($, 'terminal', 'Aspire: Picked Org')).toBe(true)
+})
+
 test("the agent's own task list moves the bar and fills the Progress section, then ends as All done", async ($, on) => {
   world(on, () => WITH_COSTS)
   const PLAN = 'mcp__ccd_turn__update_plan'
