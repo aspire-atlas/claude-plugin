@@ -86,7 +86,7 @@ import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
 import type { AgentRun, AtlasCreditsReading, AtlasReading, BandStats, Coach, Item, Notice, OrgState, Panel, Progress, Seen, Trigger, TriggerKind, Turn } from '../types'
-import { creditsView, fmtAtlasUsage, fmtCredits, isAtlasStatusCall, isAtlasToolName, readAtlasCredits, readAtlasOrg, readAtlasUsage } from './atlas-usage'
+import { creditsOf, isOrgSelected, creditsView, fmtAtlasUsage, fmtCredits, isAtlasStatusCall, isAtlasToolName, readAtlasCredits, readAtlasOrg, readAtlasUsage } from './atlas-usage'
 import type { CreditsView } from './atlas-usage'
 import { ASPIRE, COACH_CRAB, CRAB_CSS, breathOf, characterOf, crab } from './characters'
 import type { Character } from './characters'
@@ -959,8 +959,9 @@ async function statusText($: EngineInterface): Promise<string> {
   const t = await read($, trigger)
   const s = await read($, seen)
   const reading = await read($, atlas)
-  const credits = await read($, creditsAtom)
   const o = await read($, org)
+  // Credit and usage figures only for the selected organization (creditsOf).
+  const credits = creditsOf(o, (await read($, creditsAtom))?.credits ?? null)
   const p = await read($, progress)
   let version = 'unknown'
   try {
@@ -987,7 +988,7 @@ async function statusText($: EngineInterface): Promise<string> {
   const status =
     s.lastStatusAt === null
       ? 'Last get_status: none yet.'
-      : `Last get_status ${ago(at - s.lastStatusAt)}: ${credits ? `${fmtCredits(credits.credits.remaining)} credits left` : reading ? `${fmtAtlasUsage(reading.costs)} Atlas tokens` : 'no credits in it'}, organization ${o.name ?? 'not picked yet'}.`
+      : `Last get_status ${ago(at - s.lastStatusAt)}: ${credits ? `${fmtCredits(credits.remaining)} credits left` : reading && isOrgSelected(o) ? `${fmtAtlasUsage(reading.costs)} Atlas tokens` : 'no credits in it'}, organization ${o.name ?? 'not picked yet'}.`
   const at2 = await $.clock.now()
   const shown = shownOf(p, o, await read($, agents), planOf(await read($, turn), await read($, items), at2))
   const bar = isOnNow ? `Bar: ${titleOf(o)}, ${shown.label}, ${percentOf(shown)} (${shown.source === 'skill' ? 'reported by the skill' : shown.source === 'plan' ? "from the agent's own steps" : shown.source === 'agents' ? 'from the running agents' : 'initializing, no report from the skill yet'}).` : 'Bar: not shown until the mod is on.'
@@ -1693,8 +1694,9 @@ export const register: Register = on => {
 
     const running = list.filter(a => a.status === 'running').reverse()
     const finished = list.filter(a => a.status !== 'running').reverse()
-    const view = creditsView((await read($, creditsAtom))?.credits ?? null, (await read($, atlas))?.costs ?? null)
     const o = await read($, org)
+    // No selected organization, or credits of another one: the card's empty state, never a figure.
+    const view = creditsView(creditsOf(o, (await read($, creditsAtom))?.credits ?? null), isOrgSelected(o) ? (await read($, atlas))?.costs ?? null : null)
     const report = await read($, progress)
     const planTurn = await read($, turn)
     const plan = planOf(planTurn, await read($, items), Math.max(at, planTurn?.startedAt ?? 0))

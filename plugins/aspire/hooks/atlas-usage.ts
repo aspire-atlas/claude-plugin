@@ -188,6 +188,8 @@ export const readAtlasUsage = (result: unknown): AtlasTokenCosts | null => {
 export type AtlasOrgReading = {
   /** The selected organization's name; absent when the result names none. */
   name?: string
+  /** The selected organization's id; absent when the result gives none. */
+  id?: string
   /** How many organizations the caller belongs to (0 when the result lists none). */
   orgCount: number
   /** Brand profiles in the result. */
@@ -241,6 +243,8 @@ const orgFrom = (root: unknown): AtlasOrgReading | null => {
   }
   const name = nameOf(selected)
   if (name !== undefined) out.name = name
+  const id = isRecord(selected) ? field(selected, ['id', 'organizationid']) : undefined
+  if (typeof id === 'string' && id && id.length <= 80) out.id = id
   return out
 }
 
@@ -343,6 +347,7 @@ export const parseCredits = (raw: unknown): AtlasCredits | null => {
     periodConsumed: 0,
     grants: [],
   }
+  if (typeof raw.organizationId === 'string' && raw.organizationId) out.organizationId = raw.organizationId
   if (isRecord(raw.period) && typeof raw.period.start === 'string' && typeof raw.period.end === 'string') {
     out.period = { start: raw.period.start, end: raw.period.end }
   }
@@ -411,6 +416,28 @@ export const readAtlasCredits = (result: unknown): AtlasCredits | null => {
   } catch {
     return null
   }
+}
+
+/**
+ * "An organization is selected": the mod has a name for it (OrgState.name is
+ * non-null). The name is set only when a get_status result picked one: the
+ * caller has a single organization or the call named one (`asOrganizationId`).
+ * With several organizations and none named, get_status's default is not a
+ * pick, so nothing is selected. Reset, /clear and a new session clear it.
+ */
+export const isOrgSelected = (o: { name: string | null }): boolean => o.name !== null
+
+/**
+ * Credit and usage figures belong to the selected organization only. None
+ * without a selected organization; none when the reading names another
+ * organization than the selected one (both ids known and different); a
+ * reading or selection with no id is trusted, since a get_status result's
+ * figures come from the organization it selected. Pure.
+ */
+export const creditsOf = <C extends { organizationId?: string }>(o: { name: string | null; id?: string }, c: C | null): C | null => {
+  if (!c || !isOrgSelected(o)) return null
+  if (o.id !== undefined && c.organizationId !== undefined && o.id !== c.organizationId) return null
+  return c
 }
 
 /** Credits for people: whole numbers with separators, one decimal otherwise (996.2, 1,000, 3.8). */

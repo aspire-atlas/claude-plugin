@@ -58,6 +58,9 @@ test('orgStateFrom: the onboarding checkpoints a get_status result shows', () =>
   // An earlier pick stays when a later call names none.
   const picked = { name: 'Sample Brand', checkpoints: 3 }
   expect(orgStateFrom(picked, { ...several, name: 'Default Org' }, false)).toEqual(picked)
+  // The id travels with the name it came with.
+  expect(orgStateFrom(NO_ORG, { ...one, id: 'org_1' }, false)).toEqual({ name: 'Sample Brand', id: 'org_1', checkpoints: 2 })
+  expect(orgStateFrom({ name: 'Old', id: 'org_0', checkpoints: 2 }, one, false)).toEqual({ name: 'Sample Brand', checkpoints: 2 })
   // Atlas answered without organizations: 1.
   expect(orgStateFrom(NO_ORG, null, false)).toEqual({ name: null, checkpoints: 1 })
 })

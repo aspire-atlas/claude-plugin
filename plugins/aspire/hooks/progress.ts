@@ -100,7 +100,9 @@ export const orgStateFrom = (prev: OrgState, reading: AtlasOrgReading | null, is
   const isPicked = reading.name !== undefined && (reading.orgCount <= 1 || isOrgNamed)
   if (!isPicked) return prev.name ? prev : { name: null, checkpoints: 1 }
   const checkpoints = reading.profileCount === 0 ? 2 : reading.hasChannel ? 4 : 3
-  return { name: reading.name ?? prev.name, checkpoints }
+  const name = reading.name ?? prev.name
+  // The id goes with the name it came with: a reading that names an organization but no id carries none over.
+  return { name, ...(reading.name !== undefined ? (reading.id ? { id: reading.id } : {}) : prev.id ? { id: prev.id } : {}), checkpoints }
 }
 
 /** What the bar draws. */

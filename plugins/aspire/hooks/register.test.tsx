@@ -13,7 +13,7 @@ const ORGS = { selected: { id: 'org_1', name: 'Sample Brand', role: 'owner' }, a
 const PROFILES = [{ id: 'p1', name: 'Sample', channels: [{ network: 'instagram' }] }]
 const CREDITS = {
   estimate: true,
-  organizationId: 'org_z54dtf9al5vg5v92',
+  organizationId: 'org_1',
   period: { start: '2026-10-01T00:00:00.000Z', end: '2026-11-01T00:00:00.000Z' },
   thisPeriod: { consumed: 3.8, newPosts: { count: 25, rate: 0.1, credits: 2.5 }, retrievedPosts: { count: 26, rate: 0.05, credits: 1.3 } },
   balance: { granted: 1000, consumed: 3.8, remaining: 996.2, overage: 0 },
@@ -835,6 +835,29 @@ test('the credits card shows the balance on both surfaces and no agents or time 
   expect(drawn).not.toContain('NaN')
   await desktop.unmount()
   expect(await status($)).toMatch(/996\.2 credits left/)
+})
+
+test('credits are shown only for the selected organization', async ($, on) => {
+  let body: unknown = {
+    organizations: { selected: { id: 'org_1', name: 'Sample Brand' }, all: [{ id: 'org_1', name: 'Sample Brand' }, { id: 'org_2', name: 'Other' }] },
+    profiles: PROFILES,
+    credits: CREDITS,
+  }
+  world(on, () => body)
+  await typeAspire($)
+  // Two organizations, none named in the call: get_status's default is no pick, so no credits.
+  await getStatus($)
+  expect(await panelShows($, /^996\.2$/)).toBe(false)
+  expect(await status($)).not.toMatch(/credits left/)
+  // The call names the organization: it is selected, and its credits show.
+  await getStatus($, { asOrganizationId: 'org_1' })
+  expect(await panelShows($, /^996\.2$/)).toBe(true)
+  expect(await status($)).toMatch(/996\.2 credits left/)
+  // A later reading whose credits belong to another organization is hidden.
+  body = { ...(body as object), credits: { ...CREDITS, organizationId: 'org_2' } }
+  await getStatus($, { asOrganizationId: 'org_1' })
+  expect(await panelShows($, /^996\.2$/)).toBe(false)
+  expect(await status($)).not.toMatch(/credits left/)
 })
 
 test("the agent's own task list moves the bar and fills the Progress section, then ends as All done", async ($, on) => {
