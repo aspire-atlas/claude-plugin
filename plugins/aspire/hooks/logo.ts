@@ -90,3 +90,19 @@ export const spinnerSvg = (size: number): string => {
 /** The logo as a square Svg document, `size` CSS pixels a side. */
 export const logoSvg = (size: number, animated = true, grid = SMALL_GRID): string =>
   `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 512 512" role="img" aria-label="Aspire Atlas">${logoMarkup(animated, grid)}</svg>`
+
+// The mark in the terminal, which draws no Svg: a small grid of colored cells (a Raster) in the mark's own dark tile and teal, with
+// block characters standing for its shuffled squares. Fixed, not animated: a Raster only changes when a hook repaints it.
+const TERMINAL_MARK = ['▚▒░▞', '░▞▒▚']
+const MARK_TILE = 0x1c2b2a
+const MARK_TEAL = 0x3b8a82
+
+/** The terminal mark as a Raster's props: columns, rows and the base64 cells (code point, foreground, background for each). */
+export const terminalMark = (): { columns: number; rows: number; cells: string } => {
+  const words: number[] = []
+  for (const row of TERMINAL_MARK) for (const ch of row) words.push(ch.codePointAt(0) ?? 0x20, MARK_TEAL, MARK_TILE)
+  const bytes = new Uint8Array(new Uint32Array(words).buffer)
+  let binary = ''
+  for (const b of bytes) binary += String.fromCharCode(b)
+  return { columns: TERMINAL_MARK[0].length, rows: TERMINAL_MARK.length, cells: btoa(binary) }
+}

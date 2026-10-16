@@ -1278,3 +1278,122 @@ test('a /clear forgets which connector answered as Atlas, so its rows go back to
   expect(await after.find({ type: 'Text', text: /^engine row$/ })).toBeDefined()
   await after.unmount()
 })
+
+// The rest of the brand: the sites Claude Code draws itself, branded only while the mod is on (and, for the question dialog and the
+// spinner, only while a flow reports progress).
+const siteOf = ($: Engine, surface: 'terminal' | 'desktop', component: string, props: Record<string, unknown>) =>
+  $.ui.mount({ plugin: PLUGIN, surface, component: component as never, props: props as never })
+const startFlow = async ($: Engine) => {
+  await typeAspire($)
+  await report($, { title: 'Connecting', tasks: [{ title: 'Verify Aspire Atlas' }, { title: 'Get status' }], done: 1, total: 2, phase: 'Get status' })
+}
+const engineSite = (on: On, component: string, text: string) =>
+  on('ui.render', { component: component as never }, ($, e) => {
+    const { Text } = $.ui.resolve(e)
+    return <Text>{text}</Text>
+  })
+
+test('the spinner says Aspire Atlas and the flow step while a flow runs, and is Claude Code\'s own otherwise', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  // Claude Code's own spinner beneath the mod: its word and the suffix it was handed.
+  on('ui.render', { component: 'Spinner' }, ($, e) => {
+    const { Text } = $.ui.resolve(e)
+    return <Text>{`${e.props.word}${e.props.suffix}`}</Text>
+  })
+  const spin = { word: 'Thinking', message: null, suffix: '…', mode: 'thinking' }
+  const idle = await siteOf($, 'desktop', 'Spinner', spin)
+  expect(await idle.find({ type: 'Text', text: /^Thinking…$/ })).toBeDefined()
+  await idle.unmount()
+  await startFlow($)
+  const flow = await siteOf($, 'desktop', 'Spinner', spin)
+  expect(await flow.find({ type: 'Text', text: /^Thinking… · Aspire Atlas · Get status$/ })).toBeDefined()
+  await flow.unmount()
+  await report($, { finished: true })
+  const done = await siteOf($, 'desktop', 'Spinner', spin)
+  expect(await done.find({ type: 'Text', text: /^Thinking…$/ })).toBeDefined()
+  await done.unmount()
+})
+
+test('the turn line and the prompt hint carry the brand only once the mod is on', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  engineSite(on, 'PromptHint', 'hint beneath')
+  const hint = { isDraft: false, isWorking: false, hint: '? for shortcuts' }
+  const before = await siteOf($, 'terminal', 'PromptHint', hint)
+  expect(await before.find({ type: 'Text', text: /\/aspire help/ })).toBeUndefined()
+  await before.unmount()
+  await typeAspire($)
+  const after = await siteOf($, 'terminal', 'PromptHint', hint)
+  expect(await after.find({ type: 'Text', text: /hint beneath/ })).toBeDefined()
+  await after.unmount()
+})
+
+test('a collapsed group of Atlas calls is one branded row; a mixed or expanded group keeps the engine row', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  engineSite(on, 'ToolGroup', 'engine group')
+  await typeAspire($)
+  const call = (tool: string, isRunning = false) => ({ tool, input: {}, isRunning, isErrored: false })
+  const atlas = await siteOf($, 'desktop', 'ToolGroup', { calls: [call('mcp__Aspire_Atlas__search_posts'), call('mcp__Aspire_Atlas__search_creators', true)], isActive: true, isExpanded: false })
+  expect(await atlas.find({ type: 'Text', text: /^Aspire Atlas$/ })).toBeDefined()
+  expect(await atlas.find({ type: 'Text', text: /^2 calls$/ })).toBeDefined()
+  expect(String((await atlas.find({ type: 'Svg' })).props.source)).toContain('@keyframes skc')
+  await atlas.unmount()
+  for (const props of [
+    { calls: [call('Bash'), call('mcp__Aspire_Atlas__search_posts')], isActive: false, isExpanded: false },
+    { calls: [call('mcp__Aspire_Atlas__search_posts')], isActive: false, isExpanded: true },
+  ]) {
+    const row = await siteOf($, 'desktop', 'ToolGroup', props)
+    expect(await row.find({ type: 'Text', text: /^engine group$/ })).toBeDefined()
+    await row.unmount()
+  }
+})
+
+test('the plugin command output carries the mark; another command\'s output is left alone', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  engineSite(on, 'CommandOutput', 'engine output')
+  await typeAspire($)
+  const own = await siteOf($, 'desktop', 'CommandOutput', { command: 'aspire-agents-info', args: 'status', text: 'Aspire mod: on.', isErrored: false })
+  expect(await own.find({ type: 'Text', text: /^Aspire mod: on\.$/ })).toBeDefined()
+  expect(await own.find({ type: 'Svg' })).toBeDefined()
+  await own.unmount()
+  const other = await siteOf($, 'desktop', 'CommandOutput', { command: 'help', args: '', text: 'x', isErrored: false })
+  expect(await other.find({ type: 'Text', text: /^engine output$/ })).toBeDefined()
+  await other.unmount()
+})
+
+test('the question dialog gets the mark and the flow step above it only while a flow runs, with Claude Code\'s dialog kept once', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  // Claude Code's own dialog beneath the mod: core's drawing, `ref` 0 (the original props).
+  on('ui.render', { component: 'AskUserQuestion' }, () => ({ type: 'engine', ref: 0 }) as never)
+  const props = { tool: 'AskUserQuestion', questions: [] }
+  await typeAspire($)
+  const idle = await siteOf($, 'desktop', 'AskUserQuestion', props)
+  expect(await idle.find({ type: 'Text', text: /^Aspire Atlas$/ })).toBeUndefined()
+  await idle.unmount()
+  await startFlow($)
+  const desktop = await siteOf($, 'desktop', 'AskUserQuestion', props)
+  expect(await desktop.find({ type: 'Text', text: /^Aspire Atlas$/ })).toBeDefined()
+  expect(await desktop.find({ type: 'Text', text: /^Get status$/ })).toBeDefined()
+  expect(await desktop.find({ type: 'Svg' })).toBeDefined()
+  await desktop.unmount()
+  const terminal = await siteOf($, 'terminal', 'AskUserQuestion', props)
+  expect(await terminal.find({ type: 'Text', text: /^◆$/ })).toBeDefined()
+  await terminal.unmount()
+})
+
+test('the turn line says where the flow stands, and the terminal Atlas row gets the cell mark', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  engineSite(on, 'TurnDuration', 'Baked for 3s')
+  toolEngineRow(on)
+  await typeAspire($)
+  const bare = await siteOf($, 'terminal', 'TurnDuration', { word: 'Baked', durationMs: 3000 })
+  expect(await bare.find({ type: 'Text', text: / · Aspire Atlas/ })).toBeUndefined()
+  await bare.unmount()
+  await startFlow($)
+  const line = await siteOf($, 'terminal', 'TurnDuration', { word: 'Baked', durationMs: 3000 })
+  expect(await line.find({ type: 'Text', text: /^ · Aspire Atlas · step 2 of 2$/ })).toBeDefined()
+  await line.unmount()
+  const row = await toolRow($, 'terminal', 'mcp__Aspire_Atlas__search_posts')
+  expect(await row.find({ type: 'Raster' })).toBeDefined()
+  expect(await row.find({ type: 'Text', text: /^engine row$/ })).toBeDefined()
+  await row.unmount()
+})
