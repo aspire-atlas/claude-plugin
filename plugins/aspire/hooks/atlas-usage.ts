@@ -527,5 +527,5 @@ export const creditsView = (c: AtlasCredits | null, costs: AtlasTokenCosts | nul
   if (costs) {
     return { title: 'Atlas tokens', big: fmtAtlasUsage(costs), sub: '', ratio: costs.limit ? Math.min(1, costs.used / costs.limit) : 0, tone: 'ok', isOver: false, metaLeft: '', metaRight: '', tag: '', grants: '' }
   }
-  return { title: 'Credits', big: ATLAS_ABSENT, sub: 'run /aspire to refresh', ratio: 0, tone: 'ok', isOver: false, metaLeft: '', metaRight: '', tag: '', grants: '' }
+  return { title: 'Credits', big: '', sub: '', ratio: 0, tone: 'ok', isOver: false, metaLeft: '', metaRight: '', tag: '', grants: '' }
 }

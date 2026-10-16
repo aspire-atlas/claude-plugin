@@ -189,7 +189,7 @@ test('creditsView: trial with usage, over the grants, token costs only, nothing'
   const over = readAtlasCredits({ credits: { ...CREDITS_BLOCK, balance: { granted: 1000, consumed: 1042.5, remaining: 0, overage: 42.5 } } })
   expect(creditsView(over, null)).toMatchObject({ big: '42.5 over', sub: 'of 1,000 used up', isOver: true, ratio: 0, tone: 'critical' })
   expect(creditsView(null, { used: 12000, limit: 50000 })).toMatchObject({ title: 'Atlas tokens', big: '12k / 50k' })
-  expect(creditsView(null, null)).toMatchObject({ title: 'Credits', big: '—', sub: 'run /aspire to refresh' })
+  expect(creditsView(null, null)).toMatchObject({ title: 'Credits', big: '', sub: '' })
 })
 
 test('creditsOf: credits belong to the selected organization only', () => {

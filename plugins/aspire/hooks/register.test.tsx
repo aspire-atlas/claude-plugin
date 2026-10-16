@@ -121,7 +121,7 @@ for (const surface of ['terminal', 'desktop'] as const) {
     expect(await barShows($, surface, '0%')).toBe(true)
     // The band has no stats row; the panel's summary carries the Atlas figure, none made up.
     expect(await bandShows($, surface, /^Atlas tokens$/)).toBe(false)
-    expect(await panelShows($, /^run \/aspire to refresh$/)).toBe(true)
+    expect(await panelShows($, /run \/aspire to refresh/)).toBe(false)
     expect(await panelShows($, /Unrelated work/)).toBe(false)
     expect(await status($)).toMatch(/^Aspire mod: on since 0s ago, switched on by a typed \/aspire \(\/aspire:aspire\)\./)
   })
@@ -154,7 +154,7 @@ for (const surface of ['terminal', 'desktop'] as const) {
     body = WITHOUT_COSTS
     await getStatus($)
     expect(await panelShows($, /12k/)).toBe(false)
-    expect(await panelShows($, /^run \/aspire to refresh$/)).toBe(true)
+    expect(await panelShows($, /run \/aspire to refresh/)).toBe(false)
   })
 }
 
