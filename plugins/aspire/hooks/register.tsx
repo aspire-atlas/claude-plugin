@@ -91,6 +91,7 @@ import type { CreditsView } from './atlas-usage'
 import { ASPIRE, COACH_CRAB, CRAB_CSS, breathOf, characterOf, crab } from './characters'
 import type { Character } from './characters'
 import { AGENT_CHARACTERS } from './costumes'
+import { logoMarkup, logoSvg } from './logo'
 import { GROUPS, ROSTER } from './roster'
 import type { RosterEntry } from './roster'
 import { clip, fitText, fmtTime, fmtTokens, modelName, textWidth, windowOf, xml } from './format'
@@ -289,6 +290,10 @@ const isOn = async ($: EngineInterface): Promise<boolean> => {
 
 /** `get_status` from `mcp__<server>__get_status`, for the status line. */
 const shortTool = (tool: string): string => tool.replace(/^mcp__.*__/, '')
+
+/** `mcp__<server>__` of each connector that has answered as Aspire Atlas, for a server whose name does not say so. Names only. */
+const atlasServers = new Set<string>()
+const serverOf = (tool: string): string => /^(mcp__.+?__)/.exec(tool)?.[1] ?? ''
 
 // ---------------------------------------------------------------------------
 // The Artifact card: the transcript's result row for a published Artifact.
@@ -778,8 +783,8 @@ const OVER = '#D0453F'
 /** The credits card, fixed at the top and not collapsible: the Aspire mark and the organization's credits from the latest get_status. */
 const CREDIT_H = 78
 
-/** The Aspire mark (the plugin's icon), drawn in a 512 box: a deep green tile with the A and the I in white. */
-const LOGO = `<rect width="512" height="512" rx="96" fill="#0B4545"/><path fill="#fff" fill-rule="evenodd" d="M62 413 L183 98 L236 98 L356 413 L296 413 L275 354 C235 392 190 413 130 413 Z M212 185 L257 296 C225 330 185 354 145 358 Z"/><rect x="365" y="98" width="64" height="316" fill="#fff"/>`
+/** The Aspire mark, animated: the A and the I in white over the progress bar's twinkling dither, in a 512 box. */
+const LOGO = logoMarkup()
 const LOGO_SIZE = 56
 const LOGO_GAP = 10
 /** The mark's width in terminal columns, at the 8px a column the desktop grid is sized by. */
@@ -1213,6 +1218,7 @@ export const register: Register = on => {
       const payload = { result: result.result, text: result.text }
       const isStatus = isAtlasStatusCall(tool, payload)
       if (!isStatus && !isAtlasToolName(tool)) return result
+      if (serverOf(tool)) atlasServers.add(serverOf(tool))
       await activate($, 'atlas-tool', shortTool(tool))
       await count($, 'atlasResults')
       if (isStatus) {
@@ -1231,6 +1237,36 @@ export const register: Register = on => {
     }
     return result
   }).catch(($, e, next) => next(e))
+
+  // An Atlas tool's row in the transcript (`mcp__<server>__search_posts` and the like): the animated Aspire mark on the left and the call's
+  // name on the right, on the desktop. Display only: the call, its input and its result are untouched, the terminal and every
+  // other tool keep Claude Code's own row, and a row that is not drawn here is passed on as it came.
+  on('ui.render', { component: 'ToolUse' }, async ($, e, next) => {
+    const tool = String(e.props.tool)
+    const ui = $.ui.resolve(e)
+    const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
+    if (!Svg || tool === PROGRESS_TOOL || tool === STEP_TOOL || !tool.startsWith('mcp__')) return next(e)
+    if (!(isAtlasToolName(tool) || atlasServers.has(serverOf(tool))) || !(await isOn($))) return next(e)
+    const { Box, Text } = ui
+    const name = shortTool(tool).replace(/_/g, ' ')
+    const state = e.props.isInterrupted ? 'interrupted' : e.props.isErrored ? 'failed' : e.props.isRunning ? 'running' : ''
+    // Every Atlas tool takes a `context`: a sentence on why the call is made, which the row shows as its description.
+    const input = e.props.input !== null && typeof e.props.input === 'object' ? (e.props.input as Readonly<Record<string, unknown>>) : {}
+    const description = str(input.context)
+    return (
+      <Box flexDirection="row" gap={1}>
+        <Svg source={logoSvg(18)} alt="Aspire Atlas" width={18} height={18} />
+        <Box flexDirection="column" flexGrow={1} flexShrink={1} minWidth={0}>
+          <Box flexDirection="row" gap={1}>
+            <Text bold>Aspire Atlas</Text>
+            <Text dimColor>{name}</Text>
+            {state ? <Text color={e.props.isErrored || e.props.isInterrupted ? 'red' : undefined} dimColor={state === 'running'}>{state}</Text> : null}
+          </Box>
+          {description ? <Text dimColor wrap="wrap">{clip(description, 200)}</Text> : null}
+        </Box>
+      </Box>
+    )
+  })
 
   // A published Artifact: remember its title and description from the call, for the card that draws its result row. An
   // observer: the call and its result pass through unchanged, and nothing is stored but those strings.

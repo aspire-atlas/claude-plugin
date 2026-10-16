@@ -1197,3 +1197,39 @@ test('an engine without $.agent.list leaves the rows as they are', async ($, on)
   await $.turn.start({ turnId: 't2', text: 'next' } as never)
   expect(await status($)).toContain('Aspire')
 })
+
+// An Atlas tool's row: the animated mark on the left and the call's name on the right, on the desktop only.
+const toolRow = ($: Engine, surface: 'terminal' | 'desktop', tool: string, extra: Record<string, unknown> = {}) =>
+  $.ui.mount({ plugin: PLUGIN, surface, component: 'ToolUse', props: { tool_use_id: 'tu-1', tool, input: {}, isRunning: false, isErrored: false, isInterrupted: false, ...extra } as never })
+const toolEngineRow = (on: On) =>
+  on('ui.render', { component: 'ToolUse' }, ($, e) => {
+    const { Text } = $.ui.resolve(e)
+    return <Text>engine row</Text>
+  })
+
+test('desktop: an Atlas tool row is the animated mark and the call name; the terminal and other tools keep the engine row', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  toolEngineRow(on)
+  await typeAspire($)
+  const atlas = await toolRow($, 'desktop', 'mcp__Aspire_Atlas__search_posts', { isRunning: true, input: { context: 'Searching posts for the weekly readout.' } })
+  expect(await atlas.find({ type: 'Text', text: /^Searching posts for the weekly readout\.$/ })).toBeDefined()
+  expect(await atlas.find({ type: 'Text', text: /^Aspire Atlas$/ })).toBeDefined()
+  expect(await atlas.find({ type: 'Text', text: /^search posts$/ })).toBeDefined()
+  expect(await atlas.find({ type: 'Text', text: /^running$/ })).toBeDefined()
+  const svg = await atlas.find({ type: 'Svg' })
+  expect(String(svg.props.source)).toContain('lgtw')
+  await atlas.unmount()
+  for (const [surface, tool] of [['terminal', 'mcp__Aspire_Atlas__search_posts'], ['desktop', 'Bash'], ['desktop', 'mcp__Aspire_Atlas_Organization_Admin__list_members']] as const) {
+    const row = await toolRow($, surface, tool)
+    expect(await row.find({ type: 'Text', text: /^engine row$/ })).toBeDefined()
+    await row.unmount()
+  }
+})
+
+test('an Atlas tool row stays the engine row until the mod is on', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  toolEngineRow(on)
+  const row = await toolRow($, 'desktop', 'mcp__Aspire_Atlas__search_posts')
+  expect(await row.find({ type: 'Text', text: /^engine row$/ })).toBeDefined()
+  await row.unmount()
+})
