@@ -58,10 +58,13 @@ folder, and the `page` and `snapshot` sections of `program-dashboard.md`, `orche
    Read the posts and the findings per **3**.
 4. Compute each section per **4**, the next step per **5**, and the build-time emphasis per **6**.
 5. **Embed the images.** For each profile's newest posts (at most 12 per profile), run the
-   `embed_media.py` snippet in `creator-card.md`, **Images** (`post@240`, page profile), passing each
-   post's `media.mediaUrl` and `media.thumbnailUrl`, with output to a scratch file. If Python 3 or
-   Pillow is missing, install Pillow in a virtual environment in the scratch folder and retry. Put
-   each `dataUri` in that post's snapshot record. Never leave a `cdn.aspire.io` URL in the page. A
+   `embed_media.py` snippet in `creator-card.md`, **Images** (page profile), one quoted argument per
+   post in the form `post@240=<mediaUrl>|<thumbnailUrl>` from its `media.mediaUrl` and
+   `media.thumbnailUrl`, with output to a scratch file. Match each output line to its post by
+   position, and put each `dataUri` in that post's snapshot record. Keep the images under that
+   section's budget (8MB in all) with its ordered reductions, and cap the posts per profile so
+   the total across profiles fits. If Python 3 or Pillow is not already installed, install
+   nothing: every post gets the placeholder tile. Never leave a `cdn.aspire.io` URL in the page. A
    post whose embed returns `ok:false` gets the placeholder tile; count those, and say why in the
    report. Never skip this step silently.
 6. **Build the page** per **8** (load `artifact-design` and `artifact-capabilities` first,
@@ -71,7 +74,7 @@ folder, and the `page` and `snapshot` sections of `program-dashboard.md`, `orche
 7. **Write** the link calibration per **2** on `build` with a save answer. On a `key-exists`
    response, stop and return both versions to the main thread; never supersede.
 8. Verify once: read the published page back with the Artifact tool, confirm the declared
-   capabilities, and confirm the page source is ASCII only (the reference's **8**) and that no amount, member, or email is in it and that the only Atlas ids are the organization and profile ids the live reads need. Confirm every snapshot post tile has a data URI, and report the count embedded against the count shown as the placeholder; if none embedded, say so as a failure, not a layout choice.
+   capabilities, and confirm the page source is ASCII only (the reference's **8**) and that no amount, member, or email is in it and that the only Atlas ids are the organization and profile ids the live reads need. Confirm every snapshot post tile has a data URI or is counted as a placeholder, and report the count embedded against the count shown as the placeholder; if none embedded, say so as a failure, not a layout choice.
 
 ## Output to the main thread (under 200 words)
 

@@ -879,6 +879,18 @@ test("a default get_status after a pick leaves the picked organization's name an
   expect(await status($)).not.toMatch(/996\.2 credits left/)
 })
 
+test('an unparseable get_status after a pick clears the figures', async ($, on) => {
+  const orgs = { selected: { id: 'org_2', name: 'Picked Org' }, all: [{ id: 'org_1' }, { id: 'org_2' }] }
+  let body: unknown = { organizations: orgs, profiles: PROFILES, credits: { ...CREDITS, organizationId: 'org_2' } }
+  world(on, () => body)
+  await typeAspire($)
+  await getStatus($, { asOrganizationId: 'org_2' })
+  expect(await status($)).toMatch(/996\.2 credits left/)
+  body = { error: 'unavailable' }
+  await getStatus($)
+  expect(await status($)).not.toMatch(/credits left/)
+})
+
 test('the organization named under the call input counts as named', async ($, on) => {
   const several = { organizations: { selected: { id: 'org_2', name: 'Picked Org' }, all: [{ id: 'org_1' }, { id: 'org_2' }] }, profiles: [] }
   world(on, () => several)

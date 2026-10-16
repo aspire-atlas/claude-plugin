@@ -1252,7 +1252,9 @@ export const register: Register = on => {
         // or the figures of the default organization would replace, and then be hidden against, the picked one's.
         const holdsPick = (await read($, org)).name !== null
         const isPick = reading?.name !== undefined && (reading.orgCount <= 1 || isOrgNamed)
-        const isKept = holdsPick && !isPick
+        // Kept only for a reading that is the default: it parsed, several organizations, none named. An
+        // unparseable result, or a named call whose result has no name, clears the figures as before.
+        const isKept = holdsPick && !isPick && reading !== null && reading.orgCount > 1 && !isOrgNamed
         await update($, atlas, prev => (isKept ? prev : costs ? { costs, at } : null))
         await update($, creditsAtom, prev => (isKept ? prev : credits ? { credits, at } : null))
         await update($, seen, s => ({ ...s, statusReads: s.statusReads + 1, lastStatusAt: at }))
