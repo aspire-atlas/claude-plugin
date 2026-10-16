@@ -188,6 +188,8 @@ export const readAtlasUsage = (result: unknown): AtlasTokenCosts | null => {
 export type AtlasOrgReading = {
   /** The selected organization's name; absent when the result names none. */
   name?: string
+  /** The selected organization's id; absent when the result gives none. */
+  id?: string
   /** How many organizations the caller belongs to (0 when the result lists none). */
   orgCount: number
   /** Brand profiles in the result. */
@@ -241,6 +243,8 @@ const orgFrom = (root: unknown): AtlasOrgReading | null => {
   }
   const name = nameOf(selected)
   if (name !== undefined) out.name = name
+  const id = isRecord(selected) ? field(selected, ['id', 'organizationid']) : undefined
+  if (typeof id === 'string' && id && id.length <= 80) out.id = id
   return out
 }
 
@@ -343,6 +347,7 @@ export const parseCredits = (raw: unknown): AtlasCredits | null => {
     periodConsumed: 0,
     grants: [],
   }
+  if (typeof raw.organizationId === 'string' && raw.organizationId) out.organizationId = raw.organizationId
   if (isRecord(raw.period) && typeof raw.period.start === 'string' && typeof raw.period.end === 'string') {
     out.period = { start: raw.period.start, end: raw.period.end }
   }
@@ -413,6 +418,28 @@ export const readAtlasCredits = (result: unknown): AtlasCredits | null => {
   }
 }
 
+/**
+ * "An organization is selected": the mod has a name for it (OrgState.name is
+ * non-null). The name is set only when a get_status result picked one: the
+ * caller has a single organization or the call named one (`asOrganizationId`).
+ * With several organizations and none named, get_status's default is not a
+ * pick, so nothing is selected. Reset, /clear and a new session clear it.
+ */
+export const isOrgSelected = (o: { name: string | null }): boolean => o.name !== null
+
+/**
+ * Credit and usage figures belong to the selected organization only. None
+ * without a selected organization; none when the reading names another
+ * organization than the selected one (both ids known and different); a
+ * reading or selection with no id is trusted, since a get_status result's
+ * figures come from the organization it selected. Pure.
+ */
+export const creditsOf = <C extends { organizationId?: string }>(o: { name: string | null; id?: string }, c: C | null): C | null => {
+  if (!c || !isOrgSelected(o)) return null
+  if (o.id !== undefined && c.organizationId !== undefined && o.id !== c.organizationId) return null
+  return c
+}
+
 /** Credits for people: whole numbers with separators, one decimal otherwise (996.2, 1,000, 3.8). */
 export const fmtCredits = (n: number): string => {
   const [whole, frac] = String(Number(n.toFixed(1))).split('.')
@@ -434,8 +461,10 @@ export type CreditsView = {
   big: string
   /** After it: "of 1,000 left". */
   sub: string
-  /** Share of the grants consumed, 0 to 1. */
+  /** How full the bar is, 0 to 1: the share of the grants still remaining (the share used for the older token-cost card). 0 when out, over, or unknown. */
   ratio: number
+  /** The bar's color: ok above 25% left, low at 25% or less, critical at 10% or less and when out or over. */
+  tone: 'ok' | 'low' | 'critical'
   /** Credits ran past the grants. */
   isOver: boolean
   /** Under the bar, left. */
@@ -446,6 +475,22 @@ export type CreditsView = {
   tag: string
   /** Bottom right: the grants. */
   grants: string
+}
+
+/** At or under this share left, the bar turns amber. */
+export const CREDITS_LOW = 0.25
+/** At or under this share left, the bar turns red. */
+export const CREDITS_CRITICAL = 0.1
+
+/**
+ * The bar's fill and color from a credits reading: fill is remaining / granted, clamped 0..1 and 0 when over or
+ * when the grants are unknown (a track with nothing in it, never a full or half bar that says nothing).
+ */
+export const creditsBar = (c: Pick<AtlasCredits, 'granted' | 'remaining' | 'overage'>): { ratio: number; tone: CreditsView['tone'] } => {
+  if (c.overage > 0) return { ratio: 0, tone: 'critical' }
+  if (!Number.isFinite(c.granted) || !Number.isFinite(c.remaining) || c.granted <= 0) return { ratio: 0, tone: 'ok' }
+  const ratio = Math.min(1, Math.max(0, c.remaining / c.granted))
+  return { ratio, tone: ratio <= CREDITS_CRITICAL ? 'critical' : ratio <= CREDITS_LOW ? 'low' : 'ok' }
 }
 
 const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`
@@ -471,7 +516,7 @@ export const creditsView = (c: AtlasCredits | null, costs: AtlasTokenCosts | nul
       title: 'Credits',
       big: c.overage > 0 ? `${fmtCredits(c.overage)} over` : fmtCredits(c.remaining),
       sub: c.overage > 0 ? `of ${fmtCredits(c.granted)} used up` : `of ${fmtCredits(c.granted)} left`,
-      ratio: c.granted > 0 ? Math.min(1, c.consumed / c.granted) : c.overage > 0 ? 1 : 0,
+      ...creditsBar(c),
       isOver: c.overage > 0,
       metaLeft: `${fmtCredits(c.periodConsumed)} used this period`,
       metaRight: posts.join(' · '),
@@ -480,7 +525,7 @@ export const creditsView = (c: AtlasCredits | null, costs: AtlasTokenCosts | nul
     }
   }
   if (costs) {
-    return { title: 'Atlas tokens', big: fmtAtlasUsage(costs), sub: '', ratio: costs.limit ? Math.min(1, costs.used / costs.limit) : 0, isOver: false, metaLeft: '', metaRight: '', tag: '', grants: '' }
+    return { title: 'Atlas tokens', big: fmtAtlasUsage(costs), sub: '', ratio: costs.limit ? Math.min(1, costs.used / costs.limit) : 0, tone: 'ok', isOver: false, metaLeft: '', metaRight: '', tag: '', grants: '' }
   }
-  return { title: 'Credits', big: ATLAS_ABSENT, sub: 'run /aspire to refresh', ratio: 0, isOver: false, metaLeft: '', metaRight: '', tag: '', grants: '' }
+  return { title: 'Credits', big: ATLAS_ABSENT, sub: 'run /aspire to refresh', ratio: 0, tone: 'ok', isOver: false, metaLeft: '', metaRight: '', tag: '', grants: '' }
 }

@@ -13,7 +13,7 @@ const ORGS = { selected: { id: 'org_1', name: 'Sample Brand', role: 'owner' }, a
 const PROFILES = [{ id: 'p1', name: 'Sample', channels: [{ network: 'instagram' }] }]
 const CREDITS = {
   estimate: true,
-  organizationId: 'org_z54dtf9al5vg5v92',
+  organizationId: 'org_1',
   period: { start: '2026-10-01T00:00:00.000Z', end: '2026-11-01T00:00:00.000Z' },
   thisPeriod: { consumed: 3.8, newPosts: { count: 25, rate: 0.1, credits: 2.5 }, retrievedPosts: { count: 26, rate: 0.05, credits: 1.3 } },
   balance: { granted: 1000, consumed: 3.8, remaining: 996.2, overage: 0 },
@@ -837,6 +837,29 @@ test('the credits card shows the balance on both surfaces and no agents or time 
   expect(await status($)).toMatch(/996\.2 credits left/)
 })
 
+test('credits are shown only for the selected organization', async ($, on) => {
+  let body: unknown = {
+    organizations: { selected: { id: 'org_1', name: 'Sample Brand' }, all: [{ id: 'org_1', name: 'Sample Brand' }, { id: 'org_2', name: 'Other' }] },
+    profiles: PROFILES,
+    credits: CREDITS,
+  }
+  world(on, () => body)
+  await typeAspire($)
+  // Two organizations, none named in the call: get_status's default is no pick, so no credits.
+  await getStatus($)
+  expect(await panelShows($, /^996\.2$/)).toBe(false)
+  expect(await status($)).not.toMatch(/credits left/)
+  // The call names the organization: it is selected, and its credits show.
+  await getStatus($, { asOrganizationId: 'org_1' })
+  expect(await panelShows($, /^996\.2$/)).toBe(true)
+  expect(await status($)).toMatch(/996\.2 credits left/)
+  // A later reading whose credits belong to another organization is hidden.
+  body = { ...(body as object), credits: { ...CREDITS, organizationId: 'org_2' } }
+  await getStatus($, { asOrganizationId: 'org_1' })
+  expect(await panelShows($, /^996\.2$/)).toBe(false)
+  expect(await status($)).not.toMatch(/credits left/)
+})
+
 test("the agent's own task list moves the bar and fills the Progress section, then ends as All done", async ($, on) => {
   world(on, () => WITH_COSTS)
   const PLAN = 'mcp__ccd_turn__update_plan'
@@ -1196,4 +1219,59 @@ test('an engine without $.agent.list leaves the rows as they are', async ($, on)
   await spawn($, 'aspire:atlas-creator-brief', 'Keep')
   await $.turn.start({ turnId: 't2', text: 'next' } as never)
   expect(await status($)).toContain('Aspire')
+})
+
+// An Atlas tool's row: the animated mark on the left and the call's name on the right, on the desktop only.
+const toolRow = ($: Engine, surface: 'terminal' | 'desktop', tool: string, extra: Record<string, unknown> = {}) =>
+  $.ui.mount({ plugin: PLUGIN, surface, component: 'ToolUse', props: { tool_use_id: 'tu-1', tool, input: {}, isRunning: false, isErrored: false, isInterrupted: false, ...extra } as never })
+const toolEngineRow = (on: On) =>
+  on('ui.render', { component: 'ToolUse' }, ($, e) => {
+    const { Text } = $.ui.resolve(e)
+    return <Text>engine row</Text>
+  })
+
+test('desktop: an Atlas tool row is the animated mark and the call name; the terminal and other tools keep the engine row', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  toolEngineRow(on)
+  await typeAspire($)
+  const atlas = await toolRow($, 'desktop', 'mcp__Aspire_Atlas__search_posts', { isRunning: true, input: { context: 'Searching posts for the weekly readout.' } })
+  expect(await atlas.find({ type: 'Text', text: /^Searching posts for the weekly readout\.$/ })).toBeDefined()
+  expect(await atlas.find({ type: 'Text', text: /^Aspire Atlas$/ })).toBeDefined()
+  expect(await atlas.find({ type: 'Text', text: /^search posts$/ })).toBeDefined()
+  expect(await atlas.find({ type: 'Text', text: /^running$/ })).toBeDefined()
+  const svg = await atlas.find({ type: 'Svg' })
+  expect(String(svg.props.source)).toContain('lgtw')
+  await atlas.unmount()
+  for (const [surface, tool] of [['terminal', 'mcp__Aspire_Atlas__search_posts'], ['desktop', 'Bash'], ['desktop', 'mcp__Aspire_Atlas_Organization_Admin__list_members']] as const) {
+    const row = await toolRow($, surface, tool)
+    expect(await row.find({ type: 'Text', text: /^engine row$/ })).toBeDefined()
+    await row.unmount()
+  }
+})
+
+test('an Atlas tool row stays the engine row until the mod is on', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  toolEngineRow(on)
+  const row = await toolRow($, 'desktop', 'mcp__Aspire_Atlas__search_posts')
+  expect(await row.find({ type: 'Text', text: /^engine row$/ })).toBeDefined()
+  await row.unmount()
+})
+
+test('a /clear forgets which connector answered as Atlas, so its rows go back to the engine row', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  toolEngineRow(on)
+  on('session.end', () => ({ sessionId: 's1' }) as never)
+  // A connector whose tool names do not say Atlas: it is known only by answering like get_status.
+  on('tool.call', { tool: 'mcp__abc123__get_status' }, () => mcpResult(WITH_COSTS) as never)
+  await typeAspire($)
+  await $.tool.call({ tool: 'mcp__abc123__get_status', context: 'Checking the session.' } as never)
+  const before = await toolRow($, 'desktop', 'mcp__abc123__search_posts')
+  expect(await before.find({ type: 'Text', text: /^Aspire Atlas$/ })).toBeDefined()
+  await before.unmount()
+
+  await $.session.end({ reason: 'clear', sessionId: 's1', resume: { id: 's1' } } as never)
+  await typeAspire($)
+  const after = await toolRow($, 'desktop', 'mcp__abc123__search_posts')
+  expect(await after.find({ type: 'Text', text: /^engine row$/ })).toBeDefined()
+  await after.unmount()
 })

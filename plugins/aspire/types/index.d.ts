@@ -58,6 +58,8 @@ export type AtlasCredits = {
   /** Consumed over the life of the grants. */
   consumed: number
   remaining: number
+  /** The organization the block names (`organizationId`), when it does. */
+  organizationId?: string
   /** Credits used past the grants; 0 when none. */
   overage: number
   /** The current period, ISO dates; `end` is when it resets. */
@@ -199,6 +201,12 @@ export type OrgState = {
    * Null until one is known; the bar's label is then just `Aspire`.
    */
   name: string | null
+  /**
+   * The selected organization's id, when the result carried one. Credits are
+   * shown only for this organization (see `creditsOf` in hooks/atlas-usage.ts).
+   * Absent when unknown; never set without `name`.
+   */
+  id?: string
   /** Onboarding checkpoints the result shows, 0 to 4 (see Progress). */
   checkpoints: number
 }

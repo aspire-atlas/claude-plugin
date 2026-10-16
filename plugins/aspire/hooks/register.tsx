@@ -86,11 +86,12 @@ import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
 import type { AgentRun, AtlasCreditsReading, AtlasReading, BandStats, Coach, Item, Notice, OrgState, Panel, Progress, Seen, Trigger, TriggerKind, Turn } from '../types'
-import { creditsView, fmtAtlasUsage, fmtCredits, isAtlasStatusCall, isAtlasToolName, readAtlasCredits, readAtlasOrg, readAtlasUsage } from './atlas-usage'
+import { creditsOf, isOrgSelected, creditsView, fmtAtlasUsage, fmtCredits, isAtlasStatusCall, isAtlasToolName, readAtlasCredits, readAtlasOrg, readAtlasUsage } from './atlas-usage'
 import type { CreditsView } from './atlas-usage'
 import { ASPIRE, COACH_CRAB, CRAB_CSS, breathOf, characterOf, crab } from './characters'
 import type { Character } from './characters'
 import { AGENT_CHARACTERS } from './costumes'
+import { logoMarkup, logoSvg } from './logo'
 import { GROUPS, ROSTER } from './roster'
 import type { RosterEntry } from './roster'
 import { clip, fitText, fmtTime, fmtTokens, modelName, textWidth, windowOf, xml } from './format'
@@ -220,6 +221,7 @@ async function reset($: EngineInterface): Promise<void> {
   band.crab = null
   published.clear()
   loggedLinks.clear()
+  atlasServers.clear()
   await setStatus($, undefined, true)
   await update($, agents, () => [])
   await update($, panel, () => ({ isAutoOpened: false, open: DEFAULT_OPEN, leaving: null }))
@@ -289,6 +291,10 @@ const isOn = async ($: EngineInterface): Promise<boolean> => {
 
 /** `get_status` from `mcp__<server>__get_status`, for the status line. */
 const shortTool = (tool: string): string => tool.replace(/^mcp__.*__/, '')
+
+/** `mcp__<server>__` of each connector that has answered as Aspire Atlas, for a server whose name does not say so. Names only. */
+const atlasServers = new Set<string>()
+const serverOf = (tool: string): string => /^(mcp__.+?__)/.exec(tool)?.[1] ?? ''
 
 // ---------------------------------------------------------------------------
 // The Artifact card: the transcript's result row for a published Artifact.
@@ -774,12 +780,14 @@ const planBodySvg = (W: number, title: string, shown: Shown, view: PlanView, tai
 }
 
 const OVER = '#D0453F'
+/** The credits bar's amber and red, with dark-mode variants (teal is ASPIRE above 25% left, amber at 25% or less, red at 10% or less or when out). */
+const BAR_CSS = '.cb-low{fill:#B86E00}.cb-critical{fill:#D0453F}@media (prefers-color-scheme: dark){.cb-low{fill:#F2B134}.cb-critical{fill:#F0706A}}'
 
 /** The credits card, fixed at the top and not collapsible: the Aspire mark and the organization's credits from the latest get_status. */
 const CREDIT_H = 78
 
-/** The Aspire mark (the plugin's icon), drawn in a 512 box: a deep green tile with the A and the I in white. */
-const LOGO = `<rect width="512" height="512" rx="96" fill="#0B4545"/><path fill="#fff" fill-rule="evenodd" d="M62 413 L183 98 L236 98 L356 413 L296 413 L275 354 C235 392 190 413 130 413 Z M212 185 L257 296 C225 330 185 354 145 358 Z"/><rect x="365" y="98" width="64" height="316" fill="#fff"/>`
+/** The Aspire mark, animated: the A and the I in white over the progress bar's twinkling dither, in a 512 box. */
+const LOGO = logoMarkup()
 const LOGO_SIZE = 56
 const LOGO_GAP = 10
 /** The mark's width in terminal columns, at the 8px a column the desktop grid is sized by. */
@@ -791,7 +799,6 @@ const creditsCardSvg = (W: number, v: CreditsView): string => {
   const cardW = W - x0
   const barW = cardW - pad * 2
   const fill = Math.round(barW * v.ratio)
-  const color = v.isOver ? OVER : ASPIRE
   const left = x0 + pad
   const right = W - pad
   const text = (x: number, y: number, cls: string, size: number, body: string, extra = '') =>
@@ -800,14 +807,14 @@ const creditsCardSvg = (W: number, v: CreditsView): string => {
   return svg(
     W,
     CREDIT_H + 4,
-    `<g transform="translate(0,${Math.round((CREDIT_H - 4 - LOGO_SIZE) / 2)}) scale(${LOGO_SIZE / 512})"><title>Aspire</title>${LOGO}</g>
+    `<style>${BAR_CSS}</style><g transform="translate(0,${Math.round((CREDIT_H - 4 - LOGO_SIZE) / 2)}) scale(${LOGO_SIZE / 512})"><title>Aspire</title>${LOGO}</g>
 <rect class="tile" x="${x0}" y="0" width="${cardW}" height="${CREDIT_H - 4}" rx="8"/>
 ${text(left, 17, 's', 11, v.title)}
 ${v.tag ? text(right, 17, 's', 11, v.tag, 'text-anchor="end"') : ''}
 <text class="t" x="${left}" y="42" font-family="${FONT}" font-size="22" font-weight="600" font-variant-numeric="tabular-nums" ${v.isOver ? `fill="${OVER}"` : ''}>${xml(v.big)}</text>
 ${v.sub ? text(left + bigW, 42, 's', 12, v.sub) : ''}
 <rect class="k" x="${left}" y="50" width="${barW}" height="4" rx="2"/>
-${v.ratio > 0 ? `<rect x="${left}" y="50" width="${Math.max(3, fill)}" height="4" rx="2" fill="${color}"/>` : ''}
+${v.ratio > 0 ? `<rect ${v.tone === 'ok' ? `fill="${ASPIRE}"` : `class="cb-${v.tone}"`} x="${left}" y="50" width="${Math.max(3, fill)}" height="4" rx="2"/>` : ''}
 ${v.metaLeft ? text(left, 68, 's', 11, v.metaLeft) : ''}
 ${v.metaRight ? text(right, 68, 's', 11, v.metaRight, 'text-anchor="end"') : ''}`,
   )
@@ -954,8 +961,9 @@ async function statusText($: EngineInterface): Promise<string> {
   const t = await read($, trigger)
   const s = await read($, seen)
   const reading = await read($, atlas)
-  const credits = await read($, creditsAtom)
   const o = await read($, org)
+  // Credit and usage figures only for the selected organization (creditsOf).
+  const credits = creditsOf(o, (await read($, creditsAtom))?.credits ?? null)
   const p = await read($, progress)
   let version = 'unknown'
   try {
@@ -982,7 +990,7 @@ async function statusText($: EngineInterface): Promise<string> {
   const status =
     s.lastStatusAt === null
       ? 'Last get_status: none yet.'
-      : `Last get_status ${ago(at - s.lastStatusAt)}: ${credits ? `${fmtCredits(credits.credits.remaining)} credits left` : reading ? `${fmtAtlasUsage(reading.costs)} Atlas tokens` : 'no credits in it'}, organization ${o.name ?? 'not picked yet'}.`
+      : `Last get_status ${ago(at - s.lastStatusAt)}: ${credits ? `${fmtCredits(credits.remaining)} credits left` : reading && isOrgSelected(o) ? `${fmtAtlasUsage(reading.costs)} Atlas tokens` : 'no credits in it'}, organization ${o.name ?? 'not picked yet'}.`
   const at2 = await $.clock.now()
   const shown = shownOf(p, o, await read($, agents), planOf(await read($, turn), await read($, items), at2))
   const bar = isOnNow ? `Bar: ${titleOf(o)}, ${shown.label}, ${percentOf(shown)} (${shown.source === 'skill' ? 'reported by the skill' : shown.source === 'plan' ? "from the agent's own steps" : shown.source === 'agents' ? 'from the running agents' : 'initializing, no report from the skill yet'}).` : 'Bar: not shown until the mod is on.'
@@ -1213,6 +1221,7 @@ export const register: Register = on => {
       const payload = { result: result.result, text: result.text }
       const isStatus = isAtlasStatusCall(tool, payload)
       if (!isStatus && !isAtlasToolName(tool)) return result
+      if (serverOf(tool)) atlasServers.add(serverOf(tool))
       await activate($, 'atlas-tool', shortTool(tool))
       await count($, 'atlasResults')
       if (isStatus) {
@@ -1231,6 +1240,36 @@ export const register: Register = on => {
     }
     return result
   }).catch(($, e, next) => next(e))
+
+  // An Atlas tool's row in the transcript (`mcp__<server>__search_posts` and the like): the animated Aspire mark on the left and the call's
+  // name on the right, on the desktop. Display only: the call, its input and its result are untouched, the terminal and every
+  // other tool keep Claude Code's own row, and a row that is not drawn here is passed on as it came.
+  on('ui.render', { component: 'ToolUse' }, async ($, e, next) => {
+    const tool = String(e.props.tool)
+    const ui = $.ui.resolve(e)
+    const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
+    if (!Svg || tool === PROGRESS_TOOL || tool === STEP_TOOL || !tool.startsWith('mcp__')) return next(e)
+    if (!(isAtlasToolName(tool) || atlasServers.has(serverOf(tool))) || !(await isOn($))) return next(e)
+    const { Box, Text } = ui
+    const name = shortTool(tool).replace(/_/g, ' ')
+    const state = e.props.isInterrupted ? 'interrupted' : e.props.isErrored ? 'failed' : e.props.isRunning ? 'running' : ''
+    // Every Atlas tool takes a `context`: a sentence on why the call is made, which the row shows as its description.
+    const input = e.props.input !== null && typeof e.props.input === 'object' ? (e.props.input as Readonly<Record<string, unknown>>) : {}
+    const description = str(input.context)
+    return (
+      <Box flexDirection="row" gap={1}>
+        <Svg source={logoSvg(18, Boolean(e.props.isRunning))} alt="Aspire Atlas" width={18} height={18} />
+        <Box flexDirection="column" flexGrow={1} flexShrink={1} minWidth={0}>
+          <Box flexDirection="row" gap={1}>
+            <Text bold>Aspire Atlas</Text>
+            <Text dimColor>{name}</Text>
+            {state ? <Text color={e.props.isErrored || e.props.isInterrupted ? 'red' : undefined} dimColor={state === 'running'}>{state}</Text> : null}
+          </Box>
+          {description ? <Text dimColor wrap="wrap">{clip(description, 200)}</Text> : null}
+        </Box>
+      </Box>
+    )
+  })
 
   // A published Artifact: remember its title and description from the call, for the card that draws its result row. An
   // observer: the call and its result pass through unchanged, and nothing is stored but those strings.
@@ -1657,8 +1696,9 @@ export const register: Register = on => {
 
     const running = list.filter(a => a.status === 'running').reverse()
     const finished = list.filter(a => a.status !== 'running').reverse()
-    const view = creditsView((await read($, creditsAtom))?.credits ?? null, (await read($, atlas))?.costs ?? null)
     const o = await read($, org)
+    // No selected organization, or credits of another one: the card's empty state, never a figure.
+    const view = creditsView(creditsOf(o, (await read($, creditsAtom))?.credits ?? null), isOrgSelected(o) ? (await read($, atlas))?.costs ?? null : null)
     const report = await read($, progress)
     const planTurn = await read($, turn)
     const plan = planOf(planTurn, await read($, items), Math.max(at, planTurn?.startedAt ?? 0))
@@ -1783,7 +1823,7 @@ export const register: Register = on => {
         </Text>
         {view.ratio > 0 || view.metaLeft ? (
           <Text wrap="truncate-end">
-            <Text color={view.isOver ? 'red' : ASPIRE}>{ctxBar(Math.round(view.ratio * 100), 12)}</Text> <Text dimColor>{[view.metaLeft, view.grants].filter(Boolean).join(' · ')}</Text>
+            <Text color={view.tone === 'critical' ? 'red' : view.tone === 'low' ? 'yellow' : ASPIRE}>{ctxBar(Math.round(view.ratio * 100), 12)}</Text> <Text dimColor>{[view.metaLeft, view.grants].filter(Boolean).join(' · ')}</Text>
           </Text>
         ) : null}
         {view.metaRight ? <Text dimColor wrap="truncate-end">{view.metaRight}</Text> : null}
