@@ -7,14 +7,15 @@
 // To add one: add an entry to COSTUMES; its `agent` is the agent type it stands
 // for, or null for a variant. Cells use the PALETTE letters; `.` is empty.
 
+import { BRAND, ILLUSTRATION as I } from './palette'
 import type { Character, Fill } from './characters'
 
 const PALETTE: Record<string, string> = {
-  k: '#1F1E1D', w: '#F8F6F1', g: '#C9CCD2', d: '#55514C', y: '#F5C542', a: '#EF9F27', r: '#E24B4A',
-  b: '#378ADD', l: '#85B7EB', t: '#1D9E75', p: '#D4537E', o: '#D85A30', v: '#7F77DD', n: '#7A4A26',
+  k: I.ink, w: I.paper, g: I.steel, d: I.slate, y: I.gold, a: I.amber, r: I.red,
+  b: I.blue, l: I.sky, t: I.green, p: I.pink, o: I.orange, v: I.violet, n: I.wood,
 }
-const BODY = '#3B8A82'
-const INK = '#1F1E1D'
+const BODY = BRAND.teal
+const INK = I.ink
 
 export type Anim = 'sway' | 'bounce' | 'pulse' | 'blink' | 'spin'
 
@@ -63,7 +64,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'selfie',
     name: 'Selfie stick',
     agent: 'aspire:atlas-post-analysis',
-    color: '#378ADD',
+    color: I.blue,
     anim: 'sway',
     held: [
       '.kkkkkk.',
@@ -83,7 +84,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'ringlight',
     name: 'Ring light',
     agent: 'aspire:atlas-ppa-pitch',
-    color: '#EF9F27',
+    color: I.amber,
     anim: 'blink',
     held: null,
     head: [
@@ -100,7 +101,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'gift',
     name: 'Gift box',
     agent: 'aspire:atlas-product-fulfillment',
-    color: '#D4537E',
+    color: I.pink,
     anim: 'bounce',
     held: [
       '..yy.yy.',
@@ -120,7 +121,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'megaphone',
     name: 'Megaphone',
     agent: 'aspire:atlas-creator-outreach',
-    color: '#D85A30',
+    color: I.orange,
     anim: 'sway',
     held: [
       '.....yy.',
@@ -140,7 +141,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'coin',
     name: 'Deal coin',
     agent: 'aspire:atlas-creator-negotiation',
-    color: '#BA7517',
+    color: I.bronze,
     anim: 'pulse',
     held: [
       '.aaaaaa.',
@@ -160,7 +161,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'analyst',
     name: 'Analytics',
     agent: 'aspire:atlas-profile-analyst',
-    color: '#1D9E75',
+    color: I.green,
     anim: 'pulse',
     held: [
       '......tt',
@@ -180,7 +181,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'badge',
     name: 'Verified badge',
     agent: 'aspire:atlas-creator-profile',
-    color: '#378ADD',
+    color: I.blue,
     anim: 'pulse',
     held: [
       '..bbbb..',
@@ -200,7 +201,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'clipboard',
     name: 'Vetting clipboard',
     agent: 'aspire:atlas-creator-vetting',
-    color: '#888780',
+    color: I.stone,
     anim: 'sway',
     held: [
       '..kkkk..',
@@ -220,7 +221,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'detective',
     name: 'Detective',
     agent: 'aspire:atlas-creator-discovery',
-    color: '#7F77DD',
+    color: I.violet,
     anim: 'sway',
     held: [
       '.kkkk...',
@@ -247,7 +248,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'scissors',
     name: 'Cut list',
     agent: 'aspire:atlas-ad-reuse',
-    color: '#E24B4A',
+    color: I.red,
     anim: 'sway',
     held: [
       'r....r..',
@@ -267,7 +268,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'clapper',
     name: 'Clapperboard',
     agent: 'aspire:atlas-creator-brief',
-    color: '#888780',
+    color: I.stone,
     anim: 'bounce',
     held: [
       'kwkwkwkw',
@@ -287,7 +288,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'reel',
     name: 'Film reel',
     agent: 'aspire:atlas-content-library',
-    color: '#534AB7',
+    color: I.indigo,
     anim: 'spin',
     held: [
       '..kkkk..',
@@ -307,7 +308,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'crown',
     name: 'Crown',
     agent: 'aspire:atlas-roster-manager',
-    color: '#EF9F27',
+    color: I.amber,
     anim: 'pulse',
     held: null,
     head: [
@@ -324,7 +325,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'ledger',
     name: 'Coin stack',
     agent: 'aspire:atlas-program-ledger',
-    color: '#BA7517',
+    color: I.bronze,
     anim: 'bounce',
     held: [
       '........',
@@ -344,7 +345,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'gauge',
     name: 'Dashboard gauge',
     agent: 'aspire:atlas-program-dashboard',
-    color: '#1D9E75',
+    color: I.green,
     anim: 'sway',
     held: [
       '..kkkk..',
@@ -364,7 +365,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'window',
     name: 'Dashboard window',
     agent: 'aspire:atlas-org-dashboard',
-    color: '#2A9DA5',
+    color: I.cyan,
     anim: 'sway',
     held: [
       '..kkkk..',
@@ -384,7 +385,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'compass',
     name: 'Compass',
     agent: 'aspire:atlas-campaign-orchestrator',
-    color: '#7F77DD',
+    color: I.violet,
     anim: 'spin',
     held: [
       '..kkkk..',
@@ -404,7 +405,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'newspaper',
     name: 'Daily paper',
     agent: 'aspire:atlas-daily-insights-report',
-    color: '#888780',
+    color: I.stone,
     anim: 'sway',
     held: [
       'dddddddd',
@@ -424,7 +425,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'calendar',
     name: 'Weekly calendar',
     agent: 'aspire:atlas-weekly-insights-report',
-    color: '#E24B4A',
+    color: I.red,
     anim: 'bounce',
     held: [
       'rrrrrrrr',
@@ -444,7 +445,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'pie',
     name: 'Quarter pie',
     agent: 'aspire:atlas-quarterly-signal',
-    color: '#7F77DD',
+    color: I.violet,
     anim: 'spin',
     held: [
       '..tttt..',
@@ -464,7 +465,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'antenna',
     name: 'Signal antenna',
     agent: 'aspire:atlas-market-signal',
-    color: '#EF9F27',
+    color: I.amber,
     anim: 'blink',
     held: [
       'y..yy..y',
@@ -484,7 +485,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'tag',
     name: 'Price tag',
     agent: 'aspire:atlas-affiliate-manager',
-    color: '#D85A30',
+    color: I.orange,
     anim: 'sway',
     held: [
       '.kkkkkk.',
@@ -504,7 +505,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'lock',
     name: 'Rights padlock',
     agent: 'aspire:atlas-content-sourcing',
-    color: '#BA7517',
+    color: I.bronze,
     anim: 'pulse',
     held: [
       '..kkkk..',
@@ -524,7 +525,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'checklist',
     name: 'Posting checklist',
     agent: 'aspire:atlas-deliverable-tracker',
-    color: '#1D9E75',
+    color: I.green,
     anim: 'sway',
     held: [
       'wwwwwwww',
@@ -544,7 +545,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'stamp',
     name: 'Approval stamp',
     agent: 'aspire:atlas-content-review',
-    color: '#E24B4A',
+    color: I.red,
     anim: 'bounce',
     held: [
       '...dd...',
@@ -564,7 +565,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'shopping-bag',
     name: 'Shopping bag',
     agent: 'aspire:atlas-shops',
-    color: '#7F77DD',
+    color: I.violet,
     anim: 'sway',
     held: [
       '..dddd..',
@@ -584,7 +585,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'mic',
     name: 'Podcast mic',
     agent: null,
-    color: '#D4537E',
+    color: I.pink,
     anim: 'sway',
     held: [
       '..kkkk..',
@@ -604,7 +605,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'camera',
     name: 'Camera',
     agent: null,
-    color: '#444441',
+    color: I.charcoal,
     anim: 'pulse',
     held: [
       '........',
@@ -624,7 +625,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'unbox',
     name: 'Unboxing',
     agent: null,
-    color: '#BA7517',
+    color: I.bronze,
     anim: 'bounce',
     held: [
       '........',
@@ -644,7 +645,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'hashtag',
     name: 'Hashtag',
     agent: null,
-    color: '#7F77DD',
+    color: I.violet,
     anim: 'blink',
     held: [
       '..v..v..',
@@ -664,7 +665,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'heart',
     name: 'Like',
     agent: null,
-    color: '#D4537E',
+    color: I.pink,
     anim: 'pulse',
     held: [
       '.pp..pp.',
@@ -684,7 +685,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'shades',
     name: 'Sunglasses',
     agent: null,
-    color: '#1F1E1D',
+    color: I.ink,
     anim: 'blink',
     held: null,
     head: [
@@ -698,7 +699,7 @@ export const COSTUMES: readonly Costume[] = [
     key: 'trophy',
     name: 'Trophy',
     agent: null,
-    color: '#EF9F27',
+    color: I.amber,
     anim: 'bounce',
     held: [
       'yyyyyyyy',
