@@ -221,6 +221,7 @@ async function reset($: EngineInterface): Promise<void> {
   band.crab = null
   published.clear()
   loggedLinks.clear()
+  atlasServers.clear()
   await setStatus($, undefined, true)
   await update($, agents, () => [])
   await update($, panel, () => ({ isAutoOpened: false, open: DEFAULT_OPEN, leaving: null }))

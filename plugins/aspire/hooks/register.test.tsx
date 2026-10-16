@@ -1256,3 +1256,22 @@ test('an Atlas tool row stays the engine row until the mod is on', async ($, on)
   expect(await row.find({ type: 'Text', text: /^engine row$/ })).toBeDefined()
   await row.unmount()
 })
+
+test('a /clear forgets which connector answered as Atlas, so its rows go back to the engine row', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  toolEngineRow(on)
+  on('session.end', () => ({ sessionId: 's1' }) as never)
+  // A connector whose tool names do not say Atlas: it is known only by answering like get_status.
+  on('tool.call', { tool: 'mcp__abc123__get_status' }, () => mcpResult(WITH_COSTS) as never)
+  await typeAspire($)
+  await $.tool.call({ tool: 'mcp__abc123__get_status', context: 'Checking the session.' } as never)
+  const before = await toolRow($, 'desktop', 'mcp__abc123__search_posts')
+  expect(await before.find({ type: 'Text', text: /^Aspire Atlas$/ })).toBeDefined()
+  await before.unmount()
+
+  await $.session.end({ reason: 'clear', sessionId: 's1', resume: { id: 's1' } } as never)
+  await typeAspire($)
+  const after = await toolRow($, 'desktop', 'mcp__abc123__search_posts')
+  expect(await after.find({ type: 'Text', text: /^engine row$/ })).toBeDefined()
+  await after.unmount()
+})
