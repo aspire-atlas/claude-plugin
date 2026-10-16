@@ -183,9 +183,9 @@ test('desktop: the bar is a row of Buttons with the dithered meter Svg between t
   expect(agents).not.toContain('undefined')
   expect(agents).not.toContain('NaN')
   expect(await ui.find({ key: 'aspire-open-panel' })).toBeDefined()
-  // One line: the row is full width and the meter Svg fills what the other items leave (a 120-column band, not the old 360px cap).
+  // One line: the row is full width and the meter Svg is laid out for what the other items leave (a 120-column band, not the old 360px cap), then stretched by the host.
   const meter = svgs.find(s => String(s.props.source).includes('class="t0"'))
-  expect(Number(meter?.props.width)).toBeGreaterThan(360)
+  expect(Number(/viewBox="0 0 (\d+) /.exec(String(meter?.props.source))?.[1])).toBeGreaterThan(360)
   const rows = await ui.findAll({ type: 'Box' })
   expect(rows.some(r => r.props.width === '100%' && r.props.flexDirection === 'row')).toBe(true)
   // The percent, crab and count sit together in one right group that ends at the panel icon.
@@ -210,6 +210,26 @@ test('desktop: the dot turns done-green when finished; the terminal keeps the te
   expect(String((await term.find({ key: 'aspire-agents' }))?.props.label)).toContain('🦀 ×0')
   expect(await term.find({ key: 'aspire-agent-count' })).toBeUndefined()
   await term.unmount()
+})
+
+test('desktop: the band bar is drawn to stretch to the room the row leaves it, not at a guessed pixel width', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  await typeAspire($)
+  await getStatus($)
+  await report($, { title: 'Onboarding', total: 6, done: 6, finished: true })
+  for (const bodyColumns of [60, 120, 400]) {
+    const ui = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'AbovePrompt', props: { ...band, bodyColumns } as never })
+    const meter = (await ui.findAll({ type: 'Svg' })).find(s => String(s.props.alt).includes('Awaiting next assignment'))
+    expect(meter).toBeDefined()
+    // No pixel width on the element: the host takes the markup's own width up to its slot, and the markup asks for more than any slot.
+    expect(meter!.props.width).toBeUndefined()
+    const source = String(meter!.props.source)
+    expect(source).toContain('preserveAspectRatio="none"')
+    expect(source).toMatch(/<svg [^>]*width="4000"/)
+    // The layout still tracks the column count, as the guess the host stretches from.
+    expect(source).toMatch(/viewBox="0 0 \d+ 22"/)
+    await ui.unmount()
+  }
 })
 
 test('several organizations: no name until the call picks one', async ($, on) => {

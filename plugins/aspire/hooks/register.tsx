@@ -438,8 +438,20 @@ ${meterGroup(shown, BAR_W)}
 `
 }
 
-/** Only the dithered bar and its step pill, for the band's row, where Buttons carry the text either side of it. */
-const meterSvg = (shown: Shown, W: number): string => `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}">
+/** Wide enough that the host always clamps the drawing to the room the row leaves it, never grows it past that. */
+const METER_SLOT_MAX = 4000
+/** The widest layout the band's bar is drawn for: its dots stay well under the host's cap on an Svg's source. */
+const METER_LAYOUT_MAX = 1000
+
+/**
+ * Only the dithered bar and its step pill, for the band's row, where Buttons carry the text either side of it.
+ *
+ * The host takes a drawing's own width up to its slot, and the band cannot know that room in pixels (a column's width differs by
+ * font and screen). So the markup is laid out for `W`, the best guess from the column count, but declares a width past any slot with
+ * `preserveAspectRatio="none"`: the host clamps it to the room the row actually leaves and stretches the layout to fill it. A guess
+ * that runs short is stretched, not left as a short bar; one that runs long is shrunk, never wraps the row.
+ */
+const meterSvg = (shown: Shown, W: number): string => `<svg xmlns="http://www.w3.org/2000/svg" width="${METER_SLOT_MAX}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}" preserveAspectRatio="none">
 <style>
 .k{fill:#e4e4e2}.tk{fill:#b4b4b0}
 @media (prefers-color-scheme: dark){.k{fill:#2c2c2c}.tk{fill:#5a5a5a}}
@@ -1757,17 +1769,20 @@ export const register: Register = on => {
     // The desktop draws the bar itself as an Svg (the dithered fill and step pill), between a title Button and an agents Button.
     // An Svg takes no press and the host ignores absolute, so nothing lies over it: the presses sit on the Buttons beside it.
     if (band.crab === null) band.crab = pickCrab()
-    // The bar takes every column the row's other items leave (7px a column, a little under the 8px the notice and coach rows use, so a misjudged width leaves the bar short instead of wrapping the row), so it fills
-    // the row on one line; the percent, crab, count and panel icon sit together in a right group that ends at the icon.
+    // The bar is laid out for the columns the row's other items leave (8px a column, as the notice and coach rows use), and the
+    // drawing itself stretches to the room the host gives it (see meterSvg), so a misjudged width no longer leaves it short or wraps the
+    // row. The percent, crab, count and panel icon sit together in a right group that ends at the icon.
     const countText = `×${list.length}`
-    const fixedCols = title.length + percent.length + countText.length + 26
-    const meterW = Math.max(60, Math.round(((cols || 100) - fixedCols) * 7))
+    const fixedCols = title.length + percent.length + countText.length + 22
+    // The layout width is only what the host stretches from, and a long dithered fill must stay under the host's 131072-character cap
+    // on an Svg's source, so a very wide band lays out no wider than METER_LAYOUT_MAX.
+    const meterW = Math.min(METER_LAYOUT_MAX, Math.max(60, Math.round(((cols || 100) - fixedCols) * 8)))
     const barRow = (
       <Box flexDirection="row" width="100%" gap={2}>
         {Svg ? <Svg source={dotSvg(shown)} alt="" width={12} height={BAR_ROW_H} /> : null}
         <Button key="aspire-org" label={Svg ? title : `● ${title}`} plain onPress={changeOrg} />
         <Box flexGrow={1} flexShrink={1} minWidth={0}>
-          {Svg ? <Svg source={meterSvg(shown, meterW)} alt={`${shown.label}, ${percent}`} width={meterW} height={BAR_ROW_H} /> : null}
+          {Svg ? <Svg source={meterSvg(shown, meterW)} alt={`${shown.label}, ${percent}`} height={BAR_ROW_H} /> : null}
         </Box>
         <Box flexDirection="row" flexShrink={0} gap={1}>
           <Button
