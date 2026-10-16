@@ -2468,7 +2468,8 @@ answer counts as its confirmation, as with Phase 5 declines.
 Agents read `theme:brand` with their own calibration read and apply it. The main thread passes
 nothing extra. The main thread applies it too, to every page and inline creator card it builds
 itself, per **Applying the theme** in the reference. Semantic colors (verdicts, pass and fail,
-ok and warn, above and below the baseline) never take brand colors.
+ok and warn, above and below the baseline) never take brand colors. The animated Aspire Atlas
+mark keeps its own colors (`references/artifact-standard.md`).
 
 ---
 
@@ -2547,7 +2548,8 @@ yourself. Relay the link, the holiday used, and the line on what the real run ad
 "Run {agent} for your brand?" Options: "Run it now (Recommended)" / "Not now". "Run it now" hands
 off to that agent's section, starting at Phase 1.
 
-Samples never offer the decision audit and keep no decision log.
+Samples never offer the decision audit and keep no decision log. A sample page carries the mark and
+the sample footnote variant per `references/artifact-standard.md`.
 
 ---
 
@@ -2582,7 +2584,8 @@ reference lists (`flow`, `brand`, `request`, the decision log path, every audit 
 order, the published pages, the run's scratch folder, the open decisions, and an earlier audit
 page for the same work when updating). In a session without a subagent tool, follow the reference
 yourself. Relay the page link and the gaps it reports. The audit writes nothing to Atlas and needs
-no write confirmation.
+no write confirmation. The audit page carries the mark and the footnote per
+`references/artifact-standard.md`.
 
 ---
 
@@ -2642,7 +2645,8 @@ default, and only when the user asks for text or the data has no media at all.
   **Images** (inline profile for widgets, page profile for pages), which sizes each image to its
   rendered box at 2x from the full-size source and sets its `width` and `height`. Give every image an `alt` of
   the caption excerpt, and keep an `onerror` placeholder tile with the format chip for images
-  the snippet could not fetch. Note once in the page footer that images are a snapshot.
+  the snippet could not fetch. Note once in the page footer that images are a snapshot. Every page
+  carries the animated Aspire Atlas mark and the footnote per `references/artifact-standard.md`.
 - Never fabricate an image. If a post has no media fields, show the placeholder tile, not a
   stock or generated picture.
 - In the chat reply, give a 3 to 5 bullet readout of the numbers alongside the visual so the

@@ -95,7 +95,8 @@ have; never drop them when the data exists.
 
 1. **Header.** Eyebrow: "Post analysis · {network} {format} · Indexed by Atlas {date}". Title: a
    short name for the post. One paragraph: who is in it, what happens, when it was posted (day
-   of week checked against the calendar, in the account's time zone when known).
+   of week checked against the calendar, in the account's time zone when known). A "Prepared for"
+   chip names the reader from the lens (`recipient-lens.md`), and the animated mark sits at the top right.
 2. **Post card.** The cover or a frame, the author with avatar, followers and posts, format
    and topic chips (including a sponsor lockup chip when one is on screen), the caption, the
    published time, the people on screen, the language, and a link to the post.
@@ -167,7 +168,8 @@ have; never drop them when the data exists.
 15. **Data gaps.** Everything the page could not show, and why.
 16. **Footer.** The snapshot time, which fields came from Atlas, how rates were computed, how
     brand and profanity timestamps were derived (frames, transcript, audio), and that images
-    are a snapshot.
+    are a snapshot. The artifact-standard footnote follows them. The mark and the footnote follow
+    [artifact-standard.md](artifact-standard.md).
 
 Order for a lens: `brand` keeps the order above. `performance` and `creative` move sections 6,
 11, and 13 up after the executive summary and add the ad reuse check from `ad-reuse.md`,

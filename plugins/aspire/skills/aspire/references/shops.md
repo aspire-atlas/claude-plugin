@@ -411,7 +411,9 @@ saved or page-only state.
 Sections, in order:
 
 1. **Header**: the shops covered and the stage of each, the "Prepared for" chip, when Atlas was
-   read, and whether platform rules were checked (with the date) or not.
+   read, and whether platform rules were checked (with the date) or not. The "Draft plan" or
+   "Saved to Atlas" chip sits to the left of the animated Aspire Atlas mark at the top right
+   (`artifact-standard.md`).
 2. **Headline**: the decision line for the primary lens.
 3. **What changed** since the last plan (later runs only).
 4. **Readiness**: the checklist per platform.
@@ -425,7 +427,8 @@ Sections, in order:
 11. **Data gaps**: shop sales, ratings, approval status, and anything else Atlas can't see.
 12. **Footer**: "Read from Atlas as of {timestamp}", the platform pages checked with their dates,
     and "Requirements change. Commerce Manager and Seller Center show the current ones for your
-    market. This plan is guidance, not legal or tax advice."
+    market. This plan is guidance, not legal or tax advice." The artifact-standard footnote
+    follows (`artifact-standard.md`).
 
 **Lens order.** `team` keeps the order above. `leadership` leads with the headline, readiness,
 and risks on one screen, with a go, wait, or not yet per shop and the reason. `growth` leads

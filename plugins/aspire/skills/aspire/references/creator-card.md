@@ -56,7 +56,9 @@ snippet takes them. The main thread embeds them (see **Images**) before renderin
    - `title`: `atlas_creator_card_{handle}` for one creator, `atlas_creator_cards` for several.
    - `loading_messages`: one short neutral message, for example `["Loading creator profile"]`.
    - `widget_code`: the style block once, then one card per creator inside
-     `<div class="ac-grid">`.
+     `<div class="ac-grid">`. Add the small animated Aspire Atlas mark (28px) in the widget's free
+     top corner (the card's fit ring keeps its corner) and, under the cards, the one-line widget
+     footnote, both per `artifact-standard.md`, **Variants**. They count toward the 300KB of data URIs.
 5. Reply after the card with at most three bullets the card cannot show (why this creator, what
    is missing, the next step). Never repeat the card's numbers in text.
 
@@ -67,7 +69,9 @@ actions row out.
 ## Page rendering
 
 Put the style block in the page `<head>` once and the cards wherever the page structure calls
-for them, inside `<div class="ac-grid">`. The page's own tokens are not used by the card; the
+for them, inside `<div class="ac-grid">`. A page the main thread publishes for 7 or more creators
+carries the full animated Aspire Atlas mark at the top right and the full footnote at the end, per
+`artifact-standard.md`; a page another flow publishes takes them from that flow's reference. The page's own tokens are not used by the card; the
 card carries Aspire's, unless the brand has a saved theme: then add the card override from
 `theme.md`, **Creator card**, right after the style block, on pages and inline alike. Embed images with the **Images** snippet and `--profile=page`: `avatar` and `thumb` at their
 default boxes fit the card at 2x. Leave

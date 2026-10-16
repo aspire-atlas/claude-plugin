@@ -69,6 +69,9 @@ forward note and the speaker notes, never with a slide.
 - **Dark slides:** wordmark bottom left, domain bottom right. `aspire` look: "Aspire" and
   "aspire.io". `theme` look: the brand's logo per `theme.md`, **Logo**, and the brand's domain.
   `neutral`: the brand name and domain.
+- **Aspire Atlas mark:** every slide, light and dark, carries the small animated mark top right
+  (`artifact-standard.md`, 28px), clear of the eyebrow and every box. Dark slides keep their bottom
+  wordmark.
 - **Program label:** `aspire` presenter: "Aspire · Creator Ad Services". `brand` presenter:
   "Partnership ads · Round {word}" (first pitch: "Partnership ads"); the brand name is never
   repeated in the footer.
@@ -292,6 +295,11 @@ it, as the user worded it.
 
 "Thank you." and one line recapping the count ("Ten lanes, ten creators, and a third product
 earned at the read.").
+
+The Thank-you slide carries the artifact-standard footnote (`artifact-standard.md`) as its three
+lines in small muted type, with the shared-page audience line, since the deck goes to the client or
+the presenter's audience. A slide may instead carry it in a reserved footer band, only when the band
+passes the render checks in **The build**.
 
 ## Design
 
@@ -767,12 +775,13 @@ Mode `build` renders the deck from the confirmed answers.
    entry per slide, in deck order:
 
    ```text
-   {deck: {title, brand, round, presentation, recipient, currency, rateLabel, metricsAt},
+   {deck: {title, brand, round, presentation, recipient, currency, rateLabel, metricsAt, readAt},
     slides: [{n, type, canvas, eyebrow, footer: {left, right}, fields: {…}, notes, sources: {field: source}}],
     creators: [{handle, network, name, metrics…, postsCounted, metricsAt, heroEvidence: [permalinks]}],
     brollSetups: [{n, setup}]}
    ```
 
+   `readAt` follows `artifact-standard.md`: the shell clock at the read, changed on every revision.
    Images are file paths in the scratch folder (write each data URI's bytes to a file) plus the
    data URI's `bytes`. The page and every export read this model, so they never disagree.
 3. Render the page per the `artifact-design` contract (load it first): each slide a `<section
@@ -828,7 +837,9 @@ Then:
   some clients `anthropic-skills:pptx`) with the slide model, the image files, and the design
   tokens: 13.333 × 7.5 in, one slide per model entry, the same layout, fonts, and colors, live
   hyperlinks on handles and thumbnails, and speaker notes holding each slide's `notes` and
-  `sources`. No PowerPoint skill in the session: say so. Never write the file another way.
+  `sources`. The small mark goes in as a static image at the top right of each slide, since the
+  animation cannot play there (`artifact-standard.md`); if the skill cannot place it, leave it off and
+  say so in the hand-off. No PowerPoint skill in the session: say so. Never write the file another way.
 - **Google Slides**: Drive converts a .pptx to Slides on upload, but connector upload tools take
   the file inline in the call, which is too large for a deck with photos. Hand the user the .pptx
   with one line: "Drag it into Google Drive, then Open with > Google Slides." When the session has

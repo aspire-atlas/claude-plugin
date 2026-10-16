@@ -342,7 +342,9 @@ values, and say that the preview could not be drawn.
 Every flow that publishes a page already reads all calibrations. Take `theme:brand` from that
 read. A missing or retracted record means the flow's own design rules apply unchanged: that is
 the Aspire default, and nothing below applies. Agents never ask about the theme and never
-offer to set one up. Unattended runs apply a saved theme the same way.
+offer to set one up. Unattended runs apply a saved theme the same way. The theme never touches the
+animated Aspire Atlas mark: it stays at the top right, is never recolored or replaced by the
+theme, and keeps its own dark tile (`artifact-standard.md`).
 
 ### Page tokens
 
@@ -384,7 +386,9 @@ exactly as its own reference describes. Map the roles onto the page's own tokens
 Follow `header`. `band`: a full-width strip in `brand` with `on-brand` text, holding the logo or
 brand name and the page title. `rule`: a 4px `brand` top rule on the page's normal header.
 `plain`: the page's normal header. The logo sits at the start of the header, 28px high,
-`width:auto`, with `alt` from `logo.alt`. Use the chip rule from **Comparison widget** when its
+`width:auto`, with `alt` from `logo.alt`. The Aspire Atlas mark stays at the top right of every
+header style, never recolored or replaced; a `band` header leaves room for it at the far right and
+does not draw behind it (`artifact-standard.md`). Use the chip rule from **Comparison widget** when its
 `tone` matches what is behind it.
 
 ### Logo

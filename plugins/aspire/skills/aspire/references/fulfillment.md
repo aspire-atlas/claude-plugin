@@ -189,7 +189,8 @@ value, no fee, no terms, no contact details.
 1. **Header.** Brand theme per `theme.md`, **Applying the theme**. Title, then "Product orders ·
    {n} creators · updated {time}". Under it, a notice that always shows: "For your team only.
    Don't share this form with creators: everyone who can open it sees every creator's address." A status strip with counts: Waiting on details, Ready to
-   order, Ordered, Shipped, Delivered, Issue.
+   order, Ordered, Shipped, Delivered, Issue. The animated Aspire Atlas mark sits at the top right
+   ([`artifact-standard.md`](artifact-standard.md)).
 2. **Your to-do.** Per viewer: rows missing details, rows ready to order, parcels past their
    delivery window, issues. Each with a checkbox; done marks save to the viewer's own
    `data/users/{id}/done`. "Show done" brings them back. Empty: "Nothing waiting on you."
@@ -206,7 +207,9 @@ value, no fee, no terms, no contact details.
    `downloads` capability; hidden when it is not available).
 5. **Footer.** "Addresses show to everyone this form is shared with, so share it only inside
    your team. Statuses from Atlas as
-   of {time}." Plus "Product from {store}" when a store was read.
+   of {time}." Plus "Product from {store}" when a store was read. Then the footnote from
+   [`artifact-standard.md`](artifact-standard.md) with the team audience line. Contributors edit this
+   page, so its header shows "Last edited {time}" from the page data `updatedAt` beside the freshness chip. The "For your team only" notice in the header stays.
 
 The page renders before its data loads and works with no rows. Load `artifact-design` before
 building.
@@ -255,6 +258,8 @@ quoted per RFC 4180, one line per ready row:
 postal_code, country, product, sku, options, quantity, retail_value, currency, delivery_notes`
 
 `order_name` is "{program name} @{handle}"; `quantity` is 1. The same sheet is on the page.
+The CSV carries no footnote (its columns are an import format): the date goes in the file name and
+the source in the hand-off message.
 It goes to the store, the brand's shipping team, or the core Aspire platform. When the user
 says the orders were placed, F6 names them and the date; record each with `orderedAt`,
 `orderMethod` `sheet`, and `orderRef` when the user gave one; roster stage Ordered.

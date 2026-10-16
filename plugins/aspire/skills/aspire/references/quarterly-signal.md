@@ -75,7 +75,7 @@ title.
 Title "<Brand> Quarterly Signal: {Qn YYYY}", a new path per quarter so earlier quarters stay
 linkable. Sections:
 
-1. **Header:** brand, quarter, the "Prepared for" chip, prepared date.
+1. **Header:** brand, quarter, the "Prepared for" chip, prepared date, and the animated mark at the top right.
 2. **The outcome:** one sentence answering "is this working?", with the number it rests on.
 3. **Three KPI tiles:** quarter against the prior quarter, chosen from creator posts about the
    brand, distinct creators, engagement, share of voice, and the saved lead metric (R4). With
@@ -94,7 +94,8 @@ linkable. Sections:
 7. **Next quarter:** three ranked recommendations tied to the numbers above.
 8. **Appendix:** links to the quarter's readout, brief, shortlist, and market signal pages,
    and each program's dashboard (`pageUrl` on its newest snapshot),
-   where the findings carry them, then sources and data gaps.
+   where the findings carry them, then sources and data gaps. The page ends with the
+   artifact-standard footnote, and the mark and the footnote follow [artifact-standard.md](artifact-standard.md).
 
 Keep it to one screen before the appendix. Load `artifact-design` and `dataviz` first; apply
 `theme:brand` per `theme.md`, **Applying the theme**.

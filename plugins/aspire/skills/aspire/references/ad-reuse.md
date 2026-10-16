@@ -183,14 +183,14 @@ date shows as expired.
 ## Page (ad reuse agent)
 
 Title "<Brand> Ad Reuse: {window}", republished to the same path for the same brand. Sections:
-header with the "Prepared for" chip; headline (the top pattern and the top candidate); the
+header with the "Prepared for" chip and the animated mark at the top right; headline (the top pattern and the top candidate); the
 pattern table, whose "Retention" column gives the median retention score and the level mix
 per pattern ("3 measured, 2 proxy"); ranked candidate cards (media, author, hook score ring
 with the retention label beside it as a small chip, "Measured", "Creator average, not this
 post" or "Proxy", the first-3-seconds frame strip with any measured early rate cited beside
 the opening frame, metric row); the cut list table; rights and gaps; footer with sources and
-"numbers come from Atlas as of {timestamp}". Labels on the page are plain words only, never a
-field name.
+"numbers come from Atlas as of {timestamp}", then the artifact-standard footnote. Labels on the page are plain words only, never a
+field name. The mark and the footnote follow [artifact-standard.md](artifact-standard.md).
 
 When `reuse_scope` includes `creators`, rights and gaps adds one line: "Creator posts rarely
 carry measured watch time, because it comes from the account owner's insights. Most creator

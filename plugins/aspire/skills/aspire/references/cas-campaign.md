@@ -440,7 +440,8 @@ with styling is not enough.
 
 1. **Header.** Brand theme per `theme.md`, **Applying the theme** (the band header with the logo
    when the theme says so). Title "{Brand} · {campaign name}". Subtitle "Creator ads · {n}
-   creators, {v} ads each · runs {start} to {end} · updated {time}". A four step progress bar:
+   creators, {v} ads each · runs {start} to {end} · updated {time}". The animated Aspire Atlas mark
+   sits at the top right of the header (`artifact-standard.md`). A four step progress bar:
    1 Concepts approved, 2 Creators approved, 3 Fees approved, 4 Briefs approved. A done step
    shows a tick and the date, the current step shows "now" and the due date, a later step shows
    its planned date. No other part of the page uses the word gate.
@@ -517,7 +518,10 @@ with styling is not enough.
    countered), Remaining.
 10. **Footer**: "Page republished on every change. Numbers come from Atlas as of {time}. Post
     images are embedded snapshots; creator emails and the agency's notes never show to the
-    client." Plus the fee rate label once.
+    client." Plus the fee rate label once. Then the artifact-standard footnote
+    (`artifact-standard.md`). The page is shared with the client's approvers, so its source line
+    uses the standard's shared-page audience line. The client view and the agency view each carry
+    their own footnote, and the agency-only notes never appear in the client view's footnote.
 
 ### Page mechanics
 

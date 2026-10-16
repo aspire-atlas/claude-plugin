@@ -10,7 +10,7 @@ One self-contained HTML page, published with the Artifact tool. Sections in orde
 1. **Header.** Eyebrow with handle, network, "Content creation brief", target week (or the
    campaign name and window). Headline that names the strategy in one line. Meta row: owner,
    channel and follower count, creator count, prepared date, and the "Prepared for" chip
-   (`recipient-lens.md`). Standing-rule banner (red) when a red line makes the brief strategy
+   (`recipient-lens.md`), with the animated mark at the top right. Standing-rule banner (red) when a red line makes the brief strategy
    only.
 2. **Objective and audience.** KPI strip: 90 day goal from calibrations, engaged audience age
    band, top country share, gender split (from `instagram.account.audienceDemographics` on any
@@ -34,7 +34,7 @@ One self-contained HTML page, published with the Artifact tool. Sections in orde
    post days, 7 day readout.
 7. **Measurement.** Table: piece, primary metric, target, benchmark from the brand's own
    medians, secondary metric.
-8. **Footer.** Sources, date, the rate label, "costs are estimates from public view counts, not quotes", contact email note.
+8. **Footer.** Sources, date, the rate label, "costs are estimates from public view counts, not quotes", contact email note, then the artifact-standard footnote. The mark and the footnote follow [artifact-standard.md](artifact-standard.md).
 
 Design: token palette on `:root` with dark redefinitions under both the media query and
 `[data-theme="dark"]`. Fonts from Google Fonts with fallbacks (Instrument Sans display, IBM
