@@ -306,7 +306,7 @@ run.
 One page per list, published to a new path per run; a re-run of the same list republishes to
 the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
 
-1. **Header** with the "Prepared for" chip, the list name and source, the criteria used
+1. **Header** with the "Prepared for" chip, the animated mark at the top right, the list name and source, the criteria used
    (brand or campaign), network chips, and counts: Approve, Maybe, Reject, Can't vet.
 2. **Headline**: how many to approve and the one thing that decided the most rejects.
 3. **Approve**, **Maybe**, **Reject**, **Can't vet**, in that order, each a grid of creator
@@ -323,7 +323,7 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
 6. **Not vetted**: handles that could not be resolved, other networks, the brand's own
    handles, with the reason for each.
 7. **Footer**: sources, the fee rate label once, a note that images are a snapshot, and
-   "numbers come from Atlas as of {timestamp}".
+   "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote. The mark and the footnote follow [artifact-standard.md](artifact-standard.md).
 
 More than 12 creators: a chart leads the page (fit score against the recommendation lines,
 or follower count against engagement rate, colored by recommendation). Images follow

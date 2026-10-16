@@ -24,8 +24,10 @@ launches a general-purpose subagent with "Read and follow the agent file
      hook rate sits between 35% and 65%) and round enough to read as illustrative.
    - No fetched images. Profile pictures are initials on a tinted circle; post media are flat
      tiles in the holiday colors with a one-line caption and the format chip.
-   - A banner at the top of the page, and the footer, say: "Sample · invented data for
-     {holiday} {year}. Not from Atlas."
+   - A banner at the top of the page says: "Sample · invented data for {holiday} {year}. Not from
+     Atlas." The page carries the mark and the first three footnote lines, with the sample source
+     line in place of the real one (the sample variant in
+     [`artifact-standard.md`](../artifact-standard.md)).
 3. **The real page, smaller.** Follow the agent's own reference for page structure, section
    order, chrome, and wording rules, with every section present, at the smallest size that still
    shows how it works: three creators where the real page has ten, five posts where it has

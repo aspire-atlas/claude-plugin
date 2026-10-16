@@ -178,6 +178,15 @@ that file's short output instead of your normal one (no audit trail block).
 
 If the session has a task tool (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), keep your plan in it right after reading the brief: 3 to 8 tasks, one in progress at a time, each marked done as it finishes. The agents panel reads that list as your steps and a bar for them, and you can skip `aspire_step`. Otherwise, if `mcp__aspire__aspire_step` appears among your tools, including as a deferred tool, it is available: a deferred tool only needs loading first with ToolSearch (`select:mcp__aspire__aspire_step`). Right after reading the brief, call it with your plan's step count as `total` (3 to 8) and `done: 0`; call it again with `done` and a few-word `note` as each step finishes. It only draws a bar on your row in the agents panel. Skip it silently if the tool is absent or ToolSearch does not find it, and never mention it to the user.
 
+## Artifact standard
+
+Every page, deck, or card you publish carries the animated Aspire Atlas mark at the top right and
+the footnote (who prepared it, when, for whom, and the source), as
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md` sets out: the mark and the
+variants in sections 1 and 3, the footnote in section 2. Take both dates from the shell clock; on a
+republish keep the first prepared date and change the update. A sample page follows the sample
+variant. Files for import (CSV) and chat or mail text carry neither.
+
 ## Audit trail
 
 After everything else in your output, end with the audit trail block defined in

@@ -448,7 +448,9 @@ One page per review, with a new path each time so earlier reviews stay linkable.
 1. **Verdict banner.** Verdict with its go or no-go, one-line reason, the highest severity,
    counts of Pass / Flag / Fail / Can't check per dimension, stage chip (draft or published),
    brief and deliverable name, and the "Prepared for" chip (`recipient-lens.md`). For the
-   `brand` lens the go or no-go is the largest element on the banner.
+   `brand` lens the go or no-go is the largest element on the banner. The banner is the page's top
+   element, so the animated Aspire Atlas mark (`artifact-standard.md`) sits at the far right of the
+   banner row and never shrinks the go or no-go.
 2. **The brief.** The brief's title, brand, creator and deliverable, then a two-column table
    with every field of the normalized deliverable in the brief's own words. Number the
    must-include and avoid items the way the checks refer to them. Say where the brief came
@@ -470,7 +472,8 @@ One page per review, with a new path each time so earlier reviews stay linkable.
 6. **Lessons applied.** Each saved lesson that changed a call, and any candidate lesson from
    repeated overturns.
 7. **Footer.** The brief source, "numbers come from Atlas as of {timestamp}", what was not
-   checkable and why, and a note that images are a snapshot.
+   checkable and why, and a note that images are a snapshot. After these, the page ends with the
+   artifact-standard footnote (`artifact-standard.md`).
 
 Page mechanics: every image follows `creator-card.md`, **Images**: sized to its rendered box
 at 2x, never upscaled, LANCZOS, WebP or JPEG at quality 85 or more, and placed with `width` and

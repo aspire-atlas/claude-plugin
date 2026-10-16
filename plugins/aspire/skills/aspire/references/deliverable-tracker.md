@@ -427,7 +427,9 @@ launches with `run: unattended`. It follows `program.md` **9**:
   Never write a row an open match, a confirmation, or a waiver would decide. Write the tracker
   `page` finding only when it is missing (`program.md` **9**).
 - Republish the tracker page to the link in the newest `page` finding with key `tracker`. The
-  task is scheduled only after that finding exists (`program.md` **8**).
+  task is scheduled only after that finding exists (`program.md` **8**). The republish is silent,
+  so each run refreshes the footnote's update date and keeps its prepared date
+  (`artifact-standard.md`).
 - Post to the routing in `program:{slug}-routing` when at least one row is late, missing, or
   needs a fix, or a new post was matched: "{program} posting check: {l} late (@a, @b), {m}
   missing (@c), {f} need a fix (@d), {p} new posts. Review in Claude: 'check posts for
@@ -444,7 +446,8 @@ Load `artifact-design` first and `dataviz` for the charts; apply `theme:brand` p
 actions); render for the primary `recipient` lens. Sections, in order:
 
 1. **Header**: the "Prepared for" chip, the program name and term, type chips, and "checked
-   {date}".
+   {date}". The animated Aspire Atlas mark sits at the top right
+   ([`artifact-standard.md`](artifact-standard.md)).
 2. **Headline**: one line. "{p} of {o} posts owed so far are up ({rate} on time). {l} late, {m}
    missing, {f} need a fix."
 3. **Needs a fix**: one row per post: creator, the post (cover and link), the deliverable, and
@@ -472,7 +475,8 @@ actions); render for the primary `recipient` lens. Sections, in order:
 12. **Footer**: "posts and numbers come from Atlas as of {timestamp}", the grace days used, that
     the paid partnership label is not held in Atlas, shows as unclear, and is checked on the
     post itself, that
-    Stories show only when Atlas holds them, and that images are a snapshot.
+    Stories show only when Atlas holds them, and that images are a snapshot. Then the footnote with
+    the team audience line ([`artifact-standard.md`](artifact-standard.md)).
 
 When the program has a `posts` goal, its target and progress go only in the Editor-only page
 data at path `team` (`program.md` **7**), written after the publish; load `artifact-capabilities`

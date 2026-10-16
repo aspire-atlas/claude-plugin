@@ -124,11 +124,12 @@ section. Each follows `recipient-lens.md`, **Rendering for a lens**.
 ## Page
 
 Title "<Brand> Market Signal", republished to the same path each run. Sections: header with the
-window and the "Prepared for" chip; since last run; share of voice (a bar chart of posts and
+window, the "Prepared for" chip, and the animated mark at the top right; since last run; share of voice (a bar chart of posts and
 creators per entity, organic and paid split); the primary lens section; the other lens
 sections; comparison post cards with media and the quoted line; a verbatim wall (at most 12
 quotes, each linked); method and gaps (sets capped, competitors not indexed, fields missing);
-footer with "numbers come from Atlas as of {timestamp}" and a note that images are a snapshot.
+footer with "numbers come from Atlas as of {timestamp}" and a note that images are a snapshot, then the
+artifact-standard footnote. The mark and the footnote follow [artifact-standard.md](artifact-standard.md).
 Images follow `creator-card.md`, **Images**, page profile. Load `artifact-design` and
 `dataviz` first; apply `theme:brand` per `theme.md`, **Applying the theme**.
 
@@ -167,7 +168,8 @@ unattended runs send on the M3 and M4 standing approval. Never send anywhere els
 ## Scheduled (unattended) runs
 
 - Never ask a question. If `market-signal:scope`, `-topics`, `-lenses`, `-routing`, or
-  `-cadence` is missing, publish a one-card page "<Brand> Market Signal: setup needed" listing what is
+  `-cadence` is missing, publish a one-card page "<Brand> Market Signal: setup needed" (it still carries the mark and the
+  footnote, with the "No Atlas data on this page" variant in [artifact-standard.md](artifact-standard.md)) listing what is
   missing, write nothing, and end with "Run /aspire:aspire and ask for market signal setup."
 - No discovery and no destruction: never call `lookup_*`, `search_creator_marketplace`,
   `start_business_discovery`, `add_hashtags`, or any Destructive tool.

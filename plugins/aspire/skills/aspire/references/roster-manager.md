@@ -487,7 +487,8 @@ Write `team` with the page data writes right after each publish. On first publis
 Sections, in order:
 
 1. **Header**: the program and term, the "Prepared for" chip, the review window, counts per
-   segment as chips.
+   segment as chips. The animated Aspire Atlas mark sits at the top right
+   ([`artifact-standard.md`](artifact-standard.md)).
 2. **Your call needed**: one card per K2 item: the creator, the question, the answers with the
    recommendation first, and the evidence. Done marks per viewer.
 3. **Segment board**: six columns (Star, Steady, Slipping, Dormant, Retire, Not enough data),
@@ -512,7 +513,8 @@ Sections, in order:
 10. **Drafts waiting**: one copy-ready block per draft: channel, subject, body, blanks
     highlighted, and "in your {mailbox}" when a mailbox draft exists.
 11. **Footer**: how each signal is called (one line each), "cost comes from the ledger or the
-    agreed deal, never the fee calculator", and "numbers read from Atlas at {timestamp}".
+    agreed deal, never the fee calculator", and "numbers read from Atlas at {timestamp}". Then the
+    footnote with the team audience line ([`artifact-standard.md`](artifact-standard.md)).
 
 In `propose` every segment and draft shows "Proposed". In `record` the saved ones show "Saved".
 

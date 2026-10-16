@@ -427,6 +427,7 @@ written to Atlas**). The page is for the brand's team, never for creators. Load
 **Applying the theme**; render for the primary `recipient` lens (`recipient-lens.md`). Sections, in order:
 
 1. **Header**: the "Prepared for" chip, the program name and term, type chips, and the channels.
+   The animated Aspire Atlas mark sits at the top right ([`artifact-standard.md`](artifact-standard.md)).
 2. **Headline**: one line. "{n} of {m} creators contacted have replied ({rate}). {d} drafts
    waiting, {f} follow-ups due."
 3. **Pipeline**: creators per stage across Approved, Contacted, Replied, Negotiating, and later
@@ -448,7 +449,8 @@ written to Atlas**). The page is for the brand's team, never for creators. Load
    stage, channels, last contact, next follow-up, waiting on, the post the first touch cited,
    and "Your call needed" with the question when one is open.
 10. **Footer**: "numbers come from Atlas as of {timestamp}", the fee rate label when a fee is
-    shown, and a note that images are a snapshot.
+    shown, and a note that images are a snapshot. Then the footnote with the team audience line
+    ([`artifact-standard.md`](artifact-standard.md)).
 
 The page never shows the budget, the maximum, a product value limit, a team note, an email
 address, a street address, or a reply's full text. More than 12 creators: the pipeline chart

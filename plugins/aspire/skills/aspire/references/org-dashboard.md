@@ -103,9 +103,10 @@ is still an Overview and one profile tab; with several there is one tab per prof
 
 ### Header
 
-The brand logo mark and the page title, nothing else: no organization, person, role, or view
-text, and no view switcher. A small freshness chip ("Live, updated {time}" or "Snapshot from
-{time}") sits at the right.
+The brand logo mark and the page title, plus the animated Aspire Atlas mark at the far right
+(`artifact-standard.md`), nothing else: no organization, person, role, or view text, and no view
+switcher. A small freshness chip ("Live, updated {time}" or "Snapshot from {time}") sits at the
+right, to the left of the Aspire mark.
 
 ### Overview tab, in this order
 
@@ -130,7 +131,9 @@ text, and no view switcher. A small freshness chip ("Live, updated {time}" or "S
    page link. A not-set-up tile says how to start it in the person's words ("Set up with /aspire:aspire program", "/aspire:aspire cas campaign", "/aspire:aspire next", and for discovery \"ask /aspire:aspire to find creators for a campaign\"), never an internal flow name. No amounts: spend, budget, and sales stay on each program's own dashboard.
 6. **Footnote.** Everything about the organization and the person lives only here, in small type: the
    organization name and the person's name and Atlas role, the saved goals as one line each, data as
-   of, what the page reads, and the refresh command. No other place on the page repeats it.
+   of, what the page reads, and the refresh command. No other place on the page repeats it. Under
+   those lines sits the artifact-standard footnote (`artifact-standard.md`); its "Prepared by" holds
+   the person's name only, never their role or email.
 
 ### Profile tab, in this order
 

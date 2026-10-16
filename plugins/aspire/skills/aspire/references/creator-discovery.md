@@ -220,7 +220,7 @@ One page per campaign, republished to the same path every run so the link stays 
 Sections in order:
 
 1. **Header** — brand, campaign name, network chips, pool counts (undecided / accepted /
-   rejected against target), run timestamp.
+   rejected against target), run timestamp, a "Prepared for" chip fed by `recipient` (`recipient-lens.md`), and the animated mark at the top right.
 2. **Since last run** — added, re-scored up or down, went dormant, decided. One line each;
    "no change" is a valid line.
 3. **Active list** — accepted creators as creator cards, so the working set is visible first.
@@ -238,7 +238,7 @@ Sections in order:
 5. **Rejected this cycle** — collapsed list of handles with the reason recorded, so a
    decision is auditable.
 6. **Criteria** — the saved criteria in plain words, so a reader can see what "fit" meant.
-7. **Footer** — sources, a note that images are a snapshot, "numbers come from Atlas as of {timestamp}".
+7. **Footer** — sources, a note that images are a snapshot, "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote. The mark and the footnote follow [artifact-standard.md](artifact-standard.md).
 
 More than 12 candidates means a chart leads the shortlist: fit score by tier, or follower
 count against engagement rate with the pool plotted. Embed every image with the snippet in
@@ -294,7 +294,8 @@ A scheduled run starts a fresh session with nobody to answer questions.
 
 - Never ask a question. If `campaign:{slug}-brief`, `-criteria`, `-pool`, `-routing`, or
   `-cadence` is missing, publish a one-card page titled "<Brand> Creator Discovery: setup needed" listing what
-  is missing, write nothing to Atlas, and end with "Run /aspire:aspire and ask for creator
+  is missing (it still carries the mark and the footnote, with the "No Atlas data on this page" variant in
+  [artifact-standard.md](artifact-standard.md)), write nothing to Atlas, and end with "Run /aspire:aspire and ask for creator
   discovery setup."
 - **Discovery is allowed unattended for this agent**, and only this agent: the S9 cadence
   record is the standing approval, and it covers `search_creators`, `search_creator_marketplace`
