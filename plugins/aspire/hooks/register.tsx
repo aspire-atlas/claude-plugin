@@ -11,6 +11,8 @@
 // aspire_progress, that the aspire skill calls to move the bar; the tool only
 // updates what the bar shows. It makes no network calls, starts no processes,
 // reads and writes no files, and changes no tool call, prompt, or agent.
+// It also brands the sites Claude Code draws itself (the Atlas tool row and group, the question dialog, the spinner, the line that closes a turn,
+// the hint under the prompt, its own command's output), display only; SECURITY.md lists them and CLAUDE.md sets the rule.
 //
 // Several triggers, because one is not enough everywhere: in sessions the
 // Claude desktop app starts, Claude Code's built-in security plugin passes
@@ -91,7 +93,7 @@ import type { CreditsView } from './atlas-usage'
 import { ASPIRE, COACH_CRAB, CRAB_CSS, breathOf, characterOf, crab } from './characters'
 import type { Character } from './characters'
 import { AGENT_CHARACTERS } from './costumes'
-import { logoMarkup, logoSvg, spinnerSvg } from './logo'
+import { logoMarkup, logoSvg, spinnerSvg, terminalMark } from './logo'
 import { GROUPS, ROSTER } from './roster'
 import type { RosterEntry } from './roster'
 import { clip, fitText, fmtTime, fmtTokens, modelName, textWidth, windowOf, xml } from './format'
@@ -289,12 +291,25 @@ const isOn = async ($: EngineInterface): Promise<boolean> => {
   }
 }
 
+/** The /aspire flow now reporting progress (the skill has not finished it), or null: what the question dialog and the spinner speak of. */
+const flowOf = async ($: EngineInterface): Promise<Progress | null> => {
+  try {
+    if (!(await read($, isActive))) return null
+    const p = await read($, progress)
+    return p && !p.isFinished ? p : null
+  } catch {
+    return null
+  }
+}
+
 /** `get_status` from `mcp__<server>__get_status`, for the status line. */
 const shortTool = (tool: string): string => tool.replace(/^mcp__.*__/, '')
 
 /** `mcp__<server>__` of each connector that has answered as Aspire Atlas, for a server whose name does not say so. Names only. */
 const atlasServers = new Set<string>()
 const serverOf = (tool: string): string => /^(mcp__.+?__)/.exec(tool)?.[1] ?? ''
+/** An Atlas connector tool (the progress and step tools are the mod's own and never count). */
+const isAtlasTool = (tool: string): boolean => tool.startsWith('mcp__') && tool !== PROGRESS_TOOL && tool !== STEP_TOOL && (isAtlasToolName(tool) || atlasServers.has(serverOf(tool)))
 
 // ---------------------------------------------------------------------------
 // The Artifact card: the transcript's result row for a published Artifact.
@@ -1248,9 +1263,21 @@ export const register: Register = on => {
     const tool = String(e.props.tool)
     const ui = $.ui.resolve(e)
     const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
-    if (!Svg || tool === PROGRESS_TOOL || tool === STEP_TOOL || !tool.startsWith('mcp__')) return next(e)
+    const Raster = e.surface === 'terminal' && 'Raster' in ui ? ui.Raster : null
+    if ((!Svg && !Raster) || tool === PROGRESS_TOOL || tool === STEP_TOOL || !tool.startsWith('mcp__')) return next(e)
     if (!(isAtlasToolName(tool) || atlasServers.has(serverOf(tool))) || !(await isOn($))) return next(e)
     const { Box, Text } = ui
+    // The terminal draws no Svg: the small cell mark beside Claude Code's own row, which keeps its description and result.
+    if (!Svg && Raster) {
+      const theirs = await next(e)
+      return (
+        <Box flexDirection="row" gap={1}>
+          <Raster key="aspire-mark" {...terminalMark()} />
+          {theirs}
+        </Box>
+      )
+    }
+    if (!Svg) return next(e)
     const name = shortTool(tool).replace(/_/g, ' ')
     const state = e.props.isInterrupted ? 'interrupted' : e.props.isErrored ? 'failed' : e.props.isRunning ? 'running' : ''
     // Every Atlas tool takes a `context`: a sentence on why the call is made, which the row shows as its description.
@@ -1267,6 +1294,103 @@ export const register: Register = on => {
           </Box>
           {description ? <Text dimColor wrap="wrap">{clip(description, 200)}</Text> : null}
         </Box>
+      </Box>
+    )
+  })
+
+  // The rest of the brand, on the sites Claude Code already draws. Each one is display only and runs only while the mod is on; the ones
+  // that speak of a flow (the question dialog, the spinner) run only while an /aspire flow is reporting progress. Each keeps Claude
+  // Code's own drawing and adds the Aspire mark or a few words to it, and a site another mod already redrew is passed on as it came.
+
+  // The question dialog: the Aspire mark and the flow's phase above Claude Code's dialog, which must stay in the tree exactly once.
+  on('ui.render', { component: 'AskUserQuestion' }, async ($, e, next) => {
+    const flow = await flowOf($)
+    if (!flow) return next(e)
+    const ui = $.ui.resolve(e)
+    const { Box, Text } = ui
+    const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
+    const theirs = await next(e)
+    // Anything but an engine reference (a node another mod already drew, nothing at all) passes as it came: only the engine drawing is wrapped.
+    if (!theirs || typeof theirs !== 'object' || (theirs as { type?: string }).type !== 'engine') return theirs
+    return (
+      <Box flexDirection="column">
+        <Box flexDirection="row" gap={1}>
+          {Svg ? <Svg source={logoSvg(18, false)} alt="Aspire Atlas" width={18} height={18} /> : <Text color="cyan">◆</Text>}
+          <Text bold>Aspire Atlas</Text>
+          {flow.phase ? <Text dimColor>{flow.phase}</Text> : null}
+        </Box>
+        {theirs}
+      </Box>
+    )
+  })
+
+  // The line that animates while Claude works: Claude Code's own word and animation, then the brand and the flow's step.
+  on('ui.render', { component: 'Spinner' }, async ($, e, next) => {
+    const flow = await flowOf($)
+    if (!flow) return next(e)
+    const tail = ` · Aspire Atlas${flow.phase ? ` · ${flow.phase}` : ''}`
+    const own = e.props.suffix ?? ''
+    if (own.includes(' · Aspire Atlas')) return next(e)
+    return next({ ...e, props: { ...e.props, suffix: `${own}${tail}` } })
+  })
+
+  // The line that closes a turn (terminal): Claude Code's own line, then where the running flow stands.
+  on('ui.render', { component: 'TurnDuration' }, async ($, e, next) => {
+    const flow = await flowOf($)
+    if (!flow || flow.total === 0 || !(await isOn($))) return next(e)
+    const theirs = await next(e)
+    if (!theirs) return theirs
+    const { Box, Text } = $.ui.resolve(e)
+    return (
+      <Box flexDirection="row">
+        {theirs}
+        <Text dimColor>{` · Aspire Atlas · step ${Math.min(flow.done + 1, flow.total)} of ${flow.total}`}</Text>
+      </Box>
+    )
+  })
+
+  // A collapsed run of Atlas calls: the mark beside Claude Code's own group row, which keeps its descriptions, results and failures. A
+  // group that holds any other tool, and a group the person expanded, keep Claude Code's own drawing alone.
+  on('ui.render', { component: 'ToolGroup' }, async ($, e, next) => {
+    const calls = e.props.calls
+    if (e.props.isExpanded || calls.length === 0 || !calls.every(c => isAtlasTool(String(c.tool))) || !(await isOn($))) return next(e)
+    const ui = $.ui.resolve(e)
+    const { Box } = ui
+    const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
+    const Raster = e.surface === 'terminal' && 'Raster' in ui ? ui.Raster : null
+    if (!Svg && !Raster) return next(e)
+    const theirs = await next(e)
+    if (!theirs) return theirs
+    const running = calls.some(c => c.isRunning)
+    return (
+      <Box flexDirection="row" gap={1}>
+        {Svg ? <Svg source={running ? spinnerSvg(18) : logoSvg(18, false)} alt="Aspire Atlas" width={18} height={18} /> : Raster ? <Raster key="aspire-mark" {...terminalMark()} /> : null}
+        {theirs}
+      </Box>
+    )
+  })
+
+  // The hint under the prompt (terminal): Claude Code's own line, then the way back to the guide, once the mod is on and the prompt is idle.
+  on('ui.render', { component: 'PromptHint' }, async ($, e, next) => {
+    const hint = typeof e.props.hint === 'string' ? e.props.hint : ''
+    if (!hint || hint.includes('/aspire help') || e.props.isDraft || e.props.isWorking || !(await isOn($))) return next(e)
+    return next({ ...e, props: { ...e.props, hint: `${hint} · /aspire help` } })
+  })
+
+  // What the plugin's own command printed: the mark beside Claude Code's own drawing of it.
+  on('ui.render', { component: 'CommandOutput' }, async ($, e, next) => {
+    if (e.props.command !== 'aspire-agents-info' || e.props.isErrored || !(await isOn($))) return next(e)
+    const ui = $.ui.resolve(e)
+    const { Box } = ui
+    const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
+    const Raster = e.surface === 'terminal' && 'Raster' in ui ? ui.Raster : null
+    if (!Svg && !Raster) return next(e)
+    const theirs = await next(e)
+    if (!theirs) return theirs
+    return (
+      <Box flexDirection="row" gap={1}>
+        {Svg ? <Svg source={logoSvg(22, false)} alt="Aspire Atlas" width={22} height={22} /> : Raster ? <Raster key="aspire-mark" {...terminalMark()} /> : null}
+        {theirs}
       </Box>
     )
   })
