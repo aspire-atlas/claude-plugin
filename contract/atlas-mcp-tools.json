@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-07",
+  "generated": "2026-10-17",
   "source": "apps/api/lib/mcp/tools-list.golden.json",
   "surfaces": {
     "/mcp": {
@@ -10,6 +10,7 @@
         "paths": [
           "asOrganizationId",
           "asProfileId",
+          "billingAccountId",
           "hashtags",
           "networks"
         ]
@@ -42,6 +43,7 @@
         "paths": [
           "asOrganizationId",
           "asProfileId",
+          "billingAccountId",
           "insights",
           "runKey"
         ]
@@ -52,7 +54,9 @@
           "asProfileId",
           "channel",
           "elicitationId",
-          "returnUrl"
+          "replace",
+          "returnUrl",
+          "share"
         ]
       },
       "create_profile": {
@@ -107,7 +111,8 @@
         "required": [],
         "paths": [
           "asOrganizationId",
-          "asProfileId"
+          "asProfileId",
+          "billingAccountId"
         ]
       },
       "list_ad_accounts": {
@@ -158,6 +163,7 @@
         "paths": [
           "asOrganizationId",
           "asProfileId",
+          "billingAccountId",
           "cursor",
           "hashtag",
           "include",
@@ -199,6 +205,7 @@
         "paths": [
           "asOrganizationId",
           "asProfileId",
+          "billingAccountId",
           "creatorDeepAnalysis",
           "forceRefresh",
           "items"
@@ -211,6 +218,7 @@
         "paths": [
           "asOrganizationId",
           "asProfileId",
+          "billingAccountId",
           "creatorDeepAnalysis",
           "forceRefresh",
           "items"
@@ -245,21 +253,37 @@
       "search_ads": {
         "required": [],
         "paths": [
+          "actionTypes",
           "adAccountIds",
+          "adSetEffectiveStatuses",
           "adSetIds",
+          "adSetStatuses",
           "adStatuses",
           "asOrganizationId",
           "asProfileId",
+          "bidStrategies",
+          "billingEvents",
+          "businessCountryCodes",
+          "buyingTypes",
+          "campaignEffectiveStatuses",
           "campaignIds",
+          "campaignStatuses",
           "creatorHandles",
           "cursor",
           "dateFrom",
           "dateTo",
+          "destinationTypes",
           "effectiveStatuses",
+          "esFilter",
           "groupBy",
           "igMediaIds",
+          "isPartnershipAd",
           "limit",
-          "objectives"
+          "objectives",
+          "optimizationGoals",
+          "primaryAttributions",
+          "smartPromotionTypes",
+          "specialAdCategories"
         ]
       },
       "search_calibrations": {
@@ -284,6 +308,7 @@
         "paths": [
           "asOrganizationId",
           "asProfileId",
+          "billingAccountId",
           "instagram",
           "instagram.filters",
           "instagram.filters.creatorAgeBucket",
@@ -347,6 +372,7 @@
           "aggs",
           "asOrganizationId",
           "asProfileId",
+          "billingAccountId",
           "cursor",
           "esFilter",
           "exclude",
@@ -361,6 +387,7 @@
           "aggs",
           "asOrganizationId",
           "asProfileId",
+          "billingAccountId",
           "cursor",
           "esFilter",
           "exclude",
@@ -370,17 +397,50 @@
           "sort"
         ]
       },
+      "search_partnership_content": {
+        "required": [],
+        "paths": [
+          "adCode",
+          "adEligibility",
+          "adUsage",
+          "asOrganizationId",
+          "asProfileId",
+          "captionQuery",
+          "contentTypes",
+          "creatorHandles",
+          "cursor",
+          "dateFrom",
+          "dateTo",
+          "hasAdCode",
+          "isRecommended",
+          "limit",
+          "mediaTypes",
+          "permissionStatus",
+          "permissionType",
+          "postTypes",
+          "sort"
+        ]
+      },
       "search_posts": {
         "required": [],
         "paths": [
           "aggs",
           "asOrganizationId",
           "asProfileId",
+          "billingAccountId",
           "cursor",
           "esFilter",
           "exclude",
           "fields",
           "limit",
+          "partnership",
+          "partnership.adCode",
+          "partnership.adEligibility",
+          "partnership.adUsage",
+          "partnership.contentTypes",
+          "partnership.hasAdCode",
+          "partnership.isRecommended",
+          "partnership.permissionStatus",
           "queryText",
           "sort"
         ]
@@ -405,6 +465,7 @@
         "paths": [
           "asOrganizationId",
           "asProfileId",
+          "billingAccountId",
           "handle",
           "postLimit"
         ]
@@ -429,6 +490,19 @@
           "sourceRef",
           "statement",
           "visibility"
+        ]
+      },
+      "switch_billing_account": {
+        "required": [
+          "billingAccountId"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "billingAccountId",
+          "hashtag",
+          "network",
+          "savedSearchId"
         ]
       },
       "unlink_channel": {
