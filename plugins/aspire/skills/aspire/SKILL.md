@@ -12,7 +12,7 @@ description: >
   shortlist", "vet these creators", "which of these creators should we approve", "we launch on the 14th and need creators", "review this post", "check this
   draft against the brief", "brand safety check on this post", "analyze this post", "what brands are in this
   video", "show @handle's full profile", "what are creators saying about us vs {competitor}", "best hooks to reuse as
-  ads", "build a PPA pitch", "casting deck for partnership ads", "how did influencer do this
+  ads", "which creator posts can we run as partnership ads", "build a PPA pitch", "casting deck for partnership ads", "how did influencer do this
   quarter", "start the CAS campaign for {brand}", "where is the {brand} campaign", "pull the
   client's decisions", "record a reply", "set up our influencer program", "where is the
   {program} program", "write to the approved creators", "send product to the creators", "set up
@@ -272,6 +272,7 @@ team catalog, and how agents render for a lens are in `references/recipient-lens
    | `brand`, `campaign` | Which creators on a list to approve | **Creator vetting** |
    | `performance`, `creative` | Hooks, ads, licensing, a cut list | **Ad reuse**; for one post, **Content review** with the ad reuse check |
    | `leadership`, `performance` | A pitch or casting deck for partnership ads, whitelisting, creators to license | **PPA pitch** |
+   | `performance` | Which creator posts the brand can run as partnership ads now, permissions, an ad code | **Partnership content** |
    | Any | What to do next across everything, what needs me, where everything stands | **Orchestrator** |
    | `team` | Anything | The flow the ask names |
 
@@ -653,7 +654,10 @@ to a caller who does not have it.
 
 1. `AskUserQuestion`, multiSelect: which accounts to connect. Options: Instagram (channel
    `meta`), TikTok (channel `tiktok`), YouTube (channel `youtube`). Recommend Instagram or
-   TikTok first: those two are what search and hashtag tracking read today.
+   TikTok first: those two are what search and hashtag tracking read today. For partnership
+   ads, the `meta` sign-in should also link the brand's Meta Business: tell the user to pick it
+   in the **Meta businesses** group. Partnership content needs it and the brand's Instagram on
+   the same profile (`references/atlas-tools.md`, **Partnership content**).
 2. For each chosen channel, call `connect_channel` with `channel` and `asProfileId`.
    Show the returned `connectUrl` as the **account connection card**: an inline HTML card that
    explains the sign-in steps and carries one button that opens the link in the browser. Build
@@ -1003,6 +1007,40 @@ pre-fills, the build, export, and the state saved.
 
 Package prices (H2) are asked every run and never saved. Never offer the Aspire look, service
 packages, or the agency voice without `aspire_user`.
+
+---
+
+## Partnership content (creator posts the brand can run as partnership ads)
+
+Trigger when the user asks which creator posts the brand can run as partnership ads, which posts
+Meta recommends, whether a creator gave permission, what is ad ready, or pastes a partnership ad
+code to find its post ("what can we boost from creators", "which tagged posts can we run as
+ads"). It runs in the main thread: it is a read plus an optional boost, with no agent. Inputs,
+output, empty reasons, ad code rules, and the boost call are in `references/atlas-tools.md`,
+**Partnership content**.
+
+1. **Profile.** Use the brand's profile from Phase 2 + 3 and pass `asProfileId` explicitly on
+   every call. A defaulted scope hides the ad code, and the `search_posts` overlay and filter
+   refuse it.
+2. **Read.** Call `search_partnership_content` with the user's filters (creator handles, dates,
+   `adEligibility` `AD_READY`, `isRecommended`, `hasAdCode`, or a pasted `adCode`). Use
+   `search_posts` with the `partnership` filter when the ask also needs what Atlas holds about the
+   posts (transcripts, analysis, an `esFilter`); its hits then carry `partnershipAds`.
+3. **Nothing back.** Read `empty.reason` and tell the user which link is missing (the
+   reference's table). A missing Meta Business or Instagram link offers the `meta` connection
+   (Phase 4.2), with the business picked under **Meta businesses**.
+4. **Show it.** One line per post: the creator's `@handle`, the post link, whether it is ad
+   ready and permitted in plain words, whether Meta recommends it, whether the brand has run it,
+   and organic engagement (never added to paid), with "changed on {asOf}". Never show ids.
+5. **Ad codes.** Give a code only to the person asking, in this conversation, and only when they
+   need it to run the ad. Never put a code on a page, in a delivery, in a saved finding, or in a
+   message to a creator, and never repeat a pasted one back.
+6. **Run it (optional).** When the user wants to run a post, plan it with the Meta Ads
+   connector's `ads_boost_ig_post`, `confirmed=false` first, using `igMediaId` and
+   `brand.igUserId`, or the code. Show the plan, confirm with `AskUserQuestion` ("Create this ad,
+   paused, from **@{creator}**'s post?" Options: Not yet (Recommended) / Create it paused), then
+   call it with `confirmed=true`. Without the Meta Ads connector, say the post can be run from
+   Meta Ads Manager.
 
 ---
 
