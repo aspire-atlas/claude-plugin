@@ -4,6 +4,10 @@
 //   bun -e "import {logoSvg} from './plugins/aspire/hooks/logo.ts'; await Bun.write('plugins/aspire/assets/aspire-animated.svg', logoSvg(512, true, 20)); await Bun.write('plugins/aspire/assets/aspire-animated-small.svg', logoSvg(512, true, 10))"
 // Change the mark here, rewrite both files, and keep them in step.
 
+import { BRAND } from './palette'
+
+const hexNumber = (hex: string): number => parseInt(hex.slice(1), 16)
+
 /** Squares across in the small mark, the size the tool row and the panel use. */
 export const SMALL_GRID = 10
 /** Squares across in the full mark pasted into pages. */
@@ -50,7 +54,7 @@ const REDUCED = `@media (prefers-reduced-motion: reduce){.lgg path{animation:non
 
 /** The mark's shapes in a 512 box, with the style that colors them (and animates them unless `animated` is false): for a group inside another Svg. */
 export const logoMarkup = (animated = true, grid = SMALL_GRID): string => `<style>
-.lgk{fill:#1c2b2a}.lgg{fill:#3B8A82}
+.lgk{fill:${BRAND.tile}}.lgg{fill:${BRAND.teal}}
 ${animated ? `${ANIMATED}\n${REDUCED}` : STILL}
 </style>
 <defs><clipPath id="lgsq"><rect width="512" height="512" rx="96"/></clipPath></defs>
@@ -77,7 +81,7 @@ export const spinnerSvg = (size: number): string => {
   const track = RING.map(([c, r]) => path(c, r)).join('')
   const comets = RING.map(([c, r], i) => path(c, r, ` style="animation-delay:-${(SPINNER_LOOP * (1 - (i % half) / half)).toFixed(3)}s"`)).join('')
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 512 512" role="img" aria-label="Loading"><style>
-.skt{fill:#1c2b2a}.skb{fill:#C8E36B;opacity:.2}.skg{fill:#C8E36B}
+.skt{fill:${BRAND.tile}}.skb{fill:${BRAND.lime};opacity:.2}.skg{fill:${BRAND.lime}}
 .skg path{animation:skc ${SPINNER_LOOP}s linear infinite both}
 @keyframes skc{0%{opacity:1}4%{opacity:1}50%{opacity:0}100%{opacity:0}}
 @media (prefers-reduced-motion: reduce){.skg path{animation:none;opacity:0}.skg path:nth-child(-n+3),.skg path:nth-child(n+19):nth-child(-n+21){opacity:1}}
@@ -94,8 +98,8 @@ export const logoSvg = (size: number, animated = true, grid = SMALL_GRID): strin
 // The mark in the terminal, which draws no Svg: a small grid of colored cells (a Raster) in the mark's own dark tile and teal, with
 // block characters standing for its shuffled squares. Fixed, not animated: a Raster only changes when a hook repaints it.
 const TERMINAL_MARK = ['▚▒░▞', '░▞▒▚']
-const MARK_TILE = 0x1c2b2a
-const MARK_TEAL = 0x3b8a82
+const MARK_TILE = hexNumber(BRAND.tile)
+const MARK_TEAL = hexNumber(BRAND.teal)
 
 let cachedMark: { columns: number; rows: number; cells: string } | undefined
 

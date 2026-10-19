@@ -90,6 +90,7 @@ import type { EngineInterface, Register } from 'claude-code'
 import type { AgentRun, AtlasCreditsReading, AtlasReading, BandStats, Coach, Item, Notice, OrgState, Panel, Progress, Seen, Trigger, TriggerKind, Turn } from '../types'
 import { creditsOf, isOrgSelected, creditsView, fmtAtlasUsage, fmtCredits, isAtlasStatusCall, isAtlasToolName, readAtlasCredits, readAtlasOrg, readAtlasUsage } from './atlas-usage'
 import type { CreditsView } from './atlas-usage'
+import { ACCENT, BRAND, DOC, NEUTRAL, SEMANTIC, THIRD_PARTY, pairCss } from './palette'
 import { ASPIRE, COACH_CRAB, CRAB_CSS, breathOf, characterOf, crab } from './characters'
 import type { Character } from './characters'
 import { AGENT_CHARACTERS } from './costumes'
@@ -339,7 +340,32 @@ const slackDraft = (url: string): string =>
 // ---------------------------------------------------------------------------
 // The progress bar (from savvy-progress): title, bar, percent, and the crab.
 
-const DONE = '#4caf6e'
+const DONE = SEMANTIC.done
+
+// The classes each drawing's <style> block switches between light and dark, all from the palette.
+const METER_CSS = pairCss({ k: ['fill', NEUTRAL.track], tk: ['fill', NEUTRAL.tick] })
+const BAR_ROW_CSS = pairCss({ t: ['fill', NEUTRAL.ink], m: ['fill', NEUTRAL.soft], k: ['fill', NEUTRAL.track], tk: ['fill', NEUTRAL.tick] })
+const BAND_CSS = pairCss({
+  t: ['fill', NEUTRAL.ink],
+  m: ['fill', NEUTRAL.soft],
+  k: ['fill', NEUTRAL.track],
+  tk: ['fill', NEUTRAL.tick],
+  pk: ['stroke', NEUTRAL.soft],
+  pf: ['fill', NEUTRAL.soft],
+})
+const PANE_THEME_CSS = pairCss({
+  t: ['fill', NEUTRAL.ink],
+  s: ['fill', NEUTRAL.subtle],
+  m: ['fill', NEUTRAL.muted],
+  k: ['fill', NEUTRAL.track],
+  tk: ['fill', NEUTRAL.tick],
+  ln: ['stroke', NEUTRAL.track],
+  cv: ['stroke', NEUTRAL.muted],
+  sw: ['fill', NEUTRAL.swatch],
+  tile: ['fill', NEUTRAL.surface],
+  er: ['stroke', SEMANTIC.error],
+  ef: ['fill', SEMANTIC.error],
+})
 // The whole row is one SVG: the desktop wraps sibling elements onto new lines,
 // so title, bar, percent, and the agent counter with its crab live in one
 // drawing, with blank Buttons laid over it to take the presses.
@@ -347,8 +373,8 @@ const BAR_ROW_H = 22
 /** The Artifact card's document icon, after the Claude Docs artifact icon: a page whose lines, letter and check draw in one after another, then rest, then repeat. */
 const DOC_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="46" viewBox="0 0 40 46">
 <style>
-.pg{fill:#E8F4F2;stroke:#7DB8B1}.ln{fill:#3B8A82}.ls{fill:#A9D3CE}.ab{fill:#2E6E67}.ck{fill:#3B8A82}.cm{stroke:#fff}
-@media (prefers-color-scheme: dark){.pg{fill:#1E3431;stroke:#3B8A82}.ln{fill:#5FB5AB}.ls{fill:#3E6B66}.ab{fill:#5FB5AB}.ck{fill:#5FB5AB}.cm{stroke:#1E3431}}
+.pg{fill:${DOC.page.light};stroke:${DOC.pageEdge.light}}.ln{fill:${DOC.line.light}}.ls{fill:${DOC.faint.light}}.ab{fill:${DOC.accent.light}}.ck{fill:${DOC.check.light}}.cm{stroke:${DOC.checkMark.light}}
+@media (prefers-color-scheme: dark){.pg{fill:${DOC.page.dark};stroke:${DOC.pageEdge.dark}}.ln{fill:${DOC.line.dark}}.ls{fill:${DOC.faint.dark}}.ab{fill:${DOC.accent.dark}}.ck{fill:${DOC.check.dark}}.cm{stroke:${DOC.checkMark.dark}}}
 .d{transform-box:fill-box;transform-origin:0 50%;animation:dr 3.6s ease-out infinite both}
 .d2{animation-delay:.25s}.d3{animation-delay:.5s}.d4{animation-delay:.75s}.d5{animation-delay:1s}
 .pp{transform-box:fill-box;transform-origin:50% 50%;animation:pp 3.6s ease-out infinite both;animation-delay:.6s}
@@ -368,7 +394,7 @@ const DOC_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="46"
 <rect class="ls d d4" x="15.5" y="34.2" width="12" height="2.6" rx="1.3"/>
 </svg>`
 /** The Slack mark (four coloured pill pairs), its own brand colours in light and dark. */
-const SLACK_MARK = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="60 60 150 150"><path fill="#E01E5A" d="M99.4,151.2c0,7.1-5.8,12.9-12.9,12.9c-7.1,0-12.9-5.8-12.9-12.9c0-7.1,5.8-12.9,12.9-12.9h12.9V151.2z"/><path fill="#E01E5A" d="M105.9,151.2c0-7.1,5.8-12.9,12.9-12.9s12.9,5.8,12.9,12.9v32.3c0,7.1-5.8,12.9-12.9,12.9s-12.9-5.8-12.9-12.9V151.2z"/><path fill="#36C5F0" d="M118.8,99.4c-7.1,0-12.9-5.8-12.9-12.9c0-7.1,5.8-12.9,12.9-12.9s12.9,5.8,12.9,12.9v12.9H118.8z"/><path fill="#36C5F0" d="M118.8,105.9c7.1,0,12.9,5.8,12.9,12.9s-5.8,12.9-12.9,12.9H86.5c-7.1,0-12.9-5.8-12.9-12.9s5.8-12.9,12.9-12.9H118.8z"/><path fill="#2EB67D" d="M170.6,118.8c0-7.1,5.8-12.9,12.9-12.9c7.1,0,12.9,5.8,12.9,12.9s-5.8,12.9-12.9,12.9h-12.9V118.8z"/><path fill="#2EB67D" d="M164.1,118.8c0,7.1-5.8,12.9-12.9,12.9c-7.1,0-12.9-5.8-12.9-12.9V86.5c0-7.1,5.8-12.9,12.9-12.9c7.1,0,12.9,5.8,12.9,12.9V118.8z"/><path fill="#ECB22E" d="M151.2,170.6c7.1,0,12.9,5.8,12.9,12.9c0,7.1-5.8,12.9-12.9,12.9c-7.1,0-12.9-5.8-12.9-12.9v-12.9H151.2z"/><path fill="#ECB22E" d="M151.2,164.1c-7.1,0-12.9-5.8-12.9-12.9c0-7.1,5.8-12.9,12.9-12.9h32.3c7.1,0,12.9,5.8,12.9,12.9c0,7.1-5.8,12.9-12.9,12.9H151.2z"/></svg>`
+const SLACK_MARK = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="60 60 150 150"><path fill="${THIRD_PARTY.slackRed}" d="M99.4,151.2c0,7.1-5.8,12.9-12.9,12.9c-7.1,0-12.9-5.8-12.9-12.9c0-7.1,5.8-12.9,12.9-12.9h12.9V151.2z"/><path fill="${THIRD_PARTY.slackRed}" d="M105.9,151.2c0-7.1,5.8-12.9,12.9-12.9s12.9,5.8,12.9,12.9v32.3c0,7.1-5.8,12.9-12.9,12.9s-12.9-5.8-12.9-12.9V151.2z"/><path fill="${THIRD_PARTY.slackBlue}" d="M118.8,99.4c-7.1,0-12.9-5.8-12.9-12.9c0-7.1,5.8-12.9,12.9-12.9s12.9,5.8,12.9,12.9v12.9H118.8z"/><path fill="${THIRD_PARTY.slackBlue}" d="M118.8,105.9c7.1,0,12.9,5.8,12.9,12.9s-5.8,12.9-12.9,12.9H86.5c-7.1,0-12.9-5.8-12.9-12.9s5.8-12.9,12.9-12.9H118.8z"/><path fill="${THIRD_PARTY.slackGreen}" d="M170.6,118.8c0-7.1,5.8-12.9,12.9-12.9c7.1,0,12.9,5.8,12.9,12.9s-5.8,12.9-12.9,12.9h-12.9V118.8z"/><path fill="${THIRD_PARTY.slackGreen}" d="M164.1,118.8c0,7.1-5.8,12.9-12.9,12.9c-7.1,0-12.9-5.8-12.9-12.9V86.5c0-7.1,5.8-12.9,12.9-12.9c7.1,0,12.9,5.8,12.9,12.9V118.8z"/><path fill="${THIRD_PARTY.slackYellow}" d="M151.2,170.6c7.1,0,12.9,5.8,12.9,12.9c0,7.1-5.8,12.9-12.9,12.9c-7.1,0-12.9-5.8-12.9-12.9v-12.9H151.2z"/><path fill="${THIRD_PARTY.slackYellow}" d="M151.2,164.1c-7.1,0-12.9-5.8-12.9-12.9c0-7.1,5.8-12.9,12.9-12.9h32.3c7.1,0,12.9,5.8,12.9,12.9c0,7.1-5.8,12.9-12.9,12.9H151.2z"/></svg>`
 const BAR_H = 16
 const CRAB_W = 0
 const CELL = 3
@@ -417,7 +443,7 @@ const meterGroup = (shown: Shown, BAR_W: number): string => {
 <g class="tk">${ticks.join('')}</g>
 </g>
 <rect x="${pillX}" width="${pillW}" height="${BAR_H}" rx="${BAR_H / 2}" fill="${color}"/>
-<text x="${pillX + pillW / 2}" y="${BAR_H / 2 + 4}" text-anchor="middle" font-family="${FONT}" font-size="11" font-weight="600" fill="#ffffff">${xml(pill)}</text>`
+<text x="${pillX + pillW / 2}" y="${BAR_H / 2 + 4}" text-anchor="middle" font-family="${FONT}" font-size="11" font-weight="600" fill="${BRAND.white}">${xml(pill)}</text>`
 }
 
 /** The bar row's shapes, without a style block: the band wraps them in their own, the panel's progress card in the panel's. */
@@ -438,11 +464,25 @@ ${meterGroup(shown, BAR_W)}
 `
 }
 
-/** Only the dithered bar and its step pill, for the band's row, where Buttons carry the text either side of it. */
-const meterSvg = (shown: Shown, W: number): string => `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}">
+/** Wide enough that the host always clamps the drawing to the room the row leaves it, never grows it past that. */
+const METER_SLOT_MAX = 4000
+/** The widest layout the band's bar is drawn for: its dots stay well under the host's cap on an Svg's source. */
+const METER_LAYOUT_MAX = 1000
+/** How much of the estimated room the bar is laid out for: under 1, so a misjudged column width crops nothing off the fill or the pill. */
+const METER_FIT = 0.85
+
+/**
+ * Only the dithered bar and its step pill, for the band's row, where Buttons carry the text either side of it.
+ *
+ * The host takes a drawing's own width up to its slot, and the band cannot know that room in pixels (a column's width differs by
+ * font and screen). So the markup is laid out at `W`, a deliberately low guess from the column count, at its natural pixel size, and
+ * declares a width past any slot with `preserveAspectRatio="xMinYMid slice"`: the host clamps it to the room the row leaves, and
+ * `slice` crops what overflows on the right instead of scaling, so the pill's text and corners are never stretched. The guess runs
+ * low (METER_FIT) so the crop is rare; a bar that falls short of the slot stays a whole, undistorted bar.
+ */
+const meterSvg = (shown: Shown, W: number): string => `<svg xmlns="http://www.w3.org/2000/svg" width="${METER_SLOT_MAX}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}" preserveAspectRatio="xMinYMid slice">
 <style>
-.k{fill:#e4e4e2}.tk{fill:#b4b4b0}
-@media (prefers-color-scheme: dark){.k{fill:#2c2c2c}.tk{fill:#5a5a5a}}
+${METER_CSS}
 ${twinkleCss(shown)}
 </style>
 <g transform="translate(0,${(BAR_ROW_H - BAR_H) / 2})">
@@ -474,8 +514,7 @@ const noticeSvg = (character: Character, name: string, W: number): string => {
   const text = fitText(noticeText(name), 13, Math.max(40, W - textX - 8))
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${NOTICE_H}" viewBox="0 0 ${W} ${NOTICE_H}">
 <style>
-.nt{fill:#1f1f1f}
-@media (prefers-color-scheme: dark){.nt{fill:#ececec}}
+${pairCss({ nt: ['fill', NEUTRAL.ink] })}
 </style>
 ${CRAB_CSS}
 ${crab(10, (NOTICE_H - 30 * scale) / 2, character, false, true, scale)}
@@ -495,8 +534,7 @@ const coachSvg = (verdict: string, step: string | null, W: number): string => {
   const text = fitText(coachLabel(verdict, step), 13, Math.max(40, W - textX - 8))
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${COACH_H}" viewBox="0 0 ${W} ${COACH_H}">
 <style>
-.ct{fill:#1f1f1f}
-@media (prefers-color-scheme: dark){.ct{fill:#ececec}}
+${pairCss({ ct: ['fill', NEUTRAL.ink] })}
 </style>
 ${CRAB_CSS}
 ${crab(10, (COACH_H - 30 * scale) / 2, COACH_CRAB, false, true, scale)}
@@ -507,8 +545,7 @@ ${crab(10, (COACH_H - 30 * scale) / 2, COACH_CRAB, false, true, scale)}
 /** The band's whole row in one drawing: title, bar, percent, and the agent counter with its crab. */
 const bandSvg = (title: string, shown: Shown, W: number, count: number, character: Character): string => `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}">
 <style>
-.t{fill:#1f1f1f}.m{fill:#8a8a8a}.k{fill:#e4e4e2}.tk{fill:#b4b4b0}.pk{stroke:#8a8a8a}.pf{fill:#8a8a8a}
-@media (prefers-color-scheme: dark){.t{fill:#ececec}.m{fill:#9a9a9a}.k{fill:#2c2c2c}.tk{fill:#5a5a5a}.pk{stroke:#9a9a9a}.pf{fill:#9a9a9a}}
+${BAND_CSS}
 ${twinkleCss(shown)}
 </style>
 ${CRAB_CSS}
@@ -531,15 +568,14 @@ ${crab(2, (BAR_ROW_H - 30 * BAND_CRAB_SCALE) / 2, character, false, true, BAND_C
 const dotSvg = (shown: Shown): string => {
   const fill = shown.isFinished ? `fill="${DONE}"` : `class="dt"`
   return `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="${BAR_ROW_H}" viewBox="0 0 12 ${BAR_ROW_H}">
-<style>.dt{fill:#3B8A82}@media (prefers-color-scheme: dark){.dt{fill:#5fb5ab}}</style>
+<style>${pairCss({ dt: ['fill', ACCENT] })}</style>
 <circle ${fill} cx="6" cy="${BAR_ROW_H / 2}" r="4"/>
 </svg>`
 }
 
 const barSvg = (title: string, shown: Shown, W: number): string => `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}">
 <style>
-.t{fill:#1f1f1f}.m{fill:#8a8a8a}.k{fill:#e4e4e2}.tk{fill:#b4b4b0}
-@media (prefers-color-scheme: dark){.t{fill:#ececec}.m{fill:#9a9a9a}.k{fill:#2c2c2c}.tk{fill:#5a5a5a}}
+${BAR_ROW_CSS}
 ${twinkleCss(shown)}
 </style>
 ${barShapes(title, shown, W)}
@@ -553,51 +589,6 @@ const MIN_TOKENS = 20
 // A response that arrived in one burst cannot be timed; such readings are dropped.
 const MIN_SECONDS = 0.5
 const MAX_SPEED = 1000
-
-const SPEED = '#8b8cf8'
-const ATLAS = '#4caf6e'
-const MUTED = '#8a8f8c'
-const CONTEXT = '#5fa8d3'
-const WARN = '#e2a94e'
-const ALERT = '#e0846b'
-
-const ring = (color: string, glyph: string) =>
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-    <circle cx="12" cy="12" r="10" fill="none" stroke="${color}" stroke-width="2"/>
-    ${glyph}</svg>`
-
-const SPEED_ICON = ring(
-  SPEED,
-  `<path d="M6.5 15a6 6 0 0 1 11 0" fill="none" stroke="${SPEED}" stroke-width="1.8" stroke-linecap="round"/>
-   <path d="M12 15l3-4" stroke="${SPEED}" stroke-width="1.8" stroke-linecap="round"/>`,
-)
-
-// The kit's cost ring, with an "A" for Atlas in place of the dollar sign.
-const ATLAS_ICON = ring(
-  ATLAS,
-  `<text x="12" y="16.5" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13" font-weight="600" fill="${ATLAS}">A</text>`,
-)
-
-// The ring itself fills with the context, around a page of lines.
-const contextIcon = (percent: number) => {
-  const c = 2 * Math.PI * 10
-  const filled = (Math.min(100, percent) / 100) * c
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-    <circle cx="12" cy="12" r="10" fill="none" stroke="${MUTED}" stroke-opacity="0.35" stroke-width="2"/>
-    <circle cx="12" cy="12" r="10" fill="none" stroke="${CONTEXT}" stroke-width="2" stroke-linecap="round"
-      stroke-dasharray="${filled.toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 12 12)"/>
-    <g stroke="${CONTEXT}" stroke-width="1.6" stroke-linecap="round">
-      <path d="M8.5 9h7M8.5 12h7M8.5 15h4.5"/>
-    </g></svg>`
-}
-
-const contextBar = (percent: number) => {
-  const color = percent >= 85 ? ALERT : percent >= 65 ? WARN : ATLAS
-  const w = Math.round((Math.min(100, percent) / 100) * 80)
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 6" width="80" height="6">
-    <rect width="80" height="6" rx="3" fill="${MUTED}" fill-opacity="0.3"/>
-    <rect width="${w}" height="6" rx="3" fill="${color}"/></svg>`
-}
 
 // Density by the band's width in cells, so the row shrinks instead of wrapping:
 // 0 full; 1 no context bar; 2 compact turn/speed, short Atlas label; 3 no turn,
@@ -649,8 +640,7 @@ const CARD_R = 12
 const TAIL = 8
 
 const PANE_CSS = `<style>
-.t{fill:#1f1f1f}.s{fill:#6b6b68}.m{fill:#9a9a96}.k{fill:#ecebe8}.tk{fill:#b4b4b0}.ln{stroke:#e4e4e1}.cv{stroke:#b4b4b0}.sw{fill:#d4d4d0}.tile{fill:#f4f3f0}
-@media (prefers-color-scheme: dark){.t{fill:#ececec}.s{fill:#8f8f8b}.m{fill:#7d7d79}.k{fill:#2c2c2b}.tk{fill:#5a5a5a}.ln{stroke:#2c2c2b}.cv{stroke:#6f6f6b}.sw{fill:#3d3d3b}.tile{fill:#262625}}
+${PANE_THEME_CSS}
 .live{animation:p 1.6s ease-in-out infinite}@keyframes p{50%{opacity:.3}}
 @media (prefers-reduced-motion: reduce){.live{animation:none}}
 </style>`
@@ -660,8 +650,8 @@ const svg = (W: number, H: number, body: string): string =>
 
 const statusMark = (x: number, y: number, status: string, color: string): string => {
   if (status === 'running') return `<circle class="live" cx="${x}" cy="${y}" r="3.5" fill="${color}"/>`
-  if (status === 'done') return `<path d="M${x - 5} ${y}l3.5 3.5 6.5-7" fill="none" stroke="#3B9C5F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`
-  return `<path d="M${x - 4} ${y - 4}l8 8M${x + 4} ${y - 4}l-8 8" stroke="#D0453F" stroke-width="1.8" stroke-linecap="round"/>`
+  if (status === 'done') return `<path d="M${x - 5} ${y}l3.5 3.5 6.5-7" fill="none" stroke="${DONE}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`
+  return `<path d="M${x - 4} ${y - 4}l8 8M${x + 4} ${y - 4}l-8 8" class="er" stroke-width="1.8" stroke-linecap="round"/>`
 }
 
 /** One drawn row of the accordion; `edge` draws a section's top edge, `tail` is the space left under a section's last row. */
@@ -735,7 +725,7 @@ const MARK_X = 21
 const HEAD_TEXT_X = 32
 const STEP_X = 36
 const STEP_TEXT_X = 47
-const STOPPED = '#8a8f8c'
+const STOPPED = SEMANTIC.stopped
 const planH = (view: PlanView): number =>
   PLAN_TOP +
   6 +
@@ -794,9 +784,8 @@ const planBodySvg = (W: number, title: string, shown: Shown, view: PlanView, tai
   return rowSvg(W, planH(view), false, tail, parts.join('\n'))
 }
 
-const OVER = '#D0453F'
 /** The credits bar's amber and red, with dark-mode variants (teal is ASPIRE above 25% left, amber at 25% or less, red at 10% or less or when out). */
-const BAR_CSS = '.cb-low{fill:#B86E00}.cb-critical{fill:#D0453F}@media (prefers-color-scheme: dark){.cb-low{fill:#F2B134}.cb-critical{fill:#F0706A}}'
+const BAR_CSS = pairCss({ 'cb-low': ['fill', SEMANTIC.warn], 'cb-critical': ['fill', SEMANTIC.error] })
 
 /** The credits card, fixed at the top and not collapsible: the Aspire mark and the organization's credits from the latest get_status. */
 const CREDIT_H = 78
@@ -826,7 +815,7 @@ const creditsCardSvg = (W: number, v: CreditsView): string => {
 <rect class="tile" x="${x0}" y="0" width="${cardW}" height="${CREDIT_H - 4}" rx="8"/>
 ${text(left, 17, 's', 11, v.title)}
 ${v.tag ? text(right, 17, 's', 11, v.tag, 'text-anchor="end"') : ''}
-<text class="t" x="${left}" y="42" font-family="${FONT}" font-size="22" font-weight="600" font-variant-numeric="tabular-nums" ${v.isOver ? `fill="${OVER}"` : ''}>${xml(v.big)}</text>
+<text class="${v.isOver ? 'ef' : 't'}" x="${left}" y="42" font-family="${FONT}" font-size="22" font-weight="600" font-variant-numeric="tabular-nums">${xml(v.big)}</text>
 ${v.sub ? text(left + bigW, 42, 's', 12, v.sub) : ''}
 <rect class="k" x="${left}" y="50" width="${barW}" height="4" rx="2"/>
 ${v.ratio > 0 ? `<rect ${v.tone === 'ok' ? `fill="${ASPIRE}"` : `class="cb-${v.tone}"`} x="${left}" y="50" width="${Math.max(3, fill)}" height="4" rx="2"/>` : ''}
@@ -925,7 +914,7 @@ const cardSvg = (W: number, entry: RosterEntry, list: AgentRun[], tail: number, 
     `${crab(24, 8, character, false, isRunning || isLeaving, undefined, isRunning || isLeaving ? undefined : breathOf(entry.type), isLeaving)}
 <text class="t" x="62" y="22" font-family="${FONT}" font-size="12" font-weight="500">${xml(fitText(entry.name, 12, textW))}</text>
 <text class="s" x="62" y="38" font-family="${FONT}" font-size="11">${xml(fitText(entry.blurb, 11, textW))}</text>
-${isRunning ? `<circle class="live" cx="${W - 76}" cy="20" r="3.5" fill="${character.color}"/>` : runs.length ? `<path d="M${W - 80} 20l3.5 3.5 6.5-7" fill="none" stroke="#3B9C5F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
+${isRunning ? `<circle class="live" cx="${W - 76}" cy="20" r="3.5" fill="${character.color}"/>` : runs.length ? `<path d="M${W - 80} 20l3.5 3.5 6.5-7" fill="none" stroke="${DONE}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
 ${state ? `<text class="s" x="${W - 16}" y="24" text-anchor="end" font-family="${FONT}" font-size="11">${state}</text>` : ''}`,
   )
 }
@@ -1242,12 +1231,25 @@ export const register: Register = on => {
       if (isStatus) {
         const at = await $.clock.now()
         const costs = readAtlasUsage(payload)
-        await update($, atlas, () => (costs ? { costs, at } : null))
         const credits = readAtlasCredits(payload)
-        await update($, creditsAtom, () => (credits ? { credits, at } : null))
-        await update($, seen, s => ({ ...s, statusReads: s.statusReads + 1, lastStatusAt: at }))
-        const isOrgNamed = typeof (e as { asOrganizationId?: unknown }).asOrganizationId === 'string'
         const reading = readAtlasOrg(payload)
+        // The call names its organization flat or under `input`.
+        const asked = (e as { asOrganizationId?: unknown; input?: { asOrganizationId?: unknown } })
+        const isOrgNamed = typeof asked.asOrganizationId === 'string' || typeof asked.input?.asOrganizationId === 'string'
+        // A result that is only get_status's default (several organizations, none named) is not a pick and
+        // leaves the held organization alone; so it must leave that organization's costs and credits alone too,
+        // or the figures of the default organization would replace, and then be hidden against, the picked one's.
+        const holdsPick = (await read($, org)).name !== null
+        const isPick = reading?.name !== undefined && (reading.orgCount <= 1 || isOrgNamed)
+        // Kept only for a reading that is the default: it parsed, several organizations, none named. An
+        // unparseable result, or a named call whose result has no name, clears the figures as before.
+        // When the default's credits are the held organization's own (same id), they are that organization's fresh figures: taken, not kept.
+        const held = (await read($, creditsAtom))?.credits
+        const isHeldOrg = credits?.organizationId !== undefined && credits.organizationId === held?.organizationId
+        const isKept = holdsPick && !isPick && reading !== null && reading.orgCount > 1 && !isOrgNamed && !isHeldOrg
+        await update($, atlas, prev => (isKept ? prev : costs ? { costs, at } : null))
+        await update($, creditsAtom, prev => (isKept ? prev : credits ? { credits, at } : null))
+        await update($, seen, s => ({ ...s, statusReads: s.statusReads + 1, lastStatusAt: at }))
         await update($, org, prev => orgStateFrom(prev, reading, isOrgNamed))
       }
     } catch {
@@ -1747,17 +1749,20 @@ export const register: Register = on => {
     // The desktop draws the bar itself as an Svg (the dithered fill and step pill), between a title Button and an agents Button.
     // An Svg takes no press and the host ignores absolute, so nothing lies over it: the presses sit on the Buttons beside it.
     if (band.crab === null) band.crab = pickCrab()
-    // The bar takes every column the row's other items leave (7px a column, a little under the 8px the notice and coach rows use, so a misjudged width leaves the bar short instead of wrapping the row), so it fills
-    // the row on one line; the percent, crab, count and panel icon sit together in a right group that ends at the icon.
+    // The bar is laid out for most of the columns the row's other items leave (8px a column, as the notice and coach rows use; see
+    // meterSvg), and the host crops, never stretches, what overflows, so a misjudged width neither distorts it nor wraps the row.
+    // The percent, crab, count and panel icon sit together in a right group that ends at the icon.
     const countText = `×${list.length}`
-    const fixedCols = title.length + percent.length + countText.length + 26
-    const meterW = Math.max(60, Math.round(((cols || 100) - fixedCols) * 7))
+    const fixedCols = title.length + percent.length + countText.length + 22
+    // The layout width is the bar's real size, and a long dithered fill must stay under the host's 131072-character cap
+    // on an Svg's source, so a very wide band lays out no wider than METER_LAYOUT_MAX.
+    const meterW = Math.min(METER_LAYOUT_MAX, Math.max(60, Math.round(((cols || 100) - fixedCols) * 8 * METER_FIT)))
     const barRow = (
       <Box flexDirection="row" width="100%" gap={2}>
         {Svg ? <Svg source={dotSvg(shown)} alt="" width={12} height={BAR_ROW_H} /> : null}
         <Button key="aspire-org" label={Svg ? title : `● ${title}`} plain onPress={changeOrg} />
         <Box flexGrow={1} flexShrink={1} minWidth={0}>
-          {Svg ? <Svg source={meterSvg(shown, meterW)} alt={`${shown.label}, ${percent}`} width={meterW} height={BAR_ROW_H} /> : null}
+          {Svg ? <Svg source={meterSvg(shown, meterW)} alt={`${shown.label}, ${percent}`} height={BAR_ROW_H} /> : null}
         </Box>
         <Box flexDirection="row" flexShrink={0} gap={1}>
           <Button
