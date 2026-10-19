@@ -224,7 +224,7 @@ test('desktop: the band bar is drawn at its natural size and cropped to the room
     // No pixel width on the element: the host takes the markup's own width up to its slot, and the markup asks for more than any slot.
     expect(meter!.props.width).toBeUndefined()
     const source = String(meter!.props.source)
-    expect(source).toContain('preserveAspectRatio="xMinYMid slice"')
+    expect(source).toContain('preserveAspectRatio="xMinYMid meet"')
     expect(source).not.toContain('preserveAspectRatio="none"')
     expect(source).toMatch(/<svg [^>]*width="4000"/)
     // The layout still tracks the column count: the size the bar is drawn at before the host crops it.
