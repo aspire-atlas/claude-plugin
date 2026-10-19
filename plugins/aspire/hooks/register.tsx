@@ -436,10 +436,10 @@ const meterGroup = (shown: Shown, BAR_W: number): string => {
   const pillW = Math.min(BAR_W, Math.round(18 + textWidth(pill, 11)))
   const pillX = Math.max(0, Math.min(BAR_W - pillW, fillW - pillW))
 
-  return `<defs><clipPath id="aspire-bar-clip"><rect x="0" y="0" width="${BAR_W}" height="${BAR_H}" rx="${BAR_H / 2}"/></clipPath></defs>
+  return `<defs><clipPath id="aspire-bar-clip"><rect x="0" y="0" width="${BAR_W}" height="${BAR_H}" rx="${BAR_H / 2}"/></clipPath><clipPath id="aspire-fill-clip"><rect x="0" y="0" width="${Math.max(fillW, BAR_H)}" height="${BAR_H}" rx="${BAR_H / 2}"/></clipPath></defs>
 <rect class="k" width="${BAR_W}" height="${BAR_H}" rx="${BAR_H / 2}"/>
 <g clip-path="url(#aspire-bar-clip)">
-<g fill="${color}">${dots.join('')}</g>
+<g clip-path="url(#aspire-fill-clip)"><g fill="${color}">${dots.join('')}</g></g>
 <g class="tk">${ticks.join('')}</g>
 </g>
 <rect x="${pillX}" width="${pillW}" height="${BAR_H}" rx="${BAR_H / 2}" fill="${color}"/>
