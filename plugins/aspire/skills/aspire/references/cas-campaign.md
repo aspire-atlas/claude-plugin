@@ -58,6 +58,7 @@ draft, and in a channel post, uses the left column.
 | Team and weekly sync | routing and sync |
 | Budget summary, totals | budget |
 | Waiting on you (the viewer's items), Needs attention (every open item) | attention list |
+| History: who did what and when | the activity log (**1e**, **The activity log**) |
 | Home, Master Brief, Creator Selection, Selected Creators, Content Review, Ad Performance | the page's six tabs (**1d**) |
 
 The status labels a person sees, in order: Awaiting decision, Approved, Maybe, Rejected, Offer
@@ -734,7 +735,10 @@ and item. Labels, eyebrows, titles and ledes are in **Page vocabulary**, **Tabs*
    `#review`, `#performance`. A link to one item adds its round and the item after slashes:
    `#selection/r{n}/{net}-{handle}` and `#creators/r{n}/{net}-{handle}` open that creator's card,
    `#brief/r{n}/{lane}` opens that concept's brief, `#brief/r{n}/changes-{net}-{handle}` opens a
-   creator's changed brief. Opening a link selects the tab and the item's round, scrolls to the
+   creator's changed brief, `#review/r{n}/{cut}` opens that cut in the review panel, and
+   `#home/{section}` opens a Home section (`steps`, `waiting`, `attention`, `calendar`, `team`,
+   `program`, `files`). `#history` opens **History** over the tab open last. Opening a link
+   selects the tab and the item's round, scrolls to the
    item and keeps the hash in the address bar. A hash with no round opens the round the viewer
    picked last (**Round switcher**), else the current round. Switching tabs or rounds updates the
    hash. A link with no hash opens the tab the person had open last (kept in the browser, and
@@ -968,6 +972,69 @@ How the live partnership ads of the round in view did against the campaign's dec
 (**What this flow never does**), so the tab shows its empty state. The client writes nothing on
 this tab.
 
+### History
+
+Who did what and when, on every tab and in every round. It reads the activity log (**1e**, **The
+activity log**), so it shows every write on every tab, checklist ticks and notes included.
+
+- **Opening it.** From the inbox: a ghost Button "History" with the Lucide `history` icon in the
+  inbox's Sheet header, for the client and the agency. This section sets only that Button in the
+  inbox; the inbox's items are not part of it. `#history` opens it too, over the tab the person had
+  open. It opens as a Sheet (**Responsive**, **Side panels**). Closing it goes back to the inbox,
+  where the person was in it.
+- **What each person sees.** Only entries about things they can see, because only those are in
+  the data they can read. The client: every entry in the client readable logs, theirs, the other
+  approvers', the agency's and Claude's. The agency: those, plus the agency's own log, each of its
+  entries marked with a soft Badge "Agency only". **Preview as client** shows only the client
+  readable logs, with no Agency only entries. A read only client reads no page data, so History
+  shows one line: "History isn't available from this account. Ask {CM name} to share the page with
+  you as Contributor."
+- **The layout.** The Sheet's title is "History", its description "Who did what and when, newest
+  first." Under it, one row of controls: a search Input ("Search history"), a Select for the tab
+  (All tabs, then the six tabs in order), a Select for the round (All rounds, each round's label,
+  then "Whole campaign" for entries about no one round), and an outline Button, size sm, "Copy as
+  table". On phone the search takes the full width, the two Selects sit side by side under it, and
+  the Button under them. A count line in `text-xs text-muted-foreground` follows: "{n} entries",
+  with a ghost Button "Clear filters" while any filter or search is set.
+- **Grouped by day.** Newest first, one group per day on the viewer's clock and time zone, headed
+  "Today", "Yesterday", then the weekday and date ("Tue, Nov 4"), in `text-xs font-medium
+  text-muted-foreground`, pinned at the top of the list while its rows scroll (`sticky top-0
+  bg-background`). Each row: an Avatar with the writer's initials, the writer's name, and the
+  entry's text; under it, in `text-xs text-muted-foreground`, the time, the tab's label as an
+  outline Badge, the round ("Round 2", or "Whole campaign"), and for the agency the "Agency only"
+  Badge. A row with an old and new value shows "Show change", which opens "Was: {from}" and "Now:
+  {to}" under it. The name comes from the id, never the stored copy, per **Every editable value**:
+  for a Contributor's entry the id in the log's path, for an Editor's or Claude's the entry's
+  `author`; "Claude" for Claude. A row is a plain button, not a Button: `flex w-full min-w-0
+  items-start gap-3 rounded-md p-2 text-left hover:bg-accent focus-visible:outline-none
+  focus-visible:ring-1 focus-visible:ring-ring`, with `break-words` on the text.
+- **Filters and search work together.** The tab, the round and the search narrow the same list at
+  once, and the count line counts what is left. Search matches the entry's text, the creator's
+  handle, the writer's current name, the tab's label and the kind in plain words (decision, note,
+  comment, checklist), ignoring case and accents. A Select's choice and the search are kept in
+  memory while the page is open, never in page data or browser storage, and History opens on All
+  tabs and All rounds. Nothing matches: "No history matches." with "Clear filters". An empty log:
+  "Nothing has happened on this page yet."
+- **Live.** A new entry the viewer may see shows at the top of its day as it is written, by anyone,
+  without a reload (**1e**, **The activity log**, **Reading it**). An entry the filters hide only
+  changes nothing on screen. When the person has scrolled down, new rows don't move the list: a
+  secondary Button, size sm, "{n} new" shows at the top and scrolls up to them.
+- **Earlier days.** History opens with the last 14 days. A ghost Button "Show earlier" at the end
+  loads 14 more. While a search or filter is set the count line adds "Searching back to {date}", so
+  nobody reads an empty result as "never happened".
+- **Opening the item.** Clicking or pressing Enter on a row closes the Sheet and opens the row's
+  hash: the tab, the round, and the item, scrolled into view (**Header and tabs**). An item no
+  longer on the tab opens the tab at the top. A row in a done round opens that round read only.
+- **Copy as table.** Copies the rows shown now, with the filters and search applied, over the days
+  loaded, as a table: Date, Time, Who, Side (Client or Agency), Tab, Round, What, with a first line
+  "Times in {time zone}". It puts both an HTML table and tab separated text on the clipboard, so
+  it pastes as a table into a sheet, a doc or an email. Agency only rows are copied only by the
+  agency, with "Agency only" in the Side column, and never in **Preview as client**. The Button
+  reads "Copied {n} rows" for two seconds. Where the browser refuses the clipboard, a Dialog
+  "Copy history" opens with a read only Textarea holding the tab separated text, already selected,
+  the line "Press Ctrl+C or Cmd+C to copy.", and Close (outline). The table holds what the rows say,
+  never an id, a field name or a tool name.
+
 ### Footer
 
 "Page republished on every change. Numbers come from Atlas as of {time}. Post images are
@@ -995,6 +1062,7 @@ name the tab, never an older name for the part:
 | Delays and weekly call: timeline, documents, delays, agenda | Home, **Calendar**, **Files**, **Team and weekly sync** |
 | Budget (agency only) | Creator Selection, **Budget summary**, and Selected Creators, **Totals** |
 | Drafts and the reply log (agency only) | Selected Creators, on the creator's card |
+| Who did what and when, filtered by tab and round, searched | **History**, opened from the inbox |
 
 ### Page mechanics
 
@@ -1331,8 +1399,8 @@ prefixes.
   rates, Shipping, the budget summary and totals, the Calendar) is a table from 640px and a stack
   of Cards on phone, one Card per row, each showing the row's first column as its title and the
   other columns as label and value pairs.
-- **Side panels.** The creator viewer, the review panel, the inbox and comments open as a Sheet:
-  full screen on phone, a right-hand panel from 640px. Closing it returns to the same place in
+- **Side panels.** The creator viewer, the review panel, the inbox, History and comments open as a
+  Sheet: full screen on phone, a right-hand panel from 640px. Closing it returns to the same place in
   the list. A confirm or a required reason opens a Dialog.
 - **Touch.** Every control is at least 44px tall on phone and on touch screens; the `pointer:coarse`
   rule in **Tokens** enforces it, so a control must not undo it with a fixed height. Every tooltip
@@ -1453,8 +1521,9 @@ subscription to a collection sees only the documents directly in it, never the o
 below, so comments, review versions and the activity log are reached one level down: each
 writer keeps a `comments/{id}` document (`lastAt`) beside their items, the page subscribes to
 `comments` to learn the writers and then to each writer's `comments/{id}/items`, and to
-`agency/comments/items` for editors; review versions and the activity log are read when the
-person opens them. The page subscribes to collections, not to each document, to stay under the 64
+`agency/comments/items` for editors; review versions are read when the person opens them, and
+the activity log is followed the same way while **History** is open (**The activity log**,
+**Reading it**). The page subscribes to collections, not to each document, to stay under the 64
 subscriptions a view can hold; past that, the oldest writers' comments refresh when the
 person opens the thread. Updates ride a live stream where the browser has one and fall back
 to a refresh about every 30 seconds, so "without a reload" can take up to that long on some
@@ -1498,8 +1567,9 @@ with a plain description holds plain data the page writes with no stamp.
 | Creator profile | `creators/{net}-{handle}` | Agency | `name`, `descriptor`, `location`, `pickNote` (why we picked them) |
 | Creator, per round | `edits/creator-{net}-{handle}-r{round}` | Agency | `concept`, `product`, `status`, `adPermissions`, `shipping`, `tracking`, `productStatus`; `returning` (true) and `fromRound` on a creator carried into the round |
 | Creator, agency only | `agency/creator-{net}-{handle}` | Agency | Every agency only field in **Who sees what**: the recommendation, notes, vetting evidence, safety detail, email, phone, manager, tier window, last contact, rates, expected cost, cost per 1K reach, offer, counters, waiting on, the reply log, and the draft waiting to send |
-| Activity | `activity/{id}/days/{YYYY-MM-DD}` | Each person, their own; Claude under `activity/claude` | `entries:` one key per action, `{entryId}: {at, action, record, field, from, to}` |
-| Agency activity | `agency/activity/days/{YYYY-MM-DD}` | Agency | The same, for actions on agency data |
+| Activity | `activity/{id}/days/{day}` | Each person, their own; Claude under `activity/claude` | `day:`, `entries:` one key per write (**The activity log**) |
+| Activity writers | `activity/{id}` | Each person, their own | `lastAt:` the time of their newest entry, written with each one |
+| Agency activity | `agency/activity/days/{day}` | Agency | The same, for writes about agency only data |
 | Attention | `agency/attention` | Agency | The agency's attention items, and who else each client item waits on (**Home**) |
 | Last pull | `agency/pull` | The Campaign Manager | `at:` the time of the last pull that recorded something |
 | Design notes | `agency/design` | Agency | `notes:` the brand theme fallbacks from **Design standards**, one line each |
@@ -1508,10 +1578,8 @@ with a plain description holds plain data the page writes with no stamp.
 Attention, inbox and section ids are stable and say what they are (`decide-ig-{handle}-r1`,
 `fees-r1`, `selection-budget`), so a mark survives a republish. Each attention item also carries
 the hash of the tab and item it opens (**1d**, **Header and tabs**). Per viewer state is keyed by
-id, not kept as a list, so marks made on a phone and a laptop at once merge. Activity keeps one
-document per writer per day, so the log stays well under the page data's 25,000 document limit;
-an entry on a client readable record never repeats an agency only value, and an action on agency
-data goes to `agency/activity` instead.
+id, not kept as a list, so marks made on a phone and a laptop at once merge. The activity log
+keeps one document per writer per day (**The activity log**).
 
 Rules:
 
@@ -1539,6 +1607,101 @@ Rules:
 - Per viewer state stays on the page. It is private to each person, even from Claude, and is
   never pulled into Atlas.
 
+### The activity log
+
+Every write a person or Claude makes to the shared page data adds one entry to the activity log,
+and **History** (**1d**) reads it. There is one log, not a second one per tab, and every tab
+writes to it, checklist ticks and notes included.
+
+**One entry per write.** Each entry is plain data the page writes with no stamp:
+
+```json
+{"tab": "selection", "kind": "decision", "verb": "decided",
+ "text": "Yes on @a for round 2. What made the call: Brief fit",
+ "creator": "ig-a", "asset": "", "anchor": "#selection/r2/ig-a", "round": 2,
+ "at": "2026-11-04T15:02:11Z", "author": "<viewer id>", "byName": "Name", "side": "client"}
+```
+
+| Field | What it holds |
+| ----- | ------------- |
+| `tab` | The tab the write was made on: `home`, `brief`, `selection`, `creators`, `review` or `performance`, as in the hash links. For Claude's writes, the tab that shows the record. A value edited on two tabs (status on Creator Selection and Selected Creators) takes the one it was edited on |
+| `kind` | One of the kinds below |
+| `verb` | One of: added, changed, removed, decided, approved, requested changes, undid, cleared, commented, replied, resolved, reopened, ticked, unticked, uploaded, started, recorded, synced |
+| `text` | One line in the page's own words, written at the time: what changed and, for a short value, what it changed to ("Changed product status for @a to Shipped"). It never names the writer (the row does), and never holds an id, a slug, a field name or a tool name. A note or comment carries its first 200 characters |
+| `creator` | `{net}-{handle}` when the write is about one creator, else empty |
+| `asset` | The item when it is not a creator: `brief-{lane}`, `changes-{net}-{handle}`, `cut-{cut}-v{version}`, `file-{id}`, `round-r{round}`, `fees`, `budget`, `program`, `team-{id}`; else empty |
+| `anchor` | The hash the row opens (**1d**, **Header and tabs**): the item when it has one, else its tab |
+| `round` | The round number from the round records (**Rounds**), or `null` for a write about the whole campaign (program details, team, a file with no round, the budget, the match score) |
+| `at` | Full UTC time of the write |
+| `author` | The writer's id from `user.id()`; `claude` for Claude |
+| `byName` | The writer's name at the time, as on a stamp; "Claude" for Claude |
+| `side` | `client` or `agency`, from the writer's role when they wrote it (**Who sees what**); Claude's entries are `agency` |
+| `from`, `to` | On a change, a note or a status only: the old and new value, each cut to 200 characters, so a row can show the change. Left out when the value is long text the row can't show usefully (a brief's body says only which part changed) |
+
+Entries written before this shape (`{at, action, record, field, from, to}`) read as kind `edit`,
+with the tab and round worked out from `record`.
+
+**Kinds, and what logs each.** Every write in **What the page keeps** maps to one kind:
+
+| Kind | Writes | Tab |
+| ---- | ------ | --- |
+| `decision` | A creator decision and its reason; a fee approval; a brief sign off; the call on a changed brief; a cut's Approve, Request changes or Undo approval; **Reset decisions** (one entry per reset) | Creator Selection, Selected Creators, Master Brief, Content Review |
+| `note` | The client's notes and Maybe note on a decision or approval; the agency's notes on a creator | Where it was written |
+| `status` | A creator's status and ad permissions; shipping, tracking and product status, from either side, Mark shipped and Mark delivered included | Creator Selection, Selected Creators |
+| `brief` | Any part of a concept's brief; the variant build | Master Brief |
+| `comment` | A comment, a reply, an edit to one, Resolve and Reopen, on a brief or a cut, agency only comments included | Master Brief, Content Review |
+| `checklist` | A review checklist item ticked or unticked | Content Review |
+| `upload` | A new version of a cut, its link or file, and its notes | Content Review |
+| `file` | A file added, edited or removed | Home |
+| `program` | Program details, products, team, steps and dates, the weekly sync, the term, program terms, a round's dates, and starting a round (one entry for the round and its carried creators) | Home, and the tab where it was edited |
+| `edit` | Any other edited value: a creator's profile, concept and product, a cut's title, the budget total, a match score weight | Where it was edited |
+| `record` | Claude's writes: a republish's changes (one entry per record changed, naming the parts in plain words), a pull recorded in Atlas, the attention list, the design notes | The tab that shows the record |
+
+**Where an entry goes.** By what the write touched, never by who wrote it:
+
+- A write about something the client can see goes to the writer's own log,
+  `activity/{id}/days/{day}`, with `{id}` their `user.id()`. Claude writes to
+  `activity/claude/days/{day}`.
+- A write about agency only data goes to `agency/activity/days/{day}`: anything under `agency`
+  (the agency's creator fields and notes, terms before the fees are sent, the budget, the match
+  score, the variant build, the attention list, the design notes, the last pull) and every agency
+  only comment.
+- A write that touches both writes two entries, each naming only its own side's part.
+- An entry in a client readable log never carries an agency only value in `text`, `from` or `to`.
+  When agency data explains a visible change (a status that moved because a counter was
+  declined), the entry names only the visible change.
+
+`{day}` is the UTC date of `at` (`YYYY-MM-DD`), and the document's `day:` field holds it.
+
+**Writing it.** After the data write is confirmed, the page merges the entry into the day's
+document with an `update`, as one key under `entries` named by a fresh entry id, and merges
+`lastAt` into the writer's `activity/{id}`. A day's first entry creates the document under the
+short lease in **Creating a document**. A retry reuses the entry id, so an entry never lands twice.
+A document that reaches 300 entries continues in `{day}-2`, then `{day}-3`, with the same `day:`,
+so no document nears the 256 KiB limit; one document per writer per day keeps the log well under
+the page data's 25,000 documents. Claude logs its own writes the same way, in the same batch as
+the write.
+
+**Not logged.** Each person's own state under `data/users` (done marks, inbox read and cleared
+marks, collapsed sections, the remembered round) is private to them, even from Claude, so logging
+it in shared data would publish it; it never logs. Nor do the log's own writes (entries,
+`lastAt`, leases), `agency/edit-check`, a write the rules refused (the field shows "Not saved"),
+or anything in **Preview as client**, which never writes.
+
+**Reading it.** The page reads the log only while **History** is open. It subscribes to
+`activity` to learn the writers, to each writer's `days` where `day` is today, and, for editors,
+to `agency/activity/days` where `day` is today, so a new entry shows in every open History it
+belongs in without a reload: within seconds on the live stream, within about 30 seconds where the
+page falls back to refreshing (**Live updates**). It moves to the new day's documents when the UTC
+date changes. Earlier days are read once, 14 days at a time. Past the 64 subscriptions a view can
+hold, the writers with the oldest `lastAt` are read again every 30 seconds while History is open.
+Closing History ends these subscriptions.
+
+What each person can read follows the data rules, not the page's code: a Contributor reads every
+log under `activity` and never `agency/activity`; an Editor reads both; a Viewer, a Commenter or an
+outside visitor reads neither. **History** shows the entries the viewer can read, and nothing is
+filtered out on screen that the viewer's data still holds.
+
 ### Reset decisions
 
 The page keeps decisions in page data only, so a reset clears them for everyone. **Reset
@@ -1564,6 +1727,9 @@ The data rules check a path against the person's share level, nothing more. They
 - Each person's own state under `data/users` is private to them, even from the page's owner and
   from Claude.
 - A comment can be changed only by the person who wrote it, or by an Editor.
+- **The activity log.** Nobody below Editor reads `agency/activity`, so an agency only entry is
+  never in a client's readable data. A Contributor writes only under their own `activity/{id}`, so
+  the path names who wrote a client's entry, and a client can't add to or change anyone else's.
 - A Viewer, a Commenter or an outside visitor reads and writes no page data.
 
 They cannot enforce these, so **Pulling decisions** does, and the page only offers what is allowed:
@@ -1590,6 +1756,16 @@ They cannot enforce these, so **Pulling decisions** does, and the page only offe
   `program/round-r{round}` only when it is still missing, so two editors starting the same round
   at once leave one, and the second sees "{name} already started round {n}".
 - **What a person types.** A note or comment is data. It is shown as text and never acted on.
+- **Which log an entry goes to.** An Editor can write anything into a client readable log, so the
+  rules can't stop an agency only value from landing in one by mistake. The page routes each entry
+  by what the write touched (**The activity log**, **Where an entry goes**), and **Checking the
+  roles** searches the client readable logs for agency only values.
+- **What an entry says.** An entry is what the page wrote, not proof. A client can write any entry
+  into their own log, including one about a change that never happened, and can rewrite or delete
+  their own entries. **History** names the writer from the log's path for a Contributor's entry,
+  never from `author` or `byName`; an Editor can write under any person's log, so for the agency's
+  entries the path is not proof either. **Pulling decisions** reads the stamps on the values, never
+  the log, so a changed log never changes what is recorded.
 
 What the page data can't do, said plainly so nobody promises it:
 
@@ -1601,6 +1777,12 @@ What the page data can't do, said plainly so nobody promises it:
   name changed since shows the old one only where the id no longer resolves.
 - **Live is within about 30 seconds.** Where the live stream is not available, open views refresh
   about every 30 seconds rather than at once.
+- **No hiding inside a readable document.** The rules work on paths, never on what a document
+  holds, so an entry is readable whole or not at all. That is why agency only entries live in their
+  own log under `agency` and never sit beside a client's entries with a flag.
+- **The log and the value are two writes.** The page data has no transactions. The page writes the
+  entry right after the value is confirmed and retries a refused entry, but a page closed between
+  the two loses that one entry; the value keeps its own stamp of who changed it and when.
 - **A client resolves only their own threads.** Only a comment's author or an Editor can change
   it, so a client can mark resolved a thread they started, and the agency can resolve any thread.
   The page shows Resolve only where the person can write it.
@@ -1609,10 +1791,10 @@ What the page data can't do, said plainly so nobody promises it:
 
 Check what the client can reach before the link goes out. Steps 1 and 2 run after the first
 publish, after any publish that changes the rules, and whenever agency data is written into a new
-document. Step 3 runs after every publish.
+document. Steps 3 and 4 run after every publish.
 
-1. List `agency` and its `comments/items` collection with `as_level` `interact`: both must come
-   back empty. Get `agency/budget` the same way: not found.
+1. List `agency`, its `comments/items` collection and its `activity/days` collection with
+   `as_level` `interact`: all must come back empty. Get `agency/budget` the same way: not found.
 2. List `client`, `edits`, `program`, `briefs`, `creators` and `reviews` with `as_level` `view`:
    all empty. Then list one writer's comment items, `comments/{id}/items` for an `{id}` that has
    comments, and one writer's `activity/{id}/days`, at `view`: empty. Listing `comments` or
@@ -1623,6 +1805,10 @@ document. Step 3 runs after every publish.
    not show. An amount the page shows the client in its own right (an agreed fee once the fees are
    sent) is left out of the search even when an offer or counter had the same number. None of the
    rest may appear.
+4. Read the client readable activity written since the last check (each writer's
+   `activity/{id}/days` with `day` on or after the last check's date) and search every entry's
+   `text`, `from` and `to` for the same values. An entry that holds one is rewritten without it,
+   with Claude's own `update`, and the page is fixed before the next publish.
 
 Any failure stops the send: say which value leaked in one line, fix the page or the rules, and
 publish again. Say in one line what was checked. Preview as client is built from the same

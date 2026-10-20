@@ -2019,6 +2019,13 @@ open tab and the Creator Selection layout. The page ships no sample data: an emp
 its empty states. A republish never overwrites a person's edit that has not been pulled yet. The
 reference's **1d**, **Editing in place**, and **1e**, **Every editable value**, hold the rules.
 
+Every write on every tab, checklist ticks and notes included, adds one entry to the page's activity
+log, and **History**, opened from the inbox, shows it grouped by day, filtered by tab and round,
+searchable, with each row opening its item and a Copy as table. Each person sees only entries
+about what they can see: entries about agency only data go to a log the client can't read, and a
+person's own state (done marks, inbox marks) is never logged. The reference's **1d**, **History**,
+and **1e**, **The activity log**, hold the rules.
+
 A campaign runs in rounds, one a month, as many as it needs. Every tab but Creator Selection shows
 one round, picked in the round switcher on every tab and remembered for each person; Creator
 Selection is one pool for every round, and an approval adds the creator to the newest round
