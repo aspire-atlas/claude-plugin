@@ -3,7 +3,7 @@
 Used by the **CAS campaign** and **Rates and terms** sections of SKILL.md, and read by the
 `atlas-creator-discovery`, `atlas-creator-vetting` and `atlas-creator-brief` agents when they run
 in creator-ads mode. Holds the state model, the setup interview, the dispatch table, the gate
-packets, the campaign page and its page data, creator details and product shipping, the
+packets, the campaign page, its design standards and its page data, creator details and product shipping, the
 creator's turn on the brief, reminders, and the rules for unattended runs.
 
 CAS is Creator Ad Services: creators make ads for a brand, run as partnership ads. This
@@ -438,7 +438,7 @@ with styling is not enough.
 
 ### Sections, in order
 
-1. **Header.** Brand theme per `theme.md`, **Applying the theme** (the band header with the logo
+1. **Header.** Brand theme per `theme.md`, **The CAS campaign page** (the band header with the logo
    when the theme says so). Title "{Brand} · {campaign name}". Subtitle "Creator ads · {n}
    creators, {v} ads each · runs {start} to {end} · updated {time}". The animated Aspire Atlas mark
    sits at the top right of the header (`artifact-standard.md`). A four step progress bar:
@@ -480,7 +480,7 @@ with styling is not enough.
      Agreed fee, shown as "talking" until agreed), Brief and content (Brief, Content, Content
      folder), and for the agency, Agency only (Rate: UGC video, Rate: Reel collab, Rate: 90 day
      usage, Expected cost, Offer (max), Counter, Waiting on, Last contact, Agency notes, Email,
-     Manager). Status labels are soft pills in the page's semantic colors.
+     Manager). Status labels are Badges in their **Status pills** variants (**Design standards**).
    - **Controls on both layouts.** Your decision is a dropdown (Decide, Approve, Maybe, Reject)
      that takes the color of the choice. Reject opens a reason field marked "Reason is required";
      Maybe opens an optional note. Your notes is a free text cell on every row. These are
@@ -522,15 +522,320 @@ with styling is not enough.
     (`artifact-standard.md`). The page is shared with the client's approvers, so its source line
     uses the standard's shared-page audience line. The client view and the agency view each carry
     their own footnote, and the agency-only notes never appear in the client view's footnote.
+    For editors only, any brand theme fallbacks from **Design standards**, read from
+    `agency/design` (**1e**), sit above the footnote under an "Agency only" rule.
 
 ### Page mechanics
 
-Load `artifact-design` before building, and `dataviz` for any chart. Apply `theme:brand` per
-`theme.md`, **Applying the theme**. Concept chips use the theme's chart series; status pills and
+Load `artifact-design` before building, and `dataviz` for any chart. Build every screen to
+**Design standards** below. Apply `theme:brand` per `theme.md`, **The CAS campaign page**. Concept chips use the theme's chart series; status pills and
 decisions keep their semantic colors under any theme. Creators are drawn with the creator card,
 images embedded per `creator-card.md`, **Images**, page profile. Publish with the Artifact tool
 and the page data capabilities in **1e**. The client's view is complete without the agency data,
 and the page renders before its data loads.
+
+### Design standards
+
+Every screen, tab, panel and dialog on the campaign page follows this section. Other parts of this
+reference say what a screen holds; this section says how it is built and how it looks. A screen
+that does not meet it does not ship. It covers the campaign page only: other Atlas pages keep their
+own design.
+
+**Build.** The page is Tailwind utility classes on shadcn components, on the Atlas design system
+tokens below, with the brand theme applied on top (**Brand theme on the page**). Load Tailwind from
+`https://cdn.tailwindcss.com/3.4.17` with the config in **Tokens**. The page has no build step, so
+each component is plain markup (or a React element) that carries the component's class strings
+from **Component classes** exactly as written, plus the `data-state` attributes they key on.
+Never invent a class combination for a component listed there.
+
+**Components.** Use these and nothing hand-drawn in their place: Button, Card, Badge, Tabs, Table,
+Dialog, Sheet, Select, Input, Textarea, Switch, Progress, Tooltip, Avatar, Separator, Skeleton.
+Skeleton is the loading state of anything that waits for page data. Icons are Lucide, at the
+sizes the component gives them (`size-4` in buttons). The creator card keeps its own markup from
+`creator-card.md` and takes its colors from these tokens (**Brand theme on the page**).
+
+#### Tokens
+
+Put this block in the page `<head>`, before the theme block. It defines the Atlas tokens for
+light and dark, maps the semantic classes onto them, and sets the font, radius and touch targets.
+Dark mode follows the viewer's system setting. The page has no theme toggle.
+
+```html
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script>
+const v = (n) => `var(--${n})`, pair = (n) => ({DEFAULT: v(n), foreground: v(`${n}-foreground`)});
+tailwind.config = {darkMode: ["variant", [
+  "@media (prefers-color-scheme: dark) { &:not(:where([data-theme=light], [data-theme=light] *)) }",
+  "&:where([data-theme=dark], [data-theme=dark] *)"]],
+  theme: {extend: {
+    colors: {background: v("background"), foreground: v("foreground"), card: pair("card"),
+      popover: pair("popover"), primary: pair("primary"), secondary: pair("secondary"),
+      muted: pair("muted"), accent: pair("accent"), destructive: pair("destructive"),
+      border: v("border"), input: v("input"), ring: v("ring")},
+    borderRadius: {xl: "0.75rem", lg: v("radius"), md: "calc(var(--radius) - 2px)", sm: "calc(var(--radius) - 4px)"}}}};
+</script>
+<style>
+:root{--background:#ffffff;--foreground:#09090b;--card:#ffffff;--card-foreground:#09090b;
+  --popover:#ffffff;--popover-foreground:#09090b;--primary:#0a0a0a;--primary-foreground:#ffffff;
+  --secondary:#f9fafb;--secondary-foreground:#09090b;--muted:#f5f5f5;--muted-foreground:#52525c;
+  --accent:#f4f4f5;--accent-foreground:#09090b;--destructive:#e7000b;--destructive-foreground:#ffffff;
+  --border:#e4e4e7;--input:#ffffff;--ring:#1e4945;--radius:0.75rem;
+  --chart-1:#1e4945;--chart-2:#366c63;--chart-3:#4e8e81;--chart-4:#7ab19f;--chart-5:#e3f1bb;
+  --chart-1-foreground:#ffffff;--chart-2-foreground:#ffffff;--chart-3-foreground:#09090b;
+  --chart-4-foreground:#09090b;--chart-5-foreground:#09090b}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){/* the dark values below */}}
+:root[data-theme="dark"]{--background:hsl(222.2 84% 4.9%);--foreground:hsl(210 40% 98%);
+  --card:hsl(222.2 84% 4.9%);--card-foreground:hsl(210 40% 98%);--popover:hsl(222.2 84% 4.9%);
+  --popover-foreground:hsl(210 40% 98%);--primary:hsl(210 40% 98%);--primary-foreground:hsl(222.2 47.4% 11.2%);
+  --secondary:hsl(217.2 32.6% 17.5%);--secondary-foreground:hsl(210 40% 98%);--muted:hsl(217.2 32.6% 17.5%);
+  --muted-foreground:hsl(215 20.2% 65.1%);--accent:hsl(217.2 32.6% 17.5%);--accent-foreground:hsl(210 40% 98%);
+  --destructive:hsl(0 62.8% 30.6%);--destructive-foreground:hsl(210 40% 98%);--border:hsl(217.2 32.6% 17.5%);
+  --input:hsl(217.2 32.6% 17.5%);--ring:hsl(212.7 26.8% 83.9%);
+  --chart-1:hsl(220 70% 50%);--chart-2:hsl(160 60% 45%);--chart-3:hsl(30 80% 55%);--chart-4:hsl(280 65% 60%);
+  --chart-5:hsl(340 75% 55%);--chart-1-foreground:#ffffff;--chart-2-foreground:#09090b;
+  --chart-3-foreground:#09090b;--chart-4-foreground:#09090b;--chart-5-foreground:#09090b}
+*,*::before,*::after{border-color:var(--border)}
+html,body{max-width:100%;overflow-x:clip}
+[hidden]{display:none!important}
+[role=switch][data-state=unchecked]{background-color:var(--muted-foreground)!important}
+body{background-color:var(--background);color:var(--foreground);font-family:'Inter',ui-sans-serif,system-ui,-apple-system,sans-serif}
+.bg-background{background-color:var(--background)!important}.bg-card{background-color:var(--card)!important}
+.bg-popover{background-color:var(--popover)!important}.bg-primary{background-color:var(--primary)!important}
+.bg-secondary{background-color:var(--secondary)!important}.bg-muted{background-color:var(--muted)!important}
+.bg-accent{background-color:var(--accent)!important}.bg-destructive{background-color:var(--destructive)!important}
+.bg-input{background-color:var(--input)!important}
+.text-foreground{color:var(--foreground)!important}.text-card-foreground{color:var(--card-foreground)!important}
+.text-popover-foreground{color:var(--popover-foreground)!important}.text-primary{color:var(--primary)!important}
+.text-primary-foreground{color:var(--primary-foreground)!important}.text-secondary-foreground{color:var(--secondary-foreground)!important}
+.text-muted-foreground{color:var(--muted-foreground)!important}.text-accent-foreground{color:var(--accent-foreground)!important}
+.text-destructive{color:var(--destructive)!important}.text-destructive-foreground{color:var(--destructive-foreground)!important}
+.border-border{border-color:var(--border)!important}.border-input{border-color:var(--input)!important}
+.ring-ring{--tw-ring-color:var(--ring)!important}.ring-offset-background{--tw-ring-offset-color:var(--background)!important}
+.focus-visible\:ring-ring:focus-visible,.focus\:ring-ring:focus{--tw-ring-color:var(--ring)}
+.rounded-xl{border-radius:0.75rem!important}.rounded-lg{border-radius:var(--radius)!important}
+.rounded-md{border-radius:calc(var(--radius) - 2px)!important}.rounded-sm{border-radius:calc(var(--radius) - 4px)!important}
+.bg-primary\/10{background-color:color-mix(in srgb,var(--primary) 10%,transparent)!important}
+.bg-primary\/20{background-color:color-mix(in srgb,var(--primary) 20%,transparent)!important}
+.bg-muted\/50{background-color:color-mix(in srgb,var(--muted) 50%,transparent)!important}
+.border-destructive\/50{border-color:color-mix(in srgb,var(--destructive) 50%,transparent)!important}
+.bg-black\/80{background-color:rgba(0,0,0,.8)!important}
+.hover\:bg-primary\/90:hover{background-color:color-mix(in srgb,var(--primary) 90%,transparent)!important}
+.hover\:bg-primary\/80:hover{background-color:color-mix(in srgb,var(--primary) 80%,transparent)!important}
+.hover\:bg-destructive\/90:hover{background-color:color-mix(in srgb,var(--destructive) 90%,transparent)!important}
+.hover\:bg-secondary\/80:hover{background-color:color-mix(in srgb,var(--secondary) 80%,transparent)!important}
+.hover\:bg-accent:hover{background-color:var(--accent)!important}.hover\:bg-muted:hover{background-color:var(--muted)!important}
+.hover\:text-accent-foreground:hover{color:var(--accent-foreground)!important}
+.bg-chart-1{background-color:var(--chart-1)!important;color:var(--chart-1-foreground)!important}
+.bg-chart-2{background-color:var(--chart-2)!important;color:var(--chart-2-foreground)!important}
+.bg-chart-3{background-color:var(--chart-3)!important;color:var(--chart-3-foreground)!important}
+.bg-chart-4{background-color:var(--chart-4)!important;color:var(--chart-4-foreground)!important}
+.bg-chart-5{background-color:var(--chart-5)!important;color:var(--chart-5-foreground)!important}
+.border-chart-1{border-color:var(--chart-1)!important}.border-chart-2{border-color:var(--chart-2)!important}
+.border-chart-3{border-color:var(--chart-3)!important}.border-chart-4{border-color:var(--chart-4)!important}
+.border-chart-5{border-color:var(--chart-5)!important}
+@media (pointer:coarse),(max-width:639px){button:not([role=switch]):not([role=checkbox]),a,select,summary,input:not([type=checkbox]):not([type=radio]),[role=tab],[role=button]{min-height:44px}
+  a:not(:is(p,li,dd,td,th,label) a){display:inline-flex;align-items:center}
+  [data-size=icon]{min-width:44px}[role=tablist]{height:auto}
+  [role=switch],[role=checkbox],input[type=checkbox],input[type=radio]{position:relative}
+  [role=switch]::after,[role=checkbox]::after{content:"";position:absolute;left:50%;top:50%;width:44px;height:44px;transform:translate(-50%,-50%)}}
+</style>
+```
+
+The `@media (prefers-color-scheme:dark)` block repeats the `:root[data-theme="dark"]` values
+exactly; it is shortened above only to save space here. Write both in full on the page. The
+`[hidden]` rule keeps a closed Sheet, Dialog or tooltip hidden even though its classes set a
+`display`. The config's colors and radii let prefixed classes (`data-[state=active]:bg-background`,
+`focus:bg-accent`, `placeholder:text-muted-foreground`, `sm:rounded-lg`) and `bg-border` resolve
+to the same tokens; the style block covers the opacity forms (`bg-primary/10`), which Tailwind
+cannot derive from a `var()` color. A Switch or checkbox keeps its drawn size on touch screens and
+gets a 44px tap area from its `::after`. A link that stands on its own (an "open" link, a tab card)
+is `inline-flex`, so it takes the 44px height; a link inside a sentence stays inline with its text.
+
+#### Banned on the page
+
+- Generic Tailwind color classes: anything `zinc-`, `slate-`, `gray-`, `neutral-` or `stone-`,
+  and `bg-white`, `text-black`, and `text-white` as body text. Use the semantic class instead:
+  `bg-background` or `bg-card` for white, `bg-muted` or `bg-accent` for light gray, `text-foreground`,
+  `text-muted-foreground`, `border-border`, `hover:bg-accent`.
+- A color written in markup: no hex, `rgb()` or `hsl()` in a class, an attribute or an inline
+  style, and no `style` attribute that sets a color, border or radius. No theme object in script
+  (`const theme = {...}`) applied through inline styles, and no `style="background:var(--card)"`.
+  Colors live only in the page's style blocks: **Tokens**, the theme block, and the creator card's own style block with its override. Two exceptions: the Aspire Atlas mark
+  is pasted as it is (`artifact-standard.md`), and a chart library that needs color values reads
+  them from the CSS variables at run time (`getComputedStyle(document.documentElement)`), never from
+  literals in the script.
+- Cards with any corner but `rounded-xl`.
+- Any font but Inter. A brand theme's fonts are not used on this page (**Brand theme on the page**).
+- The Badge variant `solid-black`, which uses a neutral color class.
+
+#### Component classes
+
+Use these strings verbatim. Join the base string with one variant and one size. One change from
+the design system: the light mode text of the success, warning, error and processing Badges is
+one or two shades darker (`green-800`, `amber-700`, `red-700`, `sky-700` in place of `-600`),
+because the `-600` text reads below 4.5:1 on its own tint. And an unchecked Switch's track is
+`--muted-foreground` (the `[role=switch]` rule in **Tokens**), because `--input` gives it no
+visible edge on a card. A Switch keeps the `role="switch"` and `data-state` attributes.
+
+| Component | Part | Classes |
+| --------- | ---- | ------- |
+| Button | base | `inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0` |
+| | default | `bg-primary text-primary-foreground shadow hover:bg-primary/90` |
+| | destructive | `bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90` |
+| | outline | `border border-border bg-background shadow-sm hover:bg-accent hover:text-accent-foreground` |
+| | secondary | `bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80` |
+| | ghost | `hover:bg-accent hover:text-accent-foreground` |
+| | link | `text-primary underline-offset-4 hover:underline` |
+| | sizes | default `h-9 px-4 py-2`, sm `h-8 rounded-md px-3 text-xs`, lg `h-10 rounded-md px-8`, icon `h-9 w-9` with `data-size="icon"` |
+| Card | card | `rounded-xl border bg-card text-card-foreground shadow` |
+| | header, title, description | `flex flex-col space-y-1.5 p-6`, `font-semibold leading-none tracking-tight`, `text-sm text-muted-foreground` |
+| | content, footer | `p-6 pt-0`, `flex items-center p-6 pt-0` |
+| Badge | base | `inline-flex items-center gap-1 h-[22px] px-2 text-xs font-medium border transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2` |
+| | soft | `rounded-sm bg-muted text-muted-foreground border-transparent` |
+| | success | `rounded-full bg-green-600/10 text-green-800 border-transparent dark:bg-green-600/20 dark:text-green-400` |
+| | warning | `rounded-full bg-amber-500/10 text-amber-700 border-transparent dark:bg-amber-500/20 dark:text-amber-400` |
+| | error | `rounded-full bg-red-600/10 text-red-700 border-transparent dark:bg-red-600/20 dark:text-red-400` |
+| | processing | `rounded-full bg-sky-600/10 text-sky-700 border-transparent dark:bg-sky-600/20 dark:text-sky-400` |
+| | outline, secondary | `rounded-sm text-foreground`, `rounded-sm border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80` |
+| Tabs | list | `inline-flex h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground` |
+| | trigger | `inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow` |
+| | content | `mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2` |
+| Table | table, header, body | `w-full caption-bottom text-sm`, `[&_tr]:border-b`, `[&_tr:last-child]:border-0` |
+| | row | `border-b transition-colors hover:bg-muted data-[state=selected]:bg-muted` |
+| | head | `h-10 px-2 text-left align-middle font-medium text-foreground whitespace-nowrap [&:has([role=checkbox])]:pr-0` |
+| | cell | `p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0` |
+| | footer, caption | `border-t bg-muted/50 font-medium [&>tr]:last:border-b-0`, `mt-4 text-sm text-muted-foreground` |
+| Dialog | overlay | `fixed inset-0 z-50 bg-black/80` |
+| | content | `fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-lg` |
+| | header, footer | `flex flex-col space-y-1.5 text-center sm:text-left`, `flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2` |
+| | title, description | `text-lg font-semibold leading-none tracking-tight`, `text-sm text-muted-foreground` |
+| Sheet | overlay | the Dialog overlay |
+| | content | `fixed inset-0 z-50 flex h-full w-full flex-col gap-4 overflow-y-auto bg-background p-6 shadow-lg sm:inset-y-0 sm:left-auto sm:right-0 sm:max-w-md sm:border-l lg:max-w-lg` |
+| | header, title, description | the Dialog header, title and description |
+| Select | trigger | `flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-border bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1` |
+| | content | `relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md` |
+| | item | `relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50` |
+| Input | | `flex h-9 w-full rounded-md border border-border bg-transparent px-3 py-1 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm` |
+| Textarea | | `flex min-h-[60px] w-full rounded-md border border-border bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm` |
+| Switch | root | `peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-sm transition-colors data-[state=checked]:bg-primary data-[state=unchecked]:bg-input` |
+| | thumb | `pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0` |
+| Progress | root, indicator | `relative h-2 w-full overflow-hidden rounded-full bg-primary/20`, `h-full w-full flex-1 bg-primary transition-all` |
+| Tooltip | content | `z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground` |
+| Avatar | root, fallback | `relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full`, `flex h-full w-full items-center justify-center rounded-full bg-muted` |
+| Separator | | `shrink-0 bg-border` with `h-[1px] w-full` (horizontal) or `h-full w-[1px]` (vertical) |
+| Skeleton | | `animate-pulse rounded-md bg-primary/10` |
+
+Text sizes are Tailwind's: `text-xs` for captions, `text-sm` for body and labels, `text-lg` for
+card titles, `text-xl` for section titles, `text-2xl` for the page title. Weights 400, 500 and 600.
+
+**Status pills** are Badges. Each status label takes one variant, under any theme:
+
+| Variant | Status labels |
+| ------- | ------------- |
+| soft | Awaiting decision, not asked yet, not shipped |
+| processing | Offer sent, Details received, Shipped, Brief sent, in negotiation |
+| success | Approved, Agreed, Delivered, Brief accepted, Granted |
+| warning | Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending, waiting for your approval |
+| error | Rejected, Declined, returned |
+
+The decision dropdown takes the variant of its choice (Decide is soft). A pill never uses the
+brand color, so a brand whose color is red never makes an Approved look like a Rejected.
+
+**Concept colors** come from the chart series in concept order: Concept 1 takes `--chart-1`,
+Concept 2 `--chart-2`, and so on. A concept chip is `bg-chart-{n}` with the Badge base and
+`rounded-sm`; the Board group's title bar is `bg-chart-{n}`; anything thinner (a dot, a left rule
+on a card) is `border-chart-{n}` and always sits next to the concept's name, because the lighter
+Atlas series are fills that do not reach 3:1 as a thin line. A sixth concept or later takes `bg-muted text-foreground` with
+its number. Charts on the page use the same series in the same order, read from the CSS variables, and
+label each series in text, so no chart reads by color alone.
+
+#### Brand theme on the page
+
+Read `theme:brand` the way `theme.md`, **Applying the theme**, **Reading**, says. No theme, or one
+that does not parse: the Atlas tokens above stand. With a theme, it overrides these tokens only,
+in each mode from that mode's values. The table is in `theme.md`, **The CAS campaign page**:
+
+- `--primary` and `--primary-foreground`: buttons, switches, progress, tooltips and the header
+  band.
+- `--ring`: focus rings.
+- `--chart-1` to `--chart-5` and their foregrounds: concept colors and charts.
+- The header band and the logo, per `theme.md`, **Header** and **Logo**.
+
+Surfaces, text, borders and the font stay Atlas's, so every brand's page reads the same way.
+Status pills, decisions, deltas and alerts keep their semantic colors.
+
+**Contrast check.** Before publishing, check every overridden token in each mode with `contrast()`
+from `theme.md`, **Theme build**, against the thresholds below. A token that fails takes the
+Atlas default for that token in that mode. A fill and its foreground fall back together
+(`--primary` with `--primary-foreground`, `--chart-n` with `--chart-n-foreground`), so a brand
+fill never meets an Atlas foreground; any other token falls back alone:
+
+| Token | Must reach |
+| ----- | ---------- |
+| `--primary-foreground` on `--primary` | 4.5:1 (text on buttons and the band); when the pair falls back, a `band` header is drawn as `rule` |
+| `--primary` on `--background` | 3:1 (a control's edge, WCAG 1.4.11) |
+| `--primary` on `--background`, when the page uses it as text (link buttons) | 4.5:1, else links use `text-foreground` with an underline |
+| `--ring` on `--background` | 4.5:1 (it is also the creator card's fit ring, drawn as text) |
+| each `--chart-n` on `--card` | 3:1 |
+| `--chart-n-foreground` on `--chart-n` | 4.5:1: white or near-black, whichever `on()` in `theme.md` picks; if neither reads, the chip shows a `border-chart-{n}` dot and `text-foreground` instead |
+
+Each fallback is one line in `agency/design` (**1e**): "{mode} mode: the brand's {role} did not
+read clearly on {what}, so the page uses the Atlas default." The footer shows these lines under
+an "Agency only" rule, to editors only. The client never sees them. A theme with nothing to fall
+back on writes no lines and shows nothing.
+
+**The creator card** on this page takes the override in `theme.md`, **The CAS campaign page**,
+in place of the one in **Creator card**, so its surfaces and text follow these tokens and its fit
+ring follows `--ring`.
+
+#### Responsive
+
+Breakpoints are Tailwind's: phone under 640px (no prefix), tablet 640px to 1024px (`sm:` and
+`md:`), desktop over 1024px (`lg:`). Build phone first and add the larger layouts with the
+prefixes.
+
+- **No horizontal page scroll at any width.** The page wrapper is `mx-auto w-full max-w-7xl px-4
+  sm:px-6 lg:px-8`. Every flex and grid child that holds text gets `min-w-0`, and long handles and
+  links get `break-words`. Only a table's own scroll area may be wider than the screen.
+- **Layout.** Phone is one column. Card grids are `grid grid-cols-1 gap-4 sm:grid-cols-2
+  lg:grid-cols-3`. The header stacks the title above the progress steps on phone and keeps the
+  logo at the start and the mark at the end on one row at every width.
+- **Tabs.** From 640px the tabs are a Tabs list. On phone they are one row that scrolls sideways
+  on its own (`overflow-x-auto` wrapper, the list `w-max`), with the selected tab scrolled into
+  view and each count badge kept. Never wrap the tabs onto two lines.
+- **Tables.** A table with grouped header bands or more than five columns (the Board) keeps its
+  first column pinned (`sticky left-0 z-10 bg-card`) and its header pinned (`sticky top-0 z-10
+  bg-card`, the corner cell `z-20`), inside its own `overflow-auto max-h-[70vh]` area, at every
+  width. The area scrolls both ways, so the header stays in view. Every other table (Fees, Product shipping, Budget, the
+  timeline) is a table from 640px and a stack of Cards on phone, one Card per row, each showing
+  the row's first column as its title and the other columns as label and value pairs.
+- **Side panels.** The creator viewer, the review panel, the inbox and comments open as a Sheet:
+  full screen on phone, a right-hand panel from 640px. Closing it returns to the same place in
+  the list. A confirm or a required reason opens a Dialog.
+- **Touch.** Every control is at least 44px tall on phone and on touch screens; the `pointer:coarse`
+  rule in **Tokens** enforces it, so a control must not undo it with a fixed height. Every tooltip
+  trigger is a button that opens the tooltip on hover, on focus and on tap, and closes it on a
+  second tap, a tap outside or Escape. What a tooltip says is never the only place the fact lives.
+- **Keyboard shortcuts** are extras. Every action has a visible control, and no shortcut is the
+  only way to do anything.
+- **Media.** Video players are `w-full` in a box that keeps their aspect ratio and is capped at
+  `max-h-[70vh]` on phone. Charts draw at the width of their container and redraw when it
+  changes (a `ResizeObserver`), never at a fixed pixel width. The calendar is a month grid from
+  640px and a list of dated days on phone. Images are `max-w-full h-auto`.
+
+#### Checklist before publishing
+
+1. The **Tokens** block is in the `<head>`, then the theme block, and Inter is the only font.
+2. No `zinc`, `slate`, `gray`, `neutral` or `stone` color class anywhere in the page.
+3. No hex, `rgb()` or `hsl()` outside the page's style blocks and the pasted mark, and no inline
+   style that sets a color, border or radius.
+4. Every Card is `rounded-xl`, and every component uses its class strings from **Component classes**.
+5. Every status pill uses its variant from **Status pills**, and concepts use the chart series in
+   order.
+6. Every overridden token passed the contrast check in both modes, or fell back and wrote its line.
+7. At 375px, 768px and 1280px, `document.documentElement.scrollWidth` equals the window width in
+   light and dark.
 
 ## 1e. Page data: what the page keeps and how it is read back
 
@@ -561,6 +866,7 @@ at all. A Viewer reads nothing from the page data.
 | `edits/creator-{net}-{handle}` | Agency | `status`, `adPermissions`, `updatedBy`, `updatedAt` |
 | `agency/creator-{net}-{handle}` | The Campaign Manager | Every agency-only field in **Who sees what**: notes, vetting evidence, safety detail, contact, tier window, last contact, rates, offer, counters, waiting on, the reply log, and the draft waiting to send |
 | `agency/budget` | The Campaign Manager | Total, committed, offers out, remaining |
+| `agency/design` | The Campaign Manager | `notes`: the brand theme fallbacks from **Design standards**, one line each |
 | `data/users/{id}/done` | Each person | `items`: the ids of the attention items they marked done |
 
 `{net}` is `ig` or `tt`, as in `creator:` keys. Attention item ids are stable and say what they
