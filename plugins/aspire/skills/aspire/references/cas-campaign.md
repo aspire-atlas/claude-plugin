@@ -2,7 +2,7 @@
 
 Used by the **CAS campaign** and **Rates and terms** sections of SKILL.md, and read by the
 `atlas-creator-discovery`, `atlas-creator-vetting` and `atlas-creator-brief` agents when they run
-in creator-ads mode. Holds the state model, the setup interview, the dispatch table, the gate
+in creator-ads mode. Holds the state model and rounds, the setup interview, the dispatch table, the gate
 packets, the campaign page, its design standards and its page data, creator details and product shipping, the
 creator's turn on the brief, reminders, and the rules for unattended runs.
 
@@ -49,6 +49,10 @@ draft, and in a channel post, uses the left column.
 | What they make, usage, exclusivity | deliverables, usage window, exclusivity terms |
 | Details from creator | intake |
 | Shipping, address or pickup, product status | fulfilment |
+| Round {n}: its label, month and dates | a `round` finding (**Rounds**) |
+| Planned, In production, In market, Done | round state |
+| Returning | a creator carried into the next round (`returning`) |
+| Start round {n} | starting the next round (**Rounds**) |
 | Round steps | Gates 1 to 4 for one round |
 | Calendar, delays | gate dates and ledger |
 | Team and weekly sync | routing and sync |
@@ -119,6 +123,10 @@ The campaign object:
  "team": [{"id": "t1", "name": "Name", "role": "…", "goTo": "…"}]}
 ```
 
+`round` is the first round's number. Every round, the first included, is a `round` finding in the
+working state (**Rounds**), so starting a round never changes this record. `package.variants` is
+at most 5: a creator makes at most 5 variants in a round.
+
 `budgetUsd` is optional: the total the CM types for the budget summary on Creator Selection and
 the totals on Selected Creators. Without it they show committed and offers out only.
 `products` (the products in scope) and `team` (the people on the campaign and what to go to each
@@ -171,7 +179,8 @@ record type the newest finding per identity wins, by `detail.recordedAt`.
 | recordType | Identity | Anchor | kind | detail adds |
 | ---------- | -------- | ------ | ---- | ----------- |
 | `gate` | gate + round (Gate 4b: gate + round + the creator) | The brand's own account on its first linked network | `action_item` `high` while planned, open or slipped; `went_well` when cleared | `gate` (1, 2, 3, 4, `4b`), `status` (planned, open, cleared, slipped), `plannedAt`, `sentAt`, `dueAt`, `clearedAt`, `clearedBy`, `daysSlipped`, `reminderTask` (the task name). Gate 1 adds `source` (where the concepts were read from). Gate 4b adds `handle` and `network` |
-| `roster` | the creator's account | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while a candidate; `went_well` approved; `needs_improvement` rejected | `handle`, `network`, `name`, `descriptor`, `location` (the last three only when edited on the page), `lane`, `slate` (candidate, approved, maybe, rejected), `priority` (true for a Priority Yes), `clientReason` (the reason on a surprise Priority Yes or Yes), `rejectReason`, `clientQuestion`, `pickNote` (why we picked them), `rate` (offered, countered, agreed, declined), `offer` `{open, target, max}`, `counter`, `agreed`, `deliverables`, `usage`, `exclusivity`, `termNotes`, `contact` `{email, manager}`, `tier`, `lastContactAt`, `waitingOn` (client, agency, creator), `yourCall` (the question to the client, while one is open), `adPermissions` (granted, pending), `details` `{status, address, pickup, visitDate, product, options, availability}`, `shipping` `{status, carrier, tracking}`, `briefState` (sent, accepted, changed, approved, locked), `shipDate`, `vetting` (the four figures and the recommendation), `source` (chat, reply, or page) |
+| `round` | round | The brand's account | `action_item` `medium` while planned, in production or in market; `went_well` when done | `round`, `label`, `month`, `build` `{start, end}`, `inMarket` `{start, end}`, `launchDate`, `state` (planned, in production, in market, done), `steps` (`{"1": {plannedAt, dueAt}, …}` for steps 1 to 4), `closedAt` (set when the CM closes the round early), `startedFrom` (the round it was started from, empty for the first), `creators` (`new`, `same`, or `same-and-new`: how the round was started) |
+| `roster` | the creator's account + round | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while a candidate; `went_well` approved; `needs_improvement` rejected | `handle`, `network`, `name`, `descriptor`, `location` (the last three only when edited on the page), `lane`, `slate` (candidate, approved, maybe, rejected), `priority` (true for a Priority Yes), `clientReason` (the reason on a surprise Priority Yes or Yes), `rejectReason`, `clientQuestion`, `pickNote` (why we picked them), `rate` (offered, countered, agreed, declined), `offer` `{open, target, max}`, `counter`, `agreed`, `deliverables`, `usage`, `exclusivity`, `termNotes`, `contact` `{email, manager}`, `tier`, `lastContactAt`, `waitingOn` (client, agency, creator), `yourCall` (the question to the client, while one is open), `adPermissions` (granted, pending), `details` `{status, address, pickup, visitDate, product, options, availability}`, `shipping` `{status, carrier, tracking}`, `briefState` (sent, accepted, changed, approved, locked), `shipDate`, `vetting` (the four figures and the recommendation), `returning` (true when carried from an earlier round), `fromRound` (the round it was carried from), `source` (chat, reply, page, or carried) |
 | `draft` | the creator + the template | The creator's account | `action_item` `low` while not sent; `went_well` once sent | `handle`, `template` (offer, counter, accept, chase, details, brief, brief-notes), `subject`, `body`, `sentAt` |
 | `reply` | one per exchange, never replaced | The creator's account | `went_well` `low` | `handle`, `receivedAt`, `summary` (one plain line), `record` (what it wrote to the roster), `nextMove` |
 | `brief` | lane + round | The brand's account | `action_item` `medium` while a draft; `went_well` when locked | `lane`, `locked`, `briefPage`, `version`, `edits` (the edits pulled from the page, one plain line each: the part, from, to, and who) |
@@ -181,8 +190,77 @@ record type the newest finding per identity wins, by `detail.recordedAt`.
 | `ledger` | one per line, never replaced | The brand's account | `needs_improvement` | `gate`, `daysSlipped`, `reason`, `shifted` (the gates and dates it moved) |
 
 A roster finding carries the whole row, not only what changed: copy the newest finding's
-detail, change what moved, and write it as the new finding. That keeps the newest finding per
-creator complete on its own.
+detail for that creator and round, change what moved, and write it as the new finding. That keeps
+the newest finding per creator per round complete on its own. A roster finding written before
+rounds were recorded is the round in its `detail.round`.
+
+### Rounds
+
+A campaign runs in rounds. Round 1 is the first month in market, Round 2 the second, and so on,
+with no fixed number. Every part of the campaign but the creator pool belongs to one round: its
+four steps, its roster rows, its brief, its creator changes, its cuts and its results. The pool
+of candidates is shared by every round.
+
+**The round record.** One `round` finding per round, written with `append_insights` like the
+rest of the working state, so a round is added or changed with no destructive tool. The newest
+finding per round wins. A round's dates, worked out when it is created and edited by the agency
+afterwards:
+
+- **Label** "Round {n}" and **month**, the month its in-market window starts in.
+- **In-market window**: round {n} is the {n}th month of the term, from the term start plus
+  {n - 1} months to the day before the term start plus {n} months. The **launch date** is the
+  day the window opens.
+- **Build window**: the 28 days before launch, or from the day the round is created when that
+  is later.
+- **Steps**: planned dates for steps 1 to 4, worked back from the build window: briefs approved
+  (step 4) by the build window's start, the others spaced by each step's turnaround from
+  `campaign:{slug}-cas`. Gate findings keep their own dates once a step is sent.
+
+A campaign whose working state has no `round` finding has one round, numbered from
+`campaign:{slug}-cas`, with its dates worked out the same way. The first write for the campaign
+after this records it.
+
+**State.** Planned, In production, In market, Done. It is worked out from the dates against the
+real clock, the shell clock in the chat and the viewer's clock on the page, never a date saved
+in a prompt or on the page at publish: planned before the build window opens, in production from
+the build window's start until the launch date, in market from the launch date to the end of the
+in-market window, and done after that or once `closedAt` is set. Done is final: a round
+that is done never reopens, even when a date is edited later. The `state` on the finding is what
+it was when written; Claude writes a new finding with the worked out state whenever it next
+writes for the campaign, and a reader always trusts the dates over a stale `state`.
+
+**The current round** is the round in production; when none is, the newest round that is not
+done; when every round is done, the newest one. The dispatch table, the status screen and the
+round switcher's starting choice all read it. **The open round** is the round in production, else
+the newest planned one; it is where approvals land (**Creator Selection**).
+
+**Starting the next round.** Offered once the current round's briefs are approved (step 4
+cleared) and while no later round exists, in the chat as "Start round {n+1}" and on the page by **Start round {n+1}** (**1d**,
+**Round switcher**), for the agency only. One picker in the chat, or the Dialog on the page:
+"Start round {n+1} for {month}: in market {start} to {end}, launch {date}?" with the creators to
+carry:
+
+| Choice | What it does | Dispatch starts at |
+| ------ | ------------ | ------------------ |
+| Same creators, new briefs (Recommended) | Carries every creator approved in round {n} who was not dropped. Steps 1 to 3 are recorded cleared for the new round (`source` carried), with the agreed fees and details carried | Row 10 |
+| Same creators plus new ones | Carries them the same way, records step 1 cleared, and opens the pool for more | Row 2, for the new creators only |
+
+On confirm, in this order: one `round` finding for round {n+1} (`startedFrom` {n}, its dates and
+steps); one `roster` finding per carried creator for round {n+1}, copied from their round {n} row
+with `returning` true, `fromRound` {n}, `source` carried, and `briefState`, `shipping`,
+`shipDate`, `yourCall` and `waitingOn` cleared; the carried gate findings for the new round; then
+republish. A round whose in-market window would end after the term asks the CM to extend the
+term first (`campaign:{slug}-cas`, through the supersede rule). The new round's brief starts from the last round's locked brief for each concept, and
+the brief run (row 10) works from it. Hooks in the log stay refused in every round. Nothing of
+round {n} is written: its round, roster, gate, brief and revision findings stay as they were.
+
+**Past rounds are read only.** Once a round is done, nothing is written for it: no roster, gate,
+brief, revision or round finding, in the chat or from a pull. On the page its brief, cuts, calls
+and edits render as labels (**1d**, **Round switcher**). A correction goes into the next round.
+
+**Variants per round.** A creator makes at most 5 variants in a round, and at most the package's
+`variants`. Selected Creators and Content Review refuse a variant past that (**1d**); each variant
+may have any number of versions.
 
 A creator ad campaign needs at least one linked Instagram or TikTok channel on the brand
 profile, because every state finding is anchored to an account. Without one, say so in one line
@@ -270,11 +348,12 @@ cleared, `clearedBy`, `clearedAt`, `source`.
 | C4 | How long does the client get at each approval? | 1) 48 hours each (Recommended); 2) 24 hours each; 3) I'll set them per step (type them). Planned send dates per step may go in the free text too. | `campaign:{slug}-cas` (turnaround); a `planned` gate finding per gate with a date |
 | C5 | Where should the campaign page and step updates go? (multiSelect) | 1) Published page + chat summary (always on); 2) The shared Slack channel (type it); 3) Email (type the recipients) | `campaign:{slug}-routing` |
 | C6 | When is the weekly call with the client? Give the day, time and timezone. | 1) Monday 10:00, my timezone (Recommended); 2) Thursday 15:00; 3) I'll set it (type it) | `campaign:{slug}-cadence` |
-| C7 | Save this campaign setup for {brand}? Everyone on the team and every scheduled run will use it. | 1) Save the campaign (Recommended); 2) Change something | Every record above, plus `campaign:{slug}-criteria` and `campaign:{slug}-decision-defaults` |
+| C7 | Save this campaign setup for {brand}? Everyone on the team and every scheduled run will use it. | 1) Save the campaign (Recommended); 2) Change something | Every record above, plus `campaign:{slug}-criteria`, `campaign:{slug}-decision-defaults`, and the Round 1 `round` finding |
 
 Rules:
 
-- **C1** derives the slug and shows the campaign name back. When `campaign:{slug}-brief` exists
+- **C1** derives the slug and shows the campaign name back. Variants above 5 per creator are
+  asked again: a creator makes at most 5 variants in a round (**Rounds**). When `campaign:{slug}-brief` exists
   without the `type: creator-ads` line, it is a discovery campaign: offer to add the line
   through the supersede rule, or to start a new campaign name.
 - **C2** reads the pasted text into the lane object and shows it back in one line before the
@@ -293,8 +372,9 @@ Rules:
   campaign (SKILL.md, **Guardrails**): discovery may use the creator marketplace and paid
   lookups for this campaign's lanes without asking again.
 - **C7** lists every answer and the derived criteria in one summary, then writes all records
-  with `append_calibration`, `provenance: "interview"`, and the Gate 1 finding with
-  `append_insights`. A `key-exists` follows the Phase 5 supersede rule. The decision defaults
+  with `append_calibration`, `provenance: "interview"`, and the Gate 1 finding and the Round 1
+  `round` finding with `append_insights`. The summary shows Round 1's month, build window,
+  in-market window and launch date (**Rounds**); the CM changes them with "Change something". A `key-exists` follows the Phase 5 supersede rule. The decision defaults
   are written as saved above; say once that later performance reads will use them and that they
   can be changed.
 - The brand theme is read the way every page reads it (`theme.md`). Setup never asks about it.
@@ -303,7 +383,9 @@ Rules:
 
 Read the setup records and the working state, then find the campaign's row. **Read from the
 bottom up: the first row whose condition holds is where the campaign is.** Conditions read the
-current round only. Status lines use the page vocabulary.
+current round only (**Rounds**, **The current round**), so a later round's rows never read an
+earlier round's records. Status lines use the page vocabulary and start with the round: "Round
+{n}, {month}: …" once the campaign has more than one round.
 
 | # | Condition | The status screen says | The one next step | Runs it | Writes back | Reminder |
 | - | --------- | ---------------------- | ----------------- | ------- | ----------- | -------- |
@@ -338,10 +420,12 @@ Rules:
   in `reminderTask`, after the close is written.
 - **Next round.** Before a new round, offer the hook review (`hooks-and-ctas.md`, **The hook
   review**) when the round has no `hook-review` findings yet, so the next briefs lead with what
-  worked. After every brief is accepted or locked, "Start round {n+1}" asks one picker: "New
-  briefs, same creators (Recommended)" starts at row 10; "New creators too" starts at row 2. The
-  round change supersedes `campaign:{slug}-cas` with its own confirmation. Hooks in the log stay
-  refused in every round.
+  worked. Once step 4 is cleared, "Start round {n+1}" joins the status screen's options in place of
+  "Change setup", and runs **Rounds**, **Starting the next round**. A round started on the page
+  is recorded by **Pulling decisions**.
+- **Past rounds.** A done round has no next step and no reminder. Its open gates, if any, are
+  named on the status screen as "left open when round {n} ended", never written, and their
+  reminders are removed.
 
 ## Gate packets
 
@@ -421,8 +505,9 @@ on the fees"), and offered as the next step whenever a step is open.
    Claude wrote (`claude`, `atlas`, `sheet`) are never pulled back. Where both sides changed a
    creator's shipping, the newer `at` wins.
 2. Resolve each to its creator on the roster. Data for a creator the page should not hold, a
-   field the client cannot write on that document, a call made while its step was not open, and
-   a client call set from the agency side are dropped and named in one line (**1e**, **What the
+   field the client cannot write on that document, a call made while its step was not open, a
+   change to a round that is done, a variant past a creator's limit for the round, and a client
+   call set from the agency side are dropped and named in one line (**1e**, **What the
    rules enforce, and what they can't**). A field cleared by **Reset decisions** is not one of
    these: it is named as cleared (below).
 3. Map each decision: Priority Yes and Yes count as approved, Maybe as maybe, No as rejected.
@@ -445,12 +530,17 @@ the page)", and writes nothing for them. The newest call per cut version is the 
 The agency's in place edits (**1e**, **Every editable value**) come back in the same pull, after
 the client's calls, each named with who made it:
 
-- **Program details.** The budget total, team, products in scope, the round's step dates and the
-  term dates (`termStart`, `termEnd`) go to `campaign:{slug}-cas`, and the program terms to
+- **Program details.** The budget total, team, products in scope and the term dates
+  (`termStart`, `termEnd`) go to `campaign:{slug}-cas`, and the program terms to
   `campaign:{slug}-terms`. A setup record
   changes only through the Phase 5 supersede rule, so these get their own confirmation after the
-  batch picker, never inside it. A changed step date also writes the gate finding's `plannedAt`
-  or `dueAt`.
+  batch picker, never inside it.
+- **Rounds.** A round's label, month, dates and step dates go on a new `round` finding for that
+  round, in the batch picker, since they are working state. A changed step date also writes the
+  gate finding's `plannedAt` or `dueAt`. A round started on the page (`program/round-r{round}`
+  with `started`) runs **Rounds**, **Starting the next round**, with the carried creators the page
+  wrote, named in the picker as "Start round {n} for {month}, started on the page by {name}: {k}
+  returning creators". Two rounds started for the same number keep the first by `at`.
 - **The brief.** One `brief` finding per lane and round that changed, with the next `version` and
   `edits`. The lane's next brief run starts from the edited text.
 - **Creator profiles and per round edits.** Name, descriptor, location and why we picked them
@@ -579,9 +669,9 @@ and item. Labels, eyebrows, titles and ledes are in **Page vocabulary**, **Tabs*
 1. **Header.** Brand theme per `theme.md`, **The CAS campaign page** (the band header with the logo
    when the theme says so). The animated Aspire Atlas mark sits at the top right of the header
    (`artifact-standard.md`). The header follows the open tab:
-   - **Eyebrow**: "{Brand} · Round {n} · {tab eyebrow}". When the campaign has more than one round,
-     the round is a control that switches the tab to another round. On Home it switches only the
-     round steps; Home's other sections cover every round.
+   - **Eyebrow**: "{Brand} · Round {n} · {tab eyebrow}", the round in view in the **Round
+     switcher**. On Creator Selection with every round in view it reads "{Brand} · All rounds ·
+     Casting".
    - **Title**: the tab's title.
    - **Lede**: the tab's one line lede.
    - **Meta line**: "{campaign name} · Creator ads · {n} creators, {v} ads each · runs {start}
@@ -592,18 +682,61 @@ and item. Labels, eyebrows, titles and ledes are in **Page vocabulary**, **Tabs*
    - **Reset decisions**, for the agency only: an outline Button beside the Switch that clears the
      round's client decisions for everyone, after a Dialog confirm (**1e**, **Reset decisions**).
      The client and read only viewers never see it.
-2. **Tabs**, in this order: Home, Master Brief, Creator Selection, Selected Creators, Content
+2. **Round switcher**, under the header on every tab (**Round switcher** below).
+3. **Tabs**, in this order: Home, Master Brief, Creator Selection, Selected Creators, Content
    Review, Ad Performance. A count badge on each tab shows how many items there need the person
    viewing. Each tab carries its tooltip from **Tabs**.
-3. **Hash links.** Each tab has one hash: `#home`, `#brief`, `#selection`, `#creators`,
+4. **Hash links.** Each tab has one hash: `#home`, `#brief`, `#selection`, `#creators`,
    `#review`, `#performance`. A link to one item adds its round and the item after slashes:
    `#selection/r{n}/{net}-{handle}` and `#creators/r{n}/{net}-{handle}` open that creator's card,
    `#brief/r{n}/{lane}` opens that concept's brief, `#brief/r{n}/changes-{net}-{handle}` opens a
    creator's changed brief. Opening a link selects the tab and the item's round, scrolls to the
-   item and keeps the hash in the address bar; a hash with no round opens the current round.
-   Switching tabs or rounds updates the hash. A link with no hash opens the tab the person had open last (kept in the browser, and
+   item and keeps the hash in the address bar. A hash with no round opens the round the viewer
+   picked last (**Round switcher**), else the current round. Switching tabs or rounds updates the
+   hash. A link with no hash opens the tab the person had open last (kept in the browser, and
    ignored when that storage is missing), else Home. An item that is no longer on the tab opens
    the tab at the top.
+
+### Round switcher
+
+Which round a person is looking at is always on screen. Every tab but Creator Selection shows one
+round at a time: its steps, creators, brief, cuts and results, and nothing from another round.
+
+- **The control.** A segmented control under the header, built as a Tabs list with one trigger per
+  round, oldest first. Each segment shows the label ("Round 2"), the month, the in-market dates
+  ("Dec 1 to Dec 31") and the state as a Badge (**Status pills**). The selected segment is the
+  round in view, and the eyebrow names it. A campaign with one round shows the control too, so
+  the reader always knows which round they are in. On phone it is one row that scrolls sideways,
+  like the tabs, with the selected round scrolled into view.
+- **Which round opens.** A hash with a round wins. Otherwise the round the viewer picked last,
+  kept for them in page data (`data/users/{id}/round`, **1e**), so it follows them to another
+  device. Otherwise the current round (**Rounds**, **The current round**). A remembered round that
+  no longer exists opens the current round. Picking a round saves it for the viewer, never for
+  anyone else.
+- **Home.** The switcher sets the round in **Round steps**; Home's other sections cover every
+  round and name the round on each item.
+- **Creator Selection.** The pool is shared by every round, so the first segment is **All
+  rounds**, selected by default there, and each round segment filters the pool to the creators in
+  that round. Picking a round here is not remembered.
+- **Start round {n+1}.** For the agency only, an outline Button at the end of the control, shown
+  once the current round's briefs are approved and while no later round exists (**Rounds**,
+  **Starting the next round**). It opens a Dialog: title "Start round {n+1}?", the new round's
+  label, month, build window, in-market window and launch date filled in from the rules in
+  **Rounds** and editable in place, a Select for the creators to carry ("Same creators, new
+  briefs" first, "Same creators plus new ones"), the line "Round {n} stays as it is. Its
+  creators, brief and cuts don't change.", and Cancel (outline) and Start round (default). On
+  confirm the page writes `program/round-r{n+1}` and one `edits/creator-{net}-{handle}-r{n+1}`
+  per carried creator with `returning` true (**1e**), selects the new round, and shows it as
+  Planned or In production at once. Nothing reaches Atlas until **Pulling decisions**. The
+  Button never renders for the client or in **Preview as client**.
+- **A done round is read only.** Its tabs show one line under the switcher, "Round {n} is done.
+  It's read only.", and every control on them renders as a label: the brief and its sign off, the
+  cuts and their calls, comments, decisions, shipping and the agency's edits. Nothing new can be
+  added to it. **Reset decisions** does not render for it.
+- **Every date is real.** Round states, "now" on a step, due dates, days late, "No reply yet",
+  relative times and the next weekly sync are worked out from the viewer's clock when the page
+  renders and again every minute while it is open, never from the publish time or a date written
+  into the page. The page holds dates, not their results.
 
 Every tab renders for both sides. Content Review and Ad Performance are part of the page from the
 first publish. Until their own sections below say more, each shows its lede and one empty state:
@@ -616,8 +749,8 @@ Everything in the campaign in one place, for every round. Sections, in order:
 1. **Round steps.** The four steps for the round in view: 1 Concepts approved, 2 Creators
    approved, 3 Fees approved, 4 Briefs approved. A done step shows a tick and the date, the
    current step shows "now" and the due date, a later step shows its planned date. Steps 2 to 4
-   open the tab they are approved on; step 1 opens Master Brief. The round in view is the current
-   round, and the eyebrow's round control switches it. No part of the page uses the word gate.
+   open the tab they are approved on; step 1 opens Master Brief. The round in view is the one in
+   the **Round switcher**. No part of the page uses the word gate.
 2. **Waiting on you.** Worked out for the person viewing. Each item: a title, one line of detail,
    when, an "open" link to the tab and item by hash, and a checkbox to mark it done. Done items
    fade and drop out of the count; "Show done" brings them back. Done marks are kept per person
@@ -659,7 +792,9 @@ The round's briefs. One section per concept, anchored `#brief/r{n}/{lane}`: "{Co
 {n}" with a pill (approved, or waiting for your approval), in the modular shape of
 `creator-brief.md`, **Creator-ads mode** (hooks, CTAs, body, B-roll, runtime, product,
 disclosure, do not), with Approve and Send notes for the client while it waits. This is the step 4
-approval.
+approval. A round started from an earlier one opens with that round's locked brief for each
+concept, for the agency to change. Once the round is done its brief, sign offs and comments are
+read only.
 
 Then, for each creator whose brief changed, a block "@{handle} changed the {concept} brief",
 anchored `#brief/r{n}/changes-{net}-{handle}`, with a "your call" pill, the line "Only the
@@ -676,10 +811,21 @@ client reads it, comments, and signs off.
 
 ### Creator Selection
 
-Casting for the round. Filters: concept, status, waiting on (client, agency, creator), product,
-and a search on handle and name. A count line "{n} of {m} creators". Two layouts: Cards by
-default, Board second. The layout last picked is kept in the browser (**1e**, **Where things are
-kept**).
+Casting for every round, from one shared pool. Each creator shows once, with a chip per round
+they are in ("Round 1", "Round 2 · Returning"). Filters: concept, status, waiting on (client,
+agency, creator), product, and a search on handle and name; the **Round switcher** filters by
+round. The count line reads as the pool, with counts per round: "{n} of {m} creators in the pool
+· Round 1: {a} approved · Round 2: {b} approved, {r} returning".
+
+**Decisions land in the open round** (**Rounds**, **The open round**). A Priority Yes or Yes adds
+the creator to that round, and the decision is saved for it
+(`client/creator-{net}-{handle}-r{round}`). The decision control names the round: "Your decision
+for round {n}". A creator already in an earlier round shows their earlier calls as labels with
+the round. With no open round, decisions wait: the control is a label reading "Decisions open
+when round {n+1} starts".
+
+Two layouts: Cards by default, Board second. The layout last picked is kept in the browser
+(**1e**, **Where things are kept**).
 
 - **Budget summary**, agency only, at the top: Total, Committed (with the count agreed), Offers
   out (with the count countered), Remaining. Total is edited in place; the rest are worked out.
@@ -721,9 +867,12 @@ This is the step 2 approval.
 
 ### Selected Creators
 
-Everyone approved in Creator Selection for the round, from the moment they are approved. One
-card per creator, anchored `#creators/r{n}/{net}-{handle}`, with the concept, what they make once
-the fees are sent, and the latest cut of each of their variants once Content Review has them.
+Everyone in the round in view: approved in Creator Selection for it, or carried into it, from
+the moment they are in. A carried creator shows a soft Badge "Returning". One card per creator,
+anchored `#creators/r{n}/{net}-{handle}`, with the concept, what they make once the fees are
+sent, and the latest cut of each of their variants in this round once Content Review has them,
+headed "{k} of {max} variants this round", where {max} is the package's variants, at most 5. A
+creator at {max} shows no way to plan or add another variant for the round.
 Sections, in order:
 
 1. **Contract and rates.** One row per approved creator: concept, what they make, how long you
@@ -752,9 +901,15 @@ the reply log, and any draft waiting to send.
 
 ### Content Review
 
-The variants the editors cut, round by round, each with its versions, for the client to comment
-on and approve. Production hands off to the **Content review** flow (dispatch row 16). Until
-this tab has its own build, it shows its empty state.
+The variants the editors cut for the round in view, each with its versions, for the client to
+comment on and approve. Every cut belongs to one creator in one round: its id is
+`{net}-{handle}-r{round}-{variant}`, and the tab lists only cuts whose creator is on that round's
+roster, so a later round's cuts come from that round's creators, returning or new. A creator has
+at most 5 variants in a round, and at most the package's variants: the agency's control to add a
+cut offers a new variant only below that, and at the limit reads "@{handle} has {max} variants in
+round {n}. Add a new version of one of them." New versions are never limited. A done round's cuts
+are read only (**Round switcher**). Production hands off to the **Content review** flow (dispatch
+row 16). Until this tab has its own build, it shows its empty state.
 
 When it fills, the roles are already set: the client comments on a cut at a timecode or with a
 drawing, and approves, requests changes, or undoes an approval (`comments` and
@@ -763,8 +918,8 @@ a cut stay in `agency/comments`, under an "Agency only" rule in the thread.
 
 ### Ad Performance
 
-How the live partnership ads did against the campaign's decision defaults (cost per result, the
-3-second hold), and what changes in the next brief. Nothing in this flow reads ad spend yet
+How the live partnership ads of the round in view did against the campaign's decision defaults
+(cost per result, the 3-second hold), and what changes in the next brief. Nothing in this flow reads ad spend yet
 (**What this flow never does**), so the tab shows its empty state. The client writes nothing on
 this tab.
 
@@ -819,6 +974,7 @@ with who made it (**1e**, **Every editable value**). The agency edits in place:
 | Program terms and products in scope | Home, **Program details** |
 | Team | Home, **Team and weekly sync** |
 | Steps and dates | Home, **Round steps** and **Calendar** |
+| A round's label, month, build window, in-market window and launch date | Home, **Calendar**, and the **Start round** Dialog |
 | Budget total | Creator Selection, **Budget summary** |
 | Files | Home, **Files**: add, edit and remove a link |
 | The brief's text | Master Brief, every part of a concept's brief |
@@ -826,7 +982,7 @@ with who made it (**1e**, **Every editable value**). The agency edits in place:
 | Status, ad permissions, shipping, tracking, product status | Creator Selection and Selected Creators (**Agency edits on the page**) |
 
 The client edits only what **What the client can write** names, the same way. Everyone else, and
-the agency on the client's own calls, sees a label.
+the agency on the client's own calls, sees a label. Nobody edits a round that is done.
 
 How it works on screen, with the components from **Design standards**:
 
@@ -1049,9 +1205,9 @@ card titles, `text-xl` for section titles, `text-2xl` for the page title. Weight
 
 | Variant | Status labels |
 | ------- | ------------- |
-| soft | Awaiting decision, not asked yet, not shipped |
-| processing | Offer sent, Details received, Shipped, Brief sent, in negotiation |
-| success | Approved, Agreed, Delivered, Brief accepted, Granted |
+| soft | Awaiting decision, not asked yet, not shipped, Planned, Done, Returning |
+| processing | Offer sent, Details received, Shipped, Brief sent, in negotiation, In production |
+| success | Approved, Agreed, Delivered, Brief accepted, Granted, In market |
 | warning | Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending, waiting for your approval |
 | error | Rejected, Declined, returned |
 
@@ -1117,6 +1273,9 @@ prefixes.
 - **Layout.** Phone is one column. Card grids are `grid grid-cols-1 gap-4 sm:grid-cols-2
   lg:grid-cols-3`. The header stacks the eyebrow, title and lede on phone and keeps the
   logo at the start and the mark at the end on one row at every width.
+- **Round switcher.** The same as the tabs: a Tabs list from 640px, one row that scrolls
+  sideways on phone. A segment's dates and state wrap under its label inside the segment, never
+  past it.
 - **Tabs.** From 640px the tabs are a Tabs list. On phone they are one row that scrolls sideways
   on its own (`overflow-x-auto` wrapper, the list `w-max`), with the selected tab scrolled into
   view and each count badge kept. Never wrap the tabs onto two lines.
@@ -1280,6 +1439,7 @@ with a plain description holds plain data the page writes with no stamp.
 | Notes | the `notes` field on the decision and approval documents above, and agency notes on `agency/creator-{net}-{handle}` | Client; agency | A stamp each |
 | Scoring weights | `agency/match-score` | Agency | One key per weight, `weight-{signal}`, and `stats:` the tuning panel's figures |
 | Files | `program/files` | Agency | One key per file, `file-{id}`, whose `value` is `{label, url, round}` |
+| Rounds | `program/round-r{round}` | Agency | `label`, `month`, `buildStart`, `buildEnd`, `marketStart`, `marketEnd`, `launch` (dates); `creators` (`same` or `same-and-new`) and `started` (true) on a round started on the page |
 | Program details | `program/details` | Agency | `product-{id}` (a product in scope, `{name}`), `team-{id}` (`{name, role, goTo}`), `step-{gate}-r{round}-planned` and `-due` (dates), `termStart`, `termEnd`, `sync` (the weekly sync slot, shown only) |
 | Program terms | `program/terms` once the fees are sent; `agency/terms` before | Agency | `makes` (what each creator makes), `usage` (how long the brand can use it), `exclusivity`, `notes` |
 | Budget | `agency/budget` | Agency | `total` (stamp); `committed:`, `offersOut:`, `remaining:` (worked out at publish) |
@@ -1288,17 +1448,17 @@ with a plain description holds plain data the page writes with no stamp.
 | Brief comments, cut comments | `comments/{id}/items/{comment}` | Each person, their own | `{id}` is the writer's own id (`user.id()`), the `{self}` the rules check, so the path names the author. `on:` (`brief-{lane}-r{round}` or `cut-{cut}-v{version}`), `text`, `replyTo:`, `timecode:` and `drawing:` (the strokes, as data) on a cut, `resolved`, `createdAt:` |
 | Comment writers | `comments/{id}` | Each person, their own | `lastAt:` the time of their newest comment, written with each one, so the page can find every writer's items (**Live updates**) |
 | Agency only comments | `agency/comments/items/{comment}` | Agency | The same fields, kept from the client |
-| Reviews | `reviews/cut-{cut}` | Agency | `creator:` (`{net}-{handle}`), `lane:`, `variant:`, `title`, `check-{id}` (one review checklist item each, `value` true or false) |
+| Reviews | `reviews/cut-{cut}`, `{cut}` being `{net}-{handle}-r{round}-{variant}` | Agency | `creator:` (`{net}-{handle}`), `round:`, `lane:`, `variant:` (1 to 5), `title`, `check-{id}` (one review checklist item each, `value` true or false) |
 | Review versions | `reviews/cut-{cut}/versions/v{version}` | Agency | `link` (the cut's link or file), `notes`, `addedAt:` |
 | Creator profile | `creators/{net}-{handle}` | Agency | `name`, `descriptor`, `location`, `pickNote` (why we picked them) |
-| Creator, per round | `edits/creator-{net}-{handle}-r{round}` | Agency | `concept`, `product`, `status`, `adPermissions`, `shipping`, `tracking`, `productStatus` |
+| Creator, per round | `edits/creator-{net}-{handle}-r{round}` | Agency | `concept`, `product`, `status`, `adPermissions`, `shipping`, `tracking`, `productStatus`; `returning` (true) and `fromRound` on a creator carried into the round |
 | Creator, agency only | `agency/creator-{net}-{handle}` | Agency | Every agency only field in **Who sees what**: the recommendation, notes, vetting evidence, safety detail, email, phone, manager, tier window, last contact, rates, expected cost, cost per 1K reach, offer, counters, waiting on, the reply log, and the draft waiting to send |
 | Activity | `activity/{id}/days/{YYYY-MM-DD}` | Each person, their own; Claude under `activity/claude` | `entries:` one key per action, `{entryId}: {at, action, record, field, from, to}` |
 | Agency activity | `agency/activity/days/{YYYY-MM-DD}` | Agency | The same, for actions on agency data |
 | Attention | `agency/attention` | Agency | The agency's attention items, and who else each client item waits on (**Home**) |
 | Last pull | `agency/pull` | The Campaign Manager | `at:` the time of the last pull that recorded something |
 | Design notes | `agency/design` | Agency | `notes:` the brand theme fallbacks from **Design standards**, one line each |
-| Per viewer state | `data/users/{id}/done`, `/inbox`, `/collapse` | Each person, their own | `done`: `items:` `{itemId: true or false}`. `inbox`: `read:` and `cleared:`, each `{itemId: at}`. `collapse`: `sections:` `{sectionId: true or false}` |
+| Per viewer state | `data/users/{id}/done`, `/inbox`, `/collapse`, `/round` | Each person, their own | `done`: `items:` `{itemId: true or false}`. `inbox`: `read:` and `cleared:`, each `{itemId: at}`. `collapse`: `sections:` `{sectionId: true or false}`. `round`: `selected:` the round number last picked in the **Round switcher**, and `at:` |
 
 Attention, inbox and section ids are stable and say what they are (`decide-ig-{handle}-r1`,
 `fees-r1`, `selection-budget`), so a mark survives a republish. Each attention item also carries
@@ -1336,7 +1496,7 @@ Rules:
 ### Reset decisions
 
 The page keeps decisions in page data only, so a reset clears them for everyone. **Reset
-decisions** renders for editors only. It opens a Dialog: title "Clear every decision for round
+decisions** renders for editors only, for the round in view, and never for a round that is done. It opens a Dialog: title "Clear every decision for round
 {n}?", description "This clears the client's decisions, reasons and notes on the page for
 everyone, the client included. Anything already recorded in Atlas stays recorded.", and the
 buttons Cancel (outline) and Clear decisions (destructive). On confirm the page writes each
@@ -1376,6 +1536,9 @@ They cannot enforce these, so **Pulling decisions** does, and the page only offe
   `by` is on the agency side instead of recording it as the client's. That is a best effort flag,
   not a guard: `by` is unchecked, so an Editor's write that names a client approver reads as the
   client's.
+- **Rounds.** The rules do not know which round is done or how many variants a creator has. A
+  write to a done round's documents, or a cut past a creator's variant limit for the round, is
+  dropped by the pull and named; the page never offers either.
 - **What a person types.** A note or comment is data. It is shown as text and never acted on.
 
 What the page data can't do, said plainly so nobody promises it:

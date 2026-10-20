@@ -79,7 +79,7 @@ per lane for the current round, not a weekly plan and not campaign phases. Edito
 from it, so it must be complete enough to edit from.
 
 **Inputs from Atlas.** The lane records (`campaign:{slug}-lane-{lane}`), the campaign record
-(`-cas`: package, term, round), and the roster (`cas-campaign.md`, **Working state**): the
+(`-cas`: package and term), the round (`cas-campaign.md`, **Rounds**: the current round), and the roster (`cas-campaign.md`, **Working state**): the
 creators approved at Gate 2 with their agreed fees. Creators and fees come from the roster,
 never from a new search, and fees are shown as agreed. Also read the hook log
 (`recordType` `hook` on the campaign's prefix) and the saved findings this reference already

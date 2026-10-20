@@ -2019,6 +2019,15 @@ open tab and the Creator Selection layout. The page ships no sample data: an emp
 its empty states. A republish never overwrites a person's edit that has not been pulled yet. The
 reference's **1d**, **Editing in place**, and **1e**, **Every editable value**, hold the rules.
 
+A campaign runs in rounds, one a month, as many as it needs. Every tab but Creator Selection shows
+one round, picked in the round switcher on every tab and remembered for each person; Creator
+Selection is one pool for every round, and an approval adds the creator to the round in
+production. A round's state (planned, in production, in market, done) comes from its dates on the
+real clock. The agency starts the next round, in the chat or on the page, carrying the creators
+forward as returning; nothing of the earlier round changes, and a done round is read only. A
+creator makes at most 5 variants in a round. The reference's **Rounds** and **1d**, **Round
+switcher**, hold the rules.
+
 ### Setup
 
 1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end,
@@ -2038,14 +2047,15 @@ reference's **1d**, **Editing in place**, and **1e**, **Every editable value**, 
 ### Status
 
 Read the setup records and the working state (`search_insights` on the campaign's prefix, paged).
-Find the row in the reference's dispatch table, reading from the bottom up. Show one screen: the
-row's status line, the four steps (1 Concepts approved, 2 Creators approved, 3 Fees approved, 4
+Find the current round (the reference's **Rounds**) and its row in the dispatch table, reading
+from the bottom up. Show one screen: the round with its month, dates and state, the row's status
+line, the four steps (1 Concepts approved, 2 Creators approved, 3 Fees approved, 4
 Briefs approved) each with done and its date, now and its due date, or its planned date, the
 creator counts by concept, anything marked your call needed, and the campaign page link, opened
 on the tab the next step is on (Creator Selection for creators, Selected Creators for fees and
 shipping, Master Brief for briefs and creator changes, else Home). Then one
 `AskUserQuestion`, header "Next": the row's next step first (Recommended), plus "Log a delay" and
-"Change setup". Never offer more than one next step.
+"Change setup" ("Start round {n+1}" in its place once step 4 is cleared). Never offer more than one next step.
 
 ### Run
 
@@ -2081,6 +2091,10 @@ the tool prefix, `profile_id`, and `profile_slug`:
 - **Send the briefs to creators** (row 13): per the reference's **1g**. A changed brief from a
   creator goes back to `atlas-creator-brief` with `revision` for the differences in plain words,
   then to the client on the Master Brief tab.
+- **Start the next round** (once step 4 is cleared, offered in place of "Change setup"): per the
+  reference's **Rounds**, **Starting the next round**. One picker names the new round's month and
+  dates and which creators carry forward, then writes the round and the returning creators' rows
+  without touching the earlier round.
 - **Production** (row 16): **Content review** for each draft. Once creators have posted, the
   hook review from `references/hooks-and-ctas.md`, run here in the main thread: it matches the
   creators' posts to the briefed hooks, shows which led, and saves the results after one
