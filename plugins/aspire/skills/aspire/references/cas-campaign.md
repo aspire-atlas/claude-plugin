@@ -480,7 +480,7 @@ with styling is not enough.
      Agreed fee, shown as "talking" until agreed), Brief and content (Brief, Content, Content
      folder), and for the agency, Agency only (Rate: UGC video, Rate: Reel collab, Rate: 90 day
      usage, Expected cost, Offer (max), Counter, Waiting on, Last contact, Agency notes, Email,
-     Manager). Status labels are soft pills in the page's semantic colors.
+     Manager). Status labels are Badges in their **Status pills** variants (**Design standards**).
    - **Controls on both layouts.** Your decision is a dropdown (Decide, Approve, Maybe, Reject)
      that takes the color of the choice. Reject opens a reason field marked "Reason is required";
      Maybe opens an optional note. Your notes is a free text cell on every row. These are
@@ -522,8 +522,8 @@ with styling is not enough.
     (`artifact-standard.md`). The page is shared with the client's approvers, so its source line
     uses the standard's shared-page audience line. The client view and the agency view each carry
     their own footnote, and the agency-only notes never appear in the client view's footnote.
-    For editors only, any brand theme fallbacks from **Design standards** sit above the footnote
-    under an "Agency only" rule.
+    For editors only, any brand theme fallbacks from **Design standards**, read from
+    `agency/design` (**1e**), sit above the footnote under an "Agency only" rule.
 
 ### Page mechanics
 
@@ -564,9 +564,16 @@ Dark mode follows the viewer's system setting. The page has no theme toggle.
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script>
+const v = (n) => `var(--${n})`, pair = (n) => ({DEFAULT: v(n), foreground: v(`${n}-foreground`)});
 tailwind.config = {darkMode: ["variant", [
   "@media (prefers-color-scheme: dark) { &:not(:where([data-theme=light], [data-theme=light] *)) }",
-  "&:where([data-theme=dark], [data-theme=dark] *)"]]};
+  "&:where([data-theme=dark], [data-theme=dark] *)"]],
+  theme: {extend: {
+    colors: {background: v("background"), foreground: v("foreground"), card: pair("card"),
+      popover: pair("popover"), primary: pair("primary"), secondary: pair("secondary"),
+      muted: pair("muted"), accent: pair("accent"), destructive: pair("destructive"),
+      border: v("border"), input: v("input"), ring: v("ring")},
+    borderRadius: {xl: "0.75rem", lg: v("radius"), md: "calc(var(--radius) - 2px)", sm: "calc(var(--radius) - 4px)"}}}};
 </script>
 <style>
 :root{--background:#ffffff;--foreground:#09090b;--card:#ffffff;--card-foreground:#09090b;
@@ -627,15 +634,21 @@ body{background-color:var(--background);color:var(--foreground);font-family:'Int
 .border-chart-1{border-color:var(--chart-1)!important}.border-chart-2{border-color:var(--chart-2)!important}
 .border-chart-3{border-color:var(--chart-3)!important}.border-chart-4{border-color:var(--chart-4)!important}
 .border-chart-5{border-color:var(--chart-5)!important}
-@media (pointer:coarse),(max-width:639px){button,a,select,summary,input:not([type=checkbox]):not([type=radio]),[role=tab],[role=button],[role=switch],[role=checkbox]{min-height:44px}
-  [data-size=icon],[role=checkbox],[role=switch]{min-width:44px}}
+@media (pointer:coarse),(max-width:639px){button:not([role=switch]):not([role=checkbox]),a,select,summary,input:not([type=checkbox]):not([type=radio]),[role=tab],[role=button]{min-height:44px}
+  [data-size=icon]{min-width:44px}[role=tablist]{height:auto}
+  [role=switch],[role=checkbox],input[type=checkbox],input[type=radio]{position:relative}
+  [role=switch]::after,[role=checkbox]::after{content:"";position:absolute;left:50%;top:50%;width:44px;height:44px;transform:translate(-50%,-50%)}}
 </style>
 ```
 
 The `@media (prefers-color-scheme:dark)` block repeats the `:root[data-theme="dark"]` values
 exactly; it is shortened above only to save space here. Write both in full on the page. The
 `[hidden]` rule keeps a closed Sheet, Dialog or tooltip hidden even though its classes set a
-`display`.
+`display`. The config's colors and radii let prefixed classes (`data-[state=active]:bg-background`,
+`focus:bg-accent`, `placeholder:text-muted-foreground`, `sm:rounded-lg`) and `bg-border` resolve
+to the same tokens; the style block covers the opacity forms (`bg-primary/10`), which Tailwind
+cannot derive from a `var()` color. A Switch or checkbox keeps its drawn size on touch screens and
+gets a 44px tap area from its `::after`.
 
 #### Banned on the page
 
@@ -721,7 +734,7 @@ card titles, `text-xl` for section titles, `text-2xl` for the page title. Weight
 | soft | Awaiting decision, not asked yet, not shipped |
 | processing | Offer sent, Details received, Shipped, Brief sent, in negotiation |
 | success | Approved, Agreed, Delivered, Brief accepted, Granted |
-| warning | Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending |
+| warning | Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending, waiting for your approval |
 | error | Rejected, Declined, returned |
 
 The decision dropdown takes the variant of its choice (Decide is soft). A pill never uses the
@@ -741,8 +754,8 @@ Read `theme:brand` the way `theme.md`, **Applying the theme**, **Reading**, says
 that does not parse: the Atlas tokens above stand. With a theme, it overrides these tokens only,
 in each mode from that mode's values. The table is in `theme.md`, **The CAS campaign page**:
 
-- `--primary` and `--primary-foreground`: buttons, the selected tab's indicator, switches,
-  progress, tooltips.
+- `--primary` and `--primary-foreground`: buttons, switches, progress, tooltips and the header
+  band.
 - `--ring`: focus rings.
 - `--chart-1` to `--chart-5` and their foregrounds: concept colors and charts.
 - The header band and the logo, per `theme.md`, **Header** and **Logo**.
@@ -752,17 +765,18 @@ Status pills, decisions, deltas and alerts keep their semantic colors.
 
 **Contrast check.** Before publishing, check every overridden token in each mode with `contrast()`
 from `theme.md`, **Theme build**, against the thresholds below. A token that fails takes the
-Atlas default for that token in that mode, and only that token:
+Atlas default for that token in that mode. A fill and its foreground fall back together
+(`--primary` with `--primary-foreground`, `--chart-n` with `--chart-n-foreground`), so a brand
+fill never meets an Atlas foreground; any other token falls back alone:
 
 | Token | Must reach |
 | ----- | ---------- |
-| `--primary-foreground` on `--primary` | 4.5:1 (text on buttons and the band) |
+| `--primary-foreground` on `--primary` | 4.5:1 (text on buttons and the band); when the pair falls back, a `band` header is drawn as `rule` |
 | `--primary` on `--background` | 3:1 (a control's edge, WCAG 1.4.11) |
 | `--primary` on `--background`, when the page uses it as text (link buttons) | 4.5:1, else links use `text-foreground` with an underline |
-| `--ring` on `--background` | 3:1 |
+| `--ring` on `--background` | 4.5:1 (it is also the creator card's fit ring, drawn as text) |
 | each `--chart-n` on `--card` | 3:1 |
 | `--chart-n-foreground` on `--chart-n` | 4.5:1: white or near-black, whichever `on()` in `theme.md` picks; if neither reads, the chip shows a `border-chart-{n}` dot and `text-foreground` instead |
-| the band's text on the band | 4.5:1, else the header is `rule` |
 
 Each fallback is one line in `agency/design` (**1e**): "{mode} mode: the brand's {role} did not
 read clearly on {what}, so the page uses the Atlas default." The footer shows these lines under
@@ -789,8 +803,9 @@ prefixes.
   on its own (`overflow-x-auto` wrapper, the list `w-max`), with the selected tab scrolled into
   view and each count badge kept. Never wrap the tabs onto two lines.
 - **Tables.** A table with grouped header bands or more than five columns (the Board) keeps its
-  first column pinned (`sticky left-0 z-10 bg-card`) and its header pinned, inside its own
-  `overflow-x-auto` area, at every width. Every other table (Fees, Product shipping, Budget, the
+  first column pinned (`sticky left-0 z-10 bg-card`) and its header pinned (`sticky top-0 z-10
+  bg-card`, the corner cell `z-20`), inside its own `overflow-auto max-h-[70vh]` area, at every
+  width. The area scrolls both ways, so the header stays in view. Every other table (Fees, Product shipping, Budget, the
   timeline) is a table from 640px and a stack of Cards on phone, one Card per row, each showing
   the row's first column as its title and the other columns as label and value pairs.
 - **Side panels.** The creator viewer, the review panel, the inbox and comments open as a Sheet:

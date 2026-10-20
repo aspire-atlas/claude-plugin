@@ -495,8 +495,9 @@ Surfaces, text, borders and the font stay Atlas's, and `fonts` and `radius` are 
 ```
 
 Run the contrast check in **Design standards** before writing the block. A token that fails is
-left out of the block for that mode, so the Atlas default stands, and the fallback is noted for
-editors as that section says.
+left out of the block for that mode, together with its pair when it is a fill or a fill's
+foreground, so the Atlas default stands, and the fallback is noted for editors as that section
+says.
 
 The creator card on that page takes this override in place of the one in **Creator card**. Its
 fit ring uses `--ring`, which reads as text on the card. The ok and warn tiles keep their
