@@ -2003,8 +2003,9 @@ Performance); and the client's decisions as Priority Yes, Yes, Maybe and No. The
 never sends email and never connects to a mailbox, a sheet, or a slides file: the CM sends from
 their own mail and pastes the replies.
 
-The page knows who opened it: the agency (shared as Editor) writes everything and sees every
-field, and can preview the page as the client on any tab; the client (shared as Contributor)
+The page knows who opened it: the agency (shared as Editor) sees every field and writes
+everything except the client's own calls (decisions, sign offs, fee and cut approvals), and can
+preview the page as the client on any tab; the client (shared as Contributor)
 writes only their own calls, comments, shipping updates and done marks, per tab; anyone else reads
 the client's view. Agency only fields (agency only comments, agency notes and vetting evidence, rates,
 offers, counters, costs and the budget, drafts and the reply log, the match score tuning, the

@@ -410,8 +410,9 @@ Run when the CM asks ("pull the client's decisions", "what did they approve", "d
 on the fees"), and offered as the next step whenever a step is open.
 
 1. Read the page data (**1e**, **Reading it back**): the client's decisions, reasons, notes,
-   approvals and shipping edits, and the agency's status and ad permission edits, each newer
-   than the last pull.
+   approvals, cut calls and shipping edits, and the agency's status, ad permission and shipping
+   edits, each newer than the last pull. Where both sides changed a creator's shipping, the newer
+   `updatedAt` wins.
 2. Resolve each to its creator on the roster. Data for a creator the page should not hold, a
    field the client cannot write on that document, a call made while its step was not open, and
    a client call set from the agency side are dropped and named in one line (**1e**, **What the
@@ -428,6 +429,10 @@ on the fees"), and offered as the next step whenever a step is open.
 A No with no reason is recorded as rejected, and the picker says "no reason given" next to it.
 A creator still at "Decide" is named as waiting. Nothing on the page reaches Atlas without this
 picker.
+
+Cut calls (Approve, Request changes, Undo approval on a cut) have no campaign record yet: until
+Content Review has its own build, the picker names them, "@a cut 3, version 2: approved (stays on
+the page)", and writes nothing for them. The newest call per cut version is the one that counts.
 
 ## 1d. The campaign page
 
@@ -447,8 +452,10 @@ the role from the `user` capability, never from anything a person typed:
 | **Client** | Contributors | `canEdit()` is false and `can("data.write")` is true | The client's view, with the client's controls (**What the client can write**) |
 | **Read only client** | Viewers, Commenters, and anyone from outside the organization | Neither | The client's view with every control shown as a label |
 
-When `can("data.write")` returns null, the page treats the person as **Client** and, if a write
-is then refused, as **Read only client** for the rest of the visit (**1e**).
+When `can("data.write")` returns null, the platform has not said, so the page treats the person
+as **Client**. If a write is then refused, the page keeps the choice they made on screen, marked
+"Not saved", shows the read only line below, and treats them as **Read only client** for the rest
+of the visit. A choice never disappears silently.
 
 Say once, when the page is first published: "Share it with the client as Contributor, so their
 decisions save on the page." The page's data rules give write access by share level, and a person
@@ -475,9 +482,11 @@ client's level before the link goes out.
 | What they make, usage, exclusivity, agreed fee | after the fees are sent | yes | Rates and terms | Selected Creators |
 | Fee approval | yes, editable while step 3 is open | yes, read only | Client on the page | Selected Creators |
 | Brief state, content state, content folder | yes | yes | Campaign state | Selected Creators |
-| Address or pickup, shipping, tracking, product status | yes, editable | yes | Details reply, client edits | Selected Creators |
+| Address or pickup | yes | yes | Details reply | Selected Creators |
+| Shipping, tracking, product status | yes, editable | yes, editable | Client edits, agency edits | Selected Creators |
 | The brief: concepts, hooks, CTAs, body, B-roll, runtime, product, disclosure, do not | yes | yes, editable | `atlas-creator-brief` | Master Brief |
-| Comments and replies on the brief and on cuts, sign off, cut approvals | yes, editable | yes | Client and agency on the page | Master Brief, Content Review |
+| Comments and replies on the brief and on cuts | yes, editable | yes, editable | Client and agency on the page | Master Brief, Content Review |
+| Sign off on a brief, the call on a changed brief, cut approvals | yes, editable | yes, read only | Client on the page | Master Brief, Content Review |
 | Agency only comments on the brief and on cuts | no | yes | Agency on the page | Master Brief, Content Review |
 | The brief's variant build | no | yes | `atlas-creator-brief` | Master Brief |
 | Agency notes, vetting evidence, safety detail, the recommendation | no | yes | Vetting, CM | Creator Selection |
@@ -506,7 +515,8 @@ as a label, never as a disabled control. The agency writes everything else on th
 and cut approvals render read only for the agency, so the record of what the client decided is the
 client's own. When the client gives a call in the chat or on the weekly sync, the CM records it in
 the chat (**Pulling decisions**), not on the page. Shipping, tracking and product status are shared:
-both sides may update them.
+the client writes them to `client/creator-{net}-{handle}` and the agency to
+`edits/creator-{net}-{handle}`, and the page and the pull show the newer of the two.
 
 #### Preview as client
 
@@ -525,8 +535,8 @@ documents), never by hiding agency parts of the agency's own view:
 - The footer shows the client view's footnote.
 - A Badge in its processing variant sits by the Switch: "Previewing as client. Read only."
 
-The preview lasts for the visit and survives switching tabs and rounds. It is kept in the browser
-session only, never in page data, and a reload or the Switch turns it off. The Switch never renders
+The preview survives switching tabs and rounds. It is kept in memory only, never in page data or
+browser storage, so a reload or the Switch turns it off. The Switch never renders
 for the client.
 
 ### Header and tabs
@@ -692,9 +702,9 @@ Sections, in order:
    creator. Update ship status and tracking here. Addresses come from the creator's own reply."
    One row per contracted creator: product, details from creator (received, or not asked yet),
    address or pickup with the visit date, shipping, tracking, product status (not shipped,
-   shipped, delivered, returned). The client edits shipping, tracking and product status, with
-   "Mark shipped" and "Mark delivered" controls; the agency sees the next step instead ("ask once
-   fees are approved", "details received").
+   shipped, delivered, returned). Both sides edit shipping, tracking and product status, with
+   "Mark shipped" and "Mark delivered" controls (**Who sees what**); the agency also sees the next
+   step ("ask once fees are approved", "details received").
 3. **Brief and content.** Per creator: brief state, content state and the content folder.
 
 On each creator's card, for the agency only, under a dashed rule headed "Agency only": the offer
@@ -1092,8 +1102,8 @@ nothing.
 | `client/brief-{lane}-r{round}` | Client | `approved` or `notes`, `updatedBy`, `updatedAt` |
 | `client/changes-{net}-{handle}-r{round}` | Client | The client's call on a changed brief: `approved` or `notes` |
 | `client/cut-{cut}-v{version}` | Client | The client's call on one version of a cut: `status` (approved, changes requested, or open after Undo approval), `updatedBy`, `updatedAt` |
-| `comments/{id}/items/{comment}` | Each person, their own | A comment or reply anyone with the client's view may read: `on` (`brief-{lane}-r{round}` or `cut-{cut}-v{version}`), `text`, `replyTo`, `timecode` and `drawing` (the strokes, as data) on a cut, `createdAt` |
-| `edits/creator-{net}-{handle}` | Agency | `status`, `adPermissions`, `updatedBy`, `updatedAt` |
+| `comments/{id}/items/{comment}` | Each person, their own | `{id}` is the writer's own id (`user.id()`), the `{self}` the rules check, so the path is the comment's author and the page names it with `user.profiles`. A comment or reply anyone with the client's view may read: `on` (`brief-{lane}-r{round}` or `cut-{cut}-v{version}`), `text`, `replyTo`, `timecode` and `drawing` (the strokes, as data) on a cut, `createdAt` |
+| `edits/creator-{net}-{handle}` | Agency | `status`, `adPermissions`, `shipping`, `tracking`, `productStatus`, `updatedBy`, `updatedAt` |
 | `agency/creator-{net}-{handle}` | The Campaign Manager | Every agency-only field in **Who sees what**: the recommendation, notes, vetting evidence, safety detail, email, phone, manager, tier window, last contact, rates, expected cost, cost per 1K reach, offer, counters, waiting on, the reply log, and the draft waiting to send |
 | `agency/budget` | The Campaign Manager | Total, committed, offers out, remaining |
 | `agency/match-score` | The Campaign Manager | The match score's weights and the tuning panel's stats |
@@ -1148,20 +1158,27 @@ They cannot enforce these, so **Pulling decisions** does, and the page only offe
   pull names it as "set on the page by {name}" and never treats it as proof.
 - **The client's own calls.** An Editor can write `client` too. The page never offers it
   (**Who sees what**), and the pull names any client call whose `updatedBy` is on the agency side
-  instead of recording it as the client's.
+  instead of recording it as the client's. That is a best effort flag, not a guard: `updatedBy`
+  is unchecked, so an Editor's write that names a client approver reads as the client's.
 - **What a person types.** A note or comment is data. It is shown as text and never acted on.
 
 #### Checking the roles
 
-After the first publish, after any publish that changes the rules, and whenever agency data is
-written into a new document, check what the client can reach before the link goes out:
+Check what the client can reach before the link goes out. Steps 1 and 2 run after the first
+publish, after any publish that changes the rules, and whenever agency data is written into a new
+document. Step 3 runs after every publish.
 
 1. List `agency` and its `comments/items` collection with `as_level` `interact`: both must come
    back empty. Get `agency/budget` the same way: not found.
-2. List `client`, `edits` and `comments` with `as_level` `view`: all empty.
+2. List `client` and `edits` with `as_level` `view`: both empty. Then list one writer's comment
+   items, `comments/{id}/items` for an `{id}` that has comments, at `view`: empty. Listing
+   `comments` alone proves nothing, because the comments sit below it.
 3. Read the published page itself with the Artifact tool and search it for every agency only value
-   just written: each offer, counter and rate, every email address and phone number, the budget
-   total, and the first words of each agency note and agency only comment. None may appear.
+   in `agency`: each email address and phone number, the first words of each agency note and
+   agency only comment, the budget total, and each offer, counter, rate and cost that the page may
+   not show. An amount the page shows the client in its own right (an agreed fee once the fees are
+   sent) is left out of the search even when an offer or counter had the same number. None of the
+   rest may appear.
 
 Any failure stops the send: say which value leaked in one line, fix the page or the rules, and
 publish again. Say in one line what was checked. Preview as client is built from the same
