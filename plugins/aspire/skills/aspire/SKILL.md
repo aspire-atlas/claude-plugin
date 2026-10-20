@@ -2003,6 +2003,14 @@ Performance); and the client's decisions as Priority Yes, Yes, Maybe and No. The
 never sends email and never connects to a mailbox, a sheet, or a slides file: the CM sends from
 their own mail and pastes the replies.
 
+The page knows who opened it: the agency (shared as Editor) writes everything and sees every
+field, and can preview the page as the client on any tab; the client (shared as Contributor)
+writes only their own calls, comments, shipping updates and done marks, per tab; anyone else reads
+the client's view. Agency only fields (agency only comments, agency notes and vetting evidence, rates,
+offers, counters, costs and the budget, drafts and the reply log, the match score tuning, the
+brief's variant build, and contact details) never go into the page itself or into page data the
+client can read. The reference's **1d**, **Who sees what**, and **1e** hold the rules.
+
 ### Setup
 
 1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end,
@@ -2071,7 +2079,9 @@ the tool prefix, `profile_id`, and `profile_slug`:
   confirmation, so the next round's briefs lead with what worked.
 
 After each step, write the outcome per the reference, republish the campaign page with its page
-data, post the step line when a step moved, and show the new status in one line.
+data, run the reference's **Checking the roles** when it applies (it stops a send that would
+show the client an agency only value), post the step line when a step moved, and show the new
+status in one line.
 
 ### Schedule
 
