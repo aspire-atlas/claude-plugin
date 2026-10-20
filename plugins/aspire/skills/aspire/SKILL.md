@@ -2050,7 +2050,7 @@ the tool prefix, `profile_id`, and `profile_slug`:
   Brief; the CM shares it with the client as Contributor.
 - **Pull the client's decisions** (rows 5, 8, 12, 15, and whenever the CM asks "what did they
   approve"): read the page data per the reference's **Pulling decisions**, show every Priority
-  Yes, Yes, Maybe and No named with its reason, plus shipping, status and ad permission edits, and
+  Yes, Yes, Maybe and No by name, with its reason when one was given, plus shipping, status and ad permission edits, and
   record them with one picker. Priority Yes and Yes record as approved, No as rejected. A Maybe
   stays open on the page with a question back to the client.
 - **Record a reply** (rows 7, 10, 14, or whenever the CM pastes one): per

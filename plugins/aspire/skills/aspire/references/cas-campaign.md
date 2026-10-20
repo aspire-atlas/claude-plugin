@@ -306,7 +306,7 @@ current round only. Status lines use the page vocabulary.
 | 2 | Lanes saved, pool empty | "{n} concepts ready. No creators yet." | Find creators for every concept | `atlas-creator-discovery`, creator-ads mode | Discovery's undecided findings, one pool per lane | None |
 | 3 | Pool below target on any lane | "{concept}: {n} of {target} creators." One line per concept. | Find more creators for {concept} (the emptiest first) | `atlas-creator-discovery`, creator-ads mode | Same as row 2 | None |
 | 4 | Pool at target, Gate 2 not sent | "Every concept has enough creators to screen." or "Screened. Ready for the client." | Screen the {concept} creators, until every concept is screened; then send the creators for approval | `atlas-creator-vetting` with the lane as criteria; then **Gate 2 packet** below | Vetting's findings; then a `roster` candidate per slate creator and Gate 2 `open` | Reminder at its due time |
-| 5 | Gate 2 open | "Creators with {approver} since {sent}. Due {due}." Past due: "{n} days late." | Pull the client's decisions. Past due: log the delay, or chase the backup. | **CAS campaign**, Run, **Pulling decisions** | `roster` approved, maybe or rejected with reason, discovery verdicts, Gate 2 `cleared` once no creator awaits a decision; a `ledger` line when late | Removes the reminder |
+| 5 | Gate 2 open | "Creators with {approver} since {sent}. Due {due}." Past due: "{n} days late." | Pull the client's decisions. Past due: log the delay, or chase the backup. | **CAS campaign**, Run, **Pulling decisions** | `roster` approved (with `priority` for a Priority Yes), maybe, or rejected (with `rejectReason` when given), discovery verdicts, Gate 2 `cleared` once no creator awaits a decision; a `ledger` line when late | Removes the reminder |
 | 6 | Gate 2 cleared, no rates | "{n} creators approved. No fees yet." | Draft the fees and the offer emails | **Rates and terms** | `roster` rate `offered` with the offer; an offer `draft` per creator | None |
 | 7 | Rates drafted, Gate 3 not sent | "Offers out to {n} creators. {c} countered. {r} with no reply yet." | Record a reply. When every creator has agreed or declined: send the fees for approval. | **Rates and terms**, Replies; then **Gate 3 packet** below | `reply`, `roster`, the next `draft`; then Gate 3 `open` | Reminder at its due time |
 | 8 | Gate 3 open | "Fees with {approver}. Due {due}." | Pull the client's decisions | **CAS campaign**, Run, **Pulling decisions** | `roster` rate `agreed`, Gate 3 `cleared`; a `ledger` line when late | Removes the reminder |
@@ -342,8 +342,8 @@ Rules:
 
 Every packet is the campaign page (**1d**), linked to the tab the client acts on: Creator
 Selection (`#selection`) for Gate 2, Selected Creators (`#creators`) for Gate 3, Master Brief
-(`#brief`) for Gate 4, and the creator's changed brief (`#brief/changes-{net}-{handle}`) for Gate
-4b. The step moves to "now" in Home's round steps and its items join the client's Waiting on you.
+(`#brief`) for Gate 4, and the creator's changed brief (`#brief/r{n}/changes-{net}-{handle}`) for
+Gate 4b. The step moves to "now" in Home's round steps and its items join the client's Waiting on you.
 There is no separate packet page.
 
 **Sending a packet.** One `AskUserQuestion`: "Send the {step} to {approver}, due {due}? A
@@ -360,7 +360,8 @@ Composed from the newest vetting run per lane (`creator-vetting-{profile}` prefi
 `detail.campaign` = the slug and `detail.lane` = the lane).
 
 - One group per concept on Creator Selection, with the concept and persona at the top.
-- One card or board row per creator, with every field in **1d**, **Who sees what**. The
+- One card or board row per creator, with every field whose Tab in **1d**, **Who sees what**,
+  includes Creator Selection. The
   recommendation shows as the decision's starting value only for the agency; the client starts
   at "Decide".
 - Before send, ask the CM once for **Why we picked them** per creator in one message ("One line
@@ -414,6 +415,7 @@ on the fees"), and offered as the next step whenever a step is open.
 2. Resolve each to its creator on the roster. Data for a creator or a field the page should not
    hold is dropped and named in one line.
 3. Map each decision: Priority Yes and Yes count as approved, Maybe as maybe, No as rejected.
+   A stored `approve` reads as Yes and a stored `reject` as No.
    Show the batch in one picker, every item named in the page's words: "Record from the page:
    Priority Yes @a, Yes @b (approved), Maybe @c (whitelisting not on yet), No @d (Price;
    rejected); @e shipped, tracking 1Z…; ad permissions granted for @b. {This clears step 2.}"
@@ -470,8 +472,8 @@ and item. Labels, eyebrows, titles and ledes are in **Page vocabulary**, **Tabs*
    when the theme says so). The animated Aspire Atlas mark sits at the top right of the header
    (`artifact-standard.md`). The header follows the open tab:
    - **Eyebrow**: "{Brand} · Round {n} · {tab eyebrow}". When the campaign has more than one round,
-     the round is a control that switches the tab to another round; Home always covers every
-     round.
+     the round is a control that switches the tab to another round. On Home it switches only the
+     round steps; Home's other sections cover every round.
    - **Title**: the tab's title.
    - **Lede**: the tab's one line lede.
    - **Meta line**: "{campaign name} · Creator ads · {n} creators, {v} ads each · runs {start}
@@ -480,11 +482,12 @@ and item. Labels, eyebrows, titles and ledes are in **Page vocabulary**, **Tabs*
    Review, Ad Performance. A count badge on each tab shows how many items there need the person
    viewing. Each tab carries its tooltip from **Tabs**.
 3. **Hash links.** Each tab has one hash: `#home`, `#brief`, `#selection`, `#creators`,
-   `#review`, `#performance`. A link to one item adds it after a slash: `#selection/{net}-{handle}`
-   and `#creators/{net}-{handle}` open that creator's card, `#brief/{lane}` opens that concept's
-   brief, `#brief/changes-{net}-{handle}` opens a creator's changed brief. Opening a link selects
-   the tab, scrolls to the item and keeps the hash in the address bar; switching tabs updates the
-   hash. A link with no hash opens the tab the person had open last (kept in the browser, and
+   `#review`, `#performance`. A link to one item adds its round and the item after slashes:
+   `#selection/r{n}/{net}-{handle}` and `#creators/r{n}/{net}-{handle}` open that creator's card,
+   `#brief/r{n}/{lane}` opens that concept's brief, `#brief/r{n}/changes-{net}-{handle}` opens a
+   creator's changed brief. Opening a link selects the tab and the item's round, scrolls to the
+   item and keeps the hash in the address bar; a hash with no round opens the current round.
+   Switching tabs or rounds updates the hash. A link with no hash opens the tab the person had open last (kept in the browser, and
    ignored when that storage is missing), else Home. An item that is no longer on the tab opens
    the tab at the top.
 
@@ -498,8 +501,9 @@ Everything in the campaign in one place, for every round. Sections, in order:
 
 1. **Round steps.** The four steps for the round in view: 1 Concepts approved, 2 Creators
    approved, 3 Fees approved, 4 Briefs approved. A done step shows a tick and the date, the
-   current step shows "now" and the due date, a later step shows its planned date. A step opens
-   the tab it is approved on. No part of the page uses the word gate.
+   current step shows "now" and the due date, a later step shows its planned date. Steps 2 to 4
+   open the tab they are approved on; step 1 opens Master Brief. The round in view is the current
+   round, and the eyebrow's round control switches it. No part of the page uses the word gate.
 2. **Waiting on you.** Worked out for the person viewing. Each item: a title, one line of detail,
    when, an "open" link to the tab and item by hash, and a checkbox to mark it done. Done items
    fade and drop out of the count; "Show done" brings them back. Done marks are kept per person
@@ -511,8 +515,11 @@ Everything in the campaign in one place, for every round. Sections, in order:
      window ("No reply yet: @a"), approvals due within a day, anything marked your call needed,
      concepts below their pool target, details emails not sent.
 3. **Needs attention.** Every open item across every tab and round, not only the viewer's, each
-   with its tab ("Creator Selection →") and who it waits on (you, the agency, a creator). The
-   client's list leaves out agency only items. "{n} items across every tab and round"; empty:
+   with its tab ("Creator Selection →"). The agency's items in **Waiting on you** (replies to
+   record, drafts waiting to send, No reply yet, details emails not sent, concepts below target)
+   are agency only: they come from `agency` page data and are never written into the page
+   itself. On the client's list each item names its tab and whether it waits on them; who else
+   it waits on (the agency, a creator) shows for the agency only. "{n} items across every tab and round"; empty:
    "Nothing needs attention right now." The inbox shows the same items as they arrive, and each
    opens its tab and item by hash.
 4. **Calendar.** The campaign timeline for every round: what, when, who, status, for every step,
@@ -531,14 +538,14 @@ Everything in the campaign in one place, for every round. Sections, in order:
 
 ### Master Brief
 
-The round's briefs. One section per concept, anchored `#brief/{lane}`: "{Concept} brief · round
+The round's briefs. One section per concept, anchored `#brief/r{n}/{lane}`: "{Concept} brief · round
 {n}" with a pill (approved, or waiting for your approval), in the modular shape of
 `creator-brief.md`, **Creator-ads mode** (hooks, CTAs, body, B-roll, runtime, product,
 disclosure, do not), with Approve and Send notes for the client while it waits. This is the step 4
 approval.
 
 Then, for each creator whose brief changed, a block "@{handle} changed the {concept} brief",
-anchored `#brief/changes-{net}-{handle}`, with a "your call" pill, the line "Only the
+anchored `#brief/r{n}/changes-{net}-{handle}`, with a "your call" pill, the line "Only the
 differences against the brief you approved.", the differences only (removed text struck
 through, added text highlighted), and Approve the changes and Send notes for the client; the
 agency sees the draft reply to the creator instead. This is the creator changes approval. Then
@@ -553,7 +560,7 @@ default, Board second.
 - **Budget summary**, agency only, at the top: Total, Committed (with the count agreed), Offers
   out (with the count countered), Remaining.
 - **Cards**: the creator card from `creator-card.md`, page profile, one per creator, anchored
-  `#selection/{net}-{handle}`. Flow chips: the concept, filled with the theme's chart series in
+  `#selection/r{n}/{net}-{handle}`. Flow chips: the concept, filled with the theme's chart series in
   concept order, then the status labels, then "Near category" when it applies. The fit ring shows
   the paid fit score. Thumbnails show the evidence posts first, with a "Hook post" label on the
   post the hook rate came from and the play glyph on video, embedded per the card reference. The
@@ -574,11 +581,13 @@ default, Board second.
   star, so it reads apart from Yes without color. Maybe opens an optional note. Your notes is a free
   text cell on every row. These are editable for the client and read only for the agency. Status
   and Ad permissions are dropdowns for the agency and labels for the client.
-- **A reason on surprises.** When a decision goes against the agency's recommendation (Priority
-  Yes or Yes on a creator recommended Reject, or No on one recommended Approve), the card asks
-  "What made the call?" with one tap reasons: Performance, Brief fit, Paid history, Price, Reach,
-  and Other with a short text field. Any other No offers the same reasons. A reason is never
-  required; skipping it leaves the decision as it is.
+- **A reason on the call.** Every Priority Yes, Yes and No offers "What made the call?" with
+  one tap reasons: Performance, Brief fit, Paid history, Price, Reach, and Other with a short
+  text field. A reason is never required; skipping it leaves the decision as it is. The page
+  never holds the agency's recommendation, so the offer is the same on every creator. A decision
+  that goes against the recommendation (Priority Yes or Yes on a creator recommended Reject, or No
+  on one recommended Approve) is a surprise: **Pulling decisions** marks it from the agency's
+  data, and the picker names its reason, or "no reason given".
 - A TikTok creator's hook rate shows "n/a (not on TikTok)".
 
 This is the step 2 approval.
@@ -586,14 +595,17 @@ This is the step 2 approval.
 ### Selected Creators
 
 Everyone approved in Creator Selection for the round, from the moment they are approved. One
-card per creator, anchored `#creators/{net}-{handle}`, with the concept, what they make and the
-latest cut of each of their variants once Content Review has them. Sections, in order:
+card per creator, anchored `#creators/r{n}/{net}-{handle}`, with the concept, what they make once
+the fees are sent, and the latest cut of each of their variants once Content Review has them.
+Sections, in order:
 
 1. **Contract and rates.** One row per approved creator: concept, what they make, how long you
    can use it, exclusivity, the agreed fee (or "in negotiation"), if we drop them, and where it
    is. The client sees agreed fees, and only once the fees are sent; the agency also sees the
    rate per deliverable, the offer, the counter and the agreed fee. One approve control for the
-   whole sheet for the client while step 3 is open: this is the step 3 approval. **Totals**,
+   whole sheet for the client while step 3 is open: this is the step 3 approval. Before the
+   fees are sent, the client sees the creators and "Fees show here once they are sent for your
+   approval." **Totals**,
    agency only, close the section: the campaign at open, target and max, and at what is agreed
    so far, with the whitelisting uplift as its own line. Full detail: `rates-and-terms.md`,
    **Contract and rates**.
@@ -925,7 +937,7 @@ prefixes.
   sm:px-6 lg:px-8`. Every flex and grid child that holds text gets `min-w-0`, and long handles and
   links get `break-words`. Only a table's own scroll area may be wider than the screen.
 - **Layout.** Phone is one column. Card grids are `grid grid-cols-1 gap-4 sm:grid-cols-2
-  lg:grid-cols-3`. The header stacks the title above the progress steps on phone and keeps the
+  lg:grid-cols-3`. The header stacks the eyebrow, title and lede on phone and keeps the
   logo at the start and the mark at the end on one row at every width.
 - **Tabs.** From 640px the tabs are a Tabs list. On phone they are one row that scrolls sideways
   on its own (`overflow-x-auto` wrapper, the list `w-max`), with the selected tab scrolled into
@@ -933,9 +945,10 @@ prefixes.
 - **Tables.** A table with grouped header bands or more than five columns (the Board) keeps its
   first column pinned (`sticky left-0 z-10 bg-card`) and its header pinned (`sticky top-0 z-10
   bg-card`, the corner cell `z-20`), inside its own `overflow-auto max-h-[70vh]` area, at every
-  width. The area scrolls both ways, so the header stays in view. Every other table (Fees, Product shipping, Budget, the
-  timeline) is a table from 640px and a stack of Cards on phone, one Card per row, each showing
-  the row's first column as its title and the other columns as label and value pairs.
+  width. The area scrolls both ways, so the header stays in view. Every other table (Contract and
+  rates, Shipping, the budget summary and totals, the Calendar) is a table from 640px and a stack
+  of Cards on phone, one Card per row, each showing the row's first column as its title and the
+  other columns as label and value pairs.
 - **Side panels.** The creator viewer, the review panel, the inbox and comments open as a Sheet:
   full screen on phone, a right-hand panel from 640px. Closing it returns to the same place in
   the list. A confirm or a required reason opens a Dialog.
@@ -985,7 +998,7 @@ at all. A Viewer reads nothing from the page data.
 
 | Path | Who writes | What it holds |
 | ---- | ---------- | ------------- |
-| `client/creator-{net}-{handle}` | Client | `decision` (priority-yes, yes, maybe, no), `reason` (the one tap reason, or the Other text), `notes`, `shipping`, `tracking`, `productStatus`, `updatedBy`, `updatedAt` |
+| `client/creator-{net}-{handle}` | Client | `decision` (priority-yes, yes, maybe, no; a stored `approve` reads as yes and `reject` as no), `reason` (the one tap reason, the Other text, or the Maybe note), `notes`, `shipping`, `tracking`, `productStatus`, `updatedBy`, `updatedAt` |
 | `client/fees-r{round}` | Client | `approved`, `notes`, `updatedBy`, `updatedAt` |
 | `client/brief-{lane}-r{round}` | Client | `approved` or `notes`, `updatedBy`, `updatedAt` |
 | `client/changes-{net}-{handle}-r{round}` | Client | The client's call on a changed brief: `approved` or `notes` |
