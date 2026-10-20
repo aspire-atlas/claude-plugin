@@ -75,11 +75,12 @@ phases instead of one week of three posts.
 ## Creator-ads mode (the CAS master brief)
 
 For a CAS campaign (`brief_mode` `creator-ads`, `cas-campaign.md`), the brief is one master brief
-per lane for the current round, not a weekly plan and not campaign phases. Editors cut the ads
+per lane for one round, not a weekly plan and not campaign phases. Editors cut the ads
 from it, so it must be complete enough to edit from.
 
 **Inputs from Atlas.** The lane records (`campaign:{slug}-lane-{lane}`), the campaign record
-(`-cas`: package and term), the round (`cas-campaign.md`, **Rounds**: the current round), and the roster (`cas-campaign.md`, **Working state**): the
+(`-cas`: package and term), the round the main thread names (`cas-campaign.md`, **Rounds**),
+and the roster (`cas-campaign.md`, **Working state**): the
 creators approved at Gate 2 with their agreed fees. Creators and fees come from the roster,
 never from a new search, and fees are shown as agreed. Also read the hook log
 (`recordType` `hook` on the campaign's prefix) and the saved findings this reference already

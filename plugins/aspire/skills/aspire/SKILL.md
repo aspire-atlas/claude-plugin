@@ -2021,9 +2021,10 @@ reference's **1d**, **Editing in place**, and **1e**, **Every editable value**, 
 
 A campaign runs in rounds, one a month, as many as it needs. Every tab but Creator Selection shows
 one round, picked in the round switcher on every tab and remembered for each person; Creator
-Selection is one pool for every round, and an approval adds the creator to the round in
-production. A round's state (planned, in production, in market, done) comes from its dates on the
-real clock. The agency starts the next round, in the chat or on the page, carrying the creators
+Selection is one pool for every round, and an approval adds the creator to the newest round
+still choosing creators. Rounds overlap, so the status screen shows every round that is not done.
+A round's state (planned, in production, in market, done) comes from its dates on the real
+clock. The agency starts the next round, in the chat or on the page, carrying the creators
 forward as returning; nothing of the earlier round changes, and a done round is read only. A
 creator makes at most 5 variants in a round. The reference's **Rounds** and **1d**, **Round
 switcher**, hold the rules.
@@ -2047,15 +2048,17 @@ switcher**, hold the rules.
 ### Status
 
 Read the setup records and the working state (`search_insights` on the campaign's prefix, paged).
-Find the current round (the reference's **Rounds**) and its row in the dispatch table, reading
-from the bottom up. Show one screen: the round with its month, dates and state, the row's status
-line, the four steps (1 Concepts approved, 2 Creators approved, 3 Fees approved, 4
-Briefs approved) each with done and its date, now and its due date, or its planned date, the
-creator counts by concept, anything marked your call needed, and the campaign page link, opened
-on the tab the next step is on (Creator Selection for creators, Selected Creators for fees and
-shipping, Master Brief for briefs and creator changes, else Home). Then one
-`AskUserQuestion`, header "Next": the row's next step first (Recommended), plus "Log a delay" and
-"Change setup" ("Start round {n+1}" in its place once step 4 is cleared). Never offer more than one next step.
+Find each round that is not done (the reference's **Rounds**, **Which round**) and its row in the
+dispatch table, reading from the bottom up. Show one screen: per round, its month, dates and state,
+its row's status line and the four steps (1 Concepts approved, 2 Creators approved, 3 Fees
+approved, 4 Briefs approved) each with done and its date, now and its due date, or its planned
+date, the creator counts by concept, anything marked your call needed, and the campaign page link,
+opened on the tab the next step is on (Creator Selection for creators, Selected Creators for fees
+and shipping, Master Brief for briefs and creator changes, else Home). Then one
+`AskUserQuestion`, header "Next": the one next step the reference's **One next step** rule picks
+(Recommended), plus "Log a delay" and "Change setup", with "Start round {n+1}" in place of "Change
+setup" when the reference's **Starting the next round** offers it. Never offer more than one next
+step.
 
 ### Run
 
@@ -2091,10 +2094,10 @@ the tool prefix, `profile_id`, and `profile_slug`:
 - **Send the briefs to creators** (row 13): per the reference's **1g**. A changed brief from a
   creator goes back to `atlas-creator-brief` with `revision` for the differences in plain words,
   then to the client on the Master Brief tab.
-- **Start the next round** (once step 4 is cleared, offered in place of "Change setup"): per the
-  reference's **Rounds**, **Starting the next round**. One picker names the new round's month and
-  dates and which creators carry forward, then writes the round and the returning creators' rows
-  without touching the earlier round.
+- **Start the next round** (once the newest round's step 4 is cleared and no later round exists,
+  offered in place of "Change setup"): per the reference's **Rounds**, **Starting the next round**.
+  One picker names the new round's month and dates and which creators carry forward, then writes
+  the round and the returning creators' rows without touching the earlier round.
 - **Production** (row 16): **Content review** for each draft. Once creators have posted, the
   hook review from `references/hooks-and-ctas.md`, run here in the main thread: it matches the
   creators' posts to the briefed hooks, shows which led, and saves the results after one

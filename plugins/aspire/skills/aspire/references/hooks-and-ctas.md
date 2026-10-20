@@ -83,10 +83,11 @@ when the user asks how the hooks did. Main thread only, interactive only. It rea
 Atlas holds: no lookups, no marketplace, no discovery.
 
 1. **Find the posts.** `search_posts` for the round's roster creators (the authors' handles),
-   posted since Gate 4 cleared, video only (`exists mediaKind`, Reels and TikTok videos), that
-   mention or tag the brand. Project `postedAt`, `text`, `url`, `author.username`, the metrics,
-   `media` (container), and `analysis.transcript` and `analysis.overlayText` when the census
-   lists them.
+   posted from the round's Gate 4 clearing to the end of its in-market window (`cas-campaign.md`,
+   **Rounds**), so rounds that overlap never score the same post, video only (`exists mediaKind`,
+   Reels and TikTok videos), that mention or tag the brand. Project `postedAt`, `text`, `url`,
+   `author.username`, the metrics, `media` (container), and `analysis.transcript` and
+   `analysis.overlayText` when the census lists them.
 2. **Match each post to a briefed hook.** Compare the post's opening (the transcript's first
    three seconds, then the overlay text) with the round's `hook` findings. A semantic
    `search_posts` with `queryText` set to the hook's "Said" line, filtered to the creator, helps
