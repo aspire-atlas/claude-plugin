@@ -127,7 +127,7 @@ on the campaign, never reuse one, and append every new one as a `hook` finding.
 **The page.** One page per round, a section per lane with an anchor (`#lane-{lane}`), the
 coverage result at the top of each section. Title "<Brand> Creator Ad Brief: <Campaign>, round
 {n}", republished to the same path for that round. It stays the full brief editors cut from; the
-client approves the same briefs on the campaign page's Briefs tab (`cas-campaign.md`, **Gate
+client approves the same briefs on the campaign page's Master Brief tab (`cas-campaign.md`, **Gate
 4**), which the main thread builds from this page. Sections 2, 5 and 6 of **Page structure** drop out: the
 lanes set the audience, the roster replaces the shortlist, and the gates replace the timeline.
 

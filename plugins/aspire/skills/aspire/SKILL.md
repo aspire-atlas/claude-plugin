@@ -1997,7 +1997,9 @@ It never does the heavy lifting itself. Several campaigns may be saved; ask whic
 `AskUserQuestion` when more than one is active.
 
 Everything a person sees uses the reference's **Page vocabulary**: concepts, not lanes; the four
-steps (Concepts approved, Creators approved, Fees approved, Briefs approved), not gates. The flow
+steps (Concepts approved, Creators approved, Fees approved, Briefs approved), not gates; the
+page's six tabs (Home, Master Brief, Creator Selection, Selected Creators, Content Review, Ad
+Performance); and the client's decisions as Priority Yes, Yes, Maybe and No. The flow
 never sends email and never connects to a mailbox, a sheet, or a slides file: the CM sends from
 their own mail and pastes the replies.
 
@@ -2023,7 +2025,9 @@ Read the setup records and the working state (`search_insights` on the campaign'
 Find the row in the reference's dispatch table, reading from the bottom up. Show one screen: the
 row's status line, the four steps (1 Concepts approved, 2 Creators approved, 3 Fees approved, 4
 Briefs approved) each with done and its date, now and its due date, or its planned date, the
-creator counts by concept, anything marked your call needed, and the campaign page link. Then one
+creator counts by concept, anything marked your call needed, and the campaign page link, opened
+on the tab the next step is on (Creator Selection for creators, Selected Creators for fees and
+shipping, Master Brief for briefs and creator changes, else Home). Then one
 `AskUserQuestion`, header "Next": the row's next step first (Recommended), plus "Log a delay" and
 "Change setup". Never offer more than one next step.
 
@@ -2042,11 +2046,13 @@ the tool prefix, `profile_id`, and `profile_slug`:
   `references/creator-vetting.md` first and write it with its own confirmation, but it is not
   required.
 - **Sending a step for approval** (rows 4, 7, 11): per the reference's **Gate packets**. The
-  campaign page is the approval page; the CM shares it with the client as Contributor.
+  campaign page is the approval page, linked to Creator Selection, Selected Creators or Master
+  Brief; the CM shares it with the client as Contributor.
 - **Pull the client's decisions** (rows 5, 8, 12, 15, and whenever the CM asks "what did they
-  approve"): read the page data per the reference's **Pulling decisions**, show every approve,
-  maybe and reject named with its reason, plus shipping, status and ad permission edits, and
-  record them with one picker. A Maybe stays open on the page with a question back to the client.
+  approve"): read the page data per the reference's **Pulling decisions**, show every Priority
+  Yes, Yes, Maybe and No by name, with its reason when one was given, plus shipping, status and ad permission edits, and
+  record them with one picker. Priority Yes and Yes record as approved, No as rejected. A Maybe
+  stays open on the page with a question back to the client.
 - **Record a reply** (rows 7, 10, 14, or whenever the CM pastes one): per
   `references/rates-and-terms.md`, **Replies**. One picker proposes the record and the next move;
   a reply that changes what the client approved becomes "your call needed" for the client.
@@ -2058,7 +2064,7 @@ the tool prefix, `profile_id`, and `profile_slug`:
   "Write the round {n} briefs for {concepts} and save them to the campaign?"
 - **Send the briefs to creators** (row 13): per the reference's **1g**. A changed brief from a
   creator goes back to `atlas-creator-brief` with `revision` for the differences in plain words,
-  then to the client on the Briefs tab.
+  then to the client on the Master Brief tab.
 - **Production** (row 16): **Content review** for each draft. Once creators have posted, the
   hook review from `references/hooks-and-ctas.md`, run here in the main thread: it matches the
   creators' posts to the briefed hooks, shows which led, and saves the results after one
@@ -2089,7 +2095,8 @@ Full detail lives in `references/rates-and-terms.md`.
 1. If `campaign:{slug}-terms` is missing, ask T1 and T2, confirm the pair once, and write it.
 2. Draft an opening offer for every approved creator, from the fee calculator (**Fee
    calculator**). Say on the page when the Aspire recommended rates were used.
-3. Show the Fees tab and the offer drafts, then confirm saving the offers in one picker.
+3. Show contract and rates (Selected Creators) and the offer drafts, then confirm saving the
+   offers in one picker.
 4. Keep one email draft on each creator's row per the reference's **Drafts** (offer, counter,
    accept, chase). The CM sends them from their own mail; mark them sent when the CM says so.
 5. Record each pasted reply per the reference's **Replies**: one picker for the record and the
@@ -2761,8 +2768,8 @@ The watch list is the brand's saved creators, outside any campaign.
   and the handles the user types; creator discovery, whose saved cadence record approves it
   on every run including scheduled ones; and the deliverable tracker, where T0 approves
   `lookup_posts` for the post links the user pasted, in an interactive check only.
-- **Inside a CAS campaign**, one picker confirms a whole gate batch: every accept and every
-  reject is named in the question, and that one answer covers all the writes the close makes.
+- **Inside a CAS campaign**, one picker confirms a whole gate batch: every decision (Priority
+  Yes, Yes, Maybe, No) is named in the question, and that one answer covers all the writes the close makes.
   The campaign's saved sync cadence (C6) is the standing approval for paid discovery on that
   campaign: the creator marketplace and paid lookups for its lanes, without asking again. The
   defaults for brand users everywhere else are unchanged.
