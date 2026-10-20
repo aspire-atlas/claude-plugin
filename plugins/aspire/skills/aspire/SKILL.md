@@ -2012,6 +2012,13 @@ offers, counters, costs and the budget, drafts and the reply log, the match scor
 brief's variant build, and contact details) never go into the page itself or into page data the
 client can read. The reference's **1d**, **Who sees what**, and **1e** hold the rules.
 
+Every edit on the page is saved in the page's shared data, field by field, with who made it and
+when, so everyone sees it live and on every device; the agency edits program terms, products,
+team, steps and dates, the budget and the brief in place. Browser storage keeps only the last
+open tab and the Creator Selection layout. The page ships no sample data: an empty campaign shows
+its empty states. A republish never overwrites a person's edit that has not been pulled yet. The
+reference's **1d**, **Editing in place**, and **1e**, **Every editable value**, hold the rules.
+
 ### Setup
 
 1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end,
@@ -2080,9 +2087,9 @@ the tool prefix, `profile_id`, and `profile_slug`:
   confirmation, so the next round's briefs lead with what worked.
 
 After each step, write the outcome per the reference, republish the campaign page with its page
-data, run the reference's **Checking the roles** when it applies (it stops a send that would
-show the client an agency only value), post the step line when a step moved, and show the new
-status in one line.
+data, run the reference's **Checking the roles** and **Checking the edits** when they apply (the
+first stops a send that would show the client an agency only value), post the step line when a
+step moved, and show the new status in one line.
 
 ### Schedule
 
