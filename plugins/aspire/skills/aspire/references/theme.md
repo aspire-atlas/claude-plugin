@@ -469,6 +469,49 @@ safety colors (`--ac-neg`, `--ac-neu`, the ok and warn dots and tiles) keep thei
 </style>
 ```
 
+### The CAS campaign page
+
+The CAS campaign page is built on the Atlas design system tokens (`cas-campaign.md`, **Design
+standards**), not on the page tokens above. On that page the theme sets only the tokens below, in
+each mode from that mode's values, and the block goes right after the page's **Tokens** block.
+Surfaces, text, borders and the font stay Atlas's, and `fonts` and `radius` are not used there.
+
+| Atlas token | Theme role |
+| ----------- | ---------- |
+| `--primary`, `--primary-foreground` | `brand`, `onBrand` |
+| `--ring` | `brandInk` |
+| `--chart-1` to `--chart-5` | `chart[0]` to `chart[4]`, in order; a theme with fewer keeps the Atlas value for the rest |
+| `--chart-1-foreground` to `--chart-5-foreground` | `on(chart[n])` from **Theme build** |
+| Header band | `header` as in **Header**, drawn with `bg-primary text-primary-foreground` |
+| Logo | **Logo**, unchanged |
+
+```html
+<style>
+:root{--primary:{light.brand};--primary-foreground:{light.onBrand};--ring:{light.brandInk};
+  --chart-1:{light.chart[0]};--chart-1-foreground:{on(light.chart[0])};/* … through --chart-5 */}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){/* the same names with the dark values */}}
+:root[data-theme="dark"]{/* the same names with the dark values */}
+</style>
+```
+
+Run the contrast check in **Design standards** before writing the block. A token that fails is
+left out of the block for that mode, so the Atlas default stands, and the fallback is noted for
+editors as that section says.
+
+The creator card on that page takes this override in place of the one in **Creator card**. Its
+fit ring uses `--ring`, which reads as text on the card. The ok and warn tiles keep their
+semantic colors.
+
+```html
+<style>
+.ac-card,:root[data-theme="light"] .ac-card{--ac-card:var(--card);--ac-fg:var(--card-foreground);--ac-muted:var(--muted-foreground);--ac-border:var(--border);--ac-soft:var(--muted);--ac-tile:var(--muted);--ac-brand:var(--ring);--ac-on-brand:var(--card);--ac-neutral-bg:var(--muted);--ac-neutral-fg:var(--muted-foreground)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ac-card{--ac-card:var(--card);--ac-fg:var(--card-foreground);--ac-muted:var(--muted-foreground);--ac-border:var(--border);--ac-soft:var(--muted);--ac-tile:var(--muted);--ac-brand:var(--ring);--ac-on-brand:var(--card);--ac-neutral-bg:var(--muted);--ac-neutral-fg:var(--muted-foreground)}}
+:root[data-theme="dark"] .ac-card,.dark .ac-card{--ac-card:var(--card);--ac-fg:var(--card-foreground);--ac-muted:var(--muted-foreground);--ac-border:var(--border);--ac-soft:var(--muted);--ac-tile:var(--muted);--ac-brand:var(--ring);--ac-on-brand:var(--card);--ac-neutral-bg:var(--muted);--ac-neutral-fg:var(--muted-foreground)}
+.ac-card{font-family:'Inter',ui-sans-serif,system-ui,sans-serif;border-radius:0.75rem;box-shadow:none}
+.ac-card .ac-tile,.ac-card .ac-thumb{border-radius:calc(0.75rem - 4px)}
+</style>
+```
+
 ## Snippets
 
 Save each to the session's temp directory and run it with Python 3. Brand scan and Theme build
