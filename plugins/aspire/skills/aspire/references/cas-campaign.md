@@ -548,7 +548,7 @@ each component is plain markup (or a React element) that carries the component's
 from **Component classes** exactly as written, plus the `data-state` attributes they key on.
 Never invent a class combination for a component listed there.
 
-**Components.** Use these and nothing hand drawn in their place: Button, Card, Badge, Tabs, Table,
+**Components.** Use these and nothing hand-drawn in their place: Button, Card, Badge, Tabs, Table,
 Dialog, Sheet, Select, Input, Textarea, Switch, Progress, Tooltip, Avatar, Separator, Skeleton.
 Skeleton is the loading state of anything that waits for page data. Icons are Lucide, at the
 sizes the component gives them (`size-4` in buttons). The creator card keeps its own markup from
@@ -635,6 +635,7 @@ body{background-color:var(--background);color:var(--foreground);font-family:'Int
 .border-chart-3{border-color:var(--chart-3)!important}.border-chart-4{border-color:var(--chart-4)!important}
 .border-chart-5{border-color:var(--chart-5)!important}
 @media (pointer:coarse),(max-width:639px){button:not([role=switch]):not([role=checkbox]),a,select,summary,input:not([type=checkbox]):not([type=radio]),[role=tab],[role=button]{min-height:44px}
+  a:not(:is(p,li,dd,td,th,label) a){display:inline-flex;align-items:center}
   [data-size=icon]{min-width:44px}[role=tablist]{height:auto}
   [role=switch],[role=checkbox],input[type=checkbox],input[type=radio]{position:relative}
   [role=switch]::after,[role=checkbox]::after{content:"";position:absolute;left:50%;top:50%;width:44px;height:44px;transform:translate(-50%,-50%)}}
@@ -648,7 +649,8 @@ exactly; it is shortened above only to save space here. Write both in full on th
 `focus:bg-accent`, `placeholder:text-muted-foreground`, `sm:rounded-lg`) and `bg-border` resolve
 to the same tokens; the style block covers the opacity forms (`bg-primary/10`), which Tailwind
 cannot derive from a `var()` color. A Switch or checkbox keeps its drawn size on touch screens and
-gets a 44px tap area from its `::after`.
+gets a 44px tap area from its `::after`. A link that stands on its own (an "open" link, a tab card)
+is `inline-flex`, so it takes the 44px height; a link inside a sentence stays inline with its text.
 
 #### Banned on the page
 
