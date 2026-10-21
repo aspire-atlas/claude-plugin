@@ -62,6 +62,7 @@ draft, and in a channel post, uses the left column.
 | Inbox, {Tab} inbox: what's new for you | inbox items built from the activity log and tags (**1e**, **Tags and the inbox**) |
 | @Client, @Aspire, @{name}: tagged you, tagged Client, tagged Aspire | a tag (**1d**, **Tagging**) |
 | Home, Master Brief, Creator Selection, Selected Creators, Content Review, Ad Performance | the page's six tabs (**1d**) |
+| Expand all, Collapse all, a section opened or closed | each person's collapse state (`data/users/{id}/collapse`, **1d**, **Collapsing sections**) |
 
 The status labels a person sees, in order: Awaiting decision, Approved, Maybe, Rejected, Offer
 sent, Countered, Agreed, Declined, Your call needed, No reply yet, Details received, Shipped,
@@ -715,7 +716,8 @@ as a label, never as a disabled control. The agency writes everything else on th
 | Ad Performance | Nothing | None |
 
 On every tab the client also marks their own inbox items read or cleared
-(`data/users/{id}/inbox-{month}`), and tags people in the notes and comments above (`tags-client`
+(`data/users/{id}/inbox-{month}`), opens and closes sections (`data/users/{id}/collapse`,
+**Collapsing sections**), and tags people in the notes and comments above (`tags-client`
 and `tags-agency`, **Tagging**).
 
 **The client's own calls stay the client's.** Their decision, reason, notes, sign offs, fee approval
@@ -784,8 +786,9 @@ and item. Labels, eyebrows, titles and ledes are in **Page vocabulary**, **Tabs*
    `#brief/r{n}/{lane}` opens that concept's brief, `#brief/r{n}/changes-{net}-{handle}` opens a
    creator's changed brief, `#review/r{n}/{cut}` opens that cut in the review panel, and
    `#home/{section}` opens a Home section (`steps`, `waiting`, `attention`, `calendar`, `team`,
-   `program`, `files`). `#history` opens **History** and `#inbox` the **Inbox** over the tab open
-   last. A link can go one step deeper into an item, to the part a note, comment or change is on:
+   `program`, `files`, `summaries`). `#history` opens **History** and `#inbox` the **Inbox** over
+   the tab open last. A link can go one step deeper into an item, to the part a note, comment or
+   change is on:
 
    | Hash | Opens |
    | ---- | ----- |
@@ -797,12 +800,13 @@ and item. Labels, eyebrows, titles and ledes are in **Page vocabulary**, **Tabs*
    | `#review/r{n}/{cut}/v{version}` | The cut in the review panel at that version, not the newest |
    | `#review/r{n}/{cut}/v{version}/t{seconds}` | The same, with the player paused at that second |
    | `#review/r{n}/{cut}/v{version}/c{comment}` | The same, with that comment open, and the player at its timecode and its drawing shown when it has them |
-   | `#performance/r{n}/{section}` | An **Ad Performance** section, once that tab names its sections |
+   | `#performance/r{n}/{section}` | An **Ad Performance** section: `result`, `headline`, `weekly`, `variants`, `breakdowns`, `audience`, `next` (**Collapsing sections**) |
 
    A deeper part that is gone (a deleted hook, a version that no longer exists) opens the item
    above it. Opening a link
    selects the tab and the item's round, scrolls to the
-   item and keeps the hash in the address bar. A hash with no round opens the round the viewer
+   item and keeps the hash in the address bar. A link into a closed section opens the section
+   first (**Collapsing sections**). A hash with no round opens the round the viewer
    picked last (**Round switcher**), else the current round. Switching tabs or rounds updates the
    hash. A link with no hash opens the tab the person had open last (kept in the browser, and
    ignored when that storage is missing), else Home. An item that is no longer on the tab opens
@@ -853,6 +857,261 @@ round at a time: its steps, creators, brief, cuts and results, and nothing from 
 Every tab renders for both sides. Content Review and Ad Performance are part of the page from the
 first publish. Until their own sections below say more, each shows its lede and one empty state:
 "Cuts show here once creators start shooting." and "Results show here once the ads are live."
+
+### Collapsing sections
+
+Every section on every tab folds down to its header and a one line summary, and opens again when
+the person needs the detail. That covers every Home card, the program details, each concept's
+brief, the creator pool, the agency's panels, and the sections of Content Review and Ad
+Performance. What is open is remembered for each person.
+
+- **The header.** Each section is a Card whose header is a Collapsible trigger (**Component
+  classes**, Collapsible): the section's title, its summary line under it, and a Lucide
+  `chevron-down` at the end that turns up while the section is open. The whole title and summary
+  area is the trigger, a `button` with `aria-expanded` and `aria-controls` naming the content,
+  and its label for screen readers reads "Collapse {section}" or "Expand {section}". Anything
+  else a header holds (a state pill, an Approve button, an edit pencil) sits beside the trigger,
+  never inside it, and works the same whether the section is open or closed. Enter or Space on
+  the trigger toggles it.
+- **The summary line.** One line in `text-sm text-muted-foreground`, worked out live from the
+  data the viewer can read, shown whether the section is open or closed, so a closed section
+  still answers the glance question. It names counts, states and dates in plain words, short
+  enough for one line on a desktop, and wraps with `break-words` on a phone rather than running
+  past the header. It never holds an agency only value for the client: where the agency's
+  summary has one (a budget, a fee), the client's summary leaves that part out. **Sections per
+  tab** below gives each section's line. An empty section's summary is its empty state ("No
+  files yet.").
+- **Closed means hidden.** A closed section's content isn't rendered (`hidden`), so its controls
+  leave the tab order and a screen reader skips them. Live data still arrives, so the summary
+  line and the tab's count badge stay current, and opening the section shows the latest.
+- **No nesting.** A section never holds another collapsible section, so every part of a tab is at
+  most one open away. Inside a section, the parts that are already their own controls (a creator
+  card's details, a comment thread, the review panel) keep working as they do.
+- **Expand all and Collapse all.** At the top of every tab's content, at the end of a row of their
+  own above the first section: a ghost Button, size sm, "Expand all" with the Lucide
+  `chevrons-up-down` icon, and a ghost Button, size sm, "Collapse all" with `chevrons-down-up`. Each
+  opens or closes every section on the tab in view, and nothing on another tab. Since ids never
+  name the round, the change holds in every round of that tab. A Button that would change nothing
+  is disabled. On a phone the row keeps both Buttons on one line, aligned to the end.
+- **Which sections start open.** The default follows the level of the jobs a section serves, the
+  jobs listed in **Reaching every job**: Simple is one glance and one action, Standard the working
+  view, Full every field and control. A section that serves a Simple job starts open. A section
+  whose jobs are all Standard or Full starts closed, showing its summary, which is the glance
+  those jobs start from. A job the header answers on its own (its summary, or a pill or button
+  beside the trigger) doesn't make the section start open. One exception: a section holding an
+  item in the viewer's **Waiting on you** starts open for that viewer while the item waits (the
+  client's brief sign off, the client's fee approval while step 3 is open, a shipping row waiting
+  on the client). **Sections per tab** gives each section's level and default.
+- **Remembered per person.** Opening or closing a section, by its trigger, Expand all or Collapse
+  all, saves it for the person viewing in their own page data (`data/users/{id}/collapse`,
+  **1e**), so it follows them to another device. A saved state wins over the default. Expand all
+  and Collapse all save every section on the tab in one write. Ids are stable and name the
+  section (`home-steps`, `brief-{lane}`, `selection-budget`), never the round, so a section closed
+  in round 1 opens closed in round 2. Nothing about collapsing is ever logged or reaches Atlas,
+  and it never touches anyone else's view.
+- **Links open what they point at.** Opening a hash that lands in a closed section (from the
+  inbox, History, **Waiting on you**, **Needs attention**, a tab summary or a gate packet) opens
+  that section first and saves it open for the viewer, then scrolls to the item (**Header and
+  tabs**). A Home section's own hash (`#home/calendar`) does the same.
+- **Who can save it.** The client and the agency. A read only client reads no page data, and
+  **Preview as client** never writes it, so for both the sections start from the client's
+  defaults and opening or closing them lasts only while the page is open, kept in memory.
+- **It works everywhere.** The triggers, Expand all and Collapse all change only the view, never
+  a value, so they work for everyone: in a done round, for a read only client and in **Preview as
+  client**, where every other control renders as a label.
+- **Waiting for data.** While the page data loads, every section shows its default state with a
+  Skeleton in place of its summary line, then takes the saved state without a jump in the
+  person's scroll position.
+
+#### Sections per tab
+
+Ids are what `data/users/{id}/collapse` keys on. A Home or Ad Performance section's own hash is
+the part of its id after the tab (`#home/steps`, `#performance/r{n}/weekly`); every other section
+is reached by the item hashes in **Header and tabs** (`#creators/r{n}/fees` opens
+**Contract and rates**). Sections a tab's own build has not added yet still
+take these ids, summaries and defaults when it adds them. A section that renders for the agency
+only is marked so.
+
+| Tab | Section | Id | Summary line | Level | Starts |
+| --- | ------- | -- | ------------ | ----- | ------ |
+| Home | Round steps | `home-steps` | "Round {n} · {step} now, due {date} · {On track, or {d} days behind} · ads live {launch}" | Simple | Open |
+| Home | Waiting on you | `home-waiting` | "{n} waiting on you", or "Nothing needs you right now." | Simple | Open |
+| Home | Needs attention | `home-attention` | "{n} items across every tab and round" | Standard | Closed |
+| Home | Calendar | `home-calendar` | "In market {start} to {end} · next: {milestone} {date}", with "{d} days late" when a step slipped | Standard | Closed |
+| Home | Team and weekly sync | `home-team` | "Next weekly sync · {day} {time} {city} · {n} people" | Simple | Open |
+| Home | Program details | `home-program` | "{p} products in scope · {what they make} · usage {how long}"; the client sees only the products until the fees are sent | Standard | Closed |
+| Home | Files | `home-files` | "{n} files", or "No files yet." | Standard | Closed |
+| Home | Tab summaries | `home-summaries` | One headline per tab, joined: "{a} of {m} creators approved · {c} under contract · {w} cuts waiting" | Standard | Closed |
+| Master Brief | One per concept, "{Concept} brief · round {n}" | `brief-{lane}` | "{product} · {h} hooks, {c} CTAs · {runtime} · {k} creators", with the state pill beside the trigger | Full | Closed; open while it waits on the viewer's sign off |
+| Master Brief | One per changed brief, "@{handle} changed the {concept} brief" | `brief-changes-{net}-{handle}` | "{n} changes against the brief you approved" | Simple | Open |
+| Master Brief | Accepted as is | `brief-accepted` | "{n} creators accepted without changes" | Standard | Closed |
+| Creator Selection | Budget summary, agency only | `selection-budget` | "{committed} committed of {total} · {remaining} left · {d} of {m} decided" | Simple | Open |
+| Creator Selection | The pool, on Cards | `selection-pool` | The count line: "{n} of {m} creators in the pool · Round 1: {a} approved" | Simple | Open |
+| Creator Selection | One per concept, on Board | `selection-board-{lane}` | "{persona} · need {n}, {m} approved" | Simple | Open |
+| Creator Selection | Match score tuning, agency only | `selection-tuning` | "Agrees with {x} of the client's top 10 · weights {default, or tuned {date}}" | Full | Closed |
+| Selected Creators | The roster, one card per creator | `creators-roster` | "{n} creators · {k} missing details · {s} shipping confirmed · {v} of {V} variants in, {a} approved", plus "fees {agreed} of {budget}" for the agency | Simple | Open |
+| Selected Creators | Contract and rates | `creators-contract` | Client: "Fees waiting for your approval", "Fees approved {date}", or "Fees show here once they are sent"; agency: "{a} of {n} agreed · {total} committed" | Full | Closed; open for the client while step 3 waits on them |
+| Selected Creators | Shipping | `creators-shipping` | "{s} shipped, {d} delivered of {n}", or "Shown once fees are approved." | Standard | Closed; open for the client while a row waits on them |
+| Selected Creators | Brief and content | `creators-content` | "{b} briefs accepted · footage in from {f} of {n}" | Standard | Closed |
+| Content Review | The queue | `review-queue` | "{w} waiting on you · {c} with changes · {q} in Aspire QA · {a} approved" | Simple | Open |
+| Ad Performance | Cost per sale against target | `performance-result` | "Cost per sale {x} against a {t} target · {beat it, or {d} over}", or "Round {n} goes live {date}" | Simple | Open |
+| Ad Performance | Headline numbers | `performance-headline` | "Spend {s} · {p} purchases · ROAS {r}" | Standard | Closed |
+| Ad Performance | Weekly spend and return | `performance-weekly` | "{w} weeks in market · best week {date}" | Standard | Closed |
+| Ad Performance | Variants ranked | `performance-variants` | "{w} winning · {t} testing · {r} to retire or refresh" | Standard | Closed |
+| Ad Performance | Compare by framework, hook, CTA, concept, persona, creator and tier | `performance-breakdowns` | "Best {dimension}: {value} at {x} per sale" | Full | Closed |
+| Ad Performance | Who watched | `performance-audience` | "Top audience: {segment}" | Full | Closed |
+| Ad Performance | Next round's brief | `performance-next` | "{n} changes for round {n+1}", or "Nothing written yet." | Standard | Closed |
+
+The review panel, the creator viewer, the inbox and History are Sheets, not sections: they open
+over the tab and never collapse.
+
+#### Reaching every job
+
+Every job in the tables below is two clicks or fewer from **Home Simple**: Home as it
+first opens for someone who has saved no collapse state, with the defaults above. A click is
+anything that changes what is on screen: a tab, a round segment, a section's trigger, a row or
+link that opens an item, a Sheet or a Dialog. Typing, hovering, scrolling and the job's own action
+(the Approve, the save) are not counted. A job is reached when the view or control it needs is on
+screen. Where a job's control is added by its tab's own build, it goes in the section named here,
+so the count holds. A new section, tab or control keeps every row of this table at two or fewer;
+a change that breaks one updates the table or moves the control.
+
+Across every page:
+
+| Job | Path | Clicks |
+| --- | ---- | ------ |
+| See every update in one inbox and open the exact item | **Inbox**, then the row | 2 |
+| See the full history, filter it by tab and search it | **Inbox**, then **History** | 2 |
+| Switch rounds and know which round is in view | A **Round switcher** segment; the eyebrow names it | 1 |
+| Edit any text in place, saved for everyone with who made it | Home; the text in **Team and weekly sync**, which is open; for program terms, open **Program details** | 0 to 1 |
+| Tag the client or Aspire so it lands in their inbox | Creator Selection; a note box on a card, typing "@" | 1 |
+| Leave agency only comments the client can't see | Master Brief, then a concept's section; "Agency only" on its comment box | 2 |
+| Preview what the client sees | **Preview as client** in the header | 1 |
+| Collapse any section and expand it again | The section's trigger, or **Expand all** or **Collapse all** | 1 |
+| Export what is in view to a spreadsheet | The tab, then its export control | 2 |
+
+Home:
+
+| Job | Path | Clicks |
+| --- | ---- | ------ |
+| Know in one sentence where the program stands and when ads go live | **Round steps** summary | 0 |
+| Know if we're ahead, on track or behind, and why | **Round steps** summary and the step dates under it; the reasons in **Calendar**'s delay list | 0 to 1 |
+| See what's waiting on the client and send them to it | **Waiting on you**, then "open" on the item | 0 to 1 |
+| See what Aspire is working on | **Needs attention** | 1 |
+| See last round's headline result against target | Ad Performance, then last round's segment in the **Round switcher**; **Cost per sale against target** is open | 2 |
+| Find the next weekly sync, add it to a calendar, open the channel | **Team and weekly sync** | 0 |
+| See where the round is in its steps | **Round steps** | 0 |
+| See the deliverables, usage and exclusivity terms | **Program details** | 1 |
+| Keep the program files in one place by round and see what's missing | **Files** | 1 |
+| Drop in a file and have program details pulled from it | **Files** | 1 |
+| See the products in scope | **Program details** | 1 |
+| Check pacing on the calendar | **Calendar** | 1 |
+| Hover a day to see delivered against planned | **Calendar**, then hover | 1 |
+| See everything that needs attention across tabs | **Needs attention** | 1 |
+| See a summary card per tab | **Tab summaries** | 1 |
+| Show the client the Aspire team and what to go to each for | **Team and weekly sync** | 0 |
+
+Master Brief:
+
+| Job | Path | Clicks |
+| --- | ---- | ------ |
+| See the round's brief status and how complete it is | Master Brief; each concept's pill and summary | 1 |
+| Import the master brief from a Google Doc | Master Brief, then its import control | 2 |
+| Start a new round's brief from the last one | **Start round** in the **Round switcher** | 1 |
+| Scan every concept as a summary | Master Brief; the closed concept sections are the summaries | 1 |
+| Write or edit a concept | Master Brief, then the concept | 2 |
+| Write the hero beats, hooks, CTAs, body and B-roll | Master Brief, then the concept | 2 |
+| Format long text | Master Brief, then the concept | 2 |
+| Build the variant plan | Master Brief, then the concept (agency) | 2 |
+| Add or remove a concept, and see products with no concept | Master Brief, then its add concept control | 2 |
+| Set tone of voice and the don'ts | Master Brief, then the concept | 2 |
+| Comment on any part and reply with the client | Master Brief, then the concept | 2 |
+| Send the brief for sign off and record it | Master Brief, then the concept; for the client it is open while it waits, or **Waiting on you**, "open" | 1 to 2 |
+| Copy the creator-facing brief for one concept | Master Brief, then the concept | 2 |
+| Undo all edits back to the original | Master Brief, then the concept | 2 |
+
+Creator Selection:
+
+| Job | Path | Clicks |
+| --- | ---- | ------ |
+| See budget committed and left, and how many are decided | Creator Selection; **Budget summary** and the count line | 1 |
+| Go through creators and decide | Creator Selection, then a decision | 2 |
+| Filter, search and sort | Creator Selection; the filters | 1 |
+| See each match score and why | Creator Selection; the card | 1 |
+| See competitor conflicts before deciding | Creator Selection; the card | 1 |
+| Watch a creator's latest posts | Creator Selection, then a thumbnail | 2 |
+| See the concept and persona each creator maps to | Creator Selection; the card's chips | 1 |
+| Read and leave notes, and tag the other side | Creator Selection; the card's notes | 1 |
+| See which rounds a creator is already in | Creator Selection; the round chips | 1 |
+| Open a creator's full profile | Creator Selection, then the card | 2 |
+| Copy all decisions | Creator Selection; its copy control | 1 |
+| Give a one tap reason on a surprise | Creator Selection, then the decision | 2 |
+| Check the match score against the client's picks | Creator Selection, then **Match score tuning** | 2 |
+| See surprises and patterns in what the client values | Creator Selection, then **Match score tuning** | 2 |
+| Check whether last round's higher scores sold cheaper | Creator Selection, then **Match score tuning** | 2 |
+| Retune or reset the match score | Creator Selection, then **Match score tuning** | 2 |
+
+Selected Creators:
+
+| Job | Path | Clicks |
+| --- | ---- | ------ |
+| See every contracted creator's step and what's next | Selected Creators; the roster | 1 |
+| See who is missing details | Selected Creators; the roster summary and cards | 1 |
+| Track the round's totals | Selected Creators; the roster summary | 1 |
+| Filter by stage or product, and search | Selected Creators; the filters | 1 |
+| Record contract date, rates, total and payment | Selected Creators, then **Contract and rates** | 2 |
+| Record contact details and address once | Selected Creators; the card (agency) | 1 |
+| Track product shipping | Selected Creators, then **Shipping** | 2 |
+| Mark a package shipped or delivered | Selected Creators, then **Shipping** | 2 |
+| Track raw footage and the shoot by date | Selected Creators, then **Brief and content** | 2 |
+| Edit a creator's concept, persona, hook and variant plan | Selected Creators; the card | 1 |
+| Play the latest cut of every variant and jump into review | Selected Creators; the card's cuts | 1 |
+| See where each value came from | Selected Creators; hover the value | 1 |
+| Send the client a status update on a creator | Selected Creators; a note on the card, tagged @Client | 1 |
+| Export a creator snapshot, shipping list, rates or tracker | Selected Creators, then its export control | 2 |
+
+Content Review:
+
+| Job | Path | Clicks |
+| --- | ---- | ------ |
+| See how many cuts wait on the client, have changes, are in QA or approved | Content Review; the queue summary | 1 |
+| Pick a creator and see their variants | Content Review, then the creator | 2 |
+| Filter the queue by status | Content Review; the queue's filter | 1 |
+| Play a cut frame by frame, change speed, loop, show safe zones | Content Review, then the cut | 2 |
+| Comment at a timecode, draw, reply, resolve | Content Review, then the cut | 2 |
+| Mark a comment agency only | Content Review, then the cut (agency) | 2 |
+| Check a cut against the brief | Content Review, then the cut | 2 |
+| Compare a version with the one before | Content Review, then the cut | 2 |
+| Upload a new version | Content Review, then the cut (agency) | 2 |
+| Move a cut through QA, client review, changes and approved | Content Review, then the cut | 2 |
+| Copy a link to a cut or all its comments | Content Review, then the cut | 2 |
+| Look back at last round's signed off cuts | Content Review, then last round's segment in the **Round switcher**; the queue is open, read only | 2 |
+
+Ad Performance:
+
+| Job | Path | Clicks |
+| --- | ---- | ------ |
+| See cost per sale against target | Ad Performance; **Cost per sale against target** | 1 |
+| See the headline numbers | Ad Performance, then **Headline numbers** | 2 |
+| See weekly spend and return | Ad Performance, then **Weekly spend and return** | 2 |
+| See every variant ranked with its status | Ad Performance, then **Variants ranked** | 2 |
+| Flag variants to retire or refresh | Ad Performance, then **Variants ranked** | 2 |
+| Compare by framework, hook, CTA, concept and persona | Ad Performance, then **Compare** | 2 |
+| Compare by creator and tier | Ad Performance, then **Compare** | 2 |
+| See who watched | Ad Performance, then **Who watched** | 2 |
+| Write what changes in next round's brief | Ad Performance, then **Next round's brief** | 2 |
+| See that a round isn't live yet and when it launches | Ad Performance; **Cost per sale against target** shows the launch | 1 |
+
+The client's side:
+
+| Job | Path | Clicks |
+| --- | ---- | ------ |
+| See where things stand and what's waiting on them; reach the team and the sync | Home; **Round steps**, **Waiting on you** and **Team and weekly sync** are open | 0 |
+| Read the brief, comment, sign it off | **Waiting on you**, "open"; or Master Brief, then the concept | 1 to 2 |
+| Approve or pass on creators, leave notes, give a reason | Creator Selection, then the decision | 2 |
+| See who's under contract and where each creator is | Selected Creators | 1 |
+| Watch cuts, comment on the frame, request changes or approve | Content Review, then the cut | 2 |
+| See results against target and what changes next round | Ad Performance, then **Next round's brief** | 1 to 2 |
 
 ### Home
 
@@ -1246,6 +1505,7 @@ name the tab, never an older name for the part:
 | Drafts and the reply log (agency only) | Selected Creators, on the creator's card |
 | Who did what and when, filtered by tab and round, searched | **History**, opened from the inbox |
 | What changed for you, and tags for you | **Inbox**, from the header on every tab: every tab on Home, the tab's own elsewhere |
+| Open or close a section, Expand all, Collapse all | Every section's header, and the row above a tab's first section (**Collapsing sections**) |
 
 ### Page mechanics
 
@@ -1317,7 +1577,8 @@ from **Component classes** exactly as written, plus the `data-state` attributes 
 Never invent a class combination for a component listed there.
 
 **Components.** Use these and nothing hand-drawn in their place: Button, Card, Badge, Tabs, Table,
-Dialog, Sheet, Select, Input, Textarea, Switch, Progress, Tooltip, Avatar, Separator, Skeleton.
+Dialog, Sheet, Select, Input, Textarea, Switch, Progress, Tooltip, Avatar, Separator, Skeleton,
+Collapsible. Every section on a tab is a Card with a Collapsible header (**Collapsing sections**).
 Skeleton is the loading state of anything that waits for page data. Icons are Lucide, at the
 sizes the component gives them (`size-4` in buttons). The creator card keeps its own markup from
 `creator-card.md` and takes its colors from these tokens (**Brand theme on the page**).
@@ -1493,6 +1754,11 @@ visible edge on a card. A Switch keeps the `role="switch"` and `data-state` attr
 | Avatar | root, fallback | `relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full`, `flex h-full w-full items-center justify-center rounded-full bg-muted` |
 | Separator | | `shrink-0 bg-border` with `h-[1px] w-full` (horizontal) or `h-full w-[1px]` (vertical) |
 | Skeleton | | `animate-pulse rounded-md bg-primary/10` |
+| Collapsible | header | `flex items-start gap-3 p-6`, holding the trigger and anything beside it |
+| | trigger | `flex min-w-0 flex-1 items-start gap-3 rounded-md text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring [&[data-state=open]>svg]:rotate-180`, on a `button` with `aria-expanded`, `aria-controls` and `data-state` (`open` or `closed`) |
+| | title, summary | `text-xl font-semibold leading-none tracking-tight`, `mt-1.5 text-sm text-muted-foreground break-words`, in a `min-w-0 flex-1` block |
+| | chevron | the Lucide `chevron-down`, `mt-0.5 size-4 shrink-0 text-muted-foreground transition-transform motion-reduce:transition-none`, last in the trigger |
+| | content | the Card content, with `data-state` and `hidden` while closed |
 | List row | | `flex w-full min-w-0 items-start gap-3 rounded-md p-2 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring`, on a `button` |
 
 Text sizes are Tailwind's: `text-xs` for captions, `text-sm` for body and labels, `text-lg` for
@@ -1609,6 +1875,8 @@ prefixes.
 6. Every overridden token passed the contrast check in both modes, or fell back and wrote its line.
 7. At 375px, 768px and 1280px, `document.documentElement.scrollWidth` equals the window width in
    light and dark.
+8. Every section has a Collapsible header with its summary line, every tab has Expand all and
+   Collapse all, and each section starts open or closed as **Sections per tab** says.
 
 ## 1e. Page data: what the page keeps and how it is read back
 
@@ -1768,7 +2036,7 @@ with a plain description holds plain data the page writes with no stamp.
 | Attention | `agency/attention` | Agency | The agency's attention items, and who else each client item waits on (**Home**) |
 | Last pull | `agency/pull` | The Campaign Manager | `at:` the time of the last pull that recorded something |
 | Design notes | `agency/design` | Agency | `notes:` the brand theme fallbacks from **Design standards**, one line each |
-| Per viewer state | `data/users/{id}/done`, `/inbox-{month}`, `/collapse`, `/round` | Each person, their own | `done`: `items:` `{itemId: true or false}`. `inbox-{month}`: `read:` and `cleared:`, each `{itemId: at}`, for the items whose `at` falls in that month (`YYYY-MM`, **Tags and the inbox**). `collapse`: `sections:` `{sectionId: true or false}`. `round`: `selected:` the round number last picked in the **Round switcher**, and `at:` |
+| Per viewer state | `data/users/{id}/done`, `/inbox-{month}`, `/collapse`, `/round` | Each person, their own | `done`: `items:` `{itemId: true or false}`. `inbox-{month}`: `read:` and `cleared:`, each `{itemId: at}`, for the items whose `at` falls in that month (`YYYY-MM`, **Tags and the inbox**). `collapse`: `sections:` `{sectionId: true or false}`, true for closed and false for open; a section with no key takes its default (**1d**, **Collapsing sections**). `round`: `selected:` the round number last picked in the **Round switcher**, and `at:` |
 
 Attention, inbox and section ids are stable and say what they are (`decide-ig-{handle}-r1`,
 `fees-r1`, `selection-budget`), so a mark survives a republish. Each attention item also carries

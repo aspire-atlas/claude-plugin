@@ -2037,6 +2037,12 @@ Slack or email: the chat lists new tags and posts the ones for the client only a
 The reference's **1d**, **Inbox** and **Tagging**, **1e**, **Tags and the inbox**, and
 **Delivering tags** hold the rules.
 
+Every section on every tab folds to its header and a one line summary, with Expand all and
+Collapse all on each tab. Sections for one glance jobs start open and the rest start closed, and
+what each person opens or closes follows them to every device, never logged. Every job on the
+page is two clicks or fewer from Home as it first opens. The reference's **1d**, **Collapsing
+sections**, holds the rules and the table of paths.
+
 A campaign runs in rounds, one a month, as many as it needs. Every tab but Creator Selection shows
 one round, picked in the round switcher on every tab and remembered for each person; Creator
 Selection is one pool for every round, and an approval adds the creator to the newest round
