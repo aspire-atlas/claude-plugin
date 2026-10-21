@@ -2026,6 +2026,17 @@ about what they can see: entries about agency only data go to a log the client c
 person's own state (done marks, inbox marks) is never logged. The reference's **1d**, **History**,
 and **1e**, **The activity log**, hold the rules.
 
+Every tab has an inbox, opened from the header: Home's holds every update across tabs and rounds,
+and each other tab's holds only its own, with an unread count. Each item (a tag, a note, a reply,
+something new, a status change) opens the exact thing it is about: the creator and their notes,
+a cut at its version and timecode, a part of the brief. People open, clear one, mark all read,
+clear all, or open History, and their read and cleared marks follow them to every device. Typing
+"@" in any note or comment tags Client, Aspire or one person, and the tag lands only in that
+inbox; a tag for Aspire is kept where other client approvers can't read it. The page never sends
+Slack or email: the chat lists new tags and posts the ones for the client only after a confirm.
+The reference's **1d**, **Inbox** and **Tagging**, **1e**, **Tags and the inbox**, and
+**Delivering tags** hold the rules.
+
 A campaign runs in rounds, one a month, as many as it needs. Every tab but Creator Selection shows
 one round, picked in the round switcher on every tab and remembered for each person; Creator
 Selection is one pool for every round, and an approval adds the creator to the newest round
@@ -2061,11 +2072,14 @@ its row's status line and the four steps (1 Concepts approved, 2 Creators approv
 approved, 4 Briefs approved) each with done and its date, now and its due date, or its planned
 date, the creator counts by concept, anything marked your call needed, and the campaign page link,
 opened on the tab the next step is on (Creator Selection for creators, Selected Creators for fees
-and shipping, Master Brief for briefs and creator changes, else Home). Then one
+and shipping, Master Brief for briefs and creator changes, else Home), and the new tags from the
+page per the reference's **Delivering tags**. Then one
 `AskUserQuestion`, header "Next": the one next step the reference's **One next step** rule picks
 (Recommended), plus "Log a delay" and "Change setup", with "Start round {n+1}" in place of "Change
 setup" when the reference's **Starting the next round** offers it. Never offer more than one next
-step.
+step. When there are new tags for the client and a saved destination, the same call carries a
+second question, header "Tags", that confirms posting them; nothing about tags is sent without
+that answer.
 
 ### Run
 
@@ -2109,6 +2123,11 @@ the tool prefix, `profile_id`, and `profile_slug`:
   hook review from `references/hooks-and-ctas.md`, run here in the main thread: it matches the
   creators' posts to the briefed hooks, shows which led, and saves the results after one
   confirmation, so the next round's briefs lead with what worked.
+
+- **Post the tags** (whenever **Status** shows new tags for the client): per the reference's
+  **Delivering tags**, on the "Tags" answer only. Send posts each to the routing destinations and
+  records it as sent; "Keep on the page only" records it as kept. Tags for Aspire are shown to the
+  CM and never posted, and unattended runs never touch tags.
 
 After each step, write the outcome per the reference, republish the campaign page with its page
 data, run the reference's **Checking the roles** and **Checking the edits** when they apply (the
