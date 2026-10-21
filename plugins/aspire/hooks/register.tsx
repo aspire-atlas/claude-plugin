@@ -2,9 +2,9 @@
 // panel, for Claude Code.
 //
 // It stays inert until an Aspire event: a prompt typed as /aspire or
-// /aspire:aspire, the aspire skill's prompt being expanded or run through the
-// Skill tool, the skill reporting progress, an Atlas connector tool answering,
-// or an aspire:* agent starting. Before that every hook passes the event
+// /aspire:aspire, the aspire skill run through the Skill tool, the skill
+// reporting progress, an Atlas connector tool answering, or an aspire:* agent
+// starting. Before that every hook passes the event
 // straight on and records nothing. After that it reads what already passes
 // through the session (Atlas get_status results, subagent starts and ends,
 // model response timing, the context fill) and draws it. It registers one tool,
@@ -14,10 +14,11 @@
 // It also brands the sites Claude Code draws itself (the Atlas tool row and group, the question dialog, the spinner, the line that closes a turn,
 // the hint under the prompt, its own command's output), display only; SECURITY.md lists them and CLAUDE.md sets the rule.
 //
-// Several triggers, because one is not enough everywhere: in sessions the
-// Claude desktop app starts, Claude Code's built-in security plugin passes
-// skill.prompt over the plugins a person installs, so a typed /aspire is seen
-// there only as the prompt itself.
+// Several triggers, because one is not enough everywhere. There is no
+// skill.prompt hook, since Claude Code's built-in guard can hold that event
+// back from installed mods: a typed /aspire is seen as the prompt itself, the
+// model's run as the Skill tool call, and any other expansion (a preload) by
+// the skill's first progress report.
 //
 // Early-access API (function hooks): written and tested on Claude Code 2.1.295 and 2.1.299.
 //
@@ -107,7 +108,6 @@ const PLUGIN = 'aspire'
 
 const BLANK_SEEN: Seen = {
   prompts: 0,
-  skillPrompts: 0,
   skillTools: 0,
   progressReports: 0,
   atlasResults: 0,
@@ -200,7 +200,7 @@ async function activate($: EngineInterface, kind: TriggerKind, detail: string): 
   startTicking($)
 }
 
-type Count = 'prompts' | 'skillPrompts' | 'skillTools' | 'progressReports' | 'atlasResults' | 'agents'
+type Count = 'prompts' | 'skillTools' | 'progressReports' | 'atlasResults' | 'agents'
 
 const count = ($: EngineInterface, key: Count) => update($, seen, s => ({ ...s, [key]: s[key] + 1 }))
 
@@ -944,9 +944,11 @@ async function togglePane($: EngineInterface): Promise<boolean> {
 // ---------------------------------------------------------------------------
 // `/aspire-agents-info status`: whether the mod is on and what it has seen.
 
+/** A trigger saved under a kind this version no longer has (`skill`, from the removed skill.prompt hook) reads as this. */
+const OLD_TRIGGER_LABEL = 'the aspire skill'
+
 const TRIGGER_LABEL: Record<TriggerKind, string> = {
   prompt: 'a typed /aspire',
-  skill: 'the aspire skill (skill.prompt)',
   'skill-tool': 'the Skill tool running the aspire skill',
   progress: 'a progress report from the skill',
   'atlas-tool': 'an Atlas tool result',
@@ -986,10 +988,10 @@ async function statusText($: EngineInterface): Promise<string> {
   const state = !isOnNow
     ? 'Aspire mod: loaded, off. It switches on when /aspire runs, an Atlas tool answers, or an aspire agent starts.'
     : t
-      ? `Aspire mod: on since ${ago(at - t.at)}, switched on by ${TRIGGER_LABEL[t.kind]} (${t.detail}).`
+      ? `Aspire mod: on since ${ago(at - t.at)}, switched on by ${TRIGGER_LABEL[t.kind] ?? OLD_TRIGGER_LABEL} (${t.detail}).`
       : 'Aspire mod: on.'
   const counts =
-    `Seen: ${fmtCount(s.prompts, '/aspire prompt', '/aspire prompts')}, ${s.skillPrompts} skill.prompt, ` +
+    `Seen: ${fmtCount(s.prompts, '/aspire prompt', '/aspire prompts')}, ` +
     `${fmtCount(s.skillTools, 'Skill tool call', 'Skill tool calls')}, ${fmtCount(s.progressReports, 'progress report', 'progress reports')}, ` +
     `${fmtCount(s.atlasResults, 'Atlas result', 'Atlas results')}, ${fmtCount(s.agents, 'agent', 'agents')}.`
   const status =
@@ -1119,20 +1121,6 @@ export const register: Register = on => {
     }
     return next(e)
   }).catch(($, e, next) => next(e))
-
-  // Switch on: the aspire skill's prompt was expanded (/aspire typed, or the
-  // Skill tool). Claude Code passes this event over installed plugins in some
-  // hosts (the desktop app); the prompt and Skill tool hooks cover those.
-  on('skill.prompt', { skill: /^(aspire:)?aspire$/ }, async ($, e, next) => {
-    const result = await next(e)
-    try {
-      await activate($, 'skill', e.skill)
-      await count($, 'skillPrompts')
-    } catch {
-      // As above.
-    }
-    return result
-  })
 
   // Switch on: the model ran the aspire skill through the Skill tool. The call
   // and its result pass through unchanged.

@@ -213,12 +213,11 @@ export type OrgState = {
 
 /**
  * What switched the mod on. `prompt`: a prompt typed as `/aspire` or
- * `/aspire:aspire`. `skill`: the aspire skill's prompt was expanded.
- * `skill-tool`: the Skill tool ran the aspire skill. `progress`: the skill
- * reported progress. `atlas-tool`: an Atlas connector tool answered. `agent`:
- * an `aspire:*` agent started.
+ * `/aspire:aspire`. `skill-tool`: the Skill tool ran the aspire skill.
+ * `progress`: the skill reported progress. `atlas-tool`: an Atlas connector
+ * tool answered. `agent`: an `aspire:*` agent started.
  */
-export type TriggerKind = 'prompt' | 'skill' | 'skill-tool' | 'progress' | 'atlas-tool' | 'agent'
+export type TriggerKind = 'prompt' | 'skill-tool' | 'progress' | 'atlas-tool' | 'agent'
 
 /** The first Aspire event of the session, the one that switched the mod on. */
 export type Trigger = {
@@ -236,8 +235,6 @@ export type Trigger = {
 export type Seen = {
   /** Prompts typed as `/aspire` or `/aspire:aspire`. */
   prompts: number
-  /** Expansions of the aspire skill's prompt (`skill.prompt`). */
-  skillPrompts: number
   /** Skill tool calls that ran the aspire skill. */
   skillTools: number
   /** Progress reports through `aspire_progress` (main session). */

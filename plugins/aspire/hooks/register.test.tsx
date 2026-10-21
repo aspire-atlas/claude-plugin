@@ -101,6 +101,8 @@ for (const surface of ['terminal', 'desktop'] as const) {
     await typeAspire($, 'what is /aspire for?')
     await typeAspire($, '/aspire-agents-info')
     await $.skill.prompt({ skill: 'commit', text: 'Commit.' })
+    // The mod registers no skill.prompt hook, so the aspire skill expanding alone switches nothing on.
+    await runSkill($)
     await $.tool.call({ tool: 'Skill', skill: 'commit' } as never)
     await $.tool.call({ tool: 'mcp__linear__get_status' } as never)
     await $.tool.call({ tool: 'mcp__linear__list_issues' } as never)
@@ -111,7 +113,7 @@ for (const surface of ['terminal', 'desktop'] as const) {
       text: 'The Aspire agents panel starts once /aspire runs in this session.',
     })
     expect(await status($)).toMatch(/^Aspire mod: loaded, off\./)
-    expect(await status($)).toMatch(/Seen: 0 \/aspire prompts, 0 skill\.prompt, 0 Skill tool calls, 0 progress reports, 0 Atlas results, 0 agents\./)
+    expect(await status($)).toMatch(/Seen: 0 \/aspire prompts, 0 Skill tool calls, 0 progress reports, 0 Atlas results, 0 agents\./)
     expect(opened).toEqual([])
 
     // A typed /aspire switches it on: the bar shows at once, before any get_status.
@@ -250,7 +252,6 @@ test('several organizations: no name until the call picks one', async ($, on) =>
 test('each Aspire event switches the mod on and says which', async ($, on) => {
   const cases: [string, ($: Engine) => Promise<unknown>, RegExp][] = [
     ['prompt', $ => typeAspire($, '/aspire agents'), /a typed \/aspire \(\/aspire\)/],
-    ['skill.prompt', runSkill, /the aspire skill \(skill\.prompt\) \(aspire:aspire\)/],
     ['Skill tool', $ => $.tool.call({ tool: 'Skill', skill: 'aspire:aspire' } as never), /the Skill tool running the aspire skill \(aspire:aspire\)/],
     ['progress', $ => report($, { title: 'Onboarding', total: 6, done: 0 }), /a progress report from the skill/],
     ['get_status', getStatus, /an Atlas tool result \(get_status\)/],
@@ -271,11 +272,10 @@ test('each Aspire event switches the mod on and says which', async ($, on) => {
 test('status: counts, the last get_status, the bar, and the version line', async ($, on) => {
   world(on, () => WITH_COSTS)
   await typeAspire($)
-  await runSkill($)
   await getStatus($)
   await spawn($, 'aspire:atlas-market-signal', 'Market signal')
   const text = await status($)
-  expect(text).toMatch(/Seen: 1 \/aspire prompt, 1 skill\.prompt, 0 Skill tool calls, 0 progress reports, 1 Atlas result, 1 agent\./)
+  expect(text).toMatch(/Seen: 1 \/aspire prompt, 0 Skill tool calls, 0 progress reports, 1 Atlas result, 1 agent\./)
   expect(text).toMatch(/Last get_status 0s ago: 12k \/ 50k Atlas tokens, organization Sample Brand\./)
   expect(text).toMatch(/Bar: Aspire: Sample Brand, market signal 0\/1, 0% \(from the running agents\)\./)
   expect(text).toMatch(/^Claude Code .+ on .+\.$/m)
