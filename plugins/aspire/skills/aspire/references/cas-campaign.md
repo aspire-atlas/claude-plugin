@@ -62,7 +62,7 @@ draft, and in a channel post, uses the left column.
 | Inbox, {Tab} inbox: what's new for you | inbox items built from the activity log and tags (**1e**, **Tags and the inbox**) |
 | @Client, @Aspire, @{name}: tagged you, tagged Client, tagged Aspire | a tag (**1d**, **Tagging**) |
 | Home, Master Brief, Creator Selection, Selected Creators, Content Review, Ad Performance | the page's six tabs (**1d**) |
-| Expand all, Collapse all, a section's summary | each person's collapse state (**1d**, **Collapsing sections**) |
+| Expand all, Collapse all, a section opened or closed | each person's collapse state (`data/users/{id}/collapse`, **1d**, **Collapsing sections**) |
 
 The status labels a person sees, in order: Awaiting decision, Approved, Maybe, Rejected, Offer
 sent, Countered, Agreed, Declined, Your call needed, No reply yet, Details received, Shipped,
@@ -716,7 +716,8 @@ as a label, never as a disabled control. The agency writes everything else on th
 | Ad Performance | Nothing | None |
 
 On every tab the client also marks their own inbox items read or cleared
-(`data/users/{id}/inbox-{month}`), and tags people in the notes and comments above (`tags-client`
+(`data/users/{id}/inbox-{month}`), opens and closes sections (`data/users/{id}/collapse`,
+**Collapsing sections**), and tags people in the notes and comments above (`tags-client`
 and `tags-agency`, **Tagging**).
 
 **The client's own calls stay the client's.** Their decision, reason, notes, sign offs, fee approval
@@ -785,8 +786,9 @@ and item. Labels, eyebrows, titles and ledes are in **Page vocabulary**, **Tabs*
    `#brief/r{n}/{lane}` opens that concept's brief, `#brief/r{n}/changes-{net}-{handle}` opens a
    creator's changed brief, `#review/r{n}/{cut}` opens that cut in the review panel, and
    `#home/{section}` opens a Home section (`steps`, `waiting`, `attention`, `calendar`, `team`,
-   `program`, `files`, `summaries`). `#history` opens **History** and `#inbox` the **Inbox** over the tab open
-   last. A link can go one step deeper into an item, to the part a note, comment or change is on:
+   `program`, `files`, `summaries`). `#history` opens **History** and `#inbox` the **Inbox** over
+   the tab open last. A link can go one step deeper into an item, to the part a note, comment or
+   change is on:
 
    | Hash | Opens |
    | ---- | ----- |
@@ -874,10 +876,11 @@ Performance. What is open is remembered for each person.
 - **The summary line.** One line in `text-sm text-muted-foreground`, worked out live from the
   data the viewer can read, shown whether the section is open or closed, so a closed section
   still answers the glance question. It names counts, states and dates in plain words, short
-  enough for one line on a desktop, and wraps with `break-words` on a phone rather than running past the
-  header. It never holds an agency only value for the client: where the agency's summary has one
-  (a budget, a fee), the client's summary leaves that part out. **Sections per tab** below gives
-  each section's line. An empty section's summary is its empty state ("No files yet.").
+  enough for one line on a desktop, and wraps with `break-words` on a phone rather than running
+  past the header. It never holds an agency only value for the client: where the agency's
+  summary has one (a budget, a fee), the client's summary leaves that part out. **Sections per
+  tab** below gives each section's line. An empty section's summary is its empty state ("No
+  files yet.").
 - **Closed means hidden.** A closed section's content isn't rendered (`hidden`), so its controls
   leave the tab order and a screen reader skips them. Live data still arrives, so the summary
   line and the tab's count badge stay current, and opening the section shows the latest.
@@ -888,16 +891,17 @@ Performance. What is open is remembered for each person.
   own above the first section: a ghost Button, size sm, "Expand all" with the Lucide
   `chevrons-up-down` icon, and a ghost Button, size sm, "Collapse all" with `chevrons-down-up`. Each
   opens or closes every section on the tab in view, and nothing on another tab. Since ids never
-  name the round, the change holds in every round of that tab. A Button that would change nothing is disabled. On a phone the row keeps both Buttons on
-  one line, aligned to the end.
+  name the round, the change holds in every round of that tab. A Button that would change nothing
+  is disabled. On a phone the row keeps both Buttons on one line, aligned to the end.
 - **Which sections start open.** The default follows the level of the jobs a section serves, the
-  jobs listed in **Reaching every job**: Simple is one glance and one action, Standard the working view,
-  Full every field and control. A section that serves a Simple job starts open. A section whose
-  jobs are all Standard or Full starts closed, showing its summary, which is the glance those
-  jobs start from. A job the header answers on its own (its summary, or a pill or button beside
-  the trigger) doesn't make the section start open. One exception: a section holding an item in the viewer's **Waiting on you**
-  starts open for that viewer while the item waits (the client's brief sign off, the client's fee
-  approval while step 3 is open, a shipping row waiting on the client). **Sections per tab** gives each section's level and default.
+  jobs listed in **Reaching every job**: Simple is one glance and one action, Standard the working
+  view, Full every field and control. A section that serves a Simple job starts open. A section
+  whose jobs are all Standard or Full starts closed, showing its summary, which is the glance
+  those jobs start from. A job the header answers on its own (its summary, or a pill or button
+  beside the trigger) doesn't make the section start open. One exception: a section holding an
+  item in the viewer's **Waiting on you** starts open for that viewer while the item waits (the
+  client's brief sign off, the client's fee approval while step 3 is open, a shipping row waiting
+  on the client). **Sections per tab** gives each section's level and default.
 - **Remembered per person.** Opening or closing a section, by its trigger, Expand all or Collapse
   all, saves it for the person viewing in their own page data (`data/users/{id}/collapse`,
   **1e**), so it follows them to another device. A saved state wins over the default. Expand all
@@ -912,6 +916,9 @@ Performance. What is open is remembered for each person.
 - **Who can save it.** The client and the agency. A read only client reads no page data, and
   **Preview as client** never writes it, so for both the sections start from the client's
   defaults and opening or closing them lasts only while the page is open, kept in memory.
+- **It works everywhere.** The triggers, Expand all and Collapse all change only the view, never
+  a value, so they work for everyone: in a done round, for a read only client and in **Preview as
+  client**, where every other control renders as a label.
 - **Waiting for data.** While the page data loads, every section shows its default state with a
   Skeleton in place of its summary line, then takes the saved state without a jump in the
   person's scroll position.
@@ -976,8 +983,8 @@ Across every page:
 | See every update in one inbox and open the exact item | **Inbox**, then the row | 2 |
 | See the full history, filter it by tab and search it | **Inbox**, then **History** | 2 |
 | Switch rounds and know which round is in view | A **Round switcher** segment; the eyebrow names it | 1 |
-| Edit any text in place, saved for everyone with who made it | Home, **Team and weekly sync** (open), the text; for program terms, open **Program details**, then the text | 1 to 2 |
-| Tag the client or Aspire so it lands in their inbox | Creator Selection, then a note box on a card (type "@") | 2 |
+| Edit any text in place, saved for everyone with who made it | Home; the text in **Team and weekly sync**, which is open; for program terms, open **Program details** | 0 to 1 |
+| Tag the client or Aspire so it lands in their inbox | Creator Selection; a note box on a card, typing "@" | 1 |
 | Leave agency only comments the client can't see | Master Brief, then a concept's section; "Agency only" on its comment box | 2 |
 | Preview what the client sees | **Preview as client** in the header | 1 |
 | Collapse any section and expand it again | The section's trigger, or **Expand all** or **Collapse all** | 1 |
@@ -988,7 +995,7 @@ Home:
 | Job | Path | Clicks |
 | --- | ---- | ------ |
 | Know in one sentence where the program stands and when ads go live | **Round steps** summary | 0 |
-| Know if we're ahead, on track or behind, and why | **Round steps** summary; the step dates under it | 0 |
+| Know if we're ahead, on track or behind, and why | **Round steps** summary and the step dates under it; the reasons in **Calendar**'s delay list | 0 to 1 |
 | See what's waiting on the client and send them to it | **Waiting on you**, then "open" on the item | 0 to 1 |
 | See what Aspire is working on | **Needs attention** | 1 |
 | See last round's headline result against target | Ad Performance, then last round's segment in the **Round switcher**; **Cost per sale against target** is open | 2 |
@@ -1037,7 +1044,7 @@ Creator Selection:
 | Read and leave notes, and tag the other side | Creator Selection; the card's notes | 1 |
 | See which rounds a creator is already in | Creator Selection; the round chips | 1 |
 | Open a creator's full profile | Creator Selection, then the card | 2 |
-| Copy all decisions | Creator Selection, then its copy control | 2 |
+| Copy all decisions | Creator Selection; its copy control | 1 |
 | Give a one tap reason on a surprise | Creator Selection, then the decision | 2 |
 | Check the match score against the client's picks | Creator Selection, then **Match score tuning** | 2 |
 | See surprises and patterns in what the client values | Creator Selection, then **Match score tuning** | 2 |
