@@ -2127,7 +2127,7 @@ the tool prefix, `profile_id`, and `profile_slug`:
 - **Post the tags** (whenever **Status** shows new tags for the client): per the reference's
   **Delivering tags**, on the "Tags" answer only. Send posts each to the routing destinations and
   records it as sent; "Keep on the page only" records it as kept. Tags for Aspire are shown to the
-  CM and never posted, and unattended runs never touch tags.
+  CM and never posted, and unattended runs never list or post tags.
 
 After each step, write the outcome per the reference, republish the campaign page with its page
 data, run the reference's **Checking the roles** and **Checking the edits** when they apply (the
