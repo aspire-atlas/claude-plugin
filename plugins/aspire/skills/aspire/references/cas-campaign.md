@@ -887,17 +887,17 @@ Performance. What is open is remembered for each person.
 - **Expand all and Collapse all.** At the top of every tab's content, at the end of a row of their
   own above the first section: a ghost Button, size sm, "Expand all" with the Lucide
   `chevrons-up-down` icon, and a ghost Button, size sm, "Collapse all" with `chevrons-down-up`. Each
-  opens or closes every section on the tab in view, in the round in view, and nothing on another
-  tab. A Button that would change nothing is disabled. On a phone the row keeps both Buttons on
+  opens or closes every section on the tab in view, and nothing on another tab. Since ids never
+  name the round, the change holds in every round of that tab. A Button that would change nothing is disabled. On a phone the row keeps both Buttons on
   one line, aligned to the end.
-- **Which sections start open.** The default follows the level of the jobs a section serves, from
-  the project's jobs to be done: Simple is one glance and one action, Standard the working view,
+- **Which sections start open.** The default follows the level of the jobs a section serves, the
+  jobs listed in **Reaching every job**: Simple is one glance and one action, Standard the working view,
   Full every field and control. A section that serves a Simple job starts open. A section whose
   jobs are all Standard or Full starts closed, showing its summary, which is the glance those
   jobs start from. A job the header answers on its own (its summary, or a pill or button beside
   the trigger) doesn't make the section start open. One exception: a section holding an item in the viewer's **Waiting on you**
   starts open for that viewer while the item waits (the client's brief sign off, the client's fee
-  approval while step 3 is open). **Sections per tab** gives each section's level and default.
+  approval while step 3 is open, a shipping row waiting on the client). **Sections per tab** gives each section's level and default.
 - **Remembered per person.** Opening or closing a section, by its trigger, Expand all or Collapse
   all, saves it for the person viewing in their own page data (`data/users/{id}/collapse`,
   **1e**), so it follows them to another device. A saved state wins over the default. Expand all
@@ -918,8 +918,10 @@ Performance. What is open is remembered for each person.
 
 #### Sections per tab
 
-Ids are what `data/users/{id}/collapse` keys on; a hash uses the part after the tab
-(`#home/steps`, `#performance/r{n}/weekly`). Sections a tab's own build has not added yet still
+Ids are what `data/users/{id}/collapse` keys on. A Home or Ad Performance section's own hash is
+the part of its id after the tab (`#home/steps`, `#performance/r{n}/weekly`); every other section
+is reached by the item hashes in **Header and tabs** (`#creators/r{n}/fees` opens
+**Contract and rates**). Sections a tab's own build has not added yet still
 take these ids, summaries and defaults when it adds them. A section that renders for the agency
 only is marked so.
 
@@ -942,10 +944,9 @@ only is marked so.
 | Creator Selection | Match score tuning, agency only | `selection-tuning` | "Agrees with {x} of the client's top 10 · weights {default, or tuned {date}}" | Full | Closed |
 | Selected Creators | The roster, one card per creator | `creators-roster` | "{n} creators · {k} missing details · {s} shipping confirmed · {v} of {V} variants in, {a} approved", plus "fees {agreed} of {budget}" for the agency | Simple | Open |
 | Selected Creators | Contract and rates | `creators-contract` | Client: "Fees waiting for your approval", "Fees approved {date}", or "Fees show here once they are sent"; agency: "{a} of {n} agreed · {total} committed" | Full | Closed; open for the client while step 3 waits on them |
-| Selected Creators | Shipping | `creators-shipping` | "{s} shipped, {d} delivered of {n}", or "Shown once fees are approved." | Standard | Closed |
+| Selected Creators | Shipping | `creators-shipping` | "{s} shipped, {d} delivered of {n}", or "Shown once fees are approved." | Standard | Closed; open for the client while a row waits on them |
 | Selected Creators | Brief and content | `creators-content` | "{b} briefs accepted · footage in from {f} of {n}" | Standard | Closed |
 | Content Review | The queue | `review-queue` | "{w} waiting on you · {c} with changes · {q} in Aspire QA · {a} approved" | Simple | Open |
-| Content Review | Last round's signed off cuts, read only | `review-previous` | "{n} cuts signed off in round {n-1}" | Standard | Closed |
 | Ad Performance | Cost per sale against target | `performance-result` | "Cost per sale {x} against a {t} target · {beat it, or {d} over}", or "Round {n} goes live {date}" | Simple | Open |
 | Ad Performance | Headline numbers | `performance-headline` | "Spend {s} · {p} purchases · ROAS {r}" | Standard | Closed |
 | Ad Performance | Weekly spend and return | `performance-weekly` | "{w} weeks in market · best week {date}" | Standard | Closed |
@@ -959,7 +960,7 @@ over the tab and never collapse.
 
 #### Reaching every job
 
-Every job in the project's jobs to be done is two clicks or fewer from **Home Simple**: Home as it
+Every job in the tables below is two clicks or fewer from **Home Simple**: Home as it
 first opens for someone who has saved no collapse state, with the defaults above. A click is
 anything that changes what is on screen: a tab, a round segment, a section's trigger, a row or
 link that opens an item, a Sheet or a Dialog. Typing, hovering, scrolling and the job's own action
@@ -980,7 +981,7 @@ Across every page:
 | Leave agency only comments the client can't see | Master Brief, then a concept's section; "Agency only" on its comment box | 2 |
 | Preview what the client sees | **Preview as client** in the header | 1 |
 | Collapse any section and expand it again | The section's trigger, or **Expand all** or **Collapse all** | 1 |
-| Export what is in view to a spreadsheet | The tab's export control | 1 |
+| Export what is in view to a spreadsheet | The tab, then its export control | 2 |
 
 Home:
 
@@ -990,7 +991,7 @@ Home:
 | Know if we're ahead, on track or behind, and why | **Round steps** summary; the step dates under it | 0 |
 | See what's waiting on the client and send them to it | **Waiting on you**, then "open" on the item | 0 to 1 |
 | See what Aspire is working on | **Needs attention** | 1 |
-| See last round's headline result against target | Ad Performance; **Cost per sale against target** is open | 1 |
+| See last round's headline result against target | Ad Performance, then last round's segment in the **Round switcher**; **Cost per sale against target** is open | 2 |
 | Find the next weekly sync, add it to a calendar, open the channel | **Team and weekly sync** | 0 |
 | See where the round is in its steps | **Round steps** | 0 |
 | See the deliverables, usage and exclusivity terms | **Program details** | 1 |
@@ -1077,7 +1078,7 @@ Content Review:
 | Upload a new version | Content Review, then the cut (agency) | 2 |
 | Move a cut through QA, client review, changes and approved | Content Review, then the cut | 2 |
 | Copy a link to a cut or all its comments | Content Review, then the cut | 2 |
-| Look back at last round's signed off cuts | Content Review, then **Last round's signed off cuts** | 2 |
+| Look back at last round's signed off cuts | Content Review, then last round's segment in the **Round switcher**; the queue is open, read only | 2 |
 
 Ad Performance:
 
