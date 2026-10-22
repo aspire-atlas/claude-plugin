@@ -2094,7 +2094,8 @@ Find each round that is not done (the reference's **Rounds**, **Which round**) a
 dispatch table, reading from the bottom up. Show one screen: per round, its month, dates and state,
 its row's status line and the four steps (1 Concepts approved, 2 Creators approved, 3 Fees
 approved, 4 Briefs approved) each with done and its date, now and its due date, or its planned
-date, the round's current step and up next from its **Round steps**, the creator counts by concept, anything marked your call needed, and the campaign page link,
+date, the round's current step and up next from its **Round steps**, the creator counts by
+concept, anything marked your call needed, and the campaign page link,
 opened on the tab the next step is on (Creator Selection for creators, Selected Creators for fees
 and shipping, Master Brief for briefs and creator changes, else Home), and the new tags from the
 page per the reference's **Delivering tags**. Then one

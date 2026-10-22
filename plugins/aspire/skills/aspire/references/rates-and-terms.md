@@ -47,7 +47,9 @@ The terms object:
 ```
 
 `allowlisting` and `partnershipAds` are optional and asked by no question: whether the SOW
-includes allowlisting and partnership ads. They reach the record from an editor's edit on the
+includes allowlisting and partnership ads. With `allowlisting` false, no uplift is added to any
+fee and no uplift line is drafted, whatever `whitelistingUpliftPct` says; missing or true, the
+uplift applies as above. They reach the record from an editor's edit on the
 campaign page's Home, **Program terms**, or from the program files there (`cas-campaign.md`,
 **1d**, **Home**), and Home hides each until it is saved.
 
