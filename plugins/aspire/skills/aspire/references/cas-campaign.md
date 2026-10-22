@@ -406,8 +406,9 @@ steps, and the later rounds' default `plan`, **Round steps**); one `roster` find
 creator for round {n+1}, copied from their round {n} row
 with `returning` true, `fromRound` {n}, `source` carried, `offer.target` set to the round {n}
 `agreed`, and `rate`, `agreed`, `counter`, `briefState`, `shipping`, `shipDate`, `yourCall` and
-`waitingOn` cleared; the carried gate findings for the new round; the new round's brief in the
-page data (**The new round's brief**, below); then republish. Nothing of round {n} is written: its
+`waitingOn` cleared; the carried gate findings for the new round; for a round started in the
+chat, the new round's brief in the page data (**The new round's brief**, below), while a round
+started on the page already holds its brief and the pull leaves it alone; then republish. Nothing of round {n} is written: its
 round, roster, gate, brief and revision findings, and its brief documents on the page, stay as
 they were.
 
@@ -758,8 +759,10 @@ the client's calls, each named with who made it:
   `edits`, an edit to the brief's tone of voice, do's, don'ts, disclosure or file naming counting
   as a change to every lane. A reset or a restored version is named as one line ("{Concept} reset
   to the original by {name}", "Round 2 brief restored to the version from {time} by {name}") and
-  its fields are recorded like any edit. Every new `brief` finding copies `locked` and `removed`
-  from the lane's newest one unless this pull changes them, so a tone edit that touches every
+  its fields are recorded like any edit. Every new `brief` finding copies `locked`, `removed` and
+  `deferred` from the lane's newest one for the same round unless this pull changes them; a lane's
+  first finding in a round starts with all three false, and with `carriedForward` when the concept
+  came in deferred, so a tone edit that touches every
   lane never brings back a removed concept or unlocks a signed off one. The variant plan comes
   back as `edits` lines on the same finding. The lane's next brief run starts from the edited text.
 - **Concepts added or removed.** A concept added on the page is named in the batch picker and then
@@ -780,14 +783,14 @@ the client's calls, each named with who made it:
 - **A brief started from an earlier round.** Named as one line ("Round {n} brief started from
   round {m} by {name}: {c} concepts, {d} carried forward") and recorded as nothing on its own:
   the round's brief findings are first written by the brief run (row 10), which gets this text as
-  `current_brief`, or by an import. Its stamps carry `restored` naming the earlier round's locked
-  version, which is how the pull tells them from edits; an edit made after the start is pulled
-  as any edit is. That keeps a copy with empty hooks and CTAs from being sent
+  `current_brief`, or by an import. Its stamps carry `startedFrom` (**1e**, **Every editable
+  value**) and the pull skips every stamp that does, so none of them is recorded as an edit or a
+  restore; an edit made after the start has no `startedFrom` and is pulled as any edit is. That keeps a copy with empty hooks and CTAs from being sent
   for approval.
 - **Deferred concepts.** A deferred concept gets a `brief` finding with `deferred` for its round,
   named "{concept} deferred to round {n+1} by {name}"; once round {n+1} exists, its finding there
-  carries `carriedForward` {n}. **Bring back** writes `deferred` false. Every new `brief` finding
-  copies `deferred` like `locked` and `removed`.
+  carries `carriedForward` {n}. **Bring back** writes `deferred` false, and a `brief` finding with
+  `removed` true for round {n+1} when the page took it out there.
 - **Frameworks.** A change on **Frameworks** goes to `frameworks` in `campaign:{slug}-cas`, with
   the program details' own confirmation.
 - **Creator profiles and per round edits.** Name, descriptor, location and why we picked them
@@ -2381,9 +2384,9 @@ write (**1e**, **Program files and the scan**, **Who adds and scans**).
      round or "All rounds" first, newest date first, then every other file the page can read
      (**1e**, **What the page can read**), each shown as its label, category and date.
    - **Docs link**: an Input for one `https` link. A link that isn't a Google Docs link shows
-     "Paste a Google Docs link." On import the link is added to **Files** as a Master brief for
-     this round, `kind` `drive`, the next version in that category and round, so the brief's
-     source doc is kept with the program files.
+     "Paste a Google Docs link." On Replace, a link not yet in **Files** is added there as a
+     Master brief for this round, `kind` `drive`, the next version in that category and round, so
+     the brief's source doc is kept with the program files; a link already there is reused.
    - **Paste text**: a Textarea for the brief's text, for a doc the page can't read.
 
    Then Cancel (outline) and Read the brief (default).
@@ -2412,14 +2415,19 @@ write (**1e**, **Program files and the scan**, **Who adds and scans**).
      are), **Couldn't use** (each with why: "Not word for word in the document", "Not one of the
      hook types", "Not Direct or Soft", "Not one of the campaign's frameworks"), and a warning
      Badge "Not in products in scope" or "Used in round {r}" where a product or a hook does. A hook
-     or CTA already in the hook log is kept, because the document is the client's own words, and
-     marked so the agency can change it before sending.
+     or CTA already in the hook log goes to **Couldn't use**, "Used in round {r}", because every
+     hook and CTA in the log is refused in every round (**Rounds**, **The new round's brief**); its
+     slot stays empty for the agency or the next brief run to fill.
    - **Will change**: per concept, "{k} parts will change", and every edit not yet pulled that the
      import replaces, by name ("{name}'s edit to Story on {date}"), with the line "The brief as it
      is now is saved first, so you can bring it back from Versions."
    - **Not in the document**: the round's concepts the document doesn't name, "Stays as it is".
    - For a round whose step 4 is out: "{approver} is reviewing this brief. Importing takes it back
      to Draft, so it goes to the client again when you send it."
+
+   When no part would change, the Sheet says "Nothing to import: round {n}'s brief already
+   matches {label}." and Replace is disabled, so a second import of the same document writes
+   nothing at all: no version, no `importedAt`, no Files row and no change to step 4.
 
    Then Cancel (outline), Map again (ghost, Lucide `refresh-cw`, only when the stored mapping was
    used; it says under it "Claude reads the document again. The result can differ from the stored
@@ -2430,9 +2438,14 @@ write (**1e**, **Program files and the scan**, **Who adds and scans**).
    change**); if one is refused, nothing is imported. Then it writes the mapped parts through the
    **Loading the brief** table, one key at a time, each a stamp with `source` `file`, the Editor as
    `by`, the source's label as `byName` ("Pasted text" for a paste), and `file` the file's id when
-   it came from **Files**. A value equal to the current one is not written, so importing the same
-   document twice writes nothing the second time. A part the document has no text for keeps its
-   value. A concept the document names that the round doesn't have is added as **Add a concept**
+   it came from **Files**. A value equal to the current one is not written. A part the document
+   has no section for at all keeps its value and is listed under **Not in the document**. A list
+   part the document does have (personas, selling points, beats, hooks, CTAs, do's, don'ts,
+   B-roll shots) is replaced whole: every higher numbered key the document doesn't carry gets a
+   stamp with `value` `null`, as **Loading the brief** does, so the concept never mixes the
+   document's items with older ones. The variant plan is never imported: it is the agency's own
+   build, kept as it is, and a variant that names a hook, CTA or shot the import removed shows it
+   as **Removed** (**The variant plan**). A concept the document names that the round doesn't have is added as **Add a concept**
    adds one (`added`, the slug rule in **1a**). Then `sourceDoc`, `importedAt:` and `importKey:` on
    `brief-rounds/r{round}`, the original version (`kind` original, `source` `file`), so **Reset to
    original** goes back to the import, and one activity entry per concept, "Imported from {label}".
@@ -2448,8 +2461,8 @@ same brief because:
   `agency/brief-imports/{key}` (**1e**). The key for a file is where it came from, at that version:
   `upload-{asset id}` for an upload, `drive-{file id}-{modified time}` for a Google Doc, from the
   Drive details call. The key for pasted text is `text-` and the first 32 hex characters of the
-  SHA-256 of the text, worked out with `crypto.subtle` after turning `\r\n` into `\n` and trimming
-  the ends. The page also saves a `text-` key for the text it read from a file, pointing at the
+  SHA-256 of the text's UTF-8 bytes, after turning `\r\n` into `\n` and trimming spaces and line
+  breaks from both ends; the page works it out with `crypto.subtle`. The page also saves a `text-` key for the text it read from a file, pointing at the
   same mapping (`sameAs:`), so the same document uploaded again finds it too. A document whose key
   is stored is mapped from the store, with no call to Claude, and gives the same parts every time.
   A changed Google Doc has a new modified time, so it is mapped again, as it should be. **Map
@@ -2464,6 +2477,9 @@ same brief because:
   CTAs, do's, don'ts and B-roll shots are ordered by where their text first appears in the
   document, and numbered from that order (H1 to H3, C1 and C2, B01 on), whatever order the answer
   gives. A fourth hook or third CTA goes to **Couldn't use**, "The brief has 3 hooks and 2 CTAs".
+- **Numbers are text too.** A length, a beat's seconds and a runtime are kept only when their
+  words appear in the document ("30 seconds", "0-3"), like any text value; Claude never works one
+  out. One the document doesn't give stays empty.
 - **Fixed choices are checked.** A hook's type must be one of the hook patterns
   (`ad-reuse.md`, **Hook patterns**), a CTA's Direct or Soft, a framework one of the campaign's by
   its code or name, ignoring case; anything else is left empty and listed. A concept matches a
@@ -2486,11 +2502,14 @@ read the doc, Claude reads it in the chat: a Google Docs link only with a Google
 session already has, never asking for one; an upload in **Files** by its asset id, as **Scanning
 from the chat** reads one; otherwise "I can't read that doc from here. Paste the brief's text." It
 maps the text by the same rules, using and saving the same store: the key from the source, or for
-pasted text the SHA-256 of the text saved as pasted (`shasum -a 256` on the saved file). It shows
+pasted text the same `text-` key as the page's, the text saved with `\r\n` turned into `\n`, trimmed
+at both ends and with no line break added at the end, hashed with `shasum -a 256` and cut to its
+first 32 hex characters. Where the chat has no shell to run it, Claude maps the text fresh by the
+same rules and says in the picker that it couldn't check for an earlier import of it. It shows
 the preview in one picker ("Import round {n}'s brief from {label}: {c} concepts, {k} parts change,
 {e} unpulled edits replaced (saved in Versions). Not in the document: {names}.") with "Import
 (Recommended)", "Change something", then writes the page data as the page would, with no `by`,
-saves the versions, records the brief findings in the same answer (**Pulling decisions**, **An
+saves the versions with `claude` in place of the editor's id, records the brief findings in the same answer (**Pulling decisions**, **An
 import**), and republishes.
 
 #### Starting from the last round
@@ -2502,8 +2521,9 @@ from an earlier round, imported, or written by the brief run.
   with **Start round {n+1}** on the page, its brief starts from the last signed off brief in the
   same step. For the agency, a round with an earlier signed off brief also gets **Start from round
   {m}** (outline Button, Lucide `copy`) in the **Brief status** header row, {m} being the newest
-  earlier round whose step 4 is cleared. It renders while the round is not done and no concept in
-  it is signed off, and opens a Dialog: "Start round {n}'s brief from round {m}?", the concepts it
+  earlier round whose step 4 is cleared. It renders while the round is not done, its step 4 is
+  not sent, and no concept in it is signed off, so a brief the client is reviewing is never
+  replaced with one whose hooks are empty. It opens a Dialog: "Start round {n}'s brief from round {m}?", the concepts it
   brings, the deferred ones marked "Carried forward", the edits it replaces by name, the line
   "Round {m}'s brief doesn't change. The brief as it is now is saved first, so you can bring it
   back from Versions.", and Cancel (outline) and Start from round {m} (default).
@@ -2525,10 +2545,10 @@ from an earlier round, imported, or written by the brief run.
   added to scope since round {m} asks for a concept at once.
 - **Writes.** Saving first, as for an import (`kind` before start, when the round already has
   brief documents). Then each part as a stamp with `source` `claude` when Claude starts it from the
-  chat, or `manual` and the Editor as `by` on the page, with `restored` naming round {m}'s locked
-  version so History reads "Started from round {m}'s signed off brief". `startedFrom:` {m} on
+  chat, or `manual` and the Editor as `by` on the page, each carrying `startedFrom` {m}, never
+  `restored`, so History reads "Started from round {m}'s signed off brief" and the pull skips it. `startedFrom:` {m} on
   `brief-rounds/r{n}`, and the original version for round {n} (`kind` original), so **Reset to
-  original** goes back to the copy. The status is **Draft**.
+  original** goes back to the copy. The status stays **Draft**, since step 4 is not sent.
 - **Round {m} doesn't change.** Every write goes to round {n}'s documents. Nothing is written to
   round {m}'s `briefs`, `brief-rounds` or `agency/brief-*` documents, its versions are only read,
   and its brief findings and step 4 stay as they were, so it stays signed off.
@@ -2549,8 +2569,11 @@ too, as a line without the Button, since they asked for it. When round {n+1} alr
 brief has no signed off concept, the deferred concept is copied into it at once, as **Starting from
 the last round** copies one; when round {n+1}'s brief is signed off, **Defer** is disabled with
 "Round {n+1}'s brief is already signed off. Remove the concept, or bring it into a later round."
-Bringing it back takes it out of round {n+1} again only while nobody has edited it there; otherwise
-it stays and the Dialog says so.
+**Bring back** is offered only while round {n+1} doesn't hold the concept, or holds it as copied
+with no edit since and no sign off. Then it also writes `removed` true and `carriedForward` `null`
+on the concept in round {n+1}, so the concept is live in one round only. Once it has been edited
+or signed off in round {n+1}, **Bring back** is disabled with "{concept} is being worked on in
+round {n+1}. Remove it there first to bring it back here."
 
 #### Comments and sign off
 
@@ -3526,7 +3549,8 @@ prefixes.
     nothing about spend shows before Ad Performance records results.
 14. Master Brief: the status Badge follows step 4; the meter and counts match the brief and the
     roster, and the client's meter leaves the variant plan out; every concept chip opens its
-    concept; **Needs a concept** lists exactly the products in scope with no concept; the variant
+    concept; **Needs a concept** lists exactly the products in scope with no concept, then the
+    deferred concepts; the variant
     plan, **Frameworks**, **Versions** and **Reset to original** never render for the client or
     in **Preview as client**; the rich text toolbar never calls `execCommand`, and a pasted
     `<script>`, `<img onerror>` or `javascript:` link leaves nothing but its text.
@@ -3632,6 +3656,8 @@ Every value a person can edit in page data is stored as one stamp:
 | `byName` | The writer's name when it was written: `user.me()` for `manual`, else "Claude", "Aspire Atlas", the sheet's name, or the file's label |
 | `file` | Only with `source` `file`: the file's id in `program/files` (`file-{id}`), so the page can link to it |
 | `fileDate` | Only with `source` `file`: the file's date when the value was taken from it (**Which date a file has**), kept on the stamp so **From** can show it after the file is removed. A value whose file is removed is open to any file's next scan (**Program files and the scan**) |
+| `restored` | Only on a reset or restore: the version it brought back (**Brief versions and Reset to original**) |
+| `startedFrom` | Only on a brief part started from an earlier round: that round's number (**1d**, **Master Brief**, **Starting from the last round**). **Pulling decisions** skips these stamps |
 | `at` | Full UTC time of the write |
 
 The page shows the name from `user.profiles([by])` first, and `byName` only when that comes back
@@ -4210,7 +4236,8 @@ keeps**, Brief versions):
   never pruned.
 - **The original.** After each brief run, after an import that replaces the brief, and after a
   round's brief is started from an earlier one, Claude or the page writes a version with `kind` original and `id` `original-v{version}` for the round's brief, each
-  concept, and each variant plan, holding what it just loaded, with `source` `claude` or `file`.
+  concept, and each variant plan, holding what it just loaded, with `source` `claude` or `file`,
+  or `manual` for a start from an earlier round made on the page.
   The newest original is what **Reset to original** goes back to. Older originals stay, listed in
   **Versions**.
 - **Saving before a change.** Before a reset, a restore, an import or a start from an earlier

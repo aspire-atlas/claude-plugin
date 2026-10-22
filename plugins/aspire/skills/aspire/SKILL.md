@@ -2212,8 +2212,8 @@ the tool prefix, `profile_id`, and `profile_slug`:
   then to the client on the Master Brief tab.
 - **Start the next round** (once the newest round's step 4 is cleared and no later round exists,
   offered in place of "Change setup"): per the reference's **Rounds**, **Starting the next round**.
-  One picker names the new round's month and dates, which creators carry forward and which
-  concepts start from the last signed off brief or carry forward deferred, then writes the round,
+  One picker names the new round's month and dates, which creators carry forward, and the new
+  round's brief: every signed off concept plus those deferred to it, then writes the round,
   the returning creators' rows and the new round's brief without touching the earlier round.
 - **Import a brief** (when the CM asks, or the page couldn't read the doc): per the reference's
   **1d**, **Master Brief**, **Importing a brief**, **Importing from the chat**. A Google Docs link
