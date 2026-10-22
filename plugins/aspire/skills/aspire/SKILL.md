@@ -2147,6 +2147,20 @@ sign off lives under the client's own id with a copy of what they signed, and th
 doesn't. Copy creator brief gives one concept as plain text, ready to paste, with no variant plan
 or comments. The reference's **1d**, **Master Brief**, **Comments and sign off**, holds the rules.
 
+Creator Selection is the pool discovery and vetting fill in creator-ads mode, one pool for every
+round. Its Summary shows both sides how many creators are decided, with a legend per decision, and
+the approved creators' hook rate against the pool's median; the agency also sees the budget left,
+a meter of committed fees (the agreed fees) and approved creators not yet contracted (at their
+expected cost, `references/rates-and-terms.md`, **Expected cost**), the creators not priced yet,
+and an over budget warning. Both sides search, filter by decision, product, city, tier and
+concept, and sort, the client never on an agency only field; the pool shows as a Table with the
+creator and the decision pinned, or as Cards, and as Cards on a phone. The client marks each
+creator Priority Yes, Yes, Maybe or No with one tap, and taps the same value again to clear it;
+each call is kept under the client's own id with who, when, the match score they saw and the
+reason, and reaches the agency's view within seconds. Every creator carries chips for the rounds
+they are in, and Copy decisions copies the calls in view as a table. The reference's **1d**,
+**Creator Selection**, holds the rules and maps every discovery and vetting field to its column.
+
 ### Setup
 
 1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end,
@@ -2206,8 +2220,10 @@ the tool prefix, `profile_id`, and `profile_slug`:
   page's Send for sign off; the next pull records that send, its reminder and the step line.
 - **Pull the client's decisions** (rows 5, 8, 11, 12, 15, and whenever the CM asks "what did they
   approve"): read the page data per the reference's **Pulling decisions**, show every Priority
-  Yes, Yes, Maybe and No by name, with its reason when one was given, plus shipping, status and ad permission edits, and
-  record them with one picker. A brief sent for sign off on the page is recorded as step 4 sent.
+  Yes, Yes, Maybe and No by name, with its reason and who decided, plus shipping, status and ad permission edits, and
+  record them with one picker. Creator decisions are read from each client's own decisions and
+  checked first: a call from an account seen on Aspire's side is dropped, and an account the CM
+  hasn't confirmed as {brand}'s is asked about once. A brief sent for sign off on the page is recorded as step 4 sent.
   The client's brief sign off is read from their own sign off item and checked first (written by
   an account never seen on Aspire's side and confirmed by the CM as the step's approver, answering
   the newest send, the brief still what they signed);
