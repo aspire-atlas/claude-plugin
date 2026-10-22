@@ -2134,6 +2134,18 @@ the same brief; the import is a new draft and the new original. A
 creator makes at most 5 variants in a round. The reference's **Rounds** and **1d**, **Round
 switcher**, hold the rules.
 
+On Master Brief both sides comment on any part of the brief (the header, tone and don'ts, a
+concept, or any field in one) and reply, in a Comments panel filtered by All, Open, Client, Aspire
+and Resolved, with resolve, reopen and a jump to the part; agency only comments, and every comment
+on the variant plan, stay with the agency. The agency presses Send for sign off; the client gets it
+in their inbox and presses Sign off or Request changes. A sign off records who and when, locks the
+round's brief, and ticks step 4 on Home; the agency reopens a signed off brief only with a reason,
+which is logged. The page sends nothing itself, and the agency never signs off on the page: the
+sign off lives under the client's own id with a copy of what they signed, and the reference's
+**1e**, **What the rules enforce, and what they can't**, says what that proves and what it
+doesn't. Copy creator brief gives one concept as plain text, ready to paste, with no variant plan
+or comments. The reference's **1d**, **Master Brief**, **Comments and sign off**, holds the rules.
+
 ### Setup
 
 1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end,
@@ -2189,11 +2201,19 @@ the tool prefix, `profile_id`, and `profile_slug`:
   required.
 - **Sending a step for approval** (rows 4, 7, 11): per the reference's **Gate packets**. The
   campaign page is the approval page, linked to Creator Selection, Selected Creators or Master
-  Brief; the CM shares it with the client as Contributor.
-- **Pull the client's decisions** (rows 5, 8, 12, 15, and whenever the CM asks "what did they
+  Brief; the CM shares it with the client as Contributor. The briefs can also be sent from the
+  page's Send for sign off; the next pull records that send, its reminder and the step line.
+- **Pull the client's decisions** (rows 5, 8, 11, 12, 15, and whenever the CM asks "what did they
   approve"): read the page data per the reference's **Pulling decisions**, show every Priority
   Yes, Yes, Maybe and No by name, with its reason when one was given, plus shipping, status and ad permission edits, and
-  record them with one picker. Priority Yes and Yes record as approved, No as rejected. A Maybe
+  record them with one picker. A brief sent for sign off on the page is recorded as step 4 sent.
+  The client's brief sign off is read from their own sign off item and checked first (written by
+  someone with no Editor marker, answering the newest send, the brief still what they signed);
+  one that fails is named with why and never recorded, and one that passes is named with the
+  signer ("{name} signed off the round {n} brief on {date}") and, on the confirm, locks each
+  concept from the signed copy and records step 4 as approved. A client who can't write on the
+  page signs off outside it; record that only as their word, with how it was given, per the
+  reference's **Gate 4**. Priority Yes and Yes record as approved, No as rejected. A Maybe
   stays open on the page with a question back to the client.
 - **Record a reply** (rows 7, 10, 14, or whenever the CM pastes one): per
   `references/rates-and-terms.md`, **Replies**. One picker proposes the record and the next move;
