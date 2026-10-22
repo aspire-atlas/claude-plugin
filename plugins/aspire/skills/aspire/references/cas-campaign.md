@@ -895,7 +895,9 @@ Performance. What is open is remembered for each person.
   opens or closes every section on the tab in view, and nothing on another tab. Since ids never
   name the round, the change holds in every round of that tab. A Button that would change nothing
   is disabled. On a phone the row keeps all three Buttons on one line, Export at the start and the
-  other two aligned to the end.
+  other two aligned to the end. Under 400px, Expand all and Collapse all show their icons only,
+  keeping their labels for screen readers and as a tooltip, so the row never runs past the
+  screen.
 - **Which sections start open.** The default follows the level of the jobs a section serves, the
   jobs listed in **Reaching every job**: Simple is one glance and one action, Standard the working
   view, Full every field and control. A section that serves a Simple job starts open. A section
@@ -1211,8 +1213,8 @@ Two layouts: Cards by default, Board second. The layout last picked is kept in t
   `{DETAILS}` block: Hook rate (watched past 3s), Engagement on Reels, Paid work before, Ad
   permissions, Status, Product, Location, Why we picked them, any question for the client, and
   Your decision. For the agency only, under a dashed rule headed "Agency only": the
-  recommendation, agency notes, vetting evidence and safety detail, email, phone and manager, tier
-  and reply window.
+  recommendation, agency notes, vetting evidence and safety detail, email, phone and manager, and
+  the tier's reply window. The tier itself shows to both sides (**Who sees what**).
 - **Board**: one group per concept with a colored title bar (concept name, persona, "need {n},
   {m} approved"). Each group is its own full width table with the first column and the header
   pinned, and grouped header bands: Decisions (Your decision, Your notes, Status, Product), Fit
@@ -1499,8 +1501,10 @@ logs nothing and never reaches Atlas.
 
   Then a count line in `text-xs text-muted-foreground`: "{r} rows, {c} columns". For the agency it
   adds "Includes Aspire only columns." with a soft Badge "Agency only". Cancel (outline) and the
-  default Button "Download", or "Copy" for Copy as table. A tab whose every sheet is empty shows
-  the Export Button disabled, with its empty state as the Button's tooltip.
+  default Button "Download", or "Copy" for Copy as table. On a tab whose every sheet is empty, the
+  Export Button has `aria-disabled="true"` and the disabled look but stays focusable: a click, tap
+  or Enter does nothing but show its tooltip, the tab's empty state. A `disabled` Button would
+  never open that tooltip.
 - **What goes in.** Exactly the rows the tab shows now. That means the round in the **Round
   switcher**, the tab's filters and search, its sort, and its layout's columns. A closed section
   still exports, because collapsing changes the view and not the data. Home's **Needs attention**
@@ -1516,22 +1520,31 @@ logs nothing and never reaches Atlas.
   reads didn't return, the columns are left out and the count line says "Aspire only columns
   didn't load." A read only client exports the page as published, with no page data, and the
   About sheet says so.
+- **Preview as client exports the client's sheets.** The agency's browser already holds the
+  `agency` reads, so in the preview the export takes its rows from the same client readable data
+  the preview renders from (**Preview as client**), never from the agency's view with columns
+  dropped. This rests on the page's code, not on the data rules, so a real Contributor's export is
+  checked by opening the page (**What the export can't do yet**).
 - **The file name.** "{Brand} CAS Round {n} {sheet}", with "All rounds" in place of "Round {n}"
   on Creator Selection's **All rounds**, and the tab's title in place of {sheet} for "All sheets"
   ("{Brand} CAS Round 2 Selected Creators.xlsx"). The page drops `\ / : * ? " < > |` and runs of
-  spaces from it. The viewer confirms the final name in the download prompt.
+  spaces from it. The viewer confirms the final name in the download prompt. Home's Needs attention
+  covers every round whatever the name says, and the About sheet notes it.
 - **Excel.** One worksheet per sheet, named as in **Sheets per tab** (all are 31 characters or
   fewer, as Excel needs), plus a last sheet, "About this export". On every data sheet:
   - Row 1 is the header, in bold, frozen, with a filter over the header and every row.
-  - Money in the campaign's currency (USD, from `budgetUsd`) as numbers formatted `"$"#,##0.00`,
-    and the header names the currency: "Agreed fee (USD)".
-  - Rates as fractions formatted `0.0%`, counts as `#,##0`, dates as real dates formatted
-    `yyyy-mm-dd`, and times as `yyyy-mm-dd hh:mm` in the viewer's time zone. So every column sorts
-    and filters as its type.
+  - Money in US dollars, as the campaign records keep it, as numbers formatted `"$"#,##0.00`, and
+    the header names the currency: "Agreed fee (USD)".
+  - Rates as fractions formatted `0.0%`, counts as `#,##0`, and dates as real dates formatted
+    `yyyy-mm-dd`. So every column sorts and filters as its type.
+  - Times as `yyyy-mm-dd hh:mm` on the viewer's clock, the time the page shows. A spreadsheet
+    date has no time zone, so the page shifts each UTC time by the viewer's offset before writing
+    it. The header names the zone: "Updated on (PDT)".
   - Text that a person typed is always written as text. A note starting with "=" or "+" stays a
     note and never runs as a formula.
   - Columns are sized to their content up to 60 characters wide, and longer text wraps. A cell
-    past Excel's 32,767 characters is cut and ends "(continues on the page)".
+    past Excel's 32,767 characters is cut short enough that, with " (continues on the page)"
+    added, it stays within that limit.
   - No fill or font color. The **Design standards** keep every color in the page's style blocks.
 
   "About this export" holds one row per fact: campaign, tab, round, filters and search in plain
@@ -1542,29 +1555,35 @@ logs nothing and never reaches Atlas.
   marks Excel "Not available right now" and moves to CSV.
 - **CSV.** One sheet as UTF-8 with a byte order mark (so Excel reads accents), comma separated,
   quoted per RFC 4180, CRLF line ends. The header row is the same as the Excel one. Money and
-  counts are plain numbers, rates are written "28.4%", and dates are `yyyy-mm-dd`, so Excel and
+  counts are plain numbers, rates are written "28.4%", dates are `yyyy-mm-dd`, and times are
+  `yyyy-mm-dd hh:mm` on the viewer's clock with the zone in the header, as in Excel. So Excel and
   Google Sheets read each one as its type. A text cell starting with `=`, `+`, `-`, `@`, a tab or
   a carriage return gets a leading `'` so no spreadsheet runs it as a formula. A CSV carries no
   About rows, so it imports cleanly.
 - **Copy as table.** Works like **History**'s. It puts an HTML table and tab separated text of the
-  one sheet on the clipboard, with the same `'` guard on text, so it pastes as a table into a
-  sheet, a doc or an email. The Button reads "Copied {n} rows" for two seconds. If the browser
+  one sheet on the clipboard, so it pastes as a table into a sheet, a doc or an email. Only the
+  tab separated text gets the CSV's `'` guard, because that is what a spreadsheet reads. The HTML
+  table keeps the text as typed, so a doc or an email shows no stray `'`. The Button reads "Copied {n} rows" for two seconds. If the browser
   refuses the clipboard, a Dialog "Copy {sheet}" opens with a read only Textarea holding the tab
   separated text, already selected. It shows the line "Press Ctrl+C or Cmd+C to copy." and Close
   (outline).
 - **Saving.** Excel and CSV go through the page's `downloads` capability (**1e**). The viewer sees
   a prompt with the name and size and may decline. When `downloads` isn't available in this view,
-  the Format Select offers Copy as table only. Each refusal gets one plain line in the Dialog:
-  - Declined: the Dialog closes and nothing else happens.
-  - Busy: "Another download is waiting. Try again in a moment."
-  - A format turned off here: "Excel files can't be saved here. Try CSV."
-  - Anything else: "Downloads aren't available here. Copy as table instead."
+  the Format Select offers Copy as table only. Each refusal from the save gets one plain line in
+  the Dialog, by its code:
+  - `declined`: the Dialog closes and nothing else happens.
+  - `rate_limited`: "Another download is waiting. Try again in a moment."
+  - `rejected_extension` or `extension_not_enabled`: "Excel files can't be saved here. Try CSV.",
+    or for a CSV "CSV files can't be saved here. Copy as table instead."
+  - `too_large`: "This file is too big to save here. Pick one sheet or narrow the filters."
+  - Any other code: "Downloads aren't available here. Copy as table instead."
 
   The page never retries a save on its own.
 - **It works everywhere.** Export changes nothing, so it works in a done round, for a read only
   client and in **Preview as client**, where every other control is a label. The Dialog's choices
-  are kept in memory only, never in page data or browser storage, and it opens on "All sheets" and
-  Excel.
+  are kept in memory only, never in page data or browser storage. It opens on the first format it
+  offers, Excel when it can, with "All sheets" for Excel and the first sheet for CSV or Copy as
+  table.
 
 #### Sheets per tab
 
@@ -1580,8 +1599,8 @@ left blank, never filled with a dash.
 | Home | Files | File in **Files** | File, Round (or "Whole campaign"), Link, Added by, Added on |
 | Master Brief | Concepts | Concept in the round | Concept, Persona, Framework, Product, Hooks, CTAs, Body, B-roll, Runtime, Disclosure, Do not, Creators, State, Signed off by, Signed off on. Hooks, CTAs, B-roll and Do not hold one item per line in their cell |
 | Master Brief | Variants (Aspire only) | Variant in each concept's variant build | Concept, Variant, then the parts the build gives each variant (hook, CTA, beats, runtime) |
-| Creator Selection | Decisions | Creator with a call in the rounds in view | Creator, Network, Name, Concept, Round, Your decision, What made the call, Your notes, Decided by, Decided on, Status, Recommendation (Aspire only), Surprise (Aspire only), Agency notes (Aspire only) |
-| Creator Selection | Creators | Creator the pool shows now | Creator, Network, Name, Descriptor, Location, Concepts, Rounds, Match score, Hook rate, Engagement on Reels, Paid work before, Ad permissions, Instagram followers, Instagram engagement rate, Instagram average engagement, Instagram audience, the same four for TikTok, Why we picked them, Status, Product, Tier (Aspire only), Reply window (Aspire only), Email (Aspire only), Phone (Aspire only), Manager (Aspire only) |
+| Creator Selection | Decisions | Creator with a call in the rounds in view | Creator, Network, Name, Concept, Round, Your decision, What made the call, Your notes, Decided by, Decided on, Status, Recommendation (Aspire only), Surprise (Aspire only: Yes when the decision goes against the recommendation, as **A reason on the call** defines it, worked out on the page from both), Agency notes (Aspire only) |
+| Creator Selection | Creators | Creator the pool shows now | Creator, Network, Name, Descriptor, Location, Concepts, Rounds, Match score, Hook rate, Engagement on Reels, Paid work before, Ad permissions, Instagram followers, Instagram engagement rate, Instagram average engagement, Instagram audience, the same four for TikTok, Why we picked them, Status, Product, Tier, Reply window (Aspire only), Email (Aspire only), Phone (Aspire only), Manager (Aspire only) |
 | Selected Creators | Creator snapshot | Creator on the round's roster | Creator, Network, Name, Concept, Product, Returning, Status, Ad permissions, Brief state, Content state, Variants (k of max), Content folder, Waiting on (Aspire only), Last contact (Aspire only), Email (Aspire only), Phone (Aspire only), Manager (Aspire only) |
 | Selected Creators | Shipping list | Row in **Shipping** | Creator, Name, Product, Details from creator, Address or pickup, Visit date, Shipping, Tracking, Product status, Updated by, Updated on, Next step (Aspire only) |
 | Selected Creators | Rates and payments | Row in **Contract and rates** | Creator, Concept, What they make, Usage, Exclusivity, Agreed fee (or "In negotiation"), If we drop them, Where it is, Fees approved on, UGC video rate (Aspire only), Reel collab rate (Aspire only), 90 day usage rate (Aspire only), Offer open, target and max (Aspire only, three columns), Counter (Aspire only), Expected cost (Aspire only), Cost per 1K reach (Aspire only) |
@@ -1603,7 +1622,8 @@ What the export can't do yet, said plainly:
 - **Content Review exports only what its build shows.** Until that tab has its own build, it shows
   its empty state and its Export Button is disabled too.
 - **Opening in Excel and Google Sheets can't be checked from the chat.** Check one export from each
-  tab by opening the page, and say so when handing over a first publish.
+  tab by opening the page, and say so when handing over a first publish. Check one tab's export
+  from a real Contributor's account too, since **Preview as client** rests on the page's code.
 
 ### Footer
 
