@@ -381,8 +381,10 @@ factors:
 - For the paid track record, read the discovery finding's `detail.recommendationTypes` when
   present. It is supporting evidence, never points: cite it in plain words, for example "Meta
   ranks this creator under high ad performance".
-- Write the result in `detail.match`: `{score, client, band, factors, without, conflict,
-  pastDeals, weights, scoredAt}`, `score` being the five factor score and `client` the one without
+- Write the result in `detail.match`: `{score, client, band, factors, paidPartners, without, conflict,
+  pastDeals, weights, scoredAt}`, `paidPartners` being the partners part by category
+  (`{value, partners: [{name, category}]}`, `category` in, near or outside), which the campaign page
+  takes as it is, `score` being the five factor score and `client` the one without
   Budget vs target, with `fitScore` equal to `score`. The page shows the date of the run, and names
   the inputs that can differ from the campaign page's as that section lists them.
 - Brand safety runs exactly as today, and every hard stop still decides first.
