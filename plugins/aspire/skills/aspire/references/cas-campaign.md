@@ -36,7 +36,10 @@ draft, and in a channel post, uses the left column.
 | 1 Concepts approved, 2 Creators approved, 3 Fees approved, 4 Briefs approved | Gates 1 to 4 |
 | Creator changes approved (shown as "your call" on the changed brief) | Gate 4b |
 | Your decision: Priority Yes, Yes, Maybe, No ("Unreviewed" until one is picked) | slate call: Priority Yes and Yes are approved (Priority Yes adds `priority`), Maybe is maybe, No is rejected |
-| Campaign match | the match score: vetting's creator-ads fit score, else discovery's `fitScore` |
+| Campaign match: the score, Strong, Good, Possible, Weak, Competitor conflict | the match score, stored per creator per round (**1d**, **Creator Selection**, **The match score**) |
+| Performance, Brief fit, Paid history, Budget vs target, Content reach; Watch:; Scored without; About this data | the match score's five factors, its weak signals, its missing inputs and its explanation |
+| Past competitor deal: {brand} | a past paid partner that is a saved `competitor` |
+| Casting: keywords, target cities | the concept's `keyword-{n}` and `city-{id}` in `briefs/{lane}-r{round}` |
 | Nano, Micro, Mid, Macro, Mega | the page's tier, from followers (**1d**, **Creator Selection**, **Tiers**) |
 | City | the creator's `location`, else their `country` |
 | Budget left, Committed, Approved, not contracted, Unpriced, Over budget | the budget, worked out from agreed fees and expected costs (**1d**, **Creator Selection**, **Summary**) |
@@ -158,7 +161,10 @@ The campaign object:
  "files": [{"id": "f1", "label": "Spring launch strategy", "category": "Creative strategy proposal",
             "url": "https://…", "round": "all", "date": "2026-10-14", "dateFrom": "document"}],
  "frameworks": [{"slot": 1, "code": "PAS", "name": "Problem, agitate, solve",
-                 "use": "The hero, primary spend"}]}
+                 "use": "The hero, primary spend"}],
+ "match": {"weights": {"performance": 0.30, "briefFit": 0.25, "paidHistory": 0.15,
+                       "budget": 0.15, "contentReach": 0.15},
+           "tunedAt": "2026-11-12T16:40:00Z", "tunedBy": "Name"}}
 ```
 
 `round` is the first round's number. Every round, the first included, is a `round` finding in the
@@ -181,6 +187,12 @@ value is saved, Home hides its part (**1d**, **Home**).
 (what it is for). Without it, the defaults in **1d**, **Master Brief**, stand. It reaches the
 record like `products`: an agency edit on Master Brief's **Frameworks**, pulled with **Pulling
 decisions** through the supersede rule, or the CM saying it in the chat.
+
+`match` is optional: the match score's weights (**1d**, **Creator Selection**, **The match
+score**), one per factor, with when and by whom they were last tuned. Without it, or for a factor
+it leaves out, the defaults there stand. It reaches the record from **Match score tuning** on the
+page, pulled with **Pulling decisions** through the supersede rule, or from the CM saying it in the
+chat. Discovery and vetting read it in creator-ads mode, so they score with the same weights.
 
 `files` is optional too: the links Claude found while setting up the campaign in the chat (**1b**,
 **Files found in setup**), each with `label`, `category`, `url`, `round` (`all` or a round number),
@@ -253,7 +265,7 @@ record type the newest finding per identity wins, by `detail.recordedAt`.
 | ---------- | -------- | ------ | ---- | ----------- |
 | `gate` | gate + round (Gate 4b: gate + round + the creator) | The brand's own account on its first linked network | `action_item` `high` while planned, open or slipped; `went_well` when cleared | `gate` (1, 2, 3, 4, `4b`), `status` (planned, open, cleared, slipped), `plannedAt`, `sentAt`, `dueAt`, `clearedAt`, `clearedBy`, `daysSlipped`, `reminderTask` (the task name). Gate 1 adds `source` (where the concepts were read from). Gate 4 adds `signoff` `{signer, name, at, item, via, recordedBy}` (the signer's viewer id, their name, when, the `signoffs` item, `page` or `chat`, and for `chat` the CM who recorded it), `reopenedAt` and `reopenReason`. Gate 4b adds `handle` and `network` |
 | `round` | round | The brand's account | `action_item` `medium` while planned, in production or in market; `went_well` when done | `round`, `label`, `month`, `build` `{start, end}`, `inMarket` `{start, end}`, `launchDate`, `state` (planned, in production, in market, done), `steps` (`{"1": {plannedAt, dueAt}, …}` for steps 1 to 4), `plan` (every step of the round, the four approvals included, **Round steps** below), `closedAt` (set when the CM closes the round early), `startedFrom` (the round it was started from, empty for the first), `creators` (`new`, `same`, or `same-and-new`: how the round was started) |
-| `roster` | the creator's account + round | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while a candidate; `went_well` approved; `needs_improvement` rejected | `handle`, `network`, `name`, `descriptor`, `location` (the last three only when edited on the page), `lane`, `slate` (candidate, approved, maybe, rejected), `priority` (true for a Priority Yes), `clientReason` (the reason on a surprise Priority Yes or Yes), `rejectReason`, `clientQuestion`, `pickNote` (why we picked them), `rate` (offered, countered, agreed, declined), `offer` `{open, target, max}`, `counter`, `agreed`, `deliverables`, `usage`, `exclusivity`, `termNotes`, `contact` `{email, manager}`, `tier`, `decidedBy` (`{writer, name, at, score}`: the page account whose call was recorded, their name, when, and the match score they saw), `lastContactAt`, `waitingOn` (client, agency, creator), `yourCall` (the question to the client, while one is open), `adPermissions` (granted, pending), `details` `{status, address, pickup, visitDate, product, options, availability}`, `shipping` `{status, carrier, tracking}`, `briefState` (sent, accepted, changed, approved, locked), `shipDate`, `vetting` (the four figures and the recommendation), `returning` (true when carried from an earlier round), `fromRound` (the round it was carried from), `source` (chat, reply, page, or carried) |
+| `roster` | the creator's account + round | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while a candidate; `went_well` approved; `needs_improvement` rejected | `handle`, `network`, `name`, `descriptor`, `location` (the last three only when edited on the page), `lane`, `persona` (the persona's name in the round's brief, **1d**, **Creator Selection**, **Concept and persona**), `slate` (candidate, approved, maybe, rejected), `priority` (true for a Priority Yes), `clientReason` (the reason on a surprise Priority Yes or Yes), `rejectReason`, `clientQuestion`, `pickNote` (why we picked them), `rate` (offered, countered, agreed, declined), `offer` `{open, target, max}`, `counter`, `agreed`, `deliverables`, `usage`, `exclusivity`, `termNotes`, `contact` `{email, manager}`, `tier`, `decidedBy` (`{writer, name, at, score}`: the page account whose call was recorded, their name, when, and the match score they saw), `lastContactAt`, `waitingOn` (client, agency, creator), `yourCall` (the question to the client, while one is open), `adPermissions` (granted, pending), `details` `{status, address, pickup, visitDate, product, options, availability}`, `shipping` `{status, carrier, tracking}`, `briefState` (sent, accepted, changed, approved, locked), `shipDate`, `vetting` (the four figures and the recommendation), `returning` (true when carried from an earlier round), `fromRound` (the round it was carried from), `source` (chat, reply, page, or carried) |
 | `draft` | the creator + the template | The creator's account | `action_item` `low` while not sent; `went_well` once sent | `handle`, `template` (offer, counter, accept, chase, details, brief, brief-notes), `subject`, `body`, `sentAt` |
 | `reply` | one per exchange, never replaced | The creator's account | `went_well` `low` | `handle`, `receivedAt`, `summary` (one plain line), `record` (what it wrote to the roster), `nextMove` |
 | `brief` | lane + round | The brand's account | `action_item` `medium` while a draft; `went_well` when locked | `lane`, `locked`, `briefPage`, `version`, `edits` (the edits pulled from the page, one plain line each: the part, from, to, and who), `added` (true for a concept added on the page), `removed` (true for a concept taken out of this round's brief), `deferred` (true for a concept deferred to the next round), `carriedForward` (the round a deferred concept came from), `importedFrom` (`{label, url, kind}` of the document an import read), `startedFrom` (the round whose signed off brief it started from), `reopened` (`{reason, name, at}` when the agency reopened a signed off brief) |
@@ -670,7 +682,8 @@ Composed from the newest vetting run per lane (`creator-vetting-{profile}` prefi
 - Before send, ask the CM once for **Why we picked them** per creator in one message ("One line
   per creator for the client, for example '@a lives the concept: early shifts, bikes to work'").
   A blank line keeps vetting's reason, rewritten in plain words.
-- On send, also write a `roster` candidate for every creator on the slate, with `pickNote`.
+- On send, also write a `roster` candidate for every creator on the slate, with `pickNote`, and
+  `lane` and `persona` as **The match score**'s **Concept and persona** sets them.
 
 **Closing Gate 2** runs through **Pulling decisions** below. The CM may still type the
 client's decisions in chat ("yes to @a and @b, priority yes to @e, no to @c for tone"; approve
@@ -880,6 +893,9 @@ the client's calls, each named with who made it. The `send-` and `reopen-` stamp
   came in deferred, so a tone edit that touches every
   lane never brings back a removed concept or unlocks a signed off one. The variant plan comes
   back as `edits` lines on the same finding. The lane's next brief run starts from the edited text.
+  An edit to a concept's **Casting** also writes the concept's keywords and cities in full on the
+  finding, as `casting` `{keywords, cities}`, which discovery and vetting read for the match
+  score's Brief fit.
 - **Concepts added or removed.** A concept added on the page is named in the batch picker and then
   gets its own confirmation, "Save {concept} as a concept for {campaign}?", which appends
   `campaign:{slug}-lane-{lane}` with its name, line as `concept`, framework, trigger, personas
@@ -925,11 +941,15 @@ the client's calls, each named with who made it. The `send-` and `reopen-` stamp
   A send older than the newest import or reopen is skipped.
 - **Creator profiles and per round edits.** Name, descriptor, location and why we picked them
   go on the creator's `roster` finding as `name`, `descriptor`, `location` and `pickNote`, the
-  concept as `lane` and the product as `details.product`, with the rest of the batch.
-- **What stays on the page.** Match score weights, notes, comments, files, the review checklist
-  and review versions, the activity log, tags and each person's own state are never pulled. The picker names a match score
-  change in one line ("Match score weights changed on the page by {name}") so the CM can carry it
-  into the next discovery or vetting run.
+  concept as `lane`, the persona as `persona` and the product as `details.product`, with the rest
+  of the batch.
+- **Match score weights.** A `weight-*` stamp on `agency/match-score` newer than the last pull is
+  written into `match` in `campaign:{slug}-cas` through the supersede rule, with `tunedAt` and
+  `tunedBy` from the newest one, and named in one line of the picker ("Match score weights
+  changed on the page by {name}"). A `null` stamp removes that factor's weight, so the default
+  stands. Discovery and vetting then score with them.
+- **What stays on the page.** Notes, comments, files, the review checklist and review versions,
+  the activity log, tags, the stored match scores and each person's own state are never pulled.
 
 A field cleared by **Reset decisions** is named as "cleared on the page by {name}". Atlas keeps
 what it already recorded.
@@ -1010,6 +1030,9 @@ client's level before the link goes out.
 | Handle, name, descriptor, location (City), concept, persona, product | yes | yes | Roster, creator card | Creator Selection, Selected Creators |
 | Tier (Nano to Mega) | yes | yes | Worked out at publish from followers (**Creator Selection**, **Tiers**) | Creator Selection, Selected Creators |
 | Campaign match, latest posts, reach, engaged accounts, round chips | yes | yes | Discovery, vetting, roster | Creator Selection |
+| The match score's band, competitor lines, and its Performance, Brief fit, Paid history and Content reach rows with their inputs, levels and Watch line | yes | yes | Stored at publish (**Creator Selection**, **The match score**) | Creator Selection |
+| The match score's Budget vs target row, its exact factor values, and the weights in use | no | yes | Stored at publish, `agency` | Creator Selection |
+| A creator's concept and persona for the round | yes, labels | yes, editable | The round's Master Brief, agency edits | Creator Selection |
 | Decision counts and the hook rate tile in **Summary** | yes | yes | Worked out on the page | Creator Selection |
 | Hook rate, engagement on Reels, paid work before, ad permissions | yes | yes | Vetting | Creator Selection |
 | Instagram and TikTok: handle, followers, engagement rate, average engagement, audience | yes | yes | Creator card data | Creator Selection |
@@ -1161,10 +1184,11 @@ and item. Labels, eyebrows, titles and ledes are in **Page vocabulary**, **Tabs*
    | Hash | Opens |
    | ---- | ----- |
    | `#home/steps/r{n}/{step}` | **Round steps** for round {n}, selected in the **Round switcher**, at that step, `{step}` being its id (`kickoff`, `gate-2`, `custom-{id}`) |
+   | `#selection/r{n}/{net}-{handle}/match` | The creator's row or card with the score's reasons open (**Creator Selection**, **The match score**) |
    | `#selection/r{n}/{net}-{handle}/notes` | The creator's card (a row on Table) with its notes in view: the client's notes, and for the agency Aspire's notes under the "Agency only" rule |
    | `#creators/r{n}/{net}-{handle}/shipping` | The creator's row in **Shipping** |
    | `#creators/r{n}/fees` | **Contract and rates**, with the fee approval and its notes |
-   | `#brief/r{n}/{lane}/{part}` | The concept's brief at one part: `product`, `name`, `line`, `trigger`, `framework`, `personas`, `persona-{id}`, `story`, `points`, `point-{id}`, `problem`, `agitate`, `solve`, `beat-{n}`, `hook-{n}`, `cta-{n}`, `body`, `length`, `runtime`, `broll`, `broll-{n}`, `variant-{n}` (the agency's variant plan) |
+   | `#brief/r{n}/{lane}/{part}` | The concept's brief at one part: `product`, `name`, `line`, `trigger`, `framework`, `personas`, `persona-{id}`, `casting`, `keyword-{n}`, `city-{id}`, `story`, `points`, `point-{id}`, `problem`, `agitate`, `solve`, `beat-{n}`, `hook-{n}`, `cta-{n}`, `body`, `length`, `runtime`, `broll`, `broll-{n}`, `variant-{n}` (the agency's variant plan) |
    | `#brief/r{n}/overview/{part}` | The round's **Brief status** or **Tone of voice and don'ts** at one part: `status`, `title`, `summary`, `voice`, `tone`, `do-{id}`, `dont-{id}`, `disclosure`, `fileNaming`. A lane is never slugged `overview` (**1a**, **Rules**). |
    | `#brief/r{n}/comments` | The round's brief with **Comments** open (**Master Brief**, **Comments and sign off**) |
    | `#brief/r{n}/{lane}/c{comment}` | **Comments** open at that comment's thread, with the part it is on in view; `overview` in place of the lane for a comment on the header or the voice |
@@ -1435,10 +1459,11 @@ Creator Selection:
 | Go through creators one at a time and decide | Creator Selection; the decision Buttons on each row or card, then **Next unreviewed** | 1 |
 | Filter by product, decision, city and tier, search and sort | Creator Selection; the toolbar, or a column header on Table | 1 |
 | Switch between Table and Cards | Creator Selection; **View** | 1 |
-| See each match score and why | Creator Selection; the card | 1 |
-| See competitor conflicts before deciding | Creator Selection; the card | 1 |
+| See each match score and why | Creator Selection, then the score's ring on a row or card (**The match score**) | 2 |
+| See competitor conflicts before deciding | Creator Selection; the band and competitor lines on each row or card | 1 |
 | Watch a creator's latest posts | Creator Selection, then a thumbnail | 2 |
-| See the concept and persona each creator maps to | Creator Selection; the card's chips | 1 |
+| See the concept and persona each creator maps to | Creator Selection; the Concept column or the card's chips | 1 |
+| Change a creator's concept or persona | Creator Selection; the Concept and Persona Selects, agency only | 1 |
 | Read and leave notes, and tag the other side | Creator Selection; the card's notes | 1 |
 | See which rounds a creator is already in | Creator Selection; the round chips | 1 |
 | Open a creator's full profile | Creator Selection, then the card | 2 |
@@ -2380,6 +2405,12 @@ glance (**Sections per tab**). Open, it is the editor, in this order:
 2. **The concept.** Name, positioning line, conversion trigger, framework (a Select of the
    campaign's frameworks for the agency, its name as text for the client), personas (one line
    each, "Add a persona"), the story, and the selling points (one line each).
+   **Casting**, under it: up to 4 casting keywords (one line each, "Add a keyword") and the target
+   cities, when the brief names any (one line each, "Add a city"). They are what the match score's
+   Brief fit reads (**Creator Selection**, **The match score**). The agency edits them and the
+   client reads them. Claude writes them at the first publish of a round's brief from the
+   concept's persona and casting filter in its `campaign:{slug}-lane-{lane}` record, and the
+   cities only when the brief or the lane names them, stamped `claude`; never from a fixed list.
 3. **The hero (V1).** Problem, agitate and solve, one long text each, labelled by the concept's
    framework.
 4. **Hooks.** H1 to H3, one block each: the number, the type as a soft Badge, the line in quotes,
@@ -3018,6 +3049,7 @@ shows what is missing. Nothing the agent writes is dropped:
 | The run's `version`, the same for every lane it wrote | Each concept's version | `version:` in each `briefs/{lane}-r{round}`; the round's Version is the highest of them |
 | Concept, from the lane, and its place in concept order | Name, positioning line, order | `name`, `line`, `order:` in `briefs/{lane}-r{round}` |
 | Persona, from the lane | Personas | `persona-{id}` |
+| Casting keywords and target cities, from the lane's persona and casting filter | Casting | `keyword-{n}` (1 to 4), `city-{id}` |
 | Trigger and framework, from the lane | Trigger, framework | `trigger`, `framework` |
 | Story | Story | `story` |
 | Selling points | Selling points | `point-{id}` |
@@ -3166,8 +3198,8 @@ stay in view while the columns between them scroll. Each row is anchored
 | Column | Shows | Sorts by |
 | ------ | ----- | -------- |
 | Creator | Avatar, handle, name, tier Badge (outline), socials (Instagram and TikTok icons with followers, each a link to the profile), city, status Badge, and the round chips | Name |
-| Campaign match | The match score out of 100 in `text-lg font-semibold`, or "Not scored yet" for a creator discovery hasn't scored, then the paid signals in `text-xs text-muted-foreground`: hook rate, engagement on Reels, reach and engaged accounts, and "Scored without hook rate, which TikTok doesn't report" on a TikTok creator | Match |
-| Concept | The concept chip, the persona under it, and the product | Concept |
+| Campaign match | The Score ring with the match score, a button "Why {score}?" that opens its reasons, the band Badge, the competitor lines, or "Not scored yet" for a creator Claude hasn't scored (**The match score**), then the paid signals in `text-xs text-muted-foreground`: hook rate, engagement on Reels, reach and engaged accounts, and "Scored without hook rate, which TikTok doesn't report" on a TikTok creator | Match |
+| Concept | The concept chip, the persona under it, and the product; for the agency, the Concept and Persona Selects (**The match score**, **Concept and persona**) | Concept |
 | Latest posts | Up to three thumbnails, the evidence posts first, each a button with the play glyph on video and "Hook post" on the post the hook rate came from, then "Latest post {date}" | Latest post |
 | Notes | Why we picked them, the client's notes (editable for the client), and for the agency, under a dashed rule headed "Agency only": Aspire's notes (editable), the recommendation, expected cost and cost per 1K reach | None |
 | Decision | **Deciding** below | Decision |
@@ -3184,8 +3216,10 @@ it is built, both open the creator's card on Cards.
 The creator card from `creator-card.md`, page profile, one per creator, in `grid grid-cols-1
 gap-4 sm:grid-cols-2 lg:grid-cols-3`, anchored `#selection/r{n}/{net}-{handle}`. Flow chips: the
 concept, filled with the theme's chart series in concept order, then the tier, the status labels,
-the round chips, then "Near category" when it applies. The fit ring shows the match score; a creator with none shows no ring and a "Not scored yet"
-note, as discovery's own page does.
+the band, a "Competitor conflict" or "Past competitor deal" Badge when there is one, the round
+chips, then "Near category" when it applies. The fit ring shows the match score and opens its
+reasons (**The match score**); a creator with none shows no ring and a "Not scored yet" note, as
+discovery's own page does.
 Thumbnails show the evidence posts first, with a "Hook post" label on the post the hook rate came
 from and the play glyph on video, embedded per the card reference. The `{DETAILS}` block: Hook
 rate (watched past 3s), Engagement on Reels, Reach, Engaged accounts, Paid work before, Ad
@@ -3282,13 +3316,15 @@ these when Claude publishes; nothing on the page calls Atlas.
 | Tier | Creator, Tier filter, sort, search | Worked out from the followers (**Tiers**) |
 | City | Creator, City filter, search | Not written by discovery or vetting: Atlas holds a `country`, unset on about half the index, and no city. Shows the agency's `location` edit, else the country, else "No city yet". **No city data yet** |
 | Status, round chips | Creator | The `roster` findings per round, and the page's `edits` |
-| Campaign match | Campaign match, sort, the fit ring | Vetting's creator-ads fit score when the lane was screened, else discovery's `fitScore`, out of 100 |
+| Campaign match, band, factors, competitor lines | Campaign match, sort, the fit ring, the score's reasons | Stored per creator per round by Claude at publish (**The match score**), from the inputs that section lists |
 | Hook rate | Campaign match, Hook rate tile, sort | `detail.adFigures`, from `instagram.reelsHookRate` |
 | Engagement on Reels | Campaign match, sort | `instagram.reelsInteractionRate` |
 | Reach | Campaign match, sort, cost per 1K reach | `instagram.creatorMarketplaceReach` |
 | Engaged accounts | Campaign match, sort | `instagram.creatorEngagedAccounts`, which discovery writes in its ad figures |
 | Paid work before, ad permissions | Card details | `instagram.pastBrandPartnershipPartners`; partnership readiness, then the roster's `adPermissions` |
-| Concept, persona | Concept, Concept filter, sort, search | `detail.lane`, named from its `campaign:{slug}-lane-{lane}` record |
+| Concept, persona | Concept, Concept filter, sort, search | The agency's `concept` and `persona` edits, else the roster's `lane`, else `detail.lane`, named from the round's live Master Brief (**The match score**, **Concept and persona**) |
+| Bio | The match score's Brief fit and competitor lines | `instagram.biography`, `tiktok.bioDescription` |
+| Badges | The match score's Paid history and Content reach | `instagram.badges` |
 | Product | Concept, Products chips, sort | The roster's `details.product` or the agency's `product` edit. Neither agent assigns one, so a creator shows "No product" until the agency sets it on the page or the CM does in the chat. **No product per creator until someone sets it** |
 | Latest posts, latest post date | Latest posts, sort | Discovery's `evidence` permalinks and the posts read for the card (`search_posts` per creator) |
 | Why we picked them | Notes | The CM's note at Gate 2, else vetting's reason in plain words |
@@ -3299,13 +3335,197 @@ A TikTok creator's hook rate shows "n/a (not on TikTok)" and their match score c
 "Scored without hook rate, which TikTok doesn't report". Reach and engaged accounts, which Atlas
 holds for Instagram only, show "Not in Atlas". All three sort last.
 
+#### The match score
+
+The Campaign match is one number out of 100 for a creator in a round: how well they fit the
+concept they are cast on, from their paid signals, the round's Master Brief and the brand's saved
+records. It is the same number on every view: the Table, the card's fit ring, the creator viewer,
+the sort, **Copy decisions**, **Export**, the snapshot a decision saves, Home's lists, and
+discovery's shortlist and vetting's page for the campaign.
+
+**Where it is computed.** Once, by the one procedure below. Claude runs it at each publish of the
+campaign page for every creator in the pool and every round they are in, and stores the result
+(**1e**, **What the page keeps**, Match scores): what the client may see in `scores` and in the
+page itself, and the rest in `agency`. Every view reads the stored result and none works it out
+again; where the page itself and `scores` differ, the newer `scoredAt` wins, as for every value.
+Between publishes it changes only when an Editor changes one of its inputs on the
+page: a creator's concept, a concept's casting keywords or target cities, or a weight. The
+Editor's page then runs the same procedure on the stored factor inputs, with no Atlas read and no
+new judgement, for the creators the change touches, and writes the new result once, so the
+client's view moves with it. It reads the weights, the creators' edits and `agency/scores-r{round}`
+again just before it writes, and starts over when one changed since it began, so two Editors
+saving at once never leave a mix of both. Only Editors and Claude write scores: `scores` sits
+under the page data's root rule, which no Contributor can write (**1e**). A keyword or city added on the page needs a read of the creator's
+posts, which only Claude does: until the next publish the score keeps the old Brief fit, and the
+concept's **Casting** part shows "Scores update at the next publish" to the agency. Discovery and
+vetting run the same procedure in creator-ads mode with the campaign's saved weights
+(`creator-discovery.md`, **Creator-ads mode**; `creator-vetting.md`, **Creator-ads lanes**), so
+their pages show the same number for the same inputs. Their pages are dated, and the campaign page
+holds the current one.
+
+**The formula.** Score = 100 × the weighted sum of five factors, each from 0 to 1, rounded to a
+whole number. The weights are the campaign's saved ones (`match` in `campaign:{slug}-cas`, **1a**), else
+these defaults:
+
+| Factor | Default weight | How it is worked out |
+| ------ | -------------- | -------------------- |
+| Performance | 0.30 | 0.6 × hook rate, from 0 at 30% to 1 at 70%; 0.2 × engagement on Reels, from 0 at 2% to 1 at 10%; 0.2 × engaged accounts on a log scale, from 0 at 1,000 to 1 at 1,000,000 |
+| Brief fit | 0.25 | The share of the concept's casting keywords (up to 4) the creator matches. When the concept names target cities and the creator's city is known: 0.75 × that share, plus 0.25 when the creator is in one of them |
+| Paid history | 0.15 | 0.5 × past paid partners on a log scale, from 0 at none to 1 at 10 or more; 0.25 when Atlas holds a partnership ads or branded content badge; 0.25 when the creator has worked with the brand before |
+| Budget vs target | 0.15 | Expected cost over the target rate: 1 at 0.8 or under, falling evenly to 0 at 1.5. 0.5 when the creator is unpriced or no target rate is set |
+| Content reach | 0.15 | 0.8 × median views over followers, from 0 at none to 1 at 50% or more; 0.2 when Atlas holds the strong hooks badge |
+
+Every value is held between 0 and 1 before it is weighted. Weights that don't add up to 1 are
+scaled so they do. The client's decision is never an input: a call, its reason, a note or a
+Priority Yes never moves a score.
+
+**What each input reads.**
+
+- **Hook rate, engagement on Reels, engaged accounts**: `instagram.reelsHookRate`,
+  `instagram.reelsInteractionRate` and `instagram.creatorEngagedAccounts`, as **Where each field
+  comes from** reads them. On TikTok, engagement is `tiktok.engagementRate` on the same scale,
+  labelled "Engagement (TikTok)".
+- **Casting keywords and target cities**: the concept's **Casting** part in the round's live
+  Master Brief (**Master Brief**, **A concept**). A keyword matches when the creator's bio
+  (`instagram.biography`, `tiktok.bioDescription`), or a caption, transcript or on screen text of
+  one of their posts from the last 90 days in Atlas, says it or plainly means it. Claude judges
+  each match and keeps where it found it, the bio or the post's link, so every match can be shown.
+  At publish Claude judges every creator against every live concept in the round, so moving a
+  creator to another concept re-scores them on the page with no new read.
+- **The creator's city**: the agency's `location` edit only. Atlas holds no city.
+- **The concept**: the creator's concept in the round (**Concept and persona** below).
+- **Past paid partners**: the names in `instagram.pastBrandPartnershipPartners`. When vetting
+  screened the creator's lane, this part is vetting's paid track record read instead, taken from
+  the vetting finding's `detail.match`, which weighs partners in or near the brand's category
+  (`creator-vetting.md`, **Creator-ads lanes**): 1 for
+  two or more in the category, 0.6 for one in it or two or more near it, 0.3 for partners outside
+  it, 0 for none. So vetting's score and this one never disagree.
+- **Badges**: `instagram.badges`. Atlas passes them as Meta names them, so a badge counts when its
+  words name partnership ads or branded content, or strong hooks (`high_hook`).
+- **Worked with the brand before**: the brand's name or handle in the past paid partners, a
+  partnership marked post in Atlas that tags the brand's own handle, the brand's `partner` record
+  for the creator, or an agreed fee for the creator in an earlier campaign of the brand's.
+- **Expected cost**: `rates-and-terms.md`, **Expected cost**.
+- **Target rate**: `rates-and-terms.md`, **Target rate**, from the campaign's terms and budget.
+- **Median views**: the median `viewCount` of the creator's last 10 Reels, as the fee calculator
+  reads it (`fees.md`, **Applying the rates**), over their Instagram followers; on TikTok,
+  `tiktok.medianViews` over TikTok followers.
+- **Competitors**: the brand's saved `competitor` records, with their handles, names and spelling
+  variants.
+
+Keywords, cities, the target rate and the competitors always come from the brief and the brand's
+saved records. None of them is ever a list in this reference or in the page's code.
+
+**When an input has no data.** A part with no data is left out, and the rest of its factor is
+scaled up to fill its place. A factor with no part left is left out of the score, and the other
+factors' weights are scaled up to fill its place. The score never counts a missing value as zero
+and never guesses one, except that Budget vs target is 0.5 when unpriced, as the formula says. The
+score's reasons name every input left out, under "Scored without". The inputs with no data today:
+
+| Input | When it has no data | What the score does |
+| ----- | ------------------- | ------------------- |
+| Hook rate, engaged accounts | Every TikTok creator; an Instagram creator Meta hasn't ranked | Performance from the parts it has; "Scored without hook rate, which TikTok doesn't report" on TikTok |
+| The creator's city | Every creator until the agency sets their location, since Atlas holds no city | Brief fit from the keywords alone; "City not known" when the concept names target cities |
+| Casting keywords | A concept whose **Casting** part is empty | Brief fit is left out; "This concept has no casting keywords yet" |
+| Past paid partners, badges | Every TikTok creator, and an Instagram creator Meta hasn't ranked | Paid history from worked with the brand before alone |
+| Median views | Fewer than 3 Reels with views in Atlas, or no TikTok median | Content reach from the badge alone, or left out when there is no badge data either |
+| Expected cost, target rate | An unpriced creator, or a campaign with no target rate | Budget vs target is 0.5, and the reasons say which is missing |
+
+A creator Claude hasn't scored yet (new in the pool since the last publish) shows "Not scored yet"
+with no ring, as on discovery's page, and sorts last.
+
+**Competitors.**
+
+- **Competitor conflict.** When the creator's bio names a saved competitor, the score is half the
+  full score, rounded, and the band reads "Competitor conflict" with "Bio names {competitor}".
+- **Past competitor deal.** When the past paid partners, or a partnership marked post in Atlas,
+  name a saved competitor, the score is unchanged and a line reads "Past competitor deal:
+  {brand}", one per competitor, the newest first, up to two and then "and {n} more".
+
+Both show to both sides, since the competitors are the brand's own. Vetting's competitor checks
+still decide its recommendation (`creator-vetting.md`, **The recommendation**); these two lines
+show what Atlas holds and change nothing else.
+
+**Bands.** 75 and up **Strong**, 60 and up **Good**, 45 and up **Possible**, under 45 **Weak**. A
+competitor conflict reads **Competitor conflict** whatever the number.
+
+**Strong and weak signals.** For each factor, the creators in the round's pool with a value for it
+are ranked. The top third is a strong signal and the bottom third a weak one, with ties kept
+together on the stronger side. With fewer than 6 creators holding a value, nothing is marked, and
+the reasons say "Too few creators to compare". Claude ranks the whole pool at publish, creators
+not sent yet included, and stores each creator's level per factor. A concept change on the page
+re-ranks Brief fit across the round's pool; a weight change re-ranks nothing, since no factor
+value moves. The **Watch:** line lists the creator's weak signals in plain words with their
+values, weakest first: "Watch: hook rate 31%, in the bottom third of the pool; no past paid
+partners". With none, there is no Watch line.
+
+**How it shows.**
+
+- **In the Table**, the Campaign match cell holds the Score ring with the number, the band Badge
+  beside it, the competitor lines under it, then the paid signals as above. The ring and number
+  are a button, "Why {score}?", that opens the score's reasons.
+- **On the card**, the fit ring shows the score and is the same button. The band and a
+  "Competitor conflict" or "Past competitor deal" Badge are flow chips after the concept.
+- **The score's reasons** open in a Dialog titled "Why {score}?", and as a section of the creator
+  viewer once it is built. Top to bottom:
+  1. The Score ring, large, the band Badge, and the concept and persona it was scored for.
+  2. The competitor lines, when there are any.
+  3. One row per factor, in the formula's order: the factor's name, its value out of 100, the
+     Factor bar, and a success Badge "Strong" or a warning Badge "Weak" on a strong or weak
+     signal. Under it, its inputs in `text-xs text-muted-foreground`: "Hook rate 52% · Engagement
+     on Reels 4.1% · Engaged accounts 38K", or "Matches 3 of 4 keywords: {keyword} (bio),
+     {keyword} (post), {keyword} (post)", each post a link.
+  4. The Watch line, then "Scored without" and the inputs left out.
+  5. **About this data**, a Collapsible, closed at first.
+- **About this data** says in plain words where each input comes from (Meta's creator figures
+  through Aspire Atlas, the creator's posts in Atlas, the round's Master Brief and the brand's
+  saved competitors, and for the agency the expected cost and the target rate); that the score is
+  100 times the weighted sum of five factors, each from 0 to 1, and how each is worked out; for the
+  agency only, the weights in use, "default" or "tuned {date}"; that a missing input is left out,
+  never guessed; how the bands and the strong and weak thirds are set; that the client's decisions
+  never change a score; and when Claude scored the creator, or which Editor's change re-scored
+  them.
+
+**What the client sees.** The score, the band, the ring, the competitor lines, and four factor
+rows: Performance, Brief fit, Paid history and Content reach, each with its inputs, bar and level.
+The Budget vs target row is agency only. In its place one line reads "Also counts price against
+Aspire's target, which only Aspire sees." The client's bars are filled to the value rounded to the
+nearest tenth, the Watch line and "Scored without" never name price, expected cost or the target
+rate, and About this data describes the price factor in words, with no weight or number. So the
+client can't work out a cost: they never see the expected cost, the target rate or the weights in
+use. The most the score lets them infer is a broad read of whether a creator is priced above or
+below Aspire's target, and only while the default weights, which this public plugin states, are in
+use.
+
+**Concept and persona.** Each creator is cast on one concept and one persona in each round, from
+the round's live Master Brief: a concept in the round that isn't removed or deferred, and one of
+that concept's personas. At publish, Claude takes the agency's `concept` edit for the round, else
+the roster's `lane`, else discovery's `detail.lane`, skipping any that isn't live in the round.
+With none left, the creator shows a warning Badge "Needs a concept" to the agency and Brief fit is
+left out. The persona is the agency's `persona` edit, else the concept's persona whose words Claude
+finds the creator best matches in their bio and recent posts, stamped `claude`, else the concept's
+first persona. Neither ever comes from a fixed list or from the notes. For the agency, the Table's
+Concept cell and the card's concept chip hold two Selects, Concept and Persona, from the round's
+brief; the client sees them as labels. A change saves to `edits/creator-{net}-{handle}-r{round}`
+(**Editing in place**), re-scores the creator on the page as above, and is pulled into the roster
+as `lane` and `persona` (**Pulling decisions**).
+
 #### Match score tuning
 
-Agency only: the panel that tunes the match score's weights and its stats, read from
-`agency/match-score`, and the reasons behind each creator's score. Both are built in their own
-sections. What this tab gives them: each decision's `score` snapshot, the Campaign match column
-and fit ring as the place a score's reasons open from, and the `weight-{signal}` keys. The client
-sees neither the panel nor the weights.
+Agency only: the panel that tunes the match score's weights, built in its own section. What it
+needs from this tab:
+
+- **The weights**: `agency/match-score`, one stamp per factor: `weight-performance`,
+  `weight-brief-fit`, `weight-paid-history`, `weight-budget` and `weight-content-reach`. A missing
+  or `null` key reads as the weight saved in `match` in `campaign:{slug}-cas`, else the default. Saving one
+  re-scores the pool on the Editor's page and writes the results, as **The match score** says, and
+  **Pulling decisions** carries it into `campaign:{slug}-cas`, so discovery and vetting score
+  with it too.
+- **Each decision's `score` snapshot**, and the stored factor values and levels per creator per
+  round (**1e**, **What the page keeps**, Match scores), to set the score against the client's
+  picks.
+
+The client sees neither the panel nor the weights.
 
 This is the step 2 approval.
 
@@ -3690,7 +3910,7 @@ left blank, never filled with a dash.
 | Master Brief | Voice | Line of **Tone of voice and don'ts** | Part (Tone of voice, Do, Don't, Disclosure, File naming), Text |
 | Master Brief | Variants (agency only) | Variant in each concept's variant plan | Concept, Variant, Framework, Length, Hook ("H2 Demo first"), CTA, VO, B-roll ("B02, B05"), Note |
 | Creator Selection | Decisions | Creator with a call in the rounds in view | Creator, Network, Name, Concept, Product, Round, Your decision, What made the call, Your notes, Decided by, Decided on, Campaign match when decided, Status, Recommendation (agency only), Surprise (agency only: Yes when the decision goes against the recommendation, as **A reason on the call** defines it, worked out on the page from both), Expected cost (agency only), Aspire notes (agency only) |
-| Creator Selection | Creators | Creator the pool shows now, in its sort | Creator, Network, Name, Descriptor, City, Tier, Concept, Persona, Product, Rounds, Campaign match, Hook rate, Engagement on Reels, Reach, Engaged accounts, Latest post, Paid work before, Ad permissions, Instagram followers, Instagram engagement rate, Instagram average engagement, Instagram audience, the same four for TikTok, Why we picked them, Status, Your decision, Your notes, Expected cost (agency only), Cost per 1K reach (agency only), Aspire notes (agency only), Reply window (agency only), Email (agency only), Phone (agency only), Manager (agency only) |
+| Creator Selection | Creators | Creator the pool shows now, in its sort | Creator, Network, Name, Descriptor, City, Tier, Concept, Persona, Product, Rounds, Campaign match, Match band, Competitor (the conflict or past deals), Watch, Hook rate, Engagement on Reels, Reach, Engaged accounts, Latest post, Paid work before, Ad permissions, Instagram followers, Instagram engagement rate, Instagram average engagement, Instagram audience, the same four for TikTok, Why we picked them, Status, Your decision, Your notes, Expected cost (agency only), Cost per 1K reach (agency only), Aspire notes (agency only), Reply window (agency only), Email (agency only), Phone (agency only), Manager (agency only) |
 | Selected Creators | Creator snapshot | Creator on the round's roster | Creator, Network, Name, Concept, Product, Returning, Status, Ad permissions, Brief state, Content state, Variants (k of max), Content folder, Waiting on (agency only), Last contact (agency only), Email (agency only), Phone (agency only), Manager (agency only) |
 | Selected Creators | Shipping list | Row in **Shipping** | Creator, Name, Product, Details from creator, Address or pickup, Visit date, Shipping, Tracking, Product status, Updated by, Updated on, Next step (agency only) |
 | Selected Creators | Rates and payments | Row in **Contract and rates** | Creator, Concept, What they make, Usage, Exclusivity, Agreed fee (blank until agreed; Where it is says "In negotiation"), If we drop them, Where it is, Fees approved on, UGC video rate (agency only), Reel collab rate (agency only), 90 day usage rate (agency only), Offer open, target and max (agency only, three columns), Counter (agency only), Expected cost (agency only), Cost per 1K reach (agency only) |
@@ -4000,6 +4220,8 @@ visible edge on a card. A Switch keeps the `role="switch"` and `data-state` attr
 | Textarea | | `flex min-h-[60px] w-full rounded-md border border-border bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm` |
 | Switch | root | `peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-sm transition-colors data-[state=checked]:bg-primary data-[state=unchecked]:bg-input` |
 | | thumb | `pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0` |
+| Score ring | svg, track, value, number | an inline `svg` with `viewBox="0 0 36 36"`, `size-10 shrink-0 -rotate-90` (`size-16` in the score's reasons), holding two `circle` elements with `cx="18" cy="18" r="16" fill="none" stroke-width="3"`: the track `stroke-muted`, and the value `stroke-foreground` with `stroke-linecap="round"`, `pathLength="100"` and `stroke-dasharray="{score} 100"`; the number over it, centered, `text-sm font-semibold` (`text-lg` in the reasons). The ring is never colored by band: the band Badge beside it carries that. `role="img"` with `aria-label="Campaign match {score} of 100, {band}"` |
+| Factor bar | root, middle, strong, weak | `relative h-1.5 w-full overflow-hidden rounded-full bg-muted`, then one part: `h-full bg-muted-foreground transition-all` for a middle or unmarked signal, `h-full bg-green-600 transition-all dark:bg-green-500` for a strong one, `h-full bg-amber-600 transition-all dark:bg-amber-500` for a weak one, as wide as the value (a `width` in `style`, the one inline style it takes). `role="meter"` with `aria-valuenow` the value out of 100, `aria-valuemax="100"` and `aria-label` the factor's name |
 | Progress | root, indicator | `relative h-2 w-full overflow-hidden rounded-full bg-primary/20`, `h-full w-full flex-1 bg-primary transition-all` |
 | Meter, two part | root, first part, second part, legend dot | `relative flex h-2 w-full overflow-hidden rounded-full bg-primary/20`, `h-full shrink-0 bg-primary transition-all`, `h-full shrink-0 bg-muted-foreground transition-all`, `size-2 shrink-0 rounded-full` with the part's `bg-` class |
 | Tooltip | content | `z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground` |
@@ -4020,13 +4242,17 @@ card titles, `text-xl` for section titles, `text-2xl` for the page title. Weight
 
 | Variant | Status labels |
 | ------- | ------------- |
-| soft | Not recorded yet, Resolved, Agency only, Awaiting decision, Unreviewed, Unpriced, Not sent yet, not asked yet, not shipped, Planned, Done, Returning, Up next, Paused, Not done, round closed, Scanned, Not read, Draft, Needs work, New concept, Carried forward, Deferred |
+| soft | Good, Possible, Not scored yet, Not recorded yet, Resolved, Agency only, Awaiting decision, Unreviewed, Unpriced, Not sent yet, not asked yet, not shipped, Planned, Done, Returning, Up next, Paused, Not done, round closed, Scanned, Not read, Draft, Needs work, New concept, Carried forward, Deferred |
 | processing | Offer sent, Details received, Shipped, Brief sent, in negotiation, In production, Now, Coming soon, Scanning, In review with client, Waiting for your sign off, Signed off, Aspire to confirm |
-| success | Priority Yes, Yes, Approved, Agreed, Delivered, Brief accepted, Granted, In market, Ahead, On track, Met the target, Active, Updated {n}, Signed off |
-| warning | Changes requested, This isn't a sign off you made, This isn't a decision you made, Not counted, Over budget, Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending, waiting for your approval, Running behind, Launch at risk, over target, days late, Waiting on you, Out of stock, Still needed, Needs a concept, Not in products in scope, Removed, Used in round {r} |
-| error | No, Rejected, Declined, returned, Couldn't scan, Not added, Couldn't import |
+| success | Strong, Priority Yes, Yes, Approved, Agreed, Delivered, Brief accepted, Granted, In market, Ahead, On track, Met the target, Active, Updated {n}, Signed off |
+| warning | Weak, Past competitor deal, Changes requested, This isn't a sign off you made, This isn't a decision you made, Not counted, Over budget, Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending, waiting for your approval, Running behind, Launch at risk, over target, days late, Waiting on you, Out of stock, Still needed, Needs a concept, Not in products in scope, Removed, Used in round {r} |
+| error | Competitor conflict, No, Rejected, Declined, returned, Couldn't scan, Not added, Couldn't import |
 
-The decision's Badge takes the variant of its choice (Unreviewed is soft). A pill never uses the
+The decision's Badge takes the variant of its choice (Unreviewed is soft). The match score's
+band Badge takes its band's variant, and a factor's "Strong" or "Weak" Badge is success or warning.
+Strong and weak are semantic: the Factor bar's and the Badges' green and amber come from
+**Component classes**, never from the brand theme, and every colored bar has its Badge or no
+mark beside it, so a level never reads by color alone. A pill never uses the
 brand color, so a brand whose color is red never makes an Approved look like a Rejected.
 
 **Concept colors** come from the chart series in concept order: Concept 1 takes `--chart-1`,
@@ -4186,6 +4412,16 @@ prefixes.
     Decision and doesn't render under 640px; every tier, city and product count matches its
     filter's result; pool creators not sent yet are only in `agency/pool`, never in the page itself;
     and **Copy decisions** holds the rows in view with no Expected cost for the client.
+18. The match score: each creator's score reads the same on the Table, the card's ring, the
+    score's reasons, **Copy decisions**, **Export** and the creator viewer, and equals `score` in
+    their stored result; the score's reasons show five factor rows for the agency and four for the
+    client, with no price, expected cost, target rate or weight anywhere the client or **Preview
+    as client** reads, `scores` included; a bio naming a saved competitor halves the score and
+    reads Competitor conflict; every input left out is named under "Scored without"; making a
+    decision changes no score; changing a creator's concept or a weight re-scores on the page and
+    the client's open view follows; the Factor bar's colors are green and amber under every brand
+    theme, each with its Badge; and no keyword, city, competitor or target rate in the page comes
+    from anywhere but the brief and the brand's records.
 
 ## 1e. Page data: what the page keeps and how it is read back
 
@@ -4325,7 +4561,7 @@ only if it is still missing, and merges the field after. Without the lease, two 
 once would leave only one.
 
 **Live updates.** The page subscribes once to each collection it shows (`client`, `edits`,
-`program`, `briefs`, `brief-rounds`, `brief-events`, `decision-events`, `creators`, `reviews`, and for editors `agency`), and once to the viewer's
+`program`, `briefs`, `brief-rounds`, `brief-events`, `decision-events`, `creators`, `scores`, `reviews`, and for editors `agency`), and once to the viewer's
 own state, so an edit made in one browser shows in every other open view without a reload. A
 subscription to a collection sees only the documents directly in it, never the ones nested
 below, so comments, review versions and the activity log are reached one level down: each
@@ -4381,7 +4617,9 @@ for creator decisions, `refused:` the refused sign offs and the refused decision
 | Creator changes call | `client/changes-{net}-{handle}-r{round}` | Client | `approved`, `notes` |
 | Review status | `client/cut-{cut}-v{version}` | Client | `status` (approved, changes requested, or open after Undo approval) |
 | Notes | the `notes` field on the decision and approval documents above, and agency notes on `agency/creator-{net}-{handle}` | Client; agency | A stamp each |
-| Scoring weights | `agency/match-score` | Agency | One key per weight, `weight-{signal}`, and `stats:` the tuning panel's figures |
+| Scoring weights | `agency/match-score` | Agency | One stamp per factor, `weight-performance`, `weight-brief-fit`, `weight-paid-history`, `weight-budget`, `weight-content-reach` (**1d**, **Creator Selection**, **Match score tuning**), and `stats:` the tuning panel's figures |
+| Match scores | `scores/{net}-{handle}-r{round}`, for each creator sent to the client | Claude at publish; the Editor's page when it re-scores | Plain data, written whole with a `set`, the one stored result every view reads (**1d**, **Creator Selection**, **The match score**): `score:` (0 to 100, or `null` for not scored yet), `band:` (strong, good, possible, weak, conflict), `concept:` and `persona:` it was scored for, `factors:` `{performance, briefFit, paidHistory, contentReach}`, each `{value, level, inputs, without}` with `value` to the nearest tenth, `level` strong, middle, weak or none, `inputs` the plain words the row shows and `without` the inputs left out; `conflict:` the competitor the bio names, or `null`; `pastDeals:` the competitors in past paid deals; `watch:` the Watch line without price; `scoredAt:`, `scoredBy:` (`claude`, or the Editor's id) and `cause:` (`publish`, or the edit that re-scored it). Nothing about price is in it |
+| Match scores, agency only | `agency/scores-r{round}` | Claude at publish; the Editor's page when it re-scores | Plain data, one key per pool creator, `{net}-{handle}`, sent or not: `{exact, budget, ratio, levels, watch, briefHits, weights}`, where `exact` holds the five factor values unrounded, `budget` the Budget vs target value and its level, `ratio` expected cost over the target rate (or `null` and why), `levels` every factor's level, `watch` the full Watch line, `briefHits` the keyword and city matches per live concept in the round with where each was found, and `weights` the weights used. A creator not sent yet has their whole score here and in `agency/pool`, never under `scores` |
 | Files | `program/files` | Agency; Claude for a file found in the chat | One key per file, `file-{id}`, whose `value` is `{label, category, version, round, kind, url, asset, name, type, size, date, dateFrom, foundBy}`: `round` is `all` or a round number; `kind` is `upload`, `drive` or `link`; `url` is the link for `drive` and `link`; `asset` is the upload's asset id, shown from `"/_blob/" + asset`; `name`, `type` and `size` are the uploaded file's own name, type and bytes; `dateFrom` is `document`, `modified`, `added` or `set` (corrected by hand); `foundBy` is `claude` for a file Claude found, else empty. A file stored in a wrapper (**What the page can read**) keeps its real `type`. A file at the older shape `{label, url, round}` reads as a `link` with no category, which the agency sets |
 | File scans | `agency/files` | Agency | `scan-{id}:` per file, plain data: `state` (`scanning`, `updated`, `scanned`, `failed`, `unread`), `at`, `by`, `updated` (`[{term, from, to}]`), `kept` (`[{term, value, why}]`), `unusable` (`[{term, why}]`), `missing` (the terms not in the file), `reason` (for `failed` and `unread`). A `scanning` older than 10 minutes reads as `failed`, "The scan stopped before it finished." |
 | Rounds | `program/round-r{round}` | Agency | `label`, `month`, `buildStart`, `buildEnd`, `marketStart`, `marketEnd`, `launch` (dates); `creators` (`same` or `same-and-new`) and `started` (true) on a round started on the page; `step-{id}`, one per step in the round's `plan` (**Rounds**, **Round steps**), whose `value` is `{name, order, date, owner, done, doneAt}`, or `{name, order}` for an approval |
@@ -4391,7 +4629,7 @@ for creator decisions, `refused:` the refused sign offs and the refused decision
 | Budget | `agency/budget` | Agency | `total` (stamp); `committed:`, `offersOut:`, `approvedNotContracted:`, `unpriced:`, `left:` (worked out at publish from the records, and again on the page as calls arrive) |
 | The round's brief | `brief-rounds/r{round}` | Agency; Claude | `title`, `sourceDoc` (`{label, url, kind, file}` for an imported doc, `kind` `upload`, `drive` or `text`, `file` its id in `program/files`; empty for a brief the agent wrote; a `kind` `link` from before reads as `drive` for a Google Docs link, else as a link with no `file`), `importedAt:` and `importKey:` (the newest import, **Importing a brief**), `startedFrom:` (the round it was started from), `summary`, `tone` (long text), `do-{id}`, `dont-{id}`, `disclosure`, `fileNaming`, `notice`; `status:` (draft, in review, changes requested, signed off) as at publish, worked out again live on the page |
 | Brief events | `brief-events/r{round}` | Agency; Claude | `send-{id}` (a send for sign off: a stamp with `value` `{at}`, `source` `manual` and the Editor as `by` from the page, or `source` `claude` for a send from the chat) and `reopen-{id}` (a stamp with `value` `{reason, signoff}`, `signoff` naming the sign off it undid as `{writer}/{item}`, or `chat` for one recorded from the chat). Kept apart from `brief-rounds` so no version, reset, restore or import ever writes them |
-| A concept's brief | `briefs/{lane}-r{round}` | Agency; Claude | `name`, `line`, `persona-{id}`, `trigger`, `framework` (`{code, name}`), `story`, `point-{id}`, `problem`, `agitate`, `solve`, `beat-{n}` (`{name, seconds, what}`), `hook-{n}` (`{type, line, shown, overlay, why}`), `cta-{n}` (`{type, line, destination, moment, why}`), `body`, `length`, `runtime` (`{instagram, tiktok}`), `broll-{n}` (`{shot, beat}`), `product` (`{id, name, sku}`, `id` empty for a product not in scope), `added`, `removed` and `deferred` (true or false); `carriedForward:` the round a deferred concept came from; `order:` its place in concept order, `coverage:` (`{passed, of, failed}`, the checks that failed in plain words) and `version:` as at publish. Long text parts hold the saved HTML (**1d**, **Master Brief**, **Rich text**). A page from before kept `concept`, `hook-{id}`, `cta-{id}`, `broll-{id}`, `disclosure` and `donot-{id}` here: they read as `line`, the hooks, CTAs and shots in id order, and the brief's `disclosure` and don'ts, and the next publish writes them to the keys above |
+| A concept's brief | `briefs/{lane}-r{round}` | Agency; Claude | `name`, `line`, `persona-{id}`, `keyword-{n}` (1 to 4, a casting keyword each), `city-{id}` (a target city each), `trigger`, `framework` (`{code, name}`), `story`, `point-{id}`, `problem`, `agitate`, `solve`, `beat-{n}` (`{name, seconds, what}`), `hook-{n}` (`{type, line, shown, overlay, why}`), `cta-{n}` (`{type, line, destination, moment, why}`), `body`, `length`, `runtime` (`{instagram, tiktok}`), `broll-{n}` (`{shot, beat}`), `product` (`{id, name, sku}`, `id` empty for a product not in scope), `added`, `removed` and `deferred` (true or false); `carriedForward:` the round a deferred concept came from; `order:` its place in concept order, `coverage:` (`{passed, of, failed}`, the checks that failed in plain words) and `version:` as at publish. Long text parts hold the saved HTML (**1d**, **Master Brief**, **Rich text**). A page from before kept `concept`, `hook-{id}`, `cta-{id}`, `broll-{id}`, `disclosure` and `donot-{id}` here: they read as `line`, the hooks, CTAs and shots in id order, and the brief's `disclosure` and don'ts, and the next publish writes them to the keys above |
 | The brief, agency only | `agency/brief-round-r{round}` | Agency; Claude | `briefPage:` the brief agent's page link, which holds the variant plan, so it never sits where the client reads |
 | Variant plan | `agency/brief-{lane}-r{round}` | Agency; Claude | One key per part of each variant, so two editors on two parts of one variant keep both: `v{n}-framework` (`{code, name}`), `v{n}-length`, `v{n}-hook` and `v{n}-cta` (the number), `v{n}-vo` (long text), `v{n}-broll` (a list of shot numbers), `v{n}-note`; `variantCheck:` the brief agent's check of the plan (`{passed, failed}`). A page from before kept `variant-{n}` objects: each reads into these keys, and the next publish writes them |
 | Frameworks | `agency/frameworks` | Agency; Claude | `framework-{slot}` (`{slot, code, name, use}`), one per variant slot 1 to 5, from `frameworks` in `campaign:{slug}-cas` or the defaults |
@@ -4403,7 +4641,7 @@ for creator decisions, `refused:` the refused sign offs and the refused decision
 | Reviews | `reviews/cut-{cut}`, `{cut}` being `{net}-{handle}-r{round}-{variant}` | Agency | `creator:` (`{net}-{handle}`), `round:`, `lane:`, `variant:` (1 to 5), `title`, `check-{id}` (one review checklist item each, `value` true or false) |
 | Review versions | `reviews/cut-{cut}/versions/v{version}` | Agency | `link` (the cut's link or file), `notes`, `addedAt:` |
 | Creator profile | `creators/{net}-{handle}` | Agency | `name`, `descriptor`, `location`, `pickNote` (why we picked them) |
-| Creator, per round | `edits/creator-{net}-{handle}-r{round}` | Agency | `concept`, `product`, `status`, `adPermissions`, `shipping`, `tracking`, `productStatus`; `returning` (true) and `fromRound` on a creator carried into the round |
+| Creator, per round | `edits/creator-{net}-{handle}-r{round}` | Agency | `concept`, `persona` (the persona's id in the concept, `persona-{id}`), `product`, `status`, `adPermissions`, `shipping`, `tracking`, `productStatus`; `returning` (true) and `fromRound` on a creator carried into the round |
 | Pool not sent | `agency/pool` | Claude | One key per pool creator not sent to the client yet, `{net}-{handle}`, holding what their row and card show, so the page itself never lists them |
 | Creator, agency only | `agency/creator-{net}-{handle}` | Agency | Every agency only field in **Who sees what**: the recommendation, notes, vetting evidence, safety detail, email, phone, manager, reply window, last contact, rates, `expectedCost:` and `expectedFrom:` (agreed, counter, offer or calculator, `rates-and-terms.md`, **Expected cost**), `costPer1kReach:`, offer, counters, waiting on, the reply log, and the draft waiting to send |
 | Activity, client side | `activity/{id}/days/{day}` | Each Contributor, their own | `day:`, `entries:` one key per write (**The activity log**) |
@@ -4669,7 +4907,7 @@ History shows them on the client's side, because nothing in the data says who wa
 | `upload` | A new version of a cut, its link or file, and its notes | Content Review |
 | `file` | A file added (by link, upload or drop), edited or removed, the upload and its deletion included; a scan's values log as `program` and `edit` (**Program files and the scan**) | Home |
 | `program` | Program details, products, team, steps and dates (a step ticked, added, removed or edited, and Move to next step), the weekly sync, the term, program terms, a round's dates, and starting a round (one entry for the round and its carried creators) | Home, and the tab where it was edited |
-| `edit` | Any other edited value: a creator's profile, concept and product, a cut's title, the budget total, a match score weight | Where it was edited |
+| `edit` | Any other edited value: a creator's profile, concept, persona and product, a cut's title, the budget total, a match score weight | Where it was edited |
 | `record` | Claude's writes: a republish's changes (one entry per record changed, naming the parts in plain words), a pull recorded in Atlas, the attention list, the design notes | The tab that shows the record |
 
 **Where an entry goes.** By what the write touched and the writer's role (**Who sees what**),

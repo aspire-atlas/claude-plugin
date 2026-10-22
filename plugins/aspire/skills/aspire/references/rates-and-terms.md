@@ -41,9 +41,25 @@ fee plus its uplift line. A creator the
 calculator cannot price has no expected cost and shows as unpriced; never fill one in. Claude works
 it out at each publish of the campaign page for every creator in the pool, from the posts read for
 the creator cards, and writes it with its basis to the creator's agency data (`expectedCost:`,
-`expectedFrom:`). **Cost per 1K reach** is the expected cost divided by the creator's Meta reach
+`expectedFrom:`). The match score's Budget vs target sets it against the **Target rate** below
+(`cas-campaign.md`, **The match score**). **Cost per 1K reach** is the expected cost divided by the creator's Meta reach
 (`instagram.creatorMarketplaceReach`), times 1,000, and is blank without a reach. Both are
 estimates for planning and are never shown to the client or sent to a creator.
+
+## Target rate
+
+What the campaign means to pay one creator for one round, on the same footing as the expected
+cost, the whitelisting uplift included. The match score's Budget vs target compares each
+creator's expected cost with it. The first of these that holds:
+
+1. **Saved**: `targetRateUsd` in `campaign:{slug}-terms`, when the CM set one.
+2. **From the budget**: `budgetUsd` in `campaign:{slug}-cas` divided by the creators the campaign
+   plans, `package.creators` once for each round in the working state, so the more rounds the
+   budget covers, the lower the target for each.
+
+With neither, there is no target rate: the factor is 0.5 for everyone and the score's reasons say
+"No target rate set" to the agency. Like the expected cost, it is agency only and never shown to
+the client or sent to a creator, and it is never a figure written into this plugin.
 
 ## Terms, asked once per campaign
 
@@ -64,8 +80,12 @@ The terms object:
 
 ```json
 {"schema": 1, "organic": "none", "whitelistingUpliftPct": 20, "exclusivity": "none",
- "allowlisting": true, "partnershipAds": true}
+ "allowlisting": true, "partnershipAds": true, "targetRateUsd": 2500}
 ```
+
+`targetRateUsd` is optional and asked by no question: the **Target rate** for one creator for one
+round, uplift included. It reaches the record when the CM says it in the chat, through the
+supersede rule below.
 
 `allowlisting` and `partnershipAds` are optional and asked by no question: whether the SOW
 includes allowlisting and partnership ads. With `allowlisting` false, no uplift is added to any

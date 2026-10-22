@@ -332,8 +332,20 @@ Everything above applies, with these changes:
 - **The cadence is the standing approval** for the marketplace and paid lookups on this
   campaign, in interactive runs too (SKILL.md, **Guardrails**). The weekly sync never launches
   discovery; it runs when the CM picks it.
-- **Scoring stays this reference's rubric.** The paid screens (persona fit and paid track
-  record) are vetting's job (`creator-vetting.md`, **Creator-ads lanes**).
+- **The fit score is the campaign's match score.** Score every candidate with the one procedure
+  in `cas-campaign.md`, **1d**, **Creator Selection**, **The match score**, against their lane's
+  concept, with the weights in `match` in `campaign:{slug}-cas` (read it and `-terms` for this
+  campaign only), so the shortlist and the campaign page show the same number for the same
+  inputs. The casting keywords and target cities are the lane's newest `brief` finding's
+  `casting` for the round, else derived from the lane's persona and casting filter as the
+  campaign page does. Budget vs target uses the calculator's estimated fee as the expected cost.
+  Past paid partners are a plain count here; the category read is vetting's (`creator-vetting.md`,
+  **Creator-ads lanes**), and the campaign page uses it once vetting has screened the lane.
+  Write the result in `detail.match` (`{score, band, factors, without, conflict, pastDeals,
+  weights, scoredAt}`) with `fitScore` equal to `score`, and show the band and any competitor
+  line on the card. A bio naming a saved competitor halves the score, as that section says,
+  though risk flags stay unscored elsewhere. The rubric in **Scoring** above is for other
+  campaigns.
 - **Recommendation passes** fill each lane from Meta's own rankings, per the block below.
 - **Ad figures on every card**, in `{DETAILS}` and in `detail.adFigures`, drawn per
   `creator-card.md`, **Creator-ads details**:
