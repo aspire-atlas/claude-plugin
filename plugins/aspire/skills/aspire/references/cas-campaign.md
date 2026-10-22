@@ -217,8 +217,9 @@ Rules:
 
 - Derive `{slug}` from the campaign name and `{lane}` from the lane name: lowercase,
   hyphenated, no dates. Show the campaign name, never the slug. A lane slug never equals one
-  already on the campaign, nor `overview` or one starting `changes-`, which the page's links use:
-  add `-2`, `-3` and so on.
+  already on the campaign, nor one the page uses for itself (`overview`, `round`, `status`,
+  `voice`, `needs`, `frameworks`, `accepted`, `versions`) or one starting `changes-`: add `-2`,
+  `-3` and so on.
 - Parse every JSON body with a JSON parser. A body that does not parse counts as missing, and
   the status screen says setup needs fixing.
 - **Keys `campaign:{slug}-cas`, `-lane-*`, `-decision-defaults` and `-terms` belong to the CAS
@@ -999,7 +1000,7 @@ and item. Labels, eyebrows, titles and ledes are in **Page vocabulary**, **Tabs*
    | `#creators/r{n}/{net}-{handle}/shipping` | The creator's row in **Shipping** |
    | `#creators/r{n}/fees` | **Contract and rates**, with the fee approval and its notes |
    | `#brief/r{n}/{lane}/{part}` | The concept's brief at one part: `product`, `name`, `line`, `trigger`, `framework`, `persona-{id}`, `story`, `point-{id}`, `problem`, `agitate`, `solve`, `beat-{n}`, `hook-{n}`, `cta-{n}`, `body`, `length`, `runtime`, `broll-{n}`, `variant-{n}` (the agency's variant plan) |
-   | `#brief/r{n}/overview/{part}` | The round's **Brief status** or **Tone of voice and don'ts** at one part: `status`, `summary`, `tone`, `do-{id}`, `dont-{id}`, `disclosure`, `fileNaming`. A lane is never slugged `overview` (**1a**, **Rules**) |
+   | `#brief/r{n}/overview/{part}` | The round's **Brief status** or **Tone of voice and don'ts** at one part: `status`, `summary`, `tone`, `do-{id}`, `dont-{id}`, `disclosure`, `fileNaming`. A lane is never slugged `overview` (**1a**, **Rules**). |
    | `#brief/r{n}/{lane}/c{comment}` | The brief's comments open at that comment, with the part it is on in view |
    | `#review/r{n}/{cut}/v{version}` | The cut in the review panel at that version, not the newest |
    | `#review/r{n}/{cut}/v{version}/t{seconds}` | The same, with the player paused at that second |
@@ -1165,7 +1166,7 @@ only is marked so.
 | Master Brief | Brief status, "Round {n} brief" | `brief-status` | "{w} of {t} concepts written · {s} signed off · {k} open comments · version {v}", with the status Badge beside the trigger, or "No concepts in this round yet." | Simple | Open |
 | Master Brief | Tone of voice and don'ts | `brief-voice` | The tone of voice's first line, then "· {d} don'ts", or "No tone of voice set yet." | Standard | Closed |
 | Master Brief | One per concept, "{Concept} brief · round {n}" | `brief-{lane}` | "{product} · {trigger} · {personas} · {h} hooks, {c} CTAs · {k} creators", with "needs work" while the concept isn't written, and the state pill beside the trigger | Full | Closed; open while it waits on the viewer's sign off |
-| Master Brief | Needs a concept | `brief-needs` | "{n} products with no concept: {names}", then "· {r} removed" for the agency | Standard | Closed; not rendered while every product has a concept and nothing was removed |
+| Master Brief | Needs a concept | `brief-needs` | "{n} products with no concept: {names}", then "· {r} removed" for the agency | Standard | Closed; not rendered while every product has a concept and, for the agency, nothing was removed |
 | Master Brief | Frameworks, agency only | `brief-frameworks` | "V1 {code} · V2 {code} · …", with "edited" when they differ from the defaults | Full | Closed |
 | Master Brief | One per changed brief, "@{handle} changed the {concept} brief" | `brief-changes-{net}-{handle}` | "{n} changes against the brief you approved" | Simple | Open |
 | Master Brief | Accepted as is | `brief-accepted` | "{n} creators accepted without changes" | Standard | Closed |
@@ -2087,8 +2088,8 @@ Sections, in order (ids, summaries and defaults in **Collapsing sections**, **Se
 1. **Brief status** (`brief-status`), the status bar.
 2. **Tone of voice and don'ts** (`brief-voice`).
 3. One section per concept (`brief-{lane}`), in concept order.
-4. **Needs a concept** (`brief-needs`), only while a product in scope has no concept, or the
-   agency has removed a concept this round.
+4. **Needs a concept** (`brief-needs`), only while a product in scope has no concept, or, for
+   the agency only, while a concept is removed this round.
 5. **Frameworks** (`brief-frameworks`), agency only.
 6. The creator changes: one section per changed brief (`brief-changes-{net}-{handle}`), then
    **Accepted as is** (`brief-accepted`).
@@ -2157,8 +2158,9 @@ Inside:
   {C}" ({H} being 3 and {C} 2 for each concept in the round), "Creators briefed {b} of {m}" (the round's contracted creators whose brief state is
   sent, accepted, changed, approved or locked), "{k} open comments" (unresolved comments on the
   round's brief, the agency's own agency only comments counted for the agency only), "{s} of {t}
-  signed off", and "Version {v}" (the brief finding's `version`, with "edited since" when a
-  page edit is newer than it). A count at zero still shows.
+  signed off", and "Version {v}" (the highest `version` among the round's concept `brief` findings,
+  since each concept's goes up only when it changes; each concept's own shows in its section,
+  and "edited since" shows when a page edit is newer than the version). A count at zero still shows.
 - **Overview chips.** One chip per concept, in concept order, in its concept color (**Concept
   colors**) with its name and a soft Badge "Needs work" until it counts as written. Each chip is
   a link to `#brief/r{n}/{lane}`: it opens and scrolls to the concept, as any hash does.
@@ -2294,8 +2296,8 @@ after a Dialog confirm naming how many it changes.
 - **Add a concept** opens a Dialog: title "Add a concept to round {n}", a Select of the products in
   scope (those with no concept first, each marked "needs a concept"), an Input for the name, an
   optional Input for the positioning line, and Cancel (outline) and Add concept (default). The
-  page slugs the name by **1a**'s rule (unique on the campaign, never `overview` or starting
-  `changes-`), creates the concept's document (**1e**), with `added` set, opens it, and scrolls to it.
+  page slugs the name by **1a**'s rule (unique on the campaign, never a name the page uses for
+  itself), creates the concept's document (**1e**), with `added` set, opens it, and scrolls to it.
   It takes the next concept color. It reaches Atlas as a new concept only through **Pulling
   decisions**, with its own confirmation.
 - **Needs a concept.** The products in scope (`products` in `campaign:{slug}-cas` with the page's
@@ -2368,7 +2370,7 @@ shows what is missing. Nothing the agent writes is dropped:
 | Disclosure treatment | Disclosure | `disclosure` |
 | Delivered file naming | Delivered file naming | `fileNaming` |
 | Standing rule banner | Notice | `notice` |
-| `brief` finding `version` | Version | `version:` |
+| The run's `version`, the same for every lane it wrote | Each concept's version | `version:` in each `briefs/{lane}-r{round}`; the round's Version is the highest of them |
 | Concept, from the lane, and its place in concept order | Name, positioning line, order | `name`, `line`, `order:` in `briefs/{lane}-r{round}` |
 | Persona, from the lane | Personas | `persona-{id}` |
 | Trigger and framework, from the lane | Trigger, framework | `trigger`, `framework` |
@@ -3473,7 +3475,7 @@ with a plain description holds plain data the page writes with no stamp.
 | Program terms | `program/terms` | Agency | `deliverable-{id}` (`{label, count}`), `adReadyVideos`, `variants`, `usageDays`, `allowlisting`, `partnershipAds`, `exclusivity`, `organic`. A page from before kept `makes`, `usage`, `exclusivity` and `notes` as text, in `agency/terms` until the fees were sent: Program terms reads `agency/terms` then `program/terms`, shows `makes` and `usage` that don't parse as one text row each ("What each creator makes", "Usage"), `exclusivity` as its row, and `notes` as a "Notes" row last, and the next publish moves them to `program/terms` |
 | Allowlisting uplift | `agency/terms` until the fees are sent, then `program/terms` | Agency | `upliftPct` |
 | Budget | `agency/budget` | Agency | `total` (stamp); `committed:`, `offersOut:`, `remaining:` (worked out at publish) |
-| The round's brief | `brief-rounds/r{round}` | Agency; Claude | `title`, `sourceDoc` (`{label, url, kind}` for an imported doc, `kind` `drive` or `link`; empty for a brief the agent wrote), `summary`, `tone` (long text), `do-{id}`, `dont-{id}`, `disclosure`, `fileNaming`, `notice`; `status:` (draft, in review, signed off) and `version:` as at publish, both worked out again live on the page |
+| The round's brief | `brief-rounds/r{round}` | Agency; Claude | `title`, `sourceDoc` (`{label, url, kind}` for an imported doc, `kind` `drive` or `link`; empty for a brief the agent wrote), `summary`, `tone` (long text), `do-{id}`, `dont-{id}`, `disclosure`, `fileNaming`, `notice`; `status:` (draft, in review, signed off) as at publish, worked out again live on the page |
 | A concept's brief | `briefs/{lane}-r{round}` | Agency; Claude | `name`, `line`, `persona-{id}`, `trigger`, `framework` (`{code, name}`), `story`, `point-{id}`, `problem`, `agitate`, `solve`, `beat-{n}` (`{name, seconds, what}`), `hook-{n}` (`{type, line, shown, overlay, why}`), `cta-{n}` (`{type, line, destination, moment, why}`), `body`, `length`, `runtime` (`{instagram, tiktok}`), `broll-{n}` (`{shot, beat}`), `product` (`{id, name, sku}`, `id` empty for a product not in scope), `added` and `removed` (true or false); `order:` its place in concept order, `coverage:` (`{passed, of, failed}`, the checks that failed in plain words) and `version:` as at publish. Long text parts hold the saved HTML (**1d**, **Master Brief**, **Rich text**). A page from before kept `concept`, `hook-{id}`, `cta-{id}`, `broll-{id}`, `disclosure` and `donot-{id}` here: they read as `line`, the hooks, CTAs and shots in id order, and the brief's `disclosure` and don'ts, and the next publish writes them to the keys above |
 | The brief, agency only | `agency/brief-round-r{round}` | Agency; Claude | `briefPage:` the brief agent's page link, which holds the variant plan, so it never sits where the client reads |
 | Variant plan | `agency/brief-{lane}-r{round}` | Agency; Claude | One key per part of each variant, so two editors on two parts of one variant keep both: `v{n}-framework` (`{code, name}`), `v{n}-length`, `v{n}-hook` and `v{n}-cta` (the number), `v{n}-vo` (long text), `v{n}-broll` (a list of shot numbers), `v{n}-note`; `variantCheck:` the brief agent's check of the plan (`{passed, failed}`). A page from before kept `variant-{n}` objects: each reads into these keys, and the next publish writes them |
@@ -4163,7 +4165,10 @@ core Aspire platform.
 After Gate 4 clears, each creator gets their concept's locked brief.
 
 1. **Send the briefs to creators.** One `brief` draft per creator (`rates-and-terms.md`,
-   **Drafts**, the brief template) with their concept's brief page link. Show them ready to copy.
+   **Drafts**, the brief template) carrying their creator copy as text: their concept's locked
+   brief as the Master Brief holds it, every part but the variant plan and the coverage check,
+   with the round's tone of voice, do's and don'ts, disclosure and file naming. Never the brief
+   agent's page link: that page holds the variant plan, every concept and the agreed fees. Show them ready to copy.
    On the CM's word that they went, one picker writes `sentAt` and roster `briefState` sent.
 2. **The creator replies by email; the CM pastes it.** Read it against the locked brief:
    - **Accepted as is.** The reply picker proposes "brief accepted". The confirm writes roster

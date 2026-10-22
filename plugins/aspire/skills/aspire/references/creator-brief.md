@@ -92,8 +92,15 @@ uses, in the order `hooks-and-ctas.md`, **Where recommendations come from**, giv
   and the lanes.
 - **Tone of voice**: how every creator sounds, from `brand:summary`, the saved guidelines and the
   market signal language; a bracketed blank when none of them says.
-- **Do's and don'ts**, **disclosure treatment** and **delivered file naming** (below). They come
-  from brand records, not from a lane, so they are written once for the round.
+- The next three come from brand records, not from a lane, so they are written once for the
+  round, never per lane.
+- **Disclosure treatment**: the paid partnership label, plus anything `review:disclosure` says
+  when it exists (read it for disclosure only).
+- **Do's and don'ts**, one line each: from saved `red_line` and `guideline` records (never `review:`, `vetting:`, `program:` or `orchestrator:` keys,
+  and never the campaign's own `-cas`, `-lane-*`, `-terms` or `-decision-defaults` records).
+  When the client's own creator brief guardrails are saved (a `guideline` whose body names
+  them), mirror them line for line.
+- **Delivered file naming**: `[Brand] - [Creator] - Clip [#]`, stated once per brief.
 
 **Per lane, one brief with these fields:**
 
@@ -125,15 +132,8 @@ uses, in the order `hooks-and-ctas.md`, **Where recommendations come from**, giv
   defaults in `cas-campaign.md`, **1d**, **Master Brief**: V1 PAS, V2 BAB, V3 4Ps, V4 HSO, V5 SSS),
   length, which hook and CTA by number, the VO in a few lines, the B-roll shot numbers it uses,
   and a one line note. V1 uses H1 and C1. When there are at least as many variants as hooks, every
-hook is used by at least one variant, and every CTA when there are at least two. It is for the editors:
-  the client never sees it.
-- **Disclosure treatment**: the paid partnership label, plus anything `review:disclosure` says
-  when it exists (read it for disclosure only).
-- **Do's and don'ts**, one line each: from saved `red_line` and `guideline` records (never `review:`, `vetting:`, `program:` or `orchestrator:` keys,
-  and never the campaign's own `-cas`, `-lane-*`, `-terms` or `-decision-defaults` records).
-  When the client's own creator brief guardrails are saved (a `guideline` whose body names
-  them), mirror them line for line.
-- **Delivered file naming**: `[Brand] - [Creator] - Clip [#]`, stated once per brief.
+  hook is used by at least one variant, and every CTA when there are at least two. It is for the
+  editors: neither the client nor a creator ever sees it.
 - **Creators**: the lane's approved creators from the roster, as creator cards, each with the
   agreed fee and ship date.
 
@@ -203,7 +203,10 @@ After the briefs are approved, a creator may reply with their own version (`cas-
 the round, and `revision`: the creator's handle and network, their concept, and their version as
 pasted. Then the agent compares, and does nothing else:
 
-1. Read the concept's newest locked `brief` finding and its page as the approved brief, and the
+1. Read the concept's newest locked `brief` finding as the approved brief, with its text as the
+   Master Brief holds it: the campaign page's page data for that concept and round
+   (`briefs/{lane}-r{round}` and `brief-rounds/r{round}`, `cas-campaign.md`, **1e**), read with
+   the Artifact tool, and the brief page only for a part the page data doesn't have, and the
    creator's newest `brief-revision` when one exists (a second round compares against the
    approved brief, not the last revision).
 2. Compare field by field: the positioning line, personas, trigger, story, selling points, the
