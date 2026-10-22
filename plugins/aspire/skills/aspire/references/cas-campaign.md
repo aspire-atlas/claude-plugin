@@ -766,8 +766,10 @@ the page)", and writes nothing for them. The newest call per cut version is the 
 `decision-events/r{round}`, every `editors/{id}` marker and `activity-editors` writer, and the
 campaign's newest `page-sides` finding. Its writer is the id in its path, which the rules let only
 that person or the page's owner write (**1e**, **What the rules enforce, and what they can't**).
-For each creator and round, the newest call across writers that isn't cleared counts, as the
-page shows it (**1d**, **Creator Selection**, **What the row shows**):
+For each creator and round, steps 1 to 3 below filter the calls first, and the newest call left
+that isn't cleared counts, the same call the page shows (**1d**, **Creator Selection**, **What the
+row shows**). A call for a creator with no `roster` finding (not sent to the client) is dropped and
+named. The checks:
 
 1. **The writer is on the client's side.** A call whose writer has an `editors/{id}` marker now,
    or is in `page-sides` `editors`, is dropped and named: "Yes on @a from an Aspire account, not
@@ -1005,7 +1007,8 @@ client's level before the link goes out.
 
 | Field | Client | Agency | Source | Tab |
 | ----- | ------ | ------ | ------ | --- |
-| Handle, name, descriptor, location (City), concept, persona, product, tier | yes | yes | Roster, creator card | Creator Selection, Selected Creators |
+| Handle, name, descriptor, location (City), concept, persona, product | yes | yes | Roster, creator card | Creator Selection, Selected Creators |
+| Tier (Nano to Mega) | yes | yes | Worked out at publish from followers (**Creator Selection**, **Tiers**) | Creator Selection, Selected Creators |
 | Campaign match, latest posts, reach, engaged accounts, round chips | yes | yes | Discovery, vetting, roster | Creator Selection |
 | Decision counts and the hook rate tile in **Summary** | yes | yes | Worked out on the page | Creator Selection |
 | Hook rate, engagement on Reels, paid work before, ad permissions | yes | yes | Vetting | Creator Selection |
@@ -3047,7 +3050,15 @@ Casting for every round, from one shared pool. The pool is what `atlas-creator-d
 for the campaign (`creator-discovery-{profile}-{slug}` prefix, `detail.lane`), the newest vetting
 finding for that creator and lane when the lane was screened, and the creator's newest `roster`
 finding per round once they have one. Nobody adds a creator from a sheet. Each creator shows once,
-with a chip per round they are in. The **Round switcher** opens on **All rounds** here, and a
+with a chip per round they are in.
+
+**Who the client sees.** The client sees the creators sent to them: those with a `roster` finding
+in any round, which the Gate 2 send writes for every creator on the slate (**Gate packets**,
+**Gate 2**). Only those go into the page itself, and only they have the decision control, count
+toward "{m}", and wait on the client. The rest of the pool, not screened or not sent yet, is
+agency data (`agency/pool`), renders for the agency only with a soft Badge "Not sent yet" and no
+decision control, and is left out of every client figure. The pool median for the hook rate tile
+is over the creators the viewer sees. The **Round switcher** opens on **All rounds** here, and a
 round segment narrows the pool to that round's creators.
 
 **Decisions land in the open round** (**Rounds**, **The open round**). A Priority Yes or Yes adds
@@ -3097,10 +3108,12 @@ rounds**, and the round in view when a round segment is picked.
   - **No total saved**: the headline reads "No budget set" with its edit pencil, the meter is
     hidden, and the figures show as amounts.
 - **Decisions**, for both sides: "{d} of {m} decided" for the round, where {m} is every creator
-  in the pool not decided in an earlier round. Under it the legend, one Badge per value in its
+  sent to the client and not decided in an earlier round. With no open round, Decisions and Hook
+  rate cover the newest round, read only, and the legend's line reads "Decisions open when round
+  {n+1} starts". Under it the legend, one Badge per value in its
   **Status pills** variant with its icon and count: Priority Yes, Yes, Maybe, No, Unreviewed. Each
-  Badge is a button that sets the Decision filter. Then one line per concept: its chip and "need
-  {n}, {a} approved".
+  Badge is a button that sets the Decision filter. Then one line per concept: its chip, its
+  persona and "need {n}, {a} approved".
 - **Hook rate**, for both sides: "Approved average {x}%" against "Pool median {y}%", and "{d}
   points above the pool" or "below". The average is over the creators with Priority Yes or Yes in
   the round who have a hook rate; the median over every pool creator who has one. Creators with
@@ -3186,15 +3199,17 @@ foot of the card.
 - **The control**, for the client: a `role="group"` labelled "Your decision for round {n}" of four
   Buttons, size sm: Priority Yes (Lucide `star`), Yes (`check`), Maybe (`circle-help`) and No
   (`x`). The chosen one is `secondary` with `aria-pressed="true"`, the others `outline` with
-  `aria-pressed="false"`. The Buttons show the viewer's own call; beside the group sits the
+  `aria-pressed="false"`. The Buttons show the viewer's own call, and a call older than the
+  round's newest **Reset decisions** counts as none, so the next tap writes its value; beside the group sits the
   row's call (**What the row shows**) as a Badge in its **Status pills** variant, or a soft
   "Unreviewed" Badge when there is none. One tap saves. **Clicking the chosen value again clears
   it**: it takes back the viewer's own call, never another approver's. The icons keep Priority Yes apart from Yes without
   color.
 - **One at a time.** After a save, a ghost Button "Next unreviewed" under the control scrolls to
   the next Unreviewed creator in the current sort and moves focus to their control. As extras
-  (**Responsive**, **Keyboard shortcuts**), with a creator's row or card focused, `1` to `4` pick
-  the four values in order and `n` moves to the next unreviewed creator.
+  (**Responsive**, **Keyboard shortcuts**), for the client only, never for the agency or in
+  **Preview as client**: with a creator's row or card focused, `1` to `4` pick the four values in
+  order and `n` moves to the next unreviewed creator.
 - **A reason on the call.** Every Priority Yes, Yes and No offers "What made the call?" with
   one tap reasons: Performance, Brief fit, Paid history, Price, Reach, and Other with a short
   text field. A reason is never required; skipping it leaves the decision as it is. Maybe opens
@@ -3216,7 +3231,10 @@ foot of the card.
   any from an account on Aspire's side (an `editors/{id}` marker, or `sides` `editors`) and any
   from an account the CM refused (`sides` `refused`), with "{name}, {time}" under it (**1e**,
   **Creator decisions: what holds and what doesn't**). With every call cleared, the row is
-  Unreviewed. The Summary, the filters, Copy decisions and Home's lists count the same calls. A
+  Unreviewed, unless the call recorded in Atlas (the roster's `slate`, published into the page
+  itself) says otherwise: with no counted call on the page newer than the recorded one, the row
+  shows the recorded call with "Recorded by Aspire {time}", which covers a call the CM recorded
+  from the chat. The Summary, the filters, Copy decisions and Home's lists count the same calls. A
   skipped call shows to the agency only, as a line with a warning Badge "Not counted". A counted
   call from an account not in `sides` `deciders` or `approvers` carries, for the agency only, a
   processing Badge "Aspire to confirm" until the CM confirms it. When another approver's newest call differs, one line names it:
@@ -3241,7 +3259,9 @@ calls recorded at the last publish. Copying writes nothing and logs nothing.
 #### Tiers
 
 From the larger of the creator's Instagram and TikTok followers: **Nano** under 10K, **Micro**
-10K to 50K, **Mid** 50K to 500K, **Macro** 500K to 2M, **Mega** 2M and up. Worked out at publish
+10K to under 50K, **Mid** 50K to under 500K, **Macro** 500K to under 2M, **Mega** 2M and up. The
+roster's `tier` field is where discovery found the creator, a different thing, and is never shown
+as this tier. Worked out at publish
 from the follower counts Atlas holds and shown to both sides. The reply window keeps its own
 bands (`rates-and-terms.md`, **What each creator gets**), and other flows' tier words (a PPA
 pitch's casting bands, an influencer program's outreach) are their own: this page shows only
@@ -4162,8 +4182,8 @@ prefixes.
     the decision Buttons render only for the client, a second click on the chosen one clears it,
     and a call writes only under the client's own `decisions/{id}`; Table pins Creator and
     Decision and doesn't render under 640px; every tier, city and product count matches its
-    filter's result; and **Copy decisions** holds the rows in view with no Expected cost for the
-    client.
+    filter's result; pool creators not sent yet are only in `agency/pool`, never in the page itself;
+    and **Copy decisions** holds the rows in view with no Expected cost for the client.
 
 ## 1e. Page data: what the page keeps and how it is read back
 
@@ -4382,6 +4402,7 @@ for creator decisions, `refused:` the refused sign offs and the refused decision
 | Review versions | `reviews/cut-{cut}/versions/v{version}` | Agency | `link` (the cut's link or file), `notes`, `addedAt:` |
 | Creator profile | `creators/{net}-{handle}` | Agency | `name`, `descriptor`, `location`, `pickNote` (why we picked them) |
 | Creator, per round | `edits/creator-{net}-{handle}-r{round}` | Agency | `concept`, `product`, `status`, `adPermissions`, `shipping`, `tracking`, `productStatus`; `returning` (true) and `fromRound` on a creator carried into the round |
+| Pool not sent | `agency/pool` | Claude | One key per pool creator not sent to the client yet, `{net}-{handle}`, holding what their row and card show, so the page itself never lists them |
 | Creator, agency only | `agency/creator-{net}-{handle}` | Agency | Every agency only field in **Who sees what**: the recommendation, notes, vetting evidence, safety detail, email, phone, manager, reply window, last contact, rates, `expectedCost:` and `expectedFrom:` (agreed, counter, offer or calculator, `rates-and-terms.md`, **Expected cost**), `costPer1kReach:`, offer, counters, waiting on, the reply log, and the draft waiting to send |
 | Activity, client side | `activity/{id}/days/{day}` | Each Contributor, their own | `day:`, `entries:` one key per write (**The activity log**) |
 | Activity, agency side | `activity-editors/{id}/days/{day}` | Each Editor, their own; Claude under `activity-editors/claude` | The same, for the agency's writes about things the client can see |
@@ -4848,9 +4869,10 @@ everyone, the client included. Anything already recorded in Atlas stays recorded
 buttons Cancel (outline) and Clear decisions (destructive). The calls sit under each client's own
 id, where an Editor can't write, so on confirm the page writes a `reset-{id}` stamp to
 `decision-events/r{round}` with the editor as `by`, and every call older than it shows as
-Unreviewed, with "Cleared by {name} {time}" under it. It also writes each `notes`, and each
-`decision` and `reason` a page from before kept, in the round's `client/creator-*` documents as a
-stamp with `value` `null` and the editor as `by`, and logs one activity entry. Every tag whose `on` is a cleared note in that round gets `withdrawn: true`, so
+Unreviewed, with "Cleared by {name} {time}" under it. The stamp hides a `decision` and
+`reason` a page from before kept in `client` too, so the page leaves those as they are. It writes
+each `notes` in the round's `client/creator-*` documents as a stamp with `value` `null` and the
+editor as `by`, and logs one activity entry. Every tag whose `on` is a cleared note in that round gets `withdrawn: true`, so
 no inbox keeps an item that opens an empty note and the chat never posts a cleared note's words
 (**Tags and the inbox**). Nothing is deleted, and nothing reaches Atlas: **Pulling decisions** names the
 cleared fields and writes nothing for them.
