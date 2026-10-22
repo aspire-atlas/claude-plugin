@@ -254,7 +254,7 @@ record type the newest finding per identity wins, by `detail.recordedAt`.
 | `brief-revision` | the creator + round | The creator's account | `action_item` `medium` while waiting on the client; `went_well` once approved | `handle`, `lane`, `basedOn` (the locked lane brief's version), `changes` (one plain line each: what, from, to), `text` (the creator's version), `status` (waiting, approved, notes sent), `locked` |
 | `hook` | one per hook or CTA, never replaced | The brand's account | `went_well` `low` | `lane`, `type` (hook, cta), `text`, `pattern`, `firstBriefed` (round and date) |
 | `hook-review` | hook + round | The brand's account | `went_well` when it led; `needs_improvement` when it lagged or was not used; `action_item` `low` when held or not measurable | `lane`, `hook` (the text), `pattern`, `postsMatched`, `vsMedian`, `result` (led, held, lagged, not used, not measurable yet) |
-| `page-sides` | the campaign | The brand's account | `went_well` `low` | `editors` (`{viewerId: firstSeenAt}`, every id Claude has seen with an `editors/{id}` marker or an `activity-editors/{id}` document, never removed), `approvers` (`{viewerId: {name, gate, confirmedAt}}`, the page accounts the CM confirmed as a step's approver). Written in the same answer as the pull that saw something new (**Pulling decisions**, **The brief sign off**) |
+| `page-sides` | the campaign | The brand's account | `went_well` `low` | `editors` (`{viewerId: firstSeenAt}`, every id Claude has seen with an `editors/{id}` marker or an `activity-editors/{id}` document, never removed), `approvers` (`{viewerId: {name, gate, confirmedAt}}`, the page accounts the CM confirmed as a step's approver), `refused` (`{"{writer}/{item}": at}`, sign offs the CM said not to record). Written in the same answer as the pull that saw something new (**Pulling decisions**, **The brief sign off**) |
 | `ledger` | one per line, never replaced | The brand's account | `needs_improvement` | `gate`, `round`, `handle` (Gate 4b only), `daysSlipped`, `reason`, `shifted` (the gates and dates it moved) |
 
 A roster finding carries the whole row, not only what changed: copy the newest finding's
@@ -758,7 +758,7 @@ the page)", and writes nothing for them. The newest call per cut version is the 
 in `signoffs/{id}/items` is an item; the copies sit in `signoffs/{id}/copies`), the round's `send-`
 and `reopen-` stamps on `brief-rounds/r{round}`, every `editors/{id}` marker and `activity-editors`
 writer, and the campaign's newest `page-sides` finding (**1a**). An item whose id is step 4's
-`signoff.item` is already recorded and is skipped. Of the rest, the newest that answers the newest
+`signoff.item` is already recorded and is skipped, and so is one in `page-sides` `refused`. Of the rest, the newest that answers the newest
 send, with no reopen or import newer than it, is the one offered. Its writer is the id in its path,
 which the rules let only that person or the page's owner write (**1e**, **What the rules enforce,
 and what they can't**). Before it is offered:
@@ -782,7 +782,9 @@ and what they can't**). Before it is offered:
    off, or when it isn't one of them, the batch picker can't settle it: a picker of its own asks
    "Is the account that signed off on the page {approver}'s, or {backup}'s? It signed as {name}."
    with "Yes, it's {approver}'s", "Yes, it's {backup}'s" and "No, don't record it". A yes saves the
-   account in `page-sides` `approvers`, so later sign offs from it need no question. The name on
+   account in `page-sides` `approvers`, so later sign offs from it need no question. A no saves
+   the item in `page-sides` `refused`, so it is never offered again and the page shows it "Not
+   counted"; the client signs off again from the approver's account. The name on
    the item is what the page wrote, never proof; the confirmed account is what counts.
 
 The picker line: "{name} signed off the round {n} brief on {date}: {concepts}. This clears step 4."
@@ -867,7 +869,8 @@ the client's calls, each named with who made it. The `send-` and `reopen-` stamp
   the turnaround, the reminder, and the step line under C5. A `reopen-{id}` on a signed off brief
   is named "Round {n} brief reopened by {name}: {reason}" and writes a `brief` finding per lane
   with `locked` false and `reopened`, and Gate 4 back to `planned` with `reopenedAt` and
-  `reopenReason` and a new planned date; the locked versions stay, as every locked version does.
+  `reopenReason`, a new planned date, and `signoff`, `clearedAt` and `clearedBy` empty; the locked
+  versions stay, as every locked version does.
   A reopen of a sign off that was never recorded writes no `brief` finding, since nothing was
   locked: only Gate 4 back to `planned`, and the reopened sign off is named as not recorded.
   A send older than the newest import or reopen is skipped.
@@ -2744,7 +2747,10 @@ round's open threads the viewer can read. `#brief/r{n}/comments` opens it too. I
   thread folds to its first line and "Resolved by {name} {time}", and opens on tap.
 - **Editing your own.** A comment's author sees "Edit" and "Delete" as ghost Buttons, size sm. An
   edit shows "edited". Delete keeps the comment's place with "Comment deleted" and its replies,
-  and clears its text from the page data, after a Dialog confirm.
+  after a Dialog confirm. It clears the words everywhere the page put them: the comment's `text`,
+  the `text`, `from` and `to` of its own activity entries, and the `text` of each tag it wrote,
+  with `withdrawn` set, all under the author's own paths. An entry or tag the author can't write
+  (a client's comment that an Editor edited) keeps its words, and the Dialog says so.
 - **A new comment.** The box an anchor opens shows "On {part}" above a Textarea, and for the
   agency an "Agency only" Switch (on for a variant, and fixed), then Cancel (outline) and Comment
   (default). From the panel's own header, a ghost Button "New comment" asks for the part first
@@ -2803,25 +2809,31 @@ client, in a done round, or while an import holds the brief at Draft (**Importin
   "Asked for changes to the round {n} brief: {first words}"), so it shows in **History** and in the
   agency's inbox. The change request's note shows under the status Badge with the concepts it
   names ("About: {concepts}").
-- **Which items count.** A sign off or a change request counts when its writer has no
-  `editors/{id}` marker and isn't in the published list of ids seen on Aspire's side (`page-sides`,
-  **1a**), it answers the newest send, nothing newer reopened or replaced the brief, and, for a
-  sign off, the brief's parts still equal its copy, compared the way the pull compares them. Anything
-  else renders as "Not counted" with the reason in a Tooltip ("The brief changed after this sign
-  off", "Made from an Aspire account", "From before the brief was sent again"), so a sign off the
-  pull would drop never looks like one on screen. A sign off the pull already recorded (its id is
-  step 4's `signoff.item`) always counts and is never checked again.
+- **Which items count.** The page reads `sides` (**1e**), which Claude keeps from the campaign's
+  `page-sides` finding at every publish and pull: the ids seen on Aspire's side, the accounts the
+  CM confirmed as an approver, and the items the CM refused. A sign off or a change request counts
+  when its writer has no `editors/{id}` marker and isn't in `sides` `editors:`, the CM didn't
+  refuse it, it answers the newest send, nothing newer reopened or replaced the brief, and, for a
+  sign off, the brief's parts still equal its copy, compared the way the pull compares them.
+  Anything else renders as "Not counted" with the reason in a Tooltip ("The brief changed after
+  this sign off", "Made from an Aspire account", "Aspire couldn't confirm this account", "From
+  before the brief was sent again"), so a sign off the pull would drop never looks like one on
+  screen. A sign off that counts from an account not yet in `sides` `approvers:` reads "Signed
+  off, Aspire to confirm" (processing): the brief locks, so nothing changes under it, but step 4
+  doesn't tick until the pull confirms the account. A sign off the pull already recorded (its id is
+  step 4's `signoff.item`) counts without these checks, until a reopen or an import newer than it.
 
 **The locked brief.** The round's brief is signed off, and locked, once a sign off counts or the
 published step 4 was cleared after the newest send, which covers a sign off the CM recorded from
-the chat. Then every part of the round's brief renders as a label for everyone, Claude's own
+the chat, and only while no `reopen-` stamp or import is newer than that sign off or clear. A
+reopen unlocks it the moment its stamp is written. Then every part of the round's brief renders as a label for everyone, Claude's own
 republishes write nothing to it, and the status is Signed off, with "Signed off by {name} {date}"
 under the Badge, or "Signed off by {name} {by email, on a call, in a message}, recorded by {CM
 name}". **Add a concept**, **Import**, **Start from round {m}**, **Reset to original**, **Remove
 concept** and **Defer to next round** don't render (**Brief status**). The variant plan stays
 editable for the agency: it is Aspire's cut plan, the client never sees it, and the client didn't
-sign it. On Home, step 4 ticks at once (**Home**, **Round steps**): the client reads "Approved
-{date}". For the agency the same row adds a soft Badge, and **Waiting on you** and **Needs
+sign it. On Home, step 4 ticks at once for a sign off from a confirmed account (**Home**,
+**Round steps**): the client reads "Approved {date}". For the agency the same row adds a soft Badge, and **Waiting on you** and **Needs
 attention** add an item, until **Pulling decisions** records it: the page builds both from the
 `signoff-unrecorded` template Claude keeps in `agency/attention` (its title "Record {brand}'s brief
 sign off" and its Badge "Not recorded yet"), shown only when that read returns, so the client's
@@ -2845,7 +2857,8 @@ or each creator's own changes (**Creator changes**)."
 as an event at its `sentAt` and `clearedAt`: a `reopen-` or an import (`importedAt`) newer than every
 send reads **Draft**; a send (a `send-` stamp, or step 4 sent) with nothing newer reads **In review
 with client**; a change request that counts, newer than the send, reads **Changes requested**
-(warning); a sign off that counts, or step 4 cleared, newer than the send reads **Signed off**.
+(warning); a sign off that counts, or step 4 cleared, newer than the send reads **Signed off**
+("Signed off, Aspire to confirm" while its account isn't confirmed).
 With no event at all, **Draft**.
 
 **Copy creator brief.** At the end of each concept, an outline Button, size sm, "Copy creator
@@ -3917,6 +3930,7 @@ campaign page:
   {"path": "signoffs", "read": "interact", "write": "owner"},
   {"path": "signoffs/{self}", "write": "interact"},
   {"path": "editors", "read": "interact", "write": "owner"},
+  {"path": "sides", "read": "interact", "write": "owner"},
   {"path": "editors/{self}", "write": "admin"},
   {"path": "data/users/{self}", "write": "interact"}
  ]},
@@ -3957,7 +3971,8 @@ In the share menu's words: Contributors (the client) read the page data and writ
 a list or a query, nor anyone else's tags under `tags-agency`. Under `signoffs`, each person
 writes only their own subtree and no Editor writes anyone else's: only the page's own owner can
 (**What the rules enforce, and what they can't**). Under `editors`, each Editor writes only their
-own marker and nobody below Editor writes one.
+own marker and nobody below Editor writes one. Only the page's owner writes `sides`, and
+everyone who reads page data reads it.
 A Viewer, a Commenter, and anyone from outside the organization read nothing from the page data
 and write nothing. The `profile` scope lets the page show each editor's name ("Edited by
 {name}").
@@ -4069,6 +4084,7 @@ with a plain description holds plain data the page writes with no stamp.
 | Brief sign off | `signoffs/{id}/items/{item}`, `{id}` the writer's own id | Each Contributor, their own | Plain data, no stamps: `kind:` (signoff or changes), `round:`, `send:` (the `send-{id}` it answers), `at:`, `byName:`, `notes:`, `concepts:` (the lanes a change request names), `copies:` (the ids of its copy documents). Only documents here are items. A page from before kept per concept approvals in `client/brief-{lane}-r{round}` (`approved`, `notes`); they are never recorded as a sign off (**Pulling decisions**) |
 | Sign off copies | `signoffs/{id}/copies/{item}-overview` and `{item}-{lane}` | The same writer | The round's brief and each covered concept as the client saw them at sign off: for each stamped part **Loading the brief** fills, its `value`, plain, with no stamp, and no publish time field, send or reopen. Split past 200 KiB as a version is |
 | Sign off writers | `signoffs/{id}` | The writer | `lastAt:`, so the page can find every writer's items, as for comments |
+| Sides | `sides/campaign` | Claude, as the page's owner | Plain data from the campaign's `page-sides` finding (**1a**), rewritten at every publish and every pull that changed it: `editors:` the ids seen on Aspire's side, `approvers:` the confirmed approver accounts, `refused:` the refused sign offs. Only the owner writes it, so no Editor can take their id off it. A chat session that isn't the page owner's can't write it: Claude says so in one line, the page then judges sign offs by the markers alone, and the pull still runs every check |
 | Editor markers | `editors/{id}` | Each Editor, their own | `lastAt:`, written by the page on every load where `canEdit()` is true, before any control renders. Its existence marks `{id}` as on Aspire's side |
 | Own sign offs | `data/users/{id}/signoffs` | Each person, their own | `items:` `{itemId: at}`, the sign off items this person made, which their page checks the shared ones under their id against |
 | Creator changes call | `client/changes-{net}-{handle}-r{round}` | Client | `approved`, `notes` |
@@ -4399,7 +4415,7 @@ the write.
 **Not logged.** Each person's own state under `data/users` (done marks, inbox read and cleared
 marks, collapsed sections, the remembered round) is private to them, even from Claude, so logging
 it in shared data would publish it; it never logs. Nor do the log's own writes (entries,
-`lastAt`, leases), an Editor's marker under `editors`, a sign off's copy documents (the sign off
+`lastAt`, leases), an Editor's marker under `editors`, Claude's `sides/campaign`, a sign off's copy documents (the sign off
 logs once), `agency/edit-check`, `agency/tag-delivery`, a file's scan state (`agency/files`), a write the rules refused (the field shows "Not saved"),
 or anything in **Preview as client**, which never writes. An **Export** writes nothing, so it
 never logs either.
@@ -4694,7 +4710,9 @@ behalf" is held this way, and only this far:
   of what was signed, written by the signer, so a later edit to the brief never becomes the signed
   text, and the pull refuses a sign off the brief no longer matches.
 - **Holds, on screen.** **Sign off** and **Request changes** never render for an Editor or in
-  **Preview as client**, and a sign off the pull would drop shows "Not counted".
+  **Preview as client**. A sign off the pull would drop shows "Not counted", judged from the
+  markers and from `sides`, which only the page's owner writes; one from an account the CM hasn't
+  confirmed locks the brief but doesn't tick step 4 until it is confirmed.
 - **Doesn't hold: the page's owner.** The rules never limit the artifact's own owner, the account
   that published the page, so the owner can write under any `signoffs/{id}` and any `editors/{id}`.
   Claude writes page data as that owner and never writes either path; the page never offers it.
@@ -4757,7 +4775,7 @@ document. Steps 3 and 4 run after every publish.
    comments, one writer's `activity/{id}/days`, one `activity-editors/{id}/days` and one
    `tags-client/{id}/items`, at `view`: empty. Listing `comments`, `activity`, `activity-editors`
    or `tags-client` alone proves nothing, because the documents sit below them. List one writer's
-   `signoffs/{id}/items` and `signoffs/{id}/copies`, and `editors`, at `view`: empty. Whether an Editor is refused a write under
+   `signoffs/{id}/items` and `signoffs/{id}/copies`, `editors` and `sides`, at `view`: empty. Whether an Editor is refused a write under
    another person's `signoffs/{id}` can't be checked from the chat: Claude writes as the page's
    owner, whom the rules never limit, and `as_level` stands for a level, not a person.
 3. Read the published page itself with the Artifact tool and search it for every agency only value
