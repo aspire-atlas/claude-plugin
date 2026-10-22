@@ -124,7 +124,8 @@ uses, in the order `hooks-and-ctas.md`, **Where recommendations come from**, giv
   framework (the campaign's `frameworks` in `campaign:{slug}-cas` for that slot, else the
   defaults in `cas-campaign.md`, **1d**, **Master Brief**: V1 PAS, V2 BAB, V3 4Ps, V4 HSO, V5 SSS),
   length, which hook and CTA by number, the VO in a few lines, the B-roll shot numbers it uses,
-  and a one line note. Every hook and CTA is used by at least one variant. It is for the editors:
+  and a one line note. V1 uses H1 and C1. When there are at least as many variants as hooks, every
+hook is used by at least one variant, and every CTA when there are at least two. It is for the editors:
   the client never sees it.
 - **Disclosure treatment**: the paid partnership label, plus anything `review:disclosure` says
   when it exists (read it for disclosure only).
@@ -147,9 +148,9 @@ brief, never the check:
    hook inside the first three seconds.
 3. The B-roll list is complete: 10 to 15 shots, every beat served by at least one.
 
-Show the result per lane on the page ("Coverage: 3 of 3 checks pass"). A fourth check runs on the
-variant plan and is shown with it: every variant names a hook, a CTA and shots that exist, and its
-length holds its beats.
+Show the result per lane on the page ("Coverage: 3 of 3 checks pass"). The variant plan gets its
+own check, shown with the plan and never counted in the coverage result: every variant names a
+hook, a CTA and shots that exist, and its length holds its beats.
 
 **The hook log.** Follow `hooks-and-ctas.md`, **Limits**: read every hook and CTA ever briefed
 on the campaign, never reuse one, and append every new one as a `hook` finding.
@@ -180,7 +181,8 @@ shape:
    "body": "…", "length": "30 seconds", "runtime": {"instagram": "…", "tiktok": "…"},
    "broll": [{"n": 1, "shot": "…", "beat": "…"}],
    "product": {"name": "…", "sku": "[SKU]"},
-   "coverage": {"passed": 4, "of": 4, "failed": []},
+   "coverage": {"passed": 3, "of": 3, "failed": []},
+   "variantCheck": {"passed": true, "failed": []},
    "variants": [{"n": 1, "framework": "PAS", "length": "30 seconds", "hook": 1, "cta": 1,
                  "vo": "…", "broll": [1, 4, 7], "note": "…"}]}]}
 ```

@@ -149,7 +149,7 @@ The campaign object:
            "owns": "…", "goTo": "…"}],
  "files": [{"id": "f1", "label": "Spring launch strategy", "category": "Creative strategy proposal",
             "url": "https://…", "round": "all", "date": "2026-10-14", "dateFrom": "document"}],
- "frameworks": [{"id": "v1", "code": "PAS", "name": "Problem, agitate, solve",
+ "frameworks": [{"slot": 1, "code": "PAS", "name": "Problem, agitate, solve",
                  "use": "The hero, primary spend"}]}
 ```
 
@@ -168,7 +168,7 @@ written through the supersede rule; and the program files on Home's **Files**, w
 them from the newest file (**1e**, **Program files and the scan**), pulled the same way. Until a
 value is saved, Home hides its part (**1d**, **Home**).
 
-`frameworks` is optional: one per variant slot, `v1` to `v5`, each with `code`, `name` and `use`
+`frameworks` is optional: one per variant slot, `slot` 1 to 5, each with `code`, `name` and `use`
 (what it is for). Without it, the defaults in **1d**, **Master Brief**, stand. It reaches the
 record like `products`: an agency edit on Master Brief's **Frameworks**, pulled with **Pulling
 decisions** through the supersede rule, or the CM saying it in the chat.
@@ -418,7 +418,8 @@ new usage with each creator.
 product, name, positioning line, personas, trigger, framework, story, selling points, hero beats,
 body and length, beats, B-roll, runtime per platform, and the brief's tone of voice, do's and
 don'ts, disclosure and file naming carry over, and the hooks and CTAs start empty, so the variant
-plan keeps its frameworks, lengths, VO and shots and loses its hook and CTA picks, because every hook and CTA in the log is refused in every round. The
+plan keeps its frameworks, lengths and shots and loses its hook and CTA picks and its VO, which
+speaks the old hooks, because every hook and CTA in the log is refused in every round. The
 brief run (row 10) writes new ones, leading with the patterns that worked.
 
 **Past rounds are read only.** Once a round is done, nothing more is written for it: no roster,
@@ -684,7 +685,7 @@ The packet is the Master Brief tab, loaded from the data block on the round's br
 `atlas-creator-brief` in creator-ads mode (**1d**, **Master Brief**, **Loading the brief**). Its hooks and CTAs follow `hooks-and-ctas.md`, each with the reason it was
 recommended. Each concept's brief has its own approve control. Closing runs through **Pulling
 decisions**: a `brief` finding per approved lane with `locked: true`; Gate 4 `cleared` once every
-lane is locked; remove the reminder, post, republish. A brief with notes instead of an approval
+lane in the round's brief is locked, a removed concept aside; remove the reminder, post, republish. A brief with notes instead of an approval
 goes back to `atlas-creator-brief` for that lane, and the client sees it again.
 
 ### Pulling decisions
@@ -2103,8 +2104,8 @@ the page keeps**, and where each comes from in **Loading the brief** below.
 - **A concept**: product, name, positioning line, personas, conversion trigger, framework,
   story, selling points, the hero beats (problem, agitate, solve), the beats with their seconds,
   hooks H1 to H3, CTAs C1 to C2, the body and its length, runtime per platform, numbered
-  B-roll, and the editing coverage result. The number of hooks and CTAs follows the program
-  terms' deliverables (`sow.deliverables`, Hooks and CTAs), 3 and 2 when none are saved.
+  B-roll, and the editing coverage result. A concept has 3 hooks and 2 CTAs, the number the brief
+  agent writes (`hooks-and-ctas.md`).
 - **A hook**: its number, type (a hook pattern from `ad-reuse.md`, **Hook patterns**), the line
   (what is said, or "no voice"), what is shown, the overlay text, and why it was recommended.
 - **A CTA**: its number, type (Direct or Soft, `hooks-and-ctas.md`, **Writing the CTAs**), the
@@ -2135,7 +2136,7 @@ the page keeps**, and where each comes from in **Loading the brief** below.
 
 A Card with a Collapsible header like every section. Its title is "Round {n} brief", with the
 brief's status Badge beside the trigger: **Draft** (soft) until step 4 is sent, **In review with
-client** (processing) while it is open, **Signed off** (success) once it is cleared. The status is
+client** (processing) while it is open, which the client reads as "Waiting for your sign off", **Signed off** (success) once it is cleared. The status is
 worked out from the step 4 gate and each concept's sign off, never typed. While some concepts are
 signed off and others wait, the Badge stays In review with client and the meter says how many are
 signed off.
@@ -2153,7 +2154,7 @@ Inside:
   shots. For the agency it also needs every variant's framework, length, hook and CTA. The
   client's meter leaves the variant plan out, so it never counts what they can't see.
 - **The counts**, one soft Badge each, in a row that wraps: "Hooks {h} of {H}", "CTAs {c} of
-  {C}", "Creators briefed {b} of {m}" (the round's contracted creators whose brief state is
+  {C}" ({H} being 3 and {C} 2 for each concept in the round), "Creators briefed {b} of {m}" (the round's contracted creators whose brief state is
   sent, accepted, changed, approved or locked), "{k} open comments" (unresolved comments on the
   round's brief, the agency's own agency only comments counted for the agency only), "{s} of {t}
   signed off", and "Version {v}" (the brief finding's `version`, with "edited since" when a
@@ -2193,9 +2194,9 @@ glance (**Sections per tab**). Open, it is the editor, in this order:
    each, "Add a persona"), the story, and the selling points (one line each).
 3. **The hero (V1).** Problem, agitate and solve, one long text each, labelled by the concept's
    framework.
-4. **Hooks.** H1 to H{H}, one block each: the number, the type as a soft Badge, the line in quotes,
+4. **Hooks.** H1 to H3, one block each: the number, the type as a soft Badge, the line in quotes,
    "Shown:" and "Overlay:" lines, and the reason in `text-xs text-muted-foreground`.
-5. **CTAs.** C1 to C{C}, each with its type, the line, "Sends to:" (a bracketed blank stays a
+5. **CTAs.** C1 and C2, each with its type, the line, "Sends to:" (a bracketed blank stays a
    bracketed blank until someone fills it), "Lands at:" and the reason.
 6. **Body.** The body as long text, its length ("30 seconds"), the beats with their seconds,
    and the runtime per platform.
@@ -2203,7 +2204,8 @@ glance (**Sections per tab**). Open, it is the editor, in this order:
 8. **Creators.** The round's approved creators on this concept, as small creator rows with their
    brief state, each linking to their card on Selected Creators.
 9. **Coverage.** The editing coverage result Claude wrote ("Coverage: 3 of 3 checks pass"), and
-   "Edited since the check" when a page edit is newer than it. The page doesn't check coverage
+   "Edited since the check" when a page edit is newer than it. The variant plan's own check shows
+   with the plan, for the agency only. The page doesn't check coverage
    itself; the next brief run does.
 10. **Variant plan**, agency only, under an "Agency only" rule (**The variant plan** below).
 11. **Comments** and the sign off controls (**Comments and sign off** below).
@@ -2217,8 +2219,10 @@ CTA) are Selects.
 
 Two people can work on the brief at once. Each concept is its own document and every part its own
 key (**1e**, **Every editable value**), so two people editing two concepts, or two parts of one
-concept, both keep their work. Two people saving the same part at the same moment: the later save
-wins for that part only, and the other sees "{name} changed this {time}. Saving keeps yours." while
+concept, both keep their work. A hook, a CTA, a beat, a B-roll shot, the runtime and the product
+are each one part, saved whole, so two people changing the same hook at the same moment keep the
+later save. Two people saving the same part at the same moment: the later save wins for that
+part only, and the other sees "{name} changed this {time}. Saving keeps yours." while
 the part is open.
 
 #### Rich text
@@ -2290,7 +2294,8 @@ after a Dialog confirm naming how many it changes.
 - **Add a concept** opens a Dialog: title "Add a concept to round {n}", a Select of the products in
   scope (those with no concept first, each marked "needs a concept"), an Input for the name, an
   optional Input for the positioning line, and Cancel (outline) and Add concept (default). The
-  page creates the concept's document (**1e**), with `added` set, opens it, and scrolls to it.
+  page slugs the name by **1a**'s rule (unique on the campaign, never `overview` or starting
+  `changes-`), creates the concept's document (**1e**), with `added` set, opens it, and scrolls to it.
   It takes the next concept color. It reaches Atlas as a new concept only through **Pulling
   decisions**, with its own confirmation.
 - **Needs a concept.** The products in scope (`products` in `campaign:{slug}-cas` with the page's
@@ -2344,16 +2349,19 @@ text. Every part above can differ, the variant plan aside: a creator never sees 
 #### Loading the brief
 
 The brief agent publishes the round's brief page with a data block (`creator-brief.md`,
-**Creator-ads mode**, **The data block**). After a brief run, Claude reads that block with the
-Artifact tool's `read`, writes it to the page data as stamps with `source` `claude` (and the
-variant plan to `agency`), writes the original version (**1e**, **Brief versions and Reset to
-original**), and republishes. A part the agent left as a bracketed blank stays one, so the page
+**Creator-ads mode**, **The data block**). Before a brief run, when the page has edits not yet pulled, Claude
+offers **Pulling decisions** first, so the run starts from them. After the run, Claude reads the
+block with the Artifact tool's `read`, writes it to the page data as stamps with `source`
+`claude` (the variant plan and the brief page link to `agency`) under **Claude's writes** (**1e**,
+**Every editable value**), so a part someone edited on the page since the last pull is kept and
+named, then writes the original version (**1e**, **Brief versions and Reset to original**) and
+republishes. A part the agent left as a bracketed blank stays one, so the page
 shows what is missing. Nothing the agent writes is dropped:
 
 | The brief agent writes | Master Brief part | Page data key |
 | ---------------------- | ----------------- | ------------- |
 | Page title | Brief title | `title` in `brief-rounds/r{round}` |
-| The brief page's link | Source doc | `sourceDoc` |
+| The brief page's link | Source doc, for the agency only | `briefPage:` in `agency/brief-round-r{round}` |
 | The round's summary line | Summary | `summary` |
 | Tone of voice | Tone of voice | `tone` |
 | Do's and don'ts | Do, Don't | `do-{id}`, `dont-{id}` |
@@ -2361,23 +2369,24 @@ shows what is missing. Nothing the agent writes is dropped:
 | Delivered file naming | Delivered file naming | `fileNaming` |
 | Standing rule banner | Notice | `notice` |
 | `brief` finding `version` | Version | `version:` |
-| Concept, from the lane | Name, positioning line | `name`, `line` in `briefs/{lane}-r{round}` |
+| Concept, from the lane, and its place in concept order | Name, positioning line, order | `name`, `line`, `order:` in `briefs/{lane}-r{round}` |
 | Persona, from the lane | Personas | `persona-{id}` |
 | Trigger and framework, from the lane | Trigger, framework | `trigger`, `framework` |
 | Story | Story | `story` |
 | Selling points | Selling points | `point-{id}` |
 | Hero beats | Problem, agitate, solve | `problem`, `agitate`, `solve` |
 | Beat structure, with seconds | Beats | `beat-{n}` |
-| 3 hooks: pattern, said, shown, overlay, reason | H1 to H3 | `hook-{n}` |
-| 2 CTAs: action, destination, moment, reason | C1 to C2 | `cta-{n}` |
+| 3 hooks: pattern, said, shown, overlay, reason | H1 to H3: type (the pattern), line (what is said), shown, overlay, why | `hook-{n}` |
+| 2 CTAs: type, action, destination, moment, reason | C1 to C2: type (Direct or Soft), line (the action), sends to, lands at, why | `cta-{n}` |
 | 1 body, and its length | Body, length | `body`, `length` |
 | Runtime per platform | Runtime | `runtime` |
 | 10 to 15 B-roll shots, each with its beat | B-roll | `broll-{n}` |
-| Product and SKU | Product | `product` |
-| Editing coverage result | Coverage | `coverage:` |
+| Product and SKU | Product: matched by name, ignoring case, to a product in scope, whose id it takes; no match keeps the name with an empty id and shows "Not in products in scope" | `product` |
+| Editing coverage result (the three checks) | Coverage | `coverage:` |
+| The variant plan's check | Variant check, for the agency only | `variantCheck:` in `agency/brief-{lane}-r{round}` |
 | Creators, from the roster | Creators | Not stored: read from the roster at publish |
-| Variant plan, V1 to V{v} | Variant plan | `v{n}-*` in `agency/brief-{lane}-r{round}` |
-| Frameworks used | Frameworks | `framework-{n}` in `agency/frameworks` |
+| Variant plan, V1 to V{v}: framework code, length, hook and CTA numbers, VO, shot numbers, note | Variant plan, the framework matched by its code to the campaign's frameworks | `v{n}-*` in `agency/brief-{lane}-r{round}` |
+| Frameworks used | Frameworks | `framework-{slot}` in `agency/frameworks` |
 
 A brief written before the agent wrote the data block is read from its page by its section
 headings into the same parts. A part it doesn't have (story, selling points, the hero beats, the
@@ -3464,11 +3473,12 @@ with a plain description holds plain data the page writes with no stamp.
 | Program terms | `program/terms` | Agency | `deliverable-{id}` (`{label, count}`), `adReadyVideos`, `variants`, `usageDays`, `allowlisting`, `partnershipAds`, `exclusivity`, `organic`. A page from before kept `makes`, `usage`, `exclusivity` and `notes` as text, in `agency/terms` until the fees were sent: Program terms reads `agency/terms` then `program/terms`, shows `makes` and `usage` that don't parse as one text row each ("What each creator makes", "Usage"), `exclusivity` as its row, and `notes` as a "Notes" row last, and the next publish moves them to `program/terms` |
 | Allowlisting uplift | `agency/terms` until the fees are sent, then `program/terms` | Agency | `upliftPct` |
 | Budget | `agency/budget` | Agency | `total` (stamp); `committed:`, `offersOut:`, `remaining:` (worked out at publish) |
-| The round's brief | `brief-rounds/r{round}` | Agency; Claude | `title`, `sourceDoc` (`{label, url, kind}`, `kind` `page` for the brief agent's page, `drive` or `link`), `summary`, `tone` (long text), `do-{id}`, `dont-{id}`, `disclosure`, `fileNaming`, `notice`; `status:` (draft, in review, signed off) and `version:` as at publish, both worked out again live on the page |
+| The round's brief | `brief-rounds/r{round}` | Agency; Claude | `title`, `sourceDoc` (`{label, url, kind}` for an imported doc, `kind` `drive` or `link`; empty for a brief the agent wrote), `summary`, `tone` (long text), `do-{id}`, `dont-{id}`, `disclosure`, `fileNaming`, `notice`; `status:` (draft, in review, signed off) and `version:` as at publish, both worked out again live on the page |
 | A concept's brief | `briefs/{lane}-r{round}` | Agency; Claude | `name`, `line`, `persona-{id}`, `trigger`, `framework` (`{code, name}`), `story`, `point-{id}`, `problem`, `agitate`, `solve`, `beat-{n}` (`{name, seconds, what}`), `hook-{n}` (`{type, line, shown, overlay, why}`), `cta-{n}` (`{type, line, destination, moment, why}`), `body`, `length`, `runtime` (`{instagram, tiktok}`), `broll-{n}` (`{shot, beat}`), `product` (`{id, name, sku}`, `id` empty for a product not in scope), `added` and `removed` (true or false); `order:` its place in concept order, `coverage:` (`{passed, of, failed}`, the checks that failed in plain words) and `version:` as at publish. Long text parts hold the saved HTML (**1d**, **Master Brief**, **Rich text**). A page from before kept `concept`, `hook-{id}`, `cta-{id}`, `broll-{id}`, `disclosure` and `donot-{id}` here: they read as `line`, the hooks, CTAs and shots in id order, and the brief's `disclosure` and don'ts, and the next publish writes them to the keys above |
-| Variant plan | `agency/brief-{lane}-r{round}` | Agency; Claude | One key per part of each variant, so two editors on two parts of one variant keep both: `v{n}-framework` (`{code, name}`), `v{n}-length`, `v{n}-hook` and `v{n}-cta` (the number), `v{n}-vo` (long text), `v{n}-broll` (a list of shot numbers), `v{n}-note`. A page from before kept `variant-{n}` objects: each reads into these keys, and the next publish writes them |
-| Frameworks | `agency/frameworks` | Agency; Claude | `framework-{n}` (`{code, name, use}`), one per variant slot, from `frameworks` in `campaign:{slug}-cas` or the defaults |
-| Brief versions | `briefs/{lane}-r{round}/versions/{id}`, `brief-rounds/r{round}/versions/{id}`, `agency/brief-{lane}-r{round}/versions/{id}` | Agency; Claude for `original` | Plain data (**Brief versions and Reset to original**): `kind:` (original, before reset, before restore), `at:`, `by:`, `byName:`, `covers:` (the whole brief, or the concept), `fields:` the document's keys and stamps at that moment, `part:` and `parts:` when one version is split |
+| The brief, agency only | `agency/brief-round-r{round}` | Agency; Claude | `briefPage:` the brief agent's page link, which holds the variant plan, so it never sits where the client reads |
+| Variant plan | `agency/brief-{lane}-r{round}` | Agency; Claude | One key per part of each variant, so two editors on two parts of one variant keep both: `v{n}-framework` (`{code, name}`), `v{n}-length`, `v{n}-hook` and `v{n}-cta` (the number), `v{n}-vo` (long text), `v{n}-broll` (a list of shot numbers), `v{n}-note`; `variantCheck:` the brief agent's check of the plan (`{passed, failed}`). A page from before kept `variant-{n}` objects: each reads into these keys, and the next publish writes them |
+| Frameworks | `agency/frameworks` | Agency; Claude | `framework-{slot}` (`{slot, code, name, use}`), one per variant slot 1 to 5, from `frameworks` in `campaign:{slug}-cas` or the defaults |
+| Brief versions | `agency/brief-versions/{doc}/{id}`, `{doc}` naming the document it saves: `round-r{round}`, `concept-{lane}-r{round}` or `variants-{lane}-r{round}` | Agency; Claude for `original` | Plain data (**Brief versions and Reset to original**): `kind:` (original, before reset, before restore), `at:`, `by:`, `byName:`, `covers:` (the whole brief, or the concept), `fields:` the document's keys and stamps at that moment, `part:` and `parts:` when one version is split |
 | Brief comments, cut comments | `comments/{id}/items/{comment}` | Each person, their own | `{id}` is the writer's own id (`user.id()`), the `{self}` the rules check, so the path names the author. `on:` (`brief-{lane}-r{round}`, `brief-overview-r{round}` or `cut-{cut}-v{version}`), `part:` on a brief (the part's id, as in the `#brief` hash links), `text`, `replyTo:`, `timecode:` and `drawing:` (the strokes, as data) on a cut, `resolved`, `createdAt:` |
 | Comment writers | `comments/{id}` | Each person, their own | `lastAt:` the time of their newest comment, written with each one, so the page can find every writer's items (**Live updates**) |
 | Agency only comments | `agency/comments/items/{comment}` | Agency | The same fields, kept from the client |
@@ -3949,8 +3959,8 @@ cleared fields and writes nothing for them.
 ### Brief versions and Reset to original
 
 Page data keeps only the newest value of each key; nothing in it keeps old versions on its own. So
-the brief keeps its own, as documents beside each brief document (**What the page keeps**, Brief
-versions):
+the brief keeps its own, as agency documents, one per brief document it saves (**What the page
+keeps**, Brief versions):
 
 - **The original.** After each brief run, and after an import that replaces the brief, Claude
   writes a version with `kind` original and `id` `original-v{version}` for the round's brief, each
@@ -3964,8 +3974,9 @@ versions):
   the brief as it is now, so nothing changed. Try again."
 - **Resetting and restoring.** For each document it covers, the page compares the saved version
   with the document now and writes, in one merge, only the keys that differ: the saved value as a
-  new stamp with `source` `manual`, the editor as `by`, and `restored` naming the version, and
-  `null` for a key that the saved version doesn't have. So the reset is itself an edit with who
+  new stamp with `source` `manual`, the editor as `by`, and `restored` naming the version, and a stamp
+  with `value` `null` for a key that the saved version doesn't have, so its line says who
+  removed it. So the reset is itself an edit with who
   made it: it shows in History, in **Versions**, and comes back through **Pulling decisions**.
   Concepts added after the version stay and are named in the Dialog; a concept removed since is
   brought back when the reset covers the whole brief. Comments, sign offs and the client's calls
@@ -3974,18 +3985,20 @@ versions):
   it is reset keeps their text open with "{name} reset this {time}. Saving keeps yours." Restoring
   the "before reset" version brings everything back.
 - **Size.** A document is at most 256 KiB, and a whole page's data at most 25,000 documents. A
-  concept with all five of its long text parts at the 20,000 character limit is about 110 KiB with
-  its stamps, and so is a variant plan with five full VOs, so the page counts a document's size before each save and refuses a save past 200 KiB
+  concept with all five of its long text parts at the 20,000 character limit is roughly 110 KiB
+  with its stamps when the text is plain English, more with accented or other multi byte
+  characters, and so is a variant plan with five full VOs. What holds the limit is the check: the
+  page counts a document's size in bytes as it will be stored before each save, and refuses a save past 200 KiB
   with "This concept is too long to save. Shorten {part}." A version that would pass 200 KiB is
   split across documents, `{id}-p1`, `{id}-p2` and so on, by key, the first carrying `parts:`,
   and is read only when every part is there. In practice a concept is a few KiB and a version one
   document.
 - **How many.** The page keeps every original and the newest 20 other versions per document, and
-  deletes the older ones after a new version saves. A round's brief with five concepts uses at most
+  deletes the older ones with a page data delete (Editors may delete) after a new version saves. A round's brief with five concepts uses at most
   a few hundred documents this way.
-- **Who.** Only the agency writes versions, resets and restores; the rules keep `agency` versions
-  from the client, and the client never sees **Versions** or the reset controls, though the
-  concepts' versions sit beside their briefs, which the client reads anyway.
+- **Who.** Only the agency writes versions, resets and restores. Every version lives under
+  `agency`, so the client can't read one, drafts from before review and the names on them
+  included, and never sees **Versions** or the reset controls.
 
 ### What the rules enforce, and what they can't
 
@@ -3996,7 +4009,7 @@ The data rules check a path against the person's share level, nothing more. They
 - The client writes under `client`, their own subtree of `comments` and of `activity`, and their
   own state under `data/users`, and their own subtree of `tags-client` and of `tags-agency`,
   and nowhere else. A write to `edits`, `program`, `briefs`,
-  `creators`, `reviews` or `agency` from the client is refused.
+  `brief-rounds`, `creators`, `reviews` or `agency` from the client is refused.
 - Each person's own state under `data/users` is private to them, even from the page's owner and
   from Claude.
 - A comment can be changed only by the person who wrote it, or by an Editor.
