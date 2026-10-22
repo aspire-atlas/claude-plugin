@@ -86,6 +86,13 @@ never from a new search, and fees are shown as agreed. Also read the hook log
 (`recordType` `hook` on the campaign's prefix) and the saved findings this reference already
 uses, in the order `hooks-and-ctas.md`, **Where recommendations come from**, gives.
 
+**The brief as it stands.** When the lane already has a brief this round (a re-run after the
+client's notes), or the round started from an earlier one, the main thread passes `current_brief`:
+the round's brief as the Master Brief holds it, in the data block's shape, as plain text. It wins
+over the lane record: the run keeps every part the notes don't ask to change, word for word,
+writes new hooks and CTAs where they are empty, and changes the rest only where the client's
+notes or a rule ask, saying which parts it changed.
+
 **Once per round, for every lane:**
 
 - **Summary**: two or three sentences on what the round's ads must do, from the campaign brief
@@ -108,7 +115,9 @@ uses, in the order `hooks-and-ctas.md`, **Where recommendations come from**, giv
   record, in its own words.
 - **Personas**: the lane's persona, split into one line per persona when it names several.
 - **Conversion trigger** and **framework**, from the lane record. The framework is the one the
-  hero (V1) is cut to.
+  hero (V1) is cut to. Match the lane's framework text, by code or name, ignoring case, to the
+  campaign's frameworks (below); with no match it is `{"code": "", "name": "<the lane's text>"}`
+  and the page asks the agency to pick one.
 - **Story**: the arc a creator lives on camera, three to five sentences.
 - **Selling points**: three to five, one line each, only what `brand:summary`, a `guideline` or
   the campaign brief supports.
@@ -127,10 +136,12 @@ uses, in the order `hooks-and-ctas.md`, **Where recommendations come from**, giv
   invented.
 - **Runtime per platform**: the clip lengths per network, from the lane or the campaign brief.
   None saved: a bracketed blank per network, and one line asking the CM to fill it.
-- **Variant plan**: V1 to the package's variants per creator (at most 5). Each variant: its
-  framework (the campaign's `frameworks` in `campaign:{slug}-cas` for that slot, else the
-  defaults in `cas-campaign.md`, **1d**, **Master Brief**: V1 PAS, V2 BAB, V3 4Ps, V4 HSO, V5 SSS),
-  length, which hook and CTA by number, the VO in a few lines, the B-roll shot numbers it uses,
+- **Variant plan**: V1 to the package's variants per creator (at most 5). V1 takes the concept's
+  framework. V2 onward take the campaign's framework for their slot (`frameworks` in
+  `campaign:{slug}-cas`, else the defaults in `cas-campaign.md`, **1d**, **Master Brief**: V2 BAB,
+  V3 4Ps, V4 HSO, V5 SSS), unless that is the concept's framework already, in which case they
+  take the next slot's. Each variant:
+  its framework, length, which hook and CTA by number, the VO in a few lines, the B-roll shot numbers it uses,
   and a one line note. V1 uses H1 and C1. When there are at least as many variants as hooks, every
   hook is used by at least one variant, and every CTA when there are at least two. It is for the
   editors: neither the client nor a creator ever sees it.
@@ -165,8 +176,10 @@ lanes set the audience, the roster replaces the shortlist, and the gates replace
 **The data block.** The page carries the whole round's brief once more as data, so the campaign
 page loads it with nothing lost (`cas-campaign.md`, **1d**, **Master Brief**, **Loading the
 brief**, which maps every field above to a part of the page): one
-`<script type="application/json" id="cas-brief-data">` element, written with `json.dumps`, in this
-shape:
+`<script type="application/json" id="cas-brief-data">` element, written with `json.dumps` and then
+every `<`, `>` and `&` replaced with `\u003c`, `\u003e` and `\u0026`, so no text in it (a quoted
+caption holding `</script>`, say) can end the element. JSON reads those back as the same
+characters. In this shape:
 
 ```json
 {"schema": 1, "campaign": "{slug}", "round": 1, "version": 1, "title": "…", "summary": "…",
@@ -203,10 +216,12 @@ After the briefs are approved, a creator may reply with their own version (`cas-
 the round, and `revision`: the creator's handle and network, their concept, and their version as
 pasted. Then the agent compares, and does nothing else:
 
-1. Read the concept's newest locked `brief` finding as the approved brief, with its text as the
-   Master Brief holds it: the campaign page's page data for that concept and round
-   (`briefs/{lane}-r{round}` and `brief-rounds/r{round}`, `cas-campaign.md`, **1e**), read with
-   the Artifact tool, and the brief page only for a part the page data doesn't have, and the
+1. Read the concept's newest locked `brief` finding as the approved brief, with its text as it
+   was signed off: the `locked` version saved when it was locked (`cas-campaign.md`, **1e**,
+   **Brief versions and Reset to original**), passed by the main thread, never the page data as
+   it is now, so an edit made after the lock is not taken as approved. Long text is compared as
+   plain text, after the same conversion the page uses (lists as lines), so formatting is never
+   a difference. Also read the
    creator's newest `brief-revision` when one exists (a second round compares against the
    approved brief, not the last revision).
 2. Compare field by field: the positioning line, personas, trigger, story, selling points, the

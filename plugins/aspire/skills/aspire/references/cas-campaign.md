@@ -754,15 +754,18 @@ the client's calls, each named with who made it:
   `edits`, an edit to the brief's tone of voice, do's, don'ts, disclosure or file naming counting
   as a change to every lane. A reset or a restored version is named as one line ("{Concept} reset
   to the original by {name}", "Round 2 brief restored to the version from {time} by {name}") and
-  its fields are recorded like any edit. The variant plan comes back as `edits` lines on the same
-  finding. The lane's next brief run starts from the edited text.
+  its fields are recorded like any edit. Every new `brief` finding copies `locked` and `removed`
+  from the lane's newest one unless this pull changes them, so a tone edit that touches every
+  lane never brings back a removed concept or unlocks a signed off one. The variant plan comes
+  back as `edits` lines on the same finding. The lane's next brief run starts from the edited text.
 - **Concepts added or removed.** A concept added on the page is named in the batch picker and then
   gets its own confirmation, "Save {concept} as a concept for {campaign}?", which appends
   `campaign:{slug}-lane-{lane}` with its name, line as `concept`, framework, trigger, personas
   joined as `persona`, an empty casting filter, `creatorsNeeded` 0 and `source` `page`, then its
   `brief` finding with `added`. Discovery doesn't fill its pool until the CM sets how many
   creators it needs. A removed concept gets a `brief` finding with `removed` for that round; its
-  lane record stays.
+  lane record stays. A concept brought back, by **Bring back** or a reset, gets one with
+  `removed` false, named "{concept} brought back by {name}".
 - **Frameworks.** A change on **Frameworks** goes to `frameworks` in `campaign:{slug}-cas`, with
   the program details' own confirmation.
 - **Creator profiles and per round edits.** Name, descriptor, location and why we picked them
@@ -2242,7 +2245,11 @@ Tab in a list, and Enter on an empty list item work as in any editor, and each h
   toolbar action and each `beforeinput` event (`formatBold`, `formatItalic`, `formatUnderline`,
   `insertParagraph`, `insertFromPaste`, `deleteContentBackward` and the rest) changes that list
   through the Selection and Range APIs, then the page draws the field again from the list and
-  puts the caret back. It never calls `document.execCommand`, which is deprecated.
+  puts the caret back. It never calls `document.execCommand`, which is deprecated. While an input
+  method is composing (`isComposing`, between `compositionstart` and `compositionend`, as with a
+  phone keyboard's suggestions or Chinese, Japanese or Korean input), the page leaves the field to
+  the browser and redraws nothing; on `compositionend` it reads the composed text into the list
+  once. So typing on a phone never doubles or drops letters.
 - **Link.** Link opens a small Dialog with the address and the text, and Remove link when the
   selection is on one. Only `https:`, `http:` and `mailto:` addresses are kept. A saved link opens
   in a new tab with `rel="noopener noreferrer"`.
@@ -2263,7 +2270,8 @@ Tab in a list, and Enter on an empty list item work as in any editor, and each h
   on a paragraph. Every value is run through the same filter as a paste when it is read back,
   from page data or from the page itself, because page data is untrusted. The page draws it by
   building nodes from the filtered blocks, never by setting `innerHTML` from a stored value.
-  Indented paragraphs take `pl-6` per step from a fixed lookup of the four classes.
+  Indented paragraphs take `pl-6`, `pl-12`, `pl-16` or `pl-24` for steps 1 to 4, from a fixed
+  lookup, all on Tailwind's default scale.
 - **Size.** A long text value holds up to 20,000 characters of saved HTML; the field shows "{n}
   characters left" once under 2,000 remain, and refuses more. That keeps a concept well inside
   one document (**1e**, **Brief versions and Reset to original**).
@@ -2352,11 +2360,14 @@ text. Every part above can differ, the variant plan aside: a creator never sees 
 
 The brief agent publishes the round's brief page with a data block (`creator-brief.md`,
 **Creator-ads mode**, **The data block**). Before a brief run, when the page has edits not yet pulled, Claude
-offers **Pulling decisions** first, so the run starts from them. After the run, Claude reads the
+offers **Pulling decisions** first, then passes the brief as the page holds it to the run as
+`current_brief`, so the run starts from the agency's text, not the lane record. After the run, Claude reads the
 block with the Artifact tool's `read`, writes it to the page data as stamps with `source`
 `claude` (the variant plan and the brief page link to `agency`) under **Claude's writes** (**1e**,
 **Every editable value**), so a part someone edited on the page since the last pull is kept and
-named, then writes the original version (**1e**, **Brief versions and Reset to original**) and
+named. Every numbered or listed key the block no longer carries (a B-roll shot, a beat, a
+persona, a selling point, a do, a don't, a variant's parts) gets a stamp with `value` `null`, as a
+reset does, so a shorter re-run leaves nothing stale. Then Claude writes the original version (**1e**, **Brief versions and Reset to original**) and
 republishes. A part the agent left as a bracketed blank stays one, so the page
 shows what is missing. Nothing the agent writes is dropped:
 
@@ -3480,7 +3491,7 @@ with a plain description holds plain data the page writes with no stamp.
 | The brief, agency only | `agency/brief-round-r{round}` | Agency; Claude | `briefPage:` the brief agent's page link, which holds the variant plan, so it never sits where the client reads |
 | Variant plan | `agency/brief-{lane}-r{round}` | Agency; Claude | One key per part of each variant, so two editors on two parts of one variant keep both: `v{n}-framework` (`{code, name}`), `v{n}-length`, `v{n}-hook` and `v{n}-cta` (the number), `v{n}-vo` (long text), `v{n}-broll` (a list of shot numbers), `v{n}-note`; `variantCheck:` the brief agent's check of the plan (`{passed, failed}`). A page from before kept `variant-{n}` objects: each reads into these keys, and the next publish writes them |
 | Frameworks | `agency/frameworks` | Agency; Claude | `framework-{slot}` (`{slot, code, name, use}`), one per variant slot 1 to 5, from `frameworks` in `campaign:{slug}-cas` or the defaults |
-| Brief versions | `agency/brief-versions/{doc}/{id}`, `{doc}` naming the document it saves: `round-r{round}`, `concept-{lane}-r{round}` or `variants-{lane}-r{round}` | Agency; Claude for `original` | Plain data (**Brief versions and Reset to original**): `kind:` (original, before reset, before restore), `at:`, `by:`, `byName:`, `covers:` (the whole brief, or the concept), `fields:` the document's keys and stamps at that moment, `part:` and `parts:` when one version is split |
+| Brief versions | `agency/brief-versions/{doc}/{id}`, `{doc}` naming the document it saves: `round-r{round}`, `concept-{lane}-r{round}` or `variants-{lane}-r{round}` | Agency; Claude for `original` | Plain data (**Brief versions and Reset to original**): `kind:` (original, locked, before reset, before restore), `at:`, `by:`, `byName:`, `covers:` (the whole brief, or the concept), `fields:` the document's keys and stamps at that moment, `part:` and `parts:` when one version is split |
 | Brief comments, cut comments | `comments/{id}/items/{comment}` | Each person, their own | `{id}` is the writer's own id (`user.id()`), the `{self}` the rules check, so the path names the author. `on:` (`brief-{lane}-r{round}`, `brief-overview-r{round}` or `cut-{cut}-v{version}`), `part:` on a brief (the part's id, as in the `#brief` hash links), `text`, `replyTo:`, `timecode:` and `drawing:` (the strokes, as data) on a cut, `resolved`, `createdAt:` |
 | Comment writers | `comments/{id}` | Each person, their own | `lastAt:` the time of their newest comment, written with each one, so the page can find every writer's items (**Live updates**) |
 | Agency only comments | `agency/comments/items/{comment}` | Agency | The same fields, kept from the client |
@@ -3964,6 +3975,11 @@ Page data keeps only the newest value of each key; nothing in it keeps old versi
 the brief keeps its own, as agency documents, one per brief document it saves (**What the page
 keeps**, Brief versions):
 
+- **The locked version.** When **Pulling decisions** locks a concept (step 4, or a later sign
+  off), Claude writes a version with `kind` locked and `id` `locked-v{version}` for that concept
+  and the round's brief, holding the text the client signed off. A creator's changed brief is
+  compared against it (`creator-brief.md`, **A creator's revision**), and 1g sends it. It is
+  never pruned.
 - **The original.** After each brief run, and after an import that replaces the brief, Claude
   writes a version with `kind` original and `id` `original-v{version}` for the round's brief, each
   concept, and each variant plan, holding what it just loaded, with `source` `claude` or `file`.
@@ -3995,7 +4011,7 @@ keeps**, Brief versions):
   split across documents, `{id}-p1`, `{id}-p2` and so on, by key, the first carrying `parts:`,
   and is read only when every part is there. In practice a concept is a few KiB and a version one
   document.
-- **How many.** The page keeps every original and the newest 20 other versions per document, and
+- **How many.** The page keeps every original and locked version and the newest 20 other versions per document, and
   deletes the older ones with a page data delete (Editors may delete) after a new version saves. A round's brief with five concepts uses at most
   a few hundred documents this way.
 - **Who.** Only the agency writes versions, resets and restores. Every version lives under
@@ -4165,8 +4181,8 @@ core Aspire platform.
 After Gate 4 clears, each creator gets their concept's locked brief.
 
 1. **Send the briefs to creators.** One `brief` draft per creator (`rates-and-terms.md`,
-   **Drafts**, the brief template) carrying their creator copy as text: their concept's locked
-   brief as the Master Brief holds it, every part but the variant plan and the coverage check,
+   **Drafts**, the brief template) carrying their creator copy as text in its `{brief text}` slot: their
+   concept's locked version (**1e**, **Brief versions and Reset to original**), as plain text, every part but the variant plan and the coverage check,
    with the round's tone of voice, do's and don'ts, disclosure and file naming. Never the brief
    agent's page link: that page holds the variant plan, every concept and the agreed fees. Show them ready to copy.
    On the CM's word that they went, one picker writes `sentAt` and roster `briefState` sent.
@@ -4175,8 +4191,8 @@ After Gate 4 clears, each creator gets their concept's locked brief.
      `briefState` accepted. Nothing goes to the client.
    - **Changed.** Launch `atlas-creator-brief` with the tool prefix, `profile_id`,
      `profile_slug`, `brief_mode` `creator-ads`, the campaign slug, the creator's round, and
-     `revision` (the creator's handle and network, their concept, and their version as
-     pasted). It returns the differences in plain words (hook text, runtime, a B-roll shot
+     `revision` (the creator's handle and network, their concept, their version as pasted, and
+     the concept's locked version from **1e**, **Brief versions and Reset to original**). It returns the differences in plain words (hook text, runtime, a B-roll shot
      dropped or added, a CTA change). The reply
      picker names them: "@a changed the {concept} brief: Hook B now 'One charge. Friday to
      Sunday.', V2 60 seconds instead of 45, B-roll shot 07 dropped. Send these to the client,
