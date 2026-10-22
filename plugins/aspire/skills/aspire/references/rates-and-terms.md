@@ -53,9 +53,12 @@ cost, the whitelisting uplift included. The match score's Budget vs target compa
 creator's expected cost with it. The first of these that holds:
 
 1. **Saved**: `targetRateUsd` in `campaign:{slug}-terms`, when the CM set one.
-2. **From the budget**: `budgetUsd` in `campaign:{slug}-cas` divided by the creators the campaign
-   plans, `package.creators` once for each round in the working state, so the more rounds the
-   budget covers, the lower the target for each.
+2. **From the budget**: the budget total divided by the creators the campaign plans:
+   `package.creators` in `campaign:{slug}-cas` for each round the term holds, one round per
+   calendar month from `term.start` to `term.end`, both months counted. The budget total is
+   `budgetUsd` there, or the total edited on the page (`agency/budget` `total`) when it is newer
+   than the last pull. Both come from the campaign record, so discovery and vetting work out the
+   same target, and starting a round doesn't move it.
 
 With neither, there is no target rate: the factor is 0.5 for everyone and the score's reasons say
 "No target rate set" to the agency. Like the expected cost, it is agency only and never shown to

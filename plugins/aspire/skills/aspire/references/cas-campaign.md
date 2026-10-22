@@ -219,8 +219,16 @@ The lane object:
 ```json
 {"schema": 1, "lane": "busy-parent", "name": "Busy parent", "concept": "…",
  "framework": "Problem then fix", "trigger": "…", "persona": "…",
- "castingFilter": "…", "creatorsNeeded": 3, "source": "pitch"}
+ "castingFilter": "…", "creatorsNeeded": 3, "source": "pitch",
+ "casting": {"keywords": ["…", "…", "…"], "cities": []}}
 ```
+
+`casting` holds the concept's casting keywords (up to 4) and target cities, which the match
+score's Brief fit reads in every round until the round's brief changes them (**1d**, **Creator
+Selection**, **The match score**). Claude derives the keywords at setup from the persona and the
+casting filter, and the cities only when the pitch, brief or casting filter names them, never from
+a fixed list, and the C7 summary shows them so the CM can change them. A lane saved without
+`casting` gets it the same way at the next **Pulling decisions**, in its own line of the picker.
 
 `source` is where the lane came from at setup: `pitch`, `artifact`, `slides`, `pasted`, or
 `typed` (the C2 fallback), or `page` for a concept the agency added on Master Brief, recorded by
@@ -895,7 +903,8 @@ the client's calls, each named with who made it. The `send-` and `reopen-` stamp
   back as `edits` lines on the same finding. The lane's next brief run starts from the edited text.
   An edit to a concept's **Casting** also writes the concept's keywords and cities in full on the
   finding, as `casting` `{keywords, cities}`, which discovery and vetting read for the match
-  score's Brief fit.
+  score's Brief fit before the lane record's `casting`. A **Casting** edit made before the round has
+  any `brief` finding writes one with `casting` alone.
 - **Concepts added or removed.** A concept added on the page is named in the batch picker and then
   gets its own confirmation, "Save {concept} as a concept for {campaign}?", which appends
   `campaign:{slug}-lane-{lane}` with its name, line as `concept`, framework, trigger, personas
@@ -941,8 +950,8 @@ the client's calls, each named with who made it. The `send-` and `reopen-` stamp
   A send older than the newest import or reopen is skipped.
 - **Creator profiles and per round edits.** Name, descriptor, location and why we picked them
   go on the creator's `roster` finding as `name`, `descriptor`, `location` and `pickNote`, the
-  concept as `lane`, the persona as `persona` and the product as `details.product`, with the rest
-  of the batch.
+  concept as `lane`, the persona as `persona` (its name in the round's brief, resolved from the
+  `persona-{id}` the page saved) and the product as `details.product`, with the rest of the batch.
 - **Match score weights.** A `weight-*` stamp on `agency/match-score` newer than the last pull is
   written into `match` in `campaign:{slug}-cas` through the supersede rule, with `tunedAt` and
   `tunedBy` from the newest one, and named in one line of the picker ("Match score weights
@@ -1029,9 +1038,9 @@ client's level before the link goes out.
 | ----- | ------ | ------ | ------ | --- |
 | Handle, name, descriptor, location (City), concept, persona, product | yes | yes | Roster, creator card | Creator Selection, Selected Creators |
 | Tier (Nano to Mega) | yes | yes | Worked out at publish from followers (**Creator Selection**, **Tiers**) | Creator Selection, Selected Creators |
-| Campaign match, latest posts, reach, engaged accounts, round chips | yes | yes | Discovery, vetting, roster | Creator Selection |
-| The match score's band, competitor lines, and its Performance, Brief fit, Paid history and Content reach rows with their inputs, levels and Watch line | yes | yes | Stored at publish (**Creator Selection**, **The match score**) | Creator Selection |
-| The match score's Budget vs target row, its exact factor values, and the weights in use | no | yes | Stored at publish, `agency` | Creator Selection |
+| Latest posts, reach, engaged accounts, round chips | yes | yes | Discovery, vetting, roster | Creator Selection |
+| Campaign match: the client's score, its band, competitor lines, and its Performance, Brief fit, Paid history and Content reach rows with their inputs, levels and Watch line | yes | yes | Stored at publish (**Creator Selection**, **The match score**) | Creator Selection |
+| The agency's score, its Budget vs target row, its levels over the whole pool, and the weights in use | no | yes | Stored at publish, `agency` | Creator Selection |
 | A creator's concept and persona for the round | yes, labels | yes, editable | The round's Master Brief, agency edits | Creator Selection |
 | Decision counts and the hook rate tile in **Summary** | yes | yes | Worked out on the page | Creator Selection |
 | Hook rate, engagement on Reels, paid work before, ad permissions | yes | yes | Vetting | Creator Selection |
@@ -1059,7 +1068,7 @@ client's level before the link goes out.
 | A file's scan state and what each scan found | no | yes | The page's scan | Home |
 | The brief's variant plan, the frameworks, **Versions** and **Reset to original** | no | yes | `atlas-creator-brief`, agency edits | Master Brief |
 | Agency notes, vetting evidence, safety detail, the recommendation | no | yes | Vetting, CM | Creator Selection |
-| The match score tuning panel and its stats | no | yes | Discovery and vetting | Creator Selection |
+| The match score tuning panel and its stats | no | yes | `agency/match-score`, the page | Creator Selection |
 | Email, phone, manager, reply window, last contact | no | yes | Creator card, CM | Creator Selection, Selected Creators |
 | Rate per deliverable (UGC video, Reel collab, 90 day usage), expected cost, cost per 1K reach, offer open and max, counters, waiting on | no | yes | Rates and terms | Creator Selection (expected cost, cost per 1K reach, waiting on), Selected Creators |
 | Email drafts and the reply log | no | yes | Campaign Manager | Selected Creators |
@@ -2408,9 +2417,10 @@ glance (**Sections per tab**). Open, it is the editor, in this order:
    **Casting**, under it: up to 4 casting keywords (one line each, "Add a keyword") and the target
    cities, when the brief names any (one line each, "Add a city"). They are what the match score's
    Brief fit reads (**Creator Selection**, **The match score**). The agency edits them and the
-   client reads them. Claude writes them at the first publish of a round's brief from the
-   concept's persona and casting filter in its `campaign:{slug}-lane-{lane}` record, and the
-   cities only when the brief or the lane names them, stamped `claude`; never from a fixed list.
+   client reads them. Claude seeds them at the round's first publish from `casting` in the
+   concept's `campaign:{slug}-lane-{lane}` record (**1a**), stamped `claude`, so they exist before
+   the creators are sent at step 2. The brief agent's data block doesn't carry them, so a brief run
+   or an import never touches them.
 3. **The hero (V1).** Problem, agitate and solve, one long text each, labelled by the concept's
    framework.
 4. **Hooks.** H1 to H3, one block each: the number, the type as a soft Badge, the line in quotes,
@@ -3032,7 +3042,8 @@ block with the Artifact tool's `read`, writes it to the page data as stamps with
 **Every editable value**), so a part someone edited on the page since the last pull is kept and
 named. Every numbered or listed key the block no longer carries (a B-roll shot, a beat, a
 persona, a selling point, a do, a don't, a variant's parts) gets a stamp with `value` `null`, as a
-reset does, so a shorter re-run leaves nothing stale. Then Claude writes the original version (**1e**, **Brief versions and Reset to original**) and
+reset does, so a shorter re-run leaves nothing stale. The **Casting** part's `keyword-{n}` and
+`city-{id}` are never in the block and never nulled this way. Then Claude writes the original version (**1e**, **Brief versions and Reset to original**) and
 republishes. A part the agent left as a bracketed blank stays one, so the page
 shows what is missing. Nothing the agent writes is dropped:
 
@@ -3049,7 +3060,6 @@ shows what is missing. Nothing the agent writes is dropped:
 | The run's `version`, the same for every lane it wrote | Each concept's version | `version:` in each `briefs/{lane}-r{round}`; the round's Version is the highest of them |
 | Concept, from the lane, and its place in concept order | Name, positioning line, order | `name`, `line`, `order:` in `briefs/{lane}-r{round}` |
 | Persona, from the lane | Personas | `persona-{id}` |
-| Casting keywords and target cities, from the lane's persona and casting filter | Casting | `keyword-{n}` (1 to 4), `city-{id}` |
 | Trigger and framework, from the lane | Trigger, framework | `trigger`, `framework` |
 | Story | Story | `story` |
 | Selling points | Selling points | `point-{id}` |
@@ -3322,7 +3332,7 @@ these when Claude publishes; nothing on the page calls Atlas.
 | Reach | Campaign match, sort, cost per 1K reach | `instagram.creatorMarketplaceReach` |
 | Engaged accounts | Campaign match, sort | `instagram.creatorEngagedAccounts`, which discovery writes in its ad figures |
 | Paid work before, ad permissions | Card details | `instagram.pastBrandPartnershipPartners`; partnership readiness, then the roster's `adPermissions` |
-| Concept, persona | Concept, Concept filter, sort, search | The agency's `concept` and `persona` edits, else the roster's `lane`, else `detail.lane`, named from the round's live Master Brief (**The match score**, **Concept and persona**) |
+| Concept, persona | Concept, Concept filter, sort, search | The agency's `concept` and `persona` edits, else the roster's `lane` and `persona`, else `detail.lane` and Claude's persona pick, named from the round's live Master Brief (**The match score**, **Concept and persona**) |
 | Bio | The match score's Brief fit and competitor lines | `instagram.biography`, `tiktok.bioDescription` |
 | Badges | The match score's Paid history and Content reach | `instagram.badges` |
 | Product | Concept, Products chips, sort | The roster's `details.product` or the agency's `product` edit. Neither agent assigns one, so a creator shows "No product" until the agency sets it on the page or the CM does in the chat. **No product per creator until someone sets it** |
@@ -3337,47 +3347,72 @@ holds for Instagram only, show "Not in Atlas". All three sort last.
 
 #### The match score
 
-The Campaign match is one number out of 100 for a creator in a round: how well they fit the
-concept they are cast on, from their paid signals, the round's Master Brief and the brand's saved
-records. It is the same number on every view: the Table, the card's fit ring, the creator viewer,
-the sort, **Copy decisions**, **Export**, the snapshot a decision saves, Home's lists, and
-discovery's shortlist and vetting's page for the campaign.
+The Campaign match is a number out of 100 for a creator in a round: how well they fit the concept
+they are cast on, from their paid signals, the round's Master Brief and the brand's saved records.
+
+**Two sides, one number each.** The agency's score counts all five factors below. The client's
+score is the same procedure with Budget vs target left out and the other four weights scaled up to
+fill its place, because Budget vs target is worked out from the expected cost, which the client
+must never be able to work out (**What the client sees** below). Each side sees one number for a
+creator on every view of the campaign page: the Table, the card's fit ring, the score's reasons,
+the creator viewer, the sort, **Export**, and the snapshot a decision saves. The agency's reasons
+also name the client's number: "The client sees {n}, without price".
 
 **Where it is computed.** Once, by the one procedure below. Claude runs it at each publish of the
-campaign page for every creator in the pool and every round they are in, and stores the result
-(**1e**, **What the page keeps**, Match scores): what the client may see in `scores` and in the
-page itself, and the rest in `agency`. Every view reads the stored result and none works it out
-again; where the page itself and `scores` differ, the newer `scoredAt` wins, as for every value.
-Between publishes it changes only when an Editor changes one of its inputs on the
-page: a creator's concept, a concept's casting keywords or target cities, or a weight. The
-Editor's page then runs the same procedure on the stored factor inputs, with no Atlas read and no
-new judgement, for the creators the change touches, and writes the new result once, so the
-client's view moves with it. It reads the weights, the creators' edits and `agency/scores-r{round}`
-again just before it writes, and starts over when one changed since it began, so two Editors
-saving at once never leave a mix of both. Only Editors and Claude write scores: `scores` sits
-under the page data's root rule, which no Contributor can write (**1e**). A keyword or city added on the page needs a read of the creator's
-posts, which only Claude does: until the next publish the score keeps the old Brief fit, and the
-concept's **Casting** part shows "Scores update at the next publish" to the agency. Discovery and
-vetting run the same procedure in creator-ads mode with the campaign's saved weights
-(`creator-discovery.md`, **Creator-ads mode**; `creator-vetting.md`, **Creator-ads lanes**), so
-their pages show the same number for the same inputs. Their pages are dated, and the campaign page
-holds the current one.
+campaign page for every creator in the pool and every round they are in that isn't Done, and
+stores both results (**1e**, **What the page keeps**, Match scores): the client's in `scores` and
+in the page itself, the agency's in `agency`. A Done round's scores stay as they were stored.
+Every view reads the stored result and none works it out again; where the page itself and
+`scores` differ, the newer `scoredAt` wins, as for every value.
 
-**The formula.** Score = 100 × the weighted sum of five factors, each from 0 to 1, rounded to a
-whole number. The weights are the campaign's saved ones (`match` in `campaign:{slug}-cas`, **1a**), else
-these defaults:
+Between publishes a score changes only when an Editor changes one of its inputs on the page, and
+the Editor's page then runs the same procedure on the stored inputs, with no Atlas read and no new
+judgement, for the creators the change touches, and writes both results once, so the client's
+view moves with it. The inputs the page can change:
 
-| Factor | Default weight | How it is worked out |
-| ------ | -------------- | -------------------- |
-| Performance | 0.30 | 0.6 × hook rate, from 0 at 30% to 1 at 70%; 0.2 × engagement on Reels, from 0 at 2% to 1 at 10%; 0.2 × engaged accounts on a log scale, from 0 at 1,000 to 1 at 1,000,000 |
-| Brief fit | 0.25 | The share of the concept's casting keywords (up to 4) the creator matches. When the concept names target cities and the creator's city is known: 0.75 × that share, plus 0.25 when the creator is in one of them |
-| Paid history | 0.15 | 0.5 × past paid partners on a log scale, from 0 at none to 1 at 10 or more; 0.25 when Atlas holds a partnership ads or branded content badge; 0.25 when the creator has worked with the brand before |
-| Budget vs target | 0.15 | Expected cost over the target rate: 1 at 0.8 or under, falling evenly to 0 at 1.5. 0.5 when the creator is unpriced or no target rate is set |
-| Content reach | 0.15 | 0.8 × median views over followers, from 0 at none to 1 at 50% or more; 0.2 when Atlas holds the strong hooks badge |
+- a creator's concept or persona, or their `location` (City), since a city match needs nothing
+  but the location;
+- a concept removed, deferred or brought back, which can leave a creator with "Needs a concept";
+- a concept's target cities;
+- a fee, offer or counter edited on the page, which changes that creator's expected cost
+  (`rates-and-terms.md`, **Expected cost**);
+- the budget total, which can change the target rate (`rates-and-terms.md`, **Target rate**);
+- a weight (**Match score tuning**).
 
-Every value is held between 0 and 1 before it is weighted. Weights that don't add up to 1 are
-scaled so they do. The client's decision is never an input: a call, its reason, a note or a
-Priority Yes never moves a score.
+A casting keyword added or changed on the page needs a read of the creators' posts, which only
+Claude does: until the next publish the score keeps the old Brief fit, and the concept's
+**Casting** part shows "Scores update at the next publish" to the agency. The Editor's page reads
+the weights, the creators' edits and `agency/scores-r{round}` again just before it writes, and
+starts over when one of them changed since it began, so two Editors saving at once never leave a
+mix of both. Only Editors and Claude write scores: `scores` sits under the page data's root rule,
+which no Contributor can write (**1e**).
+
+**Discovery's and vetting's pages.** Discovery and vetting run the same procedure in creator-ads
+mode, with the agency's five factors (`creator-discovery.md`, **Creator-ads mode**;
+`creator-vetting.md`, **Creator-ads lanes**). Their pages show the score as of their run, dated.
+It matches the campaign page's when the inputs are the same. The inputs that can differ are named
+on their pages: a fee, offer or counter recorded since the run, weights tuned on the page and not
+yet pulled, a city the agency set on the page, a concept change, and, on discovery's page before
+vetting screened the lane, the plain count of past paid partners. Their strong and weak signals
+rank their own lane's pool.
+
+**The formula.** Each input is turned into a value from 0 to 1 and held there (clamped); nothing is
+rounded until the end. Factor values are weighted sums of their parts, and the full score is
+100 × the weighted sum of the factors. The score shown is the full score rounded to a whole
+number; with a competitor conflict it is half the full score, rounded. The weights are the
+campaign's saved ones (`match` in `campaign:{slug}-cas`, **1a**), else these defaults:
+
+| Factor | Default weight | Parts |
+| ------ | -------------- | ----- |
+| Performance | 0.30 | 0.6 × hook rate: (rate − 30%) ÷ 40%. 0.2 × engagement on Reels: (rate − 2%) ÷ 8%. 0.2 × engaged accounts: log10(accounts ÷ 1,000) ÷ 3, so 1,000 is 0 and 1,000,000 is 1 |
+| Brief fit | 0.25 | Keyword share: the concept's casting keywords the creator matches ÷ the concept's keywords (up to 4). When the concept names target cities and the creator's city is known: 0.75 × the keyword share, plus 0.25 when the creator is in one of them |
+| Paid history | 0.15 | 0.5 × past paid partners: log10(1 + partners) ÷ log10(11), so none is 0 and 10 or more is 1. 0.25 × a partnership ads or branded content badge (1 or 0). 0.25 × worked with the brand before (1 or 0) |
+| Budget vs target | 0.15 | (1.5 − ratio) ÷ 0.7, where ratio is expected cost ÷ target rate, so 0.8 or under is 1 and 1.5 or over is 0. 0.5 when the creator is unpriced or there is no target rate. Agency only |
+| Content reach | 0.15 | 0.8 × median views ÷ followers ÷ 0.5, so 50% or more is 1. 0.2 × the strong hooks badge (1 or 0) |
+
+Weights that don't add up to 1 are scaled so they do; the client's four are scaled to 1 the same
+way. The client's decision is never an input: a call, its reason, a note or a Priority Yes never
+moves a score.
 
 **What each input reads.**
 
@@ -3385,28 +3420,29 @@ Priority Yes never moves a score.
   `instagram.reelsInteractionRate` and `instagram.creatorEngagedAccounts`, as **Where each field
   comes from** reads them. On TikTok, engagement is `tiktok.engagementRate` on the same scale,
   labelled "Engagement (TikTok)".
-- **Casting keywords and target cities**: the concept's **Casting** part in the round's live
-  Master Brief (**Master Brief**, **A concept**). A keyword matches when the creator's bio
-  (`instagram.biography`, `tiktok.bioDescription`), or a caption, transcript or on screen text of
-  one of their posts from the last 90 days in Atlas, says it or plainly means it. Claude judges
-  each match and keeps where it found it, the bio or the post's link, so every match can be shown.
-  At publish Claude judges every creator against every live concept in the round, so moving a
-  creator to another concept re-scores them on the page with no new read.
+- **Casting keywords and target cities**: the concept's **Casting** part for the round (**Master
+  Brief**, **A concept**), seeded from `casting` in the lane's `campaign:{slug}-lane-{lane}`
+  record (**1a**). A keyword matches when the creator's bio (`instagram.biography`,
+  `tiktok.bioDescription`), or a caption, transcript or on screen text of one of their posts from
+  the last 90 days in Atlas, says it or plainly means it. Claude judges each match and keeps where
+  it found it, the bio or the post's link, so every match can be shown. At publish Claude judges
+  every creator against every live concept in the round, so moving a creator to another concept
+  re-scores them on the page with no new read.
 - **The creator's city**: the agency's `location` edit only. Atlas holds no city.
-- **The concept**: the creator's concept in the round (**Concept and persona** below).
+- **The concept and persona**: **Concept and persona** below.
 - **Past paid partners**: the names in `instagram.pastBrandPartnershipPartners`. When vetting
   screened the creator's lane, this part is vetting's paid track record read instead, taken from
   the vetting finding's `detail.match`, which weighs partners in or near the brand's category
-  (`creator-vetting.md`, **Creator-ads lanes**): 1 for
-  two or more in the category, 0.6 for one in it or two or more near it, 0.3 for partners outside
-  it, 0 for none. So vetting's score and this one never disagree.
+  (`creator-vetting.md`, **Creator-ads lanes**): 1 for two or more in the category, 0.6 for one in
+  it or two or more near it, 0.3 for partners outside it, 0 for none. So vetting's score and this
+  one never disagree.
 - **Badges**: `instagram.badges`. Atlas passes them as Meta names them, so a badge counts when its
   words name partnership ads or branded content, or strong hooks (`high_hook`).
 - **Worked with the brand before**: the brand's name or handle in the past paid partners, a
   partnership marked post in Atlas that tags the brand's own handle, the brand's `partner` record
   for the creator, or an agreed fee for the creator in an earlier campaign of the brand's.
 - **Expected cost**: `rates-and-terms.md`, **Expected cost**.
-- **Target rate**: `rates-and-terms.md`, **Target rate**, from the campaign's terms and budget.
+- **Target rate**: `rates-and-terms.md`, **Target rate**.
 - **Median views**: the median `viewCount` of the creator's last 10 Reels, as the fee calculator
   reads it (`fees.md`, **Applying the rates**), over their Instagram followers; on TikTok,
   `tiktok.medianViews` over TikTok followers.
@@ -3426,18 +3462,18 @@ score's reasons name every input left out, under "Scored without". The inputs wi
 | ----- | ------------------- | ------------------- |
 | Hook rate, engaged accounts | Every TikTok creator; an Instagram creator Meta hasn't ranked | Performance from the parts it has; "Scored without hook rate, which TikTok doesn't report" on TikTok |
 | The creator's city | Every creator until the agency sets their location, since Atlas holds no city | Brief fit from the keywords alone; "City not known" when the concept names target cities |
-| Casting keywords | A concept whose **Casting** part is empty | Brief fit is left out; "This concept has no casting keywords yet" |
+| Casting keywords | A concept with no casting keywords for the round or in its lane record | Brief fit is left out; "This concept has no casting keywords yet" |
 | Past paid partners, badges | Every TikTok creator, and an Instagram creator Meta hasn't ranked | Paid history from worked with the brand before alone |
 | Median views | Fewer than 3 Reels with views in Atlas, or no TikTok median | Content reach from the badge alone, or left out when there is no badge data either |
-| Expected cost, target rate | An unpriced creator, or a campaign with no target rate | Budget vs target is 0.5, and the reasons say which is missing |
+| Expected cost, target rate | An unpriced creator, or a campaign with no target rate | Budget vs target is 0.5, and the agency's reasons say which is missing |
 
 A creator Claude hasn't scored yet (new in the pool since the last publish) shows "Not scored yet"
 with no ring, as on discovery's page, and sorts last.
 
 **Competitors.**
 
-- **Competitor conflict.** When the creator's bio names a saved competitor, the score is half the
-  full score, rounded, and the band reads "Competitor conflict" with "Bio names {competitor}".
+- **Competitor conflict.** When the creator's bio names a saved competitor, the score is halved as
+  the formula says, and the band reads "Competitor conflict" with "Bio names {competitor}".
 - **Past competitor deal.** When the past paid partners, or a partnership marked post in Atlas,
   name a saved competitor, the score is unchanged and a line reads "Past competitor deal:
   {brand}", one per competitor, the newest first, up to two and then "and {n} more".
@@ -3447,17 +3483,19 @@ still decide its recommendation (`creator-vetting.md`, **The recommendation**); 
 show what Atlas holds and change nothing else.
 
 **Bands.** 75 and up **Strong**, 60 and up **Good**, 45 and up **Possible**, under 45 **Weak**. A
-competitor conflict reads **Competitor conflict** whatever the number.
+competitor conflict reads **Competitor conflict** whatever the number. Each side's band is from
+its own score.
 
-**Strong and weak signals.** For each factor, the creators in the round's pool with a value for it
-are ranked. The top third is a strong signal and the bottom third a weak one, with ties kept
-together on the stronger side. With fewer than 6 creators holding a value, nothing is marked, and
-the reasons say "Too few creators to compare". Claude ranks the whole pool at publish, creators
-not sent yet included, and stores each creator's level per factor. A concept change on the page
-re-ranks Brief fit across the round's pool; a weight change re-ranks nothing, since no factor
-value moves. The **Watch:** line lists the creator's weak signals in plain words with their
-values, weakest first: "Watch: hook rate 31%, in the bottom third of the pool; no past paid
-partners". With none, there is no Watch line.
+**Strong and weak signals.** For each factor, the creators with a value for it are ranked. The top
+third is a strong signal and the bottom third a weak one, with ties kept together on the stronger
+side. With fewer than 6 creators holding a value, nothing is marked, and the reasons say "Too few
+creators to compare". The agency's levels rank the round's whole pool; the client's rank only the
+creators sent to the client, so a level never says anything about a creator the client hasn't
+seen. Claude ranks both at publish and stores each creator's levels. A concept change on the page
+re-ranks Brief fit for the round; a weight change re-ranks nothing, since no factor value moves.
+The **Watch:** line lists the creator's weak signals in plain words with their values, weakest
+first: "Watch: hook rate 31%, in the bottom third of the pool; no past paid partners". With none,
+there is no Watch line.
 
 **How it shows.**
 
@@ -3480,35 +3518,35 @@ partners". With none, there is no Watch line.
 - **About this data** says in plain words where each input comes from (Meta's creator figures
   through Aspire Atlas, the creator's posts in Atlas, the round's Master Brief and the brand's
   saved competitors, and for the agency the expected cost and the target rate); that the score is
-  100 times the weighted sum of five factors, each from 0 to 1, and how each is worked out; for the
-  agency only, the weights in use, "default" or "tuned {date}"; that a missing input is left out,
-  never guessed; how the bands and the strong and weak thirds are set; that the client's decisions
-  never change a score; and when Claude scored the creator, or which Editor's change re-scored
-  them.
+  100 times the weighted sum of the factors, each from 0 to 1, and how each is worked out; for the
+  agency only, the price factor and the weights in use, "default" or "tuned {date}"; that a missing
+  input is left out, never guessed; how the bands and the strong and weak thirds are set; that the
+  client's decisions never change a score; and when the score was last worked out.
 
-**What the client sees.** The score, the band, the ring, the competitor lines, and four factor
+**What the client sees.** Their score, its band, the ring, the competitor lines, and four factor
 rows: Performance, Brief fit, Paid history and Content reach, each with its inputs, bar and level.
-The Budget vs target row is agency only. In its place one line reads "Also counts price against
-Aspire's target, which only Aspire sees." The client's bars are filled to the value rounded to the
-nearest tenth, the Watch line and "Scored without" never name price, expected cost or the target
-rate, and About this data describes the price factor in words, with no weight or number. So the
-client can't work out a cost: they never see the expected cost, the target rate or the weights in
-use. The most the score lets them infer is a broad read of whether a creator is priced above or
-below Aspire's target, and only while the default weights, which this public plugin states, are in
-use.
+There is no Budget vs target row, no line saying price is counted, and no weight. Because the
+client's score never contains price, nothing on it, inputs included, lets the client work out an
+expected cost, a target rate or how a creator is priced, whatever the weights. The Watch line and
+"Scored without" never name price, expected cost or the target rate. `scores` holds only the
+client's result, and its `cause` says "publish" or "updated by Aspire", never which input moved.
 
 **Concept and persona.** Each creator is cast on one concept and one persona in each round, from
 the round's live Master Brief: a concept in the round that isn't removed or deferred, and one of
 that concept's personas. At publish, Claude takes the agency's `concept` edit for the round, else
 the roster's `lane`, else discovery's `detail.lane`, skipping any that isn't live in the round.
 With none left, the creator shows a warning Badge "Needs a concept" to the agency and Brief fit is
-left out. The persona is the agency's `persona` edit, else the concept's persona whose words Claude
-finds the creator best matches in their bio and recent posts, stamped `claude`, else the concept's
-first persona. Neither ever comes from a fixed list or from the notes. For the agency, the Table's
-Concept cell and the card's concept chip hold two Selects, Concept and Persona, from the round's
-brief; the client sees them as labels. A change saves to `edits/creator-{net}-{handle}-r{round}`
-(**Editing in place**), re-scores the creator on the page as above, and is pulled into the roster
-as `lane` and `persona` (**Pulling decisions**).
+left out. The persona is the agency's `persona` edit, else the roster's `persona`, else Claude's
+pick. Claude picks, at publish, for every live concept in the round, the concept persona whose
+words the creator best matches in their bio and recent posts, else the concept's first persona,
+and stores the picks in `agency/scores-r{round}` (`personas`), so a concept change on the page
+takes Claude's pick for the new concept with no new judgement. Neither ever comes from a fixed list
+or from the notes. For the agency, the Table's Concept cell and the card's concept chip hold two
+Selects, Concept and Persona, from the round's brief; the client sees them as labels. A change
+saves to `edits/creator-{net}-{handle}-r{round}` (**Editing in place**); a concept change also
+writes the `persona` stamp with `value` `null`, so a persona of the old concept never stays. It
+re-scores the creator on the page as above, and is pulled into the roster as `lane` and `persona`,
+the persona as its name in the round's brief (**Pulling decisions**).
 
 #### Match score tuning
 
@@ -3517,13 +3555,14 @@ needs from this tab:
 
 - **The weights**: `agency/match-score`, one stamp per factor: `weight-performance`,
   `weight-brief-fit`, `weight-paid-history`, `weight-budget` and `weight-content-reach`. A missing
-  or `null` key reads as the weight saved in `match` in `campaign:{slug}-cas`, else the default. Saving one
-  re-scores the pool on the Editor's page and writes the results, as **The match score** says, and
-  **Pulling decisions** carries it into `campaign:{slug}-cas`, so discovery and vetting score
-  with it too.
-- **Each decision's `score` snapshot**, and the stored factor values and levels per creator per
-  round (**1e**, **What the page keeps**, Match scores), to set the score against the client's
-  picks.
+  key reads as the weight saved in `match` in `campaign:{slug}-cas`, else the default. A `null`
+  stamp means "back to the default": it reads as the default, and **Pulling decisions** removes
+  that factor's weight from `match`. Saving one re-scores the pool on the Editor's page and writes
+  the results, as **The match score** says, and **Pulling decisions** carries it into
+  `campaign:{slug}-cas`, so discovery and vetting score with it too.
+- **Each decision's `score` snapshot** (the client's score the decider saw), and both stored
+  results with their factor values and levels per creator per round (**1e**, **What the page
+  keeps**, Match scores), to set the score against the client's picks.
 
 The client sees neither the panel nor the weights.
 
@@ -4412,14 +4451,16 @@ prefixes.
     Decision and doesn't render under 640px; every tier, city and product count matches its
     filter's result; pool creators not sent yet are only in `agency/pool`, never in the page itself;
     and **Copy decisions** holds the rows in view with no Expected cost for the client.
-18. The match score: each creator's score reads the same on the Table, the card's ring, the
-    score's reasons, **Copy decisions**, **Export** and the creator viewer, and equals `score` in
-    their stored result; the score's reasons show five factor rows for the agency and four for the
-    client, with no price, expected cost, target rate or weight anywhere the client or **Preview
-    as client** reads, `scores` included; a bio naming a saved competitor halves the score and
+18. The match score: on each side, a creator's score reads the same on the Table, the card's
+    ring, the score's reasons, **Export**, the sort and the creator viewer, and equals `score` in
+    that side's stored result; the client and **Preview as client** show the client's score, with
+    four factor rows, levels ranked over the creators sent, and no price, expected cost, target
+    rate, weight or agency score anywhere they read, `scores` included; the agency sees five rows
+    and "The client sees {n}, without price"; a bio naming a saved competitor halves the score and
     reads Competitor conflict; every input left out is named under "Scored without"; making a
-    decision changes no score; changing a creator's concept or a weight re-scores on the page and
-    the client's open view follows; the Factor bar's colors are green and amber under every brand
+    decision changes no score; each page edit **The match score** lists re-scores on the page and
+    the client's open view follows; a Done round's scores don't move; a brief run or import leaves
+    the **Casting** part as it was; the Factor bar's colors are green and amber under every brand
     theme, each with its Badge; and no keyword, city, competitor or target rate in the page comes
     from anywhere but the brief and the brand's records.
 
@@ -4618,8 +4659,8 @@ for creator decisions, `refused:` the refused sign offs and the refused decision
 | Review status | `client/cut-{cut}-v{version}` | Client | `status` (approved, changes requested, or open after Undo approval) |
 | Notes | the `notes` field on the decision and approval documents above, and agency notes on `agency/creator-{net}-{handle}` | Client; agency | A stamp each |
 | Scoring weights | `agency/match-score` | Agency | One stamp per factor, `weight-performance`, `weight-brief-fit`, `weight-paid-history`, `weight-budget`, `weight-content-reach` (**1d**, **Creator Selection**, **Match score tuning**), and `stats:` the tuning panel's figures |
-| Match scores | `scores/{net}-{handle}-r{round}`, for each creator sent to the client | Claude at publish; the Editor's page when it re-scores | Plain data, written whole with a `set`, the one stored result every view reads (**1d**, **Creator Selection**, **The match score**): `score:` (0 to 100, or `null` for not scored yet), `band:` (strong, good, possible, weak, conflict), `concept:` and `persona:` it was scored for, `factors:` `{performance, briefFit, paidHistory, contentReach}`, each `{value, level, inputs, without}` with `value` to the nearest tenth, `level` strong, middle, weak or none, `inputs` the plain words the row shows and `without` the inputs left out; `conflict:` the competitor the bio names, or `null`; `pastDeals:` the competitors in past paid deals; `watch:` the Watch line without price; `scoredAt:`, `scoredBy:` (`claude`, or the Editor's id) and `cause:` (`publish`, or the edit that re-scored it). Nothing about price is in it |
-| Match scores, agency only | `agency/scores-r{round}` | Claude at publish; the Editor's page when it re-scores | Plain data, one key per pool creator, `{net}-{handle}`, sent or not: `{exact, budget, ratio, levels, watch, briefHits, weights}`, where `exact` holds the five factor values unrounded, `budget` the Budget vs target value and its level, `ratio` expected cost over the target rate (or `null` and why), `levels` every factor's level, `watch` the full Watch line, `briefHits` the keyword and city matches per live concept in the round with where each was found, and `weights` the weights used. A creator not sent yet has their whole score here and in `agency/pool`, never under `scores` |
+| Match scores | `scores/{net}-{handle}-r{round}`, for each creator sent to the client | Claude at publish; the Editor's page when it re-scores | Plain data, written whole with a `set`: the client's result, which every view of the client's reads (**1d**, **Creator Selection**, **The match score**): `score:` (0 to 100, without Budget vs target, or `null` for not scored yet), `band:` (strong, good, possible, weak, conflict), `concept:` and `persona:` it was scored for, `factors:` `{performance, briefFit, paidHistory, contentReach}`, each `{value, level, inputs, without}` with `value` out of 100, `level` strong, middle, weak or none ranked over the creators sent to the client, `inputs` the plain words the row shows and `without` the inputs left out; `conflict:` the competitor the bio names, or `null`; `pastDeals:` the competitors in past paid deals; `watch:` the Watch line; `scoredAt:` and `cause:` (`publish`, or `updated by Aspire`). Nothing about price, no weight and nothing about creators not sent is in it |
+| Match scores, agency only | `agency/scores-r{round}` | Claude at publish; the Editor's page when it re-scores | Plain data, one key per pool creator, `{net}-{handle}`, sent or not: `{score, client, exact, budget, ratio, levels, watch, briefHits, personas, inputs, weights, scoredBy, cause}`, where `score` is the agency's score, `client` the client's, `exact` the five factor values unrounded, `budget` the Budget vs target value, `ratio` expected cost over the target rate (or `null` and why), `levels` every factor's level over the round's whole pool, `watch` the agency's Watch line, `briefHits` the keyword and city matches per live concept in the round with where each was found, `personas` Claude's persona pick per live concept, `inputs` the stored inputs the page re-scores from (the raw figures, expected cost, target rate and whether vetting's partners read applied), `weights` the weights used, `scoredBy` `claude` or the Editor's id, and `cause` the publish or the edit that re-scored it. A creator not sent yet has their whole score here and in `agency/pool`, never under `scores` |
 | Files | `program/files` | Agency; Claude for a file found in the chat | One key per file, `file-{id}`, whose `value` is `{label, category, version, round, kind, url, asset, name, type, size, date, dateFrom, foundBy}`: `round` is `all` or a round number; `kind` is `upload`, `drive` or `link`; `url` is the link for `drive` and `link`; `asset` is the upload's asset id, shown from `"/_blob/" + asset`; `name`, `type` and `size` are the uploaded file's own name, type and bytes; `dateFrom` is `document`, `modified`, `added` or `set` (corrected by hand); `foundBy` is `claude` for a file Claude found, else empty. A file stored in a wrapper (**What the page can read**) keeps its real `type`. A file at the older shape `{label, url, round}` reads as a `link` with no category, which the agency sets |
 | File scans | `agency/files` | Agency | `scan-{id}:` per file, plain data: `state` (`scanning`, `updated`, `scanned`, `failed`, `unread`), `at`, `by`, `updated` (`[{term, from, to}]`), `kept` (`[{term, value, why}]`), `unusable` (`[{term, why}]`), `missing` (the terms not in the file), `reason` (for `failed` and `unread`). A `scanning` older than 10 minutes reads as `failed`, "The scan stopped before it finished." |
 | Rounds | `program/round-r{round}` | Agency | `label`, `month`, `buildStart`, `buildEnd`, `marketStart`, `marketEnd`, `launch` (dates); `creators` (`same` or `same-and-new`) and `started` (true) on a round started on the page; `step-{id}`, one per step in the round's `plan` (**Rounds**, **Round steps**), whose `value` is `{name, order, date, owner, done, doneAt}`, or `{name, order}` for an approval |
@@ -5182,7 +5223,7 @@ The data rules check a path against the person's share level, nothing more. They
 - The client writes under `client`, their own subtree of `comments`, `decisions`, `signoffs` and
   `activity`, and their own state under `data/users`, and their own subtree of `tags-client` and of `tags-agency`,
   and nowhere else. A write to `edits`, `program`, `briefs`,
-  `brief-rounds`, `brief-events`, `decision-events`, `creators`, `reviews`, `editors`, `sides` or `agency` from the client is refused.
+  `brief-rounds`, `brief-events`, `decision-events`, `creators`, `scores`, `reviews`, `editors`, `sides` or `agency` from the client is refused, so no client can change a match score.
 - Each person's own state under `data/users` is private to them, even from the page's owner and
   from Claude.
 - A comment can be changed only by the person who wrote it, or by an Editor.
@@ -5341,8 +5382,9 @@ document. Steps 3 and 4 run after every publish.
 3. Read the published page itself with the Artifact tool and search it for every agency only value
    in `agency`: each email address and phone number (the Aspire team's work emails are in the
    page on purpose and are not in `agency`, **Who sees what**, **Contact details**), the first words of each agency note and
-   agency only comment, the budget total, and each offer, counter, rate and cost that the page may
-   not show. An amount the page shows the client in its own right (an agreed fee once the fees are
+   agency only comment, the budget total, the target rate, each creator's expected cost, and each offer, counter, rate and cost
+   that the page may not show. Do the same for every `scores` document, which must hold no price,
+   ratio, weight or agency score. An amount the page shows the client in its own right (an agreed fee once the fees are
    sent) is left out of the search even when an offer or counter had the same number. None of the
    rest may appear.
 4. Read the client readable activity written since the last check (each writer's
