@@ -1211,7 +1211,7 @@ Two layouts: Cards by default, Board second. The layout last picked is kept in t
   the paid fit score. Thumbnails show the evidence posts first, with a "Hook post" label on the
   post the hook rate came from and the play glyph on video, embedded per the card reference. The
   `{DETAILS}` block: Hook rate (watched past 3s), Engagement on Reels, Paid work before, Ad
-  permissions, Status, Product, Location, Why we picked them, any question for the client, and
+  permissions, Status, Product, Location, Tier, Why we picked them, any question for the client, and
   Your decision. For the agency only, under a dashed rule headed "Agency only": the
   recommendation, agency notes, vetting evidence and safety detail, email, phone and manager, and
   the tier's reply window. The tier itself shows to both sides (**Who sees what**).
@@ -1497,9 +1497,10 @@ logs nothing and never reaches Atlas.
     approved."). A sheet with nothing for this viewer at all, like the agency only Variants sheet
     for the client, isn't listed.
   - **Format**: "Excel (.xlsx)" first, "CSV (.csv)", "Copy as table". CSV and Copy as table hold
-    one sheet, so picking either with "All sheets" moves Sheet to the first one.
+    one sheet, so picking either with "All sheets" moves Sheet to the first enabled one.
 
-  Then a count line in `text-xs text-muted-foreground`: "{r} rows, {c} columns". For the agency it
+  Then a count line in `text-xs text-muted-foreground`: "{r} rows, {c} columns" for one sheet, or
+  "{s} sheets, {r} rows" for "All sheets". A disabled sheet is left out of the workbook. For the agency it
   adds "Includes agency only columns." with a soft Badge "Agency only". Cancel (outline) and the
   default Button "Download", or "Copy" for Copy as table. On a tab whose every sheet is empty, the
   Export Button has `aria-disabled="true"` and the disabled look but stays focusable: a click, tap
@@ -1530,17 +1531,21 @@ logs nothing and never reaches Atlas.
   on Creator Selection's **All rounds**, and the tab's title in place of {sheet} for "All sheets"
   ("{Brand} CAS Round 2 Selected Creators.xlsx"). The page drops `\ / : * ? " < > |` and runs of
   spaces from it. The viewer confirms the final name in the download prompt. Home's Needs attention
-  covers every round whatever the name says, and the About sheet notes it.
+  covers every round, so on its own it is named "{Brand} CAS All rounds Needs attention". In a
+  workbook of all Home's sheets the name keeps the round, and the About sheet notes that Needs
+  attention covers every round.
 - **Excel.** One worksheet per sheet, named as in **Sheets per tab** (all are 31 characters or
   fewer, as Excel needs), plus a last sheet, "About this export". On every data sheet:
   - Row 1 is the header, in bold, frozen, with a filter over the header and every row.
   - Money in US dollars, as the campaign records keep it, as numbers formatted `"$"#,##0.00`, and
     the header names the currency: "Agreed fee (USD)".
   - Rates as fractions formatted `0.0%`, counts as `#,##0`, and dates as real dates formatted
-    `yyyy-mm-dd`. So every column sorts and filters as its type.
+    `yyyy-mm-dd`. A date with no time is written as midnight UTC of the date the page shows, so it
+    never lands a day off. So every column sorts and filters as its type.
   - Times as `yyyy-mm-dd hh:mm` on the viewer's clock, the time the page shows. A spreadsheet
-    date has no time zone, so the page shifts each UTC time by the viewer's offset before writing
-    it. The header names the zone: "Updated on (PDT)".
+    date has no time zone, so the page shifts each UTC time by the viewer's offset on that date,
+    which keeps times on both sides of a daylight saving change right. The header names the
+    viewer's time zone, not one offset: "Updated on (Pacific time)".
   - Text that a person typed is always written as text. A note starting with "=" or "+" stays a
     note and never runs as a formula.
   - Columns are sized to their content up to 60 characters wide, and longer text wraps. A cell
@@ -1558,13 +1563,18 @@ logs nothing and never reaches Atlas.
   quoted per RFC 4180, CRLF line ends. The header row is the same as the Excel one. Money and
   counts are plain numbers, rates are written "28.4%", dates are `yyyy-mm-dd`, and times are
   `yyyy-mm-dd hh:mm` on the viewer's clock with the zone in the header, as in Excel. So Excel and
-  Google Sheets read each one as its type. A text cell starting with `=`, `+`, `-`, `@`, a tab or
-  a carriage return gets a leading `'` so no spreadsheet runs it as a formula. A CSV carries no
-  About rows, so it imports cleanly.
+  Google Sheets read each one as its type. A Timecode may still read as a time of day there, so
+  sort on Seconds. Text a person typed (a note, a comment, a reason, a name, a label) that starts
+  with `=`, `+`, `-`, `@`, a tab or a carriage return gets a leading `'`, so no spreadsheet runs it
+  as a formula. Values the page builds itself get no `'`: the Creator column holds the handle
+  without its "@", and dates, numbers and labels never start with those characters. A CSV carries
+  no About rows, so it imports cleanly.
 - **Copy as table.** Works like **History**'s. It puts an HTML table and tab separated text of the
   one sheet on the clipboard, so it pastes as a table into a sheet, a doc or an email. Only the
   tab separated text gets the CSV's `'` guard, because that is what a spreadsheet reads. The HTML
-  table keeps the text as typed, so a doc or an email shows no stray `'`. The Button reads "Copied {n} rows" for two seconds. If the browser
+  table keeps the text as typed, so a doc or an email shows no stray `'`. In the tab separated
+  text, a cell holding a tab, a line break or a `"` is wrapped in `"` with each `"` doubled, the
+  way Excel and Google Sheets copy, so a multi line cell pastes as one cell. The Button reads "Copied {n} rows" for two seconds. If the browser
   refuses the clipboard, a Dialog "Copy {sheet}" opens with a read only Textarea holding the tab
   separated text, already selected. It shows the line "Press Ctrl+C or Cmd+C to copy." and Close
   (outline).
@@ -1584,7 +1594,7 @@ logs nothing and never reaches Atlas.
 - **It works everywhere.** Export changes nothing, so it works in a done round, for a read only
   client and in **Preview as client**, where every other control is a label. The Dialog's choices
   are kept in memory only, never in page data or browser storage. It opens on the first format it
-  offers, Excel when it can, with "All sheets" for Excel and the first sheet for CSV or Copy as
+  offers, Excel when it can, with "All sheets" for Excel and the first enabled sheet for CSV or Copy as
   table.
 
 #### Sheets per tab
@@ -1605,10 +1615,10 @@ left blank, never filled with a dash.
 | Creator Selection | Creators | Creator the pool shows now | Creator, Network, Name, Descriptor, Location, Concepts, Rounds, Match score, Hook rate, Engagement on Reels, Paid work before, Ad permissions, Instagram followers, Instagram engagement rate, Instagram average engagement, Instagram audience, the same four for TikTok, Why we picked them, Status, Product, Tier, Reply window (agency only), Email (agency only), Phone (agency only), Manager (agency only) |
 | Selected Creators | Creator snapshot | Creator on the round's roster | Creator, Network, Name, Concept, Product, Returning, Status, Ad permissions, Brief state, Content state, Variants (k of max), Content folder, Waiting on (agency only), Last contact (agency only), Email (agency only), Phone (agency only), Manager (agency only) |
 | Selected Creators | Shipping list | Row in **Shipping** | Creator, Name, Product, Details from creator, Address or pickup, Visit date, Shipping, Tracking, Product status, Updated by, Updated on, Next step (agency only) |
-| Selected Creators | Rates and payments | Row in **Contract and rates** | Creator, Concept, What they make, Usage, Exclusivity, Agreed fee (or "In negotiation"), If we drop them, Where it is, Fees approved on, UGC video rate (agency only), Reel collab rate (agency only), 90 day usage rate (agency only), Offer open, target and max (agency only, three columns), Counter (agency only), Expected cost (agency only), Cost per 1K reach (agency only) |
+| Selected Creators | Rates and payments | Row in **Contract and rates** | Creator, Concept, What they make, Usage, Exclusivity, Agreed fee (blank until agreed; Where it is says "In negotiation"), If we drop them, Where it is, Fees approved on, UGC video rate (agency only), Reel collab rate (agency only), 90 day usage rate (agency only), Offer open, target and max (agency only, three columns), Counter (agency only), Expected cost (agency only), Cost per 1K reach (agency only) |
 | Selected Creators | Variant tracker | Variant of each creator in the round | Creator, Concept, Variant, Latest version, Status, Updated on, Open comments |
 | Content Review | Variant status | Cut the queue shows now | Creator, Concept, Variant, Title, Version, Status, Approved by, Approved on, Checklist (ticked of total), Open comments |
-| Content Review | All comments | Comment or reply on the cuts the queue shows | Creator, Variant, Version, Timecode (m:ss), Comment, Reply to (its first words), Who, Side (Client, Agency, or Agency only for the agency), When, Has drawing, Resolved |
+| Content Review | All comments | Comment or reply on the cuts the queue shows | Creator, Variant, Version, Timecode (text, m:ss), Seconds (a number, for sorting), Comment, Reply to (its first words), Who, Side (Client, Agency, or Agency only for the agency), When, Has drawing, Resolved |
 | Ad Performance | Every variant | Variant in **Variants ranked** | Creator, Concept, Variant, Framework, Hook, CTA, Spend, Purchases, Cost per sale, ROAS, 3 second hold, Status (winning, testing, retire or refresh) |
 | Ad Performance | By creator | Creator in **Compare** | Creator, Tier, Variants, Spend, Purchases, Cost per sale, ROAS |
 | Ad Performance | By framework | Framework in **Compare** | Framework, Variants, Spend, Purchases, Cost per sale, ROAS |
