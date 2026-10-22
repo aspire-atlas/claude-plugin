@@ -162,7 +162,8 @@ value is saved, Home hides its part (**1d**, **Home**).
 `files` is optional too: the links Claude found while setting up the campaign in the chat (**1b**,
 **Files found in setup**), each with `label`, `category`, `url`, `round` (`all` or a round number),
 and `date` with `dateFrom` when Claude read one (**1e**, **Which date a file has**). It seeds
-Home's **Files** at the first publish; after that the page keeps every file, and Claude writes to
+Home's **Files** at the first publish, each as version 1, `kind` `drive` for a Google Drive link
+and `link` for any other, and `foundBy` `claude`; after that the page keeps every file, and Claude writes to
 `program/files` only for a file it finds or scans in the chat, never from this record on a
 republish, so a removed or edited file stays as the agency left it.
 
@@ -1712,12 +1713,11 @@ rows.
    - **Categories.** Every file has one: Kickoff deck, Statement of work, Creative intake form,
      Master brief, Creator brief, Creative packet, Target audience sheet, Creative strategy
      proposal, Shared folder.
-   - **Still needed.** First in the section, the required categories with no file yet: Creative
-     strategy proposal, Statement of work, Kickoff deck, Creative intake form, Master brief,
-     Creative packet, Target audience sheet and Shared folder. A Creator brief is never required.
+   - **Still needed.** First in the section, the required categories with no file yet: every
+     category above but Creator brief, which is never required.
      A category counts as there when a file in it is tagged "All rounds" or the round the filter
      shows. The line reads "Still needed for round {n}:" in `text-sm font-medium`, then one
-     warning Badge per category ("Still needed", **Status pills**), in the order above, in a
+     warning Badge per category ("Still needed", **Status pills**), in the **Categories** order, in a
      `flex flex-wrap gap-2` row. For the agency each Badge is a Button that opens **Add file**
      with its category already set. With nothing missing, the Lucide `circle-check` icon and
      "Every required file is here."
@@ -1808,7 +1808,10 @@ rows.
      round and date. A changed date or category says under the field "Scan the {category} files
      again to apply this." and adds that Button to the Dialog's footer. It scans every file in the
      category one after another, oldest date first, so the newest lands last and a file whose date
-     moved back hands its values to the newer one. Nothing changes until then.
+     moved back hands its values to the newer one. A changed category also releases the values
+     this file filled that its new category doesn't fill, as removing it would (**1e**, **Program
+     files and the scan**), and the Button then scans the old category's files and the new one's.
+     Nothing changes until then.
    - **Removing (agency).** The `trash-2` Button opens a Dialog "Remove {label}?" with "It leaves
      Files for everyone, and an upload is deleted for good. Values filled from it stay, and show
      its name without a link. Scan the other files again to fill them from what's left." Then Cancel (outline) and Remove (destructive). Removing
@@ -2785,9 +2788,12 @@ the session lists it and only its two tools that read one file's content and one
 the file's id, with their names and arguments taken from the session's own definitions of those
 tools, never guessed. The manifest takes the connector's own tool names, which can differ
 from how this session spells them. It lets an Editor's scan read a Google Docs, Slides or Sheets
-link through that Editor's own Google Drive connector. Because each publish passes the whole
-capability set, a republish reads the stored declaration first and keeps a stored `mcp` as it is,
-even from a session without the connector. Without one stored or in the session, `mcp` is left
+link through that Editor's own Google Drive connector. A republish leaves `capabilities` out, which
+keeps the stored set, `mcp` included, as it is, even from a session without the connector. Only a
+publish that adds a capability passes the whole set, and then it includes `mcp` when this session
+has the connector or the page was published with it before; when Claude can't tell, it doesn't
+publish the change and tells the CM it would turn off Drive reading on the page. Without `mcp`
+stored or in the session, it is left
 out, and Drive links are saved but read only from the chat (**Scanning from the chat**). The
 plugin adds no connector and never asks anyone to add one.
 
@@ -3051,7 +3057,7 @@ date no later than today.
 | Usage days, allowlisting, partnership ads | `program/terms` `usageDays`, `allowlisting`, `partnershipAds` |
 | Exclusivity, organic posting | `program/terms` `exclusivity`, `organic` |
 | Creator budget | `agency/budget` `total`, in US dollars only; another currency is listed under Couldn't use, "Not in US dollars" |
-| Step dates | `program/round-r{n}` `step-{id}` for a step matched by name, ignoring case, and `program/details` `step-{gate}-r{n}-planned` for an approval. A file tagged with a round fills that round's steps; an "All rounds" file fills the steps of the earliest round that isn't done. A step the file names that the round doesn't have is listed under Kept, "Not one of round {n}'s steps", for the agency to add |
+| Step dates | `program/round-r{n}` `step-{id}` for a step matched by name, ignoring case, and `program/details` `step-{gate}-r{n}-planned` for an approval. A file tagged with a round fills that round's steps; an "All rounds" file fills only steps of the earliest round that isn't done that have no date yet, and lists the rest under Kept, "Dated steps; tag the file with a round to update them". A step the file names that the round doesn't have is listed under Kept, "Not one of round {n}'s steps", for the agency to add |
 | Products | `program/details` `product-{id}`, matched by name, ignoring case, else a new id: `name`, `description`, `status`; never the photo |
 
 An object (a step, a product, a deliverable) is written with every one of its keys, the ones the
@@ -3081,16 +3087,20 @@ file doesn't touch copied from the current value (**Every editable value**).
    `dateFrom` `document`, unless the date was set by hand. Then, for each detail the file has, it
    compares with where the current value came from:
    - **From a file still in Files:** written only when this file is newer, by its date; on the
-     same date, by a higher version in the same category, then by the later added time. A scan
+     same date, by a higher version in the same category (a file with no version counts as 1),
+     then by the later added time. A scan
      again of the same file always rewrites its own values.
-   - **From a file since removed, or from no file** (campaign setup, Claude, a sheet): written,
-     so the first SOW fills what setup copied from it, and removing a wrong file lets the others
-     fill its values again on their next scan.
-   - **From a person's edit on the page** (`manual`): written only when the file's date is after
-     the day of the edit and comes from the document itself or was set by hand (`dateFrom`
-     `document` or `set`). An edit stands against files that predate it, and against a file whose
+   - **From a file since removed, from a file whose category no longer fills that value, or still
+     as campaign setup saved it** (an `atlas` stamp whose record hasn't changed since setup):
+     written, so the first SOW fills what setup copied from it, and removing a wrong file or
+     changing its category lets the others fill its values again on their next scan.
+   - **From a later decision**: a person's edit on the page (`manual`), or a value Claude saved
+     after setup, from the chat or a sheet (`claude`, `sheet`, or `atlas` from a record changed
+     since setup): written only when the file's date is after
+     the day of that value's `at` and comes from the document itself or was set by hand
+     (`dateFrom` `document` or `set`). Such a value stands against files that predate it, and against a file whose
      only date is when it last changed or was added, since an old SOW downloaded today would
-     otherwise look newer than the edit.
+     otherwise look newer than the decision.
 
    A value equal to the current one is not written. Everything not written is listed under
    **Kept** with why. Scans on one page run one at a time, and right before each write the page

@@ -2000,10 +2000,10 @@ Everything a person sees uses the reference's **Page vocabulary**: concepts, not
 steps (Concepts approved, Creators approved, Fees approved, Briefs approved), not gates; the
 page's six tabs (Home, Master Brief, Creator Selection, Selected Creators, Content Review, Ad
 Performance); and the client's decisions as Priority Yes, Yes, Maybe and No. The flow
-never sends email and never connects to a mailbox, a sheet, or a slides file: the CM sends from
-their own mail and pastes the replies. A Google Docs, Slides or Sheets link is read only when the
-session, or the agency person on the page, already has a Google Drive connector; the flow never
-adds a connector or asks for one.
+never sends email, never reads a mailbox, and never writes to a sheet or a slides file: the CM
+sends from their own mail and pastes the replies. A Google Docs, Slides or Sheets link is read only
+when the session, or the agency person on the page, already has a Google Drive connector; the flow
+never adds a connector or asks for one.
 
 The page knows who opened it: the agency (shared as Editor) sees every field and writes
 everything except the client's own calls (decisions, sign offs, fee and cut approvals), and can
