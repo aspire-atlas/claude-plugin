@@ -168,7 +168,10 @@ Subject: {Brand} creator ads: your brief for {concept}
 
 Hi {name},
 
-Here's your brief for {concept}: {brief link}.
+Here's your brief for {concept}:
+
+{brief text}
+
 Reply "looks good" to go ahead as is, or reply with anything you'd change and we'll take it
 to {Brand}.
 ```
