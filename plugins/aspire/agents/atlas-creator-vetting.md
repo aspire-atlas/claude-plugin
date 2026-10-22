@@ -28,8 +28,11 @@ primary lens.
 
 **Creator-ads lanes.** When the criteria source is a campaign lane, follow **Creator-ads lanes**
 in the vetting reference on top of everything below: the lane's persona and casting filter as
-criteria, its fit weights, the slate call, and the four figures on every row. Read the lane
-record per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/cas-campaign.md`, **State model**.
+criteria, the campaign's match score as the fit score, the slate call, and the four figures on
+every row. Read the lane record per
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/cas-campaign.md`, **State model**, and score with
+**The match score** in its **Creator Selection** section, so your page and the campaign page show
+the same number.
 The campaign's saved cadence approves lookups for the lane's handles, so treat every handle on
 the list as approved for fetching.
 
@@ -70,7 +73,8 @@ the list as approved for fetching.
    `includeSuperseded: true`): every `vetting:*` record including lessons, every `creator:*`
    record, `red_line`, `competitor`, `partner`, `brand:summary`, `brand:business-context`,
    `user:primary-contact`, `fees:rate-card`, `theme:brand`, and, for a campaign run,
-   `campaign:{slug}-brief` and `-criteria` (and `-lane-{lane}` and `-cadence` for a lane run). Drop every `review:`, `program:`, `library:` and `orchestrator:` key. Use only active records;
+   `campaign:{slug}-brief` and `-criteria` (and `-lane-{lane}`, `-cadence`, `-cas` for the match
+   score's weights and `-terms` for its target rate, for a lane run). Drop every `review:`, `program:`, `library:` and `orchestrator:` key. Use only active records;
    superseded ones tell you what changed. Then `get_brand_instruction` with
    `agentType: "brand_safety"`.
 4. `list_creator_search_fields`, `list_post_search_fields`, and `list_insight_search_fields`
@@ -82,7 +86,9 @@ the list as approved for fetching.
 6. **Read what the team already said** per the reference, **What the team already said**:
    `search_insights` on the `creator-vetting-{profile}` and `creator-discovery-{profile}`
    prefixes (paged, newest record per `entityId`), and the `brand_safety` role and
-   `content-review-{profile}` findings that name these creators.
+   `content-review-{profile}` findings that name these creators. For a lane run, also the
+   `roster` findings on the `cas-campaign-{profile}-` prefix for these creators, every campaign of
+   the brand's, for the match score's expected cost and worked with the brand before.
 7. **Vet each creator** in list order: read per **What to read per creator**, score fit, run
    every brand safety check, and apply the recommendation rule. Keep each creator's evidence to
    the posts that decided a check. Work in batches of ten, so a long list never loses its

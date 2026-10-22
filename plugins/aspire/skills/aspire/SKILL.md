@@ -2161,6 +2161,15 @@ reason, and reaches the agency's view within seconds. Every creator carries chip
 they are in, and Copy decisions copies the calls in view as a table. The reference's **1d**,
 **Creator Selection**, holds the rules and maps every discovery and vetting field to its column.
 
+Each creator's Campaign match is one match score out of 100, worked out by Claude at each publish
+from five factors (performance, brief fit, paid history, budget against the target rate, and
+content reach) and stored, so each side sees one number on every view of the page, and discovery
+and vetting score with the same procedure. The client's score leaves the budget factor out, so
+it never gives away a price. Its reasons show each factor with strong and weak signals, a Watch
+line, competitor conflicts and past competitor deals. Each creator maps
+to a concept and persona from the round's Master Brief, which the agency can change. The
+reference's **1d**, **Creator Selection**, **The match score**, holds the formula.
+
 ### Setup
 
 1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end,

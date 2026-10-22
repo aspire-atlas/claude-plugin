@@ -34,7 +34,9 @@ the three recommendation passes per lane (`high_ad_performance`, `most_ads_exper
 `similar_brands`, per **Recommendation passes** in the reference), the ad figures on every
 card, and the page grouped by lane. Read
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/cas-campaign.md`, **State model**, for the lane
-records. Score with this reference's rubric; the paid screens belong to vetting.
+records. Score each candidate with the campaign's match score, **The match score** in that
+file's **Creator Selection** section, so the shortlist and the campaign page show the same number;
+the category read of paid partners belongs to vetting.
 
 **Run rules**
 

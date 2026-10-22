@@ -332,8 +332,26 @@ Everything above applies, with these changes:
 - **The cadence is the standing approval** for the marketplace and paid lookups on this
   campaign, in interactive runs too (SKILL.md, **Guardrails**). The weekly sync never launches
   discovery; it runs when the CM picks it.
-- **Scoring stays this reference's rubric.** The paid screens (persona fit and paid track
-  record) are vetting's job (`creator-vetting.md`, **Creator-ads lanes**).
+- **The fit score is the campaign's match score.** Score every candidate with the one procedure
+  in `cas-campaign.md`, **1d**, **Creator Selection**, **The match score**, against their lane's
+  concept, with the weights in `match` in `campaign:{slug}-cas` (read it and `-terms` for this
+  campaign only), so the shortlist and the campaign page show the same number for the same
+  inputs. The casting keywords and target cities are `casting` in the lane record,
+  which the campaign page's edits are pulled into, else derived from the lane's persona and casting filter and named as derived
+  on the page. Budget vs target uses `rates-and-terms.md`, **Expected cost** (the
+  roster's offer, counter or agreed fee for a creator carried from an earlier round, else the
+  calculator's target plus the uplift) and **Target rate**. Read the candidates' `roster` findings
+  on the `cas-campaign-{profile}-` prefix, every campaign of the brand's, for those fees and for
+  worked with the brand before.
+  Past paid partners are a plain count here; the category read is vetting's (`creator-vetting.md`,
+  **Creator-ads lanes**), and the campaign page uses it once vetting has screened the lane.
+  Write the result in `detail.match` (`{score, band, factors, without, conflict, pastDeals,
+  weights, scoredAt}`) with `fitScore` equal to `score`, and show the band and any competitor
+  line on the card. The page shows the date of the run, and its strong and weak signals rank the
+  lane's own pool. The dormant account cap (50 with no posts in the last 30 days) is part of
+  that procedure. A bio naming a saved competitor halves the score, as that section says,
+  though risk flags stay unscored elsewhere. The rubric in **Scoring** above is for other
+  campaigns.
 - **Recommendation passes** fill each lane from Meta's own rankings, per the block below.
 - **Ad figures on every card**, in `{DETAILS}` and in `detail.adFigures`, drawn per
   `creator-card.md`, **Creator-ads details**:
