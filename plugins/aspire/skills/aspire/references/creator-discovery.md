@@ -346,6 +346,7 @@ Everything above applies, with these changes:
   - Total views (`instagram.totalViews`), labelled "Views (Meta)"
   - Account interactions (`instagram.accountInteractions`), labelled "Interactions (Meta)"
   - Marketplace reach (`instagram.creatorMarketplaceReach`), labelled "Reach (Meta)"
+  - Engaged accounts (`instagram.creatorEngagedAccounts`), labelled "Engaged accounts (Meta)"
   - Category (`instagram.category`), as a chip. When the call that found the creator sent
     `creatorInterests`, say whether the category matched it.
   - Contact route: "Email on profile" when `instagram.email` is held, else "Partnership

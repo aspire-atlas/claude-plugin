@@ -565,6 +565,7 @@ ad figures in `{DETAILS}`, one `<dt>`/`<dd>` pair each, in this order and with t
 | Views (Meta) | Number, card number format |
 | Interactions (Meta) | Number, card number format |
 | Reach (Meta) | Number, card number format |
+| Engaged accounts (Meta) | Number, card number format |
 | Category | One chip; add "matches your interest filter" or "outside your interest filter" when the search sent one |
 | Contact route | Email on profile, Partnership messages on, or No route in Atlas |
 | Meta recommends | One chip per ranking: High ad performance, Most ads experience, Similar brands. Leave the pair out when there are none |

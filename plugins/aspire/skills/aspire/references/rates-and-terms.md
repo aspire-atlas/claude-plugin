@@ -19,10 +19,31 @@ For every creator whose newest `roster` finding is `approved`:
 | Organic posting terms | `campaign:{slug}-terms`, asked once below. |
 | Whitelisting uplift | `campaign:{slug}-terms`, asked once below, added on top of each fee and shown apart from it, unless `allowlisting` is false there. |
 | Exclusivity | `exclusivity` in `campaign:{slug}-terms` when saved, else "None". A creator's own ask goes in `termNotes`. |
-| Timeline and reply window | The creator's tier, from followers: nano (under 10K) and micro (10K to 100K) about two days; mid (100K to 500K) and top (500K and up) one to two weeks, through managers. |
+| Timeline and reply window | From the creator's followers, the larger of Instagram and TikTok: under 100K about two days; 100K and up one to two weeks, through managers. These bands are the reply window's own, apart from the tier the campaign page shows (`cas-campaign.md`, **Creator Selection**, **Tiers**). |
 
 A creator the calculator cannot price shows no offer and names what is missing, per `fees.md`,
 **No data, no price**. Never price any other way.
+
+## Expected cost
+
+What a creator is expected to cost the campaign for one round, for the agency only. The campaign
+page's Creator Selection sorts on it and its budget **Summary** counts approved creators at it
+(`cas-campaign.md`, **1d**, **Creator Selection**). The first of these that holds:
+
+1. **Agreed**: the agreed fee.
+2. **Counter**: the creator's open counter.
+3. **Offer**: the offer's target.
+4. **Calculator**: the fee calculator's target (`fees.md`, **Applying the rates**) for the package
+   above, priced on the creator's own view counts.
+
+Each adds the whitelisting uplift unless `allowlisting` is false, the figure **Totals** gives as the
+fee plus its uplift line. A creator the
+calculator cannot price has no expected cost and shows as unpriced; never fill one in. Claude works
+it out at each publish of the campaign page for every creator in the pool, from the posts read for
+the creator cards, and writes it with its basis to the creator's agency data (`expectedCost:`,
+`expectedFrom:`). **Cost per 1K reach** is the expected cost divided by the creator's Meta reach
+(`instagram.creatorMarketplaceReach`), times 1,000, and is blank without a reach. Both are
+estimates for planning and are never shown to the client or sent to a creator.
 
 ## Terms, asked once per campaign
 
@@ -89,8 +110,8 @@ names the drafts and the date: "Mark the offer to @a and the chase to @b as sent
 Options: "Mark sent (Recommended)", "Change something". The confirm writes each draft again with
 `sentAt` and the roster's `lastContactAt` and `waitingOn` creator.
 
-**Reply window**, by tier, shown per creator to the agency: nano and micro about two days, mid
-and top one to two weeks through a manager.
+**Reply window**, by followers, shown per creator to the agency: under 100K about two days, 100K
+and up one to two weeks through a manager.
 
 ### The templates
 
@@ -135,7 +156,7 @@ Great, {fee} for {what they make} with {usage} usage works for us. Next we'll as
 shipping details and send the agreement.
 ```
 
-**Chase** (no reply past the tier window):
+**Chase** (no reply past the reply window):
 
 ```
 Subject: Re: {Brand} creator ads: {concept}
@@ -225,7 +246,7 @@ bounds the CM handles alone.
 
 ### No reply yet
 
-A creator whose newest sent draft is older than their tier window, with no reply since, shows
+A creator whose newest sent draft is older than their reply window, with no reply since, shows
 "No reply yet" in the agency's attention list and on their row, with a chase draft waiting. The
 chase draft is written the first time the status screen sees it, after the same save picker as
 any other draft.
@@ -245,9 +266,9 @@ The rate sheet is the **Contract and rates** section of the campaign page's Sele
   - The fee for the agency (page data, `agency`): offer, counter and agreed, with the rate per
     deliverable under it.
 - **Totals**, agency only: the campaign at open, target and max, and at what is agreed so far,
-  with the whitelisting uplift as its own line unless `allowlisting` is false. The budget summary
-  on Creator Selection carries
-  the same totals against the campaign budget.
+  with the whitelisting uplift as its own line unless `allowlisting` is false. The **Summary** on
+  Creator Selection shows the agreed figure as Committed against the campaign budget, beside the
+  approved creators not yet contracted at their **Expected cost**.
 - **Terms**: usage window, organic posting terms, whitelisting uplift (or "No allowlisting" when
   `allowlisting` is false), in plain words.
 - **One approve control** for the whole sheet, for the client, while step 3 is open.

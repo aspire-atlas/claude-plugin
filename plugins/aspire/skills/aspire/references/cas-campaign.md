@@ -35,7 +35,12 @@ draft, and in a channel post, uses the left column.
 | Concept 1: {name}, Concept 2: {name} | lane |
 | 1 Concepts approved, 2 Creators approved, 3 Fees approved, 4 Briefs approved | Gates 1 to 4 |
 | Creator changes approved (shown as "your call" on the changed brief) | Gate 4b |
-| Your decision: Priority Yes, Yes, Maybe, No ("Decide" until one is picked) | slate call: Priority Yes and Yes are approved (Priority Yes adds `priority`), Maybe is maybe, No is rejected |
+| Your decision: Priority Yes, Yes, Maybe, No ("Unreviewed" until one is picked) | slate call: Priority Yes and Yes are approved (Priority Yes adds `priority`), Maybe is maybe, No is rejected |
+| Campaign match | the match score: vetting's creator-ads fit score, else discovery's `fitScore` |
+| Nano, Micro, Mid, Macro, Mega | the page's tier, from followers (**1d**, **Creator Selection**, **Tiers**) |
+| City | the creator's `location`, else their `country` |
+| Budget left, Committed, Approved, not contracted, Unpriced, Over budget | the budget, worked out from agreed fees and expected costs (**1d**, **Creator Selection**, **Summary**) |
+| Table, Cards; Copy decisions | Creator Selection's two views, and its copy of every call in view |
 | What made the call? Performance, Brief fit, Paid history, Price, Reach, Other | the reason on a decision (`clientReason`, `rejectReason`) |
 | Status | roster state |
 | Your call needed | needs brand review |
@@ -63,7 +68,7 @@ draft, and in a channel post, uses the left column.
 | Simple, Everything | Home's two views (**1d**, **Home**) |
 | Where we stand: Ahead, On track, Running behind | the round's state and pace, worked out from the round record, the roster and the cuts (**1d**, **Home**) |
 | Aspire is on it | the agency's work in progress: cuts in changes or QA, packages shipped, creators filming |
-| Budget summary, totals | budget |
+| Summary on Creator Selection, Totals on Selected Creators | budget |
 | Waiting on you (the viewer's items), Needs attention (every open item) | attention list |
 | History: who did what and when | the activity log (**1e**, **The activity log**) |
 | Inbox, {Tab} inbox: what's new for you | inbox items built from the activity log and tags (**1e**, **Tags and the inbox**) |
@@ -160,8 +165,9 @@ The campaign object:
 working state (**Rounds**), so starting a round never changes this record. `package.variants` is
 at most 5: a creator makes at most 5 variants in a round.
 
-`budgetUsd` is optional: the total the CM types for the budget summary on Creator Selection and
-the totals on Selected Creators. Without it they show committed and offers out only.
+`budgetUsd` is optional: the total the CM types for the **Summary** on Creator Selection and
+the totals on Selected Creators. Without it the Summary reads "No budget set" and the totals show
+committed and offers out only.
 
 `sow`, `products` and `team` are optional, and so is every key inside an item but `id` and
 `name` (a deliverable's `label` and `count`). Each item keeps its `id` for good, so an edit on
@@ -247,14 +253,14 @@ record type the newest finding per identity wins, by `detail.recordedAt`.
 | ---------- | -------- | ------ | ---- | ----------- |
 | `gate` | gate + round (Gate 4b: gate + round + the creator) | The brand's own account on its first linked network | `action_item` `high` while planned, open or slipped; `went_well` when cleared | `gate` (1, 2, 3, 4, `4b`), `status` (planned, open, cleared, slipped), `plannedAt`, `sentAt`, `dueAt`, `clearedAt`, `clearedBy`, `daysSlipped`, `reminderTask` (the task name). Gate 1 adds `source` (where the concepts were read from). Gate 4 adds `signoff` `{signer, name, at, item, via, recordedBy}` (the signer's viewer id, their name, when, the `signoffs` item, `page` or `chat`, and for `chat` the CM who recorded it), `reopenedAt` and `reopenReason`. Gate 4b adds `handle` and `network` |
 | `round` | round | The brand's account | `action_item` `medium` while planned, in production or in market; `went_well` when done | `round`, `label`, `month`, `build` `{start, end}`, `inMarket` `{start, end}`, `launchDate`, `state` (planned, in production, in market, done), `steps` (`{"1": {plannedAt, dueAt}, …}` for steps 1 to 4), `plan` (every step of the round, the four approvals included, **Round steps** below), `closedAt` (set when the CM closes the round early), `startedFrom` (the round it was started from, empty for the first), `creators` (`new`, `same`, or `same-and-new`: how the round was started) |
-| `roster` | the creator's account + round | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while a candidate; `went_well` approved; `needs_improvement` rejected | `handle`, `network`, `name`, `descriptor`, `location` (the last three only when edited on the page), `lane`, `slate` (candidate, approved, maybe, rejected), `priority` (true for a Priority Yes), `clientReason` (the reason on a surprise Priority Yes or Yes), `rejectReason`, `clientQuestion`, `pickNote` (why we picked them), `rate` (offered, countered, agreed, declined), `offer` `{open, target, max}`, `counter`, `agreed`, `deliverables`, `usage`, `exclusivity`, `termNotes`, `contact` `{email, manager}`, `tier`, `lastContactAt`, `waitingOn` (client, agency, creator), `yourCall` (the question to the client, while one is open), `adPermissions` (granted, pending), `details` `{status, address, pickup, visitDate, product, options, availability}`, `shipping` `{status, carrier, tracking}`, `briefState` (sent, accepted, changed, approved, locked), `shipDate`, `vetting` (the four figures and the recommendation), `returning` (true when carried from an earlier round), `fromRound` (the round it was carried from), `source` (chat, reply, page, or carried) |
+| `roster` | the creator's account + round | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while a candidate; `went_well` approved; `needs_improvement` rejected | `handle`, `network`, `name`, `descriptor`, `location` (the last three only when edited on the page), `lane`, `slate` (candidate, approved, maybe, rejected), `priority` (true for a Priority Yes), `clientReason` (the reason on a surprise Priority Yes or Yes), `rejectReason`, `clientQuestion`, `pickNote` (why we picked them), `rate` (offered, countered, agreed, declined), `offer` `{open, target, max}`, `counter`, `agreed`, `deliverables`, `usage`, `exclusivity`, `termNotes`, `contact` `{email, manager}`, `tier`, `decidedBy` (`{writer, name, at, score}`: the page account whose call was recorded, their name, when, and the match score they saw), `lastContactAt`, `waitingOn` (client, agency, creator), `yourCall` (the question to the client, while one is open), `adPermissions` (granted, pending), `details` `{status, address, pickup, visitDate, product, options, availability}`, `shipping` `{status, carrier, tracking}`, `briefState` (sent, accepted, changed, approved, locked), `shipDate`, `vetting` (the four figures and the recommendation), `returning` (true when carried from an earlier round), `fromRound` (the round it was carried from), `source` (chat, reply, page, or carried) |
 | `draft` | the creator + the template | The creator's account | `action_item` `low` while not sent; `went_well` once sent | `handle`, `template` (offer, counter, accept, chase, details, brief, brief-notes), `subject`, `body`, `sentAt` |
 | `reply` | one per exchange, never replaced | The creator's account | `went_well` `low` | `handle`, `receivedAt`, `summary` (one plain line), `record` (what it wrote to the roster), `nextMove` |
 | `brief` | lane + round | The brand's account | `action_item` `medium` while a draft; `went_well` when locked | `lane`, `locked`, `briefPage`, `version`, `edits` (the edits pulled from the page, one plain line each: the part, from, to, and who), `added` (true for a concept added on the page), `removed` (true for a concept taken out of this round's brief), `deferred` (true for a concept deferred to the next round), `carriedForward` (the round a deferred concept came from), `importedFrom` (`{label, url, kind}` of the document an import read), `startedFrom` (the round whose signed off brief it started from), `reopened` (`{reason, name, at}` when the agency reopened a signed off brief) |
 | `brief-revision` | the creator + round | The creator's account | `action_item` `medium` while waiting on the client; `went_well` once approved | `handle`, `lane`, `basedOn` (the locked lane brief's version), `changes` (one plain line each: what, from, to), `text` (the creator's version), `status` (waiting, approved, notes sent), `locked` |
 | `hook` | one per hook or CTA, never replaced | The brand's account | `went_well` `low` | `lane`, `type` (hook, cta), `text`, `pattern`, `firstBriefed` (round and date) |
 | `hook-review` | hook + round | The brand's account | `went_well` when it led; `needs_improvement` when it lagged or was not used; `action_item` `low` when held or not measurable | `lane`, `hook` (the text), `pattern`, `postsMatched`, `vsMedian`, `result` (led, held, lagged, not used, not measurable yet) |
-| `page-sides` | the campaign | The brand's account | `went_well` `low` | `editors` (`{viewerId: firstSeenAt}`, every id Claude has seen with an `editors/{id}` marker or an `activity-editors/{id}` document, never removed), `approvers` (`{viewerId: {name, gate, confirmedAt}}`, the page accounts the CM confirmed as a step's approver), `refused` (`{"{writer}/{item}": at}`, sign offs the CM said not to record). Written in the same answer as the pull that saw something new (**Pulling decisions**, **The brief sign off**) |
+| `page-sides` | the campaign | The brand's account | `went_well` `low` | `editors` (`{viewerId: firstSeenAt}`, every id Claude has seen with an `editors/{id}` marker or an `activity-editors/{id}` document, never removed), `approvers` (`{viewerId: {name, gate, confirmedAt}}`, the page accounts the CM confirmed as a step's approver), `deciders` (`{viewerId: {name, confirmedAt}}`, the page accounts the CM confirmed as {brand}'s for creator decisions), `refused` (`{"{writer}/{item}": at}`, sign offs the CM said not to record). Written in the same answer as the pull that saw something new (**Pulling decisions**, **The creator decisions** and **The brief sign off**) |
 | `ledger` | one per line, never replaced | The brand's account | `needs_improvement` | `gate`, `round`, `handle` (Gate 4b only), `daysSlipped`, `reason`, `shifted` (the gates and dates it moved) |
 
 A roster finding carries the whole row, not only what changed: copy the newest finding's
@@ -448,7 +454,7 @@ may have any number of versions.
 
 **Spend across rounds.** Each round's fees are that round's spend. The budget's Committed sums the
 agreed fee on every creator's row in every round, so a returning creator counts once per round
-they are in; Offers out sums the open offers the same way.
+they are in; Offers out, on Selected Creators' **Totals**, sums the open offers the same way.
 
 A creator ad campaign needs at least one linked Instagram or TikTok channel on the brand
 profile, because every state finding is anchored to an account. Without one, say so in one line
@@ -656,11 +662,11 @@ emails the client itself, unless the client's address is in the routing record.
 Composed from the newest vetting run per lane (`creator-vetting-{profile}` prefix,
 `detail.campaign` = the slug and `detail.lane` = the lane).
 
-- One group per concept on Creator Selection, with the concept and persona at the top.
-- One card or board row per creator, with every field whose Tab in **1d**, **Who sees what**,
-  includes Creator Selection. The
-  recommendation shows as the decision's starting value only for the agency; the client starts
-  at "Decide".
+- Creator Selection, with each concept's chip, persona and "need {n}, {a} approved" in the
+  **Summary**, and the Concept filter to show one concept at a time.
+- One card or table row per creator, with every field whose Tab in **1d**, **Who sees what**,
+  includes Creator Selection. The recommendation shows only to the agency, under the "Agency
+  only" rule; the client starts at "Unreviewed".
 - Before send, ask the CM once for **Why we picked them** per creator in one message ("One line
   per creator for the client, for example '@a lives the concept: early shifts, bikes to work'").
   A blank line keeps vetting's reason, rewritten in plain words.
@@ -721,8 +727,8 @@ everywhere it shows.
 Run when the CM asks ("pull the client's decisions", "what did they approve", "did they sign off
 on the fees"), and offered as the next step whenever a step is open.
 
-1. Read the page data (**1e**, **Reading it back**): the client's decisions, reasons, notes,
-   approvals, cut calls and shipping edits, and the agency's status, ad permission and shipping
+1. Read the page data (**1e**, **Reading it back**): the client's creator decisions and their
+   reasons (**The creator decisions** below), notes, approvals, cut calls and shipping edits, and the agency's status, ad permission and shipping
    edits, and the agency's in place edits to program details, the brief and creator profiles:
    each field whose stamp has `source` `manual`, or `source` `file` with a `by` (written by the
    page's scan, **1e**, **Program files and the scan**), and an `at` newer than the last pull, a
@@ -748,12 +754,51 @@ on the fees"), and offered as the next step whenever a step is open.
    `source` `page`, then republishes the page so Home's lists catch up.
 
 A No with no reason is recorded as rejected, and the picker says "no reason given" next to it.
-A creator still at "Decide" is named as waiting. Nothing on the page reaches Atlas without this
+A creator still Unreviewed is named as waiting. Nothing on the page reaches Atlas without this
 picker.
 
 Cut calls (Approve, Request changes, Undo approval on a cut) have no campaign record yet: until
 Content Review has its own build, the picker names them, "@a cut 3, version 2: approved (stays on
 the page)", and writes nothing for them. The newest call per cut version is the one that counts.
+
+**The creator decisions.** Read every writer's items under `decisions` (a document in
+`decisions/{id}/items` is one creator's call for one round), the `reset-` stamps on
+`decision-events/r{round}`, every `editors/{id}` marker and `activity-editors` writer, and the
+campaign's newest `page-sides` finding. Its writer is the id in its path, which the rules let only
+that person or the page's owner write (**1e**, **What the rules enforce, and what they can't**).
+For each creator and round, steps 1 to 3 below filter the calls first, and the newest call left
+that isn't cleared counts, the same call the page shows (**1d**, **Creator Selection**, **What the
+row shows**). A call for a creator with no `roster` finding (not sent to the client) is dropped and
+named. The checks:
+
+1. **The writer is on the client's side.** A call whose writer has an `editors/{id}` marker now,
+   or is in `page-sides` `editors`, is dropped and named: "Yes on @a from an Aspire account, not
+   recorded. Only {brand} decides." Every marker or `activity-editors` writer not yet in
+   `page-sides` is added to it in the same answer as the batch.
+2. **It is newer than the last reset.** A call older than the round's newest `reset-{id}` stamp
+   was cleared by **Reset decisions**: it is named "cleared on the page by {name}" when Atlas
+   already recorded a call for that creator and round, else skipped, and nothing is written for it.
+3. **Which account decided.** An account in `page-sides` `deciders`, or in `approvers` for any
+   step, is {brand}'s and needs no question. Any other account that decided is asked about once,
+   before the batch picker, in one picker per account: "Is the account that decided on the page
+   someone at {brand}? It decided as {name}: {k} creators." with "Yes, it's {approver}'s", "Yes,
+   someone else at {brand}" and "No, don't record its calls". A yes saves the account in
+   `page-sides` `deciders`. A no saves it in `refused` as `{writer}/decisions`, so its calls are
+   never offered again and the page shows them "Not counted". The name on a call is what the page
+   wrote, never proof.
+
+The picker names each call with who made it: "Yes on @b (Brief fit), by {name}". When the newest
+call differs from another approver's, it says so: "Maybe on @c by {name}; {other} said Yes". The
+answer writes the roster finding with `decidedBy` `{writer, name, at, score}` from the call, and
+the `page-sides` finding when it changed. A creator whose every call is cleared and who has
+nothing recorded is still waiting; one whose calls were all cleared after a call was recorded is
+named "cleared on the page by {name}", and Atlas keeps what it recorded. Calls a page from before
+kept as `decision` and `reason` stamps in `client/creator-{net}-{handle}-r{round}` are read only
+for a creator with no call under `decisions`, and only when the stamp's `at` is before the
+round's `migratedAt` on `decision-events/r{round}`, which Claude writes once, at the first publish
+that declares `decisions`. A stamp after it is dropped and named, since an Editor can write
+`client`. Those read are named "(saved before calls were kept per person)", and checked as
+**Which client approver** and **The client's own calls** in **1e** describe.
 
 **The brief sign off.** Read every writer's items under `signoffs` for each live round (a document
 in `signoffs/{id}/items` is an item; the copies sit in `signoffs/{id}/copies`), the round's `send-`
@@ -962,11 +1007,14 @@ client's level before the link goes out.
 
 | Field | Client | Agency | Source | Tab |
 | ----- | ------ | ------ | ------ | --- |
-| Handle, name, descriptor, location, concept, product, tier | yes | yes | Roster, creator card | Creator Selection, Selected Creators |
+| Handle, name, descriptor, location (City), concept, persona, product | yes | yes | Roster, creator card | Creator Selection, Selected Creators |
+| Tier (Nano to Mega) | yes | yes | Worked out at publish from followers (**Creator Selection**, **Tiers**) | Creator Selection, Selected Creators |
+| Campaign match, latest posts, reach, engaged accounts, round chips | yes | yes | Discovery, vetting, roster | Creator Selection |
+| Decision counts and the hook rate tile in **Summary** | yes | yes | Worked out on the page | Creator Selection |
 | Hook rate, engagement on Reels, paid work before, ad permissions | yes | yes | Vetting | Creator Selection |
 | Instagram and TikTok: handle, followers, engagement rate, average engagement, audience | yes | yes | Creator card data | Creator Selection |
 | Why we picked them | yes | yes | The CM's note | Creator Selection |
-| Your decision, reason, your notes | yes, editable | yes, read only | Client on the page | Creator Selection |
+| Your decision, reason, your notes, and who decided | yes, editable | yes, read only | Client on the page | Creator Selection |
 | Status, ad permissions | yes, labels | yes, editable | Campaign state, agency edits | Creator Selection, Selected Creators |
 | What they make, usage, exclusivity, agreed fee | after the fees are sent | yes | Rates and terms | Selected Creators |
 | Fee approval | yes, editable while step 3 is open | yes, read only | Client on the page | Selected Creators |
@@ -989,10 +1037,11 @@ client's level before the link goes out.
 | The brief's variant plan, the frameworks, **Versions** and **Reset to original** | no | yes | `atlas-creator-brief`, agency edits | Master Brief |
 | Agency notes, vetting evidence, safety detail, the recommendation | no | yes | Vetting, CM | Creator Selection |
 | The match score tuning panel and its stats | no | yes | Discovery and vetting | Creator Selection |
-| Email, phone, manager, tier reply window, last contact | no | yes | Creator card, CM | Creator Selection, Selected Creators |
-| Rate per deliverable (UGC video, Reel collab, 90 day usage), expected cost, cost per 1K reach, offer open and max, counters, waiting on | no | yes | Rates and terms | Selected Creators |
+| Email, phone, manager, reply window, last contact | no | yes | Creator card, CM | Creator Selection, Selected Creators |
+| Rate per deliverable (UGC video, Reel collab, 90 day usage), expected cost, cost per 1K reach, offer open and max, counters, waiting on | no | yes | Rates and terms | Creator Selection (expected cost, cost per 1K reach, waiting on), Selected Creators |
 | Email drafts and the reply log | no | yes | Campaign Manager | Selected Creators |
-| Budget total, committed, offers out, remaining | no | yes | Campaign record, agreed fees | Creator Selection, Selected Creators |
+| Budget total, budget left, committed, approved not contracted, unpriced, over budget | no | yes | Campaign record, agreed fees, expected costs | Creator Selection, Selected Creators |
+| Offers out | no | yes | Rates and terms | Selected Creators |
 | Who else an attention item waits on | no | yes | Campaign state | Home |
 | History entries about agency only data, agency only comments included | no | yes | The activity log | History |
 | Tags for Aspire or someone at Aspire, from either side | only the ones they wrote | yes | Tags | Inbox |
@@ -1025,7 +1074,7 @@ as a label, never as a disabled control. The agency writes everything else on th
 | --- | ----------------- | ------------------ |
 | Home | Done marks on their own items in **Waiting on you** | `data/users/{id}/done` |
 | Master Brief | Comments and replies, resolving their own threads; Sign off or Request changes on the round's brief; the call on a creator's changed brief | `comments`, `signoffs/{id}`, `client/changes-{net}-{handle}-r{round}` |
-| Creator Selection | Your decision, a reason on the call, your notes | `client/creator-{net}-{handle}-r{round}` |
+| Creator Selection | Your decision and a reason on the call; your notes | `decisions/{id}`; `client/creator-{net}-{handle}-r{round}` |
 | Selected Creators | Fee approval, shipping, tracking, product status | `client/fees-r{round}`, `client/creator-{net}-{handle}-r{round}` |
 | Content Review | Comments on a cut, at a timecode or with a drawing; Approve, Request changes, Undo approval | `comments`, `client/cut-{cut}-v{version}` |
 | Ad Performance | Nothing | None |
@@ -1036,7 +1085,8 @@ On every tab the client also marks their own inbox items read or cleared
 and `tags-agency`, **Tagging**).
 
 **The client's own calls stay the client's.** Their decision, reason, notes, sign offs, fee approval
-and cut approvals render read only for the agency, so the record of what the client decided is the
+and cut approvals render read only for the agency, and their creator decisions and sign offs are
+kept under their own id, where no Editor but the page's owner can write, so the record of what the client decided is the
 client's own. When the client gives a call in the chat or on the weekly sync, the CM records it in
 the chat (**Pulling decisions**), not on the page. Shipping, tracking and product status are shared:
 the client writes them to `client/creator-{net}-{handle}-r{round}` and the agency to
@@ -1111,7 +1161,7 @@ and item. Labels, eyebrows, titles and ledes are in **Page vocabulary**, **Tabs*
    | Hash | Opens |
    | ---- | ----- |
    | `#home/steps/r{n}/{step}` | **Round steps** for round {n}, selected in the **Round switcher**, at that step, `{step}` being its id (`kickoff`, `gate-2`, `custom-{id}`) |
-   | `#selection/r{n}/{net}-{handle}/notes` | The creator's card (a row on Board) with its notes in view: the client's notes, and for the agency the agency notes under the "Agency only" rule |
+   | `#selection/r{n}/{net}-{handle}/notes` | The creator's card (a row on Table) with its notes in view: the client's notes, and for the agency Aspire's notes under the "Agency only" rule |
    | `#creators/r{n}/{net}-{handle}/shipping` | The creator's row in **Shipping** |
    | `#creators/r{n}/fees` | **Contract and rates**, with the fee approval and its notes |
    | `#brief/r{n}/{lane}/{part}` | The concept's brief at one part: `product`, `name`, `line`, `trigger`, `framework`, `personas`, `persona-{id}`, `story`, `points`, `point-{id}`, `problem`, `agitate`, `solve`, `beat-{n}`, `hook-{n}`, `cta-{n}`, `body`, `length`, `runtime`, `broll`, `broll-{n}`, `variant-{n}` (the agency's variant plan) |
@@ -1238,7 +1288,7 @@ Performance. What is open is remembered for each person.
   all, saves it for the person viewing in their own page data (`data/users/{id}/collapse`,
   **1e**), so it follows them to another device. A saved state wins over the default. Expand all
   and Collapse all save every section on the tab in one write. Ids are stable and name the
-  section (`home-steps`, `brief-{lane}`, `selection-budget`), never the round, so a section closed
+  section (`home-steps`, `brief-{lane}`, `selection-summary`), never the round, so a section closed
   in round 1 opens closed in round 2. Nothing about collapsing is ever logged or reaches Atlas,
   and it never touches anyone else's view.
 - **Links open what they point at.** Opening a hash that lands in a closed section (from the
@@ -1287,9 +1337,8 @@ only is marked so.
 | Master Brief | Frameworks, agency only | `brief-frameworks` | "V1 {code} · V2 {code} · …", with "edited" when they differ from the defaults | Full | Closed |
 | Master Brief | One per changed brief, "@{handle} changed the {concept} brief" | `brief-changes-{net}-{handle}` | "{n} changes against the brief you approved" | Simple | Open |
 | Master Brief | Accepted as is | `brief-accepted` | "{n} creators accepted without changes" | Standard | Closed |
-| Creator Selection | Budget summary, agency only | `selection-budget` | "{committed} committed of {total} · {remaining} left · {d} of {m} decided" | Simple | Open |
-| Creator Selection | The pool, on Cards | `selection-pool` | The count line: "{n} of {m} creators in the pool · Round 1: {a} approved" | Simple | Open |
-| Creator Selection | One per concept, on Board | `selection-board-{lane}` | "{persona} · need {n}, {m} approved" | Simple | Open |
+| Creator Selection | Summary | `selection-summary` (a state saved under `selection-budget` reads as it) | Agency: "{left} left of {total} · {d} of {m} decided · {u} unpriced", with "over budget by {x}" in place of what's left when it is; client: "{d} of {m} decided · {p} Priority Yes, {y} Yes, {b} Maybe, {o} No" | Simple | Open |
+| Creator Selection | The pool, on Table or Cards | `selection-pool` | The count line: "{n} of {m} creators in the pool · Round 1: {a} approved" | Simple | Open |
 | Creator Selection | Match score tuning, agency only | `selection-tuning` | "Agrees with {x} of the client's top 10 · weights {default, or tuned {date}}" | Full | Closed |
 | Selected Creators | The roster, one card per creator | `creators-roster` | "{n} creators · {k} missing details · {s} shipping confirmed · {v} of {V} variants in, {a} approved", plus "fees {agreed} of {budget}" for the agency | Simple | Open |
 | Selected Creators | Contract and rates | `creators-contract` | Client: "Fees waiting for your approval", "Fees approved {date}", or "Fees show here once they are sent"; agency: "{a} of {n} agreed · {total} committed" | Full | Closed; open for the client while step 3 waits on them |
@@ -1382,9 +1431,10 @@ Creator Selection:
 
 | Job | Path | Clicks |
 | --- | ---- | ------ |
-| See budget committed and left, and how many are decided | Creator Selection; **Budget summary** and the count line | 1 |
-| Go through creators and decide | Creator Selection, then a decision | 2 |
-| Filter, search and sort | Creator Selection; the filters | 1 |
+| See budget committed and left, and how many are decided | Creator Selection; **Summary** | 1 |
+| Go through creators one at a time and decide | Creator Selection; the decision Buttons on each row or card, then **Next unreviewed** | 1 |
+| Filter by product, decision, city and tier, search and sort | Creator Selection; the toolbar, or a column header on Table | 1 |
+| Switch between Table and Cards | Creator Selection; **View** | 1 |
 | See each match score and why | Creator Selection; the card | 1 |
 | See competitor conflicts before deciding | Creator Selection; the card | 1 |
 | Watch a creator's latest posts | Creator Selection, then a thumbnail | 2 |
@@ -1392,7 +1442,7 @@ Creator Selection:
 | Read and leave notes, and tag the other side | Creator Selection; the card's notes | 1 |
 | See which rounds a creator is already in | Creator Selection; the round chips | 1 |
 | Open a creator's full profile | Creator Selection, then the card | 2 |
-| Copy all decisions | Creator Selection; its copy control | 1 |
+| Copy all decisions | Creator Selection; **Copy decisions** | 1 |
 | Give a one tap reason on a surprise | Creator Selection, then the decision | 2 |
 | Check the match score against the client's picks | Creator Selection, then **Match score tuning** | 2 |
 | See surprises and patterns in what the client values | Creator Selection, then **Match score tuning** | 2 |
@@ -1457,7 +1507,7 @@ The client's side:
 | See where things stand, what's waiting on them and what Aspire is doing; reach the sync and the channel | Home; **Where we stand**, **Waiting on you**, **Aspire is on it** and **Next check in** are open | 0 |
 | See who's on the Aspire team | **Everything**, then **Team** | 2 |
 | Read the brief, comment, sign it off | **Waiting on you**, "open"; or Master Brief, then the concept | 1 to 2 |
-| Approve or pass on creators, leave notes, give a reason | Creator Selection, then the decision | 2 |
+| Approve or pass on creators, leave notes, give a reason | Creator Selection; the decision Buttons, and the reason after them | 1 to 2 |
 | See who's under contract and where each creator is | Selected Creators | 1 |
 | Watch cuts, comment on the frame, request changes or approve | Content Review, then the cut | 2 |
 | See results against target and what changes next round | Ad Performance, then **Next round's brief** | 1 to 2 |
@@ -1579,7 +1629,7 @@ Sections, in order:
      round and the count (`decide-r{n}-{k}`, `shipping-r{n}-{k}`), so a done mark lasts until the
      count changes and the item comes back with a new id.
    - **Agency**: what the agency owes, from `agency/attention`: "Record @{handle}'s reply",
-     "Send {k} drafts" (the first three handles), "No reply yet: @{handle}" (past their tier's
+     "Send {k} drafts" (the first three handles), "No reply yet: @{handle}" (past their
      reply window), approvals due within a day, a brief sign off on the page not recorded yet
      ("Record {brand}'s brief sign off", built from the `signoff-unrecorded` template while a sign
      off counts and step 4 isn't cleared), anything marked your call
@@ -2995,57 +3045,267 @@ Importing a brief fills the same parts through this table, with `source` `file` 
 
 ### Creator Selection
 
-Casting for every round, from one shared pool. Each creator shows once, with a chip per round
-they are in ("Round 1", "Round 2 · Returning"). Filters: concept, status, waiting on (client,
-agency, creator), product, and a search on handle and name; the **Round switcher** filters by
-round. The count line reads as the pool, with counts per round: "{n} of {m} creators in the pool
-· Round 1: {a} approved · Round 2: {b} approved, {r} returning".
+Casting for every round, from one shared pool. The pool is what `atlas-creator-discovery` and
+`atlas-creator-vetting` write in creator-ads mode, unchanged: one discovery finding per creator
+for the campaign (`creator-discovery-{profile}-{slug}` prefix, `detail.lane`), the newest vetting
+finding for that creator and lane when the lane was screened, and the creator's newest `roster`
+finding per round once they have one. Nobody adds a creator from a sheet. Each creator shows once,
+with a chip per round they are in.
+
+**Who the client sees.** The client sees the creators sent to them: those with a `roster` finding
+in any round, which the Gate 2 send writes for every creator on the slate (**Gate packets**,
+**Gate 2**). Only those go into the page itself, and only they have the decision control, count
+toward "{m}", and wait on the client. The rest of the pool, not screened or not sent yet, is
+agency data (`agency/pool`), renders for the agency only with a soft Badge "Not sent yet" and no
+decision control, and is left out of every client figure. The pool median for the hook rate tile
+is over the creators the viewer sees. The **Round switcher** opens on **All rounds** here, and a
+round segment narrows the pool to that round's creators.
 
 **Decisions land in the open round** (**Rounds**, **The open round**). A Priority Yes or Yes adds
-the creator to that round, and the decision is saved for it
-(`client/creator-{net}-{handle}-r{round}`). The decision control names the round: "Your decision
+the creator to that round, and the call is saved for it, in the deciding person's own decisions
+(**1e**, **What the page keeps**, Creator decisions). The control names the round: "Your decision
 for round {n}". A creator already in an earlier round shows their earlier calls as labels with
 the round. With no open round, decisions wait: the control is a label reading "Decisions open
 when round {n+1} starts".
 
-Two layouts: Cards by default, Board second. The layout last picked is kept in the browser
-(**1e**, **Where things are kept**).
+In order: **Summary**, the toolbar, the pool in **Table** or **Cards**, then **Match score
+tuning** for the agency. Every figure is worked out from the records and the page data the viewer
+can read, live, and every value shows the same way whatever its source. A figure that is an
+estimate (an expected cost) carries no special styling; its "Edited by" line (**Editing in
+place**) says where it came from.
 
-- **Budget summary**, agency only, at the top: Total, Committed (with the count agreed), Offers
-  out (with the count countered), Remaining. Total is edited in place; the rest are worked out.
-- **Cards**: the creator card from `creator-card.md`, page profile, one per creator, anchored
-  `#selection/r{n}/{net}-{handle}`. Flow chips: the concept, filled with the theme's chart series in
-  concept order, then the status labels, then "Near category" when it applies. The fit ring shows
-  the paid fit score. Thumbnails show the evidence posts first, with a "Hook post" label on the
-  post the hook rate came from and the play glyph on video, embedded per the card reference. The
-  `{DETAILS}` block: Hook rate (watched past 3s), Engagement on Reels, Paid work before, Ad
-  permissions, Status, Product, Location, Tier, Why we picked them, any question for the client, and
-  Your decision. For the agency only, under a dashed rule headed "Agency only": the
-  recommendation, agency notes, vetting evidence and safety detail, email, phone and manager, and
-  the tier's reply window. The tier itself shows to both sides (**Who sees what**).
-- **Board**: one group per concept with a colored title bar (concept name, persona, "need {n},
-  {m} approved"). Each group is its own full width table with the first column and the header
-  pinned, and grouped header bands: Decisions (Your decision, Your notes, Status, Product), Fit
-  for the concept (Why we picked them, Location, Tier), Paid signals (Hook rate, Engagement on
-  Reels, Paid work before, Ad permissions), Instagram and TikTok (Handle, Followers, Eng. rate,
-  Avg. eng., Audience each), and for the agency, Agency only (Agency notes, Email, Phone, Manager).
-  Status labels are Badges in their **Status pills** variants (**Design standards**).
-- **Your decision**, on both layouts: a dropdown with four values, Priority Yes, Yes, Maybe, No,
-  showing "Decide" until one is picked. It takes the **Status pills** variant of its choice:
-  Priority Yes and Yes success, Maybe warning, No error, Decide soft. Priority Yes also shows a
-  star, so it reads apart from Yes without color. Maybe opens an optional note. Your notes is a free
-  text cell on every row. These are editable for the client and read only for the agency. Status
-  and Ad permissions are dropdowns for the agency and labels for the client.
+#### Summary
+
+One Card, `selection-summary`, in a grid, `grid grid-cols-1 gap-4 lg:grid-cols-3` for the agency
+and `grid grid-cols-1 gap-4 sm:grid-cols-2` for the client. **Budget** always covers the whole
+campaign, every round. **Decisions** and **Hook rate** cover the open round, also on **All
+rounds**, and the round in view when a round segment is picked.
+
+- **Budget**, agency only. Read from `agency/budget` and each creator's `agency/creator-*`
+  document, so it never renders for the client or in **Preview as client**, and is worked out
+  again the moment a decision arrives.
+  - **Committed**: every agreed fee on the campaign, in every round, with the allowlisting uplift
+    on each unless allowlisting is off: the agreed figure plus its uplift line in **Contract and
+    rates**' **Totals** (`rates-and-terms.md`, **Contract and rates**). It never comes from a typed number. Shown with
+    "{k} creators agreed".
+  - **Approved, not contracted**: every creator with Priority Yes or Yes in a live round, from
+    the page or recorded, whose fee is not agreed and who has not declined, at their expected cost
+    (`rates-and-terms.md`, **Expected cost**). Shown with "{a} creators".
+  - **Unpriced**: the approved, not contracted creators with no expected cost, counted apart and
+    left out of the figures above: "{u} approved creators aren't priced yet", with a soft Badge
+    "Unpriced". Each name opens its row.
+  - **Budget left**: the total less committed and approved, not contracted, in `text-2xl
+    font-semibold`, with "of {total}" in `text-sm text-muted-foreground`. The total is edited in
+    place (**Editing in place**).
+  - **The meter**: the two part Meter from **Component classes**, committed then approved, not
+    contracted, each part as wide as its share of the total (a `width` in `style`, the one
+    inline style it takes). A legend under it repeats both with the Meter's dot in the part's
+    class, the label and the amount, so the meter never reads by color alone.
+    `role="meter"` with `aria-valuenow` the two together and `aria-valuemax` the total.
+  - **Over budget**: when committed and approved, not contracted come to more than the total, the
+    meter is full, a warning Badge "Over budget" sits beside the headline, and one line reads
+    "Committed and approved come to {sum}, {x} over the {total} budget."
+  - **No total saved**: the headline reads "No budget set" with its edit pencil, the meter is
+    hidden, and the figures show as amounts.
+- **Decisions**, for both sides: "{d} of {m} decided" for the round, where {m} is every creator
+  sent to the client and not decided in an earlier round. With no open round, Decisions and Hook
+  rate cover the newest round, read only, and the legend's line reads "Decisions open when round
+  {n+1} starts". Under it the legend, one Badge per value in its
+  **Status pills** variant with its icon and count: Priority Yes, Yes, Maybe, No, Unreviewed. Each
+  Badge is a button that sets the Decision filter. Then one line per concept: its chip, its
+  persona and "need {n}, {a} approved".
+- **Hook rate**, for both sides: "Approved average {x}%" against "Pool median {y}%", and "{d}
+  points above the pool" or "below". The average is over the creators with Priority Yes or Yes in
+  the round who have a hook rate; the median over every pool creator who has one. Creators with
+  none (every TikTok creator) are left out and named: "{k} without a hook rate left out". With
+  nothing approved yet: "No approved creators yet", and the pool median alone.
+
+#### The toolbar
+
+One row above the pool that wraps on a phone, built from Input, Select and Button:
+
+- **Search**, an Input "Search creators": name, handle, notes, city, concept, persona and tier,
+  ignoring case and accents. Notes are the client's notes, and for the agency also Aspire's notes.
+- **Decision**, a Select: All, Priority Yes, Yes, Maybe, No, Unreviewed, each with its count in
+  the pool as the other filters leave it.
+- **Products**, one chip per product in scope, in their saved order, then "No product": Buttons
+  size sm, `secondary` with `aria-pressed="true"` when pressed and `outline` with
+  `aria-pressed="false"` when not, several at once, each with its count. A product link on
+  Home (`#selection/product-{id}`) opens with that chip alone pressed.
+- **City**, **Tier**, **Concept** and **Status**, a Select each, "All" first, then each value
+  the pool holds with its count. Tiers list in size order (**Tiers** below), concepts in concept
+  order. The agency also gets **Waiting on** (client, agency, creator).
+- **Sort**, a Select, with a ghost icon Button beside it (Lucide `arrow-up-down`, labelled
+  "Ascending" or "Descending") that flips the order. The keys and the order each starts in: name
+  (A to Z), latest post (newest), hook rate, engagement on Reels, reach, engaged accounts,
+  Instagram followers, TikTok followers and match (highest), tier (Mega first), concept (concept
+  order), persona (A to Z), product (saved order), decision (Priority Yes, Yes, Maybe, No,
+  Unreviewed), and for the agency expected cost and cost per 1K reach (lowest). A creator with no
+  value for the key sorts last either way. The pool opens sorted by match.
+- **View**, a Tabs list, Table and Cards, from 640px, opening on Table. Under 640px the pool is
+  Cards only and the list doesn't render; a view kept as Table still opens there as Cards.
+- **Copy decisions** (below), an outline Button size sm.
+- The count line in `text-xs text-muted-foreground`: "{n} of {m} creators in the pool · Round 1:
+  {a} approved · Round 2: {b} approved, {r} returning", with a ghost Button "Clear filters" while
+  any filter or search is set. Nothing matches: "No creators match." with "Clear filters".
+
+The client's toolbar is built from what the client reads, so it never offers a sort, filter or
+search on an agency only field: no expected cost, cost per 1K reach, Waiting on or Aspire notes.
+Filters, search and sort are kept in memory while the page is open, never in page data or browser
+storage. The view is kept in the browser (**1e**, **Where things are kept**).
+
+#### Table
+
+From 640px. One table of the pool as the toolbar leaves it, with the Table classes, inside
+`overflow-auto max-h-[70vh]`. The header row is pinned (`sticky top-0 z-10 bg-card`), the
+Creator column pinned at the start (`sticky left-0 z-10 bg-card`) and the Decision column at the
+end (`sticky right-0 z-10 bg-card`), their header cells `z-20`, so a creator and their decision
+stay in view while the columns between them scroll. Each row is anchored
+`#selection/r{n}/{net}-{handle}`.
+
+| Column | Shows | Sorts by |
+| ------ | ----- | -------- |
+| Creator | Avatar, handle, name, tier Badge (outline), socials (Instagram and TikTok icons with followers, each a link to the profile), city, status Badge, and the round chips | Name |
+| Campaign match | The match score out of 100 in `text-lg font-semibold`, or "Not scored yet" for a creator discovery hasn't scored, then the paid signals in `text-xs text-muted-foreground`: hook rate, engagement on Reels, reach and engaged accounts, and "Scored without hook rate, which TikTok doesn't report" on a TikTok creator | Match |
+| Concept | The concept chip, the persona under it, and the product | Concept |
+| Latest posts | Up to three thumbnails, the evidence posts first, each a button with the play glyph on video and "Hook post" on the post the hook rate came from, then "Latest post {date}" | Latest post |
+| Notes | Why we picked them, the client's notes (editable for the client), and for the agency, under a dashed rule headed "Agency only": Aspire's notes (editable), the recommendation, expected cost and cost per 1K reach | None |
+| Decision | **Deciding** below | Decision |
+
+A column header that sorts is a `button` in the head cell: a click sorts by it in its starting
+order and a second click flips it, the head cell carries `aria-sort`, and the sorted column shows
+the Lucide `arrow-up` or `arrow-down` beside its label. The **Sort** Select follows the headers
+and the headers follow the Select. A thumbnail opens the creator viewer at that post (a Sheet,
+**Responsive**, **Side panels**, built in its own section); the handle opens it at the top. Until
+it is built, both open the creator's card on Cards.
+
+#### Cards
+
+The creator card from `creator-card.md`, page profile, one per creator, in `grid grid-cols-1
+gap-4 sm:grid-cols-2 lg:grid-cols-3`, anchored `#selection/r{n}/{net}-{handle}`. Flow chips: the
+concept, filled with the theme's chart series in concept order, then the tier, the status labels,
+the round chips, then "Near category" when it applies. The fit ring shows the match score; a creator with none shows no ring and a "Not scored yet"
+note, as discovery's own page does.
+Thumbnails show the evidence posts first, with a "Hook post" label on the post the hook rate came
+from and the play glyph on video, embedded per the card reference. The `{DETAILS}` block: Hook
+rate (watched past 3s), Engagement on Reels, Reach, Engaged accounts, Paid work before, Ad
+permissions, Status, Product, City, Instagram and TikTok followers, Why we picked them, any
+question for the client, and the client's notes. For the agency only, under a dashed rule headed
+"Agency only": the recommendation, Aspire's notes, expected cost and cost per 1K reach, vetting
+evidence and safety detail, email, phone and manager, and the reply window. Deciding sits at the
+foot of the card.
+
+#### Deciding
+
+- **The control**, for the client: a `role="group"` labelled "Your decision for round {n}" of four
+  Buttons, size sm: Priority Yes (Lucide `star`), Yes (`check`), Maybe (`circle-help`) and No
+  (`x`). The chosen one is `secondary` with `aria-pressed="true"`, the others `outline` with
+  `aria-pressed="false"`. The Buttons show the viewer's own call, and a call older than the
+  round's newest **Reset decisions** counts as none, so the next tap writes its value; beside the group sits the
+  row's call (**What the row shows**) as a Badge in its **Status pills** variant, or a soft
+  "Unreviewed" Badge when there is none. One tap saves. **Clicking the chosen value again clears
+  it**: it takes back the viewer's own call, never another approver's. The icons keep Priority Yes apart from Yes without
+  color.
+- **One at a time.** After a save, a ghost Button "Next unreviewed" under the control scrolls to
+  the next Unreviewed creator in the current sort and moves focus to their control. As extras
+  (**Responsive**, **Keyboard shortcuts**), for the client only, never for the agency or in
+  **Preview as client**: with a creator's row or card focused, `1` to `4` pick the four values in
+  order and `n` moves to the next unreviewed creator.
 - **A reason on the call.** Every Priority Yes, Yes and No offers "What made the call?" with
   one tap reasons: Performance, Brief fit, Paid history, Price, Reach, and Other with a short
-  text field. A reason is never required; skipping it leaves the decision as it is. The page
-  never holds the agency's recommendation, so the offer is the same on every creator. A decision
-  that goes against the recommendation (Priority Yes or Yes on a creator recommended Reject, or No
-  on one recommended Approve) is a surprise: **Pulling decisions** marks it from the agency's
-  data, and the picker names its reason, or "no reason given".
-- A TikTok creator's hook rate shows "n/a (not on TikTok)".
-- **Match score tuning**, agency only: the panel that tunes the match score's weights and its
-  stats, read from `agency/match-score`. The client sees neither the panel nor the weights.
+  text field. A reason is never required; skipping it leaves the decision as it is. Maybe opens
+  an optional note in the same place. The page never holds the agency's recommendation where the
+  client reads, so the offer is the same on every creator. A decision that goes against the
+  recommendation (Priority Yes or Yes on a creator recommended Reject, or No on one recommended
+  Approve) is a surprise: **Pulling decisions** marks it from the agency's data, and the picker
+  names its reason, or "no reason given".
+- **What a call saves.** `{approval, at, by, byName, score, reason}`: the value (`null` once
+  cleared), the time, the decider's id and name, a snapshot of the match score the decider saw (`null` when the creator had none),
+  and the reason. It goes under the decider's own id (**1e**, **What the page keeps**, Creator
+  decisions), so the record of who decided is the path, not what the page wrote. The page first
+  adds the call's id to the client's private `data/users/{id}/decisions`, then writes the call,
+  then its writer document's `lastAt`. The field shows
+  "Saving", "Saved" and "Not saved" as **Editing in place** does, and the call logs one `decision`
+  entry (**1e**, **The activity log**).
+- **What the row shows** is the newest call for the creator and round across the client's
+  writers that isn't cleared, skipping any made before the round's newest **Reset decisions**,
+  any from an account on Aspire's side (an `editors/{id}` marker, or `sides` `editors`) and any
+  from an account the CM refused (`sides` `refused`), with "{name}, {time}" under it (**1e**,
+  **Creator decisions: what holds and what doesn't**). With every call cleared, the row is
+  Unreviewed, unless the call recorded in Atlas (the roster's `slate`, published into the page
+  itself) says otherwise: with no counted call on the page newer than the recorded one, the row
+  shows the recorded call with "Recorded by Aspire {time}", which covers a call the CM recorded
+  from the chat. A recorded call older than the round's newest **Reset decisions** is hidden the
+  same way, so a reset shows every row Unreviewed until someone decides again. The Summary, the filters, Copy decisions and Home's lists count the same calls. A
+  skipped call shows to the agency only, as a line with a warning Badge "Not counted". A counted
+  call from an account not in `sides` `deciders` or `approvers` carries, for the agency only, a
+  processing Badge "Aspire to confirm" until the CM confirms it. When another approver's newest call differs, one line names it:
+  "{name} said Maybe {time}". The agency sees all of this as labels, never the Buttons, and so
+  does **Preview as client**. A client's call reaches every open view within seconds on the live
+  stream, and the Summary's counts, the meter and the hook rate tile move with it (**1e**, **Live
+  updates**).
+- Status and Ad permissions are Selects for the agency and labels for the client. A TikTok
+  creator's hook rate shows "n/a (not on TikTok)".
+
+#### Copy decisions
+
+Copies every creator the pool shows now, with the round, filters, search and sort applied, as a
+table: Decision ("Unreviewed" when there is none), Name, Handle, Product, Client notes, and for the
+agency Expected cost. It works like **History**'s **Copy as table**: an HTML table and tab
+separated text on the clipboard, the tab separated text with the CSV's `'` guard on typed text,
+"Copied {n} rows" on the Button for two seconds, and a Dialog "Copy decisions" with the text
+selected in a read only Textarea when the browser refuses the clipboard. **Preview as client** and
+the client copy without Expected cost. A read only client copies the page as published, with the
+calls recorded at the last publish. Copying writes nothing and logs nothing.
+
+#### Tiers
+
+From the larger of the creator's Instagram and TikTok followers: **Nano** under 10K, **Micro**
+10K to under 50K, **Mid** 50K to under 500K, **Macro** 500K to under 2M, **Mega** 2M and up. The
+roster's `tier` field is where discovery found the creator, a different thing, and is never shown
+as this tier. Worked out at publish
+from the follower counts Atlas holds and shown to both sides. The reply window keeps its own
+bands (`rates-and-terms.md`, **What each creator gets**), and other flows' tier words (a PPA
+pitch's casting bands, an influencer program's outreach) are their own: this page shows only
+these five.
+
+#### Where each field comes from
+
+What discovery and vetting write in creator-ads mode, and where it shows here. The page reads
+these when Claude publishes; nothing on the page calls Atlas.
+
+| On the page | Where it shows | From |
+| ----------- | -------------- | ---- |
+| Handle, network, avatar | Creator | Discovery's finding (`entityId`, `schema`) and the search hit's username; the picture from `instagram.profilePictureUrl`, embedded per `creator-card.md` |
+| Name | Creator, search, sort | The search hit, or the agency's edit (`creators/{net}-{handle}`) |
+| Instagram and TikTok followers | Creator, sort, tier | `followersCount` per network, read for the card |
+| Tier | Creator, Tier filter, sort, search | Worked out from the followers (**Tiers**) |
+| City | Creator, City filter, search | Not written by discovery or vetting: Atlas holds a `country`, unset on about half the index, and no city. Shows the agency's `location` edit, else the country, else "No city yet". **No city data yet** |
+| Status, round chips | Creator | The `roster` findings per round, and the page's `edits` |
+| Campaign match | Campaign match, sort, the fit ring | Vetting's creator-ads fit score when the lane was screened, else discovery's `fitScore`, out of 100 |
+| Hook rate | Campaign match, Hook rate tile, sort | `detail.adFigures`, from `instagram.reelsHookRate` |
+| Engagement on Reels | Campaign match, sort | `instagram.reelsInteractionRate` |
+| Reach | Campaign match, sort, cost per 1K reach | `instagram.creatorMarketplaceReach` |
+| Engaged accounts | Campaign match, sort | `instagram.creatorEngagedAccounts`, which discovery writes in its ad figures |
+| Paid work before, ad permissions | Card details | `instagram.pastBrandPartnershipPartners`; partnership readiness, then the roster's `adPermissions` |
+| Concept, persona | Concept, Concept filter, sort, search | `detail.lane`, named from its `campaign:{slug}-lane-{lane}` record |
+| Product | Concept, Products chips, sort | The roster's `details.product` or the agency's `product` edit. Neither agent assigns one, so a creator shows "No product" until the agency sets it on the page or the CM does in the chat. **No product per creator until someone sets it** |
+| Latest posts, latest post date | Latest posts, sort | Discovery's `evidence` permalinks and the posts read for the card (`search_posts` per creator) |
+| Why we picked them | Notes | The CM's note at Gate 2, else vetting's reason in plain words |
+| Recommendation, vetting evidence, safety detail | Notes, agency only | The vetting finding |
+| Expected cost, cost per 1K reach | Notes, sort, Budget, agency only | `rates-and-terms.md`, **Expected cost**, and the reach above |
+
+A TikTok creator's hook rate shows "n/a (not on TikTok)" and their match score carries
+"Scored without hook rate, which TikTok doesn't report". Reach and engaged accounts, which Atlas
+holds for Instagram only, show "Not in Atlas". All three sort last.
+
+#### Match score tuning
+
+Agency only: the panel that tunes the match score's weights and its stats, read from
+`agency/match-score`, and the reasons behind each creator's score. Both are built in their own
+sections. What this tab gives them: each decision's `score` snapshot, the Campaign match column
+and fit ring as the place a score's reasons open from, and the `weight-{signal}` keys. The client
+sees neither the panel nor the weights.
 
 This is the step 2 approval.
 
@@ -3429,8 +3689,8 @@ left blank, never filled with a dash.
 | Master Brief | Concepts | Concept in the round, removed ones left out | Concept, Product, SKU, Positioning line, Personas, Trigger, Framework, Story, Selling points, Problem, Agitate, Solve, Beats, Hooks, CTAs, Body, Length, Runtime, B-roll, Coverage, Creators, Written (Yes or No), State, Signed off by, Signed off on (both from the round's sign off, the same on every row). Personas, Selling points, Beats, Hooks, CTAs and B-roll hold one item per line in their cell ("H1 Question: {line}", "C1 Direct: {line}, sends to {destination}", "B04 {shot} ({beat})"), and long text is plain text |
 | Master Brief | Voice | Line of **Tone of voice and don'ts** | Part (Tone of voice, Do, Don't, Disclosure, File naming), Text |
 | Master Brief | Variants (agency only) | Variant in each concept's variant plan | Concept, Variant, Framework, Length, Hook ("H2 Demo first"), CTA, VO, B-roll ("B02, B05"), Note |
-| Creator Selection | Decisions | Creator with a call in the rounds in view | Creator, Network, Name, Concept, Round, Your decision, What made the call, Your notes, Decided by, Decided on, Status, Recommendation (agency only), Surprise (agency only: Yes when the decision goes against the recommendation, as **A reason on the call** defines it, worked out on the page from both), Agency notes (agency only) |
-| Creator Selection | Creators | Creator the pool shows now | Creator, Network, Name, Descriptor, Location, Concepts, Rounds, Match score, Hook rate, Engagement on Reels, Paid work before, Ad permissions, Instagram followers, Instagram engagement rate, Instagram average engagement, Instagram audience, the same four for TikTok, Why we picked them, Status, Product, Tier, Reply window (agency only), Email (agency only), Phone (agency only), Manager (agency only) |
+| Creator Selection | Decisions | Creator with a call in the rounds in view | Creator, Network, Name, Concept, Product, Round, Your decision, What made the call, Your notes, Decided by, Decided on, Campaign match when decided, Status, Recommendation (agency only), Surprise (agency only: Yes when the decision goes against the recommendation, as **A reason on the call** defines it, worked out on the page from both), Expected cost (agency only), Aspire notes (agency only) |
+| Creator Selection | Creators | Creator the pool shows now, in its sort | Creator, Network, Name, Descriptor, City, Tier, Concept, Persona, Product, Rounds, Campaign match, Hook rate, Engagement on Reels, Reach, Engaged accounts, Latest post, Paid work before, Ad permissions, Instagram followers, Instagram engagement rate, Instagram average engagement, Instagram audience, the same four for TikTok, Why we picked them, Status, Your decision, Your notes, Expected cost (agency only), Cost per 1K reach (agency only), Aspire notes (agency only), Reply window (agency only), Email (agency only), Phone (agency only), Manager (agency only) |
 | Selected Creators | Creator snapshot | Creator on the round's roster | Creator, Network, Name, Concept, Product, Returning, Status, Ad permissions, Brief state, Content state, Variants (k of max), Content folder, Waiting on (agency only), Last contact (agency only), Email (agency only), Phone (agency only), Manager (agency only) |
 | Selected Creators | Shipping list | Row in **Shipping** | Creator, Name, Product, Details from creator, Address or pickup, Visit date, Shipping, Tracking, Product status, Updated by, Updated on, Next step (agency only) |
 | Selected Creators | Rates and payments | Row in **Contract and rates** | Creator, Concept, What they make, Usage, Exclusivity, Agreed fee (blank until agreed; Where it is says "In negotiation"), If we drop them, Where it is, Fees approved on, UGC video rate (agency only), Reel collab rate (agency only), 90 day usage rate (agency only), Offer open, target and max (agency only, three columns), Counter (agency only), Expected cost (agency only), Cost per 1K reach (agency only) |
@@ -3484,13 +3744,13 @@ name the tab, never an older name for the part:
 | The products in scope | Home, Everything, **Products in scope** |
 | The Aspire team and what to go to each for | Home, Everything, **Team** |
 | Program files by round, what's still needed, previews and scans | Home, Everything, **Files** |
-| Creators: cards, board and decisions | Creator Selection |
+| Creators: the summary, table, cards, decisions and copy decisions | Creator Selection |
 | Fees and the client's single approve | Selected Creators, **Contract and rates**, with the approve control |
 | Product shipping | Selected Creators, **Shipping** |
 | Briefs: status, voice, concepts, the variant plan and frameworks, versions, with each creator's changed brief | Master Brief |
 | Pacing by day and by concept, the phases, milestones and today | Home, Everything, **Calendar** |
 | Delays and weekly call: timeline, documents, delays, agenda | Home, Everything, **Calendar** and **Files**; the sync in Simple, **Next check in**; the agenda is Simple's **Where we stand**, **Waiting on you** and **Aspire is on it** |
-| Budget (agency only) | Creator Selection, **Budget summary**, and Selected Creators, **Totals** |
+| Budget (agency only) | Creator Selection, **Summary**, and Selected Creators, **Totals** |
 | Drafts and the reply log (agency only) | Selected Creators, on the creator's card |
 | Who did what and when, filtered by tab and round, searched | **History**, opened from the inbox |
 | What changed for you, and tags for you | **Inbox**, from the header on every tab: every tab on Home, the tab's own elsewhere |
@@ -3522,7 +3782,7 @@ with who made it (**1e**, **Every editable value**). The agency edits in place:
 | Team: add, edit and remove a person | Home, Everything, **Team** |
 | Steps: tick, move to the next step, add, remove, and each step's name, date and owner | Home, Everything, **Round steps**, which **Calendar**'s step events link to |
 | A round's label, build window, in-market window and launch date (its month follows the launch) | Home, Everything, **Calendar** ("Edit round {n} dates"), and the **Start round** Dialog |
-| Budget total | Creator Selection, **Budget summary** |
+| Budget total | Creator Selection, **Summary** |
 | Files | Home, Everything, **Files**: add by link, upload or drop, edit, remove, scan again |
 | The brief | Master Brief: every part of **Tone of voice and don'ts** and of each concept, the variant plan and the frameworks; add, remove, defer and bring back a concept; import a brief; start from the last round's; reset and restore versions |
 | Creator profile: name, descriptor, location, concept, product | Creator Selection and Selected Creators |
@@ -3741,6 +4001,7 @@ visible edge on a card. A Switch keeps the `role="switch"` and `data-state` attr
 | Switch | root | `peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-sm transition-colors data-[state=checked]:bg-primary data-[state=unchecked]:bg-input` |
 | | thumb | `pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0` |
 | Progress | root, indicator | `relative h-2 w-full overflow-hidden rounded-full bg-primary/20`, `h-full w-full flex-1 bg-primary transition-all` |
+| Meter, two part | root, first part, second part, legend dot | `relative flex h-2 w-full overflow-hidden rounded-full bg-primary/20`, `h-full shrink-0 bg-primary transition-all`, `h-full shrink-0 bg-muted-foreground transition-all`, `size-2 shrink-0 rounded-full` with the part's `bg-` class |
 | Tooltip | content | `z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground` |
 | Avatar | root, fallback | `relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full`, `flex h-full w-full items-center justify-center rounded-full bg-muted` |
 | Separator | | `shrink-0 bg-border` with `h-[1px] w-full` (horizontal) or `h-full w-[1px]` (vertical) |
@@ -3759,18 +4020,18 @@ card titles, `text-xl` for section titles, `text-2xl` for the page title. Weight
 
 | Variant | Status labels |
 | ------- | ------------- |
-| soft | Not recorded yet, Resolved, Agency only, Awaiting decision, not asked yet, not shipped, Planned, Done, Returning, Up next, Paused, Not done, round closed, Scanned, Not read, Draft, Needs work, New concept, Carried forward, Deferred |
+| soft | Not recorded yet, Resolved, Agency only, Awaiting decision, Unreviewed, Unpriced, Not sent yet, not asked yet, not shipped, Planned, Done, Returning, Up next, Paused, Not done, round closed, Scanned, Not read, Draft, Needs work, New concept, Carried forward, Deferred |
 | processing | Offer sent, Details received, Shipped, Brief sent, in negotiation, In production, Now, Coming soon, Scanning, In review with client, Waiting for your sign off, Signed off, Aspire to confirm |
-| success | Approved, Agreed, Delivered, Brief accepted, Granted, In market, Ahead, On track, Met the target, Active, Updated {n}, Signed off |
-| warning | Changes requested, This isn't a sign off you made, Not counted, Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending, waiting for your approval, Running behind, Launch at risk, over target, days late, Waiting on you, Out of stock, Still needed, Needs a concept, Not in products in scope, Removed, Used in round {r} |
-| error | Rejected, Declined, returned, Couldn't scan, Not added, Couldn't import |
+| success | Priority Yes, Yes, Approved, Agreed, Delivered, Brief accepted, Granted, In market, Ahead, On track, Met the target, Active, Updated {n}, Signed off |
+| warning | Changes requested, This isn't a sign off you made, This isn't a decision you made, Not counted, Over budget, Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending, waiting for your approval, Running behind, Launch at risk, over target, days late, Waiting on you, Out of stock, Still needed, Needs a concept, Not in products in scope, Removed, Used in round {r} |
+| error | No, Rejected, Declined, returned, Couldn't scan, Not added, Couldn't import |
 
-The decision dropdown takes the variant of its choice (Decide is soft). A pill never uses the
+The decision's Badge takes the variant of its choice (Unreviewed is soft). A pill never uses the
 brand color, so a brand whose color is red never makes an Approved look like a Rejected.
 
 **Concept colors** come from the chart series in concept order: Concept 1 takes `--chart-1`,
 Concept 2 `--chart-2`, and so on. A concept chip is `bg-chart-{n}` with the Badge base and
-`rounded-sm`; the Board group's title bar is `bg-chart-{n}`; anything thinner (a dot, a left rule
+`rounded-sm`; anything thinner (a dot, a left rule
 on a card) is `border-chart-{n}` and always sits next to the concept's name, because the lighter
 Atlas series are fills that do not reach 3:1 as a thin line. A sixth concept or later takes `bg-muted text-foreground` with
 its number. Charts on the page use the same series in the same order, read from the CSS variables, and
@@ -3833,11 +4094,13 @@ prefixes.
 - **Tabs.** From 640px the tabs are a Tabs list. On phone they are one row that scrolls sideways
   on its own (`overflow-x-auto` wrapper, the list `w-max`), with the selected tab scrolled into
   view and each count badge kept. Never wrap the tabs onto two lines.
-- **Tables.** A table with grouped header bands or more than five columns (the Board) keeps its
-  first column pinned (`sticky left-0 z-10 bg-card`) and its header pinned (`sticky top-0 z-10
+- **Tables.** A table with grouped header bands or more than five columns (Creator Selection's
+  Table) keeps its first column pinned (`sticky left-0 z-10 bg-card`) and its header pinned (`sticky top-0 z-10
   bg-card`, the corner cell `z-20`), inside its own `overflow-auto max-h-[70vh]` area, at every
-  width. The area scrolls both ways, so the header stays in view. Every other table (Contract and
-  rates, Shipping, the budget summary and totals) is a table from 640px and a stack
+  width. The area scrolls both ways, so the header stays in view. Creator Selection's Table also
+  pins its last column, Decision (`sticky right-0 z-10 bg-card`), and on phone the pool is Cards
+  instead. Every other table (Contract and
+  rates, Shipping, and the totals) is a table from 640px and a stack
   of Cards on phone, one Card per row, each showing the row's first column as its title and the
   other columns as label and value pairs.
 - **Side panels.** The creator viewer, the review panel, the inbox, History and comments open as a
@@ -3914,6 +4177,15 @@ prefixes.
     `signoffs/{id}` with the copy of what they read; the locked brief renders every part as a label
     and ticks step 4 on Home; and **Copy creator brief** holds no variant plan, reason, coverage,
     comment or id.
+17. Creator Selection: the Summary's budget part, Expected cost, cost per 1K reach, Aspire's notes
+    and the Waiting on filter never render for the client or in **Preview as client**, and the
+    client's Sort Select lists neither cost; Committed equals the agreed figure plus its uplift
+    line in **Contract and rates**' **Totals**; the meter's two parts and its legend add up to what the headline subtracts;
+    the decision Buttons render only for the client, a second click on the chosen one clears it,
+    and a call writes only under the client's own `decisions/{id}`; Table pins Creator and
+    Decision and doesn't render under 640px; every tier, city and product count matches its
+    filter's result; pool creators not sent yet are only in `agency/pool`, never in the page itself;
+    and **Copy decisions** holds the rows in view with no Expected cost for the client.
 
 ## 1e. Page data: what the page keeps and how it is read back
 
@@ -3936,6 +4208,8 @@ campaign page:
   {"path": "tags-agency/{self}", "read": "interact", "write": "interact"},
   {"path": "signoffs", "read": "interact", "write": "owner"},
   {"path": "signoffs/{self}", "write": "interact"},
+  {"path": "decisions", "read": "interact", "write": "owner"},
+  {"path": "decisions/{self}", "write": "interact"},
   {"path": "editors", "read": "interact", "write": "owner"},
   {"path": "sides", "read": "interact", "write": "owner"},
   {"path": "editors/{self}", "write": "admin"},
@@ -3973,10 +4247,10 @@ out, and Drive links are saved but read only from the chat (**Scanning from the 
 plugin adds no connector and never asks anyone to add one.
 
 In the share menu's words: Contributors (the client) read the page data and write only under
-`client`, their own comments, their own sign offs, their own activity, their own tags, and their own state; Editors
+`client`, their own comments, their own creator decisions, their own sign offs, their own activity, their own tags, and their own state; Editors
 (the agency) read and write everything; nobody below Editor can read `agency` at all, in a read,
-a list or a query, nor anyone else's tags under `tags-agency`. Under `signoffs`, each person
-writes only their own subtree and no Editor writes anyone else's: only the page's own owner can
+a list or a query, nor anyone else's tags under `tags-agency`. Under `decisions` and `signoffs`,
+each person writes only their own subtree and no Editor writes anyone else's: only the page's own owner can
 (**What the rules enforce, and what they can't**). Under `editors`, each Editor writes only their
 own marker and nobody below Editor writes one. Only the page's owner writes `sides`, and
 everyone who reads page data reads it.
@@ -3993,12 +4267,13 @@ There are three places, and nothing else:
 | ----- | ---- | ----------- |
 | The page itself | What the records said at the last publish: the creators, the brief, the program, the steps | Everyone it is shared with |
 | Page data | Everything a person or Claude changed since, every decision, comment and approval, the agency data, and each person's own state | Per the rules above |
-| Browser storage | The tab open last, and Cards or Board on Creator Selection | That browser only |
+| Browser storage | The tab open last, and Table or Cards on Creator Selection | That browser only |
 
 Browser storage holds only those two things. A decision, an edit, a done mark, a read or cleared
 inbox item, a collapsed section or a review checklist tick never goes there, not even as a copy.
-Clearing the browser's storage loses the last tab and the layout, and nothing else. When browser
-storage is missing or refuses a write, the page opens on Home in Cards.
+Clearing the browser's storage loses the last tab and the view, and nothing else. When browser
+storage is missing or refuses a write, the page opens on Home, and Creator Selection on Table
+from 640px.
 
 ### Every editable value
 
@@ -4050,19 +4325,22 @@ only if it is still missing, and merges the field after. Without the lease, two 
 once would leave only one.
 
 **Live updates.** The page subscribes once to each collection it shows (`client`, `edits`,
-`program`, `briefs`, `brief-rounds`, `brief-events`, `creators`, `reviews`, and for editors `agency`), and once to the viewer's
+`program`, `briefs`, `brief-rounds`, `brief-events`, `decision-events`, `creators`, `reviews`, and for editors `agency`), and once to the viewer's
 own state, so an edit made in one browser shows in every other open view without a reload. A
 subscription to a collection sees only the documents directly in it, never the ones nested
 below, so comments, review versions and the activity log are reached one level down: each
 writer keeps a `comments/{id}` document (`lastAt`) beside their items, the page subscribes to
 `comments` to learn the writers and then to each writer's `comments/{id}/items`, and to
 `agency/comments/items` for editors, and the same way for `signoffs` and each writer's
-`signoffs/{id}/items`; `editors` is one collection of markers; review versions are read when the person opens them, and
+`signoffs/{id}/items`, and for `decisions` and each writer's `decisions/{id}/items`, so a client's
+call reaches the agency's open view within seconds; `editors` is one collection of markers; review versions are read when the person opens them, and
 the activity log is followed the same way while **History** is open (**The activity log**,
 **Reading it**). The inbox follows the log and the tags through their writer documents only
 (**Tags and the inbox**, **Reading it**). The page subscribes to collections, not to each document, to stay under the 64
-subscriptions a view can hold; past that, the oldest writers' comments refresh when the
-person opens the thread. Updates ride a live stream where the browser has one and fall back
+subscriptions a view can hold. Decision writers are subscribed before comment writers, since a
+call moves the Summary and the agency waits on it; past the limit, the oldest writers' comments
+refresh when the person opens the thread, and decision writers past it, which only a page with
+dozens of approvers reaches, are read again every 30 seconds while Creator Selection is open. Updates ride a live stream where the browser has one and fall back
 to a refresh about every 30 seconds, so "without a reload" can take up to that long on some
 connections.
 
@@ -4086,12 +4364,18 @@ with a plain description holds plain data the page writes with no stamp.
 
 | Collection | Path | Who writes | Fields |
 | ---------- | ---- | ---------- | ------ |
-| Decisions | `client/creator-{net}-{handle}-r{round}` | Client | `decision` (priority-yes, yes, maybe, no; a stored `approve` reads as yes and `reject` as no), `reason` (the one tap reason, the Other text, or the Maybe note), `notes`, `shipping`, `tracking`, `productStatus` |
+| Creator decisions | `decisions/{id}/items/{net}-{handle}-r{round}`, `{id}` the decider's own id | Each Contributor, their own | Plain data, no stamps, one document per creator per round per person, written whole with a `set` on each call: `approval:` (priority-yes, yes, maybe, no, or `null` once cleared), `at:`, `by:` (the decider's id, the same as the path's), `byName:`, `score:` (the match score shown when they decided), `reason:` (the one tap reason, the Other text, or the Maybe note; empty when none) |
+| Decision writers | `decisions/{id}` | The writer | `lastAt:`, so the page can find every writer's calls, as for comments |
+| Decision events | `decision-events/r{round}` | Agency; Claude | `reset-{id}`: a stamp with `value` `{at}` for each **Reset decisions**, the Editor as `by`; a call older than the newest one counts as cleared. `migratedAt:` the time of the first publish that declared `decisions`, written once by Claude; a decision a page from before kept in `client` counts only when stamped before it |
+| Own decisions | `data/users/{id}/decisions` | Each person, their own | `items:` `{itemId: at}`, the calls this person made, which their page checks the shared ones under their id against |
+| The client's creator fields | `client/creator-{net}-{handle}-r{round}` | Client | `notes`, `shipping`, `tracking`, `productStatus`. A page from before kept `decision` (priority-yes, yes, maybe, no; `approve` reads as yes and `reject` as no) and `reason` here as stamps: the page and the pull read them only for a creator with no call under `decisions` (**Pulling decisions**, **The creator decisions**) |
 | Fee approval | `client/fees-r{round}` | Client | `approved`, `notes` |
 | Brief sign off | `signoffs/{id}/items/{item}`, `{id}` the writer's own id | Each Contributor, their own | Plain data, no stamps: `kind:` (signoff or changes), `round:`, `send:` (the `send-{id}` it answers), `at:`, `byName:`, `notes:`, `concepts:` (the lanes a change request names), `copies:` (the ids of its copy documents). Only documents here are items. A page from before kept per concept approvals in `client/brief-{lane}-r{round}` (`approved`, `notes`); they are never recorded as a sign off (**Pulling decisions**) |
 | Sign off copies | `signoffs/{id}/copies/{item}-overview` and `{item}-{lane}` | The same writer | The round's brief and each covered concept as the client saw them at sign off: for each stamped part **Loading the brief** fills, its `value`, plain, with no stamp, and no publish time field, send or reopen. Split past 200 KiB as a version is |
 | Sign off writers | `signoffs/{id}` | The writer | `lastAt:`, so the page can find every writer's items, as for comments |
-| Sides | `sides/campaign` | Claude, as the page's owner | Plain data from the campaign's `page-sides` finding (**1a**), rewritten at every publish and every pull that changed it: `editors:` the ids seen on Aspire's side, `approvers:` the confirmed approver accounts, `refused:` the refused sign offs. Only the owner writes it, so no Editor can take their id off it. A chat session that isn't the page owner's can't write it. Then the pull still runs every check and records in Atlas, but the page can't show it: Claude says "Only {owner} can update who signs off on this page. Ask them to pull the client's decisions, so step 4 shows as approved there.", and until they do, the page judges sign offs by the markers alone and a sign off from a newly confirmed account still reads "Signed off, Aspire to confirm" |
+| Sides | `sides/campaign` | Claude, as the page's owner | Plain data from the campaign's `page-sides` finding (**1a**), rewritten at every publish and every pull that changed it: `editors:` the ids seen on Aspire's side, `approvers:` the confirmed approver accounts, `deciders:` the accounts confirmed as {brand}'s
+for creator decisions, `refused:` the refused sign offs and the refused decision writers
+(`{writer}/decisions`). Only the owner writes it, so no Editor can take their id off it. A chat session that isn't the page owner's can't write it. Then the pull still runs every check and records in Atlas, but the page can't show it: Claude says "Only {owner} can update who signs off on this page. Ask them to pull the client's decisions, so step 4 shows as approved there.", and until they do, the page judges sign offs by the markers alone and a sign off from a newly confirmed account still reads "Signed off, Aspire to confirm" |
 | Editor markers | `editors/{id}` | Each Editor, their own | `lastAt:`, written by the page on every load where `canEdit()` is true, before any control renders. Its existence marks `{id}` as on Aspire's side |
 | Own sign offs | `data/users/{id}/signoffs` | Each person, their own | `items:` `{itemId: at}`, the sign off items this person made, which their page checks the shared ones under their id against |
 | Creator changes call | `client/changes-{net}-{handle}-r{round}` | Client | `approved`, `notes` |
@@ -4104,7 +4388,7 @@ with a plain description holds plain data the page writes with no stamp.
 | Program details | `program/details` | Agency | `product-{id}` (a product in scope, `{name, status, description, photo}`, `photo` being the link; the image Claude embeds from it lives in the page itself, never in page data), `team-{id}` (`{name, role, title, email, owns, goTo}`), `step-{gate}-r{round}-planned` and `-due` (dates), `termStart`, `termEnd`, `sync` (the weekly sync slot, time zone and length from `campaign:{slug}-cadence`, shown only), `slack` and `channelLink` (the Slack channel's name and link from `campaign:{slug}-routing`, shown only; the email recipients never go on the page) |
 | Program terms | `program/terms` | Agency | `deliverable-{id}` (`{label, count}`), `adReadyVideos`, `variants`, `usageDays`, `allowlisting`, `partnershipAds`, `exclusivity`, `organic`. A page from before kept `makes`, `usage`, `exclusivity` and `notes` as text, in `agency/terms` until the fees were sent: Program terms reads `agency/terms` then `program/terms`, shows `makes` and `usage` that don't parse as one text row each ("What each creator makes", "Usage"), `exclusivity` as its row, and `notes` as a "Notes" row last, and the next publish moves them to `program/terms` |
 | Allowlisting uplift | `agency/terms` until the fees are sent, then `program/terms` | Agency | `upliftPct` |
-| Budget | `agency/budget` | Agency | `total` (stamp); `committed:`, `offersOut:`, `remaining:` (worked out at publish) |
+| Budget | `agency/budget` | Agency | `total` (stamp); `committed:`, `offersOut:`, `approvedNotContracted:`, `unpriced:`, `left:` (worked out at publish from the records, and again on the page as calls arrive) |
 | The round's brief | `brief-rounds/r{round}` | Agency; Claude | `title`, `sourceDoc` (`{label, url, kind, file}` for an imported doc, `kind` `upload`, `drive` or `text`, `file` its id in `program/files`; empty for a brief the agent wrote; a `kind` `link` from before reads as `drive` for a Google Docs link, else as a link with no `file`), `importedAt:` and `importKey:` (the newest import, **Importing a brief**), `startedFrom:` (the round it was started from), `summary`, `tone` (long text), `do-{id}`, `dont-{id}`, `disclosure`, `fileNaming`, `notice`; `status:` (draft, in review, changes requested, signed off) as at publish, worked out again live on the page |
 | Brief events | `brief-events/r{round}` | Agency; Claude | `send-{id}` (a send for sign off: a stamp with `value` `{at}`, `source` `manual` and the Editor as `by` from the page, or `source` `claude` for a send from the chat) and `reopen-{id}` (a stamp with `value` `{reason, signoff}`, `signoff` naming the sign off it undid as `{writer}/{item}`, or `chat` for one recorded from the chat). Kept apart from `brief-rounds` so no version, reset, restore or import ever writes them |
 | A concept's brief | `briefs/{lane}-r{round}` | Agency; Claude | `name`, `line`, `persona-{id}`, `trigger`, `framework` (`{code, name}`), `story`, `point-{id}`, `problem`, `agitate`, `solve`, `beat-{n}` (`{name, seconds, what}`), `hook-{n}` (`{type, line, shown, overlay, why}`), `cta-{n}` (`{type, line, destination, moment, why}`), `body`, `length`, `runtime` (`{instagram, tiktok}`), `broll-{n}` (`{shot, beat}`), `product` (`{id, name, sku}`, `id` empty for a product not in scope), `added`, `removed` and `deferred` (true or false); `carriedForward:` the round a deferred concept came from; `order:` its place in concept order, `coverage:` (`{passed, of, failed}`, the checks that failed in plain words) and `version:` as at publish. Long text parts hold the saved HTML (**1d**, **Master Brief**, **Rich text**). A page from before kept `concept`, `hook-{id}`, `cta-{id}`, `broll-{id}`, `disclosure` and `donot-{id}` here: they read as `line`, the hooks, CTAs and shots in id order, and the brief's `disclosure` and don'ts, and the next publish writes them to the keys above |
@@ -4120,7 +4404,8 @@ with a plain description holds plain data the page writes with no stamp.
 | Review versions | `reviews/cut-{cut}/versions/v{version}` | Agency | `link` (the cut's link or file), `notes`, `addedAt:` |
 | Creator profile | `creators/{net}-{handle}` | Agency | `name`, `descriptor`, `location`, `pickNote` (why we picked them) |
 | Creator, per round | `edits/creator-{net}-{handle}-r{round}` | Agency | `concept`, `product`, `status`, `adPermissions`, `shipping`, `tracking`, `productStatus`; `returning` (true) and `fromRound` on a creator carried into the round |
-| Creator, agency only | `agency/creator-{net}-{handle}` | Agency | Every agency only field in **Who sees what**: the recommendation, notes, vetting evidence, safety detail, email, phone, manager, tier window, last contact, rates, expected cost, cost per 1K reach, offer, counters, waiting on, the reply log, and the draft waiting to send |
+| Pool not sent | `agency/pool` | Claude | One key per pool creator not sent to the client yet, `{net}-{handle}`, holding what their row and card show, so the page itself never lists them |
+| Creator, agency only | `agency/creator-{net}-{handle}` | Agency | Every agency only field in **Who sees what**: the recommendation, notes, vetting evidence, safety detail, email, phone, manager, reply window, last contact, rates, `expectedCost:` and `expectedFrom:` (agreed, counter, offer or calculator, `rates-and-terms.md`, **Expected cost**), `costPer1kReach:`, offer, counters, waiting on, the reply log, and the draft waiting to send |
 | Activity, client side | `activity/{id}/days/{day}` | Each Contributor, their own | `day:`, `entries:` one key per write (**The activity log**) |
 | Activity, agency side | `activity-editors/{id}/days/{day}` | Each Editor, their own; Claude under `activity-editors/claude` | The same, for the agency's writes about things the client can see |
 | Activity writers | `activity/{id}`, `activity-editors/{id}` | The writer | `lastAt:` the time of their newest entry, written with each one |
@@ -4135,7 +4420,7 @@ with a plain description holds plain data the page writes with no stamp.
 | Per viewer state | `data/users/{id}/done`, `/inbox-{month}`, `/collapse`, `/round` | Each person, their own | `done`: `items:` `{itemId: true or false}`. `inbox-{month}`: `read:` and `cleared:`, each `{itemId: at}`, for the items whose `at` falls in that month (`YYYY-MM`, **Tags and the inbox**). `collapse`: `sections:` `{sectionId: true or false}`, true for closed and false for open; a section with no key takes its default (**1d**, **Collapsing sections**). `round`: `selected:` the round number last picked in the **Round switcher**, and `at:` |
 
 Attention, inbox and section ids are stable and say what they are (`decide-ig-{handle}-r1`,
-`fees-r1`, `selection-budget`), so a mark survives a republish. Each attention item also carries
+`fees-r1`, `selection-summary`), so a mark survives a republish. Each attention item also carries
 the hash of the tab and item it opens (**1d**, **Header and tabs**). Per viewer state is keyed by
 id, not kept as a list, so marks made on a phone and a laptop at once merge. The activity log
 keeps one document per writer per day (**The activity log**).
@@ -4155,7 +4440,7 @@ Rules:
 - The page writes a field only when the person changed it, one write per change. Controls the
   viewer cannot write render as labels.
 - **Reading it back.** Pulling decisions (above) lists `client`, `edits`, `program`, `briefs`,
-  `brief-rounds`, `brief-events`, `creators` and the agency's `terms`, `budget`, `frameworks` and `brief-*` with the Artifact tool's page data reads, and
+  `brief-rounds`, `brief-events`, `decisions`, `decision-events`, `creators` and the agency's `terms`, `budget`, `frameworks` and `brief-*` with the Artifact tool's page data reads, and
   compares each `manual` field's `at`, and each `file` field's with a `by`, with the last pull. The last pull is one time for every
   document, `at` on `agency/pull`, which Claude writes at the end of each pull that recorded
   something. A page whose decisions sit at the paths without a round
@@ -4423,7 +4708,7 @@ the write.
 **Not logged.** Each person's own state under `data/users` (done marks, inbox read and cleared
 marks, collapsed sections, the remembered round) is private to them, even from Claude, so logging
 it in shared data would publish it; it never logs. Nor do the log's own writes (entries,
-`lastAt`, leases), an Editor's marker under `editors`, Claude's `sides/campaign`, a sign off's copy documents (the sign off
+`lastAt`, leases), a decision writer's `lastAt`, an Editor's marker under `editors`, Claude's `sides/campaign`, a sign off's copy documents (the sign off
 logs once), `agency/edit-check`, `agency/tag-delivery`, a file's scan state (`agency/files`), a write the rules refused (the field shows "Not saved"),
 or anything in **Preview as client**, which never writes. An **Export** writes nothing, so it
 never logs either.
@@ -4583,10 +4868,13 @@ decisions** renders for editors only, for the round in view, and never for a rou
 opens a Dialog: title "Clear every decision for round
 {n}?", description "This clears the client's decisions, reasons and notes on the page for
 everyone, the client included. Anything already recorded in Atlas stays recorded.", and the
-buttons Cancel (outline) and Clear decisions (destructive). On confirm the page writes each
-`decision`, `reason` and `notes` in the round's `client/creator-*` documents as a stamp with
-`value` `null` and the editor as `by`, so the line under each says who cleared it, and logs one
-activity entry. Every tag whose `on` is a cleared note in that round gets `withdrawn: true`, so
+buttons Cancel (outline) and Clear decisions (destructive). The calls sit under each client's own
+id, where an Editor can't write, so on confirm the page writes a `reset-{id}` stamp to
+`decision-events/r{round}` with the editor as `by`, and every call older than it shows as
+Unreviewed, with "Cleared by {name} {time}" under it. The stamp hides a `decision` and
+`reason` a page from before kept in `client` too, so the page leaves those as they are. It writes
+each `notes` in the round's `client/creator-*` documents as a stamp with `value` `null` and the
+editor as `by`, and logs one activity entry. Every tag whose `on` is a cleared note in that round gets `withdrawn: true`, so
 no inbox keeps an item that opens an empty note and the chat never posts a cleared note's words
 (**Tags and the inbox**). Nothing is deleted, and nothing reaches Atlas: **Pulling decisions** names the
 cleared fields and writes nothing for them.
@@ -4653,13 +4941,16 @@ The data rules check a path against the person's share level, nothing more. They
 
 - Nobody below Editor reads anything under `agency`, so a client cannot reach an agency only
   field in the page data at all.
-- The client writes under `client`, their own subtree of `comments` and of `activity`, and their
-  own state under `data/users`, and their own subtree of `tags-client` and of `tags-agency`,
+- The client writes under `client`, their own subtree of `comments`, `decisions`, `signoffs` and
+  `activity`, and their own state under `data/users`, and their own subtree of `tags-client` and of `tags-agency`,
   and nowhere else. A write to `edits`, `program`, `briefs`,
-  `brief-rounds`, `brief-events`, `creators`, `reviews`, `editors`, `sides` or `agency` from the client is refused.
+  `brief-rounds`, `brief-events`, `decision-events`, `creators`, `reviews`, `editors`, `sides` or `agency` from the client is refused.
 - Each person's own state under `data/users` is private to them, even from the page's owner and
   from Claude.
 - A comment can be changed only by the person who wrote it, or by an Editor.
+- **Creator decisions.** A call under `decisions/{id}` was written by the person whose id is
+  `{id}`, or by the page's own owner. No other Editor can write one under anyone's id but their
+  own, so one client approver can't change another's call, and nobody below Contributor writes one.
 - **Sign offs.** An item under `signoffs/{id}` was written by the person whose id is `{id}`, or by
   the page's own owner. No other Editor can write one under anyone's id but their own, and nobody
   below Contributor writes one at all. An `editors/{id}` marker was written by `{id}` while they
@@ -4679,12 +4970,13 @@ They cannot enforce these, so **Pulling decisions** does, and the page only offe
   shipping before the fees are approved, or a sign off on a brief that is not waiting is dropped and
   named the same way.
 - **Which client approver.** Every Contributor can write every `client` document, so one approver
-  can change another's decision. A stamp's `by` and `byName` are what the page wrote, not a
+  can change another's notes, fee approval or cut call, and a decision a page from before kept
+  there. A stamp's `by` and `byName` are what the page wrote, not a
   checked identity; the pull names them as "set on the page by {name}" and never treats them as
   proof. The same holds for "Edited by {name}" on the page and for activity entries.
 - **The client's own calls.** An Editor can write `client` too. The page never offers it
-  (**Who sees what**) apart from **Reset decisions**, and the pull names any client call whose
-  `by` is on the agency side instead of recording it as the client's. That is a best effort flag,
+  (**Who sees what**) apart from **Reset decisions**, and the pull names any client call in
+  `client` whose `by` is on the agency side instead of recording it as the client's. That is a best effort flag,
   not a guard: `by` is unchecked, so an Editor's write that names a client approver reads as the
   client's.
 - **Rounds.** The rules do not know which round is done or how many variants a creator has. A
@@ -4705,6 +4997,24 @@ They cannot enforce these, so **Pulling decisions** does, and the page only offe
   Editor can write under any person's log, so for the agency's writes the path is not proof
   either. **Pulling decisions** reads the stamps on the values, never
   the log, so a changed log never changes what is recorded.
+
+**Creator decisions: what holds and what doesn't.** "The agency can't decide on the client's
+behalf" holds the way the sign off below does, by the same three things:
+
+- **By the rules.** No Editor but the page's owner can put a call under a client's id. An Editor's
+  call under their own id is dropped by the pull from their `editors/{id}` marker or from
+  `page-sides` `editors`, and the page shows it "Not counted" from the marker and `sides`.
+- **By the CM.** The pull records a call only from an account the CM confirmed as {brand}'s, asked
+  the first time that account decides (**Pulling decisions**, **The creator decisions**). That is
+  what stops an Editor Claude never saw, and someone at Aspire shared as Contributor.
+- **On screen.** The decision Buttons never render for an Editor or in **Preview as client**.
+- **Doesn't hold: the page's owner.** The owner can write under any `decisions/{id}`. Claude never
+  does, and the page never offers it. The client's own page compares the calls under their id with
+  their private `data/users/{id}/decisions` and shows "This isn't a decision you made" on any whose
+  id it doesn't hold or whose `at` differs from the one it holds, since each call is rewritten
+  whole under the same id. That is found when the client next opens the page, not prevented.
+- **Notes stay shared.** The client's notes on a creator are not a call and are never pulled, so
+  they stay in `client`, where any approver or Editor can write them.
 
 **The brief sign off: what holds and what doesn't.** "The agency can't sign off on the client's
 behalf" is held this way, and only this far:
@@ -4786,7 +5096,8 @@ document. Steps 3 and 4 run after every publish.
    comments, one writer's `activity/{id}/days`, one `activity-editors/{id}/days` and one
    `tags-client/{id}/items`, at `view`: empty. Listing `comments`, `activity`, `activity-editors`
    or `tags-client` alone proves nothing, because the documents sit below them. List one writer's
-   `signoffs/{id}/items` and `signoffs/{id}/copies`, `editors` and `sides`, at `view`: empty. Whether an Editor is refused a write under
+   `signoffs/{id}/items` and `signoffs/{id}/copies`, one writer's `decisions/{id}/items`,
+   `decision-events`, `editors` and `sides`, at `view`: empty. Whether an Editor is refused a write under
    another person's `signoffs/{id}` can't be checked from the chat: Claude writes as the page's
    owner, whom the rules never limit, and `as_level` stands for a level, not a person.
 3. Read the published page itself with the Artifact tool and search it for every agency only value
