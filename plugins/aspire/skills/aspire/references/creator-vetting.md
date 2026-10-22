@@ -351,10 +351,9 @@ the round's casting keywords and target cities, and the weights saved in `match`
 campaign page show the same number for the same inputs. The two paid screens are two of its
 factors:
 
-- **Persona fit is Brief fit.** Read the concept's casting keywords and target cities from the
-  lane's newest `brief` finding for the round that carries `casting` (`search_insights`, prefix
-  `cas-campaign-{profile}-{slug}`, `cas-campaign.md`, **Working state**), else from `casting` in the
-  lane record. Only when neither holds any, derive them from the lane's persona and casting
+- **Persona fit is Brief fit.** Read the concept's casting keywords and target cities from
+  `casting` in the lane record, which the campaign page's edits are pulled into. Only when it
+  holds none, derive them from the lane's persona and casting
   filter, and say on the page that they are derived, not saved. Judge each keyword
   against the bio, recent post topics and who appears on camera and in what setting, and cite the
   bio or the post for every match.

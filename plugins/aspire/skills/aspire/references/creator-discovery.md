@@ -336,9 +336,8 @@ Everything above applies, with these changes:
   in `cas-campaign.md`, **1d**, **Creator Selection**, **The match score**, against their lane's
   concept, with the weights in `match` in `campaign:{slug}-cas` (read it and `-terms` for this
   campaign only), so the shortlist and the campaign page show the same number for the same
-  inputs. The casting keywords and target cities are the lane's newest `brief` finding
-  for the round that carries `casting` (prefix `cas-campaign-{profile}-{slug}`), else `casting` in
-  the lane record, else derived from the lane's persona and casting filter and named as derived
+  inputs. The casting keywords and target cities are `casting` in the lane record,
+  which the campaign page's edits are pulled into, else derived from the lane's persona and casting filter and named as derived
   on the page. Budget vs target uses `rates-and-terms.md`, **Expected cost** (in
   discovery, the calculator's target plus the uplift) and **Target rate**.
   Past paid partners are a plain count here; the category read is vetting's (`creator-vetting.md`,
@@ -346,7 +345,8 @@ Everything above applies, with these changes:
   Write the result in `detail.match` (`{score, band, factors, without, conflict, pastDeals,
   weights, scoredAt}`) with `fitScore` equal to `score`, and show the band and any competitor
   line on the card. The page shows the date of the run, and its strong and weak signals rank the
-  lane's own pool. A bio naming a saved competitor halves the score, as that section says,
+  lane's own pool. The dormant account cap (50 with no posts in the last 30 days) is part of
+  that procedure. A bio naming a saved competitor halves the score, as that section says,
   though risk flags stay unscored elsewhere. The rubric in **Scoring** above is for other
   campaigns.
 - **Recommendation passes** fill each lane from Meta's own rankings, per the block below.

@@ -56,9 +56,9 @@ creator's expected cost with it. The first of these that holds:
 2. **From the budget**: the budget total divided by the creators the campaign plans:
    `package.creators` in `campaign:{slug}-cas` for each round the term holds, one round per
    calendar month from `term.start` to `term.end`, both months counted. The budget total is
-   `budgetUsd` there, or the total edited on the page (`agency/budget` `total`) when it is newer
-   than the last pull. Both come from the campaign record, so discovery and vetting work out the
-   same target, and starting a round doesn't move it.
+   `budgetUsd` there. The campaign page uses its own total (`agency/budget` `total`) when that is
+   newer than the last pull, and **Pulling decisions** writes it into `budgetUsd`, so discovery and
+   vetting reach the same target after the pull. Starting a round doesn't move it.
 
 With neither, there is no target rate: the factor is 0.5 for everyone and the score's reasons say
 "No target rate set" to the agency. Like the expected cost, it is agency only and never shown to
