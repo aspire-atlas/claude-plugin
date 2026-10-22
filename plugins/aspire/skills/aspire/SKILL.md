@@ -2208,7 +2208,8 @@ the tool prefix, `profile_id`, and `profile_slug`:
   Yes, Yes, Maybe and No by name, with its reason when one was given, plus shipping, status and ad permission edits, and
   record them with one picker. A brief sent for sign off on the page is recorded as step 4 sent.
   The client's brief sign off is read from their own sign off item and checked first (written by
-  someone with no Editor marker, answering the newest send, the brief still what they signed);
+  an account never seen on Aspire's side and confirmed by the CM as the step's approver, answering
+  the newest send, the brief still what they signed);
   one that fails is named with why and never recorded, and one that passes is named with the
   signer ("{name} signed off the round {n} brief on {date}") and, on the confirm, locks each
   concept from the signed copy and records step 4 as approved. A client who can't write on the
