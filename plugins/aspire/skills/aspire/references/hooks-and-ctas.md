@@ -67,7 +67,8 @@ trigger, no saved results yet"). Show it on the brief page under the hook.
 ## Limits
 
 - **The hook log.** Read every `hook` finding on the campaign before writing. Never reuse a
-  hook or CTA, word for word or in close paraphrase, in any lane or round. After the brief is
+  hook or CTA, word for word or in close paraphrase, in any lane or round. A hook logged for the
+  same lane in the same round is that brief's own, not a reuse. After the brief is
   saved, append every new hook and CTA as a `hook` finding with its pattern in `detail.pattern`.
 - **Red lines.** A `red_line` that blocks AI-written copy turns each hook and CTA into a
   direction: what the line must do and must not say, with the pattern and the reason, never a

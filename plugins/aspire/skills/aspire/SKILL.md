@@ -2123,7 +2123,14 @@ Selection is one pool for every round, and an approval adds the creator to the n
 still choosing creators. Rounds overlap, so the status screen shows every round that is not done.
 A round's state (planned, in production, in market, done) comes from its dates on the real
 clock. The agency starts the next round, in the chat or on the page, carrying the creators
-forward as returning; nothing of the earlier round changes, and a done round is read only. A
+forward as returning, and its brief starts from the last signed off brief, with hooks and CTAs
+left for the brief run, plus any concept the agency deferred to it, marked carried forward; a
+product in scope with no concept shows as needing one. Nothing of the earlier round changes, and
+a done round is read only. The agency can also import a round's brief from a Google Doc, an
+uploaded file in Files or pasted text: the page reads a Google Doc only through the agency
+person's own Google Drive connector, has Claude point at where each part is word for word, shows
+a preview before replacing anything, and keeps each mapping so the same document always gives
+the same brief; the import is a new draft and the new original. A
 creator makes at most 5 variants in a round. The reference's **Rounds** and **1d**, **Round
 switcher**, hold the rules.
 
@@ -2205,8 +2212,14 @@ the tool prefix, `profile_id`, and `profile_slug`:
   then to the client on the Master Brief tab.
 - **Start the next round** (once the newest round's step 4 is cleared and no later round exists,
   offered in place of "Change setup"): per the reference's **Rounds**, **Starting the next round**.
-  One picker names the new round's month and dates and which creators carry forward, then writes
-  the round and the returning creators' rows without touching the earlier round.
+  One picker names the new round's month and dates, which creators carry forward, and the new
+  round's brief: every signed off concept plus those deferred to it, then writes the round,
+  the returning creators' rows and the new round's brief without touching the earlier round.
+- **Import a brief** (when the CM asks, or the page couldn't read the doc): per the reference's
+  **1d**, **Master Brief**, **Importing a brief**, **Importing from the chat**. A Google Docs link
+  is read only with a Google Drive connector this session already has; otherwise ask the CM to
+  paste the brief's text. One picker shows what was found and what it replaces, then writes the
+  page data and the brief findings.
 - **Production** (row 16): **Content review** for each draft. Once creators have posted, the
   hook review from `references/hooks-and-ctas.md`, run here in the main thread: it matches the
   creators' posts to the briefed hooks, shows which led, and saves the results after one
