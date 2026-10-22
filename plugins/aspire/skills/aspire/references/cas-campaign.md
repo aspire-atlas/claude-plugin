@@ -63,7 +63,7 @@ draft, and in a channel post, uses the left column.
 | @Client, @Aspire, @{name}: tagged you, tagged Client, tagged Aspire | a tag (**1d**, **Tagging**) |
 | Home, Master Brief, Creator Selection, Selected Creators, Content Review, Ad Performance | the page's six tabs (**1d**) |
 | Expand all, Collapse all, a section opened or closed | each person's collapse state (`data/users/{id}/collapse`, **1d**, **Collapsing sections**) |
-| Export, Excel, CSV, Copy as table, Aspire only columns | a spreadsheet of what is on screen (**1d**, **Export**) |
+| Export, Excel, CSV, Copy as table, Agency only columns | a spreadsheet of what is on screen (**1d**, **Export**) |
 
 The status labels a person sees, in order: Awaiting decision, Approved, Maybe, Rejected, Offer
 sent, Countered, Agreed, Declined, Your call needed, No reply yet, Details received, Shipped,
@@ -1500,13 +1500,14 @@ logs nothing and never reaches Atlas.
     one sheet, so picking either with "All sheets" moves Sheet to the first one.
 
   Then a count line in `text-xs text-muted-foreground`: "{r} rows, {c} columns". For the agency it
-  adds "Includes Aspire only columns." with a soft Badge "Agency only". Cancel (outline) and the
+  adds "Includes agency only columns." with a soft Badge "Agency only". Cancel (outline) and the
   default Button "Download", or "Copy" for Copy as table. On a tab whose every sheet is empty, the
   Export Button has `aria-disabled="true"` and the disabled look but stays focusable: a click, tap
   or Enter does nothing but show its tooltip, the tab's empty state. A `disabled` Button would
   never open that tooltip.
 - **What goes in.** Exactly the rows the tab shows now. That means the round in the **Round
-  switcher**, the tab's filters and search, its sort, and its layout's columns. A closed section
+  switcher**, the tab's filters and search, and its sort. The columns are the sheet's own, from
+  **Sheets per tab**, whichever layout is on screen. A closed section
   still exports, because collapsing changes the view and not the data. Home's **Needs attention**
   covers every round, as it does on screen, with a Round column. Values are the newest ones on
   screen (**Every editable value**), and every label is the page's own word from **Page
@@ -1514,10 +1515,10 @@ logs nothing and never reaches Atlas.
   stamp's source.
 - **Roles hold by construction.** A sheet is built from the same data the viewer's view is built
   from, in their browser. For the client, a read only client and **Preview as client**, that is
-  the page itself and the client readable page data. The export never reads `agency`, so no Aspire
-  only column can be in it, whatever the code asks for. For the agency, the Aspire only columns
+  the page itself and the client readable page data. The export never reads `agency`, so no agency
+  only column can be in it, whatever the code asks for. For the agency, the agency only columns
   marked in **Sheets per tab** come from the `agency` reads the view already made. When those
-  reads didn't return, the columns are left out and the count line says "Aspire only columns
+  reads didn't return, the columns are left out and the count line says "Agency only columns
   didn't load." A read only client exports the page as published, with no page data, and the
   About sheet says so.
 - **Preview as client exports the client's sheets.** The agency's browser already holds the
@@ -1549,7 +1550,7 @@ logs nothing and never reaches Atlas.
 
   "About this export" holds one row per fact: campaign, tab, round, filters and search in plain
   words ("Concept: Busy parent; search: ana"), exported by (the viewer's name), exported at with
-  the time zone, and "As the client sees it" or "Includes Aspire only columns". The page loads
+  the time zone, and "As the client sees it" or "Includes agency only columns". The page loads
   ExcelJS 4.4.0 from `https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js` (about
   950 KB) on the first Excel export, never at page load. If it doesn't load, the Format Select
   marks Excel "Not available right now" and moves to CSV.
@@ -1573,8 +1574,9 @@ logs nothing and never reaches Atlas.
   the Dialog, by its code:
   - `declined`: the Dialog closes and nothing else happens.
   - `rate_limited`: "Another download is waiting. Try again in a moment."
-  - `rejected_extension` or `extension_not_enabled`: "Excel files can't be saved here. Try CSV.",
-    or for a CSV "CSV files can't be saved here. Copy as table instead."
+  - `rejected_extension` or `extension_not_enabled`: "Excel and CSV files can't be saved here.
+    Copy as table instead." The platform turns both formats off together, so the line never
+    offers the other one.
   - `too_large`: "This file is too big to save here. Pick one sheet or narrow the filters."
   - Any other code: "Downloads aren't available here. Copy as table instead."
 
@@ -1587,23 +1589,23 @@ logs nothing and never reaches Atlas.
 
 #### Sheets per tab
 
-Columns marked "(Aspire only)" are in the agency's export only. Everything else is in both, the
+Columns marked "(agency only)" are in the agency's export only. Everything else is in both, the
 client's included, and holds what the client may see per **Who sees what** at that moment. So
 fees are in the client's export only once they are sent. A column with nothing in it for a row is
 left blank, never filled with a dash.
 
 | Tab | Sheet | One row per | Columns |
 | --- | ----- | ----------- | ------- |
-| Home | Needs attention | Open item in **Needs attention**, every round | Item, Detail, Tab, Round, Waiting on you (Yes or No), Waits on (Aspire only), Since |
+| Home | Needs attention | Open item in **Needs attention**, every round | Item, Detail, Tab, Round, Waiting on you (Yes or No), Waits on (agency only), Since |
 | Home | Steps | Step of the round in view | Step (1 Concepts approved to 4 Briefs approved), State (Done, Now, Planned, Launch at risk), Planned, Due, Done on, Days late |
 | Home | Files | File in **Files** | File, Round (or "Whole campaign"), Link, Added by, Added on |
 | Master Brief | Concepts | Concept in the round | Concept, Persona, Framework, Product, Hooks, CTAs, Body, B-roll, Runtime, Disclosure, Do not, Creators, State, Signed off by, Signed off on. Hooks, CTAs, B-roll and Do not hold one item per line in their cell |
-| Master Brief | Variants (Aspire only) | Variant in each concept's variant build | Concept, Variant, then the parts the build gives each variant (hook, CTA, beats, runtime) |
-| Creator Selection | Decisions | Creator with a call in the rounds in view | Creator, Network, Name, Concept, Round, Your decision, What made the call, Your notes, Decided by, Decided on, Status, Recommendation (Aspire only), Surprise (Aspire only: Yes when the decision goes against the recommendation, as **A reason on the call** defines it, worked out on the page from both), Agency notes (Aspire only) |
-| Creator Selection | Creators | Creator the pool shows now | Creator, Network, Name, Descriptor, Location, Concepts, Rounds, Match score, Hook rate, Engagement on Reels, Paid work before, Ad permissions, Instagram followers, Instagram engagement rate, Instagram average engagement, Instagram audience, the same four for TikTok, Why we picked them, Status, Product, Tier, Reply window (Aspire only), Email (Aspire only), Phone (Aspire only), Manager (Aspire only) |
-| Selected Creators | Creator snapshot | Creator on the round's roster | Creator, Network, Name, Concept, Product, Returning, Status, Ad permissions, Brief state, Content state, Variants (k of max), Content folder, Waiting on (Aspire only), Last contact (Aspire only), Email (Aspire only), Phone (Aspire only), Manager (Aspire only) |
-| Selected Creators | Shipping list | Row in **Shipping** | Creator, Name, Product, Details from creator, Address or pickup, Visit date, Shipping, Tracking, Product status, Updated by, Updated on, Next step (Aspire only) |
-| Selected Creators | Rates and payments | Row in **Contract and rates** | Creator, Concept, What they make, Usage, Exclusivity, Agreed fee (or "In negotiation"), If we drop them, Where it is, Fees approved on, UGC video rate (Aspire only), Reel collab rate (Aspire only), 90 day usage rate (Aspire only), Offer open, target and max (Aspire only, three columns), Counter (Aspire only), Expected cost (Aspire only), Cost per 1K reach (Aspire only) |
+| Master Brief | Variants (agency only) | Variant in each concept's variant build | Concept, Variant, then the parts the build gives each variant (hook, CTA, beats, runtime) |
+| Creator Selection | Decisions | Creator with a call in the rounds in view | Creator, Network, Name, Concept, Round, Your decision, What made the call, Your notes, Decided by, Decided on, Status, Recommendation (agency only), Surprise (agency only: Yes when the decision goes against the recommendation, as **A reason on the call** defines it, worked out on the page from both), Agency notes (agency only) |
+| Creator Selection | Creators | Creator the pool shows now | Creator, Network, Name, Descriptor, Location, Concepts, Rounds, Match score, Hook rate, Engagement on Reels, Paid work before, Ad permissions, Instagram followers, Instagram engagement rate, Instagram average engagement, Instagram audience, the same four for TikTok, Why we picked them, Status, Product, Tier, Reply window (agency only), Email (agency only), Phone (agency only), Manager (agency only) |
+| Selected Creators | Creator snapshot | Creator on the round's roster | Creator, Network, Name, Concept, Product, Returning, Status, Ad permissions, Brief state, Content state, Variants (k of max), Content folder, Waiting on (agency only), Last contact (agency only), Email (agency only), Phone (agency only), Manager (agency only) |
+| Selected Creators | Shipping list | Row in **Shipping** | Creator, Name, Product, Details from creator, Address or pickup, Visit date, Shipping, Tracking, Product status, Updated by, Updated on, Next step (agency only) |
+| Selected Creators | Rates and payments | Row in **Contract and rates** | Creator, Concept, What they make, Usage, Exclusivity, Agreed fee (or "In negotiation"), If we drop them, Where it is, Fees approved on, UGC video rate (agency only), Reel collab rate (agency only), 90 day usage rate (agency only), Offer open, target and max (agency only, three columns), Counter (agency only), Expected cost (agency only), Cost per 1K reach (agency only) |
 | Selected Creators | Variant tracker | Variant of each creator in the round | Creator, Concept, Variant, Latest version, Status, Updated on, Open comments |
 | Content Review | Variant status | Cut the queue shows now | Creator, Concept, Variant, Title, Version, Status, Approved by, Approved on, Checklist (ticked of total), Open comments |
 | Content Review | All comments | Comment or reply on the cuts the queue shows | Creator, Variant, Version, Timecode (m:ss), Comment, Reply to (its first words), Who, Side (Client, Agency, or Agency only for the agency), When, Has drawing, Resolved |
@@ -2028,7 +2030,7 @@ prefixes.
 8. Every section has a Collapsible header with its summary line, every tab has Expand all and
    Collapse all, and each section starts open or closed as **Sections per tab** says.
 9. Every tab has its **Export** Button, ExcelJS loads only on the first Excel export, and the
-   client's export of each tab, made in **Preview as client**, has no Aspire only column.
+   client's export of each tab, made in **Preview as client**, has no agency only column.
 
 ## 1e. Page data: what the page keeps and how it is read back
 
