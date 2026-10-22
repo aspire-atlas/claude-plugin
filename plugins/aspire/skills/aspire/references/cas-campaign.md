@@ -111,8 +111,8 @@ setup.
 | `campaign:{slug}-brief` | `brand_fact` | The campaign in the user's words, plus the type line | `{section: "business_context", body: "type: creator-ads; <campaign description>; term <YYYY-MM-DD>..<YYYY-MM-DD>"}` |
 | `campaign:{slug}-criteria` | `guideline` | What every lane shares: networks, market, hard exclusions | `{concern: "requirement", appliesTo: ["creator-discovery", "{slug}"], body: "<one line per dimension>"}` |
 | `campaign:{slug}-pool` | `guideline` | The target per lane: three times the creators each lane needs | `{concern: "ceiling", appliesTo: ["creator-discovery", "{slug}"], body: "per lane: <lane>=<target>, ..."}` |
-| `campaign:{slug}-routing` | `policy` | Where the page, gate lines and the sync agenda go (C5) | `{area: "routing", body: "page; slack:#channel; slackLink:<url>; email:a@x.com,b@x.com"}`. `slack:` is always the channel's name, which every post uses; `slackLink:` is optional, read only by the page's **Open Slack channel** |
-| `campaign:{slug}-cadence` | `policy` | The weekly sync slot, timezone and length (C6) | `{area: "cadence", cadence: "sync", body: "sync weekly <DAY HH:MM>, <IANA timezone>, <minutes> min"}`; a body without the length reads as no length saved |
+| `campaign:{slug}-routing` | `policy` | Where the page, gate lines and the sync agenda go (C5) | `{area: "routing", body: "page; slack:#channel; channelLink:<url>; email:a@x.com,b@x.com"}`. `slack:` is always the channel's name, which every post uses; `channelLink:` is optional, read only by the page's **Open Slack channel**. Keys match exactly up to the colon |
+| `campaign:{slug}-cadence` | `policy` | The weekly sync slot, timezone and length (C6) | `{area: "cadence", cadence: "sync", body: "sync weekly <DAY HH:MM>, <minutes> min, <IANA timezone>"}`. The time zone stays the last part, so every reader takes it from there; the length is optional, and a body without it reads as no length saved |
 | `campaign:{slug}-cas` | `guideline` | Package, term, approvers and backups per gate, turnaround per gate, round, the page link | `{concern: "requirement", appliesTo: ["cas-campaign", "{slug}"], body: "<the campaign object, serialized with json.dumps>"}` |
 | `campaign:{slug}-lane-{lane}` | `guideline` | One lane: concept, framework and trigger, persona, casting filter, creators needed, and where it came from | `{concern: "requirement", appliesTo: ["cas-campaign", "creator-discovery", "creator-vetting", "creator-brief", "{slug}"], body: "<the lane object, serialized with json.dumps>"}` |
 | `campaign:{slug}-decision-defaults` | `guideline` | The rules later performance reads will use | `{concern: "preference", appliesTo: ["cas-campaign", "{slug}"], body: "<the defaults object, serialized with json.dumps>"}` |
@@ -951,7 +951,7 @@ only is marked so.
 | Home, Simple | Last round result | `home-result` | "Round {n}: cost per sale {x} against a {t} target · {w} of {a} ads won"; the section isn't rendered until a round has ad results | Simple | Open |
 | Home, Simple | Next check in | `home-sync` | "{Day} {time} your time", or "No weekly sync set yet." | Simple | Open |
 | Home, Simple | Latest updates | `home-updates` | "{n} unread", or "You're all caught up." | Simple | Open |
-| Home, Everything | Round steps | `home-steps` | "Round {n} · {step} now, due {date} · ads live {launch}", with "{step} is {d} days late" when it is | Standard | Opened by the Switch, which saves it open (**Home**, **The switch**) |
+| Home, Everything | Round steps | `home-steps` | "Round {n} · {step} now, due {date} · ads live {launch}", with "{step} is {d} days late" when it is | Standard | Open, as the view's first section; a saved state wins |
 | Home, Everything | Needs attention | `home-attention` | "{n} items across every tab and round" | Standard | Closed |
 | Home, Everything | Calendar | `home-calendar` | "In market {start} to {end} · next: {milestone} {date}", with "{d} days late" when a step slipped | Standard | Closed |
 | Home, Everything | Team | `home-team` | "{n} people" | Standard | Closed |
@@ -1143,12 +1143,11 @@ view. Home opens on Simple every time.
 section, between **Export** and **Expand all** (**Collapsing sections**). Off shows Simple, on
 shows Everything. It is kept in memory only, never in page data or browser storage, so a reload
 opens Simple again. A hash to a section of the other view (`#home/steps` from the inbox or a gate
-packet) turns the Switch to that view first, then opens the section. Turning the Switch on opens
-**Round steps** and saves it open for the viewer, the way a link into a closed section does
-(**Collapsing sections**). Turning it off sets the hash to `#home`, so a reload never lands back
+packet) turns the Switch to that view first, then opens the section. Turning it off sets the
+hash to `#home`, so a reload never lands back
 in Everything. It changes only the view,
 so it works for everyone: in a done round, for a read only client and in **Preview as client**.
-**Export** gives Home's sheets in either view, the way a closed section still exports.
+**Export** gives Home's sheets in either view (**Export**, **What goes in**).
 
 **Every number and date is from the records.** Each figure below is worked out on the page from
 the round records, the roster, the campaign record, the cadence and routing records, the page
@@ -1169,15 +1168,15 @@ section ever reads "Nothing" or "No weekly sync set yet." only because page data
 Sections, in order:
 
 1. **Where we stand** (`home-stand`). The round in view in the **Round switcher**, the current
-   round unless the viewer picked another. Its summary line is the hero sentence, so it reads the
-   same closed or open. The hero sentence, in `text-xl font-semibold`, by the round's state
-   (**Rounds**):
+   round unless the viewer picked another. Its summary line, with the summary classes from
+   **Component classes**, is the hero sentence, so it reads the same closed or open. The hero
+   sentence, by the round's state (**Rounds**):
 
    | State | Hero sentence |
    | ----- | ------------- |
    | Planned | "Round {n} is planned. Ads go live {launch}." |
    | In production | "Round {n} is in production. Ads go live {launch}." |
-   | In production, launch at risk | Before the launch date, "Round {n} is in production. Ads go live {launch}."; from it, "Round {n} is in production. Ads were due to go live {launch}." Either way with a warning Badge "Launch at risk" |
+   | In production, launch at risk (step 4 planned or due after the launch date, or not cleared by it, **Rounds**) | Before the launch date, "Round {n} is in production. Ads go live {launch}."; from it, "Round {n} is in production. Ads were due to go live {launch}." Either way with a warning Badge "Launch at risk" |
    | In market | "Round {n} is in market. Ads went live {launch} and run to {end}." |
    | Done | "Round {n} is done. Its ads ran {launch} to {end}." |
 
@@ -1194,7 +1193,10 @@ Sections, in order:
      creator who declines leaves the plan at once. They are spread evenly across the build
      window, so {z}, the number needed by today, is {y} times the whole days of the build window
      already passed, today not counted, over its length in days, rounded down to a whole video.
-     On the build window's first day {z} is 0, and after its last day {z} is {y}.
+     The build window runs from its start to the day before launch, both counted, so a round
+     created 10 days before launch has a 10 day window. On its first day {z} is 0, and after its
+     last day {z} is {y}. A window of no days (a round created on its launch day) has {z} equal
+     to {y}.
    - **What's in.** {x} is the round's cuts with at least one version (`reviews/cut-{cut}` with a
      version under `versions`, for the round's creators).
    - **The verdict**, a Badge in its **Status pills** variant: **Ahead** when {x} is above {z} by
@@ -1216,6 +1218,8 @@ Sections, in order:
 
    Planned shows "Building starts {build start}." in place of the verdict. In market and Done
    show "{x} of {y} ad videos made this round." with no verdict, once Content Review tracks cuts.
+   For a read only client, who can't read cuts, the pace area renders nothing in any state: no
+   verdict, why line, bar, count or "Pace shows here" line. The late step line still shows.
    A link Button "Round steps" opens `#home/steps`.
 2. **Waiting on you** (`home-waiting`). Worked out for the person viewing, across every live
    round, each item naming its round. Each item: a title, one line of detail, when it has waited
@@ -1239,8 +1243,10 @@ Sections, in order:
 
      Open comments are threads on that brief not marked resolved. A shipping row to fill is one
      whose creator's details are received, once fees are approved, with shipping or tracking
-     still empty and product status not shipped. A grouped item's done mark lasts until its
-     count changes.
+     still empty and product status not shipped. A grouped item ("Decide on {k} creators", "Add
+     shipping for {k} creators") has waited since its oldest member did, and its id names the
+     round and the count (`decide-r{n}-{k}`, `shipping-r{n}-{k}`), so a done mark lasts until the
+     count changes and the item comes back with a new id.
    - **Agency**: what the agency owes, from `agency/attention`: "Record @{handle}'s reply",
      "Send {k} drafts" (the first three handles), "No reply yet: @{handle}" (past their tier's
      reply window), approvals due within a day, anything marked your call
@@ -1264,9 +1270,9 @@ Sections, in order:
    rounds in production. Empty: "Nothing in production right now."
 4. **Last round result** (`home-result`). Last round's headline result: cost per sale against
    the client's target and "{w} of {a} ads won", where "last round" is the newest round with ad
-   results. The cost per sale is large (`text-2xl font-semibold`), then "against a {t} target"
-   and a Badge, success "Beat the target" or warning "{d} over target". "Won" is an ad Ad
-   Performance marks winning under the decision defaults (`campaign:{slug}-decision-defaults`). A
+   results. The cost per sale is in `text-lg font-semibold`, then "against a {t} target" and a
+   Badge: success "Met the target" at or under it, warning "{d} over target" above it. An ad
+   that "won" is one Ad Performance marks winning under the decision defaults (`campaign:{slug}-decision-defaults`). A
    link Button "See the results" opens `#performance/r{n}/result`. Money is in US dollars, as
    the records keep it.
 
@@ -1293,12 +1299,10 @@ Sections, in order:
      `TU`, `WE`, `TH`, `FR`, `SA`, `SU`), and `details` the page link). With no length
      saved, the end is the start. **No .ics download.** The `downloads` capability saves only
      the types on its list, and `.ics` isn't on it (a save is refused `rejected_extension`), so
-     the page doesn't offer one. If the platform adds it, a second outline Button "Download
-     .ics" saves a weekly event in the saved time zone through `downloads`, with the refusal
-     lines in **Export**, **Saving**.
+     the page doesn't offer one.
    - **Open Slack channel.** From `campaign:{slug}-routing` (C5): `slack:` is the channel's
-     name, which posting uses, and `slackLink:` its link, when saved. An outline Button "Open
-     Slack channel", opening the channel in a new tab, only when `slackLink:` is a link to a
+     name, which posting uses, and `channelLink:` its link, when saved. An outline Button "Open
+     Slack channel", opening the channel in a new tab, only when `channelLink:` is a link to a
      Slack channel (`https://{workspace}.slack.com/archives/{channel}` or
      `https://app.slack.com/client/{workspace}/{channel}`). With the name only, the page shows
      "#{name} on Slack" as text with no Button, and for the agency only, the line "Add the
@@ -1703,7 +1707,9 @@ logs nothing and never reaches Atlas.
   Export Button has `aria-disabled="true"` and the disabled look but stays focusable: a click, tap
   or Enter does nothing but show its tooltip, the tab's empty state. A `disabled` Button would
   never open that tooltip.
-- **What goes in.** Exactly the rows the tab shows now. That means the round in the **Round
+- **What goes in.** Exactly the rows the tab shows now. Home is the one exception: its sheets
+  (**Sheets per tab**) come from the Everything view's sections, so Home exports them whichever
+  view is on screen. That means the round in the **Round
   switcher**, the tab's filters and search, and its sort. The columns are the sheet's own, from
   **Sheets per tab**, whichever layout is on screen. A closed section
   still exports, because collapsing changes the view and not the data. Home's **Needs attention**
@@ -1862,7 +1868,7 @@ name the tab, never an older name for the part:
 | Fees and the client's single approve | Selected Creators, **Contract and rates**, with the approve control |
 | Product shipping | Selected Creators, **Shipping** |
 | Briefs, with each creator's changed brief | Master Brief |
-| Delays and weekly call: timeline, documents, delays, agenda | Home, Everything, **Calendar** and **Files**; the sync and agenda in Simple, **Next check in** |
+| Delays and weekly call: timeline, documents, delays, agenda | Home, Everything, **Calendar** and **Files**; the sync in Simple, **Next check in**; the agenda is Simple's **Where we stand**, **Waiting on you** and **Aspire is on it** |
 | Budget (agency only) | Creator Selection, **Budget summary**, and Selected Creators, **Totals** |
 | Drafts and the reply log (agency only) | Selected Creators, on the creator's card |
 | Who did what and when, filtered by tab and round, searched | **History**, opened from the inbox |
@@ -2133,7 +2139,7 @@ card titles, `text-xl` for section titles, `text-2xl` for the page title. Weight
 | ------- | ------------- |
 | soft | Awaiting decision, not asked yet, not shipped, Planned, Done, Returning |
 | processing | Offer sent, Details received, Shipped, Brief sent, in negotiation, In production |
-| success | Approved, Agreed, Delivered, Brief accepted, Granted, In market, Ahead, On track, Beat the target |
+| success | Approved, Agreed, Delivered, Brief accepted, Granted, In market, Ahead, On track, Met the target |
 | warning | Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending, waiting for your approval, Running behind, Launch at risk, over target |
 | error | Rejected, Declined, returned |
 
@@ -2384,7 +2390,7 @@ with a plain description holds plain data the page writes with no stamp.
 | Scoring weights | `agency/match-score` | Agency | One key per weight, `weight-{signal}`, and `stats:` the tuning panel's figures |
 | Files | `program/files` | Agency | One key per file, `file-{id}`, whose `value` is `{label, url, round}` |
 | Rounds | `program/round-r{round}` | Agency | `label`, `month`, `buildStart`, `buildEnd`, `marketStart`, `marketEnd`, `launch` (dates); `creators` (`same` or `same-and-new`) and `started` (true) on a round started on the page |
-| Program details | `program/details` | Agency | `product-{id}` (a product in scope, `{name}`), `team-{id}` (`{name, role, goTo}`), `step-{gate}-r{round}-planned` and `-due` (dates), `termStart`, `termEnd`, `sync` (the weekly sync slot, time zone and length from `campaign:{slug}-cadence`, shown only), `slack` and `slackLink` (the Slack channel's name and link from `campaign:{slug}-routing`, shown only; the email recipients never go on the page) |
+| Program details | `program/details` | Agency | `product-{id}` (a product in scope, `{name}`), `team-{id}` (`{name, role, goTo}`), `step-{gate}-r{round}-planned` and `-due` (dates), `termStart`, `termEnd`, `sync` (the weekly sync slot, time zone and length from `campaign:{slug}-cadence`, shown only), `slack` and `channelLink` (the Slack channel's name and link from `campaign:{slug}-routing`, shown only; the email recipients never go on the page) |
 | Program terms | `program/terms` once the fees are sent; `agency/terms` before | Agency | `makes` (what each creator makes), `usage` (how long the brand can use it), `exclusivity`, `notes` |
 | Budget | `agency/budget` | Agency | `total` (stamp); `committed:`, `offersOut:`, `remaining:` (worked out at publish) |
 | Briefs per round | `briefs/{lane}-r{round}` | Agency | `concept`, `hook-{id}`, `cta-{id}`, `body`, `broll-{id}`, `runtime`, `product`, `disclosure`, `donot-{id}`; `version:` the brief's version at publish |
