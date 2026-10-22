@@ -2001,7 +2001,9 @@ steps (Concepts approved, Creators approved, Fees approved, Briefs approved), no
 page's six tabs (Home, Master Brief, Creator Selection, Selected Creators, Content Review, Ad
 Performance); and the client's decisions as Priority Yes, Yes, Maybe and No. The flow
 never sends email and never connects to a mailbox, a sheet, or a slides file: the CM sends from
-their own mail and pastes the replies.
+their own mail and pastes the replies. A Google Docs, Slides or Sheets link is read only when the
+session, or the agency person on the page, already has a Google Drive connector; the flow never
+adds a connector or asks for one.
 
 The page knows who opened it: the agency (shared as Editor) sees every field and writes
 everything except the client's own calls (decisions, sign offs, fee and cut approvals), and can
@@ -2020,9 +2022,21 @@ weekly sync in the viewer's time zone with a Google Calendar link and the Slack 
 three newest unread updates. A Switch shows Everything, the working view: the round's steps with
 what's now and up next (the agency ticks steps, moves to the next one and edits dates), the SOW
 terms with where each came from, the products in scope, everything that needs attention tagged by
-round, one card per tab for the round in view, and the Aspire team with their emails. Every
+round, one card per tab for the round in view, the Aspire team with their emails, and the program
+files (below). Every
 figure comes from the records and the viewer's clock, and a part whose record doesn't exist yet
 is hidden, never filled with a placeholder. The reference's **1d**, **Home**, holds the rules.
+
+Home's Files keeps the program files (SOW, kickoff deck, briefs, creative packet, shared folder
+and the rest) in one place, each with its category, version, round, who added it and its date,
+filtered by round, with the required files still missing and a preview of each upload (PDF, image,
+Word, Excel, text). Only the agency adds them, by link, upload or drop, and removes them after a
+confirm. When a file is added the page asks Claude to read it and fills the program terms, products,
+step dates and budget from it, but only where the file is newer than the file each value last came
+from, by the date in the document first. Files Claude found while setting up the campaign in the
+chat show as "Found by Claude", and the CM can ask Claude to scan files from the chat. The page
+never writes to Atlas: scanned values reach the records when the CM pulls. The reference's **1d**,
+**Home**, **Files**, and **1e**, **Program files and the scan**, hold the rules.
 
 Every edit on the page is saved in the page's shared data, field by field, with who made it and
 when, so everyone sees it live and on every device; the agency edits program terms, products,
@@ -2084,7 +2098,10 @@ switcher**, hold the rules.
 3. Ask C1 and C3 to C6, one `AskUserQuestion` each, in order. On C5 and C6, say plainly what each
    one approves: delivery without asking, and scheduled tasks for this campaign.
 4. C7 confirms the batch once, then write every record with `append_calibration` and the Gate 1
-   finding with `append_insights`. A `key-exists` follows the Phase 5 supersede rule with its own
+   finding with `append_insights`. Any document setup read or was given a link to (the concepts'
+   deck, a SOW, a kickoff deck, the shared folder) is saved with the campaign and shows on Home's
+   Files as "Found by Claude" (the reference's **1b**, **Files found in setup**); no new question
+   asks for files. A `key-exists` follows the Phase 5 supersede rule with its own
    confirmation.
 
 ### Status
