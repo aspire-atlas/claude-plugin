@@ -3338,7 +3338,9 @@ writes in it follows **Who sees what** and **What the client can write**, as on 
   outside steps through the pool as the toolbar leaves it. Opening the viewer adds one entry to
   the browser's history; moving between creators and posts replaces it, so Back closes the viewer.
 - **Closing.** The top bar's ghost icon Button with the Lucide `x` icon, labelled "Close viewer",
-  Escape, or Back. The list is where it was, scrolled to the last creator viewed, with focus on
+  Escape, or Back. Close and Escape go back through the history entry the viewer added, so a later
+  Back never reopens it; a viewer opened from an outside link added none, so they replace its hash
+  with the tab's. The list is where it was, scrolled to the last creator viewed, with focus on
   their row or card.
 
 **Layout.** Built from the Viewer classes in **Component classes**: full screen at every width,
@@ -3431,7 +3433,8 @@ the creator's posts to pick from, the current one marked with `aria-current="tru
   link tiles with no image: the network icon, the format, the date and the views. Each
   creator's posts are worked out at publish from the posts read for the card (`creator-card.md`,
   **Data: what fills each section**), adding `text` (the caption) to the fields read. A creator
-  not sent yet shows the posts their row holds in `agency/pool`.
+  not sent yet shows the posts and profile kept for them in `agency/pool-{net}-{handle}`, one
+  document each (**1e**), never in the one `agency/pool` document, which holds only their row.
 - **The media**, in a box that keeps the post's shape, centred on `bg-muted`, capped in height
   on the image or video itself (the Viewer classes' media cap), never larger than
   its embedded size (`creator-card.md`, **Images**, **Placing it**):
@@ -3451,13 +3454,13 @@ the creator's posts to pick from, the current one marked with `aria-current="tru
 - **Marks on a post**, outline Badges at the media's top corner and on its tile in the row:
   - **Hook post.** Atlas's hook rate (`instagram.reelsHookRate`) is Meta's average for the
     creator across their Reels, not any one post's figure. The Hook post is the Reel that stands
-    for it: the creator's most viewed Reel from the last 90 days in Atlas. Claude marks it at
-    publish and always embeds it among the posts the Table and card show. Its tooltip: "Their most
-    watched Reel lately. The {x}% hook rate is Meta's average across their Reels, not this post's."
+    for it: the most viewed Reel from the last 90 days among the creator's last 12 posts that the
+    card's read returns. Claude marks it at publish and always embeds it among the posts the Table
+    and card show. Its tooltip: "Their most watched recent Reel. The {x}% hook rate is Meta's average across their Reels, not this post's."
     A creator with no hook rate, every TikTok creator included, has no Hook post.
   - **Paid partnership.** Instagram's paid partnership label is not held in Atlas, so the mark
-    comes from the caption: `#ad`, `#sponsored`, `#paidpartnership` or "paid partnership with",
-    ignoring case. Its tooltip: "The caption says this was paid. Atlas can't see Instagram's own
+    comes from the caption: the hashtags `#ad`, `#sponsored` or `#paidpartnership`, each as a whole
+    tag (so `#adventure` doesn't count), or the words "paid partnership with", ignoring case. Its tooltip: "The caption says this was paid. Atlas can't see Instagram's own
     label, so a post without these words may still be paid." When the words name a saved
     competitor, the Badge reads "Paid partnership: {competitor}" in the warning variant.
 - **The post's line**, in `text-sm`: the format (Reel, Post, Carousel, or Video on TikTok), the
@@ -3478,10 +3481,13 @@ the creator's posts to pick from, the current one marked with `aria-current="tru
   the page's data and set as the source of the Table's and card's thumbnail (`object-fit: cover`
   in its box) and of the viewer's media (`object-fit: contain`). On this page it takes the place of
   the card's `thumb` for those posts. The page's budget is the card reference's: all images under
-  8MB of data URIs (`creator-card.md`, **Images**, **Budgets**). Over it, in this order: drop the
-  third post of creators decided in a Done round, then every creator's third post, then rerun at
-  quality 80, then every creator's second post. A creator's first post and their Hook post are
-  never dropped. A dropped post becomes a link tile. As a guide, a post at this size is 60 to 150KB,
+  8MB of data URIs (`creator-card.md`, **Images**, **Budgets**). Over it, in this order, cutting the
+  number of images before their quality: drop the third post of creators decided in a Done round,
+  then every creator's third post, then every creator's second post, then rerun at quality 80. Past
+  that, a Hook post that isn't the creator's first post falls back to the card's `thumb`, and then
+  the first posts of creators decided in a Done round, then of every other creator, newest
+  decided first, become link tiles until the page is under budget. A dropped post becomes a link
+  tile. As a guide, a post at this size is 60 to 150KB,
   so three posts each for about 17 to 40 creators fit; past that, posts start dropping.
 - **Videos aren't stored today.** A video can't be embedded: as a data URI it would pass the whole
   page's budget on its own. The page can't link to Atlas's copy either: `media.mediaUrl` on a video
@@ -3494,7 +3500,7 @@ the creator's posts to pick from, the current one marked with `aria-current="tru
   computer, so it needs a deliberate decision recorded there first. Until then Claude stores no
   video, and every video shows its image with "Play on Instagram" or "Play on TikTok".
 - **If storing videos is turned on**, the viewer plays them with no other change: a post's `video`
-  is the asset's id, in the page itself for a creator sent to the client and in `agency/pool` for
+  is the asset's id, in the page itself for a creator sent to the client and in `agency/pool-{net}-{handle}` for
   one not sent yet, and Claude keeps a list of what it uploaded in `agency/media` so a republish
   never uploads one twice. The size to plan for: three videos for each of 40 creators, at 3 to
   10MB a video, is about 360MB to 1.2GB. Uploads would go in order of the creators still
@@ -3517,7 +3523,8 @@ the creator's posts to pick from, the current one marked with `aria-current="tru
    it:
    - **Bio**: `instagram.biography`, or `tiktok.bioDescription`, as plain text.
    - **Category**: `instagram.category`, as a chip.
-   - **Verified**: "Verified on Instagram" or "Verified on TikTok" when `verified` is true.
+   - **Verified**: "Verified" when the creator's `verified` is true. Atlas holds it per creator,
+     not per network, so the viewer never names a network for it.
    - **Badges**: every one in `instagram.badges`, in words, as outline Badges, not only the
      card's two.
 5. **Audience**, per network, labelled with the network and with what it counts (engaged accounts
@@ -3558,7 +3565,9 @@ when, so the thread is its history.
   the Textarea with Save and Cancel; saving writes the same `note-{id}` with the new text and logs
   a `note` entry with the old and new text. Remove asks in a Dialog, "Remove this note?", then
   writes the note's stamp with `value` `{text: null, createdAt}`, keeping when it was first written, and the thread shows "{name} removed a note
-  {time}" in its place. Nobody else gets either Button. The rules can't stop another person on the
+  {time}" in its place. Every tag whose `on` is that note gets `withdrawn: true` and its `text`
+  emptied, as a deleted comment's do, so no inbox opens a removed note and the chat never posts its
+  words. Nobody else gets either Button. The rules can't stop another person on the
   same side writing a note, so this is the page's rule (**1e**, **Creator decisions: what holds
   and what doesn't**, **Notes stay shared**).
 - **History.** An edited or removed note has a ghost Button "Show history" that opens, under it,
@@ -3582,7 +3591,7 @@ line.
 
 **Where the viewer's fields come from.** Read by Claude at publish, with the card's pulls
 (`creator-card.md`, **Data: what fills each section**) widened as below, and written into the page
-itself for a creator sent to the client, or `agency/pool` for one not sent yet. Every field path is
+itself for a creator sent to the client, or `agency/pool-{net}-{handle}` for one not sent yet. Every field path is
 checked against the live census (`list_creator_search_fields`, `list_post_search_fields`) first; one
 the census doesn't list leaves its part out, never guessed.
 
@@ -3590,13 +3599,13 @@ the census doesn't list leaves its part out, never guessed.
 | ------------- | ---- |
 | Bio | `instagram.biography`, `tiktok.bioDescription` |
 | Category | `instagram.category`, as discovery reads it in creator-ads mode |
-| Verified | The creator's `verified`, which the card's `search_creators` call already projects |
+| Verified | The creator's `verified`, one value per creator, which the card's `search_creators` call already projects |
 | Badges | `instagram.badges` |
 | Audience | The demographics fields `creator-profile.md` reads (`instagram.creatorEngagedAccountsBreakdowns`, `instagram.audienceDemographics`, `instagram.followerDemographics`; `tiktok.audienceGenders`, `tiktok.audienceAges` and the TikTok location breakdown), pulled without the card's `exclude` for each creator the page shows. Countries and cities are each a column only when the breakdown holds that kind of location. Atlas often holds countries alone: then the cities column is left out with "No city breakdown in Atlas", and the viewer never shows the creator's own City (**Where each field comes from**) as an audience figure |
 | Posts: media, format, date, figures, permalink | `search_posts` per creator, as for the card: `media`, `instagram.mediaProductType`, `postedAt`, `viewCount`, `likeCount`, `commentCount`, `instagram.permalink` or `url` |
 | Captions | `text` on the same posts |
 | Link tiles (up to nine more posts in 90 days) | The same call, which reads the creator's last 12 posts per channel; the posts it returns past the embedded ones, from the last 90 days |
-| Hook post | The Reels (`instagram.mediaProductType` REELS) from the last 90 days in that call, by `viewCount`; none with views, no Hook post |
+| Hook post | The Reels (`instagram.mediaProductType` REELS) from the last 90 days among that call's last 12 posts, by `viewCount`; none with views, no Hook post |
 | Paid partnership | The caption words above, on the same posts, and the brand's saved `competitor` records |
 | Rates and terms | `agency/creator-{net}-{handle}` (**1e**) |
 
@@ -3610,11 +3619,11 @@ viewer adds no data of its own beyond the notes above and each person's Auto adv
 
 Copies every creator the pool shows now, with the round, filters, search and sort applied, as a
 table: Decision ("Unreviewed" when there is none), Name, Handle, Product, Client notes, Aspire notes
-for {brand}, and for the agency Expected cost. It works like **History**'s **Copy as table**: an HTML table and tab
+for {brand}, and for the agency Aspire notes and Expected cost. It works like **History**'s **Copy as table**: an HTML table and tab
 separated text on the clipboard, the tab separated text with the CSV's `'` guard on typed text,
 "Copied {n} rows" on the Button for two seconds, and a Dialog "Copy decisions" with the text
 selected in a read only Textarea when the browser refuses the clipboard. **Preview as client** and
-the client copy without Expected cost. A read only client copies the page as published, with the
+the client copy without Aspire notes and Expected cost. A read only client copies the page as published, with the
 calls recorded at the last publish. Copying writes nothing and logs nothing.
 
 #### Tiers
@@ -4326,7 +4335,7 @@ What the export can't do yet, said plainly:
 ### Footer
 
 "Page republished on every change. Numbers come from Atlas as of {time}. Post images are
-embedded snapshots; creator emails and the agency's notes never show to the client." Plus the
+embedded snapshots; creator emails and the agency only Aspire notes never show to the client." Plus the
 fee rate label once. Then the artifact-standard footnote (`artifact-standard.md`). The page is
 shared with the client's approvers, so its source line uses the standard's shared-page audience
 line. The client view and the agency view each carry their own footnote, and the agency-only
@@ -4799,7 +4808,7 @@ prefixes.
     `signoffs/{id}` with the copy of what they read; the locked brief renders every part as a label
     and ticks step 4 on Home; and **Copy creator brief** holds no variant plan, reason, coverage,
     comment or id.
-17. Creator Selection: the Summary's budget part, Expected cost, cost per 1K reach, Aspire's notes
+17. Creator Selection: the Summary's budget part, Expected cost, cost per 1K reach, the agency only Aspire notes
     and the Waiting on filter never render for the client or in **Preview as client**, and the
     client's Sort Select lists neither cost; Committed equals the agreed figure plus its uplift
     line in **Contract and rates**' **Totals**; the meter's two parts and its legend add up to what the headline subtracts;
@@ -5055,6 +5064,7 @@ for creator decisions, `refused:` the refused sign offs and the refused decision
 | Creator profile | `creators/{net}-{handle}` | Agency | `name`, `descriptor`, `location`, `pickNote` (why we picked them) |
 | Creator, per round | `edits/creator-{net}-{handle}-r{round}` | Agency | `concept`, `persona` (the persona's id in the concept, `persona-{id}`), `product`, `status`, `adPermissions`, `shipping`, `tracking`, `productStatus`, `note-{id}` (Aspire's notes for {brand}, as in Notes below); `returning` (true) and `fromRound` on a creator carried into the round |
 | Pool not sent | `agency/pool` | Claude | One key per pool creator not sent to the client yet, `{net}-{handle}`, holding what their row and card show, so the page itself never lists them |
+| Pool viewer data | `agency/pool-{net}-{handle}` | Claude | One document per creator not sent yet, plain data: what the creator viewer shows for them (**1d**, **Creator Selection**, **The creator viewer**): posts with captions, figures, marks and images, bio, category, verified, badges and audience. Captions are cut to 2,200 characters, and a document Claude would write past 200 KiB drops its link tiles' captions, then its third and second posts' images, which then show as link tiles. Written at publish, deleted by no one: a creator sent later reads from the page itself instead |
 | Creator, agency only | `agency/creator-{net}-{handle}` | Agency | Every agency only field in **Who sees what**: the recommendation, the Aspire notes (`note-{id}`), vetting evidence, safety detail, email, phone, manager, reply window, last contact, rates, `expectedCost:` and `expectedFrom:` (agreed, counter, offer or calculator, `rates-and-terms.md`, **Expected cost**), `costPer1kReach:`, offer, counters, waiting on, the reply log, and the draft waiting to send |
 | Activity, client side | `activity/{id}/days/{day}` | Each Contributor, their own | `day:`, `entries:` one key per write (**The activity log**) |
 | Activity, agency side | `activity-editors/{id}/days/{day}` | Each Editor, their own; Claude under `activity-editors/claude` | The same, for the agency's writes about things the client can see |
@@ -5523,8 +5533,9 @@ id, where an Editor can't write, so on confirm the page writes a `reset-{id}` st
 `decision-events/r{round}` with the editor as `by`, and every call older than it shows as
 Unreviewed, with "Cleared by {name} {time}" under it. The stamp hides a `decision` and
 `reason` a page from before kept in `client` too, so the page leaves those as they are. It writes
-each client note in the round's `client/creator-*` documents (`note-{id}`, and the `notes` of a page
-from before) as a stamp with `value` `null` and the editor as `by`, and logs one activity entry.
+each client note in the round's `client/creator-*` documents as a stamp with the editor as `by`:
+a `note-{id}` with `value` `{text: null, createdAt}`, keeping its `createdAt`, and the `notes` of a
+page from before with `value` `null`, and logs one activity entry.
 Aspire's notes for {brand} in `edits` and the Aspire notes stay. Every tag whose `on` is a cleared note in that round gets `withdrawn: true`, so
 no inbox keeps an item that opens an empty note and the chat never posts a cleared note's words
 (**Tags and the inbox**). Nothing is deleted, and nothing reaches Atlas: **Pulling decisions** names the
