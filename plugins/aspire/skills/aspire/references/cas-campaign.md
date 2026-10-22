@@ -215,7 +215,7 @@ record type the newest finding per identity wins, by `detail.recordedAt`.
 | recordType | Identity | Anchor | kind | detail adds |
 | ---------- | -------- | ------ | ---- | ----------- |
 | `gate` | gate + round (Gate 4b: gate + round + the creator) | The brand's own account on its first linked network | `action_item` `high` while planned, open or slipped; `went_well` when cleared | `gate` (1, 2, 3, 4, `4b`), `status` (planned, open, cleared, slipped), `plannedAt`, `sentAt`, `dueAt`, `clearedAt`, `clearedBy`, `daysSlipped`, `reminderTask` (the task name). Gate 1 adds `source` (where the concepts were read from). Gate 4b adds `handle` and `network` |
-| `round` | round | The brand's account | `action_item` `medium` while planned, in production or in market; `went_well` when done | `round`, `label`, `month`, `build` `{start, end}`, `inMarket` `{start, end}`, `launchDate`, `state` (planned, in production, in market, done), `steps` (`{"1": {plannedAt, dueAt}, …}` for steps 1 to 4), `plan` (the round's other steps, **Round steps** below), `closedAt` (set when the CM closes the round early), `startedFrom` (the round it was started from, empty for the first), `creators` (`new`, `same`, or `same-and-new`: how the round was started) |
+| `round` | round | The brand's account | `action_item` `medium` while planned, in production or in market; `went_well` when done | `round`, `label`, `month`, `build` `{start, end}`, `inMarket` `{start, end}`, `launchDate`, `state` (planned, in production, in market, done), `steps` (`{"1": {plannedAt, dueAt}, …}` for steps 1 to 4), `plan` (every step of the round, the four approvals included, **Round steps** below), `closedAt` (set when the CM closes the round early), `startedFrom` (the round it was started from, empty for the first), `creators` (`new`, `same`, or `same-and-new`: how the round was started) |
 | `roster` | the creator's account + round | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while a candidate; `went_well` approved; `needs_improvement` rejected | `handle`, `network`, `name`, `descriptor`, `location` (the last three only when edited on the page), `lane`, `slate` (candidate, approved, maybe, rejected), `priority` (true for a Priority Yes), `clientReason` (the reason on a surprise Priority Yes or Yes), `rejectReason`, `clientQuestion`, `pickNote` (why we picked them), `rate` (offered, countered, agreed, declined), `offer` `{open, target, max}`, `counter`, `agreed`, `deliverables`, `usage`, `exclusivity`, `termNotes`, `contact` `{email, manager}`, `tier`, `lastContactAt`, `waitingOn` (client, agency, creator), `yourCall` (the question to the client, while one is open), `adPermissions` (granted, pending), `details` `{status, address, pickup, visitDate, product, options, availability}`, `shipping` `{status, carrier, tracking}`, `briefState` (sent, accepted, changed, approved, locked), `shipDate`, `vetting` (the four figures and the recommendation), `returning` (true when carried from an earlier round), `fromRound` (the round it was carried from), `source` (chat, reply, page, or carried) |
 | `draft` | the creator + the template | The creator's account | `action_item` `low` while not sent; `went_well` once sent | `handle`, `template` (offer, counter, accept, chase, details, brief, brief-notes), `subject`, `body`, `sentAt` |
 | `reply` | one per exchange, never replaced | The creator's account | `went_well` `low` | `handle`, `receivedAt`, `summary` (one plain line), `record` (what it wrote to the roster), `nextMove` |
@@ -262,8 +262,9 @@ afterwards:
 
 **Round steps.** Each round has one list of steps, from its first job to its ads going live. A
 step is `{name, date, owner, done}`: what happens, the day it is due, who does it, and whether it
-is done. Four of the steps are the client's approvals, steps 1 to 4, and the rest are the round's
-`plan`:
+is done. The round's `plan` holds every step. Four of them are the client's approvals, steps 1 to
+4, kept in `plan` with their `id`, `name` and `order` only, because their tick, dates and owner
+always come from the gate finding:
 
 ```json
 [{"id": "intake", "name": "Intake form", "order": 20, "date": null,
@@ -272,7 +273,8 @@ is done. Four of the steps are the client's approvals, steps 1 to 4, and the res
 
 `order` places a step in the list. `owner.kind` is `client`, `aspire`, `creators`, or `team` with
 `owner.team` naming a team member's `id` in `campaign:{slug}-cas`. `date` is `YYYY-MM-DD` or
-`null`; `doneAt` is the full UTC time the step was ticked.
+`null`; `doneAt` is the full UTC time the step was ticked. `order` is a number and needn't be
+whole.
 
 The default steps, written into the round's `plan` when the round is created (C7 for the first,
 **Starting the next round** for the rest). An approval keeps its place in the list and takes its
@@ -288,13 +290,13 @@ tick and dates from its gate finding, never from `plan`:
 | 50 | 2 Creators approved | 2 Creators approved (creator picks) | The step's approver | The gate |
 | 60 | Creator negotiation | | Aspire | None |
 | 70 | 3 Fees approved | 3 Fees approved | The step's approver | The gate |
-| 75 | | Contracts signed | Creators | None |
+| 75 | Contracts signed | Contracts signed | Creators | None |
 | 80 | 4 Briefs approved (master brief sign off) | 4 Briefs approved (master brief sign off) | The step's approver | The gate |
-| 85 | | Product shipped | Aspire | None |
+| 85 | Product shipped | Product shipped | Aspire | None |
 | 90 | Creator brief sign off | | Creators | None |
 | 100 | First cut review | First cut review | The client | None |
 | 110 | Final cut review | Final cut review | The client | None |
-| 115 | | Variants due | Aspire | None |
+| 115 | Variants due | Variants due | Aspire | None |
 | 120 | Final cut sign off | Final cut sign off | The client | None |
 | 130 | Ads live | Ads live | Aspire | The launch date |
 
@@ -305,7 +307,8 @@ approvals themselves, so each shows once, under the approval's name with the def
 its detail line. A step with no date shows no date to the client until someone sets one,
 because no record says when an intake form or a kickoff call happens; the agency sees "Not set"
 with the date Input (**1d**, **Home**, **Round steps**). A step the agency adds takes the id
-`custom-{id}` and an `order` between its neighbours.
+`custom-{id}` and an `order` halfway between the step it follows and the next one, or the last
+step's `order` plus 10 when it goes last.
 
 What makes a step done:
 
@@ -316,14 +319,16 @@ What makes a step done:
   early with step 4 never cleared never ticks it. Its date is always the round's launch date,
   changed with the round's dates, never on its own.
 - **Any other step**: an editor ticked it (`done` true, `doneAt` set). It also counts as done,
-  with no date, once a later approval is sent or cleared in this round, or once the ads are
-  live, so a step nobody ticked never holds the round back. An approval recorded as carried when
-  the round started (`source` carried, **Starting the next round**) doesn't count, so Round
-  {n-1} read stays open until it is ticked.
+  with no date, once an approval with a higher `order` is sent or cleared in this round, or,
+  for a step before Ads live, once the ads are live, so a step nobody ticked never holds the
+  round back. A step after Ads live counts as done only when it is ticked. An approval recorded
+  as carried when the round started (`source` carried, **Starting the next round**) doesn't
+  count, so Round {n-1} read stays open until it is ticked.
 
 **The current step** is the first step not done, and **up next** the one after it. A current
 step whose date is before today is late by the whole days since. A round with every step done
-has no current step.
+has no current step. **A round closed early** (`closedAt` set) has no current step, up next,
+lateness or "Launch at risk" either: its open steps show "Not done, round closed".
 
 A campaign with no `round` finding has one round per round number its gate and roster findings
 carry in `detail.round`, plus the number in `campaign:{slug}-cas`, each with its dates worked out
@@ -683,7 +688,10 @@ the client's calls, each named with who made it:
 - **Program details.** The budget total, team, products in scope, the term dates (`termStart`,
   `termEnd`), the usage days, the ad ready videos, the variants per creator and what each creator
   makes go to `campaign:{slug}-cas` (`term`, `package`, `sow`), and the other program terms
-  (allowlisting, partnership ads, exclusivity, organic posting) to `campaign:{slug}-terms`. A
+  (allowlisting, partnership ads, exclusivity, organic posting, and the allowlisting uplift's
+  `upliftPct` as `whitelistingUpliftPct`) to `campaign:{slug}-terms`. A change to allowlisting
+  or the uplift while any round's fees are sent or approved is named in the picker as changing
+  those fees, so the CM agrees it with the client before recording it. A
   changed product photo link is fetched and embedded at the republish that follows. A setup record
   changes only through the Phase 5 supersede rule, so these get their own confirmation after the
   batch picker, never inside it.
@@ -1478,7 +1486,8 @@ rows.
    - **Badges**, beside the name: processing "Now" on the current step, soft "Up next" on the one
      after, warning "{d} days late" on a late current step ("1 day late" for one), warning "Launch
      at risk" on step 4 when the round is at risk (**Rounds**), and an outline "Client approval"
-     on the four approvals.
+     on the four approvals. In a round closed early, none of these: an open step shows the soft
+     Badge "Not done, round closed".
    - **Where each step opens.** An approval has a link Button "Open" to where the client gives it:
      step 1 and step 4 the round's Master Brief (`#brief/r{n}`), step 2 Creator Selection
      (`#selection/r{n}`), step 3 **Contract and rates** (`#creators/r{n}/fees`). Ads live opens
@@ -1492,7 +1501,9 @@ rows.
      client approves it on {Tab}."; on Ads live, "Ads live ticks on the launch date, once the
      briefs are approved."; with every step done, it doesn't render.
    - **Editing (agency).** In place, per **Editing in place**: a checkbox at the start of every
-     step but the approvals and Ads live ticks or unticks it (unticking clears `doneAt`); the name,
+     step but the approvals and Ads live ticks or unticks it (unticking clears `doneAt`). A step
+     that counts as done only because a later step went out shows its checkbox checked and
+     disabled, with the tooltip "Done once {step} went out."; the name,
      the date (a date Input) and the owner (a Select: "{brand}", "Aspire", "Creators", then each
      team member by name) of the same steps. An approval's date is editable too: its planned date
      before it is sent, its due date after. Ads live's date is the launch date, which changes with
@@ -1592,6 +1603,14 @@ rows.
      time is in the value's tooltip, per **Editing in place**. Ad ready videos worked out from the
      package reads "Worked out: {c} creators, {v} each". On phone **From** is a line under the
      value in `text-xs text-muted-foreground`.
+   - **Allowlisting with nothing saved** reads "Yes" whenever `campaign:{slug}-terms` is saved,
+     because the uplift then applies to every fee (`rates-and-terms.md`, **What each creator
+     gets**), with **From** "Campaign setup". So the client never sees an uplift with no
+     Allowlisting row to explain it.
+   - **The SOW against the plan.** The pace verdict and the Content Review card count the round's
+     plan ({y}, **Where we stand**). When `sow.adReadyVideos` is above {y}, the agency sees one
+     warning line under Ad ready videos: "The SOW promises {s} a round; round {n}'s plan makes
+     {y}." The client sees the SOW's figure only.
    - **Hidden parts.** A row whose record has no value is hidden for the client, and a group with
      no row is hidden with it. The agency sees "Not set" in `text-muted-foreground` with the
      pencil to set it, and the group "Each creator makes" with an "Add deliverable" ghost Button,
@@ -1601,9 +1620,10 @@ rows.
      number, 1 or more), variants with a Select from 1 to 5, Yes or No with a Select, the rest
      with an Input. "Add deliverable" opens a Dialog: Label (an Input, required) and Count,
      Cancel (outline) and Add (default). A ghost icon Button with the Lucide `trash-2` icon removes
-     a deliverable after a Dialog confirm, the way a step is removed. Editing the dates, the usage
-     or the variants shows one line under the field while it is open: "This changes what the
-     creators agreed. Agree it with each creator first."
+     a deliverable after a Dialog confirm, the way a step is removed. Editing the dates, the usage,
+     the variants, allowlisting or the uplift shows one line under the field while it is open:
+     "This changes what the creators agreed. Agree it with each creator first." Allowlisting and
+     the uplift add "It changes every fee, approved ones included."
 5. **Products in scope** (`home-products`). The products the campaign is for, from `products` in
    `campaign:{slug}-cas` and the agency's edits, one Card each in a `grid grid-cols-1 gap-4
    sm:grid-cols-2 lg:grid-cols-3` grid:
@@ -1766,7 +1786,8 @@ Sections, in order:
    fees are sent, the client sees the creators and "Fees show here once they are sent for your
    approval." **Totals**,
    agency only, close the section: the campaign at open, target and max, and at what is agreed
-   so far, with the allowlisting uplift as its own line. Full detail: `rates-and-terms.md`,
+   so far, with the allowlisting uplift as its own line unless allowlisting is off. Full detail:
+   `rates-and-terms.md`,
    **Contract and rates**.
 2. **Shipping.** Shown once fees are approved. A one line intro: "Getting the product to each
    creator. Update ship status and tracking here. Addresses come from the creator's own reply."
@@ -2451,7 +2472,7 @@ card titles, `text-xl` for section titles, `text-2xl` for the page title. Weight
 
 | Variant | Status labels |
 | ------- | ------------- |
-| soft | Awaiting decision, not asked yet, not shipped, Planned, Done, Returning, Up next, Paused |
+| soft | Awaiting decision, not asked yet, not shipped, Planned, Done, Returning, Up next, Paused, Not done, round closed |
 | processing | Offer sent, Details received, Shipped, Brief sent, in negotiation, In production, Now, Coming soon |
 | success | Approved, Agreed, Delivered, Brief accepted, Granted, In market, Ahead, On track, Met the target, Active |
 | warning | Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending, waiting for your approval, Running behind, Launch at risk, over target, days late, Waiting on you, Out of stock |
@@ -2712,9 +2733,9 @@ with a plain description holds plain data the page writes with no stamp.
 | Notes | the `notes` field on the decision and approval documents above, and agency notes on `agency/creator-{net}-{handle}` | Client; agency | A stamp each |
 | Scoring weights | `agency/match-score` | Agency | One key per weight, `weight-{signal}`, and `stats:` the tuning panel's figures |
 | Files | `program/files` | Agency | One key per file, `file-{id}`, whose `value` is `{label, url, round}` |
-| Rounds | `program/round-r{round}` | Agency | `label`, `month`, `buildStart`, `buildEnd`, `marketStart`, `marketEnd`, `launch` (dates); `creators` (`same` or `same-and-new`) and `started` (true) on a round started on the page; `step-{id}`, one per step in the round's `plan` (**Rounds**, **Round steps**), whose `value` is `{name, order, date, owner, done, doneAt}` |
+| Rounds | `program/round-r{round}` | Agency | `label`, `month`, `buildStart`, `buildEnd`, `marketStart`, `marketEnd`, `launch` (dates); `creators` (`same` or `same-and-new`) and `started` (true) on a round started on the page; `step-{id}`, one per step in the round's `plan` (**Rounds**, **Round steps**), whose `value` is `{name, order, date, owner, done, doneAt}`, or `{name, order}` for an approval |
 | Program details | `program/details` | Agency | `product-{id}` (a product in scope, `{name, status, description, photo}`, `photo` being the link; the image Claude embeds from it lives in the page itself, never in page data), `team-{id}` (`{name, role, title, email, owns, goTo}`), `step-{gate}-r{round}-planned` and `-due` (dates), `termStart`, `termEnd`, `sync` (the weekly sync slot, time zone and length from `campaign:{slug}-cadence`, shown only), `slack` and `channelLink` (the Slack channel's name and link from `campaign:{slug}-routing`, shown only; the email recipients never go on the page) |
-| Program terms | `program/terms` | Agency | `deliverable-{id}` (`{label, count}`), `adReadyVideos`, `variants`, `usageDays`, `allowlisting`, `partnershipAds`, `exclusivity`, `organic`. A page from before reads a `makes`, `usage` or `exclusivity` text as that row's value |
+| Program terms | `program/terms` | Agency | `deliverable-{id}` (`{label, count}`), `adReadyVideos`, `variants`, `usageDays`, `allowlisting`, `partnershipAds`, `exclusivity`, `organic`. A page from before kept `makes`, `usage`, `exclusivity` and `notes` as text, in `agency/terms` until the fees were sent: Program terms reads `agency/terms` then `program/terms`, shows `makes` and `usage` that don't parse as one text row each ("What each creator makes", "Usage"), `exclusivity` as its row, and `notes` as a "Notes" row last, and the next publish moves them to `program/terms` |
 | Allowlisting uplift | `agency/terms` until the fees are sent, then `program/terms` | Agency | `upliftPct` |
 | Budget | `agency/budget` | Agency | `total` (stamp); `committed:`, `offersOut:`, `remaining:` (worked out at publish) |
 | Briefs per round | `briefs/{lane}-r{round}` | Agency | `concept`, `hook-{id}`, `cta-{id}`, `body`, `broll-{id}`, `runtime`, `product`, `disclosure`, `donot-{id}`; `version:` the brief's version at publish |

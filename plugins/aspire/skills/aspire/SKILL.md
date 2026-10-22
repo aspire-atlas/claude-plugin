@@ -2093,9 +2093,10 @@ Read the setup records and the working state (`search_insights` on the campaign'
 Find each round that is not done (the reference's **Rounds**, **Which round**) and its row in the
 dispatch table, reading from the bottom up. Show one screen: per round, its month, dates and state,
 its row's status line and the four steps (1 Concepts approved, 2 Creators approved, 3 Fees
-approved, 4 Briefs approved) each with done and its date, now and its due date, or its planned
-date, the round's current step and up next from its **Round steps**, the creator counts by
-concept, anything marked your call needed, and the campaign page link,
+approved, 4 Briefs approved) each with done and its date, out with the client and its due date,
+or its planned date; then the round's current step and up next from its **Round steps**, read
+after the page's step edits are pulled or labelled "as of the last pull" when they aren't; the
+creator counts by concept, anything marked your call needed, and the campaign page link,
 opened on the tab the next step is on (Creator Selection for creators, Selected Creators for fees
 and shipping, Master Brief for briefs and creator changes, else Home), and the new tags from the
 page per the reference's **Delivering tags**. Then one
