@@ -53,15 +53,24 @@ draft, and in a channel post, uses the left column.
 | Planned, In production, In market, Done | round state |
 | Returning | a creator carried into the next round (`returning`) |
 | Start round {n} | starting the next round (**Rounds**) |
-| Round steps | Gates 1 to 4 for one round |
+| Round steps: each step's name, date, owner, and Done, Now or Up next | a round's `plan`, with Gates 1 to 4 as four of its steps (**Rounds**, **Round steps**) |
+| Program terms: what each creator makes, ad ready videos, variants per creator, usage, allowlisting, partnership ads, exclusivity, organic posting | the SOW terms in `campaign:{slug}-cas` (`term`, `package`, `sow`) and `campaign:{slug}-terms` |
+| Products in scope | `products` in `campaign:{slug}-cas` |
+| Allowlisting, the allowlisting uplift | whitelisting (`allowlisting`, `whitelistingUpliftPct` in `campaign:{slug}-terms`) |
+| Tab summaries | one card per tab for the round in view (**1d**, **Home**) |
 | Calendar, delays | gate dates and ledger |
-| Team and weekly sync | routing and sync |
+| Team, Next check in | the team in `campaign:{slug}-cas`, the sync slot in `campaign:{slug}-cadence`, the Slack channel in `campaign:{slug}-routing` |
+| Simple, Everything | Home's two views (**1d**, **Home**) |
+| Where we stand: Ahead, On track, Running behind | the round's state and pace, worked out from the round record, the roster and the cuts (**1d**, **Home**) |
+| Aspire is on it | the agency's work in progress: cuts in changes or QA, packages shipped, creators filming |
 | Budget summary, totals | budget |
 | Waiting on you (the viewer's items), Needs attention (every open item) | attention list |
 | History: who did what and when | the activity log (**1e**, **The activity log**) |
 | Inbox, {Tab} inbox: what's new for you | inbox items built from the activity log and tags (**1e**, **Tags and the inbox**) |
 | @Client, @Aspire, @{name}: tagged you, tagged Client, tagged Aspire | a tag (**1d**, **Tagging**) |
 | Home, Master Brief, Creator Selection, Selected Creators, Content Review, Ad Performance | the page's six tabs (**1d**) |
+| Expand all, Collapse all, a section opened or closed | each person's collapse state (`data/users/{id}/collapse`, **1d**, **Collapsing sections**) |
+| Export, Excel, CSV, Copy as table, Agency only columns | a spreadsheet of what is on screen (**1d**, **Export**) |
 
 The status labels a person sees, in order: Awaiting decision, Approved, Maybe, Rejected, Offer
 sent, Countered, Agreed, Declined, Your call needed, No reply yet, Details received, Shipped,
@@ -106,8 +115,8 @@ setup.
 | `campaign:{slug}-brief` | `brand_fact` | The campaign in the user's words, plus the type line | `{section: "business_context", body: "type: creator-ads; <campaign description>; term <YYYY-MM-DD>..<YYYY-MM-DD>"}` |
 | `campaign:{slug}-criteria` | `guideline` | What every lane shares: networks, market, hard exclusions | `{concern: "requirement", appliesTo: ["creator-discovery", "{slug}"], body: "<one line per dimension>"}` |
 | `campaign:{slug}-pool` | `guideline` | The target per lane: three times the creators each lane needs | `{concern: "ceiling", appliesTo: ["creator-discovery", "{slug}"], body: "per lane: <lane>=<target>, ..."}` |
-| `campaign:{slug}-routing` | `policy` | Where the page, gate lines and the sync agenda go (C5) | `{area: "routing", body: "page; slack:#channel; email:a@x.com,b@x.com"}` |
-| `campaign:{slug}-cadence` | `policy` | The weekly sync slot and timezone (C6) | `{area: "cadence", cadence: "sync", body: "sync weekly <DAY HH:MM>, <IANA timezone>"}` |
+| `campaign:{slug}-routing` | `policy` | Where the page, gate lines and the sync agenda go (C5) | `{area: "routing", body: "page; slack:#channel; channelLink:<url>; email:a@x.com,b@x.com"}`. `slack:` is always the channel's name, which every post uses; `channelLink:` is optional, read only by the page's **Open Slack channel**. Keys match exactly up to the colon |
+| `campaign:{slug}-cadence` | `policy` | The weekly sync slot, timezone and length (C6) | `{area: "cadence", cadence: "sync", body: "sync weekly <DAY HH:MM>, <minutes> min, <IANA timezone>"}`. The time zone stays the last part, so every reader takes it from there; the length is optional, and a body without it reads as no length saved |
 | `campaign:{slug}-cas` | `guideline` | Package, term, approvers and backups per gate, turnaround per gate, round, the page link | `{concern: "requirement", appliesTo: ["cas-campaign", "{slug}"], body: "<the campaign object, serialized with json.dumps>"}` |
 | `campaign:{slug}-lane-{lane}` | `guideline` | One lane: concept, framework and trigger, persona, casting filter, creators needed, and where it came from | `{concern: "requirement", appliesTo: ["cas-campaign", "creator-discovery", "creator-vetting", "creator-brief", "{slug}"], body: "<the lane object, serialized with json.dumps>"}` |
 | `campaign:{slug}-decision-defaults` | `guideline` | The rules later performance reads will use | `{concern: "preference", appliesTo: ["cas-campaign", "{slug}"], body: "<the defaults object, serialized with json.dumps>"}` |
@@ -122,8 +131,15 @@ The campaign object:
            "3": {"approver": "Name", "backup": "Name", "turnaroundHours": 48},
            "4": {"approver": "Name", "backup": "Name", "turnaroundHours": 48}},
  "round": 1, "budgetUsd": 20000,
- "products": [{"id": "p1", "name": "…"}],
- "team": [{"id": "t1", "name": "Name", "role": "…", "goTo": "…"}]}
+ "sow": {"deliverables": [{"id": "d1", "label": "Hooks", "count": 3},
+                          {"id": "d2", "label": "Bodies", "count": 1},
+                          {"id": "d3", "label": "CTAs", "count": 2},
+                          {"id": "d4", "label": "B-roll shots", "count": 15}],
+         "adReadyVideos": 27},
+ "products": [{"id": "p1", "name": "…", "status": "active", "description": "…",
+               "photo": "https://…"}],
+ "team": [{"id": "t1", "name": "Name", "role": "…", "title": "…", "email": "name@example.com",
+           "owns": "…", "goTo": "…"}]}
 ```
 
 `round` is the first round's number. Every round, the first included, is a `round` finding in the
@@ -132,9 +148,26 @@ at most 5: a creator makes at most 5 variants in a round.
 
 `budgetUsd` is optional: the total the CM types for the budget summary on Creator Selection and
 the totals on Selected Creators. Without it they show committed and offers out only.
-`products` (the products in scope) and `team` (the people on the campaign and what to go to each
-for) are optional too; Home shows its empty state without them. Each item keeps its `id` for
-good, so an edit on the page names the item it changed.
+
+`sow`, `products` and `team` are optional, and so is every key inside an item but `id` and
+`name` (a deliverable's `label` and `count`). Each item keeps its `id` for good, so an edit on
+the page names the item it changed. No setup question asks for them. They reach the record three
+ways: an editor's edit on Home, pulled with **Pulling decisions**; the CM saying them in the chat,
+written through the supersede rule; and the program files on Home's **Files**, once that section
+pulls details from the SOW and the product sheet. Until a value is saved, Home hides its part
+(**1d**, **Home**).
+
+- `sow.deliverables`: what each creator makes, one item per kind with its count.
+- `sow.adReadyVideos`: the ad ready videos the SOW promises per round. Without it, Home shows
+  `package.creators` times `package.variants`, the same plan the pace verdict uses, worked out
+  and labelled so.
+- A product's `status` is one of `active`, `coming-soon`, `paused`, `out-of-stock`; `photo` is
+  the link to its image, which Claude embeds in the page at publish (**1d**, **Home**, **Products
+  in scope**).
+- A team member is someone at Aspire on the campaign: `role` on the campaign (Campaign Manager,
+  Editor, Strategist), `title` their job title, `email` their work email, `owns` what they own on
+  the campaign, `goTo` what the client goes to them for. Their work email is shown to the client
+  on purpose (**1d**, **Who sees what**).
 
 The lane object:
 
@@ -182,7 +215,7 @@ record type the newest finding per identity wins, by `detail.recordedAt`.
 | recordType | Identity | Anchor | kind | detail adds |
 | ---------- | -------- | ------ | ---- | ----------- |
 | `gate` | gate + round (Gate 4b: gate + round + the creator) | The brand's own account on its first linked network | `action_item` `high` while planned, open or slipped; `went_well` when cleared | `gate` (1, 2, 3, 4, `4b`), `status` (planned, open, cleared, slipped), `plannedAt`, `sentAt`, `dueAt`, `clearedAt`, `clearedBy`, `daysSlipped`, `reminderTask` (the task name). Gate 1 adds `source` (where the concepts were read from). Gate 4b adds `handle` and `network` |
-| `round` | round | The brand's account | `action_item` `medium` while planned, in production or in market; `went_well` when done | `round`, `label`, `month`, `build` `{start, end}`, `inMarket` `{start, end}`, `launchDate`, `state` (planned, in production, in market, done), `steps` (`{"1": {plannedAt, dueAt}, …}` for steps 1 to 4), `closedAt` (set when the CM closes the round early), `startedFrom` (the round it was started from, empty for the first), `creators` (`new`, `same`, or `same-and-new`: how the round was started) |
+| `round` | round | The brand's account | `action_item` `medium` while planned, in production or in market; `went_well` when done | `round`, `label`, `month`, `build` `{start, end}`, `inMarket` `{start, end}`, `launchDate`, `state` (planned, in production, in market, done), `steps` (`{"1": {plannedAt, dueAt}, …}` for steps 1 to 4), `plan` (every step of the round, the four approvals included, **Round steps** below), `closedAt` (set when the CM closes the round early), `startedFrom` (the round it was started from, empty for the first), `creators` (`new`, `same`, or `same-and-new`: how the round was started) |
 | `roster` | the creator's account + round | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while a candidate; `went_well` approved; `needs_improvement` rejected | `handle`, `network`, `name`, `descriptor`, `location` (the last three only when edited on the page), `lane`, `slate` (candidate, approved, maybe, rejected), `priority` (true for a Priority Yes), `clientReason` (the reason on a surprise Priority Yes or Yes), `rejectReason`, `clientQuestion`, `pickNote` (why we picked them), `rate` (offered, countered, agreed, declined), `offer` `{open, target, max}`, `counter`, `agreed`, `deliverables`, `usage`, `exclusivity`, `termNotes`, `contact` `{email, manager}`, `tier`, `lastContactAt`, `waitingOn` (client, agency, creator), `yourCall` (the question to the client, while one is open), `adPermissions` (granted, pending), `details` `{status, address, pickup, visitDate, product, options, availability}`, `shipping` `{status, carrier, tracking}`, `briefState` (sent, accepted, changed, approved, locked), `shipDate`, `vetting` (the four figures and the recommendation), `returning` (true when carried from an earlier round), `fromRound` (the round it was carried from), `source` (chat, reply, page, or carried) |
 | `draft` | the creator + the template | The creator's account | `action_item` `low` while not sent; `went_well` once sent | `handle`, `template` (offer, counter, accept, chase, details, brief, brief-notes), `subject`, `body`, `sentAt` |
 | `reply` | one per exchange, never replaced | The creator's account | `went_well` `low` | `handle`, `receivedAt`, `summary` (one plain line), `record` (what it wrote to the roster), `nextMove` |
@@ -201,7 +234,7 @@ rounds were recorded is the round in its `detail.round`.
 
 A campaign runs in rounds. Round 1 is the first month in market, Round 2 the second, and so on,
 with no fixed number. Every part of the campaign but the creator pool belongs to one round: its
-four steps, its roster rows, its brief, its creator changes, its cuts and its results. The pool
+steps (the four approvals among them), its roster rows, its brief, its creator changes, its cuts and its results. The pool
 of candidates is shared by every round. Rounds overlap: the next round is built while the last
 one is in market.
 
@@ -227,9 +260,80 @@ afterwards:
   round's build window, launch date and in-market window by the same days, in the same write,
   and every later round's dates the same way.
 
+**Round steps.** Each round has one list of steps, from its first job to its ads going live. A
+step is `{name, date, owner, done}`: what happens, the day it is due, who does it, and whether it
+is done. The round's `plan` holds every step. Four of them are the client's approvals, steps 1 to
+4, kept in `plan` with their `id`, `name` and `order` only, because their tick, dates and owner
+always come from the gate finding:
+
+```json
+[{"id": "intake", "name": "Intake form", "order": 20, "date": null,
+  "owner": {"kind": "client"}, "done": false, "doneAt": null}]
+```
+
+`order` places a step in the list. `owner.kind` is `client`, `aspire`, `creators`, or `team` with
+`owner.team` naming a team member's `id` in `campaign:{slug}-cas`. `date` is `YYYY-MM-DD` or
+`null`; `doneAt` is the full UTC time the step was ticked. `order` is a number and needn't be
+whole.
+
+The default steps, written into the round's `plan` when the round is created (C7 for the first,
+**Starting the next round** for the rest). An approval keeps its place in the list and takes its
+tick and dates from its gate finding, never from `plan`:
+
+| Order | Round 1 | Later rounds | Owner | Date |
+| ----- | ------- | ------------ | ----- | ---- |
+| 5 | | Round {n-1} read | Aspire | None |
+| 10 | 1 Concepts approved | 1 Concepts approved | Who approved the concepts | The gate |
+| 20 | Intake form | | The client | None |
+| 30 | Kickoff call | | Aspire | None |
+| 40 | Creator sourcing | | Aspire | None |
+| 50 | 2 Creators approved | 2 Creators approved (creator picks) | The step's approver | The gate |
+| 60 | Creator negotiation | | Aspire | None |
+| 70 | 3 Fees approved | 3 Fees approved | The step's approver | The gate |
+| 75 | Contracts signed | Contracts signed | Creators | None |
+| 80 | 4 Briefs approved (master brief sign off) | 4 Briefs approved (master brief sign off) | The step's approver | The gate |
+| 85 | Product shipped | Product shipped | Aspire | None |
+| 90 | Creator brief sign off | | Creators | None |
+| 100 | First cut review | First cut review | The client | None |
+| 110 | Final cut review | Final cut review | The client | None |
+| 115 | Variants due | Variants due | Aspire | None |
+| 120 | Final cut sign off | Final cut sign off | The client | None |
+| 130 | Ads live | Ads live | Aspire | The launch date |
+
+The ids are `prev-read`, `intake`, `kickoff`, `sourcing`, `negotiation`, `contracts`, `shipped`,
+`creator-brief`, `first-cut`, `final-cut`, `variants-due`, `final-signoff` and `ads-live`, and
+`gate-1` to `gate-4` for the approvals. Creator picks and the master brief sign off are the
+approvals themselves, so each shows once, under the approval's name with the default's name as
+its detail line. A step with no date shows no date to the client until someone sets one,
+because no record says when an intake form or a kickoff call happens; the agency sees "Not set"
+with the date Input (**1d**, **Home**, **Round steps**). A step the agency adds takes the id
+`custom-{id}` and an `order` halfway between the step it follows and the next one, or the last
+step's `order` plus 10 when it goes last.
+
+What makes a step done:
+
+- **An approval**: its gate is cleared. Its date is the gate's due date once sent, else its
+  planned date; its owner is the step's approver in `campaign:{slug}-cas`, and for step 1 the
+  Gate 1 finding's `clearedBy`, else "{brand}".
+- **Ads live**: the round is in market, or done after having been in market. A round closed
+  early with step 4 never cleared never ticks it. Its date is always the round's launch date,
+  changed with the round's dates, never on its own.
+- **Any other step**: an editor ticked it (`done` true, `doneAt` set). It also counts as done,
+  with no date, once an approval with a higher `order` is sent or cleared in this round, or,
+  for a step before Ads live, once the ads are live, so a step nobody ticked never holds the
+  round back. A step after Ads live counts as done only when it is ticked. An approval recorded
+  as carried when the round started (`source` carried, **Starting the next round**) doesn't
+  count, so Round {n-1} read stays open until it is ticked.
+
+**The current step** is the first step not done, and **up next** the one after it. A current
+step whose date is before today is late by the whole days since. A round with every step done
+has no current step. **A round closed early** (`closedAt` set) has no current step, up next,
+lateness or "Launch at risk" either: its open steps show "Not done, round closed".
+
 A campaign with no `round` finding has one round per round number its gate and roster findings
 carry in `detail.round`, plus the number in `campaign:{slug}-cas`, each with its dates worked out
-the same way. The first write for the campaign after this records them.
+the same way. The first write for the campaign after this records them. A round finding with no
+`plan` reads as the default steps for its round number, and its next round finding records them.
 
 **State.** Planned, In production, In market, Done. It is worked out from the dates against the
 real clock, the shell clock in the chat and the viewer's clock on the page, never a date saved
@@ -269,8 +373,9 @@ launch {date}?" with the creators to carry:
 | Same creators, new briefs (Recommended) | Carries every creator in round {n} whose `slate` is approved and `rate` agreed. Steps 1 and 2 are recorded cleared for the new round (`source` carried). Each carried creator's round {n} agreed fee is the starting point for their round {n+1} offer, so the creator agrees the round's fee and the client approves it again (step 3). Their details are carried | Row 6: draft the fees |
 | Same creators plus new ones | Carries them the same way, records only step 1 cleared, and opens the pool for more | Row 2, for the new creators |
 
-On confirm, in this order: one `round` finding for round {n+1} (`startedFrom` {n}, its dates and
-steps); one `roster` finding per carried creator for round {n+1}, copied from their round {n} row
+On confirm, in this order: one `round` finding for round {n+1} (`startedFrom` {n}, its dates,
+steps, and the later rounds' default `plan`, **Round steps**); one `roster` finding per carried
+creator for round {n+1}, copied from their round {n} row
 with `returning` true, `fromRound` {n}, `source` carried, `offer.target` set to the round {n}
 `agreed`, and `rate`, `agreed`, `counter`, `briefState`, `shipping`, `shipDate`, `yourCall` and
 `waitingOn` cleared; the carried gate findings for the new round; then
@@ -386,8 +491,8 @@ cleared, `clearedBy`, `clearedAt`, `source`.
 | C2 | Only when C0 found nothing. Paste one concept: the concept, framework and trigger, persona, casting filter, and how many creators it needs. | 1) Add this concept; 2) That's all the concepts. A pasted concept goes in the free text. Repeat until the user picks option 2. | `campaign:{slug}-lane-{lane}` per lane (`source` `typed`), `campaign:{slug}-pool` (3 times each lane's need) |
 | C3 | Who approves creators, fees and briefs on the client side, and who is the backup? | 1) The same approver and backup for every step (type them); 2) A different approver per step (type them) | `campaign:{slug}-cas` (gates) |
 | C4 | How long does the client get at each approval? | 1) 48 hours each (Recommended); 2) 24 hours each; 3) I'll set them per step (type them). Planned send dates per step may go in the free text too. | `campaign:{slug}-cas` (turnaround); a `planned` gate finding per gate with a date |
-| C5 | Where should the campaign page and step updates go? (multiSelect) | 1) Published page + chat summary (always on); 2) The shared Slack channel (type it); 3) Email (type the recipients) | `campaign:{slug}-routing` |
-| C6 | When is the weekly call with the client? Give the day, time and timezone. | 1) Monday 10:00, my timezone (Recommended); 2) Thursday 15:00; 3) I'll set it (type it) | `campaign:{slug}-cadence` |
+| C5 | Where should the campaign page and step updates go? (multiSelect) | 1) Published page + chat summary (always on); 2) The shared Slack channel (type its name, and paste its link too if the page should open it); 3) Email (type the recipients) | `campaign:{slug}-routing` |
+| C6 | When is the weekly call with the client? Give the day, time, timezone and how long it runs. | 1) Monday 10:00, my timezone, 30 minutes (Recommended); 2) Thursday 15:00, 30 minutes; 3) I'll set it (type it) | `campaign:{slug}-cadence` |
 | C7 | Save this campaign setup for {brand}? Everyone on the team and every scheduled run will use it. | 1) Save the campaign (Recommended); 2) Change something | Every record above, plus `campaign:{slug}-criteria`, `campaign:{slug}-decision-defaults`, and the Round 1 `round` finding |
 
 Rules:
@@ -413,7 +518,8 @@ Rules:
   lookups for this campaign's lanes without asking again.
 - **C7** lists every answer and the derived criteria in one summary, then writes all records with
   `append_calibration`, `provenance: "interview"`, and the Gate 1 finding and the Round 1 `round`
-  finding with `append_insights`. The summary shows Round 1's month, build window, in-market window
+  finding, with Round 1's default `plan` (**Rounds**, **Round steps**), with `append_insights`.
+  The summary shows Round 1's month, build window, in-market window
   and launch date (**Rounds**); the CM changes them with "Change something". A `key-exists` follows
   the Phase 5 supersede rule. The decision defaults are written as saved above; say once that later
   performance reads will use them and that they can be changed.
@@ -548,7 +654,9 @@ on the fees"), and offered as the next step whenever a step is open.
    approvals, cut calls and shipping edits, and the agency's status, ad permission and shipping
    edits, and the agency's in place edits to program details, the brief and creator profiles:
    each field whose stamp has `source` `manual` and an `at` newer than the last pull. Stamps
-   Claude wrote (`claude`, `atlas`, `sheet`) are never pulled back. Where both sides changed a
+   Claude wrote (`claude`, `atlas`, `sheet`, `file`) are never pulled back: Claude records a value
+   from a sheet or a program file in Atlas when it writes it, with its own confirm. Where both
+   sides changed a
    creator's shipping, the newer `at` wins.
 2. Resolve each to its creator on the roster. Data for a creator the page should not hold, a
    field the client cannot write on that document, a call made while its step was not open, a
@@ -560,7 +668,7 @@ on the fees"), and offered as the next step whenever a step is open.
 3. Map each decision: Priority Yes and Yes count as approved, Maybe as maybe, No as rejected.
    A stored `approve` reads as Yes and a stored `reject` as No.
    Show the batch in one picker, every item named in the page's words: "Record from the page:
-   Priority Yes @a, Yes @b (approved), Maybe @c (whitelisting not on yet), No @d (Price;
+   Priority Yes @a, Yes @b (approved), Maybe @c (allowlisting not on yet), No @d (Price;
    rejected); @e shipped, tracking 1Z…; ad permissions granted for @b. {This clears step 2.}"
    Options: "Record these (Recommended)", "Change something".
 4. One answer writes every finding the batch needs, in the order of the step it closes, with
@@ -577,14 +685,22 @@ the page)", and writes nothing for them. The newest call per cut version is the 
 The agency's in place edits (**1e**, **Every editable value**) come back in the same pull, after
 the client's calls, each named with who made it:
 
-- **Program details.** The budget total, team, products in scope and the term dates
-  (`termStart`, `termEnd`) go to `campaign:{slug}-cas`, and the program terms to
-  `campaign:{slug}-terms`. A setup record
+- **Program details.** The budget total, team, products in scope, the term dates (`termStart`,
+  `termEnd`), the usage days, the ad ready videos, the variants per creator and what each creator
+  makes go to `campaign:{slug}-cas` (`term`, `package`, `sow`), and the other program terms
+  (allowlisting, partnership ads, exclusivity, organic posting, and the allowlisting uplift's
+  `upliftPct` as `whitelistingUpliftPct`) to `campaign:{slug}-terms`. A change to allowlisting
+  or the uplift while any round's fees are sent or approved is named in the picker as changing
+  those fees, so the CM agrees it with the client before recording it. A
+  changed product photo link is fetched and embedded at the republish that follows. A setup record
   changes only through the Phase 5 supersede rule, so these get their own confirmation after the
   batch picker, never inside it.
 - **Rounds.** A round's label, month, dates and step dates go on a new `round` finding for that
-  round, in the batch picker, since they are working state. A changed step date also writes the
-  gate finding's `plannedAt` or `dueAt`. A round started on the page (`program/round-r{round}`
+  round, in the batch picker, since they are working state. A changed approval date also writes
+  the gate finding's `plannedAt` or `dueAt`. Ticked, added, removed and edited steps go on the
+  same round finding's `plan`, named in the picker ("Round 2: Kickoff call done, ticked on the page
+  by {name}"). A tick never clears an approval: those clear only from the client's own calls.
+  A round started on the page (`program/round-r{round}`
   with `started`) runs **Rounds**, **Starting the next round**, with the carried creators the page
   wrote, named in the picker as "Start round {n} for {month}, started on the page by {name}: {k}
   returning creators".
@@ -689,6 +805,11 @@ client's level before the link goes out.
 | Comments and replies on the brief and on cuts | yes, editable | yes, editable | Client and agency on the page | Master Brief, Content Review |
 | Sign off on a brief, the call on a changed brief, cut approvals | yes, editable | yes, read only | Client on the page | Master Brief, Content Review |
 | Agency only comments on the brief and on cuts | no | yes | Agency on the page | Master Brief, Content Review |
+| The round's steps: name, date, owner, done | yes | yes, editable, except an approval's tick | Round records, agency edits | Home |
+| Program terms: term dates, what each creator makes, ad ready videos, variants per creator, usage days, allowlisting, partnership ads, exclusivity, organic posting | yes | yes, editable | Campaign records, agency edits, program files | Home |
+| The allowlisting uplift on a fee | after the fees are sent | yes, editable | `campaign:{slug}-terms` | Home, Selected Creators |
+| Products in scope: photo, name, status, description, creator counts | yes | yes, editable | Campaign record, agency edits | Home |
+| The Aspire team: name, role, title, work email, what they own, what to go to them for | yes | yes, editable | Campaign record, agency edits | Home |
 | The brief's variant build | no | yes | `atlas-creator-brief` | Master Brief |
 | Agency notes, vetting evidence, safety detail, the recommendation | no | yes | Vetting, CM | Creator Selection |
 | The match score tuning panel and its stats | no | yes | Discovery and vetting | Creator Selection |
@@ -699,6 +820,18 @@ client's level before the link goes out.
 | Who else an attention item waits on | no | yes | Campaign state | Home |
 | History entries about agency only data, agency only comments included | no | yes | The activity log | History |
 | Tags for Aspire or someone at Aspire, from either side | only the ones they wrote | yes | Tags | Inbox |
+
+**Program terms are the client's own.** Home's **Program terms** are what the brand bought in its
+SOW, so the client sees them from the first publish. They are not the per creator rows of
+**Contract and rates**: a creator's own deliverables, usage and exclusivity, and every fee, keep
+the rule above and reach the client only once the fees are sent. The allowlisting uplift is a fee,
+so it follows the fees.
+
+**Contact details.** The agency only row covers the creators' contact details: their email,
+phone and manager, which the client never sees. The Aspire team's work emails are a different
+thing. They are Aspire's own people, listed so the client can reach them, so each one shows to
+everyone the page is shared with, in the page itself. Nothing else about a team member is
+private, and no creator's contact detail is ever listed under **Team**.
 
 #### What the client can write
 
@@ -715,7 +848,8 @@ as a label, never as a disabled control. The agency writes everything else on th
 | Ad Performance | Nothing | None |
 
 On every tab the client also marks their own inbox items read or cleared
-(`data/users/{id}/inbox-{month}`), and tags people in the notes and comments above (`tags-client`
+(`data/users/{id}/inbox-{month}`), opens and closes sections (`data/users/{id}/collapse`,
+**Collapsing sections**), and tags people in the notes and comments above (`tags-client`
 and `tags-agency`, **Tagging**).
 
 **The client's own calls stay the client's.** Their decision, reason, notes, sign offs, fee approval
@@ -783,12 +917,17 @@ and item. Labels, eyebrows, titles and ledes are in **Page vocabulary**, **Tabs*
    `#selection/r{n}/{net}-{handle}` and `#creators/r{n}/{net}-{handle}` open that creator's card,
    `#brief/r{n}/{lane}` opens that concept's brief, `#brief/r{n}/changes-{net}-{handle}` opens a
    creator's changed brief, `#review/r{n}/{cut}` opens that cut in the review panel, and
-   `#home/{section}` opens a Home section (`steps`, `waiting`, `attention`, `calendar`, `team`,
-   `program`, `files`). `#history` opens **History** and `#inbox` the **Inbox** over the tab open
-   last. A link can go one step deeper into an item, to the part a note, comment or change is on:
+   `#home/{section}` opens a Home section: in the Simple view `stand`, `waiting`, `aspire`,
+   `result`, `sync` and `updates`, in the Everything view `steps`, `attention`, `summaries`,
+   `program`, `products`, `team`, `calendar` and `files` (**Home**). A tab's hash with only a
+   round, `#brief/r{n}`, opens the tab on that round. `#selection/product-{id}` opens Creator
+   Selection on **All rounds** with its Product filter set to that product. `#history` opens
+   **History** and `#inbox` the **Inbox** over the tab open last. A link can go one step deeper into an item, to the part a note, comment or
+   change is on:
 
    | Hash | Opens |
    | ---- | ----- |
+   | `#home/steps/r{n}/{step}` | **Round steps** for round {n}, selected in the **Round switcher**, at that step, `{step}` being its id (`kickoff`, `gate-2`, `custom-{id}`) |
    | `#selection/r{n}/{net}-{handle}/notes` | The creator's card (a row on Board) with its notes in view: the client's notes, and for the agency the agency notes under the "Agency only" rule |
    | `#creators/r{n}/{net}-{handle}/shipping` | The creator's row in **Shipping** |
    | `#creators/r{n}/fees` | **Contract and rates**, with the fee approval and its notes |
@@ -797,12 +936,13 @@ and item. Labels, eyebrows, titles and ledes are in **Page vocabulary**, **Tabs*
    | `#review/r{n}/{cut}/v{version}` | The cut in the review panel at that version, not the newest |
    | `#review/r{n}/{cut}/v{version}/t{seconds}` | The same, with the player paused at that second |
    | `#review/r{n}/{cut}/v{version}/c{comment}` | The same, with that comment open, and the player at its timecode and its drawing shown when it has them |
-   | `#performance/r{n}/{section}` | An **Ad Performance** section, once that tab names its sections |
+   | `#performance/r{n}/{section}` | An **Ad Performance** section: `result`, `headline`, `weekly`, `variants`, `breakdowns`, `audience`, `next` (**Collapsing sections**) |
 
    A deeper part that is gone (a deleted hook, a version that no longer exists) opens the item
    above it. Opening a link
    selects the tab and the item's round, scrolls to the
-   item and keeps the hash in the address bar. A hash with no round opens the round the viewer
+   item and keeps the hash in the address bar. A link into a closed section opens the section
+   first (**Collapsing sections**). A hash with no round opens the round the viewer
    picked last (**Round switcher**), else the current round. Switching tabs or rounds updates the
    hash. A link with no hash opens the tab the person had open last (kept in the browser, and
    ignored when that storage is missing), else Home. An item that is no longer on the tab opens
@@ -824,8 +964,9 @@ round at a time: its steps, creators, brief, cuts and results, and nothing from 
   device. Otherwise the current round (**Rounds**, **Which round**). A remembered round that
   no longer exists opens the current round. Picking a round saves it for the viewer, never for
   anyone else.
-- **Home.** The switcher sets the round in **Round steps**; Home's other sections cover every
-  round and name the round on each item.
+- **Home.** The switcher sets the round in **Where we stand**, **Round steps** and **Tab
+  summaries**; Home's other sections cover every round or the whole campaign, and name the round
+  on each item that has one.
 - **Creator Selection.** The pool is shared by every round, so the first segment is **All
   rounds**, selected by default there, and each round segment filters the pool to the creators in
   that round. Picking a round here is not remembered.
@@ -836,7 +977,8 @@ round at a time: its steps, creators, brief, cuts and results, and nothing from 
   **Rounds** and editable in place, a Select for the creators to carry ("Same creators, new
   briefs" first, "Same creators plus new ones"), the line "Round {n} stays as it is. Its
   creators, brief and cuts don't change.", and Cancel (outline) and Start round (default). On
-  confirm the page writes `program/round-r{n+1}` and one `edits/creator-{net}-{handle}-r{n+1}`
+  confirm the page writes `program/round-r{n+1}`, with a `step-{id}` for each of the later
+  rounds' default steps (**Rounds**, **Round steps**), and one `edits/creator-{net}-{handle}-r{n+1}`
   per carried creator with `returning` true (**1e**), selects the new round, and shows it as
   Planned or In production at once. Nothing reaches Atlas until **Pulling decisions**. The
   Button never renders for the client or in **Preview as client**.
@@ -854,49 +996,698 @@ Every tab renders for both sides. Content Review and Ad Performance are part of 
 first publish. Until their own sections below say more, each shows its lede and one empty state:
 "Cuts show here once creators start shooting." and "Results show here once the ads are live."
 
+### Collapsing sections
+
+Every section on every tab folds down to its header and a one line summary, and opens again when
+the person needs the detail. That covers every Home card, the program details, each concept's
+brief, the creator pool, the agency's panels, and the sections of Content Review and Ad
+Performance. What is open is remembered for each person.
+
+- **The header.** Each section is a Card whose header is a Collapsible trigger (**Component
+  classes**, Collapsible): the section's title, its summary line under it, and a Lucide
+  `chevron-down` at the end that turns up while the section is open. The whole title and summary
+  area is the trigger, a `button` with `aria-expanded` and `aria-controls` naming the content,
+  and its label for screen readers reads "Collapse {section}" or "Expand {section}". Anything
+  else a header holds (a state pill, an Approve button, an edit pencil) sits beside the trigger,
+  never inside it, and works the same whether the section is open or closed. Enter or Space on
+  the trigger toggles it.
+- **The summary line.** One line in `text-sm text-muted-foreground`, worked out live from the
+  data the viewer can read, shown whether the section is open or closed, so a closed section
+  still answers the glance question. It names counts, states and dates in plain words, short
+  enough for one line on a desktop, and wraps with `break-words` on a phone rather than running
+  past the header. It never holds an agency only value for the client: where the agency's
+  summary has one (a budget, a fee), the client's summary leaves that part out. **Sections per
+  tab** below gives each section's line. An empty section's summary is its empty state ("No
+  files yet.").
+- **Closed means hidden.** A closed section's content isn't rendered (`hidden`), so its controls
+  leave the tab order and a screen reader skips them. Live data still arrives, so the summary
+  line and the tab's count badge stay current, and opening the section shows the latest.
+- **No nesting.** A section never holds another collapsible section, so every part of a tab is at
+  most one open away. Inside a section, the parts that are already their own controls (a creator
+  card's details, a comment thread, the review panel) keep working as they do.
+- **Expand all and Collapse all.** At the top of every tab's content, at the end of a row above
+  the first section, with only the tab's **Export** Button at its start (**Export**), and on Home
+  the **Everything** Switch after it (**Home**): a ghost
+  Button, size sm, "Expand all" with the Lucide
+  `chevrons-up-down` icon, and a ghost Button, size sm, "Collapse all" with `chevrons-down-up`. Each
+  opens or closes every section on the tab in view, and nothing on another tab; on Home, every
+  section of the view on screen. Since ids never
+  name the round, the change holds in every round of that tab. A Button that would change nothing
+  is disabled. On a phone the row keeps all three Buttons on one line, Export at the start and the
+  other two aligned to the end, with Home's Switch after Export. Under 400px, Expand all and Collapse all show their icons only,
+  keeping their labels for screen readers and as a tooltip, so the row never runs past the
+  screen.
+- **Which sections start open.** The default follows the level of the jobs a section serves, the
+  jobs listed in **Reaching every job**: Simple is one glance and one action, Standard the working
+  view, Full every field and control. A section that serves a Simple job starts open. A section
+  whose jobs are all Standard or Full starts closed, showing its summary, which is the glance
+  those jobs start from. A job the header answers on its own (its summary, or a pill or button
+  beside the trigger) doesn't make the section start open. One exception: a section holding an
+  item in the viewer's **Waiting on you** starts open for that viewer while the item waits (the
+  client's brief sign off, the client's fee approval while step 3 is open, a shipping row waiting
+  on the client). Home's **Needs attention** is not one: it lists those items, and **Waiting on
+  you** already shows them. **Sections per tab** gives each section's level and default.
+- **Remembered per person.** Opening or closing a section, by its trigger, Expand all or Collapse
+  all, saves it for the person viewing in their own page data (`data/users/{id}/collapse`,
+  **1e**), so it follows them to another device. A saved state wins over the default. Expand all
+  and Collapse all save every section on the tab in one write. Ids are stable and name the
+  section (`home-steps`, `brief-{lane}`, `selection-budget`), never the round, so a section closed
+  in round 1 opens closed in round 2. Nothing about collapsing is ever logged or reaches Atlas,
+  and it never touches anyone else's view.
+- **Links open what they point at.** Opening a hash that lands in a closed section (from the
+  inbox, History, **Waiting on you**, **Needs attention**, a tab summary or a gate packet) opens
+  that section first and saves it open for the viewer, then scrolls to the item (**Header and
+  tabs**). A Home section's own hash (`#home/calendar`) does the same.
+- **Who can save it.** The client and the agency. A read only client reads no page data, and
+  **Preview as client** never writes it, so for both the sections start from the client's
+  defaults and opening or closing them lasts only while the page is open, kept in memory.
+- **It works everywhere.** The triggers, Expand all and Collapse all change only the view, never
+  a value, so they work for everyone: in a done round, for a read only client and in **Preview as
+  client**, where every other control renders as a label.
+- **Waiting for data.** While the page data loads, every section shows its default state with a
+  Skeleton in place of its summary line, then takes the saved state without a jump in the
+  person's scroll position.
+
+#### Sections per tab
+
+Ids are what `data/users/{id}/collapse` keys on. A Home or Ad Performance section's own hash is
+the part of its id after the tab (`#home/steps`, `#performance/r{n}/weekly`); every other section
+is reached by the item hashes in **Header and tabs** (`#creators/r{n}/fees` opens
+**Contract and rates**). Sections a tab's own build has not added yet still
+take these ids, summaries and defaults when it adds them. A section that renders for the agency
+only is marked so.
+
+| Tab | Section | Id | Summary line | Level | Starts |
+| --- | ------- | -- | ------------ | ----- | ------ |
+| Home, Simple | Where we stand | `home-stand` | The hero sentence: "Round {n} is in production. Ads go live {launch}." (**Home**) | Simple | Open |
+| Home, Simple | Waiting on you | `home-waiting` | "{n} waiting on you", or "Nothing needs you right now." | Simple | Open |
+| Home, Simple | Aspire is on it | `home-aspire` | "{c} cuts in changes or QA · {p} packages on the way · {f} creators filming", leaving out a part at none, or "Nothing in production right now." | Simple | Open |
+| Home, Simple | Last round result | `home-result` | "Round {n}: cost per sale {x} against a {t} target · {w} of {a} ads won"; the section isn't rendered until a round has ad results | Simple | Open |
+| Home, Simple | Next check in | `home-sync` | "{Day} {time} your time", or "No weekly sync set yet." | Simple | Open |
+| Home, Simple | Latest updates | `home-updates` | "{n} unread", or "You're all caught up." | Simple | Open |
+| Home, Everything | Round steps | `home-steps` | "Round {n} · {step} now, due {date} · up next: {next} · ads live {launch}", leaving out a part with no value, with "{step} is {d} days late" when it is, or "Round {n} · every step done" | Standard | Open, as the view's first section; a saved state wins |
+| Home, Everything | Needs attention | `home-attention` | "{n} items across every tab and round · {w} waiting on you", or "Nothing needs attention right now." | Standard | Closed, even while items wait on the viewer, because **Waiting on you** shows them |
+| Home, Everything | Tab summaries | `home-summaries` | One headline per tab for the round in view, joined: "{a} of {m} creators approved · {c} under contract · {w} cuts waiting" | Standard | Closed |
+| Home, Everything | Program terms | `home-program` | "Runs {start} to {end} · {deliverables} per creator · usage {d} days", leaving out a part not saved | Standard | Closed |
+| Home, Everything | Products in scope | `home-products` | "{p} products · {a} active", or for the agency "No products added yet." | Standard | Closed |
+| Home, Everything | Team | `home-team` | "{n} people at Aspire", or for the agency "No team added yet." | Standard | Closed |
+| Home, Everything | Calendar | `home-calendar` | "In market {start} to {end} · next: {milestone} {date}", with "{d} days late" when a step slipped | Standard | Closed |
+| Home, Everything | Files | `home-files` | "{n} files", or "No files yet." | Standard | Closed |
+| Master Brief | One per concept, "{Concept} brief · round {n}" | `brief-{lane}` | "{product} · {h} hooks, {c} CTAs · {runtime} · {k} creators", with the state pill beside the trigger | Full | Closed; open while it waits on the viewer's sign off |
+| Master Brief | One per changed brief, "@{handle} changed the {concept} brief" | `brief-changes-{net}-{handle}` | "{n} changes against the brief you approved" | Simple | Open |
+| Master Brief | Accepted as is | `brief-accepted` | "{n} creators accepted without changes" | Standard | Closed |
+| Creator Selection | Budget summary, agency only | `selection-budget` | "{committed} committed of {total} · {remaining} left · {d} of {m} decided" | Simple | Open |
+| Creator Selection | The pool, on Cards | `selection-pool` | The count line: "{n} of {m} creators in the pool · Round 1: {a} approved" | Simple | Open |
+| Creator Selection | One per concept, on Board | `selection-board-{lane}` | "{persona} · need {n}, {m} approved" | Simple | Open |
+| Creator Selection | Match score tuning, agency only | `selection-tuning` | "Agrees with {x} of the client's top 10 · weights {default, or tuned {date}}" | Full | Closed |
+| Selected Creators | The roster, one card per creator | `creators-roster` | "{n} creators · {k} missing details · {s} shipping confirmed · {v} of {V} variants in, {a} approved", plus "fees {agreed} of {budget}" for the agency | Simple | Open |
+| Selected Creators | Contract and rates | `creators-contract` | Client: "Fees waiting for your approval", "Fees approved {date}", or "Fees show here once they are sent"; agency: "{a} of {n} agreed · {total} committed" | Full | Closed; open for the client while step 3 waits on them |
+| Selected Creators | Shipping | `creators-shipping` | "{s} shipped, {d} delivered of {n}", or "Shown once fees are approved." | Standard | Closed; open for the client while a row waits on them |
+| Selected Creators | Brief and content | `creators-content` | "{b} briefs accepted · footage in from {f} of {n}" | Standard | Closed |
+| Content Review | The queue | `review-queue` | "{w} waiting on you · {c} with changes · {q} in Aspire QA · {a} approved" | Simple | Open |
+| Ad Performance | Cost per sale against target | `performance-result` | "Cost per sale {x} against a {t} target · {beat it, or {d} over}", or "Round {n} goes live {date}" | Simple | Open |
+| Ad Performance | Headline numbers | `performance-headline` | "Spend {s} · {p} purchases · ROAS {r}" | Standard | Closed |
+| Ad Performance | Weekly spend and return | `performance-weekly` | "{w} weeks in market · best week {date}" | Standard | Closed |
+| Ad Performance | Variants ranked | `performance-variants` | "{w} winning · {t} testing · {r} to retire or refresh" | Standard | Closed |
+| Ad Performance | Compare by framework, hook, CTA, concept, persona, creator and tier | `performance-breakdowns` | "Best {dimension}: {value} at {x} per sale" | Full | Closed |
+| Ad Performance | Who watched | `performance-audience` | "Top audience: {segment}" | Full | Closed |
+| Ad Performance | Next round's brief | `performance-next` | "{n} changes for round {n+1}", or "Nothing written yet." | Standard | Closed |
+
+The review panel, the creator viewer, the inbox and History are Sheets, not sections: they open
+over the tab and never collapse.
+
+#### Reaching every job
+
+Every job in the tables below is two clicks or fewer from **Home Simple**: Home as it
+first opens, on its Simple view, for someone who has saved no collapse state, with the defaults
+above. A click is
+anything that changes what is on screen: a tab, a round segment, a section's trigger, a row or
+link that opens an item, a Sheet or a Dialog. Typing, hovering, scrolling and the job's own action
+(the Approve, the save) are not counted. A job is reached when the view or control it needs is on
+screen. Where a job's control is added by its tab's own build, it goes in the section named here,
+so the count holds. A new section, tab or control keeps every row of this table at two or fewer;
+a change that breaks one updates the table or moves the control.
+
+Across every page:
+
+| Job | Path | Clicks |
+| --- | ---- | ------ |
+| See every update in one inbox and open the exact item | **Inbox**, then the row | 2 |
+| See the full history, filter it by tab and search it | **Inbox**, then **History** | 2 |
+| Switch rounds and know which round is in view | A **Round switcher** segment; the eyebrow names it | 1 |
+| Edit any text in place, saved for everyone with who made it | Home, **Everything**; the text in **Round steps**, which is open; for the terms, products or team, open **Program terms**, **Products in scope** or **Team** | 1 to 2 |
+| Tag the client or Aspire so it lands in their inbox | Creator Selection; a note box on a card, typing "@" | 1 |
+| Leave agency only comments the client can't see | Master Brief, then a concept's section; "Agency only" on its comment box | 2 |
+| Preview what the client sees | **Preview as client** in the header | 1 |
+| Collapse any section and expand it again | The section's trigger, or **Expand all** or **Collapse all** | 1 |
+| Export what is in view to a spreadsheet | The tab, then **Export** above its first section | 2 |
+
+Home:
+
+| Job | Path | Clicks |
+| --- | ---- | ------ |
+| Know in one sentence where the program stands and when ads go live | **Where we stand**, the hero sentence | 0 |
+| Know if we're ahead, on track or behind, and why | **Where we stand**, the pace verdict and its why line | 0 |
+| See what's waiting on the client and send them to it | **Waiting on you**, then "open" on the item | 0 to 1 |
+| See what Aspire is working on | **Aspire is on it** | 0 |
+| See last round's headline result against target | **Last round result**, once a round has ad results | 0 |
+| Find the next weekly sync, add it to a calendar, open the channel | **Next check in** | 0 |
+| See the latest unread updates | **Latest updates** | 0 |
+| See where the round is in its steps, what's current and what's next | **Everything**; **Round steps** is open | 1 |
+| Move the round to its next step and edit step dates (agency) | **Everything**; **Round steps** is open | 1 |
+| See the deliverables, usage and exclusivity terms, and which file each came from | **Everything**, then **Program terms** | 2 |
+| Keep the program files in one place by round and see what's missing | **Everything**, then **Files** | 2 |
+| Drop in a file and have program details pulled from it | **Everything**, then **Files** | 2 |
+| See the products in scope with photo, status and creator count | **Everything**, then **Products in scope** | 2 |
+| Check pacing on the calendar | **Everything**, then **Calendar** | 2 |
+| Hover a day to see delivered against planned | **Everything**, then **Calendar**, then hover | 2 |
+| See everything that needs attention across tabs, tagged by round | **Everything**, then **Needs attention** | 2 |
+| See a summary card per tab for the round in view | **Everything**, then **Tab summaries** | 2 |
+| Show the client the Aspire team, their role and email, and what to go to each for | **Everything**, then **Team** | 2 |
+
+Master Brief:
+
+| Job | Path | Clicks |
+| --- | ---- | ------ |
+| See the round's brief status and how complete it is | Master Brief; each concept's pill and summary | 1 |
+| Import the master brief from a Google Doc | Master Brief, then its import control | 2 |
+| Start a new round's brief from the last one | **Start round** in the **Round switcher** | 1 |
+| Scan every concept as a summary | Master Brief; the closed concept sections are the summaries | 1 |
+| Write or edit a concept | Master Brief, then the concept | 2 |
+| Write the hero beats, hooks, CTAs, body and B-roll | Master Brief, then the concept | 2 |
+| Format long text | Master Brief, then the concept | 2 |
+| Build the variant plan | Master Brief, then the concept (agency) | 2 |
+| Add or remove a concept, and see products with no concept | Master Brief, then its add concept control | 2 |
+| Set tone of voice and the don'ts | Master Brief, then the concept | 2 |
+| Comment on any part and reply with the client | Master Brief, then the concept | 2 |
+| Send the brief for sign off and record it | Master Brief, then the concept; for the client it is open while it waits, or **Waiting on you**, "open" | 1 to 2 |
+| Copy the creator-facing brief for one concept | Master Brief, then the concept | 2 |
+| Undo all edits back to the original | Master Brief, then the concept | 2 |
+
+Creator Selection:
+
+| Job | Path | Clicks |
+| --- | ---- | ------ |
+| See budget committed and left, and how many are decided | Creator Selection; **Budget summary** and the count line | 1 |
+| Go through creators and decide | Creator Selection, then a decision | 2 |
+| Filter, search and sort | Creator Selection; the filters | 1 |
+| See each match score and why | Creator Selection; the card | 1 |
+| See competitor conflicts before deciding | Creator Selection; the card | 1 |
+| Watch a creator's latest posts | Creator Selection, then a thumbnail | 2 |
+| See the concept and persona each creator maps to | Creator Selection; the card's chips | 1 |
+| Read and leave notes, and tag the other side | Creator Selection; the card's notes | 1 |
+| See which rounds a creator is already in | Creator Selection; the round chips | 1 |
+| Open a creator's full profile | Creator Selection, then the card | 2 |
+| Copy all decisions | Creator Selection; its copy control | 1 |
+| Give a one tap reason on a surprise | Creator Selection, then the decision | 2 |
+| Check the match score against the client's picks | Creator Selection, then **Match score tuning** | 2 |
+| See surprises and patterns in what the client values | Creator Selection, then **Match score tuning** | 2 |
+| Check whether last round's higher scores sold cheaper | Creator Selection, then **Match score tuning** | 2 |
+| Retune or reset the match score | Creator Selection, then **Match score tuning** | 2 |
+
+Selected Creators:
+
+| Job | Path | Clicks |
+| --- | ---- | ------ |
+| See every contracted creator's step and what's next | Selected Creators; the roster | 1 |
+| See who is missing details | Selected Creators; the roster summary and cards | 1 |
+| Track the round's totals | Selected Creators; the roster summary | 1 |
+| Filter by stage or product, and search | Selected Creators; the filters | 1 |
+| Record contract date, rates, total and payment | Selected Creators, then **Contract and rates** | 2 |
+| Record contact details and address once | Selected Creators; the card (agency) | 1 |
+| Track product shipping | Selected Creators, then **Shipping** | 2 |
+| Mark a package shipped or delivered | Selected Creators, then **Shipping** | 2 |
+| Track raw footage and the shoot by date | Selected Creators, then **Brief and content** | 2 |
+| Edit a creator's concept, persona, hook and variant plan | Selected Creators; the card | 1 |
+| Play the latest cut of every variant and jump into review | Selected Creators; the card's cuts | 1 |
+| See where each value came from | Selected Creators; hover the value | 1 |
+| Send the client a status update on a creator | Selected Creators; a note on the card, tagged @Client | 1 |
+| Export a creator snapshot, shipping list, rates or tracker | Selected Creators, then **Export** | 2 |
+
+Content Review:
+
+| Job | Path | Clicks |
+| --- | ---- | ------ |
+| See how many cuts wait on the client, have changes, are in QA or approved | Content Review; the queue summary | 1 |
+| Pick a creator and see their variants | Content Review, then the creator | 2 |
+| Filter the queue by status | Content Review; the queue's filter | 1 |
+| Play a cut frame by frame, change speed, loop, show safe zones | Content Review, then the cut | 2 |
+| Comment at a timecode, draw, reply, resolve | Content Review, then the cut | 2 |
+| Mark a comment agency only | Content Review, then the cut (agency) | 2 |
+| Check a cut against the brief | Content Review, then the cut | 2 |
+| Compare a version with the one before | Content Review, then the cut | 2 |
+| Upload a new version | Content Review, then the cut (agency) | 2 |
+| Move a cut through QA, client review, changes and approved | Content Review, then the cut | 2 |
+| Copy a link to a cut or all its comments | Content Review, then the cut | 2 |
+| Look back at last round's signed off cuts | Content Review, then last round's segment in the **Round switcher**; the queue is open, read only | 2 |
+
+Ad Performance:
+
+| Job | Path | Clicks |
+| --- | ---- | ------ |
+| See cost per sale against target | Ad Performance; **Cost per sale against target** | 1 |
+| See the headline numbers | Ad Performance, then **Headline numbers** | 2 |
+| See weekly spend and return | Ad Performance, then **Weekly spend and return** | 2 |
+| See every variant ranked with its status | Ad Performance, then **Variants ranked** | 2 |
+| Flag variants to retire or refresh | Ad Performance, then **Variants ranked** | 2 |
+| Compare by framework, hook, CTA, concept and persona | Ad Performance, then **Compare** | 2 |
+| Compare by creator and tier | Ad Performance, then **Compare** | 2 |
+| See who watched | Ad Performance, then **Who watched** | 2 |
+| Write what changes in next round's brief | Ad Performance, then **Next round's brief** | 2 |
+| See that a round isn't live yet and when it launches | Ad Performance; **Cost per sale against target** shows the launch | 1 |
+
+The client's side:
+
+| Job | Path | Clicks |
+| --- | ---- | ------ |
+| See where things stand, what's waiting on them and what Aspire is doing; reach the sync and the channel | Home; **Where we stand**, **Waiting on you**, **Aspire is on it** and **Next check in** are open | 0 |
+| See who's on the Aspire team | **Everything**, then **Team** | 2 |
+| Read the brief, comment, sign it off | **Waiting on you**, "open"; or Master Brief, then the concept | 1 to 2 |
+| Approve or pass on creators, leave notes, give a reason | Creator Selection, then the decision | 2 |
+| See who's under contract and where each creator is | Selected Creators | 1 |
+| Watch cuts, comment on the frame, request changes or approve | Content Review, then the cut | 2 |
+| See results against target and what changes next round | Ad Performance, then **Next round's brief** | 1 to 2 |
+
 ### Home
 
-Everything in the campaign in one place, for every round. Sections, in order:
+Everything in the campaign in one place, for every round. Home has two views. **Simple** is one
+glance and one action for both sides: where the program stands, what waits on you, what Aspire
+is doing, last round's result, the next check in and what changed. **Everything** is the working
+view. Home opens on Simple every time.
 
-1. **Round steps.** The four steps for the round in view: 1 Concepts approved, 2 Creators
-   approved, 3 Fees approved, 4 Briefs approved. A done step shows a tick and the date, the
-   current step shows "now" and the due date, a later step shows its planned date. Steps 2 to 4
-   open the tab they are approved on; step 1 opens Master Brief. The round in view is the one in
-   the **Round switcher**. No part of the page uses the word gate.
-2. **Waiting on you.** Worked out for the person viewing. Each item: a title, one line of detail,
-   when, an "open" link to the tab and item by hash, and a checkbox to mark it done. Done items
+**The switch.** A Switch with the visible label "Everything", in the row above Home's first
+section, between **Export** and **Expand all** (**Collapsing sections**). Off shows Simple, on
+shows Everything. It is kept in memory only, never in page data or browser storage, so a reload
+opens Simple again. A hash to a section of the other view (`#home/steps` from the inbox or a gate
+packet) turns the Switch to that view first, then opens the section. Turning it off sets the
+hash to `#home`, so a reload never lands back
+in Everything. It changes only the view,
+so it works for everyone: in a done round, for a read only client and in **Preview as client**.
+**Export** gives Home's sheets in either view (**Export**, **What goes in**).
+
+**Every number and date is from the records.** Each figure below is worked out on the page from
+the round records, the roster, the campaign record, the cadence and routing records, the page
+data and the viewer's clock (**Round switcher**, **Every date is real**). Nothing is written into
+the page as a result. A figure whose record doesn't exist yet hides its part, as each part says,
+and never shows a placeholder, a zero standing in for "unknown", or an example value.
+
+**A read only client** reads no page data (**Who sees what**), only the page itself. The page
+itself carries what the records said at the last publish: the rounds, the roster and its shipping
+and brief states, the client's open items, the sync slot and the Slack channel. So for a read only
+client, **Where we stand**, **Waiting on you**, **Aspire is on it** and **Next check in** are built
+from those published values, and each shows one line under its title: "As of {publish time}."
+Cuts live only in page data, so the pace verdict and the cut rows don't render for them, and no
+section ever reads "Nothing" or "No weekly sync set yet." only because page data can't be read.
+
+#### The Simple view
+
+Sections, in order:
+
+1. **Where we stand** (`home-stand`). The round in view in the **Round switcher**, the current
+   round unless the viewer picked another. Its summary line, with the summary classes from
+   **Component classes**, is the hero sentence, so it reads the same closed or open. The hero
+   sentence, by the round's state (**Rounds**):
+
+   | State | Hero sentence |
+   | ----- | ------------- |
+   | Planned | "Round {n} is planned. Ads go live {launch}." |
+   | In production | "Round {n} is in production. Ads go live {launch}." |
+   | In production, launch at risk (step 4 planned or due after the launch date, or not cleared by it, **Rounds**) | Before the launch date, "Round {n} is in production. Ads go live {launch}."; from it, "Round {n} is in production. Ads were due to go live {launch}." Either way with a warning Badge "Launch at risk" |
+   | In market | "Round {n} is in market. Ads went live {launch} and run to {end}." |
+   | Done | "Round {n} is done. Its ads ran {launch} to {end}." |
+
+   `{launch}` and `{end}` are the round's launch date and the end of its in-market window, from
+   the newest of the round finding and `program/round-r{n}`, as "Dec 1" (with the year when it
+   isn't this year). When another live round exists, one line under it names it: "Round {m} is
+   {state}. Ads go live {launch}.", with a link Button "View round {m}" that selects it in the
+   **Round switcher**.
+
+   Then the **pace verdict**, while the round is in production (launch at risk included):
+   - **The plan.** {y} ad videos: the creators on the round's roster (approved for it in
+     Creator Selection, or carried into it) whose fee isn't declined, times the package's
+     variants from `campaign:{slug}-cas`, at most 5 (**Rounds**, **Variants per round**). A
+     creator who declines leaves the plan at once. They are spread evenly across the build
+     window, so {z}, the number needed by today, is {y} times the whole days of the build window
+     already passed, today not counted, over its length in days, rounded down to a whole video.
+     The build window runs from its start to the day before launch, both counted, so a round
+     created 10 days before launch has a 10 day window. On its first day {z} is 0, and after its
+     last day {z} is {y}. A window of no days (a round created on its launch day) has {z} equal
+     to {y}.
+   - **What's in.** {x} is the round's cuts with at least one version (`reviews/cut-{cut}` with a
+     version under `versions`, for the round's creators).
+   - **The verdict**, a Badge in its **Status pills** variant: **Ahead** when {x} is above {z} by
+     at least 10% of {z} and at least one video, **Running behind** when it is below {z} by at
+     least 10% of {z} and at least one video, and **On track** otherwise, and always while {z}
+     is 0. No record holds a filming lead time, so the spread starts on the build window's first
+     day, as the round's own dates set it.
+   - **The why line**, in `text-sm text-muted-foreground`: "{x} of {y} ad videos are in. We need
+     {z} by today." Once every video is in: "All {y} ad videos are in." A Progress bar under it
+     shows {x} of {y}, labelled for screen readers "{x} of {y} ad videos in".
+   - **A late step.** When the round's current step is late (**Rounds**, **Round steps**), a
+     second line names it: "{Step} is {d} days late." with the step's name as **Round steps**
+     shows it ("Briefs approved is 2 days late.", "Kickoff call is 1 day late."), from the same
+     dates.
+   - **Hidden parts.** With no creators on the round yet, the verdict, why line and bar don't
+     render, and one line reads "Pace starts once creators are approved for round {n}." Until
+     Content Review has its own build, no cut is recorded, so {x} would read 0 whatever was
+     shot: the verdict, why line and bar don't render, and one line reads "Pace shows here once
+     Content Review tracks the cuts." The late step line still shows.
+
+   Planned shows "Building starts {build start}." in place of the verdict. In market and Done
+   show "{x} of {y} ad videos made this round." with no verdict, once Content Review tracks cuts.
+   For a read only client, who can't read cuts, the pace area renders nothing in any state: no
+   verdict, why line, bar, count or "Pace shows here" line. The late step line still shows.
+   A link Button "Round steps" opens `#home/steps`.
+2. **Waiting on you** (`home-waiting`). Worked out for the person viewing, across every live
+   round, each item naming its round. Each item: a title, one line of detail, when it has waited
+   since, an "open" link straight to the item by hash, and a checkbox to mark it done. Done items
    fade and drop out of the count; "Show done" brings them back. Done marks are kept per person
-   (**1e**). Empty: "Nothing needs you right now."
-   - Client: creators waiting for a decision ("Decide on @a"), questions back to them ("Your
-     call on @a", "Your Maybe on @a"), fees waiting for approval, shipping rows waiting on them,
-     briefs waiting for approval, creators whose brief changed.
-   - Agency: replies to record, drafts waiting to send, creators with no reply past their tier
-     window ("No reply yet: @a"), approvals due within a day, anything marked your call needed,
-     concepts below their pool target, details emails not sent.
-3. **Needs attention.** Every open item across every tab and round, not only the viewer's, each
-   with its tab ("Creator Selection →"). The agency's items in **Waiting on you** (replies to
-   record, drafts waiting to send, No reply yet, details emails not sent, concepts below target)
-   are agency only: they come from `agency` page data and are never written into the page
-   itself. On the client's list each item names its tab and whether it waits on them; who else
-   it waits on (the agency, a creator) shows for the agency only. "{n} items across every tab and round"; empty:
-   "Nothing needs attention right now." Each item opens its tab and item by hash. These lists say
-   what is open; the **Inbox** says what changed.
-4. **Calendar.** The campaign timeline for every round: what, when, who, status, for every step,
-   the creator guidelines, the creator search, the creator list sent, fees agreed, product
-   shipped and briefs approved. A slipped step shows its days late, and the delay list sits under
-   it: one line per ledger entry with its date.
-5. **Team and weekly sync.** The people on the campaign and what to go to each for, the routing
-   channel, and the next weekly sync, headed "Next weekly sync · {day} {time} {city}", with "Add
-   to calendar". Under it, this week's agenda: Where we are, Blocking, Next.
-6. **Program details.** The products in scope, and the program terms: what each creator makes,
-   how long the brand can use it, and exclusivity. The client sees the terms once the fees are
-   sent (**Who sees what**); until then the card shows the products only.
-7. **Files.** Concept deck, creator guidelines, contract template and content folder, each a
-   link. Empty: "No files yet."
-8. **Tab summaries.** One card per other tab, with its headline figure and a button that opens
-   it: Master Brief (concepts written and their state), Creator Selection ("{n} approved of {m}"),
-   Selected Creators ("{n} under contract", fees for the agency only), Content Review and Ad
-   Performance (their empty states until those tabs fill).
+   (`data/users/{id}/done`, **1e**). The list is sorted by how long each item has waited, oldest
+   first; items that waited the same time keep the order of the tables below. It shows the first
+   five, with a ghost Button "Show all {n}" that lists the rest in place. Empty: "Nothing needs
+   you right now."
+   - **Client**:
+
+     | Item | Title and detail | Opens |
+     | ---- | ---------------- | ----- |
+     | A cut waiting on the client | "Review @{handle}'s V{variant}"; "{concept} · version {v}" | `#review/r{n}/{cut}/v{version}` |
+     | A concept's brief waiting for sign off | "Sign off the {concept} brief"; "{c} open comments", plus "Still to write: {concepts}" when concepts in the round have no brief yet | `#brief/r{n}/{lane}` |
+     | A creator's changed brief | "Your call on @{handle}'s changes"; "{k} changes to the {concept} brief" | `#brief/r{n}/changes-{net}-{handle}` |
+     | Creators left to decide | "Decide on {k} creators"; the first three handles, then "and {m} more" | The first one's card, `#selection/r{n}/{net}-{handle}` |
+     | A question back to the client | "Your call on @{handle}" or "Your Maybe on @{handle}"; the question | `#selection/r{n}/{net}-{handle}/notes` |
+     | Fees waiting for approval | "Approve the fees for round {n}"; "{a} creators · sent {date}" | `#creators/r{n}/fees` |
+     | Shipping rows to fill | "Add shipping for {k} creators"; the first three handles | The first one's row, `#creators/r{n}/{net}-{handle}/shipping` |
+
+     Open comments are threads on that brief not marked resolved. A shipping row to fill is one
+     whose creator's details are received, once fees are approved, with shipping or tracking
+     still empty and product status not shipped. A grouped item ("Decide on {k} creators", "Add
+     shipping for {k} creators") has waited since its oldest member did, and its id names the
+     round and the count (`decide-r{n}-{k}`, `shipping-r{n}-{k}`), so a done mark lasts until the
+     count changes and the item comes back with a new id.
+   - **Agency**: what the agency owes, from `agency/attention`: "Record @{handle}'s reply",
+     "Send {k} drafts" (the first three handles), "No reply yet: @{handle}" (past their tier's
+     reply window), approvals due within a day, anything marked your call
+     needed, concepts below their pool target and details emails not sent, in that order for ties.
+     These items never
+     render for the client, and **Preview as client** shows the client's list.
+3. **Aspire is on it** (`home-aspire`). What Aspire is working on, the same for both sides, across
+   every live round. One row per kind, hidden at none, each with its count, the first three
+   handles ("@a, @b and 2 more"), and an "open" link to the first item:
+
+   | Row | Counts | Opens |
+   | --- | ------ | ----- |
+   | "{k} cuts getting changes" | Cuts whose newest version has changes requested | The first cut, `#review/r{n}/{cut}` |
+   | "{k} cuts in Aspire QA" | Cuts whose newest version is in Aspire QA | The first cut |
+   | "{k} packages on the way" | Shipping rows with product status shipped, not yet delivered | The first row, `#creators/r{n}/{net}-{handle}/shipping` |
+   | "{k} creators filming" | Creators whose brief is accepted or locked and who have no cut in the round yet | The first card, `#creators/r{n}/{net}-{handle}` |
+
+   Every row is built from what the client can read, so it holds nothing agency only. The cut
+   rows and the filming row show once Content Review has its own build, because until it records
+   cuts, every creator with an accepted brief would count as filming. The filming row counts only
+   rounds in production. Empty: "Nothing in production right now."
+4. **Last round result** (`home-result`). Last round's headline result: cost per sale against
+   the client's target and "{w} of {a} ads won", where "last round" is the newest round with ad
+   results. The cost per sale is in `text-lg font-semibold`, then "against a {t} target" and a
+   Badge: success "Met the target" at or under it, warning "{d} over target" above it. An ad
+   that "won" is one Ad Performance marks winning under the decision defaults (`campaign:{slug}-decision-defaults`). A
+   link Button "See the results" opens `#performance/r{n}/result`. Money is in US dollars, as
+   the records keep it.
+
+   **This section doesn't render until a round has ad results**, with no empty state and no
+   summary. Two values aren't in any record yet:
+   - **Ad results.** Nothing in this flow reads ad spend (**What this flow never does**). They
+     come from Ad Performance's own build, which records each round's results.
+   - **The client's cost per sale target.** No setup question asks it. It would be saved in
+     `campaign:{slug}-decision-defaults` beside the winner rule. With results but no target,
+     the section shows the cost per sale and "{w} of {a} ads won" only, with no target line
+     and no Badge.
+5. **Next check in** (`home-sync`). The next weekly sync, the calendar link and the Slack channel.
+   - **When.** From `campaign:{slug}-cadence` (C6): the day, time and IANA time zone, and the
+     length when saved. The page works out the next sync from the viewer's clock in the saved
+     time zone, then shows it in the viewer's: "Tuesday, Nov 4 · 10:00 AM your time", and when
+     the viewer's zone differs, "(1:00 PM in New York)", the city from the saved zone. Under it,
+     "Every Tuesday". During a sync of saved length it reads "Now" until the sync ends. The
+     summary line: "{Day} {time} your time".
+   - **Add to calendar.** An outline Button with the Lucide `calendar-plus` icon, "Add to Google
+     Calendar", a link that opens Google Calendar's new event page in a new tab
+     (`https://calendar.google.com/calendar/render?action=TEMPLATE` with `text` "{Brand} weekly
+     sync: {campaign name}", `dates` the next sync's start and end in UTC, `ctz` the saved time
+     zone, `recur` `RRULE:FREQ=WEEKLY;BYDAY={code}` with the saved day as its two letter code (`MO`,
+     `TU`, `WE`, `TH`, `FR`, `SA`, `SU`), and `details` the page link). With no length
+     saved, the end is the start. **No .ics download.** The `downloads` capability saves only
+     the types on its list, and `.ics` isn't on it (a save is refused `rejected_extension`), so
+     the page doesn't offer one.
+   - **Open Slack channel.** From `campaign:{slug}-routing` (C5): `slack:` is the channel's
+     name, which posting uses, and `channelLink:` its link, when saved. An outline Button "Open
+     Slack channel", opening the channel in a new tab, only when `channelLink:` is a link to a
+     Slack channel (`https://{workspace}.slack.com/archives/{channel}` or
+     `https://app.slack.com/client/{workspace}/{channel}`). With the name only, the page shows
+     "#{name} on Slack" as text with no Button, and for the agency only, the line "Add the
+     channel's link in the chat to open it from here." With no Slack channel saved, nothing
+     about Slack renders.
+   - **Hidden parts.** With no cadence saved, the section reads "No weekly sync set yet.", and
+     for the agency, "Set it in the chat." No calendar Button renders. A part that isn't set
+     never shows a placeholder: no example channel, no default time.
+   - The weekly agenda (where we are, what is blocking, what is next) is this view: **Where we
+     stand**, **Waiting on you** and **Aspire is on it**. The weekly sync task posts the same.
+6. **Latest updates** (`home-updates`). The three newest unread items in the viewer's Home inbox
+   (every tab), not cleared, as **Inbox** rows: the same markup, and opening one marks it read
+   and opens its item. Under them, a ghost Button "Open inbox", with the unread count, opens the
+   **Inbox** Sheet. The section moves live as the inbox does. Empty: "You're all caught up." A
+   read only client reads no page data, so it shows "Updates aren't available from this
+   account." **Preview as client** shows the client's three, every item unread.
+
+#### The Everything view
+
+The working view, for both sides. Its sections, in order, are below, each with its own hash
+(`#home/steps`). Everything here is worked out from the records, the page data and the viewer's
+clock, like the Simple view. A part whose value isn't in any record yet is hidden for the client,
+and for the agency shows "Not set" with the control that sets it, never an example value. A read
+only client gets each section from the values published into the page, with "As of {publish
+time}." under the title of **Round steps**, **Needs attention** and **Tab summaries**, and no cut
+rows.
+
+1. **Round steps** (`home-steps`). Every step of the round in view in the **Round switcher**, in
+   `order`, from the round's `plan` and its four approvals (**Rounds**, **Round steps**). No part
+   of the page uses the word gate.
+   - **The list.** An ordered list, one row per step, anchored `#home/steps/r{n}/{step}`. At the
+     start
+     of the row, a done step shows the Lucide `circle-check` icon, labelled "Done" for screen
+     readers, and any other step its position in a `flex size-6 shrink-0 items-center
+     justify-center rounded-full border text-xs` circle. Then the name in `text-sm font-medium`
+     with `break-words`, and for an approval its detail line where it has one ("Master brief sign
+     off"). Under it, in `text-xs text-muted-foreground`: the owner, then the date: "Due {date}",
+     "Done {date}" for a ticked step, "Done" with no date for a step counted done by a later one,
+     and for an approval that is out "With {approver} since {sent}, due {due}", or "Approved
+     {date}" once cleared. A step with no date shows no date to the client, and "Not set" with
+     its date Input to the agency.
+   - **Owner** reads "{brand}" for `client`, "Aspire", "Creators", or the team member's name;
+     for an approval, its approver's name. A team member removed since reads "Aspire".
+   - **Badges**, beside the name: processing "Now" on the current step, soft "Up next" on the one
+     after, warning "{d} days late" on a late current step ("1 day late" for one), warning "Launch
+     at risk" on step 4 when the round is at risk (**Rounds**), and an outline "Client approval"
+     on the four approvals. In a round closed early, none of these: an open step shows the soft
+     Badge "Not done, round closed".
+   - **Where each step opens.** An approval has a link Button "Open" to where the client gives it:
+     step 1 and step 4 the round's Master Brief (`#brief/r{n}`), step 2 Creator Selection
+     (`#selection/r{n}`), step 3 **Contract and rates** (`#creators/r{n}/fees`). Ads live opens
+     Ad Performance (`#performance/r{n}/result`). The other steps open nothing.
+   - Under the list, a Progress bar of the steps done, labelled for screen readers "{x} of {y}
+     steps done", and the line "{x} of {y} steps done" in `text-sm text-muted-foreground`.
+   - **Moving the round on (agency).** A default Button, size sm, "Move to next step", with the
+     Lucide `arrow-right` icon, in the section header beside the trigger. It ticks the current step
+     done (`done` true, `doneAt` now), so up next becomes the current step. On an approval it has
+     `aria-disabled="true"` and the disabled look, and its tooltip says "{Step} ticks when the
+     client approves it on {Tab}."; on Ads live, "Ads live ticks on the launch date, once the
+     briefs are approved."; with every step done, it doesn't render.
+   - **Editing (agency).** In place, per **Editing in place**: a checkbox at the start of every
+     step but the approvals and Ads live ticks or unticks it (unticking clears `doneAt`). A step
+     that counts as done only because a later step went out shows its checkbox checked and
+     disabled, with the tooltip "Done once {step} went out."; the name,
+     the date (a date Input) and the owner (a Select: "{brand}", "Aspire", "Creators", then each
+     team member by name) of the same steps. An approval's date is editable too: its planned date
+     before it is sent, its due date after. Ads live's date is the launch date, which changes with
+     the round's dates in **Calendar**. A ghost Button, size sm, "Add step" with the Lucide `plus`
+     icon under the list opens a Dialog, "Add a step to round {n}": Name (an Input, required), After
+     (a Select of the round's steps, the current one first), Date and Owner, then Cancel (outline)
+     and Add step (default). A ghost icon Button with the Lucide `trash-2` icon, labelled "Remove
+     {step}", sits beside every step but the approvals and Ads live, and opens a Dialog: "Remove
+     {step} from round {n}?", "It leaves round {n}'s steps for everyone. History keeps a record.",
+     Cancel (outline) and Remove (destructive).
+   - The client, a read only client and **Preview as client** see the same list with every
+     control as a label. In a done round it is read only for everyone.
+2. **Needs attention** (`home-attention`). Every open item across every tab and round that the
+   person viewing can see, not only theirs, so both sides see the whole picture. Each row is the
+   List row from **Component classes**, with `break-words`: the title, one line of detail, then
+   in `text-xs text-muted-foreground` an outline Badge with the round ("Round 2"), an outline
+   Badge with the tab's label, and since when it has waited. A row that waits on the person
+   viewing adds a warning Badge "Waiting on you". For the agency it adds who it waits on ("Waits
+   on {brand}", "Waits on Aspire", "Waits on @{handle}"), read from `agency/attention` and
+   rendered only when that read returns, so the client never sees it and the page code holds no
+   such label. Clicking
+   or pressing Enter opens the item by its hash.
+
+   | Kind | Title and detail | Waits on (in `agency/attention`) | Opens |
+   | ---- | ---------------- | -------- | ----- |
+   | The brief | "Sign off the {concept} brief"; "{c} open comments" | The client | `#brief/r{n}/{lane}` |
+   | The brief | "Write the {concept} brief"; "Due by Briefs approved, {date}" (a concept with no brief in a round in production) | Aspire | `#brief/r{n}` |
+   | Cuts at the client | "Review @{handle}'s V{variant}"; "{concept} · version {v}" | The client | `#review/r{n}/{cut}/v{version}` |
+   | Changes | "@{handle}'s V{variant} is getting changes"; "{k} open comments" | Aspire | `#review/r{n}/{cut}/v{version}` |
+   | Changes | "Your call on @{handle}'s changes"; "{k} changes to the {concept} brief" | The client | `#brief/r{n}/changes-{net}-{handle}` |
+   | Packages in transit | "@{handle}'s package is on the way"; "{product} · shipped {date}", with the carrier when saved | Aspire | `#creators/r{n}/{net}-{handle}/shipping` |
+   | Creators still to shoot | "@{handle} is still to shoot"; "{concept} · brief accepted {date}" | The creator | `#creators/r{n}/{net}-{handle}` |
+   | Variants to retire or refresh | "Retire or refresh @{handle}'s V{variant}"; its cost per sale against the target | Aspire | `#performance/r{n}/variants` |
+   | Pending decisions | "Decide on {k} creators"; the first three handles | The client | `#selection/r{n}/{net}-{handle}` |
+   | Pending decisions | "Your call on @{handle}" or "Your Maybe on @{handle}"; the question | The client | `#selection/r{n}/{net}-{handle}/notes` |
+   | Pending decisions | "Approve the fees for round {n}"; "{a} creators · sent {date}" | The client | `#creators/r{n}/fees` |
+   | Pending decisions | "Add shipping for {k} creators"; the first three handles | The client | `#creators/r{n}/{net}-{handle}/shipping` |
+   | The agency's own (agency only) | The agency's rows in **Waiting on you**: replies to record, drafts to send, No reply yet, approvals due within a day, your call needed, concepts below their pool target, details emails not sent | Aspire | As in **Waiting on you** |
+
+   The client's rows are the same items as their **Waiting on you**, with the same ids, open
+   comments, grouping and "waited since" (**The Simple view**). Cut rows ("Cuts at the client",
+   the cut "Changes" row) and "Creators still to shoot" show once Content Review has its own
+   build, for the reason **Aspire is on it** gives. "Variants to retire or refresh" shows once Ad
+   Performance records each round's results, because nothing marks a variant to retire before
+   that. The agency's own rows come from `agency/attention`, never from the page itself.
+
+   A Tabs list above the rows, "All" and "Waiting on you", kept in memory and opening on All,
+   narrows the list. The rows are sorted oldest first; rows that waited the same time keep the
+   order of the table. Done marks from **Waiting on you** don't hide anything here: a row leaves
+   this list when the records or page data say it is closed. Empty: "Nothing needs attention
+   right now."; with "Waiting on you": "Nothing needs you right now." These lists say what is
+   open; the **Inbox** says what changed.
+3. **Tab summaries** (`home-summaries`). One Card per other tab, for the round in view, in the tab
+   order, in a `grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3` grid. Each card: the tab's
+   title in the Card title classes, an outline Badge with the round ("Round 2"), the tab's count
+   Badge of items waiting on the viewer when there are any (**Header and tabs**), a headline in
+   `text-2xl font-semibold`, one line in `text-sm text-muted-foreground`, and in the Card footer
+   a link Button "Open {Tab}" with the Lucide `arrow-right` icon, to the tab on that round
+   (`#brief/r{n}`, `#selection/r{n}`, `#creators/r{n}`, `#review/r{n}`, `#performance/r{n}`). The
+   card itself is not a button, so its one link is the only control in it.
+
+   | Card | Headline | Line | Until it has data |
+   | ---- | -------- | ---- | ----------------- |
+   | Master Brief | "{s} of {c} concepts signed off" | "{w} briefs written · {k} open comments", with the state pill (waiting for your approval, or Approved) | "No briefs written yet." |
+   | Creator Selection | "{a} approved" | "of {m} creators in round {n} · {d} to decide" | "No creators in the pool yet." |
+   | Selected Creators | "{n} under contract" | "{k} missing details · {s} shipped, {d} delivered", plus "{total} committed" for the agency only, from `agency/budget` `committed:` and rendered only when that read returns | "Creators show here once {brand} approves them." |
+   | Content Review | "{x} of {y} ad videos in" | "{w} waiting on you · {a} approved" | "Cuts show here once creators start shooting." |
+   | Ad Performance | "Cost per sale {x}", with the target Badge from **Last round result** | "{w} of {a} ads won" | "Round {n} goes live {launch}." before the launch, else "Results show here once the ads are live." |
+
+   Content Review and Ad Performance show their "until" line until their own builds record cuts
+   and results. There are five cards, one per tab, and no other: no card for a feature that has
+   no tab or isn't built.
+4. **Program terms** (`home-program`). What the brand bought in its SOW, from
+   `campaign:{slug}-cas` and `campaign:{slug}-terms` and the agency's edits since, for both
+   sides from the first publish (**Who sees what**, **Program terms are the client's own**). A
+   Table from 640px with the columns Term, Value and From, and a stack of Cards on phone
+   (**Responsive**), in groups, each under a `text-sm font-medium` heading:
+
+   | Group | Term | Value | From the record |
+   | ----- | ---- | ----- | --------------- |
+   | SOW dates | Starts, Ends | "Nov 2, 2026" | `term.start`, `term.end` |
+   | Each creator makes | One row per deliverable: "Hooks", "Bodies", "CTAs", "B-roll shots" | The count: "3" | `sow.deliverables` |
+   | The campaign | Ad ready videos, per round | "27" | `sow.adReadyVideos`, else `package.creators` times `package.variants` |
+   | The campaign | Variants per creator, per round | "3 (at most 5)" | `package.variants` |
+   | Usage | Usage | "{d} days" | `term.usageDays` |
+   | Usage | Allowlisting | "Yes" or "No", and once the fees are sent, "adds {p}% to each fee" | `allowlisting` and `whitelistingUpliftPct` in the terms |
+   | Usage | Partnership ads | "Yes" or "No" | `partnershipAds` in the terms |
+   | Exclusivity and organic posting | Exclusivity | "None", or the terms as saved | `exclusivity` in the terms |
+   | Exclusivity and organic posting | Organic posting | "Nothing organic, ads only", or the terms as saved | `organic` in the terms |
+
+   - **From** says where the value came from, by its stamp's `source` (**1e**, **Every editable
+     value**): "Campaign setup" for `atlas`, "Edited by {name}" for `manual`, "Written by Claude"
+     for `claude`, "From the sheet {name}" for `sheet`, and for `file` the file's label as a link
+     Button that opens the file from **Files**, or its label as text when the file is gone. Until
+     **Files** pulls details from the program files, nothing writes `file`, so **From** reads
+     only Campaign setup, Edited by, Written by Claude or From the sheet. The
+     time is in the value's tooltip, per **Editing in place**. Ad ready videos worked out from the
+     package reads "Worked out: {c} creators, {v} each". On phone **From** is a line under the
+     value in `text-xs text-muted-foreground`.
+   - **Allowlisting with nothing saved** reads "Yes" whenever `campaign:{slug}-terms` is saved,
+     because the uplift then applies to every fee (`rates-and-terms.md`, **What each creator
+     gets**), with **From** "Campaign setup". So the client never sees an uplift with no
+     Allowlisting row to explain it.
+   - **The SOW against the plan.** The pace verdict and the Content Review card count the round's
+     plan ({y}, **Where we stand**). When `sow.adReadyVideos` is above {y}, the agency sees one
+     warning line under Ad ready videos: "The SOW promises {s} a round; round {n}'s plan makes
+     {y}." The client sees the SOW's figure only.
+   - **Hidden parts.** A row whose record has no value is hidden for the client, and a group with
+     no row is hidden with it. The agency sees "Not set" in `text-muted-foreground` with the
+     pencil to set it, and the group "Each creator makes" with an "Add deliverable" ghost Button,
+     size sm, and the Lucide `plus` icon. The SOW dates and the package are saved at setup (C1),
+     so the section always has rows.
+   - **Editing (agency).** In place: dates with a date Input, counts with a number Input (a whole
+     number, 1 or more), variants with a Select from 1 to 5, Yes or No with a Select, the rest
+     with an Input. "Add deliverable" opens a Dialog: Label (an Input, required) and Count,
+     Cancel (outline) and Add (default). A ghost icon Button with the Lucide `trash-2` icon removes
+     a deliverable after a Dialog confirm, the way a step is removed. Editing the dates, the usage,
+     the variants, allowlisting or the uplift shows one line under the field while it is open:
+     "This changes what the creators agreed. Agree it with each creator first." Allowlisting and
+     the uplift add "It changes every fee, approved ones included."
+5. **Products in scope** (`home-products`). The products the campaign is for, from `products` in
+   `campaign:{slug}-cas` and the agency's edits, one Card each in a `grid grid-cols-1 gap-4
+   sm:grid-cols-2 lg:grid-cols-3` grid:
+   - **The photo**, when saved: a `thumb@240x180` image from `creator-card.md`, **Images**, page
+     profile, `w-full h-auto rounded-md`, with the product's name as its `alt`. Published pages
+     load no outside image, so Claude fetches the photo link at publish and embeds it in the page
+     itself. A link the agency set on the page since shows no image, and for the agency the line
+     "The photo shows after the next publish." With no photo there is no image area at all.
+   - **The name** in `font-semibold`, **the status** as a Badge (**Status pills**: Active,
+     Coming soon, Paused, Out of stock), and **the short description** in `text-sm
+     text-muted-foreground`.
+   - **"{n} creators, {m} approved"**, a link Button that opens Creator Selection filtered to the
+     product (`#selection/product-{id}`). {n} counts the creators in the pool whose Product is this
+     product, by its id, or by its name ignoring case where a record holds the name; {m} counts
+     those approved in any round. With none, it reads "No creators yet" as text.
+   - **Editing (agency).** Every part in place, the status with a Select and the photo with an
+     Input that takes an `https` link. An outline Button, size sm, "Add product" with the Lucide
+     `plus` icon opens a Dialog: Name (required), Status, Short description (a Textarea, 200
+     characters at most) and Photo link, then Cancel (outline) and Add product (default). Removing a
+     product works as removing a step does.
+   - **Hidden parts.** For the client the section doesn't render until the campaign has a product.
+     The agency sees "No products added yet." with **Add product**.
+6. **Team** (`home-team`). The people at Aspire on the campaign, from `team` in
+   `campaign:{slug}-cas` and the agency's edits, one Card each in the same grid:
+   - An Avatar with their initials, **the name** in `font-semibold`, **the role** on the
+     campaign, and **the title** in `text-sm text-muted-foreground`.
+   - **The work email** as a link Button (`mailto:`) with `h-auto min-w-0 whitespace-normal
+     break-all` added, so a long address wraps on a phone, and beside it a ghost icon
+     Button with the Lucide `copy` icon, labelled "Copy {name}'s email", which copies it and shows
+     the Lucide `check` icon for two seconds. Where the browser refuses the clipboard, a Dialog
+     "Copy email" opens with a read only Input holding the email, already selected, the line
+     "Press Ctrl+C or Cmd+C to copy.", and Close (outline).
+   - **"Owns: {owns}"**, and **"Go to {name} for {goTo}."**, each a line in `text-sm`.
+   - A part with nothing saved is hidden for the client, and "Not set" with its pencil for the
+     agency.
+   - **Editing (agency).** In place, and an outline Button, size sm, "Add person" with the Lucide
+     `user-plus` icon opens a Dialog: Name (required), Role, Title, Work email (an Input of type
+     email; one that doesn't look like an email shows "Enter a work email, like
+     name@company.com." and doesn't save), What they own, and Go to them for, then Cancel
+     (outline) and Add person (default). Removing a person works as removing a step does.
+   - **Hidden parts.** For the client the section doesn't render until the team has someone. The
+     agency sees "No team added yet." with **Add person**.
+   - Only Aspire's own people go here; a creator's contact details never do (**Who sees what**,
+     **Contact details**). The weekly sync is in **Next check in**.
+7. **Calendar** (`home-calendar`). The campaign timeline for every round: what, when, who and
+   status for every step in each round's **Round steps**, with each round's build window,
+   in-market window and launch date. A slipped step shows its days late, and the delay list sits
+   under it: one line per ledger entry with its date.
+8. **Files** (`home-files`). Concept deck, creator guidelines, contract template and content
+   folder, each a link. Empty: "No files yet."
+
+#### A new campaign
+
+A campaign with no round in market yet reads sensibly in every Simple section: Round 1's hero
+sentence with its launch date, "Building starts {date}." or the line that pace starts once
+creators are approved, the client's decisions and sign offs in **Waiting on you** (or "Nothing
+needs you right now."), "Nothing in production right now.", no **Last round result** at all, the
+sync or "No weekly sync set yet.", and "You're all caught up." None of them shows a zero
+standing in for a figure that doesn't exist yet.
+
+In the Everything view, Round 1's steps show with Concepts approved done and Intake form now,
+**Tab summaries** shows each card's "until" line where the tab has nothing yet, and **Program
+terms** shows the SOW dates and the package from setup. For the client, **Products in scope**
+and **Team** don't render until the agency adds someone or something.
 
 ### Master Brief
 
@@ -947,10 +1738,10 @@ Two layouts: Cards by default, Board second. The layout last picked is kept in t
   the paid fit score. Thumbnails show the evidence posts first, with a "Hook post" label on the
   post the hook rate came from and the play glyph on video, embedded per the card reference. The
   `{DETAILS}` block: Hook rate (watched past 3s), Engagement on Reels, Paid work before, Ad
-  permissions, Status, Product, Location, Why we picked them, any question for the client, and
+  permissions, Status, Product, Location, Tier, Why we picked them, any question for the client, and
   Your decision. For the agency only, under a dashed rule headed "Agency only": the
-  recommendation, agency notes, vetting evidence and safety detail, email, phone and manager, tier
-  and reply window.
+  recommendation, agency notes, vetting evidence and safety detail, email, phone and manager, and
+  the tier's reply window. The tier itself shows to both sides (**Who sees what**).
 - **Board**: one group per concept with a colored title bar (concept name, persona, "need {n},
   {m} approved"). Each group is its own full width table with the first column and the header
   pinned, and grouped header bands: Decisions (Your decision, Your notes, Status, Product), Fit
@@ -995,7 +1786,8 @@ Sections, in order:
    fees are sent, the client sees the creators and "Fees show here once they are sent for your
    approval." **Totals**,
    agency only, close the section: the campaign at open, target and max, and at what is agreed
-   so far, with the whitelisting uplift as its own line. Full detail: `rates-and-terms.md`,
+   so far, with the allowlisting uplift as its own line unless allowlisting is off. Full detail:
+   `rates-and-terms.md`,
    **Contract and rates**.
 2. **Shipping.** Shown once fees are approved. A one line intro: "Getting the product to each
    creator. Update ship status and tracking here. Addresses come from the creator's own reply."
@@ -1105,7 +1897,7 @@ deepest part **Header and tabs** names. Where each lands, per tab:
 
 | Tab | Tag, note, reply | New | Status |
 | --- | ---------------- | --- | ------ |
-| Home | None: Home has no notes or comments | `#home/files` for a file, `#home/calendar` for a round started | `#home/steps` for a step date, `#home/program` for terms and products, `#home/team`, `#home/calendar` for a round's dates |
+| Home | None: Home has no notes or comments | `#home/files` for a file, `#home/calendar` for a round started, `#home/products` for a product, `#home/team` for a person, `#home/steps/r{n}/{step}` for a step | `#home/steps/r{n}/{step}` for a step ticked or edited, `#home/program` for terms, `#home/products` for products, `#home/team`, `#home/calendar` for a round's dates |
 | Master Brief | The comment, `#brief/r{n}/{lane}/c{comment}`; a sign off note `#brief/r{n}/{lane}`; a changed brief note `#brief/r{n}/changes-{net}-{handle}` | The concept's brief, `#brief/r{n}/{lane}` | The part that changed, `#brief/r{n}/{lane}/{part}`; a sign off `#brief/r{n}/{lane}`; the call on a changed brief `#brief/r{n}/changes-{net}-{handle}` |
 | Creator Selection | The creator's card and its notes, `#selection/r{n}/{net}-{handle}/notes` | The creator's card, `#selection/r{n}/{net}-{handle}` | The same card, at the decision, status or ad permissions |
 | Selected Creators | A fee note `#creators/r{n}/fees`; a creator note the creator's card, `#creators/r{n}/{net}-{handle}` | The creator's card | Fee approval `#creators/r{n}/fees`; shipping, tracking and product status `#creators/r{n}/{net}-{handle}/shipping`; the rest the creator's card |
@@ -1217,6 +2009,167 @@ activity log**), so it shows every write on every tab, checklist ticks and notes
   the line "Press Ctrl+C or Cmd+C to copy.", and Close (outline). The table holds what the rows say,
   never an id, a field name or a tool name.
 
+### Export
+
+Every tab can save what is on screen as a spreadsheet. An export is a read: it writes no page data,
+logs nothing and never reaches Atlas.
+
+- **The control.** An outline Button, size sm, "Export" with the Lucide `download` icon, at the
+  start of the row that holds **Expand all** and **Collapse all** above the tab's first section
+  (**Collapsing sections**). That row never collapses, so Export is always one click from the tab.
+  It opens a Dialog.
+- **The Dialog.** Title "Export {tab}". Description: "What's on screen now: round {n}, with your
+  filters and search." (with **All rounds** on Creator Selection, "every round"). Then two Selects:
+  - **Sheet**: "All sheets" first, then each sheet in **Sheets per tab**, in order. A sheet whose
+    section shows its empty state is listed disabled with that line ("Shown once fees are
+    approved."). A sheet with nothing for this viewer at all, like the agency only Variants sheet
+    for the client, isn't listed.
+  - **Format**: "Excel (.xlsx)" first, "CSV (.csv)", "Copy as table". CSV and Copy as table hold
+    one sheet, so picking either with "All sheets" moves Sheet to the first enabled one.
+
+  Then a count line in `text-xs text-muted-foreground`: "{r} rows, {c} columns" for one sheet, or
+  "{s} sheets, {r} rows" for "All sheets". A disabled sheet is left out of the workbook. For the agency it
+  adds "Includes agency only columns." with a soft Badge "Agency only". Cancel (outline) and the
+  default Button "Download", or "Copy" for Copy as table. On a tab whose every sheet is empty, the
+  Export Button has `aria-disabled="true"` and the disabled look but stays focusable: a click, tap
+  or Enter does nothing but show its tooltip, the tab's empty state. A `disabled` Button would
+  never open that tooltip.
+- **What goes in.** Exactly the rows the tab shows now. Home is the one exception: its sheets
+  (**Sheets per tab**) come from the Everything view's sections, so Home exports them whichever
+  view is on screen. That means the round in the **Round
+  switcher**, the tab's filters and search, and its sort. The columns are the sheet's own, from
+  **Sheets per tab**, whichever layout is on screen. A closed section
+  still exports, because collapsing changes the view and not the data. Home's **Needs attention**
+  covers every round, as it does on screen, with a Round column. Values are the newest ones on
+  screen (**Every editable value**), and every label is the page's own word from **Page
+  vocabulary**. A sheet never holds an id, a slug, a field name, a tool name, a hash link or a
+  stamp's source.
+- **Roles hold by construction.** A sheet is built from the same data the viewer's view is built
+  from, in their browser. For the client, a read only client and **Preview as client**, that is
+  the page itself and the client readable page data. The export never reads `agency`, so no agency
+  only column can be in it, whatever the code asks for. For the agency, the agency only columns
+  marked in **Sheets per tab** come from the `agency` reads the view already made. When those
+  reads didn't return, the columns are left out and the count line says "Agency only columns
+  didn't load." A read only client exports the page as published, with no page data, and the
+  About sheet says so.
+- **Preview as client exports the client's sheets.** The agency's browser already holds the
+  `agency` reads, so in the preview the export takes its rows from the same client readable data
+  the preview renders from (**Preview as client**), never from the agency's view with columns
+  dropped. This rests on the page's code, not on the data rules, so a real Contributor's export is
+  checked by opening the page (**What the export can't do yet**).
+- **The file name.** "{Brand} CAS Round {n} {sheet}", with "All rounds" in place of "Round {n}"
+  on Creator Selection's **All rounds**, and the tab's title in place of {sheet} for "All sheets"
+  ("{Brand} CAS Round 2 Selected Creators.xlsx"). The page drops `\ / : * ? " < > |` and runs of
+  spaces from it. The viewer confirms the final name in the download prompt. Home's Needs attention
+  covers every round, so on its own it is named "{Brand} CAS All rounds Needs attention". In a
+  workbook of all Home's sheets the name keeps the round, and the About sheet notes that Needs
+  attention covers every round.
+- **Excel.** One worksheet per sheet, named as in **Sheets per tab** (all are 31 characters or
+  fewer, as Excel needs), plus a last sheet, "About this export". On every data sheet:
+  - Row 1 is the header, in bold, frozen, with a filter over the header and every row.
+  - Money in US dollars, as the campaign records keep it, as numbers formatted `"$"#,##0.00`, and
+    the header names the currency: "Agreed fee (USD)".
+  - Rates as fractions formatted `0.0%`, counts as `#,##0`, and dates as real dates formatted
+    `yyyy-mm-dd`. A date with no time is written as midnight UTC of the date the page shows, so it
+    never lands a day off. So every column sorts and filters as its type.
+  - Times as `yyyy-mm-dd hh:mm` on the viewer's clock, the time the page shows. A spreadsheet
+    date has no time zone, so the page shifts each UTC time by the viewer's offset on that date,
+    which keeps times on both sides of a daylight saving change right. The header names the
+    viewer's time zone, not one offset: "Updated on (Pacific time)".
+  - Text that a person typed is always written as text. A note starting with "=" or "+" stays a
+    note and never runs as a formula.
+  - Columns are sized to their content up to 60 characters wide, and longer text wraps. A cell
+    past Excel's 32,767 characters is cut short enough that, with " (continues on the page)"
+    added, it stays within that limit.
+  - No fill or font color. The **Design standards** keep every color in the page's style blocks.
+
+  "About this export" holds one row per fact: campaign, tab, round, filters and search in plain
+  words ("Concept: Busy parent; search: ana"), exported by (the viewer's name), exported at with
+  the time zone, and "As the client sees it" or "Includes agency only columns". The page loads
+  ExcelJS 4.4.0 from `https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js` (about
+  950 KB) on the first Excel export, never at page load. If it doesn't load, the Format Select
+  marks Excel "Not available right now" and moves to CSV.
+- **CSV.** One sheet as UTF-8 with a byte order mark (so Excel reads accents), comma separated,
+  quoted per RFC 4180, CRLF line ends. The header row is the same as the Excel one. Money and
+  counts are plain numbers, rates are written "28.4%", dates are `yyyy-mm-dd`, and times are
+  `yyyy-mm-dd hh:mm` on the viewer's clock with the zone in the header, as in Excel. So Excel and
+  Google Sheets read each one as its type. A Timecode may still read as a time of day there, so
+  sort on Seconds. Text a person typed (a note, a comment, a reason, a name, a label) that starts
+  with `=`, `+`, `-`, `@`, a tab or a carriage return gets a leading `'`, so no spreadsheet runs it
+  as a formula. Values the page builds itself get no `'`: the Creator column holds the handle
+  without its "@", and dates, numbers and labels never start with those characters. A CSV carries
+  no About rows, so it imports cleanly.
+- **Copy as table.** Works like **History**'s. It puts an HTML table and tab separated text of the
+  one sheet on the clipboard, so it pastes as a table into a sheet, a doc or an email. Only the
+  tab separated text gets the CSV's `'` guard, because that is what a spreadsheet reads. The HTML
+  table keeps the text as typed, so a doc or an email shows no stray `'`. In the tab separated
+  text, a cell holding a tab, a line break or a `"` is wrapped in `"` with each `"` doubled, the
+  way Excel and Google Sheets copy, so a multi line cell pastes as one cell. The Button reads "Copied {n} rows" for two seconds. If the browser
+  refuses the clipboard, a Dialog "Copy {sheet}" opens with a read only Textarea holding the tab
+  separated text, already selected. It shows the line "Press Ctrl+C or Cmd+C to copy." and Close
+  (outline).
+- **Saving.** Excel and CSV go through the page's `downloads` capability (**1e**). The viewer sees
+  a prompt with the name and size and may decline. When `downloads` isn't available in this view,
+  the Format Select offers Copy as table only. Each refusal from the save gets one plain line in
+  the Dialog, by its code:
+  - `declined`: the Dialog closes and nothing else happens.
+  - `rate_limited`: "Another download is waiting. Try again in a moment."
+  - `rejected_extension` or `extension_not_enabled`: "Excel and CSV files can't be saved here.
+    Copy as table instead." The platform turns both formats off together, so the line never
+    offers the other one.
+  - `too_large`: "This file is too big to save here. Pick one sheet or narrow the filters."
+  - Any other code: "Downloads aren't available here. Copy as table instead."
+
+  The page never retries a save on its own.
+- **It works everywhere.** Export changes nothing, so it works in a done round, for a read only
+  client and in **Preview as client**, where every other control is a label. The Dialog's choices
+  are kept in memory only, never in page data or browser storage. It opens on the first format it
+  offers, Excel when it can, with "All sheets" for Excel and the first enabled sheet for CSV or Copy as
+  table.
+
+#### Sheets per tab
+
+Columns marked "(agency only)" are in the agency's export only. Everything else is in both, the
+client's included, and holds what the client may see per **Who sees what** at that moment. So
+fees are in the client's export only once they are sent. A column with nothing in it for a row is
+left blank, never filled with a dash.
+
+| Tab | Sheet | One row per | Columns |
+| --- | ----- | ----------- | ------- |
+| Home | Needs attention | Open item in **Needs attention**, every round | Item, Detail, Tab, Round, Waiting on you (Yes or No), Waits on (agency only), Since |
+| Home | Steps | Step in **Round steps** for the round in view, in order | Step, Client approval (Yes or No), Owner, State (Done, Now, Up next, Planned, Launch at risk), Due, Done on, Days late |
+| Home | Program terms | Row in **Program terms** shown to the viewer | Group, Term, Value |
+| Home | Products | Product in **Products in scope** | Product, Status, Description, Creators, Approved |
+| Home | Team | Person in **Team** | Name, Role, Title, Work email, Owns, Go to them for |
+| Home | Files | File in **Files** | File, Round (or "Whole campaign"), Link, Added by, Added on |
+| Master Brief | Concepts | Concept in the round | Concept, Persona, Framework, Product, Hooks, CTAs, Body, B-roll, Runtime, Disclosure, Do not, Creators, State, Signed off by, Signed off on. Hooks, CTAs, B-roll and Do not hold one item per line in their cell |
+| Master Brief | Variants (agency only) | Variant in each concept's variant build | Concept, Variant, then the parts the build gives each variant (hook, CTA, beats, runtime) |
+| Creator Selection | Decisions | Creator with a call in the rounds in view | Creator, Network, Name, Concept, Round, Your decision, What made the call, Your notes, Decided by, Decided on, Status, Recommendation (agency only), Surprise (agency only: Yes when the decision goes against the recommendation, as **A reason on the call** defines it, worked out on the page from both), Agency notes (agency only) |
+| Creator Selection | Creators | Creator the pool shows now | Creator, Network, Name, Descriptor, Location, Concepts, Rounds, Match score, Hook rate, Engagement on Reels, Paid work before, Ad permissions, Instagram followers, Instagram engagement rate, Instagram average engagement, Instagram audience, the same four for TikTok, Why we picked them, Status, Product, Tier, Reply window (agency only), Email (agency only), Phone (agency only), Manager (agency only) |
+| Selected Creators | Creator snapshot | Creator on the round's roster | Creator, Network, Name, Concept, Product, Returning, Status, Ad permissions, Brief state, Content state, Variants (k of max), Content folder, Waiting on (agency only), Last contact (agency only), Email (agency only), Phone (agency only), Manager (agency only) |
+| Selected Creators | Shipping list | Row in **Shipping** | Creator, Name, Product, Details from creator, Address or pickup, Visit date, Shipping, Tracking, Product status, Updated by, Updated on, Next step (agency only) |
+| Selected Creators | Rates and payments | Row in **Contract and rates** | Creator, Concept, What they make, Usage, Exclusivity, Agreed fee (blank until agreed; Where it is says "In negotiation"), If we drop them, Where it is, Fees approved on, UGC video rate (agency only), Reel collab rate (agency only), 90 day usage rate (agency only), Offer open, target and max (agency only, three columns), Counter (agency only), Expected cost (agency only), Cost per 1K reach (agency only) |
+| Selected Creators | Variant tracker | Variant of each creator in the round | Creator, Concept, Variant, Latest version, Status, Updated on, Open comments |
+| Content Review | Variant status | Cut the queue shows now | Creator, Concept, Variant, Title, Version, Status, Approved by, Approved on, Checklist (ticked of total), Open comments |
+| Content Review | All comments | Comment or reply on the cuts the queue shows | Creator, Variant, Version, Timecode (text, m:ss), Seconds (a number, for sorting), Comment, Reply to (its first words), Who, Side (Client, Agency, or Agency only for the agency), When, Has drawing, Resolved |
+| Ad Performance | Every variant | Variant in **Variants ranked** | Creator, Concept, Variant, Framework, Hook, CTA, Spend, Purchases, Cost per sale, ROAS, 3 second hold, Status (winning, testing, retire or refresh) |
+| Ad Performance | By creator | Creator in **Compare** | Creator, Tier, Variants, Spend, Purchases, Cost per sale, ROAS |
+| Ad Performance | By framework | Framework in **Compare** | Framework, Variants, Spend, Purchases, Cost per sale, ROAS |
+
+What the export can't do yet, said plainly:
+
+- **No payment columns.** The page keeps no payment record. Rates and payments carries the agreed
+  fee and the fee approval only. Contract date, invoiced and paid columns join the sheet when
+  **Contract and rates** records them.
+- **Ad Performance exports nothing yet.** Nothing in this flow reads ad spend (**What this flow
+  never does**). The tab shows its empty state, so its Export Button is disabled. The three
+  sheets above are what it exports once the tab shows results.
+- **Content Review exports only what its build shows.** Until that tab has its own build, it shows
+  its empty state and its Export Button is disabled too.
+- **Opening in Excel and Google Sheets can't be checked from the chat.** Check one export from each
+  tab by opening the page, and say so when handing over a first publish. Check one tab's export
+  from a real Contributor's account too, since **Preview as client** rests on the page's code.
+
 ### Footer
 
 "Page republished on every change. Numbers come from Atlas as of {time}. Post images are
@@ -1235,17 +2188,27 @@ name the tab, never an older name for the part:
 
 | Part | Tab and section |
 | ---- | --------------- |
-| The four step progress bar (Concepts, Creators, Fees, Briefs approved) | Home, **Round steps** |
-| Needs your attention, per viewer | Home, **Waiting on you** and **Needs attention**, plus the inbox |
+| Where the round stands, its pace and its launch date | Home, Simple, **Where we stand** |
+| What Aspire is working on | Home, Simple, **Aspire is on it** |
+| Last round's cost per sale against target | Home, Simple, **Last round result**, and Ad Performance |
+| The next weekly sync, its calendar link and the Slack channel | Home, Simple, **Next check in** |
+| The round's steps, what's now and up next, with the four approvals (Concepts, Creators, Fees, Briefs approved) | Home, Everything, **Round steps** |
+| Needs your attention, per viewer | Home, Simple, **Waiting on you**, and Everything, **Needs attention**, plus the inbox |
+| One card per tab for the round in view | Home, Everything, **Tab summaries** |
+| The SOW terms: dates, what each creator makes, usage, allowlisting, exclusivity, organic posting | Home, Everything, **Program terms** |
+| The products in scope | Home, Everything, **Products in scope** |
+| The Aspire team and what to go to each for | Home, Everything, **Team** |
 | Creators: cards, board and decisions | Creator Selection |
 | Fees and the client's single approve | Selected Creators, **Contract and rates**, with the approve control |
 | Product shipping | Selected Creators, **Shipping** |
 | Briefs, with each creator's changed brief | Master Brief |
-| Delays and weekly call: timeline, documents, delays, agenda | Home, **Calendar**, **Files**, **Team and weekly sync** |
+| Delays and weekly call: timeline, documents, delays, agenda | Home, Everything, **Calendar** and **Files**; the sync in Simple, **Next check in**; the agenda is Simple's **Where we stand**, **Waiting on you** and **Aspire is on it** |
 | Budget (agency only) | Creator Selection, **Budget summary**, and Selected Creators, **Totals** |
 | Drafts and the reply log (agency only) | Selected Creators, on the creator's card |
 | Who did what and when, filtered by tab and round, searched | **History**, opened from the inbox |
 | What changed for you, and tags for you | **Inbox**, from the header on every tab: every tab on Home, the tab's own elsewhere |
+| Open or close a section, Expand all, Collapse all | Every section's header, and the row above a tab's first section (**Collapsing sections**) |
+| Export what is on screen to Excel, CSV or a copied table | **Export**, at the start of the row above a tab's first section (**Export**) |
 
 ### Page mechanics
 
@@ -1267,12 +2230,13 @@ with who made it (**1e**, **Every editable value**). The agency edits in place:
 
 | What | Where |
 | ---- | ----- |
-| Program terms and products in scope | Home, **Program details** |
-| Team | Home, **Team and weekly sync** |
-| Steps and dates | Home, **Round steps** and **Calendar** |
-| A round's label, month, build window, in-market window and launch date | Home, **Calendar**, and the **Start round** Dialog |
+| Program terms | Home, Everything, **Program terms** |
+| Products in scope: add, edit, remove, and the photo link | Home, Everything, **Products in scope** |
+| Team: add, edit and remove a person | Home, Everything, **Team** |
+| Steps: tick, move to the next step, add, remove, and each step's name, date and owner | Home, Everything, **Round steps**, and the dates in **Calendar** |
+| A round's label, month, build window, in-market window and launch date | Home, Everything, **Calendar**, and the **Start round** Dialog |
 | Budget total | Creator Selection, **Budget summary** |
-| Files | Home, **Files**: add, edit and remove a link |
+| Files | Home, Everything, **Files**: add, edit and remove a link |
 | The brief's text | Master Brief, every part of a concept's brief |
 | Creator profile: name, descriptor, location, concept, product | Creator Selection and Selected Creators |
 | Status, ad permissions, shipping, tracking, product status | Creator Selection and Selected Creators (**Agency edits on the page**) |
@@ -1293,8 +2257,8 @@ How it works on screen, with the components from **Design standards**:
 - **Who edited it.** Hovering a value shows a Tooltip: "Edited by {name} {time}". On a touch
   screen, where there is no hover, tapping the value shows the same line under it in
   `text-xs text-muted-foreground` until the next tap elsewhere. A value Claude wrote reads
-  "Written by Claude {time}", one from the records "Synced from Aspire Atlas {time}", and one
-  from a sheet "From the sheet {time}". `{time}` is relative under a day ("12 min ago"), then the
+  "Written by Claude {time}", one from the records "Synced from Aspire Atlas {time}", one from
+  a sheet "From the sheet {time}", and one from a program file "From {file label} {time}". `{time}` is relative under a day ("12 min ago"), then the
   date. Labels show the line too, so the client sees who changed what they read.
 - **Someone else's edit** shows as it arrives, with no reload. If the person has that field
   open, their text stays, and a line under it says "{name} changed this {time}. Saving keeps
@@ -1317,7 +2281,8 @@ from **Component classes** exactly as written, plus the `data-state` attributes 
 Never invent a class combination for a component listed there.
 
 **Components.** Use these and nothing hand-drawn in their place: Button, Card, Badge, Tabs, Table,
-Dialog, Sheet, Select, Input, Textarea, Switch, Progress, Tooltip, Avatar, Separator, Skeleton.
+Dialog, Sheet, Select, Input, Textarea, Switch, Progress, Tooltip, Avatar, Separator, Skeleton,
+Collapsible. Every section on a tab is a Card with a Collapsible header (**Collapsing sections**).
 Skeleton is the loading state of anything that waits for page data. Icons are Lucide, at the
 sizes the component gives them (`size-4` in buttons). The creator card keeps its own markup from
 `creator-card.md` and takes its colors from these tokens (**Brand theme on the page**).
@@ -1493,6 +2458,11 @@ visible edge on a card. A Switch keeps the `role="switch"` and `data-state` attr
 | Avatar | root, fallback | `relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full`, `flex h-full w-full items-center justify-center rounded-full bg-muted` |
 | Separator | | `shrink-0 bg-border` with `h-[1px] w-full` (horizontal) or `h-full w-[1px]` (vertical) |
 | Skeleton | | `animate-pulse rounded-md bg-primary/10` |
+| Collapsible | header | `flex items-start gap-3 p-6`, holding the trigger and anything beside it |
+| | trigger | `flex min-w-0 flex-1 items-start gap-3 rounded-md text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring [&[data-state=open]>svg]:rotate-180`, on a `button` with `aria-expanded`, `aria-controls` and `data-state` (`open` or `closed`) |
+| | title, summary | `text-xl font-semibold leading-none tracking-tight`, `mt-1.5 text-sm text-muted-foreground break-words`, in a `min-w-0 flex-1` block |
+| | chevron | the Lucide `chevron-down`, `mt-0.5 size-4 shrink-0 text-muted-foreground transition-transform motion-reduce:transition-none`, last in the trigger |
+| | content | the Card content, with `data-state` and `hidden` while closed |
 | List row | | `flex w-full min-w-0 items-start gap-3 rounded-md p-2 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring`, on a `button` |
 
 Text sizes are Tailwind's: `text-xs` for captions, `text-sm` for body and labels, `text-lg` for
@@ -1502,10 +2472,10 @@ card titles, `text-xl` for section titles, `text-2xl` for the page title. Weight
 
 | Variant | Status labels |
 | ------- | ------------- |
-| soft | Awaiting decision, not asked yet, not shipped, Planned, Done, Returning |
-| processing | Offer sent, Details received, Shipped, Brief sent, in negotiation, In production |
-| success | Approved, Agreed, Delivered, Brief accepted, Granted, In market |
-| warning | Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending, waiting for your approval |
+| soft | Awaiting decision, not asked yet, not shipped, Planned, Done, Returning, Up next, Paused, Not done, round closed |
+| processing | Offer sent, Details received, Shipped, Brief sent, in negotiation, In production, Now, Coming soon |
+| success | Approved, Agreed, Delivered, Brief accepted, Granted, In market, Ahead, On track, Met the target, Active |
+| warning | Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending, waiting for your approval, Running behind, Launch at risk, over target, days late, Waiting on you, Out of stock |
 | error | Rejected, Declined, returned |
 
 The decision dropdown takes the variant of its choice (Decide is soft). A pill never uses the
@@ -1609,6 +2579,18 @@ prefixes.
 6. Every overridden token passed the contrast check in both modes, or fell back and wrote its line.
 7. At 375px, 768px and 1280px, `document.documentElement.scrollWidth` equals the window width in
    light and dark.
+8. Every section has a Collapsible header with its summary line, every tab has Expand all and
+   Collapse all, and each section starts open or closed as **Sections per tab** says.
+9. Every tab has its **Export** Button, ExcelJS loads only on the first Excel export, and the
+   client's export of each tab, made in **Preview as client**, has no agency only column.
+10. Home opens on its Simple view, every figure there is worked out from the records and the
+    viewer's clock, and a part whose record is missing (the sync, the Slack link, ad results, the
+    target) is hidden rather than shown with a placeholder.
+11. Home's Everything view: **Round steps** shows the round in view with Now and Up next, and
+    only the agency sees its controls; every **Program terms** value says where it came from;
+    products, terms and team parts with no saved value are hidden for the client; **Needs
+    attention** tags every row with its round; there are exactly five **Tab summaries** cards;
+    and each team email copies.
 
 ## 1e. Page data: what the page keeps and how it is read back
 
@@ -1631,8 +2613,12 @@ campaign page:
   {"path": "tags-agency/{self}", "read": "interact", "write": "interact"},
   {"path": "data/users/{self}", "write": "interact"}
  ]},
- "user": {"scopes": ["profile"]}}
+ "user": {"scopes": ["profile"]},
+ "downloads": true}
 ```
+
+`downloads` lets every tab save its **Export** as Excel or CSV (**1d**, **Export**). It is not
+role gated, so a sheet's contents come from what the viewer can read, never from the capability.
 
 In the share menu's words: Contributors (the client) read the page data and write only under
 `client`, their own comments, their own activity, their own tags, and their own state; Editors
@@ -1669,9 +2655,10 @@ Every value a person can edit in page data is stored as one stamp:
 | Field | What it holds |
 | ----- | ------------- |
 | `value` | Text, a number, true or false, a date, a list, an object with fixed keys (below), or `null` for removed |
-| `source` | `manual` (a person on the page), `claude` (Claude wrote it), `atlas` (synced from the records), or `sheet` (from a sheet the CM pasted or uploaded in the chat) |
+| `source` | `manual` (a person on the page), `claude` (Claude wrote it), `atlas` (synced from the records), `sheet` (from a sheet the CM pasted or uploaded in the chat), or `file` (pulled from a program file in **Files**) |
 | `by` | The writer's id from `user.id()` for `manual`; empty for the other sources |
-| `byName` | The writer's name when it was written: `user.me()` for `manual`, else "Claude", "Aspire Atlas" or the sheet's name |
+| `byName` | The writer's name when it was written: `user.me()` for `manual`, else "Claude", "Aspire Atlas", the sheet's name, or the file's label |
+| `file` | Only with `source` `file`: the file's id in `program/files` (`file-{id}`), so the page can link to it |
 | `at` | Full UTC time of the write |
 
 The page shows the name from `user.profiles([by])` first, and `byName` only when that comes back
@@ -1723,7 +2710,10 @@ connections.
 merges one field at a time the same way the page does. Before a republish replaces a value,
 Claude reads the document: a `manual` stamp newer than the last pull (`agency/pull`) is left as it is and named
 in the publish message ("Kept 2 edits made on the page since the last pull"), so a republish
-never overwrites a person's edit that has not been pulled yet. Each write is pinned to the
+never overwrites a person's edit that has not been pulled yet. A republish whose value equals the
+stored one leaves the stamp as it is, so a value keeps its `source`, `byName` and `file`, and
+"Edited by {name}" or a file's label still shows after the edit is pulled into Atlas. Each write
+is pinned to the
 version Claude read (`if_version`); if someone saved in between, the write is refused, and Claude
 reads the document again and redoes only its own fields.
 
@@ -1743,9 +2733,10 @@ with a plain description holds plain data the page writes with no stamp.
 | Notes | the `notes` field on the decision and approval documents above, and agency notes on `agency/creator-{net}-{handle}` | Client; agency | A stamp each |
 | Scoring weights | `agency/match-score` | Agency | One key per weight, `weight-{signal}`, and `stats:` the tuning panel's figures |
 | Files | `program/files` | Agency | One key per file, `file-{id}`, whose `value` is `{label, url, round}` |
-| Rounds | `program/round-r{round}` | Agency | `label`, `month`, `buildStart`, `buildEnd`, `marketStart`, `marketEnd`, `launch` (dates); `creators` (`same` or `same-and-new`) and `started` (true) on a round started on the page |
-| Program details | `program/details` | Agency | `product-{id}` (a product in scope, `{name}`), `team-{id}` (`{name, role, goTo}`), `step-{gate}-r{round}-planned` and `-due` (dates), `termStart`, `termEnd`, `sync` (the weekly sync slot, shown only) |
-| Program terms | `program/terms` once the fees are sent; `agency/terms` before | Agency | `makes` (what each creator makes), `usage` (how long the brand can use it), `exclusivity`, `notes` |
+| Rounds | `program/round-r{round}` | Agency | `label`, `month`, `buildStart`, `buildEnd`, `marketStart`, `marketEnd`, `launch` (dates); `creators` (`same` or `same-and-new`) and `started` (true) on a round started on the page; `step-{id}`, one per step in the round's `plan` (**Rounds**, **Round steps**), whose `value` is `{name, order, date, owner, done, doneAt}`, or `{name, order}` for an approval |
+| Program details | `program/details` | Agency | `product-{id}` (a product in scope, `{name, status, description, photo}`, `photo` being the link; the image Claude embeds from it lives in the page itself, never in page data), `team-{id}` (`{name, role, title, email, owns, goTo}`), `step-{gate}-r{round}-planned` and `-due` (dates), `termStart`, `termEnd`, `sync` (the weekly sync slot, time zone and length from `campaign:{slug}-cadence`, shown only), `slack` and `channelLink` (the Slack channel's name and link from `campaign:{slug}-routing`, shown only; the email recipients never go on the page) |
+| Program terms | `program/terms` | Agency | `deliverable-{id}` (`{label, count}`), `adReadyVideos`, `variants`, `usageDays`, `allowlisting`, `partnershipAds`, `exclusivity`, `organic`. A page from before kept `makes`, `usage`, `exclusivity` and `notes` as text, in `agency/terms` until the fees were sent: Program terms reads `agency/terms` then `program/terms`, shows `makes` and `usage` that don't parse as one text row each ("What each creator makes", "Usage"), `exclusivity` as its row, and `notes` as a "Notes" row last, and the next publish moves them to `program/terms` |
+| Allowlisting uplift | `agency/terms` until the fees are sent, then `program/terms` | Agency | `upliftPct` |
 | Budget | `agency/budget` | Agency | `total` (stamp); `committed:`, `offersOut:`, `remaining:` (worked out at publish) |
 | Briefs per round | `briefs/{lane}-r{round}` | Agency | `concept`, `hook-{id}`, `cta-{id}`, `body`, `broll-{id}`, `runtime`, `product`, `disclosure`, `donot-{id}`; `version:` the brief's version at publish |
 | Variant build | `agency/brief-{lane}-r{round}` | Agency | The brief's variant build, one key per variant, `variant-{n}` |
@@ -1768,7 +2759,7 @@ with a plain description holds plain data the page writes with no stamp.
 | Attention | `agency/attention` | Agency | The agency's attention items, and who else each client item waits on (**Home**) |
 | Last pull | `agency/pull` | The Campaign Manager | `at:` the time of the last pull that recorded something |
 | Design notes | `agency/design` | Agency | `notes:` the brand theme fallbacks from **Design standards**, one line each |
-| Per viewer state | `data/users/{id}/done`, `/inbox-{month}`, `/collapse`, `/round` | Each person, their own | `done`: `items:` `{itemId: true or false}`. `inbox-{month}`: `read:` and `cleared:`, each `{itemId: at}`, for the items whose `at` falls in that month (`YYYY-MM`, **Tags and the inbox**). `collapse`: `sections:` `{sectionId: true or false}`. `round`: `selected:` the round number last picked in the **Round switcher**, and `at:` |
+| Per viewer state | `data/users/{id}/done`, `/inbox-{month}`, `/collapse`, `/round` | Each person, their own | `done`: `items:` `{itemId: true or false}`. `inbox-{month}`: `read:` and `cleared:`, each `{itemId: at}`, for the items whose `at` falls in that month (`YYYY-MM`, **Tags and the inbox**). `collapse`: `sections:` `{sectionId: true or false}`, true for closed and false for open; a section with no key takes its default (**1d**, **Collapsing sections**). `round`: `selected:` the round number last picked in the **Round switcher**, and `at:` |
 
 Attention, inbox and section ids are stable and say what they are (`decide-ig-{handle}-r1`,
 `fees-r1`, `selection-budget`), so a mark survives a republish. Each attention item also carries
@@ -1783,9 +2774,11 @@ Rules:
   even hidden. Agency data is written to `agency` with the Artifact tool's page data writes right
   after each publish, one batch per publish. The page renders the agency parts only when the
   viewer is an editor and those reads return.
-- **Fees reach the client only once sent.** What they make, usage, exclusivity and the agreed
-  fee go into the page itself and `program/terms` only after step 3 is sent; before that they
-  live in `agency`, and that publish moves them.
+- **Fees reach the client only once sent.** Each creator's row in **Contract and rates** (what
+  they make, usage, exclusivity and the agreed fee) and the allowlisting uplift go into the page
+  itself and client readable page data only after step 3 is sent; before that they live in
+  `agency`, and that publish moves them. Home's **Program terms** are the SOW's and are in
+  `program/terms` from the first publish (**1d**, **Who sees what**).
 - The page writes a field only when the person changed it, one write per change. Controls the
   viewer cannot write render as labels.
 - **Reading it back.** Pulling decisions (above) lists `client`, `edits`, `program`, `briefs`,
@@ -1824,7 +2817,7 @@ writes to it, checklist ticks and notes included.
 | `verb` | One of: added, changed, removed, decided, approved, requested changes, undid, cleared, commented, replied, resolved, reopened, ticked, unticked, uploaded, started, recorded, synced |
 | `text` | One line in the page's own words, written at the time: what changed and, for a short value, what it changed to ("Changed product status for @a to Shipped"). It never names the writer (the row does), and never holds an id, a slug, a field name or a tool name. A note or comment carries its first 200 characters |
 | `creator` | `{net}-{handle}` when the write is about one creator, else empty |
-| `asset` | The item when it is not a creator: `brief-{lane}`, `changes-{net}-{handle}`, `cut-{cut}-v{version}`, `file-{id}`, `round-r{round}`, `fees`, `budget`, `program`, `team-{id}`; else empty |
+| `asset` | The item when it is not a creator: `brief-{lane}`, `changes-{net}-{handle}`, `cut-{cut}-v{version}`, `file-{id}`, `round-r{round}`, `step-{id}-r{round}`, `fees`, `budget`, `program`, `terms`, `product-{id}`, `team-{id}`; else empty |
 | `anchor` | The hash the row opens (**1d**, **Header and tabs**): the item at the deepest part that table names (a note's `/notes`, a comment's `/c{comment}`, a cut's version), else the item, else its tab. The **Inbox** opens the same hash |
 | `round` | The round number from the round records (**Rounds**), or `null` for a write about the whole campaign (program details, team, a file with no round, the budget, the match score) |
 | `at` | Full UTC time of the write |
@@ -1854,7 +2847,7 @@ History shows them on the client's side, because nothing in the data says who wa
 | `checklist` | A review checklist item ticked or unticked | Content Review |
 | `upload` | A new version of a cut, its link or file, and its notes | Content Review |
 | `file` | A file added, edited or removed | Home |
-| `program` | Program details, products, team, steps and dates, the weekly sync, the term, program terms, a round's dates, and starting a round (one entry for the round and its carried creators) | Home, and the tab where it was edited |
+| `program` | Program details, products, team, steps and dates (a step ticked, added, removed or edited, and Move to next step), the weekly sync, the term, program terms, a round's dates, and starting a round (one entry for the round and its carried creators) | Home, and the tab where it was edited |
 | `edit` | Any other edited value: a creator's profile, concept and product, a cut's title, the budget total, a match score weight | Where it was edited |
 | `record` | Claude's writes: a republish's changes (one entry per record changed, naming the parts in plain words), a pull recorded in Atlas, the attention list, the design notes | The tab that shows the record |
 
@@ -1895,7 +2888,8 @@ the write.
 marks, collapsed sections, the remembered round) is private to them, even from Claude, so logging
 it in shared data would publish it; it never logs. Nor do the log's own writes (entries,
 `lastAt`, leases), `agency/edit-check`, `agency/tag-delivery`, a write the rules refused (the field shows "Not saved"),
-or anything in **Preview as client**, which never writes.
+or anything in **Preview as client**, which never writes. An **Export** writes nothing, so it
+never logs either.
 
 **Reading it.** The **Inbox** reads the log whenever the page is open, the lighter way in **Tags
 and the inbox**, **Reading it**. History's own reads run only while **History** is open. It subscribes to
@@ -2155,7 +3149,8 @@ document. Steps 3 and 4 run after every publish.
    `tags-client/{id}/items`, at `view`: empty. Listing `comments`, `activity`, `activity-editors`
    or `tags-client` alone proves nothing, because the documents sit below them.
 3. Read the published page itself with the Artifact tool and search it for every agency only value
-   in `agency`: each email address and phone number, the first words of each agency note and
+   in `agency`: each email address and phone number (the Aspire team's work emails are in the
+   page on purpose and are not in `agency`, **Who sees what**, **Contact details**), the first words of each agency note and
    agency only comment, the budget total, and each offer, counter, rate and cost that the page may
    not show. An amount the page shows the client in its own right (an agreed fee once the fees are
    sent) is left out of the search even when an offer or counter had the same number. None of the
@@ -2271,7 +3266,8 @@ without a second question; the send confirmation names the reminder.
   overlap never share a name. Use a one-time schedule when the tools offer one; otherwise a cron
   pinned to that date and time, which the close removes. Gate 4b has one per creator, its step name
   "creator changes @{handle}".
-- **Weekly call.** One task named "Atlas CAS weekly sync: {brand} - {campaign}" at the C6 slot,
+- **Weekly call.** One task named "Atlas CAS weekly sync: {brand} - {campaign}" at the C6 slot
+  (the day, time and time zone from `campaign:{slug}-cadence`, ignoring the length when saved),
   converted to UTC cron (`M H * * D`, shifting the weekday when the conversion crosses
   midnight). It republishes the page and posts the agenda: where we are, what is blocking, and
   what is next.
