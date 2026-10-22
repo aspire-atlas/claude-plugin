@@ -60,7 +60,7 @@ Text after the command is the argument. Route on it before anything else:
 | -------- | ------ |
 | `agents` (also `list agents`, `show agents`) | Run **List agents** below. Skip the phases unless the user picks an agent to run. |
 | `run {agent}` (an agent name from the list, with or without the `aspire:` prefix; the agents panel drafts this when someone presses an agent) | Skip steps 1 to 4 of **List agents** and start at step 5 for that agent: the sample question, then its hand-off row. The agent itself always starts in a subagent (**Running agents**). An unknown name: run **List agents** from step 1. |
-| `org` (also `change organization`, `switch org`; the progress bar's title drafts it) | Run Phase 1, then call `get_status`, ask which organization with `AskUserQuestion` (header "Organization", one option per organization, the selected one first), then call `get_status` again with `asOrganizationId` set to the choice, and give the Phase 2 + 3 route summary. Change nothing in Atlas. |
+| `org` (also `change organization`, `switch org`; the progress bar's title drafts it) | Run Phase 1, then call `get_status`, ask which organization with `AskUserQuestion` (header "Organization", one option per organization, the selected one first), then call `get_status` again with `asOrganizationId` set to the choice (even when it is the organization already selected: the progress bar and credits follow the named call, not the default), and give the Phase 2 + 3 route summary. Change nothing in Atlas. |
 | `getting started` (also `help`, `get started`, `start`, `guide`, `starter guide`, `what can you do`, `how does this work`) | Show the Atlas Starter Guide: publish the page in `references/first-run.md` (**7**, on request), say its link in one line, then make the **Sample artifacts** offer for Atlas as a whole. It needs no Atlas connection, so skip the phases and Phase 1. When Atlas happens to be connected already, use the `On request` status line; otherwise none. Never answer these with a text summary instead of the page, and never run onboarding unless the user asks to set up. |
 | `sample` (also `sample {agent}`, `show me a sample`, `example`) | Run **Sample artifacts** below. No Atlas connection is needed, so skip the phases. |
 | `fee calculator` (also `fees`, `pricing`, `rate card`, `creator rates`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Fee calculator** below. Skip the other phases. |
@@ -576,7 +576,7 @@ call is being made. Write a fresh one per call.
 2. **Auth check.** An unauthorized error means the connector token lapsed: render one connector
    card (Phase 1 rules) with "Aspire Atlas needs a fresh sign in. Click Connect above."
 3. **Organization.** One org: use it, name it once in the summary. Several: `AskUserQuestion`
-   with the org names, then call `get_status` again with `asOrganizationId` set to the chosen org's `id`.
+   with the org names, then call `get_status` again with `asOrganizationId` set to the chosen org's `id`, always, even when the choice is the organization `get_status` already selected: the progress bar and the credits follow the named call, never the default.
 4. **Route.**
    - `profiles` empty → **new org**. Go to Phase 4.
    - Profiles exist, none with a connected channel → **profile only**. Skip 4.1, go to 4.2
@@ -2035,9 +2035,93 @@ It never does the heavy lifting itself. Several campaigns may be saved; ask whic
 `AskUserQuestion` when more than one is active.
 
 Everything a person sees uses the reference's **Page vocabulary**: concepts, not lanes; the four
-steps (Concepts approved, Creators approved, Fees approved, Briefs approved), not gates. The flow
-never sends email and never connects to a mailbox, a sheet, or a slides file: the CM sends from
-their own mail and pastes the replies.
+steps (Concepts approved, Creators approved, Fees approved, Briefs approved), not gates; the
+page's six tabs (Home, Master Brief, Creator Selection, Selected Creators, Content Review, Ad
+Performance); and the client's decisions as Priority Yes, Yes, Maybe and No. The flow
+never sends email, never reads a mailbox, and never writes to a sheet or a slides file: the CM
+sends from their own mail and pastes the replies. A Google Docs, Slides or Sheets link is read only
+when the session, or the agency person on the page, already has a Google Drive connector; the flow
+never adds a connector or asks for one.
+
+The page knows who opened it: the agency (shared as Editor) sees every field and writes
+everything except the client's own calls (decisions, sign offs, fee and cut approvals), and can
+preview the page as the client on any tab; the client (shared as Contributor)
+writes only their own calls, comments, shipping updates and done marks, per tab; anyone else reads
+the client's view. Agency only fields (agency only comments, agency notes and vetting evidence, rates,
+offers, counters, costs and the budget, drafts and the reply log, the match score tuning, the
+brief's variant build, and contact details) never go into the page itself or into page data the
+client can read. The reference's **1d**, **Who sees what**, and **1e** hold the rules.
+
+Home opens on a Simple view for both sides: one sentence on where the round stands and when ads
+go live, a pace verdict (Ahead, On track or Running behind) with the ad videos in against what is
+needed by today, what waits on the viewer with a link to each item, what Aspire is working on,
+last round's cost per sale against the client's target once a round has ad results, the next
+weekly sync in the viewer's time zone with a Google Calendar link and the Slack channel, and the
+three newest unread updates. A Switch shows Everything, the working view: the round's steps with
+what's now and up next (the agency ticks steps, moves to the next one and edits dates), the SOW
+terms with where each came from, the products in scope, everything that needs attention tagged by
+round, one card per tab for the round in view, the Aspire team with their emails, and the program
+files (below). Every
+figure comes from the records and the viewer's clock, and a part whose record doesn't exist yet
+is hidden, never filled with a placeholder. The reference's **1d**, **Home**, holds the rules.
+
+Home's Files keeps the program files (SOW, kickoff deck, briefs, creative packet, shared folder
+and the rest) in one place, each with its category, version, round, who added it and its date,
+filtered by round, with the required files still missing and a preview of each upload (PDF, image,
+Word, Excel, text). Only the agency adds them, by link, upload or drop, and removes them after a
+confirm. When a file is added the page asks Claude to read it and fills the program terms, products,
+step dates and budget from it, but only where the file is newer than the file each value last came
+from, by the date in the document first. Files Claude found while setting up the campaign in the
+chat show as "Found by Claude", and the CM can ask Claude to scan files from the chat. The page
+never writes to Atlas: scanned values reach the records when the CM pulls. The reference's **1d**,
+**Home**, **Files**, and **1e**, **Program files and the scan**, hold the rules.
+
+Every edit on the page is saved in the page's shared data, field by field, with who made it and
+when, so everyone sees it live and on every device; the agency edits program terms, products,
+team, steps and dates, the budget and the brief in place. Browser storage keeps only the last
+open tab and the Creator Selection layout. The page ships no sample data: an empty campaign shows
+its empty states. A republish never overwrites a person's edit that has not been pulled yet. The
+reference's **1d**, **Editing in place**, and **1e**, **Every editable value**, hold the rules.
+
+Every write on every tab, checklist ticks and notes included, adds one entry to the page's activity
+log, and **History**, opened from the inbox, shows it grouped by day, filtered by tab and round,
+searchable, with each row opening its item and a Copy as table. Each person sees only entries
+about what they can see: entries about agency only data go to a log the client can't read, and a
+person's own state (done marks, inbox marks) is never logged. The reference's **1d**, **History**,
+and **1e**, **The activity log**, hold the rules.
+
+Every tab has an inbox, opened from the header: Home's holds every update across tabs and rounds,
+and each other tab's holds only its own, with an unread count. Each item (a tag, a note, a reply,
+something new, a status change) opens the exact thing it is about: the creator and their notes,
+a cut at its version and timecode, a part of the brief. People open, clear one, mark all read,
+clear all, or open History, and their read and cleared marks follow them to every device. Typing
+"@" in any note or comment tags Client, Aspire or one person, and the tag lands only in that
+inbox; a tag for Aspire is kept where other client approvers can't read it. The page never sends
+Slack or email: the chat lists new tags and posts the ones for the client only after a confirm.
+The reference's **1d**, **Inbox** and **Tagging**, **1e**, **Tags and the inbox**, and
+**Delivering tags** hold the rules.
+
+Every section on every tab folds to its header and a one line summary, with Expand all and
+Collapse all on each tab. Sections for one glance jobs start open and the rest start closed, and
+what each person opens or closes follows them to every device, never logged. Every job on the
+page is two clicks or fewer from Home as it first opens. The reference's **1d**, **Collapsing
+sections**, holds the rules and the table of paths.
+
+Every tab has an Export button that saves what is on screen (the round in view, the filters and
+the search) as an Excel file with a frozen header, filters and money, percent and date formats, as
+a CSV, or as a copied table. Each viewer's export is built from what they can read, so the
+client's never holds an agency only column. The reference's **1d**, **Export**, holds the sheets
+per tab and the rules.
+
+A campaign runs in rounds, one a month, as many as it needs. Every tab but Creator Selection shows
+one round, picked in the round switcher on every tab and remembered for each person; Creator
+Selection is one pool for every round, and an approval adds the creator to the newest round
+still choosing creators. Rounds overlap, so the status screen shows every round that is not done.
+A round's state (planned, in production, in market, done) comes from its dates on the real
+clock. The agency starts the next round, in the chat or on the page, carrying the creators
+forward as returning; nothing of the earlier round changes, and a done round is read only. A
+creator makes at most 5 variants in a round. The reference's **Rounds** and **1d**, **Round
+switcher**, hold the rules.
 
 ### Setup
 
@@ -2052,18 +2136,31 @@ their own mail and pastes the replies.
 3. Ask C1 and C3 to C6, one `AskUserQuestion` each, in order. On C5 and C6, say plainly what each
    one approves: delivery without asking, and scheduled tasks for this campaign.
 4. C7 confirms the batch once, then write every record with `append_calibration` and the Gate 1
-   finding with `append_insights`. A `key-exists` follows the Phase 5 supersede rule with its own
+   finding with `append_insights`. Any document setup read or was given a link to (the concepts'
+   deck, a SOW, a kickoff deck, the shared folder) is saved with the campaign and shows on Home's
+   Files as "Found by Claude" (the reference's **1b**, **Files found in setup**); no new question
+   asks for files. A `key-exists` follows the Phase 5 supersede rule with its own
    confirmation.
 
 ### Status
 
 Read the setup records and the working state (`search_insights` on the campaign's prefix, paged).
-Find the row in the reference's dispatch table, reading from the bottom up. Show one screen: the
-row's status line, the four steps (1 Concepts approved, 2 Creators approved, 3 Fees approved, 4
-Briefs approved) each with done and its date, now and its due date, or its planned date, the
-creator counts by concept, anything marked your call needed, and the campaign page link. Then one
-`AskUserQuestion`, header "Next": the row's next step first (Recommended), plus "Log a delay" and
-"Change setup". Never offer more than one next step.
+Find each round that is not done (the reference's **Rounds**, **Which round**) and its row in the
+dispatch table, reading from the bottom up. Show one screen: per round, its month, dates and state,
+its row's status line and the four steps (1 Concepts approved, 2 Creators approved, 3 Fees
+approved, 4 Briefs approved) each with done and its date, out with the client and its due date,
+or its planned date; then the round's current step and up next from its **Round steps**, read
+after the page's step edits are pulled or labelled "as of the last pull" when they aren't; the
+creator counts by concept, anything marked your call needed, and the campaign page link,
+opened on the tab the next step is on (Creator Selection for creators, Selected Creators for fees
+and shipping, Master Brief for briefs and creator changes, else Home), and the new tags from the
+page per the reference's **Delivering tags**. Then one
+`AskUserQuestion`, header "Next": the one next step the reference's **One next step** rule picks
+(Recommended), plus "Log a delay" and "Change setup", with "Start round {n+1}" in place of "Change
+setup" when the reference's **Starting the next round** offers it. Never offer more than one next
+step. When there are new tags for the client and a saved destination, the same call carries a
+second question, header "Tags", that confirms posting them; nothing about tags is sent without
+that answer.
 
 ### Run
 
@@ -2080,11 +2177,13 @@ the tool prefix, `profile_id`, and `profile_slug`:
   `references/creator-vetting.md` first and write it with its own confirmation, but it is not
   required.
 - **Sending a step for approval** (rows 4, 7, 11): per the reference's **Gate packets**. The
-  campaign page is the approval page; the CM shares it with the client as Contributor.
+  campaign page is the approval page, linked to Creator Selection, Selected Creators or Master
+  Brief; the CM shares it with the client as Contributor.
 - **Pull the client's decisions** (rows 5, 8, 12, 15, and whenever the CM asks "what did they
-  approve"): read the page data per the reference's **Pulling decisions**, show every approve,
-  maybe and reject named with its reason, plus shipping, status and ad permission edits, and
-  record them with one picker. A Maybe stays open on the page with a question back to the client.
+  approve"): read the page data per the reference's **Pulling decisions**, show every Priority
+  Yes, Yes, Maybe and No by name, with its reason when one was given, plus shipping, status and ad permission edits, and
+  record them with one picker. Priority Yes and Yes record as approved, No as rejected. A Maybe
+  stays open on the page with a question back to the client.
 - **Record a reply** (rows 7, 10, 14, or whenever the CM pastes one): per
   `references/rates-and-terms.md`, **Replies**. One picker proposes the record and the next move;
   a reply that changes what the client approved becomes "your call needed" for the client.
@@ -2096,14 +2195,25 @@ the tool prefix, `profile_id`, and `profile_slug`:
   "Write the round {n} briefs for {concepts} and save them to the campaign?"
 - **Send the briefs to creators** (row 13): per the reference's **1g**. A changed brief from a
   creator goes back to `atlas-creator-brief` with `revision` for the differences in plain words,
-  then to the client on the Briefs tab.
+  then to the client on the Master Brief tab.
+- **Start the next round** (once the newest round's step 4 is cleared and no later round exists,
+  offered in place of "Change setup"): per the reference's **Rounds**, **Starting the next round**.
+  One picker names the new round's month and dates and which creators carry forward, then writes
+  the round and the returning creators' rows without touching the earlier round.
 - **Production** (row 16): **Content review** for each draft. Once creators have posted, the
   hook review from `references/hooks-and-ctas.md`, run here in the main thread: it matches the
   creators' posts to the briefed hooks, shows which led, and saves the results after one
   confirmation, so the next round's briefs lead with what worked.
 
+- **Post the tags** (whenever **Status** shows new tags for the client): per the reference's
+  **Delivering tags**, on the "Tags" answer only. Send posts each to the routing destinations and
+  records it as sent; "Keep on the page only" records it as kept. Tags for Aspire are shown to the
+  CM and never posted, and unattended runs never list or post tags.
+
 After each step, write the outcome per the reference, republish the campaign page with its page
-data, post the step line when a step moved, and show the new status in one line.
+data, run the reference's **Checking the roles** and **Checking the edits** when they apply (the
+first stops a send that would show the client an agency only value), post the step line when a
+step moved, and show the new status in one line.
 
 ### Schedule
 
@@ -2127,7 +2237,8 @@ Full detail lives in `references/rates-and-terms.md`.
 1. If `campaign:{slug}-terms` is missing, ask T1 and T2, confirm the pair once, and write it.
 2. Draft an opening offer for every approved creator, from the fee calculator (**Fee
    calculator**). Say on the page when the Aspire recommended rates were used.
-3. Show the Fees tab and the offer drafts, then confirm saving the offers in one picker.
+3. Show contract and rates (Selected Creators) and the offer drafts, then confirm saving the
+   offers in one picker.
 4. Keep one email draft on each creator's row per the reference's **Drafts** (offer, counter,
    accept, chase). The CM sends them from their own mail; mark them sent when the CM says so.
 5. Record each pasted reply per the reference's **Replies**: one picker for the record and the
@@ -2799,8 +2910,8 @@ The watch list is the brand's saved creators, outside any campaign.
   and the handles the user types; creator discovery, whose saved cadence record approves it
   on every run including scheduled ones; and the deliverable tracker, where T0 approves
   `lookup_posts` for the post links the user pasted, in an interactive check only.
-- **Inside a CAS campaign**, one picker confirms a whole gate batch: every accept and every
-  reject is named in the question, and that one answer covers all the writes the close makes.
+- **Inside a CAS campaign**, one picker confirms a whole gate batch: every decision (Priority
+  Yes, Yes, Maybe, No) is named in the question, and that one answer covers all the writes the close makes.
   The campaign's saved sync cadence (C6) is the standing approval for paid discovery on that
   campaign: the creator marketplace and paid lookups for its lanes, without asking again. The
   defaults for brand users everywhere else are unchanged.

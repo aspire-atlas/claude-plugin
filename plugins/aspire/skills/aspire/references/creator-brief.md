@@ -75,11 +75,12 @@ phases instead of one week of three posts.
 ## Creator-ads mode (the CAS master brief)
 
 For a CAS campaign (`brief_mode` `creator-ads`, `cas-campaign.md`), the brief is one master brief
-per lane for the current round, not a weekly plan and not campaign phases. Editors cut the ads
+per lane for one round, not a weekly plan and not campaign phases. Editors cut the ads
 from it, so it must be complete enough to edit from.
 
 **Inputs from Atlas.** The lane records (`campaign:{slug}-lane-{lane}`), the campaign record
-(`-cas`: package, term, round), and the roster (`cas-campaign.md`, **Working state**): the
+(`-cas`: package and term), the round the main thread names (`cas-campaign.md`, **Rounds**),
+and the roster (`cas-campaign.md`, **Working state**): the
 creators approved at Gate 2 with their agreed fees. Creators and fees come from the roster,
 never from a new search, and fees are shown as agreed. Also read the hook log
 (`recordType` `hook` on the campaign's prefix) and the saved findings this reference already
@@ -127,7 +128,7 @@ on the campaign, never reuse one, and append every new one as a `hook` finding.
 **The page.** One page per round, a section per lane with an anchor (`#lane-{lane}`), the
 coverage result at the top of each section. Title "<Brand> Creator Ad Brief: <Campaign>, round
 {n}", republished to the same path for that round. It stays the full brief editors cut from; the
-client approves the same briefs on the campaign page's Briefs tab (`cas-campaign.md`, **Gate
+client approves the same briefs on the campaign page's Master Brief tab (`cas-campaign.md`, **Gate
 4**), which the main thread builds from this page. Sections 2, 5 and 6 of **Page structure** drop out: the
 lanes set the audience, the roster replaces the shortlist, and the gates replace the timeline.
 

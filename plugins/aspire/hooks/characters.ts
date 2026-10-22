@@ -30,6 +30,7 @@
 // and effort instead of by savvy-flow tier names, the right-to-left mirroring
 // is gone, and every costume lives in the one CHARACTERS table below.
 
+import { BRAND, ILLUSTRATION as I } from './palette'
 import { AGENT_CHARACTERS, COSTUME_KEYFRAMES, VARIANT_CHARACTERS } from './costumes'
 
 /** What picks a character: the agent type and what the run is on. */
@@ -57,9 +58,9 @@ export type Character = {
   css: string
 }
 
-// Aspire green: the brand teal of the starter page (#1E5C58 light, #5DB3A9 dark), mid-tone so it reads on both.
-export const ASPIRE = '#3B8A82'
-const INK = '#1F1E1D'
+// Aspire teal: the mark's brand color, mid-tone so it reads on both light and dark.
+export const ASPIRE = BRAND.teal
+const INK = I.ink
 
 const stamp = (f: Fill, x: number, y: number, rows: string[], map: Record<string, string>, cls?: string): void =>
   rows.forEach((row, dy) => [...row].forEach((ch, dx) => map[ch] && f(x + dx, y + dy, 1, 1, map[ch] ?? '', cls)))
@@ -92,13 +93,13 @@ export const CHARACTERS: readonly Character[] = [
   {
     // Pirate scouting the code (the Explore agent); the cutlass fences.
     key: 'explore',
-    color: '#888780',
+    color: I.stone,
     matches: run => run.type === 'Explore',
     draw: f => {
       crabBody(f)
-      stamp(f, 5, 3, ['.kk..............kk.', '.kkk....kkkk....kkk.', '..kkkkkkkwwkkkkkkk..', '..kkkkkkkkkkkkkkkk..', '.gggggggggggggggggg.'], { k: '#55514C', w: '#F8F6F1', g: '#F5C542' })
+      stamp(f, 5, 3, ['.kk..............kk.', '.kkk....kkkk....kkk.', '..kkkkkkkwwkkkkkkk..', '..kkkkkkkkkkkkkkkk..', '.gggggggggggggggggg.'], { k: I.slate, w: I.paper, g: I.gold })
       f(7, 11, 11, 1, INK); f(18, 11, 4, 3, INK)
-      f(27, 6, 1, 9, '#C9CCD2', 'it'); f(26, 15, 3, 1, '#7A4A26', 'it')
+      f(27, 6, 1, 9, I.steel, 'it'); f(26, 15, 3, 1, I.wood, 'it')
     },
     css: `.c-explore.run .it{transform-origin:50% 100%;animation:fence .5s ease-in-out infinite}
 @keyframes fence{50%{transform:rotate(25deg)}}`,
@@ -106,14 +107,14 @@ export const CHARACTERS: readonly Character[] = [
   {
     // Astronaut in a glass dome (Fable); floats instead of walking, the antenna and the star blink.
     key: 'fable',
-    color: '#7F77DD',
+    color: I.violet,
     matches: run => isFamily(run, /fable|mythos/i),
     draw: (f, t) => {
       crabBody(f)
-      f(6, 7, 18, 1, '#E6E8EE'); f(5, 8, 1, 14, '#E6E8EE'); f(24, 8, 1, 14, '#E6E8EE'); f(6, 22, 18, 1, '#C9CCD2')
-      f(6, 8, 18, 14, 'rgba(169,214,245,.32)'); f(8, 9, 2, 1, '#fff'); f(8, 10, 1, 2, '#fff')
-      f(14, 4, 2, 3, '#C9CCD2'); f(14, 2, 2, 2, t, 'ant'); f(13, 18, 4, 2, t)
-      f(27, 3, 1, 3, '#F5C542', 'star'); f(26, 4, 3, 1, '#F5C542', 'star')
+      f(6, 7, 18, 1, I.frost); f(5, 8, 1, 14, I.frost); f(24, 8, 1, 14, I.frost); f(6, 22, 18, 1, I.steel)
+      f(6, 8, 18, 14, I.glass); f(8, 9, 2, 1, I.white); f(8, 10, 1, 2, I.white)
+      f(14, 4, 2, 3, I.steel); f(14, 2, 2, 2, t, 'ant'); f(13, 18, 4, 2, t)
+      f(27, 3, 1, 3, I.gold, 'star'); f(26, 4, 3, 1, I.gold, 'star')
     },
     css: `.c-fable.run{animation:float 1s ease-in-out infinite}
 .c-fable.run .la,.c-fable.run .lb,.c-fable.run .bd{animation:none}
@@ -124,14 +125,14 @@ export const CHARACTERS: readonly Character[] = [
   {
     // Detective with a deerstalker (Opus at xhigh or max effort); the magnifier sweeps and glints.
     key: 'heavy',
-    color: '#D85A30',
+    color: I.orange,
     matches: run => isOpusAt(run, ['xhigh', 'max']),
     draw: (f, t) => {
       crabBody(f, -4, 'it')
-      stamp(f, 6, 3, ['......bbbbbb......', '....bbcbbcbbbb....', '...bbbbbbbbbbbb...', '..bcbbcbbcbbcbbb..', '.bbbbbbbbbbbbbbbb.', 'dddddddddddddddddd'], { b: '#7A4A26', c: '#A0703F', d: '#5A3519' })
+      stamp(f, 6, 3, ['......bbbbbb......', '....bbcbbcbbbb....', '...bbbbbbbbbbbb...', '..bcbbcbbcbbcbbb..', '.bbbbbbbbbbbbbbbb.', 'dddddddddddddddddd'], { b: I.wood, c: I.tan, d: I.walnut })
       f(6, 9, 18, 1, t)
-      stamp(f, 23, 1, ['.kkk.', 'k...k', 'k...k', 'k...k', '.kkk.'], { k: '#3A3A3C' }, 'it')
-      f(24, 2, 3, 3, 'rgba(169,214,245,.7)', 'it'); f(25, 6, 1, 4, '#7A4A26', 'it'); f(24, 2, 1, 1, '#fff', 'gl')
+      stamp(f, 23, 1, ['.kkk.', 'k...k', 'k...k', 'k...k', '.kkk.'], { k: I.graphite }, 'it')
+      f(24, 2, 3, 3, I.lens, 'it'); f(25, 6, 1, 4, I.wood, 'it'); f(24, 2, 1, 1, I.white, 'gl')
     },
     css: `.c-heavy.run .it{animation:scan 1s steps(1) infinite}
 .c-heavy.run .gl{animation:blink 1s steps(1) infinite -.5s}
@@ -141,13 +142,13 @@ export const CHARACTERS: readonly Character[] = [
   {
     // Engineer in a hard hat (Opus at high effort); the wrench turns a bolt.
     key: 'careful',
-    color: '#BA7517',
+    color: I.bronze,
     matches: run => isOpusAt(run, ['high']),
     draw: (f, t) => {
       crabBody(f)
-      stamp(f, 6, 4, ['.....yyyyyyyy.....', '...yyyyyhhyyyyy...', '..yyyyyyhhyyyyyy..', '..yyyyyyhhyyyyyy..', '.yyyyyyyhhyyyyyyy.', 'dddddddddddddddddd'], { y: '#F5C542', h: '#FBE08A', d: '#C99A1E' })
+      stamp(f, 6, 4, ['.....yyyyyyyy.....', '...yyyyyhhyyyyy...', '..yyyyyyhhyyyyyy..', '..yyyyyyhhyyyyyy..', '.yyyyyyyhhyyyyyyy.', 'dddddddddddddddddd'], { y: I.gold, h: I.butter, d: I.mustard })
       f(13, 5, 4, 2, t)
-      stamp(f, 0, 10, ['.s.s', 'sss.', '.s..', '.s..'], { s: '#8E929A' }, 'it')
+      stamp(f, 0, 10, ['.s.s', 'sss.', '.s..', '.s..'], { s: I.silver }, 'it')
     },
     css: `.c-careful.run .it{transform-origin:100% 100%;animation:twist .5s ease-in-out infinite}
 @keyframes twist{50%{transform:rotate(-35deg)}}`,
@@ -155,12 +156,12 @@ export const CHARACTERS: readonly Character[] = [
   {
     // Chef (Opus at medium effort), the toque traced from DockCrab's Sprites.chefHat; tosses the omelette.
     key: 'medium',
-    color: '#378ADD',
+    color: I.blue,
     matches: run => isOpusAt(run, ['medium']),
     draw: (f, t) => {
       crabBody(f, -4, 'pan')
-      stamp(f, 6, 0, ['........lll.......', '.......lllll......', '.wwwwgwwwwwwgwwwww', 'wwwwwwwwwwwwwwwwww', 'wwwwwwwwwwwwwwwwww', 'wwwwwgwwwwwggwwwww', '.wwwwgwwwwwggwwwww', '.dddbbbbbbbbbbbbb.', '.dddbbbbbbbbbbbbb.', '.dddbbbbbbbbbbbbb.'], { w: '#F4F3EE', l: '#F7F6F2', g: '#D2D1C8', b: t, d: '#B45F43' })
-      f(22, 8, 7, 2, '#4A4A48', 'pan'); f(26, 10, 1, 1, '#4A4A48', 'pan'); f(24, 7, 3, 1, '#F5B731', 'egg')
+      stamp(f, 6, 0, ['........lll.......', '.......lllll......', '.wwwwgwwwwwwgwwwww', 'wwwwwwwwwwwwwwwwww', 'wwwwwwwwwwwwwwwwww', 'wwwwwgwwwwwggwwwww', '.wwwwgwwwwwggwwwww', '.dddbbbbbbbbbbbbb.', '.dddbbbbbbbbbbbbb.', '.dddbbbbbbbbbbbbb.'], { w: I.cream, l: I.offwhite, g: I.bone, b: t, d: I.terracotta })
+      f(22, 8, 7, 2, I.pan, 'pan'); f(26, 10, 1, 1, I.pan, 'pan'); f(24, 7, 3, 1, I.yolk, 'egg')
     },
     css: `.c-medium.run .pan{transform-origin:0 50%;animation:tilt 1s ease-in-out infinite}
 .c-medium.run .egg{animation:flip 1s ease-in-out infinite}
@@ -169,13 +170,13 @@ export const CHARACTERS: readonly Character[] = [
   {
     // Racer in a helmet (Opus at low effort); runs at double pace, the checkered flag flutters.
     key: 'light',
-    color: '#1D9E75',
+    color: I.green,
     matches: run => isOpusAt(run, ['low']),
     draw: (f, t) => {
       crabBody(f, -4)
-      stamp(f, 6, 5, ['....rrrrrrrrrr....', '..rrrrrrwwrrrrrr..', '.rrrrrrrwwrrrrrrr.', '.rrrrrrrwwrrrrrrr.', '.rrrrrrrwwrrrrrrr.', '.kkkkkkkkkkkkkkkkr'], { r: t, w: '#F8F6F1', k: INK })
-      f(25, 1, 1, 9, '#8E929A')
-      stamp(f, 26, 1, ['wkwk', 'kwkw', 'wkwk'], { w: '#F8F6F1', k: INK }, 'flag')
+      stamp(f, 6, 5, ['....rrrrrrrrrr....', '..rrrrrrwwrrrrrr..', '.rrrrrrrwwrrrrrrr.', '.rrrrrrrwwrrrrrrr.', '.rrrrrrrwwrrrrrrr.', '.kkkkkkkkkkkkkkkkr'], { r: t, w: I.paper, k: INK })
+      f(25, 1, 1, 9, I.silver)
+      stamp(f, 26, 1, ['wkwk', 'kwkw', 'wkwk'], { w: I.paper, k: INK }, 'flag')
     },
     css: `.c-light.run .la{animation-duration:.25s}.c-light.run .lb{animation-duration:.25s;animation-delay:-.125s}
 .c-light.run .flag{transform-origin:0 50%;animation:wave .25s steps(1) infinite}
@@ -184,7 +185,7 @@ export const CHARACTERS: readonly Character[] = [
   {
     // The plain crab: every other run (Sonnet, Haiku, Opus before its effort is known). Keep it last.
     key: 'other',
-    color: '#888780',
+    color: I.stone,
     matches: () => true,
     draw: f => crabBody(f),
     css: '',
@@ -206,16 +207,16 @@ export const characterOf = (run: CharacterRun): Character => {
  */
 export const COACH_CRAB: Character = {
   key: 'coach',
-  color: '#378ADD',
+  color: I.blue,
   matches: () => false,
   draw: f => {
     crabBody(f)
-    stamp(f, 8, 7, ['..bbbbbbbbbb..', '.bbbbbwwbbbbb.', 'bbbbbbbbbbbbbb'], { b: '#378ADD', w: '#F8F6F1' }, 'hd')
-    stamp(f, 4, 9, ['wwwww'], { w: '#F8F6F1' }, 'hd')
-    stamp(f, 12, 14, ['r......r', '.r....r.', '..r..r..', '...rr...'], { r: '#E24B4A' })
-    stamp(f, 13, 18, ['yyyyy', 'ykyyy', 'yyyy.'], { y: '#F5C542', k: INK }, 'wh')
-    stamp(f, 22, 5, ['..gggg..', 'nnnnnnnn', 'nwwwwwwn', 'nwkkkkwn', 'nwwwwwwn', 'nwkkkwwn', 'nwwwwwwn', 'nwwwwwwn', 'nnnnnnnn'], { g: '#C9CCD2', n: '#7A4A26', w: '#F8F6F1', k: '#55514C' }, 'it')
-    stamp(f, 24, 11, ['....p', '...y.', '..y..', '.y...', 'k....'], { p: '#D4537E', y: '#F5C542', k: INK }, 'pn')
+    stamp(f, 8, 7, ['..bbbbbbbbbb..', '.bbbbbwwbbbbb.', 'bbbbbbbbbbbbbb'], { b: I.blue, w: I.paper }, 'hd')
+    stamp(f, 4, 9, ['wwwww'], { w: I.paper }, 'hd')
+    stamp(f, 12, 14, ['r......r', '.r....r.', '..r..r..', '...rr...'], { r: I.red })
+    stamp(f, 13, 18, ['yyyyy', 'ykyyy', 'yyyy.'], { y: I.gold, k: INK }, 'wh')
+    stamp(f, 22, 5, ['..gggg..', 'nnnnnnnn', 'nwwwwwwn', 'nwkkkkwn', 'nwwwwwwn', 'nwkkkwwn', 'nwwwwwwn', 'nwwwwwwn', 'nnnnnnnn'], { g: I.steel, n: I.wood, w: I.paper, k: I.slate }, 'it')
+    stamp(f, 24, 11, ['....p', '...y.', '..y..', '.y...', 'k....'], { p: I.pink, y: I.gold, k: INK }, 'pn')
   },
   css: `.c-coach.run .pn{animation:tap .5s steps(1) infinite}
 .c-coach.run .wh{animation:swing .5s ease-in-out infinite}
