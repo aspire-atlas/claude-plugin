@@ -1056,7 +1056,7 @@ client's level before the link goes out.
 | Why we picked them | yes | yes | The CM's note | Creator Selection |
 | Bio, category, verified, every badge, audience (gender, age, top countries, top cities), each post's caption and figures, and the Hook post and Paid partnership marks | yes | yes | Creator data and posts read at publish | Creator Selection, the creator viewer |
 | Notes: the client's notes and Aspire's notes for {brand} on a creator, each with who wrote it and when | yes, their own editable | yes, Aspire's editable | Client and agency on the page | Creator Selection, the creator viewer |
-| Your decision, reason, your notes, and who decided | yes, editable | yes, read only | Client on the page | Creator Selection |
+| Your decision, reason, and who decided | yes, editable | yes, read only | Client on the page | Creator Selection |
 | Status, ad permissions | yes, labels | yes, editable | Campaign state, agency edits | Creator Selection, Selected Creators |
 | What they make, usage, exclusivity, agreed fee | after the fees are sent | yes | Rates and terms | Selected Creators |
 | Fee approval | yes, editable while step 3 is open | yes, read only | Client on the page | Selected Creators |
@@ -3355,11 +3355,16 @@ under it not scrolling, focus kept inside while it is open and returned on close
   posts, and swiping up or down between creators, on the post only, never inside the bottom
   sheet. Every swipe has a Button that does the same: the post arrows over the media and the
   creator arrows in the top bar. The side panel is a bottom sheet over the lower part of the
-  screen. It opens peeked, showing its handle, the score ring with the band, the concept chip and
-  **Deciding in the viewer**, so a creator can be decided without opening it. Its handle is a
-  `button`, "Show profile" or "Hide profile" with `aria-expanded`, that opens it to 85% of the
-  screen's height, where it scrolls, and closes it again; dragging the handle does the same. The
-  post strip keeps clear of the peeked sheet, so the sheet never covers the media.
+  screen. It opens peeked, holding only its handle, one row with the score ring, the band and the
+  concept chip, the four decision Buttons and Skip, so a creator can be decided without opening it.
+  Its handle is a `button`, "Show profile" or "Hide profile" with `aria-expanded`, that opens it to
+  85% of the screen's height, where its body scrolls, and closes it again; dragging the handle does
+  the same. Opening the viewer at **Notes**, or with "Add note", opens the sheet. The media is
+  capped at the screen's height less the top bar and the peeked sheet, so the sheet never covers
+  it; the post's line and the row of posts under it scroll up from behind the sheet.
+- **Layering.** The bottom sheet sits above the post strip inside the viewer. A Dialog, a Select's
+  list, a tooltip or the tag list opened from the viewer is added after it in the page, so it opens
+  above the sheet.
 - **Touch.** Every control keeps its 44px tap area under 640px and on touch screens (**Tokens**),
   the post and creator arrows included.
 
@@ -3372,24 +3377,30 @@ from 768px, and in the peeked sheet under 768px.
   activity entry and the same "Saving", "Saved" and "Not saved". The agency, **Preview as client**
   and a read only client see the call as labels, as on the row. With no open round it is the label
   "Decisions open when round {n+1} starts". For the agency, the Status and Ad permissions Selects
-  and the Concept and Persona Selects sit under it, as on the row.
-- **Auto advance**, a Switch with its visible label, for the client only, on at first. Each
+  and the Concept and Persona Selects sit under it, as on the row; under 768px they are in the open
+  sheet, not the peek.
+- **Auto advance**, a Switch with its visible label, for the client only, on at first. It sits
+  with **Next** on the decision block's second row, which under 768px shows only in the open sheet. Each
   person's choice is kept in their own `data/users/{id}/viewer` (**1e**). On, a confirmed save of
   any of the four values moves to the next creator in the viewer who reads Unreviewed, half a
   second after "Saved" shows. A clear never moves on. Off, the viewer stays on the creator.
 - **The reason.** **Deciding**'s "What made the call?" offer opens under the control after a
   Priority Yes, Yes or No, and the optional note after a Maybe. With Auto advance on, the offer
-  moves to the next creator's panel as one line, "Add a reason for @{handle}", with the one tap
-  reasons and a ghost icon Button with the Lucide `x` icon, labelled "No reason". Picking one saves
-  it to that earlier call as **Deciding** says; the line goes when a reason is picked, when it is
-  closed, or when the next decision is made.
+  moves to the next creator as one line, "Add a reason for @{handle}" (after a Maybe, "Add a note
+  for @{handle}" with its text field), with the one tap reasons and a ghost icon Button with the
+  Lucide `x` icon, labelled "No reason". From 768px the line sits at the top of the side panel;
+  under 768px it sits over the foot of the post strip, just above the sheet, so the peek keeps its
+  size. Picking one saves it to that earlier call as **Deciding** says; the line goes when a reason
+  is picked, when it is closed, or when the next decision is made.
 - **Skip** (outline Button size sm) moves to the next creator in the viewer who reads Unreviewed,
   leaving this one as it is; a skipped creator comes round again after the last. **Next** (ghost
   Button size sm, Lucide `chevron-right`) moves to the next creator in order, decided or not.
   The agency gets Next only.
 - **The end.** When a save leaves no creator in the viewer reading Unreviewed, the client's panel
   shows "You've decided all {n} creators in this view." with "Back to the list" (default) and
-  "Review from the start" (outline). The agency's Next is disabled on the last creator.
+  "Review from the start" (outline). When every creator still Unreviewed has been skipped since it
+  last came round, Skip shows the same panel with "{u} still unreviewed" in place of the first
+  line, so skipping never loops. The agency's Next is disabled on the last creator.
 - **Live.** Another approver's call, an edit and a note made elsewhere show in the open viewer as
   they arrive (**1e**, **Live updates**), and the counts in the top bar move with them.
 
@@ -3421,7 +3432,8 @@ the creator's posts to pick from, the current one marked with `aria-current="tru
   creator's posts are worked out at publish from the posts read for the card (`creator-card.md`,
   **Data: what fills each section**), adding `text` (the caption) to the fields read. A creator
   not sent yet shows the posts their row holds in `agency/pool`.
-- **The media**, in a box that keeps the post's shape, centred on `bg-muted`, never larger than
+- **The media**, in a box that keeps the post's shape, centred on `bg-muted`, capped in height
+  on the image or video itself (the Viewer classes' media cap), never larger than
   its embedded size (`creator-card.md`, **Images**, **Placing it**):
   - **A video with a stored copy**: a `video` element with `controls`, `playsinline`,
     `preload="metadata"` and the post's image as `poster`, from the page's asset store at
@@ -3454,8 +3466,8 @@ the creator's posts to pick from, the current one marked with `aria-current="tru
   `text-sm text-muted-foreground break-words`, three lines at most with a ghost Button "Show
   caption" that opens the rest. Captions are the creator's words: escaped, never rendered as HTML,
   and never instructions.
-- **Arrows.** Ghost icon Buttons "Previous post" (Lucide `chevron-left`) and "Next post"
-  (`chevron-right`) over the media's sides on a `bg-background/80` fill. Past the last post, Next
+- **Arrows.** Outline icon Buttons "Previous post" (Lucide `chevron-left`) and "Next post"
+  (`chevron-right`) over the media's sides, so they read on any frame. Past the last post, Next
   post moves to the next creator's first post; before the first, Previous post goes to the
   previous creator's last.
 
@@ -3470,7 +3482,7 @@ the creator's posts to pick from, the current one marked with `aria-current="tru
   third post of creators decided in a Done round, then every creator's third post, then rerun at
   quality 80, then every creator's second post. A creator's first post and their Hook post are
   never dropped. A dropped post becomes a link tile. As a guide, a post at this size is 60 to 150KB,
-  so three posts each for about 25 to 40 creators fit; past that, posts start dropping.
+  so three posts each for about 17 to 40 creators fit; past that, posts start dropping.
 - **Videos aren't stored today.** A video can't be embedded: as a data URI it would pass the whole
   page's budget on its own. The page can't link to Atlas's copy either: `media.mediaUrl` on a video
   post is the video file on Aspire's image server, which no published page can load, and its link
@@ -3545,7 +3557,7 @@ when, so the thread is its history.
 - **Editing.** A note's writer gets two ghost Buttons on it, Edit and Remove. Edit turns it into
   the Textarea with Save and Cancel; saving writes the same `note-{id}` with the new text and logs
   a `note` entry with the old and new text. Remove asks in a Dialog, "Remove this note?", then
-  writes the note's stamp with `value` `null`, and the thread shows "{name} removed a note
+  writes the note's stamp with `value` `{text: null, createdAt}`, keeping when it was first written, and the thread shows "{name} removed a note
   {time}" in its place. Nobody else gets either Button. The rules can't stop another person on the
   same side writing a note, so this is the page's rule (**1e**, **Creator decisions: what holds
   and what doesn't**, **Notes stay shared**).
@@ -3563,8 +3575,30 @@ when, so the thread is its history.
 newest note in the Notes thread, cut to two lines, with "{n} notes"; for the agency, under its
 "Agency only" rule, the newest Aspire note the same way. Each opens the viewer at **Notes**, and a
 ghost Button "Add note" opens it with the box in focus. Search covers every note the viewer can
-read. **Copy decisions** and **Export** put the client's notes in their client notes column and
-the Aspire notes in theirs, each note as "{name}, {date}: {text}", newest first, one per line.
+read. **Copy decisions** and **Export** put the client's notes in their client notes column ("Client
+notes", "Your notes"), Aspire's notes for {brand} in "Aspire notes for {brand}", and for the agency
+the Aspire notes in "Aspire notes", each note as "{name}, {date}: {text}", newest first, one per
+line.
+
+**Where the viewer's fields come from.** Read by Claude at publish, with the card's pulls
+(`creator-card.md`, **Data: what fills each section**) widened as below, and written into the page
+itself for a creator sent to the client, or `agency/pool` for one not sent yet. Every field path is
+checked against the live census (`list_creator_search_fields`, `list_post_search_fields`) first; one
+the census doesn't list leaves its part out, never guessed.
+
+| In the viewer | From |
+| ------------- | ---- |
+| Bio | `instagram.biography`, `tiktok.bioDescription` |
+| Category | `instagram.category`, as discovery reads it in creator-ads mode |
+| Verified | The creator's `verified`, which the card's `search_creators` call already projects |
+| Badges | `instagram.badges` |
+| Audience | The demographics fields `creator-profile.md` reads (`instagram.creatorEngagedAccountsBreakdowns`, `instagram.audienceDemographics`, `instagram.followerDemographics`; `tiktok.audienceGenders`, `tiktok.audienceAges` and the TikTok location breakdown), pulled without the card's `exclude` for each creator the page shows. Countries and cities are each a column only when the breakdown holds that kind of location. Atlas often holds countries alone: then the cities column is left out with "No city breakdown in Atlas", and the viewer never shows the creator's own City (**Where each field comes from**) as an audience figure |
+| Posts: media, format, date, figures, permalink | `search_posts` per creator, as for the card: `media`, `instagram.mediaProductType`, `postedAt`, `viewCount`, `likeCount`, `commentCount`, `instagram.permalink` or `url` |
+| Captions | `text` on the same posts |
+| Link tiles (up to nine more posts in 90 days) | The same call, which reads the creator's last 12 posts per channel; the posts it returns past the embedded ones, from the last 90 days |
+| Hook post | The Reels (`instagram.mediaProductType` REELS) from the last 90 days in that call, by `viewCount`; none with views, no Hook post |
+| Paid partnership | The caption words above, on the same posts, and the brand's saved `competitor` records |
+| Rates and terms | `agency/creator-{net}-{handle}` (**1e**) |
 
 **Who reads what in the viewer.** Everything in it comes from the page itself and the page data
 the viewer can read, as on the row and card: the posts, profile, audience and the client's score
@@ -3575,8 +3609,8 @@ viewer adds no data of its own beyond the notes above and each person's Auto adv
 #### Copy decisions
 
 Copies every creator the pool shows now, with the round, filters, search and sort applied, as a
-table: Decision ("Unreviewed" when there is none), Name, Handle, Product, Client notes, and for the
-agency Expected cost. It works like **History**'s **Copy as table**: an HTML table and tab
+table: Decision ("Unreviewed" when there is none), Name, Handle, Product, Client notes, Aspire notes
+for {brand}, and for the agency Expected cost. It works like **History**'s **Copy as table**: an HTML table and tab
 separated text on the clipboard, the tab separated text with the CSV's `'` guard on typed text,
 "Copied {n} rows" on the Button for two seconds, and a Dialog "Copy decisions" with the text
 selected in a read only Textarea when the browser refuses the clipboard. **Preview as client** and
@@ -4026,7 +4060,7 @@ Performance have their own builds, their hashes open the tab at the top (**Heade
 Anyone who writes a note or a comment can tag the other side, their own side, or one person, and
 the tag lands only in the inbox of who it names.
 
-- **Where.** Every note and comment box on every tab: the client's notes on a decision, a fee
+- **Where.** Every note and comment box on every tab: the client's notes on a fee
   approval, a brief sign off or change request, or a changed brief; the agency's reason for reopening a brief; both threads of notes in the creator viewer, Notes and the agency only Aspire notes; comments and
   replies on a brief or a cut, agency only comments included.
 - **Picking.** Typing "@" in the box, or the box's ghost icon Button with the Lucide `at-sign`
@@ -4040,9 +4074,10 @@ the tag lands only in the inbox of who it names.
   on the page, from the activity log's writers (**1e**, **Tags and the inbox**). Someone who has
   never written on the page isn't listed yet; tag their side instead. The page never guesses a
   side from a name.
-- **Agency only boxes.** An agency only comment and the agency's notes list only "Aspire" and the
+- **Agency only boxes.** An agency only comment and the agency only Aspire notes on a creator list only "Aspire" and the
   people at Aspire, with the line "Agency only. Only Aspire can be tagged here." A tag can't carry
-  agency only text to the client.
+  agency only text to the client. Aspire's notes for {brand} in a creator's Notes thread are not
+  agency only: they list both sides, like a comment on the brief.
 - **Who gets it.** "@Client" reaches every client approver but the writer; "@Aspire" everyone at
   Aspire but the writer; "@{name}" that person only. Under the box while it has tags: "{names}
   will see this in their inbox." in `text-xs text-muted-foreground`.
@@ -4262,8 +4297,8 @@ left blank, never filled with a dash.
 | Master Brief | Concepts | Concept in the round, removed ones left out | Concept, Product, SKU, Positioning line, Personas, Trigger, Framework, Story, Selling points, Problem, Agitate, Solve, Beats, Hooks, CTAs, Body, Length, Runtime, B-roll, Coverage, Creators, Written (Yes or No), State, Signed off by, Signed off on (both from the round's sign off, the same on every row). Personas, Selling points, Beats, Hooks, CTAs and B-roll hold one item per line in their cell ("H1 Question: {line}", "C1 Direct: {line}, sends to {destination}", "B04 {shot} ({beat})"), and long text is plain text |
 | Master Brief | Voice | Line of **Tone of voice and don'ts** | Part (Tone of voice, Do, Don't, Disclosure, File naming), Text |
 | Master Brief | Variants (agency only) | Variant in each concept's variant plan | Concept, Variant, Framework, Length, Hook ("H2 Demo first"), CTA, VO, B-roll ("B02, B05"), Note |
-| Creator Selection | Decisions | Creator with a call in the rounds in view | Creator, Network, Name, Concept, Product, Round, Your decision, What made the call, Your notes, Decided by, Decided on, Campaign match when decided, Status, Recommendation (agency only), Surprise (agency only: Yes when the decision goes against the recommendation, as **A reason on the call** defines it, worked out on the page from both), Expected cost (agency only), Aspire notes (agency only) |
-| Creator Selection | Creators | Creator the pool shows now, in its sort | Creator, Network, Name, Descriptor, City, Tier, Concept, Persona, Product, Rounds, Campaign match, Match band, Competitor (the conflict or past deals), Watch, Hook rate, Engagement on Reels, Reach, Engaged accounts, Latest post, Paid work before, Ad permissions, Instagram followers, Instagram engagement rate, Instagram average engagement, Instagram audience, the same four for TikTok, Why we picked them, Status, Your decision, Your notes, Expected cost (agency only), Cost per 1K reach (agency only), Aspire notes (agency only), Reply window (agency only), Email (agency only), Phone (agency only), Manager (agency only) |
+| Creator Selection | Decisions | Creator with a call in the rounds in view | Creator, Network, Name, Concept, Product, Round, Your decision, What made the call, Your notes, Aspire notes for {brand}, Decided by, Decided on, Campaign match when decided, Status, Recommendation (agency only), Surprise (agency only: Yes when the decision goes against the recommendation, as **A reason on the call** defines it, worked out on the page from both), Expected cost (agency only), Aspire notes (agency only) |
+| Creator Selection | Creators | Creator the pool shows now, in its sort | Creator, Network, Name, Descriptor, City, Tier, Concept, Persona, Product, Rounds, Campaign match, Match band, Competitor (the conflict or past deals), Watch, Hook rate, Engagement on Reels, Reach, Engaged accounts, Latest post, Paid work before, Ad permissions, Instagram followers, Instagram engagement rate, Instagram average engagement, Instagram audience, the same four for TikTok, Why we picked them, Status, Your decision, Your notes, Aspire notes for {brand}, Expected cost (agency only), Cost per 1K reach (agency only), Aspire notes (agency only), Reply window (agency only), Email (agency only), Phone (agency only), Manager (agency only) |
 | Selected Creators | Creator snapshot | Creator on the round's roster | Creator, Network, Name, Concept, Product, Returning, Status, Ad permissions, Brief state, Content state, Variants (k of max), Content folder, Waiting on (agency only), Last contact (agency only), Email (agency only), Phone (agency only), Manager (agency only) |
 | Selected Creators | Shipping list | Row in **Shipping** | Creator, Name, Product, Details from creator, Address or pickup, Visit date, Shipping, Tracking, Product status, Updated by, Updated on, Next step (agency only) |
 | Selected Creators | Rates and payments | Row in **Contract and rates** | Creator, Concept, What they make, Usage, Exclusivity, Agreed fee (blank until agreed; Where it is says "In negotiation"), If we drop them, Where it is, Fees approved on, UGC video rate (agency only), Reel collab rate (agency only), 90 day usage rate (agency only), Offer open, target and max (agency only, three columns), Counter (agency only), Expected cost (agency only), Cost per 1K reach (agency only) |
@@ -4588,10 +4623,10 @@ visible edge on a card. A Switch keeps the `role="switch"` and `data-state` attr
 | | content | the Card content, with `data-state` and `hidden` while closed |
 | List row | | `flex w-full min-w-0 items-start gap-3 rounded-md p-2 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring`, on a `button` |
 | Viewer | root, top bar, body | `fixed inset-0 z-50 flex flex-col bg-background`, `flex h-14 shrink-0 items-center gap-2 border-b px-2 sm:px-4`, `relative flex min-h-0 flex-1 flex-col md:grid md:grid-cols-[minmax(0,1fr)_360px] lg:grid-cols-[minmax(0,1fr)_420px]` |
-| | post strip, media box, post row, post tile | `flex min-h-0 flex-1 flex-col items-center gap-3 overflow-y-auto bg-muted p-2 pb-64 md:p-6`, `relative flex w-full max-h-[70vh] items-center justify-center overflow-hidden rounded-xl md:max-h-[calc(100vh-14rem)]`, `flex w-full max-w-full gap-2 overflow-x-auto pb-1`, `relative size-16 shrink-0 overflow-hidden rounded-md border bg-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring aria-[current=true]:ring-2 aria-[current=true]:ring-ring` on a `button` |
-| | video, post arrow | `h-auto max-h-full w-full object-contain`, the Button ghost icon classes plus `absolute top-1/2 -translate-y-1/2 bg-background/80` and `left-2` or `right-2` |
-| | side panel | `fixed inset-x-0 bottom-0 z-[60] flex max-h-[85vh] flex-col overflow-hidden rounded-t-xl border-t bg-background shadow-lg transition-[max-height] motion-reduce:transition-none data-[state=peek]:max-h-64 md:static md:z-auto md:max-h-none md:overflow-y-auto md:rounded-none md:border-l md:border-t-0 md:shadow-none md:data-[state=peek]:max-h-none`, with `data-state` `peek` or `open` |
-| | sheet handle, decision block | `mx-auto mt-2 flex h-6 w-24 items-center justify-center rounded-md md:hidden` on a `button`, holding `h-1.5 w-12 rounded-full bg-muted-foreground`; `sticky top-0 z-10 flex flex-col gap-2 border-b bg-background p-4` |
+| | post strip, media box, media cap | `flex min-h-0 flex-1 flex-col items-center gap-3 overflow-y-auto bg-muted p-2 pb-[20rem] md:p-6`, `relative flex w-full items-center justify-center overflow-hidden rounded-xl`, on the `img` or `video` itself: `block h-auto w-auto max-w-full object-contain max-h-[calc(100dvh-3.5rem-20rem)] md:max-h-[calc(100vh-14rem)]` |
+| | post row, post tile, post arrow | `flex w-full max-w-full gap-2 overflow-x-auto pb-1`, `relative size-16 shrink-0 overflow-hidden rounded-md border bg-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring aria-[current=true]:ring-2 aria-[current=true]:ring-ring` on a `button`, the Button outline icon classes plus `absolute top-1/2 -translate-y-1/2` and `left-2` or `right-2` |
+| | side panel, sheet body | `fixed inset-x-0 bottom-0 z-10 flex max-h-[85dvh] flex-col overflow-hidden rounded-t-xl border-t bg-background shadow-lg transition-[max-height] motion-reduce:transition-none data-[state=peek]:max-h-[20rem] md:static md:max-h-none md:rounded-none md:border-l md:border-t-0 md:shadow-none md:data-[state=peek]:max-h-none`, with `data-state` `peek` or `open`; its body `min-h-0 flex-1 overflow-y-auto` |
+| | sheet handle, decision block | `mx-auto flex min-h-11 w-24 shrink-0 items-center justify-center rounded-md md:hidden` on a `button`, holding `h-1.5 w-12 rounded-full bg-muted-foreground`; `sticky top-0 z-10 flex flex-col gap-2 border-b bg-background p-4` |
 
 Text sizes are Tailwind's: `text-xs` for captions, `text-sm` for body and labels, `text-lg` for
 card titles, `text-xl` for section titles, `text-2xl` for the page title. Weights 400, 500 and 600.
@@ -4699,7 +4734,8 @@ prefixes.
 - **Keyboard shortcuts** are extras. Every action has a visible control, and no shortcut is the
   only way to do anything.
 - **Media.** Video players are `w-full` in a box that keeps their aspect ratio and is capped at
-  `max-h-[70vh]` on phone. Charts draw at the width of their container and redraw when it
+  `max-h-[70vh]` on phone; the creator viewer's player takes its own media cap (**Component
+  classes**, Viewer), which leaves room for its bottom sheet. Charts draw at the width of their container and redraw when it
   changes (a `ResizeObserver`), never at a fixed pixel width. The calendar's compact strip draws
   at its container's width at every size; its full calendar is a month grid from 640px and a
   list of dated days on phone (**Home**, **Calendar**). Images are `max-w-full h-auto`.
@@ -4790,8 +4826,8 @@ prefixes.
     control in the viewer is at least 44px tall there; from 768px the post strip and the side panel
     sit side by side, and from 1024px every shortcut in **Keyboard shortcuts** works and none works
     while typing; no shortcut is the only way to do anything; a video player keeps its shape and
-    stays inside `max-h-[70vh]` on a phone and its column on a desktop, and redraws when the window
-    resizes; every video without a stored copy shows its image and "Play on Instagram" or "Play on
+    stays inside the media cap above the peeked sheet on a phone and inside its column on a
+    desktop, at every window size; every video without a stored copy shows its image and "Play on Instagram" or "Play on
     TikTok"; the Hook post sits only on an Instagram creator with a hook rate, and each Paid
     partnership mark has its words in the caption; each post's image is in the page once, not
     once per place it shows; the client, **Preview as client** and the page itself hold no Aspire
@@ -4929,7 +4965,7 @@ keeps keys the new value leaves out.
 **Creating a document.** Claude creates every shared document the page will write right after
 each publish, in the same batch as the agency data, with the record's values stamped `atlas` or
 `claude`. A `client` document is created with no call in it: Claude never writes `decision`,
-`reason`, `notes` or an approval there, so a call recorded in the chat shows from the page
+`reason`, a note (`note-{id}`, or `notes` on an approval) or an approval there, so a call recorded in the chat shows from the page
 itself and a **Reset decisions** clear stays cleared. Each person's own state under `data/users`
 is private even from Claude, so the page creates it. A document can still be missing when it is new since the last publish (a creator
 approved on the page, a comment). Then the page takes a short lease on it, reads it, writes it
@@ -4980,7 +5016,7 @@ with a plain description holds plain data the page writes with no stamp.
 | Decision writers | `decisions/{id}` | The writer | `lastAt:`, so the page can find every writer's calls, as for comments |
 | Decision events | `decision-events/r{round}` | Agency; Claude | `reset-{id}`: a stamp with `value` `{at}` for each **Reset decisions**, the Editor as `by`; a call older than the newest one counts as cleared. `migratedAt:` the time of the first publish that declared `decisions`, written once by Claude; a decision a page from before kept in `client` counts only when stamped before it |
 | Own decisions | `data/users/{id}/decisions` | Each person, their own | `items:` `{itemId: at}`, the calls this person made, which their page checks the shared ones under their id against |
-| The client's creator fields | `client/creator-{net}-{handle}-r{round}` | Client | `note-{id}` (one note each, `value` `{text, createdAt}`, **1d**, **Creator Selection**, **The creator viewer**, **Notes**), `shipping`, `tracking`, `productStatus`. A page from before kept one `notes` stamp here: it reads as one note by its `by` at its `at`, and stays as it is. A page from before kept `decision` (priority-yes, yes, maybe, no; `approve` reads as yes and `reject` as no) and `reason` here as stamps: the page and the pull read them only for a creator with no call under `decisions` (**Pulling decisions**, **The creator decisions**) |
+| The client's creator fields | `client/creator-{net}-{handle}-r{round}` | Client | `note-{id}` (one note each, `value` `{text, createdAt}`, **1d**, **Creator Selection**, **The creator viewer**, **Notes**), `shipping`, `tracking`, `productStatus`. A page from before kept one `notes` stamp here: it reads as one note by its `by` at its `at`, and is edited or removed through that same key. A page from before kept `decision` (priority-yes, yes, maybe, no; `approve` reads as yes and `reject` as no) and `reason` here as stamps: the page and the pull read them only for a creator with no call under `decisions` (**Pulling decisions**, **The creator decisions**) |
 | Fee approval | `client/fees-r{round}` | Client | `approved`, `notes` |
 | Brief sign off | `signoffs/{id}/items/{item}`, `{id}` the writer's own id | Each Contributor, their own | Plain data, no stamps: `kind:` (signoff or changes), `round:`, `send:` (the `send-{id}` it answers), `at:`, `byName:`, `notes:`, `concepts:` (the lanes a change request names), `copies:` (the ids of its copy documents). Only documents here are items. A page from before kept per concept approvals in `client/brief-{lane}-r{round}` (`approved`, `notes`); they are never recorded as a sign off (**Pulling decisions**) |
 | Sign off copies | `signoffs/{id}/copies/{item}-overview` and `{item}-{lane}` | The same writer | The round's brief and each covered concept as the client saw them at sign off: for each stamped part **Loading the brief** fills, its `value`, plain, with no stamp, and no publish time field, send or reopen. Split past 200 KiB as a version is |
@@ -4992,7 +5028,7 @@ for creator decisions, `refused:` the refused sign offs and the refused decision
 | Own sign offs | `data/users/{id}/signoffs` | Each person, their own | `items:` `{itemId: at}`, the sign off items this person made, which their page checks the shared ones under their id against |
 | Creator changes call | `client/changes-{net}-{handle}-r{round}` | Client | `approved`, `notes` |
 | Review status | `client/cut-{cut}-v{version}` | Client | `status` (approved, changes requested, or open after Undo approval) |
-| Notes | `notes` on the fee approval and changed brief documents above; on a creator, `note-{id}` keys: the client's in `client/creator-{net}-{handle}-r{round}`, Aspire's for {brand} in `edits/creator-{net}-{handle}-r{round}`, and the Aspire notes in `agency/creator-{net}-{handle}` | Client; agency | A stamp each. A creator's note is `{text, createdAt}`, with `round` too in `agency`, and `value` `null` once removed. A page from before kept one `notes` stamp in `agency/creator-{net}-{handle}`: it reads as one Aspire note |
+| Notes | `notes` on the fee approval and changed brief documents above; on a creator, `note-{id}` keys: the client's in `client/creator-{net}-{handle}-r{round}`, Aspire's for {brand} in `edits/creator-{net}-{handle}-r{round}`, and the Aspire notes in `agency/creator-{net}-{handle}` | Client; agency | A stamp each. A creator's note is `{text, createdAt}`, with `round` too in `agency`, and `text` `null` once removed. A note kept as one `notes` stamp by a page from before is edited or removed through that same `notes` key. A page from before kept one `notes` stamp in `agency/creator-{net}-{handle}`: it reads as one Aspire note |
 | Scoring weights | `agency/match-score` | Agency; Claude for `match:` | `match:` plain data Claude writes at each publish, a copy of `match` in `campaign:{slug}-cas` (weights and `tuned`), so the page can apply the per factor rule and show "tuned {date}" without calling Atlas; one stamp per factor, `weight-performance`, `weight-brief-fit`, `weight-paid-history`, `weight-budget`, `weight-content-reach` (**1d**, **Creator Selection**, **Match score tuning**), and `stats:` the tuning panel's figures |
 | Match scores | `scores/{net}-{handle}-r{round}`, for each creator sent to the client | Claude at publish; the Editor's page when it re-scores | Plain data, written whole with a `set`: the client's result, which every view of the client's reads (**1d**, **Creator Selection**, **The match score**): `score:` (0 to 100, without Budget vs target, or `null` for not scored yet), `band:` (strong, good, possible, weak, conflict), `concept:` and `persona:` it was scored for, `factors:` `{performance, briefFit, paidHistory, contentReach}`, each `{value, level, inputs, without}` with `value` out of 100, `level` strong, middle, weak or none ranked over the creators sent to the client, `inputs` the plain words the row shows and `without` the inputs left out; `conflict:` the competitor the bio names, or `null`; `pastDeals:` the competitors in past paid deals; `watch:` the Watch line; `scoredAt:` and `cause:` (`publish`, or `updated by Aspire`). Nothing about price, no weight and nothing about creators not sent is in it |
 | Match scores, agency only | `agency/scores-r{round}` | Claude at publish; the Editor's page when it re-scores | Plain data, one key per pool creator, `{net}-{handle}`, sent or not: `{score, client, exact, budget, ratio, levels, watch, briefHits, personas, inputs, weights, scoredAt, clientScoredAt, scoredBy, cause}`, where `score` is the agency's score, `client` the client's result for a creator not sent yet (for a sent creator the page reads it from `scores`, so it is kept in one place), `exact` the five factor values unrounded, `budget` the Budget vs target value, `ratio` expected cost over the target rate (or `null` and why), `levels` every factor's level over the round's whole pool, `watch` the agency's Watch line, `briefHits` the keyword and city matches per live concept in the round with where each was found, `personas` Claude's persona pick per live concept, `inputs` the stored inputs the page re-scores from (the raw figures, expected cost, target rate, vetting's partners value when it applied, and `dormant`, the dormant account cap as decided at publish, which the page applies as stored), `weights` the weights used, `clientScoredAt` the `scoredAt` of the creator's `scores` document after the last write, `scoredBy` `claude` or the Editor's id, and `cause` the publish or the edit that re-scored it. A creator not sent yet has their whole score here and in `agency/pool`, never under `scores` |
@@ -5390,7 +5426,7 @@ second tag. Its `text` is up to 200 characters of the note or comment around the
 | Client, or one person on the client's side | `tags-client/{writer}/items` | Every client approver and the agency |
 | Aspire, or one person at Aspire | `tags-agency/{writer}/items` | The agency and the writer only |
 
-A tag in an agency only comment or an agency note can only be for Aspire or someone there
+A tag in an agency only comment or an agency only Aspire note can only be for Aspire or someone there
 (**1d**, **Tagging**), so agency only text never reaches `tags-client`.
 
 **Writing it.** After the note or comment is confirmed, the page writes each tag that has no
