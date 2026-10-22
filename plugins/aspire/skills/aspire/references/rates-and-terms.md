@@ -36,7 +36,8 @@ page's Creator Selection sorts on it and its budget **Summary** counts approved 
 4. **Calculator**: the fee calculator's target (`fees.md`, **Applying the rates**) for the package
    above, priced on the creator's own view counts.
 
-Each adds the whitelisting uplift unless `allowlisting` is false, as **Totals** does. A creator the
+Each adds the whitelisting uplift unless `allowlisting` is false, the figure **Totals** gives as the
+fee plus its uplift line. A creator the
 calculator cannot price has no expected cost and shows as unpriced; never fill one in. Claude works
 it out at each publish of the campaign page for every creator in the pool, from the posts read for
 the creator cards, and writes it with its basis to the creator's agency data (`expectedCost:`,

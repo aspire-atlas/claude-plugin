@@ -3085,8 +3085,8 @@ rounds**, and the round in view when a round segment is picked.
   document, so it never renders for the client or in **Preview as client**, and is worked out
   again the moment a decision arrives.
   - **Committed**: every agreed fee on the campaign, in every round, with the allowlisting uplift
-    on each unless allowlisting is off: the agreed figure **Contract and rates** totals
-    (`rates-and-terms.md`, **Contract and rates**). It never comes from a typed number. Shown with
+    on each unless allowlisting is off: the agreed figure plus its uplift line in **Contract and
+    rates**' **Totals** (`rates-and-terms.md`, **Contract and rates**). It never comes from a typed number. Shown with
     "{k} creators agreed".
   - **Approved, not contracted**: every creator with Priority Yes or Yes in a live round, from
     the page or recorded, whose fee is not agreed and who has not declined, at their expected cost
@@ -3166,7 +3166,7 @@ stay in view while the columns between them scroll. Each row is anchored
 | Column | Shows | Sorts by |
 | ------ | ----- | -------- |
 | Creator | Avatar, handle, name, tier Badge (outline), socials (Instagram and TikTok icons with followers, each a link to the profile), city, status Badge, and the round chips | Name |
-| Campaign match | The match score out of 100 in `text-lg font-semibold`, then the paid signals in `text-xs text-muted-foreground`: hook rate, engagement on Reels, reach and engaged accounts, and "Scored without hook rate, which TikTok doesn't report" on a TikTok creator | Match |
+| Campaign match | The match score out of 100 in `text-lg font-semibold`, or "Not scored yet" for a creator discovery hasn't scored, then the paid signals in `text-xs text-muted-foreground`: hook rate, engagement on Reels, reach and engaged accounts, and "Scored without hook rate, which TikTok doesn't report" on a TikTok creator | Match |
 | Concept | The concept chip, the persona under it, and the product | Concept |
 | Latest posts | Up to three thumbnails, the evidence posts first, each a button with the play glyph on video and "Hook post" on the post the hook rate came from, then "Latest post {date}" | Latest post |
 | Notes | Why we picked them, the client's notes (editable for the client), and for the agency, under a dashed rule headed "Agency only": Aspire's notes (editable), the recommendation, expected cost and cost per 1K reach | None |
@@ -3184,7 +3184,8 @@ it is built, both open the creator's card on Cards.
 The creator card from `creator-card.md`, page profile, one per creator, in `grid grid-cols-1
 gap-4 sm:grid-cols-2 lg:grid-cols-3`, anchored `#selection/r{n}/{net}-{handle}`. Flow chips: the
 concept, filled with the theme's chart series in concept order, then the tier, the status labels,
-the round chips, then "Near category" when it applies. The fit ring shows the match score.
+the round chips, then "Near category" when it applies. The fit ring shows the match score; a creator with none shows no ring and a "Not scored yet"
+note, as discovery's own page does.
 Thumbnails show the evidence posts first, with a "Hook post" label on the post the hook rate came
 from and the play glyph on video, embedded per the card reference. The `{DETAILS}` block: Hook
 rate (watched past 3s), Engagement on Reels, Reach, Engaged accounts, Paid work before, Ad
@@ -3219,7 +3220,7 @@ foot of the card.
   Approve) is a surprise: **Pulling decisions** marks it from the agency's data, and the picker
   names its reason, or "no reason given".
 - **What a call saves.** `{approval, at, by, byName, score, reason}`: the value (`null` once
-  cleared), the time, the decider's id and name, a snapshot of the match score the decider saw,
+  cleared), the time, the decider's id and name, a snapshot of the match score the decider saw (`null` when the creator had none),
   and the reason. It goes under the decider's own id (**1e**, **What the page keeps**, Creator
   decisions), so the record of who decided is the path, not what the page wrote. The page first
   adds the call's id to the client's private `data/users/{id}/decisions`, then writes the call,
@@ -3234,7 +3235,8 @@ foot of the card.
   Unreviewed, unless the call recorded in Atlas (the roster's `slate`, published into the page
   itself) says otherwise: with no counted call on the page newer than the recorded one, the row
   shows the recorded call with "Recorded by Aspire {time}", which covers a call the CM recorded
-  from the chat. The Summary, the filters, Copy decisions and Home's lists count the same calls. A
+  from the chat. A recorded call older than the round's newest **Reset decisions** is hidden the
+  same way, so a reset shows every row Unreviewed until someone decides again. The Summary, the filters, Copy decisions and Home's lists count the same calls. A
   skipped call shows to the agency only, as a line with a warning Badge "Not counted". A counted
   call from an account not in `sides` `deciders` or `approvers` carries, for the agency only, a
   processing Badge "Aspire to confirm" until the CM confirms it. When another approver's newest call differs, one line names it:
@@ -3284,7 +3286,7 @@ these when Claude publishes; nothing on the page calls Atlas.
 | Hook rate | Campaign match, Hook rate tile, sort | `detail.adFigures`, from `instagram.reelsHookRate` |
 | Engagement on Reels | Campaign match, sort | `instagram.reelsInteractionRate` |
 | Reach | Campaign match, sort, cost per 1K reach | `instagram.creatorMarketplaceReach` |
-| Engaged accounts | Campaign match, sort | `instagram.creatorEngagedAccounts`, which discovery now writes in its ad figures |
+| Engaged accounts | Campaign match, sort | `instagram.creatorEngagedAccounts`, which discovery writes in its ad figures |
 | Paid work before, ad permissions | Card details | `instagram.pastBrandPartnershipPartners`; partnership readiness, then the roster's `adPermissions` |
 | Concept, persona | Concept, Concept filter, sort, search | `detail.lane`, named from its `campaign:{slug}-lane-{lane}` record |
 | Product | Concept, Products chips, sort | The roster's `details.product` or the agency's `product` edit. Neither agent assigns one, so a creator shows "No product" until the agency sets it on the page or the CM does in the chat. **No product per creator until someone sets it** |
@@ -4018,7 +4020,7 @@ card titles, `text-xl` for section titles, `text-2xl` for the page title. Weight
 
 | Variant | Status labels |
 | ------- | ------------- |
-| soft | Not recorded yet, Resolved, Agency only, Awaiting decision, Unreviewed, Unpriced, not asked yet, not shipped, Planned, Done, Returning, Up next, Paused, Not done, round closed, Scanned, Not read, Draft, Needs work, New concept, Carried forward, Deferred |
+| soft | Not recorded yet, Resolved, Agency only, Awaiting decision, Unreviewed, Unpriced, Not sent yet, not asked yet, not shipped, Planned, Done, Returning, Up next, Paused, Not done, round closed, Scanned, Not read, Draft, Needs work, New concept, Carried forward, Deferred |
 | processing | Offer sent, Details received, Shipped, Brief sent, in negotiation, In production, Now, Coming soon, Scanning, In review with client, Waiting for your sign off, Signed off, Aspire to confirm |
 | success | Priority Yes, Yes, Approved, Agreed, Delivered, Brief accepted, Granted, In market, Ahead, On track, Met the target, Active, Updated {n}, Signed off |
 | warning | Changes requested, This isn't a sign off you made, This isn't a decision you made, Not counted, Over budget, Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending, waiting for your approval, Running behind, Launch at risk, over target, days late, Waiting on you, Out of stock, Still needed, Needs a concept, Not in products in scope, Removed, Used in round {r} |
@@ -4177,8 +4179,8 @@ prefixes.
     comment or id.
 17. Creator Selection: the Summary's budget part, Expected cost, cost per 1K reach, Aspire's notes
     and the Waiting on filter never render for the client or in **Preview as client**, and the
-    client's Sort Select lists neither cost; Committed equals the agreed figure in **Contract and
-    rates**' totals; the meter's two parts and its legend add up to what the headline subtracts;
+    client's Sort Select lists neither cost; Committed equals the agreed figure plus its uplift
+    line in **Contract and rates**' **Totals**; the meter's two parts and its legend add up to what the headline subtracts;
     the decision Buttons render only for the client, a second click on the chosen one clears it,
     and a call writes only under the client's own `decisions/{id}`; Table pins Creator and
     Decision and doesn't render under 640px; every tier, city and product count matches its
