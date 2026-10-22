@@ -345,8 +345,9 @@ step's `order` plus 10 when it goes last.
 What makes a step done:
 
 - **An approval**: its gate is cleared. On the page, step 4 also counts as done from the moment
-  the page accepts the client's sign off (**1d**, **Master Brief**, **Comments and sign off**), until
-  a reopen undoes it; the pull then records the gate. Its date is the gate's due date once sent, else its
+  the page counts a sign off from a confirmed approver account (`sides` `approvers:`, **1d**,
+  **Master Brief**, **Comments and sign off**), until a reopen undoes it; one from an account not yet
+  confirmed reads "Signed off, Aspire to confirm" and leaves step 4 open; the pull then records the gate. Its date is the gate's due date once sent, else its
   planned date; its owner is the step's approver in `campaign:{slug}-cas`, and for step 1 the
   Gate 1 finding's `clearedBy`, else "{brand}".
 - **Ads live**: the round is in market, or done after having been in market. A round closed
@@ -756,10 +757,11 @@ the page)", and writes nothing for them. The newest call per cut version is the 
 
 **The brief sign off.** Read every writer's items under `signoffs` for each live round (a document
 in `signoffs/{id}/items` is an item; the copies sit in `signoffs/{id}/copies`), the round's `send-`
-and `reopen-` stamps on `brief-rounds/r{round}`, every `editors/{id}` marker and `activity-editors`
+and `reopen-` stamps on `brief-events/r{round}`, every `editors/{id}` marker and `activity-editors`
 writer, and the campaign's newest `page-sides` finding (**1a**). An item whose id is step 4's
-`signoff.item` is already recorded and is skipped, and so is one in `page-sides` `refused`. Of the rest, the newest that answers the newest
-send, with no reopen or import newer than it, is the one offered. Its writer is the id in its path,
+`signoff.item` is already recorded and is skipped, and so is one in `page-sides` `refused`. Of the rest, only the newest item for the round
+is checked and named; older ones are left as they are and never named, since a newer send, sign off
+or reopen already replaced them. Its writer is the id in its path,
 which the rules let only that person or the page's owner write (**1e**, **What the rules enforce,
 and what they can't**). Before it is offered:
 
@@ -869,10 +871,12 @@ the client's calls, each named with who made it. The `send-` and `reopen-` stamp
   the turnaround, the reminder, and the step line under C5. A `reopen-{id}` on a signed off brief
   is named "Round {n} brief reopened by {name}: {reason}" and writes a `brief` finding per lane
   with `locked` false and `reopened`, and Gate 4 back to `planned` with `reopenedAt` and
-  `reopenReason`, a new planned date, and `signoff`, `clearedAt` and `clearedBy` empty; the locked
+  `reopenReason`, a new planned date, and `signoff`, `clearedAt`, `clearedBy`, `sentAt` and
+  `dueAt` empty; the locked
   versions stay, as every locked version does.
   A reopen of a sign off that was never recorded writes no `brief` finding, since nothing was
-  locked: only Gate 4 back to `planned`, and the reopened sign off is named as not recorded.
+  locked: only Gate 4 back to `planned` with a new planned date, `sentAt` and `dueAt` cleared and its
+  reminder removed, as an import does, and the reopened sign off is named as not recorded.
   A send older than the newest import or reopen is skipped.
 - **Creator profiles and per round edits.** Name, descriptor, location and why we picked them
   go on the creator's `roster` finding as `name`, `descriptor`, `location` and `pickNote`, the
@@ -1276,7 +1280,7 @@ only is marked so.
 | Home, Everything | Team | `home-team` | "{n} people at Aspire", or for the agency "No team added yet." | Standard | Closed |
 | Home, Everything | Calendar | `home-calendar` | For the round in view, parts joined with " · ": "Round {n} {verdict, lower case}" ("Round 2 running behind"), or where **Where we stand** shows no verdict the round's state in its place ("Round 1 in market to Dec 31", "Round 1 done", "Round 3 starts building Jan 4", "Round 2 in production"), then "next: {milestone} {date}" "next" naming the round's next dated milestone or "every milestone passed", and "{Step} is {d} days late" when its current step is late, the step named as **Round steps** names it ("Round 2 running behind · next: Ads live Dec 1 · Briefs approved is 2 days late") | Standard | Closed |
 | Home, Everything | Files | `home-files` | "{n} files · still needed: {categories}", or "{n} files · every required file is here", or "No files yet." | Standard | Closed |
-| Master Brief | Brief status, "Round {n} brief" | `brief-status` | "{w} of {t} concepts written · {status} · {k} open comments · version {v}", with the status Badge beside the trigger, or "No concepts in this round yet." | Simple | Open |
+| Master Brief | Brief status, "Round {n} brief" | `brief-status` | "{w} of {t} concepts written · {k} open comments · version {v}", with the status Badge beside the trigger, or "No concepts in this round yet." | Simple | Open |
 | Master Brief | Tone of voice and don'ts | `brief-voice` | The tone of voice's first line, then "· {d} don'ts", or "No tone of voice set yet." | Standard | Closed |
 | Master Brief | One per concept, "{Concept} brief · round {n}" | `brief-{lane}` | "{product} · {trigger} · {personas} · {h} hooks, {c} CTAs · {k} creators", with "needs work" while the concept isn't written, and the status Badge beside the trigger | Full | Closed |
 | Master Brief | Needs a concept | `brief-needs` | "{p} products with no concept: {names}", then "· {d} deferred to round {n+1}", then "· {r} removed" for the agency | Standard | Closed; not rendered while every product has a concept, nothing is deferred and, for the agency, nothing was removed |
@@ -1671,8 +1675,9 @@ rows.
      off"). Under it, in `text-xs text-muted-foreground`: the owner, then the date: "Due {date}",
      "Done {date}" for a ticked step, "Done" with no date for a step counted done by a later one,
      and for an approval that is out "With {approver} since {sent}, due {due}", or "Approved
-     {date}" once cleared. Step 4 reads "Approved {date}" as soon as the page accepts the sign off,
-     with "Signed off by {name}" in its detail line, and for the agency the soft Badge from the
+     {date}" once cleared. Step 4 reads "Approved {date}" as soon as the page counts a sign off from
+     a confirmed approver account, with "Signed off by {name}" in its detail line (one from an
+     account not yet confirmed reads "Signed off, Aspire to confirm" and stays open), and for the agency the soft Badge from the
      `signoff-unrecorded` template in `agency/attention` ("Not recorded yet") until the pull
      records it; a brief sent on the page and not yet recorded reads "With
      {approver} since {sent}". A step with no date shows no date to the client, and "Not set" with
@@ -2772,7 +2777,7 @@ written by the client's meter ("Still to write: {concepts}"). It opens a Dialog:
 round {n}'s brief for sign off?", the line "{approver} gets it in their inbox and in Waiting on
 you. The page doesn't email or post anything. The next time you run the campaign in the chat,
 Claude records it and offers the step update for {channel}.", and Cancel (outline) and Send for
-sign off (default). Send writes a `send-{id}` stamp on `brief-rounds/r{round}` with the Editor as
+sign off (default). Send writes a `send-{id}` stamp on `brief-events/r{round}` with the Editor as
 `by` and logs one entry (kind `brief`, verb `sent`, "Sent the round {n} brief for sign off"), on
 the agency's client readable log. That entry is the client's inbox item, and the brief joins
 their **Waiting on you** ("Sign off the round {n} brief"). The status moves to In review with
@@ -2793,9 +2798,11 @@ client, in a done round, or while an import holds the brief at Draft (**Importin
   Request changes (default). The status moves to Changes requested, and the note shows under the
   status Badge for both sides until the brief is sent again.
 - **What a sign off writes.** First the item's id goes in the client's own
-  `data/users/{id}/signoffs`, which nobody else can read or write, the page's owner included. Only
-  once that is saved does the page write the item under the client's own `signoffs/{id}` (**1e**),
-  never under `client`: `kind` signoff or changes, the round, the `send-{id}` it answers, the time,
+  `data/users/{id}/signoffs`, which nobody else can read or write, the page's owner included. Then the
+  copies, and only once every one is saved does the page write the item, last, under the client's
+  own `signoffs/{id}` (**1e**), never under `client`, so no reader ever finds an item without its
+  copies. A refused write shows "Not saved" and keeps **Sign off** there to try again. The item holds
+  `kind` signoff or changes, the round, the `send-{id}` it answers, the time,
   the note, the concepts a change request names, and for a sign off a copy of what the client
   signed, in `signoffs/{id}/copies`, one document for the round's brief and one per concept. The
   copy holds the brief's parts only, the stamped keys **Loading the brief** fills, each as the value
@@ -2845,7 +2852,7 @@ an outline Button "Reopen" with the Lucide `lock-open` icon in the header row. I
 title "Reopen round {n}'s brief?", the line "{name}'s sign off from {date} stops counting. The
 brief goes back to Draft, and you send it for sign off again.", a required Textarea "Why are you
 reopening it?" that the client reads too, and Cancel (outline) and Reopen (destructive). It writes
-a `reopen-{id}` stamp on `brief-rounds/r{round}` with the reason and the sign off it undoes
+a `reopen-{id}` stamp on `brief-events/r{round}` with the reason and the sign off it undoes
 (`{writer}/{item}`, or `chat` for one recorded from the chat), and logs one entry (kind `brief`,
 verb `reopened`, "Reopened the round {n} brief: {reason}") on the client readable log, so the client
 gets it in their inbox and History shows it. A round in market keeps its brief: the Button is
@@ -3753,7 +3760,7 @@ card titles, `text-xl` for section titles, `text-2xl` for the page title. Weight
 | Variant | Status labels |
 | ------- | ------------- |
 | soft | Not recorded yet, Resolved, Agency only, Awaiting decision, not asked yet, not shipped, Planned, Done, Returning, Up next, Paused, Not done, round closed, Scanned, Not read, Draft, Needs work, New concept, Carried forward, Deferred |
-| processing | Offer sent, Details received, Shipped, Brief sent, in negotiation, In production, Now, Coming soon, Scanning, In review with client |
+| processing | Offer sent, Details received, Shipped, Brief sent, in negotiation, In production, Now, Coming soon, Scanning, In review with client, Waiting for your sign off, Signed off, Aspire to confirm |
 | success | Approved, Agreed, Delivered, Brief accepted, Granted, In market, Ahead, On track, Met the target, Active, Updated {n}, Signed off |
 | warning | Changes requested, This isn't a sign off you made, Not counted, Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending, waiting for your approval, Running behind, Launch at risk, over target, days late, Waiting on you, Out of stock, Still needed, Needs a concept, Not in products in scope, Removed, Used in round {r} |
 | error | Rejected, Declined, returned, Couldn't scan, Not added, Couldn't import |
@@ -4043,7 +4050,7 @@ only if it is still missing, and merges the field after. Without the lease, two 
 once would leave only one.
 
 **Live updates.** The page subscribes once to each collection it shows (`client`, `edits`,
-`program`, `briefs`, `brief-rounds`, `creators`, `reviews`, and for editors `agency`), and once to the viewer's
+`program`, `briefs`, `brief-rounds`, `brief-events`, `creators`, `reviews`, and for editors `agency`), and once to the viewer's
 own state, so an edit made in one browser shows in every other open view without a reload. A
 subscription to a collection sees only the documents directly in it, never the ones nested
 below, so comments, review versions and the activity log are reached one level down: each
@@ -4084,7 +4091,7 @@ with a plain description holds plain data the page writes with no stamp.
 | Brief sign off | `signoffs/{id}/items/{item}`, `{id}` the writer's own id | Each Contributor, their own | Plain data, no stamps: `kind:` (signoff or changes), `round:`, `send:` (the `send-{id}` it answers), `at:`, `byName:`, `notes:`, `concepts:` (the lanes a change request names), `copies:` (the ids of its copy documents). Only documents here are items. A page from before kept per concept approvals in `client/brief-{lane}-r{round}` (`approved`, `notes`); they are never recorded as a sign off (**Pulling decisions**) |
 | Sign off copies | `signoffs/{id}/copies/{item}-overview` and `{item}-{lane}` | The same writer | The round's brief and each covered concept as the client saw them at sign off: for each stamped part **Loading the brief** fills, its `value`, plain, with no stamp, and no publish time field, send or reopen. Split past 200 KiB as a version is |
 | Sign off writers | `signoffs/{id}` | The writer | `lastAt:`, so the page can find every writer's items, as for comments |
-| Sides | `sides/campaign` | Claude, as the page's owner | Plain data from the campaign's `page-sides` finding (**1a**), rewritten at every publish and every pull that changed it: `editors:` the ids seen on Aspire's side, `approvers:` the confirmed approver accounts, `refused:` the refused sign offs. Only the owner writes it, so no Editor can take their id off it. A chat session that isn't the page owner's can't write it: Claude says so in one line, the page then judges sign offs by the markers alone, and the pull still runs every check |
+| Sides | `sides/campaign` | Claude, as the page's owner | Plain data from the campaign's `page-sides` finding (**1a**), rewritten at every publish and every pull that changed it: `editors:` the ids seen on Aspire's side, `approvers:` the confirmed approver accounts, `refused:` the refused sign offs. Only the owner writes it, so no Editor can take their id off it. A chat session that isn't the page owner's can't write it. Then the pull still runs every check and records in Atlas, but the page can't show it: Claude says "Only {owner} can update who signs off on this page. Ask them to pull the client's decisions, so step 4 shows as approved there.", and until they do, the page judges sign offs by the markers alone and a sign off from a newly confirmed account still reads "Signed off, Aspire to confirm" |
 | Editor markers | `editors/{id}` | Each Editor, their own | `lastAt:`, written by the page on every load where `canEdit()` is true, before any control renders. Its existence marks `{id}` as on Aspire's side |
 | Own sign offs | `data/users/{id}/signoffs` | Each person, their own | `items:` `{itemId: at}`, the sign off items this person made, which their page checks the shared ones under their id against |
 | Creator changes call | `client/changes-{net}-{handle}-r{round}` | Client | `approved`, `notes` |
@@ -4098,7 +4105,8 @@ with a plain description holds plain data the page writes with no stamp.
 | Program terms | `program/terms` | Agency | `deliverable-{id}` (`{label, count}`), `adReadyVideos`, `variants`, `usageDays`, `allowlisting`, `partnershipAds`, `exclusivity`, `organic`. A page from before kept `makes`, `usage`, `exclusivity` and `notes` as text, in `agency/terms` until the fees were sent: Program terms reads `agency/terms` then `program/terms`, shows `makes` and `usage` that don't parse as one text row each ("What each creator makes", "Usage"), `exclusivity` as its row, and `notes` as a "Notes" row last, and the next publish moves them to `program/terms` |
 | Allowlisting uplift | `agency/terms` until the fees are sent, then `program/terms` | Agency | `upliftPct` |
 | Budget | `agency/budget` | Agency | `total` (stamp); `committed:`, `offersOut:`, `remaining:` (worked out at publish) |
-| The round's brief | `brief-rounds/r{round}` | Agency; Claude | `title`, `sourceDoc` (`{label, url, kind, file}` for an imported doc, `kind` `upload`, `drive` or `text`, `file` its id in `program/files`; empty for a brief the agent wrote; a `kind` `link` from before reads as `drive` for a Google Docs link, else as a link with no `file`), `importedAt:` and `importKey:` (the newest import, **Importing a brief**), `startedFrom:` (the round it was started from), `send-{id}` (a send for sign off: a stamp with `value` `{at}`, `source` `manual` and the Editor as `by` from the page, or `source` `claude` for a send from the chat), `reopen-{id}` (a stamp with `value` `{reason, signoff}`, `signoff` naming the sign off it undid as `{writer}/{item}`, or `chat` for one recorded from the chat), `summary`, `tone` (long text), `do-{id}`, `dont-{id}`, `disclosure`, `fileNaming`, `notice`; `status:` (draft, in review, changes requested, signed off) as at publish, worked out again live on the page |
+| The round's brief | `brief-rounds/r{round}` | Agency; Claude | `title`, `sourceDoc` (`{label, url, kind, file}` for an imported doc, `kind` `upload`, `drive` or `text`, `file` its id in `program/files`; empty for a brief the agent wrote; a `kind` `link` from before reads as `drive` for a Google Docs link, else as a link with no `file`), `importedAt:` and `importKey:` (the newest import, **Importing a brief**), `startedFrom:` (the round it was started from), `summary`, `tone` (long text), `do-{id}`, `dont-{id}`, `disclosure`, `fileNaming`, `notice`; `status:` (draft, in review, changes requested, signed off) as at publish, worked out again live on the page |
+| Brief events | `brief-events/r{round}` | Agency; Claude | `send-{id}` (a send for sign off: a stamp with `value` `{at}`, `source` `manual` and the Editor as `by` from the page, or `source` `claude` for a send from the chat) and `reopen-{id}` (a stamp with `value` `{reason, signoff}`, `signoff` naming the sign off it undid as `{writer}/{item}`, or `chat` for one recorded from the chat). Kept apart from `brief-rounds` so no version, reset, restore or import ever writes them |
 | A concept's brief | `briefs/{lane}-r{round}` | Agency; Claude | `name`, `line`, `persona-{id}`, `trigger`, `framework` (`{code, name}`), `story`, `point-{id}`, `problem`, `agitate`, `solve`, `beat-{n}` (`{name, seconds, what}`), `hook-{n}` (`{type, line, shown, overlay, why}`), `cta-{n}` (`{type, line, destination, moment, why}`), `body`, `length`, `runtime` (`{instagram, tiktok}`), `broll-{n}` (`{shot, beat}`), `product` (`{id, name, sku}`, `id` empty for a product not in scope), `added`, `removed` and `deferred` (true or false); `carriedForward:` the round a deferred concept came from; `order:` its place in concept order, `coverage:` (`{passed, of, failed}`, the checks that failed in plain words) and `version:` as at publish. Long text parts hold the saved HTML (**1d**, **Master Brief**, **Rich text**). A page from before kept `concept`, `hook-{id}`, `cta-{id}`, `broll-{id}`, `disclosure` and `donot-{id}` here: they read as `line`, the hooks, CTAs and shots in id order, and the brief's `disclosure` and don'ts, and the next publish writes them to the keys above |
 | The brief, agency only | `agency/brief-round-r{round}` | Agency; Claude | `briefPage:` the brief agent's page link, which holds the variant plan, so it never sits where the client reads |
 | Variant plan | `agency/brief-{lane}-r{round}` | Agency; Claude | One key per part of each variant, so two editors on two parts of one variant keep both: `v{n}-framework` (`{code, name}`), `v{n}-length`, `v{n}-hook` and `v{n}-cta` (the number), `v{n}-vo` (long text), `v{n}-broll` (a list of shot numbers), `v{n}-note`; `variantCheck:` the brief agent's check of the plan (`{passed, failed}`). A page from before kept `variant-{n}` objects: each reads into these keys, and the next publish writes them |
@@ -4147,7 +4155,7 @@ Rules:
 - The page writes a field only when the person changed it, one write per change. Controls the
   viewer cannot write render as labels.
 - **Reading it back.** Pulling decisions (above) lists `client`, `edits`, `program`, `briefs`,
-  `brief-rounds`, `creators` and the agency's `terms`, `budget`, `frameworks` and `brief-*` with the Artifact tool's page data reads, and
+  `brief-rounds`, `brief-events`, `creators` and the agency's `terms`, `budget`, `frameworks` and `brief-*` with the Artifact tool's page data reads, and
   compares each `manual` field's `at`, and each `file` field's with a `by`, with the last pull. The last pull is one time for every
   document, `at` on `agency/pull`, which Claude writes at the end of each pull that recorded
   something. A page whose decisions sit at the paths without a round
@@ -4615,8 +4623,11 @@ keeps**, Brief versions):
   removed it. So the reset is itself an edit with who
   made it: it shows in History, in **Versions**, and comes back through **Pulling decisions**.
   Concepts added after the version stay and are named in the Dialog; a concept removed since is
-  brought back when the reset covers the whole brief. Comments, sign offs and the client's calls
-  are never part of a version and never reset.
+  brought back when the reset covers the whole brief. Comments, sign offs, sends, reopens
+  (`brief-events`) and the client's calls are never part of a version and never reset. A locked
+  version holds only the parts a sign off copies, so restoring one writes only the keys it holds
+  and nulls none, leaving the title, source doc, order and the added, removed and deferred marks as
+  they are.
 - **Two people at once.** A reset merges keys like any edit, so a person typing in a concept while
   it is reset keeps their text open with "{name} reset this {time}. Saving keeps yours." Restoring
   the "before reset" version brings everything back.
@@ -4645,7 +4656,7 @@ The data rules check a path against the person's share level, nothing more. They
 - The client writes under `client`, their own subtree of `comments` and of `activity`, and their
   own state under `data/users`, and their own subtree of `tags-client` and of `tags-agency`,
   and nowhere else. A write to `edits`, `program`, `briefs`,
-  `brief-rounds`, `creators`, `reviews` or `agency` from the client is refused.
+  `brief-rounds`, `brief-events`, `creators`, `reviews`, `editors`, `sides` or `agency` from the client is refused.
 - Each person's own state under `data/users` is private to them, even from the page's owner and
   from Claude.
 - A comment can be changed only by the person who wrote it, or by an Editor.
@@ -4770,7 +4781,7 @@ document. Steps 3 and 4 run after every publish.
    List `tags-agency`, and one tag writer's `tags-agency/{id}/items` when one exists, at
    `interact`: both empty. A client reading their own `tags-agency/{id}` can't be checked from the
    chat, because `as_level` stands for a level, not a person.
-2. List `client`, `edits`, `program`, `briefs`, `creators` and `reviews` with `as_level` `view`:
+2. List `client`, `edits`, `program`, `briefs`, `brief-events`, `creators` and `reviews` with `as_level` `view`:
    all empty. Then list one writer's comment items, `comments/{id}/items` for an `{id}` that has
    comments, one writer's `activity/{id}/days`, one `activity-editors/{id}/days` and one
    `tags-client/{id}/items`, at `view`: empty. Listing `comments`, `activity`, `activity-editors`

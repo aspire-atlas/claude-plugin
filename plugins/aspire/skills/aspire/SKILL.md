@@ -2139,7 +2139,8 @@ concept, or any field in one) and reply, in a Comments panel filtered by All, Op
 and Resolved, with resolve, reopen and a jump to the part; agency only comments, and every comment
 on the variant plan, stay with the agency. The agency presses Send for sign off; the client gets it
 in their inbox and presses Sign off or Request changes. A sign off records who and when, locks the
-round's brief, and ticks step 4 on Home; the agency reopens a signed off brief only with a reason,
+round's brief, and ticks step 4 on Home once the CM has confirmed the signing account as the
+approver's (until then it reads "Signed off, Aspire to confirm"); the agency reopens a signed off brief only with a reason,
 which is logged. The page sends nothing itself, and the agency never signs off on the page: the
 sign off lives under the client's own id with a copy of what they signed, and the reference's
 **1e**, **What the rules enforce, and what they can't**, says what that proves and what it
