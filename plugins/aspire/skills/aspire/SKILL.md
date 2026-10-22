@@ -2043,6 +2043,12 @@ what each person opens or closes follows them to every device, never logged. Eve
 page is two clicks or fewer from Home as it first opens. The reference's **1d**, **Collapsing
 sections**, holds the rules and the table of paths.
 
+Every tab has an Export button that saves what is on screen (the round in view, the filters and
+the search) as an Excel file with a frozen header, filters and money, percent and date formats, as
+a CSV, or as a copied table. Each viewer's export is built from what they can read, so the
+client's never holds an agency only column. The reference's **1d**, **Export**, holds the sheets
+per tab and the rules.
+
 A campaign runs in rounds, one a month, as many as it needs. Every tab but Creator Selection shows
 one round, picked in the round switcher on every tab and remembered for each person; Creator
 Selection is one pool for every round, and an approval adds the creator to the newest round

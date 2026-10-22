@@ -63,6 +63,7 @@ draft, and in a channel post, uses the left column.
 | @Client, @Aspire, @{name}: tagged you, tagged Client, tagged Aspire | a tag (**1d**, **Tagging**) |
 | Home, Master Brief, Creator Selection, Selected Creators, Content Review, Ad Performance | the page's six tabs (**1d**) |
 | Expand all, Collapse all, a section opened or closed | each person's collapse state (`data/users/{id}/collapse`, **1d**, **Collapsing sections**) |
+| Export, Excel, CSV, Copy as table, Agency only columns | a spreadsheet of what is on screen (**1d**, **Export**) |
 
 The status labels a person sees, in order: Awaiting decision, Approved, Maybe, Rejected, Offer
 sent, Countered, Agreed, Declined, Your call needed, No reply yet, Details received, Shipped,
@@ -887,12 +888,16 @@ Performance. What is open is remembered for each person.
 - **No nesting.** A section never holds another collapsible section, so every part of a tab is at
   most one open away. Inside a section, the parts that are already their own controls (a creator
   card's details, a comment thread, the review panel) keep working as they do.
-- **Expand all and Collapse all.** At the top of every tab's content, at the end of a row of their
-  own above the first section: a ghost Button, size sm, "Expand all" with the Lucide
+- **Expand all and Collapse all.** At the top of every tab's content, at the end of a row above
+  the first section, with only the tab's **Export** Button at its start (**Export**): a ghost
+  Button, size sm, "Expand all" with the Lucide
   `chevrons-up-down` icon, and a ghost Button, size sm, "Collapse all" with `chevrons-down-up`. Each
   opens or closes every section on the tab in view, and nothing on another tab. Since ids never
   name the round, the change holds in every round of that tab. A Button that would change nothing
-  is disabled. On a phone the row keeps both Buttons on one line, aligned to the end.
+  is disabled. On a phone the row keeps all three Buttons on one line, Export at the start and the
+  other two aligned to the end. Under 400px, Expand all and Collapse all show their icons only,
+  keeping their labels for screen readers and as a tooltip, so the row never runs past the
+  screen.
 - **Which sections start open.** The default follows the level of the jobs a section serves, the
   jobs listed in **Reaching every job**: Simple is one glance and one action, Standard the working
   view, Full every field and control. A section that serves a Simple job starts open. A section
@@ -988,7 +993,7 @@ Across every page:
 | Leave agency only comments the client can't see | Master Brief, then a concept's section; "Agency only" on its comment box | 2 |
 | Preview what the client sees | **Preview as client** in the header | 1 |
 | Collapse any section and expand it again | The section's trigger, or **Expand all** or **Collapse all** | 1 |
-| Export what is in view to a spreadsheet | The tab, then its export control | 2 |
+| Export what is in view to a spreadsheet | The tab, then **Export** above its first section | 2 |
 
 Home:
 
@@ -1068,7 +1073,7 @@ Selected Creators:
 | Play the latest cut of every variant and jump into review | Selected Creators; the card's cuts | 1 |
 | See where each value came from | Selected Creators; hover the value | 1 |
 | Send the client a status update on a creator | Selected Creators; a note on the card, tagged @Client | 1 |
-| Export a creator snapshot, shipping list, rates or tracker | Selected Creators, then its export control | 2 |
+| Export a creator snapshot, shipping list, rates or tracker | Selected Creators, then **Export** | 2 |
 
 Content Review:
 
@@ -1206,10 +1211,10 @@ Two layouts: Cards by default, Board second. The layout last picked is kept in t
   the paid fit score. Thumbnails show the evidence posts first, with a "Hook post" label on the
   post the hook rate came from and the play glyph on video, embedded per the card reference. The
   `{DETAILS}` block: Hook rate (watched past 3s), Engagement on Reels, Paid work before, Ad
-  permissions, Status, Product, Location, Why we picked them, any question for the client, and
+  permissions, Status, Product, Location, Tier, Why we picked them, any question for the client, and
   Your decision. For the agency only, under a dashed rule headed "Agency only": the
-  recommendation, agency notes, vetting evidence and safety detail, email, phone and manager, tier
-  and reply window.
+  recommendation, agency notes, vetting evidence and safety detail, email, phone and manager, and
+  the tier's reply window. The tier itself shows to both sides (**Who sees what**).
 - **Board**: one group per concept with a colored title bar (concept name, persona, "need {n},
   {m} approved"). Each group is its own full width table with the first column and the header
   pinned, and grouped header bands: Decisions (Your decision, Your notes, Status, Product), Fit
@@ -1476,6 +1481,162 @@ activity log**), so it shows every write on every tab, checklist ticks and notes
   the line "Press Ctrl+C or Cmd+C to copy.", and Close (outline). The table holds what the rows say,
   never an id, a field name or a tool name.
 
+### Export
+
+Every tab can save what is on screen as a spreadsheet. An export is a read: it writes no page data,
+logs nothing and never reaches Atlas.
+
+- **The control.** An outline Button, size sm, "Export" with the Lucide `download` icon, at the
+  start of the row that holds **Expand all** and **Collapse all** above the tab's first section
+  (**Collapsing sections**). That row never collapses, so Export is always one click from the tab.
+  It opens a Dialog.
+- **The Dialog.** Title "Export {tab}". Description: "What's on screen now: round {n}, with your
+  filters and search." (with **All rounds** on Creator Selection, "every round"). Then two Selects:
+  - **Sheet**: "All sheets" first, then each sheet in **Sheets per tab**, in order. A sheet whose
+    section shows its empty state is listed disabled with that line ("Shown once fees are
+    approved."). A sheet with nothing for this viewer at all, like the agency only Variants sheet
+    for the client, isn't listed.
+  - **Format**: "Excel (.xlsx)" first, "CSV (.csv)", "Copy as table". CSV and Copy as table hold
+    one sheet, so picking either with "All sheets" moves Sheet to the first enabled one.
+
+  Then a count line in `text-xs text-muted-foreground`: "{r} rows, {c} columns" for one sheet, or
+  "{s} sheets, {r} rows" for "All sheets". A disabled sheet is left out of the workbook. For the agency it
+  adds "Includes agency only columns." with a soft Badge "Agency only". Cancel (outline) and the
+  default Button "Download", or "Copy" for Copy as table. On a tab whose every sheet is empty, the
+  Export Button has `aria-disabled="true"` and the disabled look but stays focusable: a click, tap
+  or Enter does nothing but show its tooltip, the tab's empty state. A `disabled` Button would
+  never open that tooltip.
+- **What goes in.** Exactly the rows the tab shows now. That means the round in the **Round
+  switcher**, the tab's filters and search, and its sort. The columns are the sheet's own, from
+  **Sheets per tab**, whichever layout is on screen. A closed section
+  still exports, because collapsing changes the view and not the data. Home's **Needs attention**
+  covers every round, as it does on screen, with a Round column. Values are the newest ones on
+  screen (**Every editable value**), and every label is the page's own word from **Page
+  vocabulary**. A sheet never holds an id, a slug, a field name, a tool name, a hash link or a
+  stamp's source.
+- **Roles hold by construction.** A sheet is built from the same data the viewer's view is built
+  from, in their browser. For the client, a read only client and **Preview as client**, that is
+  the page itself and the client readable page data. The export never reads `agency`, so no agency
+  only column can be in it, whatever the code asks for. For the agency, the agency only columns
+  marked in **Sheets per tab** come from the `agency` reads the view already made. When those
+  reads didn't return, the columns are left out and the count line says "Agency only columns
+  didn't load." A read only client exports the page as published, with no page data, and the
+  About sheet says so.
+- **Preview as client exports the client's sheets.** The agency's browser already holds the
+  `agency` reads, so in the preview the export takes its rows from the same client readable data
+  the preview renders from (**Preview as client**), never from the agency's view with columns
+  dropped. This rests on the page's code, not on the data rules, so a real Contributor's export is
+  checked by opening the page (**What the export can't do yet**).
+- **The file name.** "{Brand} CAS Round {n} {sheet}", with "All rounds" in place of "Round {n}"
+  on Creator Selection's **All rounds**, and the tab's title in place of {sheet} for "All sheets"
+  ("{Brand} CAS Round 2 Selected Creators.xlsx"). The page drops `\ / : * ? " < > |` and runs of
+  spaces from it. The viewer confirms the final name in the download prompt. Home's Needs attention
+  covers every round, so on its own it is named "{Brand} CAS All rounds Needs attention". In a
+  workbook of all Home's sheets the name keeps the round, and the About sheet notes that Needs
+  attention covers every round.
+- **Excel.** One worksheet per sheet, named as in **Sheets per tab** (all are 31 characters or
+  fewer, as Excel needs), plus a last sheet, "About this export". On every data sheet:
+  - Row 1 is the header, in bold, frozen, with a filter over the header and every row.
+  - Money in US dollars, as the campaign records keep it, as numbers formatted `"$"#,##0.00`, and
+    the header names the currency: "Agreed fee (USD)".
+  - Rates as fractions formatted `0.0%`, counts as `#,##0`, and dates as real dates formatted
+    `yyyy-mm-dd`. A date with no time is written as midnight UTC of the date the page shows, so it
+    never lands a day off. So every column sorts and filters as its type.
+  - Times as `yyyy-mm-dd hh:mm` on the viewer's clock, the time the page shows. A spreadsheet
+    date has no time zone, so the page shifts each UTC time by the viewer's offset on that date,
+    which keeps times on both sides of a daylight saving change right. The header names the
+    viewer's time zone, not one offset: "Updated on (Pacific time)".
+  - Text that a person typed is always written as text. A note starting with "=" or "+" stays a
+    note and never runs as a formula.
+  - Columns are sized to their content up to 60 characters wide, and longer text wraps. A cell
+    past Excel's 32,767 characters is cut short enough that, with " (continues on the page)"
+    added, it stays within that limit.
+  - No fill or font color. The **Design standards** keep every color in the page's style blocks.
+
+  "About this export" holds one row per fact: campaign, tab, round, filters and search in plain
+  words ("Concept: Busy parent; search: ana"), exported by (the viewer's name), exported at with
+  the time zone, and "As the client sees it" or "Includes agency only columns". The page loads
+  ExcelJS 4.4.0 from `https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js` (about
+  950 KB) on the first Excel export, never at page load. If it doesn't load, the Format Select
+  marks Excel "Not available right now" and moves to CSV.
+- **CSV.** One sheet as UTF-8 with a byte order mark (so Excel reads accents), comma separated,
+  quoted per RFC 4180, CRLF line ends. The header row is the same as the Excel one. Money and
+  counts are plain numbers, rates are written "28.4%", dates are `yyyy-mm-dd`, and times are
+  `yyyy-mm-dd hh:mm` on the viewer's clock with the zone in the header, as in Excel. So Excel and
+  Google Sheets read each one as its type. A Timecode may still read as a time of day there, so
+  sort on Seconds. Text a person typed (a note, a comment, a reason, a name, a label) that starts
+  with `=`, `+`, `-`, `@`, a tab or a carriage return gets a leading `'`, so no spreadsheet runs it
+  as a formula. Values the page builds itself get no `'`: the Creator column holds the handle
+  without its "@", and dates, numbers and labels never start with those characters. A CSV carries
+  no About rows, so it imports cleanly.
+- **Copy as table.** Works like **History**'s. It puts an HTML table and tab separated text of the
+  one sheet on the clipboard, so it pastes as a table into a sheet, a doc or an email. Only the
+  tab separated text gets the CSV's `'` guard, because that is what a spreadsheet reads. The HTML
+  table keeps the text as typed, so a doc or an email shows no stray `'`. In the tab separated
+  text, a cell holding a tab, a line break or a `"` is wrapped in `"` with each `"` doubled, the
+  way Excel and Google Sheets copy, so a multi line cell pastes as one cell. The Button reads "Copied {n} rows" for two seconds. If the browser
+  refuses the clipboard, a Dialog "Copy {sheet}" opens with a read only Textarea holding the tab
+  separated text, already selected. It shows the line "Press Ctrl+C or Cmd+C to copy." and Close
+  (outline).
+- **Saving.** Excel and CSV go through the page's `downloads` capability (**1e**). The viewer sees
+  a prompt with the name and size and may decline. When `downloads` isn't available in this view,
+  the Format Select offers Copy as table only. Each refusal from the save gets one plain line in
+  the Dialog, by its code:
+  - `declined`: the Dialog closes and nothing else happens.
+  - `rate_limited`: "Another download is waiting. Try again in a moment."
+  - `rejected_extension` or `extension_not_enabled`: "Excel and CSV files can't be saved here.
+    Copy as table instead." The platform turns both formats off together, so the line never
+    offers the other one.
+  - `too_large`: "This file is too big to save here. Pick one sheet or narrow the filters."
+  - Any other code: "Downloads aren't available here. Copy as table instead."
+
+  The page never retries a save on its own.
+- **It works everywhere.** Export changes nothing, so it works in a done round, for a read only
+  client and in **Preview as client**, where every other control is a label. The Dialog's choices
+  are kept in memory only, never in page data or browser storage. It opens on the first format it
+  offers, Excel when it can, with "All sheets" for Excel and the first enabled sheet for CSV or Copy as
+  table.
+
+#### Sheets per tab
+
+Columns marked "(agency only)" are in the agency's export only. Everything else is in both, the
+client's included, and holds what the client may see per **Who sees what** at that moment. So
+fees are in the client's export only once they are sent. A column with nothing in it for a row is
+left blank, never filled with a dash.
+
+| Tab | Sheet | One row per | Columns |
+| --- | ----- | ----------- | ------- |
+| Home | Needs attention | Open item in **Needs attention**, every round | Item, Detail, Tab, Round, Waiting on you (Yes or No), Waits on (agency only), Since |
+| Home | Steps | Step of the round in view | Step (1 Concepts approved to 4 Briefs approved), State (Done, Now, Planned, Launch at risk), Planned, Due, Done on, Days late |
+| Home | Files | File in **Files** | File, Round (or "Whole campaign"), Link, Added by, Added on |
+| Master Brief | Concepts | Concept in the round | Concept, Persona, Framework, Product, Hooks, CTAs, Body, B-roll, Runtime, Disclosure, Do not, Creators, State, Signed off by, Signed off on. Hooks, CTAs, B-roll and Do not hold one item per line in their cell |
+| Master Brief | Variants (agency only) | Variant in each concept's variant build | Concept, Variant, then the parts the build gives each variant (hook, CTA, beats, runtime) |
+| Creator Selection | Decisions | Creator with a call in the rounds in view | Creator, Network, Name, Concept, Round, Your decision, What made the call, Your notes, Decided by, Decided on, Status, Recommendation (agency only), Surprise (agency only: Yes when the decision goes against the recommendation, as **A reason on the call** defines it, worked out on the page from both), Agency notes (agency only) |
+| Creator Selection | Creators | Creator the pool shows now | Creator, Network, Name, Descriptor, Location, Concepts, Rounds, Match score, Hook rate, Engagement on Reels, Paid work before, Ad permissions, Instagram followers, Instagram engagement rate, Instagram average engagement, Instagram audience, the same four for TikTok, Why we picked them, Status, Product, Tier, Reply window (agency only), Email (agency only), Phone (agency only), Manager (agency only) |
+| Selected Creators | Creator snapshot | Creator on the round's roster | Creator, Network, Name, Concept, Product, Returning, Status, Ad permissions, Brief state, Content state, Variants (k of max), Content folder, Waiting on (agency only), Last contact (agency only), Email (agency only), Phone (agency only), Manager (agency only) |
+| Selected Creators | Shipping list | Row in **Shipping** | Creator, Name, Product, Details from creator, Address or pickup, Visit date, Shipping, Tracking, Product status, Updated by, Updated on, Next step (agency only) |
+| Selected Creators | Rates and payments | Row in **Contract and rates** | Creator, Concept, What they make, Usage, Exclusivity, Agreed fee (blank until agreed; Where it is says "In negotiation"), If we drop them, Where it is, Fees approved on, UGC video rate (agency only), Reel collab rate (agency only), 90 day usage rate (agency only), Offer open, target and max (agency only, three columns), Counter (agency only), Expected cost (agency only), Cost per 1K reach (agency only) |
+| Selected Creators | Variant tracker | Variant of each creator in the round | Creator, Concept, Variant, Latest version, Status, Updated on, Open comments |
+| Content Review | Variant status | Cut the queue shows now | Creator, Concept, Variant, Title, Version, Status, Approved by, Approved on, Checklist (ticked of total), Open comments |
+| Content Review | All comments | Comment or reply on the cuts the queue shows | Creator, Variant, Version, Timecode (text, m:ss), Seconds (a number, for sorting), Comment, Reply to (its first words), Who, Side (Client, Agency, or Agency only for the agency), When, Has drawing, Resolved |
+| Ad Performance | Every variant | Variant in **Variants ranked** | Creator, Concept, Variant, Framework, Hook, CTA, Spend, Purchases, Cost per sale, ROAS, 3 second hold, Status (winning, testing, retire or refresh) |
+| Ad Performance | By creator | Creator in **Compare** | Creator, Tier, Variants, Spend, Purchases, Cost per sale, ROAS |
+| Ad Performance | By framework | Framework in **Compare** | Framework, Variants, Spend, Purchases, Cost per sale, ROAS |
+
+What the export can't do yet, said plainly:
+
+- **No payment columns.** The page keeps no payment record. Rates and payments carries the agreed
+  fee and the fee approval only. Contract date, invoiced and paid columns join the sheet when
+  **Contract and rates** records them.
+- **Ad Performance exports nothing yet.** Nothing in this flow reads ad spend (**What this flow
+  never does**). The tab shows its empty state, so its Export Button is disabled. The three
+  sheets above are what it exports once the tab shows results.
+- **Content Review exports only what its build shows.** Until that tab has its own build, it shows
+  its empty state and its Export Button is disabled too.
+- **Opening in Excel and Google Sheets can't be checked from the chat.** Check one export from each
+  tab by opening the page, and say so when handing over a first publish. Check one tab's export
+  from a real Contributor's account too, since **Preview as client** rests on the page's code.
+
 ### Footer
 
 "Page republished on every change. Numbers come from Atlas as of {time}. Post images are
@@ -1506,6 +1667,7 @@ name the tab, never an older name for the part:
 | Who did what and when, filtered by tab and round, searched | **History**, opened from the inbox |
 | What changed for you, and tags for you | **Inbox**, from the header on every tab: every tab on Home, the tab's own elsewhere |
 | Open or close a section, Expand all, Collapse all | Every section's header, and the row above a tab's first section (**Collapsing sections**) |
+| Export what is on screen to Excel, CSV or a copied table | **Export**, at the start of the row above a tab's first section (**Export**) |
 
 ### Page mechanics
 
@@ -1877,6 +2039,8 @@ prefixes.
    light and dark.
 8. Every section has a Collapsible header with its summary line, every tab has Expand all and
    Collapse all, and each section starts open or closed as **Sections per tab** says.
+9. Every tab has its **Export** Button, ExcelJS loads only on the first Excel export, and the
+   client's export of each tab, made in **Preview as client**, has no agency only column.
 
 ## 1e. Page data: what the page keeps and how it is read back
 
@@ -1899,8 +2063,12 @@ campaign page:
   {"path": "tags-agency/{self}", "read": "interact", "write": "interact"},
   {"path": "data/users/{self}", "write": "interact"}
  ]},
- "user": {"scopes": ["profile"]}}
+ "user": {"scopes": ["profile"]},
+ "downloads": true}
 ```
+
+`downloads` lets every tab save its **Export** as Excel or CSV (**1d**, **Export**). It is not
+role gated, so a sheet's contents come from what the viewer can read, never from the capability.
 
 In the share menu's words: Contributors (the client) read the page data and write only under
 `client`, their own comments, their own activity, their own tags, and their own state; Editors
@@ -2163,7 +2331,8 @@ the write.
 marks, collapsed sections, the remembered round) is private to them, even from Claude, so logging
 it in shared data would publish it; it never logs. Nor do the log's own writes (entries,
 `lastAt`, leases), `agency/edit-check`, `agency/tag-delivery`, a write the rules refused (the field shows "Not saved"),
-or anything in **Preview as client**, which never writes.
+or anything in **Preview as client**, which never writes. An **Export** writes nothing, so it
+never logs either.
 
 **Reading it.** The **Inbox** reads the log whenever the page is open, the lighter way in **Tags
 and the inbox**, **Reading it**. History's own reads run only while **History** is open. It subscribes to
