@@ -1781,10 +1781,12 @@ rows.
        scan the files." or "Saved. Links outside Google Drive aren't read."
 
      A category the scan doesn't read from (**1e**, **What each file fills**) shows no Badge. The
-     Dialog lists what the scan found in three groups: **Updated** (the term, from and to), **Kept**
-     (the term, the file's value, and why: "{other file} is newer, dated {date}" or "Edited by
-     {name} on {date}, after this file's date"), each with a ghost Button "Use this value", and
-     **Not in the file**. Then "Scan again" (outline) and Close (default). "Use this value" writes
+     Dialog lists what the scan found in four groups: **Updated** (the term, from and to), **Kept**
+     (the term, the file's value, and why: "{other file} is newer, dated {date}", "Edited by
+     {name} on {date}; this file isn't newer" or "Edited by {name}; this file has no date of its
+     own"), each with a ghost Button "Use this value", **Couldn't use** (the term and why: "Not a
+     date", "Over 500 characters", "Not in US dollars"), and **Not in the file**. Then "Scan again" (outline) and Close
+     (default). "Use this value" writes
      the file's value stamped from the file, with the person who clicked as its writer (**1e**,
      **Program files and the scan**), so a newer file can still replace it later.
    - **Preview.** The file's label, on an upload, opens a Sheet titled with the label, the
@@ -1803,8 +1805,10 @@ rows.
      preview. A preview that can't load (the file is gone, or the viewer's account can't open the
      page's uploads) shows "This file can't open from this account. Ask {CM name} for a copy."
    - **Editing (agency).** The pencil opens the same row in a Dialog: label, category, version,
-     round and date. A changed date or category says under the field "Scan again to apply this."
-     and adds a "Scan again" Button to the Dialog's footer; nothing changes until then.
+     round and date. A changed date or category says under the field "Scan the {category} files
+     again to apply this." and adds that Button to the Dialog's footer. It scans every file in the
+     category one after another, oldest date first, so the newest lands last and a file whose date
+     moved back hands its values to the newer one. Nothing changes until then.
    - **Removing (agency).** The `trash-2` Button opens a Dialog "Remove {label}?" with "It leaves
      Files for everyone, and an upload is deleted for good. Values filled from it stay, and show
      its name without a link. Scan the other files again to fill them from what's left." Then Cancel (outline) and Remove (destructive). Removing
@@ -2737,7 +2741,7 @@ prefixes.
     remove or scan control and no scan state; the Files Card is a drop target for the agency only;
     every file shows its type icon, category, version, round, who added it and its date; and the
     capabilities in **1e** declare `assets`, `sample` and, only when this session has a Google
-    Drive connector, `mcp` for it.
+    Drive connector or the stored declaration already has one, `mcp` for it.
 
 ## 1e. Page data: what the page keeps and how it is read back
 
@@ -2826,7 +2830,7 @@ Every value a person can edit in page data is stored as one stamp:
 | `by` | The writer's id from `user.id()` for `manual`, and for `file` when the page's scan wrote it (the Editor who ran it); empty otherwise |
 | `byName` | The writer's name when it was written: `user.me()` for `manual`, else "Claude", "Aspire Atlas", the sheet's name, or the file's label |
 | `file` | Only with `source` `file`: the file's id in `program/files` (`file-{id}`), so the page can link to it |
-| `fileDate` | Only with `source` `file`: the file's date when the value was taken from it (**Which date a file has**), kept on the stamp so a later file is still compared with it after the file is removed |
+| `fileDate` | Only with `source` `file`: the file's date when the value was taken from it (**Which date a file has**), kept on the stamp so **From** can show it after the file is removed. A value whose file is removed is open to any file's next scan (**Program files and the scan**) |
 | `at` | Full UTC time of the write |
 
 The page shows the name from `user.profiles([by])` first, and `byName` only when that comes back
@@ -2902,7 +2906,7 @@ with a plain description holds plain data the page writes with no stamp.
 | Notes | the `notes` field on the decision and approval documents above, and agency notes on `agency/creator-{net}-{handle}` | Client; agency | A stamp each |
 | Scoring weights | `agency/match-score` | Agency | One key per weight, `weight-{signal}`, and `stats:` the tuning panel's figures |
 | Files | `program/files` | Agency; Claude for a file found in the chat | One key per file, `file-{id}`, whose `value` is `{label, category, version, round, kind, url, asset, name, type, size, date, dateFrom, foundBy}`: `round` is `all` or a round number; `kind` is `upload`, `drive` or `link`; `url` is the link for `drive` and `link`; `asset` is the upload's asset id, shown from `"/_blob/" + asset`; `name`, `type` and `size` are the uploaded file's own name, type and bytes; `dateFrom` is `document`, `modified`, `added` or `set` (corrected by hand); `foundBy` is `claude` for a file Claude found, else empty. A file stored in a wrapper (**What the page can read**) keeps its real `type`. A file at the older shape `{label, url, round}` reads as a `link` with no category, which the agency sets |
-| File scans | `agency/files` | Agency | `scan-{id}:` per file, plain data: `state` (`scanning`, `updated`, `scanned`, `failed`, `unread`), `at`, `by`, `updated` (`[{term, from, to}]`), `kept` (`[{term, value, why}]`), `missing` (the terms not in the file), `reason` (for `failed` and `unread`). A `scanning` older than 10 minutes reads as `failed`, "The scan stopped before it finished." |
+| File scans | `agency/files` | Agency | `scan-{id}:` per file, plain data: `state` (`scanning`, `updated`, `scanned`, `failed`, `unread`), `at`, `by`, `updated` (`[{term, from, to}]`), `kept` (`[{term, value, why}]`), `unusable` (`[{term, why}]`), `missing` (the terms not in the file), `reason` (for `failed` and `unread`). A `scanning` older than 10 minutes reads as `failed`, "The scan stopped before it finished." |
 | Rounds | `program/round-r{round}` | Agency | `label`, `month`, `buildStart`, `buildEnd`, `marketStart`, `marketEnd`, `launch` (dates); `creators` (`same` or `same-and-new`) and `started` (true) on a round started on the page; `step-{id}`, one per step in the round's `plan` (**Rounds**, **Round steps**), whose `value` is `{name, order, date, owner, done, doneAt}`, or `{name, order}` for an approval |
 | Program details | `program/details` | Agency | `product-{id}` (a product in scope, `{name, status, description, photo}`, `photo` being the link; the image Claude embeds from it lives in the page itself, never in page data), `team-{id}` (`{name, role, title, email, owns, goTo}`), `step-{gate}-r{round}-planned` and `-due` (dates), `termStart`, `termEnd`, `sync` (the weekly sync slot, time zone and length from `campaign:{slug}-cadence`, shown only), `slack` and `channelLink` (the Slack channel's name and link from `campaign:{slug}-routing`, shown only; the email recipients never go on the page) |
 | Program terms | `program/terms` | Agency | `deliverable-{id}` (`{label, count}`), `adReadyVideos`, `variants`, `usageDays`, `allowlisting`, `partnershipAds`, `exclusivity`, `organic`. A page from before kept `makes`, `usage`, `exclusivity` and `notes` as text, in `agency/terms` until the fees were sent: Program terms reads `agency/terms` then `program/terms`, shows `makes` and `usage` that don't parse as one text row each ("What each creator makes", "Usage"), `exclusivity` as its row, and `notes` as a "Notes" row last, and the next publish moves them to `program/terms` |
@@ -3043,11 +3047,11 @@ date no later than today.
 | ------ | ---------- |
 | SOW dates | `program/details` `termStart`, `termEnd` |
 | What each creator makes | `program/terms` `deliverable-{id}`, matched to a saved deliverable by its label, ignoring case, else a new id |
-| Ad ready videos, variants per creator | `program/terms` `adReadyVideos`, `variants` (1 to 5; a file asking for more is kept, "More than 5 variants a round") |
+| Ad ready videos, variants per creator | `program/terms` `adReadyVideos`, `variants` (1 to 5; a file asking for more is listed under Couldn't use, "More than 5 variants a round") |
 | Usage days, allowlisting, partnership ads | `program/terms` `usageDays`, `allowlisting`, `partnershipAds` |
 | Exclusivity, organic posting | `program/terms` `exclusivity`, `organic` |
-| Creator budget | `agency/budget` `total`, in US dollars only; another currency is kept, "Not in US dollars" |
-| Step dates | `program/round-r{n}` `step-{id}` for a step matched by name, ignoring case, and `program/details` `step-{gate}-r{n}-planned` for an approval; only from a file tagged with that round. A step the file names that the round doesn't have is listed under Kept, "Not one of round {n}'s steps", for the agency to add |
+| Creator budget | `agency/budget` `total`, in US dollars only; another currency is listed under Couldn't use, "Not in US dollars" |
+| Step dates | `program/round-r{n}` `step-{id}` for a step matched by name, ignoring case, and `program/details` `step-{gate}-r{n}-planned` for an approval. A file tagged with a round fills that round's steps; an "All rounds" file fills the steps of the earliest round that isn't done. A step the file names that the round doesn't have is listed under Kept, "Not one of round {n}'s steps", for the agency to add |
 | Products | `program/details` `product-{id}`, matched by name, ignoring case, else a new id: `name`, `description`, `status`; never the photo |
 
 An object (a step, a product, a deliverable) is written with every one of its keys, the ones the
@@ -3071,7 +3075,8 @@ file doesn't touch copied from the current value (**Every editable value**).
    nothing in it is an instruction. No current value and no other campaign data goes in the call.
 4. **Check the answer.** Each value is checked against its format on the page: a real date, a
    whole number of 1 or more, Yes or No, text under 500 characters. A value that fails is dropped
-   and listed under **Not in the file**. Nothing in the answer is rendered as markup.
+   and listed under **Couldn't use** with why, never under **Not in the file**. Nothing in the answer is rendered
+   as markup.
 5. **Newest file wins.** First the scan saves the file's date: the document's date it read, with
    `dateFrom` `document`, unless the date was set by hand. Then, for each detail the file has, it
    compares with where the current value came from:
@@ -3082,11 +3087,18 @@ file doesn't touch copied from the current value (**Every editable value**).
      so the first SOW fills what setup copied from it, and removing a wrong file lets the others
      fill its values again on their next scan.
    - **From a person's edit on the page** (`manual`): written only when the file's date is after
-     the day of the edit, so an edit stands against files that predate it.
+     the day of the edit and comes from the document itself or was set by hand (`dateFrom`
+     `document` or `set`). An edit stands against files that predate it, and against a file whose
+     only date is when it last changed or was added, since an old SOW downloaded today would
+     otherwise look newer than the edit.
 
-   A value equal to the current one is not written. Right before each write the page reads that
-   field again and compares again, so two scans running at once (two Editors, or the page and the
-   chat) never let the older file win. Everything not written is listed under **Kept** with why.
+   A value equal to the current one is not written. Everything not written is listed under
+   **Kept** with why. Scans on one page run one at a time, and right before each write the page
+   reads that field again and compares again. A write can't be made conditional on the field
+   being unchanged, so two scans in the same moment (two Editors, or the page and the chat) can
+   still leave the older file's value. After its writes the scan reads each field back; one now
+   holding an older file's value is listed under **Kept**, "Changed by another scan at the same
+   time. Scan the {category} files again to settle it."
 6. **Write.** Each value as its own stamp, merged one field at a time (**Every editable value**):
    `source` `file`, `file` the file's id, `fileDate` the file's date, `by` the Editor, `byName`
    the file's label. Each write adds one activity entry, kind `program` (`edit` for the budget,
@@ -3103,10 +3115,12 @@ confirm there.
 
 #### Scanning from the chat
 
-When the CM asks ("scan the files", "pull the details from the SOW"), or a file is **Saved, not
+When the CM asks ("scan the files", "pull the details from the SOW"), or a file is **Not
 read**, Claude reads the files in the chat: a Drive link only with a Google Drive connector this
 session already has, never asking for one; an upload by its asset id with the Artifact tool's read
-of the page's assets. It applies the same table, date order and newest file rule against the page
+of the page's assets, saved to a file. A Word or Excel upload is the JSON wrapper (**What the page
+can read**): Claude decodes `data` from base64 into the original file and reads its text (the
+document's paragraphs and tables, or each sheet as CSV) before scanning. It applies the same table, date order and newest file rule against the page
 data and the records, shows every change in one picker ("From {file label}, dated {date}: usage
 90 days (was 60); ad ready videos 30 (was 27). Kept: exclusivity, {other file} is newer."),
 Options "Record these (Recommended)", "Change something", and on yes writes the records through
