@@ -233,7 +233,7 @@ record type the newest finding per identity wins, by `detail.recordedAt`.
 | `brief-revision` | the creator + round | The creator's account | `action_item` `medium` while waiting on the client; `went_well` once approved | `handle`, `lane`, `basedOn` (the locked lane brief's version), `changes` (one plain line each: what, from, to), `text` (the creator's version), `status` (waiting, approved, notes sent), `locked` |
 | `hook` | one per hook or CTA, never replaced | The brand's account | `went_well` `low` | `lane`, `type` (hook, cta), `text`, `pattern`, `firstBriefed` (round and date) |
 | `hook-review` | hook + round | The brand's account | `went_well` when it led; `needs_improvement` when it lagged or was not used; `action_item` `low` when held or not measurable | `lane`, `hook` (the text), `pattern`, `postsMatched`, `vsMedian`, `result` (led, held, lagged, not used, not measurable yet) |
-| `ledger` | one per line, never replaced | The brand's account | `needs_improvement` | `gate`, `daysSlipped`, `reason`, `shifted` (the gates and dates it moved) |
+| `ledger` | one per line, never replaced | The brand's account | `needs_improvement` | `gate`, `round`, `handle` (Gate 4b only), `daysSlipped`, `reason`, `shifted` (the gates and dates it moved) |
 
 A roster finding carries the whole row, not only what changed: copy the newest finding's
 detail for that creator and round, change what moved, and write it as the new finding. That keeps
@@ -585,7 +585,7 @@ Rules:
   Otherwise, when a round can be started (**Rounds**, **Starting the next round**), "Start round
   {n+1}" replaces "Change setup"; "Change setup" still runs when the CM asks for it.
 - **Slips.** A gate is slipped when it is open past its due time. Logging the delay writes the
-  gate as `slipped` with the days, writes one `ledger` line, writes a new finding for every
+  gate as `slipped` with the days, writes one `ledger` line (with its round, and the creator for Gate 4b), writes a new finding for every
   later gate with a planned or due date, moved by the same days, and moves the round's dates and
   every later round's the same way (**Rounds**). Closing a slipped gate writes
   the final days slipped; any days not yet logged get their own ledger line and move the later
@@ -1126,7 +1126,7 @@ only is marked so.
 | Home, Everything | Program terms | `home-program` | "Runs {start} to {end} · {deliverables} per creator · usage {d} days", leaving out a part not saved | Standard | Closed |
 | Home, Everything | Products in scope | `home-products` | "{p} products · {a} active", or for the agency "No products added yet." | Standard | Closed |
 | Home, Everything | Team | `home-team` | "{n} people at Aspire", or for the agency "No team added yet." | Standard | Closed |
-| Home, Everything | Calendar | `home-calendar` | For the round in view: "Round {n} {verdict, lower case} · next: {milestone} {date}" ("Round 2 running behind · next: Ads live Dec 1"), leaving out the verdict where **Where we stand** hides it, "next" naming the round's next dated milestone or "every milestone passed", and "{Step} is {d} days late" when its current step is late, the step named as **Round steps** names it ("Round 2 running behind · next: Ads live Dec 1 · Briefs approved is 2 days late") | Standard | Closed |
+| Home, Everything | Calendar | `home-calendar` | For the round in view, parts joined with " · ": "Round {n} {verdict, lower case}" ("Round 2 running behind"), or where **Where we stand** shows no verdict the round's state in its place ("Round 1 in market to Dec 31", "Round 1 done", "Round 3 starts building Jan 4", "Round 2 in production"), then "next: {milestone} {date}" "next" naming the round's next dated milestone or "every milestone passed", and "{Step} is {d} days late" when its current step is late, the step named as **Round steps** names it ("Round 2 running behind · next: Ads live Dec 1 · Briefs approved is 2 days late") | Standard | Closed |
 | Home, Everything | Files | `home-files` | "{n} files · still needed: {categories}", or "{n} files · every required file is here", or "No files yet." | Standard | Closed |
 | Master Brief | One per concept, "{Concept} brief · round {n}" | `brief-{lane}` | "{product} · {h} hooks, {c} CTAs · {runtime} · {k} creators", with the state pill beside the trigger | Full | Closed; open while it waits on the viewer's sign off |
 | Master Brief | One per changed brief, "@{handle} changed the {concept} brief" | `brief-changes-{net}-{handle}` | "{n} changes against the brief you approved" | Simple | Open |
@@ -1713,14 +1713,15 @@ rows.
      | On the calendar | From |
      | --------------- | ---- |
      | The span | The term's start to its end (`program/details` `termStart` and `termEnd`, else `term.start` and `term.end` in `campaign:{slug}-cas`), widened to take in any round's dates that fall outside it |
-     | Build phase | The round's build window, from its start to the day before launch (**Rounds**). Past the launch date, while step 4 was not yet cleared, the day stays build, as **Launch at risk** |
-     | In-market phase | From the later of the launch date and step 4's `clearedAt`, to the in-market window's end, or to `closedAt` for a round closed early. A round closed before step 4 cleared has no in-market phase. Each day's phase is the round's state on that day (**Pace uses the Where we stand rule**), so the bars, the day details and the export never disagree with the pace under them |
+     | Build phase | The round's build window, from its start to the day before launch (**Rounds**). A day from the launch date to today on which step 4 was not yet cleared stays build, as **Launch at risk** |
+     | In-market phase | From the later of the launch date and step 4's `clearedAt`, to the in-market window's end, or to `closedAt` for a round closed early. A round closed before step 4 cleared has no in-market phase. While step 4 is still open, the days after today keep their planned in-market phase, drawn as a `border border-primary` outline bar with no fill, because whether they go live isn't known yet. Each day's phase is the round's state on that day (**Pace uses the Where we stand rule**), so the bars, the day details and the export never disagree with the pace under them |
      | Milestones | **First cut review**, **Variants due** and **Ads live**: the dates of the round's `first-cut` and `variants-due` steps and its launch date, from the newest of the round finding and `program/round-r{n}` (**Rounds**, **Round steps**), named as **Round steps** names them |
      | Steps | Each step's date in the round's `plan` and page data, an approval's from its gate finding, as **Round steps** shows them |
      | Cut delivered | The `addedAt:` (full UTC time) of each cut's first version, `reviews/cut-{cut}/versions/v1` or the lowest version there (**1e**). A later version is a new version, not a delivery |
      | Approved | The activity log's entries for the cut's versions (**The activity log**: kind `decision`, verb approved or undid, `asset` `cut-{cut}-v{version}`): a cut counts as approved from the `at` of an approval until the `at` of an undo. Where the log has no entry for a cut, the `at` of its `client/cut-{cut}-v{version}` `status` stamp while that value is approved |
      | Shipping | The activity log's `status` entries for the creator in the round whose `to` is Shipped or Delivered (from either side, so a Mark shipped shows at once), else the roster's `shipDate` for Shipped; and the pickup visit date in `details` |
      | Spend and return | The week's figures Ad Performance records for the round, once it records them |
+     | Reading the log | The activity log is read only while the section is open, and only the day documents (`days/{day}`) for days inside a round's build or in-market window, up to today,, read once and then kept current by the page's live updates (**Live updates**). Closing the section stops it |
      | Today | The viewer's clock (**Round switcher**, **Every date is real**) |
 
      A time (`addedAt:`, a log entry's `at`) lands on the viewer's own calendar day. A date with
@@ -1732,10 +1733,13 @@ rows.
      the verdict and the states it shows in are the ones in **Where we stand** (**The Simple
      view**), never a second rule. The calendar only asks the same question on another day or
      for one concept:
-     - **A round's state on a day {d}** is the **Rounds** state test with {d} as today: In
-       production from the build window's start, and past the launch date for as long as step 4
-       was not cleared by {d} (its gate's `clearedAt`); In market from the launch date once step
-       4 was cleared; Planned and Done as **Rounds** says.
+     - **A round's state on a day {d}** is the **Rounds** state test with {d} as today, on the
+       dates alone: a stored `state` is ignored, so a finished round keeps its past phases. Planned
+       before the build window; In production from its start, and past the launch date for as
+       long as step 4 was not cleared by {d} (its gate's `clearedAt`), up to today; In market from
+       the launch date once step 4 was cleared; Done after the in-market window, or from
+       `closedAt` for a round closed early. A day after today on which step 4 is still open reads
+       as planned in market, with the future-day pace line.
      - **While the round is in production on {d}**: what's in by {d} is the round's cuts whose
        first version was added on or before {d}; what's needed by {d} is {z} worked out with {d}
        as today; and the verdict follows. On today that is, by construction, the same round, the
@@ -1746,7 +1750,10 @@ rows.
        cuts. A round's verdict is worked out from the round's own totals, not added up from the
        concept rows, so a concept can run behind while the round is on track.
      - **The plan is today's plan.** No record keeps the roster as it stood on a past day, so a
-       creator added or declined since moves the plan on every day. Delivered and approved counts
+       creator added or declined since moves the plan on every day. The round's dates are today's
+       dates too: a logged slip moves the build window, launch and in-market window (**Rounds**),
+       so past days are drawn and paced against the moved window, and a delivery can sit on a day
+       that now reads Planned. The delay list says each slip. Delivered and approved counts
        come from the dated version records and the activity log, so they don't change after the
        day.
      - **Hidden as Where we stand is hidden.** With no creators in the round, the pace parts read
@@ -1782,16 +1789,21 @@ rows.
        day a cut of that concept was delivered: `border-l-2 border-chart-{n}`, 8px tall, sitting
        beside the concept's chip as **Concept colors** requires of a thin mark. A sixth concept or
        later keeps its chip from **Concept colors** (`bg-muted text-foreground` with its number)
-       and takes `border-foreground` ticks. When a day is narrower than 4px at the
+       and takes `border-muted-foreground` ticks, matching its bar in the day details and never
+       mistaken for the today line. When a day is narrower than 4px at the
        strip's width, ticks group by week, one tick on the week's first day. In market and Done
        rounds show "{x} of {y} made" and no tag; a Planned round "Building starts {date}".
      - **The legend**, under the strip, in `flex flex-wrap gap-x-4 gap-y-1 text-xs
-       text-muted-foreground`: a swatch and "Build", a swatch and "In market", each milestone's
+       text-muted-foreground`: a swatch and "Build", a swatch and "In market", an outline swatch and
+       "In market if briefs are approved" while a round shows one, each milestone's
        icon and name, the today line and "Today", and a tick and "A cut delivered". It is always
        there, because identity never rests on color alone.
      - **Delays**, under the legend, in both views: one line per `ledger` entry for the
-       campaign, "{Step} slipped {d} days", from its `gate` and `daysSlipped`,
-       newest first, or "No delays."
+       campaign, "Round {n}: {Step} slipped {d} days" ("1 day" for one), from its `round`, `gate`
+       and `daysSlipped`, the step named as **Round steps** names the approval; a Gate 4b line reads
+       "Round {n}: @{handle}'s brief approval slipped {d} days". A line written before `ledger`
+       carried `round` takes it from the gates in `shifted`, and leaves the round out when those
+       don't say. Newest first, or "No delays."
    - **The full calendar.** While the section is open, a ghost Button, size sm, "Full calendar"
      with the Lucide `calendar-days` icon, at the end of the row above the strip, swaps the strip
      for every day of the span, and "Compact strip" with `calendar-range` swaps it back. The
@@ -1807,8 +1819,8 @@ rows.
        deliveries for the round in view. Today's date number sits in a `bg-foreground
        text-background rounded-full` circle with "Today" for screen readers. Days outside the span
        are empty and not focusable. Each button's accessible name reads the whole day: "{date},
-       round {n} build day {b} of {B} (or "in market week {w}", or "{d} days past launch, launch at
-       risk"), {k} delivered, First cut review", so no band or icon is the
+       round {n} build day {b} of {B} (or "in market week {w}", "{d} days past launch, launch at
+       risk", "planned" or "done"), {k} delivered, First cut review", so no band or icon is the
        only place a fact lives.
      - **On a phone**, a list of dated days grouped by month: every day that has a milestone,
        step, delivery, approval or shipping event, plus today, each a List row (**Component
@@ -1875,12 +1887,18 @@ rows.
      delays and the published shipping dates, with "As of {publish time}." under the title.
    - **Editing (agency).** Each round lane's label, on the strip and in the full calendar's
      month where the round's build starts, carries a ghost icon Button with the Lucide `pencil`
-     icon, labelled "Edit round {n} dates". It opens a Dialog "Round {n} dates" with date Inputs
-     for Build starts, Launch date and In market ends, then Cancel (outline) and Save (default).
-     Saving writes `program/round-r{n}` (`buildStart`, `launch`, `buildEnd` the day before launch,
+     icon, labelled "Edit round {n} dates". It opens a Dialog "Round {n} dates" with a Label Input
+     (required) and date Inputs for Build starts, Launch date and In market ends, then Cancel
+     (outline) and Save (default). Saving writes `program/round-r{n}` (`label`, `buildStart`, `launch`, `buildEnd` the day before launch,
      `marketStart` the launch, `marketEnd`, and `month` from the launch), and Ads live moves with
      the launch. A launch before the build start, or an end before the launch, shows "The launch
-     can't be before the build starts or after the in-market window ends." and doesn't save.
+     can't be before the build starts or after the in-market window ends." and doesn't save. Two
+     more refusals, under In market ends: past the term's end, "The term ends {date}. Running
+     past it changes the usage the creators agreed to, so it's a setup change. Change it in the
+     chat once each creator has agreed." (**Rounds**); on or after the next round's launch, "Round
+     {n+1} goes live {date}. End this round before then, or move round {n+1} first." A launch
+     before step 4's due date saves, with the warning line "Briefs approved is due {date}, after
+     this launch. The round will show Launch at risk."
      The Dialog says "Later rounds keep their dates. To move every later round with this one, log
      the delay in the chat." because only a slip moves them (**Rounds**). A step's date is edited
      in **Round steps**, which each step event links to. In a done round, and for the client,
@@ -2466,7 +2484,7 @@ left blank, never filled with a dash.
 | --- | ----- | ----------- | ------- |
 | Home | Needs attention | Open item in **Needs attention**, every round | Item, Detail, Tab, Round, Waiting on you (Yes or No), Waits on (agency only), Since |
 | Home | Steps | Step in **Round steps** for the round in view, in order | Step, Client approval (Yes or No), Owner, State (Done, Now, Up next, Planned, Launch at risk), Due, Done on, Days late |
-| Home | Calendar | Day and round in **Calendar**'s span, every round, for each day with a phase change, milestone, step, delivery, approval or shipping event, plus today | Date, Round, Phase (Build, Build (launch at risk), In market), Events, Delivered that day, New versions, In by then, Needed by then, Approved by then, Pace. The counts and Pace follow the day details for that round, and are left blank where the calendar hides them |
+| Home | Calendar | Day and round in **Calendar**'s span, every round, for each day with a phase change, milestone, step, delivery, approval or shipping event, plus today | Date, Round, Phase (Planned, Build, Build (launch at risk), In market, Done), Events, Delivered that day, New versions, In by then, Needed by then, Approved by then, Pace. The counts and Pace follow the day details for that round, and are left blank where the calendar hides them |
 | Home | Program terms | Row in **Program terms** shown to the viewer | Group, Term, Value |
 | Home | Products | Product in **Products in scope** | Product, Status, Description, Creators, Approved |
 | Home | Team | Person in **Team** | Name, Role, Title, Work email, Owns, Go to them for |
@@ -2566,7 +2584,7 @@ with who made it (**1e**, **Every editable value**). The agency edits in place:
 | Products in scope: add, edit, remove, and the photo link | Home, Everything, **Products in scope** |
 | Team: add, edit and remove a person | Home, Everything, **Team** |
 | Steps: tick, move to the next step, add, remove, and each step's name, date and owner | Home, Everything, **Round steps**, which **Calendar**'s step events link to |
-| A round's build window, in-market window and launch date (its month follows the launch) | Home, Everything, **Calendar** ("Edit round {n} dates"), and the **Start round** Dialog, which also sets the label |
+| A round's label, build window, in-market window and launch date (its month follows the launch) | Home, Everything, **Calendar** ("Edit round {n} dates"), and the **Start round** Dialog |
 | Budget total | Creator Selection, **Budget summary** |
 | Files | Home, Everything, **Files**: add by link, upload or drop, edit, remove, scan again |
 | The brief's text | Master Brief, every part of a concept's brief |
