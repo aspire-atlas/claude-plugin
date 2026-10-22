@@ -2017,9 +2017,12 @@ go live, a pace verdict (Ahead, On track or Running behind) with the ad videos i
 needed by today, what waits on the viewer with a link to each item, what Aspire is working on,
 last round's cost per sale against the client's target once a round has ad results, the next
 weekly sync in the viewer's time zone with a Google Calendar link and the Slack channel, and the
-three newest unread updates. A Switch shows Everything, the working view. Every figure comes from
-the records and the viewer's clock, and a part whose record doesn't exist yet is hidden, never
-filled with a placeholder. The reference's **1d**, **Home**, holds the rules.
+three newest unread updates. A Switch shows Everything, the working view: the round's steps with
+what's now and up next (the agency ticks steps, moves to the next one and edits dates), the SOW
+terms with where each came from, the products in scope, everything that needs attention tagged by
+round, one card per tab for the round in view, and the Aspire team with their emails. Every
+figure comes from the records and the viewer's clock, and a part whose record doesn't exist yet
+is hidden, never filled with a placeholder. The reference's **1d**, **Home**, holds the rules.
 
 Every edit on the page is saved in the page's shared data, field by field, with who made it and
 when, so everyone sees it live and on every device; the agency edits program terms, products,
@@ -2091,7 +2094,7 @@ Find each round that is not done (the reference's **Rounds**, **Which round**) a
 dispatch table, reading from the bottom up. Show one screen: per round, its month, dates and state,
 its row's status line and the four steps (1 Concepts approved, 2 Creators approved, 3 Fees
 approved, 4 Briefs approved) each with done and its date, now and its due date, or its planned
-date, the creator counts by concept, anything marked your call needed, and the campaign page link,
+date, the round's current step and up next from its **Round steps**, the creator counts by concept, anything marked your call needed, and the campaign page link,
 opened on the tab the next step is on (Creator Selection for creators, Selected Creators for fees
 and shipping, Master Brief for briefs and creator changes, else Home), and the new tags from the
 page per the reference's **Delivering tags**. Then one

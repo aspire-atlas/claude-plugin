@@ -42,8 +42,14 @@ Recommended)", and "Nothing organic, ads only" follows without the Recommended m
 The terms object:
 
 ```json
-{"schema": 1, "organic": "none", "whitelistingUpliftPct": 20, "exclusivity": "none"}
+{"schema": 1, "organic": "none", "whitelistingUpliftPct": 20, "exclusivity": "none",
+ "allowlisting": true, "partnershipAds": true}
 ```
+
+`allowlisting` and `partnershipAds` are optional and asked by no question: whether the SOW
+includes allowlisting and partnership ads. They reach the record from an editor's edit on the
+campaign page's Home, **Program terms**, or from the program files there (`cas-campaign.md`,
+**1d**, **Home**), and Home hides each until it is saved.
 
 A change later goes through `supersede_calibration` with its own Destructive tools confirmation.
 
