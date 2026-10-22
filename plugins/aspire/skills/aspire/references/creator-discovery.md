@@ -338,8 +338,11 @@ Everything above applies, with these changes:
   campaign only), so the shortlist and the campaign page show the same number for the same
   inputs. The casting keywords and target cities are `casting` in the lane record,
   which the campaign page's edits are pulled into, else derived from the lane's persona and casting filter and named as derived
-  on the page. Budget vs target uses `rates-and-terms.md`, **Expected cost** (in
-  discovery, the calculator's target plus the uplift) and **Target rate**.
+  on the page. Budget vs target uses `rates-and-terms.md`, **Expected cost** (the
+  roster's offer, counter or agreed fee for a creator carried from an earlier round, else the
+  calculator's target plus the uplift) and **Target rate**. Read the candidates' `roster` findings
+  on the `cas-campaign-{profile}-` prefix, every campaign of the brand's, for those fees and for
+  worked with the brand before.
   Past paid partners are a plain count here; the category read is vetting's (`creator-vetting.md`,
   **Creator-ads lanes**), and the campaign page uses it once vetting has screened the lane.
   Write the result in `detail.match` (`{score, band, factors, without, conflict, pastDeals,

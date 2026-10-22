@@ -197,7 +197,8 @@ In this order; the first rule that applies decides, and the page names it:
 4. **Safety caps.** Any other Fail, a `flag` or `escalate` red line, or two or more Flags →
    at most **Maybe**.
 5. **Fit score** against `vetting:thresholds` (default 70 and 50): **Approve** at or above
-   the approve line, **Maybe** at or above the maybe line, **Reject** under it.
+   the approve line, **Maybe** at or above the maybe line, **Reject** under it. In a creator-ads
+   lane this is the score without Budget vs target (**Creator-ads lanes**).
 
 A `vetting:lesson-*` record can change how a check is judged; mark every call a lesson
 changed ("Passed under saved lesson: …"). A lesson never relaxes a red line, a competitor, a
@@ -325,7 +326,8 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
 7. **Footer**: sources, the fee rate label once, a note that images are a snapshot, and
    "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote. The mark and the footnote follow [artifact-standard.md](artifact-standard.md).
 
-More than 12 creators: a chart leads the page (fit score against the recommendation lines,
+More than 12 creators: a chart leads the page (fit score against the recommendation lines, in a
+creator-ads lane the score without Budget vs target, which is what the lines decide,
 or follower count against engagement rate, colored by recommendation). Images follow
 `creator-card.md`, **Images**, page profile, cutting thumbnails per card before quality on a
 large list. Load `artifact-design`, and `dataviz` for any chart, and apply `theme:brand` per

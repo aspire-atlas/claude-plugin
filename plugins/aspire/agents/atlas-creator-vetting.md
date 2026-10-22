@@ -86,7 +86,9 @@ the list as approved for fetching.
 6. **Read what the team already said** per the reference, **What the team already said**:
    `search_insights` on the `creator-vetting-{profile}` and `creator-discovery-{profile}`
    prefixes (paged, newest record per `entityId`), and the `brand_safety` role and
-   `content-review-{profile}` findings that name these creators.
+   `content-review-{profile}` findings that name these creators. For a lane run, also the
+   `roster` findings on the `cas-campaign-{profile}-` prefix for these creators, every campaign of
+   the brand's, for the match score's expected cost and worked with the brand before.
 7. **Vet each creator** in list order: read per **What to read per creator**, score fit, run
    every brand safety check, and apply the recommendation rule. Keep each creator's evidence to
    the posts that decided a check. Work in batches of ten, so a long list never loses its
