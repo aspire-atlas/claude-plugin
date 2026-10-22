@@ -2196,7 +2196,9 @@ the tool prefix, `profile_id`, and `profile_slug`:
   creator, shown ready to copy; the CM sends them and says when they went.
 - **Brief** (row 10): `atlas-creator-brief` with `brief_mode` `creator-ads`, the campaign slug,
   the round, the lanes, and `recipient` (`campaign`, then `creative`). Confirm the write first:
-  "Write the round {n} briefs for {concepts} and save them to the campaign?"
+  "Write the round {n} briefs for {concepts} and save them to the campaign?" After the run, load the
+  brief page's data block into the Master Brief tab and save it as the original (reference, **1d**,
+  **Master Brief**, **Loading the brief**).
 - **Send the briefs to creators** (row 13): per the reference's **1g**. A changed brief from a
   creator goes back to `atlas-creator-brief` with `revision` for the differences in plain words,
   then to the client on the Master Brief tab.

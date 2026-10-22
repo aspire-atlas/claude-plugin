@@ -86,22 +86,49 @@ never from a new search, and fees are shown as agreed. Also read the hook log
 (`recordType` `hook` on the campaign's prefix) and the saved findings this reference already
 uses, in the order `hooks-and-ctas.md`, **Where recommendations come from**, gives.
 
+**Once per round, for every lane:**
+
+- **Summary**: two or three sentences on what the round's ads must do, from the campaign brief
+  and the lanes.
+- **Tone of voice**: how every creator sounds, from `brand:summary`, the saved guidelines and the
+  market signal language; a bracketed blank when none of them says.
+- **Do's and don'ts**, **disclosure treatment** and **delivered file naming** (below). They come
+  from brand records, not from a lane, so they are written once for the round.
+
 **Per lane, one brief with these fields:**
 
-- **Concept and persona**, from the lane record, in its own words.
+- **Concept**: the name, and the positioning line (the concept in one sentence), from the lane
+  record, in its own words.
+- **Personas**: the lane's persona, split into one line per persona when it names several.
+- **Conversion trigger** and **framework**, from the lane record. The framework is the one the
+  hero (V1) is cut to.
+- **Story**: the arc a creator lives on camera, three to five sentences.
+- **Selling points**: three to five, one line each, only what `brand:summary`, a `guideline` or
+  the campaign brief supports.
+- **Hero beats**: problem, agitate and solve, one short paragraph each, named as the framework
+  names its three beats when it isn't problem, agitate, solve.
 - **3 hooks, 2 CTAs, 1 body.** Hooks and CTAs are written and recommended per
-  `hooks-and-ctas.md`: its sources, its patterns, its rules, and a reason under each one. The
-  body carries the beats between the hook and the CTA.
+  `hooks-and-ctas.md`: its sources, its patterns, its rules, and a reason under each one. Each
+  hook keeps its pattern, Said, Shown and Overlay; each CTA its type (direct or soft), action,
+  destination and moment. The body carries the beats between the hook and the CTA, with its
+  length in seconds.
 - **Beat structure**: hook, problem or setup, proof, payoff, CTA, with seconds per beat.
-- **10 to 15 B-roll shots**, each one line: what is filmed and which beat it serves.
+- **10 to 15 B-roll shots**, numbered B01 onward, each one line: what is filmed and which beat it
+  serves.
 - **Product and SKU**, from `brand:summary` and the campaign brief. Missing: a bracketed blank.
 - **CTA destinations**: where each CTA sends people. Missing: a bracketed blank, never a URL
   invented.
 - **Runtime per platform**: the clip lengths per network, from the lane or the campaign brief.
   None saved: a bracketed blank per network, and one line asking the CM to fill it.
+- **Variant plan**: V1 to the package's variants per creator (at most 5). Each variant: its
+  framework (the campaign's `frameworks` in `campaign:{slug}-cas` for that slot, else the
+  defaults in `cas-campaign.md`, **1d**, **Master Brief**: V1 PAS, V2 BAB, V3 4Ps, V4 HSO, V5 SSS),
+  length, which hook and CTA by number, the VO in a few lines, the B-roll shot numbers it uses,
+  and a one line note. Every hook and CTA is used by at least one variant. It is for the editors:
+  the client never sees it.
 - **Disclosure treatment**: the paid partnership label, plus anything `review:disclosure` says
   when it exists (read it for disclosure only).
-- **Do's and don'ts**: from saved `red_line` and `guideline` records (never `review:`, `vetting:`, `program:` or `orchestrator:` keys,
+- **Do's and don'ts**, one line each: from saved `red_line` and `guideline` records (never `review:`, `vetting:`, `program:` or `orchestrator:` keys,
   and never the campaign's own `-cas`, `-lane-*`, `-terms` or `-decision-defaults` records).
   When the client's own creator brief guardrails are saved (a `guideline` whose body names
   them), mirror them line for line.
@@ -120,17 +147,48 @@ brief, never the check:
    hook inside the first three seconds.
 3. The B-roll list is complete: 10 to 15 shots, every beat served by at least one.
 
-Show the result per lane on the page ("Coverage: 3 of 3 checks pass").
+Show the result per lane on the page ("Coverage: 3 of 3 checks pass"). A fourth check runs on the
+variant plan and is shown with it: every variant names a hook, a CTA and shots that exist, and its
+length holds its beats.
 
 **The hook log.** Follow `hooks-and-ctas.md`, **Limits**: read every hook and CTA ever briefed
 on the campaign, never reuse one, and append every new one as a `hook` finding.
 
 **The page.** One page per round, a section per lane with an anchor (`#lane-{lane}`), the
 coverage result at the top of each section. Title "<Brand> Creator Ad Brief: <Campaign>, round
-{n}", republished to the same path for that round. It stays the full brief editors cut from; the
+{n}", republished to the same path for that round, carrying the data block below. It stays the full brief editors cut from; the
 client approves the same briefs on the campaign page's Master Brief tab (`cas-campaign.md`, **Gate
 4**), which the main thread builds from this page. Sections 2, 5 and 6 of **Page structure** drop out: the
 lanes set the audience, the roster replaces the shortlist, and the gates replace the timeline.
+
+**The data block.** The page carries the whole round's brief once more as data, so the campaign
+page loads it with nothing lost (`cas-campaign.md`, **1d**, **Master Brief**, **Loading the
+brief**, which maps every field above to a part of the page): one
+`<script type="application/json" id="cas-brief-data">` element, written with `json.dumps`, in this
+shape:
+
+```json
+{"schema": 1, "campaign": "{slug}", "round": 1, "version": 1, "title": "…", "summary": "…",
+ "tone": "…", "dos": ["…"], "donts": ["…"], "disclosure": "…", "fileNaming": "…", "notice": "",
+ "frameworks": [{"slot": 1, "code": "PAS", "name": "Problem, agitate, solve", "use": "…"}],
+ "concepts": [{"lane": "{lane}", "order": 1, "name": "…", "line": "…", "personas": ["…"],
+   "trigger": "…", "framework": {"code": "PAS", "name": "Problem, agitate, solve"},
+   "story": "…", "sellingPoints": ["…"], "problem": "…", "agitate": "…", "solve": "…",
+   "beats": [{"n": 1, "name": "Hook", "seconds": "0-3", "what": "…"}],
+   "hooks": [{"n": 1, "type": "question", "line": "…", "shown": "…", "overlay": "…", "why": "…"}],
+   "ctas": [{"n": 1, "type": "direct", "line": "…", "destination": "[destination]", "moment": "…", "why": "…"}],
+   "body": "…", "length": "30 seconds", "runtime": {"instagram": "…", "tiktok": "…"},
+   "broll": [{"n": 1, "shot": "…", "beat": "…"}],
+   "product": {"name": "…", "sku": "[SKU]"},
+   "coverage": {"passed": 4, "of": 4, "failed": []},
+   "variants": [{"n": 1, "framework": "PAS", "length": "30 seconds", "hook": 1, "cta": 1,
+                 "vo": "…", "broll": [1, 4, 7], "note": "…"}]}]}
+```
+
+Text is plain, with a blank line between paragraphs and "- " or "1. " at the start of a list
+line; the page turns it into its own rich text. A bracketed blank stays a bracketed blank. The
+creators are not in the block: the page reads them from the roster. The block is data, never shown,
+and holds nothing the page itself doesn't show the agency.
 
 **Writes**, on the main thread's confirmation: a `brief` finding per lane (`locked: false`,
 `briefPage`, `version`), then a `hook` finding per new hook and CTA, all per
@@ -146,8 +204,10 @@ pasted. Then the agent compares, and does nothing else:
 1. Read the concept's newest locked `brief` finding and its page as the approved brief, and the
    creator's newest `brief-revision` when one exists (a second round compares against the
    approved brief, not the last revision).
-2. Compare field by field: each hook and CTA, the body, the beats and their seconds, each B-roll
-   shot, the product, the runtime per platform, the disclosure, and the do's and don'ts.
+2. Compare field by field: the positioning line, personas, trigger, story, selling points, the
+   hero beats, each hook and CTA, the body and its length, the beats and their seconds, each
+   B-roll shot, the product, the runtime per platform, the tone of voice, the disclosure, and the
+   do's and don'ts. The variant plan is the editors', never the creator's, so it is not compared.
 3. List each difference as one plain line: what changed, the approved text, the creator's text.
    For example "Hook B: 'Charged once Friday night, back Sunday dark' becomes 'One charge. Friday
    to Sunday.'", "Runtime: V2 45 seconds becomes 60 seconds", "B-roll 07, the trailhead sign:
