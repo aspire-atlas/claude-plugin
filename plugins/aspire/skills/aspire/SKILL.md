@@ -2062,7 +2062,7 @@ what's now and up next (the agency ticks steps, moves to the next one and edits 
 terms with where each came from, the products in scope, everything that needs attention tagged by
 round, one card per tab for the round in view, the Aspire team with their emails, and the program
 files (below), and a calendar across the campaign: each round's build and in-market phases, its
-milestones (first read, variants due, launch), today, and one row per concept with its pace tag,
+milestones (first cut review, variants due, ads live), today, and one row per concept with its pace tag,
 using the same pace rule as the Simple view. It opens as a compact strip, expands to every day,
 and hovering or tapping a day shows what was delivered against the plan, what should be in today
 or by then, and that day's events, from the real version and approval dates. Every

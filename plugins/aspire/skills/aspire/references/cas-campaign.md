@@ -1125,7 +1125,7 @@ only is marked so.
 | Home, Everything | Program terms | `home-program` | "Runs {start} to {end} · {deliverables} per creator · usage {d} days", leaving out a part not saved | Standard | Closed |
 | Home, Everything | Products in scope | `home-products` | "{p} products · {a} active", or for the agency "No products added yet." | Standard | Closed |
 | Home, Everything | Team | `home-team` | "{n} people at Aspire", or for the agency "No team added yet." | Standard | Closed |
-| Home, Everything | Calendar | `home-calendar` | "Round {n} {verdict, lower case} · next: {milestone} {date}" ("Round 2 running behind · next: Launch Dec 1"), leaving out the verdict where **Where we stand** hides it, with "{d} days late" when a step slipped | Standard | Closed |
+| Home, Everything | Calendar | `home-calendar` | For the round in view: "Round {n} {verdict, lower case} · next: {milestone} {date}" ("Round 2 running behind · next: Ads live Dec 1"), leaving out the verdict where **Where we stand** hides it, "next" naming the round's next dated milestone or "every milestone passed", and "{step} is {d} days late" when its current step is late (**Round steps**) | Standard | Closed |
 | Home, Everything | Files | `home-files` | "{n} files · still needed: {categories}", or "{n} files · every required file is here", or "No files yet." | Standard | Closed |
 | Master Brief | One per concept, "{Concept} brief · round {n}" | `brief-{lane}` | "{product} · {h} hooks, {c} CTAs · {runtime} · {k} creators", with the state pill beside the trigger | Full | Closed; open while it waits on the viewer's sign off |
 | Master Brief | One per changed brief, "@{handle} changed the {concept} brief" | `brief-changes-{net}-{handle}` | "{n} changes against the brief you approved" | Simple | Open |
@@ -1713,125 +1713,146 @@ rows.
      | --------------- | ---- |
      | The span | The term's start to its end (`program/details` `termStart` and `termEnd`, else `term.start` and `term.end` in `campaign:{slug}-cas`), widened to take in any round's dates that fall outside it |
      | Build phase | The round's build window, from its start to the day before launch (**Rounds**) |
-     | In-market phase | The round's in-market window |
-     | Milestones | **First read**: the round's First cut review step date. **Variants due**: its Variants due step date. **Launch**: its launch date. From the newest of the round finding and `program/round-r{n}` (**Rounds**, **Round steps**) |
+     | In-market phase | The round's in-market window, ending at `closedAt` for a round closed early |
+     | Milestones | **First cut review**, **Variants due** and **Ads live**: the dates of the round's `first-cut` and `variants-due` steps and its launch date, from the newest of the round finding and `program/round-r{n}` (**Rounds**, **Round steps**), named as **Round steps** names them |
      | Steps | Each step's date in the round's `plan` and page data, an approval's from its gate finding, as **Round steps** shows them |
-     | Cut delivered | Each version's `addedAt:` in `reviews/cut-{cut}/versions/v{version}` (**1e**) |
-     | Approved | The `at` of the newest `client/cut-{cut}-v{version}` `status` stamp whose value is approved |
-     | Shipping | The roster's `shipDate`; the time product status became delivered (the `productStatus` stamp's `at` when its value is delivered); and the pickup visit date in `details` |
+     | Cut delivered | The `addedAt:` (full UTC time) of each cut's first version, `reviews/cut-{cut}/versions/v1` or the lowest version there (**1e**). A later version is a new version, not a delivery |
+     | Approved | The activity log's entries for the cut's versions (**The activity log**: kind `decision`, verb approved or undid, `asset` `cut-{cut}-v{version}`): a cut counts as approved from the `at` of an approval until the `at` of an undo. Where the log has no entry for a cut, the `at` of its `client/cut-{cut}-v{version}` `status` stamp while that value is approved |
+     | Shipping | The activity log's `status` entries for the creator in the round whose `to` is Shipped or Delivered (from either side, so a Mark shipped shows at once), else the roster's `shipDate` for Shipped; and the pickup visit date in `details` |
      | Spend and return | The week's figures Ad Performance records for the round, once it records them |
      | Today | The viewer's clock (**Round switcher**, **Every date is real**) |
 
-     A time (`addedAt:`, a stamp's `at`) lands on the viewer's own calendar day. A date with no
-     time (a step, a launch) is that date for everyone. A milestone or step with no date isn't
+     A time (`addedAt:`, a log entry's `at`) lands on the viewer's own calendar day. A date with
+     no time (a step, a launch) is that date for everyone. A milestone or step with no date isn't
      drawn: the client sees nothing for it, and the agency sees it under the calendar as
      "{Milestone}, round {n}: no date set" with a link Button "Set it" to its step in **Round
      steps** (`#home/steps/r{n}/{step}`).
-   - **Pace uses the Where we stand rule.** The plan, what's in, the 10% and one video threshold
-     and the verdict are the ones in **Where we stand** (**The Simple view**), never a second
-     rule. The calendar only asks the same question on another day or for one concept:
-     - **On a day {d}** in a round's build window: what's in by {d} is the round's cuts whose first
-       version was added on or before {d}; what's needed by {d} is {z} worked out with {d} as
-       today. So on today the calendar's numbers and verdict are the ones **Where we stand**
-       shows, to the video.
+   - **Pace uses the Where we stand rule.** The plan, what's in, the 10% and one video threshold,
+     the verdict and the states it shows in are the ones in **Where we stand** (**The Simple
+     view**), never a second rule. The calendar only asks the same question on another day or
+     for one concept:
+     - **A round's state on a day {d}** is the **Rounds** state test with {d} as today: In
+       production from the build window's start, and past the launch date for as long as step 4
+       was not cleared by {d} (its gate's `clearedAt`); In market from the launch date once step
+       4 was cleared; Planned and Done as **Rounds** says.
+     - **While the round is in production on {d}**: what's in by {d} is the round's cuts whose
+       first version was added on or before {d}; what's needed by {d} is {z} worked out with {d}
+       as today; and the verdict follows. On today that is, by construction, the same round, the
+       same {x}, {y}, {z} and verdict as **Where we stand** shows, Launch at risk included.
+     - **While it is in market or done on {d}**: "{x} of {y} ad videos made this round." with no
+       verdict, as **Where we stand** reads. **Planned**: "Building starts {date}."
      - **For one concept**: the same rule over the round's creators on that concept and their
        cuts. A round's verdict is worked out from the round's own totals, not added up from the
        concept rows, so a concept can run behind while the round is on track.
      - **The plan is today's plan.** No record keeps the roster as it stood on a past day, so a
        creator added or declined since moves the plan on every day. Delivered and approved counts
-       are what the version and status records say happened on each day.
+       come from the dated version records and the activity log, so they don't change after the
+       day.
      - **Hidden as Where we stand is hidden.** With no creators in the round, the pace parts read
        "Pace starts once creators are approved for round {n}." Until Content Review has its own
        build no cut is recorded, so delivered, approved, pace tags and the per concept bars don't
-       render, and the line under the strip reads "Deliveries show here once Content Review
-       tracks the cuts." The phases, milestones, steps, shipping and today still show. A read
-       only client reads no cuts, so for them the calendar has no pace parts in any state.
+       render, and the strip's caption reads "Deliveries show here once Content Review tracks the
+       cuts." The phases, milestones, steps, shipping and today still show. A read only client
+       reads no cuts and no log, so for them the calendar has no pace, delivery or approval parts
+       in any state.
    - **The compact strip.** The default once the section is open. One timeline across the span,
      drawn at the width of its container and redrawn when that changes (**Responsive**,
      **Media**), so it never scrolls sideways:
+     - **The caption** above it, in `text-xs text-muted-foreground`: "{start} to {end}", plus
+       "Starts {date}" before the span or "Ended {date}" after it, plus any line this section
+       says goes there.
      - **Month labels** along the top in `text-xs text-muted-foreground`, at the first day of each
        month, with a 1px `bg-border` hairline. A label that would overlap the one before is left
        out, and the hairline stays.
      - **One lane per round**, oldest first, labelled "Round {n}" at the start in `text-xs
-       font-medium`. Its build phase is a `bg-muted` bar and its in-market phase a `bg-primary/20`
-       bar, each 12px tall with `rounded-sm` ends and a 2px gap between them. "Build" and "In
-       market" sit inside a bar in `text-xs` when the text fits with room on both sides, and
-       otherwise only in the legend and the day details. Overlapping rounds are separate lanes,
-       so one never covers another. The lane for the round in view in the **Round switcher**
-       carries `font-semibold` on its label.
+       font-medium` (`font-semibold` for the round in view). Its build phase is a `bg-primary/20`
+       bar and its in-market phase a `bg-primary` bar, each 12px tall with `rounded-sm` ends and a
+       2px gap between them, so the two read apart by lightness and by order as well as by the
+       legend. Overlapping rounds are separate lanes, so one never covers another.
      - **Milestones** on the round's lane as Lucide icons, `size-3`, in `text-foreground`:
-       `eye` for First read, `layers` for Variants due and `rocket` for Launch. A milestone that
-       fell late (its step done after its date, or open past it) adds a warning Badge "{d} days
-       late" beside it in the full calendar, and "late" in its day details.
+       `eye` for First cut review, `layers` for Variants due and `rocket` for Ads live.
      - **Today** as a 2px `bg-foreground` line through every lane, with "Today" above it in
-       `text-xs font-medium`. Before the span starts or after it ends, the line isn't drawn and
-       the strip's caption reads "Starts {date}" or "Ended {date}".
+       `text-xs font-medium`. Outside the span the line isn't drawn.
      - **One row per concept** of the round in view, under the round lanes, in concept order: the
        concept chip (**Concept colors**), its pace tag as a Badge (Ahead, On track or Running
        behind, **Status pills**), and "{x} of {y} in · {z} needed by today" in `text-xs
-       text-muted-foreground`, or "All {y} in" once they are. On the row's track, a 2px tick in
-       `bg-chart-{n}` on each day a version of that concept's cuts was added, 8px tall, with a
-       2px gap between ticks on neighbouring days. In market and Done rounds show "{x} of {y}
-       made" and no tag; a Planned round "Building starts {date}".
+       text-muted-foreground`, or "All {y} in" once they are. On the row's track, a tick on each
+       day a cut of that concept was delivered: `border-l-2 border-chart-{n}`, 8px tall, sitting
+       beside the concept's chip as **Concept colors** requires of a thin mark, and
+       `border-foreground` for a sixth concept or later. When a day is narrower than 4px at the
+       strip's width, ticks group by week, one tick on the week's first day. In market and Done
+       rounds show "{x} of {y} made" and no tag; a Planned round "Building starts {date}".
      - **The legend**, under the strip, in `flex flex-wrap gap-x-4 gap-y-1 text-xs
        text-muted-foreground`: a swatch and "Build", a swatch and "In market", each milestone's
-       icon and name, the today line and "Today", and "Tick: a cut delivered". It is always
+       icon and name, the today line and "Today", and a tick and "A cut delivered". It is always
        there, because identity never rests on color alone.
-   - **The full calendar.** A ghost Button, size sm, "Full calendar" with the Lucide
-     `calendar-days` icon, beside the section's trigger, swaps the strip for every day of the
-     span, and "Compact strip" with `calendar-range` swaps it back. The choice is kept in memory
-     for the visit, like the **Everything** Switch, and works for everyone.
+     - **Delays**, under the legend, in both views: one line per `ledger` entry for the
+       campaign, "{Step} slipped {d} days on {date}", newest first, or "No delays."
+   - **The full calendar.** While the section is open, a ghost Button, size sm, "Full calendar"
+     with the Lucide `calendar-days` icon, at the end of the row above the strip, swaps the strip
+     for every day of the span, and "Compact strip" with `calendar-range` swaps it back. The
+     choice is kept in memory for the visit, like the **Everything** Switch, and works for
+     everyone. The caption, legend and delays stay.
      - **From 640px**, a month grid per month of the span, one under another, so the page scrolls
        down and never sideways. Each month has its name in `text-sm font-medium`, weekday
-       headers in `text-xs text-muted-foreground`, and seven equal columns (`grid grid-cols-7`).
-       Each day is a `button` cell, `min-w-0`, holding its date number in `text-xs`, a 4px band
-       at its top per round whose phase covers it (`bg-muted` for build, `bg-primary/20` for in
-       market), its milestone icons, and for the round in view one 4px wide bar per concept in
-       `bg-chart-{n}` whose height shows the versions added that day against the busiest day in
-       the span, capped at the cell. Today's cell has `ring-2 ring-ring`. Days outside the span
-       are empty and not focusable.
+       headers in `text-xs text-muted-foreground`, and seven equal columns (`grid grid-cols-7`),
+       built as one `role="grid"` per month. Each day is a `gridcell` holding a `button`,
+       `min-w-0`, with `focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring`:
+       its date number in `text-xs`, a 4px band at its top per round whose phase covers it (the
+       same two fills as the strip), its milestone icons, and "{k} in" in `text-xs` on a day with
+       deliveries for the round in view. Today's date number sits in a `bg-foreground
+       text-background rounded-full` circle with "Today" for screen readers. Days outside the span
+       are empty and not focusable. Each button's accessible name reads the whole day: "{date},
+       round {n} build day {b} of {B}, {k} delivered, First cut review", so no band or icon is the
+       only place a fact lives.
      - **On a phone**, a list of dated days grouped by month: every day that has a milestone,
        step, delivery, approval or shipping event, plus today, each a List row (**Component
-       classes**) with the date, the round and its phase as outline Badges, and one line
-       naming what happened. The compact strip stays above the list, so the phases and today
-       read at a glance first.
-     - **Delays**, under the grid or list: one line per `ledger` entry, "{Step} slipped {d} days
-       on {date}", newest first, with "No delays." when there are none.
-   - **Day details.** Hovering any day on the strip or the grid shows them in a floating Card
-     (the Card classes, `w-72 max-w-[calc(100vw-2rem)]`) beside the pointer, flipped to stay
-     inside the section. The pointer never has to land on a mark: on the strip it snaps to the
-     nearest day under it, and a 1px `bg-border` hairline marks that day across every lane.
-     Clicking or tapping a day, or pressing Enter on it, pins the same details in a panel under
-     the calendar, with a ghost icon Button with the Lucide `x` icon, labelled "Close", that
-     unpins it. On a phone a tap pins and nothing floats. The strip is one focusable group,
-     labelled "Campaign calendar, {start} to {end}", whose Left and Right arrows move a day, Page
-     Up and Page Down a month, and Home and End to the span's ends, pinning as they go; each
-     grid cell is its own focusable button. The pinned panel is `aria-live="polite"`. Each part
-     below is hidden when it has nothing:
+       classes**) with the date, the round and its phase as outline Badges, and one line naming
+       what happened. Above the list sits the strip, and a date Input, "Go to a day", that pins
+       any day of the span, so a day with no event is reachable too.
+   - **Day details.** For any day of the span:
+     - **Opening them.** Hovering a day on the strip or the grid shows them in a floating Card
+       (the Card classes, `w-72 max-w-[calc(100vw-2rem)]`) placed beside the day, flipped to stay
+       inside the section. On the strip the pointer snaps to the nearest day under it and a 1px
+       `bg-border` hairline marks that day across every lane, so the pointer never has to land on
+       a mark. The Card stays while the pointer moves onto it, closes when the pointer leaves
+       both, and Escape closes it. Clicking or tapping a day, pressing Enter on it, or picking it
+       in "Go to a day" pins the same details in a panel under the calendar, `aria-live="polite"`,
+       with ghost Buttons "Previous day" and "Next day" (Lucide `chevron-left` and
+       `chevron-right`), so on a phone every day is a tap or two from any other, and a ghost icon
+       Button with the Lucide `x` icon, labelled "Close", that unpins it. On a phone nothing
+       floats: a tap on the strip pins the nearest day.
+     - **The keyboard.** The strip is one `role="slider"` labelled "Campaign calendar", with
+       `aria-valuetext` the selected date: Left and Right move a day, Page Up and Page Down a
+       month, Home and End to the span's ends, each pinning the day. The month grids use one
+       roving tab stop: arrows move between days, across months too, and Enter pins.
      - **The heading**: the date ("Tuesday, Nov 4"), then one outline Badge per round whose phase
        holds the day ("Round 2 · build day 12 of 28", "Round 1 · in market week 3").
-     - **A past day**, for each round whose build window holds the day: "{a} delivered that day ·
-       {x} of {z} in against the plan for {date}", the verdict for that day as a Badge, and "{p}
-       approved by then". Delivered counts versions added that day; {x} and {z} are as in **Pace
-       uses the Where we stand rule**.
-     - **Today**: "{x} of {y} in. We need {z} by today.", with the verdict, as **Where we stand**
-       reads, and "{p} approved so far".
-     - **A future day**: "{z} of {y} should be in by {date}." for the round whose build window
-       holds it, from the same spread. A day after the build window: "All {y} should be in."
-     - **Per concept bars**: one row per concept of that round, the chip, then a track in
-       `bg-muted` 8px tall and `rounded-sm`, filled in `bg-chart-{n}` to what's in by that day,
-       with a 2px `bg-foreground` tick at what's needed by then, and "{x_c} of {z_c}" in `text-xs`
-       after it. Future days show the needed tick and "{z_c} by then" only. The track keeps the
-       value in text, so a concept color that reads faintly on the card never hides a number.
+     - **Pace**, for each round in production on that day (**Pace uses the Where we stand
+       rule**):
+       - A past day: "{a} delivered that day · {x} of {z} in against the plan for {date}", the
+         verdict for that day as a Badge, and "{p} approved by then".
+       - Today: "{x} of {y} in. We need {z} by today.", with the verdict, as **Where we stand**
+         reads, and "{p} approved so far".
+       - A future day: "{z} of {y} should be in by {date}."
+       - A round in market or done that day: its "{x} of {y} ad videos made this round." line.
+       {a} counts cuts first delivered that day. New versions of earlier cuts are counted apart,
+       as "{v} new versions", and never as deliveries.
+     - **Per concept bars**: one row per concept of the round in view, the chip, then a track in
+       `bg-muted`, 8px tall, `rounded-sm`, filled with `bg-chart-{n}` to what's in by that day
+       (`bg-foreground` for a sixth concept or later), with a 2px `bg-foreground` tick at what's
+       needed by then, and "{x_c} of {z_c}" in `text-xs` after it. Future days show the needed
+       tick and "{z_c} by then" only. The text carries the value, so a concept color that reads
+       faintly on the card never hides a number.
      - **Events** that day, every round, each a line with its Lucide icon, its round as an
-       outline Badge, and a link to its item: `film` "Cut delivered: @{handle}'s V{variant}"
-       (with "version {v}" past the first), opening `#review/r{n}/{cut}/v{version}`; `circle-check`
-       "Approved: @{handle}'s V{variant}"; the milestone's icon and "{Milestone}"; `list-checks`
-       "{Step} due" or "{Step} done", opening `#home/steps/r{n}/{step}`, with a warning Badge
-       "{d} days late" when it is; `truck` "Shipped to @{handle}", `package-check` "Delivered to
-       @{handle}" and `store` "@{handle} picks up the product", opening
-       `#creators/r{n}/{net}-{handle}/shipping`. More than six events show six and "and {m}
-       more", which lists the rest in place.
+       outline Badge, and a link to its item: `film` "Cut delivered: @{handle}'s V{variant}" and
+       `file-plus` "New version: @{handle}'s V{variant}, version {v}", opening
+       `#review/r{n}/{cut}/v{version}`; `circle-check` "Approved: @{handle}'s V{variant}", opening
+       the approved version; the milestone's icon and its name; `list-checks` "{Step} due" or
+       "{Step} done", opening `#home/steps/r{n}/{step}`, with a warning Badge "{d} days late" when
+       it is; `truck` "Shipped to @{handle}", `package-check` "Delivered to @{handle}" and `store`
+       "@{handle} picks up the product", opening `#creators/r{n}/{net}-{handle}/shipping`. More
+       than six events show six and "and {m} more", which lists the rest in place.
      - **Shoot**: no record holds a creator's shoot date, so the calendar shows no shoot events.
        When Selected Creators, **Brief and content**, records one per creator, it shows as
        `clapperboard` "@{handle} shoots" with the other events.
@@ -1839,26 +1860,23 @@ rows.
        the round's results, that week's spend and return ("Spend {s} · return {r}") with a link
        Button "See the week" to `#performance/r{n}/weekly`. Until then, nothing about spend shows:
        no zero, no placeholder.
-   - **Who sees what.** Every part is built from what the viewer can read. The client's events
-     leave out anything their tabs don't show them yet: shipping events once Shipping shows for
-     them (fees approved), and cut and approval events once the cut reached them. A read only
-     client gets the phases, milestones, steps, today and the shipping events from the values
-     published into the page, with "As of {publish time}." under the title, and no pace parts.
-   - **Editing (agency).** In the full calendar, each round's first cell of its build phase and
-     each lane label on the strip carry a ghost icon Button with the Lucide `pencil` icon,
-     labelled "Edit round {n} dates". It opens a Dialog "Round {n} dates" with date Inputs for
-     Build starts, Launch date and In market ends, then Cancel (outline) and Save (default).
+   - **Who sees what.** Every part is built from what the viewer can read. The client's shipping
+     events show once Shipping shows for them (fees approved). Cut, version and approval events
+     show to whoever reads the cuts, the same set **Where we stand** counts, so the events always
+     add up to the numbers. A read only client gets the phases, milestones, steps, today, the
+     delays and the published shipping dates, with "As of {publish time}." under the title.
+   - **Editing (agency).** Each round lane's label, on the strip and in the full calendar's
+     month where the round's build starts, carries a ghost icon Button with the Lucide `pencil`
+     icon, labelled "Edit round {n} dates". It opens a Dialog "Round {n} dates" with date Inputs
+     for Build starts, Launch date and In market ends, then Cancel (outline) and Save (default).
      Saving writes `program/round-r{n}` (`buildStart`, `launch`, `buildEnd` the day before launch,
      `marketStart` the launch, `marketEnd`, and `month` from the launch), and Ads live moves with
      the launch. A launch before the build start, or an end before the launch, shows "The launch
      must come after the build starts and before the in-market window ends." and doesn't save.
      The Dialog says "Later rounds keep their dates. To move every later round with this one, log
      the delay in the chat." because only a slip moves them (**Rounds**). A step's date is edited
-     from its line in the day details, which opens it in **Round steps**. In a done round, and for
-     the client, nothing here is editable.
-   - **Empty.** A campaign whose round records hold no dates yet (none can, after setup, since
-     C7 writes the first round) shows "The calendar fills in once round 1 has its dates." and no
-     strip.
+     in **Round steps**, which each step event links to. In a done round, and for the client,
+     nothing here is editable.
 8. **Files** (`home-files`). The program files in one place, each tagged with its round, with
    what is still missing. Both sides see the list, **Still needed** and the previews. Only the
    agency adds, edits, removes and scans files (**Who sees what**, **Files and the scan**). When a
@@ -2362,9 +2380,10 @@ logs nothing and never reaches Atlas.
   on Creator Selection's **All rounds**, and the tab's title in place of {sheet} for "All sheets"
   ("{Brand} CAS Round 2 Selected Creators.xlsx"). The page drops `\ / : * ? " < > |` and runs of
   spaces from it. The viewer confirms the final name in the download prompt. Home's Needs attention
-  covers every round, so on its own it is named "{Brand} CAS All rounds Needs attention". In a
+  covers every round, so on its own it is named "{Brand} CAS All rounds Needs attention", and the
+  Calendar sheet likewise "{Brand} CAS All rounds Calendar". In a
   workbook of all Home's sheets the name keeps the round, and the About sheet notes that Needs
-  attention covers every round.
+  attention and Calendar cover every round.
 - **Excel.** One worksheet per sheet, named as in **Sheets per tab** (all are 31 characters or
   fewer, as Excel needs), plus a last sheet, "About this export". On every data sheet:
   - Row 1 is the header, in bold, frozen, with a filter over the header and every row.
@@ -2439,7 +2458,7 @@ left blank, never filled with a dash.
 | --- | ----- | ----------- | ------- |
 | Home | Needs attention | Open item in **Needs attention**, every round | Item, Detail, Tab, Round, Waiting on you (Yes or No), Waits on (agency only), Since |
 | Home | Steps | Step in **Round steps** for the round in view, in order | Step, Client approval (Yes or No), Owner, State (Done, Now, Up next, Planned, Launch at risk), Due, Done on, Days late |
-| Home | Calendar | Day in **Calendar**'s span that has a phase change, milestone, step, delivery, approval or shipping event, plus today | Date, Round, Phase (Build, In market), Events, Delivered that day, In by then, Needed by then, Approved by then, Pace. The four counts and Pace are for the round whose build window holds the day, and are left out where the calendar hides them |
+| Home | Calendar | Day and round in **Calendar**'s span, every round, for each day with a phase change, milestone, step, delivery, approval or shipping event, plus today | Date, Round, Phase (Build, In market), Events, Delivered that day, New versions, In by then, Needed by then, Approved by then, Pace. The counts and Pace follow the day details for that round, and are left blank where the calendar hides them |
 | Home | Program terms | Row in **Program terms** shown to the viewer | Group, Term, Value |
 | Home | Products | Product in **Products in scope** | Product, Status, Description, Creators, Approved |
 | Home | Team | Person in **Team** | Name, Role, Title, Work email, Owns, Go to them for |
@@ -2538,8 +2557,8 @@ with who made it (**1e**, **Every editable value**). The agency edits in place:
 | Program terms | Home, Everything, **Program terms** |
 | Products in scope: add, edit, remove, and the photo link | Home, Everything, **Products in scope** |
 | Team: add, edit and remove a person | Home, Everything, **Team** |
-| Steps: tick, move to the next step, add, remove, and each step's name, date and owner | Home, Everything, **Round steps**, and the dates in **Calendar** |
-| A round's label, month, build window, in-market window and launch date | Home, Everything, **Calendar** (the full calendar's "Edit round {n} dates"), and the **Start round** Dialog |
+| Steps: tick, move to the next step, add, remove, and each step's name, date and owner | Home, Everything, **Round steps**, which **Calendar**'s step events link to |
+| A round's build window, in-market window and launch date (its month follows the launch) | Home, Everything, **Calendar** ("Edit round {n} dates"), and the **Start round** Dialog, which also sets the label |
 | Budget total | Creator Selection, **Budget summary** |
 | Files | Home, Everything, **Files**: add by link, upload or drop, edit, remove, scan again |
 | The brief's text | Master Brief, every part of a concept's brief |
@@ -2855,7 +2874,7 @@ prefixes.
   first column pinned (`sticky left-0 z-10 bg-card`) and its header pinned (`sticky top-0 z-10
   bg-card`, the corner cell `z-20`), inside its own `overflow-auto max-h-[70vh]` area, at every
   width. The area scrolls both ways, so the header stays in view. Every other table (Contract and
-  rates, Shipping, the budget summary and totals, the Calendar) is a table from 640px and a stack
+  rates, Shipping, the budget summary and totals) is a table from 640px and a stack
   of Cards on phone, one Card per row, each showing the row's first column as its title and the
   other columns as label and value pairs.
 - **Side panels.** The creator viewer, the review panel, the inbox, History and comments open as a
