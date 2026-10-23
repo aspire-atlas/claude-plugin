@@ -91,7 +91,10 @@ client's notes), or the round started from an earlier one, the main thread passe
 the round's brief as the Master Brief holds it, in the data block's shape, as plain text. It wins
 over the lane record: the run keeps every part the notes don't ask to change, word for word,
 writes new hooks and CTAs where they are empty, and changes the rest only where the client's
-notes or a rule ask, saying which parts it changed.
+notes or a rule ask, saying which parts it changed. A hook or CTA with a type and no line was set
+by a change line from Ad Performance: write its line in that type. Follow the brief's change notes
+(`change-r{n}-{id}`, agency lines included) per `hooks-and-ctas.md`, **Where recommendations come
+from**, and leave them out of the data block, since they aren't parts of the brief.
 
 **Once per round, for every lane:**
 
