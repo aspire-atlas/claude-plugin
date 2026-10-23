@@ -2158,7 +2158,12 @@ creator and the decision pinned, or as Cards, and as Cards on a phone. The clien
 creator Priority Yes, Yes, Maybe or No with one tap, and taps the same value again to clear it;
 each call is kept under the client's own id with who, when, the match score they saw and the
 reason, and reaches the agency's view within seconds. Every creator carries chips for the rounds
-they are in, and Copy decisions copies the calls in view as a table. The reference's **1d**,
+they are in, and Copy decisions copies the calls in view as a table. **Start review** opens the
+creator viewer, one creator at a time and full screen, a bottom sheet on a phone: their latest
+posts to watch (a video plays in the page only from a stored copy, and the page stores none
+today, so each opens on Instagram or TikTok), the Hook post and paid partnership marks, the whole
+profile and audience, the decision with Auto advance, and notes both sides read with who wrote
+each and when, beside Aspire's own notes, which the client never sees. The reference's **1d**,
 **Creator Selection**, holds the rules and maps every discovery and vetting field to its column.
 
 Each creator's Campaign match is one match score out of 100, worked out by Claude at each publish
