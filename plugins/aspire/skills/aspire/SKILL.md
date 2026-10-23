@@ -2184,7 +2184,7 @@ of decided per match level, how many of our top 10 were picked, and how often a 
 pass, read as holding up, partly matching or choosing differently), the surprises with their
 reasons and what the client seems to value, and, once a round has ad results, whether its higher
 scored half sold cheaper. It suggests new weights from picks against passes, pulled toward the
-default when there are few decisions, each moved at most 0.08 and never under 0.03. An Editor's
+default when there are few decisions, each kept within 0.08 of its default and never under 0.03, with the price factor settled apart so the client's score never depends on it. An Editor's
 **Apply tuned score** or **Back to default** re-scores the pool for both sides on the page; the
 weights reach Atlas only when the CM saves them in the next pull. The reference's **1d**,
 **Creator Selection**, **Match score tuning**, holds the rules.

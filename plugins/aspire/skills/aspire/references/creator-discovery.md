@@ -336,7 +336,8 @@ Everything above applies, with these changes:
   in `cas-campaign.md`, **1d**, **Creator Selection**, **The match score**, against their lane's
   concept, with the weights in `match` in `campaign:{slug}-cas` (read it and `-terms` for this
   campaign only), so the shortlist and the campaign page show the same number for the same
-  inputs. The casting keywords and target cities are `casting` in the lane record,
+  inputs. When `match` has a `basis`, the page says
+  "Weights tuned {date} from {n} client decisions" in its About this data, else "Default weights". The casting keywords and target cities are `casting` in the lane record,
   which the campaign page's edits are pulled into, else derived from the lane's persona and casting filter and named as derived
   on the page. Budget vs target uses `rates-and-terms.md`, **Expected cost** (the
   roster's offer, counter or agreed fee for a creator carried from an earlier round, else the
