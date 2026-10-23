@@ -2208,6 +2208,20 @@ delivered in one click. The email, street, ZIP, phone, delivery note, rates, tot
 chat names a creator's city and region, never the street. The reference's **1d**, **Selected
 Creators**, holds the step rules and **Creator records**.
 
+Ad Performance shows how the round's partnership ads sold, read from {brand}'s own Meta ad account
+with `search_ads` at every publish: only ads that ran a variant's live post, which the agency
+records on each variant in the creator's plan. Both sides see the blended cost per sale against
+{brand}'s target with the share of ads at or under it, the headline numbers (spend, impressions,
+CPM, hook rate, hold rate, link CTR, purchases, revenue, ROAS with its peak week), spend and ROAS
+by week as two charts on one week axis, and every variant ranked by cost per sale with its status:
+Winning, Testing, Watch, Fatigued or Retire, set by the target and spend floor saved in the
+campaign's decision defaults. Variants to retire or refresh join Home's attention list. Hook and
+CTA per variant, and ads the agency hasn't matched to a variant, are agency only. Money stays in
+the ad account's currency and is never added across currencies. A round not in market shows its
+launch date and cuts instead, and a brand with no ad account linked sees "Connect your Meta ad
+account to see results". The page never changes an ad. The reference's **1d**, **Ad
+Performance**, holds the rules.
+
 ### Setup
 
 1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end,
@@ -2218,7 +2232,8 @@ Creators**, holds the step rules and **Creator records**.
    "Change", then ask who approved them and when. C2, one concept per turn by hand, runs only
    when nothing was found. No approved concepts anywhere: say so in one line and ask the CM to
    confirm with the client first.
-3. Ask C1 and C3 to C6, one `AskUserQuestion` each, in order. On C5 and C6, say plainly what each
+3. Ask C1, C3 to C6 and C6a (the cost per sale target and spend floor), one `AskUserQuestion`
+   each, in order. On C5 and C6, say plainly what each
    one approves: delivery without asking, and scheduled tasks for this campaign.
 4. C7 confirms the batch once, then write every record with `append_calibration` and the Gate 1
    finding with `append_insights`. Any document setup read or was given a link to (the concepts'
@@ -2315,6 +2330,11 @@ the tool prefix, `profile_id`, and `profile_slug`:
   is read only with a Google Drive connector this session already has; otherwise ask the CM to
   paste the brief's text. One picker shows what was found and what it replaces, then writes the
   page data and the brief findings.
+- **Ads in market** (row 17): save the cost per sale target when none is saved, with one
+  `AskUserQuestion` (C6a's question) and the supersede rule; otherwise name the variants to retire
+  or refresh with their reasons. The results themselves are read at every publish, per the
+  reference's **1d**, **Ad Performance**, **Reading the results**; nothing about them is written
+  to Atlas, and retiring an ad is done in Meta Ads Manager.
 - **Production** (row 16): **Content review** for each draft. Once creators have posted, the
   hook review from `references/hooks-and-ctas.md`, run here in the main thread: it matches the
   creators' posts to the briefed hooks, shows which led, and saves the results after one
@@ -2335,7 +2355,10 @@ step moved, and show the new status in one line.
 Follow **Readouts**, Schedule, for the mechanics. After setup, offer the weekly call once with
 `AskUserQuestion` ("Set up the weekly call agenda for {campaign} at {slot}?" Options: "Yes
 (Recommended)" / "Not now"). Approval reminders need no offer: C6 approved them, so sending a
-step creates its reminder and closing it removes it. Name tasks and write prompts as the
+step creates its reminder and closing it removes it. C6 also approved the daily results refresh,
+which the status screen creates once a round is in market or launches within 7 days, and removes once no round is in market
+or ended in the last 14 days and none launches within 7 days; it
+republishes the page to the same link and posts nothing. Name tasks and write prompts as the
 reference says. If the scheduled-task tools are missing, say so and stop; never fake a schedule.
 
 Unattended runs never ask, never decide, never pull the page data, and never launch an agent.
