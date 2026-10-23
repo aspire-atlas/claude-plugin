@@ -297,7 +297,7 @@ record type the newest finding per identity wins, by `detail.recordedAt`.
 | `brief-revision` | the creator + round | The creator's account | `action_item` `medium` while waiting on the client; `went_well` once approved | `handle`, `lane`, `basedOn` (the locked lane brief's version), `changes` (one plain line each: what, from, to), `text` (the creator's version), `status` (waiting, approved, notes sent), `locked` |
 | `hook` | one per hook or CTA, never replaced | The brand's account | `went_well` `low` | `lane`, `type` (hook, cta), `text`, `pattern`, `firstBriefed` (round and date) |
 | `hook-review` | hook + round | The brand's account | `went_well` when it led; `needs_improvement` when it lagged or was not used; `action_item` `low` when held or not measurable | `lane`, `hook` (the text), `pattern`, `postsMatched`, `vsMedian`, `result` (led, held, lagged, not used, not measurable yet) |
-| `page-sides` | the campaign | The brand's account | `went_well` `low` | `editors` (`{viewerId: firstSeenAt}`, every id Claude has seen with an `editors/{id}` marker or an `activity-editors/{id}` document, never removed), `approvers` (`{viewerId: {name, gate, gates, confirmedAt}}`, the page accounts the CM confirmed as a step's approver: `gate` the first step it was confirmed for and `gates` every step since, a record with no `gates` reading as `[gate]`), `deciders` (`{viewerId: {name, confirmedAt}}`, the page accounts the CM confirmed as {brand}'s for creator decisions), `refused` (`{"{writer}/{item}": at}`, sign offs the CM said not to record, and `{writer}/fees-r{round}` for a fee approval). Written in the same answer as the pull that saw something new (**Pulling decisions**, **The creator decisions**, **The fee approval** and **The brief sign off**) |
+| `page-sides` | the campaign | The brand's account | `went_well` `low` | `editors` (`{viewerId: firstSeenAt}`, every id Claude has seen with an `editors/{id}` marker or an `activity-editors/{id}` document, never removed), `approvers` (`{viewerId: {name, gate, gates, confirmedAt}}`, the page accounts the CM confirmed as a step's approver: `gate` the first step it was confirmed for and `gates` every step since, a record with no `gates` reading as `[gate]`), `deciders` (`{viewerId: {name, confirmedAt}}`, the page accounts the CM confirmed as {brand}'s for creator decisions), `refused` (`{"{writer}/{item}": at}`, sign offs the CM said not to record, and `{writer}/fees-r{round}` for a fee approval, whose value is the refused item's `at`, so a later item from that writer isn't refused). Written in the same answer as the pull that saw something new (**Pulling decisions**, **The creator decisions**, **The fee approval** and **The brief sign off**) |
 | `ledger` | one per line, never replaced | The brand's account | `needs_improvement` | `gate`, `round`, `handle` (Gate 4b only), `daysSlipped`, `reason`, `shifted` (the gates and dates it moved) |
 
 A roster finding carries the whole row, not only what changed: copy the newest finding's
@@ -874,7 +874,9 @@ rules enforce, and what they can't**). Before it is offered:
    the account that approved the fees on the page {approver}'s, or {backup}'s? It approved as
    {name}." with "Yes, it's {approver}'s", "Yes, it's {backup}'s" and "No, don't record it". A yes
    adds step 3 to the account's `gates` in `page-sides` `approvers`; a no saves the item in
-   `refused` as `{writer}/fees-r{round}`, and the page shows it "Not counted".
+   `refused` as `{writer}/fees-r{round}` with the item's `at`, and the page shows it "Not
+   counted". Every approval for a round is written to the same path, so a refusal covers only
+   items at or before that `at`: a later approval from the same account is checked again.
 
 The picker line: "{name} approved the round {n} fees on {date}: @a ($1,200), @b ($900), @c
 ($2,100). This clears step 3." On the answer, run **Closing Gate 3** (`rates-and-terms.md`) with
@@ -1787,7 +1789,7 @@ Sections, in order:
    | "{k} cuts getting changes" | Cuts whose newest version has changes requested | The first cut, `#review/r{n}/{cut}` |
    | "{k} cuts in Aspire QA" | Cuts whose newest version is in Aspire QA | The first cut |
    | "{k} packages on the way" | Shipping rows with product status shipped, not yet delivered | The first row, `#creators/r{n}/{net}-{handle}/shipping` |
-   | "{k} creators filming" | Creators at step 4, Shooting, on Selected Creators: product delivered, brief accepted or locked, and no cut in the round yet (**Selected Creators**, **Steps**) | The first card, `#creators/r{n}/{net}-{handle}` |
+   | "{k} creators filming" | Creators at step 4 or 5 on Selected Creators, Shooting or Footage in and editing, so they have no cut in the round yet (**Selected Creators**, **Steps**) | The first card, `#creators/r{n}/{net}-{handle}` |
 
    Every row is built from what the client can read, so it holds nothing agency only. The cut
    rows and the filming row show once Content Review has its own build, because until it records
@@ -1963,7 +1965,7 @@ rows.
    | ---- | -------- | ---- | ----------------- |
    | Master Brief | The brief's status: "Draft", "Waiting for your sign off" for the client ("In review with client" for the agency), "Changes requested" or "Signed off {date}" | "{w} of {t} concepts written · {k} open comments", with the status Badge | "No briefs written yet." |
    | Creator Selection | "{a} approved" | "of {m} creators in round {n} · {d} to decide" | "No creators in the pool yet." |
-   | Selected Creators | "{n} with fees agreed", the creators on the tab (**Selected Creators**, **Who's here**) | "{k} missing details · {s} shipped, {d} delivered", plus "{total} committed" for the agency only, from `agency/budget` `committed:` and rendered only when that read returns | "Creators show here once {brand} approves them." |
+   | Selected Creators | "{n} with fees agreed", the creators on the tab (**Selected Creators**, **Who's here**) | "{k} missing details · {s} shipped, {d} delivered", {k} being the creators with any detail to add as the viewer counts them (**Selected Creators**, **Details to add**), plus "{total} committed" for the agency only, from `agency/budget` `committed:` and rendered only when that read returns | "Creators show here once {brand} approves them and their fees are agreed." |
    | Content Review | "{x} of {y} ad videos in" | "{w} waiting on you · {a} approved" | "Cuts show here once creators start shooting." |
    | Ad Performance | "Cost per sale {x}", with the target Badge from **Last round result** | "{w} of {a} ads won" | "Round {n} goes live {launch}." before the launch, else "Results show here once the ads are live." |
 
@@ -4240,9 +4242,11 @@ In order: **Round totals**, the toolbar, the cards, then **Contract and rates**,
 
 #### Steps
 
-Every card has one step out of 8. A creator's step is the highest step whose rule holds, and
-every step before it counts as done, as **Round steps** counts a step done once a later one is.
-A creator with no step's rule holding is at step 0, "Not started". The rules read only records
+Every card has one step out of 8. A creator's step is the highest step whose rule holds, so a
+record that skips ahead (a package marked shipped before the contract record says signed) never
+holds the card back. A creator with no step's rule holding is at step 0, "Not started". The
+expanded list marks each step by its own rule, never as done because a later one holds, so it
+never contradicts a cell. The rules read only records
 and page data, never a field a person sets:
 
 | # | Step | Reached when | Until its record exists |
@@ -4254,7 +4258,7 @@ and page data, never a field a person sets:
 | 5 | Footage in and editing | At least one raw file in: the creator's footage record for the round (`footage` on `edits/creator-{net}-{handle}-r{round}`, `{files, at}`, the number of files received) is 1 or more | Not reached on its own. A creator moves from Shooting to Cuts in review when their first cut arrives |
 | 6 | Cuts in review | The creator has at least one cut in the round with a version (`reviews/cut-{net}-{handle}-r{round}-{variant}` with a version under `versions`, **1e**), the same cuts **Where we stand** counts as in | Not reached until Content Review records cuts |
 | 7 | Cuts approved | Every one of the creator's {v} variants for the round has a cut whose newest version is approved (**Variants per creator** below). Approved is read as the calendar reads it (**Home**, **Calendar**, **Where every date comes from**, Approved): the activity log's approval and undo entries for that version, else its `client/cut-{cut}-v{version}` `status` stamp | Not reached until Content Review records cuts |
-| 8 | Ads live | One of the creator's variants runs as a live ad in Ad Performance's records for the round | The round's **Ads live** step is done (the round is in market, **Rounds**, **Round steps**) and the creator is at step 7 |
+| 8 | Ads live | One of the creator's variants runs as a live ad in Ad Performance's records for the round | The round's **Ads live** step is done (the round is in market, **Rounds**, **Round steps**) and at least one of the creator's cuts is approved, so a creator whose last variant is still in review isn't held back |
 
 Product status Returned holds the creator at step 2 with the line "Package returned" and an
 error Badge "returned" on the Shipping cell, until a new shipment is marked.
@@ -4280,6 +4284,7 @@ Under the step, one line in `text-sm`, worked out from the same records. The fir
 | When | Agency reads | Client reads |
 | ---- | ------------ | ------------ |
 | A question to the client is open (`yourCall`) | "Waiting on {brand}: {question}" | "Your call: {question}" |
+| Step 0, the client asked for changes to the fees | "Waiting on Aspire to revise the fees" | the same |
 | Step 0, fees approval (step 3 of the round) open | "Waiting on {brand} to approve fees" | "Waiting on your fee approval" |
 | Step 0, fees approved | "Next: contract signed" | the same |
 | Step 1, details not received | "Waiting on @{handle}'s shipping details" | the same |
@@ -4378,8 +4383,9 @@ to that hash opens the card expanded and scrolls to it.
 - **Expand**: a ghost Button size sm, "Details" with the Lucide `chevron-down` that turns up while
   open, on a `button` with `aria-expanded` and `aria-controls`. It is the card's own control, not a
   Collapsible section (**Collapsing sections**, **No nesting**). Open, the card adds:
-  - **The 8 steps** as a list: each with a soft Badge "Done", a processing Badge "Now" or a soft
-    "Up next" on the next one, the date it was reached where its record holds one (signed,
+  - **The 8 steps** as a list: each with a soft Badge "Done" when its own rule holds, a processing
+    Badge "Now" on the card's step, a soft "Up next" on the one after it, and a soft "Not done" on
+    an earlier step whose own rule doesn't hold (a contract still out while the package ships), the date it was reached where its record holds one (signed,
     shipped, delivered, first file in, first cut, all approved, live), and a Tooltip on the date
     saying which record it came from ("From the shipping status, marked by {name} {time}"). A step
     whose record doesn't exist yet shows "Not tracked yet" under it.
@@ -4453,8 +4459,17 @@ What the section's header shows, for both sides:
   an account the CM hasn't confirmed as an approver for step 3 (`sides` `approvers`), it reads
   "Fees approved, Aspire to confirm" with the processing Badge "Aspire to confirm", and step 3
   stays open on Home until the pull records it.
-- **Fees changed since you approved** (warning), when an agreed fee, a creator or the uplift
-  differs from the approval's copy: the client approves again.
+- **Changes requested {date}** (warning), for both sides, when the newest counted item is a
+  request for changes newer than any approval, with the client's note shown to both: the
+  agency revises the fees and sends them again, and every card's line reads "Waiting on Aspire to
+  revise the fees" in place of the step 0 rows.
+- **Fees changed since you approved** (warning), while step 3 is open, when an agreed fee, a
+  creator or the uplift differs from the approval's copy: the client approves again.
+- **After step 3 is cleared**, the client's header stays "Fees approved {date}", and the page
+  compares the fees with the copy in Gate 3's recorded `approval`. A fee, a creator or the uplift
+  that changed since shows the agency only a warning Badge "Fees changed after approval" with the
+  lines that differ. A change like that goes to the client as a your call (`rates-and-terms.md`,
+  **Replies**), recorded in the chat; it never reopens step 3 on its own.
 - **Not counted** (warning), for the agency only, on an approval from an account on Aspire's side
   or one the CM refused.
 
