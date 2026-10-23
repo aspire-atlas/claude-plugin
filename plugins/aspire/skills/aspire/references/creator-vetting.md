@@ -350,7 +350,8 @@ lanes (SKILL.md, **Guardrails**). R4 is answered by the CAS Run picker.
 in `cas-campaign.md`, **1d**, **Creator Selection**, **The match score**, with the lane's concept,
 the round's casting keywords and target cities, and the weights saved in `match` in
 `campaign:{slug}-cas` (the defaults there without it). Vetting runs it so its page and the
-campaign page show the same number for the same inputs. The two paid screens are two of its
+campaign page show the same number for the same inputs. When `match` has a `basis`, the page says
+"Weights tuned {date} from {n} client decisions" in its About this data, else "Default weights". The two paid screens are two of its
 factors:
 
 - **Persona fit is Brief fit.** Read the concept's casting keywords and target cities from

@@ -355,6 +355,13 @@ The keys `-cas`, `-lane-*`, `-decision-defaults`, and `-terms` belong to the CAS
 Every other flow drops them, as it drops `review:` and `vetting:` keys. They are never brand
 guidelines: brief conflicts, content review checks, and red-line scans leave them out.
 
+**The match score's weights live in `match` on `campaign:{slug}-cas`**, with `tuned` and `basis`
+(`cas-campaign.md`, **1a**). Weights an Editor tunes on the campaign page reach it only through
+the CAS campaign's pull, in a picker of their own, written through the supersede rule. Discovery
+and vetting read them in creator-ads mode for that campaign only. There is no brand-wide weights
+key: tuning learns from one client's calls on one campaign, so it never carries to another campaign
+or to discovery and vetting outside creator-ads mode.
+
 **Keys starting `program:` belong to the influencer program flows** (`program.md`): its setup,
 terms, maximums, budget, catalog and outreach voice. Every flow outside the program drops them
 when it reads guidelines, as it drops `review:` and `vetting:` keys. They are never brand

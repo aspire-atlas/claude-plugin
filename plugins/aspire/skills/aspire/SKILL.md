@@ -2175,6 +2175,20 @@ line, competitor conflicts and past competitor deals. Each creator maps
 to a concept and persona from the round's Master Brief, which the agency can change. The
 reference's **1d**, **Creator Selection**, **The match score**, holds the formula.
 
+When a client passes on a creator they see scored 75 or more, or picks one under 60, the page asks
+once, never blocking, why: "Why pass?" or "What made them a yes?", with one tap reasons in the
+client's own words ("Too expensive" and "Great price" are their view, not a price). The trigger is
+the client's own score, which has no price in it, so the question gives nothing away. For the
+agency only, **Match score tuning** shows how far the score agrees with the client's picks (picked
+of decided per match level, how many of our top 10 were picked, and how often a pick outscored a
+pass, read as holding up, partly matching or choosing differently), the surprises with their
+reasons and what the client seems to value, and, once a round has ad results, whether its higher
+scored half sold cheaper. It suggests new weights from picks against passes, pulled toward the
+default when there are few decisions, each kept within 0.08 of its default and never under 0.03, with the price factor settled apart so the client's score never depends on it. An Editor's
+**Apply tuned score** or **Back to default** re-scores the pool for both sides on the page; the
+weights reach Atlas only when the CM saves them in the next pull. The reference's **1d**,
+**Creator Selection**, **Match score tuning**, holds the rules.
+
 ### Setup
 
 1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end,
@@ -2246,7 +2260,14 @@ the tool prefix, `profile_id`, and `profile_slug`:
   concept from the signed copy and records step 4 as approved. A client who can't write on the
   page signs off outside it; record that only as their word, with how it was given, per the
   reference's **Gate 4**. Priority Yes and Yes record as approved, No as rejected. A Maybe
-  stays open on the page with a question back to the client.
+  stays open on the page with a question back to the client. A surprise reason the client
+  picked ("Why pass: Too expensive") is named in their words and recorded on the creator. When an
+  Editor applied a tuned match score on the page since the last pull, offer it after the batch, in
+  one picker of its own: "Save the tuned match score for {campaign}?" with the weights before and
+  after, how many client decisions it learned from and the agreement before and after, and "Save
+  it (Recommended)" or "Keep it on the page only". Saving supersedes `match` in
+  `campaign:{slug}-cas`, so discovery and vetting for this campaign score with the same weights.
+  It is the campaign's calibration, never a brand-wide one, and the page never writes it itself.
 - **Record a reply** (rows 7, 10, 14, or whenever the CM pastes one): per
   `references/rates-and-terms.md`, **Replies**. One picker proposes the record and the next move;
   a reply that changes what the client approved becomes "your call needed" for the client.
