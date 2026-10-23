@@ -111,7 +111,7 @@ draft, and in a channel post, uses the left column.
 | Connect your Meta ad account to see results | no ad account linked to the brand's Profile in Atlas |
 | Needs a concept | a product in scope that no concept in the round names |
 | Reset to original, Versions | the brief's saved versions (**1e**, **Brief versions and Reset to original**) |
-| Changes for round {t}; Keep, Replace, Lead with, Move, Put more behind, Put less behind; Proposed, Accepted, Dropped, Results changed; Apply to round {t} brief; Changes from round {n}, From round {n} results | the lines **Changes for round {t}** proposes from `leaders:` and `overBand:`, the calls on them in `agency/changes-r{round}` and `changes/r{round}`, and the `change-{id}` notes Apply writes on the next brief (**1d**, **Ad Performance**, **Changes for round {t}**) |
+| Changes for round {t}; Keep, Replace, Lead with, Move, Put more behind, Put less behind; Proposed, Accepted, Dropped, Results changed; Apply to round {t} brief; Changes from round {n}, From round {n} results | the lines **Changes for round {t}** proposes from `leaders:` and `overBand:`, the calls on them in `agency/changes-r{round}` and `changes/r{round}`, and the `change-r{n}-{id}` notes Apply writes on the next brief (**1d**, **Ad Performance**, **Changes for round {t}**) |
 
 The status labels a person sees, in order: Awaiting decision, Approved, Maybe, Rejected, Offer
 sent, Countered, Agreed, Declined, Your call needed, No reply yet, Details received, Shipped,
@@ -1072,7 +1072,7 @@ the client's calls, each named with who made it. The `send-` and `reopen-` stamp
 - **Changes applied from Ad Performance.** Named as one line per round ("Round {t} brief: {k}
   changes from round {n}'s results applied by {name}"). The parts an apply wrote are `manual`
   stamps and are recorded as the brief edits they are, on the same `brief` findings. Each applied
-  line, from `change-{id}` on `brief-rounds/r{t}` and `agency/brief-round-r{t}`, goes on the
+  line, from `change-r{n}-{id}` on `brief-rounds/r{t}` and `agency/brief-round-r{t}`, goes on the
   `brief` finding of the lane it names as a `fromResults` line, and a line that names no lane (a
   framework or a creator line) on every lane's finding for the round, as a tone edit does. A lane
   with no `brief` finding in the round yet gets its first one, as an import's does. A line
@@ -1637,7 +1637,7 @@ only is marked so.
 | Ad Performance | Variants ranked | `performance-variants` | "{w} winning · {t} testing · {r} to retire or refresh" | Standard | Closed |
 | Ad Performance | Compare by framework, hook, CTA (those three for the agency only), concept, persona, product, creator and tier | `performance-breakdowns` | "Best {dimension}: {value} at {x} per sale", or "Too early to call a winner"; for the client never framework, hook or CTA | Full | Closed |
 | Ad Performance | Who watched | `performance-audience` | "Top audience: {segment}" | Full | Closed; not rendered until `search_ads` has an audience breakdown (**Ad Performance**, **Who watched**) |
-| Ad Performance | Changes for round {t} | `performance-next` | Agency: "{a} of {p} lines accepted for round {t} · {k} applied"; client: "{c} changes for round {t}"; or "Too early to propose changes" | Standard | Closed |
+| Ad Performance | Changes for round {t} | `performance-next` | Agency: "{a} of {p} lines accepted for round {t} · {k} applied", or "Too early to propose changes"; client: "{c} changes for round {t}", or "Nothing here yet." | Standard | Closed |
 
 The review panel, the inbox, History and the brief's **Comments** are Sheets, and the creator
 viewer is a full screen view (**Creator Selection**, **The creator viewer**); none is a section: they open
@@ -3014,7 +3014,8 @@ from an earlier round, imported, or written by the brief run.
   back from Versions.", and Cancel (outline) and Start from round {m} (default). On Start the
   page checks the three conditions again from the page data as it is then, and refuses with the
   reason if one no longer holds.
-- **What it copies.** For each concept covered by round {m}'s sign off, its locked version
+- **What it copies.** Never round {m}'s own change notes (`change-r{k}-{id}`), which belong to round {m}'s
+  brief; a locked version holds only the parts a sign off copies, so it has none. For each concept covered by round {m}'s sign off, its locked version
   (`agency/brief-versions/concept-{lane}-r{m}/locked-v{version}`) and the round's
   (`round-r{m}/locked-v{version}`), which hold the text the client approved, never the edits made
   since. The parts carried and the parts that start empty are the ones **Rounds**, **The new
@@ -3323,7 +3324,7 @@ block with the Artifact tool's `read`, writes it to the page data as stamps with
 named. Every numbered or listed key the block no longer carries (a B-roll shot, a beat, a
 persona, a selling point, a do, a don't, a variant's parts) gets a stamp with `value` `null`, as a
 reset does, so a shorter re-run leaves nothing stale. The **Casting** part's `keyword-{n}` and
-`city-{id}`, and the `change-{id}` notes from Ad Performance (**Brief status**, **Changes from
+`city-{id}`, and the `change-r{n}-{id}` notes from Ad Performance (**Brief status**, **Changes from
 round {n}**), are never in the block and never nulled this way; `current_brief` carries the
 change notes, agency lines included, so the run follows them (`hooks-and-ctas.md`, **Where
 recommendations come from**). Then Claude writes the original version (**1e**, **Brief versions and Reset to original**) and
@@ -6768,12 +6769,13 @@ within their product's block, as their leaders are. It needs a target in the res
 line is proposed, while keep, lead and more lines still are. Claude writes these groups per kind
 to `overBand:` at each publish with `leaders:`.
 
-**Only what cleared the bar.** Every line rests on a group with the data **Enough to call a
-leader** asks for, so a group with a small sample is never proposed, not even with a mark: it is
-left out. One line at the end of the section names the kinds with nothing yet, "Nothing proposed
-for {kinds} yet: too early to call.", the client's naming only concepts. With no line at all, the
-section reads "Too early to propose changes. Each group needs {n} ads past the spend floor and {p}
-purchases." for both sides.
+**Only what cleared the bar.** Every line rests on a group in `leaders:`, which passed **Enough to
+call a leader**, or in `overBand:`, which passed **Over the Watch band** above. A group that passes
+neither is never proposed, not even with a mark: it is left out. For the agency, one line at the
+end of the section names the kinds with nothing yet, "Nothing proposed for {kinds} yet: too early
+to call.", and with no line at all the section reads "Too early to propose changes. Each group
+needs {n} ads past the spend floor and {p} purchases." Both rest on the proposals, which the client
+can't read, so the client's side always reads as **What the client sees** says.
 
 **The numbers behind each line.** Under each line, in `text-xs text-muted-foreground`, the figures
 it rests on and its sample, from `leaders:` or `overBand:`: "{x} per sale against {y} for {next
@@ -6856,7 +6858,8 @@ for sign off."; and Cancel (outline) and Apply (default). On Apply, in this orde
    Editor as `by`, only when it differs from the current value. A hook or CTA that already has a
    line keeps it; the line lands as a note. A line about a concept that round {t}'s brief doesn't
    have, or has removed or deferred, lands as a note too.
-5. **Write the changes.** One `change-{id}` stamp per applied line, `{id}` the line's id,
+5. **Write the changes.** One `change-r{n}-{id}` stamp per applied line, `{id}` the line's id,
+   so lines from two results rounds that land on one brief never share a key,
    `{kind, text, figures, sample, from, lane, parts}`, `from` round {n} and `parts` the parts it
    wrote: the concept lines on `brief-rounds/r{t}`, every other line on `agency/brief-round-r{t}`.
    Then `applied-{id}:` `{round, at, by}` on `agency/changes-r{n}` per line, and for a concept line
@@ -6871,7 +6874,7 @@ for sign off."; and Cancel (outline) and Apply (default). On Apply, in this orde
    `#brief/r{t}/overview/changes`.
 
 The status stays Draft, or Changes requested until it is sent again. A line counts as applied only
-while its `change-{id}` is in round {t}'s brief, whatever its `applied-{id}:` marks say, so restoring the "Before applying changes" version
+while its `change-r{n}-{id}` is in round {t}'s brief, whatever its `applied-{id}:` marks say, so restoring the "Before applying changes" version
 from **Versions** takes the line back to accepted, not applied. Applying again applies only the lines
 not applied yet.
 
@@ -8013,8 +8016,8 @@ is no step field anywhere in page data; the Footage
     insight cards change when the round's figures change, with nothing fixed in the page's code;
     and **Who watched** isn't drawn, linked or exported until `list_ad_search_fields` lists an
     age and gender breakdown, and shows **Top regions** only when it lists region too.
-30. Ad Performance's **Changes for round {t}**: every line rests on a group in `leaders:` or
-    `overBand:` that has the data **Enough to call a leader** asks for, with its figures and
+30. Ad Performance's **Changes for round {t}**: every line rests on a group in `leaders:` that
+    passed **Enough to call a leader** or in `overBand:` that passed **Over the Watch band**, with its figures and
     sample under it, and a kind with no such group proposes nothing; a kept hook sets only H1's
     type, never a hook or CTA's words, and no creator override is written; {t} skips a round whose
     brief is with the client or signed off and says why; **Apply to round {t} brief** renders for
@@ -8244,10 +8247,10 @@ cut call writers (`{writer}/cut-calls`). Only the owner writes it, so no Editor 
 | Program terms | `program/terms` | Agency | `deliverable-{id}` (`{label, count}`), `adReadyVideos`, `variants`, `usageDays`, `allowlisting`, `partnershipAds`, `exclusivity`, `organic`. A page from before kept `makes`, `usage`, `exclusivity` and `notes` as text, in `agency/terms` until the fees were sent: Program terms reads `agency/terms` then `program/terms`, shows `makes` and `usage` that don't parse as one text row each ("What each creator makes", "Usage"), `exclusivity` as its row, and `notes` as a "Notes" row last, and the next publish moves them to `program/terms` |
 | Allowlisting uplift | `agency/terms` until the fees are sent, then `program/terms` | Agency | `upliftPct` |
 | Budget | `agency/budget` | Agency | `total` (stamp); `committed:`, `offersOut:`, `approvedNotContracted:`, `unpriced:`, `left:` (worked out at publish from the records, and again on the page as calls arrive) |
-| The round's brief | `brief-rounds/r{round}` | Agency; Claude | `title`, `sourceDoc` (`{label, url, kind, file}` for an imported doc, `kind` `upload`, `drive` or `text`, `file` its id in `program/files`; empty for a brief the agent wrote; a `kind` `link` from before reads as `drive` for a Google Docs link, else as a link with no `file`), `importedAt:` and `importKey:` (the newest import, **Importing a brief**), `startedFrom:` (the round it was started from), `change-{id}` (an applied concept line from Ad Performance, `{kind, text, figures, sample, from, lane, parts}`, **1d**, **Ad Performance**, **Changes for round {t}**), `summary`, `tone` (long text), `do-{id}`, `dont-{id}`, `disclosure`, `fileNaming`, `notice`; `status:` (draft, in review, changes requested, signed off) as at publish, worked out again live on the page |
+| The round's brief | `brief-rounds/r{round}` | Agency; Claude | `title`, `sourceDoc` (`{label, url, kind, file}` for an imported doc, `kind` `upload`, `drive` or `text`, `file` its id in `program/files`; empty for a brief the agent wrote; a `kind` `link` from before reads as `drive` for a Google Docs link, else as a link with no `file`), `importedAt:` and `importKey:` (the newest import, **Importing a brief**), `startedFrom:` (the round it was started from), `change-r{n}-{id}` (an applied concept line from Ad Performance, `{n}` the round whose results it came from, `{kind, text, figures, sample, from, lane, parts}`, **1d**, **Ad Performance**, **Changes for round {t}**), `summary`, `tone` (long text), `do-{id}`, `dont-{id}`, `disclosure`, `fileNaming`, `notice`; `status:` (draft, in review, changes requested, signed off) as at publish, worked out again live on the page |
 | Brief events | `brief-events/r{round}` | Agency; Claude | `send-{id}` (a send for sign off: a stamp with `value` `{at}`, `source` `manual` and the Editor as `by` from the page, or `source` `claude` for a send from the chat) and `reopen-{id}` (a stamp with `value` `{reason, signoff}`, `signoff` naming the sign off it undid as `{writer}/{item}`, or `chat` for one recorded from the chat). Kept apart from `brief-rounds` so no version, reset, restore or import ever writes them |
 | A concept's brief | `briefs/{lane}-r{round}` | Agency; Claude | `name`, `line`, `persona-{id}`, `keyword-{n}` (1 to 4, a casting keyword each), `city-{id}` (a target city each), `trigger`, `framework` (`{code, name}`), `story`, `point-{id}`, `problem`, `agitate`, `solve`, `beat-{n}` (`{name, seconds, what}`), `hook-{n}` (`{type, line, shown, overlay, why}`), `cta-{n}` (`{type, line, destination, moment, why}`), `body`, `length`, `runtime` (`{instagram, tiktok}`), `broll-{n}` (`{shot, beat}`), `product` (`{id, name, sku}`, `id` empty for a product not in scope), `added`, `removed` and `deferred` (true or false); `carriedForward:` the round a deferred concept came from; `order:` its place in concept order, `coverage:` (`{passed, of, failed}`, the checks that failed in plain words) and `version:` as at publish. Long text parts hold the saved HTML (**1d**, **Master Brief**, **Rich text**). A page from before kept `concept`, `hook-{id}`, `cta-{id}`, `broll-{id}`, `disclosure` and `donot-{id}` here: they read as `line`, the hooks, CTAs and shots in id order, and the brief's `disclosure` and don'ts, and the next publish writes them to the keys above |
-| The brief, agency only | `agency/brief-round-r{round}` | Agency; Claude | `briefPage:` the brief agent's page link, which holds the variant plan, so it never sits where the client reads; `change-{id}`, every applied line from Ad Performance that isn't a concept line (hook, CTA, framework, creator), the same shape as on `brief-rounds` |
+| The brief, agency only | `agency/brief-round-r{round}` | Agency; Claude | `briefPage:` the brief agent's page link, which holds the variant plan, so it never sits where the client reads; `change-r{n}-{id}`, every applied line from Ad Performance that isn't a concept line (hook, CTA, framework, creator), the same shape as on `brief-rounds` |
 | Variant plan | `agency/brief-{lane}-r{round}` | Agency; Claude | One key per part of each variant, so two editors on two parts of one variant keep both: `v{n}-framework` (`{code, name}`), `v{n}-length`, `v{n}-hook` and `v{n}-cta` (the number), `v{n}-vo` (long text), `v{n}-broll` (a list of shot numbers), `v{n}-note`; `variantCheck:` the brief agent's check of the plan (`{passed, failed}`). A page from before kept `variant-{n}` objects: each reads into these keys, and the next publish writes them |
 | Frameworks | `agency/frameworks` | Agency; Claude | `framework-{slot}` (`{slot, code, name, use}`), one per variant slot 1 to 5, from `frameworks` in `campaign:{slug}-cas` or the defaults |
 | Brief imports | `agency/brief-imports/{key}`, `{key}` from the source (**1d**, **Master Brief**, **Importing a brief**, **Repeatable mapping**) | Agency; Claude for an import in the chat | Plain data: `mapping:` Claude's answer in the data block's shape, before the checks, which run again at every preview, `source:` (`{label, url, kind, file}`), `at:`, `by:`, or `sameAs:` the key of the stored mapping for a `text-` key that points at one. Split past 200 KiB as a version is |
@@ -9060,7 +9063,7 @@ document. Steps 3 and 4 run after every publish.
    Performance**, **What the page itself holds** lists: no hook, CTA or framework, no ad, ad set,
    campaign or ad account id, and no ad code. The client's insight cards in the page itself name
    no framework, hook or CTA (**Compare**, **Insight cards**). For each round with change lines,
-   read `changes/r{round}` and the `change-{id}` notes on `brief-rounds` at `interact`: every line
+   read `changes/r{round}` and the `change-r{n}-{id}` notes on `brief-rounds` at `interact`: every line
    there is a concept line in `proposed:` with an accepted call, and none holds the text or
    figures of a hook, CTA, framework or creator line from `agency/changes-r{round}`, nor a hook
    pattern, CTA type, framework code, creator handle or fee. Search the page itself for those

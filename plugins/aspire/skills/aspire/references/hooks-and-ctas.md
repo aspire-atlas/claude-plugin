@@ -10,7 +10,7 @@ in the main thread, inside the CAS campaign section.
 
 Read in this order. An earlier source outranks a later one when they disagree.
 
-1. **The changes applied from Ad Performance.** The round's `change-{id}` notes, which come in
+1. **The changes applied from Ad Performance.** The round's `change-r{n}-{id}` notes, which come in
    `current_brief` (`cas-campaign.md`, **Ad Performance**, **Changes for round {t}**). They rest on
    the paid partnership ads' results, so they outrank everything below. A pattern a line keeps
    leads the concept's hooks, in H1 when Apply set its type; a pattern a line replaces is not used
@@ -124,5 +124,6 @@ for round {t}** on Ad Performance, whose accepted lines an Editor applies to the
 hook review never writes or changes a brief, and nothing it saves reaches a brief until a brief run
 writes new hooks. Its `hook-review` findings are a source the brief run reads (source 2 above), below
 the applied changes, so when the organic and the paid results disagree about a hook, the paid
-results win and the hook's reason says which it followed. A hook with no paid result yet (too few
+results win; the agency reads why on the change note, and the hook's reason, which the client
+reads, says nothing of either result. A hook with no paid result yet (too few
 ads, or no ads live) is led by the hook review alone.
