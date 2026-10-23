@@ -5144,7 +5144,10 @@ on close.
   same. Opening the panel at a comment (`/c{comment}`) or tapping **Comment** opens the sheet. The
   player is capped so the peeked sheet never covers the video or its controls.
 - **Layering.** A Dialog, a Select's list, a tooltip or the tag list opened from the panel is
-  added after the bottom sheet in the page, so it opens above it.
+  added after the bottom sheet in the page, so it opens above it. While the player is full screen
+  (**Full screen**), each is added inside the full screen part instead, since the browser draws
+  nothing outside it, and while the player fills the window it takes `z-[70]` in place of `z-50`,
+  so it opens above the player.
 
 Closing the panel returns to the same creator tab, filter and row. In a done round the comment box
 is replaced by the line in **A done round**, and threads and drawings stay readable.
@@ -5154,16 +5157,19 @@ is replaced by the line in **A done round**, and threads and drawings stay reada
 An uploaded cut plays in a `video` element from `"/_blob/" + asset`, with `playsinline` and
 `preload="metadata"`, and no browser controls: the page draws its own, so every control looks and
 works the same on every browser. It opens paused, at 0:00, or at the time or comment the hash
-names. Nothing the player does writes page data or logs: playing, seeking, speed, loop, the safe
-zone, sound and full screen are the viewer's own, kept in memory for the visit only.
+names. Nothing the player does writes page data or logs, but the one frame rate write in
+**Frame rate**: playing, seeking, speed, loop, the safe zone, sound and full screen are the
+viewer's own, kept in memory for the visit only.
 
 Under the video, top to bottom:
 
-1. **The scrubber**, with the comment markers on it (**Comment markers**). It carries
-   `role="slider"`, `aria-label` "Position", `aria-valuemin` 0, `aria-valuemax` the duration and
-   `aria-valuetext` "0:04.4 of 0:30". Dragging it, or tapping a point on it, seeks there; the video
+1. **The scrubber**, with the comment markers in a row just above it (**Comment markers**). The
+   markers' row is a sibling of the scrubber, never inside it, so screen readers reach each marker
+   and a tap on one never seeks through the scrubber. The scrubber carries `role="slider"`,
+   `aria-label` "Position", `aria-valuemin` 0, `aria-valuemax` the duration, `aria-valuenow` the
+   current time in seconds and `aria-valuetext` "0:04.4 of 0:30.0". Dragging it, or tapping a point on it, seeks there; the video
    pauses while it is dragged and plays on after if it was playing.
-2. **The time**: "0:04.4 / 0:30" in `text-xs tabular-nums text-muted-foreground`, and, when the
+2. **The time**: "0:04.4 / 0:30.0" in `text-xs tabular-nums text-muted-foreground`, and, when the
    frame rate is known, "· frame 132" after it (**Frame rate**). A time is always m:ss with tenths
    of a second.
 3. **The controls**, each a Button with its icon, `aria-label` and a Tooltip that names it and its
@@ -5190,7 +5196,8 @@ Under the video, top to bottom:
 4. **Comment and Draw**, from 640px only: a default Button "Comment at {time}" with the Lucide
    `message-square-plus` icon and an outline Button "Draw" with the Lucide `pencil` icon, after the
    controls. Under 640px they sit in the peeked bottom sheet instead. Neither renders for a version
-   the viewer can't comment on (**What the client sees**, **A done round**, **Preview as client**).
+   the viewer can't comment on (**What the client sees**, **A done round**) or in **Preview as
+   client**.
 
 While the video loads, a Skeleton the shape of the box. When it can't play, the box shows the
 `film` icon and "This cut can't play right now. Ask {CM name} for a link." (**Adding a cut**), and
@@ -5203,16 +5210,22 @@ same frames:
 1. **From the file, when it is added.** Before the upload starts, the Editor's page reads the
    file's own header from their computer: for MP4 and MOV, the video track's time scale (`mdhd`)
    and the time each frame takes (`stts`); for WebM, the video track's frame length
-   (`DefaultDuration`). It reads only the header boxes, with the browser's own file reading, so
-   Claude downloads nothing and nothing leaves the Editor's browser that the upload doesn't already
-   send. The frame rate is the time scale over the most common frame time, rounded to the nearest of
+   (`DefaultDuration`, in nanoseconds). It reads only the header boxes, with the browser's own file
+   reading, so Claude downloads nothing and nothing leaves the Editor's browser that the upload
+   doesn't already send. For MP4 and MOV the frame rate is the time scale over the most common frame
+   time; for WebM it is one billion over the frame length. Either is rounded to the nearest of
    23.976, 24, 25, 29.97, 30, 48, 50, 59.94 and 60 when it is within 0.01 of one, else kept to three
-   decimals. A file whose frames take different times (a phone recording) keeps that most common
-   rate and is marked as variable. The version gets `fps:`, `fpsFrom:` `file` and `fpsVariable:`.
-2. **From playback, when the file didn't say.** A WebM with no frame length, a version from
-   before, or a header the page couldn't read has no `fps:`. Then, while the cut plays at 1x, the
-   page times the first 20 frames the browser draws (`requestVideoFrameCallback`), takes the middle
-   value, and rounds it the same way. That rate is used at once in the viewer's own player. An
+   decimals. A file is marked variable only when more than 1% of its frames, leaving out the first
+   and the last, take a time other than the most common one (a phone recording); it keeps the most
+   common rate. A last frame of a different length, which most files have, doesn't make it
+   variable. The version gets `fps:`, `fpsFrom:` `file` and `fpsVariable:`.
+2. **From playback, when the file didn't say.** A WebM with no frame length, a fragmented MP4
+   (its frame times are in the fragments, not the header), a version from before, or a header the
+   page couldn't read has no `fps:`. Then, while the cut plays at 1x, the page reads the video time
+   of each of the first 20 frames the browser draws (`requestVideoFrameCallback`, its `mediaTime`),
+   never the clock time between them, which follows the screen. It keeps the gaps between frames
+   that follow each other (`presentedFrames` up by exactly one), takes the middle gap, and turns it
+   into a rate rounded the same way. That rate is used at once in the viewer's own player. An
    Editor's page also writes it to the version once, as `fpsFrom:` `playback`, so the next viewer
    doesn't wait; a client's page can't write `reviews`, so for a client it holds for the visit only.
 
@@ -5238,8 +5251,10 @@ safe zone is only a guide." under the player while it is on.
 screen through the browser's full screen mode, where the browser has one for a page element and
 lets the page use it. Where it doesn't (an iPhone, or a frame that blocks it), the player fills the window instead, over the panel, with the same
 controls, so drawing, the safe zone and the markers work in full screen everywhere. The Full
-screen Button or Escape closes it. Comments stay in the panel; **Comment** and **Draw**
-leave full screen first.
+screen Button or Escape closes it. In the browser's full screen mode the browser keeps Escape for
+itself and only leaves full screen, so a drawing in progress stays open, and **Done** or the bar
+leaves it. Comments stay in the panel; **Comment** leaves full screen first, and **Draw** works in
+full screen.
 
 **Keyboard shortcuts.** From 1024px, with a fine pointer, as extras only: every one has a visible
 control above. None works while focus is in a text field, a Select or the tag list, or while a
@@ -5254,7 +5269,7 @@ Dialog is open, and the arrows work on the scrubber when it has focus.
 | D | Draw on the frame, or Done while drawing | **Draw** |
 | S | Show or hide the Reels safe zone | Reels safe zone |
 | M | Sound on or off | Sound |
-| Escape | Leaves drawing, then full screen, then closes the panel | **Done**, Full screen, Close |
+| Escape | Leaves drawing, then closes the panel. In the browser's full screen mode it only leaves full screen, since the browser keeps that key | **Done**, Full screen, Close |
 
 A ghost icon Button "Keyboard shortcuts" (Lucide `keyboard`) in the header, from 1024px, opens a
 Dialog with this table in plain words.
@@ -5286,8 +5301,10 @@ decimals, or empty when general), `frame:` (when the frame rate is known) and `d
 writer's own `comments/{id}/items` or, for an agency only comment, `agency/comments/items` (**1e**),
 and logs one entry, kind `comment`, verb `commented`, tab `review`, asset `cut-{cut}-v{version}`,
 anchor `#review/r{n}/{cut}/v{version}/c{comment}`, text "Commented at 0:04.4: {first words}" or
-"Commented at 0:04.4 with a drawing: {first words}" (**1e**, **The activity log**). Typing in the
-box never changes the time it saved; the player can play on while someone types.
+"Commented at 0:04.4 with a drawing: {first words}" (**1e**, **The activity log**). While the version is in
+Aspire QA, the entry goes to the writer's agency log, as an upload does (**Adding a cut**), so no
+client gets an inbox item for a version they can't open; the comment itself stays in its place.
+Typing in the box never changes the time it saved; the player can play on while someone types.
 
 **The list.** Under the status block, for the version open in the player:
 
@@ -5323,7 +5340,7 @@ time; general comments have none. A marker is a `button` with `aria-label` "Comm
 does. Open threads are filled, resolved threads faded, and agency only threads hollow (the marker
 classes in **Component classes**, Review panel). Markers closer together than 44px on screen join
 into one marker showing their count, which seeks to the first and sets the list to show those
-threads first. Markers sit above the track, so dragging the scrubber never hits one.
+threads first. Markers sit in their own row above the scrubber, so dragging the scrubber never hits one.
 
 **Which version.** The list and the markers show the version open in the player. A version keeps
 its own comments: a new version starts with none, and the earlier version's comments stay on it.
@@ -5332,9 +5349,9 @@ Moving between versions is ASP-3941's (**What the status flow adds**).
 **Who can comment, and where.** The agency on any version. The client on the newest version sent
 to them, and only while the cut has no newer version in Aspire QA (**What the client sees**): on
 an older version the box is replaced by "Aspire is checking version {v}. Comments open again when
-it's sent." A done round is read only (**A done round**). **Preview as client** shows the client's
-box with Comment disabled and the line "Preview doesn't save." A read only client never reaches the
-panel (**What the client sees**).
+it's sent." A done round is read only (**A done round**). In **Preview as client** no comment
+box, reply box, Resolve, Edit or Delete renders, as on the brief, since the preview never writes. A
+read only client never reaches the panel (**What the client sees**).
 
 #### Drawing on the frame
 
@@ -5352,8 +5369,8 @@ under the controls:
   seeking keeps the drawing open and moves its time to the new frame, so someone can find the exact
   frame before or while drawing.
 - **Done** opens the comment box with the drawing attached (**Comments on a cut**) at the frame it
-  was drawn on. Escape, Close or leaving the cut with strokes drawn asks "Discard this drawing?"
-  with Keep drawing and Discard.
+  was drawn on. Escape (outside the browser's full screen mode), Close or leaving the cut with
+  strokes drawn asks "Discard this drawing?" with Keep drawing and Discard.
 
 **How a drawing is kept.** The strokes are drawn as `svg` paths over the video's frame (never the
 letterbox around it), in a `viewBox` of 0 to 1 each way, so the same data draws in the same place
@@ -5444,9 +5461,10 @@ whoever reads the copy opens the cut with **Copy link** to see it.
 #### A linked cut in the panel
 
 A Google Drive or Frame.io cut opens outside the page (**Adding a cut**, **Who can play what**), so
-in the panel it has no player. In the player's place, the film box with "Plays in Google Drive" or
-"Plays in Frame.io" and an outline Button "Open in Google Drive" or "Open in Frame.io" that opens the
-link in a new tab (`rel="noopener"`).
+in the panel it has no player, and so does a cut added as a link from any other host. In the
+player's place, the film box with "Plays in Google Drive", "Plays in Frame.io" or "Plays outside
+this page", and an outline Button "Open in Google Drive", "Open in Frame.io" or "Open link" that
+opens the link in a new tab (`rel="noopener"`).
 
 What still applies: comments, replies, resolve and reopen, the five filters, agency only comments,
 tagging, **Copy link** (with no time) and **Copy comments**. A comment on a linked cut can name a
@@ -5454,7 +5472,8 @@ time: the box has an optional Input "At (m:ss)", saved as `timecode:` with no fr
 shown as a plain time that doesn't seek. What doesn't apply: frame stepping, speed, loop, the safe
 zone, sound, full screen, drawing, markers and keyboard shortcuts. The panel says so in one line
 under the Button: "This cut plays in Google Drive, so comments here can name a time but can't pin a
-frame or a drawing."
+frame or a drawing.", with "Frame.io" or "outside this page" in place of "in Google Drive" as the
+host says.
 
 #### What the status flow adds
 
@@ -6148,14 +6167,15 @@ visible edge on a card. A Switch keeps the `role="switch"` and `data-state` attr
 | | post row, post tile, post arrow | `flex w-full max-w-full gap-2 overflow-x-auto pb-1`, `relative size-16 shrink-0 overflow-hidden rounded-md border bg-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring aria-[current=true]:ring-2 aria-[current=true]:ring-ring` on a `button`, the Button outline icon classes plus `absolute top-1/2 -translate-y-1/2` and `left-2` or `right-2` |
 | | side panel, sheet body | `fixed inset-x-0 bottom-0 z-10 flex max-h-[85dvh] flex-col overflow-hidden rounded-t-xl border-t bg-background shadow-lg transition-[max-height] motion-reduce:transition-none data-[state=peek]:max-h-[min(20rem,50dvh)] md:static md:max-h-none md:rounded-none md:border-l md:border-t-0 md:shadow-none md:data-[state=peek]:max-h-none`, with `data-state` `peek` or `open`; its body `min-h-0 flex-1 overflow-y-auto` |
 | Review panel | root, header, body | the Sheet content with `p-0 gap-0` in place of `p-6 gap-4` and `sm:max-w-2xl lg:max-w-6xl` in place of `sm:max-w-md lg:max-w-lg`; `flex h-14 shrink-0 items-center gap-2 border-b px-2 sm:px-4`; `relative flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_380px]` |
-| | player column, player, video box | `flex min-w-0 flex-col gap-2 bg-muted p-2 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:p-4 lg:overflow-y-auto`; the part that goes full screen, `flex w-full flex-col gap-2 bg-muted`, with `fixed inset-0 z-[60] justify-center bg-background p-2` added while it fills the window; `relative mx-auto flex w-full items-center justify-center overflow-hidden rounded-xl bg-black` |
-| | video | `block h-auto w-auto max-w-full object-contain max-h-[calc(100dvh-18.5rem)] sm:max-h-[60vh] lg:max-h-[calc(100vh-13rem)]`, and `max-h-[calc(100dvh-8rem)]` in full screen |
-| | frame layer, safe zone, safe zone shade, safe zone outline | `pointer-events-none absolute`, placed over the video's frame with `left`, `top`, `width` and `height` in `style` (the one inline style the player uses, like the Factor bar's width, and never a color); `absolute inset-0`; `absolute bg-black/40`; `absolute inset-[14%_6%_35%_6%] border border-dashed border-white/80` |
-| | drawing surface, stroke, stroke under, pens | an `svg` with `viewBox="0 0 1 1"` and `preserveAspectRatio="none"`, `absolute inset-0 h-full w-full`, plus `pointer-events-auto touch-none cursor-crosshair` while drawing; each `path` `fill-none [stroke-linecap:round] [stroke-linejoin:round] [vector-effect:non-scaling-stroke]` with `stroke-[3px]` (Thin) or `stroke-[6px]` (Thick); under it the same path in `stroke-black/60` two pixels wider; the pens `stroke-red-500`, `stroke-amber-400`, `stroke-sky-400`, and their dots `bg-red-500`, `bg-amber-400`, `bg-sky-400` |
+| | player column, player, video box | `flex min-w-0 flex-col gap-2 bg-muted p-2 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:p-4 lg:overflow-y-auto`; the part that goes full screen, `flex w-full flex-col gap-2 bg-muted`, with `bg-background` in place of `bg-muted` in full screen, and `fixed inset-0 z-[60] justify-center p-2` added while it fills the window; `relative mx-auto flex w-full items-center justify-center overflow-hidden rounded-xl bg-black` |
+| | video | `block h-auto w-auto max-w-full object-contain max-h-[calc(100dvh-21rem-env(safe-area-inset-bottom))] sm:max-h-[60vh] lg:max-h-[calc(100vh-13rem)]`, and `max-h-[calc(100dvh-8rem)]` in full screen |
+| | frame layer, safe zone, safe zone shades, safe zone outline | `pointer-events-none absolute`, placed over the video's frame with `left`, `top`, `width` and `height` in `style`; `absolute inset-0`; four shades, each `absolute bg-black/40` plus top `inset-x-0 top-0 h-[14%]`, bottom `inset-x-0 bottom-0 h-[35%]`, left `left-0 top-[14%] bottom-[35%] w-[6%]` and right `right-0 top-[14%] bottom-[35%] w-[6%]`; `absolute inset-[14%_6%_35%_6%] border border-dashed border-white/80` |
+| | inline styles | The player's only inline styles set position and size, never a color, border or radius, like the Factor bar's width: the frame layer's `left`, `top`, `width` and `height`, the played bar's `width`, and the thumb's and each marker's `left` |
+| | drawing surface, stroke, stroke under, pens | an `svg` with `viewBox="0 0 1 1"` and `preserveAspectRatio="none"`, `absolute inset-0 h-full w-full`, plus `pointer-events-auto touch-pinch-zoom cursor-crosshair` while drawing, which stops a finger from scrolling but lets two fingers zoom; each `path` `fill-none [stroke-linecap:round] [stroke-linejoin:round] [vector-effect:non-scaling-stroke]` with `stroke-[3px]` (Thin) or `stroke-[6px]` (Thick); under it the same path in `stroke-black/60` with `stroke-[5px]` (Thin) or `stroke-[8px]` (Thick); the pens `stroke-red-500`, `stroke-amber-400`, `stroke-sky-400`, and their dots `bg-red-500`, `bg-amber-400`, `bg-sky-400` |
 | | scrubber, track, played, thumb | `relative h-11 w-full cursor-pointer touch-none select-none` on the `role="slider"` element; `absolute inset-x-0 bottom-3 h-1.5 rounded-full bg-primary/20`; `h-full rounded-full bg-primary`, as wide as the time played (a `width` in `style`); `absolute bottom-[0.4375rem] size-4 -translate-x-1/2 rounded-full border-2 border-primary bg-background shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring` |
-| | marker, open, resolved, agency only, count | `absolute top-0 flex h-6 w-6 -translate-x-1/2 items-start justify-center rounded-full focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring [@media(pointer:coarse)]:w-11`, holding a dot: `size-2.5 rounded-full bg-primary`; `size-2.5 rounded-full bg-muted-foreground/50`; `size-2.5 rounded-full border-2 border-primary bg-background`; `flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground` |
+| | markers row, marker, open, resolved, agency only, count | `relative h-5 w-full [@media(pointer:coarse)]:h-11`, the scrubber's sibling just above it, tall enough on touch for the 44px markers; `absolute bottom-0 flex h-5 w-6 -translate-x-1/2 items-end justify-center rounded-full focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring [@media(pointer:coarse)]:w-11`, holding a dot: `size-2.5 rounded-full bg-primary`; `size-2.5 rounded-full bg-muted-foreground/50`; `size-2.5 rounded-full border-2 border-primary bg-background`; `flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground` |
 | | controls, toggle pressed, time | `flex flex-wrap items-center justify-center gap-1`, the Buttons ghost icon, and Speed a Select trigger with `w-[4.5rem]` in place of `w-full`; `aria-[pressed=true]:bg-accent aria-[pressed=true]:text-accent-foreground`; `text-xs tabular-nums text-muted-foreground` |
-| | side column | the Viewer side panel classes with `sm:` in place of `md:`, `data-[state=peek]:max-h-[calc(5.5rem+env(safe-area-inset-bottom))]` in place of its peek height, and `lg:border-l lg:overflow-y-auto` added; its body `min-h-0 flex-1 overflow-y-auto` |
+| | side column | the Viewer side panel classes with `sm:` in place of `md:`, `data-[state=peek]:max-h-[calc(5.5rem+env(safe-area-inset-bottom))]` in place of its peek height, and `lg:border-l lg:overflow-y-auto` added; its body `min-h-0 flex-1 overflow-y-auto`; its handle the Viewer's sheet handle with `sm:hidden` in place of `md:hidden` |
 | | sheet handle, decision block | `mx-auto flex min-h-11 w-24 shrink-0 items-center justify-center rounded-md md:hidden` on a `button`, holding `h-1.5 w-12 rounded-full bg-muted-foreground`; `sticky top-0 z-10 flex flex-col gap-2 border-b bg-background p-4` |
 
 Text sizes are Tailwind's: `text-xs` for captions, `text-sm` for body and labels, `text-lg` for
@@ -6660,8 +6680,8 @@ for creator decisions, `refused:` the refused sign offs, the refused fee approva
 | Frameworks | `agency/frameworks` | Agency; Claude | `framework-{slot}` (`{slot, code, name, use}`), one per variant slot 1 to 5, from `frameworks` in `campaign:{slug}-cas` or the defaults |
 | Brief imports | `agency/brief-imports/{key}`, `{key}` from the source (**1d**, **Master Brief**, **Importing a brief**, **Repeatable mapping**) | Agency; Claude for an import in the chat | Plain data: `mapping:` Claude's answer in the data block's shape, before the checks, which run again at every preview, `source:` (`{label, url, kind, file}`), `at:`, `by:`, or `sameAs:` the key of the stored mapping for a `text-` key that points at one. Split past 200 KiB as a version is |
 | Brief versions | `agency/brief-versions/{doc}/{id}`, `{doc}` naming the document it saves: `round-r{round}`, `concept-{lane}-r{round}` or `variants-{lane}-r{round}` | Agency; Claude for `original` | Plain data (**Brief versions and Reset to original**): `kind:` (original, locked, before reset, before restore, before import, before start), `at:`, `by:`, `byName:`, `covers:` (the whole brief, or the concept), `fields:` the document's keys and stamps at that moment, `part:` and `parts:` when one version is split |
-| Brief comments, cut comments | `comments/{id}/items/{comment}` | Each person, their own | `{id}` is the writer's own id (`user.id()`), the `{self}` the rules check, so the path names the author. `on:` (`brief-{lane}-r{round}`, `brief-overview-r{round}` or `cut-{cut}-v{version}`), `part:` on a brief (the anchor's id, **1d**, **Master Brief**, **Comments and sign off**; empty for a concept as a whole), `text`, `replyTo:` (the thread's first comment), on a cut `timecode:` (seconds into the video, to three decimals; empty for a general comment and on a reply), `frame:` (the frame number at the version's `fps:`, left out when it isn't known) and `drawing:` (`{strokes: [{pen, size, points}]}`, `pen` red, yellow or blue, `size` thin or thick, `points` a list of `[x, y]` pairs from 0 to 1 across and down the video's frame, to three decimals; at most 50 strokes and 4,000 points; left out when there is none) (**1d**, **Content Review**, **Comments on a cut**, **Drawing on the frame**), `resolved` (on a thread's first comment), `deleted` (true once its author deleted it, and `text` then written as an empty string, so the words leave the data), `editedAt:` (the last time its author changed `text`), `createdAt:` |
-| Comment writers | `comments/{id}` | Each person, their own | `lastAt:` the time of their newest comment, written with each one, so the page can find every writer's items (**Live updates**) |
+| Brief comments, cut comments | `comments/{id}/items/{comment}` | Each person, their own | `{id}` is the writer's own id (`user.id()`), the `{self}` the rules check, so the path names the author. `on:` (`brief-{lane}-r{round}`, `brief-overview-r{round}` or `cut-{cut}-v{version}`), `part:` on a brief (the anchor's id, **1d**, **Master Brief**, **Comments and sign off**; empty for a concept as a whole), `text`, `replyTo:` (the thread's first comment), on a cut `timecode:` (seconds into the video, to three decimals; empty for a general comment and on a reply), `frame:` (the frame number at the version's `fps:`, left out when it isn't known) and `drawing:` (`{strokes: [{pen, size, points}]}`, `pen` red, yellow or blue, `size` thin or thick, `points` a list of `[x, y]` pairs from 0 to 1 across and down the video's frame, to three decimals; at most 50 strokes and 4,000 points; left out when there is none) (**1d**, **Content Review**, **Comments on a cut**, **Drawing on the frame**), `resolved` (on a thread's first comment), `deleted` (true once its author deleted it, and `text` then written as an empty string and `drawing:`, `timecode:` and `frame:` removed, so the words and the drawing leave the data), `editedAt:` (the last time its author changed `text`), `createdAt:` |
+| Comment writers | `comments/{id}` | Each person, their own | `lastAt:` the time of their newest comment, written with each one, so the page can find every writer's items (**Live updates**). An agency only comment or reply never writes it, so the client's data never shows when Aspire wrote one; editors find those through `agency/comments/items` |
 | Agency only comments | `agency/comments/items/{comment}` | Agency | The same fields, kept from the client. Every reply to an agency only thread is kept here too, with `replyTo:` its first comment, and no reply here ever answers a thread kept under `comments` (**1d**, **Content Review**, **Agency only comments on a cut**) |
 | Reviews | `reviews/cut-{cut}`, `{cut}` being `{net}-{handle}-r{round}-{variant}` | Agency | `creator:` (`{net}-{handle}`), `round:`, `lane:`, `variant:` (1 to 5), `title`, `check-{id}` (one review checklist item each, `value` true or false) |
 | Review versions | `reviews/cut-{cut}/versions/v{version}` | Agency | `kind:` (`upload`, `drive`, `frameio` or `link`), `asset:` (the upload's asset id, shown from `"/_blob/" + asset`; empty for a link), `link` (the address, for a link; for a version from before, the cut's link or file), `name:`, `type:` and `size:` (the uploaded file's own name, type and bytes), `notes`, `addedAt:`, `addedBy:`, `sentAt:` and `sentBy:` (written once by **Send to {brand}**; empty while the version is in Aspire QA), and for an upload `fps:` (the frame rate), `fpsFrom:` (`file` when read from the file as it was added, `playback` when an Editor's player timed it), `fpsVariable:` (true when the file's frames take different times), `width:`, `height:` and `duration:` (from the video's own metadata) (**1d**, **Content Review**, **The player**, **Frame rate**). An Editor's page writes the `playback` fields once, only while `fps:` is empty. A version from before with a `link` and no `kind:` reads as a link, and one with no `sentAt:` as in Aspire QA |
@@ -6975,7 +6995,7 @@ the write.
 marks, collapsed sections, the remembered round) is private to them, even from Claude, so logging
 it in shared data would publish it; it never logs. Nor do the log's own writes (entries,
 `lastAt`, leases), a decision writer's `lastAt`, an Editor's marker under `editors`, Claude's `sides/campaign`, a sign off's copy documents (the sign off
-logs once), `agency/edit-check`, `agency/tag-delivery`, a file's scan state (`agency/files`), a write the rules refused (the field shows "Not saved"),
+logs once), `agency/edit-check`, `agency/tag-delivery`, a file's scan state (`agency/files`), the frame rate an Editor's player saves on a review version (**1d**, **Content Review**, **Frame rate**), a write the rules refused (the field shows "Not saved"),
 or anything in **Preview as client**, which never writes. An **Export** writes nothing, so it
 never logs either.
 
