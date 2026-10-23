@@ -3334,7 +3334,8 @@ writes in it follows **Who sees what** and **What the client can write**, as on 
 - **Hash links.** `#selection/r{n}/{net}-{handle}/view` opens the viewer on that creator at their
   first post, `#selection/r{n}/{net}-{handle}/view/{post}` at one post (`{post}` being the post's
   Atlas id), `#selection/r{n}/{net}-{handle}/notes` at **Notes**, and
-  `#selection/r{n}/{net}-{handle}/notes/{note}` at one note, open and in view. A link opened from
+  `#selection/r{n}/{net}-{handle}/notes/{note}` at one note, open and in view (`{note}` being the
+  note's own id, the `{id}` in its `note-{id}` key, or `notes` for a note kept by a page from before). A link opened from
   outside steps through the pool as the toolbar leaves it. Opening the viewer adds one entry to
   the browser's history; moving between creators and posts replaces it, so Back closes the viewer.
 - **Closing.** The top bar's ghost icon Button with the Lucide `x` icon, labelled "Close viewer",
@@ -3555,6 +3556,9 @@ when, so the thread is its history.
   agency, with the tag picker (**Tagging**) and a default Button size sm "Add note". On **All
   rounds** the thread is the open round's, and earlier rounds' notes for the creator sit under a
   Collapsible "Earlier rounds", read only.
+- **A creator not sent yet** has no Notes thread and no box for it: anything written there would
+  sit in `edits`, which the client reads, and name a creator they were never sent. The agency sees
+  only the Aspire notes, with the line "Send @{handle} to {brand} to write a note they'll see."
 - **Aspire notes**, for the agency only, under a dashed rule headed "Agency only": the agency's
   notes on the creator, every round, newest first, with each note's round as a soft Badge.
   Description: "Only Aspire sees these." Kept in `agency/creator-{net}-{handle}` as `note-{id}`
@@ -4632,9 +4636,9 @@ visible edge on a card. A Switch keeps the `role="switch"` and `data-state` attr
 | | content | the Card content, with `data-state` and `hidden` while closed |
 | List row | | `flex w-full min-w-0 items-start gap-3 rounded-md p-2 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring`, on a `button` |
 | Viewer | root, top bar, body | `fixed inset-0 z-50 flex flex-col bg-background`, `flex h-14 shrink-0 items-center gap-2 border-b px-2 sm:px-4`, `relative flex min-h-0 flex-1 flex-col md:grid md:grid-cols-[minmax(0,1fr)_360px] lg:grid-cols-[minmax(0,1fr)_420px]` |
-| | post strip, media box, media cap | `flex min-h-0 flex-1 flex-col items-center gap-3 overflow-y-auto bg-muted p-2 pb-[20rem] md:p-6`, `relative flex w-full items-center justify-center overflow-hidden rounded-xl`, on the `img` or `video` itself: `block h-auto w-auto max-w-full object-contain max-h-[calc(100dvh-3.5rem-20rem)] md:max-h-[calc(100vh-14rem)]` |
+| | post strip, media box, media cap | `flex min-h-0 flex-1 flex-col items-center gap-3 overflow-y-auto bg-muted p-2 pb-[min(20rem,50dvh)] md:p-6`, `relative flex w-full items-center justify-center overflow-hidden rounded-xl`, on the `img` or `video` itself: `block h-auto w-auto max-w-full object-contain max-h-[calc(100dvh-3.5rem-min(20rem,50dvh))] md:max-h-[calc(100vh-14rem)]` |
 | | post row, post tile, post arrow | `flex w-full max-w-full gap-2 overflow-x-auto pb-1`, `relative size-16 shrink-0 overflow-hidden rounded-md border bg-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring aria-[current=true]:ring-2 aria-[current=true]:ring-ring` on a `button`, the Button outline icon classes plus `absolute top-1/2 -translate-y-1/2` and `left-2` or `right-2` |
-| | side panel, sheet body | `fixed inset-x-0 bottom-0 z-10 flex max-h-[85dvh] flex-col overflow-hidden rounded-t-xl border-t bg-background shadow-lg transition-[max-height] motion-reduce:transition-none data-[state=peek]:max-h-[20rem] md:static md:max-h-none md:rounded-none md:border-l md:border-t-0 md:shadow-none md:data-[state=peek]:max-h-none`, with `data-state` `peek` or `open`; its body `min-h-0 flex-1 overflow-y-auto` |
+| | side panel, sheet body | `fixed inset-x-0 bottom-0 z-10 flex max-h-[85dvh] flex-col overflow-hidden rounded-t-xl border-t bg-background shadow-lg transition-[max-height] motion-reduce:transition-none data-[state=peek]:max-h-[min(20rem,50dvh)] md:static md:max-h-none md:rounded-none md:border-l md:border-t-0 md:shadow-none md:data-[state=peek]:max-h-none`, with `data-state` `peek` or `open`; its body `min-h-0 flex-1 overflow-y-auto` |
 | | sheet handle, decision block | `mx-auto flex min-h-11 w-24 shrink-0 items-center justify-center rounded-md md:hidden` on a `button`, holding `h-1.5 w-12 rounded-full bg-muted-foreground`; `sticky top-0 z-10 flex flex-col gap-2 border-b bg-background p-4` |
 
 Text sizes are Tailwind's: `text-xs` for captions, `text-sm` for body and labels, `text-lg` for
@@ -4841,7 +4845,8 @@ prefixes.
     partnership mark has its words in the caption; each post's image is in the page once, not
     once per place it shows; the client, **Preview as client** and the page itself hold no Aspire
     note, rate, term, contact detail or agency score; a client note shows Edit and Remove only to
-    its writer; an edited note's **Show history** lists its earlier text; and Back closes the
+    its writer; a creator not sent yet has no Notes thread or box, only the Aspire notes; on a 667
+    by 375 phone held sideways the post still shows above the peeked sheet; an edited note's **Show history** lists its earlier text; and Back closes the
     viewer on the list where it was.
 
 ## 1e. Page data: what the page keeps and how it is read back
@@ -5037,7 +5042,7 @@ for creator decisions, `refused:` the refused sign offs and the refused decision
 | Own sign offs | `data/users/{id}/signoffs` | Each person, their own | `items:` `{itemId: at}`, the sign off items this person made, which their page checks the shared ones under their id against |
 | Creator changes call | `client/changes-{net}-{handle}-r{round}` | Client | `approved`, `notes` |
 | Review status | `client/cut-{cut}-v{version}` | Client | `status` (approved, changes requested, or open after Undo approval) |
-| Notes | `notes` on the fee approval and changed brief documents above; on a creator, `note-{id}` keys: the client's in `client/creator-{net}-{handle}-r{round}`, Aspire's for {brand} in `edits/creator-{net}-{handle}-r{round}`, and the Aspire notes in `agency/creator-{net}-{handle}` | Client; agency | A stamp each. A creator's note is `{text, createdAt}`, with `round` too in `agency`, and `text` `null` once removed. A note kept as one `notes` stamp by a page from before is edited or removed through that same `notes` key. A page from before kept one `notes` stamp in `agency/creator-{net}-{handle}`: it reads as one Aspire note |
+| Notes | `notes` on the fee approval and changed brief documents above; on a creator, `note-{id}` keys, where `{id}` is a new random id the page makes for each note, never the writer's id, so each note is its own key and its tags' `on` is unique: the client's in `client/creator-{net}-{handle}-r{round}`, Aspire's for {brand} in `edits/creator-{net}-{handle}-r{round}`, and the Aspire notes in `agency/creator-{net}-{handle}` | Client; agency | A stamp each. A creator's note is `{text, createdAt}`, with `round` too in `agency`, and `text` `null` once removed. A note kept as one `notes` stamp by a page from before is edited or removed through that same `notes` key. A page from before kept one `notes` stamp in `agency/creator-{net}-{handle}`: it reads as one Aspire note |
 | Scoring weights | `agency/match-score` | Agency; Claude for `match:` | `match:` plain data Claude writes at each publish, a copy of `match` in `campaign:{slug}-cas` (weights and `tuned`), so the page can apply the per factor rule and show "tuned {date}" without calling Atlas; one stamp per factor, `weight-performance`, `weight-brief-fit`, `weight-paid-history`, `weight-budget`, `weight-content-reach` (**1d**, **Creator Selection**, **Match score tuning**), and `stats:` the tuning panel's figures |
 | Match scores | `scores/{net}-{handle}-r{round}`, for each creator sent to the client | Claude at publish; the Editor's page when it re-scores | Plain data, written whole with a `set`: the client's result, which every view of the client's reads (**1d**, **Creator Selection**, **The match score**): `score:` (0 to 100, without Budget vs target, or `null` for not scored yet), `band:` (strong, good, possible, weak, conflict), `concept:` and `persona:` it was scored for, `factors:` `{performance, briefFit, paidHistory, contentReach}`, each `{value, level, inputs, without}` with `value` out of 100, `level` strong, middle, weak or none ranked over the creators sent to the client, `inputs` the plain words the row shows and `without` the inputs left out; `conflict:` the competitor the bio names, or `null`; `pastDeals:` the competitors in past paid deals; `watch:` the Watch line; `scoredAt:` and `cause:` (`publish`, or `updated by Aspire`). Nothing about price, no weight and nothing about creators not sent is in it |
 | Match scores, agency only | `agency/scores-r{round}` | Claude at publish; the Editor's page when it re-scores | Plain data, one key per pool creator, `{net}-{handle}`, sent or not: `{score, client, exact, budget, ratio, levels, watch, briefHits, personas, inputs, weights, scoredAt, clientScoredAt, scoredBy, cause}`, where `score` is the agency's score, `client` the client's result for a creator not sent yet (for a sent creator the page reads it from `scores`, so it is kept in one place), `exact` the five factor values unrounded, `budget` the Budget vs target value, `ratio` expected cost over the target rate (or `null` and why), `levels` every factor's level over the round's whole pool, `watch` the agency's Watch line, `briefHits` the keyword and city matches per live concept in the round with where each was found, `personas` Claude's persona pick per live concept, `inputs` the stored inputs the page re-scores from (the raw figures, expected cost, target rate, vetting's partners value when it applied, and `dormant`, the dormant account cap as decided at publish, which the page applies as stored), `weights` the weights used, `clientScoredAt` the `scoredAt` of the creator's `scores` document after the last write, `scoredBy` `claude` or the Editor's id, and `cause` the publish or the edit that re-scored it. A creator not sent yet has their whole score here and in `agency/pool`, never under `scores` |
@@ -5401,7 +5406,7 @@ writes is their own read and cleared marks.
 ```json
 {"type": "tag", "tab": "selection", "creator": "ig-a", "who": "<writer id>", "verb": "tagged",
  "text": "@Client can you look at her audience split before Friday?", "at": "2026-11-04T15:02:11Z",
- "asset": "", "anchor": "#selection/r2/ig-a/notes", "round": 2, "recipient": {"side": "client"}}
+ "asset": "", "anchor": "#selection/r2/ig-a/notes/n8f3k2", "round": 2, "recipient": {"side": "client"}}
 ```
 
 | Field | What it holds |

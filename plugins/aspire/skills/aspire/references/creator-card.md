@@ -16,7 +16,7 @@ The one larger view, a single creator's full profile page, embeds this same card
 | Agents (brief, discovery, account analyst, content review) | Inside the agent's published page | Hidden |
 | No widget tool, or the call fails | The Markdown fallback below | n/a |
 | One creator's full profile or portfolio view | Published page, the card at full width with the evidence sections below it (`creator-profile.md`) | Hidden |
-| The CAS campaign page (`cas-campaign.md`, **1d**) | Published page, page profile, one card per creator, with the concept as the first flow chip and the "Hook post" and "Paid partnership" marks on its thumbnails; the same card, without thumbnails, heads the creator viewer's **Profile** (`cas-campaign.md`, **Creator Selection**, **The creator viewer**) | Hidden |
+| The CAS campaign page (`cas-campaign.md`, **1d**) | Published page, page profile, one card per creator, with the concept as the first flow chip and the "Hook post" and "Paid partnership" marks on its thumbnails; the same card, without thumbnails, sits in the creator viewer's **Profile**, after the match and the concept (`cas-campaign.md`, **Creator Selection**, **The creator viewer**) | Hidden |
 
 Agents never call `show_widget`; the main thread can. When an agent returns a creator the user
 should see in chat, the main thread renders the card from the agent's numbers.
