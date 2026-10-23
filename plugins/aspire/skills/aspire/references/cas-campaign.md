@@ -458,7 +458,7 @@ steps, and the later rounds' default `plan`, **Round steps**); one `roster` find
 creator for round {n+1}, copied from their round {n} row
 with `returning` true, `fromRound` {n}, `source` carried, `offer.target` set to the round {n}
 `agreed`, and `rate`, `agreed`, `counter`, `briefState`, `shipping`, `shipDate`, `contract`, `payment`,
-`rates`, `footage`, `yourCall` and `waitingOn` cleared. `contact`, `name` and `details` carry, so the
+`rates`, `footage`, `variantPlan`, `yourCall` and `waitingOn` cleared. `contact`, `name` and `details` carry, so the
 creator's contact details and address show in the new round without retyping; only
 `details.status`, `pickup`, `visitDate`, `product`, `options` and `availability` are cleared, so a
 pickup never carries and a returning creator never starts the round at Product delivered, since the round's details
@@ -1045,7 +1045,9 @@ the client's calls, each named with who made it. The `send-` and `reopen-` stamp
   A creator's variant plan overrides go on the same finding as `variantPlan`, the whole list for
   the round as the page holds it, a `null` stamp leaving its field out, named one line per change
   ("@{handle}: V2 hook H3 in place of the brief's H1, by {name}"). An override past the creator's
-  variants for the round, or made for a concept that isn't theirs, is dropped and named.
+  variants for the round is dropped and named. One made for a concept that isn't theirs now is
+  left out of `variantPlan` and named, and its page stamp stays as it is, listed on the card as
+  "Made for {concept}" until an Editor clears it.
 - **Match score weights.** The weights an Editor applied on the page (**1d**, **Creator
   Selection**, **Match score tuning**) are saved to Atlas only here, in the chat, so discovery and
   vetting score with the same weights. A `weight-*` stamp on `agency/match-score` counts when it
@@ -1532,7 +1534,7 @@ only is marked so.
 | Ad Performance | Headline numbers | `performance-headline` | "Spend {s} · {p} purchases · ROAS {r}" | Standard | Closed |
 | Ad Performance | Weekly spend and return | `performance-weekly` | "{w} weeks in market · best week {date}" | Standard | Closed |
 | Ad Performance | Variants ranked | `performance-variants` | "{w} winning · {t} testing · {r} to retire or refresh" | Standard | Closed |
-| Ad Performance | Compare by framework, hook, CTA, concept, persona, creator and tier | `performance-breakdowns` | "Best {dimension}: {value} at {x} per sale" | Full | Closed |
+| Ad Performance | Compare by framework, hook, CTA (those three for the agency only), concept, persona, creator and tier | `performance-breakdowns` | "Best {dimension}: {value} at {x} per sale" | Full | Closed |
 | Ad Performance | Who watched | `performance-audience` | "Top audience: {segment}" | Full | Closed |
 | Ad Performance | Next round's brief | `performance-next` | "{n} changes for round {n+1}", or "Nothing written yet." | Standard | Closed |
 
@@ -1681,7 +1683,7 @@ Ad Performance:
 | See weekly spend and return | Ad Performance, then **Weekly spend and return** | 2 |
 | See every variant ranked with its status | Ad Performance, then **Variants ranked** | 2 |
 | Flag variants to retire or refresh | Ad Performance, then **Variants ranked** | 2 |
-| Compare by framework, hook, CTA, concept and persona | Ad Performance, then **Compare** | 2 |
+| Compare by framework, hook, CTA (agency only), concept and persona | Ad Performance, then **Compare** | 2 |
 | Compare by creator and tier | Ad Performance, then **Compare** | 2 |
 | See who watched | Ad Performance, then **Who watched** | 2 |
 | Write what changes in next round's brief | Ad Performance, then **Next round's brief** | 2 |
@@ -4635,7 +4637,8 @@ A link Button "Open in the brief" goes to `#brief/r{n}/{lane}`. Both sides read 
 the client reads the brief. An edit to a hook, a CTA or a selling point in the brief shows on
 every card on that concept the moment it is saved, with nothing to republish. A part the brief
 has removed doesn't show here; a part still blank in the brief shows as its bracketed blank. A
-creator with no live concept shows the warning Badge "Needs a concept" and no part of the brief.
+creator with no live concept shows the agency the warning Badge "Needs a concept"; the client sees
+no part of the brief for them.
 
 **The variant plan, agency only.** Under a dashed rule headed "Agency only", a Table of V1 to
 V{v}, {v} being the program terms' variants per creator (**Variants per creator**), at most 5.
@@ -4665,10 +4668,11 @@ variant stops following. A hook is referenced by its number, so an override that
 shows H3's current line: editing H3 in the brief updates that card too. What an override stops is
 the brief's choice of which hook, CTA, framework or length the variant uses.
 
-**Overriding.** Each of the four cells is a Select (or the Input for Length) whose first option is
-the brief's own value, "Brief: H1 Question". Picking anything else saves an override; picking the
-brief's option, or the ghost Button "Use the brief's" beside an overridden cell, clears it by
-writing the stamp with `value` `null`. An overridden cell shows the warning Badge "Override" with
+**Overriding.** Framework, Hook and CTA are Selects whose first option is the brief's own value,
+"Brief: H1 Question". Picking anything else saves an override; picking the brief's option clears
+it. Length is an Input whose placeholder is the brief's length: typing other text saves an
+override, and emptying it, or typing the brief's own text, clears it. The ghost Button "Use the
+brief's" beside an overridden cell clears it too. Clearing writes the stamp with `value` `null`. An overridden cell shows the warning Badge "Override" with
 a Tooltip "The brief says {value}. Changed by {name} {time}." and its source tag (**Where each
 value came from**). VO, B-roll and the note aren't overridden per creator: they follow the brief's
 V{n}, shown read only under the row ("VO and B-roll follow the brief's V{n}") with "Open in the
@@ -4681,8 +4685,8 @@ stamp whose `value` is `null`, means the field follows the brief.
 
 **At most 5 variants.** The Table has exactly {v} rows and no way to add one. A brief plan longer
 than {v} applies only its first {v} variants to the creator. An override for a variant past {v}
-or past 5 is never shown or read, and **Pulling decisions** drops it and names it, as it drops a
-cut past the limit.
+or past 5 is never shown or read, and **Pulling decisions** drops it and names it (**Creator
+profiles and per round edits**).
 
 **When something changes under the plan:**
 
@@ -4693,7 +4697,7 @@ cut past the limit.
 | A hook or CTA removed from the brief (its stamp `null`), while an override or the brief's plan names it | The cell shows the number struck through with a warning Badge "Broken", "H3 was removed from the brief", and the row's From reads "Broken". It never falls back to another hook or CTA, and Content Review and Ad Performance show the same Badge. For the agency the card's header adds a warning Badge "Plan broken" until it is fixed |
 | A framework renamed or changed in **Frameworks** | Nothing: a variant keeps the code and name it was given, as the brief's plan does (**Frameworks**) |
 | The creator's concept changed (here or on **Creator Selection**) | The Select first opens a Dialog when the creator has overrides: "Change @{handle} to {concept}? Their {k} variant overrides were made for {old concept} and are cleared." Confirming writes the concept, the persona stamp as `null` (as **The match score** says), and a `null` stamp for each override. The plan then follows the new concept's brief. An override whose `lane` isn't the current concept (a concept moved by a pull, say) is never applied: it shows under the Table as "Made for {concept}", with "Clear", until cleared |
-| The concept removed or deferred | Can't happen while the creator is on it: **Remove concept** and **Defer to next round** are disabled while any approved creator in the round is on it. A concept that leaves the round another way (a reset, a restored version) leaves the creator with "Needs a concept": the plan shows no rows, the overrides are kept and listed as "Made for {concept}", and nothing is read from them until the creator has a live concept again |
+| The concept removed or deferred | Can't happen while the creator is on it: **Remove concept** and **Defer to next round** are disabled while any approved creator in the round is on it. A concept that leaves the round another way (a reset, a restored version) moves the creator to the next live concept **The match score**'s rule finds, else to "Needs a concept", where the plan shows no rows. Either way the overrides are kept and listed as "Made for {concept}", and nothing is read from them until the creator is on that concept again or they are cleared |
 | The brief reset, restored, imported or rewritten by a brief run | The concept's plan changes as any brief edit does. Creator overrides are not part of the brief and are never reset, restored or nulled with it |
 | The round's brief signed off and locked (**Comments and sign off**, **The locked brief**) | The brief's text is a label for everyone, so no hook, CTA or selling point changes under a card. The variant plan stays editable for the agency, as the brief's own plan does, and so do the overrides: they are Aspire's cut plan, which the client didn't sign. The concept and persona stay editable on the live concepts |
 | A cut already in for the variant (**Content Review**) | Changing that variant's framework, hook or CTA first opens a Dialog: "V{n}'s cut was made with {old}. Change the plan anyway?" After the change the cut shows the agency a warning Badge "Plan changed since this cut", until a newer version is added |
@@ -4714,8 +4718,8 @@ holds them (**Who sees what**; **1e**, **Checking the roles**).
 **Reading a creator's variant.** Content Review and Ad Performance name a variant's framework, hook
 and CTA by reading them through this block's rule, never from a copy, so all three tabs agree:
 
-1. Find the creator's concept for the round: their `concept` edit, else the roster's `lane`, as
-   **The match score**'s **Concept and persona** resolves it.
+1. Find the creator's concept for the round, as **The match score**'s **Concept and persona**
+   resolves it.
 2. For variant {n} (from the cut's `variant:` in `reviews/cut-{cut}`), read each field by the three
    steps above.
 3. Show a hook or CTA as its number and type with its line from `briefs/{lane}-r{round}`, and a
@@ -4724,16 +4728,17 @@ and CTA by reading them through this block's rule, never from a copy, so all thr
    "Cut for {concept}" beside the labels.
 
 The read needs `agency`, so it runs only on an Editor's page. A client view of either tab shows no
-per variant hook, CTA or framework until that tab's own ticket decides to, and then only through a
-client readable copy Claude writes at publish with a new **Who sees what** row; the page never
-copies agency data into client readable data on its own. Ad Performance's ranked variants and its
+per variant hook, CTA or framework. Showing one would need a client readable copy Claude writes at
+publish and a new **Who sees what** row; the page never copies agency data into client readable
+data on its own. Ad Performance's ranked variants and its
 **Compare** by framework, hook and CTA group by these same read values.
 
 **In Atlas.** **Pulling decisions** writes the creator's overrides to their round's `roster`
 finding as `variantPlan` (**1a**), one entry per overridden variant, and names them in the picker
 ("@{handle}: V2 hook H3 in place of the brief's H1, by {name}"). At each publish Claude writes them
 back from `variantPlan` stamped `atlas`, leaving a newer page edit as it is (**1e**, **Claude's
-writes**). The brief agent writes the concept's plan, never a creator's override.
+writes**), and never nulls a page stamp `variantPlan` doesn't hold, so a "Made for {concept}"
+override stays until an Editor clears it. The brief agent writes the concept's plan, never a creator's override.
 
 #### Contract and rates
 
@@ -5199,7 +5204,7 @@ left blank, never filled with a dash.
 | Selected Creators | Variant plans (agency only) | Variant of each creator in the round, V1 to V{v} | Creator, Concept, Persona, Variant, Framework, Length, Hook ("H2 Demo first"), Hook line, CTA, CTA line, From (Brief, Override or Broken), Overridden fields, Changed by, Changed on |
 | Content Review | Variant status | Cut the queue shows now | Creator, Concept, Variant, Title, Version, Status, Approved by, Approved on, Checklist (ticked of total), Open comments |
 | Content Review | All comments | Comment or reply on the cuts the queue shows | Creator, Variant, Version, Timecode (text, m:ss), Seconds (a number, for sorting), Comment, Reply to (its first words), Who, Side (Client, Agency, or Agency only for the agency), When, Has drawing, Resolved |
-| Ad Performance | Every variant | Variant in **Variants ranked** | Creator, Concept, Variant, Framework, Hook, CTA, Spend, Purchases, Cost per sale, ROAS, 3 second hold, Status (winning, testing, retire or refresh) |
+| Ad Performance | Every variant | Variant in **Variants ranked** | Creator, Concept, Variant, Framework (agency only), Hook (agency only), CTA (agency only), Spend, Purchases, Cost per sale, ROAS, 3 second hold, Status (winning, testing, retire or refresh) |
 | Ad Performance | By creator | Creator in **Compare** | Creator, Tier, Variants, Spend, Purchases, Cost per sale, ROAS |
 | Ad Performance | By framework | Framework in **Compare** | Framework, Variants, Spend, Purchases, Cost per sale, ROAS |
 
@@ -6704,7 +6709,7 @@ document. Steps 3 and 4 run after every publish.
 1. List `agency`, its `comments/items` collection and one agency writer's
    `activity-{id}/days` collection with `as_level` `interact`: all must come back empty. Get `agency/budget`, `agency/files`, `agency/match-score`,
    `agency/scores-r{round}` for the open round, and one `agency/creator-{net}-{handle}-r{round}`
-   that holds variant plan overrides the same way: not found. These hold every figure
+   (one with variant plan overrides when any exist) the same way: not found. These hold every figure
    **Match score tuning** shows and every weight, so a client can't reach the panel's data.
    List `tags-agency`, and one tag writer's `tags-agency/{id}/items` when one exists, at
    `interact`: both empty. A client reading their own `tags-agency/{id}` can't be checked from the
