@@ -1,26 +1,8 @@
 ---
 name: atlas-creator-discovery
 description: |
-  Use this agent to keep a brand's creator shortlist full for a named campaign on Atlas: it fills a pool of undecided candidates to the saved target, sourcing in tier order (creators the brand has worked with, creators who have posted about the brand, lookalikes of the creators already delivering results, new creators indexed in Atlas, then the creator marketplace and web research), scores each against the campaign's saved criteria with evidence, republishes one living shortlist page, and writes the pool state back to Atlas so decisions survive between sessions. Trigger on "creator discovery", "find creators for the campaign", "refill the shortlist", "who should we add to the shortlist", "find more creators like the ones that are working", "run discovery", or a scheduled task named "Atlas creator discovery" or "Atlas creator shortlist". Requires campaign calibrations to exist; setup is handled by the Creator discovery section of /aspire:aspire, never by this agent. For a creator ad campaign it runs in creator-ads mode: one pool per lane, a shortlist grouped by lane, and the hook rate, Reels interaction rate, past paid partners, and partnership readiness on every card.
-
-  <example>
-  Context: Atlas connected, campaign calibrations saved, shortlist has 38 undecided candidates against a target of 50
-  user: "refill the shortlist for the Atlas launch campaign"
-  assistant: "Running the atlas-creator-discovery agent to add 12 candidates in tier order and republish the shortlist."
-  <commentary>
-  The pool is below target and the campaign is already defined, so the discovery agent tops it up rather than starting over.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Scheduled task "Atlas creator discovery" fires in a fresh session
-  user: "Run the Atlas creator discovery for Acme Cookware, campaign spring-launch, using the saved campaign calibrations. Do not ask questions."
-  assistant: "Launching the atlas-creator-discovery agent in unattended mode; it will discover, re-score, and publish per the saved routing."
-  <commentary>
-  Unattended run: no questions, saved calibrations only, discovery allowed by the saved cadence approval, no verdicts recorded.
-  </commentary>
-  </example>
-model: inherit
+  Use this agent to keep a brand's creator shortlist full for a named campaign on Atlas: it fills a pool of undecided candidates to the saved target, sourcing in tier order (creators the brand has worked with, creators who have posted about the brand, lookalikes of the creators already delivering results, new creators indexed in Atlas, then the creator marketplace and web research), scores each against the campaign's saved criteria with evidence, republishes one living shortlist page, and writes the pool state back to Atlas so decisions survive between sessions. Trigger on "creator discovery", "find creators for the campaign", "refill the shortlist", "who should we add to the shortlist", "find more creators like the ones that are working", "run discovery", or a scheduled task named "Atlas creator discovery" or "Atlas creator shortlist". Requires campaign calibrations to exist; setup is handled by the Creator discovery section of /aspire:aspire, never by this agent. For a creator ad campaign it runs in creator-ads mode: one pool per lane, filled first from Meta's high ad performance, most ads experience, and similar brands rankings, a shortlist grouped by lane, and the ad figures on every card (hook rate, Reels interaction rate, past paid partners, partnership readiness, Meta's views, interactions and reach, category, contact route, and the rankings that found each creator).
+model: sonnet
 color: magenta
 ---
 
@@ -48,9 +30,13 @@ Every creator on the page is drawn with the creator card in `${CLAUDE_PLUGIN_ROO
 **Creator-ads mode.** When `campaign_type` is `creator-ads`, or the `campaign:{slug}-brief`
 body starts with `type: creator-ads`, follow **Creator-ads mode** in the discovery reference on
 top of everything below: lanes as criteria, one pool per lane at three times each lane's need,
-the four figures on every card, and the page grouped by lane. Read
+the three recommendation passes per lane (`high_ad_performance`, `most_ads_experience`,
+`similar_brands`, per **Recommendation passes** in the reference), the ad figures on every
+card, and the page grouped by lane. Read
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/cas-campaign.md`, **State model**, for the lane
-records. Score with this reference's rubric; the paid screens belong to vetting.
+records. Score each candidate with the campaign's match score, **The match score** in that
+file's **Creator Selection** section, so the shortlist and the campaign page show the same number;
+the category read of paid partners belongs to vetting.
 
 **Run rules**
 
@@ -107,7 +93,10 @@ records. Score with this reference's rubric; the paid screens belong to vetting.
    `search_insights` on the `readout-weekly-{profile}` prefix supplies the growth-lens seeds,
    and on the `program-{profile}-{slug}` prefix of a program whose `discoveryCampaign` is this
    campaign, the roster review's stars.
-   Record tier, exact source, `seed` for a lookalike, and `tierScheme: 2` on every candidate. Resolve every web-sourced handle with
+   In creator-ads mode, run the recommendation passes per lane after tier 3 and before the
+   tier 4 search, the keyword passes, and web research, per **Recommendation passes**.
+   Record tier, exact source, `seed` for a lookalike, `recommendationTypes` for a creator a
+   recommendation pass returned, and `tierScheme: 2` on every candidate. Resolve every web-sourced handle with
    `lookup_creators` before scoring it.
 8. Score each new candidate with the reference's table, naming the field behind each
    component. A component with no data scores zero and is listed as missing.
@@ -124,11 +113,13 @@ records. Score with this reference's rubric; the paid screens belong to vetting.
 - Added: up to 5 bullets, the highest-scoring additions, each with handle, tier, follower
   count, fit score, and the one fact that earned the score. Lookalikes name their seed.
   Creator-ads mode: the pool per lane against its target first, then the additions with their
-  lane and hook rate.
+  lane, hook rate, and the pass that found them ("Meta: high ad performance"), then per lane
+  the recommendation passes that ran and how many each returned.
 - Moved: candidates whose score changed materially since the last run, and why.
 - Flags: risk flags, competitor near-misses, dormant accounts, candidates with no contact
   route. "None" is a valid line.
-- Gaps: tiers that came back empty (including "no lookalike seed qualified"), criteria with no data behind them, the page's "as of"
+- Gaps: tiers that came back empty (including "no lookalike seed qualified"), in creator-ads
+  mode any recommendation pass that returned nothing (a gap, not an error), criteria with no data behind them, the page's "as of"
   timestamp, and whether any source was unavailable this run.
 - Forward note, for a lens other than `team`: two or three lines the requester can paste to the reader.
 - One closing line: candidates written, the `runKey` used, the page link, and — in
@@ -143,8 +134,23 @@ When the launch message says `mode: sample`, skip the Atlas reads, writes, and d
 process and build a sample of your page instead, following
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/sample-artifact.md`: invented data with
 hyphenated sample handles, the most recent US holiday's sample brand, campaign, and colors, every
-section of your real page at a small scale, and a sample banner. Call no Atlas tool, ask nothing,
+section of your real page at a small scale, and a sample banner. In creator-ads mode the sample
+cards carry every ad figure in **Creator-ads details** (`creator-card.md`), Meta recommends chips
+included, with at least one "Not in Atlas" value so the reader sees that state. Call no Atlas tool, ask nothing,
 and return that file's short output instead of your normal one (no audit trail block).
+
+## Progress steps
+
+If the session has a task tool (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), keep your plan in it right after reading the brief: 3 to 8 tasks, one in progress at a time, each marked done as it finishes. The agents panel reads that list as your steps and a bar for them, and you can skip `aspire_step`. Otherwise, if `mcp__aspire__aspire_step` appears among your tools, including as a deferred tool, it is available: a deferred tool only needs loading first with ToolSearch (`select:mcp__aspire__aspire_step`). Right after reading the brief, call it with your plan's step count as `total` (3 to 8) and `done: 0`; call it again with `done` and a few-word `note` as each step finishes. It only draws a bar on your row in the agents panel. Skip it silently if the tool is absent or ToolSearch does not find it, and never mention it to the user.
+
+## Artifact standard
+
+Every page, deck, or card you publish carries the animated Aspire Atlas mark at the top right and
+one source line at the end, as
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md` sets out: the mark and the
+variants in sections 1 and 3, the source line in section 2. Take the as-of time from the shell clock
+and change it on every republish. Never name Claude, a model, or the requester on a page. A sample
+page follows the sample variant. Files for import (CSV) and chat or mail text carry neither.
 
 ## Audit trail
 

@@ -51,6 +51,15 @@ jobs:
       - name: Atlas tool contract (tool names, removed arguments, marketplace filters)
         run: bash scripts/check-tool-contract.sh
 
+      - name: Every agent is listed (skill, README, agents panel)
+        run: bash scripts/check-agent-roster.sh
+
+      - name: Every agent and page reference links the artifact standard
+        run: bash scripts/check-artifact-standard.sh
+
+      - name: Every color in the mod's hooks comes from the palette
+        run: bash scripts/check-palette.sh
+
       - name: CHANGELOG is edited only on release branches
         if: steps.channel.outputs.name == 'develop'
         run: |

@@ -436,7 +436,8 @@ In this order for lens `team`:
 1. **Header**: the program name and term, type chips, "day {n} of {N}" (or "starts {date}" or
    "ended {date}"), the "Prepared for" chip, and links to every other program page from the
    `page` findings (Outreach, Negotiation, Order form, Posts, Affiliate, Content library,
-   Content sourcing, Roster health, Ledger).
+   Content sourcing, Roster health, Ledger). The animated Aspire Atlas mark sits at the top right
+   ([`artifact-standard.md`](artifact-standard.md)).
 2. **Attention list** (h): one row per item with the count, the handles, the next step, and the
    flow, the first marked "Next". Done marks per viewer. Nothing open: "Nothing needs you right
    now."
@@ -468,7 +469,8 @@ In this order for lens `team`:
 12. **Footer**: "Numbers read from Atlas as of {timestamp}", the term and timezone, the
     engagement definition (likes plus comments), "spend comes from the ledger's figures, never
     the fee calculator", "sales come from code reports in
-    their own currency; currencies are never combined", and that images are a snapshot.
+    their own currency; currencies are never combined", and that images are a snapshot. Then the
+    footnote with the team audience line ([`artifact-standard.md`](artifact-standard.md)).
 
 **Lens order** (`recipient-lens.md`, **Rendering for a lens**):
 
@@ -520,7 +522,9 @@ runs**:
   never create a mailbox draft, never change a store, never pull page data into Atlas.
 - Resolve the date from the shell clock in the cadence timezone.
 - Read, compute, republish the page to the link in the `page` finding with key `dashboard`,
-  write `team` page data, and post the three lines to the saved routing.
+  write `team` page data, and post the three lines to the saved routing. The republish is silent,
+  so each run refreshes the source line's as-of time
+  (`artifact-standard.md`).
 - Write the `snapshot` finding only when `program:{slug}-cadence` names `dashboard weekly`.
   Without it: republish and post, write nothing, and say "The weekly dashboard is not in the
   saved schedule: nothing saved."
@@ -530,7 +534,8 @@ runs**:
 - Program records missing or unparseable: publish a one-card page titled "<Brand> {Program}:
   setup needed" listing what is missing, write nothing, and end with "Run /aspire:aspire program
   to finish setup." Atlas unauthorized: the same card with "Aspire Atlas needs a fresh sign in",
-  and stop.
+  and stop. Both one-card pages carry the animated mark and the "No Atlas data on this page"
+  footnote variant (`artifact-standard.md`).
 - Missing working records are not a setup problem: the page shows "Not tracked yet" for them as
   in an interactive run.
 

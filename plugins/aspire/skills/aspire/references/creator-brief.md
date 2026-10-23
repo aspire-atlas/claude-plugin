@@ -10,7 +10,7 @@ One self-contained HTML page, published with the Artifact tool. Sections in orde
 1. **Header.** Eyebrow with handle, network, "Content creation brief", target week (or the
    campaign name and window). Headline that names the strategy in one line. Meta row: owner,
    channel and follower count, creator count, prepared date, and the "Prepared for" chip
-   (`recipient-lens.md`). Standing-rule banner (red) when a red line makes the brief strategy
+   (`recipient-lens.md`), with the animated mark at the top right. Standing-rule banner (red) when a red line makes the brief strategy
    only.
 2. **Objective and audience.** KPI strip: 90 day goal from calibrations, engaged audience age
    band, top country share, gender split (from `instagram.account.audienceDemographics` on any
@@ -34,7 +34,7 @@ One self-contained HTML page, published with the Artifact tool. Sections in orde
    post days, 7 day readout.
 7. **Measurement.** Table: piece, primary metric, target, benchmark from the brand's own
    medians, secondary metric.
-8. **Footer.** Sources, date, the rate label, "costs are estimates from public view counts, not quotes", contact email note.
+8. **Footer.** Sources, date, the rate label, "costs are estimates from public view counts, not quotes", contact email note, then the artifact-standard footnote. The mark and the footnote follow [artifact-standard.md](artifact-standard.md).
 
 Design: token palette on `:root` with dark redefinitions under both the media query and
 `[data-theme="dark"]`. Fonts from Google Fonts with fallbacks (Instrument Sans display, IBM
@@ -75,36 +75,79 @@ phases instead of one week of three posts.
 ## Creator-ads mode (the CAS master brief)
 
 For a CAS campaign (`brief_mode` `creator-ads`, `cas-campaign.md`), the brief is one master brief
-per lane for the current round, not a weekly plan and not campaign phases. Editors cut the ads
+per lane for one round, not a weekly plan and not campaign phases. Editors cut the ads
 from it, so it must be complete enough to edit from.
 
 **Inputs from Atlas.** The lane records (`campaign:{slug}-lane-{lane}`), the campaign record
-(`-cas`: package, term, round), and the roster (`cas-campaign.md`, **Working state**): the
+(`-cas`: package and term), the round the main thread names (`cas-campaign.md`, **Rounds**),
+and the roster (`cas-campaign.md`, **Working state**): the
 creators approved at Gate 2 with their agreed fees. Creators and fees come from the roster,
 never from a new search, and fees are shown as agreed. Also read the hook log
 (`recordType` `hook` on the campaign's prefix) and the saved findings this reference already
 uses, in the order `hooks-and-ctas.md`, **Where recommendations come from**, gives.
 
+**The brief as it stands.** When the lane already has a brief this round (a re-run after the
+client's notes), or the round started from an earlier one, the main thread passes `current_brief`:
+the round's brief as the Master Brief holds it, in the data block's shape, as plain text. It wins
+over the lane record: the run keeps every part the notes don't ask to change, word for word,
+writes new hooks and CTAs where they are empty, and changes the rest only where the client's
+notes or a rule ask, saying which parts it changed. A hook or CTA with a type and no line was set
+by a change line from Ad Performance: write its line in that type. Follow the brief's change notes
+(`change-r{n}-{id}`, agency lines included) per `hooks-and-ctas.md`, **Where recommendations come
+from**, and leave them out of the data block, since they aren't parts of the brief.
+
+**Once per round, for every lane:**
+
+- **Summary**: two or three sentences on what the round's ads must do, from the campaign brief
+  and the lanes.
+- **Tone of voice**: how every creator sounds, from `brand:summary`, the saved guidelines and the
+  market signal language; a bracketed blank when none of them says.
+- The next three come from brand records, not from a lane, so they are written once for the
+  round, never per lane.
+- **Disclosure treatment**: the paid partnership label, plus anything `review:disclosure` says
+  when it exists (read it for disclosure only).
+- **Do's and don'ts**, one line each: from saved `red_line` and `guideline` records (never `review:`, `vetting:`, `program:` or `orchestrator:` keys,
+  and never the campaign's own `-cas`, `-lane-*`, `-terms` or `-decision-defaults` records).
+  When the client's own creator brief guardrails are saved (a `guideline` whose body names
+  them), mirror them line for line.
+- **Delivered file naming**: `[Brand] - [Creator] - Clip [#]`, stated once per brief.
+
 **Per lane, one brief with these fields:**
 
-- **Concept and persona**, from the lane record, in its own words.
+- **Concept**: the name, and the positioning line (the concept in one sentence), from the lane
+  record, in its own words.
+- **Personas**: the lane's persona, split into one line per persona when it names several.
+- **Conversion trigger** and **framework**, from the lane record. The framework is the one the
+  hero (V1) is cut to. Match the lane's framework text, by code or name, ignoring case, to the
+  campaign's frameworks (below); with no match it is `{"code": "", "name": "<the lane's text>"}`
+  and the page asks the agency to pick one.
+- **Story**: the arc a creator lives on camera, three to five sentences.
+- **Selling points**: three to five, one line each, only what `brand:summary`, a `guideline` or
+  the campaign brief supports.
+- **Hero beats**: problem, agitate and solve, one short paragraph each, named as the framework
+  names its three beats when it isn't problem, agitate, solve.
 - **3 hooks, 2 CTAs, 1 body.** Hooks and CTAs are written and recommended per
-  `hooks-and-ctas.md`: its sources, its patterns, its rules, and a reason under each one. The
-  body carries the beats between the hook and the CTA.
+  `hooks-and-ctas.md`: its sources, its patterns, its rules, and a reason under each one. Each
+  hook keeps its pattern, Said, Shown and Overlay; each CTA its type (direct or soft), action,
+  destination and moment. The body carries the beats between the hook and the CTA, with its
+  length in seconds.
 - **Beat structure**: hook, problem or setup, proof, payoff, CTA, with seconds per beat.
-- **10 to 15 B-roll shots**, each one line: what is filmed and which beat it serves.
+- **10 to 15 B-roll shots**, numbered B01 onward, each one line: what is filmed and which beat it
+  serves.
 - **Product and SKU**, from `brand:summary` and the campaign brief. Missing: a bracketed blank.
 - **CTA destinations**: where each CTA sends people. Missing: a bracketed blank, never a URL
   invented.
 - **Runtime per platform**: the clip lengths per network, from the lane or the campaign brief.
   None saved: a bracketed blank per network, and one line asking the CM to fill it.
-- **Disclosure treatment**: the paid partnership label, plus anything `review:disclosure` says
-  when it exists (read it for disclosure only).
-- **Do's and don'ts**: from saved `red_line` and `guideline` records (never `review:`, `vetting:`, `program:` or `orchestrator:` keys,
-  and never the campaign's own `-cas`, `-lane-*`, `-terms` or `-decision-defaults` records).
-  When the client's own creator brief guardrails are saved (a `guideline` whose body names
-  them), mirror them line for line.
-- **Delivered file naming**: `[Brand] - [Creator] - Clip [#]`, stated once per brief.
+- **Variant plan**: V1 to the package's variants per creator (at most 5). V1 takes the concept's
+  framework. V2 onward take the campaign's framework for their slot (`frameworks` in
+  `campaign:{slug}-cas`, else the defaults in `cas-campaign.md`, **1d**, **Master Brief**: V2 BAB,
+  V3 4Ps, V4 HSO, V5 SSS), unless that is the concept's framework already, in which case they
+  take the next slot's. Each variant:
+  its framework, length, which hook and CTA by number, the VO in a few lines, the B-roll shot numbers it uses,
+  and a one line note. V1 uses H1 and C1. When there are at least as many variants as hooks, every
+  hook is used by at least one variant, and every CTA when there are at least two. It is for the
+  editors: neither the client nor a creator ever sees it.
 - **Creators**: the lane's approved creators from the roster, as creator cards, each with the
   agreed fee and ship date.
 
@@ -119,17 +162,51 @@ brief, never the check:
    hook inside the first three seconds.
 3. The B-roll list is complete: 10 to 15 shots, every beat served by at least one.
 
-Show the result per lane on the page ("Coverage: 3 of 3 checks pass").
+Show the result per lane on the page ("Coverage: 3 of 3 checks pass"). The variant plan gets its
+own check, shown with the plan and never counted in the coverage result: every variant names a
+hook, a CTA and shots that exist, and its length holds its beats.
 
 **The hook log.** Follow `hooks-and-ctas.md`, **Limits**: read every hook and CTA ever briefed
 on the campaign, never reuse one, and append every new one as a `hook` finding.
 
 **The page.** One page per round, a section per lane with an anchor (`#lane-{lane}`), the
 coverage result at the top of each section. Title "<Brand> Creator Ad Brief: <Campaign>, round
-{n}", republished to the same path for that round. It stays the full brief editors cut from; the
-client approves the same briefs on the campaign page's Briefs tab (`cas-campaign.md`, **Gate
+{n}", republished to the same path for that round, carrying the data block below. It stays the full brief editors cut from; the
+client approves the same briefs on the campaign page's Master Brief tab (`cas-campaign.md`, **Gate
 4**), which the main thread builds from this page. Sections 2, 5 and 6 of **Page structure** drop out: the
 lanes set the audience, the roster replaces the shortlist, and the gates replace the timeline.
+
+**The data block.** The page carries the whole round's brief once more as data, so the campaign
+page loads it with nothing lost (`cas-campaign.md`, **1d**, **Master Brief**, **Loading the
+brief**, which maps every field above to a part of the page): one
+`<script type="application/json" id="cas-brief-data">` element, written with `json.dumps` and then
+every `<`, `>` and `&` replaced with `\u003c`, `\u003e` and `\u0026`, so no text in it (a quoted
+caption holding `</script>`, say) can end the element. JSON reads those back as the same
+characters. In this shape:
+
+```json
+{"schema": 1, "campaign": "{slug}", "round": 1, "version": 1, "title": "…", "summary": "…",
+ "tone": "…", "dos": ["…"], "donts": ["…"], "disclosure": "…", "fileNaming": "…", "notice": "",
+ "frameworks": [{"slot": 1, "code": "PAS", "name": "Problem, agitate, solve", "use": "…"}],
+ "concepts": [{"lane": "{lane}", "order": 1, "name": "…", "line": "…", "personas": ["…"],
+   "trigger": "…", "framework": {"code": "PAS", "name": "Problem, agitate, solve"},
+   "story": "…", "sellingPoints": ["…"], "problem": "…", "agitate": "…", "solve": "…",
+   "beats": [{"n": 1, "name": "Hook", "seconds": "0-3", "what": "…"}],
+   "hooks": [{"n": 1, "type": "question", "line": "…", "shown": "…", "overlay": "…", "why": "…"}],
+   "ctas": [{"n": 1, "type": "direct", "line": "…", "destination": "[destination]", "moment": "…", "why": "…"}],
+   "body": "…", "length": "30 seconds", "runtime": {"instagram": "…", "tiktok": "…"},
+   "broll": [{"n": 1, "shot": "…", "beat": "…"}],
+   "product": {"name": "…", "sku": "[SKU]"},
+   "coverage": {"passed": 3, "of": 3, "failed": []},
+   "variantCheck": {"passed": true, "failed": []},
+   "variants": [{"n": 1, "framework": "PAS", "length": "30 seconds", "hook": 1, "cta": 1,
+                 "vo": "…", "broll": [1, 4, 7], "note": "…"}]}]}
+```
+
+Text is plain, with a blank line between paragraphs and "- " or "1. " at the start of a list
+line; the page turns it into its own rich text. A bracketed blank stays a bracketed blank. The
+creators are not in the block: the page reads them from the roster. The block is data, never shown,
+and holds nothing the page itself doesn't show the agency.
 
 **Writes**, on the main thread's confirmation: a `brief` finding per lane (`locked: false`,
 `briefPage`, `version`), then a `hook` finding per new hook and CTA, all per
@@ -142,11 +219,18 @@ After the briefs are approved, a creator may reply with their own version (`cas-
 the round, and `revision`: the creator's handle and network, their concept, and their version as
 pasted. Then the agent compares, and does nothing else:
 
-1. Read the concept's newest locked `brief` finding and its page as the approved brief, and the
+1. Read the concept's newest locked `brief` finding as the approved brief, with its text as it
+   was signed off: the `locked` version saved when it was locked (`cas-campaign.md`, **1e**,
+   **Brief versions and Reset to original**), passed by the main thread, never the page data as
+   it is now, so an edit made after the lock is not taken as approved. Long text is compared as
+   plain text, after the same conversion the page uses (lists as lines), so formatting is never
+   a difference. Also read the
    creator's newest `brief-revision` when one exists (a second round compares against the
    approved brief, not the last revision).
-2. Compare field by field: each hook and CTA, the body, the beats and their seconds, each B-roll
-   shot, the product, the runtime per platform, the disclosure, and the do's and don'ts.
+2. Compare field by field: the positioning line, personas, trigger, story, selling points, the
+   hero beats, each hook and CTA, the body and its length, the beats and their seconds, each
+   B-roll shot, the product, the runtime per platform, the tone of voice, the disclosure, and the
+   do's and don'ts. The variant plan is the editors', never the creator's, so it is not compared.
 3. List each difference as one plain line: what changed, the approved text, the creator's text.
    For example "Hook B: 'Charged once Friday night, back Sunday dark' becomes 'One charge. Friday
    to Sunday.'", "Runtime: V2 45 seconds becomes 60 seconds", "B-roll 07, the trailhead sign:
@@ -235,16 +319,26 @@ fetched during the run.
     (0, 10000, 25000, 50000, 75000, 100000, 250000, 1000000) and `creatorMaxFollowers` (the
     same without 0), so round a follower band outward to the nearest allowed values;
     `creatorLatestPostActivity` (`last_7_days`, `last_30_days`, `last_90_days`),
-    `creatorInterests` (up to five), `creatorLanguage` (language codes), `recommendationType`
-    (`most_relevant_for_me`, `high_ad_performance`, `most_ads_experience`, `similar_brands`,
-    `similar_audience`, `interested_in_collaboration`), and the yes-only filters
-    `verifiedAccount`, `hasPublicContactEmail`, `hasPortfolio`, `featuredInPaidAds` (creators
-    already in partnership ads) and `excludeMessagedCreators` (leave out creators the brand has
-    already messaged).
+    `creatorInterests` (up to five), `creatorLanguage` (a list of ISO 639-1 codes from a closed
+    set of 24: `ar`, `as`, `bn`, `nl`, `en`, `fr`, `de`, `gu`, `hi`, `id`, `ja`, `kn`, `ko`,
+    `ml`, `mr`, `or`, `pt`, `pa`, `es`, `zh`, `ta`, `te`, `tr`, `ur`; send it only when the
+    criteria name a language in the set), `recommendationType` (`most_relevant_for_me`,
+    `high_ad_performance`, `most_ads_experience`, `similar_brands`, `similar_audience`,
+    `interested_in_collaboration`), and the yes-only filters `verifiedAccount`,
+    `hasPublicContactEmail`, `hasPortfolio`, `featuredInPaidAds` (creators already in
+    partnership ads) and `excludeMessagedCreators` (leave out creators the brand has already
+    messaged; best effort, so the campaign's own dedupe still decides). Send a yes-only filter
+    as `true` or not at all: `false` on `hasPortfolio` or `hasPublicContactEmail` is an inverse
+    filter that keeps only creators without one.
   - `keyword` is optional. Without one, every network in `networks` needs at least one filter
     of its own, so a keyword-less Instagram search sends `networks: ["instagram"]`.
+    `recommendationType` counts as that filter. `most_relevant_for_me` is Meta's default
+    ranking, the same set a call with no ranking returns. `most_ads_experience` can return no
+    creators for a brand; that is a valid result.
     `instagram.filters.similarToCreators` (one to five handles) finds lookalikes and is sent
     only without a keyword; the server rejects the two together.
+  - `recommendationType` combines with `keyword`, `creatorCountries` and the follower band.
+    Never send it with `similarToCreators`: the server accepts the pair and returns nothing.
   - TikTok filters are ranges and codes: `countryCodes` (defaults to `["US"]`, echoed in
     `jobs.tiktok.appliedDefaults`; all codes from one region: US alone; DE, ES, FR, GB, IT; or
     the rest). TikTok supports only US, DE, ES, FR, GB, IT, AE, AR, AU, BR, CA, CO, EG, ID,

@@ -167,7 +167,8 @@ container. Step numbers are a real sequence, so number them.
 1. **Header.** Eyebrow `DECISION RECORD · {FLOW} · {ROUND OR RUN DATE}`, headline "How the {work}
    was built", a two-sentence lede (what the work is and who it is for), and a meta row: brand
    and handles, date, what was produced, status ("Built", "Built · {n} decisions open"), and the
-   total time from request to finish.
+   total time from request to finish. The animated Aspire Atlas mark sits at the top right
+   ([`artifact-standard.md`](../artifact-standard.md)).
 2. **Timing.** The first `[start]` to the last `[end]` (or the last `[p]` when no `[end]` exists)
    as the headline duration, then where that time went, each as a duration and a share of the
    total:
@@ -206,7 +207,8 @@ container. Step numbers are a real sequence, so number them.
    known only as counts, a trail block that was missing, steps with no time recorded. Leave it
    out when there are none.
 10. **Footer.** "Recorded from this session on {date}." and the data-freshness line when numbers
-   came from Atlas.
+   came from Atlas. Then the source line
+   ([`artifact-standard.md`](../artifact-standard.md)); the lede already says who the audit is for.
 
 **Updates.** When `audit_page` is given, read it, keep its steps as they are, add the new steps
 after them, update the meta row's status and total time, the timing section, the results, the final decision set, and the open

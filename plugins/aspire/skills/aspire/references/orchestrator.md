@@ -287,8 +287,10 @@ profile, from `creator-card.md`.
 
 Sections, in order:
 
-1. **Header.** The brand, "Updated {local time}", "Next run {local time}", and the level in plain
-   words ("Approvals run within the hour" or "Approvals wait for a session").
+1. **Header.** The brand, "Updated {local time}", "Next run {local time}", the level in plain
+   words ("Approvals run within the hour" or "Approvals wait for a session"), and the "Prepared
+   for" chip from `recipient` (`recipient-lens.md`). The animated Aspire Atlas mark sits at the top
+   right (`artifact-standard.md`).
 2. **Waiting on you.** Each `page` action with a current packet: the title, the why, the creator
    cards involved, the packet's summary in the agent's own words, each question in `questions`
    as a control with exactly the options the packet offered, the held approvals as "Do this in
@@ -306,7 +308,8 @@ Sections, in order:
 6. **Where everything stands.** One stage strip per program and campaign in scope (**1**), with
    counts per stage and the link to that flow's own page from its `page` finding.
 7. **Footer.** What the run read, the actions counted but not shown, and any source it could not
-   read.
+   read, then the artifact-standard footnote (`artifact-standard.md`). The setup-needed card
+   (**9**) carries the mark and the standard's "No Atlas data on this page" variant of the footnote.
 
 Money: a packet's fees, budgets, and amounts go only in Editor-only page data (`team`), never in
 the page itself or a Slack message, as on the program pages.
