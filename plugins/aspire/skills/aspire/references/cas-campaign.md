@@ -737,6 +737,13 @@ id with a copy of the fees they saw, is the approval (**Pulling decisions**, **T
 approval**). Write the roster findings, Gate 3 `cleared` with `approval`, remove the reminder,
 post, republish. Then the details step (**1f**) starts.
 
+**Sending the fees again.** After a request for changes, the CM revises the fees in the chat
+(**Rates and terms**, **Replies**) and sends them again with the packet send above: Gate 3 stays
+`open` with a new `sentAt` and `dueAt`, the reminder moves to the new due time, and the page is
+republished with the revised sheet. Every fee item older than the new `sentAt`, the request and
+any earlier approval, no longer counts (**Pulling decisions**, **The fee approval**, check 2), so
+the client approves the revised sheet.
+
 A client approver who can't write on the page approves the fees by email, on a call or in a
 message, and the CM records it in the chat the way a Gate 4 sign off from outside the page is
 recorded: "Record {name}'s approval of the round {n} fees, given {by email, on the call, in a
@@ -4234,8 +4241,8 @@ reply Claude records.
 A creator approved but not agreed yet, or who declined, has no card: they stay in **Contract and
 rates**, and one line under the cards names them, "{k} more approved, fees not agreed yet", with
 a link Button "Contract and rates" to `#creators/r{n}/fees`. A creator who drops out after
-agreeing (`rate` declined, or `slate` rejected on a newer roster finding) leaves the tab at
-once.
+agreeing (`rate` declined, or `slate` rejected on a newer roster finding) leaves the tab at the
+next publish, which follows the pull or reply that recorded it.
 
 In order: **Round totals**, the toolbar, the cards, then **Contract and rates**, **Shipping** and
 **Brief and content**. The first three sit in the roster section (`creators-roster`).
@@ -4291,7 +4298,9 @@ Under the step, one line in `text-sm`, worked out from the same records. The fir
 | Step 1 | "Next: ship {product}" | the same |
 | Step 2 | "On the way: {carrier} {tracking}", or "On the way" | the same |
 | Step 3 (Product delivered), a changed brief waiting on the client (Gate 4b open) | "Waiting on {brand}'s call on @{handle}'s brief changes" | "Your call on @{handle}'s brief changes" |
-| Step 3 (Product delivered), brief not accepted | "Waiting on @{handle} to accept the brief" | the same |
+| Step 3 (Product delivered), step 4 of the round (briefs approved) not cleared | "Waiting on {brand}'s brief sign off" | "Waiting on your brief sign off" |
+| Step 3 (Product delivered), briefs approved, brief not sent to the creator yet (no `briefState`) | "Next: send @{handle} the brief" | the same |
+| Step 3 (Product delivered), brief sent, not accepted | "Waiting on @{handle} to accept the brief" | the same |
 | Step 4 | "Shooting · shoot by {date}", or "Shoot by date passed {d} days ago" | the same |
 | Step 5 | "Editing · {x} of {f} files in" | the same |
 | Step 6, cuts waiting on the client | "{n} variants waiting on {brand}" | "{n} variants waiting on you" |
@@ -4337,7 +4346,8 @@ One row above the cards that wraps on a phone:
   Live. Needs info is a creator with at least one detail to add as this viewer counts them (below),
   or whose details from creator aren't received. Before the shoot is steps 0 to 4, up to and
 including Shooting, since no footage is in yet, Content in steps
-  5 to 7, and Live step 8. Needs info overlaps the others; the other four don't overlap. On a
+  5 to 7, and Live step 8. All holds every card and Needs info overlaps the rest; Before the shoot, Content in and Live
+  don't overlap and add up to All. On a
   phone the list scrolls sideways like the tabs.
 - **Products**, one chip per product in scope, then "No product", as Creator Selection's toolbar
   builds them (`secondary` with `aria-pressed="true"` when pressed, several at once, each with its
@@ -4460,9 +4470,11 @@ What the section's header shows, for both sides:
   "Fees approved, Aspire to confirm" with the processing Badge "Aspire to confirm", and step 3
   stays open on Home until the pull records it.
 - **Changes requested {date}** (warning), for both sides, when the newest counted item is a
-  request for changes newer than any approval, with the client's note shown to both: the
-  agency revises the fees and sends them again, and every card's line reads "Waiting on Aspire to
-  revise the fees" in place of the step 0 rows.
+  request for changes newer than any approval and than step 3's `sentAt`, with the client's note
+  shown to both: the agency revises the fees and sends them again (**Gate 3: the fees**), and
+  every card's line reads "Waiting on Aspire to revise the fees" in place of the step 0 rows. Once
+  they are sent again, the request is older than the new `sentAt` and no longer counts, so the
+  header goes back to waiting for the client's approval.
 - **Fees changed since you approved** (warning), while step 3 is open, when an agreed fee, a
   creator or the uplift differs from the approval's copy: the client approves again.
 - **After step 3 is cleared**, the client's header stays "Fees approved {date}", and the page
@@ -5398,8 +5410,8 @@ is no step field anywhere in page data; the Footage
     total and the variants planned equal the program terms' deliverables and variants per
     creator, so an edit to either on Home changes every card; the client's details chip counts
     only name and address, and no email, phone, rate, payment amount, fee total or budget renders
-    for the client or in **Preview as client**; the Stage counts add up (Needs info aside) to the
-    cards in view; **Expand all cards** opens every card in view and nothing else; **Approve
+    for the client or in **Preview as client**; Before the shoot, Content in and Live add up to All, which counts
+    the cards in view; **Expand all cards** opens every card in view and nothing else; **Approve
     fees** renders for the client only, while step 3 is open, and writes only under the client's
     own `fees/{id}` with a copy of the fees they saw; and an approval whose copy no longer matches
     reads "Fees changed since you approved".
