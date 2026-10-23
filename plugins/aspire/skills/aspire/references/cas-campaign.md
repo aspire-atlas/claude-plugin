@@ -679,7 +679,7 @@ vocabulary and start with the round once the campaign has more than one: "Round 
 | 14 | Briefs sent, replies waiting | "{a} accepted, {c} changed, {w} waiting." | Record a reply | **1g**, Replies | `reply`, roster `briefState` accepted, or a `brief-revision` and Gate 4b `open` for that creator | Reminder at that creator's Gate 4b due time |
 | 15 | A Gate 4b open for any creator | "{n} creator changes with {approver}." | Pull the client's decisions | **CAS campaign**, Run, **Pulling decisions** | `brief-revision` approved and locked, or a `brief-notes` draft; Gate 4b `cleared` per creator | Removes that creator's reminder |
 | 16 | Every creator's brief accepted or locked | "In production. Hands to the content review flow." | Review a creator's draft. Once creators have posted: review the round's hooks. | **Content review**, with the creator ad campaign brief as P1's source (`content-review.md`, **Normalizing the brief**: the concept's locked `brief`, or the creator's approved `brief-revision`); the hook review in `hooks-and-ctas.md` | Content review's own findings; `hook-review` findings | None. Offer once to keep or stop the weekly call. |
-| 17 | Row 16's condition holds (every creator's brief accepted or locked), and the round is in market or launches within 7 days | "In market: cost per sale {x} against a {t} target · {w} of {a} ads won · {r} to retire or refresh." Before results: "Ads go live {launch}." With no target: "No cost per sale target saved." | With no target saved, save {brand}'s cost per sale target (C6a's question, through the supersede rule). Otherwise, with variants to retire or refresh, go over them; else the next step of row 16 | **CAS campaign**, Status; the results are read at every publish (**1d**, **Ad Performance**, **Reading the results**) | `campaign:{slug}-decision-defaults` superseded when the target is saved | Creates the daily results refresh once the round is in market (**Reminders and the weekly call**, **Results refresh**, which also says when it is removed) |
+| 17 | Row 16's condition holds (every creator's brief accepted or locked), and the round is in market or launches within 7 days | "In market: cost per sale {x} against a {t} target · {w} of {a} ads won · {r} to retire or refresh." Before results: "Ads go live {launch}." With no target: "No cost per sale target saved." | With no target saved, save {brand}'s cost per sale target (C6a's question, through the supersede rule). Otherwise, with variants to retire or refresh, go over them; else the next step of row 16 | **CAS campaign**, Status; the results are read at every publish (**1d**, **Ad Performance**, **Reading the results**) | `campaign:{slug}-decision-defaults` superseded when the target is saved | The daily results refresh (**Reminders and the weekly call**, **Results refresh**, which says when the status screen creates and removes it, whatever row the round is on) |
 
 Rules:
 
@@ -1611,7 +1611,7 @@ only is marked so.
 | Selected Creators | Shipping | `creators-shipping` | "{s} shipped, {d} delivered of {n}", or "Shown once fees are approved." | Standard | Closed; open for the client while a row waits on them |
 | Selected Creators | Brief and content | `creators-content` | "{b} briefs accepted · footage in from {f} of {n}" | Standard | Closed |
 | Content Review | The queue: count tiles, filter, creator tabs and variant rows | `review-queue` | Client: "{w} waiting on you · {c} with changes · {q} in Aspire QA · {a} of {y} approved"; agency: "{w} with {brand} · {c} with changes · {q} in Aspire QA · {a} of {y} approved"; "No cuts in round {n} yet." before the first | Simple | Open |
-| Ad Performance | Cost per sale against target | `performance-result` | "Cost per sale {x} against a {t} target · {beat it, or {d} over}", or "Round {n} goes live {date}", or "Connect your Meta ad account to see results" | Simple | Open |
+| Ad Performance | Cost per sale against target | `performance-result` | "Cost per sale {x} against a {t} target · {d}% under target, or {d}% over target", or "Round {n} goes live {date}", or "Connect your Meta ad account to see results" | Simple | Open |
 | Ad Performance | Headline numbers | `performance-headline` | "Spend {s} · {p} purchases · ROAS {r}" | Standard | Closed |
 | Ad Performance | Weekly spend and return | `performance-weekly` | "{w} weeks in market · best week {date}" | Standard | Closed |
 | Ad Performance | Variants ranked | `performance-variants` | "{w} winning · {t} testing · {r} to retire or refresh" | Standard | Closed |
@@ -6188,6 +6188,10 @@ cleared), at every publish:
    Days live, and one over the last 7 days, for **Fatigued** below. Neither changes a total: the
    tab's figures stay inside step 1's dates.
 
+`creatorHandles` and `igMediaIds` take at most 100 values each, so a longer list is read in
+batches of 100 with the same other arguments, and the batches' rows are put together before
+anything is summed. A row comes back in one batch only, since each ad has one creator and one post.
+
 The `search_ads` rules hold everywhere (`atlas-tools.md`, **Paid ads**, and
 `list_ad_search_fields`, which Claude calls before the first read in a session):
 
@@ -6206,6 +6210,10 @@ The `search_ads` rules hold everywhere (`atlas-tools.md`, **Paid ads**, and
 - **No value is not zero.** A metric Meta reports as null is left out of its sum. A figure whose
   every part is null shows "No data", and a figure with no denominator (no impressions, no
   purchases) shows "None yet" for purchases-based figures and "No data" otherwise, never 0.
+- **Purchases decide revenue.** A row with a purchase count of 0 counts revenue 0, even when Meta
+  leaves its purchase value null, so its ROAS is a real 0.00. Only a row whose purchase count is
+  null too has no purchases reported. This holds for the headline numbers, the weeks and the
+  variant rows alike.
 - **Paid only.** Nothing here adds organic figures from `search_posts`.
 - **No ad code.** `search_ads` rows carry no ad code, and the page never holds one, from any tool,
   in any part of the page or page data (`atlas-tools.md`, **Ad codes**).
@@ -6269,7 +6277,7 @@ Each matched variant in the results currency takes one status, the first rule th
 | 1 | Testing | Spend under the floor |
 | 2 | Retire | No purchase reported (a count of zero, or none from Meta), and spend above the Watch band (`watchRatio` times the target) |
 | 3 | Watch | No purchase reported, and spend within the Watch band |
-| 4 | Fatigued | Cost per sale at or under the target, live past `fatigueDays`, and slipping: its cost per sale over the last 7 days is above its cost per sale over the whole read, or it spent in the last 7 days with no purchase |
+| 4 | Fatigued | Cost per sale at or under the target, live past `fatigueDays`, and slipping: its cost per sale over the last 7 days is above its cost per sale from the launch date to today (both from step 5's reads), or it spent in the last 7 days with no purchase |
 | 5 | Winning | Cost per sale at or under the target |
 | 6 | Watch | Cost per sale up to the Watch band |
 | 7 | Retire | Cost per sale above the Watch band |
@@ -6286,8 +6294,9 @@ the variants past the floor ("{w} of {a} ads won", {a} counting every variant no
 
 - **Retire**: over the Watch band, or past it with no purchase ("over the cost per sale bar").
 - **Refresh**: Fatigued ("live past {fatigueDays} days and slipping").
-- **Not spending**: Testing and live `stuckDays` days or more ("under the spend floor after {d}
-  days").
+- **Not spending**: Testing, with `stuckDays` days or more from its first day of spend to today
+  ("under the spend floor after {d} days"). It counts to today, not to its last day of spend, so
+  an ad that spent once and stopped is caught.
 
 Each one is a row in Home's **Needs attention**, "Retire or refresh @{handle}'s V{variant}", with
 its reason and its cost per sale against the target, waiting on Aspire, opening
@@ -6360,8 +6369,9 @@ Each chart is titled, has one series and so no legend, and labels only its highe
 Colors are read from the CSS variables at run time (**Banned on the page**), so the brand's chart
 colors apply and the contrast check in **Brand theme on the page** has already passed them. Hover,
 focus or tap on a week shows one Tooltip for both charts: "Week {w}, {dates}: spend {s} · ROAS
-{r} · {p} purchases". A week with spend and a purchase count of zero shows ROAS 0.00; one where
-Meta reported no purchase value draws no point, and its Tooltip says "No purchases reported". A
+{r} · {p} purchases". A week with spend and a purchase count of 0 shows ROAS 0.00 (**Purchases
+decide revenue**); a week whose purchase count Meta left null draws no point, and its Tooltip says
+"No purchases reported". A
 week with no spend draws no bar and no point. Under the charts a Table, "Show as
 table", lists each week's Spend, Purchases, Revenue and ROAS, so nothing reads by the chart
 alone. The charts draw at their container's width and redraw when it changes (**Responsive**,
@@ -6667,7 +6677,10 @@ logs nothing and never reaches Atlas.
   fewer, as Excel needs), plus a last sheet, "About this export". On every data sheet:
   - Row 1 is the header, in bold, frozen, with a filter over the header and every row.
   - Money in US dollars, as the campaign records keep it, as numbers formatted `"$"#,##0.00`, and
-    the header names the currency: "Agreed fee (USD)".
+    the header names the currency: "Agreed fee (USD)". Ad Performance's sheets are the exception:
+    their money is in the ad account's currency, so it is formatted `#,##0.00` with no symbol, each
+    row names its currency in the Currency column, and a money header names the currency only when
+    every row on the sheet shares it ("Spend (GBP)").
   - Rates as fractions formatted `0.0%`, counts as `#,##0`, and dates as real dates formatted
     `yyyy-mm-dd`. A date with no time is written as midnight UTC of the date the page shows, so it
     never lands a day off. So every column sorts and filters as its type.
@@ -8660,7 +8673,9 @@ without a second question; the send confirmation names the reminder.
   what is next.
 - **Results refresh.** One task per campaign named "Atlas CAS results refresh: {brand} -
   {campaign}", daily at 07:00 in the campaign's saved time zone, converted to UTC cron (`M H * * *`).
-  The status screen creates it when a round goes in market (row 17). It runs while a round is in
+  The status screen creates it whenever it runs and a round is in market or launches within 7 days,
+  whatever row the round is on, so a late brief never stops it; until the launch, its prompt stops
+  without publishing. It runs while a round is in
   market and for 14 days after a round's in-market end, so late purchases and the last days' spend
   reach the page. The status screen removes it whenever it runs and none of that holds and no round
   launches within 7 days; an unattended run never removes a task. C6 approved it, so neither asks.
