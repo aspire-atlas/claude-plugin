@@ -1238,7 +1238,7 @@ client's level before the link goes out.
 | Cuts: the count tiles and filter, each creator's tab and status dots, and per variant the poster, version, stage, status and open comments | yes; a version in Aspire QA shows as its status only, and the client works on the newest version sent to them | yes, with **Add cut** on an empty slot | Agency uploads and links, Aspire's sends, the client's calls (`reviews`, `cut-calls`) | Content Review |
 | A cut's uploaded video | yes, for people in the organization that published the page | yes | The page's asset store | Content Review, Selected Creators (the cut tiles) |
 | Cut tiles on a creator's card: each variant's latest version, its status, open comments and **Open in review** | yes, the newest version sent to them, never one in Aspire QA; a read only client sees one line, no tiles | yes, the newest version | `reviews`, `cut-calls`, `comments` (**Selected Creators**, **Cut tiles**) | Selected Creators |
-| Status updates to {brand} on a creator: the text, who sent it and when | yes | yes, editable | Aspire's notes for {brand} (`edits`), tagged to the client side | Selected Creators, the creator viewer |
+| Status updates to {brand} on a creator: the text, who sent it and when | yes, but not a read only client | yes, editable | Aspire's notes for {brand} (`edits`), tagged to the client side | Selected Creators, the creator viewer |
 | **Update {brand}** | no | yes | Agency on the page | Selected Creators |
 | A cut's versions, compare, the status, the last move and who made it | yes, for versions sent to them | yes, every version | `reviews`, `cut-calls` | Content Review |
 | Send to {brand}, Send as is, Back to editor, Nudge {brand}, Upload new version | no | yes, editable | Agency on the page | Content Review |
@@ -4840,7 +4840,8 @@ latest for that viewer.
 
 - **The video**, in a 9:16 box (**Component classes**, Cut tiles). For an uploaded cut, a `video`
   element from `"/_blob/" + asset`, with `playsinline` and `preload="metadata"`, showing its frame
-  at 0.5 seconds (`#t=0.5`) until played. A Play Button over it plays it in place, and while it
+  at 0.5 seconds (`#t=0.5`) until played. A Play Button over it plays it in place from 0:00 (the
+  page sets the time to 0 first, since the frame shown sits at 0.5 seconds), and while it
   plays the tile adds Pause and a Sound toggle (Lucide `volume-2` or `volume-x`), each a ghost
   icon Button with its `aria-label` and Tooltip. Sound comes from one tile at a time: turning it on
   for one turns it off on the others, as **Compare** does. The tile has no scrubber, frame steps,
@@ -4854,8 +4855,11 @@ latest for that viewer.
   the tile's version the viewer can read, the same count as Content Review's Comments cell (the
   agency's includes agency only threads).
 - **Open in review**, a link Button to `#review/r{n}/{cut}/v{k}`, {k} being the tile's version,
-  with `/t{seconds}` added when the tile is paused past 0:00, so the review panel opens on the same
-  frame (**Header and tabs**). Opening it pauses the tile.
+  with `/t{seconds}` added only once the viewer has played the tile and it is paused past 0.5
+  seconds, so the review panel opens on the same frame (**Header and tabs**), and an unplayed tile
+  opens it at 0:00. Opening it pauses the tile. For the client on a cut with no version sent to
+  them, it goes to `#review/r{n}/{net}-{handle}` instead, the creator's tab, since that cut doesn't
+  open for them (**Content Review**, **What the client sees**).
 
 **An empty slot** shows the dashed box with the Lucide `clapperboard` icon and the soft Badge "Not
 cut yet", as Content Review names it. For the agency in the current round, a link Button "Add cut"
@@ -4880,6 +4884,12 @@ uploads. So:
 - **An upload that can't load** (removed, or the browser refuses it) shows the `film` icon and
   "This cut can't play right now. Ask {CM name} for a link.", with **Open in review** still there.
 
+**Loading.** A tile's `video` is added only while its card is open and the tile is near the
+screen (an `IntersectionObserver` with a margin of one screen), with `preload="metadata"`; until
+then the box shows a Skeleton. So **Expand all cards** on a round of 20 creators loads the tiles in
+view, not a hundred videos at once. A tile scrolled far away keeps its element but stops if it was
+playing.
+
 **Phone and desktop.** Under 640px the tiles are one row that scrolls sideways, each tile 10rem
 wide and snapping into place, with the next tile's edge showing so the row reads as one that
 scrolls. The row is a focusable region labelled "Cuts for @{handle}, V1 to V{v}", so the keyboard
@@ -4887,7 +4897,7 @@ scrolls it too. From 640px the tiles wrap in a grid, three across, and five acro
 The page itself never scrolls sideways (**Responsive**).
 
 **Play all.** Above the tiles, while two or more tiles can play, an outline Button size sm "Play
-all" with the Lucide `play` icon plays every playable tile from 0:00 at once, with no sound, and
+all" with the Lucide `play` icon sets every playable tile to 0:00 and plays them at once, with no sound, and
 turns into "Pause all". A tile's own Sound toggle then picks the one to hear.
 
 Nothing a tile does writes page data or logs: playing, pausing and sound are the viewer's own,
@@ -4938,12 +4948,21 @@ refused save keeps the Dialog open with the text and "Not saved", as **Editing i
   its first words. The open card's **Updates to {brand}** lists the round's updates newest first,
   each with who, when and the full text, and for the client a link Button "Reply in notes" to
   `#selection/r{n}/{net}-{handle}/notes`. With none: "No updates sent to {brand} this round."
-- **In the client's inbox**: one "Tagged Client" (or "Tagged you") item that opens the card at
+- **In the client's inbox**: a "Tagged Client" (or "Tagged you") item from the tag, and a Note
+  item from the log entry, as any tagged note gives (**Tags and the inbox**). Both open the card at
   **Updates to {brand}**.
 - **In History**, as the note entry above.
 
-Its author edits or removes an update the way a note is edited or removed, which updates or
-withdraws its tags (**Tagging**, **Saving**).
+Its author edits or removes an update with Edit and Remove on it, in **Updates to {brand}** or in
+the creator viewer's Notes, the way a note is edited or removed (**Creator Selection**, **The
+creator viewer**, **Notes**), which updates or withdraws its tags (**Tagging**, **Saving**). Both
+keep `kind` `update`: an edit writes `{text, createdAt, kind}` with the new text, and a removal
+`{text: null, createdAt, kind}`, so an edited update stays an update. A removed update leaves the
+card's line, **Updates to {brand}** and the export's Last update to {brand}, which read the newest
+update whose `text` isn't `null`.
+
+A read only client reads no page data, and the updates live there, so the card shows them no line
+and the open card shows "Updates aren't available from this account." in place of the list.
 
 **It never leaves the page on its own.** The page never posts to Slack or sends email (**Tagging**,
 **Nothing is sent from the page**). The next interactive run in the chat lists the update with the
@@ -6399,10 +6418,10 @@ left blank, never filled with a dash.
 | Creator Selection | Match agreement (agency only) | Band in **Match score tuning**'s **Agreement**, then a row for our top 10 and one for the agreement score | Measure (the band, "Our top 10" or "Agreement score"), Picked, Decided, Share, Verdict (on the agreement score row), Rounds |
 | Creator Selection | Weights (agency only) | Factor in **Retune** | Factor, Weight in use, Default or tuned on, Suggested, Change, Decisions it learned from |
 | Creator Selection | Creators | Creator the pool shows now, in its sort | Creator, Network, Name, Descriptor, City, Tier, Concept, Persona, Product, Rounds, Campaign match, Match band, Competitor (the conflict or past deals), Watch, Hook rate, Engagement on Reels, Reach, Engaged accounts, Latest post, Paid work before, Ad permissions, Instagram followers, Instagram engagement rate, Instagram average engagement, Instagram audience, the same four for TikTok, Why we picked them, Status, Your decision, Your notes, Aspire notes for {brand}, Expected cost (agency only), Cost per 1K reach (agency only), Aspire notes (agency only), Reply window (agency only), Email (agency only), Phone (agency only), Manager (agency only) |
-| Selected Creators | Creator snapshot | Card the tab shows now, in its sort | Creator, Network, Name, Concept, Product, Returning, Step (a number, 0 to 8), Step name, Next or waiting on, Details to add (the count as the viewer counts them, so name and address only for the client), Missing (the details named, one per line, the same ones), Contract, Payment (blank for the client until the fees are sent), Agreed fee (blank for the client until the fees are sent), Ship to (city and region, or pickup), Address confirmed, Footage files in, Footage files planned, one Footage column per deliverable ("Hooks in"), Shoot by, Status, Ad permissions, Brief state, Content state, Variants in, Variants approved, Variants planned, Content folder, Last update to {brand} (when the newest status update was posted), Waiting on (agency only), Last contact (agency only), Email (agency only), Phone (agency only), Manager (agency only), Paid so far (agency only) |
+| Selected Creators | Creator snapshot | Card the tab shows now, in its sort | Creator, Network, Name, Concept, Product, Returning, Step (a number, 0 to 8), Step name, Next or waiting on, Details to add (the count as the viewer counts them, so name and address only for the client), Missing (the details named, one per line, the same ones), Contract, Payment (blank for the client until the fees are sent), Payment date (the same), What they make, Usage, Exclusivity, If we drop them, Agreed fee and Fees approved on (each blank for the client until the fees are sent), Ship to (city and region, or pickup), Address confirmed, Footage files in, Footage files planned, one Footage column per deliverable ("Hooks in"), Shoot by, Status, Ad permissions, Brief state, Content state, Variants in, Variants approved, Variants planned, Content folder, Last update to {brand} (when the newest status update was posted), Waiting on (agency only), Last contact (agency only), Email (agency only), Phone (agency only), Manager (agency only), Paid so far (agency only) |
 | Selected Creators | Shipping list | Row in **Shipping** | Creator, Name, Item, Details from creator, Ship to (home or pickup), City, Region, Country, Visit date, Address confirmed, Carrier, Tracking, Shipped on, Delivered on, ETA, Product status, Source (the product status's tag), Updated by, Updated on, Address line 1 (agency only), Address line 2 (agency only), ZIP or postal code (agency only), Phone (agency only), Delivery note (agency only), Next step (agency only) |
 | Selected Creators | Rates and payments (agency only) | Row in **Contract and rates** | Creator, Concept, What they make, Usage, Exclusivity, Agreed fee (blank until agreed; Where it is says "In negotiation"), If we drop them, Where it is, Fees approved on, Payment status, Payment date, Contract, Signed on, UGC video rate, Reel collab rate, 90 day usage rate, Contracted total, Paid so far, Offer open, target and max (three columns), Counter, Expected cost, Cost per 1K reach |
-| Selected Creators | Variant tracker | Variant slot of each creator in view, V1 to V{v}, in the cards' order, then any cut "Past the plan" | Creator, Concept, Variant, Hook ("H2 Demo first", agency only), CTA ("C1 Direct", agency only), Framework (code and name, agency only), Version (the cut tile's version: the newest for the agency, the newest sent for the client; blank when not cut yet), Stage, Status (the tile's Badge, "Not cut yet" for an empty slot), Open comments (the tile's count), Due, Due for (the step the date is from), Updated on |
+| Selected Creators | Variant tracker | Variant slot of each creator in view, V1 to V{v}, in the cards' order, then any cut "Past the plan" | Creator, Concept, Variant, Hook (agency only, "H2 Demo first"), CTA (agency only, "C1 Direct"), Framework (agency only, code and name), Version (the cut tile's version: the newest for the agency, the newest sent for the client; blank when not cut yet), Stage, Status (the tile's Badge, "Not cut yet" for an empty slot), Open comments (the tile's count), Due, Due for (the step the date is from), Updated on |
 | Selected Creators | Variant plans (agency only) | Variant of each creator in the round, V1 to V{v} | Creator, Concept, Persona, Variant, Framework, Length, Hook ("H2 Demo first"), Hook line, CTA, CTA line, From (Brief, Override or Broken), Overridden fields, Changed by, Changed on |
 | Content Review | Variant status | Cut the queue shows now, the filter and creator applied | Creator, Concept, Variant, Title, Version (for the client, the newest sent to them), Stage, Status, Added on, Sent on, Approved by, Approved on, File (Upload, Google Drive, Frame.io or Link), Link (a link's address; blank for an upload), Runtime (m:ss.s, blank for a link), Aspect (9:16, 4:5 or width × height), Brief check (passed of 8, with "{f} failed" when any did), Open comments, Hook ("H2 Demo first", agency only), CTA (agency only), Framework (agency only) |
 | Content Review | All comments | Comment or reply on the cuts the queue shows | Creator, Variant, Version, Timecode (text, m:ss.s, or General; a reply leaves it blank), Frame (the frame number, blank when the frame rate isn't known or for a linked cut), Seconds (a number, for sorting), Comment, Reply to (its first words), Who, Side (Client, Agency, or Agency only for the agency), When, Has drawing, Resolved |
@@ -6413,13 +6432,17 @@ left blank, never filled with a dash.
 **Selected Creators' sheets.** The four sheets for that tab's jobs are Creator snapshot, Shipping
 list, Rates and payments, and Variant tracker, with Variant plans beside them for the agency.
 
-- **The toolbar's filters apply to every sheet.** Search, Stage and Products narrow the cards, and
-  each sheet takes only the creators those filters leave in view, so a shipping list for "Needs
-  info" holds the same creators as the snapshot. The About sheet names the filters.
+- **The toolbar's filters apply to the card sheets.** Search, Stage and Products narrow the cards,
+  and Creator snapshot, Shipping list and Variant tracker take only the creators those filters
+  leave in view, so a shipping list for "Needs info" holds the same creators as the snapshot. The
+  About sheet names the filters. Rates and payments keeps every row of **Contract and rates**,
+  creators still in negotiation included, since they have no card for a filter to act on.
 - **Rates and payments is agency only, whole.** It is the agency's money sheet, with rates per
   deliverable, offers, counters and amounts paid, so the client's Sheet Select doesn't list it.
-  What the client may read about fees (the agreed fee, the contract and the payment status, once
-  the fees are sent) is in their Creator snapshot instead.
+  What the client may read about each creator's terms once the fees are sent (what they make,
+  usage, exclusivity, if we drop them, the agreed fee, the contract, the payment status and when
+  the fees were approved) is in their Creator snapshot instead. Before the fees are sent those
+  columns are blank for the client, and a creator in negotiation has no card yet.
 - **The client's Shipping list holds no street.** It has the city, region and country, or the
   pickup and its visit date, as the page shows them (**Who sees what**, **Addresses**). Address
   lines 1 and 2, the ZIP or postal code, the phone and the delivery note are agency only columns.
@@ -6772,7 +6795,7 @@ visible edge on a card. A Switch keeps the `role="switch"` and `data-state` attr
 | | status block, moves, last move | `flex flex-col gap-3 border-b p-4`; `flex flex-wrap items-center gap-2`, its Buttons size default with `min-h-11` added on touch (`[@media(pointer:coarse)]:min-h-11`); `text-xs text-muted-foreground` |
 | | compare pair, compare box, compare label | `grid w-full grid-cols-2 gap-2`; the video box classes with `aspect-[9/16]` added, its `video` `h-full w-full object-contain`; `flex items-center justify-between gap-2 text-xs font-medium text-muted-foreground` |
 | | brief check: brief block, row, row name, window | `rounded-md border bg-card p-3 text-sm`, a `dl` with `grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1`; `flex min-w-0 items-start gap-2 border-b py-2 last:border-b-0`; `min-w-0 flex-1 text-sm`; the Button link variant, size sm |
-| Cut tiles | row, tile, media box, empty box, play, meta | `flex snap-x snap-mandatory gap-3 overflow-x-auto rounded-md pb-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0 lg:grid-cols-5`, on a `div` with `role="region"`, `aria-label` and `tabindex="0"`; `flex w-40 shrink-0 snap-start flex-col gap-2 rounded-xl border bg-card p-2 text-card-foreground sm:w-auto`; `relative w-full overflow-hidden rounded-md bg-black aspect-[9/16]`, its `video` `h-full w-full object-contain`, and for a linked cut or one that can't play `bg-muted` in place of `bg-black` with the icon and line centred in `text-xs text-muted-foreground`; `flex w-full flex-col items-center justify-center gap-1 rounded-md border border-dashed text-xs text-muted-foreground aspect-[9/16]`; the Button secondary variant, size icon, plus `absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full`, with Pause and Sound the Button ghost icon classes in a `flex items-center gap-1` row under the box; `flex min-w-0 flex-wrap items-center gap-1 text-xs text-muted-foreground` |
+| Cut tiles | row, tile, media box, empty box, play, meta | `flex snap-x snap-mandatory gap-3 overflow-x-auto rounded-md pb-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0 lg:grid-cols-5`, on a `div` with `role="region"`, `aria-label` and `tabindex="0"`; `flex w-40 shrink-0 snap-start flex-col gap-2 rounded-xl border bg-card p-2 text-card-foreground sm:w-auto`; `relative w-full overflow-hidden rounded-md bg-black aspect-[9/16]`, its `video` `h-full w-full object-contain`, and for a linked cut or one that can't play `bg-muted` in place of `bg-black` with the icon and line centred in `text-xs text-muted-foreground`; `flex w-full flex-col items-center justify-center gap-1 rounded-md border border-dashed text-xs text-muted-foreground aspect-[9/16]`; the Button secondary variant, size icon, plus `absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 shadow`, keeping the base's `rounded-md`, with Pause and Sound the Button ghost icon classes in a `flex items-center gap-1` row under the box; `flex min-w-0 flex-wrap items-center gap-1 text-xs text-muted-foreground` |
 
 Text sizes are Tailwind's: `text-xs` for captions, `text-sm` for body and labels, `text-lg` for
 card titles, `text-xl` for section titles, `text-2xl` for the page title. Weights 400, 500 and 600.
@@ -7076,20 +7099,24 @@ is no step field anywhere in page data; the Footage
     notes and Claude's suggestions are missing from the client's page data, not only from the
     screen, while the eight results show read only to the client.
 27. Cut tiles, status updates and Selected Creators' exports: each open card has exactly {v}
-    tiles, at most 5, the same slots Content Review shows the creator; every tile plays the same
+    slot tiles, at most 5, the same slots Content Review shows the creator, plus one tile per cut
+    "Past the plan"; every tile plays the same
     version Content Review's row shows that viewer as latest, so the agency's tile plays the
     newest version and the client's, and **Preview as client**'s, the newest sent, never one in
     Aspire QA, and adding or sending a version changes the tile in every open view with no reload;
     each tile's version Badge, status Badge and open comment count equal that row's; **Open in
-    review** opens the review panel at the tile's version and paused time; an empty slot reads "Not
+    review** opens the review panel at the tile's version and the time it was paused at, at 0:00
+    for a tile never played, and for the client on a cut with no version sent goes to the
+    creator's tab; an empty slot reads "Not
     cut yet"; a Google Drive or Frame.io tile has no player and opens the link in a new tab; a read
     only client sees the one line and no tile; at 375px the tiles scroll sideways inside their row
     while `document.documentElement.scrollWidth` still equals the window width; **Update {brand}**
     renders for the agency only, in the current round, prefills from client readable values only,
     lets the Editor change the text, and posts one note for {brand} with `kind` `update` and one
-    tag per recipient under `tags-client`, so the client's inbox gets one tag item that opens the
-    card at **Updates to {brand}**, and nothing leaves the page; the four Selected Creators sheets
-    follow the toolbar's filters; Rates and payments isn't offered to the client; and the client's
+    tag per recipient under `tags-client`, so the client's inbox gets its tag item, opening the
+    card at **Updates to {brand}**, and nothing leaves the page; an edited update keeps `kind`
+    `update`; Creator snapshot, Shipping list and Variant tracker follow the toolbar's filters
+    while Rates and payments keeps every row of **Contract and rates**; Rates and payments isn't offered to the client; and the client's
     Shipping list and Variant tracker have no street, ZIP, phone, delivery note, hook, CTA or
     framework column.
 
