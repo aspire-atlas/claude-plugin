@@ -6516,7 +6516,8 @@ A group is named best on a figure only when the numbers support it:
 - **Something to beat.** At least two groups of the kind have enough data.
 - **A real group.** "Not planned", "No persona", "No product" and "No follower count" are never
   named best and never count as the next group: they hold what couldn't be placed, not a choice
-  anyone made.
+  anyone made. Nor is a hook or CTA with the "Broken" Badge, since the brief no longer has it to
+  repeat; it keeps its figures in the table.
 
 Persona leaders are compared across every concept and persona pair in the round; hook and CTA
 leaders within each product's block (**The parts**). When no group passes, nothing is named best
@@ -6596,8 +6597,9 @@ decimal and ROAS two, as in **Headline numbers**.
    "{c} creators · {v} variants", and Spend, Impressions, Hook rate and Cost per sale as label and
    value pairs. Up to three soft Badges tag the leaders: "Lowest cost per sale" and "Highest hook
    rate" by **Enough to call a leader**, and "Most impressions" on the tier with the most. Most
-   impressions is a count, not a result, so it needs no margin, but it is shown only when two or
-   more tiers have enough data, as the other two need. A tier can carry more than one, and a Badge no tier earns
+   impressions is a count, not a result, so it needs no margin, but it goes only to a real tier
+   (never "No follower count") that has enough data itself, and only when two or more real tiers
+   have enough data. A tier can carry more than one, and a Badge no tier earns
    isn't shown.
 5. **Which framework won**, agency only. One row per framework in the campaign's frameworks
    order (**Frameworks**), then "Not planned": Framework (code and name), Variants, Spend, Hook
@@ -7042,6 +7044,7 @@ left blank, never filled with a dash.
 | Ad Performance | By tier | Tier in **By tier** | Tier, Creators, Variants, Past the floor, Won, Spend, Impressions, Hook rate, Purchases, Revenue, ROAS, Cost per sale, Leader |
 | Ad Performance | By framework (agency only) | Framework in **Which framework won**, "Not planned" included | Framework (code and name), Variants, Past the floor, Won, Spend, Impressions, Hook rate, Hold rate, Purchases, Revenue, ROAS, Cost per sale, Leader, Small sample |
 | Ad Performance | By hook (agency only) | Hook in **Hooks and CTAs**, per product, "Not planned" and "No product" included | Product, Concept, Hook ("H2 Demo first"), Hook line, Variants, Spend, Impressions, Hook rate, Hold rate, Purchases, Revenue, Cost per sale, Leader, Small sample |
+| Ad Performance | Audience | Cell in **Who watched**, once it is shown: each age band and gender, then each region, per product, "All products" first | Product, Breakdown (Age and gender, or Region), Age band, Gender, Region, Impressions, Share of impressions, Purchases (blank where Meta reports none), Currency |
 | Ad Performance | By CTA (agency only) | CTA number per product in **CTA 1 against CTA 2**, "No product" included | Product, CTA (C1, C2 or Not planned), Types, Variants, Spend, Impressions, Link CTR, Purchases, Revenue, Cost per sale, Leader, Small sample |
 
 **Selected Creators' sheets.** Three are for both sides, Creator snapshot, Shipping list and
@@ -7091,7 +7094,8 @@ What the export can't do yet, said plainly:
   With no target, Won and Win rate are left blank on every row.
   By framework, By hook and By CTA are agency only, whole, and aren't listed for the client. A
   kind the page didn't draw because its sums didn't match isn't exported either. **Who watched**
-  has no sheet while it is hidden. By concept and persona holds each concept's row and its
+  has no Audience sheet while it is hidden, and its sheet holds no regions when **Top regions**
+  isn't shown. By concept and persona holds each concept's row and its
   personas' rows under it, so its concept rows add up to the totals and its persona rows add up
   to their concept. With no results for the round in view, the Export Button is
   disabled.
@@ -7782,8 +7786,9 @@ is no step field anywhere in page data; the Footage
     group; every group's rates are worked out from its sums; no group is tagged best, and no
     insight card names a leader, unless it has `compareMinVariants` variants past the floor (and
     `compareMinPurchases` purchases for cost per sale) and beats the next group by
-    `winnerMarginPct`, and no "Not planned", "No persona", "No product" or "No follower count"
-    row is ever named best; a group short of the variants shows "Small sample" and one short of
+    `winnerMarginPct` ("Most impressions" needs no margin, only enough data in two or more real
+    tiers, the tagged one among them), and no "Not planned", "No persona", "No product", "No
+    follower count" or "Broken" row is ever named best or saved as a leader; a group short of the variants shows "Small sample" and one short of
     the purchases "Few sales"; leader Badges are soft, never a
     status color; the client's view, **Preview as client**, the page itself and the client's
     export hold no framework, hook or CTA group, label or insight card; the agency's framework
@@ -8030,7 +8035,7 @@ cut call writers (`{writer}/cut-calls`). Only the owner writes it, so no Editor 
 | Pool viewer data | `agency/pool-{net}-{handle}` | Claude | One document per creator not sent yet, plain data: what the creator viewer shows for them (**1d**, **Creator Selection**, **The creator viewer**): posts with captions, figures, marks and images, bio, category, verified, badges and audience. Captions are cut to 2,200 characters, and a document Claude would write past 200 KiB drops its link tiles' captions, then its third and second posts' images, which then show as link tiles. Written at publish, deleted by no one: a creator sent later reads from the page itself instead |
 | Creator, agency only | `agency/creator-{net}-{handle}` | Agency; Claude | Every agency only field in **Who sees what** that isn't per round: the recommendation, the Aspire notes (`note-{id}`), vetting evidence, safety detail, the profile's `email`, `phone`, `address` (`{line1, line2, city, region, postal, country}`) and `deliveryNote` (stamps, edited on the Selected Creators card, written by Claude from the roster's `contact` and `details` stamped `atlas`), manager, reply window, last contact, `expectedCost:` and `expectedFrom:` (agreed, counter, offer or calculator, `rates-and-terms.md`, **Expected cost**), `costPer1kReach:`, offer, counters, waiting on, `replies:` the reply log (`[{at, summary}]`, newest first) and `drafts:` the creator's email drafts (`[{template, subject, body, sentAt}]`). A page from before kept the rates (`rate-ugc`, `rate-reel`, `rate-usage90`) and a payment amount here: the rates read as the newest round's (**Creator, agency only, per round**), and the amount is never shown, since the page works it out |
 | Creator, agency only, per round | `agency/creator-{net}-{handle}-r{round}` | Claude for the rates; Agency and Claude for the overrides | `rate-ugc`, `rate-reel`, `rate-usage90`, the round's three rates per deliverable, as recorded in the chat; the creator's variant plan overrides (**1d**, **Selected Creators**, **Concept and variant plan**), one stamp per field per variant, V1 to V5 at most: `v{n}-framework` (`{lane, code, name}`), `v{n}-length` (`{lane, text}`), `v{n}-hook` and `v{n}-cta` (`{lane, n}`), `lane` being the concept it was made for; no stamp, or `value` `null`, follows the concept's plan; and each variant's live post, `v{n}-post` (`{lane, url, igMediaId}`), written by an Editor and by Claude from the roster's `variantPlan`, with Claude adding `igMediaId` once a read finds the post (**1d**, **Ad Performance**) |
-| Ad results not matched | `agency/performance-r{round}` | Claude at publish | Plain data, rewritten whole at each read: `at:` the read's time, `rows:` one per ad by the round's creators whose post is no variant's live post, `{creator, ad, post, currency, spend, firstDate, lastDate}`, `ad` the ad's name and `post` its post link; `insights:` the agency's insight cards (**1d**, **Ad Performance**, **Compare**, **Insight cards**), up to 3, each `{headline, kind, group, figures, sample, part}`, `kind` framework, hook, CTA, or `none` for the "Too early to call" card (whose `group` is `null` and which is never marked as changed), `figures` the numbers the card quotes and `part` the table it links to; `leaders:` per kind (concept, persona, product, creator, tier, framework, and hook and CTA per product), the group **Enough to call a leader** names best on cost per sale and on hook rate with its figures and sample, or `null`, for **Next round's brief**. Nothing here is a code or an id the page shows |
+| Ad results not matched | `agency/performance-r{round}` | Claude at publish | Plain data, rewritten whole at each read: `at:` the read's time, `rows:` one per ad by the round's creators whose post is no variant's live post, `{creator, ad, post, currency, spend, firstDate, lastDate}`, `ad` the ad's name and `post` its post link; `insights:` the agency's insight cards (**1d**, **Ad Performance**, **Compare**, **Insight cards**), up to 3, each `{headline, kind, group, product, concept, figures, sample, part}`, `product` the block a hook or CTA card is about and `concept` the hook's concept (both `null` for a framework card), so the card is matched to exactly one row, `kind` framework, hook, CTA, or `none` for the "Too early to call" card (whose `group` is `null` and which is never marked as changed), `figures` the numbers the card quotes and `part` the table it links to; `leaders:` per kind (concept, persona, product, creator, tier, framework, and hook and CTA per product), the group **Enough to call a leader** names best on cost per sale and on hook rate with its figures and sample, or `null`, for **Next round's brief**. Nothing here is a code or an id the page shows |
 | Activity, client side | `activity/{id}/days/{day}` | Each Contributor, their own | `day:`, `entries:` one key per write (**The activity log**) |
 | Activity, agency side | `activity-editors/{id}/days/{day}` | Each Editor, their own; Claude under `activity-editors/claude` | The same, for the agency's writes about things the client can see |
 | Activity writers | `activity/{id}`, `activity-editors/{id}` | The writer | `lastAt:` the time of their newest entry, written with each one |
