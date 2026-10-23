@@ -322,7 +322,8 @@ row per line, newest status:
 `creator` is `@handle`. Dates are `YYYY-MM-DD`. Product lines are included with their kind so
 finance can leave them out. Void lines are included. The page offers the same file for
 Editors (**The page**). `build` and `payments` write it on the record pass; `export` writes it
-from the lines as recorded, never from proposed ones.
+from the lines as recorded, never from proposed ones. The CSV carries no footnote (its columns are
+an import format): the date goes in the file name and the source in the hand-off message.
 
 ## The questions (main thread)
 
@@ -474,7 +475,8 @@ share it with creators."
 Sections, in order:
 
 1. **Header**: the program and term, the "Prepared for" chip, and "Amounts: team view" for
-   viewers without the team data.
+   viewers without the team data. The animated Aspire Atlas mark sits at the top right
+   ([`artifact-standard.md`](artifact-standard.md)).
 2. **KPI row**: Budget, Committed, Paid, Remaining, in the budget's currency, from
    `team/budget`. Product cost and Forecast to term end sit under Committed and Remaining in
    small type. Other currencies get their own smaller row. Without the team data the row shows
@@ -500,7 +502,9 @@ Sections, in order:
    lines dropped from a hand-off, currencies not counted toward the budget, and "{n} bank or tax
    details were removed and not saved" when any were.
 10. **Footer**: "The ledger records; payments run in Aspire or your finance tool. Read from
-    Atlas as of {timestamp}."
+    Atlas as of {timestamp}." Then the footnote with the team audience line
+    ([`artifact-standard.md`](artifact-standard.md)). Amounts stay in the Editor-only page data, so
+    the footnote carries no amount.
 
 In `propose`, new lines and status changes show "Proposed". In `record`, the approved ones show
 their new status.

@@ -2,25 +2,7 @@
 name: atlas-creator-outreach
 description: |
   Use this agent to reach the creators a brand approved for an influencer program on Atlas: it writes a personal first message to each one, naming a real recent post of theirs from Atlas and why they fit, with the program's offer for their deal type (gifting, paid posts, ambassador, or affiliate) at the level the saved terms allow. It drafts for each channel the program uses (email, Instagram or TikTok DM, Aspire message), writes the follow-ups and the close-out on the saved schedule, sorts creators' replies into interested, accepted, question, counter, declined, details, rights, auto-reply, or other with the record and next move for each, and publishes one outreach pipeline page. It saves drafts and recorded replies to Atlas only with the approvals the main thread passes in, creates mailbox drafts only after their own confirmation, and never sends unless the user asked to send in this session and confirmed every recipient. Trigger on "write to the approved creators", "draft outreach for the program", "who do we need to reach out to", "follow up with the creators who haven't replied", "record a reply", "here's what @handle said", "who replied", "check replies", or a scheduled task named "Atlas program reply check". Requires program setup records; setup is handled by the Influencer program section of /aspire:aspire, never by this agent.
-
-  <example>
-  Context: Atlas connected, the "Summer ambassadors" program is set up, eight creators sit at Approved, Gmail is connected and the program's outreach record says drafts go to Gmail
-  user: "write first messages to the creators we approved"
-  assistant: "Launching the atlas-creator-outreach agent in first-touch mode for the eight approved creators; it will draft email, DM, and Aspire messages for each, save them to the program, and create the email drafts in your Gmail as you confirmed."
-  <commentary>
-  The main thread read the roster, asked O1 (save the drafts) and O2 (create Gmail drafts for the named creators) in one picker, and passed both. The agent personalizes, drafts, writes, and publishes the pipeline page. Nothing is sent.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Scheduled task "Atlas program reply check: Acme Cookware - Summer ambassadors" fires in a fresh session
-  user: "Run the Atlas program reply check for Acme Cookware, program Summer ambassadors. Do not ask questions."
-  assistant: "Launching the atlas-creator-outreach agent in reply-check mode; it will read roster creators' replies from the connected mailbox, list follow-ups due, republish the outreach page, and post to the saved routing."
-  <commentary>
-  Unattended run: read only. It summarizes and classes each reply and proposes the record, but records nothing, drafts nothing in the mailbox, and sends nothing. The next interactive session records the replies with one picker.
-  </commentary>
-  </example>
-model: inherit
+model: sonnet
 color: cyan
 ---
 
@@ -197,6 +179,19 @@ hyphenated sample handles, the most recent US holiday's sample brand, campaign, 
 section of your real page at a small scale (four creators, one per program type, drafts on each
 channel, two replies to record, one follow-up due), and a sample banner. Call no Atlas tool, ask
 nothing, and return that file's short output instead of your normal one (no audit trail block).
+
+## Progress steps
+
+If the session has a task tool (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), keep your plan in it right after reading the brief: 3 to 8 tasks, one in progress at a time, each marked done as it finishes. The agents panel reads that list as your steps and a bar for them, and you can skip `aspire_step`. Otherwise, if `mcp__aspire__aspire_step` appears among your tools, including as a deferred tool, it is available: a deferred tool only needs loading first with ToolSearch (`select:mcp__aspire__aspire_step`). Right after reading the brief, call it with your plan's step count as `total` (3 to 8) and `done: 0`; call it again with `done` and a few-word `note` as each step finishes. It only draws a bar on your row in the agents panel. Skip it silently if the tool is absent or ToolSearch does not find it, and never mention it to the user.
+
+## Artifact standard
+
+Every page, deck, or card you publish carries the animated Aspire Atlas mark at the top right and
+one source line at the end, as
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md` sets out: the mark and the
+variants in sections 1 and 3, the source line in section 2. Take the as-of time from the shell clock
+and change it on every republish. Never name Claude, a model, or the requester on a page. A sample
+page follows the sample variant. Files for import (CSV) and chat or mail text carry neither.
 
 ## Audit trail
 

@@ -351,6 +351,9 @@ creator's fee or terms, the ad readiness score, a team note, or the approver's n
 the records cannot fill are bracketed blanks (`[fee]`, `[due date]`), listed under `blanks`; a
 draft with a blank is never sent.
 
+Drafts to creators are text, not pages, so they carry no footnote
+([`artifact-standard.md`](artifact-standard.md)).
+
 ### The templates
 
 `{posts}` is one line per post: the format, the date, and the link (email, Aspire) or a few
@@ -600,7 +603,8 @@ Write `team` with one page data batch right after each publish. On first publish
 Sections, in order:
 
 1. **Header**: the program, "Prepared for" chip, when the records were read, counts: wanted,
-   requested, countered, granted this month, expiring in 30 days, asset requests open.
+   requested, countered, granted this month, expiring in 30 days, asset requests open. The
+   animated Aspire Atlas mark sits at the top right ([`artifact-standard.md`](artifact-standard.md)).
 2. **Your call needed**: one card per open item, the answers with the recommendation first.
    Done marks per viewer.
 3. **Requests by status**: tabs for Wanted, Requested, Countered, Granted, Declined. Each row:
@@ -620,7 +624,8 @@ Sections, in order:
    highlighted, "In your {mailbox}" when a mailbox draft exists.
 9. **Footer**: "Read from Atlas as of {timestamp}", where fees came from ("your usage fees" or
    "your number"), "Rights shown are what your records say. The signed agreement decides paid use.", and
-   a link to the content library page.
+   a link to the content library page. Then the footnote with the team audience line
+   ([`artifact-standard.md`](artifact-standard.md)).
 
 **Lens order.** `team` keeps the order above. `performance` and `creative` lead with Expiring
 and Granted this month. `brand` moves the proof lines and "Get this in writing" up.

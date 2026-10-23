@@ -197,7 +197,8 @@ In this order; the first rule that applies decides, and the page names it:
 4. **Safety caps.** Any other Fail, a `flag` or `escalate` red line, or two or more Flags →
    at most **Maybe**.
 5. **Fit score** against `vetting:thresholds` (default 70 and 50): **Approve** at or above
-   the approve line, **Maybe** at or above the maybe line, **Reject** under it.
+   the approve line, **Maybe** at or above the maybe line, **Reject** under it. In a creator-ads
+   lane this is the score without Budget vs target (**Creator-ads lanes**).
 
 A `vetting:lesson-*` record can change how a check is judged; mark every call a lesson
 changed ("Passed under saved lesson: …"). A lesson never relaxes a red line, a competitor, a
@@ -306,7 +307,7 @@ run.
 One page per list, published to a new path per run; a re-run of the same list republishes to
 the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
 
-1. **Header** with the "Prepared for" chip, the list name and source, the criteria used
+1. **Header** with the "Prepared for" chip, the animated mark at the top right, the list name and source, the criteria used
    (brand or campaign), network chips, and counts: Approve, Maybe, Reject, Can't vet.
 2. **Headline**: how many to approve and the one thing that decided the most rejects.
 3. **Approve**, **Maybe**, **Reject**, **Can't vet**, in that order, each a grid of creator
@@ -323,9 +324,10 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
 6. **Not vetted**: handles that could not be resolved, other networks, the brand's own
    handles, with the reason for each.
 7. **Footer**: sources, the fee rate label once, a note that images are a snapshot, and
-   "numbers come from Atlas as of {timestamp}".
+   "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote. The mark and the footnote follow [artifact-standard.md](artifact-standard.md).
 
-More than 12 creators: a chart leads the page (fit score against the recommendation lines,
+More than 12 creators: a chart leads the page (fit score against the recommendation lines, in a
+creator-ads lane the score without Budget vs target, which is what the lines decide,
 or follower count against engagement rate, colored by recommendation). Images follow
 `creator-card.md`, **Images**, page profile, cutting thumbnails per card before quality on a
 large list. Load `artifact-design`, and `dataviz` for any chart, and apply `theme:brand` per
@@ -344,27 +346,57 @@ is the lane's undecided candidates from discovery (`creator-discovery-{profile}-
 are answered by the launch. R3 is skipped: the campaign's saved cadence approves lookups for its
 lanes (SKILL.md, **Guardrails**). R4 is answered by the CAS Run picker.
 
-**Fit score for a creator-ads lane**, out of 100:
+**Fit score for a creator-ads lane** is the campaign's match score, out of 100: the one procedure
+in `cas-campaign.md`, **1d**, **Creator Selection**, **The match score**, with the lane's concept,
+the round's casting keywords and target cities, and the weights saved in `match` in
+`campaign:{slug}-cas` (the defaults there without it). Vetting runs it so its page and the
+campaign page show the same number for the same inputs. When `match` has a `basis`, the page says
+"Weights tuned {date} from {n} client decisions" in its About this data, else "Default weights". The two paid screens are two of its
+factors:
 
-| Component | Weight | Source |
-| --------- | ------ | ------ |
-| Persona fit | 30 | Does the creator credibly live the lane's persona? Bio, recent post topics, who appears on camera and in what setting, against the persona and casting filter. Cite the posts. |
-| Hook rate | 25 | `instagram.reelsHookRate`: full points at 45% or more, falling evenly to zero at 20% |
-| Past paid partners in or near category | 20 | `instagram.pastBrandPartnershipPartners` and partnership-marked posts: 20 for two or more in the brand's category, 12 for one in it or two or more near it, 6 for paid partners outside it, 0 for none |
-| Reels interaction rate | 15 | `instagram.reelsInteractionRate`: full points at 5% or more, falling evenly to zero at 1% |
-| Partnership readiness | 10 | 10 when partnership messages are enabled and the creator has partnership experience, 5 when one holds, 0 when neither does |
-
+- **Persona fit is Brief fit.** Read the concept's casting keywords and target cities from
+  `casting` in the lane record, which the campaign page's edits are pulled into. Only when it
+  holds none, derive them from the lane's persona and casting
+  filter, and say on the page that they are derived, not saved. Judge each keyword
+  against the bio, recent post topics and who appears on camera and in what setting, and cite the
+  bio or the post for every match.
+- **Paid track record is Paid history**, with the partners part read by category:
+  `instagram.pastBrandPartnershipPartners` and partnership marked posts give 1 for two or more
+  partners in the brand's category, 0.6 for one in it or two or more near it, 0.3 for paid
+  partners outside it, and 0 for none. The campaign page uses this read in place of the plain
+  count for every creator vetting screened, so the two never disagree.
 - The category comes from `brand:summary` and `brand:business-context`, as in the creator
   brief's **Fit rubric**. "Near" means a category the same buyer shops in.
-- A component Atlas holds no data for scores zero and is listed as missing. The one exception
-  is hook rate on TikTok, which Atlas does not report: score the other four out of 75, scale
-  to 100, and say so on the card ("Scored without hook rate, which TikTok doesn't report").
+- Performance, Budget vs target and Content reach are worked out exactly as that section says,
+  Budget vs target from `rates-and-terms.md`, **Expected cost** (before step 3, the calculator's
+  target plus the uplift, unless a roster finding holds an offer, counter or agreed fee) and
+  **Target rate**, which reads `-cas` and `-terms`.
+- **The recommendation uses the score without Budget vs target**, the client's score in that
+  section, against `vetting:thresholds`, so price never decides Approve, Maybe or Reject, and no
+  reason ever cites price, cost or the target rate. The thresholds decide the recommendation and
+  the bands (75, 60, 45) only label the score; the two are separate.
+- An input Atlas holds no data for is left out and named, as that section says, never scored as
+  zero. On TikTok that is hook rate, engaged accounts, past paid partners and badges; say so on the
+  card ("Scored without hook rate, which TikTok doesn't report").
+- A bio that names a saved competitor halves the score, as that section says. It is also a hard
+  stop below when it is a saved competitor's own handle.
+- Partnership readiness isn't scored. It stays one of the figures on every row.
+- For the paid track record, read the discovery finding's `detail.recommendationTypes` when
+  present. It is supporting evidence, never points: cite it in plain words, for example "Meta
+  ranks this creator under high ad performance".
+- Write the result in `detail.match`: `{score, client, band, factors, paidPartners, without, conflict,
+  pastDeals, weights, scoredAt}`, `paidPartners` being the partners part by category
+  (`{value, partners: [{name, category}]}`, `category` in, near or outside), which the campaign page
+  takes as it is, `score` being the five factor score and `client` the one without
+  Budget vs target, with `fitScore` equal to `score`. The page shows the date of the run, and names
+  the inputs that can differ from the campaign page's as that section lists them.
 - Brand safety runs exactly as today, and every hard stop still decides first.
 
 **The recommendation is the slate call.** Approve, Maybe, or Reject, by **The recommendation**
 above against `vetting:thresholds`. A creator who would be Can't vet appears on the slate as
 Maybe, with "not enough data to judge" as what would settle it. Every Reject carries its reason
-in plain words, because the Gate 2 packet shows it to the client.
+in plain words, never price, because the CM may pass it on to the client; the Gate 2 packet itself
+shows the recommendation to the agency only (`cas-campaign.md`, **Gate 2**).
 
 **Output rows carry the four figures**: hook rate, Reels interaction rate, past paid partners,
 and partnership readiness, in each finding's `detail.adFigures` and on each card, beside the

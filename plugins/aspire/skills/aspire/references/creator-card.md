@@ -16,7 +16,7 @@ The one larger view, a single creator's full profile page, embeds this same card
 | Agents (brief, discovery, account analyst, content review) | Inside the agent's published page | Hidden |
 | No widget tool, or the call fails | The Markdown fallback below | n/a |
 | One creator's full profile or portfolio view | Published page, the card at full width with the evidence sections below it (`creator-profile.md`) | Hidden |
-| The CAS campaign page (`cas-campaign.md`, **1d**) | Published page, page profile, one card per creator, with the concept as the first flow chip and a "Hook post" label on the evidence thumbnail the hook rate came from | Hidden |
+| The CAS campaign page (`cas-campaign.md`, **1d**) | Published page, page profile, one card per creator, with the concept as the first flow chip and the "Hook post" and "Paid partnership" marks on its thumbnails; the same card, without thumbnails, sits in the creator viewer's **Profile**, after the match and the concept (`cas-campaign.md`, **Creator Selection**, **The creator viewer**) | Hidden |
 
 Agents never call `show_widget`; the main thread can. When an agent returns a creator the user
 should see in chat, the main thread renders the card from the agent's numbers.
@@ -56,7 +56,9 @@ snippet takes them. The main thread embeds them (see **Images**) before renderin
    - `title`: `atlas_creator_card_{handle}` for one creator, `atlas_creator_cards` for several.
    - `loading_messages`: one short neutral message, for example `["Loading creator profile"]`.
    - `widget_code`: the style block once, then one card per creator inside
-     `<div class="ac-grid">`.
+     `<div class="ac-grid">`. Add the small animated Aspire Atlas mark (28px) in the widget's free
+     top corner (the card's fit ring keeps its corner) and, under the cards, the one-line widget
+     footnote, both per `artifact-standard.md`, **Variants**. They count toward the 300KB of data URIs.
 5. Reply after the card with at most three bullets the card cannot show (why this creator, what
    is missing, the next step). Never repeat the card's numbers in text.
 
@@ -67,7 +69,9 @@ actions row out.
 ## Page rendering
 
 Put the style block in the page `<head>` once and the cards wherever the page structure calls
-for them, inside `<div class="ac-grid">`. The page's own tokens are not used by the card; the
+for them, inside `<div class="ac-grid">`. A page the main thread publishes for 7 or more creators
+carries the full animated Aspire Atlas mark at the top right and the full footnote at the end, per
+`artifact-standard.md`; a page another flow publishes takes them from that flow's reference. The page's own tokens are not used by the card; the
 card carries Aspire's, unless the brand has a saved theme: then add the card override from
 `theme.md`, **Creator card**, right after the style block, on pages and inline alike. Embed images with the **Images** snippet and `--profile=page`: `avatar` and `thumb` at their
 default boxes fit the card at 2x. Leave
@@ -145,6 +149,11 @@ and `cssHeight` (half of them). Use them so the browser never stretches the imag
   embed_media.py … > media.jsonl`), read only the small fields (`ok`, `format`, `width`,
   `height`, `cssWidth`, `cssHeight`, `native`, `bytes`), and put each `dataUri` into the page
   from that file as you assemble the HTML. Never retype a data URI.
+
+**The CAS campaign page** embeds each post it shows once, as `post@360`, and uses that one image
+for the card's thumbnail and the creator viewer, in place of `thumb`; its order for dropping
+images past 8MB is in `cas-campaign.md`, **The creator viewer**, **How the media reaches the
+viewer**. No surface embeds a video: the snippet never downloads one.
 
 **Failures.**
 
@@ -326,7 +335,7 @@ fill in from web copy. The one exception is the header row, which always shows.
 | Subtitle | `{SUBTITLE}` | Name · descriptor, per **Subtitle** below | No name and no descriptor: leave the line out |
 | Topics | `{TOPICS}`, `{TOPICS_MORE}` | Top two `analysis.aestheticTags` by post count across the 12 posts, or `youtube.youtubeTopicCategories` | Count tags case-insensitively and show each in its most common spelling. A tag must appear on 3 or more posts. `+N` counts the other tags that pass; omit when zero |
 | Audience | `{AUDIENCE}` | Instagram: `instagram.creatorEngagedAccountsBreakdowns` (engaged accounts, top gender share, top age band). TikTok: `tiktok.audienceGenders` and `tiktok.audienceAges` with the follower count | Only when a gender or age breakdown has results; they are often empty. Format `33.4K, Female 79%, 25-34` |
-| Fit ring | `{FIT}` | The fit score the current flow computed or read from Atlas (discovery `fitScore`) | Only a 0 to 100 score from a stated rubric. Flows without one leave the ring out; the brief shows its Strong or Partial read as a badge instead |
+| Fit ring | `{FIT}` | The fit score the current flow computed or read from Atlas (discovery `fitScore`); in a CAS campaign, the stored match score (`cas-campaign.md`, **The match score**) | Only a 0 to 100 score from a stated rubric. Flows without one leave the ring out; the brief shows its Strong or Partial read as a badge instead |
 | Network chips | `{CHIPS}` | One chip per entry in `channels` with its `followersCount` | Only when there are two or more channels. The primary one is `aria-selected="true"` |
 | Badges | `{BADGES}` | See **Badges** below | Flow chips, then up to two card badges, then an outline `+N` chip |
 | Brand safety tile | `{SAFETY}` | `analysis.brandSafety` on the posts, plus the flow's **safety** risk flags only | Needs 3 or more analyzed posts, or a safety flag. See **Brand safety** below |
@@ -546,6 +555,31 @@ rule in the data table says so, and drop the comments themselves. Repeat `.ac-ne
 `{SAFETY_TONE}` and `{SENTIMENT_TONE}` are empty for success, `ac-warn`, or `ac-neutral`.
 `{ICON_SAFETY}` is `{ICON_SHIELD_CHECK}` when brand safe and `{ICON_SHIELD_ALERT}` otherwise.
 `{DETAILS}` is `<dt>`/`<dd>` pairs, for example `<dt>Angle</dt><dd>…</dd>`.
+
+### Creator-ads details
+
+A creator ad campaign's discovery card (`creator-discovery.md`, **Creator-ads mode**) puts the
+ad figures in `{DETAILS}`, one `<dt>`/`<dd>` pair each, in this order and with these labels:
+
+| Label | Value |
+| ----- | ----- |
+| Hook rate | Rate, one decimal |
+| Reels interaction rate | Rate, one decimal |
+| Past paid partners | Up to five names, comma separated |
+| Partnership readiness | Ready, Partly, or Not yet |
+| Views (Meta) | Number, card number format |
+| Interactions (Meta) | Number, card number format |
+| Reach (Meta) | Number, card number format |
+| Engaged accounts (Meta) | Number, card number format |
+| Category | One chip; add "matches your interest filter" or "outside your interest filter" when the search sent one |
+| Contact route | Email on profile, Partnership messages on, or No route in Atlas |
+| Meta recommends | One chip per ranking: High ad performance, Most ads experience, Similar brands. Leave the pair out when there are none |
+
+Chips inside a `<dd>` are `<span class="ac-badge ac-outline">` in a `<span class="ac-badges">`.
+A figure Atlas does not hold reads "Not in Atlas", never a guess. Never add a period to views or
+interactions ("30-day", "lifetime"): Atlas reports none. A TikTok card shows one line instead,
+"Hook rate is not available on TikTok." These labels are the only words the card shows; the
+field names stay in the references.
 
 ## Icons
 

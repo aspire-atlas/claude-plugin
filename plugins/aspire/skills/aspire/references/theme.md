@@ -342,7 +342,9 @@ values, and say that the preview could not be drawn.
 Every flow that publishes a page already reads all calibrations. Take `theme:brand` from that
 read. A missing or retracted record means the flow's own design rules apply unchanged: that is
 the Aspire default, and nothing below applies. Agents never ask about the theme and never
-offer to set one up. Unattended runs apply a saved theme the same way.
+offer to set one up. Unattended runs apply a saved theme the same way. The theme never touches the
+animated Aspire Atlas mark: it stays at the top right, is never recolored or replaced by the
+theme, and keeps its own dark tile (`artifact-standard.md`).
 
 ### Page tokens
 
@@ -384,7 +386,9 @@ exactly as its own reference describes. Map the roles onto the page's own tokens
 Follow `header`. `band`: a full-width strip in `brand` with `on-brand` text, holding the logo or
 brand name and the page title. `rule`: a 4px `brand` top rule on the page's normal header.
 `plain`: the page's normal header. The logo sits at the start of the header, 28px high,
-`width:auto`, with `alt` from `logo.alt`. Use the chip rule from **Comparison widget** when its
+`width:auto`, with `alt` from `logo.alt`. The Aspire Atlas mark stays at the top right of every
+header style, never recolored or replaced; a `band` header leaves room for it at the far right and
+does not draw behind it (`artifact-standard.md`). Use the chip rule from **Comparison widget** when its
 `tone` matches what is behind it.
 
 ### Logo
@@ -462,6 +466,50 @@ safety colors (`--ac-neg`, `--ac-neu`, the ok and warn dots and tiles) keep thei
 .acp{font-family:var(--font-body)}
 .acp h1,.acp h2,.acp .acp-big{font-family:var(--font-display);font-stretch:var(--font-display-stretch)}
 .acp .acp-panel,.acp .acp-note{border-radius:var(--radius,12px);box-shadow:none}
+</style>
+```
+
+### The CAS campaign page
+
+The CAS campaign page is built on the Atlas design system tokens (`cas-campaign.md`, **Design
+standards**), not on the page tokens above. On that page the theme sets only the tokens below, in
+each mode from that mode's values, and the block goes right after the page's **Tokens** block.
+Surfaces, text, borders and the font stay Atlas's, and `fonts` and `radius` are not used there.
+
+| Atlas token | Theme role |
+| ----------- | ---------- |
+| `--primary`, `--primary-foreground` | `brand`, `onBrand` |
+| `--ring` | `brandInk` |
+| `--chart-1` to `--chart-5` | `chart[0]` to `chart[4]`, in order; a theme with fewer keeps the Atlas value for the rest |
+| `--chart-1-foreground` to `--chart-5-foreground` | `on(chart[n])` from **Theme build** |
+| Header band | `header` as in **Header**, drawn with `bg-primary text-primary-foreground` |
+| Logo | **Logo**, unchanged |
+
+```html
+<style>
+:root{--primary:{light.brand};--primary-foreground:{light.onBrand};--ring:{light.brandInk};
+  --chart-1:{light.chart[0]};--chart-1-foreground:{on(light.chart[0])};/* … through --chart-5 */}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){/* the same names with the dark values */}}
+:root[data-theme="dark"]{/* the same names with the dark values */}
+</style>
+```
+
+Run the contrast check in **Design standards** before writing the block. A token that fails is
+left out of the block for that mode, together with its pair when it is a fill or a fill's
+foreground, so the Atlas default stands, and the fallback is noted for editors as that section
+says.
+
+The creator card on that page takes this override in place of the one in **Creator card**. Its
+fit ring uses `--ring`, which reads as text on the card. The ok and warn tiles keep their
+semantic colors.
+
+```html
+<style>
+.ac-card,:root[data-theme="light"] .ac-card{--ac-card:var(--card);--ac-fg:var(--card-foreground);--ac-muted:var(--muted-foreground);--ac-border:var(--border);--ac-soft:var(--muted);--ac-tile:var(--muted);--ac-brand:var(--ring);--ac-on-brand:var(--card);--ac-neutral-bg:var(--muted);--ac-neutral-fg:var(--muted-foreground)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ac-card{--ac-card:var(--card);--ac-fg:var(--card-foreground);--ac-muted:var(--muted-foreground);--ac-border:var(--border);--ac-soft:var(--muted);--ac-tile:var(--muted);--ac-brand:var(--ring);--ac-on-brand:var(--card);--ac-neutral-bg:var(--muted);--ac-neutral-fg:var(--muted-foreground)}}
+:root[data-theme="dark"] .ac-card,.dark .ac-card{--ac-card:var(--card);--ac-fg:var(--card-foreground);--ac-muted:var(--muted-foreground);--ac-border:var(--border);--ac-soft:var(--muted);--ac-tile:var(--muted);--ac-brand:var(--ring);--ac-on-brand:var(--card);--ac-neutral-bg:var(--muted);--ac-neutral-fg:var(--muted-foreground)}
+.ac-card{font-family:'Inter',ui-sans-serif,system-ui,sans-serif;border-radius:0.75rem;box-shadow:none}
+.ac-card .ac-tile,.ac-card .ac-thumb{border-radius:calc(0.75rem - 4px)}
 </style>
 ```
 

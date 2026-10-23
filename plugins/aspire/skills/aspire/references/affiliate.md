@@ -143,8 +143,9 @@ CSV in the session's scratchpad folder (the working directory when there is none
 
 `action, code, handle, network, discount_kind, discount_value, currency, starts_at, ends_at, title, notes`
 
-`action` is `create` or `turn off`. `currency` is filled for `fixed` only. The same rows are on
-the page with a download. Codes on the sheet stay `planned` (written with A1). When the user says
+`action` is `create` or `turn off`. `currency` is filled for `fixed` only. The CSV carries no
+footnote (its columns are an import format): provenance goes in the file name and the hand-off
+message. The same rows are on the page with a download. Codes on the sheet stay `planned` (written with A1). When the user says
 they are in the store, A4 names them and the date, and `record` writes each `live` with
 `codeMethod` `sheet`. A `turn off` row becomes `retired` the same way.
 
@@ -468,7 +469,8 @@ with your team as Editor to see the sales goal and maximums. Never share it with
 Sections, in order:
 
 1. **Header**: the program, the period ("September 2026" or "October 1 to 7, so far"), the
-   "Prepared for" chip, and a source chip: "Sales from {source label}, {currency}".
+   "Prepared for" chip, and a source chip: "Sales from {source label}, {currency}". The animated
+   Aspire Atlas mark sits at the top right ([`artifact-standard.md`](artifact-standard.md)).
 2. **KPI row**: Revenue, Orders, Commission owed, and Revenue against the sales goal. The goal
    tile renders only for Editors when `team/goal` reads back; others see "Sales goal: team
    view". Each tile carries its source and currency, and the change from last month.
@@ -490,7 +492,9 @@ Sections, in order:
    included or not, "Other codes" with its order count, codes to check, and creators with no
    sales.
 10. **Footer**: "Revenue is {source}'s figure in {currency}, read {timestamp}. Atlas data as of
-    {timestamp}. Sales and posts on the same days are a correlation, not proof."
+    {timestamp}. Sales and posts on the same days are a correlation, not proof." Then the footnote
+    with the team audience line ([`artifact-standard.md`](artifact-standard.md)); its source line
+    names the store or affiliate platform as the source of the sales figures.
 
 In `propose`, codes and figures show "Proposed". In `record`, the approved ones show their new
 status. The page never shows a customer's name, email, or address, an order's contents, the

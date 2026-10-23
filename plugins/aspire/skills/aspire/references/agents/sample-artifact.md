@@ -24,8 +24,10 @@ launches a general-purpose subagent with "Read and follow the agent file
      hook rate sits between 35% and 65%) and round enough to read as illustrative.
    - No fetched images. Profile pictures are initials on a tinted circle; post media are flat
      tiles in the holiday colors with a one-line caption and the format chip.
-   - A banner at the top of the page, and the footer, say: "Sample · invented data for
-     {holiday} {year}. Not from Atlas."
+   - A banner at the top of the page says: "Sample · invented data for {holiday} {year}. Not from
+     Atlas." The page carries the mark and the sample source
+     line in place of the real one (the sample variant in
+     [`artifact-standard.md`](../artifact-standard.md)).
 3. **The real page, smaller.** Follow the agent's own reference for page structure, section
    order, chrome, and wording rules, with every section present, at the smallest size that still
    shows how it works: three creators where the real page has ten, five posts where it has
@@ -129,6 +131,7 @@ print(json.dumps({"holiday": name, "date": day.isoformat(), "year": day.year, "d
 | `atlas-program-ledger` | The holiday campaign's ledger: budget, committed, paid, remaining, burn by month, lines, an overdue invoice, an unmatched payment | 4 creators, 1 unmatched row |
 | `atlas-campaign-orchestrator` | The holiday brand's Next actions: one program and one creator ad campaign, actions across the buckets, two waiting on a decision, one done, one changed since approval, the stage strips | 8 actions |
 | `atlas-program-dashboard` | One sample program's dashboard: goals with pacing, the funnel, deliverables, content, performance, spend in the team view, roster health, the attention list | 8 creators, 4 posts |
+| `atlas-shops` | The sample brand's shops plan for the holiday: readiness for Instagram Shop and TikTok Shop, the step order, lead products and posts to tag, creators for the shop by role, the running cadence | 2 shops, 4 creators |
 
 An agent not in this table builds its own page at the smallest scale that shows every section.
 

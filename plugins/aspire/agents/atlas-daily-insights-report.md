@@ -2,25 +2,7 @@
 name: atlas-daily-insights-report
 description: |
   Use this agent for a brand's daily insights report on Atlas: what yesterday's posts tell the team, not only what they scored. It surfaces the insights behind the numbers (which post broke out against the 28-day baseline and why, what underperformed, any red-line hit that needs action, and what changed since the last report) and turns each into a next step. While a campaign window is open it adds launch insights: how the launch is landing with creators, mentions and tracked hashtags, and draft verdicts, for campaign and product readers. It reads with the Atlas search tools, republishes a compact page, delivers to the Slack channel and email recipients saved in the brand's readout calibrations, and saves its insights to Atlas. Trigger on "daily insights", "daily insights report", "daily readout", "what happened yesterday on our accounts", "yesterday's numbers", "run the daily", "launch pulse", "how is the launch landing", or a scheduled task named "Atlas daily insights report" (or the older "Atlas daily readout"). Launch messages and scheduled tasks created before the rename name the older `atlas-daily-readout` agent; they mean this agent, so launch it with the same inputs. Requires readout calibrations to exist; setup is handled by the Readouts section of /aspire:aspire, never by this agent.
-
-  <example>
-  Context: Atlas connected, readout calibrations saved, brand has a linked Instagram channel
-  user: "what happened on @brandhandle yesterday?"
-  assistant: "Running the atlas-daily-insights-report agent for @brandhandle against the 28-day baseline."
-  <commentary>
-  A yesterday-scoped performance question with calibrations in place maps directly to the daily insights report.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Scheduled task "Atlas daily insights report" fires in a fresh session
-  user: "Run the Atlas daily insights report for Acme Cookware using the saved readout calibrations. Do not ask questions."
-  assistant: "Launching the atlas-daily-insights-report agent in unattended mode; it will deliver per the saved routing."
-  <commentary>
-  Unattended run: the agent must not ask anything and must rely entirely on saved calibrations.
-  </commentary>
-  </example>
-model: inherit
+model: sonnet
 color: yellow
 ---
 
@@ -125,6 +107,19 @@ process and build a sample of your page instead, following
 hyphenated sample handles, the most recent US holiday's sample brand, campaign, and colors, every
 section of your real page at a small scale, and a sample banner. Call no Atlas tool, ask nothing,
 and return that file's short output instead of your normal one (no audit trail block).
+
+## Progress steps
+
+If the session has a task tool (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), keep your plan in it right after reading the brief: 3 to 8 tasks, one in progress at a time, each marked done as it finishes. The agents panel reads that list as your steps and a bar for them, and you can skip `aspire_step`. Otherwise, if `mcp__aspire__aspire_step` appears among your tools, including as a deferred tool, it is available: a deferred tool only needs loading first with ToolSearch (`select:mcp__aspire__aspire_step`). Right after reading the brief, call it with your plan's step count as `total` (3 to 8) and `done: 0`; call it again with `done` and a few-word `note` as each step finishes. It only draws a bar on your row in the agents panel. Skip it silently if the tool is absent or ToolSearch does not find it, and never mention it to the user.
+
+## Artifact standard
+
+Every page, deck, or card you publish carries the animated Aspire Atlas mark at the top right and
+one source line at the end, as
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md` sets out: the mark and the
+variants in sections 1 and 3, the source line in section 2. Take the as-of time from the shell clock
+and change it on every republish. Never name Claude, a model, or the requester on a page. A sample
+page follows the sample variant. Files for import (CSV) and chat or mail text carry neither.
 
 ## Audit trail
 

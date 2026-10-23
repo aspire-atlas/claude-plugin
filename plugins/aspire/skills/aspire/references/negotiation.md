@@ -499,7 +499,8 @@ this creator's deal.
 Sections, on one screen, printable:
 
 1. **Header**: the brand, the program, the creator (name, handle, network), the date agreed,
-   "Prepared for the agreement in Aspire".
+   "Prepared for the agreement in Aspire". The animated Aspire Atlas mark sits at the top right
+   ([`artifact-standard.md`](artifact-standard.md)).
 2. **Deliverables**: a table of what, how many, by when (the dates worked out from the product
    arriving or `termStart`).
 3. **Dates**: posting window, term start and end, renewal notice date for ambassadors.
@@ -511,7 +512,10 @@ Sections, on one screen, printable:
 7. **Compensation**: fee or monthly fee, usage fee, product and its value, commission % and code with its
    discount, payout timing.
 8. **Footer**: "Terms as agreed on {date}. The agreement and payment run in Aspire." No budget,
-   no max, no other creator, no performance read, no team note.
+   no max, no other creator, no performance read, no team note. Then the footnote from
+   [`artifact-standard.md`](artifact-standard.md) with the shared-page audience line (shared with the
+   creator for this agreement only); like the footer, it holds no budget, maximum, other creator, or
+   performance read.
 
 Load `artifact-design`; apply `theme:brand` per `theme.md`.
 
@@ -551,7 +555,8 @@ share it with creators; their terms summary is the page to share."
 Sections, in order:
 
 1. **Header**: the program, "Prepared for" chip, counts by status (Offer to send, Waiting on
-   creator, Your call needed, Agreed, Declined), the fee rate label.
+   creator, Your call needed, Agreed, Declined), the fee rate label. The animated Aspire Atlas mark
+   sits at the top right ([`artifact-standard.md`](artifact-standard.md)).
 2. **Your call needed**: one card per open item: the creator, the question, the answers with the
    recommendation first, and why. Done marks per viewer.
 3. **Creators in negotiation**: one card per creator, grouped by type. In `{DETAILS}`: our offer,
@@ -563,7 +568,8 @@ Sections, in order:
 6. **Drafts waiting**: one copy-ready block per creator: channel, subject, body, and "in your
    {mailbox}" when a mailbox draft exists.
 7. **Footer**: the fee rate label, "fees are estimates from public view counts, not quotes", and
-   "numbers read from Atlas at {timestamp}".
+   "numbers read from Atlas at {timestamp}". Then the footnote with the team audience line
+   ([`artifact-standard.md`](artifact-standard.md)).
 
 In `propose`, every move shows "Proposed". In `record`, the approved ones show their new status
 and the rest stay proposed.
