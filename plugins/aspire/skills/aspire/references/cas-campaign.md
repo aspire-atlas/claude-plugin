@@ -102,6 +102,11 @@ draft, and in a channel post, uses the left column.
 | Variant plan, V1 to V5 | the variant build (`agency/brief-{lane}-r{round}`) |
 | Needs client review, Changes requested, With Aspire QA, Approved; Not cut yet; First cut, Second cut, Final cut; Add cut, Send to {brand} | a cut's status and stage, worked out from its newest version in `reviews` and the client's call under `cut-calls` (**1d**, **Content Review**, **The status flow**) |
 | Frameworks (PAS, BAB, 4Ps, HSO, SSS) | `frameworks` in `campaign:{slug}-cas` |
+| Cost per sale, target, {d}% under target, {d}% over target, hit rate, ads won | spend over purchases from `search_ads`, against `costPerSaleTarget` in `campaign:{slug}-decision-defaults` (**1d**, **Ad Performance**) |
+| Spend, Impressions, CPM, Hook rate, Hold rate, Link CTR, Purchases, Revenue, ROAS, Peak week | `search_ads` sums and the ratios worked out from them (**1d**, **Ad Performance**, **Reading the results**) |
+| Winning, Testing, Watch, Fatigued, Retire; Retire or refresh; Not spending; spend floor | a variant's status under the decision defaults (**1d**, **Ad Performance**, **Status**) |
+| Live post; Ads not matched | the post a variant's partnership ad runs (`v{n}-post`), and ads by the round's creators that ran no variant's live post |
+| Connect your Meta ad account to see results | no ad account linked to the brand's Profile in Atlas |
 | Needs a concept | a product in scope that no concept in the round names |
 | Reset to original, Versions | the brief's saved versions (**1e**, **Brief versions and Reset to original**) |
 
@@ -259,8 +264,19 @@ The decision defaults, saved at setup and read by later performance reads:
 ```json
 {"schema": 1, "winnerMarginPct": 20, "winnerMetric": "cost per result",
  "tieBreak": "3-second hold", "switchOffFloor": {"spendUsd": 30, "impressions": 1000},
- "neverSwitchOffLastAd": true}
+ "neverSwitchOffLastAd": true,
+ "costPerSaleTarget": {"amount": 45, "currency": "USD"},
+ "spendFloor": {"amount": 30, "currency": "USD"},
+ "watchRatio": 1.3, "fatigueDays": 36, "stuckDays": 7}
 ```
+
+`costPerSaleTarget` is {brand}'s own cost per sale target and `spendFloor` the spend under which
+an ad is still testing, each in the ad account's currency, from C6a or the status screen (**1c**,
+row 17). `watchRatio`, `fatigueDays` and `stuckDays` set Ad Performance's Watch band, Fatigued and
+Not spending, 1.3, 36 and 7 when the record leaves them out. A record without a target is read as
+having none: no number in the page's code stands in for it (**1d**, **Ad Performance**, **The
+target and the floor**). Changing any of them goes through the supersede rule with its own
+confirmation.
 
 Rules:
 
@@ -293,7 +309,7 @@ record type the newest finding per identity wins, by `detail.recordedAt`.
 | ---------- | -------- | ------ | ---- | ----------- |
 | `gate` | gate + round (Gate 4b: gate + round + the creator) | The brand's own account on its first linked network | `action_item` `high` while planned, open or slipped; `went_well` when cleared | `gate` (1, 2, 3, 4, `4b`), `status` (planned, open, cleared, slipped), `plannedAt`, `sentAt`, `dueAt`, `clearedAt`, `clearedBy`, `daysSlipped`, `reminderTask` (the task name). Gate 1 adds `source` (where the concepts were read from). Gate 3 adds `approval` `{approver, name, at, item, via, recordedBy}` (the approver's viewer id, their name, when, the `fees` item, `page` or `chat`, and for `chat` the CM who recorded it). Gate 4 adds `signoff` `{signer, name, at, item, via, recordedBy}` (the signer's viewer id, their name, when, the `signoffs` item, `page` or `chat`, and for `chat` the CM who recorded it), `reopenedAt` and `reopenReason`. Gate 4b adds `handle` and `network` |
 | `round` | round | The brand's account | `action_item` `medium` while planned, in production or in market; `went_well` when done | `round`, `label`, `month`, `build` `{start, end}`, `inMarket` `{start, end}`, `launchDate`, `state` (planned, in production, in market, done), `steps` (`{"1": {plannedAt, dueAt}, …}` for steps 1 to 4), `plan` (every step of the round, the four approvals included, **Round steps** below), `closedAt` (set when the CM closes the round early), `startedFrom` (the round it was started from, empty for the first), `creators` (`new`, `same`, or `same-and-new`: how the round was started) |
-| `roster` | the creator's account + round | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while a candidate; `went_well` approved; `needs_improvement` rejected | `handle`, `network`, `name`, `descriptor`, `location` (the last three only when edited on the page), `lane`, `persona` (the persona's name in the round's brief, **1d**, **Creator Selection**, **Concept and persona**), `slate` (candidate, approved, maybe, rejected), `priority` (true for a Priority Yes), `clientReason` (the reason on a Priority Yes or Yes against the recommendation), `rejectReason`, `clientQuestion`, `pickNote` (why we picked them), `rate` (offered, countered, agreed, declined), `offer` `{open, target, max}`, `counter`, `agreed`, `deliverables`, `usage`, `exclusivity`, `termNotes`, `contact` `{email, phone, manager}`, `tier`, `decidedBy` (`{writer, name, at, score, band}`: the page account whose call was recorded, their name, when, and the match score and band they saw), `surprise` (`{kind, reason, text, at}`: the client's surprise reason on that call, `kind` `pass` or `pick`, **1d**, **Creator Selection**, **Deciding**), `lastContactAt`, `waitingOn` (client, agency, creator), `yourCall` (the question to the client, while one is open), `adPermissions` (granted, pending), `details` `{status, address, pickup, visitDate, product, options, availability, deliveryNote}` (`address` being `{line1, line2, city, region, postal, country}`), `shipping` `{status, item, carrier, tracking, shippedAt, deliveredAt, eta}` (`status` not shipped, shipped, delivered, returned or kept), `contract` `{status, signedAt}`, `payment` `{status, at, paidPct}`, `rates` `{ugc, reel, usage90}` (the round's rates per deliverable), `footage` `{counts, at}`, `briefState` (sent, accepted, changed, approved, locked), `variantPlan` (the creator's overrides of the concept's variant plan for the round, one entry per overridden field, `[{variant, field, lane, value, by, at}]`, `field` being framework, length, hook or cta and `by` and `at` that field's own writer and time, **1d**, **Selected Creators**, **Concept and variant plan**), `shipDate`, `vetting` (the four figures and the recommendation), `returning` (true when carried from an earlier round), `fromRound` (the round it was carried from), `source` (chat, reply, page, or carried) |
+| `roster` | the creator's account + round | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while a candidate; `went_well` approved; `needs_improvement` rejected | `handle`, `network`, `name`, `descriptor`, `location` (the last three only when edited on the page), `lane`, `persona` (the persona's name in the round's brief, **1d**, **Creator Selection**, **Concept and persona**), `slate` (candidate, approved, maybe, rejected), `priority` (true for a Priority Yes), `clientReason` (the reason on a Priority Yes or Yes against the recommendation), `rejectReason`, `clientQuestion`, `pickNote` (why we picked them), `rate` (offered, countered, agreed, declined), `offer` `{open, target, max}`, `counter`, `agreed`, `deliverables`, `usage`, `exclusivity`, `termNotes`, `contact` `{email, phone, manager}`, `tier`, `decidedBy` (`{writer, name, at, score, band}`: the page account whose call was recorded, their name, when, and the match score and band they saw), `surprise` (`{kind, reason, text, at}`: the client's surprise reason on that call, `kind` `pass` or `pick`, **1d**, **Creator Selection**, **Deciding**), `lastContactAt`, `waitingOn` (client, agency, creator), `yourCall` (the question to the client, while one is open), `adPermissions` (granted, pending), `details` `{status, address, pickup, visitDate, product, options, availability, deliveryNote}` (`address` being `{line1, line2, city, region, postal, country}`), `shipping` `{status, item, carrier, tracking, shippedAt, deliveredAt, eta}` (`status` not shipped, shipped, delivered, returned or kept), `contract` `{status, signedAt}`, `payment` `{status, at, paidPct}`, `rates` `{ugc, reel, usage90}` (the round's rates per deliverable), `footage` `{counts, at}`, `briefState` (sent, accepted, changed, approved, locked), `variantPlan` (the creator's overrides of the concept's variant plan for the round, one entry per overridden field, `[{variant, field, lane, value, by, at}]`, `field` being framework, length, hook, cta or post (the variant's live post, `{url, igMediaId}`) and `by` and `at` that field's own writer and time, **1d**, **Selected Creators**, **Concept and variant plan**), `shipDate`, `vetting` (the four figures and the recommendation), `returning` (true when carried from an earlier round), `fromRound` (the round it was carried from), `source` (chat, reply, page, or carried) |
 | `draft` | the creator + the template | The creator's account | `action_item` `low` while not sent; `went_well` once sent | `handle`, `template` (offer, counter, accept, chase, details, brief, brief-notes), `subject`, `body`, `sentAt` |
 | `reply` | one per exchange, never replaced | The creator's account | `went_well` `low` | `handle`, `receivedAt`, `summary` (one plain line), `record` (what it wrote to the roster), `nextMove` |
 | `brief` | lane + round | The brand's account | `action_item` `medium` while a draft; `went_well` when locked | `lane`, `locked`, `briefPage`, `version`, `edits` (the edits pulled from the page, one plain line each: the part, from, to, and who), `added` (true for a concept added on the page), `removed` (true for a concept taken out of this round's brief), `deferred` (true for a concept deferred to the next round), `carriedForward` (the round a deferred concept came from), `importedFrom` (`{label, url, kind}` of the document an import read), `startedFrom` (the round whose signed off brief it started from), `reopened` (`{reason, name, at}` when the agency reopened a signed off brief) |
@@ -599,6 +615,7 @@ cleared, `clearedBy`, `clearedAt`, `source`.
 | C4 | How long does the client get at each approval? | 1) 48 hours each (Recommended); 2) 24 hours each; 3) I'll set them per step (type them). Planned send dates per step may go in the free text too. | `campaign:{slug}-cas` (turnaround); a `planned` gate finding per gate with a date |
 | C5 | Where should the campaign page and step updates go? (multiSelect) | 1) Published page + chat summary (always on); 2) The shared Slack channel (type its name, and paste its link too if the page should open it); 3) Email (type the recipients) | `campaign:{slug}-routing` |
 | C6 | When is the weekly call with the client? Give the day, time, timezone and how long it runs. | 1) Monday 10:00, my timezone, 30 minutes (Recommended); 2) Thursday 15:00, 30 minutes; 3) I'll set it (type it) | `campaign:{slug}-cadence` |
+| C6a | What cost per sale should the ads beat for {brand}, and how much should an ad spend before we judge it? Give the amounts in the ad account's currency. | 1) Type the target and the spend floor; 2) Not known yet: ask again before the ads go live (Recommended when {brand} hasn't said) | `costPerSaleTarget` and `spendFloor` in `campaign:{slug}-decision-defaults` |
 | C7 | Save this campaign setup for {brand}? Everyone on the team and every scheduled run will use it. | 1) Save the campaign (Recommended); 2) Change something | Every record above, plus `campaign:{slug}-criteria`, `campaign:{slug}-decision-defaults`, and the Round 1 `round` finding |
 
 Rules:
@@ -627,8 +644,13 @@ Rules:
   finding, with Round 1's default `plan` (**Rounds**, **Round steps**), with `append_insights`.
   The summary shows Round 1's month, build window, in-market window
   and launch date (**Rounds**); the CM changes them with "Change something". A `key-exists` follows
-  the Phase 5 supersede rule. The decision defaults are written as saved above; say once that later
-  performance reads will use them and that they can be changed.
+  the Phase 5 supersede rule. The decision defaults are written as saved above, with C6a's target
+  and floor when given; say once that Ad Performance will judge every variant by them and that they
+  can be changed.
+- **C6a** is the only question that asks the cost per sale target. Each amount needs a currency: a
+  bare number takes the currency of the brand's linked ad account from `list_ad_accounts`, said
+  back in the C7 summary, and with no ad account linked it is asked again with the currency. "Not
+  known yet" leaves both out, and row 17 asks again once the round is close to going live.
 - The brand theme is read the way every page reads it (`theme.md`). Setup never asks about it.
 
 ## 1c. Dispatch table
@@ -658,6 +680,7 @@ vocabulary and start with the round once the campaign has more than one: "Round 
 | 14 | Briefs sent, replies waiting | "{a} accepted, {c} changed, {w} waiting." | Record a reply | **1g**, Replies | `reply`, roster `briefState` accepted, or a `brief-revision` and Gate 4b `open` for that creator | Reminder at that creator's Gate 4b due time |
 | 15 | A Gate 4b open for any creator | "{n} creator changes with {approver}." | Pull the client's decisions | **CAS campaign**, Run, **Pulling decisions** | `brief-revision` approved and locked, or a `brief-notes` draft; Gate 4b `cleared` per creator | Removes that creator's reminder |
 | 16 | Every creator's brief accepted or locked | "In production. Hands to the content review flow." | Review a creator's draft. Once creators have posted: review the round's hooks. | **Content review**, with the creator ad campaign brief as P1's source (`content-review.md`, **Normalizing the brief**: the concept's locked `brief`, or the creator's approved `brief-revision`); the hook review in `hooks-and-ctas.md` | Content review's own findings; `hook-review` findings | None. Offer once to keep or stop the weekly call. |
+| 17 | The round is in market, or launches within 7 days with step 4 cleared | "In market: cost per sale {x} against a {t} target · {w} of {a} ads won · {r} to retire or refresh." Before results: "Ads go live {launch}." With no target: "No cost per sale target saved." | With no target saved, save {brand}'s cost per sale target (C6a's question, through the supersede rule). Otherwise, with variants to retire or refresh, go over them; else the next step of row 16 | **CAS campaign**, Status; the results are read at every publish (**1d**, **Ad Performance**, **Reading the results**) | `campaign:{slug}-decision-defaults` superseded when the target is saved | Creates the daily results refresh once the round is in market, and removes it when no round is (**Reminders and the weekly call**) |
 
 Rules:
 
@@ -1079,7 +1102,8 @@ the client's calls, each named with who made it. The `send-` and `reopen-` stamp
   `persona-{id}` the page saved) and the product as `details.product`, with the rest of the batch.
   A creator's variant plan overrides go on the same finding as `variantPlan`, the whole list for
   the round as the page holds it, a `null` stamp leaving its field out, named one line per change
-  ("@{handle}: V2 hook H3 in place of the brief's H1, by {name}"). An override past the creator's
+  ("@{handle}: V2 hook H3 in place of the brief's H1, by {name}"). A variant's live post goes in the
+  same list as field `post`, named "@{handle}: V2 live post {link}, by {name}". An override past the creator's
   variants for the round is dropped and named. One made for a concept that isn't theirs now is
   left out of `variantPlan` and named, and its page stamp stays as it is, listed on the card as
   "Made for {concept}" until an Editor clears it.
@@ -1263,6 +1287,9 @@ client's level before the link goes out.
 | Budget total, budget left, committed, approved not contracted, unpriced, over budget | no | yes | Campaign record, agreed fees, expected costs | Creator Selection, Selected Creators |
 | Offers out | no | yes | Rates and terms | Selected Creators |
 | Who else an attention item waits on | no | yes | Campaign state | Home |
+| Ad results: cost per sale against the target, the hit rate, every headline number, the weeks, and per variant its creator, concept, spend, days live, hook rate, cost per sale and status | yes, a read only client too | yes | `search_ads` on {brand}'s own ad account, read at publish into the page itself (**Ad Performance**) | Ad Performance, Home, Selected Creators |
+| A ranked variant's hook and CTA | no | yes | **Reading a creator's variant** on the Editor's page | Ad Performance |
+| Live post per variant, and ads not matched to a variant (ad name, post, spend, dates) | no | yes, editable | `agency/creator-{net}-{handle}-r{round}`, `agency/performance-r{round}` | Selected Creators, Ad Performance |
 | History entries about agency only data, agency only comments included | no | yes | The activity log | History |
 | Tags for Aspire or someone at Aspire, from either side | only the ones they wrote | yes | Tags | Inbox |
 
@@ -1470,8 +1497,8 @@ round at a time: its steps, creators, brief, cuts and results, and nothing from 
 Every tab renders for both sides. Content Review and Ad Performance are part of the page from the
 first publish. Content Review shows its queue (**Content Review**), and while the round has no
 creators on Selected Creators, its lede and one empty state: "Cuts show here once creators start
-shooting." Until its own section below says more, Ad Performance shows its lede and "Results show
-here once the ads are live."
+shooting." Ad Performance shows **Not live yet** until a round is in market, and "Connect your
+Meta ad account to see results" while no ad account is linked (**Ad Performance**).
 
 ### Collapsing sections
 
@@ -1585,7 +1612,7 @@ only is marked so.
 | Selected Creators | Shipping | `creators-shipping` | "{s} shipped, {d} delivered of {n}", or "Shown once fees are approved." | Standard | Closed; open for the client while a row waits on them |
 | Selected Creators | Brief and content | `creators-content` | "{b} briefs accepted · footage in from {f} of {n}" | Standard | Closed |
 | Content Review | The queue: count tiles, filter, creator tabs and variant rows | `review-queue` | Client: "{w} waiting on you · {c} with changes · {q} in Aspire QA · {a} of {y} approved"; agency: "{w} with {brand} · {c} with changes · {q} in Aspire QA · {a} of {y} approved"; "No cuts in round {n} yet." before the first | Simple | Open |
-| Ad Performance | Cost per sale against target | `performance-result` | "Cost per sale {x} against a {t} target · {beat it, or {d} over}", or "Round {n} goes live {date}" | Simple | Open |
+| Ad Performance | Cost per sale against target | `performance-result` | "Cost per sale {x} against a {t} target · {beat it, or {d} over}", or "Round {n} goes live {date}", or "Connect your Meta ad account to see results" | Simple | Open |
 | Ad Performance | Headline numbers | `performance-headline` | "Spend {s} · {p} purchases · ROAS {r}" | Standard | Closed |
 | Ad Performance | Weekly spend and return | `performance-weekly` | "{w} weeks in market · best week {date}" | Standard | Closed |
 | Ad Performance | Variants ranked | `performance-variants` | "{w} winning · {t} testing · {r} to retire or refresh" | Standard | Closed |
@@ -1898,18 +1925,17 @@ Sections, in order:
    the client's target and "{w} of {a} ads won", where "last round" is the newest round with ad
    results. The cost per sale is in `text-lg font-semibold`, then "against a {t} target" and a
    Badge: success "Met the target" at or under it, warning "{d} over target" above it. An ad
-   that "won" is one Ad Performance marks winning under the decision defaults (`campaign:{slug}-decision-defaults`). A
-   link Button "See the results" opens `#performance/r{n}/result`. Money is in US dollars, as
-   the records keep it.
+   that "won" is one Ad Performance marks Winning or Fatigued, at or under the target, and {a} counts
+   every variant past the spend floor (**Ad Performance**, **Status**). The Badge is the one
+   **Cost per sale against target** shows. A link Button "See the results" opens
+   `#performance/r{n}/result`. Money is in that round's results currency (**Ad Performance**,
+   **Reading the results**).
 
-   **This section doesn't render until a round has ad results**, with no empty state and no
-   summary. Two values aren't in any record yet:
-   - **Ad results.** Nothing in this flow reads ad spend (**What this flow never does**). They
-     come from Ad Performance's own build, which records each round's results.
-   - **The client's cost per sale target.** No setup question asks it. It would be saved in
-     `campaign:{slug}-decision-defaults` beside the winner rule. With results but no target,
-     the section shows the cost per sale and "{w} of {a} ads won" only, with no target line
-     and no Badge.
+   **This section doesn't render until a round has ad results**: a matched ad with spend in the
+   page's results for the round. Until then there is no empty state and no summary, and with no
+   Meta ad account linked it never renders. The target is `costPerSaleTarget` in
+   `campaign:{slug}-decision-defaults`. With results but no target, the section shows the cost
+   per sale and "{w} of {a} ads won" only, with no target line and no Badge.
 5. **Next check in** (`home-sync`). The next weekly sync, the calendar link and the Slack channel.
    - **When.** From `campaign:{slug}-cadence` (C6): the day, time and IANA time zone, and the
      length when saved. The page works out the next sync from the viewer's clock in the saved
@@ -2041,9 +2067,11 @@ rows.
    The client's rows are the same items as their **Waiting on you**, with the same ids, open
    comments, grouping and "waited since" (**The Simple view**). "Cuts at the client" counts cuts
    that need client review, and the cut "Changes" row cuts with changes requested (**Content
-   Review**, **Statuses**). "Variants to retire or refresh" shows once Ad
-   Performance records each round's results, because nothing marks a variant to retire before
-   that. The agency's own rows come from `agency/attention`, never from the page itself.
+   Review**, **Statuses**). "Variants to retire or refresh" lists the round in market's variants
+   to retire or refresh (**Ad Performance**, **Status**), its detail naming the reason ("over
+   the cost per sale bar", "live past {d} days and slipping", "under the spend floor after {d}
+   days") with the cost per sale against the target, and shows nothing before the round has
+   results. The agency's own rows come from `agency/attention`, never from the page itself.
 
    A Tabs list above the rows, "All" and "Waiting on you", kept in memory and opening on All,
    narrows the list. The rows are sorted oldest first; rows that waited the same time keep the
@@ -2066,10 +2094,10 @@ rows.
    | Creator Selection | "{a} approved" | "of {m} creators in round {n} · {d} to decide" | "No creators in the pool yet." |
    | Selected Creators | "{n} with fees agreed", the creators on the tab (**Selected Creators**, **Who's here**) | "{k} missing details · {s} shipped, {d} delivered", {k} being the creators with any detail to add as the viewer counts them (**Selected Creators**, **Details to add**), plus "{total} committed" for the agency only, from `agency/budget` `committed:` and rendered only when that read returns | "Creators show here once {brand} approves them and their fees are agreed." |
    | Content Review | "{x} of {y} ad videos in" | "{w} waiting on you · {a} approved" | "Cuts show here once creators start shooting." |
-   | Ad Performance | "Cost per sale {x}", with the target Badge from **Last round result** | "{w} of {a} ads won" | "Round {n} goes live {launch}." before the launch, else "Results show here once the ads are live." |
+   | Ad Performance | "Cost per sale {x}", with the target Badge from **Last round result** | "{w} of {a} ads won · {r} to retire or refresh" | "Round {n} goes live {launch}." before the launch, "No ad has run a variant's live post yet." once it is live, and "Connect your Meta ad account to see results" with no ad account linked |
 
-   Content Review shows its "until" line while the round has no cut, and Ad Performance until it
-   records results. A read only client reads no cuts, so their Content Review card shows only
+   Content Review shows its "until" line while the round has no cut, and Ad Performance until the
+   page holds the round's results. A read only client reads no cuts, so their Content Review card shows only
    "Cuts show here for people who can open this page's data." in any state. There are five cards, one per tab, and no other: no card for a feature that has
    no tab or isn't built.
 4. **Program terms** (`home-program`). What the brand bought in its SOW, from
@@ -2181,7 +2209,7 @@ rows.
      | Cut delivered | The `addedAt:` (full UTC time) of each cut's first version, `reviews/cut-{cut}/versions/v1` or the lowest version there (**1e**). A later version is a new version, not a delivery |
      | Approved | The client's call that counts on the cut's newest version (**Content Review**, **The status flow**, **The call that counts**): a cut counts as approved from that call's `at` while it is approved. It stops at an undo or a request for changes, a **Send to {brand} as is**, or the `addedAt:` of a newer version of the cut, which starts in Aspire QA (**Content Review**, **Statuses**). Neither the activity log nor a `client/cut-{cut}-v{version}` stamp from an earlier page makes a cut approved |
      | Shipping | The creator's shipping record for the round, `shippedAt` and `deliveredAt` (the newer of the two sides' stamps, **Selected Creators**, **Creator records**), else the activity log's `status` entries for the creator in the round whose `to` is Shipped or Delivered (from either side, so a Mark shipped shows at once), else the roster's `shipDate` for Shipped; and the pickup visit date in `details`. A product kept from last round has no shipping event |
-     | Spend and return | The week's figures Ad Performance records for the round, once it records them |
+     | Spend and return | The week's spend and ROAS in **Weekly spend and return** for the round, the same weeks from the launch date (**Ad Performance**, **Reading the results**), once the page holds them |
      | Reading the log | The activity log is read only while the section is open, and only the day documents (`days/{day}`) for days inside a round's build or in-market window, up to today,, read once and then kept current by the page's live updates (**Live updates**). Closing the section stops it |
      | Today | The viewer's clock (**Round switcher**, **Every date is real**) |
 
@@ -2335,8 +2363,8 @@ rows.
      - **Shoot**: no record holds a creator's shoot date, so the calendar shows no shoot events.
        When Selected Creators, **Brief and content**, records one per creator, it shows as
        `clapperboard` "@{handle} shoots" with the other events.
-     - **An in-market day**: "Week {w} in market" for that round, and once Ad Performance records
-       the round's results, that week's spend and return ("Spend {s} · return {r}") with a link
+     - **An in-market day**: "Week {w} in market" for that round, and once the page holds the
+       round's results, that week's spend and ROAS ("Spend {s} · ROAS {r}") with a link
        Button "See the week" to `#performance/r{n}/weekly`. Until then, nothing about spend shows:
        no zero, no placeholder.
    - **Who sees what.** Every part is built from what the viewer can read. The client's shipping
@@ -4227,10 +4255,10 @@ font-semibold`, separated by a Separator:
    - **Reasons.** The most used surprise reason, when it was used 3 or more times: "The most common
      reason to pass on a strong match: Not our look (4)".
    With no line to show: "No clear pattern yet in {n} decisions."
-4. **Did it sell.** Hidden, with no empty state, until a round has ad results, which Ad
-   Performance records once it has its own build (**Ad Performance**); nothing in this flow reads
-   ad spend before then (**What this flow never does**). Once one does: the newest round with ad
-   results ("Round {n}"), its creators with ad spend, ranked by the agency's stored score for that
+4. **Did it sell.** Hidden, with no empty state, until a round has ad results (**Home**, **Last
+   round result**). Once one does: the newest round with ad results ("Round {n}"), its creators
+   with spend on their matched variants in the page's results (**Ad Performance**, **Reading the
+   results**), ranked by the agency's stored score for that
    round (a Done round's scores don't move), split into a higher half and a lower half, the higher
    half taking the middle creator of an odd count. For each half, its creators' spend added up over
    their purchases added up: "Higher scored half ({k} creators, scores {a} to {b}): {x} per sale"
@@ -4238,7 +4266,8 @@ font-semibold`, separated by a Separator:
    "Higher scored creators sold {d} cheaper per sale", "cost {d} more per sale", or "About the
    same" within 5%. With fewer than 4 creators with spend: "Too few creators with ad results to
    compare." Under it: "This compares the two halves; it doesn't prove the score caused the
-   difference." Money is in US dollars, as the records keep it.
+   difference." Money is in the round's results currency, and spend in another currency is left
+   out.
 5. **Retune.** A Table of the five factors, one row each: the factor, the weight in use with
    "default" or "tuned {date}" under it, the suggested weight, and the change ("+0.06", "−0.03",
    or "no change"). Under it, two agreement figures on the decided creators in every round, the suggestion's own basis, each worked out
@@ -4367,7 +4396,7 @@ and page data, never a field a person sets:
 | 5 | Footage in and editing | At least one raw file in: the creator's footage record for the round (**Creator records**, Footage) counts 1 or more | Not reached on its own. A creator whose footage nobody records moves from Shooting to Cuts in review when their first cut arrives |
 | 6 | Cuts in review | The creator has at least one cut in the round with a version (`reviews/cut-{net}-{handle}-r{round}-{variant}` with a version under `versions`, **1e**), the same cuts **Where we stand** counts as in | Not reached until the creator's first cut is added on Content Review (**Content Review**, **Adding a cut**) |
 | 7 | Cuts approved | Every one of the creator's {v} variants for the round has a cut whose newest version is approved (**Variants per creator** below). Approved is read as the calendar reads it (**Home**, **Calendar**, **Where every date comes from**, Approved): the client's call that counts on that version (**Content Review**, **The status flow**, **The call that counts**). Step 7 ticks only when each of those approvals is from an account the CM confirmed as {brand}'s, so one showing "Aspire to confirm" holds it | Not reached while any of the {v} slots has no cut |
-| 8 | Ads live | One of the creator's variants runs as a live ad in Ad Performance's records for the round | The round's **Ads live** step is done (the round is in market, **Rounds**, **Round steps**) and at least one of the creator's cuts is approved by an account the CM confirmed (step 7's rule), so a creator whose last variant is still in review isn't held back |
+| 8 | Ads live | One of the creator's variants has a live post with matched spend in the page's results for the round (**Ad Performance**, **Reading the results**) | The round's **Ads live** step is done (the round is in market, **Rounds**, **Round steps**) and at least one of the creator's cuts is approved by an account the CM confirmed (step 7's rule), so a creator whose last variant is still in review isn't held back |
 
 Product status Returned holds the creator at step 2 with the line "Package returned" and an
 error Badge "returned" on the Shipping cell, until a new shipment is marked.
@@ -4704,7 +4733,7 @@ no part of the brief for them.
 
 **The variant plan, agency only.** Under a dashed rule headed "Agency only", a Table of V1 to
 V{v}, {v} being the program terms' variants per creator (**Variants per creator**), at most 5.
-Columns: Variant, Framework, Length, Hook, CTA, and From. On a phone it is a stack of Cards, one
+Columns: Variant, Framework, Length, Hook, CTA, Live post, and From. On a phone it is a stack of Cards, one
 per variant, with the same fields (**Responsive**, **Tables**).
 
 | Column | Shows | Editor's control |
@@ -4713,7 +4742,8 @@ per variant, with the same fields (**Responsive**, **Tables**).
 | Length | "15 seconds" | A one line Input |
 | Hook | Number and type, "H2 Demo first", with the line in `text-xs text-muted-foreground` under it, read from the brief | A Select of the concept's hooks |
 | CTA | Number and type, "C1 Direct", with its line under it, read from the brief | A Select of the concept's CTAs |
-| From | A soft Badge "Brief" when every field in the row follows the concept's plan, else a warning Badge "Override" | None |
+| Live post | The Instagram post the variant's partnership ad runs, as a link, with "No ad found for this post yet" in `text-xs text-muted-foreground` when the last read matched nothing to it, or "Not live yet" | An Input for the post's link (**Ad Performance**, **Where the results come from**) |
+| From | A soft Badge "Brief" when every field in the row follows the concept's plan, else a warning Badge "Override". The live post isn't part of the plan and never makes a row an override | None |
 
 How each field is read, the same rule everywhere the variant is shown (**Reading a creator's
 variant**, below):
@@ -4743,7 +4773,10 @@ brief". Overrides are agency edits and log to the agency log (**The activity log
 Overrides are kept on `agency/creator-{net}-{handle}-r{round}`, one stamp per field per variant:
 `v{n}-framework` (`{lane, code, name}`), `v{n}-length` (`{lane, text}`), `v{n}-hook` and `v{n}-cta`
 (`{lane, n}`). The `lane` is the concept the override was made for. A key with no stamp, or a
-stamp whose `value` is `null`, means the field follows the brief.
+stamp whose `value` is `null`, means the field follows the brief. The live post is kept beside them
+as `v{n}-post` (`{lane, url, igMediaId}`), `lane` the concept the variant was cut for; it is a fact
+about the variant, not an override, so a concept change doesn't clear it and it never carries to
+another round.
 
 **At most 5 variants.** The Table has exactly {v} rows and no way to add one. A brief plan longer
 than {v} applies only its first {v} variants to the creator. An override for a variant past {v}
@@ -4781,7 +4814,8 @@ holds them (**Who sees what**; **1e**, **Checking the roles**).
 **Reading a creator's variant.** Content Review and Ad Performance name a variant's framework, hook
 and CTA by reading them through this block's rule, never from a copy, so all three tabs agree:
 
-1. Take the concept the cut was made for, its `lane:` in `reviews/cut-{cut}`. A cut with no
+1. Take the concept the cut was made for, its `lane:` in `reviews/cut-{cut}`; on Ad Performance,
+   the live post's `lane`, else the cut's. A cut with no
    `lane:` takes the creator's concept for the round, as **The match score**'s **Concept and
    persona** resolves it.
 2. For variant {n} (from the cut's `variant:`), read each field by the three steps above for that
@@ -6089,14 +6123,294 @@ brief asked for. A read only client sees none of it (**What the client sees**).
 
 ### Ad Performance
 
-How the live partnership ads of the round in view did against the campaign's decision defaults
-(cost per result, the 3-second hold), and what changes in the next brief. Nothing in this flow reads ad spend yet
-(**What this flow never does**), so the tab shows its empty state. The client writes nothing on
-this tab.
+How the round in view's partnership ads sold against {brand}'s cost per sale target, read from
+{brand}'s own Meta ad account through Aspire Atlas at each publish. It covers only the ads that ran
+a variant's live post, so other ads in the account never count. The client writes nothing on this
+tab. In order: **Cost per sale against target**, **Headline numbers**, **Weekly spend and
+return** and **Variants ranked**. **Compare**, **Who watched** and **Next round's brief** keep
+their ids and summaries in **Sections per tab** and aren't rendered until their own build adds
+them; nothing here stands in for them.
 
-When it fills, each variant's framework, hook and CTA, in **Variants ranked** and in **Compare**,
-are read by **Selected Creators**, **Concept and variant plan**, **Reading a creator's variant**,
-the same values Content Review and the card show.
+#### Where the results come from
+
+Claude reads the results at every publish, interactive or scheduled (**Reading the results**), and
+writes them into the page itself as the round's results. The page never calls Atlas. A result is
+as old as the last publish, and the tab says so: "As of {time}", the read's time in the viewer's
+own time zone, under the tab's header. Results are never saved to Atlas: Meta's figures are the
+record, and each publish reads them again.
+
+**No Meta ad account linked.** Before reading, Claude calls `list_ad_accounts` for the brand's
+Profile. When none is linked, every section on the tab is replaced by one Card for both sides:
+"Connect your Meta ad account to see results", with "Results show here once {brand}'s Meta ad
+account is linked to Aspire Atlas." under it. The agency also sees, under an "Agency only" rule,
+"Link it from the chat: /aspire:aspire, then connect Meta." Home's **Last round result**, the
+calendar's spend and return, **Did it sell** and the Ads live step read as they do with no results.
+No section shows a zero or an empty chart in its place.
+
+**The live post on each variant.** Each ad maps to its creator and variant through the post it ran.
+Each variant in a creator's variant plan (**Selected Creators**, **Concept and variant plan**) has
+a **Live post** field: the link to the Instagram post the partnership ad runs, filled when the ad
+goes live. It is kept with the creator's plan for the round, `v{n}-post` on
+`agency/creator-{net}-{handle}-r{round}`, a stamp whose `value` is `{lane, url, igMediaId}`, `lane`
+being the concept the variant was cut for and `igMediaId` filled by Claude once a read finds the
+post (**1e**). An Editor sets it in the variant plan Table's **Live post** column (an Input that
+takes an Instagram post link), or from **Ads not matched** below, or the CM says it in the chat. A
+link that isn't an Instagram post link is refused in place: "Paste the link to the Instagram post
+the ad runs." **Pulling decisions** saves it to the creator's `roster` finding with the plan's
+overrides (`variantPlan`, field `post`), so it holds after the page is rebuilt. Claude never sets
+a live post by guessing: it proposes nothing from ad names, which people type, and a post two
+variants name counts for neither until an Editor fixes one ("Two variants name this post").
+
+#### Reading the results
+
+For each round that is in market or was (**Rounds**: its launch date has passed, and step 4 is
+cleared), at every publish:
+
+1. **Dates.** From the round's launch date to the earlier of today and its in-market end (or
+   `closedAt`), in the campaign's saved time zone. Days are each ad account's own days, as
+   `search_ads` reads them. Spend after the round's in-market end isn't counted in the round.
+2. **The round's ads.** `search_ads` with `groupBy` `ad`, `isPartnershipAd` true, `creatorHandles`
+   the round's creators on Selected Creators (Instagram handles), the dates above, and
+   `actionTypes` `["video_view"]`, paged to the end. Each row names the post it ran
+   (`post.igMediaId`, `post.permalink`) and its creator (`creator.handle`).
+3. **Matching.** A row belongs to a variant when its post is that variant's live post: the same
+   `igMediaId`, or before one is stored the same post code in the link (the part after `/p/` or
+   `/reel/`), compared without case. Claude then stores the `igMediaId` on the stamp. Every other
+   row is **not matched**: it isn't in any figure on the tab and is listed for the agency only.
+4. **Weeks.** `search_ads` with `groupBy` `day`, `igMediaIds` the matched posts, the same dates
+   and `actionTypes`, paged to the end, summed into weeks: week 1 is the launch date and the six
+   days after it, and so on, the last week cut at the read's last day.
+5. **The last 7 days.** `search_ads` with `groupBy` `ad`, `igMediaIds` the matched posts and the
+   last 7 days of the read, for **Fatigued** below.
+
+The `search_ads` rules hold everywhere (`atlas-tools.md`, **Paid ads**, and
+`list_ad_search_fields`, which Claude calls before the first read in a session):
+
+- **One figure per currency.** Every row carries its `currency`. Money is added only within one
+  currency and never converted. The tab's figures are in the **results currency**: the target's
+  currency when a target is saved and the ads ran in it, else the currency with the most spend.
+  Spend in any other currency shows as one line under **Headline numbers**, "Also {spend} spent in
+  {currency}, {p} purchases", never added in, and a variant whose ads ran only in another currency
+  has its row in that currency with no status (**Status**).
+- **Attribution windows.** Rows also split by attribution window. Within one currency they add up
+  the way Meta's own totals do, and when more than one window is in play, **Headline numbers**
+  says "Purchases are counted under each ad set's own attribution window: {windows}."
+- **Ratios from sums.** Every rate is worked out again from the summed counts, never averaged
+  from rows or days.
+- **No value is not zero.** A metric Meta reports as null is left out of its sum. A figure whose
+  every part is null shows "No data", and a figure with no denominator (no impressions, no
+  purchases) shows "None yet" for purchases-based figures and "No data" otherwise, never 0.
+- **Paid only.** Nothing here adds organic figures from `search_posts`.
+- **No ad code.** `search_ads` rows carry no ad code, and the page never holds one, from any tool,
+  in any part of the page or page data (`atlas-tools.md`, **Ad codes**).
+
+The figures, each worked out from sums over the matched ads in the results currency:
+
+| Figure | Worked out as |
+| ------ | ------------- |
+| Spend | `paidSpend` |
+| Impressions | `paidImpressionCount` |
+| CPM | spend over impressions, times 1,000 |
+| Hook rate (3 second plays) | the `video_view` action's `count` over impressions |
+| Hold rate (15 second plays) | `paidVideoThruplayCount` (plays to 15 seconds, or to the end of a shorter video) over 3 second plays |
+| Link CTR | `paidInlineLinkClickCount` over impressions. `search_ads`'s own `paidCtr` counts every click, not link clicks, so it isn't used |
+| Purchases | `paidPurchaseCount` |
+| Revenue | `paidPurchaseValue` |
+| ROAS | revenue over spend |
+| Cost per sale | spend over purchases |
+| Days live | from the first day the variant's ads spent to the last, both counted, within the read |
+
+**Done when the totals match Meta.** The tab's Spend, Impressions, Purchases and Revenue equal
+Meta Ads Manager's totals for the same ads (the variants' live posts), the same dates and the same
+currency. Before handing over a first publish with results, Claude says so and asks the CM to check
+one round against Ads Manager.
+
+**What the page itself holds.** For each round with results: the read's time and dates, the
+results currency, the totals, the weeks, and one row per matched variant: the creator, concept,
+variant number, currency and every figure above, plus the round's target, floor and status
+settings. All of it is {brand}'s own ad account's figures, so the client sees every one of them,
+spend and cost per sale included (**Who sees what**). The rows hold no ad name, ad or campaign id,
+ad account, hook, CTA or framework. The not matched rows (each ad's name, its creator, its post
+link, spend and dates) go only to `agency/performance-r{round}` (**1e**).
+
+#### The target and the floor
+
+Read from `campaign:{slug}-decision-defaults` (**1a**), never from a number in the page's code:
+
+- **Cost per sale target**: `costPerSaleTarget` `{amount, currency}`, asked at setup (C6a) or
+  later from the status screen (**1c**, row 17).
+- **Spend floor**: `spendFloor` `{amount, currency}`, else `switchOffFloor.spendUsd` when the results
+  currency is USD. A variant under it hasn't spent enough to judge.
+- **Watch band**: `watchRatio`, the multiple of the target up to which a variant is Watch, 1.3 when
+  the record has none.
+- **Fatigue**: `fatigueDays`, the days live after which a winning variant can be Fatigued, 36 when
+  the record has none.
+- **Stuck**: `stuckDays`, the days live after which a variant still under the floor is flagged, 7
+  when the record has none.
+
+With no target saved, or one in another currency than the results, the tab shows every figure with
+no target line, no hit rate and no Winning, Watch, Fatigued or Retire status, only Testing; the
+agency sees one line, "No cost per sale target saved for {brand}" or "The target is in {currency},
+the ads report in {currency}", with how to set it in the chat. With no floor, no variant is
+Testing.
+
+#### Status
+
+Each matched variant in the results currency takes one status, the first rule that holds:
+
+| # | Status | When |
+| - | ------ | ---- |
+| 1 | Testing | Spend under the floor |
+| 2 | Retire | No purchases, and spend above the Watch band (`watchRatio` times the target) |
+| 3 | Watch | No purchases, and spend within the Watch band |
+| 4 | Fatigued | Cost per sale at or under the target, live past `fatigueDays`, and slipping: its cost per sale over the last 7 days is above its cost per sale over the whole read, or it spent in the last 7 days with no purchase |
+| 5 | Winning | Cost per sale at or under the target |
+| 6 | Watch | Cost per sale up to the Watch band |
+| 7 | Retire | Cost per sale above the Watch band |
+
+The statuses are Winning, Testing, Watch, Fatigued and Retire, and their Badges follow **Status
+pills**: Winning success, Testing processing, Watch and Fatigued warning, Retire error. They are
+semantic, so no brand theme colors them.
+
+**Won** means Winning or Fatigued: at or under the target. **Hit rate** is the variants won over
+the variants past the floor ("{w} of {a} ads won", {a} counting every variant not Testing). Home's
+**Last round result** and **Tab summaries** use these same counts.
+
+**To retire or refresh**, the variants Aspire acts on:
+
+- **Retire**: over the Watch band, or past it with no purchase ("over the cost per sale bar").
+- **Refresh**: Fatigued ("live past {fatigueDays} days and slipping").
+- **Not spending**: Testing and live `stuckDays` days or more ("under the spend floor after {d}
+  days").
+
+Each one is a row in Home's **Needs attention**, "Retire or refresh @{handle}'s V{variant}", with
+its reason and its cost per sale against the target, waiting on Aspire, opening
+`#performance/r{n}/variants` (**Home**, **The Everything view**). Only the round in market flags
+them; a done round's statuses are history.
+
+#### Cost per sale against target
+
+`performance-result`, open, for both sides. A Card with two parts side by side from 640px,
+stacked on a phone:
+
+- **The number.** The blended cost per sale (all matched spend over all matched purchases) as a
+  hero figure, `text-5xl font-semibold`, in the results currency. Under it, "against a {t} target",
+  and a Badge: success "{d}% under target" at or under the target, warning "{d}% over target"
+  above it, {d} rounded to a whole number. Under that, in `text-sm text-muted-foreground`,
+  "{p} purchases from {s} spent · {w} of {a} ads won".
+- **The hit rate ring.** The **Score ring** from **Component classes** at `size-16`, its value the
+  hit rate out of 100 and its number "{h}%", `aria-label="Hit rate {h} percent, {w} of {a} ads at
+  or under target"`, with "Hit rate" under it. It is one part of a whole, so a ring fits it, and
+  like the match score's ring it is never colored by result: the Badge beside the number carries
+  that. With no variant past the floor yet, the ring isn't drawn and the part reads "No ad has
+  spent past the floor yet."
+
+With no target, the number shows alone with no target line, Badge or ring (**The target and the
+floor**). With no purchase yet, the number reads "No sales yet" and "{s} spent" under it.
+
+**Not live yet.** For a round whose launch hasn't come, or whose step 4 isn't cleared, this
+section is the tab's only section, for both sides:
+
+- "Round {n} goes live {launch date}", the date in `text-2xl font-semibold`, with "in {d} days"
+  from the viewer's clock, or "Launch at risk" (warning) while step 4 is open past the launch, as
+  **Round steps** says.
+- "{x} of {y} cuts in · {a} approved", the counts **Where we stand** and Content Review use for
+  the round.
+- Link Buttons: "Open Content Review" to `#review/r{n}`, and, when an earlier round has results,
+  "See round {m}'s results" to `#performance/r{m}/result`, {m} being the newest such round.
+
+A round in market with no matched ad yet shows the same Card with "Round {n} went live {date}. No
+ad has run a variant's live post yet." For the agency only, under an "Agency only" rule: "{k}
+variants have no live post", linking to the first card's variant plan, and **Ads not matched**
+when there are any.
+
+#### Headline numbers
+
+`performance-headline`. A KPI row of stat tiles, each a Card with the label in `text-sm
+text-muted-foreground` and the value in `text-2xl font-semibold`, in a `grid grid-cols-2 gap-4
+sm:grid-cols-3 lg:grid-cols-5` grid: Spend, Impressions, CPM, Hook rate, Hold rate, Link CTR,
+Purchases, Revenue, ROAS and Cost per sale. Money is in the results currency, with its code once
+in the section's description ("In {currency}"). Rates show one decimal ("31.4%"), ROAS two ("2.41").
+
+- ROAS adds "Peak week {w}: {r}" under its value, the week with the highest ROAS among weeks with
+  a purchase.
+- Hook rate and Hold rate each carry a Tooltip saying what they count: "Plays of 3 seconds or more,
+  over impressions" and "Plays of 15 seconds or to the end, over plays of 3 seconds or more".
+- No tile has a sparkline or a target of its own: the weeks are in **Weekly spend and return**,
+  and the target in the section above.
+
+Under the tiles, the other currency line and the attribution window line when they apply.
+
+#### Weekly spend and return
+
+`performance-weekly`. Two charts, one above the other, sharing one week axis (Week 1 to Week {w},
+each with its dates in the Tooltip), never one chart with two scales:
+
+- **Spend by week**, a bar chart in `--chart-1`, its y axis in the results currency from zero.
+- **ROAS by week**, a line in `--chart-2` with a marker on each week, its y axis from zero.
+
+Each chart is titled, has one series and so no legend, and labels only its highest week directly.
+Colors are read from the CSS variables at run time (**Banned on the page**), so the brand's chart
+colors apply and the contrast check in **Brand theme on the page** has already passed them. Hover,
+focus or tap on a week shows one Tooltip for both charts: "Week {w}, {dates}: spend {s} · ROAS
+{r} · {p} purchases". A week with spend but no purchase shows ROAS 0.00, since its revenue is a
+real zero; a week with no spend draws no bar and no point. Under the charts a Table, "Show as
+table", lists each week's Spend, Purchases, Revenue and ROAS, so nothing reads by the chart
+alone. The charts draw at their container's width and redraw when it changes (**Responsive**,
+**Media**). The calendar's in-market days read the same weeks (**Home**, **Calendar**).
+
+#### Variants ranked
+
+`performance-variants`. The every variant table, one row per matched variant, sorted by cost per
+sale, cheapest first; variants with no purchase next, by spend, most first; Testing variants last.
+The first 10 rows show, then a ghost Button "Show all {n}"; "Show fewer" after.
+
+| Column | Shows | Who |
+| ------ | ----- | --- |
+| Variant | "V{n}" with the concept chip (**Concept colors**) | Both |
+| Creator | Avatar and @handle, opening their card on Selected Creators | Both |
+| Hook | "H2 Demo first", by **Reading a creator's variant**, with "Broken" when removed | Agency only |
+| CTA | "C1 Direct", the same way | Agency only |
+| Spend | The amount; under the floor, a **Progress** bar under it at spend over the floor, with "{x} of {floor} floor" in `text-xs text-muted-foreground` | Both |
+| Days live | "{d} days" | Both |
+| Hook rate | "31.4%" | Both |
+| Cost per sale | The amount, or "None yet" | Both |
+| Status | Its Badge (**Status**), with the flag's reason in a Tooltip when it is to retire or refresh | Both |
+
+The Hook and CTA columns are read on the Editor's page only (**Reading a creator's variant**), so
+the client's table, the page itself and **Preview as client** never have them. A row whose cut was
+made for another concept shows the agency "Cut for {concept}" as Content Review does.
+
+**Top ads.** Above the table, a Tabs list, "Cost per sale", "Hook rate" and "Spend", opening on
+Cost per sale and kept in memory only, picks the order of a strip of the 3 top variants as small
+Cards (variant, creator, the picked figure in `text-2xl font-semibold`, status Badge), each
+opening its row. Cost per sale takes the cheapest with a purchase, past the floor; Hook rate the
+highest past the floor; Spend the most. The table's own order doesn't change.
+
+On a phone the table is a stack of Cards, one per variant, its title "V{n} · @{handle}" and the
+other columns as label and value pairs (**Responsive**, **Tables**).
+
+**Ads not matched**, agency only, under a dashed rule headed "Agency only", only when any exist:
+one row per not matched ad from `agency/performance-r{round}`, with its creator, its post as a
+link, its spend and dates, and a Select "Link to variant" of that creator's V1 to V{v} with no
+live post. Picking one writes that variant's `v{n}-post` stamp, logs an agency entry, and the
+next publish counts the ad. "{k} ads by the round's creators aren't counted because their post
+isn't a variant's live post." sits above the list.
+
+#### For the breakdowns
+
+**Compare** groups the same matched rows by a read value: framework, hook and CTA by **Reading a
+creator's variant** on the Editor's page, concept and persona from the creator's round stamps, the
+creator, and the tier. Each group's figures are worked out from its rows' sums in the results
+currency, as above, so no group averages its variants' rates. Its framework, hook and CTA groups
+are agency only.
+
+#### Responsive and roles
+
+Every section follows **Responsive** and **Design standards**. The tab's figures are the same for
+the client, a read only client and **Preview as client**, since they are in the page itself; only
+the Hook and CTA columns, **Ads not matched** and the agency's lines differ. The page never writes
+page data on this tab for the client, and an Editor's only write is a live post.
 
 ### Inbox
 
@@ -6175,8 +6489,9 @@ deepest part **Header and tabs** names. Where each lands, per tab:
 | Content Review | The comment on the cut at its version, `#review/r{n}/{cut}/v{version}/c{comment}`, at its timecode | The cut at the new version, `#review/r{n}/{cut}/v{version}` | The cut at the version the call or tick was on, `#review/r{n}/{cut}/v{version}` |
 | Ad Performance | The section, `#performance/r{n}/{section}` | The section | The section |
 
-A tag opens what it was written in: the comment or the note. Until Ad Performance has its own
-build, its hashes open the tab at the top (**Header and tabs**).
+A tag opens what it was written in: the comment or the note. An Ad Performance section that
+isn't rendered (**Compare**, **Who watched**, **Next round's brief**) opens the tab at the top
+(**Header and tabs**).
 
 ### Tagging
 
@@ -6434,7 +6749,9 @@ left blank, never filled with a dash.
 | Selected Creators | Variant plans (agency only) | Variant of each creator in the round, V1 to V{v} | Creator, Concept, Persona, Variant, Framework, Length, Hook ("H2 Demo first"), Hook line, CTA, CTA line, From (Brief, Override or Broken), Overridden fields, Changed by, Changed on |
 | Content Review | Variant status | Cut the queue shows now, the filter and creator applied | Creator, Concept, Variant, Title, Version (for the client, the newest sent to them), Stage, Status, Added on, Sent on, Approved by, Approved on, File (Upload, Google Drive, Frame.io or Link), Link (a link's address; blank for an upload), Runtime (m:ss.s, blank for a link), Aspect (9:16, 4:5 or width × height), Brief check (passed of 8, with "{f} failed" when any did), Open comments, Hook ("H2 Demo first", agency only), CTA (agency only), Framework (agency only) |
 | Content Review | All comments | Comment or reply on the cuts the queue shows | Creator, Variant, Version, Timecode (text, m:ss.s, or General; a reply leaves it blank), Frame (the frame number, blank when the frame rate isn't known or for a linked cut), Seconds (a number, for sorting), Comment, Reply to (its first words), Who, Side (Client, Agency, or Agency only for the agency), When, Has drawing, Resolved |
-| Ad Performance | Every variant | Variant in **Variants ranked** | Creator, Concept, Variant, Framework (agency only), Hook (agency only), CTA (agency only), Spend, Purchases, Cost per sale, ROAS, 3 second hold, Status (winning, testing, retire or refresh) |
+| Ad Performance | Every variant | Variant in **Variants ranked**, in its order, every row, not only the first 10 | Creator, Concept, Variant, Framework (agency only), Hook (agency only), CTA (agency only), Currency, Spend, Spend floor, Days live, Impressions, Hook rate, Hold rate, Link CTR, Purchases, Revenue, Cost per sale, ROAS, Status (Winning, Testing, Watch, Fatigued, Retire), Retire or refresh (the reason, blank when none) |
+| Ad Performance | Weeks | Week in **Weekly spend and return** | Round, Week, From, To, Currency, Spend, Impressions, Purchases, Revenue, ROAS, Cost per sale |
+| Ad Performance | Not matched (agency only) | Row in **Ads not matched** | Creator, Ad, Post link, Currency, Spend, First day, Last day |
 | Ad Performance | By creator | Creator in **Compare** | Creator, Tier, Variants, Spend, Purchases, Cost per sale, ROAS |
 | Ad Performance | By framework (agency only) | Framework in **Compare** | Framework, Variants, Spend, Purchases, Cost per sale, ROAS |
 
@@ -6473,9 +6790,13 @@ What the export can't do yet, said plainly:
 - **Empty cells stay empty.** A record nobody has filled leaves its cells blank, never a guessed
   address, tracking number or date. The street, ZIP, phone and delivery note are in the agency's
   sheet only, so a client's export holds no more of an address than the page shows them.
-- **Ad Performance exports nothing yet.** Nothing in this flow reads ad spend (**What this flow
-  never does**). The tab shows its empty state, so its Export Button is disabled. The three
-  sheets above are what it exports once the tab shows results.
+- **Ad Performance exports the results the page holds.** Every variant and Weeks are for both
+  sides, with the figures the page itself holds and the same results currency, so the totals of
+  their Spend, Purchases and Revenue columns equal **Headline numbers**. The client's Every
+  variant has no Framework, Hook or CTA column and the client gets no Not matched sheet, as on the
+  tab. By creator and By framework export
+  once **Compare** is built. With no results for the round in view, the Export Button is
+  disabled.
 - **Content Review exports the cuts its queue shows.** With no cut in the round, its Export
   Button is disabled. Hook, CTA and Framework are agency only columns, as on the tab.
 - **Opening in Excel and Google Sheets can't be checked from the chat.** Check one export from each
@@ -6503,6 +6824,11 @@ name the tab, never an older name for the part:
 | Where the round stands, its pace and its launch date | Home, Simple, **Where we stand** |
 | What Aspire is working on | Home, Simple, **Aspire is on it** |
 | Last round's cost per sale against target | Home, Simple, **Last round result**, and Ad Performance |
+| Cost per sale against target, the hit rate, and when a round goes live | Ad Performance, **Cost per sale against target** |
+| Spend, impressions, CPM, hook and hold rates, link CTR, purchases, revenue, ROAS | Ad Performance, **Headline numbers** |
+| Spend and ROAS by week | Ad Performance, **Weekly spend and return**, and Home, Everything, **Calendar** |
+| Every variant ranked with its status, and the ones to retire or refresh | Ad Performance, **Variants ranked**, and Home, Everything, **Needs attention** |
+| A variant's live post | Selected Creators, the card's **Concept and variant plan**, and Ad Performance, **Ads not matched** |
 | The next weekly sync, its calendar link and the Slack channel | Home, Simple, **Next check in** |
 | The round's steps, what's now and up next, with the four approvals (Concepts, Creators, Fees, Briefs approved) | Home, Everything, **Round steps** |
 | Needs your attention, per viewer | Home, Simple, **Waiting on you**, and Everything, **Needs attention**, plus the inbox |
@@ -6817,10 +7143,10 @@ card titles, `text-xl` for section titles, `text-2xl` for the page title. Weight
 | Variant | Status labels |
 | ------- | ------------- |
 | soft | New, Not started, Not received, Edited by {name}, Synced from Atlas, Sheet, Claude, From {file label}, Not sent, Not due, Good, Possible, Not scored yet, Too few decisions to judge yet, Not recorded yet, Resolved, Agency only, Awaiting decision, Unreviewed, Unpriced, Not sent yet, not asked yet, not shipped, Planned, Done, Returning, Up next, Paused, Not done, round closed, Scanned, Not read, Draft, Needs work, New concept, Carried forward, Deferred, With Aspire QA, Not cut yet, Not under contract, Back with editor, Not checked, Can't check, Version {k} |
-| processing | Needs client review, Sent, Invoice sent, 50% paid, Offer sent, Details received, Shipped, Brief sent, in negotiation, In production, Now, Coming soon, Scanning, In review with client, Waiting for your sign off, Signed off, Aspire to confirm |
-| success | Signed, Paid in full, Confirmed, Kept last round's product, Fees approved, Strong, Holding up, Picked, Priority Yes, Yes, Approved, Agreed, Delivered, Brief accepted, Granted, In market, Ahead, On track, Met the target, Active, Updated {n}, Signed off, Pass |
-| warning | details to add, On hold, Not confirmed for round {n}, More than planned, Fees changed since you approved, This isn't an approval you made, Weak, Partly matching, Past competitor deal, Paid partnership: {competitor}, Changes requested, This isn't a sign off you made, This isn't a decision you made, This isn't a call you made, Approved on the earlier page, not recorded, Fail, Not counted, Over budget, Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending, waiting for your approval, Running behind, Launch at risk, over target, days late, Waiting on you, Out of stock, Still needed, Needs a concept, Not in products in scope, Removed, Used in round {r}, Broken, Plan broken, Override, Cut for {concept}, Plan changed since this cut, Past the plan |
-| error | Competitor conflict, Choosing differently, Passed, No, Rejected, Declined, returned, Couldn't scan, Not added, Couldn't import |
+| processing | Testing, Needs client review, Sent, Invoice sent, 50% paid, Offer sent, Details received, Shipped, Brief sent, in negotiation, In production, Now, Coming soon, Scanning, In review with client, Waiting for your sign off, Signed off, Aspire to confirm |
+| success | Winning, under target, Signed, Paid in full, Confirmed, Kept last round's product, Fees approved, Strong, Holding up, Picked, Priority Yes, Yes, Approved, Agreed, Delivered, Brief accepted, Granted, In market, Ahead, On track, Met the target, Active, Updated {n}, Signed off, Pass |
+| warning | Watch, Fatigued, details to add, On hold, Not confirmed for round {n}, More than planned, Fees changed since you approved, This isn't an approval you made, Weak, Partly matching, Past competitor deal, Paid partnership: {competitor}, Changes requested, This isn't a sign off you made, This isn't a decision you made, This isn't a call you made, Approved on the earlier page, not recorded, Fail, Not counted, Over budget, Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending, waiting for your approval, Running behind, Launch at risk, over target, days late, Waiting on you, Out of stock, Still needed, Needs a concept, Not in products in scope, Removed, Used in round {r}, Broken, Plan broken, Override, Cut for {concept}, Plan changed since this cut, Past the plan |
+| error | Retire, Competitor conflict, Choosing differently, Passed, No, Rejected, Declined, returned, Couldn't scan, Not added, Couldn't import |
 
 The decision's Badge takes the variant of its choice (Unreviewed is soft). The match score's
 band Badge takes its band's variant, and a factor's "Strong" or "Weak" Badge is success or warning.
@@ -6960,7 +7286,8 @@ prefixes.
     and verdict match **Where we stand** exactly, concepts take the chart series in order and
     are always named beside their color, the strip and grid draw at their container's width with
     no sideways scroll at 375px, 768px and 1280px, day details open on hover, focus and tap, and
-    nothing about spend shows before Ad Performance records results.
+    nothing about spend shows before the page holds the round's results, after which each
+    in-market day's spend and ROAS equal that week's in **Weekly spend and return**.
 14. Master Brief: the status Badge follows step 4; the meter and counts match the brief and the
     roster, and the client's meter leaves the variant plan out; every concept chip opens its
     concept; **Needs a concept** lists exactly the products in scope with no concept, then the
@@ -7131,6 +7458,24 @@ is no step field anywhere in page data; the Footage
     while Rates and payments keeps every row of **Contract and rates**; Rates and payments isn't offered to the client; and the client's
     Shipping list and Variant tracker have no street, ZIP, phone, delivery note, hook, CTA or
     framework column.
+28. Ad Performance: with no Meta ad account linked, every section reads "Connect your Meta ad
+    account to see results" and no figure, chart or zero shows anywhere on the page; a round not
+    in market shows only **Not live yet**, with its launch date, its cuts in and approved, and its
+    links; Spend, Impressions, Purchases and Revenue equal Meta Ads Manager's totals for the
+    variants' live posts, the same dates and the same currency, and the Every variant and Weeks
+    sheets add up to them; no money is added across currencies, and no figure shows 0 where Meta
+    reported nothing; every rate equals its sums divided, never an average; each variant's status
+    follows **Status** with the target, floor and settings from `campaign:{slug}-decision-defaults`,
+    and changing the target there changes the statuses at the next publish with nothing in the
+    page's code; the status Badges keep their semantic colors under every brand theme; the two
+    weekly charts share one week axis, each has one scale from zero, take `--chart-1` and
+    `--chart-2` from the CSS variables, and have their table; the hit rate ring is never colored
+    by result; the table shows 10 rows and then **Show all**, and **Top ads** reorders only its
+    strip; Hook and CTA, **Ads not matched** and the agency lines never render for the client or
+    in **Preview as client**, and the page itself holds no hook, CTA, framework, ad name, ad,
+    campaign or ad account id, and no ad code; the retire or refresh rows on Home match the
+    table's flags; and the Ads live step, **Last round result**, the calendar's spend and ROAS,
+    the Ad Performance summary card and **Did it sell** read the same results.
 
 ## 1e. Page data: what the page keeps and how it is read back
 
@@ -7216,7 +7561,7 @@ There are three places, and nothing else:
 
 | Where | What | Who sees it |
 | ----- | ---- | ----------- |
-| The page itself | What the records said at the last publish: the creators, the brief, the program, the steps | Everyone it is shared with |
+| The page itself | What the records said at the last publish: the creators, the brief, the program, the steps, and each round's ad results as the last read found them (**1d**, **Ad Performance**) | Everyone it is shared with |
 | Page data | Everything a person or Claude changed since, every decision, comment and approval, the agency data, and each person's own state | Per the rules above |
 | Browser storage | The tab open last, and Table or Cards on Creator Selection | That browser only |
 
@@ -7369,7 +7714,8 @@ cut call writers (`{writer}/cut-calls`). Only the owner writes it, so no Editor 
 | Pool not sent | `agency/pool` | Claude | One key per pool creator not sent to the client yet, `{net}-{handle}`, holding what their row and card show, so the page itself never lists them |
 | Pool viewer data | `agency/pool-{net}-{handle}` | Claude | One document per creator not sent yet, plain data: what the creator viewer shows for them (**1d**, **Creator Selection**, **The creator viewer**): posts with captions, figures, marks and images, bio, category, verified, badges and audience. Captions are cut to 2,200 characters, and a document Claude would write past 200 KiB drops its link tiles' captions, then its third and second posts' images, which then show as link tiles. Written at publish, deleted by no one: a creator sent later reads from the page itself instead |
 | Creator, agency only | `agency/creator-{net}-{handle}` | Agency; Claude | Every agency only field in **Who sees what** that isn't per round: the recommendation, the Aspire notes (`note-{id}`), vetting evidence, safety detail, the profile's `email`, `phone`, `address` (`{line1, line2, city, region, postal, country}`) and `deliveryNote` (stamps, edited on the Selected Creators card, written by Claude from the roster's `contact` and `details` stamped `atlas`), manager, reply window, last contact, `expectedCost:` and `expectedFrom:` (agreed, counter, offer or calculator, `rates-and-terms.md`, **Expected cost**), `costPer1kReach:`, offer, counters, waiting on, `replies:` the reply log (`[{at, summary}]`, newest first) and `drafts:` the creator's email drafts (`[{template, subject, body, sentAt}]`). A page from before kept the rates (`rate-ugc`, `rate-reel`, `rate-usage90`) and a payment amount here: the rates read as the newest round's (**Creator, agency only, per round**), and the amount is never shown, since the page works it out |
-| Creator, agency only, per round | `agency/creator-{net}-{handle}-r{round}` | Claude for the rates; Agency and Claude for the overrides | `rate-ugc`, `rate-reel`, `rate-usage90`, the round's three rates per deliverable, as recorded in the chat; the creator's variant plan overrides (**1d**, **Selected Creators**, **Concept and variant plan**), one stamp per field per variant, V1 to V5 at most: `v{n}-framework` (`{lane, code, name}`), `v{n}-length` (`{lane, text}`), `v{n}-hook` and `v{n}-cta` (`{lane, n}`), `lane` being the concept it was made for; no stamp, or `value` `null`, follows the concept's plan |
+| Creator, agency only, per round | `agency/creator-{net}-{handle}-r{round}` | Claude for the rates; Agency and Claude for the overrides | `rate-ugc`, `rate-reel`, `rate-usage90`, the round's three rates per deliverable, as recorded in the chat; the creator's variant plan overrides (**1d**, **Selected Creators**, **Concept and variant plan**), one stamp per field per variant, V1 to V5 at most: `v{n}-framework` (`{lane, code, name}`), `v{n}-length` (`{lane, text}`), `v{n}-hook` and `v{n}-cta` (`{lane, n}`), `lane` being the concept it was made for; no stamp, or `value` `null`, follows the concept's plan; and each variant's live post, `v{n}-post` (`{lane, url, igMediaId}`), written by an Editor and by Claude from the roster's `variantPlan`, with Claude adding `igMediaId` once a read finds the post (**1d**, **Ad Performance**) |
+| Ad results not matched | `agency/performance-r{round}` | Claude at publish | Plain data, rewritten whole at each read: `at:` the read's time, `rows:` one per ad by the round's creators whose post is no variant's live post, `{creator, ad, post, currency, spend, firstDate, lastDate}`, `ad` the ad's name and `post` its post link. Nothing here is a code or an id the page shows |
 | Activity, client side | `activity/{id}/days/{day}` | Each Contributor, their own | `day:`, `entries:` one key per write (**The activity log**) |
 | Activity, agency side | `activity-editors/{id}/days/{day}` | Each Editor, their own; Claude under `activity-editors/claude` | The same, for the agency's writes about things the client can see |
 | Activity writers | `activity/{id}`, `activity-editors/{id}` | The writer | `lastAt:` the time of their newest entry, written with each one |
@@ -8119,7 +8465,8 @@ document. Steps 3 and 4 run after every publish.
 1. List `agency`, its `comments/items` collection and one agency writer's
    `activity-{id}/days` collection with `as_level` `interact`: all must come back empty. Get `agency/budget`, `agency/files`, `agency/match-score`,
    `agency/scores-r{round}` for the open round, and one `agency/creator-{net}-{handle}-r{round}`
-   (one with variant plan overrides when any exist) and one `agency/cut-{cut}` when a cut exists the
+   (one with variant plan overrides or a live post when any exist), `agency/performance-r{round}`
+   for a round with results, and one `agency/cut-{cut}` when a cut exists the
    same way: not found. The last holds the cut's plan, its brief check notes and Claude's
    suggestions, which can quote the hook and the CTA. These hold every figure
    **Match score tuning** shows and every weight, so a client can't reach the panel's data.
@@ -8155,7 +8502,11 @@ document. Steps 3 and 4 run after every publish.
    `reviews/cut-{cut}/versions/v{version}` at `interact` and check it holds only the fields **What
    the page keeps** lists for it: no hook, CTA or framework text, no brief check note and no
    suggestion. An amount the page shows the client in its own right (an agreed fee once the fees are
-   sent) is left out of the search even when an offer or counter had the same number. None of the
+   sent) is left out of the search even when an offer or counter had the same number. For each
+   round with ad results, search the page itself for every ad name in `agency/performance-r{round}`
+   and check its results rows hold only the fields **Ad Performance**, **What the page itself
+   holds** lists: no hook, CTA or framework, no ad, ad set, campaign or ad account id, and no ad
+   code. None of the
    rest may appear.
 4. Read the client readable activity written since the last check (each writer's
    `activity/{id}/days` and `activity-editors/{id}/days` with `day` on or after the last check's
@@ -8297,6 +8648,12 @@ without a second question; the send confirmation names the reminder.
   converted to UTC cron (`M H * * D`, shifting the weekday when the conversion crosses
   midnight). It republishes the page and posts the agenda: where we are, what is blocking, and
   what is next.
+- **Results refresh.** One task per campaign named "Atlas CAS results refresh: {brand} -
+  {campaign}", daily at 07:00 in the campaign's saved time zone, converted to UTC cron (`M H * * *`).
+  The status screen creates it when a round goes in market (row 17) and removes it once no round
+  is in market and none launches within 7 days; C6 approved it, so neither asks. It republishes
+  the page, which reads the ad results again (**1d**, **Ad Performance**, **Reading the
+  results**), to the same link, and posts nothing.
 - **Step lines.** Any gate change or ledger line posts one line to the routing channel when it
   is written: "{Campaign}: {step name} {status}. {one fact}. {page link}". Interactive runs
   confirm the send once per session; scheduled runs use the C5 standing approval.
@@ -8311,6 +8668,17 @@ clock in the campaign's saved timezone; do not trust any date in this prompt. If
 {n} is already cleared, or round {r} is done, stop without posting. Otherwise post the reminder to
 the destinations saved in the campaign routing, naming the approver and backup, and republish the
 campaign page.
+```
+
+Results refresh prompt:
+
+```
+Run /aspire:aspire cas campaign for {brand}, campaign {campaign}, as the unattended daily results
+refresh. Use the Aspire Atlas connection and the campaign's saved records. Do not ask questions.
+Do not record any decision, pull the page data, or write anything to Atlas. Read the date from the
+shell clock in the campaign's saved timezone; do not trust any date in this prompt. If no round of
+the campaign is in market today, stop without publishing. Otherwise read the ad results for every
+round that has been in market and republish the campaign page to its saved link. Post nothing.
 ```
 
 Weekly sync prompt: the same text, with "as an unattended round {r} Gate {n} reminder" replaced by
@@ -8328,6 +8696,10 @@ Follow the readout rules (`readout.md`, **Scheduled (unattended) runs**):
 - Never list or post tags. A tag is posted only after the CM confirms it in the chat
   (**Delivering tags**). The leak search in **Checking the roles**, step 4, still reads them.
 - A slip is shown as "{n} days late, not yet logged" until a person logs it.
+- Ad results are read and published like any other figure, with the stamps Claude writes after a
+  publish (a live post's `igMediaId`, `agency/performance-r{round}`) and nothing else. A variant to
+  retire or refresh is shown, never acted on, and a missing target stays missing until the CM
+  saves one in the chat.
 - Never launch an agent and never start discovery work.
 - Resolve the date from the shell clock in the cadence timezone (`TZ=<tz> date +%F`).
 - If the campaign records are missing, publish a one-card page titled "<Brand> Creator Ad
@@ -8344,7 +8716,10 @@ Follow the readout rules (`readout.md`, **Scheduled (unattended) runs**):
   doesn't already have. The CM sends from their own mail and pastes replies; a Google Docs,
   Slides or Sheets file is read only when the session, or the Editor on the page, already has a
   Google Drive connector. No connector is ever added or asked for.
-- Paid performance data (paid hook rate, cost per result). The decision defaults are saved for
-  later reads; nothing here reads ad spend.
+- Paid data beyond the brand's own partnership ads. Ad Performance reads `search_ads` for the
+  round's creators on {brand}'s own linked ad accounts only, never another brand's, never
+  organic figures added to paid ones, and never an ad code. It never changes an ad: retiring or
+  refreshing one is done in Meta Ads Manager, and nothing on the page or in a scheduled run
+  pauses, boosts or edits an ad.
 - Editing the cuts. Aspire's editors cut the variants outside this flow; the page tracks, reviews
   and approves them (**1d**, **Content Review**), and keeps them only in page data.
