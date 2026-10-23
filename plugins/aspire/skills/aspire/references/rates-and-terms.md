@@ -306,16 +306,18 @@ The rate sheet is the **Contract and rates** section of the campaign page's Sele
   rates**).
 - The fee rate label once ("Aspire recommended rates" when no rate card is saved), "fees are
   estimates from public view counts, not quotes".
-- **The contract and payment**, agency only, once the fees are sent: the contract status and
+- **The contract and payment**, on the agency's rows once the fees are sent: the contract status and
   signed date, the round's rate per deliverable (UGC video, Reel collab, 90 day usage), the
   contracted total (the agreed fee plus its uplift) and the payment status (Invoice sent; 50%
   paid, the rest on final cut sign off; Paid in full; On hold) with the amount paid so far. The
-  client reads the payment status only, beside their agreed fee. Each value carries its source
+  client reads the contract status, its signed date and the payment status beside their agreed
+  fee, never a rate, the total or an amount. Each value carries its source
   tag (`cas-campaign.md`, **1d**, **Selected Creators**, **Creator records**).
 
 **Rates are recorded per round.** When the CM records a creator's rates per deliverable in the
-chat, with the offer or a reply, the confirm writes them for the round being negotiated, to the
-page's `agency/creator-{net}-{handle}-r{round}` at the next publish, stamped `claude`, so a
+chat, with the offer or a reply, the confirm writes them to the roster finding for the round being
+negotiated, as `rates` `{ugc, reel, usage90}`, and the next publish copies them to the page's
+`agency/creator-{net}-{handle}-r{round}`, stamped `claude`, so a
 returning creator's new rates never overwrite what an earlier round contracted. A contract signed
 or a payment made outside the page (in the core Aspire platform) is recorded on the card by the
 agency, or typed in the chat: "@a signed on the 3rd", "@b paid half". The chat proposes the
