@@ -292,7 +292,7 @@ record type the newest finding per identity wins, by `detail.recordedAt`.
 | ---------- | -------- | ------ | ---- | ----------- |
 | `gate` | gate + round (Gate 4b: gate + round + the creator) | The brand's own account on its first linked network | `action_item` `high` while planned, open or slipped; `went_well` when cleared | `gate` (1, 2, 3, 4, `4b`), `status` (planned, open, cleared, slipped), `plannedAt`, `sentAt`, `dueAt`, `clearedAt`, `clearedBy`, `daysSlipped`, `reminderTask` (the task name). Gate 1 adds `source` (where the concepts were read from). Gate 3 adds `approval` `{approver, name, at, item, via, recordedBy}` (the approver's viewer id, their name, when, the `fees` item, `page` or `chat`, and for `chat` the CM who recorded it). Gate 4 adds `signoff` `{signer, name, at, item, via, recordedBy}` (the signer's viewer id, their name, when, the `signoffs` item, `page` or `chat`, and for `chat` the CM who recorded it), `reopenedAt` and `reopenReason`. Gate 4b adds `handle` and `network` |
 | `round` | round | The brand's account | `action_item` `medium` while planned, in production or in market; `went_well` when done | `round`, `label`, `month`, `build` `{start, end}`, `inMarket` `{start, end}`, `launchDate`, `state` (planned, in production, in market, done), `steps` (`{"1": {plannedAt, dueAt}, …}` for steps 1 to 4), `plan` (every step of the round, the four approvals included, **Round steps** below), `closedAt` (set when the CM closes the round early), `startedFrom` (the round it was started from, empty for the first), `creators` (`new`, `same`, or `same-and-new`: how the round was started) |
-| `roster` | the creator's account + round | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while a candidate; `went_well` approved; `needs_improvement` rejected | `handle`, `network`, `name`, `descriptor`, `location` (the last three only when edited on the page), `lane`, `persona` (the persona's name in the round's brief, **1d**, **Creator Selection**, **Concept and persona**), `slate` (candidate, approved, maybe, rejected), `priority` (true for a Priority Yes), `clientReason` (the reason on a Priority Yes or Yes against the recommendation), `rejectReason`, `clientQuestion`, `pickNote` (why we picked them), `rate` (offered, countered, agreed, declined), `offer` `{open, target, max}`, `counter`, `agreed`, `deliverables`, `usage`, `exclusivity`, `termNotes`, `contact` `{email, phone, manager}`, `tier`, `decidedBy` (`{writer, name, at, score, band}`: the page account whose call was recorded, their name, when, and the match score and band they saw), `surprise` (`{kind, reason, text, at}`: the client's surprise reason on that call, `kind` `pass` or `pick`, **1d**, **Creator Selection**, **Deciding**), `lastContactAt`, `waitingOn` (client, agency, creator), `yourCall` (the question to the client, while one is open), `adPermissions` (granted, pending), `details` `{status, address, pickup, visitDate, product, options, availability, deliveryNote}` (`address` being `{line1, line2, city, region, postal, country}`), `shipping` `{status, item, carrier, tracking, shippedAt, deliveredAt, eta}` (`status` not shipped, shipped, delivered, returned or kept), `contract` `{status, signedAt}`, `payment` `{status, at, paidPct}`, `rates` `{ugc, reel, usage90}` (the round's rates per deliverable), `footage` `{counts, at}`, `briefState` (sent, accepted, changed, approved, locked), `variantPlan` (the creator's overrides of the concept's variant plan for the round, `[{variant, lane, framework, length, hook, cta, by, at}]`, holding only the fields overridden, **1d**, **Selected Creators**, **Concept and variant plan**), `shipDate`, `vetting` (the four figures and the recommendation), `returning` (true when carried from an earlier round), `fromRound` (the round it was carried from), `source` (chat, reply, page, or carried) |
+| `roster` | the creator's account + round | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while a candidate; `went_well` approved; `needs_improvement` rejected | `handle`, `network`, `name`, `descriptor`, `location` (the last three only when edited on the page), `lane`, `persona` (the persona's name in the round's brief, **1d**, **Creator Selection**, **Concept and persona**), `slate` (candidate, approved, maybe, rejected), `priority` (true for a Priority Yes), `clientReason` (the reason on a Priority Yes or Yes against the recommendation), `rejectReason`, `clientQuestion`, `pickNote` (why we picked them), `rate` (offered, countered, agreed, declined), `offer` `{open, target, max}`, `counter`, `agreed`, `deliverables`, `usage`, `exclusivity`, `termNotes`, `contact` `{email, phone, manager}`, `tier`, `decidedBy` (`{writer, name, at, score, band}`: the page account whose call was recorded, their name, when, and the match score and band they saw), `surprise` (`{kind, reason, text, at}`: the client's surprise reason on that call, `kind` `pass` or `pick`, **1d**, **Creator Selection**, **Deciding**), `lastContactAt`, `waitingOn` (client, agency, creator), `yourCall` (the question to the client, while one is open), `adPermissions` (granted, pending), `details` `{status, address, pickup, visitDate, product, options, availability, deliveryNote}` (`address` being `{line1, line2, city, region, postal, country}`), `shipping` `{status, item, carrier, tracking, shippedAt, deliveredAt, eta}` (`status` not shipped, shipped, delivered, returned or kept), `contract` `{status, signedAt}`, `payment` `{status, at, paidPct}`, `rates` `{ugc, reel, usage90}` (the round's rates per deliverable), `footage` `{counts, at}`, `briefState` (sent, accepted, changed, approved, locked), `variantPlan` (the creator's overrides of the concept's variant plan for the round, one entry per overridden field, `[{variant, field, lane, value, by, at}]`, `field` being framework, length, hook or cta and `by` and `at` that field's own writer and time, **1d**, **Selected Creators**, **Concept and variant plan**), `shipDate`, `vetting` (the four figures and the recommendation), `returning` (true when carried from an earlier round), `fromRound` (the round it was carried from), `source` (chat, reply, page, or carried) |
 | `draft` | the creator + the template | The creator's account | `action_item` `low` while not sent; `went_well` once sent | `handle`, `template` (offer, counter, accept, chase, details, brief, brief-notes), `subject`, `body`, `sentAt` |
 | `reply` | one per exchange, never replaced | The creator's account | `went_well` `low` | `handle`, `receivedAt`, `summary` (one plain line), `record` (what it wrote to the roster), `nextMove` |
 | `brief` | lane + round | The brand's account | `action_item` `medium` while a draft; `went_well` when locked | `lane`, `locked`, `briefPage`, `version`, `edits` (the edits pulled from the page, one plain line each: the part, from, to, and who), `added` (true for a concept added on the page), `removed` (true for a concept taken out of this round's brief), `deferred` (true for a concept deferred to the next round), `carriedForward` (the round a deferred concept came from), `importedFrom` (`{label, url, kind}` of the document an import read), `startedFrom` (the round whose signed off brief it started from), `reopened` (`{reason, name, at}` when the agency reopened a signed off brief) |
@@ -1534,7 +1534,7 @@ only is marked so.
 | Ad Performance | Headline numbers | `performance-headline` | "Spend {s} · {p} purchases · ROAS {r}" | Standard | Closed |
 | Ad Performance | Weekly spend and return | `performance-weekly` | "{w} weeks in market · best week {date}" | Standard | Closed |
 | Ad Performance | Variants ranked | `performance-variants` | "{w} winning · {t} testing · {r} to retire or refresh" | Standard | Closed |
-| Ad Performance | Compare by framework, hook, CTA (those three for the agency only), concept, persona, creator and tier | `performance-breakdowns` | "Best {dimension}: {value} at {x} per sale" | Full | Closed |
+| Ad Performance | Compare by framework, hook, CTA (those three for the agency only), concept, persona, creator and tier | `performance-breakdowns` | "Best {dimension}: {value} at {x} per sale", for the client never framework, hook or CTA | Full | Closed |
 | Ad Performance | Who watched | `performance-audience` | "Top audience: {segment}" | Full | Closed |
 | Ad Performance | Next round's brief | `performance-next` | "{n} changes for round {n+1}", or "Nothing written yet." | Standard | Closed |
 
@@ -2672,10 +2672,13 @@ Select of its CTAs), VO (long text, opened below the row with the toolbar), B-ro
 numbers, picked from the concept's numbered list, shown "B02, B05, B09"), and Note. The Table keeps
 its first column and header pinned (**Responsive**, **Tables**) and is a stack of Cards on phone. A
 variant that names a hook, CTA or shot that was removed shows it struck through with a warning
-Badge "Removed", so nobody cuts from a part that is gone. Under the Table, one line names the
-creators on the concept who override it, linking to each card (**Selected Creators**, **Concept
-and variant plan**, **Under the brief's own plan**): a change here reaches every other creator on
-the concept.
+Badge "Removed", so nobody cuts from a part that is gone; a creator's card, Content Review and Ad
+Performance show the same thing as "Broken", since there it is a cut's plan that is broken. Under the
+Table, one line names the creators on the concept who override it, linking to each card
+(**Selected Creators**, **Concept and variant plan**, **Under the brief's own plan**): a change
+here reaches every other creator on the concept. Changing a variant's framework, hook or CTA here
+when any creator following it already has a cut for that variant first opens a Dialog: "{k}
+creators following V{n} already have a cut made with {old}. Change the plan anyway?"
 
 #### Frameworks
 
@@ -4700,13 +4703,14 @@ profiles and per round edits**).
 | The concept removed or deferred | Can't happen while the creator is on it: **Remove concept** and **Defer to next round** are disabled while any approved creator in the round is on it. A concept that leaves the round another way (a reset, a restored version) moves the creator to the next live concept **The match score**'s rule finds, else to "Needs a concept", where the plan shows no rows. Either way the overrides are kept and listed as "Made for {concept}", and nothing is read from them until the creator is on that concept again or they are cleared |
 | The brief reset, restored, imported or rewritten by a brief run | The concept's plan changes as any brief edit does. Creator overrides are not part of the brief and are never reset, restored or nulled with it |
 | The round's brief signed off and locked (**Comments and sign off**, **The locked brief**) | The brief's text is a label for everyone, so no hook, CTA or selling point changes under a card. The variant plan stays editable for the agency, as the brief's own plan does, and so do the overrides: they are Aspire's cut plan, which the client didn't sign. The concept and persona stay editable on the live concepts |
-| A cut already in for the variant (**Content Review**) | Changing that variant's framework, hook or CTA first opens a Dialog: "V{n}'s cut was made with {old}. Change the plan anyway?" After the change the cut shows the agency a warning Badge "Plan changed since this cut", until a newer version is added |
+| A cut already in for the variant (**Content Review**) | Changing that variant's framework, hook or CTA here first opens a Dialog: "V{n}'s cut was made with {old}. Change the plan anyway?" (Master Brief asks the same for the brief's own plan, **The variant plan**.) When a version is added, the page saves the plan it was made with, `plan-v{version}` in `agency/cut-{cut}` (**1e**). Whenever the plan read now differs from the newest version's record, from a card, a brief edit or a pull, the cut shows the agency a warning Badge "Plan changed since this cut", until a newer version is added. A version from before has no record and shows no Badge |
 | The round done | The whole block is a label (**Round switcher**) |
 | A new round | Overrides are per round and never carry. A returning creator starts round {n+1} on the new brief's plan for their concept, with no overrides |
 
 **Under the brief's own plan.** Below each concept's variant plan on Master Brief, for the agency,
-one line: "{k} creators have their own plan for this concept", each handle a link to their card's
-block, so an Editor changing the brief's plan sees who won't follow it.
+one line: "{k} creators have their own plan for this concept", counting creators on the concept
+with an override made for it ("Made for" overrides held for another concept don't count), each
+handle a link to their card's block, so an Editor changing the brief's plan sees who won't follow it.
 
 **What the client sees.** The concept and persona as labels, the product, and the brief's
 positioning line, hooks, CTAs and selling points, all of which they read in the brief already.
@@ -4718,14 +4722,16 @@ holds them (**Who sees what**; **1e**, **Checking the roles**).
 **Reading a creator's variant.** Content Review and Ad Performance name a variant's framework, hook
 and CTA by reading them through this block's rule, never from a copy, so all three tabs agree:
 
-1. Find the creator's concept for the round, as **The match score**'s **Concept and persona**
-   resolves it.
-2. For variant {n} (from the cut's `variant:` in `reviews/cut-{cut}`), read each field by the three
-   steps above.
+1. Take the concept the cut was made for, its `lane:` in `reviews/cut-{cut}`. A cut with no
+   `lane:` takes the creator's concept for the round, as **The match score**'s **Concept and
+   persona** resolves it.
+2. For variant {n} (from the cut's `variant:`), read each field by the three steps above for that
+   concept: an override counts only when its `lane` is that concept, else the concept's plan.
 3. Show a hook or CTA as its number and type with its line from `briefs/{lane}-r{round}`, and a
    removed one as "Broken". Show the framework by its code and name.
 4. When the cut's `lane:` isn't the creator's current concept, show the agency a warning Badge
-   "Cut for {concept}" beside the labels.
+   "Cut for {concept}" beside the labels, so an old cut keeps the hooks it was made with and is
+   never counted under the new concept's.
 
 The read needs `agency`, so it runs only on an Editor's page. A client view of either tab shows no
 per variant hook, CTA or framework. Showing one would need a client readable copy Claude writes at
@@ -4734,11 +4740,15 @@ data on its own. Ad Performance's ranked variants and its
 **Compare** by framework, hook and CTA group by these same read values.
 
 **In Atlas.** **Pulling decisions** writes the creator's overrides to their round's `roster`
-finding as `variantPlan` (**1a**), one entry per overridden variant, and names them in the picker
+finding as `variantPlan` (**1a**), one entry per overridden field with that stamp's own writer and time, and names them in the picker
 ("@{handle}: V2 hook H3 in place of the brief's H1, by {name}"). At each publish Claude writes them
 back from `variantPlan` stamped `atlas`, leaving a newer page edit as it is (**1e**, **Claude's
 writes**), and never nulls a page stamp `variantPlan` doesn't hold, so a "Made for {concept}"
-override stays until an Editor clears it. The brief agent writes the concept's plan, never a creator's override.
+override stays until an Editor clears it. A concept change recorded in the chat follows the
+page's rule: when the creator has overrides made for the old concept, the picker names them
+("@{handle}'s 2 variant overrides were made for {old concept} and are cleared"), and the next
+publish writes a `null` stamp for each. Only the page and that confirmed change clear an override;
+no other chat flow writes one. The brief agent writes the concept's plan, never a creator's override.
 
 #### Contract and rates
 
@@ -5206,7 +5216,7 @@ left blank, never filled with a dash.
 | Content Review | All comments | Comment or reply on the cuts the queue shows | Creator, Variant, Version, Timecode (text, m:ss), Seconds (a number, for sorting), Comment, Reply to (its first words), Who, Side (Client, Agency, or Agency only for the agency), When, Has drawing, Resolved |
 | Ad Performance | Every variant | Variant in **Variants ranked** | Creator, Concept, Variant, Framework (agency only), Hook (agency only), CTA (agency only), Spend, Purchases, Cost per sale, ROAS, 3 second hold, Status (winning, testing, retire or refresh) |
 | Ad Performance | By creator | Creator in **Compare** | Creator, Tier, Variants, Spend, Purchases, Cost per sale, ROAS |
-| Ad Performance | By framework | Framework in **Compare** | Framework, Variants, Spend, Purchases, Cost per sale, ROAS |
+| Ad Performance | By framework (agency only) | Framework in **Compare** | Framework, Variants, Spend, Purchases, Cost per sale, ROAS |
 
 What the export can't do yet, said plainly:
 
@@ -6003,6 +6013,7 @@ for creator decisions, `refused:` the refused sign offs, the refused fee approva
 | Agency only comments | `agency/comments/items/{comment}` | Agency | The same fields, kept from the client |
 | Reviews | `reviews/cut-{cut}`, `{cut}` being `{net}-{handle}-r{round}-{variant}` | Agency | `creator:` (`{net}-{handle}`), `round:`, `lane:`, `variant:` (1 to 5), `title`, `check-{id}` (one review checklist item each, `value` true or false) |
 | Review versions | `reviews/cut-{cut}/versions/v{version}` | Agency | `link` (the cut's link or file), `notes`, `addedAt:` |
+| Cut plans, agency only | `agency/cut-{cut}` | Agency; Claude when it records a version | `plan-v{version}:` plain data written once when that version is added, the plan it was made with as **Reading a creator's variant** read it then: `{lane, framework, hook, cta}` (**1d**, **Selected Creators**, **Concept and variant plan**). Kept apart from `reviews`, which the client reads |
 | Creator profile | `creators/{net}-{handle}` | Agency; Claude | `name`, `descriptor`, `location`, `pickNote` (why we picked them), `shipArea` (`{city, region, country}` of the address, copied from `agency/creator-{net}-{handle}` `address` with its `at`, **1d**, **Selected Creators**, **Creator records**) |
 | Creator, per round | `edits/creator-{net}-{handle}-r{round}` | Agency; Claude at publish, from the roster | `concept`, `persona` (the persona's id in the concept, `persona-{id}`), `product`, `status`, `adPermissions`, the shipping record as on the client's document, `shootBy` (a date), `note-{id}` (Aspire's notes for {brand}, as in Notes below); `returning` (true) and `fromRound` on a creator carried into the round; and the round's records (**1d**, **Selected Creators**, **Creator records**): `contract` (`{status, signedAt}`), `payment` (`{status, at, paidPct}`, no amount), `footage` (`{counts, at}`) and `shipTo` (`{kind, confirmed, visitDate}`, no part of the address). Until each is written, its cell reads as **The card** says. A page from before kept `footage` as `{files, at}`: it reads as one count with no deliverable, and `shipTo` as an address or pickup: the next publish moves any address in it to `agency/creator-{net}-{handle}` and rewrites `shipTo` in the new shape, and **Checking the roles** step 3 fails until it has |
 | Pool not sent | `agency/pool` | Claude | One key per pool creator not sent to the client yet, `{net}-{handle}`, holding what their row and card show, so the page itself never lists them |
@@ -6043,7 +6054,7 @@ Rules:
 - The page writes a field only when the person changed it, one write per change. Controls the
   viewer cannot write render as labels.
 - **Reading it back.** Pulling decisions (above) lists `client`, `edits`, `program`, `briefs`,
-  `brief-rounds`, `brief-events`, `decisions`, `decision-events`, `fees`, `creators` and the agency's `terms`, `budget`, `frameworks` and `brief-*` with the Artifact tool's page data reads, and
+  `brief-rounds`, `brief-events`, `decisions`, `decision-events`, `fees`, `creators` and the agency's `terms`, `budget`, `frameworks`, `brief-*` and `creator-*` (`agency/creator-{net}-{handle}` and `agency/creator-{net}-{handle}-r{round}`) with the Artifact tool's page data reads, and
   compares each `manual` field's `at`, and each `file` field's with a `by`, with the last pull. The last pull is one time for every
   document, `at` on `agency/pull`, which Claude writes at the end of each pull that recorded
   something. A page whose decisions sit at the paths without a round
