@@ -3814,9 +3814,10 @@ when, so the thread is its history.
   as **Tagging** says for agency only boxes. Never rendered for the client or in **Preview as
   client**.
 - **Editing.** A note's writer gets two ghost Buttons on it, Edit and Remove. Edit turns it into
-  the Textarea with Save and Cancel; saving writes the same `note-{id}` with the new text and logs
+  the Textarea with Save and Cancel; saving writes the same `note-{id}` with the new text, keeping its `kind` when it has one
+  (a status update, **Selected Creators**, **Status updates**), and logs
   a `note` entry with the old and new text. Remove asks in a Dialog, "Remove this note?", then
-  writes the note's stamp with `value` `{text: null, createdAt}`, keeping when it was first written, and the thread shows "{name} removed a note
+  writes the note's stamp with `value` `{text: null, createdAt}`, plus its `kind` when it has one, keeping when it was first written, and the thread shows "{name} removed a note
   {time}" in its place. Every tag whose `on` is that note gets `withdrawn: true` and its `text`
   emptied, as a deleted comment's do, so no inbox opens a removed note and the chat never posts its
   words. Nobody else gets either Button. The rules can't stop another person on the
@@ -4840,8 +4841,9 @@ latest for that viewer.
 
 - **The video**, in a 9:16 box (**Component classes**, Cut tiles). For an uploaded cut, a `video`
   element from `"/_blob/" + asset`, with `playsinline` and `preload="metadata"`, showing its frame
-  at 0.5 seconds (`#t=0.5`) until played. A Play Button over it plays it in place from 0:00 (the
-  page sets the time to 0 first, since the frame shown sits at 0.5 seconds), and while it
+  at 0.5 seconds (`#t=0.5`) until played. A Play Button over it plays it in place. The first
+  play, and a play after the cut ended, starts from 0:00 (the page sets the time to 0 first, since
+  the frame shown sits at 0.5 seconds); a play after Pause goes on from where it paused. While it
   plays the tile adds Pause and a Sound toggle (Lucide `volume-2` or `volume-x`), each a ghost
   icon Button with its `aria-label` and Tooltip. Sound comes from one tile at a time: turning it on
   for one turns it off on the others, as **Compare** does. The tile has no scrubber, frame steps,
@@ -4855,9 +4857,10 @@ latest for that viewer.
   the tile's version the viewer can read, the same count as Content Review's Comments cell (the
   agency's includes agency only threads).
 - **Open in review**, a link Button to `#review/r{n}/{cut}/v{k}`, {k} being the tile's version,
-  with `/t{seconds}` added only once the viewer has played the tile and it is paused past 0.5
-  seconds, so the review panel opens on the same frame (**Header and tabs**), and an unplayed tile
-  opens it at 0:00. Opening it pauses the tile. For the client on a cut with no version sent to
+  opening it pauses the tile first, then builds the link from the tile's time, adding
+  `/t{seconds}` once the viewer has played the tile past 0.5 seconds, whether it was playing or
+  paused. So the review panel opens on the same frame (**Header and tabs**), and a tile never
+  played opens it at 0:00. For the client on a cut with no version sent to
   them, it goes to `#review/r{n}/{net}-{handle}` instead, the creator's tab, since that cut doesn't
   open for them (**Content Review**, **What the client sees**).
 
@@ -4884,11 +4887,14 @@ uploads. So:
 - **An upload that can't load** (removed, or the browser refuses it) shows the `film` icon and
   "This cut can't play right now. Ask {CM name} for a link.", with **Open in review** still there.
 
-**Loading.** A tile's `video` is added only while its card is open and the tile is near the
-screen (an `IntersectionObserver` with a margin of one screen), with `preload="metadata"`; until
-then the box shows a Skeleton. So **Expand all cards** on a round of 20 creators loads the tiles in
-view, not a hundred videos at once. A tile scrolled far away keeps its element but stops if it was
-playing.
+**Loading.** A card's tiles get their `video` elements, all of them at once, when the card is
+open and its row of tiles comes within one screen of the window (an `IntersectionObserver` on the
+row, against the window, with a margin of one screen), with `preload="metadata"`; until then each
+box shows a Skeleton. The row is watched as a whole, so tiles scrolled out of sight inside the
+phone's sideways row load with the rest and **Play all** reaches every one. So **Expand all
+cards** on a round of 20 creators loads the cards in view, not a hundred videos at once. Once
+added, a tile's element stays. A playing tile stops when its whole row leaves the window, never
+for scrolling sideways inside the row.
 
 **Phone and desktop.** Under 640px the tiles are one row that scrolls sideways, each tile 10rem
 wide and snapping into place, with the next tile's edge showing so the row reads as one that
@@ -4917,7 +4923,10 @@ for the client, in **Preview as client** or in a done round. It opens a Dialog "
 
 - **Who**, a Select: "Client" first ("Everyone approving for {brand}"), then the people on
   {brand}'s side the page knows (**Tagging**, **Which people are listed**). It sets the tag at the
-  start of the text.
+  start of the text. Changing it replaces that leading tag only while it is still the one the
+  Select put there; once the Editor has changed or removed it, the Select leaves the text alone and
+  says "Edit the tag in the text." under it, so no second tag is added and nothing typed is lost.
+  Who gets the update is always the tags in the text when it posts.
 - **Update**, a Textarea with the tag picker (**Tagging**), filled with "@Client Round {n} update on
   @{handle}: {step and next}", where {step and next} is the card's step and its waiting on line
   as the client reads it: "Step 5 of 8, Footage in and editing. Editing · 12 of 21 files in." Once
@@ -6418,7 +6427,7 @@ left blank, never filled with a dash.
 | Creator Selection | Match agreement (agency only) | Band in **Match score tuning**'s **Agreement**, then a row for our top 10 and one for the agreement score | Measure (the band, "Our top 10" or "Agreement score"), Picked, Decided, Share, Verdict (on the agreement score row), Rounds |
 | Creator Selection | Weights (agency only) | Factor in **Retune** | Factor, Weight in use, Default or tuned on, Suggested, Change, Decisions it learned from |
 | Creator Selection | Creators | Creator the pool shows now, in its sort | Creator, Network, Name, Descriptor, City, Tier, Concept, Persona, Product, Rounds, Campaign match, Match band, Competitor (the conflict or past deals), Watch, Hook rate, Engagement on Reels, Reach, Engaged accounts, Latest post, Paid work before, Ad permissions, Instagram followers, Instagram engagement rate, Instagram average engagement, Instagram audience, the same four for TikTok, Why we picked them, Status, Your decision, Your notes, Aspire notes for {brand}, Expected cost (agency only), Cost per 1K reach (agency only), Aspire notes (agency only), Reply window (agency only), Email (agency only), Phone (agency only), Manager (agency only) |
-| Selected Creators | Creator snapshot | Card the tab shows now, in its sort | Creator, Network, Name, Concept, Product, Returning, Step (a number, 0 to 8), Step name, Next or waiting on, Details to add (the count as the viewer counts them, so name and address only for the client), Missing (the details named, one per line, the same ones), Contract, Payment (blank for the client until the fees are sent), Payment date (the same), What they make, Usage, Exclusivity, If we drop them, Agreed fee and Fees approved on (each blank for the client until the fees are sent), Ship to (city and region, or pickup), Address confirmed, Footage files in, Footage files planned, one Footage column per deliverable ("Hooks in"), Shoot by, Status, Ad permissions, Brief state, Content state, Variants in, Variants approved, Variants planned, Content folder, Last update to {brand} (when the newest status update was posted), Waiting on (agency only), Last contact (agency only), Email (agency only), Phone (agency only), Manager (agency only), Paid so far (agency only) |
+| Selected Creators | Creator snapshot | Card the tab shows now, in its sort | Creator, Network, Name, Concept, Product, Returning, Step (a number, 0 to 8), Step name, Next or waiting on, Details to add (the count as the viewer counts them, so name and address only for the client), Missing (the details named, one per line, the same ones), Contract, Signed on (blank for the client until the fees are sent), Payment (the same), Payment date (the same), What they make, Usage, Exclusivity, If we drop them, Agreed fee and Fees approved on (each blank for the client until the fees are sent), Ship to (city and region, or pickup), Address confirmed, Footage files in, Footage files planned, one Footage column per deliverable ("Hooks in"), Shoot by, Status, Ad permissions, Brief state, Content state, Variants in, Variants approved, Variants planned, Content folder, Last update to {brand} (when the newest status update was posted), Waiting on (agency only), Last contact (agency only), Email (agency only), Phone (agency only), Manager (agency only), Paid so far (agency only) |
 | Selected Creators | Shipping list | Row in **Shipping** | Creator, Name, Item, Details from creator, Ship to (home or pickup), City, Region, Country, Visit date, Address confirmed, Carrier, Tracking, Shipped on, Delivered on, ETA, Product status, Source (the product status's tag), Updated by, Updated on, Address line 1 (agency only), Address line 2 (agency only), ZIP or postal code (agency only), Phone (agency only), Delivery note (agency only), Next step (agency only) |
 | Selected Creators | Rates and payments (agency only) | Row in **Contract and rates** | Creator, Concept, What they make, Usage, Exclusivity, Agreed fee (blank until agreed; Where it is says "In negotiation"), If we drop them, Where it is, Fees approved on, Payment status, Payment date, Contract, Signed on, UGC video rate, Reel collab rate, 90 day usage rate, Contracted total, Paid so far, Offer open, target and max (three columns), Counter, Expected cost, Cost per 1K reach |
 | Selected Creators | Variant tracker | Variant slot of each creator in view, V1 to V{v}, in the cards' order, then any cut "Past the plan" | Creator, Concept, Variant, Hook (agency only, "H2 Demo first"), CTA (agency only, "C1 Direct"), Framework (agency only, code and name), Version (the cut tile's version: the newest for the agency, the newest sent for the client; blank when not cut yet), Stage, Status (the tile's Badge, "Not cut yet" for an empty slot), Open comments (the tile's count), Due, Due for (the step the date is from), Updated on |
@@ -6429,19 +6438,19 @@ left blank, never filled with a dash.
 | Ad Performance | By creator | Creator in **Compare** | Creator, Tier, Variants, Spend, Purchases, Cost per sale, ROAS |
 | Ad Performance | By framework (agency only) | Framework in **Compare** | Framework, Variants, Spend, Purchases, Cost per sale, ROAS |
 
-**Selected Creators' sheets.** The four sheets for that tab's jobs are Creator snapshot, Shipping
-list, Rates and payments, and Variant tracker, with Variant plans beside them for the agency.
+**Selected Creators' sheets.** Three are for both sides, Creator snapshot, Shipping list and
+Variant tracker, and two for the agency only, Rates and payments and Variant plans.
 
 - **The toolbar's filters apply to the card sheets.** Search, Stage and Products narrow the cards,
-  and Creator snapshot, Shipping list and Variant tracker take only the creators those filters
-  leave in view, so a shipping list for "Needs info" holds the same creators as the snapshot. The
+  and Creator snapshot, Shipping list, Variant tracker and Variant plans take only the creators
+  those filters leave in view, so a shipping list for "Needs info" holds the same creators as the snapshot. The
   About sheet names the filters. Rates and payments keeps every row of **Contract and rates**,
   creators still in negotiation included, since they have no card for a filter to act on.
 - **Rates and payments is agency only, whole.** It is the agency's money sheet, with rates per
   deliverable, offers, counters and amounts paid, so the client's Sheet Select doesn't list it.
   What the client may read about each creator's terms once the fees are sent (what they make,
-  usage, exclusivity, if we drop them, the agreed fee, the contract, the payment status and when
-  the fees were approved) is in their Creator snapshot instead. Before the fees are sent those
+  usage, exclusivity, if we drop them, the agreed fee, the contract and its signed date, the payment
+  status and when the fees were approved) is in their Creator snapshot instead. Before the fees are sent those
   columns are blank for the client, and a creator in negotiation has no card yet.
 - **The client's Shipping list holds no street.** It has the city, region and country, or the
   pickup and its visit date, as the page shows them (**Who sees what**, **Addresses**). Address
@@ -6451,10 +6460,13 @@ list, Rates and payments, and Variant tracker, with Variant plans beside them fo
   so a client's tracker never names a version still in Aspire QA. Hook, CTA and Framework are read
   by **Reading a creator's variant**, for the agency only, and a client's export leaves those
   three columns out, as the tab does. Due is worked out from the round's steps (**Rounds**,
-  **Round steps**) by where the variant is: "Not cut yet" takes the **Variants due** step's date;
-  a newest version 1 the **First cut review** date; version 2 the **Final cut review** date;
-  version 3 or later the **Final cut sign off** date; an Approved variant has no Due. Due for
-  names that step, and a step with no date leaves both blank.
+  **Round steps**) and the row's own version, the one the tile shows that viewer, so a client's
+  Due never follows a version in Aspire QA. The first cut of V1 is due at **First cut review**,
+  and the first cut of every other variant at **Variants due**, so V1 not cut yet, or at version
+  1, takes the First cut review date and V2 to V{v} take the Variants due date. Version 2 takes
+  the later of **Final cut review** and **Variants due**, and version 3 or later **Final cut sign
+  off**. An Approved variant has no Due. Due for names the step the date came from, and a step
+  with no date leaves both blank.
 
 What the export can't do yet, said plainly:
 
