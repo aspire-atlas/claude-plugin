@@ -1358,7 +1358,7 @@ and item. Labels, eyebrows, titles and ledes are in **Page vocabulary**, **Tabs*
    | `#brief/r{n}/{lane}/c{comment}` | **Comments** open at that comment's thread, with the part it is on in view; `overview` in place of the lane for a comment on the header or the voice |
    | `#review/r{n}/{net}-{handle}` | Content Review on that creator's tab, no cut open. A cut's id always ends in `-r{round}-{variant}`, and a handle never holds a hyphen, so the two never collide |
    | `#review/r{n}/{cut}/v{version}` | The cut in the review panel at that version, not the newest |
-   | `#review/r{n}/{cut}/v{version}/t{seconds}` | The same, with the player paused at that second |
+   | `#review/r{n}/{cut}/v{version}/t{seconds}` | The same, with the player paused at that time, `{seconds}` whole or with up to three decimals (`t4.4`) (**Content Review**, **Sharing a cut**) |
    | `#review/r{n}/{cut}/v{version}/c{comment}` | The same, with that comment open, and the player at its timecode and its drawing shown when it has them |
    | `#performance/r{n}/{section}` | An **Ad Performance** section: `result`, `headline`, `weekly`, `variants`, `breakdowns`, `audience`, `next` (**Collapsing sections**) |
 
@@ -5116,16 +5116,365 @@ round's segment in the **Round switcher**, then a cut.
 
 A Sheet over the tab (**Responsive**, **Side panels**), opened by a row or by
 `#review/r{n}/{cut}`, at the newest version (the newest sent one for the client), or at the
-version, second or comment the deeper hashes name (**Header and tabs**). It holds the player,
-frame comments and drawing; the versions, compare, the status flow and the brief check. Those are
-specified with the panel. What this tab needs from it:
+version, second or comment the deeper hashes name (**Header and tabs**). It holds the player
+(**The player**), frame comments (**Comments on a cut**) and drawing (**Drawing on the frame**),
+**Copy link** and **Copy comments** (**Sharing a cut**), and the status block where the versions,
+compare, the status flow and the brief check go (**What the status flow adds**). It is built from
+the Review panel classes in **Component classes**, with `role="dialog"`, `aria-modal="true"` and
+`aria-label` "@{handle} V{variant}, version {v}", focus kept inside while it is open and returned
+on close.
 
-- **Send to {brand}**, for the agency, writes `sentAt:` and `sentBy:` on the version, and Approve,
-  Request changes and Undo approval write the client's `client/cut-{cut}-v{version}` stamp, so the
-  statuses above hold.
-- A new version writes `versions/v{version}` with the same fields as Add cut, and `plan-v{version}`.
-- In a done round, the comment box line above.
-- Closing it returns to the same creator tab, filter and row.
+**Layout.**
+
+- **Header**, at every width: Close (ghost icon Button, Lucide `x`), "@{handle} V{variant}" in
+  `font-semibold`, the cut's title under it in `text-xs text-muted-foreground` (`min-w-0`,
+  truncated), then **Copy link** and **Copy comments** as ghost icon Buttons with their Tooltips
+  (Lucide `link` and `clipboard-copy`), labelled with their full names.
+- **From 1024px**, two columns: the player on the left, and on the right a 380px column with the
+  status block at its top and the comments under it, each scrolling on its own.
+- **From 640px to 1023px**, one column in the right-hand Sheet: the player, then the status block,
+  then the comments, the Sheet scrolling as a whole.
+- **Under 640px**, the Sheet is full screen. The player is full width at the top, and the status
+  block and the comments are a bottom sheet over the lower part of the screen, as the creator
+  viewer's is (**Creator Selection**, **The creator viewer**, **Layout**). It opens peeked, holding
+  its handle and one row: the status Badge, a default Button "Comment" with the Lucide
+  `message-square-plus` icon, and an outline Button "Draw" with the Lucide `pencil` icon. Its handle
+  is a `button`, "Show comments ({k})" or "Hide comments" with `aria-expanded`, that opens it to 85%
+  of the screen's height, where its body scrolls, and closes it again; dragging the handle does the
+  same. Opening the panel at a comment (`/c{comment}`) or tapping **Comment** opens the sheet. The
+  player is capped so the peeked sheet never covers the video or its controls.
+- **Layering.** A Dialog, a Select's list, a tooltip or the tag list opened from the panel is
+  added after the bottom sheet in the page, so it opens above it.
+
+Closing the panel returns to the same creator tab, filter and row. In a done round the comment box
+is replaced by the line in **A done round**, and threads and drawings stay readable.
+
+#### The player
+
+An uploaded cut plays in a `video` element from `"/_blob/" + asset`, with `playsinline` and
+`preload="metadata"`, and no browser controls: the page draws its own, so every control looks and
+works the same on every browser. It opens paused, at 0:00, or at the time or comment the hash
+names. Nothing the player does writes page data or logs: playing, seeking, speed, loop, the safe
+zone, sound and full screen are the viewer's own, kept in memory for the visit only.
+
+Under the video, top to bottom:
+
+1. **The scrubber**, with the comment markers on it (**Comment markers**). It carries
+   `role="slider"`, `aria-label` "Position", `aria-valuemin` 0, `aria-valuemax` the duration and
+   `aria-valuetext` "0:04.4 of 0:30". Dragging it, or tapping a point on it, seeks there; the video
+   pauses while it is dragged and plays on after if it was playing.
+2. **The time**: "0:04.4 / 0:30" in `text-xs tabular-nums text-muted-foreground`, and, when the
+   frame rate is known, "· frame 132" after it (**Frame rate**). A time is always m:ss with tenths
+   of a second.
+3. **The controls**, each a Button with its icon, `aria-label` and a Tooltip that names it and its
+   key ("Back one frame (Left arrow)"):
+
+   | Control | Icon | Does |
+   | ------- | ---- | ---- |
+   | Back one second | Lucide `chevrons-left` | Pauses and moves back one second, not past 0:00 |
+   | Back one frame | Lucide `step-back` | Pauses and moves back one frame (**Frame rate**) |
+   | Play or Pause | Lucide `play` or `pause` | Plays or pauses. Its label follows its state |
+   | Forward one frame | Lucide `step-forward` | Pauses and moves forward one frame |
+   | Forward one second | Lucide `chevrons-right` | Pauses and moves forward one second, not past the end |
+   | Speed | none; a Select showing "1x" | 0.5x, 1x, 1.5x, 2x. Opens on 1x. Sound keeps its pitch |
+   | Loop | Lucide `repeat` | On, the cut starts again from 0:00 at its end. `aria-pressed` |
+   | Reels safe zone | Lucide `scan` | Shows or hides the safe zone over the frame (**Reels safe zone**). `aria-pressed` |
+   | Sound | Lucide `volume-2` or `volume-x` | Turns the sound on or off. Opens with sound on, as the video starts only when someone presses Play |
+   | Full screen | Lucide `maximize` or `minimize` | Shows the player alone, filling the screen (**Full screen**) |
+
+   A toggle's Button is ghost, with `aria-pressed` and the pressed classes in **Component
+   classes**, Review panel. From 640px the controls are one row: the five moves in the middle, Speed
+   and Loop before them, the safe zone, sound and full screen after. Under 640px they are two rows of
+   five: the moves, then Speed, Loop, the safe zone, sound and full screen. Every control keeps its
+   44px tap area on phone and on touch screens (**Tokens**).
+4. **Comment and Draw**, from 640px only: a default Button "Comment at {time}" with the Lucide
+   `message-square-plus` icon and an outline Button "Draw" with the Lucide `pencil` icon, after the
+   controls. Under 640px they sit in the peeked bottom sheet instead. Neither renders for a version
+   the viewer can't comment on (**What the client sees**, **A done round**, **Preview as client**).
+
+While the video loads, a Skeleton the shape of the box. When it can't play, the box shows the
+`film` icon and "This cut can't play right now. Ask {CM name} for a link." (**Adding a cut**), and
+the controls are disabled, while comments stay readable and open.
+
+**Frame rate.** A browser plays a video without saying its frame rate, so the page learns it in
+one of two ways and stores it on the version (**1e**, Review versions), so every viewer steps the
+same frames:
+
+1. **From the file, when it is added.** Before the upload starts, the Editor's page reads the
+   file's own header from their computer: for MP4 and MOV, the video track's time scale (`mdhd`)
+   and the time each frame takes (`stts`); for WebM, the video track's frame length
+   (`DefaultDuration`). It reads only the header boxes, with the browser's own file reading, so
+   Claude downloads nothing and nothing leaves the Editor's browser that the upload doesn't already
+   send. The frame rate is the time scale over the most common frame time, rounded to the nearest of
+   23.976, 24, 25, 29.97, 30, 48, 50, 59.94 and 60 when it is within 0.01 of one, else kept to three
+   decimals. A file whose frames take different times (a phone recording) keeps that most common
+   rate and is marked as variable. The version gets `fps:`, `fpsFrom:` `file` and `fpsVariable:`.
+2. **From playback, when the file didn't say.** A WebM with no frame length, a version from
+   before, or a header the page couldn't read has no `fps:`. Then, while the cut plays at 1x, the
+   page times the first 20 frames the browser draws (`requestVideoFrameCallback`), takes the middle
+   value, and rounds it the same way. That rate is used at once in the viewer's own player. An
+   Editor's page also writes it to the version once, as `fpsFrom:` `playback`, so the next viewer
+   doesn't wait; a client's page can't write `reviews`, so for a client it holds for the visit only.
+
+**Stepping a frame.** With a frame rate, one frame is `1 / fps` seconds. The page works out the
+frame the video shows (the time times the rate, rounded down) and seeks to the middle of the next or
+previous one, so a step never lands on a frame's edge and shows the same frame twice. On a variable
+rate file, "frame 132" and each step are the nearest frame at the stored rate, and the time readout
+adds "· frame rate varies" in a Tooltip on the frame number.
+
+**When the rate isn't known** (the browser can't time frames, or the cut hasn't been played at 1x
+yet): one step is 1/30 of a second. The frame number doesn't show, the frame Buttons' Tooltips say
+"Steps 1/30 of a second. This cut's frame rate isn't known yet.", and a comment saves its time with
+no `frame:`. Once the rate is learned, the Tooltips and the frame number update without a reload.
+
+**Reels safe zone.** An overlay on the frame showing where Instagram's Reels screen covers the
+video: the top 14%, the bottom 35% and 6% at each side are shaded, and the rest has a dashed
+outline, following Meta's guidance for Reels ads. It is drawn over the video's frame, not the
+letterbox around it, and scales with it. The overlay ignores taps, so the video and drawing work
+through it. A cut whose frame isn't 9:16 still shows it, with the line "This cut isn't 9:16, so the
+safe zone is only a guide." under the player while it is on.
+
+**Full screen.** The player (the video, its overlays, the scrubber and the controls) fills the
+screen through the browser's full screen mode, where the browser has one for a page element and
+lets the page use it. Where it doesn't (an iPhone, or a frame that blocks it), the player fills the window instead, over the panel, with the same
+controls, so drawing, the safe zone and the markers work in full screen everywhere. The Full
+screen Button or Escape closes it. Comments stay in the panel; **Comment** and **Draw**
+leave full screen first.
+
+**Keyboard shortcuts.** From 1024px, with a fine pointer, as extras only: every one has a visible
+control above. None works while focus is in a text field, a Select or the tag list, or while a
+Dialog is open, and the arrows work on the scrubber when it has focus.
+
+| Key | Does | Visible control |
+| --- | ---- | --------------- |
+| Space | Play or pause | Play or Pause |
+| Left, Right | Back or forward one frame | The frame Buttons |
+| Shift with Left, Right | Back or forward one second | The second Buttons |
+| C | Comment at the current time: pauses and moves focus to the comment box | **Comment at {time}** |
+| D | Draw on the frame, or Done while drawing | **Draw** |
+| S | Show or hide the Reels safe zone | Reels safe zone |
+| M | Sound on or off | Sound |
+| Escape | Leaves drawing, then full screen, then closes the panel | **Done**, Full screen, Close |
+
+A ghost icon Button "Keyboard shortcuts" (Lucide `keyboard`) in the header, from 1024px, opens a
+Dialog with this table in plain words.
+
+#### Comments on a cut
+
+Both sides comment on a version of a cut and reply back and forth, as on the brief (**Master
+Brief**, **Comments and sign off**), with the same comment shape (**1e**, Brief comments, cut
+comments). What differs is the anchor: a time in the video, with a drawing when there is one.
+
+**A new comment.** **Comment at {time}** (or C) pauses the video and opens the comment box at the
+foot of the comments, holding:
+
+- A chip with the Lucide `clock` icon, "At 0:04.4", and a ghost icon Button "Make it general"
+  (Lucide `x`), which takes the time off, so the comment is about the cut as a whole. A general
+  comment shows "General" in place of a time.
+- When the comment has a drawing, a chip with the Lucide `pencil` icon, "Drawing, {k} strokes",
+  and ghost Buttons "Edit drawing" and "Remove drawing". A drawing always has a time, so "Make it
+  general" removes it too, after the line "This removes the drawing." with Cancel and Remove.
+- A Textarea "Comment", with the tag picker (**Tagging**). A comment needs words or a drawing;
+  with only a drawing it reads "Drawing at 0:04.4" in the list.
+- For the agency only, an "Agency only" Switch with its visible label, off at first (**Agency only
+  comments on a cut**).
+- Cancel (outline) and Comment (default). Under the box, while it has tags, "{names} will see this
+  in their inbox."
+
+Comment writes the comment with `on:` `cut-{cut}-v{version}`, `timecode:` (seconds, to three
+decimals, or empty when general), `frame:` (when the frame rate is known) and `drawing:`, under the
+writer's own `comments/{id}/items` or, for an agency only comment, `agency/comments/items` (**1e**),
+and logs one entry, kind `comment`, verb `commented`, tab `review`, asset `cut-{cut}-v{version}`,
+anchor `#review/r{n}/{cut}/v{version}/c{comment}`, text "Commented at 0:04.4: {first words}" or
+"Commented at 0:04.4 with a drawing: {first words}" (**1e**, **The activity log**). Typing in the
+box never changes the time it saved; the player can play on while someone types.
+
+**The list.** Under the status block, for the version open in the player:
+
+- **Filters.** A Tabs list: All, Open, Client, Aspire, Resolved, each with its count, kept in
+  memory and opening on Open. The rules are the brief's: Open and Resolved go by the thread's first
+  comment, Client and Aspire by who started the thread, and every agency only thread counts as
+  Aspire. Each filter's empty state is the brief's ("No comments yet.", "No open comments.",
+  "Nothing from {brand} yet.", "Nothing from Aspire yet.", "Nothing resolved yet.").
+- **Order.** General comments first, then by time in the video, earliest first, ties by when they
+  were written, so the list reads in the order the cut plays.
+- **A thread.** A Card per thread, built as the brief's: the first comment and its replies in time
+  order, replies under a `border-l border-border pl-4` rule, each with its Avatar, name, side
+  Badge, time written, and text with its tags. At the top of the thread, in place of the brief's
+  "Go to {part}", a link Button with the time ("0:04.4", or "General") and, when the comment has a
+  drawing, the Lucide `pencil` icon and "Drawing".
+- **Seeking.** Tapping a thread's time, or the thread itself outside its Buttons and fields, pauses
+  the video at that time, shows its drawing, and rings the thread with `ring-2 ring-ring` until
+  something else is picked. Under 640px it also lowers the bottom sheet to its peek, so the frame
+  shows. A general comment doesn't move the video. The address bar takes the comment's hash.
+- **Replying.** A Textarea "Reply" and a default Button, size sm, "Reply", under each thread, with
+  the tag picker. One level only: every reply's `replyTo:` is the thread's first comment, and a
+  reply carries no time or drawing of its own. A reply logs as verb `replied`.
+- **Resolve and Reopen, Edit and Delete** work as on the brief, with the same rights: the thread's
+  author or an Editor resolves and reopens, and a comment's author edits and deletes. An edit
+  changes the words only; to move a comment to another time or change its drawing, its author
+  deletes it and comments again. Deleting a comment removes its drawing with its words.
+- **Live.** A comment made in another open view shows in the list and on the scrubber as it
+  arrives (**1e**, **Live updates**).
+
+**Comment markers.** Each thread in the list under the filter has a marker on the scrubber at its
+time; general comments have none. A marker is a `button` with `aria-label` "Comment at 0:04.4 by
+{name}: {first words}" and a Tooltip with the same, and tapping it does what tapping the thread
+does. Open threads are filled, resolved threads faded, and agency only threads hollow (the marker
+classes in **Component classes**, Review panel). Markers closer together than 44px on screen join
+into one marker showing their count, which seeks to the first and sets the list to show those
+threads first. Markers sit above the track, so dragging the scrubber never hits one.
+
+**Which version.** The list and the markers show the version open in the player. A version keeps
+its own comments: a new version starts with none, and the earlier version's comments stay on it.
+Moving between versions is ASP-3941's (**What the status flow adds**).
+
+**Who can comment, and where.** The agency on any version. The client on the newest version sent
+to them, and only while the cut has no newer version in Aspire QA (**What the client sees**): on
+an older version the box is replaced by "Aspire is checking version {v}. Comments open again when
+it's sent." A done round is read only (**A done round**). **Preview as client** shows the client's
+box with Comment disabled and the line "Preview doesn't save." A read only client never reaches the
+panel (**What the client sees**).
+
+#### Drawing on the frame
+
+**Draw** (or D) pauses the video and turns the frame into a drawing surface, over the video and
+under the controls:
+
+- **The bar.** Over the top of the frame while drawing: three pens, Red, Yellow and Blue, as
+  ghost icon Buttons with a filled dot (`aria-pressed` on the one in use, Red first); two sizes,
+  Thin and Thick; Undo (Lucide `undo-2`), which takes off the last stroke; Clear (Lucide
+  `trash-2`), which takes off every stroke; and a default Button "Done". Every one has its label
+  and Tooltip.
+- **Drawing.** A finger, a pen or the mouse draws while pressed. The surface takes every touch
+  while drawing, so a finger drawing on a phone never scrolls the panel or moves the bottom sheet;
+  two fingers still zoom the page. The controls under the frame stay usable: stepping a frame or
+  seeking keeps the drawing open and moves its time to the new frame, so someone can find the exact
+  frame before or while drawing.
+- **Done** opens the comment box with the drawing attached (**Comments on a cut**) at the frame it
+  was drawn on. Escape, Close or leaving the cut with strokes drawn asks "Discard this drawing?"
+  with Keep drawing and Discard.
+
+**How a drawing is kept.** The strokes are drawn as `svg` paths over the video's frame (never the
+letterbox around it), in a `viewBox` of 0 to 1 each way, so the same data draws in the same place
+at any size: in the panel, on a phone, held sideways and in full screen. Each stroke keeps its pen,
+its size and its points, each point being how far across and how far down the frame it is, from 0
+to 1, to three decimals. Points closer than 0.003 to the one before are left out while drawing, and
+a drawing holds at most 50 strokes and 4,000 points, which keeps a comment far under a document's
+size limit; past that, the bar says "This drawing is full. Comment, then start another." The line
+width is set on screen, not in the data, so it stays the same thickness at any size.
+
+**Showing a drawing.** A comment's drawing shows over the frame while the video is paused within
+one frame of its time and the comment is picked in the list or its marker was tapped, and hides
+once the video plays. Each stroke draws in its pen's color over a darker, wider line under it, so
+it reads on a light or dark frame.
+
+**Linked cuts can't be drawn on.** A Google Drive or Frame.io cut doesn't play in the page, so it
+has no frame to draw on (**A linked cut in the panel**).
+
+#### Agency only comments on a cut
+
+An Editor can make a comment agency only, for remarks the client should never read: a note to the
+editor, a fix Aspire will make before sending, a question about the plan.
+
+- **Where it is kept.** Under `agency/comments/items` (**1e**), which nobody below Editor can read
+  (**1e**, **What the rules enforce, and what they can't**). It isn't hidden on screen; the client's
+  page data never holds it, nor its words, its time, its drawing or its count. Its activity entries
+  go to the writer's agency log (**1e**, **The activity log**, **Where an entry goes**), and its
+  tags reach Aspire only (**Tagging**, **Agency only boxes**).
+- **Choosing it.** The "Agency only" Switch in the comment box, when the comment is written. It
+  can't be changed after: a comment the client may already have read can't be taken back by moving
+  it, and an agency only comment is never moved where the client reads. To take back a visible
+  comment, its author deletes it.
+- **Replies stay with their thread.** A reply to an agency only thread is agency only: it is written
+  to `agency/comments/items` with `replyTo:` the thread's first comment, and its box has no Switch
+  and reads "Agency only". A reply to a visible thread is visible, and its box has no Switch either,
+  with the line "To say something only Aspire sees, start an agency only comment." A visible thread
+  never holds an agency only reply, and an agency only thread never a visible one.
+- **How it shows.** For the agency, a soft Badge "Agency only" on the thread, the thread under the
+  "Agency only" rule, and a hollow marker on the scrubber. In **Preview as client**, the Client
+  filter and the client's counts, none of it shows, as for the client.
+
+#### Sharing a cut
+
+**Copy link.** Copies the page's address with the hash to this cut, the version in the player, and
+the time it is paused at: `#review/r{n}/{cut}/v{version}/t{seconds}` (**Header and tabs**), or
+without the time at 0:00. Each thread also has a ghost Button, size sm, "Copy link" that copies its
+`/c{comment}` hash. The round comes from the cut, so a link works for any round, a done round
+included, and opens that round in the **Round switcher**. The Button reads "Copied" for two
+seconds; where the browser refuses the clipboard, a Dialog shows the address in a read only Input,
+already selected, with "Press Ctrl+C or Cmd+C to copy." and Close. Copying writes nothing and logs
+nothing.
+
+A link holds only the hash, never the cut, a file or a comment, so it opens nothing its reader
+couldn't already open. The page checks each part of the hash against what the person opening it can
+read, as for any hash:
+
+- Someone outside the publishing organization, or without access to the page, can't open the page.
+  A read only client reaches Content Review's line in **What the client sees**, not the cut.
+- A client opening a version that isn't sent yet gets the newest version sent to them, at the
+  same time, or, when none is sent, the creator's tab with "Aspire is checking this cut" (**What
+  the client sees**).
+- A client opening an agency only comment's link gets the cut at that version with no comment
+  picked, and nothing on screen says a comment was there.
+- A cut, version or comment that is gone opens the item above it (**Header and tabs**).
+
+For the agency, when the version in the player isn't sent yet, the Button's Tooltip and the
+"Copied" line add "{brand} sees version {s} from this link until version {v} is sent.", or "{brand}
+can't open this cut until a version is sent." when none is.
+
+**Copy comments.** Copies the threads the list shows now, with its filter, every reply included,
+for the version in the player, as one table: an HTML table and tab separated text of the same rows,
+as **History**'s **Copy as table** does, so it pastes as a table into a sheet, a doc or an email.
+The columns are the **Export** sheet "All comments" without Creator and Variant, which the first
+line names ("@{handle} V{variant}, version {v}, {title}"): Version, Timecode, Frame, Seconds,
+Comment, Reply to, Who, Side, When, Has drawing, Resolved, with each tag kept as its text.
+
+- **For the client** it holds only what their page data holds, so never an agency only comment.
+- **For the agency** it opens a Dialog "Copy comments" with a Switch "Include agency only
+  comments", off at first, and Cancel and Copy. With it off the copy is what the client would get,
+  so it can be pasted to {brand}. With it on, agency only comments come with Side "Agency only", and
+  the Dialog says "This copy has agency only comments. Don't send it to {brand}."
+- In **Preview as client** it copies what the client would get, with no Dialog.
+
+The Button reads "Copied" for two seconds, with the same Dialog fallback as **Copy link**. Copying
+writes nothing and logs nothing. A drawing can't go in a table, so Has drawing says Yes, and
+whoever reads the copy opens the cut with **Copy link** to see it.
+
+#### A linked cut in the panel
+
+A Google Drive or Frame.io cut opens outside the page (**Adding a cut**, **Who can play what**), so
+in the panel it has no player. In the player's place, the film box with "Plays in Google Drive" or
+"Plays in Frame.io" and an outline Button "Open in Google Drive" or "Open in Frame.io" that opens the
+link in a new tab (`rel="noopener"`).
+
+What still applies: comments, replies, resolve and reopen, the five filters, agency only comments,
+tagging, **Copy link** (with no time) and **Copy comments**. A comment on a linked cut can name a
+time: the box has an optional Input "At (m:ss)", saved as `timecode:` with no frame or drawing, and
+shown as a plain time that doesn't seek. What doesn't apply: frame stepping, speed, loop, the safe
+zone, sound, full screen, drawing, markers and keyboard shortcuts. The panel says so in one line
+under the Button: "This cut plays in Google Drive, so comments here can name a time but can't pin a
+frame or a drawing."
+
+#### What the status flow adds
+
+The versions, side by side compare, the status flow and the brief check are ASP-3941's. This
+section leaves them these places and hooks:
+
+- **The status block**, at the top of the right column from 1024px, under the player from 640px,
+  and in the bottom sheet under 640px with its Badge in the peek: the cut's status Badge (**Statuses**)
+  and stage, "Version {v}", where the version picker goes, then the row where **Send to {brand}**,
+  Approve, Request changes and Undo approval go, then the brief check. **Send to {brand}**, for the
+  agency, writes `sentAt:` and `sentBy:` on the version, and Approve, Request changes and Undo
+  approval write the client's `client/cut-{cut}-v{version}` stamp, so the statuses hold.
+- **A new version** writes `versions/v{version}` with the same fields as **Add cut**, the frame
+  rate read the same way (**Frame rate**), and `plan-v{version}`.
+- **Every version has its own frame rate, comments and markers.** The player reads `fps:` from the
+  version it plays, the list and markers show that version's comments by `on:`, and a comment's
+  `/c{comment}` hash opens its own version. A compare view plays each side with its own rate and
+  markers, and steps both sides by their own frames.
+- **The player is one part.** Compare uses two players built as **The player** says, sharing one
+  set of controls only if ASP-3941 says so.
 
 ### Ad Performance
 
@@ -5470,7 +5819,7 @@ left blank, never filled with a dash.
 | Selected Creators | Variant tracker | Variant of each creator in the round | Creator, Concept, Variant, Latest version, Status, Updated on, Open comments |
 | Selected Creators | Variant plans (agency only) | Variant of each creator in the round, V1 to V{v} | Creator, Concept, Persona, Variant, Framework, Length, Hook ("H2 Demo first"), Hook line, CTA, CTA line, From (Brief, Override or Broken), Overridden fields, Changed by, Changed on |
 | Content Review | Variant status | Cut the queue shows now, the filter and creator applied | Creator, Concept, Variant, Title, Version (for the client, the newest sent to them), Stage, Status, Added on, Sent on, Approved by, Approved on, File (Upload, Google Drive, Frame.io or Link), Link (a link's address; blank for an upload), Checklist (ticked of total), Open comments, Hook ("H2 Demo first", agency only), CTA (agency only), Framework (agency only) |
-| Content Review | All comments | Comment or reply on the cuts the queue shows | Creator, Variant, Version, Timecode (text, m:ss), Seconds (a number, for sorting), Comment, Reply to (its first words), Who, Side (Client, Agency, or Agency only for the agency), When, Has drawing, Resolved |
+| Content Review | All comments | Comment or reply on the cuts the queue shows | Creator, Variant, Version, Timecode (text, m:ss.s, or General; a reply leaves it blank), Frame (the frame number, blank when the frame rate isn't known or for a linked cut), Seconds (a number, for sorting), Comment, Reply to (its first words), Who, Side (Client, Agency, or Agency only for the agency), When, Has drawing, Resolved |
 | Ad Performance | Every variant | Variant in **Variants ranked** | Creator, Concept, Variant, Framework (agency only), Hook (agency only), CTA (agency only), Spend, Purchases, Cost per sale, ROAS, 3 second hold, Status (winning, testing, retire or refresh) |
 | Ad Performance | By creator | Creator in **Compare** | Creator, Tier, Variants, Spend, Purchases, Cost per sale, ROAS |
 | Ad Performance | By framework (agency only) | Framework in **Compare** | Framework, Variants, Spend, Purchases, Cost per sale, ROAS |
@@ -5798,6 +6147,15 @@ visible edge on a card. A Switch keeps the `role="switch"` and `data-state` attr
 | | post strip, media box, media cap | `flex min-h-0 flex-1 flex-col items-center gap-3 overflow-y-auto bg-muted p-2 pb-[min(20rem,50dvh)] md:p-6`, `relative flex w-full items-center justify-center overflow-hidden rounded-xl`, on the `img` or `video` itself: `block h-auto w-auto max-w-full object-contain max-h-[calc(100dvh-3.5rem-min(20rem,50dvh))] md:max-h-[calc(100vh-14rem)]` |
 | | post row, post tile, post arrow | `flex w-full max-w-full gap-2 overflow-x-auto pb-1`, `relative size-16 shrink-0 overflow-hidden rounded-md border bg-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring aria-[current=true]:ring-2 aria-[current=true]:ring-ring` on a `button`, the Button outline icon classes plus `absolute top-1/2 -translate-y-1/2` and `left-2` or `right-2` |
 | | side panel, sheet body | `fixed inset-x-0 bottom-0 z-10 flex max-h-[85dvh] flex-col overflow-hidden rounded-t-xl border-t bg-background shadow-lg transition-[max-height] motion-reduce:transition-none data-[state=peek]:max-h-[min(20rem,50dvh)] md:static md:max-h-none md:rounded-none md:border-l md:border-t-0 md:shadow-none md:data-[state=peek]:max-h-none`, with `data-state` `peek` or `open`; its body `min-h-0 flex-1 overflow-y-auto` |
+| Review panel | root, header, body | the Sheet content with `p-0 gap-0` in place of `p-6 gap-4` and `sm:max-w-2xl lg:max-w-6xl` in place of `sm:max-w-md lg:max-w-lg`; `flex h-14 shrink-0 items-center gap-2 border-b px-2 sm:px-4`; `relative flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_380px]` |
+| | player column, player, video box | `flex min-w-0 flex-col gap-2 bg-muted p-2 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:p-4 lg:overflow-y-auto`; the part that goes full screen, `flex w-full flex-col gap-2 bg-muted`, with `fixed inset-0 z-[60] justify-center bg-background p-2` added while it fills the window; `relative mx-auto flex w-full items-center justify-center overflow-hidden rounded-xl bg-black` |
+| | video | `block h-auto w-auto max-w-full object-contain max-h-[calc(100dvh-18.5rem)] sm:max-h-[60vh] lg:max-h-[calc(100vh-13rem)]`, and `max-h-[calc(100dvh-8rem)]` in full screen |
+| | frame layer, safe zone, safe zone shade, safe zone outline | `pointer-events-none absolute`, placed over the video's frame with `left`, `top`, `width` and `height` in `style` (the one inline style the player uses, like the Factor bar's width, and never a color); `absolute inset-0`; `absolute bg-black/40`; `absolute inset-[14%_6%_35%_6%] border border-dashed border-white/80` |
+| | drawing surface, stroke, stroke under, pens | an `svg` with `viewBox="0 0 1 1"` and `preserveAspectRatio="none"`, `absolute inset-0 h-full w-full`, plus `pointer-events-auto touch-none cursor-crosshair` while drawing; each `path` `fill-none [stroke-linecap:round] [stroke-linejoin:round] [vector-effect:non-scaling-stroke]` with `stroke-[3px]` (Thin) or `stroke-[6px]` (Thick); under it the same path in `stroke-black/60` two pixels wider; the pens `stroke-red-500`, `stroke-amber-400`, `stroke-sky-400`, and their dots `bg-red-500`, `bg-amber-400`, `bg-sky-400` |
+| | scrubber, track, played, thumb | `relative h-11 w-full cursor-pointer touch-none select-none` on the `role="slider"` element; `absolute inset-x-0 bottom-3 h-1.5 rounded-full bg-primary/20`; `h-full rounded-full bg-primary`, as wide as the time played (a `width` in `style`); `absolute bottom-[0.4375rem] size-4 -translate-x-1/2 rounded-full border-2 border-primary bg-background shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring` |
+| | marker, open, resolved, agency only, count | `absolute top-0 flex h-6 w-6 -translate-x-1/2 items-start justify-center rounded-full focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring [@media(pointer:coarse)]:w-11`, holding a dot: `size-2.5 rounded-full bg-primary`; `size-2.5 rounded-full bg-muted-foreground/50`; `size-2.5 rounded-full border-2 border-primary bg-background`; `flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground` |
+| | controls, toggle pressed, time | `flex flex-wrap items-center justify-center gap-1`, the Buttons ghost icon, and Speed a Select trigger with `w-[4.5rem]` in place of `w-full`; `aria-[pressed=true]:bg-accent aria-[pressed=true]:text-accent-foreground`; `text-xs tabular-nums text-muted-foreground` |
+| | side column | the Viewer side panel classes with `sm:` in place of `md:`, `data-[state=peek]:max-h-[calc(5.5rem+env(safe-area-inset-bottom))]` in place of its peek height, and `lg:border-l lg:overflow-y-auto` added; its body `min-h-0 flex-1 overflow-y-auto` |
 | | sheet handle, decision block | `mx-auto flex min-h-11 w-24 shrink-0 items-center justify-center rounded-md md:hidden` on a `button`, holding `h-1.5 w-12 rounded-full bg-muted-foreground`; `sticky top-0 z-10 flex flex-col gap-2 border-b bg-background p-4` |
 
 Text sizes are Tailwind's: `text-xs` for captions, `text-sm` for body and labels, `text-lg` for
@@ -5895,7 +6253,9 @@ prefixes.
   of Cards on phone, one Card per row, each showing the row's first column as its title and the
   other columns as label and value pairs.
 - **Side panels.** The review panel, the inbox, History and comments open as a
-  Sheet: full screen on phone, a right-hand panel from 640px. The creator viewer is full screen at
+  Sheet: full screen on phone, a right-hand panel from 640px. The review panel is wider, with two
+  columns from 1024px, and on phone its comments and status are a bottom sheet under the player
+  (**Content Review**, **The review panel**). The creator viewer is full screen at
   every width, with its side panel on the right from 768px and as a bottom sheet under it (**Creator
   Selection**, **The creator viewer**). Closing either returns to the same place in
   the list. A confirm or a required reason opens a Dialog.
@@ -6067,6 +6427,20 @@ is no step field anywhere in page data; the Footage
     moves the creator to step 6 and Home's pace at once with no reload; and a done round shows no
     **Add cut** or send, with "Round {n} is signed off." and its results link in place of the
     comment box.
+25. The cut player: at 375px a client opens a sent cut, steps it frame by frame, pins a comment to
+    a frame, draws on it with a finger without the panel scrolling, and posts both from the bottom
+    sheet, which never covers the video or its controls; the drawing shows in the same place at
+    375px, 768px, 1280px and in full screen, and in full screen on a phone that can't make a page
+    element full screen; every control has a visible Button with a label and a Tooltip, keeps its
+    44px tap area on touch, and every shortcut in **Keyboard shortcuts** works from 1024px and none
+    while typing; stepping a frame at the stored `fps:` shows each frame once, and a cut with no
+    known rate steps 1/30 of a second and says so; an agency only comment, its replies, its drawing,
+    its marker and its count are missing from the client's page data, not only from the screen, and
+    from **Preview as client**; a reply takes its thread's side; **Copy link** opened by a client on
+    a version in QA lands on the newest sent version, on an agency only comment shows no comment, and
+    works for a cut in any round; **Copy comments** for the client and with the agency's Switch off
+    holds no agency only comment; and a Google Drive or Frame.io cut shows no player, markers or
+    drawing, and takes general or typed time comments only.
 
 ## 1e. Page data: what the page keeps and how it is read back
 
@@ -6286,11 +6660,11 @@ for creator decisions, `refused:` the refused sign offs, the refused fee approva
 | Frameworks | `agency/frameworks` | Agency; Claude | `framework-{slot}` (`{slot, code, name, use}`), one per variant slot 1 to 5, from `frameworks` in `campaign:{slug}-cas` or the defaults |
 | Brief imports | `agency/brief-imports/{key}`, `{key}` from the source (**1d**, **Master Brief**, **Importing a brief**, **Repeatable mapping**) | Agency; Claude for an import in the chat | Plain data: `mapping:` Claude's answer in the data block's shape, before the checks, which run again at every preview, `source:` (`{label, url, kind, file}`), `at:`, `by:`, or `sameAs:` the key of the stored mapping for a `text-` key that points at one. Split past 200 KiB as a version is |
 | Brief versions | `agency/brief-versions/{doc}/{id}`, `{doc}` naming the document it saves: `round-r{round}`, `concept-{lane}-r{round}` or `variants-{lane}-r{round}` | Agency; Claude for `original` | Plain data (**Brief versions and Reset to original**): `kind:` (original, locked, before reset, before restore, before import, before start), `at:`, `by:`, `byName:`, `covers:` (the whole brief, or the concept), `fields:` the document's keys and stamps at that moment, `part:` and `parts:` when one version is split |
-| Brief comments, cut comments | `comments/{id}/items/{comment}` | Each person, their own | `{id}` is the writer's own id (`user.id()`), the `{self}` the rules check, so the path names the author. `on:` (`brief-{lane}-r{round}`, `brief-overview-r{round}` or `cut-{cut}-v{version}`), `part:` on a brief (the anchor's id, **1d**, **Master Brief**, **Comments and sign off**; empty for a concept as a whole), `text`, `replyTo:` (the thread's first comment), `timecode:` and `drawing:` (the strokes, as data) on a cut, `resolved` (on a thread's first comment), `deleted` (true once its author deleted it, and `text` then written as an empty string, so the words leave the data), `editedAt:` (the last time its author changed `text`), `createdAt:` |
+| Brief comments, cut comments | `comments/{id}/items/{comment}` | Each person, their own | `{id}` is the writer's own id (`user.id()`), the `{self}` the rules check, so the path names the author. `on:` (`brief-{lane}-r{round}`, `brief-overview-r{round}` or `cut-{cut}-v{version}`), `part:` on a brief (the anchor's id, **1d**, **Master Brief**, **Comments and sign off**; empty for a concept as a whole), `text`, `replyTo:` (the thread's first comment), on a cut `timecode:` (seconds into the video, to three decimals; empty for a general comment and on a reply), `frame:` (the frame number at the version's `fps:`, left out when it isn't known) and `drawing:` (`{strokes: [{pen, size, points}]}`, `pen` red, yellow or blue, `size` thin or thick, `points` a list of `[x, y]` pairs from 0 to 1 across and down the video's frame, to three decimals; at most 50 strokes and 4,000 points; left out when there is none) (**1d**, **Content Review**, **Comments on a cut**, **Drawing on the frame**), `resolved` (on a thread's first comment), `deleted` (true once its author deleted it, and `text` then written as an empty string, so the words leave the data), `editedAt:` (the last time its author changed `text`), `createdAt:` |
 | Comment writers | `comments/{id}` | Each person, their own | `lastAt:` the time of their newest comment, written with each one, so the page can find every writer's items (**Live updates**) |
-| Agency only comments | `agency/comments/items/{comment}` | Agency | The same fields, kept from the client |
+| Agency only comments | `agency/comments/items/{comment}` | Agency | The same fields, kept from the client. Every reply to an agency only thread is kept here too, with `replyTo:` its first comment, and no reply here ever answers a thread kept under `comments` (**1d**, **Content Review**, **Agency only comments on a cut**) |
 | Reviews | `reviews/cut-{cut}`, `{cut}` being `{net}-{handle}-r{round}-{variant}` | Agency | `creator:` (`{net}-{handle}`), `round:`, `lane:`, `variant:` (1 to 5), `title`, `check-{id}` (one review checklist item each, `value` true or false) |
-| Review versions | `reviews/cut-{cut}/versions/v{version}` | Agency | `kind:` (`upload`, `drive`, `frameio` or `link`), `asset:` (the upload's asset id, shown from `"/_blob/" + asset`; empty for a link), `link` (the address, for a link; for a version from before, the cut's link or file), `name:`, `type:` and `size:` (the uploaded file's own name, type and bytes), `notes`, `addedAt:`, `addedBy:`, `sentAt:` and `sentBy:` (written once by **Send to {brand}**; empty while the version is in Aspire QA) (**1d**, **Content Review**). A version from before with a `link` and no `kind:` reads as a link, and one with no `sentAt:` as in Aspire QA |
+| Review versions | `reviews/cut-{cut}/versions/v{version}` | Agency | `kind:` (`upload`, `drive`, `frameio` or `link`), `asset:` (the upload's asset id, shown from `"/_blob/" + asset`; empty for a link), `link` (the address, for a link; for a version from before, the cut's link or file), `name:`, `type:` and `size:` (the uploaded file's own name, type and bytes), `notes`, `addedAt:`, `addedBy:`, `sentAt:` and `sentBy:` (written once by **Send to {brand}**; empty while the version is in Aspire QA), and for an upload `fps:` (the frame rate), `fpsFrom:` (`file` when read from the file as it was added, `playback` when an Editor's player timed it), `fpsVariable:` (true when the file's frames take different times), `width:`, `height:` and `duration:` (from the video's own metadata) (**1d**, **Content Review**, **The player**, **Frame rate**). An Editor's page writes the `playback` fields once, only while `fps:` is empty. A version from before with a `link` and no `kind:` reads as a link, and one with no `sentAt:` as in Aspire QA |
 | Cut plans, agency only | `agency/cut-{cut}` | Agency; Claude when it records a version | `plan-v{version}:` plain data written once when that version is added, the plan it was made with as **Reading a creator's variant** read it then: `{lane, framework, hook, cta}` (**1d**, **Selected Creators**, **Concept and variant plan**). Kept apart from `reviews`, which the client reads |
 | Creator profile | `creators/{net}-{handle}` | Agency; Claude | `name`, `descriptor`, `location`, `pickNote` (why we picked them), `shipArea` (`{city, region, country}` of the address, copied from `agency/creator-{net}-{handle}` `address` with its `at`, **1d**, **Selected Creators**, **Creator records**) |
 | Creator, per round | `edits/creator-{net}-{handle}-r{round}` | Agency; Claude at publish, from the roster | `concept`, `persona` (the persona's id in the concept, `persona-{id}`), `product`, `status`, `adPermissions`, the shipping record as on the client's document, `shootBy` (a date), `note-{id}` (Aspire's notes for {brand}, as in Notes below); `returning` (true) and `fromRound` on a creator carried into the round; and the round's records (**1d**, **Selected Creators**, **Creator records**): `contract` (`{status, signedAt}`), `payment` (`{status, at, paidPct}`, no amount), `footage` (`{counts, at}`) and `shipTo` (`{kind, confirmed, visitDate}`, no part of the address). Until each is written, its cell reads as **The card** says. A page from before kept `footage` as `{files, at}`: it reads as one count with no deliverable, and `shipTo` as an address or pickup: the next publish moves any address in it to `agency/creator-{net}-{handle}` and rewrites `shipTo` in the new shape, and **Checking the roles** step 3 fails until it has |
