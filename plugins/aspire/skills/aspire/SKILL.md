@@ -2356,7 +2356,8 @@ Full detail lives in `references/rates-and-terms.md`.
    dropping out goes to the client as "your call needed". A creator past their reply window gets
    a chase draft.
 6. Record the client's fee approval per the reference's **Closing Gate 3**, read back from the
-   page. Then the details emails start; contracts and shipping run in the core Aspire platform.
+   client's own approval on the page and checked per `references/cas-campaign.md`, **Pulling
+   decisions**, **The fee approval**. Then the details emails start; contracts and shipping run in the core Aspire platform.
 
 When the fees used the Aspire recommended rates, make the fee calculator offer from **Fee
 calculator**, Offers, after the reply.

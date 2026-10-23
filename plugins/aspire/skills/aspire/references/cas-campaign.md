@@ -116,7 +116,7 @@ creator makes, and the Creator Selection lede is worked out from the roster.
 | Home | `#home` | Overview | Campaign Home | Everything in {brand}'s creator ad campaign in one place: where it stands, what needs you, and a summary of every tab. | Where the campaign stands and what needs you |
 | Master Brief | `#brief` | Concepts and variants | Master Brief | Every concept and persona in play for the round, with the hooks, CTAs, body and B-roll each creator shoots and how they become {v} variants. | The master brief for each round: concepts, hooks, CTAs and the variant build |
 | Creator Selection | `#selection` | Casting | Creator Selection | {n} creators sourced for {concepts} across {m} markets. Paid signals for {k} of them come from Meta's creator rankings through Aspire Atlas. | Review and approve creators |
-| Selected Creators | `#creators` | Under contract | Selected Creators | Everyone {brand} approved for the round: concept, contracted rates, shipping details and deliverables, with the latest cut of each of their variants side by side. | Everyone under contract: concept, rates, shipping and their latest cuts |
+| Selected Creators | `#creators` | Under contract | Selected Creators | Everyone {brand} approved for the round with fees agreed: concept, contracted rates, shipping details and deliverables, with the latest cut of each of their variants side by side. | Everyone under contract: concept, rates, shipping and their latest cuts |
 | Content Review | `#review` | Variants in review | Content Review | Every variant the editors cut for {brand}, round by round. Each creator gets up to {v} variants per round, and each can go through several versions. | Review cuts, comment on the frame and approve |
 | Ad Performance | `#performance` | Month in market results | Ad Performance Review | How the ads made with the creators {brand} approved sold against {brand}'s own cost per result, who watched, and what changes in the next brief. | How the live partnership ads are performing |
 
@@ -851,8 +851,10 @@ that declares `decisions`. A stamp after it is dropped and named, since an Edito
 **The fee approval.** Read every writer's items under `fees` for each live round whose step 3 is
 open (a document in `fees/{id}/items/r{round}` is one person's approval for that round), every
 `editors/{id}` marker and `activity-editors` writer, and the campaign's newest `page-sides`
-finding. An item in `page-sides` `refused`, or one whose `approval` is `null` (taken back), is
-skipped. Of the rest, only the newest item for the round is checked and named. Its writer is the
+finding. Checks 1 and 2 below filter the items first: an item in `page-sides` `refused`, one
+whose `approval` is `null` (taken back), one from Aspire's side and one older than the send are
+left out, so a stray item never hides a valid one. Of the rest, only the newest item for the round
+is checked against 3 and 4 and named, the same item the page shows. Its writer is the
 id in its path, which the rules let only that person or the page's owner write (**1e**, **What the
 rules enforce, and what they can't**). Before it is offered:
 
@@ -1143,8 +1145,9 @@ client's level before the link goes out.
 | What they make, usage, exclusivity, agreed fee | after the fees are sent | yes | Rates and terms | Selected Creators |
 | Fee approval | yes, editable while step 3 is open | yes, read only | Client on the page, under their own id | Selected Creators |
 | A creator's step of 8, its dates, and the waiting on line | yes | yes | Worked out on the page from the records (**Selected Creators**, **Steps**) | Selected Creators |
-| Contract status, footage files in, shoot by, ship to | yes | yes, editable | The creator's records for the round, agency edits | Selected Creators |
-| Payment status | after the fees are sent | yes, editable | The creator's payment record for the round | Selected Creators |
+| Contract status, footage files in, ship to | yes | yes, read only until their records are kept | The creator's records for the round | Selected Creators |
+| Shoot by | yes | yes, editable | Agency edits, else the round's First cut review step | Selected Creators |
+| Payment status | after the fees are sent | yes, read only until its record is kept | The creator's payment record for the round | Selected Creators |
 | Payment amount | no | yes | `agency` | Selected Creators |
 | Details to add: name and address | yes | yes | Worked out on the page | Selected Creators |
 | Details to add: email, phone and rates | no | yes | Worked out on the Editor's page from `agency` | Selected Creators |
@@ -1960,7 +1963,7 @@ rows.
    | ---- | -------- | ---- | ----------------- |
    | Master Brief | The brief's status: "Draft", "Waiting for your sign off" for the client ("In review with client" for the agency), "Changes requested" or "Signed off {date}" | "{w} of {t} concepts written · {k} open comments", with the status Badge | "No briefs written yet." |
    | Creator Selection | "{a} approved" | "of {m} creators in round {n} · {d} to decide" | "No creators in the pool yet." |
-   | Selected Creators | "{n} under contract", the creators on the tab (**Selected Creators**, **Who's here**) | "{k} missing details · {s} shipped, {d} delivered", plus "{total} committed" for the agency only, from `agency/budget` `committed:` and rendered only when that read returns | "Creators show here once {brand} approves them." |
+   | Selected Creators | "{n} with fees agreed", the creators on the tab (**Selected Creators**, **Who's here**) | "{k} missing details · {s} shipped, {d} delivered", plus "{total} committed" for the agency only, from `agency/budget` `committed:` and rendered only when that read returns | "Creators show here once {brand} approves them." |
    | Content Review | "{x} of {y} ad videos in" | "{w} waiting on you · {a} approved" | "Cuts show here once creators start shooting." |
    | Ad Performance | "Cost per sale {x}", with the target Badge from **Last round result** | "{w} of {a} ads won" | "Round {n} goes live {launch}." before the launch, else "Results show here once the ads are live." |
 
@@ -4212,8 +4215,11 @@ This is the step 2 approval.
 
 Everyone under contract for the round in view, one card each, with the step they are on, what's
 next or what we're waiting on, and what's still missing. Every figure is worked out live from the
-records published into the page and the page data the viewer can read, so a step moves the
-moment a record changes, and nobody sets a step by hand.
+records published into the page and the page data the viewer can read, and nobody sets a step by
+hand. A step reached from page data (product status, the footage, contract and payment records,
+cuts and their calls) moves the moment it changes, in every open view. One reached from a roster
+field (brief state, details, the fee) moves at the next publish, which follows every pull and
+reply Claude records.
 
 **Who's here.** A creator is on the tab for round {n} when both hold:
 
@@ -4242,16 +4248,16 @@ and page data, never a field a person sets:
 | # | Step | Reached when | Until its record exists |
 | - | ---- | ------------ | ----------------------- |
 | 1 | Contract signed | The creator's contract record for the round says signed (`contract` on `edits/creator-{net}-{handle}-r{round}`, `{status, signedAt}`, `status` not sent, sent or signed) | Step 3 (Fees approved) is cleared for the round and the round's **Contracts signed** step is done (**Rounds**, **Round steps**: ticked, or done once step 4 is sent), so every creator with an agreed fee reaches it together |
-| 2 | Product shipped | Product status is Shipped or Delivered, from the newer of the client's and the agency's `productStatus` by `at` (**Who sees what**), else the roster's `shipping.status` shipped or delivered, else a `shipDate` on or before today. A pickup counts once its visit date is today or past. These are the values the calendar's shipping events come from (**Home**, **Calendar**, **Where every date comes from**) | Always has its record |
+| 2 | Product shipped | Product status is Shipped or Delivered, from the newer of the client's and the agency's `productStatus` by `at` (**Who sees what**), else the roster's `shipping.status` shipped or delivered, else a `shipDate` on or before today. A product status of Not shipped, set later than the `shipDate`, wins over it. A pickup counts once its visit date is today or past. This is consistent with the calendar's shipping events (**Home**, **Calendar**, **Where every date comes from**), which read the same changes from the activity log: the step reads a field's current value, so a status set back to Shipped moves the step back while the calendar still shows the day it was marked delivered | Always has its record |
 | 3 | Product delivered | Product status is Delivered, by the same reads, else a pickup whose visit date has passed | Always has its record |
 | 4 | Shooting | Product delivered, and the creator's brief accepted or locked: roster `briefState` accepted, approved or locked, or their changed brief approved (**1g**) | Always has its record |
 | 5 | Footage in and editing | At least one raw file in: the creator's footage record for the round (`footage` on `edits/creator-{net}-{handle}-r{round}`, `{files, at}`, the number of files received) is 1 or more | Not reached on its own. A creator moves from Shooting to Cuts in review when their first cut arrives |
 | 6 | Cuts in review | The creator has at least one cut in the round with a version (`reviews/cut-{net}-{handle}-r{round}-{variant}` with a version under `versions`, **1e**), the same cuts **Where we stand** counts as in | Not reached until Content Review records cuts |
-| 7 | Cuts approved | Every one of the creator's {v} variants for the round has a cut whose newest version is approved (**Variants per creator** below), read as Content Review reads a cut's call | Not reached until Content Review records cuts |
+| 7 | Cuts approved | Every one of the creator's {v} variants for the round has a cut whose newest version is approved (**Variants per creator** below). Approved is read as the calendar reads it (**Home**, **Calendar**, **Where every date comes from**, Approved): the activity log's approval and undo entries for that version, else its `client/cut-{cut}-v{version}` `status` stamp | Not reached until Content Review records cuts |
 | 8 | Ads live | One of the creator's variants runs as a live ad in Ad Performance's records for the round | The round's **Ads live** step is done (the round is in market, **Rounds**, **Round steps**) and the creator is at step 7 |
 
-Product status Returned holds the creator at step 2 with the line "Package returned" and a
-warning Badge "returned" on the Shipping cell, until a new shipment is marked.
+Product status Returned holds the creator at step 2 with the line "Package returned" and an
+error Badge "returned" on the Shipping cell, until a new shipment is marked.
 
 **Steps follow the records.** When a record that moved a creator on changes back (a delivery
 marked by mistake and set back to Shipped), the step goes back with it, so the card always
@@ -4274,13 +4280,13 @@ Under the step, one line in `text-sm`, worked out from the same records. The fir
 | When | Agency reads | Client reads |
 | ---- | ------------ | ------------ |
 | A question to the client is open (`yourCall`) | "Waiting on {brand}: {question}" | "Your call: {question}" |
-| Step 0, step 3 open | "Waiting on {brand} to approve fees" | "Waiting on your fee approval" |
-| Step 0, step 3 cleared | "Next: contract signed" | the same |
+| Step 0, fees approval (step 3 of the round) open | "Waiting on {brand} to approve fees" | "Waiting on your fee approval" |
+| Step 0, fees approved | "Next: contract signed" | the same |
 | Step 1, details not received | "Waiting on @{handle}'s shipping details" | the same |
 | Step 1 | "Next: ship {product}" | the same |
 | Step 2 | "On the way: {carrier} {tracking}", or "On the way" | the same |
-| Step 3, a changed brief waiting on the client (Gate 4b open) | "Waiting on {brand}'s call on @{handle}'s brief changes" | "Your call on @{handle}'s brief changes" |
-| Step 3, brief not accepted | "Waiting on @{handle} to accept the brief" | the same |
+| Step 3 (Product delivered), a changed brief waiting on the client (Gate 4b open) | "Waiting on {brand}'s call on @{handle}'s brief changes" | "Your call on @{handle}'s brief changes" |
+| Step 3 (Product delivered), brief not accepted | "Waiting on @{handle} to accept the brief" | the same |
 | Step 4 | "Shooting · shoot by {date}", or "Shoot by date passed {d} days ago" | the same |
 | Step 5 | "Editing · {x} of {f} files in" | the same |
 | Step 6, cuts waiting on the client | "{n} variants waiting on {brand}" | "{n} variants waiting on you" |
@@ -4309,7 +4315,8 @@ text-muted-foreground`. They cover the round in view and the creators on the tab
   shipped".
 - **Variants delivered**: "{x} of {y}", {y} being the creators on the tab times {v}, {x} their
   cuts with a first version (the calendar's **Cut delivered**), with a Progress bar.
-- **Variants approved**: "{a} of {y}", with "{x} delivered".
+- **Variants approved**: "{a} of {y}", with "{x} delivered", a variant counting as approved by the
+  step 7 rule.
 
 Until Content Review records cuts, both variant tiles read "Shows once Content Review tracks the
 cuts.", as **Where we stand** does. A round with no creators on the tab shows the tiles at 0 with
@@ -4323,7 +4330,8 @@ One row above the cards that wraps on a phone:
   ignoring case and accents.
 - **Stage**, a Tabs list with a count on each: All, Needs info, Before the shoot, Content in,
   Live. Needs info is a creator with at least one detail to add as this viewer counts them (below),
-  or whose details from creator aren't received. Before the shoot is steps 0 to 4, Content in steps
+  or whose details from creator aren't received. Before the shoot is steps 0 to 4, up to and
+including Shooting, since no footage is in yet, Content in steps
   5 to 7, and Live step 8. Needs info overlaps the others; the other four don't overlap. On a
   phone the list scrolls sideways like the tabs.
 - **Products**, one chip per product in scope, then "No product", as Creator Selection's toolbar
@@ -4358,7 +4366,7 @@ to that hash opens the card expanded and scrolls to it.
 
   | Cell | Shows | From |
   | ---- | ----- | ---- |
-  | Contract | Not sent, Sent, or Signed {date} | The contract record; until it exists, "Signed" once step 1 holds by its fallback, else "Not tracked yet" |
+  | Contract | Not sent, Sent, or Signed {date} | The contract record; until it exists, "Contracts signed for the round", with no date, once step 1 holds by its fallback, else "Not tracked yet" |
   | Payment | Not due, Invoiced or Paid {date} for both sides once the fees are sent, and the amount for the agency only | The creator's payment record for the round (`payment` on `edits/creator-{net}-{handle}-r{round}`, `{status, at}`, with the amount in `agency/creator-{net}-{handle}`); until it exists, "Not tracked yet" |
   | Shipping | Product status Badge, and the carrier and tracking as a link when there is one | **Shipping** |
   | Ship to | City and region of the address, or "Pickup {visit date}"; "Not received" | Details from creator, else the creator's shipping record for the round when it exists |
@@ -4419,13 +4427,22 @@ campaign at open, target and max, and at what is agreed so far, with the allowli
 own line unless allowlisting is off. Full detail: `rates-and-terms.md`, **Contract and rates**.
 
 **The fee approval.** The client approves the whole fee sheet once per round, here, while step 3
-is open. It is a default Button "Approve fees" and an outline Button "Request changes" with an
+is open. Step 3 is sent only once every creator on the sheet has agreed or declined (**1c**, row
+7), so every row it covers has an agreed fee; a declined creator is listed as declined and left
+out of the copy. It is a default Button "Approve fees" and an outline Button "Request changes" with an
 optional note, for the client only, never for the agency or in **Preview as client**. Approving
 saves the client's own approval under their id (`fees/{id}/items/r{round}`, **1e**, **What the
 page keeps**, Fee approvals), with a copy of every fee line they saw. The page first adds the
 item to the client's private `data/users/{id}/fees`, then writes the item, then its writer
-document's `lastAt`, and logs one `decision` entry. Tapping "Approve fees" again while it is not
-recorded takes the approval back (`approval` `null`).
+document's `lastAt`, and logs one `decision` entry. While the approval is not recorded, an
+outline Button "Undo approval" takes it back (`approval` `null`), as a cut's Undo approval does.
+Once **Pulling decisions** records it, step 3 is cleared and the section shows the approval as a
+label, with no control.
+
+Step 3 stays open on Home until the pull records it, as **Round steps** says: an approval on the
+page never ticks it. From the moment the client's own approval counts on the page, their **Waiting
+on you** item for the fees leaves their list, and each card's line reads "Fees approved, Aspire to
+record" in place of the waiting line.
 
 What the section's header shows, for both sides:
 
@@ -4810,7 +4827,7 @@ left blank, never filled with a dash.
 | Creator Selection | Match agreement (agency only) | Band in **Match score tuning**'s **Agreement**, then a row for our top 10 and one for the agreement score | Measure (the band, "Our top 10" or "Agreement score"), Picked, Decided, Share, Verdict (on the agreement score row), Rounds |
 | Creator Selection | Weights (agency only) | Factor in **Retune** | Factor, Weight in use, Default or tuned on, Suggested, Change, Decisions it learned from |
 | Creator Selection | Creators | Creator the pool shows now, in its sort | Creator, Network, Name, Descriptor, City, Tier, Concept, Persona, Product, Rounds, Campaign match, Match band, Competitor (the conflict or past deals), Watch, Hook rate, Engagement on Reels, Reach, Engaged accounts, Latest post, Paid work before, Ad permissions, Instagram followers, Instagram engagement rate, Instagram average engagement, Instagram audience, the same four for TikTok, Why we picked them, Status, Your decision, Your notes, Aspire notes for {brand}, Expected cost (agency only), Cost per 1K reach (agency only), Aspire notes (agency only), Reply window (agency only), Email (agency only), Phone (agency only), Manager (agency only) |
-| Selected Creators | Creator snapshot | Card the tab shows now, in its sort | Creator, Network, Name, Concept, Product, Returning, Step (a number, 0 to 8), Step name, Next or waiting on, Details to add (the count as the viewer counts them), Missing (the details named, one per line), Contract, Payment, Ship to, Footage files in, Footage files planned, Shoot by, Status, Ad permissions, Brief state, Content state, Variants in, Variants approved, Variants planned, Content folder, Waiting on (agency only), Last contact (agency only), Email (agency only), Phone (agency only), Manager (agency only), Payment amount (agency only) |
+| Selected Creators | Creator snapshot | Card the tab shows now, in its sort | Creator, Network, Name, Concept, Product, Returning, Step (a number, 0 to 8), Step name, Next or waiting on, Details to add (the count as the viewer counts them, so name and address only for the client), Missing (the details named, one per line, the same ones), Contract, Payment (blank for the client until the fees are sent), Ship to, Footage files in, Footage files planned, Shoot by, Status, Ad permissions, Brief state, Content state, Variants in, Variants approved, Variants planned, Content folder, Waiting on (agency only), Last contact (agency only), Email (agency only), Phone (agency only), Manager (agency only), Payment amount (agency only) |
 | Selected Creators | Shipping list | Row in **Shipping** | Creator, Name, Product, Details from creator, Address or pickup, Visit date, Shipping, Tracking, Product status, Updated by, Updated on, Next step (agency only) |
 | Selected Creators | Rates and payments | Row in **Contract and rates** | Creator, Concept, What they make, Usage, Exclusivity, Agreed fee (blank until agreed; Where it is says "In negotiation"), If we drop them, Where it is, Fees approved on, UGC video rate (agency only), Reel collab rate (agency only), 90 day usage rate (agency only), Offer open, target and max (agency only, three columns), Counter (agency only), Expected cost (agency only), Cost per 1K reach (agency only) |
 | Selected Creators | Variant tracker | Variant of each creator in the round | Creator, Concept, Variant, Latest version, Status, Updated on, Open comments |
@@ -5361,7 +5378,8 @@ prefixes.
     entry, and write nothing to Atlas; and the cards, Table and sort follow the new scores.
 21. Selected Creators: only creators approved for the round with an agreed fee have a card; each
     card's step matches **Steps** for its records, and changing a product status, a brief state
-    or a cut moves it at once with no reload and no step field anywhere in page data; the Footage
+    or a cut moves it at once with no reload, a roster field moves it at the next publish, and there
+is no step field anywhere in page data; the Footage
     total and the variants planned equal the program terms' deliverables and variants per
     creator, so an edit to either on Home changes every card; the client's details chip counts
     only name and address, and no email, phone, rate, payment amount, fee total or budget renders
@@ -5562,9 +5580,9 @@ with a plain description holds plain data the page writes with no stamp.
 | Brief sign off | `signoffs/{id}/items/{item}`, `{id}` the writer's own id | Each Contributor, their own | Plain data, no stamps: `kind:` (signoff or changes), `round:`, `send:` (the `send-{id}` it answers), `at:`, `byName:`, `notes:`, `concepts:` (the lanes a change request names), `copies:` (the ids of its copy documents). Only documents here are items. A page from before kept per concept approvals in `client/brief-{lane}-r{round}` (`approved`, `notes`); they are never recorded as a sign off (**Pulling decisions**) |
 | Sign off copies | `signoffs/{id}/copies/{item}-overview` and `{item}-{lane}` | The same writer | The round's brief and each covered concept as the client saw them at sign off: for each stamped part **Loading the brief** fills, its `value`, plain, with no stamp, and no publish time field, send or reopen. Split past 200 KiB as a version is |
 | Sign off writers | `signoffs/{id}` | The writer | `lastAt:`, so the page can find every writer's items, as for comments |
-| Sides | `sides/campaign` | Claude, as the page's owner | Plain data from the campaign's `page-sides` finding (**1a**), rewritten at every publish and every pull that changed it: `editors:` the ids seen on Aspire's side, `approvers:` the confirmed approver accounts, `deciders:` the accounts confirmed as {brand}'s
-for creator decisions, `refused:` the refused sign offs and the refused decision writers
-(`{writer}/decisions`). Only the owner writes it, so no Editor can take their id off it. A chat session that isn't the page owner's can't write it. Then the pull still runs every check and records in Atlas, but the page can't show it: Claude says "Only {owner} can update who signs off on this page. Ask them to pull the client's decisions, so step 4 shows as approved there.", and until they do, the page judges sign offs by the markers alone and a sign off from a newly confirmed account still reads "Signed off, Aspire to confirm" |
+| Sides | `sides/campaign` | Claude, as the page's owner | Plain data from the campaign's `page-sides` finding (**1a**), rewritten at every publish and every pull that changed it: `editors:` the ids seen on Aspire's side, `approvers:` the confirmed approver accounts with their `gates`, `deciders:` the accounts confirmed as {brand}'s
+for creator decisions, `refused:` the refused sign offs, the refused fee approvals
+(`{writer}/fees-r{round}`) and the refused decision writers (`{writer}/decisions`). Only the owner writes it, so no Editor can take their id off it. A chat session that isn't the page owner's can't write it. Then the pull still runs every check and records in Atlas, but the page can't show it: Claude says "Only {owner} can update who signs off on this page. Ask them to pull the client's decisions, so steps 3 and 4 show as approved there.", and until they do, the page judges sign offs and fee approvals by the markers alone, and one from a newly confirmed account still reads "Signed off, Aspire to confirm" or "Fees approved, Aspire to confirm" |
 | Editor markers | `editors/{id}` | Each Editor, their own | `lastAt:`, written by the page on every load where `canEdit()` is true, before any control renders. Its existence marks `{id}` as on Aspire's side |
 | Own sign offs | `data/users/{id}/signoffs` | Each person, their own | `items:` `{itemId: at}`, the sign off items this person made, which their page checks the shared ones under their id against |
 | Creator changes call | `client/changes-{net}-{handle}-r{round}` | Client | `approved`, `notes` |
@@ -6316,10 +6334,11 @@ document. Steps 3 and 4 run after every publish.
    in `agency`: each email address and phone number (the Aspire team's work emails are in the
    page on purpose and are not in `agency`, **Who sees what**, **Contact details**), the first words of each agency note and
    agency only comment, the budget total, the target rate, each creator's expected cost, and each offer, counter, rate and cost
-   that the page may not show. Do the same for every `scores` document, which must hold no price,
+   that the page may not show, each rate per deliverable (`rate-*`) and each payment amount. Do the same for every `scores` document, which must hold no price,
    ratio, weight or agency score. Search the page itself's data blocks and text, leaving out its script code, for the tuning panel's values too: each weight in use and in `stats:` as it shows ("0.31"), the agreement scores in `stats:`, and the suggested weights: none may appear. The page's code holds the panel's labels and the formula's constants, as it holds every agency only section's labels; it reads every weight from `agency` at run time, so no weight is written into it. Read one writer's `decisions/{id}/items` at `interact` and check that a call holds only
    the fields **What the page keeps** lists for it, so a surprise reason never carries a score
-   from `agency`. An amount the page shows the client in its own right (an agreed fee once the fees are
+   from `agency`. Read one writer's `fees/{id}/items` at `interact` the same way: its `copy`
+   holds only agreed fees and the uplift, never an offer, counter, rate or expected cost. An amount the page shows the client in its own right (an agreed fee once the fees are
    sent) is left out of the search even when an offer or counter had the same number. None of the
    rest may appear.
 4. Read the client readable activity written since the last check (each writer's
