@@ -821,7 +821,8 @@ picker.
 
 **The cut calls.** Approve, Request changes and Undo approval on a cut have no campaign record:
 cuts and their versions live only in page data (**1d**, **Content Review**), so the picker names
-the calls and writes nothing to Atlas for them. They are checked the way creator decisions are,
+the calls and writes no cut record to Atlas; the only thing recorded is who decided, in
+`page-sides` (step 3 below). They are checked the way creator decisions are,
 so the picker never names a call the page wouldn't count. Read every writer's items under
 `cut-calls` (a document in `cut-calls/{id}/items/{cut}-v{version}` is one person's call on one
 version), the versions under `reviews`, every `editors/{id}` marker and `activity-editors` writer,
@@ -830,8 +831,11 @@ and the campaign's newest `page-sides` finding. Then:
 1. **The writer is on the client's side.** A call whose writer has an `editors/{id}` marker now,
    or is in `page-sides` `editors`, is dropped and named: "Approval of @a V3, version 2 from an
    Aspire account, not counted. Only {brand} approves cuts."
-2. **It answers the newest send.** A call whose `send` isn't the version's `sentAt:` was made
-   before a **Send to {brand} as is** and is left out without a line, as the page leaves it out.
+2. **It answers the newest send of the same file.** A call whose `send` isn't the version's
+   `sentAt:` was made before a **Send to {brand} as is** and is left out without a line, as the
+   page leaves it out. A call whose `file` isn't the version's file now (its `asset:`, or `link`
+   for a linked version) is dropped and named: "Approval of @a V3, version 2 was for a file that
+   was replaced since, not counted."
 3. **Which account decided.** An account in `page-sides` `deciders`, or in `approvers` for any
    step, needs no question. Any other is asked once, in the same picker the creator decisions use
    for that account ("It decided as {name}: {k} creators, {c} cuts"), or in one of its own when it
@@ -845,8 +849,8 @@ Of the rest, the newest call per version counts, the same call the page shows, a
 names it with who made it: "@a V3, version 2: approved by {name} (stays on the page)". A request
 for changes whose `open` threads are all resolved or gone now, or which names none, adds "(no open
 comment)", since the page asks for one and the rules can't. A call from
-an account the CM hasn't confirmed yet counts on the page from the moment it is made, so the cut
-reads Approved before this check; the answer here is what keeps or ends that. The answer writes
+an account the CM hasn't confirmed yet counts on the page from the moment it is made, and the
+agency sees "Aspire to confirm" on it until this check; the answer here keeps or ends it. The answer writes
 only the `page-sides` finding when it changed, and the `sides/campaign` copy with it.
 
 **The creator decisions.** Read every writer's items under `decisions` (a document in
@@ -1174,8 +1178,12 @@ from outside the organization that publishes the page holds the lowest level wha
 menu says. A client approver outside it reads the page itself but nothing from the page data, and
 nothing they do saves. Their read only view says so in one line: "Your choices can't save from
 this account. Tell {CM name} your decisions." The CM then records them in the chat, the way a
-decision typed in chat is recorded (**Gate 2: the creators**). Say this to the CM in the same
-first-publish message when the client's approvers are outside the organization.
+decision typed in chat is recorded (**Gate 2: the creators**). Cut approvals are the exception:
+a cut call has no campaign record and a call from Aspire's side never counts, so they can't be
+recorded from the chat (**Content Review**, **The status flow**). Such an approver approves cuts
+through a teammate at {brand} who can open the page as Contributor, or once the CM shares the page
+with them from inside the organization. Say this to the CM in the same first-publish message when
+the client's approvers are outside the organization.
 
 Fields marked agency only never render for the client. They are never written into the page
 itself, only into the agency's page data, which the client cannot read (**1e**). Hiding them
@@ -4347,7 +4355,7 @@ and page data, never a field a person sets:
 | 4 | Shooting | Product delivered, and the creator's brief accepted or locked: roster `briefState` accepted, approved or locked, or their changed brief approved (**1g**) | Always has its record |
 | 5 | Footage in and editing | At least one raw file in: the creator's footage record for the round (**Creator records**, Footage) counts 1 or more | Not reached on its own. A creator whose footage nobody records moves from Shooting to Cuts in review when their first cut arrives |
 | 6 | Cuts in review | The creator has at least one cut in the round with a version (`reviews/cut-{net}-{handle}-r{round}-{variant}` with a version under `versions`, **1e**), the same cuts **Where we stand** counts as in | Not reached until the creator's first cut is added on Content Review (**Content Review**, **Adding a cut**) |
-| 7 | Cuts approved | Every one of the creator's {v} variants for the round has a cut whose newest version is approved (**Variants per creator** below). Approved is read as the calendar reads it (**Home**, **Calendar**, **Where every date comes from**, Approved): the client's call that counts on that version (**Content Review**, **The status flow**, **The call that counts**) | Not reached while any of the {v} slots has no cut |
+| 7 | Cuts approved | Every one of the creator's {v} variants for the round has a cut whose newest version is approved (**Variants per creator** below). Approved is read as the calendar reads it (**Home**, **Calendar**, **Where every date comes from**, Approved): the client's call that counts on that version (**Content Review**, **The status flow**, **The call that counts**). Step 7 ticks only when each of those approvals is from an account the CM confirmed as {brand}'s, so one showing "Aspire to confirm" holds it | Not reached while any of the {v} slots has no cut |
 | 8 | Ads live | One of the creator's variants runs as a live ad in Ad Performance's records for the round | The round's **Ads live** step is done (the round is in market, **Rounds**, **Round steps**) and at least one of the creator's cuts is approved, so a creator whose last variant is still in review isn't held back |
 
 Product status Returned holds the creator at step 2 with the line "Package returned" and an
@@ -5523,8 +5531,11 @@ peek. Top to bottom:
 2. **Versions.** The version picker and, when the cut can be compared, **Compare** beside it
    (**Versions**, **Compare**).
 3. **The moves.** The Buttons the viewer's side has for the cut's status (**The status flow**), in
-   one row that wraps, each at least 44px tall on touch. On a version that isn't the newest, the
-   row is the line "Calls and sends are on version {v}." and a link Button "Open version {v}". A
+   one row that wraps, each at least 44px tall on touch. For the agency on a version that isn't
+   the newest, and for the client on a version older than the newest one sent to them, the row is
+   the line "Calls and sends are on version {v}." and a link Button "Open version {v}", {v} being
+   the newest the viewer can open. For the client on the newest version sent while a newer one is
+   in QA, it is the status flow table's line, "Aspire is checking version {v}". A
    done round, a read only client and **Preview as client** show no moves.
 4. **The last move.** One line in `text-xs text-muted-foreground` naming the newest move on the
    version open and who made it: "Sent to {brand} by {name}, 2 days ago", "Changes requested by
@@ -5557,7 +5568,8 @@ address bar. Sends and calls act on the newest version only (**The status flow**
 
 **Upload new version.** For Editors, in the round in view while it is the current round; never
 in a done round, for the client or in **Preview as client**. It is an outline Button with the
-Lucide `upload` icon in the moves row while the cut is With Aspire QA or Changes requested, and the
+Lucide `upload` icon in the moves row while the cut is With Aspire QA, the default Button there
+while it is Changes requested, and the
 last item of the picker's list, "Upload new version", in every status. On a cut that is Needs
 client review or Approved it asks first, in a Dialog "Replace version {v}?":
 
@@ -5583,7 +5595,8 @@ When another Editor added that version a moment ago, the page writes nothing, de
 upload, and says "{name} added version {k} a moment ago." Otherwise it writes
 `reviews/cut-{cut}/versions/v{k}` with `kind:`, `asset:` or `link`, `name:`, `type:`, `size:`,
 `notes`, `addedAt:`, `addedBy:`, the frame rate fields, `width:`, `height:` and `duration:`, then
-`plan-v{k}` in `agency/cut-{cut}` (**Concept and variant plan**). A file that won't upload gets the
+`latest:` on `reviews/cut-{cut}`, then `plan-v{k}` in `agency/cut-{cut}` (**Concept and variant
+plan**). A file that won't upload gets the
 lines in **When a cut won't upload**. It logs one `upload` entry, verb uploaded, "Uploaded version
 {k} of @{handle} V{n}", in the writer's agency log, since the version is in QA.
 
@@ -5651,8 +5664,8 @@ in the current round.
 
 | Viewer | Status | The moves | What a move writes |
 | ------ | ------ | --------- | ------------------ |
-| Agency | With Aspire QA | **Send to {brand}** (default), **Back to editor** (outline), **Upload new version** (outline) | Send: `sentAt:` and `sentBy:` on the version. Back to editor: an agency only comment and `qa-v{k}` in `agency/cut-{cut}` |
-| Agency | Changes requested | **Upload new version** (default), **Send to {brand} as is** (outline) | Upload: a new version (**Versions**). Send as is: `sentAt:` and `sentBy:` again, with `resent:` true |
+| Agency | With Aspire QA | **Send to {brand}** (default), **Back to editor** (outline), **Upload new version** (outline) | Send: `sentAt:`, `sentBy:` and a `sends:` entry on the version. Back to editor: an agency only comment and a `qa-v{k}-{id}` key in `agency/cut-{cut}` |
+| Agency | Changes requested | **Upload new version** (default), **Send to {brand} as is** (outline) | Upload: a new version (**Versions**). Send as is: `sentAt:`, `sentBy:` and a `sends:` entry again, with `resent:` true |
 | Agency | Needs client review | **Nudge {brand}** (outline) | A tag for the client side |
 | Agency | Approved | None. The last move line says who approved | Nothing |
 | Client | Needs client review | **Approve** (default), **Request changes** (outline) | The client's call |
@@ -5668,7 +5681,8 @@ only comments, "{c} agency only comments are still open.", so nothing is sent by
 blocks the send. Cancel (outline) and Send (default). Send reads the version first: when another
 Editor sent it a moment ago, it writes nothing and says "{name} sent it a moment ago." Otherwise
 it merges `sentAt:` (now) and `sentBy:` (the Editor's id) into
-`reviews/cut-{cut}/versions/v{k}`, and logs one `upload` entry, verb sent, "Sent version {k} of
+`reviews/cut-{cut}/versions/v{k}`, adds `{at, by, side: agency, asIs: false}` to its `sends:`, and
+merges `latest:` into `reviews/cut-{cut}` (**1e**, Reviews), and logs one `upload` entry, verb sent, "Sent version {k} of
 @{handle} V{n} to {brand}", in the Editor's client readable log, so the client's **Inbox** gets one
 New item opening the version. The cut is Needs client review in every open view.
 
@@ -5676,7 +5690,7 @@ New item opening the version. The cut is Needs client review in every open view.
 editor" with a Textarea "What to fix", required, whose tag picker lists Aspire's side only
 (**Tagging**, **Agency only boxes**), and Cancel and Send back. It saves the words as an agency only
 general comment on the version (**Agency only comments on a cut**), with its tags, and writes
-`qa-v{k}:` `{at, by, comment}` in `agency/cut-{cut}`. It logs one `upload` entry, verb changed,
+`qa-v{k}-{id}:` `{at, by, side: agency, comment}` in `agency/cut-{cut}`, one key per return. It logs one `upload` entry, verb changed,
 "Sent version {k} back to the editor", in the agency log. The status stays With Aspire QA, and the
 agency's view shows "Back with editor" until a newer version is added or this one is sent. None of
 it is in the client's data.
@@ -5685,7 +5699,8 @@ it is in the client's data.
 the comments settle it or {brand} asked for something the brief rules out. A Dialog "Send version
 {k} again, unchanged?": "{brand}'s request for changes on version {k} closes, and the version goes
 back to them for review. Reply to their comments first, so they know why." with Cancel and Send as
-is. It merges `sentAt:` (now), `sentBy:` and `resent:` true into the version, and logs one `upload`
+is. It merges `sentAt:` (now), `sentBy:` and `resent:` true into the version, adds `{at, by,
+side: agency, asIs: true}` to its `sends:`, updates `latest:` on the cut, and logs one `upload`
 entry, verb sent, "Sent version {k} of @{handle} V{n} to {brand} again, unchanged", in the client
 readable log. A call counts only when it answers the version's newest send (**The call that
 counts** below), so the request for changes stops counting and the cut is Needs client review
@@ -5695,15 +5710,15 @@ again. The request stays in **History** and the comments stay on the version.
 "Client" first ("Everyone approving for {brand}") and then the people on {brand}'s side the page
 knows (**Tagging**, **Which people are listed**), a Textarea filled with "@Client version {k} of
 @{handle} V{n} is ready for your review." that the Editor can change, and Cancel and Nudge. It
-writes one tag under `tags-client/{id}/items` (**1e**, **Tags and the inbox**) with `on:`
-`nudge-cut-{cut}-v{k}-{day}`, `{day}` the UTC date, and `anchor` `#review/r{n}/{cut}/v{k}`. Each
-person it names gets a "Tagged you" item in their inbox that opens the cut, and a second nudge to
-the same people on the same day updates that tag's text rather than adding another. A tag logs
-nothing (**1e**, **Tags and the inbox**), so a nudge shows in the inbox, not in **History**. Like
-any tag, the next chat run lists it in **Delivering tags**, which offers to post it to the
-campaign's saved destinations after a confirm; the page itself sends no message. After a nudge,
-the line under the Button reads "Nudged by {name}, 2 hours ago", from the newest nudge tag on the
-version.
+writes one tag per recipient under `tags-client/{id}/items` (**1e**, **Tags and the inbox**),
+each with `on:` `nudge-cut-{cut}-v{k}-{at}`, `{at}` the nudge's time, so every nudge is new, plus
+`anchor` `#review/r{n}/{cut}/v{k}`, `version:` {k} and `side:` agency. Each person it names gets a
+"Tagged you" item in their inbox that opens the cut. Like any tag, the next chat run lists it in
+**Delivering tags**, which offers to post it to the campaign's saved destinations after a confirm;
+the page itself sends no message. The nudge also logs one entry, kind `status`, verb nudged,
+asset `cut-{cut}-v{k}`, "Nudged {brand} on version {k} of @{handle} V{n}", in the Editor's agency
+log, so **History** shows it to the agency while the client's inbox holds only the tag. The line
+under the Button reads "Nudged by {name}, 2 hours ago", from the newest of those entries.
 
 **Approve, Request changes and Undo approval.** For the client only. They never render for an
 Editor, in **Preview as client**, or for a read only client.
@@ -5719,17 +5734,20 @@ Editor, in **Preview as client**, or for a read only client.
 
 A call is one document under the client's own id, `cut-calls/{id}/items/{cut}-v{k}` (**1e**),
 written whole with a `set`: `call:` (approved, changes, or `null` once undone), `version:`
-{k}, `send:` the version's `sentAt:` as the page showed it, `at:`, `by:` (the same id as the
-path's), `byName:`, `side:` client, and on a request for changes `open:` the ids of the open
-threads it rested on. The page also records the call in the client's own
+{k}, `send:` the version's `sentAt:` as the page showed it, `file:` the version's `asset:` (or
+`link` for a linked version) as the page played it, `at:`, `by:` (the same id as the path's),
+`byName:`, `side:` client, and on a request for changes `open:` the ids of the open threads it
+rested on. The page also records the call in the client's own
 `data/users/{id}/cut-calls` and merges `lastAt:` into `cut-calls/{id}`, then logs one `decision`
 entry, verb approved, requested changes or undid, asset `cut-{cut}-v{k}`, in the client's own log.
 
-**What review status holds.** Every move is kept with who made it, their side, the version and
+**What review status holds.** Each move is stored with who made it, their side, the version and
 the time. The client's calls are their `cut-calls` items, each with `by`, `side`, `version` and
-`at`. Aspire's sends are on the version they send, `sentBy:` and `sentAt:`, readable by the
-client; a send is always Aspire's. Back to editor is in `agency/cut-{cut}`, since it is about a
-version {brand} hasn't seen. The activity log has an entry for each, so **History** lists them all.
+`at`; an item is rewritten whole on each call, so it holds that person's newest call on the
+version. Aspire's sends are on the version they send: `sends:` lists every one (`{at, by, side,
+asIs}`), and `sentAt:` and `sentBy:` repeat the newest. Back to editor keeps one `qa-v{k}-{id}`
+key per return in `agency/cut-{cut}`, since it is about a version {brand} hasn't seen. A nudge is
+its tags. Every move also logs one entry, so **History** lists each one, earlier calls included.
 
 **The call that counts.** The page reads every writer's item for the version and leaves out:
 
@@ -5739,18 +5757,28 @@ version {brand} hasn't seen. The activity log has an entry for each, so **Histor
 2. **An item from a refused account**: `{writer}/cut-calls` is in `sides` `refused` (**Pulling
    decisions**). It shows "Not counted" the same way.
 3. **An item that doesn't answer the newest send**: its `send` isn't the version's `sentAt:`.
+4. **An item for another file**: its `file` isn't the version's `asset:` (or `link`) now, so a
+   file swapped on a sent version never carries an approval the client gave the old one. The agency
+   sees it "Not counted" with "The file changed after {name}'s call."
 
 Of the rest, the newest by `at` counts. The version is Approved when its `call` is approved,
 Changes requested when it is changes, and Needs client review when the version is sent and no
 item counts or the newest is `null`. This is the one read behind every Approved on the page:
 **Statuses**, the count tiles, the calendar's Approved, Selected Creators' step 7, Home's counts
-and the export. The client's own page compares the calls under their id with their private
+and the export.
+
+A counted call from an account in neither `sides` `deciders` nor `approvers` makes the cut read
+Approved, with a processing Badge "Aspire to confirm" beside the status for the agency, until the
+CM's next pull confirms or refuses the account (**Pulling decisions**, **The cut calls**). Selected
+Creators' step 7 waits for it, as step 3 waits for a fee approval to be confirmed: it ticks only
+once every approval it rests on is from a confirmed account. The client's own page compares the calls under their id with their private
 `data/users/{id}/cut-calls`, by id and `at`, and shows a warning Badge "This isn't a call you
 made" on any it doesn't hold.
 
 A call a page from before kept as a `status` stamp in `client/cut-{cut}-v{version}`, which an
-Editor could also write, shows to the agency as "Approved on the earlier page, not recorded" and
-never counts, so {brand} approves that cut again on the page.
+Editor could also write, never counts. When its value is approved, it shows to the agency as
+"Approved on the earlier page, not recorded", so {brand} approves that cut again on the page; any
+other value shows nothing.
 
 **Approved needs {brand}'s Approve.** No move on Aspire's side writes a call, and a call from an
 Aspire account doesn't count, so a cut reaches Approved only when someone on {brand}'s side
@@ -7008,11 +7036,11 @@ writer keeps a `comments/{id}` document (`lastAt`) beside their items, the page 
 `signoffs/{id}/items`, for `decisions` and each writer's `decisions/{id}/items`, so a client's
 call reaches the agency's open view within seconds, and for `fees` and each writer's
 `fees/{id}/items`, and for `cut-calls` and each writer's `cut-calls/{id}/items`, so a client's
-Approve reaches the agency's open view the same way; `editors` is one collection of markers; review versions are read when the person opens them, and
+Approve reaches the agency's open view the same way; `editors` is one collection of markers; review versions are read when the person opens them, and the open cut's `versions` collection is subscribed while its review panel is open, so a send, a new version or a brief check tick shows there live (the queue reads each cut's `latest:`), and
 the activity log is followed the same way while **History** is open (**The activity log**,
 **Reading it**). The inbox follows the log and the tags through their writer documents only
 (**Tags and the inbox**, **Reading it**). The page subscribes to collections, not to each document, to stay under the 64
-subscriptions a view can hold. Decision writers are subscribed before comment writers, since a
+subscriptions a view can hold. Decision writers are subscribed before comment writers, then cut call writers, since a
 call moves the Summary and the agency waits on it; past the limit, the oldest writers' comments
 refresh when the person opens the thread, and decision writers past it, which only a page with
 dozens of approvers reaches, are read again every 30 seconds while Creator Selection is open. Updates ride a live stream where the browser has one and fall back
@@ -7053,11 +7081,11 @@ with a plain description holds plain data the page writes with no stamp.
 | Sides | `sides/campaign` | Claude, as the page's owner | Plain data from the campaign's `page-sides` finding (**1a**), rewritten at every publish and every pull that changed it: `editors:` the ids seen on Aspire's side, `approvers:` the confirmed approver accounts with their `gates`, `deciders:` the accounts confirmed as {brand}'s
 for creator decisions and cut calls, `refused:` the refused sign offs, the refused fee approvals
 (`{writer}/fees-r{round}`), the refused decision writers (`{writer}/decisions`) and the refused
-cut call writers (`{writer}/cut-calls`). Only the owner writes it, so no Editor can take their id off it. A chat session that isn't the page owner's can't write it. Then the pull still runs every check and records in Atlas, but the page can't show it: Claude says "Only {owner} can update who signs off on this page. Ask them to pull the client's decisions, so steps 3 and 4 show as approved there.", and until they do, the page judges sign offs and fee approvals by the markers alone, and one from a newly confirmed account still reads "Signed off, Aspire to confirm" or "Fees approved, Aspire to confirm" |
+cut call writers (`{writer}/cut-calls`). Only the owner writes it, so no Editor can take their id off it. A chat session that isn't the page owner's can't write it. Then the pull still runs every check and records in Atlas, but the page can't show it: Claude says "Only {owner} can update who signs off on this page. Ask them to pull the client's decisions, so steps 3 and 4 show as approved there.", and until they do, the page judges sign offs, fee approvals and cut calls by the markers alone, and one from a newly confirmed account still reads "Signed off, Aspire to confirm", "Fees approved, Aspire to confirm" or, on a cut, "Aspire to confirm"; a cut call the CM refused keeps counting on the page until the owner pulls |
 | Editor markers | `editors/{id}` | Each Editor, their own | `lastAt:`, written by the page on every load where `canEdit()` is true, before any control renders. Its existence marks `{id}` as on Aspire's side |
 | Own sign offs | `data/users/{id}/signoffs` | Each person, their own | `items:` `{itemId: at}`, the sign off items this person made, which their page checks the shared ones under their id against |
 | Creator changes call | `client/changes-{net}-{handle}-r{round}` | Client | `approved`, `notes` |
-| Cut calls | `cut-calls/{id}/items/{cut}-v{version}`, `{id}` the client's own id | Each Contributor, their own | Plain data, no stamps, one document per person per cut version, written whole with a `set` on each call: `call:` (approved, changes, or `null` once undone), `version:` the version number, `send:` the version's `sentAt:` as the page showed it, `at:`, `by:` (the same id as the path's), `byName:`, `side:` client, `open:` on a request for changes the ids of the open threads it rested on (**1d**, **Content Review**, **The status flow**). Only these count as the client's call on a cut. A page from before kept a `status` stamp in `client/cut-{cut}-v{version}`: it shows to the agency as "Approved on the earlier page, not recorded" and never counts |
+| Cut calls | `cut-calls/{id}/items/{cut}-v{version}`, `{id}` the client's own id | Each Contributor, their own | Plain data, no stamps, one document per person per cut version, written whole with a `set` on each call: `call:` (approved, changes, or `null` once undone), `version:` the version number, `send:` the version's `sentAt:` as the page showed it, `file:` the version's `asset:` (or `link`) as the page played it, `at:`, `by:` (the same id as the path's), `byName:`, `side:` client, `open:` on a request for changes the ids of the open threads it rested on (**1d**, **Content Review**, **The status flow**). Only these count as the client's call on a cut. A page from before kept a `status` stamp in `client/cut-{cut}-v{version}`: it never counts, and when its value is approved it shows to the agency as "Approved on the earlier page, not recorded" |
 | Cut call writers | `cut-calls/{id}` | The writer | `lastAt:`, so the page can find every writer's calls, as for comments |
 | Own cut calls | `data/users/{id}/cut-calls` | Each person, their own | `items:` `{itemId: at}`, the cut calls this person made, which their page checks the shared ones under their id against |
 | Notes | `notes` on the changed brief documents above (a fee approval's note is its item's `notes:`); on a creator, `note-{id}` keys, where `{id}` is a new random id the page makes for each note, never the writer's id, so each note is its own key and its tags' `on` is unique: the client's in `client/creator-{net}-{handle}-r{round}`, Aspire's for {brand} in `edits/creator-{net}-{handle}-r{round}`, and the Aspire notes in `agency/creator-{net}-{handle}` | Client; agency | A stamp each. A creator's note is `{text, createdAt}`, with `round` too in `agency`, and `text` `null` once removed. A note kept as one `notes` stamp by a page from before is edited or removed through that same `notes` key. A page from before kept one `notes` stamp in `agency/creator-{net}-{handle}`: it reads as one Aspire note |
@@ -7082,9 +7110,9 @@ cut call writers (`{writer}/cut-calls`). Only the owner writes it, so no Editor 
 | Brief comments, cut comments | `comments/{id}/items/{comment}` | Each person, their own | `{id}` is the writer's own id (`user.id()`), the `{self}` the rules check, so the path names the author. `on:` (`brief-{lane}-r{round}`, `brief-overview-r{round}` or `cut-{cut}-v{version}`), `part:` on a brief (the anchor's id, **1d**, **Master Brief**, **Comments and sign off**; empty for a concept as a whole), `text`, `replyTo:` (the thread's first comment), on a cut `timecode:` (seconds into the video, to three decimals; empty for a general comment and on a reply), `frame:` (the frame number at the version's `fps:`, left out when it isn't known) and `drawing:` (`{strokes: [{pen, size, points}]}`, `pen` red, yellow or blue, `size` thin or thick, `points` a list of `[x, y]` pairs from 0 to 1 across and down the video's frame, to three decimals; at most 50 strokes and 4,000 points; left out when there is none) (**1d**, **Content Review**, **Comments on a cut**, **Drawing on the frame**), `resolved` (on a thread's first comment), `deleted` (true once its author deleted it, and `text` then written as an empty string and `drawing:`, `timecode:` and `frame:` removed, so the words and the drawing leave the data), `editedAt:` (the last time its author changed `text`), `createdAt:` |
 | Comment writers | `comments/{id}` | Each person, their own | `lastAt:` the time of their newest comment, written with each one, so the page can find every writer's items (**Live updates**). An agency only comment or reply never writes it, so the client's data never shows when Aspire wrote one; editors find those through `agency/comments/items` |
 | Agency only comments | `agency/comments/items/{comment}` | Agency | The same fields, kept from the client. Every reply to an agency only thread is kept here too, with `replyTo:` its first comment, and no reply here ever answers a thread kept under `comments` (**1d**, **Content Review**, **Agency only comments on a cut**) |
-| Reviews | `reviews/cut-{cut}`, `{cut}` being `{net}-{handle}-r{round}-{variant}` | Agency | `creator:` (`{net}-{handle}`), `round:`, `lane:`, `variant:` (1 to 5), `title`. A page from before kept `check-{id}` stamps here, one per review checklist item: they aren't the brief check's and aren't shown, since the brief check is per version |
-| Review versions | `reviews/cut-{cut}/versions/v{version}` | Agency | `kind:` (`upload`, `drive`, `frameio` or `link`), `asset:` (the upload's asset id, shown from `"/_blob/" + asset`; empty for a link), `link` (the address, for a link; for a version from before, the cut's link or file), `name:`, `type:` and `size:` (the uploaded file's own name, type and bytes), `notes`, `addedAt:`, `addedBy:`, `sentAt:` and `sentBy:` (the newest send: written by **Send to {brand}**, and again by **Send to {brand} as is**; empty while the version is in Aspire QA), `resent:` (true once a send was **Send to {brand} as is**), `check-{id}` (the brief check, one stamp per check, `hook`, `brand`, `product`, `cta`, `captions`, `safezone`, `disclosure`, and `runtime` on a linked version only, `value` pass, fail or `null`; **1d**, **Content Review**, **The brief check**), and for an upload `fps:` (the frame rate), `fpsFrom:` (`file` when read from the file as it was added, `playback` when an Editor's player timed it), `fpsVariable:` (true when the file's frames take different times), `width:`, `height:` and `duration:` (from the video's own metadata, read from the file before the upload) (**1d**, **Content Review**, **The player**, **Frame rate**). An Editor's page writes the `playback` fields once, only while `fps:` is empty, and `width:`, `height:` and `duration:` once, only while they are empty. A version from before with a `link` and no `kind:` reads as a link, and one with no `sentAt:` as in Aspire QA |
-| Cut plans, agency only | `agency/cut-{cut}` | Agency; Claude when it records a version | `plan-v{version}:` plain data written once when that version is added, the plan it was made with as **Reading a creator's variant** read it then: `{lane, framework, hook, cta}` (**1d**, **Selected Creators**, **Concept and variant plan**); `qa-v{version}:` `{at, by, comment}` for **Back to editor**, the agency only comment holding what to fix; `check-v{version}-{id}` a note on one brief check (a stamp); `suggest-v{version}:` the newest **Suggest ticks** answer, `{at, by, frames, results}`, `frames` the times read and `results` each check's `{value, at, why}` (**1d**, **Content Review**, **The status flow**, **The brief check**). Kept apart from `reviews`, which the client reads |
+| Reviews | `reviews/cut-{cut}`, `{cut}` being `{net}-{handle}-r{round}-{variant}` | Agency | `creator:` (`{net}-{handle}`), `round:`, `lane:`, `variant:` (1 to 5), `title`, `latest:` (`{version, sentAt}`, the newest version's number and its `sentAt:`, merged with every new version and every send, so the queue and the count tiles read each cut's status live from the `reviews` subscription without opening its versions; when it disagrees with the versions, the versions win once the cut is opened, and an Editor's page then merges the right value). A page from before kept `check-{id}` stamps here, one per review checklist item: they aren't the brief check's and aren't shown, since the brief check is per version |
+| Review versions | `reviews/cut-{cut}/versions/v{version}` | Agency | `kind:` (`upload`, `drive`, `frameio` or `link`), `asset:` (the upload's asset id, shown from `"/_blob/" + asset`; empty for a link), `link` (the address, for a link; for a version from before, the cut's link or file), `name:`, `type:` and `size:` (the uploaded file's own name, type and bytes), `notes`, `addedAt:`, `addedBy:`, `sentAt:` and `sentBy:` (the newest send: written by **Send to {brand}**, and again by **Send to {brand} as is**; empty while the version is in Aspire QA), `resent:` (true once a send was **Send to {brand} as is**), `sends:` (every send, `[{at, by, side, asIs}]`, oldest first), `check-{id}` (the brief check, one stamp per check, `hook`, `brand`, `product`, `cta`, `captions`, `safezone`, `disclosure`, and `runtime` on a linked version only, `value` pass, fail or `null`; **1d**, **Content Review**, **The brief check**), and for an upload `fps:` (the frame rate), `fpsFrom:` (`file` when read from the file as it was added, `playback` when an Editor's player timed it), `fpsVariable:` (true when the file's frames take different times), `width:`, `height:` and `duration:` (from the video's own metadata, read from the file before the upload) (**1d**, **Content Review**, **The player**, **Frame rate**). An Editor's page writes the `playback` fields once, only while `fps:` is empty, and `width:`, `height:` and `duration:` once, only while they are empty. A version from before with a `link` and no `kind:` reads as a link, and one with no `sentAt:` as in Aspire QA |
+| Cut plans, agency only | `agency/cut-{cut}` | Agency; Claude when it records a version | `plan-v{version}:` plain data written once when that version is added, the plan it was made with as **Reading a creator's variant** read it then: `{lane, framework, hook, cta}` (**1d**, **Selected Creators**, **Concept and variant plan**); `qa-v{version}-{id}:` `{at, by, side, comment}`, one per **Back to editor**, the agency only comment holding what to fix; `check-v{version}-{id}` a note on one brief check (a stamp); `suggest-v{version}:` the newest **Suggest ticks** answer, `{at, by, frames, results}`, `frames` the times read and `results` each check's `{value, at, why}` (**1d**, **Content Review**, **The status flow**, **The brief check**). Kept apart from `reviews`, which the client reads |
 | Creator profile | `creators/{net}-{handle}` | Agency; Claude | `name`, `descriptor`, `location`, `pickNote` (why we picked them), `shipArea` (`{city, region, country}` of the address, copied from `agency/creator-{net}-{handle}` `address` with its `at`, **1d**, **Selected Creators**, **Creator records**) |
 | Creator, per round | `edits/creator-{net}-{handle}-r{round}` | Agency; Claude at publish, from the roster | `concept`, `persona` (the persona's id in the concept, `persona-{id}`), `product`, `status`, `adPermissions`, the shipping record as on the client's document, `shootBy` (a date), `note-{id}` (Aspire's notes for {brand}, as in Notes below); `returning` (true) and `fromRound` on a creator carried into the round; and the round's records (**1d**, **Selected Creators**, **Creator records**): `contract` (`{status, signedAt}`), `payment` (`{status, at, paidPct}`, no amount), `footage` (`{counts, at}`) and `shipTo` (`{kind, confirmed, visitDate}`, no part of the address). Until each is written, its cell reads as **The card** says. A page from before kept `footage` as `{files, at}`: it reads as one count with no deliverable, and `shipTo` as an address or pickup: the next publish moves any address in it to `agency/creator-{net}-{handle}` and rewrites `shipTo` in the new shape, and **Checking the roles** step 3 fails until it has |
 | Pool not sent | `agency/pool` | Claude | One key per pool creator not sent to the client yet, `{net}-{handle}`, holding what their row and card show, so the page itself never lists them |
@@ -7320,7 +7348,7 @@ writes to it, checklist ticks and notes included.
 | ----- | ------------- |
 | `tab` | The tab the write was made on: `home`, `brief`, `selection`, `creators`, `review` or `performance`, as in the hash links. For Claude's writes, the tab that shows the record. A value edited on two tabs (status on Creator Selection and Selected Creators) takes the one it was edited on |
 | `kind` | One of the kinds below |
-| `verb` | One of: added, changed, removed, decided, approved, requested changes, undid, cleared, commented, replied, resolved, reopened, ticked, unticked, uploaded, started, sent, recorded, synced |
+| `verb` | One of: added, changed, removed, decided, approved, requested changes, undid, cleared, commented, replied, resolved, reopened, ticked, unticked, uploaded, started, sent, nudged, recorded, synced |
 | `text` | One line in the page's own words, written at the time: what changed and, for a short value, what it changed to ("Changed product status for @a to Shipped"). It never names the writer (the row does), and never holds an id, a slug, a field name or a tool name. A note or comment carries its first 200 characters |
 | `creator` | `{net}-{handle}` when the write is about one creator, else empty |
 | `asset` | The item when it is not a creator: `brief-{lane}`, `brief-overview` (the sign off, a send and a reopen included), `changes-{net}-{handle}`, `cut-{cut}-v{version}`, `file-{id}`, `round-r{round}`, `step-{id}-r{round}`, `fees`, `budget`, `program`, `terms`, `product-{id}`, `team-{id}`; else empty |
@@ -7347,10 +7375,10 @@ History shows them on the client's side, because nothing in the data says who wa
 | ---- | ------ | --- |
 | `decision` | A creator decision and its reason, the Maybe note included (both live in `reason`), and its surprise reason; a fee approval; a brief sign off or request for changes; the call on a changed brief; a cut's Approve, Request changes or Undo approval; **Reset decisions** (one entry per reset) | Creator Selection, Selected Creators, Master Brief, Content Review |
 | `note` | The client's `notes` on an approval; a note on a creator, from either side, in the Notes thread or the Aspire notes, added, edited or removed, with the old and new text | Where it was written |
-| `status` | A creator's status and ad permissions; the shipping record (item, carrier, tracking, shipped, delivered and ETA dates, product status), from either side, Mark shipped, Mark delivered and Kept last round's product included | Creator Selection, Selected Creators |
+| `status` | A creator's status and ad permissions; a **Nudge {brand}** on a cut, in the agency log; the shipping record (item, carrier, tracking, shipped, delivered and ETA dates, product status), from either side, Mark shipped, Mark delivered and Kept last round's product included | Creator Selection, Selected Creators |
 | `brief` | Any part of a concept's brief; the variant build; sending the brief for sign off and reopening it | Master Brief |
 | `comment` | A comment, a reply, an edit to one, Resolve and Reopen, on a brief or a cut, agency only comments included | Master Brief, Content Review |
-| `checklist` | A brief check on a cut version ticked or unticked, a suggestion used included; in the agency log while the version is in Aspire QA | Content Review |
+| `checklist` | A brief check on a cut version ticked or unticked, a suggestion used included; in the agency log while the version is in Aspire QA, and in the client readable log once it is sent | Content Review |
 | `upload` | A new version of a cut, its link or file, and its notes, in the agency log while it is in Aspire QA; **Back to editor** (verb changed), in the agency log; **Send to {brand}** and **Send to {brand} as is** on a version (verb sent), where the client reads it (**1d**, **Content Review**, **Adding a cut**, **The status flow**) | Content Review |
 | `file` | A file added (by link, upload or drop), edited or removed, the upload and its deletion included; a scan's values log as `program` and `edit` (**Program files and the scan**) | Home |
 | `program` | Program details, products, team, steps and dates (a step ticked, added, removed or edited, and Move to next step), the weekly sync, the term, program terms, a round's dates, and starting a round (one entry for the round and its carried creators) | Home, and the tab where it was edited |
@@ -7394,7 +7422,7 @@ the write.
 marks, collapsed sections, the remembered round) is private to them, even from Claude, so logging
 it in shared data would publish it; it never logs. Nor do the log's own writes (entries,
 `lastAt`, leases), a decision writer's `lastAt`, an Editor's marker under `editors`, Claude's `sides/campaign`, a sign off's copy documents (the sign off
-logs once), `agency/edit-check`, `agency/tag-delivery`, a file's scan state (`agency/files`), the frame rate, size and length an Editor's player saves on a review version (**1d**, **Content Review**, **Frame rate**), a **Suggest ticks** answer, a nudge (its tag is the record), a write the rules refused (the field shows "Not saved"),
+logs once), `agency/edit-check`, `agency/tag-delivery`, a file's scan state (`agency/files`), the frame rate, size and length an Editor's player saves on a review version (**1d**, **Content Review**, **Frame rate**), a **Suggest ticks** answer, a write the rules refused (the field shows "Not saved"),
 or anything in **Preview as client**, which never writes. An **Export** writes nothing, so it
 never logs either.
 
@@ -7736,15 +7764,17 @@ pressing Approve" holds the way the fee approval does, and only that far:
   (**Pulling decisions**, **The cut calls**).
 - **Holds, on screen.** **Approve**, **Request changes** and **Undo approval** never render for an
   Editor or in **Preview as client**.
-- **Holds against a later change.** A call answers one send of one version. A new version starts
-  in QA and needs its own Approve, and **Send as is** ends a request for changes but never makes an
-  approval.
+- **Holds against a later change.** A call answers one send of one file of one version: it carries
+  the send and the file it was made on, so a new version (which starts in QA), a **Send as is** or
+  a file swapped on the version all leave it uncounted, and **Send as is** ends a request for
+  changes but never makes an approval.
 - **Doesn't hold: the page's owner.** The owner can write under any `cut-calls/{id}`. Claude never
   does, and the page never offers it. The client's own page catches it against their private
   `data/users/{id}/cut-calls` and shows "This isn't a call you made", found when they next open the
   page, not prevented.
 - **Doesn't hold until the pull: an account the CM hasn't confirmed.** A call counts on the page
-  as soon as it is made, from any account with no marker and not refused. An Editor Claude never
+  as soon as it is made, from any account with no marker and not refused, with "Aspire to confirm"
+  for the agency and step 7 held until it is confirmed. An Editor Claude never
   saw, who deleted their marker or never loaded the page, or someone at Aspire shared as
   Contributor, can make a cut read Approved until the next pull asks the CM about that account and
   the CM says no. Share the agency as Editor (**Who sees what**).
