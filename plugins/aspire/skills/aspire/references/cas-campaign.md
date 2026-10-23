@@ -6780,15 +6780,16 @@ can't read, so the client's side always reads as **What the client sees** says.
 **The numbers behind each line.** Under each line, in `text-xs text-muted-foreground`, the figures
 it rests on and its sample, from `leaders:` or `overBand:`: "{x} per sale against {y} for {next
 group} · {a} ads past the floor, {p} purchases" for a leader on cost per sale, "{h}% hook rate
-against {h2}% for {next group}" for one on hook rate, and "{x} per sale against a {t} target, over
+against {h2}% for {next group}" for one on hook rate, and "{x} per sale against a {target} target, over
 the {b} Watch band" for a group over the band ("{s} spent, {p} purchases" when it has too few to
 divide). A ghost Button, size sm, "See the numbers" opens **Compare** (`#performance/r{n}/breakdowns`).
 Since the agency's framework, hook and CTA groups are read live (**Compare**, **Groups**), a line
 about one whose figures now differ from the table's shows "The plan changed since the last update.
 This line updates at the next one." and can't be applied until then.
 
-Each line has a stable id, `{kind}-{action}-{group}` (`hook-keep-{lane}-h2`, `cta-lead-{product
-id}`, `framework-move-v3`, `concept-more-{lane}`, `creator-less-{net}-{handle}`), so a publish that
+Each line has a stable id, `{kind}-{action}-{group}`, a framework line's group being its slot and
+code so two frameworks moved off one slot never share one (`hook-keep-{lane}-h2`, `cta-lead-{product
+id}`, `framework-move-v3-pas`, `framework-keep-v1-pas`, `concept-more-{lane}`, `creator-less-{net}-{handle}`), so a publish that
 proposes it again keeps its call and wording, with the newest figures. The order is the table's,
 then concept order within a kind, so the section and the brief list lines the same way.
 
@@ -6835,7 +6836,7 @@ the reason in a line under it as well as its Tooltip, when:
 
 It opens a Dialog: title "Apply {k} changes to round {t}'s brief?"; per concept, the parts that
 change ("Concept 2: H1 type Demo first · V3 framework BAB") and the notes it adds; the lines that
-land as a note only, each with why ("{concept} isn't in round {t}'s brief", "H1 is already written
+land as a note only, each with why ("{concept} isn't in round {t}'s brief", "{concept} wasn't in round {n}", "H1 is already written
 in round {t}"); when round {t} has no brief yet, "Round {t}'s brief starts from round {m}'s signed
 off brief first, as Start from round {m} does."; the line "The brief as it is now is saved first,
 so you can bring it back from Versions. It stays a draft: nothing goes to {brand} until it's sent
@@ -6857,13 +6858,14 @@ for sign off."; and Cancel (outline) and Apply (default). On Apply, in this orde
 4. **Write the parts.** Each part in the table above, one stamp with `source` `manual` and the
    Editor as `by`, only when it differs from the current value. A hook or CTA that already has a
    line keeps it; the line lands as a note. A line about a concept that round {t}'s brief doesn't
-   have, or has removed or deferred, lands as a note too.
+   have, or has removed or deferred, lands as a note too, and so does a lead CTA line for a
+   concept that wasn't in round {n}, which has no C{w} to read a type from.
 5. **Write the changes.** One `change-r{n}-{id}` stamp per applied line, `{id}` the line's id,
    so lines from two results rounds that land on one brief never share a key,
    `{kind, text, figures, sample, from, lane, parts}`, `from` round {n} and `parts` the parts it
    wrote: the concept lines on `brief-rounds/r{t}`, every other line on `agency/brief-round-r{t}`.
    Then `applied-{id}:` `{round, at, by}` on `agency/changes-r{n}` per line, and for a concept line
-   the same on `changes/r{n}`.
+   `applied-{id}:` `{round, at}`, with no Editor id, on `changes/r{n}`.
 6. **Log it.** One agency entry, "Applied {k} changes from round {n}'s results to the round {t}
    brief". When concept lines were applied, one in the Editor's client readable log, "Added {c}
    changes from round {n}'s results to the round {t} brief", opening `#brief/r{t}/overview/changes`,
@@ -8019,7 +8021,7 @@ is no step field anywhere in page data; the Footage
 30. Ad Performance's **Changes for round {t}**: every line rests on a group in `leaders:` that
     passed **Enough to call a leader** or in `overBand:` that passed **Over the Watch band**, with its figures and
     sample under it, and a kind with no such group proposes nothing; a kept hook sets only H1's
-    type, never a hook or CTA's words, and no creator override is written; {t} skips a round whose
+    type, or H2's for a second leading hook in the concept, never a hook or CTA's words, and no creator override is written; {t} skips a round whose
     brief is with the client or signed off and says why; **Apply to round {t} brief** renders for
     the agency only, saves the brief first, refuses a brief that was sent or signed off while the
     Dialog was open and writes nothing then, starts an empty round {t} brief from the last signed
@@ -8759,8 +8761,9 @@ keeps**, Brief versions):
   compared against it (`creator-brief.md`, **A creator's revision**), and 1g sends it. It is
   never pruned.
 - **The original.** After each brief run, after an import that replaces the brief, and after a
-  round's brief is started from an earlier one, Claude or the page writes a version with `kind` original and `id` `original-v{version}` for the round's brief, each
-  concept, and each variant plan, holding what it just loaded, with `source` `claude` or `file`,
+  round's brief is started from an earlier one, Claude or the page writes a version with `kind` original and `id` `original-v{version}` for the round's brief (with
+  `agency/brief-round-r{round}` as `round-agency-r{round}`, so a reset takes an applied change's
+  agency notes back with its parts), each concept, and each variant plan, holding what it just loaded, with `source` `claude` or `file`,
   or `manual` for a start from an earlier round made on the page.
   The newest original is what **Reset to original** goes back to. Older originals stay, listed in
   **Versions**.
@@ -8810,7 +8813,7 @@ The data rules check a path against the person's share level, nothing more. They
 - The client writes under `client`, their own subtree of `comments`, `decisions`, `fees`, `cut-calls`, `signoffs` and
   `activity`, and their own state under `data/users`, and their own subtree of `tags-client` and of `tags-agency`,
   and nowhere else. A write to `edits`, `program`, `briefs`,
-  `brief-rounds`, `brief-events`, `decision-events`, `creators`, `scores`, `reviews`, `editors`, `sides` or `agency` from the client is refused, so no client can change a match score.
+  `brief-rounds`, `brief-events`, `decision-events`, `changes`, `creators`, `scores`, `reviews`, `editors`, `sides` or `agency` from the client is refused, so no client can change a match score.
 - Each person's own state under `data/users` is private to them, even from the page's owner and
   from Claude.
 - A comment can be changed only by the person who wrote it, or by an Editor.
