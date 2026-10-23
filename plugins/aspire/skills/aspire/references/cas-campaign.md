@@ -1794,7 +1794,7 @@ Sections, in order:
    Planned shows "Building starts {build start}." in place of the verdict. In market and Done
    show "{x} of {y} ad videos made this round." with no verdict.
    For a read only client, who can't read cuts, the pace area renders nothing in any state: no
-   verdict, why line, bar, count or "Pace shows here" line. The late step line still shows.
+   verdict, why line, bar or count. The late step line still shows.
    A link Button "Round steps" opens `#home/steps`.
 2. **Waiting on you** (`home-waiting`). Worked out for the person viewing, across every live
    round, each item naming its round. Each item: a title, one line of detail, when it has waited
@@ -2129,7 +2129,7 @@ rows.
      | Milestones | **First cut review**, **Variants due** and **Ads live**: the dates of the round's `first-cut` and `variants-due` steps and its launch date, from the newest of the round finding and `program/round-r{n}` (**Rounds**, **Round steps**), named as **Round steps** names them |
      | Steps | Each step's date in the round's `plan` and page data, an approval's from its gate finding, as **Round steps** shows them |
      | Cut delivered | The `addedAt:` (full UTC time) of each cut's first version, `reviews/cut-{cut}/versions/v1` or the lowest version there (**1e**). A later version is a new version, not a delivery |
-     | Approved | The activity log's entries for the cut's versions (**The activity log**: kind `decision`, verb approved, requested changes or undid, `asset` `cut-{cut}-v{version}`): a cut counts as approved from the `at` of an approval until the `at` of an undo or a request for changes (verb requested changes). Where the log has no entry for a cut, the `at` of its `client/cut-{cut}-v{version}` `status` stamp while that value is approved |
+     | Approved | The activity log's entries for the cut's versions (**The activity log**: kind `decision`, verb approved, requested changes or undid, `asset` `cut-{cut}-v{version}`): a cut counts as approved from the `at` of an approval until the `at` of an undo or a request for changes (verb requested changes) on that version, or the `addedAt:` of a newer version of the cut, which starts in Aspire QA (**Content Review**, **Statuses**). Where the log has no entry for a cut, the `at` of its `client/cut-{cut}-v{version}` `status` stamp while that value is approved |
      | Shipping | The creator's shipping record for the round, `shippedAt` and `deliveredAt` (the newer of the two sides' stamps, **Selected Creators**, **Creator records**), else the activity log's `status` entries for the creator in the round whose `to` is Shipped or Delivered (from either side, so a Mark shipped shows at once), else the roster's `shipDate` for Shipped; and the pickup visit date in `details`. A product kept from last round has no shipping event |
      | Spend and return | The week's figures Ad Performance records for the round, once it records them |
      | Reading the log | The activity log is read only while the section is open, and only the day documents (`days/{day}`) for days inside a round's build or in-market window, up to today,, read once and then kept current by the page's live updates (**Live updates**). Closing the section stops it |
@@ -2483,7 +2483,8 @@ the page keeps**, and where each comes from in **Loading the brief** below.
 - **A B-roll shot**: its number (B01, B02, …), what is filmed, and the beat it serves. A number is
   never reused in the round: removing B04 leaves B03 and B05, so a variant that names B05 still
   means the same shot.
-- **The variant plan** (agency only): V1 up to the package's variants per creator, at most 5. A
+- **The variant plan** (agency only): V1 up to the program terms' variants per creator
+  (**Selected Creators**, **Variants per creator**), at most 5. A
   variant has its number, framework, length, hook number, CTA number, VO, the B-roll shot
   numbers it uses, and a note.
 - **Frameworks**, per campaign (agency only), one per variant slot, each a code, a name and what
@@ -2668,8 +2669,8 @@ Tab in a list, and Enter on an empty list item work as in any editor, and each h
 #### The variant plan
 
 For the agency only, at the end of each concept under an "Agency only" rule, and never in the page
-itself (**Who sees what**): a Table of V1 to V{v}, {v} being the package's variants per creator, at
-most 5. Columns: Variant, Framework (a Select of the campaign's frameworks; it starts on the
+itself (**Who sees what**): a Table of V1 to V{v}, {v} being the program terms' variants per creator
+(**Selected Creators**, **Variants per creator**), at most 5. Columns: Variant, Framework (a Select of the campaign's frameworks; it starts on the
 framework for that slot), Length, Hook (a Select of the concept's hooks, "H1 Question"), CTA (a
 Select of its CTAs), VO (long text, opened below the row with the toolbar), B-roll (the shot
 numbers, picked from the concept's numbered list, shown "B02, B05, B09"), and Note. The Table keeps
@@ -4467,8 +4468,9 @@ to that hash opens the card expanded and scrolls to it.
     date, edited in place by the agency (Selects); the client reads both as labels once the fees
     are sent.
   - **Variants this round**: "{k} of {max} variants this round", {max} being {v}, and one slot per
-    variant V1 to V{v} with its newest version's status Badge and a link to `#review/r{n}/{cut}`,
-    or "Not cut yet", as Content Review names an empty slot. A creator at {max} shows no way to plan or add another variant for the round.
+    variant V1 to V{v} with its newest version's status Badge and a link to `#review/r{n}/{cut}`
+    (for the client, to `#review/r{n}/{net}-{handle}` while no version of the cut was sent, since
+    it doesn't open for them), or "Not cut yet", as Content Review names an empty slot. A creator at {max} shows no way to plan or add another variant for the round.
     Each slot holds a place for the cut's player, filled when cuts play on the card.
   - For the agency only, under a dashed rule headed "Agency only": the offer (open, target, max),
     counters and agreed, the round's rate per deliverable (UGC video, Reel collab, 90 day usage),
@@ -4921,8 +4923,12 @@ request for changes, ends an approval, so Approved and Changes requested can't b
 - **A new version starts in QA.** Adding version 2 to a cut that had changes requested moves the
   cut back to With Aspire QA until version 2 is sent.
 - **A cut waits on the client** when its status is Needs client review. **Waiting on you**,
-  **Needs attention**, the tab's count badge and Selected Creators' "{n} variants waiting on
-  {brand}" all count that, and only that.
+  **Needs attention** and Selected Creators' "{n} variants waiting on {brand}" count that, and
+  only that.
+- **A cut waits on the viewer** when it waits on their side: for the client, Needs client
+  review; for the agency, With Aspire QA or Changes requested. The tab's count badge (**Header and
+  tabs**) counts those cuts in the round in view, and the creator tabs open on the first creator
+  with one.
 - **Sending and the calls** are the review panel's status flow (**The review panel**): **Send to
   {brand}** writes `sentAt:` and `sentBy:` on the version, and the client's Approve, Request
   changes and Undo approval write their stamp. This tab only reads them.
@@ -4949,8 +4955,8 @@ Inside the section, top to bottom:
    cut by its newest version. Approved's {y} is the creators on Selected Creators times {v}, and
    {a} and {x} count only their cuts in slots V1 to V{v}, so the tile never passes {y}: a "Not
    under contract" creator's cuts and a cut "Past the plan" are left out of it, as they are of
-   Selected Creators' **Round totals**. So the tile always equals **Variants delivered** and
-   **Variants approved** there. **Where we stand** plans with every approved creator whose fee
+   Selected Creators' **Round totals**. So the tile equals **Variants delivered** and **Variants
+   approved** there, except that **Variants delivered** still counts a cut "Past the plan". **Where we stand** plans with every approved creator whose fee
    isn't declined, agreed or not, so its {y} can be higher until every fee is agreed. A tile is a button
    that sets the filter below to its status (`aria-pressed` true while it is on); pressing it
    again goes back to All.
@@ -4964,8 +4970,8 @@ Inside the section, top to bottom:
    above. The trigger carries `aria-label` "@{handle}: V1 approved, V2 needs client review, V3
    not cut yet", and its Tooltip says the same, so no status reads by color alone. On phone the
    list scrolls sideways with the selected creator in view. The tab opens on the creator in the
-   hash (`#review/r{n}/{net}-{handle}`), else the first with a cut waiting on the viewer, else the
-   first. Under the list, for the selected creator: their concept chip (**Concept colors**), the
+   hash (`#review/r{n}/{net}-{handle}`), else the first with a cut waiting on the viewer
+   (**Statuses**), else the first. Under the list, for the selected creator: their concept chip (**Concept colors**), the
    persona, "{k} of {v} cut · {a} approved", and a link Button "Open card" to
    `#creators/r{n}/{net}-{handle}`.
 4. **Variant rows**, one per slot, V1 to V{v}. From 640px a Table, and on phone a stack of Cards,
@@ -5030,10 +5036,22 @@ Selection**, **The creator viewer**, **Videos aren't stored today**).
 
 Add writes `reviews/cut-{cut}` (`creator:`, `round:`, `lane:` the creator's concept now,
 `variant:`, `title`), then `reviews/cut-{cut}/versions/v1` (**1e**, Review versions), and
-`plan-v1` in `agency/cut-{cut}` (**Concept and variant plan**), and logs one `upload` entry
-(**1e**, **The activity log**). The cut shows at once in every open view as With Aspire QA, and
+`plan-v1` in `agency/cut-{cut}` (**Concept and variant plan**), and logs one `upload` entry in
+the agency log (**1e**, **The activity log**), since the client can't open a version in QA. **Send
+to {brand}** logs the version again, `upload` with verb `sent`, where the client reads it, so the
+client's **Inbox** gets one New item for it, opening the version, when it is theirs to review. The cut shows at once in every open view as With Aspire QA, and
 the creator's step on Selected Creators, Home's pace and the calendar's delivery follow it.
 Adding version 2 and later is the review panel's (**The review panel**).
+
+**Writing it safely.** The upload goes first. Then the page takes a short lease on
+`reviews/cut-{cut}` and reads it, as **1e**, **Every editable value**, **Creating a document**
+says: when the cut already has a version (another Editor added it a moment ago), it writes
+nothing, deletes the upload it just made, and the Dialog says "{name} added V{n} a moment ago."
+over the queue's new row. Otherwise it writes the version before the cut's own fields, so a cut
+is never left without one. A slot whose `reviews/cut-{cut}` has no version reads as empty,
+"Not cut yet", with **Add cut**, which writes over it. Cancel during an upload stops it, and an
+upload that finished but whose writes failed is deleted, so no stray file holds the page's
+storage. A refused write keeps the Dialog open with "Not saved" and "Try again".
 
 **When a cut won't upload,** the Dialog stays open, keeps the title and notes, writes nothing,
 and says why under the file input with an error Badge "Not added":
@@ -5789,7 +5807,7 @@ card titles, `text-xl` for section titles, `text-2xl` for the page title. Weight
 
 | Variant | Status labels |
 | ------- | ------------- |
-| soft | New, Not started, Not received, Edited by {name}, Synced from Atlas, Sheet, Claude, From {file label}, Not sent, Not due, Not in yet, Good, Possible, Not scored yet, Too few decisions to judge yet, Not recorded yet, Resolved, Agency only, Awaiting decision, Unreviewed, Unpriced, Not sent yet, not asked yet, not shipped, Planned, Done, Returning, Up next, Paused, Not done, round closed, Scanned, Not read, Draft, Needs work, New concept, Carried forward, Deferred, With Aspire QA, Not cut yet, Not under contract |
+| soft | New, Not started, Not received, Edited by {name}, Synced from Atlas, Sheet, Claude, From {file label}, Not sent, Not due, Good, Possible, Not scored yet, Too few decisions to judge yet, Not recorded yet, Resolved, Agency only, Awaiting decision, Unreviewed, Unpriced, Not sent yet, not asked yet, not shipped, Planned, Done, Returning, Up next, Paused, Not done, round closed, Scanned, Not read, Draft, Needs work, New concept, Carried forward, Deferred, With Aspire QA, Not cut yet, Not under contract |
 | processing | Needs client review, Sent, Invoice sent, 50% paid, Offer sent, Details received, Shipped, Brief sent, in negotiation, In production, Now, Coming soon, Scanning, In review with client, Waiting for your sign off, Signed off, Aspire to confirm |
 | success | Signed, Paid in full, Confirmed, Kept last round's product, Fees approved, Strong, Holding up, Picked, Priority Yes, Yes, Approved, Agreed, Delivered, Brief accepted, Granted, In market, Ahead, On track, Met the target, Active, Updated {n}, Signed off |
 | warning | details to add, On hold, Not confirmed for round {n}, More than planned, Fees changed since you approved, This isn't an approval you made, Weak, Partly matching, Past competitor deal, Paid partnership: {competitor}, Changes requested, This isn't a sign off you made, This isn't a decision you made, Not counted, Over budget, Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending, waiting for your approval, Running behind, Launch at risk, over target, days late, Waiting on you, Out of stock, Still needed, Needs a concept, Not in products in scope, Removed, Used in round {r}, Broken, Plan broken, Override, Cut for {concept}, Plan changed since this cut, Past the plan |
@@ -6039,7 +6057,8 @@ is no step field anywhere in page data; the Footage
     program terms' variants per creator, so an edit on Home changes them; each cut's status is
     its newest version's by the rules in **Statuses**, read in order, and the tiles' counts, the
     filter's counts and the dots agree, with Approved's {a}, {x} and {y} equal to Selected
-    Creators' **Variants approved** and **Variants delivered** and never past {y}; every dot's status is in its trigger's label; a tile or a filter
+    Creators' **Variants approved** and **Variants delivered** while no cut is "Past the plan", and
+    never past {y}; every dot's status is in its trigger's label; a tile or a filter
     narrows the tabs and rows and hides empty slots; Hook + CTA and Framework never render for the
     client or in **Preview as client**, the export included; a cut with no version sent reads
     "Aspire is checking this cut" for the client and doesn't open; **Add cut** refuses a file over
@@ -6539,7 +6558,7 @@ History shows them on the client's side, because nothing in the data says who wa
 | `brief` | Any part of a concept's brief; the variant build; sending the brief for sign off and reopening it | Master Brief |
 | `comment` | A comment, a reply, an edit to one, Resolve and Reopen, on a brief or a cut, agency only comments included | Master Brief, Content Review |
 | `checklist` | A review checklist item ticked or unticked | Content Review |
-| `upload` | A new version of a cut, its link or file, and its notes | Content Review |
+| `upload` | A new version of a cut, its link or file, and its notes, in the agency log while it is in Aspire QA; **Send to {brand}** on a version (verb sent), where the client reads it (**1d**, **Content Review**, **Adding a cut**) | Content Review |
 | `file` | A file added (by link, upload or drop), edited or removed, the upload and its deletion included; a scan's values log as `program` and `edit` (**Program files and the scan**) | Home |
 | `program` | Program details, products, team, steps and dates (a step ticked, added, removed or edited, and Move to next step), the weekly sync, the term, program terms, a round's dates, and starting a round (one entry for the round and its carried creators) | Home, and the tab where it was edited |
 | `edit` | Any other edited value: a creator's profile (an address edit logs only `shipArea`'s city in the client readable log, and the rest in the agency log), the round's contract, payment, ship to and footage, concept, persona and product, a cut's title, the budget total, a match score weight; **Apply tuned score** and **Back to default**, one entry each in the agency log and one "Updated the match scores" in the client readable log when a client score changed, which names no weight or figure | Where it was edited |
