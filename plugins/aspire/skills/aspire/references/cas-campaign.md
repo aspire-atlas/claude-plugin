@@ -197,10 +197,10 @@ decisions** through the supersede rule, or the CM saying it in the chat.
 
 `match` is optional: the match score's weights (**1d**, **Creator Selection**, **The match
 score**), one per factor, and in `tuned` when and by whom each factor's weight was last set. Without it, or for a factor
-it leaves out, the defaults there stand. `basis` is optional: what the last tuning saved from the
-page learned from, `{decisions, agreement, at}`, the number of client decisions and the agreement
-score before and after, so the page's **About this data** and discovery's and vetting's pages can say
-"tuned {date} from {n} client decisions". It reaches the record from **Match score tuning** on the
+it leaves out, the defaults there stand. `basis` is optional: what the last tuning
+saved from the page learned from, `{decisions, agreement, at}`, the number of client decisions and
+the agreement on Aspire's score before and after, so the page's **About this data** and
+discovery's and vetting's pages can say "tuned {date} from {n} client decisions". It reaches the record from **Match score tuning** on the
 page, offered in its own picker by **Pulling decisions** and written through the supersede rule, or
 from the CM saying it in the chat. It belongs to this campaign only, never to the brand as a whole. Discovery and vetting read it in creator-ads mode, so they score with the same weights.
 
@@ -285,7 +285,7 @@ record type the newest finding per identity wins, by `detail.recordedAt`.
 | ---------- | -------- | ------ | ---- | ----------- |
 | `gate` | gate + round (Gate 4b: gate + round + the creator) | The brand's own account on its first linked network | `action_item` `high` while planned, open or slipped; `went_well` when cleared | `gate` (1, 2, 3, 4, `4b`), `status` (planned, open, cleared, slipped), `plannedAt`, `sentAt`, `dueAt`, `clearedAt`, `clearedBy`, `daysSlipped`, `reminderTask` (the task name). Gate 1 adds `source` (where the concepts were read from). Gate 4 adds `signoff` `{signer, name, at, item, via, recordedBy}` (the signer's viewer id, their name, when, the `signoffs` item, `page` or `chat`, and for `chat` the CM who recorded it), `reopenedAt` and `reopenReason`. Gate 4b adds `handle` and `network` |
 | `round` | round | The brand's account | `action_item` `medium` while planned, in production or in market; `went_well` when done | `round`, `label`, `month`, `build` `{start, end}`, `inMarket` `{start, end}`, `launchDate`, `state` (planned, in production, in market, done), `steps` (`{"1": {plannedAt, dueAt}, …}` for steps 1 to 4), `plan` (every step of the round, the four approvals included, **Round steps** below), `closedAt` (set when the CM closes the round early), `startedFrom` (the round it was started from, empty for the first), `creators` (`new`, `same`, or `same-and-new`: how the round was started) |
-| `roster` | the creator's account + round | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while a candidate; `went_well` approved; `needs_improvement` rejected | `handle`, `network`, `name`, `descriptor`, `location` (the last three only when edited on the page), `lane`, `persona` (the persona's name in the round's brief, **1d**, **Creator Selection**, **Concept and persona**), `slate` (candidate, approved, maybe, rejected), `priority` (true for a Priority Yes), `clientReason` (the reason on a surprise Priority Yes or Yes), `rejectReason`, `clientQuestion`, `pickNote` (why we picked them), `rate` (offered, countered, agreed, declined), `offer` `{open, target, max}`, `counter`, `agreed`, `deliverables`, `usage`, `exclusivity`, `termNotes`, `contact` `{email, manager}`, `tier`, `decidedBy` (`{writer, name, at, score}`: the page account whose call was recorded, their name, when, and the match score they saw), `surprise` (`{kind, reason, text, at}`: the client's surprise reason on that call, `kind` `pass` or `pick`, **1d**, **Creator Selection**, **Deciding**), `lastContactAt`, `waitingOn` (client, agency, creator), `yourCall` (the question to the client, while one is open), `adPermissions` (granted, pending), `details` `{status, address, pickup, visitDate, product, options, availability}`, `shipping` `{status, carrier, tracking}`, `briefState` (sent, accepted, changed, approved, locked), `shipDate`, `vetting` (the four figures and the recommendation), `returning` (true when carried from an earlier round), `fromRound` (the round it was carried from), `source` (chat, reply, page, or carried) |
+| `roster` | the creator's account + round | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while a candidate; `went_well` approved; `needs_improvement` rejected | `handle`, `network`, `name`, `descriptor`, `location` (the last three only when edited on the page), `lane`, `persona` (the persona's name in the round's brief, **1d**, **Creator Selection**, **Concept and persona**), `slate` (candidate, approved, maybe, rejected), `priority` (true for a Priority Yes), `clientReason` (the reason on a Priority Yes or Yes against the recommendation), `rejectReason`, `clientQuestion`, `pickNote` (why we picked them), `rate` (offered, countered, agreed, declined), `offer` `{open, target, max}`, `counter`, `agreed`, `deliverables`, `usage`, `exclusivity`, `termNotes`, `contact` `{email, manager}`, `tier`, `decidedBy` (`{writer, name, at, score}`: the page account whose call was recorded, their name, when, and the match score they saw), `surprise` (`{kind, reason, text, at}`: the client's surprise reason on that call, `kind` `pass` or `pick`, **1d**, **Creator Selection**, **Deciding**), `lastContactAt`, `waitingOn` (client, agency, creator), `yourCall` (the question to the client, while one is open), `adPermissions` (granted, pending), `details` `{status, address, pickup, visitDate, product, options, availability}`, `shipping` `{status, carrier, tracking}`, `briefState` (sent, accepted, changed, approved, locked), `shipDate`, `vetting` (the four figures and the recommendation), `returning` (true when carried from an earlier round), `fromRound` (the round it was carried from), `source` (chat, reply, page, or carried) |
 | `draft` | the creator + the template | The creator's account | `action_item` `low` while not sent; `went_well` once sent | `handle`, `template` (offer, counter, accept, chase, details, brief, brief-notes), `subject`, `body`, `sentAt` |
 | `reply` | one per exchange, never replaced | The creator's account | `went_well` `low` | `handle`, `receivedAt`, `summary` (one plain line), `record` (what it wrote to the roster), `nextMove` |
 | `brief` | lane + round | The brand's account | `action_item` `medium` while a draft; `went_well` when locked | `lane`, `locked`, `briefPage`, `version`, `edits` (the edits pulled from the page, one plain line each: the part, from, to, and who), `added` (true for a concept added on the page), `removed` (true for a concept taken out of this round's brief), `deferred` (true for a concept deferred to the next round), `carriedForward` (the round a deferred concept came from), `importedFrom` (`{label, url, kind}` of the document an import read), `startedFrom` (the round whose signed off brief it started from), `reopened` (`{reason, name, at}` when the agency reopened a signed off brief) |
@@ -787,8 +787,7 @@ on the fees"), and offered as the next step whenever a step is open.
    `source` `page`, then republishes the page so Home's lists catch up.
 
 A No with no reason is recorded as rejected, and the picker says "no reason given" next to it.
-A call with a surprise reason (**1d**, **Creator Selection**, **Deciding**, **A surprise asks
-why**) names it in the client's words: "No @d (Why pass: Too expensive; rejected)", "Yes @e (What
+A surprise reason picked or changed after its call was recorded (its `surprise.at` newer than the last pull, the call itself unchanged) is named as an update, "Why pass added for @a by {name}: Not our look", and writes `surprise` on a new roster finding for that creator and round with the rest of the batch. A call with a surprise reason (**1d**, **Creator Selection**, **Deciding**, **A surprise asks why**) names it in the client's words: "No @d (Why pass: Too expensive; rejected)", "Yes @e (What
 made them a yes: Love their content)", and the roster finding gets it as `surprise`.
 A creator still Unreviewed is named as waiting. Nothing on the page reaches Atlas without this
 picker.
@@ -977,7 +976,7 @@ the client's calls, each named with who made it. The `send-` and `reopen-` stamp
   `agency/pull`, the pull offers them after the batch picker, in one picker of their own:
   "Save the tuned match score for {campaign}? {name} applied it on the page {time}, from {n}
   client decisions: Performance 0.30 to 0.26, Brief fit 0.25 to 0.33, the rest unchanged.
-  Agreement on those decisions went from {b}% to {c}%. Discovery and vetting for {campaign} then
+  Agreement on Aspire's score for those decisions went from {b}% to {c}%. Discovery and vetting for {campaign} then
   score with it." (from `stats:` on `agency/match-score`; a reset reads "Go back to the default match
   score for {campaign}? {name} set it back on the page {time}."), with "Save it (Recommended)" and
   "Keep it on the page only". **Save it** writes `match` in `campaign:{slug}-cas` through the
@@ -3333,13 +3332,14 @@ foot of the card.
   the client picked and are never compared with, or shown beside, an expected cost on any view the
   client reads.
 
-  It is a prompt, not a gate. It opens where "What made the call?" would: a `role="group"`
+  It is a prompt, not a gate, and the decider can change it later: the row's and the card's call
+  line shows the surprise reason with a link Button "Change", which opens the prompt again. It opens where "What made the call?" would: a `role="group"`
   labelled with its question, in a Card under the control (`rounded-xl border bg-card p-4`), the
   question in `text-sm font-medium`, then one outline Button size sm per reason, and a ghost icon
-  Button with the Lucide `x` icon labelled "Dismiss". One tap on a reason saves it; Other opens an
-  Input (up to 140 characters) with a Button "Save". Dismissing, deciding on another creator,
+  Button with the Lucide `x` icon labelled "No reason", as the viewer's reason line has. One tap on a reason saves it; Other opens an
+  Input (up to 140 characters) with a Button "Save". Closing it, deciding on another creator,
   leaving the page or doing nothing leaves the call saved as it is, with no reason, and the
-  prompt never comes back for that call. In the creator viewer it is carried to the next creator
+  prompt doesn't open again on its own for that call. In the creator viewer it is carried to the next creator
   as one line, as "What made the call?" is (**The creator viewer**, **Deciding in the viewer**).
   A call changed again drops its surprise reason, and asks again only when the new call is a
   surprise too.
@@ -3462,7 +3462,7 @@ from 768px, and in the peeked sheet under 768px.
   size. Picking one saves it to that earlier call as **Deciding** says; the line goes when a reason
   is picked, when it is closed, or when the next decision is made. A surprise (**Deciding**, **A
   surprise asks why**) carries the same way, as "Why pass on @{handle}?" or "What made @{handle} a
-  yes?" with its six reasons and "Dismiss", and never holds back Auto advance.
+  yes?" with its six reasons and the "No reason" Button, and never holds back Auto advance.
 - **Skip** (outline Button size sm) moves to the next creator in the viewer who reads Unreviewed,
   leaving this one as it is; a skipped creator comes round again after the last. **Next** (ghost
   Button size sm, Lucide `chevron-right`) moves to the next creator in order, decided or not.
@@ -4021,8 +4021,7 @@ font-semibold`, separated by a Separator:
      above passes". In `text-2xl font-semibold`, with its verdict Badge: success "Holding up" at
      75% and up, warning "Partly matching" at 60% and up, error "Choosing differently" under 60%.
      One plain line under it: "When {brand} picked one creator and passed on another, our score
-     ranked the pick higher {x}% of the time." With fewer than 3 picks or 3 passes in every round,
-     it reads "Too few decisions to judge yet: {p} picks and {q} passes" with a soft Badge, and the
+     ranked the pick higher {x}% of the time." Unless at least one round in view has 3 or more picks and 3 or more passes, it reads "Too few decisions to judge yet: {p} picks and {q} passes" with a soft Badge, and the
      verdict, **Retune** and the patterns wait.
 2. **Surprises.** Every counted pass on a score of 75 or more and every counted pick on a score
    under 60, newest first, as List rows: the Avatar and handle (a link to the row), the round, the call's Badge, "{brand} saw {n}" with its band Badge,
@@ -4062,15 +4061,14 @@ font-semibold`, separated by a Separator:
 5. **Retune.** A Table of the five factors, one row each: the factor, the weight in use with
    "default" or "tuned {date}" under it, the suggested weight, and the change ("+0.06", "−0.03",
    or "no change"). Under it, three agreement figures on the decided creators, each worked out
-   with the agency's score: "With today's weights {b}%", "With the suggested weights {c}%", and
+   with the agency's score: labelled "Agreement on Aspire's score": "With today's weights {b}%", "With the suggested weights {c}%", each over pairs in the same round as the Agreement score is, and
    "These are the same decisions the suggestion learned from, so the second figure flatters it."
    Then two Buttons for an Editor: **Apply tuned score** (default size sm) and **Back to default**
    (outline size sm). Apply is disabled while the suggestion equals the weights in use, or while
    the agreement score reads "Too few decisions to judge yet"; Back to default is disabled while
    every weight is the default.
 
-**How the suggestion is worked out.** On the Editor's page, from the decided creators in the
-rounds in view, every time a counted call arrives:
+**How the suggestion is worked out.** On the Editor's page, from the decided creators in every round, whatever the **Round switcher** shows, since **Apply tuned score** re-scores every round that isn't Done; the Retune block says "Learned from {n} decisions across {r} rounds". It is worked out again every time a counted call arrives:
 
 1. For each factor, the **gap**: the average value (0 to 1) of the picks less the average of the
    passes, from the agency's stored `exact` values. A creator the factor left out is left out of
@@ -4082,8 +4080,7 @@ rounds in view, every time a counted call arrives:
    way; at 5, a fifth of the way.
 4. **Capped**: each weight moves at most 0.08 from the weight in use now, up or down.
 5. **Floored**: no weight goes under 0.03, so no factor is ever dropped.
-6. **Normalised**: the five are scaled to add up to 1, then shown to two decimals and kept to
-   three.
+6. **Normalised within the limits**: the five are scaled to add up to 1. Any weight that then sits more than 0.08 from the weight in use, or under 0.03, is set to that limit and held, and the others are scaled again to fill the difference, repeated until none breaks a limit (at most five passes, since each holds one more weight). The weights in use always meet the limits, so there is always an answer. They are shown to two decimals and kept to three.
 
 The suggestion is worked out again on every view, so it follows new calls; it is saved only when an
 Editor applies it.
@@ -4099,15 +4096,14 @@ weights it resets. On **Apply** the page, in this order:
    as the default;
 2. writes `stats:` on the same document: `{action, at, by, byName, decisions, before, after,
    agreement}`, `action` `tuned` or `default`, `decisions` the number decided, `before` and `after`
-   the five weights, and `agreement` the agreement score before and after on the agency's score;
+   the five weights, and `agreement` the agreement on Aspire's score before and after;
 3. re-scores every creator in every round that isn't Done and writes the results, as **The match
    score**, **Where it is computed**, says for a weight change, so the Table, the cards, the viewer,
    the sort and the client's open views all move within seconds on the live stream. A weight
    change moves no factor value, so no level or Watch line changes;
 4. logs one `edit` entry in its agency log, "Applied the tuned match score from {n} decisions:
    Brief fit 0.25 to 0.31, Paid history 0.15 to 0.12" or "Set the match score back to the default
-   weights", and one entry in its client readable log, "Updated the match scores", which names no
-   weight, factor or number (**1e**, **The activity log**).
+   weights", and, only when at least one `scores` document changed, one entry in its client readable log, "Updated the match scores", which names no weight, factor or number (**1e**, **The activity log**). A retune that moves only Budget vs target changes no client score once the client's four are scaled to 1, so it writes no client entry and tells the client nothing.
 
 While it runs, both Buttons are disabled and show "Applying"; a refused write shows "Not saved" and
 leaves the weights as they were. Two Editors applying at once follow the re-score's own rule: the
@@ -4855,7 +4851,7 @@ card titles, `text-xl` for section titles, `text-2xl` for the page title. Weight
 
 | Variant | Status labels |
 | ------- | ------------- |
-| soft | Good, Possible, Not scored yet, Too few decisions to judge yet, None decided, Not recorded yet, Resolved, Agency only, Awaiting decision, Unreviewed, Unpriced, Not sent yet, not asked yet, not shipped, Planned, Done, Returning, Up next, Paused, Not done, round closed, Scanned, Not read, Draft, Needs work, New concept, Carried forward, Deferred |
+| soft | Good, Possible, Not scored yet, Too few decisions to judge yet, Not recorded yet, Resolved, Agency only, Awaiting decision, Unreviewed, Unpriced, Not sent yet, not asked yet, not shipped, Planned, Done, Returning, Up next, Paused, Not done, round closed, Scanned, Not read, Draft, Needs work, New concept, Carried forward, Deferred |
 | processing | Offer sent, Details received, Shipped, Brief sent, in negotiation, In production, Now, Coming soon, Scanning, In review with client, Waiting for your sign off, Signed off, Aspire to confirm |
 | success | Strong, Holding up, Picked, Priority Yes, Yes, Approved, Agreed, Delivered, Brief accepted, Granted, In market, Ahead, On track, Met the target, Active, Updated {n}, Signed off |
 | warning | Weak, Partly matching, Past competitor deal, Paid partnership: {competitor}, Changes requested, This isn't a sign off you made, This isn't a decision you made, Not counted, Over budget, Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending, waiting for your approval, Running behind, Launch at risk, over target, days late, Waiting on you, Out of stock, Still needed, Needs a concept, Not in products in scope, Removed, Used in round {r} |
@@ -5056,8 +5052,7 @@ prefixes.
     by 375 phone held sideways the post still shows above the peeked sheet; an edited note's **Show history** lists its earlier text; and Back closes the
     viewer on the list where it was.
 20. Match score tuning: the section renders for an Editor only, never for a Contributor, a
-    Viewer or in **Preview as client**, and the page itself holds none of its words, figures or
-    weights; a client's No on a creator their ring shows at 75 or more asks "Why pass?", and a
+    Viewer or in **Preview as client**, and the page itself holds none of its figures or weights; a client's No on a creator their ring shows at 75 or more asks "Why pass?", and a
     Priority Yes or Yes under 60 asks "What made them a yes?", each once, dismissible, with the call
     already saved before it shows; Maybe and an unscored creator never ask; the surprise reason
     saves on the client's own call with `at`, and a changed call drops it; the agreement figures,
@@ -5065,7 +5060,7 @@ prefixes.
     by the score at decision time; Did it sell doesn't render before a round has ad results; the
     suggestion moves no weight more than 0.08 or under 0.03 and adds up to 1; **Apply tuned score**
     and **Back to default** write the five stamps and `stats:`, re-score every creator in every
-    round that isn't Done for both sides, log one agency entry and one "Updated the match scores"
+    round that isn't Done for both sides, log one agency entry and, only when a client score changed, one "Updated the match scores"
     entry, and write nothing to Atlas; and the cards, Table and sort follow the new scores.
 
 ## 1e. Page data: what the page keeps and how it is read back
@@ -5553,7 +5548,7 @@ History shows them on the client's side, because nothing in the data says who wa
 | `upload` | A new version of a cut, its link or file, and its notes | Content Review |
 | `file` | A file added (by link, upload or drop), edited or removed, the upload and its deletion included; a scan's values log as `program` and `edit` (**Program files and the scan**) | Home |
 | `program` | Program details, products, team, steps and dates (a step ticked, added, removed or edited, and Move to next step), the weekly sync, the term, program terms, a round's dates, and starting a round (one entry for the round and its carried creators) | Home, and the tab where it was edited |
-| `edit` | Any other edited value: a creator's profile, concept, persona and product, a cut's title, the budget total, a match score weight; **Apply tuned score** and **Back to default**, one entry each in the agency log and one "Updated the match scores" in the client readable log, which names no weight or figure | Where it was edited |
+| `edit` | Any other edited value: a creator's profile, concept, persona and product, a cut's title, the budget total, a match score weight; **Apply tuned score** and **Back to default**, one entry each in the agency log and one "Updated the match scores" in the client readable log when a client score changed, which names no weight or figure | Where it was edited |
 | `record` | Claude's writes: a republish's changes (one entry per record changed, naming the parts in plain words), a pull recorded in Atlas, the attention list, the design notes | The tab that shows the record |
 
 **Where an entry goes.** By what the write touched and the writer's role (**Who sees what**),
@@ -5996,10 +5991,7 @@ document. Steps 3 and 4 run after every publish.
    page on purpose and are not in `agency`, **Who sees what**, **Contact details**), the first words of each agency note and
    agency only comment, the budget total, the target rate, each creator's expected cost, and each offer, counter, rate and cost
    that the page may not show. Do the same for every `scores` document, which must hold no price,
-   ratio, weight or agency score. Search the page itself for the tuning panel too: the words
-   "Match score tuning", "Apply tuned score", "Back to default", "What {brand} seems to value" and
-   "Did it sell", and each weight in use and in `stats:` written as it shows ("0.31"): none may
-   appear. Read one writer's `decisions/{id}/items` at `interact` and check that a call holds only
+   ratio, weight or agency score. Search the page itself for the tuning panel's values too: each weight in use and in `stats:` as it shows ("0.31"), the agreement scores in `stats:`, and the suggested weights: none may appear. The panel's labels are in the page's code, as every agency only section's are; its values never are. Read one writer's `decisions/{id}/items` at `interact` and check that a call holds only
    the fields **What the page keeps** lists for it, so a surprise reason never carries a score
    from `agency`. An amount the page shows the client in its own right (an agreed fee once the fees are
    sent) is left out of the search even when an offer or counter had the same number. None of the
