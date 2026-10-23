@@ -6,6 +6,33 @@ The version lives in exactly one place: `plugins[].version` in `.claude-plugin/m
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-10-23
+
+Major release. Adds the Claude Code mod, which `SECURITY.md` describes, and rebuilds the CAS campaign page into six tabs with client and agency roles. Also adds an organization dashboard, a shops agent, the Atlas Starter Guide, and partnership content.
+
+### Added
+- CAS campaign page rebuilt into six tabs: Home, Master Brief, Creator Selection, Selected Creators, Content Review, and Ad Performance. Agency (Editor) and client (Contributor) roles apply on every tab: the client sees only what is theirs to read or decide, and agency only details such as creator contacts, addresses, rates, and budget never reach them. A Preview as client switch shows the agency the client's view.
+- Rounds on the CAS campaign: a round switcher, each round's own brief, creators, files, and results, and the next round's brief started from the last one with what won written in.
+- Comments and sign off on the CAS page: comments and replies on the brief and on cuts, a real send for sign off, the client's sign off or request for changes, fee approval, and creator decisions with reasons, each kept under the person who made it. Every edit shows who made it and when, and an inbox, tagging, and a searchable history track it all.
+- Cut review on Content Review: a queue per creator and variant, a player with comments at a timecode and drawings on the frame, versions side by side, a review status flow from Aspire QA to the client's approval, and a check of each cut against the brief.
+- Home's simple and full views (where the round stands, what's waiting on whom, the pacing calendar, program terms, products, team, and program files), the Master Brief imported from a Google Doc, Creator Selection with a match score and its reasons, Selected Creators with an eight step tracker and creator records for contract, payment, shipping, and footage, and Ad Performance with cost per sale against target read from the brand's own ad account. Every tab exports to Excel or CSV.
+- Claude Code mod: a progress bar and band above the prompt, a panel of the session's agents with Atlas credits, a prompt coach card, an Artifact card, and the Aspire mark on the Atlas rows and sites Claude Code draws. It is display only: inert until an Aspire event, it makes no network, file, or process calls and changes no tool call, result, prompt, or agent.
+- `atlas-org-dashboard` agent: the live page a bare `/aspire:aspire` opens on a configured organization, with profiles and channels, credits, setup, recent posts, every program and campaign, goals, and the one next step.
+- `atlas-shops` agent: a plan for setting up and running an Instagram Shop, a TikTok Shop, or both. It writes nothing to any shop or store.
+- Atlas Starter Guide: `/aspire getting started` and `/aspire help` publish the guide without starting onboarding, and an organization that hasn't finished onboarding gets a private first-run page.
+- Partnership content: `search_partnership_content` and the partnership filter on post searches, for a brand whose Meta Business and Instagram are linked on the same profile.
+- Creator ad campaign lanes are filled first from Meta's ad performance rankings, and the ad reuse hook score uses measured watch time where Atlas holds it.
+
+### Changed
+- `/aspire` runs every Atlas agent in a background subagent, so you can start another while one works.
+- Every page, deck, and card carries the animated Aspire Atlas mark and one source line.
+- Follow up questions and missing details always come as a multiple-choice question with suggestions, and the prompt coach runs on its own when an ask is missing key inputs.
+- `SECURITY.md` and the plugin README describe what the CAS page stores and who can see it, and the README covers the Meta Ads client ID step for Claude on the web and Cowork.
+
+### Known limits
+- A client approver outside the organization that publishes the CAS page can read the page but can't save decisions on it. The campaign manager records their creator decisions, fee approvals, and brief sign off from the chat, marked as recorded by them. Cut approvals can't be recorded that way.
+- Creator videos in the CAS creator viewer show their image with "Play on Instagram" or "Play on TikTok", because playing them on the page would need the plugin to download them.
+
 ## [3.3.0] - 2026-10-09
 
 Minor release. Adds the influencer program flows, a campaign orchestrator, and an optional Meta Ads connector, and fixes findings from an audit of the agents.
@@ -142,7 +169,8 @@ First public release. Versioning restarts at 1.0.0; earlier 0.x builds were inte
 - Two release channels: `aspire-atlas` (official, pinned) and `aspire-atlas-beta` (tracks `develop`).
 - Apache-2.0 license.
 
-[Unreleased]: https://github.com/aspire-atlas/claude-plugin/compare/v3.3.0...HEAD
+[Unreleased]: https://github.com/aspire-atlas/claude-plugin/compare/v4.0.0...HEAD
+[4.0.0]: https://github.com/aspire-atlas/claude-plugin/compare/v3.3.0...v4.0.0
 [3.3.0]: https://github.com/aspire-atlas/claude-plugin/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/aspire-atlas/claude-plugin/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/aspire-atlas/claude-plugin/compare/v3.0.0...v3.1.0
