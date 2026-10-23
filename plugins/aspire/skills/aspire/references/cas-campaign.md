@@ -6261,8 +6261,8 @@ Each matched variant in the results currency takes one status, the first rule th
 | # | Status | When |
 | - | ------ | ---- |
 | 1 | Testing | Spend under the floor |
-| 2 | Retire | No purchases, and spend above the Watch band (`watchRatio` times the target) |
-| 3 | Watch | No purchases, and spend within the Watch band |
+| 2 | Retire | No purchase reported (a count of zero, or none from Meta), and spend above the Watch band (`watchRatio` times the target) |
+| 3 | Watch | No purchase reported, and spend within the Watch band |
 | 4 | Fatigued | Cost per sale at or under the target, live past `fatigueDays`, and slipping: its cost per sale over the last 7 days is above its cost per sale over the whole read, or it spent in the last 7 days with no purchase |
 | 5 | Winning | Cost per sale at or under the target |
 | 6 | Watch | Cost per sale up to the Watch band |
@@ -6353,8 +6353,9 @@ Each chart is titled, has one series and so no legend, and labels only its highe
 Colors are read from the CSS variables at run time (**Banned on the page**), so the brand's chart
 colors apply and the contrast check in **Brand theme on the page** has already passed them. Hover,
 focus or tap on a week shows one Tooltip for both charts: "Week {w}, {dates}: spend {s} · ROAS
-{r} · {p} purchases". A week with spend but no purchase shows ROAS 0.00, since its revenue is a
-real zero; a week with no spend draws no bar and no point. Under the charts a Table, "Show as
+{r} · {p} purchases". A week with spend and a purchase count of zero shows ROAS 0.00; one where
+Meta reported no purchase value draws no point, and its Tooltip says "No purchases reported". A
+week with no spend draws no bar and no point. Under the charts a Table, "Show as
 table", lists each week's Spend, Purchases, Revenue and ROAS, so nothing reads by the chart
 alone. The charts draw at their container's width and redraw when it changes (**Responsive**,
 **Media**). The calendar's in-market days read the same weeks (**Home**, **Calendar**).
