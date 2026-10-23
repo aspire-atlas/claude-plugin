@@ -70,10 +70,10 @@ figure when there is one ("result first: led round 1 at 1.6x the creators' media
 "bold claim: the brand's top ad reuse pattern, median hook score 74"; "from the lane's
 trigger, no saved results yet"). Show it on the brief page under the hook.
 
-A hook or CTA that follows a change line from Ad Performance gives its pattern and "Aspire's pick
-from round {n}'s results" as its reason, never a paid figure: results by hook, CTA and framework
-are agency only (`cas-campaign.md`, **Ad Performance**, **Compare**), and the reason shows to the
-client.
+A hook or CTA that follows a change line from Ad Performance gives a reason from the pattern's fit
+with the concept's trigger and persona, never its paid result or that results chose it: results by
+hook, CTA and framework are agency only (`cas-campaign.md`, **Ad Performance**, **Compare**), and
+the reason shows to the client. The agency reads the source on the change note.
 
 ## Limits
 
@@ -111,17 +111,18 @@ Atlas holds: no lookups, no marketplace, no discovery.
 4. **Show it.** One table per lane on the campaign page, under the brief: hook, pattern,
    posts matched, median against the creators' median, result. Then one line per pattern: the
    patterns that led, and the ones to drop.
-5. **Save it.** One `AskUserQuestion`: "Save the round {n} hook results? The next round's
-   briefs will lead with what worked." Options: "Save (Recommended)", "Page only". On save,
+5. **Save it.** One `AskUserQuestion`: "Save the round {n} hook results? Later brief runs
+   weigh them when they pick hook patterns." Options: "Save (Recommended)", "Page only". On save,
    write a `hook-review` finding per hook (`cas-campaign.md`, **Working state**).
 
 These are organic results from the creators' own posts. Paid results (hook rate and cost per
 sale from the partnership ads) are Ad Performance's, judged by the saved decision defaults in
 `campaign:{slug}-decision-defaults` (`cas-campaign.md`, **Ad Performance**).
 
-**How the two feed the next brief.** There is one way into a brief: **Changes for round {t}** on
-Ad Performance, whose accepted lines an Editor applies to the round's brief. The hook review never
-writes a brief. Its `hook-review` findings are a source the brief run reads (source 2 above), below
+**How the two feed the next brief.** There is one way to change a brief from results: **Changes
+for round {t}** on Ad Performance, whose accepted lines an Editor applies to the round's brief. The
+hook review never writes or changes a brief, and nothing it saves reaches a brief until a brief run
+writes new hooks. Its `hook-review` findings are a source the brief run reads (source 2 above), below
 the applied changes, so when the organic and the paid results disagree about a hook, the paid
 results win and the hook's reason says which it followed. A hook with no paid result yet (too few
 ads, or no ads live) is led by the hook review alone.
