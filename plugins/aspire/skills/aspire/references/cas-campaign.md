@@ -5062,6 +5062,10 @@ the newest version sent, "Version 1 · Aspire is checking version 2", and a cut 
 sent yet reads "Aspire is checking this cut" and doesn't open. That is a view, not a secret: a
 version in QA is in client readable page data (`reviews`), and nothing in it is agency only.
 
+A read only client reads no page data (**Who sees what**), and cuts live only there, so for them
+the queue shows one line in place of its parts: "Cuts show here for people who can open this
+page's data. Ask {CM name} for access."
+
 #### A done round
 
 A done round's queue shows as it ended, read only (**Round switcher**): no **Add cut**, no send,
