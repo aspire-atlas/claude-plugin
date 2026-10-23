@@ -492,8 +492,8 @@ end or `closedAt`) still counts and is pulled; one stamped after is dropped. On 
 round's brief, cuts, calls and edits render as labels (**1d**, **Round switcher**). A correction
 goes into the next round.
 
-**Variants per round.** A creator makes at most 5 variants in a round, and at most the package's
-`variants`. Selected Creators and Content Review refuse a variant past that (**1d**); each variant
+**Variants per round.** A creator makes at most 5 variants in a round, and at most the program
+terms' variants per creator (`program/terms` `variants`, else the package's `variants`). Selected Creators and Content Review refuse a variant past that (**1d**); each variant
 may have any number of versions.
 
 **Spend across rounds.** Each round's fees are that round's spend. The budget's Committed sums the
@@ -1837,7 +1837,7 @@ Sections, in order:
    | Row | Counts | Opens |
    | --- | ------ | ----- |
    | "{k} cuts getting changes" | Cuts whose newest version has changes requested | The first cut, `#review/r{n}/{cut}` |
-   | "{k} cuts in Aspire QA" | Cuts whose newest version is in Aspire QA | The first cut |
+   | "{k} cuts in Aspire QA" | Cuts whose newest version is in Aspire QA | The first cut; for the client, that cut's creator on Content Review, `#review/r{n}/{net}-{handle}`, since a cut with no version sent doesn't open for them |
    | "{k} packages on the way" | Shipping rows with product status shipped, not yet delivered | The first row, `#creators/r{n}/{net}-{handle}/shipping` |
    | "{k} creators filming" | Creators at step 4 or 5 on Selected Creators, Shooting or Footage in and editing, so they have no cut in the round yet (**Selected Creators**, **Steps**) | The first card, `#creators/r{n}/{net}-{handle}` |
 
@@ -2019,7 +2019,8 @@ rows.
    | Ad Performance | "Cost per sale {x}", with the target Badge from **Last round result** | "{w} of {a} ads won" | "Round {n} goes live {launch}." before the launch, else "Results show here once the ads are live." |
 
    Content Review shows its "until" line while the round has no cut, and Ad Performance until it
-   records results. There are five cards, one per tab, and no other: no card for a feature that has
+   records results. A read only client reads no cuts, so their Content Review card shows only
+   "Cuts show here for people who can open this page's data." in any state. There are five cards, one per tab, and no other: no card for a feature that has
    no tab or isn't built.
 4. **Program terms** (`home-program`). What the brand bought in its SOW, from
    `campaign:{slug}-cas` and `campaign:{slug}-terms` and the agency's edits since, for both
@@ -2128,7 +2129,7 @@ rows.
      | Milestones | **First cut review**, **Variants due** and **Ads live**: the dates of the round's `first-cut` and `variants-due` steps and its launch date, from the newest of the round finding and `program/round-r{n}` (**Rounds**, **Round steps**), named as **Round steps** names them |
      | Steps | Each step's date in the round's `plan` and page data, an approval's from its gate finding, as **Round steps** shows them |
      | Cut delivered | The `addedAt:` (full UTC time) of each cut's first version, `reviews/cut-{cut}/versions/v1` or the lowest version there (**1e**). A later version is a new version, not a delivery |
-     | Approved | The activity log's entries for the cut's versions (**The activity log**: kind `decision`, verb approved or undid, `asset` `cut-{cut}-v{version}`): a cut counts as approved from the `at` of an approval until the `at` of an undo. Where the log has no entry for a cut, the `at` of its `client/cut-{cut}-v{version}` `status` stamp while that value is approved |
+     | Approved | The activity log's entries for the cut's versions (**The activity log**: kind `decision`, verb approved, requested changes or undid, `asset` `cut-{cut}-v{version}`): a cut counts as approved from the `at` of an approval until the `at` of an undo or a request for changes (verb requested changes). Where the log has no entry for a cut, the `at` of its `client/cut-{cut}-v{version}` `status` stamp while that value is approved |
      | Shipping | The creator's shipping record for the round, `shippedAt` and `deliveredAt` (the newer of the two sides' stamps, **Selected Creators**, **Creator records**), else the activity log's `status` entries for the creator in the round whose `to` is Shipped or Delivered (from either side, so a Mark shipped shows at once), else the roster's `shipDate` for Shipped; and the pickup visit date in `details`. A product kept from last round has no shipping event |
      | Spend and return | The week's figures Ad Performance records for the round, once it records them |
      | Reading the log | The activity log is read only while the section is open, and only the day documents (`days/{day}`) for days inside a round's build or in-market window, up to today,, read once and then kept current by the page's live updates (**Live updates**). Closing the section stops it |
@@ -4313,7 +4314,7 @@ and page data, never a field a person sets:
 | 4 | Shooting | Product delivered, and the creator's brief accepted or locked: roster `briefState` accepted, approved or locked, or their changed brief approved (**1g**) | Always has its record |
 | 5 | Footage in and editing | At least one raw file in: the creator's footage record for the round (**Creator records**, Footage) counts 1 or more | Not reached on its own. A creator whose footage nobody records moves from Shooting to Cuts in review when their first cut arrives |
 | 6 | Cuts in review | The creator has at least one cut in the round with a version (`reviews/cut-{net}-{handle}-r{round}-{variant}` with a version under `versions`, **1e**), the same cuts **Where we stand** counts as in | Not reached until the creator's first cut is added on Content Review (**Content Review**, **Adding a cut**) |
-| 7 | Cuts approved | Every one of the creator's {v} variants for the round has a cut whose newest version is approved (**Variants per creator** below). Approved is read as the calendar reads it (**Home**, **Calendar**, **Where every date comes from**, Approved): the activity log's approval and undo entries for that version, else its `client/cut-{cut}-v{version}` `status` stamp | Not reached while any of the {v} slots has no cut |
+| 7 | Cuts approved | Every one of the creator's {v} variants for the round has a cut whose newest version is approved (**Variants per creator** below). Approved is read as the calendar reads it (**Home**, **Calendar**, **Where every date comes from**, Approved): the activity log's approval, request for changes and undo entries for that version, else its `client/cut-{cut}-v{version}` `status` stamp | Not reached while any of the {v} slots has no cut |
 | 8 | Ads live | One of the creator's variants runs as a live ad in Ad Performance's records for the round | The round's **Ads live** step is done (the round is in market, **Rounds**, **Round steps**) and at least one of the creator's cuts is approved, so a creator whose last variant is still in review isn't held back |
 
 Product status Returned holds the creator at step 2 with the line "Package returned" and an
@@ -4467,7 +4468,7 @@ to that hash opens the card expanded and scrolls to it.
     are sent.
   - **Variants this round**: "{k} of {max} variants this round", {max} being {v}, and one slot per
     variant V1 to V{v} with its newest version's status Badge and a link to `#review/r{n}/{cut}`,
-    or "Not in yet". A creator at {max} shows no way to plan or add another variant for the round.
+    or "Not cut yet", as Content Review names an empty slot. A creator at {max} shows no way to plan or add another variant for the round.
     Each slot holds a place for the cut's player, filled when cuts play on the card.
   - For the agency only, under a dashed rule headed "Agency only": the offer (open, target, max),
     counters and agreed, the round's rate per deliverable (UGC video, Reel collab, 90 day usage),
@@ -4855,10 +4856,11 @@ the counts and the shoot by date in place.
 
 The variants the editors cut for the round in view, each with its versions, for the client to
 comment on and approve. Every cut belongs to one creator in one round: its id is
-`{net}-{handle}-r{round}-{variant}`, and the tab lists only cuts whose creator is on that round's
-roster, so a later round's cuts come from that round's creators, returning or new. A creator has
-at most 5 variants in a round, and at most the package's variants: the agency's control to add a
-cut offers a new variant only below that, and at the limit reads "@{handle} has {max} variants in
+`{net}-{handle}-r{round}-{variant}`, and the tab lists only that round's creators and their cuts
+(**Whose cuts are here**), so a later round's cuts come from that round's creators, returning or
+new. A creator has at most 5 variants in a round, and at most the program terms' variants per
+creator (**Selected Creators**, **Variants per creator**): the agency's control to add a cut offers
+a new variant only below that, and at the limit reads "@{handle} has {max} variants in
 round {n}. Add a new version of one of them." New versions are never limited. A done round's cuts
 are read only (**Round switcher**). Production hands off to the **Content review** flow (dispatch
 row 16).
@@ -4900,14 +4902,20 @@ cut** on each for the agency.
 #### Statuses
 
 A cut's status is the status of its newest version, worked out live from the page data. Nobody
-sets it by hand, and no record stores it.
+sets it by hand, and no record stores it. The rows below are read in order, and the first that
+holds is the status, so a version with a call never reads as in QA.
+
+**The call on a version** is the newest of the client's calls on it: the activity log's `decision`
+entries for that version (verb approved, requested changes or undid, `asset`
+`cut-{cut}-v{version}`), else its `client/cut-{cut}-v{version}` `status` stamp. An undo, or a
+request for changes, ends an approval, so Approved and Changes requested can't both hold.
 
 | Status | When | Badge | Dot |
 | ------ | ---- | ----- | --- |
-| With Aspire QA | The newest version hasn't been sent to {brand}: no `sentAt:` on it (**1e**, Review versions) | soft | `bg-muted-foreground` |
-| Needs client review | The newest version was sent, and has no call on it, or its approval was undone | processing | `bg-sky-600 dark:bg-sky-500` |
-| Changes requested | The client's call on the newest version is changes requested | warning | `bg-amber-600 dark:bg-amber-500` |
-| Approved | The newest version is approved, read as **Selected Creators**, **Steps**, step 7 reads it: the activity log's approval and undo entries for that version, else its `client/cut-{cut}-v{version}` `status` stamp | success | `bg-green-600 dark:bg-green-500` |
+| Approved | The call on the newest version is approved, the same read **Selected Creators**, **Steps**, step 7 and the calendar's Approved use | success | `bg-green-600 dark:bg-green-500` |
+| Changes requested | The call on the newest version is changes requested | warning | `bg-amber-600 dark:bg-amber-500` |
+| Needs client review | The newest version was sent (`sentAt:` on it), with no call on it yet or its approval undone | processing | `bg-sky-600 dark:bg-sky-500` |
+| With Aspire QA | None of the above: the newest version hasn't been sent to {brand} and has no call (**1e**, Review versions) | soft | `bg-muted-foreground` |
 | Not cut yet | A slot with no cut. A place, not a status | soft | hollow, `border border-muted-foreground` |
 
 - **A new version starts in QA.** Adding version 2 to a cut that had changes requested moves the
@@ -4937,10 +4945,13 @@ Inside the section, top to bottom:
    | With Aspire QA | {q} | "Aspire is checking them" |
    | Approved | "{a} of {y}" | "{x} of {y} in", with a Progress bar of {a} over {y} |
 
-   Every count covers the round in view and every creator on the tab, whatever the filter, one
-   per cut by its newest version. {y} is the creators on Selected Creators times {v}, and {x} the
-   cuts with a first version, the same {x} and {y} as **Where we stand** and Selected Creators'
-   **Variants delivered** and **Variants approved**, so the three always agree. A tile is a button
+   The first three count every cut on the tab in the round in view, whatever the filter, one per
+   cut by its newest version. Approved's {y} is the creators on Selected Creators times {v}, and
+   {a} and {x} count only their cuts in slots V1 to V{v}, so the tile never passes {y}: a "Not
+   under contract" creator's cuts and a cut "Past the plan" are left out of it, as they are of
+   Selected Creators' **Round totals**. So the tile always equals **Variants delivered** and
+   **Variants approved** there. **Where we stand** plans with every approved creator whose fee
+   isn't declined, agreed or not, so its {y} can be higher until every fee is agreed. A tile is a button
    that sets the filter below to its status (`aria-pressed` true while it is on); pressing it
    again goes back to All.
 2. **Filter**, a Tabs list: All, Needs client review, Changes, Aspire QA, Approved, each with its
@@ -4982,8 +4993,8 @@ Inside the section, top to bottom:
    controls, `class="h-full w-full object-cover"`, `aria-hidden="true"`, from `"/_blob/" + asset +
    "#t=0.5"`: the browser draws that frame, the page stores no separate image, and the poster
    never plays. For a linked cut, the Lucide `film` icon centred, with "Drive", "Frame.io" or
-   "Link" under the box in `text-xs text-muted-foreground`. When the video can't load (a viewer
-   whose account can't open the page's uploads, below), the `film` icon in its place.
+   "Link" under the box in `text-xs text-muted-foreground`. When the video can't load, the
+   `film` icon in its place.
 
    **An empty slot.** The poster box is `border border-dashed` with the Lucide `clapperboard`
    icon, "V{n}", and in place of the other cells a soft Badge "Not cut yet". For the agency the
@@ -5009,7 +5020,10 @@ Selection**, **The creator viewer**, **Videos aren't stored today**).
 - Tabs "Upload" and "Link". Upload holds a file input, also a drop target, that takes MP4, MOV
   and WebM. Link holds an Input for a Google Drive, Frame.io or other link, named from its host:
   Google Drive for `drive.google.com`, Frame.io for `frame.io` and `f.io`, else Link.
-- Title, an Input, filled with "@{handle} V{n}". Notes, an optional Textarea.
+- Title, an Input, filled with "@{handle} V{n}". Notes, an optional Textarea. Under both, in
+  `text-xs text-muted-foreground`: "{brand} sees the title, the notes and the file's name." They
+  are kept in client readable `reviews`, so the plan above never goes in them; an agency only
+  remark goes in an agency only comment on the cut.
 - Under the file input, in `text-xs text-muted-foreground`: "Up to 20 MB. {used} of {max} of
   this page's storage used.", from the page's asset listing (`usage`), read when the Dialog opens.
 - Cancel (outline) and Add (default). While a file uploads, a Progress bar, and Add is disabled.
@@ -5037,10 +5051,12 @@ fit and keep the master in Drive or Frame.io.
 
 **Who can play what.**
 
-- **An uploaded cut** plays in the page for people in the organization that published it. A
-  client approver from outside it reads the page but can't open the page's uploads (**Who sees
-  what**): their poster shows the `film` icon, and the review panel says "This cut can't play from
-  this account. Ask {CM name} for a link."
+- **An uploaded cut** plays in the page for everyone who reads the queue: people in the
+  organization that published the page, who are the only ones who can open its uploads. A client
+  approver from outside it is a read only client (**Who sees what**), who sees neither the queue
+  nor the uploads, only the line in **What the client sees**. When the video can't load anyway (an
+  upload removed), the poster shows the `film` icon and the review panel says "This cut can't
+  play right now. Ask {CM name} for a link."
 - **A Google Drive or Frame.io link** never plays in the page. A page can play video only from
   its own asset store, and either service asks the viewer to sign in there. Its row opens the
   review panel, which shows an outline Button "Open in Google Drive" or "Open in Frame.io" that
@@ -5059,12 +5075,16 @@ add.
 
 The client sees that a cut is With Aspire QA, but works on what was sent to them: their row shows
 the newest version sent, "Version 1 · Aspire is checking version 2", and a cut with no version
-sent yet reads "Aspire is checking this cut" and doesn't open. That is a view, not a secret: a
+sent yet reads "Aspire is checking this cut" and doesn't open. While a newer version is in QA,
+the older one opens read only for them: its comments stay readable, and it takes no new call or
+comment, since the cut's status follows the newest version. That is a view, not a secret: a
 version in QA is in client readable page data (`reviews`), and nothing in it is agency only.
 
 A read only client reads no page data (**Who sees what**), and cuts live only there, so for them
 the queue shows one line in place of its parts: "Cuts show here for people who can open this
-page's data. Ask {CM name} for access."
+page's data. Ask {CM name} for access." Cut calls have no campaign record (**Pulling decisions**),
+so such an approver can't approve a cut from the chat either: the CM shares the page with them
+from inside the organization, or the client's calls come from an approver who can open it.
 
 #### A done round
 
@@ -6017,9 +6037,9 @@ is no step field anywhere in page data; the Footage
     round's cuts; a round 2 creator with no round 1 history shows V1 to V{v}, five with the
     default plan, each "Not cut yet" with **Add cut** for the agency only; the slots follow the
     program terms' variants per creator, so an edit on Home changes them; each cut's status is
-    its newest version's by the rules in **Statuses**, and the tiles' counts, the filter's counts
-    and the dots agree, with Approved's {y} equal to **Where we stand**'s and Selected Creators'
-    **Variants approved**; every dot's status is in its trigger's label; a tile or a filter
+    its newest version's by the rules in **Statuses**, read in order, and the tiles' counts, the
+    filter's counts and the dots agree, with Approved's {a}, {x} and {y} equal to Selected
+    Creators' **Variants approved** and **Variants delivered** and never past {y}; every dot's status is in its trigger's label; a tile or a filter
     narrows the tabs and rows and hides empty slots; Hook + CTA and Framework never render for the
     client or in **Preview as client**, the export included; a cut with no version sent reads
     "Aspire is checking this cut" for the client and doesn't open; **Add cut** refuses a file over
