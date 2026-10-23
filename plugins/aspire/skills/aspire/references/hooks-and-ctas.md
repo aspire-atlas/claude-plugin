@@ -10,17 +10,23 @@ in the main thread, inside the CAS campaign section.
 
 Read in this order. An earlier source outranks a later one when they disagree.
 
-1. **This campaign's hook reviews.** The newest `hook-review` findings on the campaign's
+1. **The changes applied from Ad Performance.** The round's `change-{id}` notes, which come in
+   `current_brief` (`cas-campaign.md`, **Ad Performance**, **Changes for round {t}**). They rest on
+   the paid partnership ads' results, so they outrank everything below. A pattern a line keeps
+   leads the concept's hooks, in H1 when Apply set its type; a pattern a line replaces is not used
+   on that concept; and a CTA type a line leads with is C1. Keeping a pattern never keeps its
+   words: the hook log (**Limits**) still refuses them.
+2. **This campaign's hook reviews.** The newest `hook-review` findings on the campaign's
    prefix (**The hook review** below). Patterns that led in an earlier round go first.
    Patterns that lagged are dropped unless a lane has nothing else.
-2. **The brand's saved ad reuse findings.** `search_insights` on the `ad-reuse-{profile}`
+3. **The brand's saved ad reuse findings.** `search_insights` on the `ad-reuse-{profile}`
    prefix, newest first: the hook patterns that lead, with their median hook score.
-3. **The brand's saved market signal findings.** `search_insights` on the
+4. **The brand's saved market signal findings.** `search_insights` on the
    `market-signal-{profile}` prefix: the phrases creators already use, and the features the
    brand wins on.
-4. **The lane itself.** Its concept, framework, trigger, and persona (`campaign:{slug}-lane-{lane}`).
+5. **The lane itself.** Its concept, framework, trigger, and persona (`campaign:{slug}-lane-{lane}`).
 
-None of the first three saved: say so in one line on the page and write from the lane alone.
+None of the first four saved: say so in one line on the page and write from the lane alone.
 Never invent a performance figure to justify a hook.
 
 ## Hook patterns
@@ -64,6 +70,11 @@ figure when there is one ("result first: led round 1 at 1.6x the creators' media
 "bold claim: the brand's top ad reuse pattern, median hook score 74"; "from the lane's
 trigger, no saved results yet"). Show it on the brief page under the hook.
 
+A hook or CTA that follows a change line from Ad Performance gives its pattern and "Aspire's pick
+from round {n}'s results" as its reason, never a paid figure: results by hook, CTA and framework
+are agency only (`cas-campaign.md`, **Ad Performance**, **Compare**), and the reason shows to the
+client.
+
 ## Limits
 
 - **The hook log.** Read every `hook` finding on the campaign before writing. Never reuse a
@@ -104,6 +115,13 @@ Atlas holds: no lookups, no marketplace, no discovery.
    briefs will lead with what worked." Options: "Save (Recommended)", "Page only". On save,
    write a `hook-review` finding per hook (`cas-campaign.md`, **Working state**).
 
-These are organic results from the creators' own posts. Paid results (paid hook rate, cost per
-result) come later with Meta ad data; the saved decision defaults in
-`campaign:{slug}-decision-defaults` will judge them then.
+These are organic results from the creators' own posts. Paid results (hook rate and cost per
+sale from the partnership ads) are Ad Performance's, judged by the saved decision defaults in
+`campaign:{slug}-decision-defaults` (`cas-campaign.md`, **Ad Performance**).
+
+**How the two feed the next brief.** There is one way into a brief: **Changes for round {t}** on
+Ad Performance, whose accepted lines an Editor applies to the round's brief. The hook review never
+writes a brief. Its `hook-review` findings are a source the brief run reads (source 2 above), below
+the applied changes, so when the organic and the paid results disagree about a hook, the paid
+results win and the hook's reason says which it followed. A hook with no paid result yet (too few
+ads, or no ads live) is led by the hook review alone.

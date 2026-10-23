@@ -111,6 +111,7 @@ draft, and in a channel post, uses the left column.
 | Connect your Meta ad account to see results | no ad account linked to the brand's Profile in Atlas |
 | Needs a concept | a product in scope that no concept in the round names |
 | Reset to original, Versions | the brief's saved versions (**1e**, **Brief versions and Reset to original**) |
+| Changes for round {t}; Keep, Replace, Lead with, Move, Put more behind, Put less behind; Proposed, Accepted, Dropped, Results changed; Apply to round {t} brief; Changes from round {n}, From round {n} results | the lines **Changes for round {t}** proposes from `leaders:` and `overBand:`, the calls on them in `agency/changes-r{round}` and `changes/r{round}`, and the `change-{id}` notes Apply writes on the next brief (**1d**, **Ad Performance**, **Changes for round {t}**) |
 
 The status labels a person sees, in order: Awaiting decision, Approved, Maybe, Rejected, Offer
 sent, Countered, Agreed, Declined, Your call needed, No reply yet, Details received, Shipped,
@@ -315,7 +316,7 @@ record type the newest finding per identity wins, by `detail.recordedAt`.
 | `roster` | the creator's account + round | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while a candidate; `went_well` approved; `needs_improvement` rejected | `handle`, `network`, `name`, `descriptor`, `location` (the last three only when edited on the page), `lane`, `persona` (the persona's name in the round's brief, **1d**, **Creator Selection**, **Concept and persona**), `slate` (candidate, approved, maybe, rejected), `priority` (true for a Priority Yes), `clientReason` (the reason on a Priority Yes or Yes against the recommendation), `rejectReason`, `clientQuestion`, `pickNote` (why we picked them), `rate` (offered, countered, agreed, declined), `offer` `{open, target, max}`, `counter`, `agreed`, `deliverables`, `usage`, `exclusivity`, `termNotes`, `contact` `{email, phone, manager}`, `tier`, `decidedBy` (`{writer, name, at, score, band}`: the page account whose call was recorded, their name, when, and the match score and band they saw), `surprise` (`{kind, reason, text, at}`: the client's surprise reason on that call, `kind` `pass` or `pick`, **1d**, **Creator Selection**, **Deciding**), `lastContactAt`, `waitingOn` (client, agency, creator), `yourCall` (the question to the client, while one is open), `adPermissions` (granted, pending), `details` `{status, address, pickup, visitDate, product, options, availability, deliveryNote}` (`address` being `{line1, line2, city, region, postal, country}`), `shipping` `{status, item, carrier, tracking, shippedAt, deliveredAt, eta}` (`status` not shipped, shipped, delivered, returned or kept), `contract` `{status, signedAt}`, `payment` `{status, at, paidPct}`, `rates` `{ugc, reel, usage90}` (the round's rates per deliverable), `footage` `{counts, at}`, `briefState` (sent, accepted, changed, approved, locked), `variantPlan` (the creator's overrides of the concept's variant plan for the round, one entry per overridden field, `[{variant, field, lane, value, by, at}]`, `field` being framework, length, hook, cta or post (the variant's live post, `{url, igMediaId}`) and `by` and `at` that field's own writer and time, **1d**, **Selected Creators**, **Concept and variant plan**), `shipDate`, `vetting` (the four figures and the recommendation), `returning` (true when carried from an earlier round), `fromRound` (the round it was carried from), `source` (chat, reply, page, or carried) |
 | `draft` | the creator + the template | The creator's account | `action_item` `low` while not sent; `went_well` once sent | `handle`, `template` (offer, counter, accept, chase, details, brief, brief-notes), `subject`, `body`, `sentAt` |
 | `reply` | one per exchange, never replaced | The creator's account | `went_well` `low` | `handle`, `receivedAt`, `summary` (one plain line), `record` (what it wrote to the roster), `nextMove` |
-| `brief` | lane + round | The brand's account | `action_item` `medium` while a draft; `went_well` when locked | `lane`, `locked`, `briefPage`, `version`, `edits` (the edits pulled from the page, one plain line each: the part, from, to, and who), `added` (true for a concept added on the page), `removed` (true for a concept taken out of this round's brief), `deferred` (true for a concept deferred to the next round), `carriedForward` (the round a deferred concept came from), `importedFrom` (`{label, url, kind}` of the document an import read), `startedFrom` (the round whose signed off brief it started from), `reopened` (`{reason, name, at}` when the agency reopened a signed off brief) |
+| `brief` | lane + round | The brand's account | `action_item` `medium` while a draft; `went_well` when locked | `lane`, `locked`, `briefPage`, `version`, `edits` (the edits pulled from the page, one plain line each: the part, from, to, and who), `added` (true for a concept added on the page), `removed` (true for a concept taken out of this round's brief), `deferred` (true for a concept deferred to the next round), `carriedForward` (the round a deferred concept came from), `importedFrom` (`{label, url, kind}` of the document an import read), `startedFrom` (the round whose signed off brief it started from), `reopened` (`{reason, name, at}` when the agency reopened a signed off brief), `fromResults` (the lines applied from Ad Performance, one plain line each with the round they came from, **1d**, **Ad Performance**, **Changes for round {t}**) |
 | `brief-revision` | the creator + round | The creator's account | `action_item` `medium` while waiting on the client; `went_well` once approved | `handle`, `lane`, `basedOn` (the locked lane brief's version), `changes` (one plain line each: what, from, to), `text` (the creator's version), `status` (waiting, approved, notes sent), `locked` |
 | `hook` | one per hook or CTA, never replaced | The brand's account | `went_well` `low` | `lane`, `type` (hook, cta), `text`, `pattern`, `firstBriefed` (round and date) |
 | `hook-review` | hook + round | The brand's account | `went_well` when it led; `needs_improvement` when it lagged or was not used; `action_item` `low` when held or not measurable | `lane`, `hook` (the text), `pattern`, `postsMatched`, `vsMedian`, `result` (led, held, lagged, not used, not measurable yet) |
@@ -1068,6 +1069,14 @@ the client's calls, each named with who made it. The `send-` and `reopen-` stamp
   value**) and the pull skips every stamp that does, so none of them is recorded as an edit or a
   restore; an edit made after the start has no `startedFrom` and is pulled as any edit is. That keeps a copy with empty hooks and CTAs from being sent
   for approval.
+- **Changes applied from Ad Performance.** Named as one line per round ("Round {t} brief: {k}
+  changes from round {n}'s results applied by {name}"). The parts an apply wrote are `manual`
+  stamps and are recorded as the brief edits they are, on the same `brief` findings. Each applied
+  line, from `change-{id}` on `brief-rounds/r{t}` and `agency/brief-round-r{t}`, goes on the
+  `brief` finding of the lane it names as a `fromResults` line, and a line that names no lane (a
+  framework or a creator line) on every lane's finding for the round, as a tone edit does. A line
+  whose note a reset or restore removed before the pull isn't recorded. The proposals and calls in
+  `agency/changes-r{n}` and `changes/r{n}` stay on the page.
 - **Deferred concepts.** A deferred concept gets a `brief` finding with `deferred` for its round,
   named "{concept} deferred to round {n+1} by {name}"; once round {n+1} exists, its finding there
   carries `carriedForward` {n}. **Bring back** writes `deferred` false, and a `brief` finding with
@@ -1140,6 +1149,7 @@ the client's calls, each named with who made it. The `send-` and `reopen-` stamp
   outside creator-ads mode. There is no second key for them (`atlas-tools.md`, **CAS campaign
   records**).
 - **What stays on the page.** Notes, comments, files, the brief check and review versions,
+  the proposed change lines and the calls on them,
   the activity log, tags, the stored match scores, each creator's shoot by date, the source tags
   (Atlas keeps its own `source` on each finding), and each person's own state are never pulled. A creator's step is never stored anywhere: it is worked
   out from the records each time (**1d**, **Selected Creators**, **Steps**).
@@ -1295,6 +1305,8 @@ client's level before the link goes out.
 | A ranked variant's hook and CTA | no | yes | **Reading a creator's variant** on the Editor's page | Ad Performance |
 | Results compared by concept, persona, product, creator and tier, with the client's insight cards, and the audience by age, gender and region once **Who watched** is shown | yes, a read only client too | yes | Claude at publish, into the page itself (**Ad Performance**, **Compare**, **Who watched**) | Ad Performance |
 | Results compared by framework, hook and CTA, and the agency's insight cards | no | yes | **Reading a creator's variant** on the Editor's page; the cards from `agency/performance-r{round}` | Ad Performance |
+| Changes for round {t}: the accepted concept lines, their figures and where they were applied | yes, read only, a read only client too | yes, editable | `changes/r{round}`, written when an Editor accepts a concept line (**Ad Performance**, **Changes for round {t}**) | Ad Performance, Master Brief (**Changes from round {n}**) |
+| Changes for round {t}: every proposed, dropped or not yet accepted line, every hook, CTA, framework and creator line with its figures, the calls, **Apply to round {t} brief**, and the "From round {n} results" marks on the next brief's parts | no | yes, editable | `agency/changes-r{round}`, `agency/brief-round-r{round}` | Ad Performance, Master Brief |
 | Live post per variant, and ads not matched to a variant (ad name, post, spend, dates) | no | yes, editable | `agency/creator-{net}-{handle}-r{round}`, `agency/performance-r{round}` | Selected Creators, Ad Performance |
 | History entries about agency only data, agency only comments included | no | yes | The activity log | History |
 | Tags for Aspire or someone at Aspire, from either side | only the ones they wrote | yes | Tags | Inbox |
@@ -1434,7 +1446,7 @@ and item. Labels, eyebrows, titles and ledes are in **Page vocabulary**, **Tabs*
    | `#creators/r{n}/{net}-{handle}/update` | The creator's card, open at **Updates to {brand}** (**Selected Creators**, **Status updates**) |
    | `#creators/r{n}/fees` | **Contract and rates**, with the fee approval and its notes |
    | `#brief/r{n}/{lane}/{part}` | The concept's brief at one part: `product`, `name`, `line`, `trigger`, `framework`, `personas`, `persona-{id}`, `casting`, `keyword-{n}`, `city-{id}`, `story`, `points`, `point-{id}`, `problem`, `agitate`, `solve`, `beat-{n}`, `hook-{n}`, `cta-{n}`, `body`, `length`, `runtime`, `broll`, `broll-{n}`, `variant-{n}` (the agency's variant plan) |
-   | `#brief/r{n}/overview/{part}` | The round's **Brief status** or **Tone of voice and don'ts** at one part: `status`, `title`, `summary`, `voice`, `tone`, `do-{id}`, `dont-{id}`, `disclosure`, `fileNaming`. A lane is never slugged `overview` (**1a**, **Rules**). |
+   | `#brief/r{n}/overview/{part}` | The round's **Brief status** or **Tone of voice and don'ts** at one part: `status`, `title`, `summary`, `voice`, `tone`, `do-{id}`, `dont-{id}`, `disclosure`, `fileNaming`, and `changes` for **Changes from round {n}**. A lane is never slugged `overview` (**1a**, **Rules**). |
    | `#brief/r{n}/comments` | The round's brief with **Comments** open (**Master Brief**, **Comments and sign off**) |
    | `#brief/r{n}/{lane}/c{comment}` | **Comments** open at that comment's thread, with the part it is on in view; `overview` in place of the lane for a comment on the header or the voice |
    | `#review/r{n}/{net}-{handle}` | Content Review on that creator's tab, no cut open. A cut's id always ends in `-r{round}-{variant}`, and a handle never holds a hyphen, so the two never collide |
@@ -1624,7 +1636,7 @@ only is marked so.
 | Ad Performance | Variants ranked | `performance-variants` | "{w} winning · {t} testing · {r} to retire or refresh" | Standard | Closed |
 | Ad Performance | Compare by framework, hook, CTA (those three for the agency only), concept, persona, product, creator and tier | `performance-breakdowns` | "Best {dimension}: {value} at {x} per sale", or "Too early to call a winner"; for the client never framework, hook or CTA | Full | Closed |
 | Ad Performance | Who watched | `performance-audience` | "Top audience: {segment}" | Full | Closed; not rendered until `search_ads` has an audience breakdown (**Ad Performance**, **Who watched**) |
-| Ad Performance | Next round's brief | `performance-next` | "{n} changes for round {n+1}", or "Nothing written yet." | Standard | Closed |
+| Ad Performance | Changes for round {t} | `performance-next` | Agency: "{a} of {p} lines accepted for round {t} · {k} applied"; client: "{c} changes for round {t}"; or "Too early to propose changes" | Standard | Closed |
 
 The review panel, the inbox, History and the brief's **Comments** are Sheets, and the creator
 viewer is a full screen view (**Creator Selection**, **The creator viewer**); none is a section: they open
@@ -1775,7 +1787,7 @@ Ad Performance:
 | Compare by framework, hook, CTA (agency only), concept, persona and product | Ad Performance, then **Compare** | 2 |
 | Compare by creator and tier | Ad Performance, then **Compare** | 2 |
 | See who watched | Ad Performance, then **Who watched**, once `search_ads` has an audience breakdown; hidden until then | 2 |
-| Write what changes in next round's brief | Ad Performance, then **Next round's brief** | 2 |
+| Write what changes in next round's brief: edit, accept or drop each line, then apply them | Ad Performance, then **Changes for round {t}** | 2 |
 | See that a round isn't live yet and when it launches | Ad Performance; **Cost per sale against target** shows the launch | 1 |
 
 The client's side:
@@ -1789,7 +1801,7 @@ The client's side:
 | See who's under contract and where each creator is | Selected Creators | 1 |
 | Watch the latest cut of each of a creator's variants, and read Aspire's updates on them | Selected Creators, then the card's **Details** | 2 |
 | Watch cuts, comment on the frame, request changes or approve | Content Review, then the cut | 2 |
-| See results against target and what changes next round | Ad Performance, then **Next round's brief** | 1 to 2 |
+| See results against target and what changes next round | Ad Performance, then **Changes for round {t}** | 1 to 2 |
 
 ### Home
 
@@ -2625,6 +2637,17 @@ Inside:
   ("H1 Question · H2 Demo first · H3 Result first"), the CTA types, the creators on it as
   Avatars with their handles, and its open comments. A Table from 640px, a stack of Cards on
   phone (**Responsive**). A row opens its concept. This is the scan of every concept.
+- **Changes from round {n}.** Once lines from Ad Performance are applied to this round (**Ad
+  Performance**, **Changes for round {t}**), anchored `#brief/r{n}/overview/changes`: one row per
+  applied line, in the lines' order, grouped by the round they came from, each with a soft Badge
+  "From round {m} results", the line, its figures, and for a line that wrote a part a link Button
+  "Go to {part}". The client reads the concept lines only, from `brief-rounds/r{round}`. The agency
+  reads every line, the others under an "Agency only" rule from `agency/brief-round-r{round}`, and
+  each part a line wrote carries the same soft Badge beside its label, with the line and its
+  figures in the Tooltip, until someone edits that part by hand. The rows are notes, not parts of
+  the brief: nobody edits them here, and the creator copy never holds them. A brief run or an
+  import leaves them as they are; a reset or a restore to a version from before the apply removes
+  them with the parts they wrote, and their lines read as accepted, not applied, again.
 - **Sign off and comments.** At the start of the header row: **Comments** for everyone, then
   **Send for sign off** or **Reopen** for the agency, or **Sign off** and **Request changes** for
   the client, each as **Comments and sign off** says. Under the Badge, the sign off line ("Signed
@@ -3011,6 +3034,9 @@ from an earlier round, imported, or written by the brief run.
   `restored`, so History reads "Started from round {m}'s signed off brief" and the pull skips it. `startedFrom:` {m} on
   `brief-rounds/r{n}`, and the original version for round {n} (`kind` original), so **Reset to
   original** goes back to the copy. The status stays **Draft**, since step 4 is not sent.
+- **From Ad Performance.** **Apply to round {n} brief** (**Ad Performance**, **Changes for round
+  {t}**) runs this copy first, with the same writes, when round {n} has no brief yet, then applies
+  its lines on top.
 - **Round {m} doesn't change.** Every write goes to round {n}'s documents. Nothing is written to
   round {m}'s `briefs`, `brief-rounds` or `agency/brief-*` documents, its versions are only read,
   and its brief findings and step 4 stay as they were, so it stays signed off.
@@ -3295,7 +3321,10 @@ block with the Artifact tool's `read`, writes it to the page data as stamps with
 named. Every numbered or listed key the block no longer carries (a B-roll shot, a beat, a
 persona, a selling point, a do, a don't, a variant's parts) gets a stamp with `value` `null`, as a
 reset does, so a shorter re-run leaves nothing stale. The **Casting** part's `keyword-{n}` and
-`city-{id}` are never in the block and never nulled this way. Then Claude writes the original version (**1e**, **Brief versions and Reset to original**) and
+`city-{id}`, and the `change-{id}` notes from Ad Performance (**Brief status**, **Changes from
+round {n}**), are never in the block and never nulled this way; `current_brief` carries the
+change notes, agency lines included, so the run follows them (`hooks-and-ctas.md`, **Where
+recommendations come from**). Then Claude writes the original version (**1e**, **Brief versions and Reset to original**) and
 republishes. A part the agent left as a bracketed blank stays one, so the page
 shows what is missing. Nothing the agent writes is dropped:
 
@@ -6133,10 +6162,8 @@ How the round in view's partnership ads sold against {brand}'s cost per sale tar
 {brand}'s own Meta ad account through Aspire Atlas at each publish. It covers only the ads that ran
 a variant's live post, so other ads in the account never count. The client writes nothing on this
 tab. In order: **Cost per sale against target**, **Headline numbers**, **Weekly spend and
-return**, **Variants ranked**, **Compare** and **Who watched**. **Who watched** stays hidden until
-`search_ads` offers an audience breakdown (**Who watched**, below). **Next round's brief** keeps its
-id and summary in **Sections per tab** and isn't rendered until its own build adds it; nothing
-here stands in for it.
+return**, **Variants ranked**, **Compare**, **Who watched** and **Changes for round {t}**. **Who
+watched** stays hidden until `search_ads` offers an audience breakdown (**Who watched**, below).
 
 #### Where the results come from
 
@@ -6679,21 +6706,202 @@ What it shows once the tool has it, for both sides, since it is {brand}'s own ad
   **Products** for one product) by more than 1%, a line says "Meta reports {x}% of impressions by age and
   gender. Small groups are left out." Money stays per currency, as everywhere on the tab.
 
-#### What the next brief reads
+#### Changes for round {t}
 
-**Next round's brief** (not built yet) takes its inputs from **Compare** and nothing else on this
-tab: the leaders **Enough to call a leader** names, per kind, with their figures and samples, and
-the groups over the Watch band. A kind with no leader gives it nothing. It reads every kind's
-leaders from `leaders:` in `agency/performance-r{round}`, where Claude writes them at each publish
-with the agency's insight cards (**1e**).
+`performance-next`, the tab's last section, for both sides. It turns what **Compare** found into
+the lines that change the next brief: which hooks to keep or replace, which CTA leads, the
+framework mix, and where spend moves between concepts and between creators, each with the numbers
+behind it. Editors edit, accept or drop each line, then **Apply to round {t} brief** writes the
+accepted lines into that round's brief as a draft. The client reads the accepted lines they may
+see. It is drawn for a round whose **Compare** is drawn; otherwise it isn't, as the rest of the tab.
+
+##### Which round it changes
+
+{t} is the first round after round {n}, the round in view, whose brief can still change: it isn't
+done and its status is Draft or Changes requested (**Master Brief**, **Brief status**). When no
+later round's brief can, {t} is the round after the newest round, not started yet. Rounds overlap
+(**Rounds**), so round {n+1}'s brief is often signed off before round {n} has results; the lines then
+go to round {n+2}, and a line under the section's title says why, for both sides: "Round {n+1}'s
+brief was signed off {date}, before these results were in, so these changes go into round {t}'s
+brief." {t} is worked out live from the page data, so a send, a sign off or a reopen moves it at
+once. A line already applied keeps the round it went to.
+
+##### The lines
+
+Claude writes the proposed lines at every publish, interactive or scheduled, into
+`agency/changes-r{n}` (**1e**), from that publish's `leaders:` and `overBand:` in
+`agency/performance-r{n}`, the same figures **Compare** shows. Nothing else proposes a line: not
+**Variants ranked**, one variant's figures, an insight card's wording, organic posts or a guess. A
+kind with no leader and nothing over the band proposes nothing.
+
+| Kind | Line | Proposed when | What Apply writes | Who sees it |
+| ---- | ---- | ------------- | ----------------- | ----------- |
+| Hook, keep | "Keep {pattern} as {concept}'s lead hook" | The hook is named best in its product's block on cost per sale or on hook rate (**Enough to call a leader**); one line when it leads on both | The round {t} concept's H1 type set to {pattern}, while H1 has no line yet | Agency only |
+| Hook, replace | "Replace {pattern} on {concept}" | The hook is over the Watch band (below) | No part: the change tells the brief run not to use {pattern} on {concept} | Agency only |
+| Lead CTA | "Lead {product}'s concepts with C{w}'s ask" | C{w} is named best on cost per sale in the product's block ("Lower cost per sale") | In each round {t} concept on {product}, C1's type set to the type that concept's C{w} had in round {n}, and C2's to the other type, while neither has a line yet. A concept whose two CTAs shared one type gets no part | Agency only |
+| Framework, keep | "Keep {code} on V{k}" | The framework is named best on cost per sale | No part: the variant plan already carries its frameworks (**Starting from the last round**) | Agency only |
+| Framework, move | "Move V{k} from {code} to {leader}" | The framework is over the Watch band and another framework leads; one line per variant slot that used it in round {n}'s plans | `v{k}-framework` set to {leader} in every round {t} concept plan whose V{k} uses {code} | Agency only |
+| Concept, more | "Put more of round {t}'s ads behind {concept}" | The concept is named best on cost per sale | No part: a note on the brief | Both |
+| Concept, less | "Put less of round {t}'s ads behind {concept}" | The concept is over the Watch band | No part: a note on the brief | Both |
+| Creator, more | "Rebook @{handle} and give them more of the spend" | The creator is named best on cost per sale | No part: a note on the brief | Agency only |
+| Creator, less | "Move spend away from @{handle}" | The creator is over the Watch band | No part: a note on the brief | Agency only |
+
+`{pattern}` is the hook's type (`ad-reuse.md`, **Hook patterns**), and a hook keeps its concept,
+since hook numbers belong to a concept (**Compare**, **Groups**). **Keep a hook means keep its
+pattern, never its words.** Every hook and CTA in the log is refused in every round (**Rounds**,
+**The new round's brief**), so a kept hook is a new line in the same pattern, written by the next
+brief run; Apply sets the type and leaves the line empty, so the concept counts as needing work
+until the run writes it. The same holds for a CTA's ask. Apply never writes a creator's own
+variant plan: overrides belong to one round and never carry (**Selected Creators**, **Concept and
+variant plan**), so a framework line changes the concept's plan, which every returning creator
+starts round {t} on.
+
+**Over the Watch band.** A real group (never "Not planned", "No persona", "No product", "No
+follower count" or "Broken") with `compareMinVariants` variants past the floor, whose cost per sale
+is above the Watch band (`watchRatio` times the target) on at least `compareMinPurchases`
+purchases, or which has fewer purchases than that and has spent more than `compareMinPurchases`
+times the Watch band, so even that many sales would leave it over. Hooks and CTAs are compared
+within their product's block, as their leaders are. It needs a target in the results currency
+(**The target and the floor**): with none, nothing is over the band and no replace, move or less
+line is proposed, while keep, lead and more lines still are. Claude writes these groups per kind
+to `overBand:` at each publish with `leaders:`.
+
+**Only what cleared the bar.** Every line rests on a group with the data **Enough to call a
+leader** asks for, so a group with a small sample is never proposed, not even with a mark: it is
+left out. One line at the end of the section names the kinds with nothing yet, "Nothing proposed
+for {kinds} yet: too early to call.", the client's naming only concepts. With no line at all, the
+section reads "Too early to propose changes. Each group needs {n} ads past the spend floor and {p}
+purchases." for both sides.
+
+**The numbers behind each line.** Under each line, in `text-xs text-muted-foreground`, the figures
+it rests on and its sample, from `leaders:` or `overBand:`: "{x} per sale against {y} for {next
+group} · {a} ads past the floor, {p} purchases" for a leader on cost per sale, "{h}% hook rate
+against {h2}% for {next group}" for one on hook rate, and "{x} per sale against a {t} target, over
+the {b} Watch band" for a group over the band ("{s} spent, {p} purchases" when it has too few to
+divide). A ghost Button, size sm, "See the numbers" opens **Compare** (`#performance/r{n}/breakdowns`).
+Since the agency's framework, hook and CTA groups are read live (**Compare**, **Groups**), a line
+about one whose figures now differ from the table's shows "The plan changed since the last update.
+This line updates at the next one." and can't be applied until then.
+
+Each line has a stable id, `{kind}-{action}-{group}` (`hook-keep-{lane}-h2`, `cta-lead-{product
+id}`, `framework-move-v3`, `concept-more-{lane}`, `creator-less-{net}-{handle}`), so a publish that
+proposes it again keeps its call and wording, with the newest figures. The order is the table's,
+then concept order within a kind, so the section and the brief list lines the same way.
+
+##### Edit, accept or drop
+
+For the agency, each line is a row: a soft Badge with its kind, the line, its numbers, and at the
+end an outline Button "Accept" (Lucide `check`) and a ghost Button "Drop" (Lucide `x`), each with
+`aria-pressed`. The chosen one shows pressed with its Badge, success "Accepted" or soft "Dropped";
+clicking it again clears the call, and a line with no call shows soft "Proposed". Dropped lines
+fold to the end under "Dropped ({d})". The line's text is edited in place (**Editing in place**),
+one line of up to 200 characters; its numbers can't be edited. A concept line's editor adds "{brand}
+reads this line once it's accepted." under the Input. On a phone each row stacks its text, numbers
+and Buttons (**Responsive**).
+
+- **What a call writes.** A `call-{id}` stamp on `agency/changes-r{n}`, `{state, text}`, `state`
+  accepted, dropped or `null`, `text` the Editor's wording or `null` for Claude's. Accepting a
+  concept line also writes `line-{id}` on `changes/r{n}`, `{text, figures}`, the only copy the
+  client reads; dropping or clearing it writes that stamp `null`, and editing an accepted one
+  writes it again. Each call and edit logs one entry (kind `brief`, tab `performance`): a concept
+  line's in the Editor's client readable log ("Planned for round {t}: {text}") once accepted, every
+  other one in the agency log.
+- **Results move.** A line accepted and not applied whose group a later publish no longer proposes
+  stays, with its figures as last proposed and a warning Badge "Results changed"; Accept is
+  disabled with "The round's numbers no longer support this line.", and Drop clears it. That
+  publish writes its `line-{id}` on `changes/r{n}` `null`, `source` `claude`, the one case where
+  Claude replaces an Editor's stamp unasked (**1e**, **Claude's writes**), so the client never reads
+  a line the results stopped supporting. A line still proposed shows the newest figures, and Claude
+  writes them into its client copy; when the Editor's wording quotes older ones, its Tooltip says
+  "The figures changed since this line was edited."
+
+##### Apply to round {t} brief
+
+A default Button "Apply to round {t} brief" (Lucide `file-check`), for the agency only, at the end
+of the section's header row, while at least one accepted line isn't applied. It is disabled, with
+the reason in a line under it as well as its Tooltip, when:
+
+- **Round {t} isn't started.** "Round {t} isn't started yet. Start it, then apply.", with a link
+  Button "Start round {t}" that opens the **Round switcher**'s Dialog when it is offered; else
+  "Round {t} can be started once round {t-1}'s brief is signed off."
+- **Nothing can land.** Every accepted line is "Results changed" or waits on the next update.
+
+It opens a Dialog: title "Apply {k} changes to round {t}'s brief?"; per concept, the parts that
+change ("Concept 2: H1 type Demo first · V3 framework BAB") and the notes it adds; the lines that
+land as a note only, each with why ("{concept} isn't in round {t}'s brief", "H1 is already written
+in round {t}"); when round {t} has no brief yet, "Round {t}'s brief starts from round {m}'s signed
+off brief first, as Start from round {m} does."; the line "The brief as it is now is saved first,
+so you can bring it back from Versions. It stays a draft: nothing goes to {brand} until it's sent
+for sign off."; and Cancel (outline) and Apply (default). On Apply, in this order:
+
+1. **Check again.** From the page data as it is at that moment: round {t} exists, isn't done, and
+   its status is Draft or Changes requested, and each line is still accepted and not applied. A
+   brief that is with the client or signed off is refused, never taken back to Draft as an import
+   takes it, because the client is reading or has signed that text: "Round {t}'s brief was just
+   sent for sign off, so it can't be changed." (or "was just signed off"), then "These changes now
+   go to round {t'}'s brief.", {t'} worked out again as above. To change a signed off brief, the
+   agency reopens it first, where the round allows it (**Comments and sign off**, **Reopening**). A
+   refusal writes nothing.
+2. **Start the brief when it is empty.** A round {t} with no brief documents gets **Starting from
+   the last round**'s writes first, from round {m}, the newest earlier round whose step 4 is cleared.
+3. **Save first.** The version the brief is at now, `kind` before apply, for every document the
+   apply touches (**1e**, **Brief versions and Reset to original**). If one is refused, nothing is
+   applied.
+4. **Write the parts.** Each part in the table above, one stamp with `source` `manual` and the
+   Editor as `by`, only when it differs from the current value. A hook or CTA that already has a
+   line keeps it; the line lands as a note. A line about a concept that round {t}'s brief doesn't
+   have, or has removed or deferred, lands as a note too.
+5. **Write the changes.** One `change-{id}` stamp per applied line, `{id}` the line's id,
+   `{kind, text, figures, sample, from, lane, parts}`, `from` round {n} and `parts` the parts it
+   wrote: the concept lines on `brief-rounds/r{t}`, every other line on `agency/brief-round-r{t}`.
+   Then `applied-{id}:` `{round, at, by}` on `agency/changes-r{n}` per line, and for a concept line
+   the same on `changes/r{n}`.
+6. **Log it.** One agency entry, "Applied {k} changes from round {n}'s results to the round {t}
+   brief". When concept lines were applied, one in the Editor's client readable log, "Added {c}
+   changes from round {n}'s results to the round {t} brief", opening `#brief/r{t}/overview/changes`,
+   and for each concept whose client readable parts changed, "Updated the {concept} brief", which
+   says nothing about results.
+7. **Open the brief.** Master Brief on round {t} at the first change in the lines' order: the
+   part it wrote (`#brief/r{t}/{lane}/{part}`, `variant-{n}` for a framework), else
+   `#brief/r{t}/overview/changes`.
+
+The status stays Draft, or Changes requested until it is sent again. A line counts as applied only
+while its `change-{id}` is in round {t}'s brief, so restoring the "Before applying changes" version
+from **Versions** takes the line back to accepted, not applied. Applying again applies only the lines
+not applied yet.
+
+**Done when** applying the changes leaves round {t}'s brief in Draft and its **Changes from round
+{n}** (**Master Brief**, **Brief status**) lists exactly the lines that were accepted and applied:
+none dropped, none proposed and not accepted, and none twice.
+
+##### What the client sees
+
+The accepted concept lines from `changes/r{n}`, read only, for the client, a read only client and
+**Preview as client**: each line, its figures, and once applied "Applied to round {t}'s brief
+{date}", linking to `#brief/r{t}/overview/changes`. Nothing proposed, dropped, or edited before it
+was accepted, no "Results changed", and no hook, CTA, framework or creator line, nor a count of
+them. With no concept line accepted: "Nothing here yet. Aspire adds what changes in the next brief
+once the round's results support it."
+
+- **Hook, CTA and framework lines are agency only, numbers and all.** They rest on which variant
+  used which, which is Aspire's cut plan (**Compare**, **What the client sees, and what stays agency
+  only**), so they live only in `agency`, and the brief parts they set carry no word of where they
+  came from.
+- **Creator lines are agency only.** Moving spend toward or away from a creator is a rebooking and
+  fee call, which sits with the offers and rates (**Who sees what**).
+- **Concept lines show to both sides.** They rest on the concept results the client already reads
+  in **Compare**, and name no amount of budget or fee. An Editor's wording on one is what the client
+  reads, so it never names a hook, CTA, framework, creator or fee; **Checking the roles** step 3
+  searches for them.
 
 #### Responsive and roles
 
 Every section follows **Responsive** and **Design standards**. The tab's figures are the same for
 the client, a read only client and **Preview as client**, since they are in the page itself; only
 the Hook and CTA columns, **Compare**'s framework, hook and CTA parts and the agency's insight
-cards, **Ads not matched** and the agency's lines differ. The page never writes page data on this
-tab for the client, and an Editor's only write is a live post.
+cards, **Ads not matched**, **Changes for round {t}**'s agency lines and controls, and the agency's
+lines differ. The page never writes page data on this tab for the client. An Editor writes a live
+post, and a change line's call or wording and its apply.
 
 ### Inbox
 
@@ -6773,7 +6981,7 @@ deepest part **Header and tabs** names. Where each lands, per tab:
 | Ad Performance | The section, `#performance/r{n}/{section}` | The section | The section |
 
 A tag opens what it was written in: the comment or the note. An Ad Performance section that
-isn't rendered (**Who watched** while hidden, **Next round's brief**) opens the tab at the top
+isn't rendered (**Who watched** while hidden) opens the tab at the top
 (**Header and tabs**).
 
 ### Tagging
@@ -7046,6 +7254,7 @@ left blank, never filled with a dash.
 | Ad Performance | By hook (agency only) | Hook in **Hooks and CTAs**, per product, "Not planned" and "No product" included | Product, Concept, Hook ("H2 Demo first"), Hook line, Variants, Spend, Impressions, Hook rate, Hold rate, Purchases, Revenue, Cost per sale, Leader, Small sample |
 | Ad Performance | Audience | Cell in **Who watched**, once it is shown: each age band and gender, then each region, per product, "All products" first | Product, Breakdown (Age and gender, or Region), Age band, Gender, Region, Impressions, Share of impressions, Purchases (blank where Meta reports none), Currency |
 | Ad Performance | By CTA (agency only) | CTA number per product in **CTA 1 against CTA 2**, "No product" included | Product, CTA (C1, C2 or Not planned), Types, Variants, Spend, Impressions, Link CTR, Purchases, Revenue, Cost per sale, Leader, Small sample |
+| Ad Performance | Changes | Line in **Changes for round {t}**, in its order; the client's sheet only the accepted concept lines | Kind, Line, Figures, Sample, State (Proposed, Accepted, Dropped, Results changed or Applied; the client's reads Accepted or Applied), Applied to (the round and date) |
 
 **Selected Creators' sheets.** Three are for both sides, Creator snapshot, Shipping list and
 Variant tracker, and two for the agency only, Rates and payments and Variant plans.
@@ -7446,10 +7655,10 @@ card titles, `text-xl` for section titles, `text-2xl` for the page title. Weight
 
 | Variant | Status labels |
 | ------- | ------------- |
-| soft | New, Not started, Not received, Edited by {name}, Synced from Atlas, Sheet, Claude, From {file label}, Not sent, Not due, Good, Possible, Not scored yet, Too few decisions to judge yet, Not recorded yet, Resolved, Agency only, Awaiting decision, Unreviewed, Unpriced, Not sent yet, not asked yet, not shipped, Planned, Done, Returning, Up next, Paused, Not done, round closed, Scanned, Not read, Draft, Needs work, New concept, Carried forward, Deferred, With Aspire QA, Not cut yet, Not under contract, Back with editor, Not checked, Can't check, Version {k} |
+| soft | New, Not started, Not received, Edited by {name}, Synced from Atlas, Sheet, Claude, From {file label}, Not sent, Not due, Good, Possible, Not scored yet, Too few decisions to judge yet, Not recorded yet, Resolved, Agency only, Awaiting decision, Unreviewed, Unpriced, Not sent yet, not asked yet, not shipped, Planned, Done, Returning, Up next, Paused, Not done, round closed, Scanned, Not read, Draft, Needs work, New concept, Carried forward, Deferred, With Aspire QA, Not cut yet, Not under contract, Back with editor, Not checked, Can't check, Version {k}, Proposed, Dropped, From round {n} results |
 | processing | Testing, Needs client review, Sent, Invoice sent, 50% paid, Offer sent, Details received, Shipped, Brief sent, in negotiation, In production, Now, Coming soon, Scanning, In review with client, Waiting for your sign off, Signed off, Aspire to confirm |
-| success | Winning, under target, Signed, Paid in full, Confirmed, Kept last round's product, Fees approved, Strong, Holding up, Picked, Priority Yes, Yes, Approved, Agreed, Delivered, Brief accepted, Granted, In market, Ahead, On track, Active, Updated {n}, Signed off, Pass |
-| warning | Watch, Fatigued, details to add, On hold, Not confirmed for round {n}, More than planned, Fees changed since you approved, This isn't an approval you made, Weak, Partly matching, Past competitor deal, Paid partnership: {competitor}, Changes requested, This isn't a sign off you made, This isn't a decision you made, This isn't a call you made, Approved on the earlier page, not recorded, Fail, Not counted, Over budget, Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending, waiting for your approval, Running behind, Launch at risk, over target, days late, Waiting on you, Out of stock, Still needed, Needs a concept, Not in products in scope, Removed, Used in round {r}, Broken, Plan broken, Override, Cut for {concept}, Plan changed since this cut, Past the plan |
+| success | Winning, under target, Signed, Paid in full, Confirmed, Kept last round's product, Fees approved, Strong, Holding up, Picked, Priority Yes, Yes, Approved, Agreed, Delivered, Brief accepted, Granted, In market, Ahead, On track, Active, Updated {n}, Signed off, Pass, Accepted, Applied |
+| warning | Watch, Fatigued, details to add, On hold, Not confirmed for round {n}, More than planned, Fees changed since you approved, This isn't an approval you made, Weak, Partly matching, Past competitor deal, Paid partnership: {competitor}, Changes requested, This isn't a sign off you made, This isn't a decision you made, This isn't a call you made, Approved on the earlier page, not recorded, Fail, Not counted, Over budget, Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending, waiting for your approval, Running behind, Launch at risk, over target, days late, Waiting on you, Out of stock, Still needed, Needs a concept, Not in products in scope, Removed, Used in round {r}, Broken, Plan broken, Override, Cut for {concept}, Plan changed since this cut, Past the plan, Results changed |
 | error | Retire, Competitor conflict, Choosing differently, Passed, No, Rejected, Declined, returned, Couldn't scan, Not added, Couldn't import |
 
 The decision's Badge takes the variant of its choice (Unreviewed is soft). The match score's
@@ -7796,6 +8005,18 @@ is no step field anywhere in page data; the Footage
     insight cards change when the round's figures change, with nothing fixed in the page's code;
     and **Who watched** isn't drawn, linked or exported until `list_ad_search_fields` lists an
     age and gender breakdown, and shows **Top regions** only when it lists region too.
+30. Ad Performance's **Changes for round {t}**: every line rests on a group in `leaders:` or
+    `overBand:` that has the data **Enough to call a leader** asks for, with its figures and
+    sample under it, and a kind with no such group proposes nothing; a kept hook sets only H1's
+    type, never a hook or CTA's words, and no creator override is written; {t} skips a round whose
+    brief is with the client or signed off and says why; **Apply to round {t} brief** renders for
+    the agency only, saves the brief first, refuses a brief that was sent or signed off while the
+    Dialog was open and writes nothing then, starts an empty round {t} brief from the last signed
+    off one, keeps its status Draft, logs its entries and opens Master Brief at the first change;
+    round {t}'s **Changes from round {n}** lists exactly the lines accepted and applied; the client,
+    a read only client and **Preview as client** read only the accepted concept lines, from
+    `changes/r{round}`, with no control; and no hook, CTA, framework or creator line, nor its
+    figures, is in the page itself, client readable page data or the client's export.
 
 ## 1e. Page data: what the page keeps and how it is read back
 
@@ -7941,7 +8162,7 @@ only if it is still missing, and merges the field after. Without the lease, two 
 once would leave only one.
 
 **Live updates.** The page subscribes once to each collection it shows (`client`, `edits`,
-`program`, `briefs`, `brief-rounds`, `brief-events`, `decision-events`, `creators`, `scores`, `reviews`, and for editors `agency`), and once to the viewer's
+`program`, `briefs`, `brief-rounds`, `brief-events`, `decision-events`, `changes`, `creators`, `scores`, `reviews`, and for editors `agency`), and once to the viewer's
 own state, so an edit made in one browser shows in every other open view without a reload. A
 subscription to a collection sees only the documents directly in it, never the ones nested
 below, so comments, review versions and the activity log are reached one level down: each
@@ -8015,14 +8236,14 @@ cut call writers (`{writer}/cut-calls`). Only the owner writes it, so no Editor 
 | Program terms | `program/terms` | Agency | `deliverable-{id}` (`{label, count}`), `adReadyVideos`, `variants`, `usageDays`, `allowlisting`, `partnershipAds`, `exclusivity`, `organic`. A page from before kept `makes`, `usage`, `exclusivity` and `notes` as text, in `agency/terms` until the fees were sent: Program terms reads `agency/terms` then `program/terms`, shows `makes` and `usage` that don't parse as one text row each ("What each creator makes", "Usage"), `exclusivity` as its row, and `notes` as a "Notes" row last, and the next publish moves them to `program/terms` |
 | Allowlisting uplift | `agency/terms` until the fees are sent, then `program/terms` | Agency | `upliftPct` |
 | Budget | `agency/budget` | Agency | `total` (stamp); `committed:`, `offersOut:`, `approvedNotContracted:`, `unpriced:`, `left:` (worked out at publish from the records, and again on the page as calls arrive) |
-| The round's brief | `brief-rounds/r{round}` | Agency; Claude | `title`, `sourceDoc` (`{label, url, kind, file}` for an imported doc, `kind` `upload`, `drive` or `text`, `file` its id in `program/files`; empty for a brief the agent wrote; a `kind` `link` from before reads as `drive` for a Google Docs link, else as a link with no `file`), `importedAt:` and `importKey:` (the newest import, **Importing a brief**), `startedFrom:` (the round it was started from), `summary`, `tone` (long text), `do-{id}`, `dont-{id}`, `disclosure`, `fileNaming`, `notice`; `status:` (draft, in review, changes requested, signed off) as at publish, worked out again live on the page |
+| The round's brief | `brief-rounds/r{round}` | Agency; Claude | `title`, `sourceDoc` (`{label, url, kind, file}` for an imported doc, `kind` `upload`, `drive` or `text`, `file` its id in `program/files`; empty for a brief the agent wrote; a `kind` `link` from before reads as `drive` for a Google Docs link, else as a link with no `file`), `importedAt:` and `importKey:` (the newest import, **Importing a brief**), `startedFrom:` (the round it was started from), `change-{id}` (an applied concept line from Ad Performance, `{kind, text, figures, sample, from, lane, parts}`, **1d**, **Ad Performance**, **Changes for round {t}**), `summary`, `tone` (long text), `do-{id}`, `dont-{id}`, `disclosure`, `fileNaming`, `notice`; `status:` (draft, in review, changes requested, signed off) as at publish, worked out again live on the page |
 | Brief events | `brief-events/r{round}` | Agency; Claude | `send-{id}` (a send for sign off: a stamp with `value` `{at}`, `source` `manual` and the Editor as `by` from the page, or `source` `claude` for a send from the chat) and `reopen-{id}` (a stamp with `value` `{reason, signoff}`, `signoff` naming the sign off it undid as `{writer}/{item}`, or `chat` for one recorded from the chat). Kept apart from `brief-rounds` so no version, reset, restore or import ever writes them |
 | A concept's brief | `briefs/{lane}-r{round}` | Agency; Claude | `name`, `line`, `persona-{id}`, `keyword-{n}` (1 to 4, a casting keyword each), `city-{id}` (a target city each), `trigger`, `framework` (`{code, name}`), `story`, `point-{id}`, `problem`, `agitate`, `solve`, `beat-{n}` (`{name, seconds, what}`), `hook-{n}` (`{type, line, shown, overlay, why}`), `cta-{n}` (`{type, line, destination, moment, why}`), `body`, `length`, `runtime` (`{instagram, tiktok}`), `broll-{n}` (`{shot, beat}`), `product` (`{id, name, sku}`, `id` empty for a product not in scope), `added`, `removed` and `deferred` (true or false); `carriedForward:` the round a deferred concept came from; `order:` its place in concept order, `coverage:` (`{passed, of, failed}`, the checks that failed in plain words) and `version:` as at publish. Long text parts hold the saved HTML (**1d**, **Master Brief**, **Rich text**). A page from before kept `concept`, `hook-{id}`, `cta-{id}`, `broll-{id}`, `disclosure` and `donot-{id}` here: they read as `line`, the hooks, CTAs and shots in id order, and the brief's `disclosure` and don'ts, and the next publish writes them to the keys above |
-| The brief, agency only | `agency/brief-round-r{round}` | Agency; Claude | `briefPage:` the brief agent's page link, which holds the variant plan, so it never sits where the client reads |
+| The brief, agency only | `agency/brief-round-r{round}` | Agency; Claude | `briefPage:` the brief agent's page link, which holds the variant plan, so it never sits where the client reads; `change-{id}`, every applied line from Ad Performance that isn't a concept line (hook, CTA, framework, creator), the same shape as on `brief-rounds` |
 | Variant plan | `agency/brief-{lane}-r{round}` | Agency; Claude | One key per part of each variant, so two editors on two parts of one variant keep both: `v{n}-framework` (`{code, name}`), `v{n}-length`, `v{n}-hook` and `v{n}-cta` (the number), `v{n}-vo` (long text), `v{n}-broll` (a list of shot numbers), `v{n}-note`; `variantCheck:` the brief agent's check of the plan (`{passed, failed}`). A page from before kept `variant-{n}` objects: each reads into these keys, and the next publish writes them |
 | Frameworks | `agency/frameworks` | Agency; Claude | `framework-{slot}` (`{slot, code, name, use}`), one per variant slot 1 to 5, from `frameworks` in `campaign:{slug}-cas` or the defaults |
 | Brief imports | `agency/brief-imports/{key}`, `{key}` from the source (**1d**, **Master Brief**, **Importing a brief**, **Repeatable mapping**) | Agency; Claude for an import in the chat | Plain data: `mapping:` Claude's answer in the data block's shape, before the checks, which run again at every preview, `source:` (`{label, url, kind, file}`), `at:`, `by:`, or `sameAs:` the key of the stored mapping for a `text-` key that points at one. Split past 200 KiB as a version is |
-| Brief versions | `agency/brief-versions/{doc}/{id}`, `{doc}` naming the document it saves: `round-r{round}`, `concept-{lane}-r{round}` or `variants-{lane}-r{round}` | Agency; Claude for `original` | Plain data (**Brief versions and Reset to original**): `kind:` (original, locked, before reset, before restore, before import, before start), `at:`, `by:`, `byName:`, `covers:` (the whole brief, or the concept), `fields:` the document's keys and stamps at that moment, `part:` and `parts:` when one version is split |
+| Brief versions | `agency/brief-versions/{doc}/{id}`, `{doc}` naming the document it saves: `round-r{round}`, `round-agency-r{round}` (`agency/brief-round-r{round}`, saved with the whole brief so an applied change's agency note goes back with it; a version without it leaves that document as it is), `concept-{lane}-r{round}` or `variants-{lane}-r{round}` | Agency; Claude for `original` | Plain data (**Brief versions and Reset to original**): `kind:` (original, locked, before reset, before restore, before import, before start, before apply), `at:`, `by:`, `byName:`, `covers:` (the whole brief, or the concept), `fields:` the document's keys and stamps at that moment, `part:` and `parts:` when one version is split |
 | Brief comments, cut comments | `comments/{id}/items/{comment}` | Each person, their own | `{id}` is the writer's own id (`user.id()`), the `{self}` the rules check, so the path names the author. `on:` (`brief-{lane}-r{round}`, `brief-overview-r{round}` or `cut-{cut}-v{version}`), `part:` on a brief (the anchor's id, **1d**, **Master Brief**, **Comments and sign off**; empty for a concept as a whole), `text`, `replyTo:` (the thread's first comment), on a cut `timecode:` (seconds into the video, to three decimals; empty for a general comment and on a reply), `frame:` (the frame number at the version's `fps:`, left out when it isn't known) and `drawing:` (`{strokes: [{pen, size, points}]}`, `pen` red, yellow or blue, `size` thin or thick, `points` a list of `[x, y]` pairs from 0 to 1 across and down the video's frame, to three decimals; at most 50 strokes and 4,000 points; left out when there is none) (**1d**, **Content Review**, **Comments on a cut**, **Drawing on the frame**), `resolved` (on a thread's first comment), `deleted` (true once its author deleted it, and `text` then written as an empty string and `drawing:`, `timecode:` and `frame:` removed, so the words and the drawing leave the data), `editedAt:` (the last time its author changed `text`), `createdAt:` |
 | Comment writers | `comments/{id}` | Each person, their own | `lastAt:` the time of their newest comment, written with each one, so the page can find every writer's items (**Live updates**). An agency only comment or reply never writes it, so the client's data never shows when Aspire wrote one; editors find those through `agency/comments/items` |
 | Agency only comments | `agency/comments/items/{comment}` | Agency | The same fields, kept from the client. Every reply to an agency only thread is kept here too, with `replyTo:` its first comment, and no reply here ever answers a thread kept under `comments` (**1d**, **Content Review**, **Agency only comments on a cut**) |
@@ -8035,7 +8256,9 @@ cut call writers (`{writer}/cut-calls`). Only the owner writes it, so no Editor 
 | Pool viewer data | `agency/pool-{net}-{handle}` | Claude | One document per creator not sent yet, plain data: what the creator viewer shows for them (**1d**, **Creator Selection**, **The creator viewer**): posts with captions, figures, marks and images, bio, category, verified, badges and audience. Captions are cut to 2,200 characters, and a document Claude would write past 200 KiB drops its link tiles' captions, then its third and second posts' images, which then show as link tiles. Written at publish, deleted by no one: a creator sent later reads from the page itself instead |
 | Creator, agency only | `agency/creator-{net}-{handle}` | Agency; Claude | Every agency only field in **Who sees what** that isn't per round: the recommendation, the Aspire notes (`note-{id}`), vetting evidence, safety detail, the profile's `email`, `phone`, `address` (`{line1, line2, city, region, postal, country}`) and `deliveryNote` (stamps, edited on the Selected Creators card, written by Claude from the roster's `contact` and `details` stamped `atlas`), manager, reply window, last contact, `expectedCost:` and `expectedFrom:` (agreed, counter, offer or calculator, `rates-and-terms.md`, **Expected cost**), `costPer1kReach:`, offer, counters, waiting on, `replies:` the reply log (`[{at, summary}]`, newest first) and `drafts:` the creator's email drafts (`[{template, subject, body, sentAt}]`). A page from before kept the rates (`rate-ugc`, `rate-reel`, `rate-usage90`) and a payment amount here: the rates read as the newest round's (**Creator, agency only, per round**), and the amount is never shown, since the page works it out |
 | Creator, agency only, per round | `agency/creator-{net}-{handle}-r{round}` | Claude for the rates; Agency and Claude for the overrides | `rate-ugc`, `rate-reel`, `rate-usage90`, the round's three rates per deliverable, as recorded in the chat; the creator's variant plan overrides (**1d**, **Selected Creators**, **Concept and variant plan**), one stamp per field per variant, V1 to V5 at most: `v{n}-framework` (`{lane, code, name}`), `v{n}-length` (`{lane, text}`), `v{n}-hook` and `v{n}-cta` (`{lane, n}`), `lane` being the concept it was made for; no stamp, or `value` `null`, follows the concept's plan; and each variant's live post, `v{n}-post` (`{lane, url, igMediaId}`), written by an Editor and by Claude from the roster's `variantPlan`, with Claude adding `igMediaId` once a read finds the post (**1d**, **Ad Performance**) |
-| Ad results not matched | `agency/performance-r{round}` | Claude at publish | Plain data, rewritten whole at each read: `at:` the read's time, `rows:` one per ad by the round's creators whose post is no variant's live post, `{creator, ad, post, currency, spend, firstDate, lastDate}`, `ad` the ad's name and `post` its post link; `insights:` the agency's insight cards (**1d**, **Ad Performance**, **Compare**, **Insight cards**), up to 3, each `{headline, kind, group, product, concept, figures, sample, part}`, `product` the block a hook or CTA card is about and `concept` the hook's concept (both `null` for a framework card), so the card is matched to exactly one row, `kind` framework, hook, CTA, or `none` for the "Too early to call" card (whose `group` is `null` and which is never marked as changed), `figures` the numbers the card quotes and `part` the table it links to; `leaders:` per kind (concept, persona, product, creator, tier, framework, and hook and CTA per product), the group **Enough to call a leader** names best on cost per sale and on hook rate with its figures and sample, or `null`, for **Next round's brief**. Nothing here is a code or an id the page shows |
+| Ad results not matched | `agency/performance-r{round}` | Claude at publish | Plain data, rewritten whole at each read: `at:` the read's time, `rows:` one per ad by the round's creators whose post is no variant's live post, `{creator, ad, post, currency, spend, firstDate, lastDate}`, `ad` the ad's name and `post` its post link; `insights:` the agency's insight cards (**1d**, **Ad Performance**, **Compare**, **Insight cards**), up to 3, each `{headline, kind, group, product, concept, figures, sample, part}`, `product` the block a hook or CTA card is about and `concept` the hook's concept (both `null` for a framework card), so the card is matched to exactly one row, `kind` framework, hook, CTA, or `none` for the "Too early to call" card (whose `group` is `null` and which is never marked as changed), `figures` the numbers the card quotes and `part` the table it links to; `leaders:` per kind (concept, persona, product, creator, tier, framework, and hook and CTA per product), the group **Enough to call a leader** names best on cost per sale and on hook rate with its figures and sample, or `null`; `overBand:` per kind, the real groups with enough data over the Watch band (**1d**, **Ad Performance**, **Changes for round {t}**, **Over the Watch band**), each with its figures and sample. **Changes for round {t}** proposes its lines from `leaders:` and `overBand:`. Nothing here is a code or an id the page shows |
+| Change lines | `agency/changes-r{round}`, `{round}` the round whose results they come from | Claude at publish for `proposed:`; Agency for the calls | `proposed:` plain data, rewritten at each publish: the lines in order, each `{id, kind, action, lane, product, group, text, figures, sample, client}`, `client` true for a concept line; `call-{id}` a stamp per line an Editor called, `{state, text}` (accepted, dropped or `null`, and the Editor's wording or `null`); `last-{id}:` a line no longer proposed that was accepted, kept as it was last proposed for "Results changed"; `applied-{id}:` `{round, at, by}` (**1d**, **Ad Performance**, **Changes for round {t}**) |
+| Change lines, for the client | `changes/r{round}` | Agency; Claude to take a line off or refresh its figures | `line-{id}`, a stamp per accepted concept line, `{text, figures}`, `null` once dropped, cleared or no longer supported; `applied-{id}:` `{round, at}`. Only concept lines are ever here |
 | Activity, client side | `activity/{id}/days/{day}` | Each Contributor, their own | `day:`, `entries:` one key per write (**The activity log**) |
 | Activity, agency side | `activity-editors/{id}/days/{day}` | Each Editor, their own; Claude under `activity-editors/claude` | The same, for the agency's writes about things the client can see |
 | Activity writers | `activity/{id}`, `activity-editors/{id}` | The writer | `lastAt:` the time of their newest entry, written with each one |
@@ -8293,7 +8516,7 @@ History shows them on the client's side, because nothing in the data says who wa
 | `decision` | A creator decision and its reason, the Maybe note included (both live in `reason`), and its surprise reason; a fee approval; a brief sign off or request for changes; the call on a changed brief; a cut's Approve, Request changes or Undo approval; **Reset decisions** (one entry per reset) | Creator Selection, Selected Creators, Master Brief, Content Review |
 | `note` | The client's `notes` on an approval; a note on a creator, from either side, in the Notes thread or the Aspire notes, added, edited or removed, with the old and new text; a status update from **Update {brand}**, in the Editor's client readable log | Where it was written |
 | `status` | A creator's status and ad permissions; a **Nudge {brand}** on a cut, in the agency log; the shipping record (item, carrier, tracking, shipped, delivered and ETA dates, product status), from either side, Mark shipped, Mark delivered and Kept last round's product included | Creator Selection, Selected Creators |
-| `brief` | Any part of a concept's brief; the variant build; sending the brief for sign off and reopening it | Master Brief |
+| `brief` | Any part of a concept's brief; the variant build; sending the brief for sign off and reopening it; a change line accepted, dropped or edited, and applying the changes (**Ad Performance**, **Changes for round {t}**) | Master Brief, Ad Performance for a change line's call |
 | `comment` | A comment, a reply, an edit to one, Resolve and Reopen, on a brief or a cut, agency only comments included | Master Brief, Content Review |
 | `checklist` | A brief check on a cut version ticked or unticked, a suggestion used included; in the agency log while the version is in Aspire QA, and in the client readable log once it is sent | Content Review |
 | `upload` | A new version of a cut, its link or file, and its notes, in the agency log while it is in Aspire QA; **Back to editor** (verb changed), in the agency log; **Send to {brand}** and **Send to {brand} as is** on a version (verb sent), where the client reads it (**1d**, **Content Review**, **Adding a cut**, **The status flow**) | Content Review |
@@ -8530,9 +8753,9 @@ keeps**, Brief versions):
   or `manual` for a start from an earlier round made on the page.
   The newest original is what **Reset to original** goes back to. Older originals stay, listed in
   **Versions**.
-- **Saving before a change.** Before a reset, a restore, an import or a start from an earlier
-  round, the page writes the version the brief is at now, `kind` before reset, before restore,
-  before import or before start, `id` the time and the editor's id, for each
+- **Saving before a change.** Before a reset, a restore, an import, a start from an earlier
+  round or applying changes from Ad Performance, the page writes the version the brief is at now, `kind` before reset, before restore,
+  before import, before start or before apply (shown "Before applying changes by {name}, {time}"), `id` the time and the editor's id, for each
   document the change touches. Only once every one of those writes is confirmed does the reset or
   restore write anything. If one is refused, nothing is reset and the Dialog says "Couldn't save
   the brief as it is now, so nothing changed. Try again."
@@ -8786,14 +9009,14 @@ document. Steps 3 and 4 run after every publish.
    `activity-{id}/days` collection with `as_level` `interact`: all must come back empty. Get `agency/budget`, `agency/files`, `agency/match-score`,
    `agency/scores-r{round}` for the open round, and one `agency/creator-{net}-{handle}-r{round}`
    (one with variant plan overrides or a live post when any exist), `agency/performance-r{round}`
-   for a round with results, and one `agency/cut-{cut}` when a cut exists the
+   and `agency/changes-r{round}` for a round with results, and one `agency/cut-{cut}` when a cut exists the
    same way: not found. The last holds the cut's plan, its brief check notes and Claude's
    suggestions, which can quote the hook and the CTA. These hold every figure
    **Match score tuning** shows and every weight, so a client can't reach the panel's data.
    List `tags-agency`, and one tag writer's `tags-agency/{id}/items` when one exists, at
    `interact`: both empty. A client reading their own `tags-agency/{id}` can't be checked from the
    chat, because `as_level` stands for a level, not a person.
-2. List `client`, `edits`, `program`, `briefs`, `brief-events`, `creators` and `reviews` with `as_level` `view`:
+2. List `client`, `edits`, `program`, `briefs`, `brief-events`, `changes`, `creators` and `reviews` with `as_level` `view`:
    all empty. Then list one writer's comment items, `comments/{id}/items` for an `{id}` that has
    comments, one writer's `activity/{id}/days`, one `activity-editors/{id}/days` and one
    `tags-client/{id}/items`, at `view`: empty. Listing `comments`, `activity`, `activity-editors`
@@ -8828,7 +9051,12 @@ document. Steps 3 and 4 run after every publish.
    shares by design, and check its results rows hold only the fields **Ad
    Performance**, **What the page itself holds** lists: no hook, CTA or framework, no ad, ad set,
    campaign or ad account id, and no ad code. The client's insight cards in the page itself name
-   no framework, hook or CTA (**Compare**, **Insight cards**). None of the
+   no framework, hook or CTA (**Compare**, **Insight cards**). For each round with change lines,
+   read `changes/r{round}` and the `change-{id}` notes on `brief-rounds` at `interact`: every line
+   there is a concept line in `proposed:` with an accepted call, and none holds the text or
+   figures of a hook, CTA, framework or creator line from `agency/changes-r{round}`, nor a hook
+   pattern, CTA type, framework code, creator handle or fee. Search the page itself for those
+   lines' text the same way. None of the
    rest may appear.
 4. Read the client readable activity written since the last check (each writer's
    `activity/{id}/days` and `activity-editors/{id}/days` with `day` on or after the last check's
