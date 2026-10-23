@@ -100,6 +100,7 @@ draft, and in a channel post, uses the left column.
 | Concept: product, name, positioning line, personas, trigger, framework, story, selling points | a lane's brief (`briefs/{lane}-r{round}`, **1e**) |
 | Hero beats: problem, agitate, solve; hooks H1 to H3; CTAs C1 to C2; body; B-roll B01 to B15 | the brief's parts (`creator-brief.md`, **Creator-ads mode**) |
 | Variant plan, V1 to V5 | the variant build (`agency/brief-{lane}-r{round}`) |
+| Needs client review, Changes requested, With Aspire QA, Approved; Not cut yet; First cut, Second cut, Final cut; Add cut, Send to {brand} | a cut's status and stage, worked out from its newest version in `reviews` and the client's call in `client/cut-*` (**1d**, **Content Review**) |
 | Frameworks (PAS, BAB, 4Ps, HSO, SSS) | `frameworks` in `campaign:{slug}-cas` |
 | Needs a concept | a product in scope that no concept in the round names |
 | Reset to original, Versions | the brief's saved versions (**1e**, **Brief versions and Reset to original**) |
@@ -818,9 +819,9 @@ made them a yes: Love their content)", and the roster finding gets it as `surpri
 A creator still Unreviewed is named as waiting. Nothing on the page reaches Atlas without this
 picker.
 
-Cut calls (Approve, Request changes, Undo approval on a cut) have no campaign record yet: until
-Content Review has its own build, the picker names them, "@a cut 3, version 2: approved (stays on
-the page)", and writes nothing for them. The newest call per cut version is the one that counts.
+Cut calls (Approve, Request changes, Undo approval on a cut) have no campaign record: the picker
+names them, "@a V3, version 2: approved (stays on the page)", and writes nothing for them. Cuts
+and their versions live only in page data (**1d**, **Content Review**). The newest call per cut version is the one that counts.
 
 **The creator decisions.** Read every writer's items under `decisions` (a document in
 `decisions/{id}/items` is one creator's call for one round), the `reset-` stamps on
@@ -1196,6 +1197,8 @@ client's level before the link goes out.
 | Send for sign off and Reopen, with its reason | yes, labels | yes, editable | Agency on the page | Master Brief |
 | Copy creator brief | yes | yes | The brief as the viewer reads it | Master Brief |
 | Agency only comments on the brief and on cuts, every comment on a variant included | no | yes | Agency on the page | Master Brief, Content Review |
+| Cuts: the count tiles and filter, each creator's tab and status dots, and per variant the poster, version, stage, status and open comments | yes; a version in Aspire QA shows as its status only, and the client works on the newest version sent to them | yes, with **Add cut** on an empty slot | Agency uploads and links, the client's calls (`reviews`, `client/cut-*`) | Content Review |
+| A cut's uploaded video | yes, for people in the organization that published the page | yes | The page's asset store | Content Review |
 | The round's steps: name, date, owner, done | yes | yes, editable, except an approval's tick | Round records, agency edits | Home |
 | Program terms: term dates, what each creator makes, ad ready videos, variants per creator, usage days, allowlisting, partnership ads, exclusivity, organic posting | yes | yes, editable | Campaign records, agency edits, program files | Home |
 | The allowlisting uplift on a fee | after the fees are sent | yes, editable | `campaign:{slug}-terms` | Home, Selected Creators |
@@ -1353,6 +1356,7 @@ and item. Labels, eyebrows, titles and ledes are in **Page vocabulary**, **Tabs*
    | `#brief/r{n}/overview/{part}` | The round's **Brief status** or **Tone of voice and don'ts** at one part: `status`, `title`, `summary`, `voice`, `tone`, `do-{id}`, `dont-{id}`, `disclosure`, `fileNaming`. A lane is never slugged `overview` (**1a**, **Rules**). |
    | `#brief/r{n}/comments` | The round's brief with **Comments** open (**Master Brief**, **Comments and sign off**) |
    | `#brief/r{n}/{lane}/c{comment}` | **Comments** open at that comment's thread, with the part it is on in view; `overview` in place of the lane for a comment on the header or the voice |
+   | `#review/r{n}/{net}-{handle}` | Content Review on that creator's tab, no cut open. A cut's id always ends in `-r{round}-{variant}`, and a handle never holds a hyphen, so the two never collide |
    | `#review/r{n}/{cut}/v{version}` | The cut in the review panel at that version, not the newest |
    | `#review/r{n}/{cut}/v{version}/t{seconds}` | The same, with the player paused at that second |
    | `#review/r{n}/{cut}/v{version}/c{comment}` | The same, with that comment open, and the player at its timecode and its drawing shown when it has them |
@@ -1415,8 +1419,10 @@ round at a time: its steps, creators, brief, cuts and results, and nothing from 
   into the page. The page holds dates, not their results.
 
 Every tab renders for both sides. Content Review and Ad Performance are part of the page from the
-first publish. Until their own sections below say more, each shows its lede and one empty state:
-"Cuts show here once creators start shooting." and "Results show here once the ads are live."
+first publish. Content Review shows its queue (**Content Review**), and while the round has no
+creators on Selected Creators, its lede and one empty state: "Cuts show here once creators start
+shooting." Until its own section below says more, Ad Performance shows its lede and "Results show
+here once the ads are live."
 
 ### Collapsing sections
 
@@ -1529,7 +1535,7 @@ only is marked so.
 | Selected Creators | Contract and rates | `creators-contract` | Client: "Fees waiting for your approval", "Fees approved {date}", "Fees changed since you approved", or "Fees show here once they are sent"; agency: "{a} of {n} agreed · {total} committed", with "fees with {brand}" or "fees approved {date}" | Full | Closed; open for the client while step 3 waits on them |
 | Selected Creators | Shipping | `creators-shipping` | "{s} shipped, {d} delivered of {n}", or "Shown once fees are approved." | Standard | Closed; open for the client while a row waits on them |
 | Selected Creators | Brief and content | `creators-content` | "{b} briefs accepted · footage in from {f} of {n}" | Standard | Closed |
-| Content Review | The queue | `review-queue` | "{w} waiting on you · {c} with changes · {q} in Aspire QA · {a} approved" | Simple | Open |
+| Content Review | The queue: count tiles, filter, creator tabs and variant rows | `review-queue` | Client: "{w} waiting on you · {c} with changes · {q} in Aspire QA · {a} of {y} approved"; agency: "{w} with {brand} · {c} with changes · {q} in Aspire QA · {a} of {y} approved"; "No cuts in round {n} yet." before the first | Simple | Open |
 | Ad Performance | Cost per sale against target | `performance-result` | "Cost per sale {x} against a {t} target · {beat it, or {d} over}", or "Round {n} goes live {date}" | Simple | Open |
 | Ad Performance | Headline numbers | `performance-headline` | "Spend {s} · {p} purchases · ROAS {r}" | Standard | Closed |
 | Ad Performance | Weekly spend and return | `performance-weekly` | "{w} weeks in market · best week {date}" | Standard | Closed |
@@ -1662,7 +1668,8 @@ Content Review:
 | Job | Path | Clicks |
 | --- | ---- | ------ |
 | See how many cuts wait on the client, have changes, are in QA or approved | Content Review; the queue summary | 1 |
-| Pick a creator and see their variants | Content Review, then the creator | 2 |
+| Pick a creator and see their variants | Content Review, then the creator's tab | 2 |
+| Add a creator's first cut of a variant | Content Review, then the creator's tab, then **Add cut** on the empty slot (agency) | 2 |
 | Filter the queue by status | Content Review; the queue's filter | 1 |
 | Play a cut frame by frame, change speed, loop, show safe zones | Content Review, then the cut | 2 |
 | Comment at a timecode, draw, reply, resolve | Content Review, then the cut | 2 |
@@ -1781,13 +1788,11 @@ Sections, in order:
      shows it ("Briefs approved is 2 days late.", "Kickoff call is 1 day late."), from the same
      dates.
    - **Hidden parts.** With no creators on the round yet, the verdict, why line and bar don't
-     render, and one line reads "Pace starts once creators are approved for round {n}." Until
-     Content Review has its own build, no cut is recorded, so {x} would read 0 whatever was
-     shot: the verdict, why line and bar don't render, and one line reads "Pace shows here once
-     Content Review tracks the cuts." The late step line still shows.
+     render, and one line reads "Pace starts once creators are approved for round {n}." The late
+     step line still shows.
 
    Planned shows "Building starts {build start}." in place of the verdict. In market and Done
-   show "{x} of {y} ad videos made this round." with no verdict, once Content Review tracks cuts.
+   show "{x} of {y} ad videos made this round." with no verdict.
    For a read only client, who can't read cuts, the pace area renders nothing in any state: no
    verdict, why line, bar, count or "Pace shows here" line. The late step line still shows.
    A link Button "Round steps" opens `#home/steps`.
@@ -1836,9 +1841,8 @@ Sections, in order:
    | "{k} packages on the way" | Shipping rows with product status shipped, not yet delivered | The first row, `#creators/r{n}/{net}-{handle}/shipping` |
    | "{k} creators filming" | Creators at step 4 or 5 on Selected Creators, Shooting or Footage in and editing, so they have no cut in the round yet (**Selected Creators**, **Steps**) | The first card, `#creators/r{n}/{net}-{handle}` |
 
-   Every row is built from what the client can read, so it holds nothing agency only. The cut
-   rows and the filming row show once Content Review has its own build, because until it records
-   cuts, every creator with an accepted brief would count as filming. The filming row counts only
+   Every row is built from what the client can read, so it holds nothing agency only. A cut's
+   newest version decides its row (**Content Review**, **Statuses**). The filming row counts only
    rounds in production. Empty: "Nothing in production right now."
 4. **Last round result** (`home-result`). Last round's headline result: cost per sale against
    the client's target and "{w} of {a} ads won", where "last round" is the newest round with ad
@@ -1985,9 +1989,9 @@ rows.
    | The agency's own (agency only) | The agency's rows in **Waiting on you**: replies to record, drafts to send, No reply yet, approvals due within a day, a brief sign off not recorded yet, your call needed, concepts below their pool target, details emails not sent | Aspire | As in **Waiting on you** |
 
    The client's rows are the same items as their **Waiting on you**, with the same ids, open
-   comments, grouping and "waited since" (**The Simple view**). Cut rows ("Cuts at the client",
-   the cut "Changes" row) and "Creators still to shoot" show once Content Review has its own
-   build, for the reason **Aspire is on it** gives. "Variants to retire or refresh" shows once Ad
+   comments, grouping and "waited since" (**The Simple view**). "Cuts at the client" counts cuts
+   that need client review, and the cut "Changes" row cuts with changes requested (**Content
+   Review**, **Statuses**). "Variants to retire or refresh" shows once Ad
    Performance records each round's results, because nothing marks a variant to retire before
    that. The agency's own rows come from `agency/attention`, never from the page itself.
 
@@ -2014,8 +2018,8 @@ rows.
    | Content Review | "{x} of {y} ad videos in" | "{w} waiting on you · {a} approved" | "Cuts show here once creators start shooting." |
    | Ad Performance | "Cost per sale {x}", with the target Badge from **Last round result** | "{w} of {a} ads won" | "Round {n} goes live {launch}." before the launch, else "Results show here once the ads are live." |
 
-   Content Review and Ad Performance show their "until" line until their own builds record cuts
-   and results. There are five cards, one per tab, and no other: no card for a feature that has
+   Content Review shows its "until" line while the round has no cut, and Ad Performance until it
+   records results. There are five cards, one per tab, and no other: no card for a feature that has
    no tab or isn't built.
 4. **Program terms** (`home-program`). What the brand bought in its SOW, from
    `campaign:{slug}-cas` and `campaign:{slug}-terms` and the agency's edits since, for both
@@ -2163,10 +2167,8 @@ rows.
        come from the dated version records and the activity log, so they don't change after the
        day.
      - **Hidden as Where we stand is hidden.** With no creators in the round, the pace parts read
-       "Pace starts once creators are approved for round {n}." Until Content Review has its own
-       build no cut is recorded, so delivered, approved, pace tags and the per concept bars don't
-       render, and the strip's caption reads "Deliveries show here once Content Review tracks the
-       cuts." The phases, milestones, steps, shipping and today still show. A read only client
+       "Pace starts once creators are approved for round {n}." The phases, milestones, steps,
+       shipping and today still show. A read only client
        reads no cuts and no log, so for them the calendar has no pace, delivery or approval parts
        in any state.
    - **The compact strip.** The default once the section is open. One timeline across the span,
@@ -4310,8 +4312,8 @@ and page data, never a field a person sets:
 | 3 | Product delivered | Product status is Delivered or Kept last round's product, by the same reads, else a pickup whose visit date has passed | Always has its record |
 | 4 | Shooting | Product delivered, and the creator's brief accepted or locked: roster `briefState` accepted, approved or locked, or their changed brief approved (**1g**) | Always has its record |
 | 5 | Footage in and editing | At least one raw file in: the creator's footage record for the round (**Creator records**, Footage) counts 1 or more | Not reached on its own. A creator whose footage nobody records moves from Shooting to Cuts in review when their first cut arrives |
-| 6 | Cuts in review | The creator has at least one cut in the round with a version (`reviews/cut-{net}-{handle}-r{round}-{variant}` with a version under `versions`, **1e**), the same cuts **Where we stand** counts as in | Not reached until Content Review records cuts |
-| 7 | Cuts approved | Every one of the creator's {v} variants for the round has a cut whose newest version is approved (**Variants per creator** below). Approved is read as the calendar reads it (**Home**, **Calendar**, **Where every date comes from**, Approved): the activity log's approval and undo entries for that version, else its `client/cut-{cut}-v{version}` `status` stamp | Not reached until Content Review records cuts |
+| 6 | Cuts in review | The creator has at least one cut in the round with a version (`reviews/cut-{net}-{handle}-r{round}-{variant}` with a version under `versions`, **1e**), the same cuts **Where we stand** counts as in | Not reached until the creator's first cut is added on Content Review (**Content Review**, **Adding a cut**) |
+| 7 | Cuts approved | Every one of the creator's {v} variants for the round has a cut whose newest version is approved (**Variants per creator** below). Approved is read as the calendar reads it (**Home**, **Calendar**, **Where every date comes from**, Approved): the activity log's approval and undo entries for that version, else its `client/cut-{cut}-v{version}` `status` stamp | Not reached while any of the {v} slots has no cut |
 | 8 | Ads live | One of the creator's variants runs as a live ad in Ad Performance's records for the round | The round's **Ads live** step is done (the round is in market, **Rounds**, **Round steps**) and at least one of the creator's cuts is approved, so a creator whose last variant is still in review isn't held back |
 
 Product status Returned holds the creator at step 2 with the line "Package returned" and an
@@ -4356,7 +4358,8 @@ Under the step, one line in `text-sm`, worked out from the same records. The fir
 | Step 7 | "Next: ads go live {launch}" | the same |
 | Step 8 | "Ads live" | the same |
 
-A cut waits on the client when its newest version has no call yet. The agency also sees, in
+A cut waits on the client when its status is Needs client review: its newest version was sent to
+{brand}, with no call on it or its approval undone (**Content Review**, **Statuses**). The agency also sees, in
 `text-xs text-muted-foreground` under the line, the roster's `waitingOn` and last contact from
 `agency/creator-*`, and "Final 50% due: final cuts signed off" for a creator at 50% paid who has
 reached step 7 (every variant's cut approved, the final cut sign off the payment label means), never shown to the client.
@@ -4381,8 +4384,7 @@ text-muted-foreground`. They cover the round in view and the creators on the tab
 - **Variants approved**: "{a} of {y}", with "{x} delivered", a variant counting as approved by the
   step 7 rule.
 
-Until Content Review records cuts, both variant tiles read "Shows once Content Review tracks the
-cuts.", as **Where we stand** does. A round with no creators on the tab shows the tiles at 0 with
+A round with no creators on the tab shows the tiles at 0 with
 "Creators show here once {brand} approves them and their fees are agreed."
 
 #### The toolbar
@@ -4859,16 +4861,229 @@ at most 5 variants in a round, and at most the package's variants: the agency's 
 cut offers a new variant only below that, and at the limit reads "@{handle} has {max} variants in
 round {n}. Add a new version of one of them." New versions are never limited. A done round's cuts
 are read only (**Round switcher**). Production hands off to the **Content review** flow (dispatch
-row 16). Until this tab has its own build, it shows its empty state.
+row 16).
 
-When it fills, the roles are already set: the client comments on a cut at a timecode or with a
-drawing, and approves, requests changes, or undoes an approval (`comments` and
-`client/cut-{cut}-v{version}`, **1e**). The agency comments too, and its agency only comments on
-a cut stay in `agency/comments`, under an "Agency only" rule in the thread.
+The roles are set: the client comments on a cut at a timecode or with a drawing, and approves,
+requests changes, or undoes an approval (`comments` and `client/cut-{cut}-v{version}`, **1e**).
+The agency comments too, and its agency only comments on a cut stay in `agency/comments`, under an
+"Agency only" rule in the thread.
 
 A cut's framework, hook and CTA are read from the creator's plan for that variant, by **Selected
 Creators**, **Concept and variant plan**, **Reading a creator's variant**, for the agency only, so
 the cut, the card and Ad Performance always name the same ones.
+
+The tab is one section, **The queue** (`review-queue`, **Collapsing sections**): the count
+tiles, the status filter, one tab per creator, and that creator's variant rows. A cut opens in
+**The review panel**, a Sheet over the tab.
+
+#### Whose cuts are here
+
+The creator tabs are the round in view's own creators: everyone on Selected Creators for that
+round (**Selected Creators**, **Who's here**), in the order that tab lists them. A cut's id carries
+its round, so a returning creator's round 1 cuts stay in round 1 and never show in round 2, and a
+creator new in round 2 starts with every slot empty. Nothing on this tab is built from another
+round's creators or cuts. A creator who left the round after a cut was added (declined, or
+rejected on a newer roster finding) keeps a tab for the cuts they have, with a soft Badge "Not
+under contract" and no empty slots, so no cut drops out of sight.
+
+**Slots.** Each creator has one slot per variant in their variant plan: V1 to V{v}, {v} being the
+program terms' variants per creator (**Selected Creators**, **Variants per creator**), at most 5,
+the same rows **Concept and variant plan** shows. With the default plan that is five slots. The
+number is read from the program terms, never written into the page, so an edit on Home changes
+every creator's slots at once. A cut whose variant is past {v} (the terms lowered after it was
+cut) still shows, after the slots, with a warning Badge "Past the plan", and doesn't count in
+{y} below.
+
+So a round 2 creator with no round 1 history shows V1 to V{v}, each "Not cut yet", with **Add
+cut** on each for the agency.
+
+#### Statuses
+
+A cut's status is the status of its newest version, worked out live from the page data. Nobody
+sets it by hand, and no record stores it.
+
+| Status | When | Badge | Dot |
+| ------ | ---- | ----- | --- |
+| With Aspire QA | The newest version hasn't been sent to {brand}: no `sentAt:` on it (**1e**, Review versions) | soft | `bg-muted-foreground` |
+| Needs client review | The newest version was sent, and has no call on it, or its approval was undone | processing | `bg-sky-600 dark:bg-sky-500` |
+| Changes requested | The client's call on the newest version is changes requested | warning | `bg-amber-600 dark:bg-amber-500` |
+| Approved | The newest version is approved, read as **Selected Creators**, **Steps**, step 7 reads it: the activity log's approval and undo entries for that version, else its `client/cut-{cut}-v{version}` `status` stamp | success | `bg-green-600 dark:bg-green-500` |
+| Not cut yet | A slot with no cut. A place, not a status | soft | hollow, `border border-muted-foreground` |
+
+- **A new version starts in QA.** Adding version 2 to a cut that had changes requested moves the
+  cut back to With Aspire QA until version 2 is sent.
+- **A cut waits on the client** when its status is Needs client review. **Waiting on you**,
+  **Needs attention**, the tab's count badge and Selected Creators' "{n} variants waiting on
+  {brand}" all count that, and only that.
+- **Sending and the calls** are the review panel's status flow (**The review panel**): **Send to
+  {brand}** writes `sentAt:` and `sentBy:` on the version, and the client's Approve, Request
+  changes and Undo approval write their stamp. This tab only reads them.
+
+**Stage** comes from the newest version's number: version 1 is "First cut", version 2 "Second
+cut", version 3 or later "Final cut". It is shown as text, never as a Badge.
+
+#### The queue
+
+Inside the section, top to bottom:
+
+1. **Count tiles**, in `grid grid-cols-2 gap-4 lg:grid-cols-4`, each a Count tile (**Component
+   classes**) with the count in `text-2xl font-semibold`, the status name, and one line in
+   `text-sm text-muted-foreground`:
+
+   | Tile | Count | Line |
+   | ---- | ----- | ---- |
+   | Needs client review | {w} | Client: "Waiting on you"; agency: "Waiting on {brand}" |
+   | Changes requested | {c} | "Aspire is making changes" |
+   | With Aspire QA | {q} | "Aspire is checking them" |
+   | Approved | "{a} of {y}" | "{x} of {y} in", with a Progress bar of {a} over {y} |
+
+   Every count covers the round in view and every creator on the tab, whatever the filter, one
+   per cut by its newest version. {y} is the creators on Selected Creators times {v}, and {x} the
+   cuts with a first version, the same {x} and {y} as **Where we stand** and Selected Creators'
+   **Variants delivered** and **Variants approved**, so the three always agree. A tile is a button
+   that sets the filter below to its status (`aria-pressed` true while it is on); pressing it
+   again goes back to All.
+2. **Filter**, a Tabs list: All, Needs client review, Changes, Aspire QA, Approved, each with its
+   count after the label ("Changes 2"). It opens on All and is kept in memory only. On phone it is one row that scrolls sideways, as the tabs do (**Responsive**). A status
+   filter narrows the creator tabs to creators with at least one cut in that status and the rows
+   to those cuts, and hides empty slots. With nothing left: "No cuts in round {n} with that
+   status." and a ghost Button "Show all".
+3. **Creator tabs**, a Tabs list, one trigger per creator: "@{handle}" and, after it, one Status
+   dot (**Component classes**) per slot, V1 to V{v} in order, each taking its status's color
+   above. The trigger carries `aria-label` "@{handle}: V1 approved, V2 needs client review, V3
+   not cut yet", and its Tooltip says the same, so no status reads by color alone. On phone the
+   list scrolls sideways with the selected creator in view. The tab opens on the creator in the
+   hash (`#review/r{n}/{net}-{handle}`), else the first with a cut waiting on the viewer, else the
+   first. Under the list, for the selected creator: their concept chip (**Concept colors**), the
+   persona, "{k} of {v} cut · {a} approved", and a link Button "Open card" to
+   `#creators/r{n}/{net}-{handle}`.
+4. **Variant rows**, one per slot, V1 to V{v}. From 640px a Table, and on phone a stack of Cards,
+   one per variant, with the same fields (**Responsive**, **Tables**). The agency's Table has
+   seven columns, so it pins its first column and its header as **Tables** says; the client's has
+   five.
+
+   | Column | Shows | Who |
+   | ------ | ----- | --- |
+   | Variant | The poster, "V{n}" as a link Button that opens the cut (`#review/r{n}/{cut}`), and the cut's title under it in `text-xs text-muted-foreground` | Both |
+   | Version | "Version {v}", with when it was added under it ("2 days ago") | Both |
+   | Hook + CTA | "H2 + C1", with the two types under it in `text-xs text-muted-foreground` ("Demo first · Direct") | Agency only |
+   | Framework | Code and name, "BAB Before, after, bridge" | Agency only |
+   | Stage | First cut, Second cut or Final cut | Both |
+   | Status | The status Badge | Both |
+   | Comments | The Lucide `message-square` and "{k} open", open threads on that version the viewer can read (the agency's count includes agency only threads), or "None" | Both |
+
+   Clicking a row, or Enter on it, opens the same cut. Hook, CTA and framework are read by
+   **Reading a creator's variant**, never copied, so a brief edit shows here at once, and the
+   Badges that read brings ("Broken", "Cut for {concept}", "Plan changed since this cut") sit in
+   their cells. A variant with nothing planned reads "Not planned".
+
+   **The poster.** A box `relative w-12 shrink-0 overflow-hidden rounded-md bg-muted aspect-[9/16]`.
+   For an uploaded cut, a `video` element with `muted`, `playsinline`, `preload="metadata"`, no
+   controls, `class="h-full w-full object-cover"`, `aria-hidden="true"`, from `"/_blob/" + asset +
+   "#t=0.5"`: the browser draws that frame, the page stores no separate image, and the poster
+   never plays. For a linked cut, the Lucide `film` icon centred, with "Drive", "Frame.io" or
+   "Link" under the box in `text-xs text-muted-foreground`. When the video can't load (a viewer
+   whose account can't open the page's uploads, below), the `film` icon in its place.
+
+   **An empty slot.** The poster box is `border border-dashed` with the Lucide `clapperboard`
+   icon, "V{n}", and in place of the other cells a soft Badge "Not cut yet". For the agency the
+   Hook + CTA and Framework cells still show the plan, so the editor sees what to cut, and an
+   outline Button size sm "Add cut" with the Lucide `upload` icon sits in the Status cell. The
+   client sees "Not cut yet" only.
+
+   Under the rows, for the agency, when every slot has a cut: "@{handle} has {v} variants in round
+   {n}. Add a new version of one of them."
+
+#### Adding a cut
+
+**Who adds cuts: Editors only.** A cut is added on the page by someone on Aspire's side, from
+their own computer: the page's uploads are granted to Editors and up (`assets` without `upload:
+"interact"`, **1e**), every upload fills the page's one storage quota and file count, and the client
+and the creators never upload. Claude downloads nothing for this and the plugin runs no file
+write, so it needs no change to `SECURITY.md`, unlike storing creators' posted videos (**Creator
+Selection**, **The creator viewer**, **Videos aren't stored today**).
+
+**Add cut** on an empty slot opens a Dialog, "Add V{n} for @{handle}":
+
+- The plan for the slot, read only: hook, CTA and framework as the row shows them.
+- Tabs "Upload" and "Link". Upload holds a file input, also a drop target, that takes MP4, MOV
+  and WebM. Link holds an Input for a Google Drive, Frame.io or other link, named from its host:
+  Google Drive for `drive.google.com`, Frame.io for `frame.io` and `f.io`, else Link.
+- Title, an Input, filled with "@{handle} V{n}". Notes, an optional Textarea.
+- Under the file input, in `text-xs text-muted-foreground`: "Up to 20 MB. {used} of {max} of
+  this page's storage used.", from the page's asset listing (`usage`), read when the Dialog opens.
+- Cancel (outline) and Add (default). While a file uploads, a Progress bar, and Add is disabled.
+
+Add writes `reviews/cut-{cut}` (`creator:`, `round:`, `lane:` the creator's concept now,
+`variant:`, `title`), then `reviews/cut-{cut}/versions/v1` (**1e**, Review versions), and
+`plan-v1` in `agency/cut-{cut}` (**Concept and variant plan**), and logs one `upload` entry
+(**1e**, **The activity log**). The cut shows at once in every open view as With Aspire QA, and
+the creator's step on Selected Creators, Home's pace and the calendar's delivery follow it.
+Adding version 2 and later is the review panel's (**The review panel**).
+
+**When a cut won't upload,** the Dialog stays open, keeps the title and notes, writes nothing,
+and says why under the file input with an error Badge "Not added":
+
+| Why | It says |
+| --- | ------- |
+| Over 20 MB, the page's limit for one upload | "This cut is over 20 MB. Add a Google Drive or Frame.io link to it instead.", and switches to Link |
+| The page's storage or file count is full | "This page's storage is full. Add a Google Drive or Frame.io link instead.", and switches to Link |
+| Not MP4, MOV or WebM | "Upload an MP4, MOV or WebM video, or add a link." |
+| Too many uploads at once | "Not added yet. Try again in a minute." |
+
+The 20 MB is the page runtime's limit for one upload, and it isn't raised per file. A 30 second
+review copy exported at 720p and about 4 Mbps is about 15 MB, so editors export review copies to
+fit and keep the master in Drive or Frame.io.
+
+**Who can play what.**
+
+- **An uploaded cut** plays in the page for people in the organization that published it. A
+  client approver from outside it reads the page but can't open the page's uploads (**Who sees
+  what**): their poster shows the `film` icon, and the review panel says "This cut can't play from
+  this account. Ask {CM name} for a link."
+- **A Google Drive or Frame.io link** never plays in the page. A page can play video only from
+  its own asset store, and either service asks the viewer to sign in there. Its row opens the
+  review panel, which shows an outline Button "Open in Google Drive" or "Open in Frame.io" that
+  opens the link in a new tab (`rel="noopener"`). Comments on it carry no frame or drawing, since
+  there is no player to pin them to.
+
+#### What the client sees
+
+The tiles, the filter, the creator tabs and their dots, and per variant the poster, "V{n}", the
+version, the stage, the status and the open comments. Not Hook + CTA or Framework: they are the
+creator's variant plan, which is agency only (**Concept and variant plan**, **What the client
+sees**), so those columns and the plan under an empty slot never render for the client or in
+**Preview as client**, and the client's export leaves them out. Showing them would need a client
+readable copy Claude writes at publish and a new **Who sees what** row, which this tab doesn't
+add.
+
+The client sees that a cut is With Aspire QA, but works on what was sent to them: their row shows
+the newest version sent, "Version 1 · Aspire is checking version 2", and a cut with no version
+sent yet reads "Aspire is checking this cut" and doesn't open. That is a view, not a secret: a
+version in QA is in client readable page data (`reviews`), and nothing in it is agency only.
+
+#### A done round
+
+A done round's queue shows as it ended, read only (**Round switcher**): no **Add cut**, no send,
+no calls. In the review panel the comment box is replaced by one line, "Round {n} is signed
+off.", and a link Button "See round {n} results" to `#performance/r{n}/result`. Threads and
+drawings stay readable. That is how the client looks back at last round's signed off cuts: the
+round's segment in the **Round switcher**, then a cut.
+
+#### The review panel
+
+A Sheet over the tab (**Responsive**, **Side panels**), opened by a row or by
+`#review/r{n}/{cut}`, at the newest version (the newest sent one for the client), or at the
+version, second or comment the deeper hashes name (**Header and tabs**). It holds the player,
+frame comments and drawing; the versions, compare, the status flow and the brief check. Those are
+specified with the panel. What this tab needs from it:
+
+- **Send to {brand}**, for the agency, writes `sentAt:` and `sentBy:` on the version, and Approve,
+  Request changes and Undo approval write the client's `client/cut-{cut}-v{version}` stamp, so the
+  statuses above hold.
+- A new version writes `versions/v{version}` with the same fields as Add cut, and `plan-v{version}`.
+- In a done round, the comment box line above.
+- Closing it returns to the same creator tab, filter and row.
 
 ### Ad Performance
 
@@ -4958,8 +5173,8 @@ deepest part **Header and tabs** names. Where each lands, per tab:
 | Content Review | The comment on the cut at its version, `#review/r{n}/{cut}/v{version}/c{comment}`, at its timecode | The cut at the new version, `#review/r{n}/{cut}/v{version}` | The cut at the version the call or tick was on, `#review/r{n}/{cut}/v{version}` |
 | Ad Performance | The section, `#performance/r{n}/{section}` | The section | The section |
 
-A tag opens what it was written in: the comment or the note. Until Content Review and Ad
-Performance have their own builds, their hashes open the tab at the top (**Header and tabs**).
+A tag opens what it was written in: the comment or the note. Until Ad Performance has its own
+build, its hashes open the tab at the top (**Header and tabs**).
 
 ### Tagging
 
@@ -5212,7 +5427,7 @@ left blank, never filled with a dash.
 | Selected Creators | Rates and payments | Row in **Contract and rates** | Creator, Concept, What they make, Usage, Exclusivity, Agreed fee (blank until agreed; Where it is says "In negotiation"), If we drop them, Where it is, Fees approved on, Payment status (blank for the client until the fees are sent), Payment date, Contract (blank for the client until the fees are sent), Signed on (the same), UGC video rate (agency only), Reel collab rate (agency only), 90 day usage rate (agency only), Contracted total (agency only), Paid so far (agency only), Offer open, target and max (agency only, three columns), Counter (agency only), Expected cost (agency only), Cost per 1K reach (agency only) |
 | Selected Creators | Variant tracker | Variant of each creator in the round | Creator, Concept, Variant, Latest version, Status, Updated on, Open comments |
 | Selected Creators | Variant plans (agency only) | Variant of each creator in the round, V1 to V{v} | Creator, Concept, Persona, Variant, Framework, Length, Hook ("H2 Demo first"), Hook line, CTA, CTA line, From (Brief, Override or Broken), Overridden fields, Changed by, Changed on |
-| Content Review | Variant status | Cut the queue shows now | Creator, Concept, Variant, Title, Version, Status, Approved by, Approved on, Checklist (ticked of total), Open comments |
+| Content Review | Variant status | Cut the queue shows now, the filter and creator applied | Creator, Concept, Variant, Title, Version (for the client, the newest sent to them), Stage, Status, Added on, Sent on, Approved by, Approved on, File (Upload, Google Drive, Frame.io or Link), Link (a link's address; blank for an upload), Checklist (ticked of total), Open comments, Hook ("H2 Demo first", agency only), CTA (agency only), Framework (agency only) |
 | Content Review | All comments | Comment or reply on the cuts the queue shows | Creator, Variant, Version, Timecode (text, m:ss), Seconds (a number, for sorting), Comment, Reply to (its first words), Who, Side (Client, Agency, or Agency only for the agency), When, Has drawing, Resolved |
 | Ad Performance | Every variant | Variant in **Variants ranked** | Creator, Concept, Variant, Framework (agency only), Hook (agency only), CTA (agency only), Spend, Purchases, Cost per sale, ROAS, 3 second hold, Status (winning, testing, retire or refresh) |
 | Ad Performance | By creator | Creator in **Compare** | Creator, Tier, Variants, Spend, Purchases, Cost per sale, ROAS |
@@ -5226,8 +5441,8 @@ What the export can't do yet, said plainly:
 - **Ad Performance exports nothing yet.** Nothing in this flow reads ad spend (**What this flow
   never does**). The tab shows its empty state, so its Export Button is disabled. The three
   sheets above are what it exports once the tab shows results.
-- **Content Review exports only what its build shows.** Until that tab has its own build, it shows
-  its empty state and its Export Button is disabled too.
+- **Content Review exports the cuts its queue shows.** With no cut in the round, its Export
+  Button is disabled. Hook, CTA and Framework are agency only columns, as on the tab.
 - **Opening in Excel and Google Sheets can't be checked from the chat.** Check one export from each
   tab by opening the page, and say so when handing over a first publish. Check one tab's export
   from a real Contributor's account too, since **Preview as client** rests on the page's code.
@@ -5307,6 +5522,7 @@ with who made it (**1e**, **Every editable value**). The agency edits in place:
 | A creator's persona and variant plan overrides for the round | Selected Creators, the card's **Concept and variant plan** (the persona also on Creator Selection) |
 | A creator's email, phone, address and delivery note; the round's contract, payment, ship to, footage counts and shoot by date | Selected Creators, the card (and **Contract and rates**, **Shipping**, **Brief and content**) |
 | Status, ad permissions, and the shipping record (item, carrier, tracking, dates, product status) | Creator Selection and Selected Creators (**Agency edits on the page**) |
+| A cut's first version (an upload or a link), its title and notes | Content Review, **Add cut** on an empty slot; later versions in the review panel |
 
 The client edits only what **What the client can write** names, the same way. Everyone else, and
 the agency on the client's own calls, sees a label. Nobody edits a round that is done.
@@ -5533,6 +5749,8 @@ visible edge on a card. A Switch keeps the `role="switch"` and `data-state` attr
 | | title, summary | `text-xl font-semibold leading-none tracking-tight`, `mt-1.5 text-sm text-muted-foreground break-words`, in a `min-w-0 flex-1` block |
 | | chevron | the Lucide `chevron-down`, `mt-0.5 size-4 shrink-0 text-muted-foreground transition-transform motion-reduce:transition-none`, last in the trigger |
 | | content | the Card content, with `data-state` and `hidden` while closed |
+| Count tile | | `flex min-w-0 flex-col items-start gap-1 rounded-xl border bg-card p-4 text-left shadow hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring aria-[pressed=true]:ring-2 aria-[pressed=true]:ring-ring`, on a `button` with `aria-pressed` |
+| Status dot | | `inline-block size-2 shrink-0 rounded-full`, with the status's dot class from **Content Review**, **Statuses**; `aria-hidden="true"`, since the trigger's label names every status |
 | List row | | `flex w-full min-w-0 items-start gap-3 rounded-md p-2 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring`, on a `button` |
 | Viewer | root, top bar, body | `fixed inset-0 z-50 flex flex-col bg-background`, `flex h-14 shrink-0 items-center gap-2 border-b px-2 sm:px-4`, `relative flex min-h-0 flex-1 flex-col md:grid md:grid-cols-[minmax(0,1fr)_360px] lg:grid-cols-[minmax(0,1fr)_420px]` |
 | | post strip, media box, media cap | `flex min-h-0 flex-1 flex-col items-center gap-3 overflow-y-auto bg-muted p-2 pb-[min(20rem,50dvh)] md:p-6`, `relative flex w-full items-center justify-center overflow-hidden rounded-xl`, on the `img` or `video` itself: `block h-auto w-auto max-w-full object-contain max-h-[calc(100dvh-3.5rem-min(20rem,50dvh))] md:max-h-[calc(100vh-14rem)]` |
@@ -5547,10 +5765,10 @@ card titles, `text-xl` for section titles, `text-2xl` for the page title. Weight
 
 | Variant | Status labels |
 | ------- | ------------- |
-| soft | New, Not started, Not received, Edited by {name}, Synced from Atlas, Sheet, Claude, From {file label}, Not sent, Not due, Not in yet, Good, Possible, Not scored yet, Too few decisions to judge yet, Not recorded yet, Resolved, Agency only, Awaiting decision, Unreviewed, Unpriced, Not sent yet, not asked yet, not shipped, Planned, Done, Returning, Up next, Paused, Not done, round closed, Scanned, Not read, Draft, Needs work, New concept, Carried forward, Deferred |
-| processing | Sent, Invoice sent, 50% paid, Offer sent, Details received, Shipped, Brief sent, in negotiation, In production, Now, Coming soon, Scanning, In review with client, Waiting for your sign off, Signed off, Aspire to confirm |
+| soft | New, Not started, Not received, Edited by {name}, Synced from Atlas, Sheet, Claude, From {file label}, Not sent, Not due, Not in yet, Good, Possible, Not scored yet, Too few decisions to judge yet, Not recorded yet, Resolved, Agency only, Awaiting decision, Unreviewed, Unpriced, Not sent yet, not asked yet, not shipped, Planned, Done, Returning, Up next, Paused, Not done, round closed, Scanned, Not read, Draft, Needs work, New concept, Carried forward, Deferred, With Aspire QA, Not cut yet, Not under contract |
+| processing | Needs client review, Sent, Invoice sent, 50% paid, Offer sent, Details received, Shipped, Brief sent, in negotiation, In production, Now, Coming soon, Scanning, In review with client, Waiting for your sign off, Signed off, Aspire to confirm |
 | success | Signed, Paid in full, Confirmed, Kept last round's product, Fees approved, Strong, Holding up, Picked, Priority Yes, Yes, Approved, Agreed, Delivered, Brief accepted, Granted, In market, Ahead, On track, Met the target, Active, Updated {n}, Signed off |
-| warning | details to add, On hold, Not confirmed for round {n}, More than planned, Fees changed since you approved, This isn't an approval you made, Weak, Partly matching, Past competitor deal, Paid partnership: {competitor}, Changes requested, This isn't a sign off you made, This isn't a decision you made, Not counted, Over budget, Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending, waiting for your approval, Running behind, Launch at risk, over target, days late, Waiting on you, Out of stock, Still needed, Needs a concept, Not in products in scope, Removed, Used in round {r} |
+| warning | details to add, On hold, Not confirmed for round {n}, More than planned, Fees changed since you approved, This isn't an approval you made, Weak, Partly matching, Past competitor deal, Paid partnership: {competitor}, Changes requested, This isn't a sign off you made, This isn't a decision you made, Not counted, Over budget, Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending, waiting for your approval, Running behind, Launch at risk, over target, days late, Waiting on you, Out of stock, Still needed, Needs a concept, Not in products in scope, Removed, Used in round {r}, Broken, Plan broken, Override, Cut for {concept}, Plan changed since this cut, Past the plan |
 | error | Competitor conflict, Choosing differently, Passed, No, Rejected, Declined, returned, Couldn't scan, Not added, Couldn't import |
 
 The decision's Badge takes the variant of its choice (Unreviewed is soft). The match score's
@@ -5790,6 +6008,22 @@ is no step field anywhere in page data; the Footage
     part; the Table has exactly {v} rows, at most 5, with no way to add one; a concept change
     asks before clearing overrides; and the client and **Preview as client** show no framework,
     length, hook, CTA or override per variant, the export included.
+24. Content Review: the creator tabs are exactly the round in view's creators on Selected Creators
+    (plus any who left with a cut, marked "Not under contract"), and no round's tab shows another
+    round's cuts; a round 2 creator with no round 1 history shows V1 to V{v}, five with the
+    default plan, each "Not cut yet" with **Add cut** for the agency only; the slots follow the
+    program terms' variants per creator, so an edit on Home changes them; each cut's status is
+    its newest version's by the rules in **Statuses**, and the tiles' counts, the filter's counts
+    and the dots agree, with Approved's {y} equal to **Where we stand**'s and Selected Creators'
+    **Variants approved**; every dot's status is in its trigger's label; a tile or a filter
+    narrows the tabs and rows and hides empty slots; Hook + CTA and Framework never render for the
+    client or in **Preview as client**, the export included; a cut with no version sent reads
+    "Aspire is checking this cut" for the client and doesn't open; **Add cut** refuses a file over
+    20 MB, a full store and a non video type with its line, writes nothing then, and offers Link;
+    a Google Drive or Frame.io cut opens outside the page from the review panel; adding a cut
+    moves the creator to step 6 and Home's pace at once with no reload; and a done round shows no
+    **Add cut** or send, with "Round {n} is signed off." and its results link in place of the
+    comment box.
 
 ## 1e. Page data: what the page keeps and how it is read back
 
@@ -5830,7 +6064,8 @@ campaign page:
 `downloads` lets every tab save its **Export** as Excel or CSV (**1d**, **Export**). It is not
 role gated, so a sheet's contents come from what the viewer can read, never from the capability.
 
-`assets` stores the files the agency uploads to Home's **Files**, and `sample` lets the page ask
+`assets` stores the files the agency uploads to Home's **Files** and the cuts it uploads on
+Content Review (**1d**, **Content Review**, **Adding a cut**), and `sample` lets the page ask
 Claude to read one (**Program files and the scan**) and to map a brief the agency imports (**1d**,
 **Master Brief**, **Importing a brief**). Both run only for Editors, on their own usage. `assets` is declared without
 `upload: "interact"`, so only Editors upload. `sample` declares images because a scanned PDF or an
@@ -6012,7 +6247,7 @@ for creator decisions, `refused:` the refused sign offs, the refused fee approva
 | Comment writers | `comments/{id}` | Each person, their own | `lastAt:` the time of their newest comment, written with each one, so the page can find every writer's items (**Live updates**) |
 | Agency only comments | `agency/comments/items/{comment}` | Agency | The same fields, kept from the client |
 | Reviews | `reviews/cut-{cut}`, `{cut}` being `{net}-{handle}-r{round}-{variant}` | Agency | `creator:` (`{net}-{handle}`), `round:`, `lane:`, `variant:` (1 to 5), `title`, `check-{id}` (one review checklist item each, `value` true or false) |
-| Review versions | `reviews/cut-{cut}/versions/v{version}` | Agency | `link` (the cut's link or file), `notes`, `addedAt:` |
+| Review versions | `reviews/cut-{cut}/versions/v{version}` | Agency | `kind:` (`upload`, `drive`, `frameio` or `link`), `asset:` (the upload's asset id, shown from `"/_blob/" + asset`; empty for a link), `link` (the address, for a link; for a version from before, the cut's link or file), `name:`, `type:` and `size:` (the uploaded file's own name, type and bytes), `notes`, `addedAt:`, `addedBy:`, `sentAt:` and `sentBy:` (written once by **Send to {brand}**; empty while the version is in Aspire QA) (**1d**, **Content Review**). A version from before with a `link` and no `kind:` reads as a link, and one with no `sentAt:` as in Aspire QA |
 | Cut plans, agency only | `agency/cut-{cut}` | Agency; Claude when it records a version | `plan-v{version}:` plain data written once when that version is added, the plan it was made with as **Reading a creator's variant** read it then: `{lane, framework, hook, cta}` (**1d**, **Selected Creators**, **Concept and variant plan**). Kept apart from `reviews`, which the client reads |
 | Creator profile | `creators/{net}-{handle}` | Agency; Claude | `name`, `descriptor`, `location`, `pickNote` (why we picked them), `shipArea` (`{city, region, country}` of the address, copied from `agency/creator-{net}-{handle}` `address` with its `at`, **1d**, **Selected Creators**, **Creator records**) |
 | Creator, per round | `edits/creator-{net}-{handle}-r{round}` | Agency; Claude at publish, from the roster | `concept`, `persona` (the persona's id in the concept, `persona-{id}`), `product`, `status`, `adPermissions`, the shipping record as on the client's document, `shootBy` (a date), `note-{id}` (Aspire's notes for {brand}, as in Notes below); `returning` (true) and `fromRound` on a creator carried into the round; and the round's records (**1d**, **Selected Creators**, **Creator records**): `contract` (`{status, signedAt}`), `payment` (`{status, at, paidPct}`, no amount), `footage` (`{counts, at}`) and `shipTo` (`{kind, confirmed, visitDate}`, no part of the address). Until each is written, its cell reads as **The card** says. A page from before kept `footage` as `{files, at}`: it reads as one count with no deliverable, and `shipTo` as an address or pickup: the next publish moves any address in it to `agency/creator-{net}-{handle}` and rewrites `shipTo` in the new shape, and **Checking the roles** step 3 fails until it has |
@@ -6942,4 +7177,5 @@ Follow the readout rules (`readout.md`, **Scheduled (unattended) runs**):
   Google Drive connector. No connector is ever added or asked for.
 - Paid performance data (paid hook rate, cost per result). The decision defaults are saved for
   later reads; nothing here reads ad spend.
-- Hero cuts, variants and delivery (steps 16 to 20).
+- Editing the cuts. Aspire's editors cut the variants outside this flow; the page tracks, reviews
+  and approves them (**1d**, **Content Review**), and keeps them only in page data.
