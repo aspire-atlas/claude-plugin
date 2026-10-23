@@ -264,15 +264,13 @@ The decision defaults, saved at setup and read by later performance reads:
 ```json
 {"schema": 1, "winnerMarginPct": 20, "winnerMetric": "cost per result",
  "tieBreak": "3-second hold", "switchOffFloor": {"spendUsd": 30, "impressions": 1000},
- "neverSwitchOffLastAd": true,
- "costPerSaleTarget": {"amount": 45, "currency": "USD"},
- "spendFloor": {"amount": 30, "currency": "USD"},
- "watchRatio": 1.3, "fatigueDays": 36, "stuckDays": 7}
+ "neverSwitchOffLastAd": true, "watchRatio": 1.3, "fatigueDays": 36, "stuckDays": 7}
 ```
 
-`costPerSaleTarget` is {brand}'s own cost per sale target and `spendFloor` the spend under which
-an ad is still testing, each in the ad account's currency, from C6a or the status screen (**1c**,
-row 17). `watchRatio`, `fatigueDays` and `stuckDays` set Ad Performance's Watch band, Fatigued and
+Two more keys are added only when C6a or the status screen (**1c**, row 17) gives them, never from
+an example: `costPerSaleTarget`, {brand}'s own cost per sale target, and `spendFloor`, the spend
+under which an ad is still testing, each `{amount, currency}` in the ad account's currency
+(`{"amount": …, "currency": "USD"}`). `watchRatio`, `fatigueDays` and `stuckDays` set Ad Performance's Watch band, Fatigued and
 Not spending, 1.3, 36 and 7 when the record leaves them out. A record without a target is read as
 having none: no number in the page's code stands in for it (**1d**, **Ad Performance**, **The
 target and the floor**). Changing any of them goes through the supersede rule with its own
@@ -635,8 +633,8 @@ Rules:
   weekly call agenda will post to {channel} and email {recipients} without asking each time."
   The page and chat summary always ship.
 - **C6 is the standing approval to run scheduled tasks for this campaign.** Say so plainly:
-  "This sets a weekly call task and a reminder for each open approval. They run on their own,
-  without asking each time." It is also the standing approval for paid discovery on this
+  "This sets a weekly call task, a reminder for each open approval, and a daily results refresh
+  while a round's ads are in market. They run on their own, without asking each time." It is also the standing approval for paid discovery on this
   campaign (SKILL.md, **Guardrails**): discovery may use the creator marketplace and paid
   lookups for this campaign's lanes without asking again.
 - **C7** lists every answer and the derived criteria in one summary, then writes all records with
@@ -644,12 +642,13 @@ Rules:
   finding, with Round 1's default `plan` (**Rounds**, **Round steps**), with `append_insights`.
   The summary shows Round 1's month, build window, in-market window
   and launch date (**Rounds**); the CM changes them with "Change something". A `key-exists` follows
-  the Phase 5 supersede rule. The decision defaults are written as saved above, with C6a's target
-  and floor when given; say once that Ad Performance will judge every variant by them and that they
+  the Phase 5 supersede rule. The decision defaults are written as saved above, adding C6a's target
+  and floor only when given, so "Not known yet" saves neither; say once that Ad Performance will judge every variant by them and that they
   can be changed.
 - **C6a** is the only question that asks the cost per sale target. Each amount needs a currency: a
-  bare number takes the currency of the brand's linked ad account from `list_ad_accounts`, said
-  back in the C7 summary, and with no ad account linked it is asked again with the currency. "Not
+  bare number takes the currency `list_ad_accounts` shows for the ad account linked to the brand's
+  Profile, said back in the C7 summary, and when none is linked, or the linked ones use more than
+  one currency, it is asked again with the currency. "Not
   known yet" leaves both out, and row 17 asks again once the round is close to going live.
 - The brand theme is read the way every page reads it (`theme.md`). Setup never asks about it.
 
@@ -680,7 +679,7 @@ vocabulary and start with the round once the campaign has more than one: "Round 
 | 14 | Briefs sent, replies waiting | "{a} accepted, {c} changed, {w} waiting." | Record a reply | **1g**, Replies | `reply`, roster `briefState` accepted, or a `brief-revision` and Gate 4b `open` for that creator | Reminder at that creator's Gate 4b due time |
 | 15 | A Gate 4b open for any creator | "{n} creator changes with {approver}." | Pull the client's decisions | **CAS campaign**, Run, **Pulling decisions** | `brief-revision` approved and locked, or a `brief-notes` draft; Gate 4b `cleared` per creator | Removes that creator's reminder |
 | 16 | Every creator's brief accepted or locked | "In production. Hands to the content review flow." | Review a creator's draft. Once creators have posted: review the round's hooks. | **Content review**, with the creator ad campaign brief as P1's source (`content-review.md`, **Normalizing the brief**: the concept's locked `brief`, or the creator's approved `brief-revision`); the hook review in `hooks-and-ctas.md` | Content review's own findings; `hook-review` findings | None. Offer once to keep or stop the weekly call. |
-| 17 | The round is in market, or launches within 7 days with step 4 cleared | "In market: cost per sale {x} against a {t} target · {w} of {a} ads won · {r} to retire or refresh." Before results: "Ads go live {launch}." With no target: "No cost per sale target saved." | With no target saved, save {brand}'s cost per sale target (C6a's question, through the supersede rule). Otherwise, with variants to retire or refresh, go over them; else the next step of row 16 | **CAS campaign**, Status; the results are read at every publish (**1d**, **Ad Performance**, **Reading the results**) | `campaign:{slug}-decision-defaults` superseded when the target is saved | Creates the daily results refresh once the round is in market, and removes it when no round is (**Reminders and the weekly call**) |
+| 17 | Row 16's condition holds (every creator's brief accepted or locked), and the round is in market or launches within 7 days | "In market: cost per sale {x} against a {t} target · {w} of {a} ads won · {r} to retire or refresh." Before results: "Ads go live {launch}." With no target: "No cost per sale target saved." | With no target saved, save {brand}'s cost per sale target (C6a's question, through the supersede rule). Otherwise, with variants to retire or refresh, go over them; else the next step of row 16 | **CAS campaign**, Status; the results are read at every publish (**1d**, **Ad Performance**, **Reading the results**) | `campaign:{slug}-decision-defaults` superseded when the target is saved | Creates the daily results refresh once the round is in market (**Reminders and the weekly call**, **Results refresh**, which also says when it is removed) |
 
 Rules:
 
@@ -1924,10 +1923,10 @@ Sections, in order:
 4. **Last round result** (`home-result`). Last round's headline result: cost per sale against
    the client's target and "{w} of {a} ads won", where "last round" is the newest round with ad
    results. The cost per sale is in `text-lg font-semibold`, then "against a {t} target" and a
-   Badge: success "Met the target" at or under it, warning "{d} over target" above it. An ad
-   that "won" is one Ad Performance marks Winning or Fatigued, at or under the target, and {a} counts
-   every variant past the spend floor (**Ad Performance**, **Status**). The Badge is the one
-   **Cost per sale against target** shows. A link Button "See the results" opens
+   Badge, the one **Cost per sale against target** shows: success "{d}% under target" at or
+   under it, warning "{d}% over target" above it. An ad that "won" is one Ad Performance marks
+   Winning or Fatigued, at or under the target, and {a} counts every variant in the results
+   currency past the spend floor (**Ad Performance**, **Status**). A link Button "See the results" opens
    `#performance/r{n}/result`. Money is in that round's results currency (**Ad Performance**,
    **Reading the results**).
 
@@ -2067,8 +2066,8 @@ rows.
    The client's rows are the same items as their **Waiting on you**, with the same ids, open
    comments, grouping and "waited since" (**The Simple view**). "Cuts at the client" counts cuts
    that need client review, and the cut "Changes" row cuts with changes requested (**Content
-   Review**, **Statuses**). "Variants to retire or refresh" lists the round in market's variants
-   to retire or refresh (**Ad Performance**, **Status**), its detail naming the reason ("over
+   Review**, **Statuses**). "Variants to retire or refresh" lists the variants to retire or
+   refresh of a round in market or in its 14 days after (**Ad Performance**, **Status**), its detail naming the reason ("over
    the cost per sale bar", "live past {d} days and slipping", "under the spend floor after {d}
    days") with the cost per sale against the target, and shows nothing before the round has
    results. The agency's own rows come from `agency/attention`, never from the page itself.
@@ -6139,8 +6138,9 @@ as old as the last publish, and the tab says so: "As of {time}", the read's time
 own time zone, under the tab's header. Results are never saved to Atlas: Meta's figures are the
 record, and each publish reads them again.
 
-**No Meta ad account linked.** Before reading, Claude calls `list_ad_accounts` for the brand's
-Profile. When none is linked, every section on the tab is replaced by one Card for both sides:
+**No Meta ad account linked.** Every `search_ads` reply names the ad accounts linked to the
+brand's Profile that it read (`adAccountIds`), whoever runs it. When the first read's list is
+empty, no ad account is linked, and every section on the tab is replaced by one Card for both sides:
 "Connect your Meta ad account to see results", with "Results show here once {brand}'s Meta ad
 account is linked to Aspire Atlas." under it. The agency also sees, under an "Agency only" rule,
 "Link it from the chat: /aspire:aspire, then connect Meta." Home's **Last round result**, the
@@ -6174,14 +6174,19 @@ cleared), at every publish:
    `actionTypes` `["video_view"]`, paged to the end. Each row names the post it ran
    (`post.igMediaId`, `post.permalink`) and its creator (`creator.handle`).
 3. **Matching.** A row belongs to a variant when its post is that variant's live post: the same
-   `igMediaId`, or before one is stored the same post code in the link (the part after `/p/` or
-   `/reel/`), compared without case. Claude then stores the `igMediaId` on the stamp. Every other
+   `igMediaId`, or before one is stored the same post code in the link (the part after `/p/`,
+   `/reel/`, `/reels/` or `/tv/`, up to the next `/` or `?`), compared exactly, since post codes
+   are case sensitive. Claude then stores the `igMediaId` on the stamp. Every other
    row is **not matched**: it isn't in any figure on the tab and is listed for the agency only.
-4. **Weeks.** `search_ads` with `groupBy` `day`, `igMediaIds` the matched posts, the same dates
-   and `actionTypes`, paged to the end, summed into weeks: week 1 is the launch date and the six
+4. **Weeks.** `search_ads` with `groupBy` `day`, `igMediaIds` the matched posts, the same
+   `isPartnershipAd` and `creatorHandles` as step 2, the same dates and `actionTypes`, paged to the
+   end, and summed into weeks, so the weeks hold exactly the ads step 2 matched: week 1 is the launch date and the six
    days after it, and so on, the last week cut at the read's last day.
-5. **The last 7 days.** `search_ads` with `groupBy` `ad`, `igMediaIds` the matched posts and the
-   last 7 days of the read, for **Fatigued** below.
+5. **Days live and the last 7 days.** Two more reads with step 4's filters and `groupBy` `ad`,
+   both running to today even after the round's in-market end, because a winning ad often keeps
+   running: one from the launch date, whose rows' `firstDate` and `lastDate` give each variant's
+   Days live, and one over the last 7 days, for **Fatigued** below. Neither changes a total: the
+   tab's figures stay inside step 1's dates.
 
 The `search_ads` rules hold everywhere (`atlas-tools.md`, **Paid ads**, and
 `list_ad_search_fields`, which Claude calls before the first read in a session):
@@ -6190,8 +6195,9 @@ The `search_ads` rules hold everywhere (`atlas-tools.md`, **Paid ads**, and
   currency and never converted. The tab's figures are in the **results currency**: the target's
   currency when a target is saved and the ads ran in it, else the currency with the most spend.
   Spend in any other currency shows as one line under **Headline numbers**, "Also {spend} spent in
-  {currency}, {p} purchases", never added in, and a variant whose ads ran only in another currency
-  has its row in that currency with no status (**Status**).
+  {currency}, {p} purchases", never added in. A variant whose ads ran only in another currency is
+  kept out of the ranking, the statuses, the hit rate and the totals: it is listed under the table
+  in "In other currencies", with its figures in its own currency and no status.
 - **Attribution windows.** Rows also split by attribution window. Within one currency they add up
   the way Meta's own totals do, and when more than one window is in play, **Headline numbers**
   says "Purchases are counted under each ad set's own attribution window: {windows}."
@@ -6218,7 +6224,7 @@ The figures, each worked out from sums over the matched ads in the results curre
 | Revenue | `paidPurchaseValue` |
 | ROAS | revenue over spend |
 | Cost per sale | spend over purchases |
-| Days live | from the first day the variant's ads spent to the last, both counted, within the read |
+| Days live | from the first day the variant's ads spent to the last, both counted, from the launch date to today (step 5) |
 
 **Done when the totals match Meta.** The tab's Spend, Impressions, Purchases and Revenue equal
 Meta Ads Manager's totals for the same ads (the variants' live posts), the same dates and the same
@@ -6285,8 +6291,9 @@ the variants past the floor ("{w} of {a} ads won", {a} counting every variant no
 
 Each one is a row in Home's **Needs attention**, "Retire or refresh @{handle}'s V{variant}", with
 its reason and its cost per sale against the target, waiting on Aspire, opening
-`#performance/r{n}/variants` (**Home**, **The Everything view**). Only the round in market flags
-them; a done round's statuses are history.
+`#performance/r{n}/variants` (**Home**, **The Everything view**). Only a round in market, or
+in its 14 days after the in-market end (**Reminders and the weekly call**, **Results refresh**),
+flags them, since its ads often still run; an older round's statuses are history.
 
 #### Cost per sale against target
 
@@ -6792,8 +6799,10 @@ What the export can't do yet, said plainly:
   address, tracking number or date. The street, ZIP, phone and delivery note are in the agency's
   sheet only, so a client's export holds no more of an address than the page shows them.
 - **Ad Performance exports the results the page holds.** Every variant and Weeks are for both
-  sides, with the figures the page itself holds and the same results currency, so the totals of
-  their Spend, Purchases and Revenue columns equal **Headline numbers**. The client's Every
+  sides, with the figures the page itself holds. Every variant lists the results currency's
+  variants first and then those in "In other currencies", each with its Currency, so the totals of
+  the results currency's rows, and of Weeks, in Spend, Purchases and Revenue equal **Headline
+  numbers**. The client's Every
   variant has no Framework, Hook or CTA column and the client gets no Not matched sheet, as on the
   tab. By creator and By framework export
   once **Compare** is built. With no results for the round in view, the Export Button is
@@ -7145,7 +7154,7 @@ card titles, `text-xl` for section titles, `text-2xl` for the page title. Weight
 | ------- | ------------- |
 | soft | New, Not started, Not received, Edited by {name}, Synced from Atlas, Sheet, Claude, From {file label}, Not sent, Not due, Good, Possible, Not scored yet, Too few decisions to judge yet, Not recorded yet, Resolved, Agency only, Awaiting decision, Unreviewed, Unpriced, Not sent yet, not asked yet, not shipped, Planned, Done, Returning, Up next, Paused, Not done, round closed, Scanned, Not read, Draft, Needs work, New concept, Carried forward, Deferred, With Aspire QA, Not cut yet, Not under contract, Back with editor, Not checked, Can't check, Version {k} |
 | processing | Testing, Needs client review, Sent, Invoice sent, 50% paid, Offer sent, Details received, Shipped, Brief sent, in negotiation, In production, Now, Coming soon, Scanning, In review with client, Waiting for your sign off, Signed off, Aspire to confirm |
-| success | Winning, under target, Signed, Paid in full, Confirmed, Kept last round's product, Fees approved, Strong, Holding up, Picked, Priority Yes, Yes, Approved, Agreed, Delivered, Brief accepted, Granted, In market, Ahead, On track, Met the target, Active, Updated {n}, Signed off, Pass |
+| success | Winning, under target, Signed, Paid in full, Confirmed, Kept last round's product, Fees approved, Strong, Holding up, Picked, Priority Yes, Yes, Approved, Agreed, Delivered, Brief accepted, Granted, In market, Ahead, On track, Active, Updated {n}, Signed off, Pass |
 | warning | Watch, Fatigued, details to add, On hold, Not confirmed for round {n}, More than planned, Fees changed since you approved, This isn't an approval you made, Weak, Partly matching, Past competitor deal, Paid partnership: {competitor}, Changes requested, This isn't a sign off you made, This isn't a decision you made, This isn't a call you made, Approved on the earlier page, not recorded, Fail, Not counted, Over budget, Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending, waiting for your approval, Running behind, Launch at risk, over target, days late, Waiting on you, Out of stock, Still needed, Needs a concept, Not in products in scope, Removed, Used in round {r}, Broken, Plan broken, Override, Cut for {concept}, Plan changed since this cut, Past the plan |
 | error | Retire, Competitor conflict, Choosing differently, Passed, No, Rejected, Declined, returned, Couldn't scan, Not added, Couldn't import |
 
@@ -8651,10 +8660,12 @@ without a second question; the send confirmation names the reminder.
   what is next.
 - **Results refresh.** One task per campaign named "Atlas CAS results refresh: {brand} -
   {campaign}", daily at 07:00 in the campaign's saved time zone, converted to UTC cron (`M H * * *`).
-  The status screen creates it when a round goes in market (row 17) and removes it once no round
-  is in market and none launches within 7 days; C6 approved it, so neither asks. It republishes
-  the page, which reads the ad results again (**1d**, **Ad Performance**, **Reading the
-  results**), to the same link, and posts nothing.
+  The status screen creates it when a round goes in market (row 17). It runs while a round is in
+  market and for 14 days after a round's in-market end, so late purchases and the last days' spend
+  reach the page. The status screen removes it whenever it runs and none of that holds and no round
+  launches within 7 days; an unattended run never removes a task. C6 approved it, so neither asks.
+  It republishes the page, which reads the ad results again (**1d**, **Ad Performance**,
+  **Reading the results**), to the same link, and posts nothing.
 - **Step lines.** Any gate change or ledger line posts one line to the routing channel when it
   is written: "{Campaign}: {step name} {status}. {one fact}. {page link}". Interactive runs
   confirm the send once per session; scheduled runs use the C5 standing approval.
@@ -8678,7 +8689,8 @@ Run /aspire:aspire cas campaign for {brand}, campaign {campaign}, as the unatten
 refresh. Use the Aspire Atlas connection and the campaign's saved records. Do not ask questions.
 Do not record any decision, pull the page data, or write anything to Atlas. Read the date from the
 shell clock in the campaign's saved timezone; do not trust any date in this prompt. If no round of
-the campaign is in market today, stop without publishing. Otherwise read the ad results for every
+the campaign is in market today and none ended its time in market in the last 14 days, stop
+without publishing. Otherwise read the ad results for every
 round that has been in market and republish the campaign page to its saved link. Post nothing.
 ```
 

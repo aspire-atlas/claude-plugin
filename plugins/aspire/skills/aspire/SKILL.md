@@ -2356,7 +2356,8 @@ Follow **Readouts**, Schedule, for the mechanics. After setup, offer the weekly 
 `AskUserQuestion` ("Set up the weekly call agenda for {campaign} at {slot}?" Options: "Yes
 (Recommended)" / "Not now"). Approval reminders need no offer: C6 approved them, so sending a
 step creates its reminder and closing it removes it. C6 also approved the daily results refresh,
-which the status screen creates when a round goes in market and removes when none is; it
+which the status screen creates when a round goes in market and removes once no round is in market
+or ended in the last 14 days and none launches within 7 days; it
 republishes the page to the same link and posts nothing. Name tasks and write prompts as the
 reference says. If the scheduled-task tools are missing, say so and stop; never fake a schedule.
 
