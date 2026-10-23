@@ -295,7 +295,11 @@ The rate sheet is the **Contract and rates** section of the campaign page's Sele
   approved creators not yet contracted at their **Expected cost**.
 - **Terms**: usage window, organic posting terms, whitelisting uplift (or "No allowlisting" when
   `allowlisting` is false), in plain words.
-- **One approve control** for the whole sheet, for the client, while step 3 is open.
+- **One approval for the whole sheet**, once per round: **Approve fees** or **Request changes**,
+  for the client only, while step 3 is open. It is saved under the client's own id with a copy of
+  the fees they saw, so no one at Aspire can approve for them and a fee changed afterwards is
+  never recorded as approved (`cas-campaign.md`, **1d**, **Selected Creators**, **Contract and
+  rates**).
 - The fee rate label once ("Aspire recommended rates" when no rate card is saved), "fees are
   estimates from public view counts, not quotes".
 
@@ -307,13 +311,18 @@ slate"). It is never a recommendation to drop anyone.
 ## Closing Gate 3
 
 The client's approval comes back on the page and is read with **Pulling decisions**
-(`cas-campaign.md`). The CM may also report it in chat; resolve it the same way. One batch
+(`cas-campaign.md`), checked as **The fee approval** there says: written by an account on the
+client's side and confirmed by the CM as step 3's approver, newer than the send, and for the fees
+as they are now. One that fails is named with why and never recorded. A client who can't write on
+the page approves outside it, and the CM records their word in the chat (`cas-campaign.md`,
+**Gate 3: the fees**). One batch
 picker names each creator's approved fee: "Record the client's approval of fees for @a
 ($1,200), @b ($900) and @c ($2,100)? This completes step 3." Options: "Record it
 (Recommended)", "Change something". On confirm:
 
-1. Write a `roster` finding per creator with `rate` `agreed`, then Gate 3 `cleared`, a ledger
-   line when it was late, and remove the reminder.
+1. Write a `roster` finding per creator with `rate` `agreed`, then Gate 3 `cleared` with
+   `clearedBy` the approver's name and `approval`, the `page-sides` finding when it changed, a
+   ledger line when it was late, and remove the reminder.
 2. Say in two lines what it unblocks: the creator details emails (`cas-campaign.md`, **1f**),
    and contracts, which run in the core Aspire platform.
 3. Republish the campaign page with the fees and the Shipping section shown to the client,

@@ -2189,6 +2189,20 @@ default when there are few decisions, each kept within 0.08 of its default and n
 weights reach Atlas only when the CM saves them in the next pull. The reference's **1d**,
 **Creator Selection**, **Match score tuning**, holds the rules.
 
+Selected Creators shows everyone approved for the round whose fee is agreed, one card each. A
+card shows the creator's step out of 8 (contract signed, product shipped, product delivered,
+shooting, footage in and editing, cuts in review, cuts approved, ads live), worked out every time
+from their records and review status, never set by hand, with what's next or what we're waiting
+on, new or returning, and their contract, payment, shipping, ship to, footage, variants and shoot
+by date. A chip counts the details still to add (name, email, phone, address and rates); the
+client's counts only what the client can see. Round totals show the creators, shipping
+confirmed, and variants delivered and approved against the plan, which comes from the program
+terms (files per creator and variants per creator), plus fees against the budget for the agency
+only. Both sides filter by stage and product and search, and open or close every card. The
+client approves the fee sheet once per round on this tab; the approval is kept under the client's
+own id with a copy of the fees they saw. The reference's **1d**, **Selected Creators**, holds the
+step rules.
+
 ### Setup
 
 1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end,
@@ -2251,7 +2265,10 @@ the tool prefix, `profile_id`, and `profile_slug`:
   Yes, Yes, Maybe and No by name, with its reason and who decided, plus shipping, status and ad permission edits, and
   record them with one picker. Creator decisions are read from each client's own decisions and
   checked first: a call from an account seen on Aspire's side is dropped, and an account the CM
-  hasn't confirmed as {brand}'s is asked about once. A brief sent for sign off on the page is recorded as step 4 sent.
+  hasn't confirmed as {brand}'s is asked about once. The client's fee approval is read from their
+  own approval item and checked the same way (an account never seen on Aspire's side, confirmed as
+  step 3's approver, newer than the send, and the fees still what they approved), then recorded as
+  step 3 approved. A brief sent for sign off on the page is recorded as step 4 sent.
   The client's brief sign off is read from their own sign off item and checked first (written by
   an account never seen on Aspire's side and confirmed by the CM as the step's approver, answering
   the newest send, the brief still what they signed);
