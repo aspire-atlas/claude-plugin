@@ -206,6 +206,10 @@ Welcome aboard. To get the product to you, please reply with:
 Your brief arrives on {brief date}.
 ```
 
+For a creator whose profile already holds an address (a returning creator, `cas-campaign.md`,
+**1f**), line 1 reads "1. Are we still shipping to you in {city}? Reply yes, or send the new
+address", naming the city only. The draft never carries the street.
+
 **Brief** (after the briefs are approved, `cas-campaign.md`, **1g**):
 
 ```
@@ -302,6 +306,21 @@ The rate sheet is the **Contract and rates** section of the campaign page's Sele
   rates**).
 - The fee rate label once ("Aspire recommended rates" when no rate card is saved), "fees are
   estimates from public view counts, not quotes".
+- **The contract and payment**, agency only, once the fees are sent: the contract status and
+  signed date, the round's rate per deliverable (UGC video, Reel collab, 90 day usage), the
+  contracted total (the agreed fee plus its uplift) and the payment status (Invoice sent; 50%
+  paid, the rest on final cut sign off; Paid in full; On hold) with the amount paid so far. The
+  client reads the payment status only, beside their agreed fee. Each value carries its source
+  tag (`cas-campaign.md`, **1d**, **Selected Creators**, **Creator records**).
+
+**Rates are recorded per round.** When the CM records a creator's rates per deliverable in the
+chat, with the offer or a reply, the confirm writes them for the round being negotiated, to the
+page's `agency/creator-{net}-{handle}-r{round}` at the next publish, stamped `claude`, so a
+returning creator's new rates never overwrite what an earlier round contracted. A contract signed
+or a payment made outside the page (in the core Aspire platform) is recorded on the card by the
+agency, or typed in the chat: "@a signed on the 3rd", "@b paid half". The chat proposes the
+record in one picker, like a reply, and writes it to the roster's `contract` or `payment` for the
+round. Claude never assumes a contract is signed or a payment made.
 
 **If we drop them** is three facts in one line: the saving at their current figure (agreed,
 else counter, else target), the concept's count after the drop against what it needs, and the
