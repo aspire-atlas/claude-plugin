@@ -1622,7 +1622,7 @@ only is marked so.
 | Ad Performance | Headline numbers | `performance-headline` | "Spend {s} · {p} purchases · ROAS {r}" | Standard | Closed |
 | Ad Performance | Weekly spend and return | `performance-weekly` | "{w} weeks in market · best week {date}" | Standard | Closed |
 | Ad Performance | Variants ranked | `performance-variants` | "{w} winning · {t} testing · {r} to retire or refresh" | Standard | Closed |
-| Ad Performance | Compare by framework, hook, CTA (those three for the agency only), concept, persona, creator and tier | `performance-breakdowns` | "Best {dimension}: {value} at {x} per sale", or "Too early to call a winner"; for the client never framework, hook or CTA | Full | Closed |
+| Ad Performance | Compare by framework, hook, CTA (those three for the agency only), concept, persona, product, creator and tier | `performance-breakdowns` | "Best {dimension}: {value} at {x} per sale", or "Too early to call a winner"; for the client never framework, hook or CTA | Full | Closed |
 | Ad Performance | Who watched | `performance-audience` | "Top audience: {segment}" | Full | Closed; not rendered until `search_ads` has an audience breakdown (**Ad Performance**, **Who watched**) |
 | Ad Performance | Next round's brief | `performance-next` | "{n} changes for round {n+1}", or "Nothing written yet." | Standard | Closed |
 
@@ -1772,7 +1772,7 @@ Ad Performance:
 | See weekly spend and return | Ad Performance, then **Weekly spend and return** | 2 |
 | See every variant ranked with its status | Ad Performance, then **Variants ranked** | 2 |
 | Flag variants to retire or refresh | Ad Performance, then **Variants ranked** | 2 |
-| Compare by framework, hook, CTA (agency only), concept and persona | Ad Performance, then **Compare** | 2 |
+| Compare by framework, hook, CTA (agency only), concept, persona and product | Ad Performance, then **Compare** | 2 |
 | Compare by creator and tier | Ad Performance, then **Compare** | 2 |
 | See who watched | Ad Performance, then **Who watched**, once `search_ads` has an audience breakdown; hidden until then | 2 |
 | Write what changes in next round's brief | Ad Performance, then **Next round's brief** | 2 |
@@ -6461,10 +6461,10 @@ the headline numbers add up. Each variant falls in exactly one group of each kin
 | ----- | --------- | --------------------- |
 | Framework (agency only) | **Reading a creator's variant**, its code and name | "Not planned" |
 | Hook (agency only) | **Reading a creator's variant** for the row's concept, its number and type within that concept, with its line and type from that concept's brief (`briefs/{lane}-r{round}`) | "Not planned"; a removed hook keeps its number with the "Broken" Badge, as on **Variants ranked** |
-| CTA (agency only) | **Reading a creator's variant**, its number (C1 or C2) | "Not planned"; a removed one as for hooks |
+| CTA (agency only) | **Reading a creator's variant** for the row's concept, its number (C1 or C2) within the row's product, since a number names a different CTA in each concept | "Not planned"; a removed one as for hooks |
 | Concept | The live post's `lane` (**The live post on each variant**), as the row's concept already is | Never empty: the row has one |
 | Persona | The creator's persona for the round (**The match score**, **Concept and persona**), when the row's concept is the creator's concept. A persona group is the pair of concept and persona, since personas belong to a concept | "No persona" under the row's concept, also for a cut made for another concept, whose persona was never set |
-| Product | The product of the row's concept (the live post's `lane`) in the round's brief, not the creator's current concept | "No product" |
+| Product | The product of the row's concept (the live post's `lane`) in the round's brief, not the creator's current concept. A product the brief names that isn't in scope is its own group under that name, with the warning Badge "Not in products in scope" | "No product" |
 | Creator | The row's creator | Never empty |
 | Tier | **Creator Selection**, **Tiers**, worked out at publish | "No follower count" |
 
@@ -6496,7 +6496,8 @@ the same as the rest of the tab; leaders on cost per sale and hook rate still wo
 kind, the groups' Spend, Impressions, Purchases and Revenue add up to **Headline numbers**.
 Persona groups add up the same way, since each is a concept and persona pair, and within a concept
 they add up to the concept's row. The page checks it when it draws the section, counting a group
-whose figure is "No data" as nothing on both sides, as the totals do: a kind whose sums differ from the totals isn't drawn,
+whose figure is "No data" as nothing on both sides, as the totals do, and comparing money in the
+currency's smallest unit (cents for USD) after rounding, and counts exactly: a kind whose sums differ from the totals isn't drawn,
 and its place reads "These groups don't add up to the round's totals yet. They'll show at the next
 update." For the agency it names the kind and the gap. Rates are never checked this way, since a
 rate of a whole isn't the sum of its parts' rates.
@@ -6513,13 +6514,24 @@ A group is named best on a figure only when the numbers support it:
   `winnerMarginPct` percent: on cost per sale, the next one's is that much higher; on hook rate,
   the best's is that much higher.
 - **Something to beat.** At least two groups of the kind have enough data.
+- **A real group.** "Not planned", "No persona", "No product" and "No follower count" are never
+  named best and never count as the next group: they hold what couldn't be placed, not a choice
+  anyone made.
 
-Persona leaders are compared across every concept and persona pair in the round. When no group
-passes, nothing is named best and the kind says so in one line, "Too early to call: {x} of {y}
-{groups} have {n} ads past the spend floor and {p} purchases.", leaving out the purchases where
-the kind is compared on hook rate only. A group short of enough
-data still shows its figures with an outline Badge "Small sample" beside its name, so a low cost
-per sale from one ad never reads as a result. Leaders are tagged with a soft Badge, never a status
+Persona leaders are compared across every concept and persona pair in the round; hook and CTA
+leaders within each product's block (**The parts**). When no group passes, nothing is named best
+and the kind says why in one line:
+
+- Too little data: "Too early to call: {x} of {y} {groups} have {n} ads past the spend floor and
+  {p} purchases.", with "{n} ads with spend" when no floor is saved, and without the purchases
+  where the kind is compared on hook rate only.
+- Enough data but no margin: "No clear leader: {best} is {d}% ahead of {next}, under the {m}%
+  needed."
+
+**Small sample** is an outline Badge beside a group's name when it has fewer than
+`compareMinVariants` variants past the floor. A group with enough variants but fewer than
+`compareMinPurchases` purchases shows its cost per sale with an outline Badge "Few sales" beside
+the figure instead. So a low cost per sale from one ad or one sale never reads as a result. Leaders are tagged with a soft Badge, never a status
 color, since being best isn't the same as beating the target.
 
 ##### Insight cards
@@ -6571,8 +6583,8 @@ decimal and ROAS two, as in **Headline numbers**.
    rate with "{w} of {a}" beside it. The bar isn't colored by result; its number carries it. With
    no target, the Win rate column isn't there. A concept or persona named best on cost per sale
    carries the soft Badge "Lowest cost per sale".
-2. **Products.** One row per product in **Products in scope** order, then "No product" when it
-   has rows: Product, Concepts, Variants,
+2. **Products.** One row per product in **Products in scope** order, then products not in scope
+   by name, then "No product" when it has rows: Product, Concepts, Variants,
    Spend, Purchases, Revenue, ROAS, Cost per sale and Win rate, the same way.
 3. **By creator.** One row per creator, sorted by cost per sale, cheapest first, then those with
    no purchase by spend: Creator (Avatar and @handle, opening their card), Tier, Concepts (the
@@ -6589,11 +6601,12 @@ decimal and ROAS two, as in **Headline numbers**.
    isn't shown.
 5. **Which framework won**, agency only. One row per framework in the campaign's frameworks
    order (**Frameworks**), then "Not planned": Framework (code and name), Variants, Spend, Hook
-   rate, Cost per sale and Winners ("{w} of {a}", the won count). Above the table, a bar chart of
+   rate, Cost per sale and Won ("{w} of {a}", left out with no target). Above the table, a bar chart of
    cost per sale by framework (**The chart**, below). The framework named best on cost per sale
    carries "Lowest cost per sale".
-6. **Hooks and CTAs**, agency only. One block per product, in **Products in scope** order, then
-   a "No product" block when it has rows:
+6. **Hooks and CTAs**, agency only. One block per product, in the same order as **Products**,
+   "No product" last when it has rows. Hooks and CTAs are compared within a block only, so each
+   block has its own leaders:
    - **Hooks.** One row per hook in use on the block's concepts, then "Not planned" when it has
      rows: the hook ("H2 Demo first") with
      its concept chip, since hook numbers belong to a concept, then Variants, Spend, Hook rate,
@@ -6606,21 +6619,23 @@ decimal and ROAS two, as in **Headline numbers**.
      under them says "No clear difference yet" and how much data each has.
 
 The summary line (**Sections per tab**) names the best group on cost per sale among the kinds the
-viewer sees, concept first, then persona, product, tier and creator, and for the agency framework,
-hook and CTA after them: "Best concept: {name} at {x} per sale". With no leader, "Too early to
+viewer sees, concept first, then persona, product, tier and creator, and for the agency framework
+after them (hooks and CTAs lead only within a product, so they aren't in it): "Best concept: {name} at {x} per sale". With no leader, "Too early to
 call a winner". The client's line is written into the page itself at publish. The agency's line,
-when a framework, hook or CTA leads, is worked out on the Editor's page only, and it is never
+when a framework leads, is worked out on the Editor's page only, and it is never
 written to the page itself, client readable data, Home's **Tab summaries** for the client, or a
 channel post.
 
 ##### The chart
 
 One chart in the section, for the agency: **Cost per sale by framework**, a horizontal bar chart,
-one bar per framework with purchases, sorted cheapest first, in `--chart-1`, its axis in the results
+one bar per framework with enough data for cost per sale (**Enough to call a leader**), sorted
+cheapest first, in `--chart-1`, its axis in the results
 currency from zero. It has one series, so no legend, and the title names it. The target is a
-dashed reference line labelled "Target {t}", in `--muted-foreground`, never a status color. Each
-bar has its value at its end. A framework with no purchase draws no bar and is named under the
-chart, "No purchase yet: {codes}". Hover, focus or tap on a bar shows "{code} {name}: {x} per
+dashed reference line labelled "Target {t}", in `--muted-foreground`, never a status color, drawn
+only when a target is saved in the results currency. Each bar has its value at its end. A
+framework without enough data draws no bar and is named under the chart, "Not enough data yet:
+{codes}", with its figures in the table. Hover, focus or tap on a bar shows "{code} {name}: {x} per
 sale · {v} variants · {s} spent". The table under it is the same data, so nothing reads by the
 chart alone. Colors are read from the CSS variables at run time, and the chart draws at its
 container's width (**Responsive**, **Media**). Every other part is a table or Cards: their job is
@@ -6629,9 +6644,9 @@ to read exact figures across a few groups, which a table does better.
 #### Who watched
 
 `performance-audience`. Hidden: not drawn, not in **Expand all**, not in the export and not
-reached by a link, until `search_ads` can break results down by age, gender and region. Claude
-checks `list_ad_search_fields` at each publish and draws the section only when it lists those
-breakdowns. Nothing stands in for it: no fixed or sample figures, and no audience guessed from
+reached by a link, until `search_ads` can break results down by age and gender. Claude checks
+`list_ad_search_fields` at each publish and draws the section only when it lists that breakdown
+(**When it shows**, below); region is optional. Nothing stands in for it: no fixed or sample figures, and no audience guessed from
 followers or organic posts. A link to `#performance/r{n}/audience` opens the tab at the top, as
 for any section that isn't rendered.
 
@@ -7025,7 +7040,7 @@ left blank, never filled with a dash.
 | Ad Performance | By product | Product in **Products**, "No product" included | Product, Concepts, Variants, Past the floor, Won, Win rate, Spend, Impressions, Hook rate, Purchases, Revenue, ROAS, Cost per sale, Leader, Small sample |
 | Ad Performance | By creator | Creator in **By creator**, every row | Creator, Tier, Concepts, Variants, Past the floor, Won, Spend, Impressions, Hook rate, Hold rate, Link CTR, Purchases, Revenue, ROAS, Cost per sale, Small sample |
 | Ad Performance | By tier | Tier in **By tier** | Tier, Creators, Variants, Past the floor, Won, Spend, Impressions, Hook rate, Purchases, Revenue, ROAS, Cost per sale, Leader |
-| Ad Performance | By framework (agency only) | Framework in **Which framework won**, "Not planned" included | Framework (code and name), Variants, Past the floor, Winners, Spend, Impressions, Hook rate, Hold rate, Purchases, Revenue, ROAS, Cost per sale, Leader, Small sample |
+| Ad Performance | By framework (agency only) | Framework in **Which framework won**, "Not planned" included | Framework (code and name), Variants, Past the floor, Won, Spend, Impressions, Hook rate, Hold rate, Purchases, Revenue, ROAS, Cost per sale, Leader, Small sample |
 | Ad Performance | By hook (agency only) | Hook in **Hooks and CTAs**, per product, "Not planned" and "No product" included | Product, Concept, Hook ("H2 Demo first"), Hook line, Variants, Spend, Impressions, Hook rate, Hold rate, Purchases, Revenue, Cost per sale, Leader, Small sample |
 | Ad Performance | By CTA (agency only) | CTA number per product in **CTA 1 against CTA 2**, "No product" included | Product, CTA (C1, C2 or Not planned), Types, Variants, Spend, Impressions, Link CTR, Purchases, Revenue, Cost per sale, Leader, Small sample |
 
@@ -7767,13 +7782,15 @@ is no step field anywhere in page data; the Footage
     group; every group's rates are worked out from its sums; no group is tagged best, and no
     insight card names a leader, unless it has `compareMinVariants` variants past the floor (and
     `compareMinPurchases` purchases for cost per sale) and beats the next group by
-    `winnerMarginPct`; a group short of that shows "Small sample"; leader Badges are soft, never a
+    `winnerMarginPct`, and no "Not planned", "No persona", "No product" or "No follower count"
+    row is ever named best; a group short of the variants shows "Small sample" and one short of
+    the purchases "Few sales"; leader Badges are soft, never a
     status color; the client's view, **Preview as client**, the page itself and the client's
     export hold no framework, hook or CTA group, label or insight card; the agency's framework
     chart has one series in `--chart-1` from zero, the target as a dashed line, and its table;
     insight cards change when the round's figures change, with nothing fixed in the page's code;
     and **Who watched** isn't drawn, linked or exported until `list_ad_search_fields` lists an
-    age, gender and region breakdown.
+    age and gender breakdown, and shows **Top regions** only when it lists region too.
 
 ## 1e. Page data: what the page keeps and how it is read back
 
@@ -8013,7 +8030,7 @@ cut call writers (`{writer}/cut-calls`). Only the owner writes it, so no Editor 
 | Pool viewer data | `agency/pool-{net}-{handle}` | Claude | One document per creator not sent yet, plain data: what the creator viewer shows for them (**1d**, **Creator Selection**, **The creator viewer**): posts with captions, figures, marks and images, bio, category, verified, badges and audience. Captions are cut to 2,200 characters, and a document Claude would write past 200 KiB drops its link tiles' captions, then its third and second posts' images, which then show as link tiles. Written at publish, deleted by no one: a creator sent later reads from the page itself instead |
 | Creator, agency only | `agency/creator-{net}-{handle}` | Agency; Claude | Every agency only field in **Who sees what** that isn't per round: the recommendation, the Aspire notes (`note-{id}`), vetting evidence, safety detail, the profile's `email`, `phone`, `address` (`{line1, line2, city, region, postal, country}`) and `deliveryNote` (stamps, edited on the Selected Creators card, written by Claude from the roster's `contact` and `details` stamped `atlas`), manager, reply window, last contact, `expectedCost:` and `expectedFrom:` (agreed, counter, offer or calculator, `rates-and-terms.md`, **Expected cost**), `costPer1kReach:`, offer, counters, waiting on, `replies:` the reply log (`[{at, summary}]`, newest first) and `drafts:` the creator's email drafts (`[{template, subject, body, sentAt}]`). A page from before kept the rates (`rate-ugc`, `rate-reel`, `rate-usage90`) and a payment amount here: the rates read as the newest round's (**Creator, agency only, per round**), and the amount is never shown, since the page works it out |
 | Creator, agency only, per round | `agency/creator-{net}-{handle}-r{round}` | Claude for the rates; Agency and Claude for the overrides | `rate-ugc`, `rate-reel`, `rate-usage90`, the round's three rates per deliverable, as recorded in the chat; the creator's variant plan overrides (**1d**, **Selected Creators**, **Concept and variant plan**), one stamp per field per variant, V1 to V5 at most: `v{n}-framework` (`{lane, code, name}`), `v{n}-length` (`{lane, text}`), `v{n}-hook` and `v{n}-cta` (`{lane, n}`), `lane` being the concept it was made for; no stamp, or `value` `null`, follows the concept's plan; and each variant's live post, `v{n}-post` (`{lane, url, igMediaId}`), written by an Editor and by Claude from the roster's `variantPlan`, with Claude adding `igMediaId` once a read finds the post (**1d**, **Ad Performance**) |
-| Ad results not matched | `agency/performance-r{round}` | Claude at publish | Plain data, rewritten whole at each read: `at:` the read's time, `rows:` one per ad by the round's creators whose post is no variant's live post, `{creator, ad, post, currency, spend, firstDate, lastDate}`, `ad` the ad's name and `post` its post link; `insights:` the agency's insight cards (**1d**, **Ad Performance**, **Compare**, **Insight cards**), up to 3, each `{headline, kind, group, figures, sample, part}`, `kind` framework, hook, CTA, or `none` for the "Too early to call" card (whose `group` is `null` and which is never marked as changed), `figures` the numbers the card quotes and `part` the table it links to; `leaders:` per kind (concept, persona, product, creator, tier, framework, hook, CTA), the group **Enough to call a leader** names best on cost per sale and on hook rate with its figures and sample, or `null`, for **Next round's brief**. Nothing here is a code or an id the page shows |
+| Ad results not matched | `agency/performance-r{round}` | Claude at publish | Plain data, rewritten whole at each read: `at:` the read's time, `rows:` one per ad by the round's creators whose post is no variant's live post, `{creator, ad, post, currency, spend, firstDate, lastDate}`, `ad` the ad's name and `post` its post link; `insights:` the agency's insight cards (**1d**, **Ad Performance**, **Compare**, **Insight cards**), up to 3, each `{headline, kind, group, figures, sample, part}`, `kind` framework, hook, CTA, or `none` for the "Too early to call" card (whose `group` is `null` and which is never marked as changed), `figures` the numbers the card quotes and `part` the table it links to; `leaders:` per kind (concept, persona, product, creator, tier, framework, and hook and CTA per product), the group **Enough to call a leader** names best on cost per sale and on hook rate with its figures and sample, or `null`, for **Next round's brief**. Nothing here is a code or an id the page shows |
 | Activity, client side | `activity/{id}/days/{day}` | Each Contributor, their own | `day:`, `entries:` one key per write (**The activity log**) |
 | Activity, agency side | `activity-editors/{id}/days/{day}` | Each Editor, their own; Claude under `activity-editors/claude` | The same, for the agency's writes about things the client can see |
 | Activity writers | `activity/{id}`, `activity-editors/{id}` | The writer | `lastAt:` the time of their newest entry, written with each one |
@@ -8802,7 +8819,8 @@ document. Steps 3 and 4 run after every publish.
    suggestion. An amount the page shows the client in its own right (an agreed fee once the fees are
    sent) is left out of the search even when an offer or counter had the same number. For each
    round with ad results, search the page itself for every ad name in `agency/performance-r{round}`
-   and every headline in its `insights:`, and check its results rows hold only the fields **Ad
+   and every headline in its `insights:` except the `none` card, whose text the client's card
+   shares by design, and check its results rows hold only the fields **Ad
    Performance**, **What the page itself holds** lists: no hook, CTA or framework, no ad, ad set,
    campaign or ad account id, and no ad code. The client's insight cards in the page itself name
    no framework, hook or CTA (**Compare**, **Insight cards**). None of the
