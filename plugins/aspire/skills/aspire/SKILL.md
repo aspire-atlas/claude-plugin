@@ -2204,7 +2204,7 @@ own id with a copy of the fees they saw. Each creator's profile (name, email, ph
 delivery note) is kept once and shows again in every round, and each round keeps their contract,
 payment, ship to, shipping and footage, every value tagged with where it came from (Sheet, Synced
 from Atlas, Edited by {name}, Claude, or the program file). Either side marks a package shipped or
-delivered in one click. The street, ZIP, phone, delivery note, rates, totals and amounts are agency only, and the
+delivered in one click. The email, street, ZIP, phone, delivery note, rates, totals and amounts are agency only, and the
 chat names a creator's city and region, never the street. The reference's **1d**, **Selected
 Creators**, holds the step rules and **Creator records**.
 

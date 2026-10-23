@@ -458,7 +458,7 @@ steps, and the later rounds' default `plan`, **Round steps**); one `roster` find
 creator for round {n+1}, copied from their round {n} row
 with `returning` true, `fromRound` {n}, `source` carried, `offer.target` set to the round {n}
 `agreed`, and `rate`, `agreed`, `counter`, `briefState`, `shipping`, `shipDate`, `contract`, `payment`,
-`footage`, `yourCall` and `waitingOn` cleared. `contact`, `name` and `details` carry, so the
+`rates`, `footage`, `yourCall` and `waitingOn` cleared. `contact`, `name` and `details` carry, so the
 creator's contact details and address show in the new round without retyping; only
 `details.status`, `pickup`, `visitDate`, `product`, `options` and `availability` are cleared, so a
 pickup never carries and a returning creator never starts the round at Product delivered, since the round's details
@@ -4342,8 +4342,8 @@ Under the step, one line in `text-sm`, worked out from the same records. The fir
 
 A cut waits on the client when its newest version has no call yet. The agency also sees, in
 `text-xs text-muted-foreground` under the line, the roster's `waitingOn` and last contact from
-`agency/creator-*`, and "Final 50% due: cuts approved" for a creator at 50% paid who has reached
-step 7, never shown to the client.
+`agency/creator-*`, and "Final 50% due: final cuts signed off" for a creator at 50% paid who has
+reached step 7 (every variant's cut approved, the final cut sign off the payment label means), never shown to the client.
 
 #### Round totals
 
@@ -4417,7 +4417,7 @@ to that hash opens the card expanded and scrolls to it.
   | Contract | Not sent, Sent, or Signed {date}, for the client once the fees are sent | The contract record (**Creator records**); with none, "Contracts signed for the round", with no date, once step 1 holds by its fallback, else "Not recorded yet" |
   | Payment | Invoice sent, 50% paid, Paid in full or On hold, with its date, for both sides once the fees are sent; for the agency only, the amount paid so far of the contracted total ("{paid} of {total} paid") | The payment record (**Creator records**); with none, "Not recorded yet" for the agency and "Not due" for the client |
   | Shipping | Product status Badge, and the carrier and tracking as a link when there is one, with the ETA while on the way | **Shipping** |
-  | Ship to | City and region, or "Pickup {visit date}", with "Confirmed" or "Not confirmed for round {n}"; "Not received" | The creator's profile and the round's ship to (**Creator records**) |
+  | Ship to | City and region, or "Pickup {visit date}", with "Confirmed" or "Not confirmed for round {n}"; "Not received"; for a creator whose product status is Kept, "Kept last round's product", with no confirmation Badge | The creator's profile and the round's ship to (**Creator records**) |
   | Footage | "{x} of {f} files" | The footage record (**Creator records**); with none, "Not recorded yet" |
   | Variants | "{k} of {v} in · {a} approved" | The round's cuts (**Content Review**) |
   | Shoot by | The creator's shoot by date, with "{d} days left" or "{d} days late" from step 4 until step 5 | `shootBy` on `edits/creator-{net}-{handle}-r{round}`, an agency edit; else the round's **First cut review** step date, labelled "First cut review"; else "Not set" |
@@ -4518,7 +4518,7 @@ round** carries into the new round's roster, so the page and Atlas agree in ever
 | Contract | `contract`, `{status, signedAt}`: `status` not-sent, sent or signed, read as Not sent, Sent and Signed; `signedAt` the signed date | Agency, a Select and a date Input |
 | Rates | `rate-ugc`, `rate-reel`, `rate-usage90` on `agency/creator-{net}-{handle}-r{round}`, the round's three rates per deliverable, copied by Claude at each publish from the round's roster `rates`, which the chat writes when they are recorded (**Rates and terms**). A page from before kept them on `agency/creator-{net}-{handle}`: they read as the newest round's when its own document has none, and the next publish writes them there | The chat only |
 | Contracted total | Not stored: the agreed fee plus its allowlisting uplift, as **Totals** gives it (`rates-and-terms.md`, **Contract and rates**) | Nobody; worked out |
-| Payment | `payment`, `{status, at, paidPct}`: `status` invoice-sent, half-paid, paid or on-hold, read as Invoice sent, "50% paid, the rest on final cut sign off", Paid in full and On hold; `at` its date; `paidPct` 0, 50 or 100, set with the status (an On hold keeps the one before it). The amount paid so far is `paidPct` of the contracted total, worked out on the Editor's page, so no amount is stored. `paidPct` tells the client nothing the status they read doesn't already say | Agency, a Select; shown and saved only once the fees are sent |
+| Payment | `payment`, `{status, at, paidPct}`: `status` invoice-sent, half-paid, paid or on-hold, read as Invoice sent, "50% paid, the rest on final cut sign off", Paid in full and On hold; `at` its date; `paidPct` 0, 50 or 100, set with the status (an On hold keeps the one before it). The amount paid so far is `paidPct` of the contracted total, worked out on the Editor's page, so no amount is stored. `paidPct` is client readable and tells the client only whether half was paid before an On hold, never an amount | Agency, a Select; shown and saved only once the fees are sent |
 | Ship to | `shipTo`, `{kind, confirmed, visitDate}`: `kind` home or pickup; `confirmed` true once the address is confirmed for this round; `visitDate` for a pickup. Never any part of the address | Agency; Claude from the details reply |
 | Shipping | `productStatus` (not-shipped, shipped, delivered, returned or kept), `item` (what was sent: the round's product and its options, from the details reply), `shipping` (the carrier), `tracking`, `shippedAt`, `deliveredAt`, `eta` (typed only), `etaEstimate` (from **Mark shipped**), each its own stamp, on both `client/creator-{net}-{handle}-r{round}` and this document | Both sides; the newer `at` wins per field (**Who sees what**) |
 | Footage | `footage`, `{counts, at}`: `counts` the raw files received per deliverable, keyed by the program terms' deliverable ids (`{"hooks": 2, "broll": 9}`), `at` the newest file's date. {x} sums the counts, each capped at its deliverable's own count, so {x} never passes {f} | Agency, one number Input per deliverable |
@@ -4536,7 +4536,7 @@ than planned", so a creator who sent extra B-roll is never cut back on the page.
 is written, its cell reads as **The card** says.
 
 **Mark shipped and Mark delivered.** On each creator's row in **Shipping** and on the open card,
-for both sides while the round is live:
+for both sides while the round isn't done or closed early (**Rounds**):
 
 - **Mark shipped**, an outline Button size sm, while the product status is Not shipped or empty
   and the creator isn't picking up. One click saves product status Shipped, `shippedAt` today and
@@ -4604,15 +4604,13 @@ here once they are sent for your approval." **Totals**, agency only, close the s
 campaign at open, target and max, and at what is agreed so far, with the allowlisting uplift as its
 own line unless allowlisting is off. Full detail: `rates-and-terms.md`, **Contract and rates**.
 
-The client reads each row's terms and agreed fee, the contract status and signed date, and the
-payment status, once the fees are sent; the rates, the contracted total and the amount paid are
-agency only. The contracted total is the agreed fee plus its uplift, both of which the client
-already reads, so it is kept to the agency's row for layout, not as a secret. From then on, each agency row also carries the creator's contract record (status and signed
+Once the fees are sent, each agency row also carries the creator's contract record (status and signed
 date), the round's rates per deliverable, the contracted total, and the payment status with the
 amount paid so far, each with its source tag (**Creator records**). The agency edits the contract
 and payment status here or on the card; the rates come from the chat. Once the fees are sent, the
 client's row shows the agreed fee, the contract status and signed date, and the payment status,
-never a rate, a total or an amount.
+never a rate, a total or an amount. The contracted total is the agreed fee plus its uplift, both
+of which the client already reads, so it is kept to the agency's row for layout, not as a secret.
 
 **The fee approval.** The client approves the whole fee sheet once per round, here, while step 3
 is open. Step 3 is sent only once every creator on the sheet has agreed or declined (**1c**, row
@@ -4670,7 +4668,10 @@ the tab, as a Card on a phone and a table from `md`:
   (received, or not asked yet);
 - Ship to: the city and region, or the pickup and its visit date, and whether the address is
   confirmed for the round (**Creator records**); for the agency, the full address and delivery
-  note under it in `text-xs text-muted-foreground`, with **Copy shipping label**;
+  note under it in `text-xs text-muted-foreground`, with **Copy shipping label** and a Checkbox
+  **Address confirmed for round {n}** that writes `shipTo` `confirmed` and logs an `edit` entry in
+  the agency log. A creator whose product status is Kept needs no confirmation and shows "Kept
+  last round's product" instead;
 - the three step timeline;
 - the carrier, the tracking (a link when it is a carrier's tracking link), shipped, delivered and
   ETA dates, and the product status (Not shipped, Shipped, Delivered, Returned, Kept last round's
@@ -4683,7 +4684,7 @@ change moves the creator's step at once (**Steps**). Only the agency edits the a
 to. The agency also sees the next step ("ask once fees are approved", "details received", "confirm
 the address for round {n}"). A returning creator's address shows from the first day of the new
 round, with "Not confirmed for round {n}" until the round's details reply confirms it or the
-agency ticks **Address confirmed** on their row.
+agency ticks **Address confirmed for round {n}** on their row.
 
 #### Brief and content
 

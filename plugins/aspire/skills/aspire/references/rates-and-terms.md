@@ -318,7 +318,9 @@ The rate sheet is the **Contract and rates** section of the campaign page's Sele
 chat, with the offer or a reply, the confirm writes them to the roster finding for the round being
 negotiated, as `rates` `{ugc, reel, usage90}`, and the next publish copies them to the page's
 `agency/creator-{net}-{handle}-r{round}`, stamped `claude`, so a
-returning creator's new rates never overwrite what an earlier round contracted. A contract signed
+returning creator's new rates never overwrite what an earlier round contracted. Each round starts
+with no rates: starting the next round clears `rates`, and a carried creator's are recorded again
+with that round's offer. A contract signed
 or a payment made outside the page (in the core Aspire platform) is recorded on the card by the
 agency, or typed in the chat: "@a signed on the 3rd", "@b paid half". The chat proposes the
 record in one picker, like a reply, and writes it to the roster's `contract` or `payment` for the
