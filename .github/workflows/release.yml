@@ -23,33 +23,42 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           . scripts/plugins.sh
+          fail=0
           for p in $(plugin_names); do
             ver=$(plugin_version "$p")
             tag=$(plugin_tag "$p" "$ver")
+
             if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
-              echo "$tag already tagged; nothing to do for $p"; continue
+              echo "$tag already tagged; nothing to release for $p"
+              target="$tag^{commit}"
+            else
+              awk -v v="$ver" '
+                $0 ~ "^## \\["v"\\]" {p=1; next}
+                p && /^## \[/ {exit}
+                p {print}
+              ' "$(plugin_changelog "$p")" > "notes-$p.md" || true
+              # One plugin's problem must not hold back the others.
+              [[ -s "notes-$p.md" ]] || { echo "FAIL no changelog section for $p $ver"; fail=1; continue; }
+
+              src=$(plugin_src "$p")
+              (cd "$(dirname "$src")" && zip -qr "$GITHUB_WORKSPACE/$p-$ver.zip" "$(basename "$src")")
+              sha256sum "$p-$ver.zip" > "$p-$ver.zip.sha256"
+
+              # The repository's Latest release stays on aspire.
+              gh release create "$tag" "$p-$ver.zip" "$p-$ver.zip.sha256" \
+                --target "$GITHUB_SHA" --title "$p v$ver" --notes-file "notes-$p.md" \
+                --latest="$([[ "$p" == aspire ]] && echo true || echo false)" \
+                || { echo "FAIL could not publish $tag"; fail=1; continue; }
+              target=$GITHUB_SHA
             fi
-
-            awk -v v="$ver" '
-              $0 ~ "^## \\["v"\\]" {p=1; next}
-              p && /^## \[/ {exit}
-              p {print}
-            ' "$(plugin_changelog "$p")" > "notes-$p.md"
-            [[ -s "notes-$p.md" ]] || { echo "No changelog section for $p $ver"; exit 1; }
-
-            src=$(plugin_src "$p")
-            (cd "$(dirname "$src")" && zip -qr "$GITHUB_WORKSPACE/$p-$ver.zip" "$(basename "$src")")
-            sha256sum "$p-$ver.zip" > "$p-$ver.zip.sha256"
-
-            # The repository's Latest release stays on aspire.
-            gh release create "$tag" "$p-$ver.zip" "$p-$ver.zip.sha256" \
-              --target "$GITHUB_SHA" --title "$p v$ver" --notes-file "notes-$p.md" \
-              --latest="$([[ "$p" == aspire ]] && echo true || echo false)"
 
             # Dependency version ranges resolve against <plugin>--vX.Y.Z tags;
-            # aspire's releases keep their vX.Y.Z tag and get this one as well.
-            if [[ "$tag" != "$p--v$ver" ]]; then
-              git tag "$p--v$ver" "$GITHUB_SHA"
-              git push origin "refs/tags/$p--v$ver"
+            # aspire's releases keep their vX.Y.Z tag and get this one as well,
+            # on the same commit. Checked on its own, so a failed push is retried.
+            dep="$p--v$ver"
+            if [[ "$tag" != "$dep" ]] && ! git rev-parse -q --verify "refs/tags/$dep" >/dev/null; then
+              { git tag "$dep" "$target" && git push origin "refs/tags/$dep"; } \
+                || { echo "FAIL could not push $dep"; fail=1; }
             fi
           done
+          exit $fail

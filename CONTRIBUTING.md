@@ -76,7 +76,7 @@ Version bumps: **patch** for copy and reference fixes, **minor** for a new agent
 
 ## Adding a plugin
 
-Follow section 14 of [docs/PLUGIN-LIFECYCLE.md](docs/PLUGIN-LIFECYCLE.md). Only plugins for customers go in this repository; a plugin for Aspire staff gets its own private repository.
+Follow section 14 of [docs/PLUGIN-LIFECYCLE.md](docs/PLUGIN-LIFECYCLE.md). Only plugins for customers go in this repository; a plugin meant only for Aspire's own team gets its own private repository. A plugin not ready for the official channel is held back on release branches by removing its marketplace entry there (section 5 of the runbook).
 
 ## Branch protection
 

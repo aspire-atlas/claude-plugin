@@ -10,8 +10,9 @@
 #
 # plugin.json must never carry a version on either branch: each plugin's
 # marketplace entry on main is the single source of truth, which keeps
-# develop -> main merges conflict-free. Every plugin lives in plugins/<name>/
-# and every folder there is listed.
+# develop -> main merges conflict-free. Every plugin lives in plugins/<name>/.
+# On develop every folder there is listed; on main a folder without an entry is
+# a plugin held back from the official channel until its first release.
 #
 # Usage: scripts/check-channel.sh <develop|main>
 set -euo pipefail
@@ -34,15 +35,19 @@ case "$channel" in
     ;;
   main)
     [[ "$name" == "aspire-atlas" ]] || err "marketplace name is '$name', expected 'aspire-atlas' on main"
-    # The top-level version is no plugin's version; it is optional and kept only as X.Y.Z.
-    [[ -z "$mver" || "$mver" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || err "marketplace.json top-level version '$mver' must be X.Y.Z on main"
+    # The top-level version is optional; while it is there it follows aspire's.
+    aver=$(jq -r '.plugins[] | select(.name == "aspire") | .version // empty' "$M")
+    [[ -z "$mver" || "$mver" == "$aver" ]] || err "marketplace.json top-level version '$mver' must equal aspire's version '$aver' on main (or be removed)"
     ;;
   *) echo "unknown channel '$channel'"; exit 2 ;;
 esac
 
 for d in plugins/*/; do
   d=${d%/}
-  jq -e --arg s "./$d" '.plugins[] | select(.source == $s)' "$M" >/dev/null || err "$d has no entry in $M"
+  if ! jq -e --arg s "./$d" '.plugins[] | select(.source == $s)' "$M" >/dev/null; then
+    if [[ "$channel" == main ]]; then echo "HELD $d has no entry on main, so it is not released yet"
+    else err "$d has no entry in $M"; fi
+  fi
 done
 
 for i in $(seq 0 $((count - 1))); do
@@ -68,7 +73,7 @@ for i in $(seq 0 $((count - 1))); do
       [[ -z "$ever" ]] || err "$pname: marketplace entry must not set version on develop (beta tracks commits)"
       ;;
     main)
-      [[ "$ever" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || err "$pname: marketplace entry version '$ever' must be release semver X.Y.Z"
+      [[ "$ever" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || err "$pname: marketplace entry version '$ever' must be release semver X.Y.Z (to hold the plugin back instead, remove its entry on the release branch)"
       cl=$(plugin_changelog "$pname")
       grep -q "^## \[$ever\]" "$cl" 2>/dev/null || err "$pname: $cl has no '## [$ever]' entry"
       latest_tag=$(plugin_latest_tagged "$pname")
@@ -84,7 +89,9 @@ for i in $(seq 0 $((count - 1))); do
           # Docs, CI and repo housekeeping may land on main without a bump.
           # Plugin content may not: anything under the plugin folder that
           # differs from the tagged release requires a new version.
-          if ! git diff --quiet "$tag" HEAD -- "$src"; then
+          # Plugin paths hold no spaces (check above), so the pathspecs split safely.
+          # shellcheck disable=SC2046
+          if ! git diff --quiet "$tag" HEAD -- $(plugin_content "$pname"); then
             err "$pname: $src changed since tag $tag but version is still $ever. Bump it."
           fi
         fi

@@ -73,10 +73,14 @@ check_plugin() { # plugin name
 
 checked=0
 for p in $(plugin_names); do
-  compgen -G "$(plugin_src "$p")/agents/*.md" >/dev/null || continue
+  src=$(plugin_src "$p")
+  compgen -G "$src/agents/*.md" >/dev/null || continue
   check_plugin "$p"
   checked=$((checked + 1))
 done
+
+# aspire always ships agents; finding none means a path is wrong, not that all is listed.
+[ "$checked" -gt 0 ] || err "no plugin has agents in plugins/<name>/agents/; check the marketplace sources"
 
 if [ "$fail" -eq 0 ]; then
   echo "OK   the agents of $checked plugin(s) are listed in their skill, README, and agents panel, and their models match the Model tiers table"

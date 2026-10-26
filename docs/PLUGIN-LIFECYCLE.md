@@ -28,7 +28,7 @@ Each plugin's version lives in exactly one place: its own entry's `version` in `
 - No `plugins/<name>/.claude-plugin/plugin.json` has a `version` field.
 - No `skills/*/SKILL.md` frontmatter has a `version` field.
 - `develop`'s `marketplace.json` never has any `version` field.
-- The top-level `version` on `main` is not any plugin's version. It is optional, must be `X.Y.Z` when present, and a release may drop it.
+- The top-level `version` on `main` is optional. While it is there it must equal `aspire`'s version; a release may drop it.
 
 CI (`scripts/check-channel.sh`) fails the build if any of these are violated. The reason: Claude resolves a plugin's version as `plugin.json`, then marketplace entry, then commit SHA. Keeping the field out of shared files is what lets `develop` track commits while `main` stays pinned, and what keeps merges between the branches conflict-free.
 
@@ -38,8 +38,8 @@ CI (`scripts/check-channel.sh`) fails the build if any of these are violated. Th
 
 | What | Rule | `aspire` (kept from before there were several plugins) |
 | --- | --- | --- |
-| Folder | `plugins/<name>/`, listed with `"source": "./plugins/<name>"`. Every folder under `plugins/` has an entry. Org sync needs relative paths for private plugins, so plugins live in this repository. | `plugins/aspire/` |
-| Changelog | `plugins/<name>/CHANGELOG.md`, shipped with the plugin | the root `CHANGELOG.md` |
+| Folder | `plugins/<name>/`, listed with `"source": "./plugins/<name>"`. On `develop` every folder under `plugins/` has an entry; on `main` a folder without one is held back (below). Org sync needs relative paths for private plugins, so plugins live in this repository. | `plugins/aspire/` |
+| Changelog | `plugins/<name>/CHANGELOG.md`, shipped with the plugin. Editing it alone is not a content change, so it needs no version bump. | the root `CHANGELOG.md` |
 | Release tag | `<name>--vX.Y.Z`, the form Claude Code resolves dependency version ranges against | `vX.Y.Z`, plus `aspire--vX.Y.Z` from the next release on |
 | Release asset | `<name>-X.Y.Z.zip` and its `.sha256` | `aspire-X.Y.Z.zip` |
 
@@ -117,6 +117,8 @@ Then, for every plugin whose folder differs from `main` (`git diff --stat origin
 
 Leave every other plugin's version alone.
 
+**Holding a plugin back.** A plugin that is on `develop` but not ready for the official channel arrives on the release branch with a versionless entry, which the gate refuses. Remove that entry from `marketplace.json` on the release branch (keep its folder). On `main` the folder then sits unlisted, so nobody can install it, and `check-channel.sh main` reports it as held. Later merges from `develop` keep the entry out, because `main` removed it and `develop` did not change it; if `develop` edits the entry meanwhile, resolve the conflict by leaving it out again. The release that ships the plugin adds the entry back with its `version`.
+
 ```bash
 bash scripts/check-channel.sh main        # must print OK
 git commit -am "Release 1.2.0"
@@ -127,12 +129,13 @@ gh pr create --base main --label release --title "Release 1.2.0"
 The `Release gate` check blocks the merge unless all of these hold:
 
 - Source branch is `release/*`, `develop`, or `hotfix/*`.
-- For each plugin: if anything in its folder changed, or it is new on `main`, its version is higher than `main`'s (no plugin's version goes down).
+- Every listed plugin has a version (hold back an unready one as above).
+- For each plugin: if anything in its folder other than its changelog changed, or it is new on `main`, its version is higher than `main`'s (no plugin's version goes down).
 - For each plugin being released: its changelog has a dated entry for that version and nothing is left under Unreleased.
 
 Merge with a **merge commit** (not squash), so `main` records that it contains `develop`. On merge, the `Release` workflow, for each plugin whose version has no tag yet:
 
-- tags the merge commit (`v1.2.0` and `aspire--v1.2.0` for `aspire`, `<name>--v1.2.0` for the others),
+- tags the merge commit (`v1.2.0` and `aspire--v1.2.0` for `aspire`, `<name>--v1.2.0` for the others; a missing `aspire--vX.Y.Z` for the current version is added on any later run),
 - packages `plugins/<name>` as `<name>-1.2.0.zip` with a `.sha256`,
 - publishes a GitHub Release using that plugin's changelog section as notes. The repository's Latest release stays on `aspire`.
 
@@ -265,7 +268,7 @@ bash scripts/check-channel.sh develop   # or main
 
 ## 14. Adding a plugin
 
-Everything in this repository ships to customers. A plugin for Aspire staff does not go here: it belongs in a separate private repository with its own marketplace (see `CLAUDE.md`).
+Everything in this repository ships to customers. A plugin meant only for Aspire's own team does not go here: it belongs in a separate private repository with its own marketplace (see `CLAUDE.md`).
 
 1. Branch from `develop` as for any feature.
 2. Create `plugins/<name>/` with `.claude-plugin/plugin.json` (`name`, `displayName`, `description`, `author`, `homepage`, `repository`, `license`; no `version`), a `README.md`, and its `skills/`. Agents are named `atlas-<name>.md`; list each in a skill's agent hand-off and Model tiers tables and in the plugin README's agent table, as `aspire` does.
@@ -275,8 +278,8 @@ Everything in this repository ships to customers. A plugin for Aspire staff does
    ln -s ../../../../aspire/skills/aspire/references/artifact-standard.md plugins/<name>/skills/aspire/references/
    ln -s ../../aspire/assets/aspire-animated.svg ../../aspire/assets/aspire-animated-small.svg plugins/<name>/assets/
    ```
-   Claude Code copies the target of a link that stays inside the marketplace when it installs the plugin. Before the plugin's first official release, install it from the org catalog (through the mirror) and from a release zip, and confirm the linked files arrive there too.
-4. Add its entry to `.claude-plugin/marketplace.json` on `develop`: `name`, `"source": "./plugins/<name>"`, `displayName` with " (beta)", `description`, and the same metadata fields `aspire`'s entry carries. No `version`, and no changelog yet.
+   The checks require real links to `aspire`'s files; a copy fails. Claude Code copies the target of a link that stays inside the marketplace when it installs the plugin, and the release zip stores the target's contents. Before the plugin's first official release, install it from the org catalog (through the mirror) and from a release zip, and confirm the linked files arrive there too.
+4. Add its entry to `.claude-plugin/marketplace.json` on `develop`: `name`, `"source": "./plugins/<name>"`, `displayName` with " (beta)", `description`, and the same metadata fields `aspire`'s entry carries. No `version`, and no changelog yet. Until its first release, every release branch holds it back (section 5).
 5. Connectors: a plugin bundles only connectors it uses, in its own `.mcp.json`. Adding an Aspire connector is a deliberate decision (see `CLAUDE.md`).
 6. Add a row to the root `README.md` plugin table.
 7. Run the checks in section 4. They loop over every plugin, so a new plugin is checked from its first commit.

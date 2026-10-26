@@ -22,7 +22,8 @@ hexes() {
 
 checked=0
 for p in $(plugin_names); do
-  H=$(plugin_src "$p")/hooks
+  src=$(plugin_src "$p")
+  H=$src/hooks
   compgen -G "$H/*.ts*" >/dev/null || continue
   PAL=$H/palette.ts
   [ -f "$PAL" ] || { echo "FAIL $H holds TypeScript sources but no palette.ts"; fail=1; continue; }

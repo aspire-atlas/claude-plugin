@@ -34,7 +34,7 @@ for p in $(plugin_names); do
     # The block and the standard name these paths under the plugin's own root.
     for f in skills/aspire/references/artifact-standard.md assets/aspire-animated.svg assets/aspire-animated-small.svg; do
       [ -e "$src/$f" ] || { err "$p: $src/$f is missing; link it to $P/$f"; continue; }
-      cmp -s "$src/$f" "$P/$f" || err "$p: $src/$f differs from $P/$f; link it instead of copying"
+      { [ -L "$src/$f" ] && [ "$src/$f" -ef "$P/$f" ]; } || err "$p: $src/$f must be a symbolic link to $P/$f, not a copy"
     done
   fi
   for f in "$src"/agents/*.md; do

@@ -35,9 +35,13 @@ jobs:
             base_ver=$(plugin_version "$p" "$RUNNER_TEMP/base.json")
             head_ver=$(plugin_version "$p")
             echo "$p  main: ${base_ver:-none}  ->  PR: ${head_ver:-none}"
-            [[ -n "$head_ver" ]] || { echo "FAIL $p: marketplace entry has no version; set it to X.Y.Z"; fail=1; continue; }
-            if [[ -n "$base_ver" ]] && git diff --quiet "origin/$BASE" HEAD -- "$src"; then
-              # Docs and CI-only PRs may land without a bump.
+            if [[ -z "$head_ver" ]]; then
+              echo "FAIL $p: marketplace entry has no version. Release it here (version and changelog entry), or remove its entry on this branch to hold it back from main."
+              fail=1; continue
+            fi
+            # Docs, CI and changelog-only PRs may land without a bump.
+            # shellcheck disable=SC2046
+            if [[ -n "$base_ver" ]] && git diff --quiet "origin/$BASE" HEAD -- $(plugin_content "$p"); then
               release=$([[ "$base_ver" != "$head_ver" ]] && echo true || echo false)
             else
               # Content changed, or the plugin is new on main.
