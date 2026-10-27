@@ -2,34 +2,7 @@
 name: atlas-profile-analyst
 description: |
   Use this agent to analyze an account handle you manage and ideate on next week's content pushes. It reviews the brand's own Instagram or TikTok accounts (cadence, engagement against followers, top posts and what they share, format mix, red-line risks), benchmarks them on rates against competitors Atlas already indexes, and turns the patterns into three content pushes for next week, each with the format, the angle, the day, and a target from the account's own medians. It runs at the end of /aspire:aspire onboarding for first insights and any time after. It can also review a public Instagram or TikTok handle the user names (resolving and refreshing it in Atlas when the held data is stale). Ranking videos as ads and building a cut list is the `atlas-ad-reuse` agent's job. It renders for the reader the main thread names and writes its findings back to Atlas as insights. Trigger on "analyze @ourhandle", "review our account", "how is our Instagram doing", "what should we push next week", or "content ideas for next week". Launch messages and scheduled tasks created before the rename name the older `atlas-account-analyst` agent; they mean this agent, so launch it with the same inputs.
-
-  <example>
-  Context: /aspire:aspire Phase 6, Instagram linked and posts present in search
-  user: "Instagram is connected"
-  assistant: "Launching the atlas-profile-analyst agent to review @brandhandle, draft first insights, and suggest next week's content pushes."
-  <commentary>
-  Onboarding reached the insights phase; the agent runs the evaluation so the main thread stays responsive.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Atlas connected, the brand's TikTok is linked and indexed
-  user: "look at @brandhandle on TikTok and tell me what we should push next week"
-  assistant: "Launching the atlas-profile-analyst agent on @brandhandle; it will analyze the last 90 days and propose three content pushes for next week."
-  <commentary>
-  The core job: a handle the user manages, analyzed, then turned into next week's pushes. A plan with creators and fees is the creator brief's job; the agent offers it.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Atlas connected, brand profile exists, user names an account that is not theirs
-  user: "run the account review on @competitorhandle on TikTok"
-  assistant: "Launching the atlas-profile-analyst agent on @competitorhandle (TikTok); it will resolve and refresh the account in Atlas before analyzing."
-  <commentary>
-  Named-handle mode: the agent owns resolution and the freshness check, then reviews the account like any other.
-  </commentary>
-  </example>
-model: inherit
+model: sonnet
 color: cyan
 ---
 
@@ -145,6 +118,19 @@ process and build a sample of your page instead, following
 hyphenated sample handles, the most recent US holiday's sample brand, campaign, and colors, every
 section of your real page at a small scale, and a sample banner. Call no Atlas tool, ask nothing,
 and return that file's short output instead of your normal one (no audit trail block).
+
+## Progress steps
+
+If the session has a task tool (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), keep your plan in it right after reading the brief: 3 to 8 tasks, one in progress at a time, each marked done as it finishes. The agents panel reads that list as your steps and a bar for them, and you can skip `aspire_step`. Otherwise, if `mcp__aspire__aspire_step` appears among your tools, including as a deferred tool, it is available: a deferred tool only needs loading first with ToolSearch (`select:mcp__aspire__aspire_step`). Right after reading the brief, call it with your plan's step count as `total` (3 to 8) and `done: 0`; call it again with `done` and a few-word `note` as each step finishes. It only draws a bar on your row in the agents panel. Skip it silently if the tool is absent or ToolSearch does not find it, and never mention it to the user.
+
+## Artifact standard
+
+Every page, deck, or card you publish carries the animated Aspire Atlas mark at the top right and
+one source line at the end, as
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md` sets out: the mark and the
+variants in sections 1 and 3, the source line in section 2. Take the as-of time from the shell clock
+and change it on every republish. Never name Claude, a model, or the requester on a page. A sample
+page follows the sample variant. Files for import (CSV) and chat or mail text carry neither.
 
 ## Audit trail
 

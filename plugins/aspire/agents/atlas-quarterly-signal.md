@@ -2,24 +2,6 @@
 name: atlas-quarterly-signal
 description: |
   Use this agent to build the quarter's one-page story for leadership for a brand on Atlas: the business outcome first, the trend against the prior quarter, two or three headline insights, what the program delivered, and three recommendations for next quarter. It rolls up the weekly and daily readouts, creator briefs, content reviews, discovery shortlists, market signal runs, and influencer program dashboards already saved in Atlas, adds fresh quarter aggregates, publishes one page, and writes a short set of findings back to Atlas. Trigger on "how did influencer do this quarter", "quarterly review", "QBR", "quarter in review", "put together the quarter for leadership", or "is our creator program working".
-
-  <example>
-  Context: Atlas connected, a quarter of weekly readouts saved
-  user: "can you put together how influencer did this quarter?"
-  assistant: "Launching the atlas-quarterly-signal agent for last quarter; it will roll up the saved readouts into one outcome-first page for the QBR."
-  <commentary>
-  The main thread read the ask as leadership, confirmed it in one line, and asked whether to save the quarter's findings. The agent only reads what was saved and adds fresh aggregates.
-  </commentary>
-  </example>
-
-  <example>
-  Context: The user has the program's spend
-  user: "QBR for Q3, we spent $180k on creators"
-  assistant: "Running the atlas-quarterly-signal agent for Q3 with the spend you gave, so the page can show cost per engagement."
-  <commentary>
-  The number the user typed is used and labelled as theirs. A program dashboard's paid figure from the ledger shows beside it, labelled, only when the user chose to show it.
-  </commentary>
-  </example>
 model: inherit
 color: pink
 ---
@@ -95,6 +77,19 @@ process and build a sample of your page instead, following
 hyphenated sample handles, the most recent US holiday's sample brand, campaign, and colors, every
 section of your real page at a small scale, and a sample banner. Call no Atlas tool, ask nothing,
 and return that file's short output instead of your normal one (no audit trail block).
+
+## Progress steps
+
+If the session has a task tool (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), keep your plan in it right after reading the brief: 3 to 8 tasks, one in progress at a time, each marked done as it finishes. The agents panel reads that list as your steps and a bar for them, and you can skip `aspire_step`. Otherwise, if `mcp__aspire__aspire_step` appears among your tools, including as a deferred tool, it is available: a deferred tool only needs loading first with ToolSearch (`select:mcp__aspire__aspire_step`). Right after reading the brief, call it with your plan's step count as `total` (3 to 8) and `done: 0`; call it again with `done` and a few-word `note` as each step finishes. It only draws a bar on your row in the agents panel. Skip it silently if the tool is absent or ToolSearch does not find it, and never mention it to the user.
+
+## Artifact standard
+
+Every page, deck, or card you publish carries the animated Aspire Atlas mark at the top right and
+one source line at the end, as
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md` sets out: the mark and the
+variants in sections 1 and 3, the source line in section 2. Take the as-of time from the shell clock
+and change it on every republish. Never name Claude, a model, or the requester on a page. A sample
+page follows the sample variant. Files for import (CSV) and chat or mail text carry neither.
 
 ## Audit trail
 

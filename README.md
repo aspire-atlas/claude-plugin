@@ -48,7 +48,7 @@ Notes:
 ## Requirements
 
 - An Aspire Atlas account. The Atlas connector points at `https://atlas.aspire.io/mcp`, and the organization admin connector at `https://atlas.aspire.io/mcp/admin-organization`. Both authenticate with OAuth; no API keys or environment variables are needed.
-- Optional: a Meta account with access to the brand's ad accounts, for the Meta Ads connector. It points at Meta's ads MCP server, `https://mcp.facebook.com/ads`, and signs in with Facebook through Aspire's Meta app. Connect it only if you want Meta's own ads tools in Claude; every Atlas flow works without it.
+- Optional: a Meta account with access to the brand's ad accounts, for the Meta Ads connector. It points at Meta's ads MCP server, `https://mcp.facebook.com/ads`, and signs in with Facebook through Aspire's Meta app. In Claude on the web (claude.ai) and Cowork, the workspace admin who adds it for the team enters the app's client ID; see the plugin's [Setup](plugins/aspire/README.md#setup). Connect it only if you want Meta's own ads tools in Claude; every Atlas flow works without it.
 - Do not add any bundled connector a second time as a custom connector. The plugin bundles all three.
 
 ## Safety
@@ -61,6 +61,10 @@ Notes:
 
 Full details in the [plugin README](plugins/aspire/README.md).
 
+## Band and agents panel in Claude Code
+
+From 4.0.0, once `/aspire` runs in a Claude Code session, the plugin shows a progress bar above the prompt (`Aspire: {organization}` and onboarding progress), a band under it (Atlas token costs, response speed, context), and an Aspire agents panel (`/aspire-agents-info`; `/aspire-agents-info status` checks that the mod is on). It reads only what already passes through the session and makes no network, file, or process calls. Details in the [plugin README](plugins/aspire/README.md#band-and-agents-panel-claude-code).
+
 ## Support
 
 - Maintainers: [docs/PLUGIN-LIFECYCLE.md](docs/PLUGIN-LIFECYCLE.md) and [CONTRIBUTING.md](CONTRIBUTING.md)
@@ -70,4 +74,4 @@ Full details in the [plugin README](plugins/aspire/README.md).
 
 ## License
 
-[Apache-2.0](LICENSE). Copyright Aspire.
+[Apache-2.0](LICENSE). Copyright Aspire. The Claude Code mod includes code adapted from [claude-kit](https://github.com/johnnyvizz/claude-kit) under the MIT License; its notice is kept in the files that carry that code.

@@ -506,6 +506,12 @@ admins only, the way the CAS page keeps `agency`), never in the page itself. Add
 only on the order form. The footer says when the numbers were read from Atlas. The page's link
 is saved as a `page` finding on first publish.
 
+Every program page carries the animated Aspire Atlas mark at the top right and the source
+line from [`artifact-standard.md`](artifact-standard.md).
+Program pages are team pages, so they use the team audience line; negotiation's terms summary is the
+one exception (`negotiation.md`). Files made for import (order sheet, code sheet, finance CSV)
+have no footnote.
+
 ## 8. Reminders and schedules
 
 Same mechanics as **Readouts**, Schedule, in SKILL.md: the session's scheduled-task tools, never

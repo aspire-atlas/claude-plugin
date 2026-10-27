@@ -2,10 +2,10 @@
 
 Used by the **Rates and terms** section of SKILL.md. Step 13 and Gate 3 of a CAS campaign
 (`cas-campaign.md`): an opening offer and terms for every creator the client approved at Gate 2,
-the email drafts the CM sends, the replies the CM pastes back, and the Fees tab the client
-approves on the campaign page. Main thread only; no agent runs this, and an unattended run never
-does. Nothing here sends email or reads a mailbox: the CM sends from their own mail and pastes
-the replies.
+the email drafts the CM sends, the replies the CM pastes back, and the contract and rates the
+client approves on the campaign page's Selected Creators tab. Main thread only; no agent runs
+this, and an unattended run never does. Nothing here sends email or reads a mailbox: the CM sends
+from their own mail and pastes the replies.
 
 ## What each creator gets
 
@@ -17,12 +17,53 @@ For every creator whose newest `roster` finding is `approved`:
 | Deliverables | The package in `campaign:{slug}-cas`: one creator's share is the variants count, each a clip on the lane's networks. |
 | Usage rights window | The term in `campaign:{slug}-cas` (start, end, usage days). |
 | Organic posting terms | `campaign:{slug}-terms`, asked once below. |
-| Whitelisting uplift | `campaign:{slug}-terms`, asked once below, added on top of each fee and shown apart from it. |
+| Whitelisting uplift | `campaign:{slug}-terms`, asked once below, added on top of each fee and shown apart from it, unless `allowlisting` is false there. |
 | Exclusivity | `exclusivity` in `campaign:{slug}-terms` when saved, else "None". A creator's own ask goes in `termNotes`. |
-| Timeline and reply window | The creator's tier, from followers: nano (under 10K) and micro (10K to 100K) about two days; mid (100K to 500K) and top (500K and up) one to two weeks, through managers. |
+| Timeline and reply window | From the creator's followers, the larger of Instagram and TikTok: under 100K about two days; 100K and up one to two weeks, through managers. These bands are the reply window's own, apart from the tier the campaign page shows (`cas-campaign.md`, **Creator Selection**, **Tiers**). |
 
 A creator the calculator cannot price shows no offer and names what is missing, per `fees.md`,
 **No data, no price**. Never price any other way.
+
+## Expected cost
+
+What a creator is expected to cost the campaign for one round, for the agency only. The campaign
+page's Creator Selection sorts on it and its budget **Summary** counts approved creators at it
+(`cas-campaign.md`, **1d**, **Creator Selection**). The first of these that holds:
+
+1. **Agreed**: the agreed fee.
+2. **Counter**: the creator's open counter.
+3. **Offer**: the offer's target.
+4. **Calculator**: the fee calculator's target (`fees.md`, **Applying the rates**) for the package
+   above, priced on the creator's own view counts.
+
+Each adds the whitelisting uplift unless `allowlisting` is false, the figure **Totals** gives as the
+fee plus its uplift line. A creator the
+calculator cannot price has no expected cost and shows as unpriced; never fill one in. Claude works
+it out at each publish of the campaign page for every creator in the pool, from the posts read for
+the creator cards, and writes it with its basis to the creator's agency data (`expectedCost:`,
+`expectedFrom:`). The match score's Budget vs target sets it against the **Target rate** below
+(`cas-campaign.md`, **The match score**). **Cost per 1K reach** is the expected cost divided by the creator's Meta reach
+(`instagram.creatorMarketplaceReach`), times 1,000, and is blank without a reach. Both are
+estimates for planning and are never shown to the client or sent to a creator.
+
+## Target rate
+
+What the campaign means to pay one creator for one round, on the same footing as the expected
+cost, the whitelisting uplift included. The match score's Budget vs target compares each
+creator's expected cost with it. The first of these that holds:
+
+1. **Saved**: `targetRateUsd` in `campaign:{slug}-terms`, when the CM set one.
+2. **From the budget**: the budget total divided by the creators the campaign plans:
+   `package.creators` in `campaign:{slug}-cas` for each round the term holds, one round per
+   calendar month from `term.start` to `term.end`, both months counted. The budget total is
+   `budgetUsd` there. The campaign page uses its own total (`agency/budget` `total`) and term dates
+   (`program/details` `termStart`, `termEnd`) when they are newer than the last pull, and
+   **Pulling decisions** writes them into `budgetUsd` and `term`, so discovery and
+   vetting reach the same target after the pull. Starting a round doesn't move it.
+
+With neither, there is no target rate: the factor is 0.5 for everyone and the score's reasons say
+"No target rate set" to the agency. Like the expected cost, it is agency only and never shown to
+the client or sent to a creator, and it is never a figure written into this plugin.
 
 ## Terms, asked once per campaign
 
@@ -42,8 +83,20 @@ Recommended)", and "Nothing organic, ads only" follows without the Recommended m
 The terms object:
 
 ```json
-{"schema": 1, "organic": "none", "whitelistingUpliftPct": 20, "exclusivity": "none"}
+{"schema": 1, "organic": "none", "whitelistingUpliftPct": 20, "exclusivity": "none",
+ "allowlisting": true, "partnershipAds": true, "targetRateUsd": 2500}
 ```
+
+`targetRateUsd` is optional and asked by no question: the **Target rate** for one creator for one
+round, uplift included. It reaches the record when the CM says it in the chat, through the
+supersede rule below.
+
+`allowlisting` and `partnershipAds` are optional and asked by no question: whether the SOW
+includes allowlisting and partnership ads. With `allowlisting` false, no uplift is added to any
+fee and no uplift line is drafted, whatever `whitelistingUpliftPct` says; missing or true, the
+uplift applies as above. They reach the record from an editor's edit on the
+campaign page's Home, **Program terms**, or from the program files there (`cas-campaign.md`,
+**1d**, **Home**), and Home hides each until it is saved.
 
 A change later goes through `supersede_calibration` with its own Destructive tools confirmation.
 
@@ -55,7 +108,7 @@ A change later goes through `supersede_calibration` with its own Destructive too
    channel the deliverables cover, projecting `viewCount`, `likeCount`, `commentCount`,
    `mediaKind` and `instagram.mediaProductType`. Price per **What each creator gets**, with the
    rate per deliverable (UGC video, Reel collab, 90 day usage) and the expected cost.
-3. Show the Fees tab (below) for the agency, and the offer drafts (**Drafts**) in chat.
+3. Show **Contract and rates** (below) for the agency, and the offer drafts (**Drafts**) in chat.
 4. One `AskUserQuestion`: "Save opening offers for {n} creators to the campaign? Totals at
    target: {total}. An offer email draft goes on each creator's row." Options: "Save the offers
    (Recommended)", "Change something". On save, write a `roster` finding per creator with `rate`
@@ -81,8 +134,8 @@ names the drafts and the date: "Mark the offer to @a and the chase to @b as sent
 Options: "Mark sent (Recommended)", "Change something". The confirm writes each draft again with
 `sentAt` and the roster's `lastContactAt` and `waitingOn` creator.
 
-**Reply window**, by tier, shown per creator to the agency: nano and micro about two days, mid
-and top one to two weeks through a manager.
+**Reply window**, by followers, shown per creator to the agency: under 100K about two days, 100K
+and up one to two weeks through a manager.
 
 ### The templates
 
@@ -127,7 +180,7 @@ Great, {fee} for {what they make} with {usage} usage works for us. Next we'll as
 shipping details and send the agreement.
 ```
 
-**Chase** (no reply past the tier window):
+**Chase** (no reply past the reply window):
 
 ```
 Subject: Re: {Brand} creator ads: {concept}
@@ -153,6 +206,10 @@ Welcome aboard. To get the product to you, please reply with:
 Your brief arrives on {brief date}.
 ```
 
+For a creator whose profile already holds an address (a returning creator, `cas-campaign.md`,
+**1f**), line 1 reads "1. Are we still shipping to you in {city}? Reply yes, or send the new
+address", naming the city only. The draft never carries the street.
+
 **Brief** (after the briefs are approved, `cas-campaign.md`, **1g**):
 
 ```
@@ -160,7 +217,10 @@ Subject: {Brand} creator ads: your brief for {concept}
 
 Hi {name},
 
-Here's your brief for {concept}: {brief link}.
+Here's your brief for {concept}:
+
+{brief text}
+
 Reply "looks good" to go ahead as is, or reply with anything you'd change and we'll take it
 to {Brand}.
 ```
@@ -214,15 +274,15 @@ bounds the CM handles alone.
 
 ### No reply yet
 
-A creator whose newest sent draft is older than their tier window, with no reply since, shows
+A creator whose newest sent draft is older than their reply window, with no reply since, shows
 "No reply yet" in the agency's attention list and on their row, with a chase draft waiting. The
 chase draft is written the first time the status screen sees it, after the same save picker as
 any other draft.
 
-## The Fees tab
+## Contract and rates
 
-The rate sheet is the Fees tab of the campaign page (`cas-campaign.md`, **1d**). It is the step 3
-approval, sent with the packet rules there.
+The rate sheet is the **Contract and rates** section of the campaign page's Selected Creators tab
+(`cas-campaign.md`, **1d**). It is the step 3 approval, sent with the packet rules there.
 
 - **Intro line.** Client: "What each approved creator will be paid. Approve to move to step 4 and
   let contracts go out." plus a line when someone is still talking. Agency: "Opening offers from
@@ -234,12 +294,37 @@ approval, sent with the packet rules there.
   - The fee for the agency (page data, `agency`): offer, counter and agreed, with the rate per
     deliverable under it.
 - **Totals**, agency only: the campaign at open, target and max, and at what is agreed so far,
-  with the whitelisting uplift as its own line. The Budget tab carries the same totals against
-  the campaign budget.
-- **Terms**: usage window, organic posting terms, whitelisting uplift, in plain words.
-- **One approve control** for the whole sheet, for the client, while step 3 is open.
+  with the whitelisting uplift as its own line unless `allowlisting` is false. The **Summary** on
+  Creator Selection shows the agreed figure as Committed against the campaign budget, beside the
+  approved creators not yet contracted at their **Expected cost**.
+- **Terms**: usage window, organic posting terms, whitelisting uplift (or "No allowlisting" when
+  `allowlisting` is false), in plain words.
+- **One approval for the whole sheet**, once per round: **Approve fees** or **Request changes**,
+  for the client only, while step 3 is open. It is saved under the client's own id with a copy of
+  the fees they saw, so no one at Aspire can approve for them and a fee changed afterwards is
+  never recorded as approved (`cas-campaign.md`, **1d**, **Selected Creators**, **Contract and
+  rates**).
 - The fee rate label once ("Aspire recommended rates" when no rate card is saved), "fees are
   estimates from public view counts, not quotes".
+- **The contract and payment**, on the agency's rows once the fees are sent: the contract status and
+  signed date, the round's rate per deliverable (UGC video, Reel collab, 90 day usage), the
+  contracted total (the agreed fee plus its uplift) and the payment status (Invoice sent; 50%
+  paid, the rest on final cut sign off; Paid in full; On hold) with the amount paid so far. The
+  client reads the contract status, its signed date and the payment status beside their agreed
+  fee, never a rate, the total or an amount. Each value carries its source
+  tag (`cas-campaign.md`, **1d**, **Selected Creators**, **Creator records**).
+
+**Rates are recorded per round.** When the CM records a creator's rates per deliverable in the
+chat, with the offer or a reply, the confirm writes them to the roster finding for the round being
+negotiated, as `rates` `{ugc, reel, usage90}`, and the next publish copies them to the page's
+`agency/creator-{net}-{handle}-r{round}`, stamped `claude`, so a
+returning creator's new rates never overwrite what an earlier round contracted. Each round starts
+with no rates: starting the next round clears `rates`, and a carried creator's are recorded again
+with that round's offer. A contract signed
+or a payment made outside the page (in the core Aspire platform) is recorded on the card by the
+agency, or typed in the chat: "@a signed on the 3rd", "@b paid half". The chat proposes the
+record in one picker, like a reply, and writes it to the roster's `contract` or `payment` for the
+round. Claude never assumes a contract is signed or a payment made.
 
 **If we drop them** is three facts in one line: the saving at their current figure (agreed,
 else counter, else target), the concept's count after the drop against what it needs, and the
@@ -249,16 +334,21 @@ slate"). It is never a recommendation to drop anyone.
 ## Closing Gate 3
 
 The client's approval comes back on the page and is read with **Pulling decisions**
-(`cas-campaign.md`). The CM may also report it in chat; resolve it the same way. One batch
+(`cas-campaign.md`), checked as **The fee approval** there says: written by an account on the
+client's side and confirmed by the CM as step 3's approver, newer than the send, and for the fees
+as they are now. One that fails is named with why and never recorded. A client who can't write on
+the page approves outside it, and the CM records their word in the chat (`cas-campaign.md`,
+**Gate 3: the fees**). One batch
 picker names each creator's approved fee: "Record the client's approval of fees for @a
 ($1,200), @b ($900) and @c ($2,100)? This completes step 3." Options: "Record it
 (Recommended)", "Change something". On confirm:
 
-1. Write a `roster` finding per creator with `rate` `agreed`, then Gate 3 `cleared`, a ledger
-   line when it was late, and remove the reminder.
+1. Write a `roster` finding per creator with `rate` `agreed`, then Gate 3 `cleared` with
+   `clearedBy` the approver's name and `approval`, the `page-sides` finding when it changed, a
+   ledger line when it was late, and remove the reminder.
 2. Say in two lines what it unblocks: the creator details emails (`cas-campaign.md`, **1f**),
    and contracts, which run in the core Aspire platform.
-3. Republish the campaign page with the fees and the Product shipping tab shown to the client,
+3. Republish the campaign page with the fees and the Shipping section shown to the client,
    and post the step line.
 
 A ship date the CM types still writes `shipDate` to the creator's roster finding; the answer is

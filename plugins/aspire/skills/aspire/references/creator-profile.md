@@ -106,7 +106,7 @@ with `ok: false` leaves its media box empty (the tile background shows) with the
 `alt`; never substitute another image. The page follows the snippet's page budget (images
 under 8MB, the page under 10MB); this page stays far below it, but if it ever goes over, drop
 Lowest posts images first. Top posts are the page's subject and are never dropped. Note once in
-the page footer that images are a snapshot.
+the page footer that images are a snapshot. The page carries the animated Aspire Atlas mark at the top right and the artifact-standard footnote after the data gaps, per [artifact-standard.md](artifact-standard.md).
 
 ## Style block
 
@@ -221,6 +221,10 @@ same `--ac-*` tokens as the card, so it follows the host and the saved theme the
 .acp-step{padding:14px 16px;display:grid;grid-template-columns:20px auto minmax(0,1fr);gap:12px;align-items:start}
 .acp-step>span:first-child{font-size:14px;font-weight:600;line-height:21px;color:var(--ac-muted);font-variant-numeric:tabular-nums}
 .acp-step p{margin:0;font-size:14px;line-height:21px;text-wrap:pretty}
+.acp-top{display:flex;justify-content:flex-end;margin-bottom:-16px}
+.acp-top svg{width:40px;height:40px;border:1px solid var(--ac-border);border-radius:10px}
+.acp-foot{color:var(--ac-muted);font-size:12px;line-height:16px}
+.acp-foot p{margin:0 0 4px}
 .acp-gaps{display:flex;flex-direction:column;gap:8px;padding:16px 20px}
 @media (max-width:560px){.acp{gap:32px}.acp-rows>div{grid-template-columns:minmax(0,1fr);gap:4px}.acp-step{grid-template-columns:20px minmax(0,1fr)}.acp-step p{grid-column:2}.acp-pbars>div>div{width:20px}}
 </style>
@@ -235,6 +239,8 @@ percentages of the axis or the largest value, written inline.
 
 ```html
 <main class="acp" aria-label="Creator profile: {HANDLE}">
+  <div class="acp-top"><!-- the animated mark, once, per artifact-standard.md -->{MARK}</div>
+
   {CARD}
 
   <section class="acp-sec acp-summary">
@@ -378,6 +384,10 @@ percentages of the axis or the largest value, written inline.
     <span class="acp-eyebrow">Data gaps &amp; freshness</span>
     <ul><!-- one per gap, freshness first --><li>{GAP}</li></ul>
   </section>
+
+  <footer class="atlas-footnote acp-foot" data-updated="{UPDATED_ISO}">
+    <!-- the images-are-a-snapshot note, then the source line from artifact-standard.md -->{FOOTNOTE}
+  </footer>
 </main>
 ```
 

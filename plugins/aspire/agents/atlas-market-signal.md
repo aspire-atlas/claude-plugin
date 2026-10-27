@@ -2,25 +2,7 @@
 name: atlas-market-signal
 description: |
   Use this agent to report what creators are saying about a brand on Atlas compared with its saved competitors: share of voice, the features creators compare and where the brand won or lost, friction users mention, the language and framing that is spreading, and the comparison videos with the strongest openings. One run renders a parity read for product teams, a messaging read for product marketing, reuse candidates for performance and creative, and a brief update for campaign planning, publishes one page, delivers to the saved Slack channel and email recipients, and writes findings back to Atlas. Trigger on "what are creators saying about us vs {competitor}", "how are we talked about compared with", "competitive signal", "share of voice", "market signal", "are we behind on features", or a scheduled task named "Atlas market signal". Requires market signal calibrations to exist; setup is handled by the Market signal section of /aspire:aspire, never by this agent.
-
-  <example>
-  Context: Atlas connected, market signal calibrations saved, the user's ask reads as a product review question
-  user: "what are creators saying about us vs. the other brands in our category?"
-  assistant: "Launching the atlas-market-signal agent for the last week, with a parity read for the product review and a messaging view for PMM."
-  <commentary>
-  The main thread read the ask, confirmed the readers in one line, and passes the lenses. The agent runs the analysis once and renders a section per lens.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Scheduled task "Atlas market signal" fires Monday morning in a fresh session
-  user: "Run the Atlas market signal for Acme Cookware using the saved market signal calibrations. Do not ask questions."
-  assistant: "Launching the atlas-market-signal agent in unattended mode; it will lead with what changed since last week and deliver per the saved routing."
-  <commentary>
-  Unattended run: no questions, saved calibrations and lenses only, no discovery, standing delivery approval applies.
-  </commentary>
-  </example>
-model: inherit
+model: sonnet
 color: purple
 ---
 
@@ -107,6 +89,19 @@ process and build a sample of your page instead, following
 hyphenated sample handles, the most recent US holiday's sample brand, campaign, and colors, every
 section of your real page at a small scale, and a sample banner. Call no Atlas tool, ask nothing,
 and return that file's short output instead of your normal one (no audit trail block).
+
+## Progress steps
+
+If the session has a task tool (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), keep your plan in it right after reading the brief: 3 to 8 tasks, one in progress at a time, each marked done as it finishes. The agents panel reads that list as your steps and a bar for them, and you can skip `aspire_step`. Otherwise, if `mcp__aspire__aspire_step` appears among your tools, including as a deferred tool, it is available: a deferred tool only needs loading first with ToolSearch (`select:mcp__aspire__aspire_step`). Right after reading the brief, call it with your plan's step count as `total` (3 to 8) and `done: 0`; call it again with `done` and a few-word `note` as each step finishes. It only draws a bar on your row in the agents panel. Skip it silently if the tool is absent or ToolSearch does not find it, and never mention it to the user.
+
+## Artifact standard
+
+Every page, deck, or card you publish carries the animated Aspire Atlas mark at the top right and
+one source line at the end, as
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md` sets out: the mark and the
+variants in sections 1 and 3, the source line in section 2. Take the as-of time from the shell clock
+and change it on every republish. Never name Claude, a model, or the requester on a page. A sample
+page follows the sample variant. Files for import (CSV) and chat or mail text carry neither.
 
 ## Audit trail
 

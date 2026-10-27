@@ -238,7 +238,8 @@ for the charts; apply `theme:brand` per `theme.md`, **Applying the theme**; rend
 
 Sections, in order:
 
-1. **Header.** The scope, the window, "Prepared for" chip, when the catalog was read.
+1. **Header.** The scope, the window, "Prepared for" chip, when the catalog was read. The animated
+   Aspire Atlas mark sits at the top right ([`artifact-standard.md`](artifact-standard.md)).
 2. **Counts.** Assets, cleared for ads, cleared for organic, requested, expiring in 30 days, no
    rights. Then small bar charts: assets by product, by format, by rights status.
 3. **Cleared for ads.** Cards for current Paid usage and Whitelisting, by ad readiness, with
@@ -257,7 +258,8 @@ Sections, in order:
    cap, sources not tracked, what Atlas does not hold (contracts, the paid partnership label),
    and where rights come from.
 8. **Footer.** "Read from Atlas as of {timestamp}"; images are a snapshot; "Rights shown are
-   what your records and agreed deals say. Check the signed agreement before paid use."
+   what your records and agreed deals say. Check the signed agreement before paid use." Then the
+   footnote with the team audience line ([`artifact-standard.md`](artifact-standard.md)).
 
 **Lens order.** `team` keeps the order above. `performance` and `creative` lead with Cleared
 for ads and Worth requesting. `brand` adds a safety filter preset to "flag" and "block" and
@@ -329,7 +331,8 @@ Follow `program.md`, **9**, and `readout.md`, **Scheduled (unattended) runs**:
   creator.
 - Resolve the date from the shell clock in the cadence timezone.
 - Collect, tag, join, republish to the link in the library's `page` finding, and post the
-  alert to the saved routing.
+  alert to the saved routing. The republish is silent, so each run refreshes the source line's as-of
+  time (`artifact-standard.md`).
 - Write `asset` findings only when `program:{slug}-cadence` names the library (`library
   weekly`, the P9 "Weekly content library refresh" answer), or, for the whole brand, when the
   `library:cadence` calibration is saved (**Content library**, Schedule, in SKILL.md). Without
