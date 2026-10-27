@@ -1,7 +1,8 @@
 name: Release
 
-# Tags the official channel. Runs when main receives a version bump and cuts
-# the GitHub Release automatically, so a merged release PR is the whole job.
+# Tags the official channel. Runs on every push to main and cuts a GitHub
+# Release for each plugin whose version has no tag yet, so a merged release PR
+# is the whole job.
 on:
   push:
     branches: [main]
@@ -17,41 +18,47 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Read version and decide whether to release
-        id: ver
+      - name: Tag and publish a GitHub Release for every plugin version not yet tagged
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          ver=$(jq -r '.plugins[0].version' .claude-plugin/marketplace.json)
-          echo "version=$ver" >> "$GITHUB_OUTPUT"
-          if git rev-parse -q --verify "refs/tags/v$ver" >/dev/null; then
-            echo "v$ver already tagged; nothing to do"; echo "release=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "release=true" >> "$GITHUB_OUTPUT"
-          fi
+          . scripts/plugins.sh
+          fail=0
+          for p in $(plugin_names); do
+            ver=$(plugin_version "$p")
+            tag=$(plugin_tag "$p" "$ver")
 
-      - name: Extract changelog section
-        if: steps.ver.outputs.release == 'true'
-        run: |
-          awk -v v="${{ steps.ver.outputs.version }}" '
-            $0 ~ "^## \\["v"\\]" {p=1; next}
-            p && /^## \[/ {exit}
-            p {print}
-          ' CHANGELOG.md > notes.md
-          [[ -s notes.md ]] || { echo "No CHANGELOG section"; exit 1; }
+            if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+              echo "$tag already tagged; nothing to release for $p"
+              target="$tag^{commit}"
+            else
+              awk -v v="$ver" '
+                $0 ~ "^## \\["v"\\]" {p=1; next}
+                p && /^## \[/ {exit}
+                p {print}
+              ' "$(plugin_changelog "$p")" > "notes-$p.md" || true
+              # One plugin's problem must not hold back the others.
+              [[ -s "notes-$p.md" ]] || { echo "FAIL no changelog section for $p $ver"; fail=1; continue; }
 
-      - name: Package plugin archive
-        if: steps.ver.outputs.release == 'true'
-        run: |
-          v="${{ steps.ver.outputs.version }}"
-          (cd plugins && zip -qr "../aspire-$v.zip" aspire)
-          sha256sum "aspire-$v.zip" > "aspire-$v.zip.sha256"
+              src=$(plugin_src "$p")
+              (cd "$(dirname "$src")" && zip -qr "$GITHUB_WORKSPACE/$p-$ver.zip" "$(basename "$src")")
+              sha256sum "$p-$ver.zip" > "$p-$ver.zip.sha256"
 
-      - name: Tag and publish GitHub Release
-        if: steps.ver.outputs.release == 'true'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ steps.ver.outputs.version }}
-          name: aspire v${{ steps.ver.outputs.version }}
-          body_path: notes.md
-          files: |
-            aspire-*.zip
-            aspire-*.zip.sha256
+              # The repository's Latest release stays on aspire.
+              gh release create "$tag" "$p-$ver.zip" "$p-$ver.zip.sha256" \
+                --target "$GITHUB_SHA" --title "$p v$ver" --notes-file "notes-$p.md" \
+                --latest="$([[ "$p" == aspire ]] && echo true || echo false)" \
+                || { echo "FAIL could not publish $tag"; fail=1; continue; }
+              target=$GITHUB_SHA
+            fi
+
+            # Dependency version ranges resolve against <plugin>--vX.Y.Z tags;
+            # aspire's releases keep their vX.Y.Z tag and get this one as well,
+            # on the same commit. Checked on its own, so a failed push is retried.
+            dep="$p--v$ver"
+            if [[ "$tag" != "$dep" ]] && ! git rev-parse -q --verify "refs/tags/$dep" >/dev/null; then
+              { git tag "$dep" "$target" && git push origin "refs/tags/$dep"; } \
+                || { echo "FAIL could not push $dep"; fail=1; }
+            fi
+          done
+          exit $fail
