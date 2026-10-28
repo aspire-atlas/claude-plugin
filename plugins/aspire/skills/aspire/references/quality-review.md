@@ -22,8 +22,9 @@ records what it saw and what to fix; the person decides what to change.
 | `brief` | Optional: what the work was asked to answer (an RFP, a brief, the user's request in their words). Turns on check **4.1** |
 | `recipient` | The lens of whoever acts on the work (`recipient-lens.md`) |
 | `audience` | Who will see the work, which sets **4.11** and the audience line checked in **4.12**: `team` (the brand's own team, leadership included), `client` (a brand or agency outside the team), `creator`, or `public`. Default `team` |
-| `profile_id`, `profile_slug`, tool prefix | Optional. With a brand profile, check **4.3** re-checks the Atlas figures the work cites, read only |
-| `earlier_review` | The path or link of an earlier review of the same work, when this is a re-review |
+| `profile_id`, `profile_slug`, tool prefix | Optional. The brand profile sets the page's theme and the category in **4.9** |
+| `recheck` | `true` when the user asked to re-check the Atlas figures the work cites (**4.3**), read only. Needs a profile |
+| `earlier_review` | The link of an earlier review of the same work, when this is a re-review. The new review republishes to that link |
 | `run` | Always `interactive`. The review has no unattended mode |
 
 ## 2. Reading the target
@@ -76,8 +77,8 @@ judge what was not seen.
 With a `brief`: list each question or requirement it asks, in its own order and numbering. Find
 where the work answers it and score the answer 1 to 5: 5 is specific, evidenced, and answers exactly
 what was asked; 3 answers in general terms; 1 dodges, defers ("pricing follows"), or leaves it out.
-A requirement with no answer anywhere is a Critical finding when `audience` is `client` or
-`public`, and High otherwise; a score of 1 is a High finding. Without a
+Every requirement scored 1 (no answer anywhere, a dodge, or a deferral) is one finding: Critical
+when `audience` is `client` or `public`, High otherwise. A score of 2 is a Medium finding. Without a
 brief, score against the work's own stated purpose (its title, its "what this page is for" line, or
 the flow's job in SKILL.md) and say so.
 
@@ -99,7 +100,7 @@ the flow's job in SKILL.md) and say so.
 - Atlas figures carry an as-of date and a window.
 - Outside statistics go on the page's verify list; the review does not vouch for them.
 - Quotes, pull quotes, and headlines claim no more than the case or data behind them.
-- **Atlas re-check** (only with a brand profile): for up to 10 Atlas figures the work cites (post
+- **Atlas re-check** (only when `recheck` is `true`): for up to 10 Atlas figures the work cites (post
   counts, follower counts, view counts, shares), read the same thing with `search_posts` or
   `search_creators` under the same window and say whether it still holds. Never call
   `lookup_creators` or `lookup_posts`. Differences go on the page as "Atlas now shows {x}; the work
@@ -183,11 +184,12 @@ nobody outside the publisher's company can reach that company's private tools. C
 
 ### 4.12 Artifact standard
 
-For pages this plugin published, and external work that carries the mark, check against
-`artifact-standard.md`: the mark once at the top right; the "Prepared for" chip; the source line with
-an as-of time and the networks the data came from; the audience line that matches `audience`; no
-mention of Claude, a model, an assistant, the requester, an email, or an id; the saved theme applied
-when one exists, with semantic colors left alone. A sample page carries the sample variant.
+For pages this plugin published, and external work that carries the mark, run the checklist in
+`artifact-standard.md`, section 4 (**Before publishing**), against the variant section 3 sets for
+that kind of page (sample, review, no Atlas data, inline widget, deck, order form). A page that uses
+its variant correctly passes. The audience line must match `audience`: a page whose footer says
+"Internal use only" while `audience` is `client`, `creator`, or `public` is a Critical finding.
+Also check the saved theme is applied when one exists, with semantic colors left alone.
 
 ### 4.13 Polish
 
@@ -198,7 +200,7 @@ inconsistent naming or capitalization, and broken links.
 
 | Level | Means |
 | ----- | ----- |
-| Critical | Could lose the decision, misleads the reader, or is a legal or compliance gap (an unanswered requirement in a brief, two prices, a private note on a client slide, a figure or section the reader will see empty or broken) |
+| Critical | Could lose the decision, misleads the reader, or is a legal or compliance gap (an unanswered brief requirement in client or public work (**4.1**), two prices, a private note on a client slide, a figure or section the reader will see empty or broken) |
 | High | Hurts credibility with a careful reader (numbers that disagree, a promise with nothing behind it, proof off-category, a link inside the work the reader cannot open) |
 | Medium | Polish (typos, page numbers, wording) |
 
@@ -222,8 +224,9 @@ next steps concrete enough to act on. Three to six strengths; never pad.
 
 ## 7. The page
 
-Title "{Work title} Review". One page, published with the Artifact tool, republished to the same
-file path for a re-review of the same work. Load `artifact-design`, and `dataviz` for any chart.
+Title "{Work title} Review". One page, published with the Artifact tool. A re-review reads the
+`earlier_review` link with the Artifact tool and publishes with `url` set to it, so the team keeps
+one link. Load `artifact-design`, and `dataviz` for any chart.
 Apply the brand's saved theme when there is a profile (`theme.md`, **Applying the theme**), semantic
 colors excepted. Sections, in order:
 

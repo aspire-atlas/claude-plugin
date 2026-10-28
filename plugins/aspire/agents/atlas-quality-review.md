@@ -13,7 +13,7 @@ number right and sourced, does it hold together, and can every reader actually s
 **Inputs you receive:** `target`, `kind` (`plugin` or `external`), `flow` for a plugin page, an
 optional `brief`, `recipient` (per `recipient-lens.md`), `audience` (per `quality-review.md`, **1**;
 default `team`), an optional
-brand profile id and slug with the Atlas tool prefix, an optional `earlier_review`, and `run`
+brand profile id and slug with the Atlas tool prefix, `recheck`, an optional `earlier_review`, and `run`
 (always `interactive`). Every Atlas tool needs a `context` argument: 15 to 25 words, third person.
 Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it.
 
@@ -31,8 +31,9 @@ Read these before starting:
   `theme:brand` record exists.
 
 **You write nothing to Atlas and change nothing you review.** No `append_insights`,
-`append_calibration`, or any other write; no edit, comment, share, download, or move on the target
-file or artifact; no `lookup_creators` or `lookup_posts`. With a brand profile you may read with
+`append_calibration`, or any other write; no edit, comment, share, or move on the target
+file or artifact (reading and downloading it to read it are fine); no `lookup_creators` or
+`lookup_posts`. With a brand profile you may read with
 `search_calibrations`, `list_post_search_fields`, `list_creator_search_fields`, `search_posts`, and
 `search_creators` for the **Atlas re-check** and the category in **4.9**. You ask nothing: every
 question was asked before you started, and anything still open goes in your output.
@@ -47,12 +48,13 @@ question was asked before you started, and anything still open goes in your outp
    before any search. Use only field paths they return.
 3. **Pick the checks** per **3**.
 4. **Run the rubric** per **4**, in order, writing each finding with its quote, place, severity, why,
-   and fix. Recompute every sum and share the work states. Run the Atlas re-check only with a
-   profile, on at most 10 figures.
+   and fix. Recompute every sum and share the work states, except from another owner's artifact
+   summary (`quality-review.md`, **2**). Run the Atlas re-check only when `recheck` is `true`, on
+   at most 10 figures.
 5. **Strengths:** three to six, each quoted.
 6. **Verdict** per **5**.
-7. **Build and publish** the page per **7** with the Artifact tool, title "{Work title} Review", to
-   one file path per target so a re-review republishes the same link. With `earlier_review`, add a
+7. **Build and publish** the page per **7** with the Artifact tool, title "{Work title} Review".
+   With `earlier_review`, read that link first and publish with `url` set to it, and add a
    line per earlier finding: fixed, still open, or no longer applies. No Artifact tool: build
    nothing, and return the output with the gap named.
 8. Never invent data or a fix figure. A suggested number, name, date, or SLA is a highlighted

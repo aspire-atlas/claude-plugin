@@ -2862,7 +2862,8 @@ never run it in an unattended session.
 
 1. **The work.** Use the link or file the user gave. Without one, ask with `AskUserQuestion`,
    header "Review": "What should I review?" Options: "{the newest page published in this session}
-   (Recommended)" when there is one, "A link or file (paste it in the box)". Naming or pasting a
+   (Recommended)" when there is one, "A Google Slides, Docs, or Drive link (paste it in the box)",
+   "A file or a Claude artifact link (attach or paste it)". Naming or pasting a
    link is the approval to read that one file. A Drive file is read through the Drive connector;
    when the connector returns no text and the session has a browser the user is signed in to, the
    agent reads the deck's HTML view, read only (`quality-review.md`, **2**).
@@ -2876,11 +2877,13 @@ never run it in an unattended session.
      flow's answers as its brief without asking.
    - header "Atlas", only when Atlas is connected in this session or the work is a plugin page:
      "If it cites Atlas figures, re-check them? Read only." Options: "Re-check them
-     (Recommended)", "Skip". The agent skips the re-check when the work cites none. "Re-check them" runs Phase 1 and
-     Phase 2 + 3 for the profile first, when they have not run this session.
+     (Recommended)", "Skip". The agent skips the re-check when the work cites none. "Re-check them"
+     runs Phase 1 and Phase 2 + 3 first, when they have not run this session, only to confirm the
+     connection and pick the brand profile: skip the other phases and every offer.
 3. **Launch** `atlas-quality-review` (**Running agents**, in a subagent) with `target`, `kind`
    (`plugin` or `external`), `flow` for a plugin page, `brief`, `recipient`, `audience`, the tool
-   prefix, `profile_id` and `profile_slug` when the re-check is on, and `earlier_review` when the
+   prefix, `profile_id` and `profile_slug` whenever the session has a profile, `recheck` (`true` on
+   "Re-check them"), `run: interactive`, and `earlier_review` (the earlier review's link) when the
    same work was reviewed before, ending with the decision-audit line.
 4. **Relay** the page link, the verdict and its reason, each Critical finding in one line, the data
    access line, and what the review could not see. Say once that the review is for the team, and
@@ -2892,15 +2895,18 @@ never run it in an unattended session.
 
 ### The offer
 
-When real work ends in a published page, ask once, after the flow's own follow-up questions and
-before the decision audit offer: an agent's page (its output carries a `Quality review:` line, per
-`references/artifact-standard.md`), or a page the main thread built (**Visual output**, a deck it
-exported). `AskUserQuestion`, header "Review": "Run a quality review on {page title} before you
-share it?" Options: "Review it (Recommended)", "Not now". "Review it" runs **Run** from step 3 with
-`kind: plugin`, the flow, the page link, the flow's `recipient`, `audience` read from the page's
-own audience line (`artifact-standard.md`, section 2: "Internal use only" is `team`; "Shared with
-{audience}" names the client or creator), `brief` set to the user's original request and the
-flow's answers, the session's profile, and the re-check on when Atlas is connected.
+When real work ends in a published page, ask once, after the flow's own follow-up questions: an
+agent's page (its output carries a `Quality review:` line, per `references/artifact-standard.md`),
+or a page the main thread built (**Visual output**, a deck it exported). Ask it in one
+`AskUserQuestion` call with the decision audit offer as the second question when that offer
+applies (**Decision audit**), so neither waits on the other. The review question: header
+"Review", "Run a quality review on {page title} before you share it?" Options: "Review it for
+{who the page's audience line names: our team, or the client or creator} (Recommended)", "Review
+it for someone else (say who in the box)", "Not now". Either "Review it" runs **Run** from step 3
+with `kind: plugin`, the flow, the page link, the flow's `recipient`, `audience` from the answer
+(`quality-review.md`, **1**), `brief` set to the user's original request and the flow's answers,
+the session's profile, and `recheck: true` when Atlas is connected. The review runs in the
+background; its result and its **Next** question come when it finishes.
 
 Ask at most once per page per session, and again after a revision or export of the same page only
 if the user reviewed it before ("Review it again"). Never offer it in an unattended run, for a
@@ -2927,8 +2933,8 @@ call, judgement, and open decision behind it. The instructions live in
   agent returns; never show it to the user.
 
 **The offer.** When an agent's real work (never a sample) ends in a published page (a deck, a brief, a shortlist, a
-review, a readout, a profile), and after the flow's own follow-up questions and the quality review
-offer (**Quality review**, The offer), ask once with
+review, a readout, a profile), and after the flow's own follow-up questions, ask once, as the second
+question in the quality review offer's call when that offer is made (**Quality review**, The offer), with
 `AskUserQuestion`, header "Audit": "Would you like an audit of the decisions and tools behind
 {page title}?" Options: "Build the audit page (Recommended)" / "Not now". Ask again after a later
 revision or export of the same work only if the user built an audit for it; then the update
