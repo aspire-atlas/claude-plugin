@@ -1371,7 +1371,7 @@ enabled for scheduled tasks. Unattended runs follow `references/program.md` **9*
 
 Trigger when a program creator needs a deal worked out: an offer for creators who said they're
 interested, an answer to a counter or a question about the deal, an ambassador renewal, or a
-change the brand wants to an agreed deal ("negotiate with @handle", "she asked for \$2,000",
+change the brand wants to an agreed deal ("negotiate with @handle", "she asked for USD 2,000",
 "make offers to the creators who said yes", "what should we offer", "is this rate fair", "renew
 our ambassadors", "raise @handle's commission", "move @handle to paid", "extend usage on
 @handle's Reel"). Also reached from the
@@ -1772,7 +1772,7 @@ details; not saved") and never repeat what was removed. Never ask for them.
    - **G5**, header "Your call", one per item the agent raised, exactly as worded: the
      recommended answer first (Recommended), the alternatives, "Decide later".
    - **G1**, header "Lines": "Save these ledger lines for {program}? {n} new, {r} revised, {v}
-     void. @a: paid fee \$1,200, due Nov 6; @b: October fee \$800; and {n-2} more." Options: "Save
+     void. @a: paid fee USD 1,200, due Nov 6; @b: October fee USD 800; and {n-2} more." Options: "Save
      the lines (Recommended)", "Change something", "Page only".
 3. "Change something" relaunches `pass: propose` with the change. "Page only" stops. Otherwise
    relaunch with `pass: record`, the `ledger-packet`, and the answers.
@@ -1982,7 +1982,7 @@ requests need a person to approve them, and stop.
    `AskUserQuestion` call, skipping any with nothing to ask:
    - S1 (`rights`, `renewal`, `ugc`), header "Requests": "Save these {rights requests, renewals,
      or asset requests} for {program}? {n} drafts go on the creators' rows." with each creator
-     named in one line ("@a: 2 Reels, paid usage on Meta ads for 90 days, \$300"; "@b: let lapse,
+     named in one line ("@a: 2 Reels, paid usage on Meta ads for 90 days, USD 300"; "@b: let lapse,
      pull from ads by Nov 3"). Options: "Save the requests (Recommended)", "Change something",
      "Page only".
    - S2, header "Your call", one per open item, exactly as the agent worded it: the recommended
@@ -1990,7 +1990,7 @@ requests need a person to approve them, and stop.
    - S3 (`replies`), header "Record": "Record these {n} replies for {program}?" (add "and pass
      {k} fees owed to the ledger" when a grant carries a fee) with each named in one line,
      including the proof ("@a: granted paid usage on Meta ads for 90 days from
-     Oct 7, \$250, proof: email reply Oct 7"). Options: "Record them (Recommended)", "Change
+     Oct 7, USD 250, proof: email reply Oct 7"). Options: "Record them (Recommended)", "Change
      something".
    - S4, header "Mailbox", only when the program's mail setting names a live mailbox that can
      draft and some drafts go by email: "Create {n} drafts in your {Gmail or Outlook} for @a,
