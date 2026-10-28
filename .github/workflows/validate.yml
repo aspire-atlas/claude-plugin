@@ -60,6 +60,9 @@ jobs:
       - name: Every color in the mod's hooks comes from the palette
         run: bash scripts/check-palette.sh
 
+      - name: No unescaped $<digit> in a skill or command body (argument substitution)
+        run: bash scripts/check-skill-args.sh
+
       - name: Changelogs are edited only on release branches
         if: steps.channel.outputs.name == 'develop'
         run: |
