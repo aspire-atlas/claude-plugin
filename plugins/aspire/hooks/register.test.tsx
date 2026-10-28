@@ -716,8 +716,8 @@ test('idle crabs breathe at their own rate and start at their own point', async 
     .map(el => /--d:-([\d.]+)s;--p:([\d.]+)s/.exec(String(el.props.source)))
     .filter((m): m is RegExpExecArray => m !== null)
     .map(m => ({ delay: Number(m[1]), period: Number(m[2]) }))
-  expect(breaths).toHaveLength(26)
-  expect(new Set(breaths.map(b => `${b.delay}/${b.period}`)).size).toBe(26)
+  expect(breaths).toHaveLength(27)
+  expect(new Set(breaths.map(b => `${b.delay}/${b.period}`)).size).toBe(27)
   expect(new Set(breaths.map(b => b.period)).size).toBeGreaterThanOrEqual(20)
   expect(new Set(breaths.map(b => b.delay)).size).toBeGreaterThanOrEqual(20)
   for (const b of breaths) {

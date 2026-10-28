@@ -55,8 +55,8 @@ grep -qF 'Not for public publishing.' "$STD" || err "the standard lost its audie
 # References that define a published page or deck, in the aspire plugin.
 for f in ad-reuse affiliate cas-campaign content-library content-review content-sourcing creator-brief creator-card \
   creator-discovery creator-profile creator-vetting deliverable-tracker fulfillment market-signal negotiation org-dashboard \
-  orchestrator outreach post-analysis ppa-pitch program program-dashboard program-ledger quarterly-signal readout \
-  roster-manager shops first-run agents/decision-audit agents/sample-artifact; do
+  orchestrator outreach post-analysis ppa-pitch program program-dashboard program-ledger quality-review quarterly-signal \
+  readout roster-manager shops first-run agents/decision-audit agents/sample-artifact; do
   [ -f "$R/$f.md" ] || { err "$R/$f.md is missing"; continue; }
   grep -q 'artifact-standard' "$R/$f.md" || err "$f.md does not link artifact-standard.md"
 done
