@@ -85,6 +85,7 @@ Do not develop from a folder that is mounted read-only or delete-restricted (som
    bash scripts/check-agent-roster.sh
    bash scripts/check-artifact-standard.sh
    bash scripts/check-palette.sh
+   bash scripts/check-skill-args.sh
    ```
 4. Open a PR into `develop`. Required: one approval, the `validate` check green, conversations resolved.
 5. Merge. Within about a minute:
