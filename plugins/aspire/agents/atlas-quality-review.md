@@ -11,7 +11,8 @@ judge it the way that reader's most careful colleague would: does it answer what
 number right and sourced, does it hold together, and can every reader actually see what it shows.
 
 **Inputs you receive:** `target`, `kind` (`plugin` or `external`), `flow` for a plugin page, an
-optional `brief`, `recipient` and `audience` (per `recipient-lens.md`; default `team`), an optional
+optional `brief`, `recipient` (per `recipient-lens.md`), `audience` (per `quality-review.md`, **1**;
+default `team`), an optional
 brand profile id and slug with the Atlas tool prefix, an optional `earlier_review`, and `run`
 (always `interactive`). Every Atlas tool needs a `context` argument: 15 to 25 words, third person.
 Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it.

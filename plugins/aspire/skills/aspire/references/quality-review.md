@@ -20,7 +20,8 @@ records what it saw and what to fix; the person decides what to change.
 | `kind` | `plugin` when the target is a page this plugin published (the main thread knows from the flow that made it), else `external` |
 | `flow` | For `plugin`: the flow and agent that made it ("Creator brief", `atlas-creator-brief`) |
 | `brief` | Optional: what the work was asked to answer (an RFP, a brief, the user's request in their words). Turns on check **4.1** |
-| `recipient` | Who will read the work (`recipient-lens.md`), plus `audience`: `team`, `client`, `creator`, `leadership`, or `public` |
+| `recipient` | The lens of whoever acts on the work (`recipient-lens.md`) |
+| `audience` | Who will see the work, which sets **4.11** and the audience line checked in **4.12**: `team` (the brand's own team, leadership included), `client` (a brand or agency outside the team), `creator`, or `public`. Default `team` |
 | `profile_id`, `profile_slug`, tool prefix | Optional. With a brand profile, check **4.3** re-checks the Atlas figures the work cites, read only |
 | `earlier_review` | The path or link of an earlier review of the same work, when this is a re-review |
 | `run` | Always `interactive`. The review has no unattended mode |
@@ -31,9 +32,9 @@ Read all of it before judging anything, and keep a coverage note for **4.0**.
 
 | Target | How to read it |
 | ------ | -------------- |
-| Claude artifact | The Artifact tool, `action: "read"`. Also list its files (`scope: "files"`) and read any page data or script the page loads, so **4.11** can see what it fetches. A Docs artifact: the docs connector's read |
+| Claude artifact | The Artifact tool, `action: "read"`. Also list its files (`scope: "files"`) and read any page data or script the page loads, so **4.11** can see what it fetches. A Docs artifact: the docs connector's read. For an artifact the user does not own, `read` returns a summary, not the page: say so in the coverage note, mark every quote "(from the summary)", skip the recomputed sums in **4.4**, and recommend asking the owner for edit access or an export for a full review |
 | Google Slides or Docs | The Drive connector's read of the file's content, with comments |
-| .pptx, .pdf, .docx in Drive | The Drive connector's read. When it returns no text (an upload with no index, or a file over the connector's size limit) and the session has a browser the user is signed in to, open `https://docs.google.com/presentation/d/{id}/htmlpresent` for a deck and read the page text. Read only: never edit, download, or share the file |
+| .pptx, .pdf, .docx in Drive | The Drive connector's read. When it returns no text (an upload with no index, or a file over the connector's size limit) and the session has a browser the user is signed in to, open `https://docs.google.com/presentation/d/{id}/htmlpresent` for a deck and read the page text. The connector's read and download tools are both fine; never edit, move, share, or comment on the file |
 | Local file | The session's pptx, pdf, or docx skill to extract the text; read .html and .md directly |
 
 Nothing readable: say what was tried, publish nothing, and stop. Speaker notes, sticky notes, and
@@ -51,6 +52,8 @@ on the page as not applicable, with the reason, never silently skipped.
 | A plugin report or signal (readout, market signal, quarterly signal, profile, post analysis, ad reuse) | 4.6 Commercial, 4.8 People (unless it names a team) |
 | A plugin brief, shortlist, or vetting page | 4.8 People |
 | A plugin dashboard or program page (org dashboard, program dashboard, ledger, CAS campaign, orchestrator, order form) | 4.7 Proof |
+| A plugin working page (content review, outreach, negotiation, fulfillment, deliverable tracker, affiliate, roster health, content sourcing, content library, shops plan) | 4.7 Proof, 4.8 People |
+| Any other plugin page | 4.6 Commercial, 4.7 Proof, and 4.8 People, unless the page shows prices, case studies, or a team |
 | A plugin deck (PPA pitch) | none |
 | A decision audit page | 4.5 to 4.10 |
 
@@ -73,7 +76,8 @@ judge what was not seen.
 With a `brief`: list each question or requirement it asks, in its own order and numbering. Find
 where the work answers it and score the answer 1 to 5: 5 is specific, evidenced, and answers exactly
 what was asked; 3 answers in general terms; 1 dodges, defers ("pricing follows"), or leaves it out.
-A requirement with no answer anywhere is a Critical finding for a client-facing piece. Without a
+A requirement with no answer anywhere is a Critical finding when `audience` is `client` or
+`public`, and High otherwise; a score of 1 is a High finding. Without a
 brief, score against the work's own stated purpose (its title, its "what this page is for" line, or
 the flow's job in SKILL.md) and say so.
 
@@ -172,9 +176,10 @@ nobody outside the publisher's company can reach that company's private tools. C
    publisher's company. Name it, and recommend replacing it with the figure plus a source the reader
    can reach, or removing it. Links to private dashboards, private chat threads, and private files
    in a client-facing piece are a High finding.
-4. **Sharing.** A private artifact link, a Drive file shared with no one, or a page whose content
-   depends on the publisher's own sign-in will not open for the reader. Name it, and say who must
-   share what before the work is sent.
+4. **Sharing.** The work itself is often still private when it is reviewed: every plugin page starts
+   private. That is not a finding. List it under **Check before sending** as a step ("share {page}
+   with {audience} as Viewer"). A finding is only a private link or file *inside* the work that
+   the reader will be sent to and cannot open (**3** above).
 
 ### 4.12 Artifact standard
 
@@ -193,8 +198,8 @@ inconsistent naming or capitalization, and broken links.
 
 | Level | Means |
 | ----- | ----- |
-| Critical | Could lose the decision, misleads the reader, or is a legal, compliance, or access gap (an unanswered requirement, two prices, a private note on a client slide, data the reader cannot see presented as if they can) |
-| High | Hurts credibility with a careful reader (numbers that disagree, a promise with nothing behind it, proof off-category, a link the reader cannot open) |
+| Critical | Could lose the decision, misleads the reader, or is a legal or compliance gap (an unanswered requirement in a brief, two prices, a private note on a client slide, a figure or section the reader will see empty or broken) |
+| High | Hurts credibility with a careful reader (numbers that disagree, a promise with nothing behind it, proof off-category, a link inside the work the reader cannot open) |
 | Medium | Polish (typos, page numbers, wording) |
 
 **Verdict:** any Critical finding means **Not ready**. High findings alone mean **Ready with fixes**.
@@ -236,12 +241,12 @@ colors excepted. Sections, in order:
    can see it; who cannot; the fix. Shown whenever 4.11 found anything.
 8. **Suggested fixes:** before-and-after mock-ups of the two to four biggest fixes, drawn in CSS,
    with placeholders highlighted.
-9. **Check before sending:** the facts to source or confirm (**4.3**), and the Atlas re-check
-   results when it ran.
+9. **Check before sending:** the facts to source or confirm (**4.3**), the Atlas re-check results
+   when it ran, and who must share what with the reader before it goes out (**4.11**, item 4).
 10. **Top fixes in order:** five to seven, each with its rough effort.
-11. **Footer:** the coverage line again, then the source line per `artifact-standard.md`: the
-    standard line when the Atlas re-check ran, otherwise the "No Atlas data on this page" variant,
-    and the team audience line (a review is for the team, never the work's reader).
+11. **Footer:** the coverage line again, then the source line per `artifact-standard.md`, section
+    3, **Review pages**, with the team audience line (a review is for the team, never the work's
+    reader).
 
 ## 8. Output to the main thread (under 200 words)
 

@@ -129,7 +129,7 @@ time so it never goes stale; never recite it from memory.
    | `atlas-campaign-orchestrator` | Phase 1, then Phase 2 + 3, then **Orchestrator** (Setup if it has never run) |
    | `atlas-shops` | Phase 1, then Phase 2 + 3, then **Shops** (its shop and stage questions first) |
    | `atlas-org-dashboard` | Phase 1, then Phase 2 + 3, then **Organization dashboard** (its publish question first) |
-   | `atlas-quality-review` | **Quality review** (it asks for the work to review first; Phase 1 only when the Atlas re-check is wanted) |
+   | `atlas-quality-review` | **Quality review** (it asks for the work to review first; Phase 1 and Phase 2 + 3 only when the Atlas re-check is wanted) |
 
    Answers the **Prompt coach** already collected carry into the hand-off row (**Prompt coach**,
    Carry-over).
@@ -2868,14 +2868,15 @@ never run it in an unattended session.
    agent reads the deck's HTML view, read only (`quality-review.md`, **2**).
 2. **Who reads it, and against what.** One `AskUserQuestion` call, skipping what the user already
    said, with the **Reading the ask** confirmation folded into the first question:
-   - header "For": "Who will read it?" Options: the reader the ask names or the flow's lens
-     (Recommended), "A client", "Our team", "Leadership". The answer sets `recipient` and
-     `audience`.
+   - header "For": "Who will see it?" Options: the reader the ask names (Recommended), "A client",
+     "A creator", "Our team or leadership"; the free text takes "the public". The answer sets
+     `audience` (`quality-review.md`, **1**) and, with the ask, `recipient`.
    - header "Brief": "Should it answer a brief or RFP?" Options: "Yes (paste or link it in the
      box)", "No, judge it on its own purpose". A plugin page gets the original request and the
      flow's answers as its brief without asking.
-   - header "Atlas", only when the work cites Atlas figures: "Re-check the Atlas figures it cites?
-     Read only." Options: "Re-check them (Recommended)", "Skip". "Re-check them" runs Phase 1 and
+   - header "Atlas", only when Atlas is connected in this session or the work is a plugin page:
+     "If it cites Atlas figures, re-check them? Read only." Options: "Re-check them
+     (Recommended)", "Skip". The agent skips the re-check when the work cites none. "Re-check them" runs Phase 1 and
      Phase 2 + 3 for the profile first, when they have not run this session.
 3. **Launch** `atlas-quality-review` (**Running agents**, in a subagent) with `target`, `kind`
    (`plugin` or `external`), `flow` for a plugin page, `brief`, `recipient`, `audience`, the tool
@@ -2896,8 +2897,10 @@ before the decision audit offer: an agent's page (its output carries a `Quality 
 `references/artifact-standard.md`), or a page the main thread built (**Visual output**, a deck it
 exported). `AskUserQuestion`, header "Review": "Run a quality review on {page title} before you
 share it?" Options: "Review it (Recommended)", "Not now". "Review it" runs **Run** from step 3 with
-`kind: plugin`, the flow, the page link, the flow's `recipient`, the session's profile, and the
-re-check on when Atlas is connected.
+`kind: plugin`, the flow, the page link, the flow's `recipient`, `audience` read from the page's
+own audience line (`artifact-standard.md`, section 2: "Internal use only" is `team`; "Shared with
+{audience}" names the client or creator), `brief` set to the user's original request and the
+flow's answers, the session's profile, and the re-check on when Atlas is connected.
 
 Ask at most once per page per session, and again after a revision or export of the same page only
 if the user reviewed it before ("Review it again"). Never offer it in an unattended run, for a
@@ -2929,7 +2932,8 @@ offer (**Quality review**, The offer), ask once with
 `AskUserQuestion`, header "Audit": "Would you like an audit of the decisions and tools behind
 {page title}?" Options: "Build the audit page (Recommended)" / "Not now". Ask again after a later
 revision or export of the same work only if the user built an audit for it; then the update
-option is "Update the audit page". Never ask in an unattended run; scheduled runs keep no log.
+option is "Update the audit page". Never ask in an unattended run; scheduled runs keep no log. Never
+offer an audit of a quality review's own page.
 
 **Building it.** Launch a general-purpose subagent with: "Read and follow
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/decision-audit.md`.", then the inputs the
@@ -3139,8 +3143,8 @@ The watch list is the brand's saved creators, outside any campaign.
   They never start discovery work, interactive or unattended.
 - Creator fees come only from the fee calculator (**Fee calculator**). No price is shown when
   the data behind it is missing.
-- After real work ends in a published page, offer the quality review, then the decision audit
-  (**Quality review**, **Decision audit**). The review reads and reports; it never edits the
+- After real work ends in a published page, offer the quality review (**Quality review**); after
+  an agent's page, the decision audit next (**Decision audit**). The review reads and reports; it never edits the
   work or writes to Atlas. The audit records what happened; it never re-decides, re-runs, or
   writes to Atlas.
 - Every agent runs in a subagent (**Running agents**), started in the background so the user
