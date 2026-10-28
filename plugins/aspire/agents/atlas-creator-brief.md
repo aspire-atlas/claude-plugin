@@ -112,10 +112,6 @@ one source line at the end, as
 variants in sections 1 and 3, the source line in section 2. Take the as-of time from the shell clock
 and change it on every republish. Never name Claude, a model, or the requester on a page. A sample
 page follows the sample variant. Files for import (CSV) and chat or mail text carry neither.
-After a real (not sample) publish, add one line to your output, `Quality review: {page title}, {link}`,
-so the main thread can offer to review the page before it is shared
-(`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/quality-review.md`). A quality review's own page
-gets no such line.
 
 ## Audit trail
 

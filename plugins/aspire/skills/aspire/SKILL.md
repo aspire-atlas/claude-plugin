@@ -2896,7 +2896,8 @@ never run it in an unattended session.
 ### The offer
 
 When real work ends in a published page, ask once, after the flow's own follow-up questions: an
-agent's page (its output carries a `Quality review:` line, per `references/artifact-standard.md`),
+agent's page (any agent result that returns the link of a page it published, other than a
+sample or a quality review's own page),
 or a page the main thread built (**Visual output**, a deck it exported). Ask it in one
 `AskUserQuestion` call with the decision audit offer as the second question when that offer
 applies (**Decision audit**), so neither waits on the other. The review question: header
