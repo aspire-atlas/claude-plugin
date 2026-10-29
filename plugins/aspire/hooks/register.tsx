@@ -202,8 +202,24 @@ async function activate($: EngineInterface, kind: TriggerKind, detail: string): 
 
 type Count = 'prompts' | 'skillTools' | 'progressReports' | 'atlasResults' | 'agents'
 
+// One case per key, with no computed member: the plugin directory cannot read brackets in code that $ reaches.
+function bump(s: Seen, key: Count): Seen {
+  switch (key) {
+    case 'prompts':
+      return { ...s, prompts: s.prompts + 1 }
+    case 'skillTools':
+      return { ...s, skillTools: s.skillTools + 1 }
+    case 'progressReports':
+      return { ...s, progressReports: s.progressReports + 1 }
+    case 'atlasResults':
+      return { ...s, atlasResults: s.atlasResults + 1 }
+    case 'agents':
+      return { ...s, agents: s.agents + 1 }
+  }
+}
+
 async function count($: EngineInterface, key: Count): Promise<void> {
-  await update($, seen, s => ({ ...s, [key]: s[key] + 1 }))
+  await update($, seen, s => bump(s, key))
 }
 
 async function reset($: EngineInterface): Promise<void> {

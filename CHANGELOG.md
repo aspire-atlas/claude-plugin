@@ -6,6 +6,16 @@ The version lives in exactly one place: `plugins[].version` in `.claude-plugin/m
 
 ## [Unreleased]
 
+## [4.1.1] - 2026-10-29
+
+Patch release. Fixes the line in the Claude Code mod that the Anthropic plugin directory still could not read in 4.1.0.
+
+### Changed
+- The plugin README describes the Atlas token costs figure for customers: what the band shows, and that it stays blank when Atlas doesn't report it.
+
+### Fixed
+- The Claude Code mod counts the Aspire events it has seen without a computed key, the form the Anthropic plugin directory couldn't read in 4.1.0. Nothing changes in what the mod shows or does.
+
 ## [4.1.0] - 2026-10-29
 
 Minor release. Adds the quality review, which checks a page or deck before it is shared, and fixes what kept 4.0.0 out of the Anthropic plugin directory.
@@ -187,7 +197,8 @@ First public release. Versioning restarts at 1.0.0; earlier 0.x builds were inte
 - Two release channels: `aspire-atlas` (official, pinned) and `aspire-atlas-beta` (tracks `develop`).
 - Apache-2.0 license.
 
-[Unreleased]: https://github.com/aspire-atlas/claude-plugin/compare/v4.1.0...HEAD
+[Unreleased]: https://github.com/aspire-atlas/claude-plugin/compare/v4.1.1...HEAD
+[4.1.1]: https://github.com/aspire-atlas/claude-plugin/compare/v4.1.0...v4.1.1
 [4.1.0]: https://github.com/aspire-atlas/claude-plugin/compare/v4.0.0...v4.1.0
 [4.0.0]: https://github.com/aspire-atlas/claude-plugin/compare/v3.3.0...v4.0.0
 [3.3.0]: https://github.com/aspire-atlas/claude-plugin/compare/v3.2.0...v3.3.0
