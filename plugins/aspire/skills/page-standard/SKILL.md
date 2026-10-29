@@ -153,7 +153,8 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   platforms with posts; the script knows the page is shared when its `atlas-footnote` says "Shared
   with". Show the exact count ("1,412 posts"), never a rounded one ("1.4K").
 - A check that is N/A for this page (section 1) goes in `data-na` on the scope, for example
-  `data-na="R2"` on a ledger or a one-creator profile; the script reports it `n/a`.
+  `data-na="R2"` on a ledger or a one-creator profile; the script reports it `n/a`. Only R2 and R6
+  can be N/A; R1 and R11 apply to every page, and naming them fails the check.
 - A decisions section with no decision says "Nothing needs approval" (or "No decision needs
   approval"). A `data-by` date is a real date the page also shows.
 - Mark anything in someone else's words with `blockquote`, `q`, or `data-quoted`: a creator's
@@ -375,6 +376,8 @@ def r2(nodes, regions):
         return ["no single scope to read platforms from"]
     top, problems = counts(scopes[0], "the scope")
     if shared(nodes):
+        if not any(top.values()):
+            problems.append("the page is shared outside the team but lists no platform with posts; list the ones it covers")
         for name, posts in sorted(top.items()):
             if posts == 0:
                 problems.append("the page is shared outside the team but names %s as not covered; leave it out" % name)
@@ -432,6 +435,8 @@ def r11(nodes, regions):
             problems.append("names %s: \"%s\"" % (kind, hit))
     return problems
 
+# Only these scripted checks can be N/A (reader-standard.md; quality-review.md, section 3).
+CAN_BE_NA = {"R2", "R6"}
 CHECKS = (("R1", "Reader and scope", r1), ("R2", "Platforms covered", r2),
           ("R6", "Decisions kept separate", r6), ("R11", "Plain language", r11))
 
@@ -449,8 +454,10 @@ def check(path):
     na = set((scope.attrs.get("data-na") or "").upper().split()) if scope is not None else set()
     results = []
     for code, name, run in CHECKS:
-        if code in na:
+        if code in na and code in CAN_BE_NA:
             results.append((code, name, "n/a", []))
+        elif code in na:
+            results.append((code, name, "fail", ["%s is never N/A; remove it from data-na" % code]))
         elif code != "R11" and not regions:
             results.append((code, name, "unmarked", ["the page has no data-page markup; judge this check by reading"]))
         else:
@@ -496,7 +503,8 @@ flow. Every check is pass, fail, or N/A, never a score.
 
 When the reader standard changes, this table and the script change in the same commit.
 
-- **Sample pages** follow `references/agents/sample-artifact.md`: no self-check and no page check.
+- **Sample pages** follow `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/sample-artifact.md`:
+  no self-check and no page check.
 - **A review page** (a quality review) runs the check with the words of the work under review
   marked as quoted.
 - The scripted checks look only at the markup in section 5. A page can pass the script and still

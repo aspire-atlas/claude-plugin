@@ -16,9 +16,9 @@ The two pieces say everything the page needs to say about itself:
 - **When:** the "as of" time in the source line, which changes every time the page is republished or
   its data is refreshed. There is no separate prepared date.
 
-What a page says, part by part, and the R1 to R12 checks (`reader-standard.md`) it passes before it is published are set
-by the shared skill `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`. This file sets only the
-mark and the source line.
+What a page says, part by part, and the R1 to R12 checks (`reader-standard.md`) it passes before
+it is published are set by the shared skill `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`.
+This file sets only the mark and the source line.
 
 Applies to: pages published with the Artifact tool, the PPA deck (HTML and exports), the inline
 creator card widget, the decision audit page, sample pages, and any page the main thread builds.
@@ -86,8 +86,8 @@ added, it does not replace them). Markup:
   source sentence: "Source: Aspire Atlas cross-platform indexing (...), and {source label} data for
   {what it fills}. Data compiled ..." Never present the other connector's figures as Atlas's.
 - Never name Claude, a model, or an assistant, and never add the requester's name, email, id, slug,
-  or role to the source line. "AI brand memory" is the fixed name of the data layer, not a statement about who wrote
-  the page.
+  or role to the source line. "AI brand memory" is the fixed name of the data layer, not a
+  statement about who wrote the page.
 
 The source sentence's fixed wording is: `Source: Aspire Atlas cross-platform indexing ({networks}).
 Data compiled via proprietary AI brand memory as of {asOfDate}.` Keep it as one sentence pair; the

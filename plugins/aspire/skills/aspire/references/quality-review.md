@@ -26,6 +26,7 @@ log (**10**). It records what it saw and what to fix; the person decides what to
 | `brief` | Optional: what the work was asked to answer (an RFP, a brief, the user's request in their words). Turns on check **4.1** |
 | `recipient` | The lens of whoever acts on the work (`recipient-lens.md`) |
 | `audience` | Who will see the work, which sets **4.11** (item 5, platform disclosures, applies outside the team), the audience line checked in **4.12**, the scope of **R2** and **R9**, and the severity of **R11**: `team` (the brand's own team, leadership included), `client` (a brand or agency outside the team), `creator`, or `public`. Default `team` |
+| `page_check` | Optional, for `plugin`: the `page-check` block the agent returned with the page (`skills/page-standard/SKILL.md`, section 7). Used in **4.14** |
 | `evidence_dir` | Optional: a folder with the raw output of the run that made the work, for **R7** |
 | `media_dir` | Optional: a folder with the videos or a frame index (JSON with `t` and a description per frame) the work's timecodes refer to, for **4.15** |
 | `profile_id`, `profile_slug`, tool prefix | Optional. The brand profile sets the page's theme and the category in **4.9** |
@@ -243,9 +244,9 @@ Run every R check in `reader-standard.md`, in ID order, by the rules there: **R7
 default severity or higher, and one defect filed once under its most specific check with both IDs
 listed in **Failed checks**.
 
-A page an agent published carries its own page check (`skills/page-standard/SKILL.md`). Treat it as
-the agent's claim, not evidence: judge every R check again. When an R check the page check marked
-`pass` fails here, say so in the finding ("the page check passed R5").
+With `page_check`, treat it as the agent's claim, not evidence: judge every R check again. When an
+R check the page check marked `pass` or `fixed` fails here, say so in the finding ("the page check
+passed R5").
 
 ### 4.15 Media and links
 

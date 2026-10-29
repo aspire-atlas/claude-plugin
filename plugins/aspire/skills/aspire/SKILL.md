@@ -186,8 +186,9 @@ direct ask, `/aspire:aspire run {agent}`, a hand-off from **List agents**, a sec
    Check the result before telling the user it is done. Close out each published page in one
    line from its `page-check` block (`skills/page-standard/SKILL.md`): the link and any check
    fixed or still failing, by name, and tell the requester its `gaps`. To fix a check still
-   failing, offer **Apply the fixes** (**Quality review**, Run step 5) with its `stillFailing`
-   lines as the fixes; never edit an agent's page here. Unattended runs relay the line and offer
+   failing, offer **Apply the fixes** (**Quality review**, Run step 5), with one fix per `fail`
+   in `stillFailing` written as `{check}, page: make it pass ({reason})`; leave out `n/a` lines
+   and a fail the user would have to fix (a connection to add). Never edit an agent's page here. Unattended runs relay the line and offer
    nothing; samples return no page check.
 5. **Several at once.** Different agents, and a second run of the same agent for another brand,
    handle, or campaign, may run together. Keep one decision log line per launch and return, and
@@ -286,8 +287,8 @@ team catalog, and how agents render for a lens are in `references/recipient-lens
 
 4. **Pass it on.** Every agent launch below includes `recipient` (the confirmed lens or lenses,
    primary first). With a `leadership` primary lens, also pass `preparedBy`: the name the user
-   gave for whoever sends the page on, or nothing (the page then says "{organization} team"). Relay the agent's forward note as-is, so the requester can paste it to the
-   reader.
+   gave for whoever sends the page on, or nothing (the page then says "{organization} team").
+   Relay the agent's forward note as-is, so the requester can paste it to the reader.
 5. **Keep the record.** From the first question of any flow that launches an Atlas agent, keep
    the running decision log and ask every agent for its audit trail block, per **Decision
    audit**.
@@ -2895,7 +2896,8 @@ interactive session may launch the agent with `mode: grade` to grade a draft (`q
    (`plugin` or `external`), `flow` for a plugin page, `brief`, `recipient`, `audience`, the tool
    prefix, `profile_id` and `profile_slug` whenever the session has a profile, `recheck` (`true` on
    "Re-check them"), `run: interactive`, `publish: artifact`, `log`, and
-   `earlier_review` (the earlier review's link) when the same work was reviewed before, ending with
+   `earlier_review` (the earlier review's link) when the same work was reviewed before,
+   `page_check` (the page's `page-check` block, when the agent returned one), ending with
    the decision-audit line. For `log`: when Atlas is connected and the session has a profile
    (whatever the "Atlas" answer was), find the key `quality-review:log` with `search_calibrations`
    (no filter, limit 100 per page, paged to the end; read only) just before launching and pass its
