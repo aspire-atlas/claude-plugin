@@ -222,7 +222,7 @@ These are product and safety commitments. A PR that breaks one is blocked in rev
   | ------- | ------------ |
   | No version in plugin.json (`MANIFEST_VERSION_MISSING`) | No `plugin.json` carries a version: `develop` resolves it to the commit SHA and `main` pins it on the plugin's entry in `marketplace.json` (section 2, `check-channel.sh`). Adding one would break the beta channel. |
   | Unknown field `types` (`UNKNOWN_KEY`) | It declares the mod's state contract, `types/index.d.ts`, which `claude plugin validate` holds every `$.state` key to. |
-  | `icon`, `privacyPolicyUrl` (`UNKNOWN_KEY_CROSS_TOOL`, `UNKNOWN_KEY`) | Listing fields the directory reads. |
+  | `icon`, `privacyPolicyUrl`, `documentationUrl`, `supportUrl`, `termsOfServiceUrl` (`UNKNOWN_KEY_CROSS_TOOL`, `UNKNOWN_KEY`) | Listing fields the directory reads: the icon and the listing's Privacy policy, Documentation, Support, and Terms of service links. |
   | Uses hooks, includes a mod, adds tools, hooks prompt, agent, or call events (`USES_HOOKS`, `MOD_*`) | The deliberate 4.0.0 decision; the plugin README's **What each hook does** answers the reviewer, and `check-directory.sh` keeps it complete. |
   | Uses a credential from the user's machine (`MCP_FORWARDS_CREDENTIAL_ENV`) | Nothing reads a credential; the connectors sign in with their own vendor through OAuth, and the Meta Ads client ID is public. A reviewer confirms it. |
   | Image or font file the code could run, assets passed unread (`UNREAD_ASSET_REFERENCED`, `ASSETS_PASSED_UNREAD`) | `assets/icon.png` is the listing icon and the spinners are SVG; nothing runs them. A reviewer confirms it. |
