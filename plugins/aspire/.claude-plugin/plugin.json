@@ -7,7 +7,10 @@
     "name": "Aspire"
   },
   "homepage": "https://atlas.aspire.io",
+  "documentationUrl": "https://atlas.aspire.io/docs/",
+  "supportUrl": "https://www.aspire.io/contact",
   "privacyPolicyUrl": "https://www.aspire.io/legal/privacy-policy",
+  "termsOfServiceUrl": "https://www.aspire.io/legal/terms-of-service",
   "repository": "https://github.com/aspire-atlas/claude-plugin",
   "license": "Apache-2.0",
   "keywords": [
