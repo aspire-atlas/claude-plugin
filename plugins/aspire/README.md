@@ -2,6 +2,17 @@
 
 Onboarding for the Atlas platform (https://atlas.aspire.io). Takes a new or returning user from "not connected" to first insights on their brand's social accounts.
 
+## Install
+
+In Claude Code:
+
+```shell
+/plugin marketplace add aspire-atlas/claude-plugin
+/plugin install aspire@aspire-atlas
+```
+
+The repository [README](../../README.md) covers the Claude app and the beta channel.
+
 ## Components
 
 | Component | Name | Purpose |

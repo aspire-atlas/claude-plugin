@@ -15,6 +15,7 @@
 #   - a plugin with a mod says in its README what its hooks do (MOD_ANSWERS_FOR_TOOL,
 #     MOD_HOOKS_OPERATION, MOD_HOOKS_POLICY_EVENT): each tool it registers, each prompt, message
 #     and agent event it hooks, and the tools it answers itself
+#   - every skill's description is at most 1,024 characters, the skill spec's limit
 # plugin.json carrying no version is check-channel.sh's rule, kept on purpose; it is not checked here.
 #
 #   scripts/check-directory.sh
@@ -23,6 +24,7 @@ cd "$(dirname "$0")/.."
 . scripts/plugins.sh
 
 MAX_BYTES=262144
+MAX_DESC=1024
 KNOWN_READ=216907
 fail=0
 err() { echo "FAIL $*"; fail=1; }
@@ -40,6 +42,23 @@ for p in $(plugin_names); do
     fi
   done < <(find "$src" -type f ! -name '*.png' ! -name '*.jpg' ! -name '*.jpeg' ! -name '*.gif' ! -name '*.webp' \
     ! -name '*.ico' ! -name '*.woff' ! -name '*.woff2' ! -name '*.ttf' ! -name '*.otf' | sort)
+
+  # Skill descriptions within the skill spec's limit, read as YAML folds them: a > block's lines
+  # joined by single spaces, quotes around a one-line value dropped.
+  while IFS= read -r f; do
+    len=$(awk '
+      NR == 1 && /^---$/ { fm = 1; next }
+      fm && /^---$/ { exit }
+      fm && /^description:/ {
+        v = $0; sub(/^description:[[:space:]]*/, "", v)
+        if (v ~ /^[>|]/) { block = 1; next }
+        gsub(/^["'\'']|["'\'']$/, "", v); d = v; next
+      }
+      fm && block && /^[[:space:]]+/ { v = $0; sub(/^[[:space:]]+/, "", v); d = (d == "" ? v : d " " v); next }
+      fm && block { block = 0 }
+      END { print length(d) }' "$f")
+    [ "$len" -le "$MAX_DESC" ] || err "$f: description is $len characters, over the $MAX_DESC the skill spec allows"
+  done < <(find "$src/skills" -name SKILL.md 2>/dev/null | sort)
 
   H=$src/hooks
   compgen -G "$H/*.ts*" >/dev/null || continue
@@ -85,5 +104,5 @@ for p in $(plugin_names); do
   fi
 done
 
-[ "$fail" -eq 0 ] && echo "OK   plugins pass the directory's mod form, file size, and hook documentation checks"
+[ "$fail" -eq 0 ] && echo "OK   plugins pass the directory's mod form, file size, skill description, and hook documentation checks"
 exit "$fail"

@@ -1,25 +1,18 @@
 ---
 name: aspire
 description: >
-  Creative Intelligence for your brand on Aspire Atlas. Connect Instagram, TikTok, and
-  YouTube, see what's working, benchmark competitors, and check brand safety. Find and brief
-  creators, keep a campaign shortlist, review posts, check a page or deck against the reader standard before it's shared, run an influencer program from outreach to payments, track what creators say about you vs.
-  competitors, and get daily, weekly, and quarterly reports shaped for whoever will act on
-  them. Use for "/aspire", "/aspire agents", "/aspire getting started", "/aspire help", "/aspire quality review", "review this deck", "is this ready to send", "get started with Atlas", "what can /aspire do",
-  "first time with Atlas", "connect Atlas",
-  "onboard my brand", "connect my Instagram", "what happened yesterday", "how did last week
-  go", "schedule the weekly readout", "find creators for the campaign", "refill the
-  shortlist", "vet these creators", "which of these creators should we approve", "we launch on the 14th and need creators", "review this post", "check this
-  draft against the brief", "brand safety check on this post", "analyze this post", "what brands are in this
-  video", "show @handle's full profile", "what are creators saying about us vs {competitor}", "best hooks to reuse as
-  ads", "which creator posts can we run as partnership ads", "build a PPA pitch", "casting deck for partnership ads", "how did influencer do this
-  quarter", "start the CAS campaign for {brand}", "where is the {brand} campaign", "pull the
-  client's decisions", "record a reply", "set up our influencer program", "where is the
-  {program} program", "write to the approved creators", "send product to the creators", "set up
-  affiliate codes", "did the creators post", "request rights", "what do we owe creators",
-  "set up Instagram Shop", "TikTok Shop", "sell on TikTok", "program dashboard", "what's
-  next", "what should we do next", "next actions", "/aspire fee calculator", or any short, vague ask about creators, posts, or
-  reports ("find me people", "get me creators"), which the prompt coach tightens first.
+  Creative Intelligence on Aspire Atlas for brand, social, and influencer marketing teams.
+  Connect Instagram, TikTok, and YouTube to see what's working, benchmark competitors, and
+  check brand safety. Find, vet, and brief creators, review posts, run an influencer program
+  from outreach to payments, pitch partnership ads, track what creators say about you vs.
+  competitors, and get daily, weekly, and quarterly reports for whoever acts on them. Use for
+  "/aspire", "/aspire agents", "/aspire getting started", "/aspire help", "/aspire quality
+  review", "get started with Atlas", "connect my Instagram", "how did last week go", "find
+  creators for the campaign", "vet these creators", "review this post",
+  "best hooks to reuse as ads", "build a PPA pitch", "start the CAS campaign for {brand}",
+  "set up our influencer program", "what do we owe creators", "TikTok Shop", "what should we
+  do next", or any short, vague ask about creators, posts, or reports, which the prompt coach
+  tightens first.
 metadata:
   author: Aspire
 ---
