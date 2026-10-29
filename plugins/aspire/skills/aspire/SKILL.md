@@ -1,17 +1,18 @@
 ---
 name: aspire
 description: >
-  Creative Intelligence on Aspire Atlas for brand, social, and influencer marketing teams:
-  connect Instagram, TikTok, and YouTube, see what's working, benchmark competitors, check
-  brand safety, find, vet, and brief creators, review posts, run influencer programs and creator
+  Creative Intelligence on Aspire Atlas for brand, social, and influencer marketing teams.
+  Connect Instagram, TikTok, and YouTube to see what's working, benchmark competitors, and check
+  brand safety. Find, vet, and brief creators. Review posts, run influencer programs and creator
   ad campaigns, and get reports for whoever acts on them. Use for "/aspire" (with agents, help,
-  getting started, fee calculator, or quality review), "what can /aspire do", "first time with
-  Atlas", "connect Atlas", "connect my Instagram", "how did last week go", "schedule the weekly
-  readout", "find creators for the campaign", "vet these creators", "review this post", "best
-  hooks to reuse as ads", "build a PPA pitch", "start the CAS campaign for {brand}", "where is
-  the {brand} campaign", "pull the client's decisions", "set up our influencer program", "where
-  is the {program} program", "what do we owe creators", "TikTok Shop", "what should we do
-  next", or a short, vague ask ("find me people"), which the prompt coach tightens first.
+  getting started, fee calculator, or quality review), "what can /aspire do", "onboard my brand",
+  "first time with Atlas", "connect Atlas", "connect my Instagram", "schedule the weekly
+  readout", "find creators for the campaign", "vet these creators", "review this post", "which
+  creator posts can we run as partnership ads", "build a PPA pitch", "start the CAS campaign for
+  {brand}", "where is the {brand} campaign", "pull the client's decisions", "set up our
+  influencer program", "where is the {program} program", "what do we owe creators", "what
+  should we do next", or a short, vague ask ("find me people"), which the prompt coach tightens
+  first.
 metadata:
   author: Aspire
 ---

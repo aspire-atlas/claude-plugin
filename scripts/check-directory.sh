@@ -57,8 +57,9 @@ for p in $(plugin_names); do
 
   # Skill descriptions within the skill spec's limit, read as YAML folds them: continuation lines
   # (of a > or | block, or of a wrapped plain or quoted value) joined by single spaces, a blank
-  # line kept as one newline, and quotes around the value dropped. wc -m counts characters, not
-  # bytes, so curly quotes and accents count once.
+  # line kept as one newline. Outside a block, the quotes around a quoted value and its escapes
+  # (\" and '') count as the text they stand for, and a plain value ends at " #", where YAML's
+  # comment starts. wc -m counts characters, not bytes, so curly quotes and accents count once.
   while IFS= read -r f; do
     desc=$(awk '
       { sub(/\r$/, "") }
@@ -67,7 +68,7 @@ for p in $(plugin_names); do
       fm && /^description:/ {
         found = 1; cont = 1
         v = $0; sub(/^description:[[:space:]]*/, "", v)
-        if (v !~ /^[>|]/) d = v
+        if (v ~ /^[>|]/) blk = 1; else d = v
         next
       }
       fm && cont && /^[[:space:]]*$/ { d = d "\n"; next }
@@ -78,7 +79,10 @@ for p in $(plugin_names); do
       fm && cont { cont = 0 }
       END {
         if (!found) exit 1
-        sub(/\n+$/, "", d); gsub(/^["'\'']|["'\'']$/, "", d)
+        sub(/\n+$/, "", d)
+        if (!blk && d ~ /^"/) { sub(/^"/, "", d); sub(/"[[:space:]]*$/, "", d); gsub(/\\"/, "\"", d) }
+        else if (!blk && d ~ /^'\''/) { sub(/^'\''/, "", d); sub(/'\''[[:space:]]*$/, "", d); gsub(/'\'\''/, "'\''", d) }
+        else if (!blk) sub(/[[:space:]]+#.*$/, "", d)
         printf "%s", d
       }' "$f") || { err "$f: no description in its frontmatter"; continue; }
     len=$(printf '%s' "$desc" | LC_ALL=C.UTF-8 wc -m | tr -d ' ')
