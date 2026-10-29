@@ -41,6 +41,7 @@ bash scripts/check-tool-contract.sh
 bash scripts/check-agent-roster.sh
 bash scripts/check-artifact-standard.sh
 bash scripts/check-orchestration.sh
+bash scripts/check-agent-specs.sh
 bash scripts/check-palette.sh
 bash scripts/check-skill-args.sh
 bash scripts/check-directory.sh
