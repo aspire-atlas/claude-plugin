@@ -8,6 +8,9 @@
 #     name, and blocked 4.1.0 and 4.1.1 on every call to `count($, ...)` while `count` was also a number
 #     parameter elsewhere in register.tsx. As a precaution, not a proven cause, a callback passed with $
 #     (update($, atom, s => ...)) uses no bracketed member or key either
+#   - no .tsx or .jsx file uses h or Fragment as a name of its own (a property, member, variable, parameter,
+#     function, import or assignment): JSX compiles to h(...) and Fragment, so the directory blocks it
+#     (4.1.2 was blocked on a panel row's `h` height field)
 #   - every text file in a plugin is small enough for the validator to read (BINARIES_NOT_INSPECTED).
 #     The directory publishes no limit. The largest file it has read is 216,907 bytes (SKILL.md in
 #     4.0.0) and the smallest it skipped 820,928 (cas-campaign.md), so a file over 256 KiB fails and
@@ -40,6 +43,14 @@ for p in $(plugin_names); do
     fi
   done < <(find "$src" -type f ! -name '*.png' ! -name '*.jpg' ! -name '*.jpeg' ! -name '*.gif' ! -name '*.webp' \
     ! -name '*.ico' ! -name '*.woff' ! -name '*.woff2' ! -name '*.ttf' ! -name '*.otf' | sort)
+
+  # h and Fragment are JSX's own names in every .tsx or .jsx file, tests included.
+  jsxname='(^|[^A-Za-z0-9_$.'"'"'"`-])(h|Fragment)[[:space:]]*[?]?:|\.(h|Fragment)\b|\b(const|let|var|function|class)[[:space:]]+(h|Fragment)\b|\bimport\b[^;]*\b(h|Fragment)\b|(^|[^A-Za-z0-9_$.])(h|Fragment)[[:space:]]*=[^=>]|[(,][[:space:]]*(h|Fragment)[[:space:]]*[,)=]'
+  while IFS= read -r f; do
+    while IFS= read -r hit; do
+      [ -n "$hit" ] && err "$f:${hit%%:*}: h and Fragment are what JSX compiles to; give this a name of its own"
+    done <<<"$(grep -nE "$jsxname" "$f" | grep -vE '^[0-9]+:[[:space:]]*(//|/\*|\*)' || true)"
+  done < <(find "$src" -type f \( -name '*.tsx' -o -name '*.jsx' \) | sort)
 
   H=$src/hooks
   compgen -G "$H/*.ts*" >/dev/null || continue

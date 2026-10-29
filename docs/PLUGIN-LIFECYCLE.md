@@ -285,10 +285,11 @@ Everything in this repository ships to customers. A plugin meant only for Aspire
 
 1. Branch from `develop` as for any feature.
 2. Create `plugins/<name>/` with `.claude-plugin/plugin.json` (`name`, `displayName`, `description`, `author`, `homepage`, `repository`, `license`; no `version`), a `README.md`, and its `skills/`. Agents are named `atlas-<name>.md`; list each in a skill's agent hand-off and Model tiers tables and in the plugin README's agent table, as `aspire` does.
-3. Share files with `aspire` by symbolic link, never by copy. Every agent carries the artifact standard's agent block verbatim, and that block names `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md`, so the plugin links that path and the two animated marks in `assets/` to `aspire`'s files:
+3. Share files with `aspire` by symbolic link, never by copy. Every agent carries the artifact standard's agent block verbatim, and that block names `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md` and `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, which reads `reader-standard.md`, so the plugin links those three paths and the two animated marks in `assets/` to `aspire`'s files:
    ```bash
-   mkdir -p plugins/<name>/skills/aspire/references plugins/<name>/assets
-   ln -s ../../../../aspire/skills/aspire/references/artifact-standard.md plugins/<name>/skills/aspire/references/
+   mkdir -p plugins/<name>/skills/aspire/references plugins/<name>/skills/page-standard plugins/<name>/assets
+   ln -s ../../../../aspire/skills/aspire/references/artifact-standard.md ../../../../aspire/skills/aspire/references/reader-standard.md plugins/<name>/skills/aspire/references/
+   ln -s ../../../aspire/skills/page-standard/SKILL.md plugins/<name>/skills/page-standard/
    ln -s ../../aspire/assets/aspire-animated.svg ../../aspire/assets/aspire-animated-small.svg plugins/<name>/assets/
    ```
    The checks require real links to `aspire`'s files; a copy fails. Claude Code copies the target of a link that stays inside the marketplace when it installs the plugin, and the release zip stores the target's contents. Before the plugin's first official release, install it from the org catalog (through the mirror) and from a release zip, and confirm the linked files arrive there too.
