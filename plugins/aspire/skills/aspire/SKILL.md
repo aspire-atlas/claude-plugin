@@ -3,7 +3,7 @@ name: aspire
 description: >
   Creative Intelligence for your brand on Aspire Atlas. Connect Instagram, TikTok, and
   YouTube, see what's working, benchmark competitors, and check brand safety. Find and brief
-  creators, keep a campaign shortlist, review posts, run an influencer program from outreach to payments, track what creators say about you vs.
+  creators, keep a campaign shortlist, review posts, check a page or deck against the reader standard before it's shared, run an influencer program from outreach to payments, track what creators say about you vs.
   competitors, and get daily, weekly, and quarterly reports shaped for whoever will act on
   them. Use for "/aspire", "/aspire agents", "/aspire getting started", "/aspire help", "/aspire quality review", "review this deck", "is this ready to send", "get started with Atlas", "what can /aspire do",
   "first time with Atlas", "connect Atlas",
@@ -2851,12 +2851,16 @@ Trigger on `/aspire:aspire quality review`, on asks like "review this deck", "au
 this ready to send", or "check this page before I share it", and on "Review it" in the offer below.
 It checks one finished piece of work: any page this plugin published, or a pitch, proposal, brief,
 or report the brand made elsewhere. Full detail lives in `references/quality-review.md`: how the
-target is read, which checks apply, the rubric (including data access and live pages), severity and
-verdict, the writing rules, and the page.
+target is read, which checks apply, the rubric (including data access and live pages, the reader
+standard in `references/reader-standard.md`, and media and links), pass or fail on every check,
+severity and verdict, the writing rules, the page, the output, grade mode, and the review log.
 
 The review reads and reports. It never edits the work, never writes to Atlas, and never starts
-discovery work, so it needs no write confirmation. It is interactive only: never schedule it, and
-never run it in an unattended session.
+discovery work, so it needs no write confirmation. Its only other write is one row in the
+organization's own review log, when the organization saved one (**Review log** below). It is
+interactive only: never schedule it, and never run it in an unattended session. Another skill in an
+interactive session may launch the agent with `mode: grade` to grade a draft (`quality-review.md`,
+**9**): it builds no page, logs nothing, and returns the grade to that skill.
 
 ### Run
 
@@ -2883,15 +2887,41 @@ never run it in an unattended session.
 3. **Launch** `atlas-quality-review` (**Running agents**, in a subagent) with `target`, `kind`
    (`plugin` or `external`), `flow` for a plugin page, `brief`, `recipient`, `audience`, the tool
    prefix, `profile_id` and `profile_slug` whenever the session has a profile, `recheck` (`true` on
-   "Re-check them"), `run: interactive`, and `earlier_review` (the earlier review's link) when the
-   same work was reviewed before, ending with the decision-audit line.
-4. **Relay** the page link, the verdict and its reason, each Critical finding in one line, the data
-   access line, and what the review could not see. Say once that the review is for the team, and
-   name any private link or file the reader will not be able to open until it is shared.
+   "Re-check them"), `run: interactive`, `publish: artifact`, `log` (the saved `quality-review:log`
+   when the session has a profile and one exists, else `none`; never asked during a review), and
+   `earlier_review` (the earlier review's link) when the same work was reviewed before, ending with
+   the decision-audit line.
+4. **Relay** the page link, the verdict and its reason, the failed checks, each Critical finding in
+   one line, the data access line, and the not verified and coverage lines (what the review could
+   not check or see). Say once that the review is for the team, and name any private link or file
+   the reader will not be able to open until it is shared. Keep the `quality_review_fixes` block for
+   step 5; never show the JSON.
 5. **Next.** Ask once with `AskUserQuestion`, header "Next": "Review it again after the fixes?"
-   Options: "Not now (Recommended)", "Review it again". "Review it again" relaunches with
-   `earlier_review`, so the page marks each finding fixed or still open. A plugin page the user
-   wants changed goes back to its own flow's revise step, never to the review.
+   Options: "Not now (Recommended)", "Apply the fixes (sends them to {flow})" for a plugin page with
+   findings, "Review it again". "Apply the fixes" passes the `quality_review_fixes` block as `fixes`
+   to that flow's revise step: the flow's own way of changing a published page (a `revise` mode, a
+   `propose` pass with the fixes as overrides, or a rebuild), with every question and write
+   confirmation that step asks. The flow applies what its own rules allow, republishes to the same
+   link, and then this step is asked again. External work gets no apply option; its fixes stay a
+   list. "Review it again" relaunches with `earlier_review`, so the page marks each finding fixed,
+   still open, or no longer applies.
+6. **Adjustments.** When a review log is saved and the user disputes a finding ("that's fine", "not
+   a real issue") or names one the review missed, add one row to the log's adjustments
+   (`quality-review.md`, **10**) with the user's reason in their words and the check id (or `new`).
+   No question first: it records what the user just said and writes nothing to Atlas. Without a
+   saved log, nothing is written.
+
+### Review log
+
+An organization can keep a log of its reviews in a file or a Claude Doc of its own, so its reviewers
+can grade the review's calls (`quality-review.md`, **10**). It is off unless someone asks for it ("log
+our quality reviews to {file or doc}"). Needs a brand profile. Confirm with `AskUserQuestion`, header
+"Log": "Add a row to {file or doc} after every quality review for {brand}? Each row has the verdict
+and failed checks, with columns left for your reviewers." Options: "Log reviews there
+(Recommended)", "Not now". On yes, write `quality-review:log` with `append_calibration` (`policy`,
+`{area: "routing", body: "file:{path}"}` or `"docs:{link}"`, `provenance: "interview"`); a
+`key-exists` follows the Phase 5 supersede rule. Turning it off is `retract_calibration` with its
+own confirmation. Never suggest a log the organization did not name.
 
 ### The offer
 
