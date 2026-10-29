@@ -1,6 +1,6 @@
 # Quality review (is this page or deck ready to send?)
 
-Rubric version 2.0.
+Rubric version 2.1.
 
 The **Quality review** section of SKILL.md launches the `atlas-quality-review` agent with the inputs
 below. The agent reads one finished piece of work, runs the rubric in **4**, and publishes a review
@@ -243,6 +243,10 @@ Run every R check in `reader-standard.md`, in ID order, by the rules there: **R7
 default severity or higher, and one defect filed once under its most specific check with both IDs
 listed in **Failed checks**.
 
+A page an agent published carries its own page check (`skills/page-standard/SKILL.md`). Treat it as
+the agent's claim, not evidence: judge every R check again. When an R check the page check marked
+`pass` fails here, say so in the finding ("the page check passed R5").
+
 ### 4.15 Media and links
 
 1. **Timecodes.** Find every timecode the work claims: storyboard beats, cut lists, "brand at
@@ -400,7 +404,7 @@ session, so the draft is not graded by the same run that wrote it.
 ```json
 {
   "quality_review_grade": {
-    "rubric_version": "2.0",
+    "rubric_version": "2.1",
     "target": "{the target as given}",
     "verdict": "Ready with fixes",
     "checks": [
