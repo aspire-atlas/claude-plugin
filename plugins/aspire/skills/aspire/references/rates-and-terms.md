@@ -28,7 +28,7 @@ A creator the calculator cannot price shows no offer and names what is missing, 
 
 What a creator is expected to cost the campaign for one round, for the agency only. The campaign
 page's Creator Selection sorts on it and its budget **Summary** counts approved creators at it
-(`cas-campaign.md`, **1d**, **Creator Selection**). The first of these that holds:
+(`cas-campaign-page-brief.md`, **Creator Selection**). The first of these that holds:
 
 1. **Agreed**: the agreed fee.
 2. **Counter**: the creator's open counter.
@@ -42,7 +42,7 @@ calculator cannot price has no expected cost and shows as unpriced; never fill o
 it out at each publish of the campaign page for every creator in the pool, from the posts read for
 the creator cards, and writes it with its basis to the creator's agency data (`expectedCost:`,
 `expectedFrom:`). The match score's Budget vs target sets it against the **Target rate** below
-(`cas-campaign.md`, **The match score**). **Cost per 1K reach** is the expected cost divided by the creator's Meta reach
+(`cas-campaign-page-brief.md`, **The match score**). **Cost per 1K reach** is the expected cost divided by the creator's Meta reach
 (`instagram.creatorMarketplaceReach`), times 1,000, and is blank without a reach. Both are
 estimates for planning and are never shown to the client or sent to a creator.
 
@@ -95,8 +95,8 @@ supersede rule below.
 includes allowlisting and partnership ads. With `allowlisting` false, no uplift is added to any
 fee and no uplift line is drafted, whatever `whitelistingUpliftPct` says; missing or true, the
 uplift applies as above. They reach the record from an editor's edit on the
-campaign page's Home, **Program terms**, or from the program files there (`cas-campaign.md`,
-**1d**, **Home**), and Home hides each until it is saved.
+campaign page's Home, **Program terms**, or from the program files there (`cas-campaign-page.md`,
+**Home**), and Home hides each until it is saved.
 
 A change later goes through `supersede_calibration` with its own Destructive tools confirmation.
 
@@ -302,7 +302,7 @@ The rate sheet is the **Contract and rates** section of the campaign page's Sele
 - **One approval for the whole sheet**, once per round: **Approve fees** or **Request changes**,
   for the client only, while step 3 is open. It is saved under the client's own id with a copy of
   the fees they saw, so no one at Aspire can approve for them and a fee changed afterwards is
-  never recorded as approved (`cas-campaign.md`, **1d**, **Selected Creators**, **Contract and
+  never recorded as approved (`cas-campaign-page-creators.md`, **Selected Creators**, **Contract and
   rates**).
 - The fee rate label once ("Aspire recommended rates" when no rate card is saved), "fees are
   estimates from public view counts, not quotes".
@@ -312,7 +312,7 @@ The rate sheet is the **Contract and rates** section of the campaign page's Sele
   paid, the rest on final cut sign off; Paid in full; On hold) with the amount paid so far. The
   client reads the contract status, its signed date and the payment status beside their agreed
   fee, never a rate, the total or an amount. Each value carries its source
-  tag (`cas-campaign.md`, **1d**, **Selected Creators**, **Creator records**).
+  tag (`cas-campaign-page-creators.md`, **Selected Creators**, **Creator records**).
 
 **Rates are recorded per round.** When the CM records a creator's rates per deliverable in the
 chat, with the offer or a reply, the confirm writes them to the roster finding for the round being

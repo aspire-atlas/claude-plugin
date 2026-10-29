@@ -515,7 +515,8 @@ Sections, on one screen, printable:
    no max, no other creator, no performance read, no team note. Then the footnote from
    [`artifact-standard.md`](artifact-standard.md) with the shared-page audience line (shared with the
    creator for this agreement only); like the footer, it holds no budget, maximum, other creator, or
-   performance read.
+   performance read, and nothing about Atlas data gaps or errors (`artifact-standard.md`,
+   section 2, **No platform disclosures**).
 
 Load `artifact-design`; apply `theme:brand` per `theme.md`.
 
@@ -530,7 +531,7 @@ profile, no actions); render for `recipient`.
 **Who sees what.** The page is for the brand's team and is never shared with a creator or a
 manager. The page itself holds everything except the money that only the team should see,
 which lives in its page data under `team`, readable by Editors only, the way the CAS page keeps
-`agency` (`cas-campaign.md`, **1e**). Declare on every publish:
+`agency` (`cas-campaign-data.md`). Declare on every publish:
 
 ```json
 {"db": {"rules": [

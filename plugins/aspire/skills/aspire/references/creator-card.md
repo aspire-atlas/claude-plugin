@@ -16,7 +16,7 @@ The one larger view, a single creator's full profile page, embeds this same card
 | Agents (brief, discovery, account analyst, content review) | Inside the agent's published page | Hidden |
 | No widget tool, or the call fails | The Markdown fallback below | n/a |
 | One creator's full profile or portfolio view | Published page, the card at full width with the evidence sections below it (`creator-profile.md`) | Hidden |
-| The CAS campaign page (`cas-campaign.md`, **1d**) | Published page, page profile, one card per creator, with the concept as the first flow chip and the "Hook post" and "Paid partnership" marks on its thumbnails; the same card, without thumbnails, sits in the creator viewer's **Profile**, after the match and the concept (`cas-campaign.md`, **Creator Selection**, **The creator viewer**) | Hidden |
+| The CAS campaign page (`cas-campaign-page.md`) | Published page, page profile, one card per creator, with the concept as the first flow chip and the "Hook post" and "Paid partnership" marks on its thumbnails; the same card, without thumbnails, sits in the creator viewer's **Profile**, after the match and the concept (`cas-campaign.md`, **Creator Selection**, **The creator viewer**) | Hidden |
 
 Agents never call `show_widget`; the main thread can. When an agent returns a creator the user
 should see in chat, the main thread renders the card from the agent's numbers.
@@ -152,7 +152,7 @@ and `cssHeight` (half of them). Use them so the browser never stretches the imag
 
 **The CAS campaign page** embeds each post it shows once, as `post@360`, and uses that one image
 for the card's thumbnail and the creator viewer, in place of `thumb`; its order for dropping
-images past 8MB is in `cas-campaign.md`, **The creator viewer**, **How the media reaches the
+images past 8MB is in `cas-campaign-page-brief.md`, **The creator viewer**, **How the media reaches the
 viewer**. No surface embeds a video: the snippet never downloads one.
 
 **Failures.**
@@ -335,7 +335,7 @@ fill in from web copy. The one exception is the header row, which always shows.
 | Subtitle | `{SUBTITLE}` | Name · descriptor, per **Subtitle** below | No name and no descriptor: leave the line out |
 | Topics | `{TOPICS}`, `{TOPICS_MORE}` | Top two `analysis.aestheticTags` by post count across the 12 posts, or `youtube.youtubeTopicCategories` | Count tags case-insensitively and show each in its most common spelling. A tag must appear on 3 or more posts. `+N` counts the other tags that pass; omit when zero |
 | Audience | `{AUDIENCE}` | Instagram: `instagram.creatorEngagedAccountsBreakdowns` (engaged accounts, top gender share, top age band). TikTok: `tiktok.audienceGenders` and `tiktok.audienceAges` with the follower count | Only when a gender or age breakdown has results; they are often empty. Format `33.4K, Female 79%, 25-34` |
-| Fit ring | `{FIT}` | The fit score the current flow computed or read from Atlas (discovery `fitScore`); in a CAS campaign, the stored match score (`cas-campaign.md`, **The match score**) | Only a 0 to 100 score from a stated rubric. Flows without one leave the ring out; the brief shows its Strong or Partial read as a badge instead |
+| Fit ring | `{FIT}` | The fit score the current flow computed or read from Atlas (discovery `fitScore`); in a CAS campaign, the stored match score (`cas-campaign-page-brief.md`, **The match score**) | Only a 0 to 100 score from a stated rubric. Flows without one leave the ring out; the brief shows its Strong or Partial read as a badge instead |
 | Network chips | `{CHIPS}` | One chip per entry in `channels` with its `followersCount` | Only when there are two or more channels. The primary one is `aria-selected="true"` |
 | Badges | `{BADGES}` | See **Badges** below | Flow chips, then up to two card badges, then an outline `+N` chip |
 | Brand safety tile | `{SAFETY}` | `analysis.brandSafety` on the posts, plus the flow's **safety** risk flags only | Needs 3 or more analyzed posts, or a safety flag. See **Brand safety** below |
