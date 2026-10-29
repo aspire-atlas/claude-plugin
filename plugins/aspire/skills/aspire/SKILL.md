@@ -64,7 +64,8 @@ Text after the command is the argument. Route on it before anything else:
 | `shops` (also `shop`, `instagram shop`, `tiktok shop`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Shops** below. Skip the other phases. |
 | `quality review` (also `review this deck`, `audit this deck`, `review this page`, `is this ready to send`, `check this before I share it`) | Run **Quality review** below. It needs no Atlas connection unless the user wants the work's Atlas figures re-checked, so skip the phases until then. |
 | `polish` (also `improve my prompt`, `coach`, `tighten this prompt`) | Run **Prompt coach** below. It needs no Atlas connection, so skip the phases until "Run it now" hands the rewritten ask to a flow. |
-| empty, or anything else | Run the phases in order, starting at Phase 1. Treat the text as context. On an unconfigured organization, Phase 2 + 3 publishes the first-run guide before the next phase (**First-run guide** there). With nothing after the command, a configured organization ends Phase 2 + 3 at **Organization dashboard**. |
+| A shortcut: `vet`, `list review`, `campaign`, `content review`, `payments`, `reports`, `account` (and the aliases in `references/orchestration.md` **4**) | A routing hint only. Run Phase 1 and Phase 2 + 3 to confirm the connection and pick the brand profile, then run that shortcut's section per `references/orchestration.md` **4**, skipping only the "what do you need" step: memory, the setup reply, and every approval still run. Text after the shortcut is context. |
+| empty, or anything else | In an unattended run (a scheduled task, whose prompt says not to ask questions), run Phase 1 and Phase 2 + 3, then the flow the text names, per `references/orchestration.md` **1**, Unattended runs. Otherwise run the phases in order, starting at Phase 1. Treat the text as context. On an unconfigured organization, Phase 2 + 3 publishes the first-run guide before the next phase (**First-run guide** there). With nothing after the command, a configured organization ends Phase 2 + 3 at **Organization dashboard**. |
 
 ### List agents
 
@@ -153,8 +154,15 @@ agent, or ask anything else, while one works. This holds for every launch in thi
 direct ask, `/aspire:aspire run {agent}`, a hand-off from **List agents**, a second pass
 (`propose` then `record`, `plan` then `build`), a relaunch, and a scheduled run.
 
+Every launch follows the orchestration contract in `references/orchestration.md`: routing with
+the persona and reader, memory loaded first, one setup reply, the `launch` block, the result
+packet, and the permission levels. This section is how a launch runs; that file is what goes in
+and what comes back. Agents refuse a launch without the `launch` block, so a person reaches an
+agent only through this skill or a shortcut.
+
 1. **Launch.** Use the Agent tool with `subagent_type` `aspire:{agent}` (the name without the
-   prefix gets it added), a `description` equal to the task it runs (**Progress bar**), the
+   prefix gets it added), a `description` equal to the task it runs (**Progress bar**), a prompt
+   that starts with the `launch` block (`references/orchestration.md` **5**) followed by the
    inputs the flow lists, `run_in_background: true`, and the `model` from **Model tiers**
    (`sonnet` or `haiku`; for a tier of `inherit` pass none) unless the user named a model for
    this launch, which wins (pass it as `sonnet`, `opus`, `haiku`, or `fable`). Never pass
@@ -171,20 +179,29 @@ direct ask, `/aspire:aspire run {agent}`, a hand-off from **List agents**, a sec
    applies to that launch only: launch the agent again with the model named, and the next
    launch goes back to the table. Then end the turn. Never wait on it, poll it, or sleep.
 3. **Ask before, never during.** Every question, write confirmation, and picker the flow lists
-   for the launch is asked first, in the main thread, because agents never ask. Questions an
-   agent raises come back in its result and are asked when it arrives.
+   for the launch is asked first, in the main thread, because agents never ask: in one setup
+   reply (`references/orchestration.md` **2**) that repeats the question with its code, names the
+   reader, and gives the time estimate. Questions an agent raises come back in its result packet
+   and are asked when it arrives. Write the launch's Runs row (**9** there).
 4. **When it finishes.** Its result arrives as a task notification. Treat it as the agent's
-   report: relay the summary, page link, and decisions it needs, then run the flow's next step
-   (the questions after a `propose` pass, then the `record` launch, which is another subagent).
-   Check the result before telling the user it is done. Close out each published page in one
-   line from its `page-check` block (`skills/page-standard/SKILL.md`): the link and any check
-   fixed or still failing, by name, and tell the requester its `gaps`. To fix a check still
+   report and act on its `result-packet` block: relay the summary, page link, and decisions it
+   needs, confirm its `proposals` by permission level (`references/orchestration.md` **7**: Write
+   once per batch, Send one by one, Spend with the cost first), ask its `questions`, log the
+   return and every change after it (**9** there), then run the flow's next step (the `record`
+   launch after a `propose` pass, which is another subagent). A result without a packet
+   (other than a sample, a `mode: grade` run, or the agent's "Not started" line) is treated as
+   having proposed nothing: carry out nothing from it and say so. Check the result
+   before telling the user it is done. Close out each published page in one line
+   (`references/orchestration.md` **10**): the question, the link, the checks fixed or still
+   failing by name from its `page-check` block (`skills/page-standard/SKILL.md`), and anything a
+   reviewer should know, and tell the requester its `gaps`. To fix a check still
    failing, offer **Apply the fixes** (**Quality review**, Run step 5), with one fix per `fail`
    in `stillFailing` written as `{check}, page: make it pass ({reason})`; leave out `n/a` lines
    and a fail the user would have to fix (a connection to add). Never edit an agent's page here. Unattended runs relay the line and offer
    nothing; samples return no page check.
 5. **Several at once.** Different agents, and a second run of the same agent for another brand,
-   handle, or campaign, may run together. Keep one decision log line per launch and return, and
+   handle, or campaign, may run together, up to three for one request (`references/orchestration.md`
+   **8**); a fourth waits until one returns. Keep one decision log line per launch and return, and
    the audit trail blocks per run (**Decision audit**). When several results arrive close
    together, relay them one at a time, oldest first, and ask each one's questions in its own
    call. Two runs never write the same record: for the same profile and the same agent, say
@@ -192,6 +209,13 @@ direct ask, `/aspire:aspire run {agent}`, a hand-off from **List agents**, a sec
 6. **Unattended runs** (scheduled tasks) are already a session of their own: they launch the
    agent as a subagent and wait for it, since nothing else is happening there. They apply the
    table's model silently, never ask about it, and never set effort.
+7. **This skill owns every schedule.** Every scheduled task a section of this skill creates has a
+   prompt that starts with `/aspire:aspire ` and then the section's prompt, so each run goes
+   through this skill, carries the `launch` block with `run: unattended`, and republishes to the
+   same page link. A scheduled task whose prompt does not run `/aspire:aspire` (one made before this
+   rule; the hourly "Run /aspire:aspire next" prompt already does): offer once, in an interactive session, to update its prompt. When an agent answers
+   "Not started: run the aspire:aspire skill", run this skill with that request, in a scheduled
+   run too.
 
 ---
 
@@ -251,7 +275,9 @@ team catalog, and how agents render for a lens are in `references/recipient-lens
 1. **Infer.** Match the ask's words against the catalog's cues, and take any reader, meeting,
    or date the user names ("for Thursday's product review"). Pick a primary lens and, when a
    hand-off applies (Performance then Creative; Campaign then Brand), a second one.
-2. **Confirm in one line.** One `AskUserQuestion`, header "For", in the same call as the
+2. **Confirm in one line.** When the run has a setup reply (`references/orchestration.md` **2**),
+   name the reader in its Heard question, with the question's code, instead of asking "For"
+   on its own. Otherwise one `AskUserQuestion`, header "For", in the same call as the
    flow's first question when there is one. Word it as the guess ("This reads like it's for
    the product review. Should I track it weekly and add a messaging view for PMM?"). Options:
    the guess (Recommended), one or two other lenses from the cues, "Just for our team". Skip
@@ -278,7 +304,8 @@ team catalog, and how agents render for a lens are in `references/recipient-lens
    | Any | What to do next across everything, what needs me, where everything stands | **Orchestrator** |
    | `team` | Anything | The flow the ask names |
 
-4. **Pass it on.** Every agent launch below includes `recipient` (the confirmed lens or lenses,
+4. **Pass it on.** Every agent launch below includes the persona and primary reader in its
+   `launch` block (`references/orchestration.md` **1** and **5**), and `recipient` (the confirmed lens or lenses,
    primary first). With a `leadership` primary lens, also pass `preparedBy`: the name the user
    gave for whoever sends the page on, or nothing (the page then says "{organization} team").
    Relay the agent's forward note as-is, so the requester can paste it to the reader.
@@ -2832,9 +2859,10 @@ to four agents as options with the rest named in the question text. Ask at most 
 in the middle of a running flow, and never in an unattended run.
 
 **Running it.** No Atlas connection, profile, or Phase 1 is needed, and nothing is confirmed,
-because nothing is written. Launch the agent with `mode: sample` and the line "Follow
+because nothing is written. Launch the agent with a `launch` block (`references/orchestration.md`
+**5**, `mode: sample`, nothing approved), `mode: sample`, and the line "Follow
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/sample-artifact.md`." Where plugin agents do
-not load, launch a general-purpose subagent with "Read and follow
+not load, launch a general-purpose subagent with the same `launch` block and "Read and follow
 `${CLAUDE_PLUGIN_ROOT}/agents/{agent}.md` in mode `sample`, and
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/sample-artifact.md`", or follow both
 yourself. Relay the link, the holiday used, and the line on what the real run adds, then ask once:

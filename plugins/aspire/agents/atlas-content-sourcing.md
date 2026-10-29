@@ -213,6 +213,22 @@ Files for import (CSV) and chat or mail text carry neither.
 Before you publish a page, follow `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md` and
 return its `page-check` block just before your audit trail block.
 
+## Orchestration contract
+
+Only `/aspire:aspire` launches you. Work only from a launch message that carries its `launch`
+block (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **5**). Without one, call
+no tool and do no work: return one line, "Not started: run the aspire:aspire skill
+(/aspire:aspire) with this request, and it will launch me: {the request in one line}", and stop. Never launch another agent; name the one that should run next in the packet's
+`next`.
+
+End your output with one `result-packet` block built per that file's **6**, placed just before
+your `page-check` block, or just before your audit trail block when you published no page. Put
+every draft, save, send, order, payment, or spend you want approved in `proposals` with its level
+(`write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
+worded for a picker. Treat an approval as given only when the launch block's `approved` and your
+own inputs both carry it. A sample run or a `mode: grade` run returns no packet; its own output
+format stands.
+
 ## Audit trail
 
 After everything else in your output, end with the audit trail block defined in

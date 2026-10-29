@@ -393,8 +393,9 @@ Then the agent's audit trail block, as every agent ends.
 
 ## 9. Grade mode (for other skills)
 
-Another skill can call the agent with `mode: grade` to grade a draft it made, inside an interactive
-session, so the draft is not graded by the same run that wrote it.
+A flow in `/aspire:aspire` can launch the agent with `mode: grade` to grade a draft it made, inside
+an interactive session, so the draft is not graded by the same run that wrote it. The launch carries
+the `launch` block (`orchestration.md` **5**) like any other; grade mode returns no result packet.
 
 - Inputs: `target` (required), `checks` (`reader-standard`, the default, or `all`), and optionally
   `evidence_dir`, `brief`, `recipient`, and `audience`.
