@@ -333,7 +333,7 @@ Everything above applies, with these changes:
   campaign, in interactive runs too (SKILL.md, **Guardrails**). The weekly sync never launches
   discovery; it runs when the CM picks it.
 - **The fit score is the campaign's match score.** Score every candidate with the one procedure
-  in `cas-campaign.md`, **1d**, **Creator Selection**, **The match score**, against their lane's
+  in `cas-campaign-page-brief.md`, **Creator Selection**, **The match score**, against their lane's
   concept, with the weights in `match` in `campaign:{slug}-cas` (read it and `-terms` for this
   campaign only), so the shortlist and the campaign page show the same number for the same
   inputs. When `match` has a `basis`, the page says

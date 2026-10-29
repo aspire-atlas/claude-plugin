@@ -2026,9 +2026,10 @@ campaign for {brand}", "where is the {brand} campaign", "what's next on {campaig
 creators for approval", "pull the client's decisions", "record a reply", "send the details
 emails", "send the briefs to creators", "log a delay"). Requires a brand profile with a linked
 Instagram or TikTok channel. Full detail lives in `references/cas-campaign.md`: the page
-vocabulary, the state model, the setup interview, the dispatch table, the gate packets, the
-campaign page and its page data, creator details and shipping, the creator's turn on the brief,
-and the unattended rules. Hook and CTA recommendations, and the hook review between rounds, live
+vocabulary, the state model, the setup interview, the dispatch table, the gate packets, creator
+details and shipping, the creator's turn on the brief, and the unattended rules. The campaign
+page and its page data are in the `references/cas-campaign-page*.md` and
+`references/cas-campaign-data.md` files its **1d** lists. Hook and CTA recommendations, and the hook review between rounds, live
 in `references/hooks-and-ctas.md`.
 
 The Campaign Manager conducts the campaign from approved concepts through sourcing, negotiation,

@@ -445,7 +445,7 @@ to two weeks through a manager.
 
 Product details (address or pickup, size, color, product choice) are collected on one published
 page per program, the **order form**, shared with the user, the way the CAS campaign page
-collects the client's shipping edits (`cas-campaign.md`, **1d** and **1e**).
+collects the client's shipping edits (`cas-campaign-page.md` and `cas-campaign-data.md`).
 
 - The order form is for the brand's team, never for creators: anyone it is shared with can
   read every row, and so every creator's address. No flow suggests sharing it with a creator,
