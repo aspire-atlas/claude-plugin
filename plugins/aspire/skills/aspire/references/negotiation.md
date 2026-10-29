@@ -515,7 +515,8 @@ Sections, on one screen, printable:
    no max, no other creator, no performance read, no team note. Then the footnote from
    [`artifact-standard.md`](artifact-standard.md) with the shared-page audience line (shared with the
    creator for this agreement only); like the footer, it holds no budget, maximum, other creator, or
-   performance read.
+   performance read, and nothing about Atlas data gaps or errors (`artifact-standard.md`,
+   section 2, **No platform disclosures**).
 
 Load `artifact-design`; apply `theme:brand` per `theme.md`.
 
