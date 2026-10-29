@@ -202,7 +202,7 @@ async function activate($: EngineInterface, kind: TriggerKind, detail: string): 
 
 type Count = 'prompts' | 'skillTools' | 'progressReports' | 'atlasResults' | 'agents'
 
-// One case per key, with no computed member: the plugin directory cannot read brackets in code that $ reaches.
+// One case per key, with no computed member, so nothing $ reaches uses brackets.
 function bump(s: Seen, key: Count): Seen {
   switch (key) {
     case 'prompts':
@@ -218,7 +218,9 @@ function bump(s: Seen, key: Count): Seen {
   }
 }
 
-async function count($: EngineInterface, key: Count): Promise<void> {
+// Named so no other binding in this file shares it: the plugin directory resolves a helper that takes $ by its
+// name, and blocked 4.1.0 and 4.1.1 while `count` was also a number parameter in the drawing code.
+async function countSeen($: EngineInterface, key: Count): Promise<void> {
   await update($, seen, s => bump(s, key))
 }
 
@@ -1132,7 +1134,7 @@ export const register: Register = on => {
       if ((await read($, notice)) !== null) await update($, notice, () => null)
       if (typeof e.text === 'string' && ASPIRE_PROMPT.test(e.text)) {
         await activate($, 'prompt', e.text.trim().split(/\s/, 1)[0] ?? '/aspire')
-        await count($, 'prompts')
+        await countSeen($, 'prompts')
       }
     } catch {
       // Switching on is a convenience: the prompt goes on whatever happens here.
@@ -1149,7 +1151,7 @@ export const register: Register = on => {
       const skill = (e as { skill?: unknown }).skill
       if (typeof skill === 'string' && ASPIRE_SKILL.test(skill.trim().replace(/^\//, ''))) {
         await activate($, 'skill-tool', skill.trim())
-        await count($, 'skillTools')
+        await countSeen($, 'skillTools')
       }
     } catch {
       // As above.
@@ -1164,7 +1166,7 @@ export const register: Register = on => {
     if (e.agentId) return { result: 'ignored: only the main session reports Aspire progress' }
     try {
       await activate($, 'progress', 'aspire_progress')
-      await count($, 'progressReports')
+      await countSeen($, 'progressReports')
       const before = await read($, progress)
       const p = await update($, progress, prev => mergeProgress(prev, e as unknown as ProgressInput))
       if (!before || before.isFinished || before.title !== p?.title) band.crab = null
@@ -1234,7 +1236,7 @@ export const register: Register = on => {
       if (!isStatus && !isAtlasToolName(tool)) return result
       if (serverOf(tool)) atlasServers.add(serverOf(tool))
       await activate($, 'atlas-tool', shortTool(tool))
-      await count($, 'atlasResults')
+      await countSeen($, 'atlasResults')
       if (isStatus) {
         const at = await $.clock.now()
         const costs = readAtlasUsage(payload)
@@ -1574,7 +1576,7 @@ export const register: Register = on => {
         return [...list.filter(a => a.id !== run.id), run].slice(-MAX_RUNS)
       })
       await update($, now, () => at)
-      await count($, 'agents')
+      await countSeen($, 'agents')
 
       // The panel opens by itself once per session, for the first aspire:* agent.
       if (isAspire && !(await read($, panel)).isAutoOpened) {

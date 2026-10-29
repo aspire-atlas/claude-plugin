@@ -4,8 +4,10 @@
 #   - a mod's capability object $ is used only in the plain form the directory reads
 #     (MOD_CAPABILITY_USE_NOT_PLAIN, blocking): every helper that takes $ is a function declaration,
 #     never a const or let arrow, and $ is never wrapped in parentheses, a cast, "!", "?." or brackets.
-#     A callback passed with $ (update($, atom, s => ...)) uses no brackets either: 4.1.0 was blocked
-#     on `s => ({ ...s, [key]: s[key] + 1 })`, though the brackets were on the state, not on $
+#     A helper that takes $ has a name no other binding in the file uses: the directory resolves it by
+#     name, and blocked 4.1.0 and 4.1.1 on every call to `count($, ...)` while `count` was also a number
+#     parameter elsewhere in register.tsx. As a precaution, not a proven cause, a callback passed with $
+#     (update($, atom, s => ...)) uses no bracketed member or key either
 #   - every text file in a plugin is small enough for the validator to read (BINARIES_NOT_INSPECTED).
 #     The directory publishes no limit. The largest file it has read is 216,907 bytes (SKILL.md in
 #     4.0.0) and the smallest it skipped 820,928 (cas-campaign.md), so a file over 256 KiB fails and
@@ -58,6 +60,12 @@ for p in $(plugin_names); do
     while IFS= read -r hit; do
       [ -n "$hit" ] && err "$f:${hit%%:*}: a callback passed with \$ uses no brackets; move the work into a function that does not take \$"
     done <<<"$(grep -HnE "$bracketed" "$f" | grep -vE "$comment" | cut -d: -f2- || true)"
+    for h in $(grep -oE '^(export[[:space:]]+)?(async[[:space:]]+)?function[[:space:]]+[A-Za-z_][A-Za-z0-9_]*[[:space:]]*\(\$' "$f" |
+      sed -E 's/.*function[[:space:]]+//; s/[[:space:]]*\(\$$//' | sort -u); do
+      while IFS= read -r hit; do
+        [ -n "$hit" ] && err "$f:${hit%%:*}: '$h' takes \$ and is also bound here; give the helper a name nothing else in the file uses"
+      done <<<"$(grep -nE "(\b(const|let|var)[[:space:]]+$h\b|[(,{][[:space:]]*$h[[:space:]]*[:=,)}?])" "$f" | grep -vE '^[0-9]+:[[:space:]]*(//|/\*|\*)' || true)"
+    done
   done
 
   # The README says what the hooks do.
