@@ -86,7 +86,7 @@ added, it does not replace them). Markup:
   source sentence: "Source: Aspire Atlas cross-platform indexing (...), and {source label} data for
   {what it fills}. Data compiled ..." Never present the other connector's figures as Atlas's.
 - Never name Claude, a model, or an assistant, and never add the requester's name, email, id, slug,
-  or role. "AI brand memory" is the fixed name of the data layer, not a statement about who wrote
+  or role to the source line. "AI brand memory" is the fixed name of the data layer, not a statement about who wrote
   the page.
 
 The source sentence's fixed wording is: `Source: Aspire Atlas cross-platform indexing ({networks}).
@@ -153,12 +153,9 @@ one source line at the end, as
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md` sets out: the mark and the
 variants in sections 1 and 3, the source line in section 2. Take the as-of time from the shell clock
 and change it on every republish. Never name Claude or a model on a page, and name the requester
-only in the "Prepared by" line the page standard sets. A sample page follows the sample variant. Files for import (CSV) and chat or mail text carry neither.
+only in the "Prepared by" line the page standard sets. A sample page follows the sample variant.
+Files for import (CSV) and chat or mail text carry neither.
 
-Before you publish a page, read `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md` and
-follow it: the nine parts every page holds, the reader and evidence rules, and checks R1 to R12
-from `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/reader-standard.md`. Run its script for R1, R2,
-R6, and R11, judge the rest, and fix every fail before publishing.
-Put its page check, one per page published, at the end of your output, just before the audit
-trail block.
+Before you publish a page, follow `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md` and
+return its `page-check` block just before your audit trail block.
 <!-- /agent-block -->

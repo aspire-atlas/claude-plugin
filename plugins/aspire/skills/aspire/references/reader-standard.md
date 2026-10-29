@@ -12,8 +12,7 @@ are defined. Two things run them:
   checks, on any page or deck before it is shared.
 
 Each check returns PASS, FAIL, or N/A with a one-line reason; which ones are N/A for a kind of target
-is in `quality-review.md`, **3**. The Skills x Artifacts Map calls them E1 to E12: R1 is E1, R2 is E2,
-and so on to R12. Use the R IDs in pages, page checks, and findings.
+is in `quality-review.md`, **3**.
 
 | ID | Check | Passes when | Fails when, for example | Default severity on FAIL |
 | --- | --- | --- | --- | --- |
@@ -22,7 +21,7 @@ and so on to R12. Use the R IDs in pages, page checks, and findings.
 | R3 | Answer first | The headline is the conclusion and answers the question | "Creator performance overview" | High |
 | R4 | Numbers have context | Every number in the summary and insights is compared with something (last period, peers, a goal), each insight ends in what to do about it, and there are no more than three insights | "48K views" with nothing beside it | High |
 | R5 | Clear next steps | Every next step says what to do, who does it, by when, and what it should change | "Consider optimizing content" | High |
-| R6 | Decisions kept separate | What the reader must approve sits in its own section, each with a deadline, or the page says nothing needs approval | Approvals buried in the to-do list | High |
+| R6 | Decisions kept separate | What the reader must approve sits in its own section, each with its deadline when it has one, or the page says nothing needs approval | Approvals buried in the to-do list | High |
 | R7 | Real evidence | Every creator, post, and number comes from the run's data, and every evidence link (a post or profile URL) opens what it claims | A handle or number that isn't in the data | **Critical** |
 | R8 | Shows its working | Scores and recommendations explain how they were reached, with the weights behind any score | A score with no explanation | High |
 | R9 | Names what's missing | On a team page, missing data is named, with what connecting it would add | Says nothing about missing ad data | Medium; High when the gap would change the decision |
@@ -52,10 +51,13 @@ and so on to R12. Use the R IDs in pages, page checks, and findings.
   start above y=800 in the rendered order. With a text-only read, judge by source order and say so
   in the coverage line. "Prepared by" applies only to a page for a VP or budget owner; on any other
   page its absence is not a FAIL.
-- **R11** always fails on these words outside quoted text (a creator's caption, someone's own
-  words): an agent name (`atlas-...`), an Atlas tool name, Claude, Anthropic, LLM, MCP, subagent,
-  tool call, API, JSON, endpoint, webhook, schema, and runKey. Names and acronyms match by case, so
-  "Atlas-indexed" passes. Other jargon is a judgment.
+- **R11** always fails on these words anywhere a reader sees them (body text, chart labels, image
+  alt text, button labels), outside quoted text (a creator's caption or name, someone's own words):
+  an agent name (`atlas-...`), an Atlas tool name in any form (`search_posts`,
+  `mcp__Aspire_Atlas__search_posts`), Claude, Anthropic, LLM, MCP, API, JSON, runKey (matched by
+  case, plurals included, so "Atlas-indexed" passes), and subagent, tool call, webhook, endpoint,
+  and schema (any case). Handles, hashtags, emails, and links are not checked. Other jargon is a
+  judgment.
 - One defect is one finding. A defect that fails an R check and a 4.x check (a headline count that
   disagrees with the table fails R7 and 4.4) is filed under the more specific check, here 4.4, and
   both IDs go in **Failed checks**.
