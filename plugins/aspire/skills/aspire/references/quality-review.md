@@ -25,7 +25,7 @@ log (**10**). It records what it saw and what to fix; the person decides what to
 | `flow` | For `plugin`: the flow and agent that made it ("Creator brief", `atlas-creator-brief`) |
 | `brief` | Optional: what the work was asked to answer (an RFP, a brief, the user's request in their words). Turns on check **4.1** |
 | `recipient` | The lens of whoever acts on the work (`recipient-lens.md`) |
-| `audience` | Who will see the work, which sets **4.11**, the audience line checked in **4.12**, and the severity of **R11**: `team` (the brand's own team, leadership included), `client` (a brand or agency outside the team), `creator`, or `public`. Default `team` |
+| `audience` | Who will see the work, which sets **4.11** (item 5, platform disclosures, applies outside the team), the audience line checked in **4.12**, the scope of **R2** and **R9**, and the severity of **R11**: `team` (the brand's own team, leadership included), `client` (a brand or agency outside the team), `creator`, or `public`. Default `team` |
 | `evidence_dir` | Optional: a folder with the raw output of the run that made the work, for **R7** |
 | `media_dir` | Optional: a folder with the videos or a frame index (JSON with `t` and a description per frame) the work's timecodes refer to, for **4.15** |
 | `profile_id`, `profile_slug`, tool prefix | Optional. The brand profile sets the page's theme and the category in **4.9** |
@@ -70,7 +70,8 @@ on the page as not applicable, with the reason, never silently skipped.
 
 On any plugin page, **R2** is n/a only when the page shows no social data. **4.12 Artifact
 standard** runs on every page this plugin published, and on external work only when it carries the
-Aspire Atlas mark. **4.15** checks timecodes only when the work claims one.
+Aspire Atlas mark. **4.15** checks timecodes only when the work claims one. Outside the team, **R9** is n/a and **4.11**, item 5
+runs; on a team page it is the reverse.
 
 ## 4. The rubric
 
@@ -108,7 +109,9 @@ for" line, or the flow's job in SKILL.md) and say so.
 - Page numbers, slide maps, and cross-references match positions.
 - Length fits the use: presented live, read alone, or skimmed on a phone.
 - For a plugin page: every section its flow's reference lists is present, or left out with the
-  reference's leave-out rule and named under data gaps.
+  reference's leave-out rule and named under data gaps. Outside the team (`audience` `client`,
+  `creator`, or `public`), a section left out is left out without comment, and the gap goes to the
+  requester only (**4.11**, item 5).
 
 ### 4.3 Evidence
 
@@ -182,7 +185,9 @@ nobody outside the publisher's company can reach that company's private tools. C
    viewer needs, what a viewer without it sees, and whether the page shows a dated snapshot instead
    of an empty or broken section. A live page with no fallback, or one that does not say whether
    the viewer is seeing live data or a snapshot, is a finding. A page that reads Atlas live cannot
-   be shared by public link; say so when the audience is outside the team.
+   be shared by public link; say so when the audience is outside the team. Outside the team, the
+   fallback is the dated snapshot with its "as of" date and nothing else: no error, connection, or
+   "couldn't load" message.
 2. **Other connectors.** Figures from a connector other than Atlas (Meta Ads, a store, a mailbox,
    Drive, Slack, a calendar) were read through the publisher's own connection. Name each one, say
    who can refresh or check those figures and who cannot, and confirm the source line names the
@@ -198,6 +203,22 @@ nobody outside the publisher's company can reach that company's private tools. C
    private. That is not a finding. List it under **Check before sending** as a step ("share {page}
    with {audience} as Viewer"). A finding is only a private link or file *inside* the work that
    the reader will be sent to and cannot open (**3** above).
+5. **Platform disclosures.** When `audience` is `client`, `creator`, or `public`, the work says
+   nothing about Atlas's own performance, errors, or missing data. These are for the requester, not
+   the reader. Flag every statement, note, footnote, chart label, or empty state that:
+   - says a read failed, timed out, was partial, or was retried, or that Atlas, a tool, or a
+     connection had an error (**Critical**);
+   - names data Atlas does not hold or could not collect (a platform, posts, a date range, ad or
+     audience data), calls data stale, delayed, or incomplete, or carries a "data gaps",
+     "limitations", or "not available" section about the tool (**High**);
+   - explains a fallback or snapshot by a failure ("showing cached data because…") (**High**).
+
+   The fix removes the sentence or section from the work and gives it to the requester in the chat
+   summary; a section with nothing to show is left out, not explained. Not a disclosure: the source
+   line and its "as of" date, a dated snapshot label, figures the reader's own systems hold named as
+   theirs (**4.10**), and a next step asking the reader to share their own data, as long as it does
+   not say Atlas lacks it. With `audience` `team` this item is N/A: gaps on a team page are expected
+   (**R9**).
 
 ### 4.12 Artifact standard
 
@@ -246,8 +267,8 @@ listed in **Failed checks**.
 
 | Level | Means |
 | ----- | ----- |
-| Critical | Could lose the decision, misleads the reader, or is a legal or compliance gap (an unanswered brief requirement in client or public work (**4.1**), two prices, a private note on a client slide, a handle or number not in the run's data (**R7**), a figure, image, or section the reader will see empty or broken) |
-| High | Hurts credibility with a careful reader (numbers that disagree, a promise with nothing behind it, proof off-category, a link inside the work the reader cannot open, a timecode more than a second off, most reader standard failures) |
+| Critical | Could lose the decision, misleads the reader, or is a legal or compliance gap (an unanswered brief requirement in client or public work (**4.1**), two prices, a private note on a client slide, a handle or number not in the run's data (**R7**), an Atlas error or failed read shown to a reader outside the team (**4.11**), a figure, image, or section the reader will see empty or broken) |
+| High | Hurts credibility with a careful reader (numbers that disagree, a promise with nothing behind it, proof off-category, a link inside the work the reader cannot open, a timecode more than a second off, an Atlas data gap or limitation shown to a reader outside the team, most reader standard failures) |
 | Medium | Polish (typos, page numbers, wording, a dead in-page link, a `thin` brief answer) |
 
 Severity sits on findings; checks are PASS, FAIL, or N/A. **Verdict:** any Critical finding means
