@@ -4,8 +4,9 @@ Used by **Running agents** and **Reading the ask** in SKILL.md, and by every age
 block in **11**. It is the one shape every launch and every result takes, so `/aspire` can run
 any agent without reading a different format for each.
 
-`/aspire` is the front door. A person never picks an agent and never reaches one, or a shared
-skill, except through `/aspire:aspire` or one of its shortcuts (**4**). `/aspire` knows who is
+`/aspire` is the front door. A person never picks an agent and never reaches one, or the shared
+page standard, except through `/aspire:aspire` or one of its shortcuts (**4**). The organization
+admin skill is a separate support skill and keeps its own command. `/aspire` knows who is
 asking, loads the brand's memory and the person's own, picks the agent that owns the job, asks the
 few questions that matter in one picker round, and launches the agent. The agent does the work,
 publishes one page, and returns a result packet (**6**). `/aspire` reads the packet, asks for the
@@ -43,7 +44,8 @@ actions page and its hourly run. That run is one more caller of this contract.
 A shortcut (**4**) skips only the "what do you need" step: step 3 takes the shortcut's agent.
 Steps 1, 2, 4, 5, 6 and 7 still run. An unattended run skips step 4 and uses what was saved.
 
-**Unattended runs.** A scheduled task runs `/aspire:aspire {argument or shortcut} {its prompt}`.
+**Unattended runs.** A scheduled task runs `/aspire:aspire {argument or shortcut} {its prompt}`,
+and its prompt says not to ask questions; that is how the skill knows the run is unattended.
 After Phase 1 and Phase 2 + 3 it goes straight to the flow its argument, shortcut, or text names
 (**Reading the ask**, step 3), never to onboarding, the gap check, or an offer, and runs it
 unattended. Text it cannot route publishes the flow's "setup needed" card and stops.
@@ -65,9 +67,10 @@ up to four questions per call, so the reply holds, in this order:
    Skip it when the flow sets its own window (a daily or weekly report, a program's term) or the
    ask already gave one.
 3. **Credit cap**, header "Credits", only when the agent's level is `spend` and this run will
-   spend: "Cap this run at {estimate} credits?" Options: "Cap at {estimate} (Recommended)",
-   "Cap at {double}", "No cap". Never invent the estimate: it is the count of handles or posts to
-   fetch and the balance from `get_status`.
+   spend: "This fetches {n} handles or posts Atlas does not hold, and each uses Atlas credits
+   ({balance} left). Cap it at {n}?" Options: "Cap at {n} fetches (Recommended)", "Fetch none,
+   use what Atlas holds", "No cap". The cap counts fetches. Never state a credit price per fetch
+   unless `get_status` reports one; the balance comes from `get_status`.
 4. **Save**, header "Save". Whether to save the findings to Atlas, defaulting to no: "Page only
    (Recommended)", "Save to Atlas". This is the run's one write confirmation (**7**, Write), and
    it replaces the flow's own save question (for example vetting's R4) so it is never asked twice.
@@ -152,8 +155,8 @@ lists them. Agents work only from a message that carries it (**11**).
   own window; leave out what the flow does not use.
 - `approved` lists what the person already approved, by level: `write` is the setup reply's
   Save answer (or the flow's standing approval in an unattended run); `send` names each recipient,
-  order, or payment approved one by one; `spend.cap` is the credit cap, `null` for no cap or no
-  spend. The flow's own inputs still name each approval as before (R4, O1 and so on); an agent
+  order, or payment approved one by one; `spend.cap` is the cap in fetches (**2**), `null` for no cap or
+  no spend. The flow's own inputs still name each approval as before (R4, O1 and so on); an agent
   writes, sends, or spends only when both agree.
 - The `recipient` lens object (`recipient-lens.md`) and the decision-audit line follow as today.
 
@@ -184,7 +187,7 @@ acts on.
 
 | Field | Holds |
 | ----- | ----- |
-| `page` | The link to the page published or republished this run; `null` when none was. |
+| `page` | The link to the page published or republished this run; `null` when none was. A run that published more than one page or deck gives a list of links, main page first, each with its own `page-check` block. |
 | `findings` | Up to five, the ones the page leads with. `kind` is `observation`, `inference`, or `recommendation`; `confidence` is `high`, `medium`, or `low`. Every finding cites its evidence; one that cannot is left out. |
 | `proposals` | Every draft, save, send, order, payment, or spend the agent wants approved, each with its `level` (**7**) and its `items`. Empty when there is nothing to approve. |
 | `questions` | Everything the agent could not settle, worded so the main thread can put it in `AskUserQuestion` as is. |
@@ -205,8 +208,8 @@ below, never from what an agent's prompt says it may do.
 | Level | What it covers | What `/aspire` confirms |
 | ----- | -------------- | ----------------------- |
 | Read | Searches and analyses what Atlas holds, publishes a page, delivers it to the routing saved at setup | Nothing. Runs on request or on schedule. |
-| Write | Saves records to Atlas: stages, deals, insights, calibrations, drafts, links | One confirmation per batch of saves: one `AskUserQuestion` naming what the batch saves. |
-| Send | Reaches someone outside the run: a message or mailbox draft to a creator, an order, a discount code in a store, a listing, a payment | Every recipient, order, or payment, one by one: one question per item, never a batch. |
+| Write | Saves records to Atlas (stages, deals, insights, calibrations, drafts, links) or creates drafts in the brand's own mailbox, which send nothing | One confirmation per batch of saves: one `AskUserQuestion` naming what the batch saves. |
+| Send | Reaches someone outside the brand: a message sent to a creator, an order, a discount code in a store, a listing, a payment | Every recipient, order, or payment, one by one: one question per item, never a batch. |
 | Spend | Uses credits beyond the ordinary search (fetching handles or posts Atlas does not hold, starting discovery work) or moves money | The cost in credits or currency, said before the run, with the credit cap (**2**). |
 
 **Every agent's highest level.** What the agent can propose at most. Pre-launch, a `spend` agent
@@ -224,11 +227,11 @@ packet after the run.
 | `atlas-creator-brief` | write | Saves the brief's action items |
 | `atlas-creator-discovery` | spend | Starts discovery work for new candidates |
 | `atlas-creator-negotiation` | write | Saves offers, counters, and agreed terms as drafts |
-| `atlas-creator-outreach` | send | Sends or creates mailbox drafts to creators |
+| `atlas-creator-outreach` | send | Sends messages to creators |
 | `atlas-creator-profile` | spend | Refreshes a stale handle |
 | `atlas-creator-vetting` | spend | Fetches handles Atlas does not hold |
 | `atlas-daily-insights-report` | write | Saves the day's insights |
-| `atlas-deliverable-tracker` | send | Creates chase and fix-request drafts in the connected mailbox |
+| `atlas-deliverable-tracker` | write | Saves statuses and stage moves, and creates chase drafts in the mailbox |
 | `atlas-market-signal` | write | Saves findings |
 | `atlas-org-dashboard` | write | Saves the dashboard link to memory |
 | `atlas-post-analysis` | spend | Refetches the post |
@@ -239,20 +242,22 @@ packet after the run.
 | `atlas-program-ledger` | write | Records invoices and payments; never pays |
 | `atlas-quality-review` | read | Publishes its review; writes nothing to Atlas |
 | `atlas-quarterly-signal` | write | Saves the quarter's findings |
-| `atlas-roster-manager` | send | Creates re-engagement and thank-you drafts in the connected mailbox |
+| `atlas-roster-manager` | write | Saves the roster review, and creates note drafts in the mailbox |
 | `atlas-shops` | write | Saves the plan |
 | `atlas-weekly-insights-report` | write | Saves the week's insights |
 
 **Enforcing it from the packet.** When a packet arrives:
 
 1. Group `proposals` by level. Judge each by what it does, not by its label: a proposal that
-   reaches someone outside the run is `send` whatever it says, one that saves to Atlas is at least
+   reaches someone outside the brand is `send` whatever it says, one that saves to Atlas is at least
    `write`, and one that uses credits or money is `spend`. Use the higher of the label and what it
    does, and log the difference (**9**, Adjustments).
 2. A proposal above the agent's level in the table is not offered. Say in one line that the
    agent proposed something it may not do, and log it.
 3. Confirm by level: Write, one question per batch; Send, one question per item; Spend, the cost
-   first. Then relaunch the agent (its `record` or `build` pass, as the flow says) with `approved`
+   first. Where the flow's section has its own confirmation for the same items (O1, T1 to T5, R4,
+   and the like), that question is the confirmation, asked once, as long as it is at least as
+   strict as the level: a batch question never confirms a Send. Never confirm the same item twice. Then relaunch the agent (its `record` or `build` pass, as the flow says) with `approved`
    listing exactly what was confirmed. Nothing in a packet is ever carried out unconfirmed.
 4. Questions go into `AskUserQuestion` as written, after the proposals.
 

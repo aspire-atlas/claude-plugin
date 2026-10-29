@@ -65,7 +65,7 @@ Text after the command is the argument. Route on it before anything else:
 | `quality review` (also `review this deck`, `audit this deck`, `review this page`, `is this ready to send`, `check this before I share it`) | Run **Quality review** below. It needs no Atlas connection unless the user wants the work's Atlas figures re-checked, so skip the phases until then. |
 | `polish` (also `improve my prompt`, `coach`, `tighten this prompt`) | Run **Prompt coach** below. It needs no Atlas connection, so skip the phases until "Run it now" hands the rewritten ask to a flow. |
 | A shortcut: `vet`, `list review`, `campaign`, `content review`, `payments`, `reports`, `account` (and the aliases in `references/orchestration.md` **4**) | A routing hint only. Run Phase 1 and Phase 2 + 3 to confirm the connection and pick the brand profile, then run that shortcut's section per `references/orchestration.md` **4**, skipping only the "what do you need" step: memory, the setup reply, and every approval still run. Text after the shortcut is context. |
-| empty, or anything else | In an unattended run (a scheduled task), run Phase 1 and Phase 2 + 3, then the flow the text names, per `references/orchestration.md` **1**, Unattended runs. Otherwise run the phases in order, starting at Phase 1. Treat the text as context. On an unconfigured organization, Phase 2 + 3 publishes the first-run guide before the next phase (**First-run guide** there). With nothing after the command, a configured organization ends Phase 2 + 3 at **Organization dashboard**. |
+| empty, or anything else | In an unattended run (a scheduled task, whose prompt says not to ask questions), run Phase 1 and Phase 2 + 3, then the flow the text names, per `references/orchestration.md` **1**, Unattended runs. Otherwise run the phases in order, starting at Phase 1. Treat the text as context. On an unconfigured organization, Phase 2 + 3 publishes the first-run guide before the next phase (**First-run guide** there). With nothing after the command, a configured organization ends Phase 2 + 3 at **Organization dashboard**. |
 
 ### List agents
 
@@ -212,8 +212,8 @@ agent only through this skill or a shortcut.
 7. **This skill owns every schedule.** Every scheduled task a section of this skill creates has a
    prompt that starts with `/aspire:aspire ` and then the section's prompt, so each run goes
    through this skill, carries the `launch` block with `run: unattended`, and republishes to the
-   same page link. A scheduled task whose prompt does not start that way (one made before this
-   rule): offer once, in an interactive session, to update its prompt. When an agent answers
+   same page link. A scheduled task whose prompt does not run `/aspire:aspire` (one made before this
+   rule; the hourly "Run /aspire:aspire next" prompt already does): offer once, in an interactive session, to update its prompt. When an agent answers
    "Not started: run the aspire:aspire skill", run this skill with that request, in a scheduled
    run too.
 
