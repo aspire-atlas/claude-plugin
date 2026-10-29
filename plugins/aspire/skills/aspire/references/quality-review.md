@@ -126,6 +126,11 @@ for" line, or the flow's job in SKILL.md) and say so.
   `search_creators` under the same window and say whether it still holds. Never call
   `lookup_creators` or `lookup_posts`. Differences go on the page as "Atlas now shows {x}; the work
   says {y}", with the read's time.
+- **Creator slates** (a vetting page, a shortlist, a casting deck, or any list that says which
+  creators to work with): every creator has Yes, Maybe, or No with a reason; every Maybe carries
+  the one question that would settle it; and a list that came up short says so ("3 of the 20 asked
+  for") instead of padding it with creators who did not pass. A creator with no call or no reason,
+  or a padded list, is **High**.
 
 ### 4.4 Consistency
 
@@ -175,6 +180,10 @@ and the work never addresses is a finding.
 Metrics with a baseline, a target, and the threshold that changes a decision (scale, stop, renew).
 A "rule" with no numbers fails. Metrics the reader's own systems hold (sales, iROAS) are named as
 the reader's, never as Atlas's.
+
+Any work that recommends paid spend (ads, boosting, partnership ads, whitelisting) carries a test
+plan: one variable per test, a hypothesis, and the Scale, Fix, or Stop rule for each, with its
+number. A paid recommendation with no test plan is **High**.
 
 ### 4.11 Data access and live pages
 
