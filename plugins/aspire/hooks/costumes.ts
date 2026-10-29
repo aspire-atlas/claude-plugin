@@ -1,4 +1,4 @@
-// Influencer-marketing costumes for the crabs: one per Aspire agent type (25), and
+// Influencer-marketing costumes for the crabs: one per Aspire agent type (27), and
 // seven variants worn by the second and later concurrent runs of the same agent.
 // Each costume is a pixel prop held in the right claw (8 by 9 cells, drawn at
 // 22,5) and, for some, a head piece (14 wide, at its own position). They are
@@ -577,6 +577,26 @@ export const COSTUMES: readonly Costume[] = [
       'vvvvvvvv',
       'vvvvvvvv',
       'vvvvvvvv',
+    ],
+    head: null,
+    headAt: [8, 3],
+  },
+  {
+    key: 'red-pen',
+    name: 'Red pen',
+    agent: 'aspire:atlas-quality-review',
+    color: I.orange,
+    anim: 'sway',
+    held: [
+      '......kk',
+      '.....krk',
+      '....krrk',
+      '...krrk.',
+      '..krrk..',
+      '.krrk...',
+      'kwrk....',
+      'kkk.....',
+      'k.......',
     ],
     head: null,
     headAt: [8, 3],

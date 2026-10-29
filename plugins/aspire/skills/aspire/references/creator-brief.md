@@ -141,7 +141,7 @@ from**, and leave them out of the data block, since they aren't parts of the bri
   None saved: a bracketed blank per network, and one line asking the CM to fill it.
 - **Variant plan**: V1 to the package's variants per creator (at most 5). V1 takes the concept's
   framework. V2 onward take the campaign's framework for their slot (`frameworks` in
-  `campaign:{slug}-cas`, else the defaults in `cas-campaign.md`, **1d**, **Master Brief**: V2 BAB,
+  `campaign:{slug}-cas`, else the defaults in `cas-campaign-page-brief.md`, **Master Brief**: V2 BAB,
   V3 4Ps, V4 HSO, V5 SSS), unless that is the concept's framework already, in which case they
   take the next slot's. Each variant:
   its framework, length, which hook and CTA by number, the VO in a few lines, the B-roll shot numbers it uses,
@@ -177,7 +177,7 @@ client approves the same briefs on the campaign page's Master Brief tab (`cas-ca
 lanes set the audience, the roster replaces the shortlist, and the gates replace the timeline.
 
 **The data block.** The page carries the whole round's brief once more as data, so the campaign
-page loads it with nothing lost (`cas-campaign.md`, **1d**, **Master Brief**, **Loading the
+page loads it with nothing lost (`cas-campaign-page-brief.md`, **Master Brief**, **Loading the
 brief**, which maps every field above to a part of the page): one
 `<script type="application/json" id="cas-brief-data">` element, written with `json.dumps` and then
 every `<`, `>` and `&` replaced with `\u003c`, `\u003e` and `\u0026`, so no text in it (a quoted
@@ -220,7 +220,7 @@ the round, and `revision`: the creator's handle and network, their concept, and 
 pasted. Then the agent compares, and does nothing else:
 
 1. Read the concept's newest locked `brief` finding as the approved brief, with its text as it
-   was signed off: the `locked` version saved when it was locked (`cas-campaign.md`, **1e**,
+   was signed off: the `locked` version saved when it was locked (`cas-campaign-data.md`,
    **Brief versions and Reset to original**), passed by the main thread, never the page data as
    it is now, so an edit made after the lock is not taken as approved. Long text is compared as
    plain text, after the same conversion the page uses (lists as lines), so formatting is never

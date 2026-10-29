@@ -85,6 +85,8 @@ Do not develop from a folder that is mounted read-only or delete-restricted (som
    bash scripts/check-agent-roster.sh
    bash scripts/check-artifact-standard.sh
    bash scripts/check-palette.sh
+   bash scripts/check-skill-args.sh
+   bash scripts/check-directory.sh
    ```
 4. Open a PR into `develop`. Required: one approval, the `validate` check green, conversations resolved.
 5. Merge. Within about a minute:
@@ -214,6 +216,17 @@ These are product and safety commitments. A PR that breaks one is blocked in rev
 - Submission (one time): https://claude.ai/admin-settings/directory/submissions/plugins/new with the public repo URL. Requires an Owner on the Aspire Team or Enterprise org. Track status at https://claude.ai/admin-settings/directory/submissions.
 - After approval, the directory mirrors `main` and screens each update automatically. No re-submission for new versions.
 - Governing documents: the Anthropic Software Directory Terms and Policy. Practical implications: keep the description narrow and accurate, keep the connector list to what the plugin uses (three: Aspire Atlas for data and Aspire Atlas Organization Admin for organization members, both on atlas.aspire.io, and the optional Meta Ads connector at mcp.facebook.com/ads), and respond to Anthropic within a reasonable time if they flag something.
+- Directory findings. Each push to `main` is scanned, and a finding marked **Blocking** keeps that version off the listing until a new version fixes it. Warnings and notes hold a version for a reviewer or are only recorded. Fix a finding in the plugin when it is blocking, or when the fix breaks no rule of this repo; `scripts/check-directory.sh` catches the blocking ones before a push. These are kept on purpose and stay as they are:
+
+  | Finding | Why it stays |
+  | ------- | ------------ |
+  | No version in plugin.json (`MANIFEST_VERSION_MISSING`) | No `plugin.json` carries a version: `develop` resolves it to the commit SHA and `main` pins it on the plugin's entry in `marketplace.json` (section 2, `check-channel.sh`). Adding one would break the beta channel. |
+  | Unknown field `types` (`UNKNOWN_KEY`) | It declares the mod's state contract, `types/index.d.ts`, which `claude plugin validate` holds every `$.state` key to. |
+  | `icon`, `privacyPolicyUrl` (`UNKNOWN_KEY_CROSS_TOOL`, `UNKNOWN_KEY`) | Listing fields the directory reads. |
+  | Uses hooks, includes a mod, adds tools, hooks prompt, agent, or call events (`USES_HOOKS`, `MOD_*`) | The deliberate 4.0.0 decision; the plugin README's **What each hook does** answers the reviewer, and `check-directory.sh` keeps it complete. |
+  | Uses a credential from the user's machine (`MCP_FORWARDS_CREDENTIAL_ENV`) | Nothing reads a credential; the connectors sign in with their own vendor through OAuth, and the Meta Ads client ID is public. A reviewer confirms it. |
+  | Image or font file the code could run, assets passed unread (`UNREAD_ASSET_REFERENCED`, `ASSETS_PASSED_UNREAD`) | `assets/icon.png` is the listing icon and the spinners are SVG; nothing runs them. A reviewer confirms it. |
+  | Validation didn't finish (`VALIDATION_INCOMPLETE`) | The validator's own state; a reviewer looks at that version. |
 - Optional but worth doing: submit the Atlas MCP server to the Connectors Directory. A plugin that bundles a directory-listed connector shows fewer install warnings and has a better chance at the Anthropic Verified badge.
 
 ## 11. Access and permissions

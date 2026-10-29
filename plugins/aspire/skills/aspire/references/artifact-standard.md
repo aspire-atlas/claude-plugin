@@ -69,6 +69,13 @@ added, it does not replace them). Markup:
     page (the client's approvers), the PPA pitch deck (the client or presenter's audience), and any other
     page the user says will be shared. The order form stays "Internal use only" (its team contributors
     are the audience) and keeps its own "For your team only" notice, which this line does not replace.
+- **No platform disclosures.** A page with the shared audience line says nothing about Atlas's
+  own performance, errors, or missing data: no data gaps or limitations section; no failed,
+  partial, or retried read; no stale, delayed, or "not available in Atlas" note; no platform or
+  posts Atlas could not collect; and no fallback or snapshot explained by a failure. Those go to
+  the requester in the chat summary. The page shows what was found, and a section with nothing to
+  show is left out without comment. The source line, its as-of time, and a dated snapshot label
+  stay. Team pages keep their data gaps.
 - Data from a connector other than Atlas (a store, ad account, mailbox, or Drive file) is added to the
   source sentence: "Source: Aspire Atlas cross-platform indexing (...), and {source label} data for
   {what it fills}. Data compiled ..." Never present the other connector's figures as Atlas's.
@@ -84,6 +91,11 @@ check script finds it in this file only.
 
 - **Sample pages** (mode `sample`): carry the mark, and replace the source line with "Sample.
   Invented data for {holiday} {year}. Not from Atlas. Not for any decision." Keep the sample banner.
+- **Review pages** (a quality review's page): carry the mark, and replace the source line with
+  "Reviewed from {the work's title}, read from {where: an artifact, Google Drive, a file} as of
+  {asOfDate}." When the review re-checked Atlas figures, add the standard source sentence after it;
+  when it did not, add nothing about Atlas. Then "Rubric version {n}." from `quality-review.md`, then
+  the team audience line.
 - **Pages with no Atlas data** (the first-run starter page, the setup-needed cards): carry the mark,
   and replace the source line with "No Atlas data on this page."
 - **The order form**: Contributors edit it, so its header shows "Last edited {time}" from the page
@@ -104,7 +116,8 @@ check script finds it in this file only.
 2. The source line has the as-of time from the shell clock and a networks list that matches the data;
    the page names no Claude, model, assistant, requester, email, or id.
 3. The header carries the "Prepared for" chip (recipient-lens.md) so the page says who it is for.
-4. The audience line matches who will see the page.
+4. The audience line matches who will see the page, and a page with the shared line carries no
+   platform disclosures (section 2).
 5. The page source stays ASCII and keeps its size budget (the full mark is about 27KB of the page's
    budget).
 

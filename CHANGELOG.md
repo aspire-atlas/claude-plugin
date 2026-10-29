@@ -6,6 +6,24 @@ The version lives in exactly one place: `plugins[].version` in `.claude-plugin/m
 
 ## [Unreleased]
 
+## [4.1.0] - 2026-10-29
+
+Minor release. Adds the quality review, which checks a page or deck before it is shared, and fixes what kept 4.0.0 out of the Anthropic plugin directory.
+
+### Added
+- `atlas-quality-review` agent and `/aspire quality review`: checks a finished page, deck, or card grid, or a pitch, proposal, brief, or report made elsewhere (Google Slides or Docs, a Drive file, a .pptx, .pdf, or .docx, or a Claude artifact link), before it is shared. Each requirement of the brief and each check gets a pass or fail with the reason, every finding is quoted with why it matters and the fix, and the page ends with a verdict: Ready, Ready with fixes, or Not ready. It reads only: it writes nothing to Atlas and never edits, shares, or downloads the work.
+- A reader standard for every page: answer first, numbers with context, next steps with an owner, decisions kept apart, real evidence, and plain language.
+- The quality review checks who can see each figure, live pages and their fallbacks, figures from other connectors, links that won't open, timecodes, and missing images.
+- After any agent publishes a page, `/aspire` offers a quality review before you share it, and "Apply the fixes" hands the review's fixes to the flow that made the page, with its usual confirmations.
+
+### Changed
+- Atlas errors and data gaps stay off pages shared outside the team and go to you in the chat instead. Pages for your own team keep their data gaps.
+- The plugin README says what each of the mod's hooks does: the two tools it answers itself, the prompt and agent events it reads and passes on unchanged, and that the plugin reads no credential from your machine.
+
+### Fixed
+- Amounts in the skill are written as `USD 2,000`, so running `/aspire:aspire` with arguments no longer turns them into the arguments.
+- The Claude Code mod and the CAS campaign reference now pass the Anthropic plugin directory's checks: the mod uses its capability object in the plain form the directory reads, and the CAS campaign reference is split into files the directory can inspect.
+
 ## [4.0.0] - 2026-10-23
 
 Major release. Adds the Claude Code mod, which `SECURITY.md` describes, and rebuilds the CAS campaign page into six tabs with client and agency roles. Also adds an organization dashboard, a shops agent, the Atlas Starter Guide, and partnership content.
@@ -169,7 +187,8 @@ First public release. Versioning restarts at 1.0.0; earlier 0.x builds were inte
 - Two release channels: `aspire-atlas` (official, pinned) and `aspire-atlas-beta` (tracks `develop`).
 - Apache-2.0 license.
 
-[Unreleased]: https://github.com/aspire-atlas/claude-plugin/compare/v4.0.0...HEAD
+[Unreleased]: https://github.com/aspire-atlas/claude-plugin/compare/v4.1.0...HEAD
+[4.1.0]: https://github.com/aspire-atlas/claude-plugin/compare/v4.0.0...v4.1.0
 [4.0.0]: https://github.com/aspire-atlas/claude-plugin/compare/v3.3.0...v4.0.0
 [3.3.0]: https://github.com/aspire-atlas/claude-plugin/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/aspire-atlas/claude-plugin/compare/v3.1.0...v3.2.0
