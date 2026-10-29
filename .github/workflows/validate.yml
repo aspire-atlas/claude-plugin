@@ -63,6 +63,9 @@ jobs:
       - name: No $<digit> or $ARGUMENTS in a skill or command body (argument substitution)
         run: bash scripts/check-skill-args.sh
 
+      - name: What the plugin directory's scan blocks (mod form, file size, hook docs)
+        run: bash scripts/check-directory.sh
+
       - name: Changelogs are edited only on release branches
         if: steps.channel.outputs.name == 'develop'
         run: |

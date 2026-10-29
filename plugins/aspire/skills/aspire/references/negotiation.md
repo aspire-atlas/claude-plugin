@@ -531,7 +531,7 @@ profile, no actions); render for `recipient`.
 **Who sees what.** The page is for the brand's team and is never shared with a creator or a
 manager. The page itself holds everything except the money that only the team should see,
 which lives in its page data under `team`, readable by Editors only, the way the CAS page keeps
-`agency` (`cas-campaign.md`, **1e**). Declare on every publish:
+`agency` (`cas-campaign-data.md`). Declare on every publish:
 
 ```json
 {"db": {"rules": [
