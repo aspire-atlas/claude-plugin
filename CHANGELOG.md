@@ -6,6 +6,13 @@ The version lives in exactly one place: `plugins[].version` in `.claude-plugin/m
 
 ## [Unreleased]
 
+## [4.1.2] - 2026-10-29
+
+Patch release. Fixes the line in the Claude Code mod that the Anthropic plugin directory still could not read in 4.1.1.
+
+### Fixed
+- The Claude Code mod's event counter has a name nothing else in the mod uses, so the Anthropic plugin directory can read its calls. Nothing changes in what the mod shows or does.
+
 ## [4.1.1] - 2026-10-29
 
 Patch release. Fixes the line in the Claude Code mod that the Anthropic plugin directory still could not read in 4.1.0.
@@ -197,7 +204,8 @@ First public release. Versioning restarts at 1.0.0; earlier 0.x builds were inte
 - Two release channels: `aspire-atlas` (official, pinned) and `aspire-atlas-beta` (tracks `develop`).
 - Apache-2.0 license.
 
-[Unreleased]: https://github.com/aspire-atlas/claude-plugin/compare/v4.1.1...HEAD
+[Unreleased]: https://github.com/aspire-atlas/claude-plugin/compare/v4.1.2...HEAD
+[4.1.2]: https://github.com/aspire-atlas/claude-plugin/compare/v4.1.1...v4.1.2
 [4.1.1]: https://github.com/aspire-atlas/claude-plugin/compare/v4.1.0...v4.1.1
 [4.1.0]: https://github.com/aspire-atlas/claude-plugin/compare/v4.0.0...v4.1.0
 [4.0.0]: https://github.com/aspire-atlas/claude-plugin/compare/v3.3.0...v4.0.0
