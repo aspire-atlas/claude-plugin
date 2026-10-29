@@ -252,22 +252,9 @@ The bar and band draw only where the host renders the slot above the prompt. The
 
 Dismissing the bar with `✕` starts no fallback. `/aspire-agents-info status` adds a `Band:` line: how many times the slot has been drawn and on which surface, or that it never was.
 
-### Atlas token costs in get_status
+### Atlas token costs
 
-TODO: confirm with the Atlas server team. The server change has not shipped, so this is the shape the mod assumes; `hooks/atlas-usage.ts` is the only code that reads it, and `types/index.d.ts` documents it too.
-
-The mod looks for an object named `tokenCosts` anywhere in the `get_status` result JSON. When there are several, the one under `organizations.selected` wins, then the shallowest:
-
-```json
-{ "organizations": { "selected": { "id": "org_…", "tokenCosts": {
-    "used": 12400, "limit": 50000, "remaining": 37600,
-    "period": "2026-10", "unit": "tokens" } } } }
-```
-
-- `used` (number) is required: what the period has used. Without it, `limit - remaining` is used when both are present; otherwise there is no reading.
-- `limit` and `remaining` (numbers), `period` and `unit` (strings; leave `unit` out for plain tokens) are optional.
-- Also accepted: `token_costs`, `tokenCost`, or `tokenUsage` for the object; `usedTokens`, `tokensUsed`, `consumed`, or `spent` for `used`; `quota`, `allowance`, or `cap` for `limit`; `left`, `balance`, or `available` for `remaining`; plain numeric strings for numbers.
-- A `get_status` result without it clears the band's figure.
+The band's `Atlas tokens: used / limit` figure shows what your organization has used in the current period, read from the latest answer Atlas gives to `get_status`. When Atlas doesn't report token costs for your organization, the figure stays blank: the mod never estimates it and never shows Claude's own usage in its place. The fields the mod reads are documented in `types/index.d.ts`.
 
 ### Third-party code
 
