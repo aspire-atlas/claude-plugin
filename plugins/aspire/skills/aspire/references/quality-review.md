@@ -68,7 +68,8 @@ on the page as not applicable, with the reason, never silently skipped.
 | A decision audit page | 4.5 to 4.10 | R3 to R6, R10, R12 |
 | A quality review's own page | not reviewed | not reviewed |
 
-On any plugin page, **R2** is n/a only when the page shows no social data. **4.12 Artifact
+On any plugin page, **R2** is n/a when the page shows no social data, or when it covers one post,
+one creator, or one account on one network (a post analysis, a content review, a creator profile). **4.12 Artifact
 standard** runs on every page this plugin published, and on external work only when it carries the
 Aspire Atlas mark. **4.15** checks timecodes only when the work claims one. Outside the team, **R9** is n/a and **4.11**, item 5
 runs; on a team page it is the reverse.
@@ -232,7 +233,8 @@ Also check the saved theme is applied when one exists, with semantic colors left
 ### 4.13 Polish
 
 Typos, stray characters, leftover placeholders or design notes, presenter labels on slides,
-inconsistent naming or capitalization, and broken links.
+inconsistent naming or capitalization. Broken links are not judged here: they are **4.15** or
+**R7** (**Broken links**, in **4.15**).
 
 ### 4.14 Reader standard
 
@@ -262,6 +264,15 @@ listed in **Failed checks**.
 3. **In-page links.** Every `href="#id"` must match an element id. One that doesn't is **Medium**.
 4. **External links.** List them. Fetch one only when WebFetch is available and the domain is
    public; never sign in. Private links stay under **4.11**.
+
+**Broken links.** Each broken link is one finding, filed in exactly one place:
+
+| The link | Filed under | Severity |
+| --- | --- | --- |
+| An in-page `#id` link with no matching id | 4.15, item 3 | Medium |
+| A link given as evidence for a creator, post, or number (a post or profile URL) that does not open or opens something else | R7 | Critical |
+| Any other public link that does not open | 4.15, item 4 | High when the reader needs it to act, else Medium |
+| A private link the reader cannot open | 4.11, item 3 | High |
 
 ## 5. Severity and verdict
 
@@ -409,17 +420,19 @@ Claude Doc it owns, or none. Nothing goes to Atlas, and nothing goes anywhere th
 not name.
 
 - **Where it is saved.** The `quality-review:log` calibration (`policy`, `{area: "routing", body:
-  "file:{path}" | "docs:{link}"}`), set from SKILL.md's **Quality review**, Review log. The main
-  thread passes it as `log`; without it, `log` is `none`.
+  "docs:{link}"}`), set from SKILL.md's **Quality review**, Review log. The main thread reads it
+  before each launch and passes it as `log`; without it, `log` is `none`. A `file:{path}` log is
+  never saved for the organization; it is passed for one review when the user names a local file.
 - **One row per review.** After publishing, the agent appends one row. Columns, in order (the CSV
   header, or the Doc table's columns):
   `review_id,rubric_version,date,target,kind,flow,audience,verdict,failed_checks,critical,high,medium,expert_verdict,agreement,critique`.
-  `review_id` is `QR-{MMDD}-{HHMM}` from the shell clock (UTC); `failed_checks` is
+  `review_id` is `QR-{YYYYMMDD}-{HHMMSS}` from the shell clock (UTC), with `-2`, `-3` added when the
+  log already has that id; `failed_checks` is
   semicolon-separated `{id} {name}`; `expert_verdict`, `agreement`, and `critique` are always left
   empty for the organization's reviewers to fill in. A file that doesn't exist yet is created with
   the header. Grade mode, sample mode, and an unreadable target write no row.
-- **Adjustments.** When the user disputes a finding or names one the review missed, the main thread
-  adds a row beside the log (a second table in the Doc, or `{name}-adjustments.csv` next to the
+- **Adjustments.** When the user disputes a finding or names one the review missed, and confirms
+  it, the main thread adds a row beside the log (a second table in the Doc, or `{name}-adjustments.csv` next to the
   file): `review_id,date,by,what_changed,why,check,lesson`, with `check` set to the check id or
   `new`.
 - **Calibrating the checks.** Every 20 rows that have a reviewer's verdict, work out how often the
