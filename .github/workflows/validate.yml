@@ -63,7 +63,7 @@ jobs:
       - name: No $<digit> or $ARGUMENTS in a skill or command body (argument substitution)
         run: bash scripts/check-skill-args.sh
 
-      - name: What the plugin directory's scan blocks (mod form, file size, hook docs)
+      - name: What the plugin directory's scan blocks (mod form, file size, hook docs), and skill description length
         run: bash scripts/check-directory.sh
 
       - name: Changelogs are edited only on release branches
