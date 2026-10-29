@@ -61,5 +61,36 @@ for f in ad-reuse affiliate cas-campaign content-library content-review content-
   grep -q 'artifact-standard' "$R/$f.md" || err "$f.md does not link artifact-standard.md"
 done
 
-[ "$fail" -eq 0 ] && echo "OK   artifact standard is linked from every agent and page reference"
+# The page standard: a shared skill no one can call as a command, which the agent block links, and
+# whose self-check script passes the good fixture and fails each bad one on the check it names.
+PS=$P/skills/page-standard/SKILL.md
+FX=scripts/fixtures/page-standard
+if [ ! -f "$PS" ]; then
+  err "$PS is missing"
+else
+  awk 'NR == 1 && /^---/ { fm = 1; next } fm && /^---/ { exit } fm' "$PS" | grep -qx 'user-invocable: false' ||
+    err "$PS must set user-invocable: false in its frontmatter (it is never a command)"
+  grep -qF 'skills/page-standard/SKILL.md' <<< "$canon" || err "the agent block does not link skills/page-standard/SKILL.md"
+  if command -v python3 >/dev/null; then
+    tmp=$(mktemp -d)
+    awk '/<!-- page-check -->/{f=1;next} /<!-- \/page-check -->/{f=0} f' "$PS" | sed '1d;$d' > "$tmp/page_check.py"
+    [ -s "$tmp/page_check.py" ] || err "$PS has no <!-- page-check --> script"
+    for f in "$FX"/*.html; do
+      out=$(python3 -I "$tmp/page_check.py" "$f") && code=0 || code=$?
+      case $(basename "$f" .html) in
+        pass) [ "$code" -eq 0 ] || err "page check fails $f, which should pass: $out" ;;
+        fail-*)
+          want=$(basename "$f" .html | sed -E 's/^fail-e([0-9]+).*/E\1/')
+          [ "$code" -eq 1 ] || err "page check passes $f, which should fail $want"
+          grep -q "\"check\": \"$want\", .*\"result\": \"fail\"" <<< "$out" || err "page check does not fail $want on $f"
+          [ "$(grep -c '"result": "fail"' <<< "$out")" -eq 1 ] || err "page check should fail only $want on $f: $out" ;;
+      esac
+    done
+    rm -rf "$tmp"
+  else
+    echo "SKIP page check fixtures (no python3)"
+  fi
+fi
+
+[ "$fail" -eq 0 ] && echo "OK   artifact standard is linked from every agent and page reference; page check passes its fixtures"
 exit "$fail"

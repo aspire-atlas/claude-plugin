@@ -183,7 +183,12 @@ direct ask, `/aspire:aspire run {agent}`, a hand-off from **List agents**, a sec
 4. **When it finishes.** Its result arrives as a task notification. Treat it as the agent's
    report: relay the summary, page link, and decisions it needs, then run the flow's next step
    (the questions after a `propose` pass, then the `record` launch, which is another subagent).
-   Check the result before telling the user it is done.
+   Check the result before telling the user it is done. Close out each published page in one
+   line from the agent's page check (`skills/page-standard/SKILL.md`, section 7): the question,
+   the link, and the checks fixed or still failing by name ("Fixed E3 Answer first; still
+   failing E9 Names what is missing: no ad account connected"). A result with no page check for
+   a page it published, or with a scripted check still failing, is not done: say so, and offer
+   to run it again.
 5. **Several at once.** Different agents, and a second run of the same agent for another brand,
    handle, or campaign, may run together. Keep one decision log line per launch and return, and
    the audit trail blocks per run (**Decision audit**). When several results arrive close

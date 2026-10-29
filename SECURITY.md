@@ -20,7 +20,7 @@ Email **security@aspire.io** with a description, reproduction steps, and impact.
   - ships tests (`*.test.ts`, `*.test.tsx`) that run only under `claude plugin test`.
 
   Function hooks are an early-access Claude Code API. The mod was written and tested on Claude Code 2.1.295 and 2.1.299 and may need changes when that API changes. The skills, agents, and connectors do not depend on it. Parts of the mod are adapted from claude-kit (MIT License); the notice is in the files that carry that code.
-- **Snippets that run on your computer.** A few reference files include short Python snippets. Claude saves one to a temporary file and runs it to embed images on a page or card, read a brand's website colors, fonts, and logo, work out a color palette, work out creator metrics from search results it saved, or pick the US holiday a sample page is themed around. Every snippet:
+- **Snippets that run on your computer.** A few reference and skill files include short Python snippets. Claude saves one to a temporary file and runs it to embed images on a page or card, check a page it built against the page standard before publishing it, read a brand's website colors, fonts, and logo, work out a color palette, work out creator metrics from search results it saved, or pick the US holiday a sample page is themed around. Every snippet:
   - is written out in full in the plugin, where anyone can read it, and is never downloaded;
   - uses only the Python standard library and Pillow, and runs only when Python is already installed;
   - starts no other programs and installs nothing;
