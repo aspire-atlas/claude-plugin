@@ -24,7 +24,7 @@ Email **security@aspire.io** with a description, reproduction steps, and impact.
   - is written out in full in the plugin, where anyone can read it, and is never downloaded;
   - uses only the Python standard library and Pillow, and runs only when Python is already installed;
   - starts no other programs and installs nothing;
-  - only reads public web pages and images the flow names (Aspire's image server, the brand's website, its logo and product images, Google Fonts), or files Claude saved in the same temporary folder;
+  - only reads public web pages and images the flow names (Aspire's image server, the brand's website, its logo and product images, Google Fonts), files Claude saved in the same temporary folder, or the page Claude built and is about to publish;
   - writes nothing except up to three logo files in the folder where it runs, and prints its results;
   - runs through the same permission checks as any command Claude runs.
 

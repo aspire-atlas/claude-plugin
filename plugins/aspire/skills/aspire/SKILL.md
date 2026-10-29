@@ -186,9 +186,10 @@ direct ask, `/aspire:aspire run {agent}`, a hand-off from **List agents**, a sec
    Check the result before telling the user it is done. Close out each published page in one
    line from the agent's page check (`skills/page-standard/SKILL.md`, section 7): the question,
    the link, and the checks fixed or still failing by name ("Fixed E3 Answer first; still
-   failing E9 Names what is missing: no ad account connected"). A result with no page check for
-   a page it published, or with a scripted check still failing, is not done: say so, and offer
-   to run it again.
+   failing E9 Names what is missing: no ad account connected"). When a page has no page check, or
+   a scripted check still fails for a reason other than "fixed format", say so and offer to fix
+   that page and republish it to the same link. Never rerun the whole agent for it: a rerun can
+   repeat writes or spend.
 5. **Several at once.** Different agents, and a second run of the same agent for another brand,
    handle, or campaign, may run together. Keep one decision log line per launch and return, and
    the audit trail blocks per run (**Decision audit**). When several results arrive close
@@ -285,7 +286,10 @@ team catalog, and how agents render for a lens are in `references/recipient-lens
    | `team` | Anything | The flow the ask names |
 
 4. **Pass it on.** Every agent launch below includes `recipient` (the confirmed lens or lenses,
-   primary first). Relay the agent's forward note as-is, so the requester can paste it to the
+   primary first). With a `leadership` primary lens, also pass `preparedBy`: the name the user
+   gave for whoever sends the page on, or nothing (the page then says "{organization} team"). When
+   the ask matches a question in the Skills x Artifacts Map, pass its code as `questionCode`
+   (`skills/page-standard/SKILL.md`). Relay the agent's forward note as-is, so the requester can paste it to the
    reader.
 5. **Keep the record.** From the first question of any flow that launches an Atlas agent, keep
    the running decision log and ask every agent for its audit trail block, per **Decision

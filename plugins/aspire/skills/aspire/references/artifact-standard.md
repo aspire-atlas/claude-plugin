@@ -8,8 +8,9 @@ source sentence anywhere else: point here.
 The two pieces say everything the page needs to say about itself:
 
 - **Who prepared it:** the mark, which is Aspire Atlas. A page never names Claude, a model, or an
-  assistant. It names a person only in the "Prepared by" line a page for a VP or budget owner
-  carries (`skills/page-standard/SKILL.md`, section 2), with the name the preparer gave.
+  assistant, and names the person who asked for it only in the "Prepared by" line a page for a
+  VP or budget owner carries (`skills/page-standard/SKILL.md`, section 2). Creators, approvers,
+  and other people a flow shows stay as that flow sets them.
 - **For whom:** the header's "Prepared for" chip (recipient-lens.md), and, on a page shared outside
   the team, the audience in the source line.
 - **When:** the "as of" time in the source line, which changes every time the page is republished or
@@ -111,8 +112,8 @@ check script finds it in this file only.
 1. The mark is inline, once, at the top right; nothing recolors it; the header still fits at phone
    width.
 2. The source line has the as-of time from the shell clock and a networks list that matches the data;
-   the page names no Claude, model, assistant, email, or id, and a person only in a "Prepared by"
-   line (page-standard, section 2).
+   the page names no Claude, model, assistant, email, or id, and names the requester only in a
+   "Prepared by" line (page-standard, section 2).
 3. The header carries the "Prepared for" chip (recipient-lens.md) so the page says who it is for.
 4. The audience line matches who will see the page.
 5. The page source stays ASCII and keeps its size budget (the full mark is about 27KB of the page's
@@ -142,11 +143,12 @@ Every page, deck, or card you publish carries the animated Aspire Atlas mark at 
 one source line at the end, as
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md` sets out: the mark and the
 variants in sections 1 and 3, the source line in section 2. Take the as-of time from the shell clock
-and change it on every republish. Never name Claude or a model on a page, and name a person only in
-the "Prepared by" line the page standard sets. A sample page follows the sample variant. Files for import (CSV) and chat or mail text carry neither.
+and change it on every republish. Never name Claude or a model on a page, and name the requester
+only in the "Prepared by" line the page standard sets. A sample page follows the sample variant. Files for import (CSV) and chat or mail text carry neither.
 
 Before you publish a page, read `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md` and
 follow it: the nine parts every page holds, the reader and evidence rules, and checks E1 to E12.
 Run its script for E1, E2, E6, and E11, judge the rest, and fix every fail before publishing.
-End your output to the main thread with its page check, one per page published.
+Put its page check, one per page published, at the end of your output, just before the audit
+trail block.
 <!-- /agent-block -->

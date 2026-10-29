@@ -106,13 +106,14 @@ Every page, deck, or card you publish carries the animated Aspire Atlas mark at 
 one source line at the end, as
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md` sets out: the mark and the
 variants in sections 1 and 3, the source line in section 2. Take the as-of time from the shell clock
-and change it on every republish. Never name Claude or a model on a page, and name a person only in
-the "Prepared by" line the page standard sets. A sample page follows the sample variant. Files for import (CSV) and chat or mail text carry neither.
+and change it on every republish. Never name Claude or a model on a page, and name the requester
+only in the "Prepared by" line the page standard sets. A sample page follows the sample variant. Files for import (CSV) and chat or mail text carry neither.
 
 Before you publish a page, read `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md` and
 follow it: the nine parts every page holds, the reader and evidence rules, and checks E1 to E12.
 Run its script for E1, E2, E6, and E11, judge the rest, and fix every fail before publishing.
-End your output to the main thread with its page check, one per page published.
+Put its page check, one per page published, at the end of your output, just before the audit
+trail block.
 
 ## Audit trail
 

@@ -37,10 +37,15 @@ its page holds; this skill is the bar that content clears.
 | 8 | What is missing | Missing data and what connecting it would add ("Paid results need a connected Meta ad account"). | E9 |
 | 9 | What Atlas can draft next | The drafts Atlas can make next, for example outreach to the 11, offers, discount codes. Nothing is sent without approval. | |
 
-Every part is on every page. When a part has nothing for this page, it says so in one line ("No
-decision needs approval", "No insights this run: 3 posts is too few to compare"); it is never
+Every part is on every page. When a part has nothing for this page, it says so in one line
+("Nothing needs approval", "No insights this run: 3 posts is too few to compare"); it is never
 left out. A working page (an order form, a ledger, a tracker) keeps the parts short and puts its
 working table where the evidence goes.
+
+**A flow's fixed format wins on layout.** Where a flow's reference fixes a format (the PPA deck's
+slide order, the CAS campaign page's tabs and client view, the order form), keep that format and
+place each part where it fits. A part with no place is marked `fail` in the page check with the
+reason "fixed format"; that does not hold the publish.
 
 Two more checks cover the whole page:
 
@@ -51,29 +56,34 @@ Two more checks cover the whole page:
 
 ## 2. Reader rules
 
-- **A VP or budget owner reads it** (questions I6, P4, P5, O3, O4, A1, and any page whose
-  `recipient` is `leadership`): split the page. The answer, the decisions, and the next steps sit
-  on the first screen. The method, all the evidence, and the options left out go below, so the
-  person who prepared it can back it up if asked. "Prepared by" sits at the top with the name the
-  main thread passed as `preparedBy`, or a blank the preparer fills in, and the page tells them
-  they can edit it before sending. A VP page that opens with the method fails E10.
-- **The brand reads it** (an agency or Aspire team prepared it for the brand): build the client
-  version. No revision history, no "was 5, now 12", no named rejects, and the brand's own colors
-  and type from `theme.md`. Whenever the reader is the brand and the main thread did not say which
-  version, return the question "Build a client version for {brand}?" with the result.
+- **A VP or budget owner reads it** (the primary `recipient` is `leadership`, or the main thread
+  passed a `questionCode` the Skills x Artifacts Map marks as VP-read: I6, P4, P5, O3, O4, or A1):
+  split the page. The answer, the decisions, and the next steps sit on the first screen. The
+  method, all the evidence, and the options left out go below, so the person who prepared it can
+  back it up if asked. "Prepared by {preparedBy}" sits at the top, with the `preparedBy` the main
+  thread passed, or "{organization} team" when it passed none; the person who sends it can edit
+  the line. A VP page that opens with the method fails E10. The map's codes come only from
+  `questionCode`; they are not the numbered questions inside a flow (outreach's O3 is a send step).
+- **A client reads it** (an agency or Aspire team prepared it for the brand as its client: the
+  shared-page audiences in `artifact-standard.md` section 2): build the client version. No
+  revision history, no "was 5, now 12", no named rejects, and the brand's own colors and type from
+  `theme.md`. When the main thread did not say which version, return the question "Build a client
+  version for {brand}?" with the result. The `brand` lens in `recipient-lens.md` (the brand's own
+  safety and approval team) is not a client reader. A flow that sets its own client view (the CAS
+  campaign page) keeps it.
 - **Any other reader:** the "Prepared for" chip from `recipient-lens.md` and the order the lens
   sets.
 
 ## 3. Evidence standards that never vary by layout
 
-- **Ad cut-downs (P1).** A storyboard per ad: a real still for every beat, timecodes, a one-line
+- **Ad cut-downs** (map question P1). A storyboard per ad: a real still for every beat, timecodes, a one-line
   description, a duration strip, and edit notes, on the fixed five-beat structure: hook 0 to 3s,
   brand 3 to 6s, build 6 to 9s, reveal 9 to 12s, end card +2s. Treat timecodes from speech or
   frame sheets as drafts: check every one against a 1-second frame scan before publishing, and
   re-cut a beat that moves.
 - **Any page that recommends paid spend.** A test plan: one variable per test, a hypothesis, and
   the Scale, Fix, or Stop rule for each.
-- **Creator slates (I1).** Yes, Maybe, or No with a reason for every creator, the fee and the
+- **Creator slates** (map question I1). Yes, Maybe, or No with a reason for every creator, the fee and the
   expected return. Run the fit checks before brand safety, and say which checks each creator
   reached. Each Maybe carries the one question that would settle it. Screen in the order the user
   ranked the brief's criteria. When the ask comes up short, say so ("3 of the 20 asked for") and
@@ -103,7 +113,7 @@ Mark the parts the script reads. The attributes carry no styling; style the page
 <!-- Part 1, before the first h2. data-range is the range as the page shows it. -->
 <div data-page="scope" data-reader="the influencer manager" data-brand="Brightside Toys"
      data-range="Aug 1 to Oct 28, 2026">
-  For the influencer manager · Brightside Toys · Aug 1 to Oct 28, 2026 ·
+  For the influencer manager | Brightside Toys | Aug 1 to Oct 28, 2026 |
   <span data-platform="instagram" data-posts="412">Instagram 412 posts</span>,
   <span data-platform="tiktok" data-posts="96">TikTok 96 posts</span>,
   <span data-platform="youtube" data-posts="0">YouTube not covered</span>
@@ -124,14 +134,19 @@ Mark the parts the script reads. The attributes carry no styling; style the page
 ```
 
 - List Instagram, TikTok, and YouTube in the scope every time, with a count of 0 and words such as
-  "not covered" or "no posts" for one with no data. Add another platform the data holds.
+  "not covered" or "no posts" for one with no data. Add another platform the data holds. Show the
+  exact count ("1,412 posts"), never a rounded one ("1.4K").
+- A decisions section with no decision says "Nothing needs approval" (or "No decision needs
+  approval").
 - A page with no social data at all (a ledger, an order form) puts `data-platforms="none"` on the
   scope and says in it what the page covers instead.
-- Mark a creator's caption or anything else in someone else's words with `blockquote`, `q`, or
-  `data-quoted`; the plain-language check skips it.
+- Mark a creator's caption, name, or anything else in someone else's words with `blockquote`,
+  `q`, or `data-quoted`; the plain-language check skips it, and it skips handles, hashtags, and
+  links. Never change a creator's real name or handle to pass a check.
 
 Run the check on the HTML file before every publish. Save this script once per session to a
-temporary file (`page_check.py`) and run `python3 page_check.py {page.html}`. It reads only that
+temporary file (`page_check.py`) and run `python3 page_check.py {page.html}` on the page file you
+are about to publish. It reads only that
 file, writes nothing, and prints one JSON line per check; it exits 1 when any check fails. When
 Python is not installed, check these four by reading the page and say "checked by reading" in the
 page check.
@@ -144,17 +159,37 @@ from html.parser import HTMLParser
 
 NETWORKS = ("instagram", "tiktok", "youtube")
 NOT_COVERED = ("not covered", "no posts", "not connected", "missing", "none")
-SKIP = {"script", "style", "svg", "template", "noscript", "head"}
+SKIP = {"script", "style", "svg", "template", "noscript"}
 VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
-VERBS = "search|lookup|list|get|set|add|remove|append|start|connect|create|update|delete|unlink|switch|supersede|retract"
+INLINE = {"a", "abbr", "b", "bdi", "cite", "code", "data", "em", "i", "kbd", "mark", "q", "s", "small",
+          "span", "strong", "sub", "sup", "time", "u", "var"}
+# Start tag -> open tags it closes, as browsers do for omitted end tags.
+CLOSES = {"p": {"p"}, "li": {"li", "p"}, "dt": {"dt", "dd", "p"}, "dd": {"dt", "dd", "p"},
+          "tr": {"tr", "td", "th", "p"}, "td": {"td", "th", "p"}, "th": {"td", "th", "p"},
+          "option": {"option"}, "body": {"head"}}
+BLOCK = {"address", "article", "aside", "blockquote", "details", "div", "dl", "fieldset", "figure",
+         "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "header", "hr", "main", "nav", "ol",
+         "p", "pre", "section", "table", "ul"}
+# Atlas tool names, kept equal to contract/atlas-mcp-tools.json by scripts/check-artifact-standard.sh.
+TOOLS = frozenset("""
+add_hashtags append_calibration append_insights cancel_invitation connect_channel create_organization
+create_profile delete_organization delete_profile get_brand_instruction get_job_status get_more_tools
+get_profile get_status invite_member leave_organization list_ad_accounts list_ad_search_fields
+list_available_hashtags list_channels list_creator_marketplace_labels list_creator_search_fields
+list_hashtag_posts list_hashtags list_insight_search_fields list_invitations list_members
+list_my_organizations list_my_profiles list_post_search_fields lookup_creators lookup_posts
+remove_hashtags remove_member retract_calibration search_ads search_calibrations
+search_creator_marketplace search_creators search_insights search_partnership_content search_posts
+set_brand_instruction start_business_discovery supersede_calibration switch_billing_account
+unlink_channel update_member_role update_organization update_profile
+""".split())
+# Case-sensitive on purpose: "Atlas-indexed" and "embedding a link" are plain words.
 BANNED = [
     (r"\batlas-[a-z]+(?:-[a-z]+)*\b", "an agent name"),
-    (r"(?<![@#\w])(?:%s)_[a-z_]+\b" % VERBS, "a tool name"),
-    (r"\b(?:Claude|Anthropic|LLM|MCP)\b", "a system name"),
-    (r"\bsub-?agents?\b", "a system word"),
-    (r"\btool calls?\b", "a system word"),
-    (r"\b(?:API|JSON|endpoints?|webhooks?|schema|embeddings?|runKey)\b", "a system word"),
+    (r"\b(?:Claude|Anthropic|LLM|MCP|API|JSON|runKey)\b", "a system name"),
+    (r"\b[Ss]ub-?agents?\b|\b[Tt]ool calls?\b|\b[Ww]ebhooks?\b|\b[Ee]ndpoints?\b|\b[Ss]chemas?\b", "a system word"),
 ]
+NOTHING = re.compile(r"\b(?:nothing|no decisions?) needs? (?:your )?approval\b", re.I)
 
 class Node:
     def __init__(self, tag, attrs, parent):
@@ -165,6 +200,9 @@ class Tree(HTMLParser):
         super().__init__(convert_charrefs=True)
         self.root = self.cur = Node("#root", [], None)
     def handle_starttag(self, tag, attrs):
+        while self.cur is not self.root and (self.cur.tag in CLOSES.get(tag, ()) or
+                                              (tag in BLOCK and self.cur.tag == "p")):
+            self.cur = self.cur.parent
         node = Node(tag, attrs, self.cur)
         self.cur.kids.append(node)
         if tag not in VOID:
@@ -181,24 +219,38 @@ class Tree(HTMLParser):
         self.cur.kids.append(data)
 
 def walk(node):
-    yield node
-    for kid in node.kids:
-        if isinstance(kid, Node):
-            yield from walk(kid)
+    stack = [node]
+    while stack:
+        node = stack.pop()
+        yield node
+        stack.extend(reversed([k for k in node.kids if isinstance(k, Node)]))
+
+def quoted(node):
+    return node.tag in ("blockquote", "q") or "data-quoted" in node.attrs
 
 def text(node, quotes=True):
-    if node.tag in SKIP or (not quotes and (node.tag in ("blockquote", "q") or "data-quoted" in node.attrs)):
-        return ""
-    parts = [kid if isinstance(kid, str) else " %s " % text(kid, quotes) for kid in node.kids]
-    return re.sub(r"\s+", " ", "".join(parts)).strip()
+    out, stack = [], [node]
+    while stack:
+        item = stack.pop()
+        if isinstance(item, str):
+            out.append(item)
+        elif item.tag not in SKIP and (quotes or not quoted(item)):
+            pad = "" if item.tag in INLINE else " "
+            stack.append(pad)
+            stack.extend(reversed(item.kids))
+            stack.append(pad)
+    return re.sub(r"\s+", " ", "".join(out)).strip()
 
 def has(haystack, needle):
     return re.sub(r"\s+", " ", needle).strip().lower() in haystack.lower()
 
+def page_name(node):
+    return (node.attrs.get("data-page") or "").strip().lower()
+
 def inside(node, name):
     node = node.parent
     while node is not None:
-        if node.attrs.get("data-page") == name:
+        if page_name(node) == name:
             return True
         node = node.parent
     return False
@@ -216,8 +268,9 @@ def e1(nodes, regions):
     if len(scopes) != 1:
         return ["the page needs exactly one data-page=\"scope\" (found %d)" % len(scopes)]
     scope, problems = scopes[0], []
+    order = {id(n): i for i, n in enumerate(nodes)}
     first_h2 = next((i for i, n in enumerate(nodes) if n.tag == "h2"), None)
-    if first_h2 is not None and nodes.index(scope) > first_h2:
+    if first_h2 is not None and order[id(scope)] > first_h2:
         problems.append("the scope comes after the first h2; it belongs at the top")
     shown = text(scope)
     for attr in ("data-reader", "data-brand", "data-range"):
@@ -238,10 +291,11 @@ def counts(region, label):
             problems.append("%s gives %s no whole-number data-posts" % (label, name))
             continue
         posts, shown = int(raw), text(found[0])
+        numbers = {int(n.replace(",", "")) for n in re.findall(r"(?<![\d.,])\d[\d,]*(?![\d.])", shown)}
         if posts == 0 and not any(has(shown, w) for w in NOT_COVERED):
             problems.append("%s shows %s with 0 posts but does not say it is not covered" % (label, name))
-        if posts > 0 and not (str(posts) in shown.replace(",", "")):
-            problems.append("%s does not show %s's post count (%d)" % (label, name, posts))
+        if posts > 0 and posts not in numbers:
+            problems.append("%s does not show %s's exact post count (%d)" % (label, name, posts))
         out[name] = posts
     return out, problems
 
@@ -278,7 +332,7 @@ def e6(nodes, regions):
     if not any(n.tag in ("h2", "h3") for n in walk(section)):
         problems.append("the decisions section has no heading")
     items = [n for n in walk(section) if "data-decision" in n.attrs]
-    if not items and not has(text(section), "nothing needs approval"):
+    if not items and not NOTHING.search(text(section)):
         problems.append("the decisions section lists no data-decision and does not say \"Nothing needs approval\"")
     for item in items:
         if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", (item.attrs.get("data-by") or "").strip()):
@@ -289,9 +343,11 @@ def e6(nodes, regions):
     return problems
 
 def e11(nodes, regions):
-    shown, problems = text(nodes[0], quotes=False), []
+    shown = re.sub(r"https?://\S+|[@#][\w.]+", " ", text(nodes[0], quotes=False))
+    problems = ["names a tool name: \"%s\"" % t for t in
+                sorted(set(re.findall(r"\b[a-z]+(?:_[a-z]+)+\b", shown)) & TOOLS)[:5]]
     for pattern, kind in BANNED:
-        for hit in sorted(set(re.findall(pattern, shown, flags=re.I)))[:5]:
+        for hit in sorted(set(re.findall(pattern, shown)))[:5]:
             problems.append("names %s: \"%s\"" % (kind, hit))
     return problems
 
@@ -299,12 +355,12 @@ def main(path):
     tree = Tree()
     with open(path, encoding="utf-8") as f:
         tree.feed(f.read())
+    tree.close()
     nodes = list(walk(tree.root))
     regions = {}
     for node in nodes:
-        name = node.attrs.get("data-page")
-        if name:
-            regions.setdefault(name.strip().lower(), []).append(node)
+        if page_name(node):
+            regions.setdefault(page_name(node), []).append(node)
     failed = False
     for code, name, check in (("E1", "Reader and scope", e1), ("E2", "Platforms covered", e2),
                               ("E6", "Decisions kept separate", e6), ("E11", "Plain language", e11)):
@@ -336,7 +392,7 @@ they match the expert reviewers' verdicts, and until then a reviewer may overrul
 | E8 | Shows its working | Scores and recommendations explain how they were reached, with the weights | A score with no explanation | Judgment |
 | E9 | Names what is missing | Missing data is named, with what connecting it would add | Says nothing about missing ad data | Judgment |
 | E10 | Fits the reader | A VP or budget owner sees the answer, decisions, and next steps on one screen, with "Prepared by" at the top and the detail below; a brand reader gets the client version | A VP brief that opens with the method | Judgment |
-| E11 | Plain language | No tool, agent, or system name; none of these words outside quoted text: an agent name (`atlas-...`), an Atlas tool name, Claude, Anthropic, LLM, MCP, subagent, tool call, API, JSON, endpoint, webhook, schema, embedding, runKey | "The atlas-market-signal agent found" | Script |
+| E11 | Plain language | No tool, agent, or system name; none of these words outside quoted text: an agent name (`atlas-...`), an Atlas tool name, Claude, Anthropic, LLM, MCP, subagent, tool call, API, JSON, endpoint, webhook, schema, runKey (names and acronyms match by case, so "Atlas-indexed" passes) | "The atlas-market-signal agent found" | Script |
 | E12 | Built for this question | The page's sections and visuals come from what this question and reader need | A launch timeline on a one-creator profile copied from an example | Judgment |
 
 - **Sample pages** (invented data) pass E7 by carrying the sample banner and source line from
@@ -348,7 +404,9 @@ they match the expert reviewers' verdicts, and until then a reviewer may overrul
 
 ## 7. The page check in the result
 
-End the output to the main thread with the page check, after everything else the agent returns:
+Put the page check at the end of the output to the main thread, just before the audit trail
+block, which stays last. The audit block's `outputs` line carries the one-line page check as its
+checks result.
 
 ```
 Page check: 12 of 12 pass. Fixed E3 Answer first, E5 Clear next steps.
@@ -363,11 +421,12 @@ Page check: 12 of 12 pass. Fixed E3 Answer first, E5 Clear next steps.
 ```
 
 - `checks`: `pass` (passed the first time), `fixed` (failed, fixed before publishing), or `fail`
-  (still failing at publish). Never publish with a scripted check at `fail` unless the main thread
-  said to publish anyway; say why in `stillFailing`.
+  (still failing at publish). Never publish with a scripted check at `fail` unless its reason is
+  "fixed format" or the main thread said to publish anyway; say why in `stillFailing`.
 - `stillFailing`: one entry per `fail`, as "E9 Names what is missing: {why it could not be fixed}".
 - `scripted`: `ran`, or `read` when Python was not available and E1, E2, E6, and E11 were judged
   by reading the page.
+- `question`: the `questionCode` the main thread passed, or `none`.
 - One page check per page published. A run that publishes no page returns none.
 
 The main thread relays the one line in its close-out, one line per page: the question, the link,
