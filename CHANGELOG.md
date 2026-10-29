@@ -6,6 +6,25 @@ The version lives in exactly one place: `plugins[].version` in `.claude-plugin/m
 
 ## [Unreleased]
 
+## [4.2.0] - 2026-10-29
+
+Minor release. Adds the page standard every agent page follows and checks before it is published, and fixes the next line in the Claude Code mod that the Anthropic plugin directory could not read.
+
+### Added
+- Page standard: every agent page holds the same parts (who it is for and what it covers, the answer first, up to three insights, ranked next steps, decisions kept apart, real evidence, how it was worked out, what is missing, and what Atlas can draft next) and checks itself against the reader standard (R1 to R12) before it is published. Agents load it on their own; it is not a command.
+- Each agent ends with a one-line page check, and `/aspire` offers to fix and republish a page that fails one.
+- A page for a VP puts the answer, the decisions, and the next steps on one screen with a "Prepared by" line, and a page for a client gets a client version.
+
+### Changed
+- The reader standard gains a deadline on each decision, what each next step should change, a next step for each insight, and the weights behind scores. The quality review runs the same checks (rubric 2.1) and re-judges an agent's own page check rather than trusting it.
+- A flow's fixed format still decides its layout: the PPA deck, the CAS client view, and the order form.
+
+### Fixed
+- The Claude Code mod's agents panel names a row's height `height` instead of `h`, a name the Anthropic plugin directory reserves in JSX files. Nothing changes in what the mod shows or does.
+
+### Known limits
+- Agent pages don't carry the page standard's markers yet, so its scripted checks flag current pages until each agent's page is updated.
+
 ## [4.1.2] - 2026-10-29
 
 Patch release. Fixes the line in the Claude Code mod that the Anthropic plugin directory still could not read in 4.1.1.
@@ -204,7 +223,8 @@ First public release. Versioning restarts at 1.0.0; earlier 0.x builds were inte
 - Two release channels: `aspire-atlas` (official, pinned) and `aspire-atlas-beta` (tracks `develop`).
 - Apache-2.0 license.
 
-[Unreleased]: https://github.com/aspire-atlas/claude-plugin/compare/v4.1.2...HEAD
+[Unreleased]: https://github.com/aspire-atlas/claude-plugin/compare/v4.2.0...HEAD
+[4.2.0]: https://github.com/aspire-atlas/claude-plugin/compare/v4.1.2...v4.2.0
 [4.1.2]: https://github.com/aspire-atlas/claude-plugin/compare/v4.1.1...v4.1.2
 [4.1.1]: https://github.com/aspire-atlas/claude-plugin/compare/v4.1.0...v4.1.1
 [4.1.0]: https://github.com/aspire-atlas/claude-plugin/compare/v4.0.0...v4.1.0
