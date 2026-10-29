@@ -3,7 +3,9 @@
 # reaches it (docs/PLUGIN-LIFECYCLE.md, section 10, has the findings and which ones we keep on purpose):
 #   - a mod's capability object $ is used only in the plain form the directory reads
 #     (MOD_CAPABILITY_USE_NOT_PLAIN, blocking): every helper that takes $ is a function declaration,
-#     never a const or let arrow, and $ is never wrapped in parentheses, a cast, "!", "?." or brackets
+#     never a const or let arrow, and $ is never wrapped in parentheses, a cast, "!", "?." or brackets.
+#     A callback passed with $ (update($, atom, s => ...)) uses no brackets either: 4.1.0 was blocked
+#     on `s => ({ ...s, [key]: s[key] + 1 })`, though the brackets were on the state, not on $
 #   - every text file in a plugin is small enough for the validator to read (BINARIES_NOT_INSPECTED).
 #     The directory publishes no limit. The largest file it has read is 216,907 bytes (SKILL.md in
 #     4.0.0) and the smallest it skipped 820,928 (cas-campaign.md), so a file over 256 KiB fails and
@@ -45,6 +47,7 @@ for p in $(plugin_names); do
   arrow='^[[:space:]]*(export[[:space:]]+)?(const|let|var)[[:space:]]+[A-Za-z_][A-Za-z0-9_]*[[:space:]]*=[[:space:]]*(async[[:space:]]*)?\(\$[,:)]'
   wrapped='(^|[^A-Za-z0-9_$])\(\$\)\.|\(\$[[:space:]]+as[[:space:]]|\$!|\$\?\.|\$\[|\$\.[A-Za-z_]+(\?\.|!|\[)'
   comment=':[0-9]+:[[:space:]]*(//|/\*|\*)'
+  bracketed='(update|read)\(\$,[^;]*\[[^]]+\]'
   for f in $srcs; do
     while IFS= read -r hit; do
       [ -n "$hit" ] && err "$f:${hit%%:*}: a helper that takes \$ must be a function declaration, not a const arrow"
@@ -52,6 +55,9 @@ for p in $(plugin_names); do
     while IFS= read -r hit; do
       [ -n "$hit" ] && err "$f:${hit%%:*}: write \$ as a plain \$.noun.method(...) call, with nothing wrapped around its parts"
     done <<<"$(grep -HnE "$wrapped" "$f" | grep -vE "$comment" | cut -d: -f2- || true)"
+    while IFS= read -r hit; do
+      [ -n "$hit" ] && err "$f:${hit%%:*}: a callback passed with \$ uses no brackets; move the work into a function that does not take \$"
+    done <<<"$(grep -HnE "$bracketed" "$f" | grep -vE "$comment" | cut -d: -f2- || true)"
   done
 
   # The README says what the hooks do.
