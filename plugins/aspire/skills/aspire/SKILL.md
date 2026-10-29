@@ -185,8 +185,8 @@ direct ask, `/aspire:aspire run {agent}`, a hand-off from **List agents**, a sec
    (the questions after a `propose` pass, then the `record` launch, which is another subagent).
    Check the result before telling the user it is done. Close out each published page in one
    line from the agent's page check (`skills/page-standard/SKILL.md`, section 7): the question,
-   the link, and the checks fixed or still failing by name ("Fixed E3 Answer first; still
-   failing E9 Names what is missing: no ad account connected"). When a page has no page check, or
+   the link, and the checks fixed or still failing by name ("Fixed R3 Answer first; still
+   failing R9 Names what's missing: no ad account connected"). When a page has no page check, or
    a scripted check still fails for a reason other than "fixed format", say so and offer to fix
    that page and republish it to the same link. Never rerun the whole agent for it: a rerun can
    repeat writes or spend.

@@ -16,7 +16,7 @@ The two pieces say everything the page needs to say about itself:
 - **When:** the "as of" time in the source line, which changes every time the page is republished or
   its data is refreshed. There is no separate prepared date.
 
-What a page says, part by part, and the E1 to E12 checks it passes before it is published are set
+What a page says, part by part, and the R1 to R12 checks (`reader-standard.md`) it passes before it is published are set
 by the shared skill `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`. This file sets only the
 mark and the source line.
 
@@ -156,8 +156,9 @@ and change it on every republish. Never name Claude or a model on a page, and na
 only in the "Prepared by" line the page standard sets. A sample page follows the sample variant. Files for import (CSV) and chat or mail text carry neither.
 
 Before you publish a page, read `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md` and
-follow it: the nine parts every page holds, the reader and evidence rules, and checks E1 to E12.
-Run its script for E1, E2, E6, and E11, judge the rest, and fix every fail before publishing.
+follow it: the nine parts every page holds, the reader and evidence rules, and checks R1 to R12
+from `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/reader-standard.md`. Run its script for R1, R2,
+R6, and R11, judge the rest, and fix every fail before publishing.
 Put its page check, one per page published, at the end of your output, just before the audit
 trail block.
 <!-- /agent-block -->

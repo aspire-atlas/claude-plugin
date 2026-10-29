@@ -72,7 +72,7 @@ else
     err "$PS must set user-invocable: false in its frontmatter (it is never a command)"
   grep -qF 'skills/page-standard/SKILL.md' <<< "$canon" || err "the agent block does not link skills/page-standard/SKILL.md"
   [ -f "$FX/pass.html" ] || err "$FX/pass.html is missing (the page check needs a page that passes)"
-  # The script's tool list matches the Atlas tool contract, so E11 catches every tool name.
+  # The script's tool list matches the Atlas tool contract, so R11 catches every tool name.
   listed=$(awk '/^TOOLS = frozenset\("""/{f=1;next} f&&/^"""/{f=0} f' "$PS" | tr -s ' ' '\n' | sed '/^$/d' | sort -u)
   known=$(jq -r '.surfaces[] | keys[]' contract/atlas-mcp-tools.json | sort -u)
   [ "$listed" = "$known" ] || err "$PS's TOOLS list differs from contract/atlas-mcp-tools.json: $(diff <(echo "$known") <(echo "$listed") | grep '^[<>]' | tr '\n' ' ')"
@@ -86,12 +86,12 @@ else
       out=$(python3 -I "$tmp/page_check.py" "$f" 2>&1) && code=0 || code=$?
       case $(basename "$f" .html) in
         pass*) [ "$code" -eq 0 ] || err "page check fails $f, which should pass: $out" ;;
-        fail-e[0-9]*)
-          want=$(basename "$f" .html | sed -E 's/^fail-e([0-9]+).*/E\1/')
+        fail-r[0-9]*)
+          want=$(basename "$f" .html | sed -E 's/^fail-r([0-9]+).*/R\1/')
           [ "$code" -eq 1 ] || err "page check exits $code on $f, which should fail $want: $out"
           grep -q "\"check\": \"$want\", .*\"result\": \"fail\"" <<< "$out" || err "page check does not fail $want on $f"
           [ "$(grep -c '"result": "fail"' <<< "$out")" -eq 1 ] || err "page check should fail only $want on $f: $out" ;;
-        *) err "$f is named neither pass*.html nor fail-eN*.html" ;;
+        *) err "$f is named neither pass*.html nor fail-rN*.html" ;;
       esac
     done
   else
