@@ -11,7 +11,7 @@ In Claude Code:
 /plugin install aspire@aspire-atlas
 ```
 
-The repository [README](../../README.md) covers the Claude app and the beta channel.
+The repository [README](https://github.com/aspire-atlas/claude-plugin#readme) covers the Claude app and the beta channel.
 
 ## Components
 

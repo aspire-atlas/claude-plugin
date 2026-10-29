@@ -15,7 +15,8 @@
 #   - a plugin with a mod says in its README what its hooks do (MOD_ANSWERS_FOR_TOOL,
 #     MOD_HOOKS_OPERATION, MOD_HOOKS_POLICY_EVENT): each tool it registers, each prompt, message
 #     and agent event it hooks, and the tools it answers itself
-#   - every skill's description is at most 1,024 characters, the skill spec's limit
+#   - every skill's description is at most 1,024 characters, the skill spec's limit. The directory
+#     has not flagged this, but a reviewer or a later scan can, so it is held here too
 # plugin.json carrying no version is check-channel.sh's rule, kept on purpose; it is not checked here.
 #
 #   scripts/check-directory.sh
@@ -43,20 +44,33 @@ for p in $(plugin_names); do
   done < <(find "$src" -type f ! -name '*.png' ! -name '*.jpg' ! -name '*.jpeg' ! -name '*.gif' ! -name '*.webp' \
     ! -name '*.ico' ! -name '*.woff' ! -name '*.woff2' ! -name '*.ttf' ! -name '*.otf' | sort)
 
-  # Skill descriptions within the skill spec's limit, read as YAML folds them: a > block's lines
-  # joined by single spaces, quotes around a one-line value dropped.
+  # Skill descriptions within the skill spec's limit, read as YAML folds them: continuation lines
+  # (of a > or | block, or of a wrapped plain or quoted value) joined by single spaces, a blank
+  # line kept as one newline, and quotes around the value dropped. wc -m counts characters, not
+  # bytes, so curly quotes and accents count once.
   while IFS= read -r f; do
-    len=$(awk '
-      NR == 1 && /^---$/ { fm = 1; next }
-      fm && /^---$/ { exit }
+    desc=$(awk '
+      { sub(/\r$/, "") }
+      NR == 1 && /^---[[:space:]]*$/ { fm = 1; next }
+      fm && /^---[[:space:]]*$/ { exit }
       fm && /^description:/ {
+        found = 1; cont = 1
         v = $0; sub(/^description:[[:space:]]*/, "", v)
-        if (v ~ /^[>|]/) { block = 1; next }
-        gsub(/^["'\'']|["'\'']$/, "", v); d = v; next
+        if (v !~ /^[>|]/) d = v
+        next
       }
-      fm && block && /^[[:space:]]+/ { v = $0; sub(/^[[:space:]]+/, "", v); d = (d == "" ? v : d " " v); next }
-      fm && block { block = 0 }
-      END { print length(d) }' "$f")
+      fm && cont && /^[[:space:]]*$/ { d = d "\n"; next }
+      fm && cont && /^[[:space:]]+/ {
+        v = $0; sub(/^[[:space:]]+/, "", v)
+        d = (d == "" || d ~ /\n$/ ? d v : d " " v); next
+      }
+      fm && cont { cont = 0 }
+      END {
+        if (!found) exit 1
+        sub(/\n+$/, "", d); gsub(/^["'\'']|["'\'']$/, "", d)
+        printf "%s", d
+      }' "$f") || { err "$f: no description in its frontmatter"; continue; }
+    len=$(printf '%s' "$desc" | LC_ALL=C.UTF-8 wc -m | tr -d ' ')
     [ "$len" -le "$MAX_DESC" ] || err "$f: description is $len characters, over the $MAX_DESC the skill spec allows"
   done < <(find "$src/skills" -name SKILL.md 2>/dev/null | sort)
 

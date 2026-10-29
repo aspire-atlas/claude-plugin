@@ -1,18 +1,17 @@
 ---
 name: aspire
 description: >
-  Creative Intelligence on Aspire Atlas for brand, social, and influencer marketing teams.
-  Connect Instagram, TikTok, and YouTube to see what's working, benchmark competitors, and
-  check brand safety. Find, vet, and brief creators, review posts, run an influencer program
-  from outreach to payments, pitch partnership ads, track what creators say about you vs.
-  competitors, and get daily, weekly, and quarterly reports for whoever acts on them. Use for
-  "/aspire", "/aspire agents", "/aspire getting started", "/aspire help", "/aspire quality
-  review", "get started with Atlas", "connect my Instagram", "how did last week go", "find
-  creators for the campaign", "vet these creators", "review this post",
-  "best hooks to reuse as ads", "build a PPA pitch", "start the CAS campaign for {brand}",
-  "set up our influencer program", "what do we owe creators", "TikTok Shop", "what should we
-  do next", or any short, vague ask about creators, posts, or reports, which the prompt coach
-  tightens first.
+  Creative Intelligence on Aspire Atlas for brand, social, and influencer marketing teams:
+  connect Instagram, TikTok, and YouTube, see what's working, benchmark competitors, check
+  brand safety, find, vet, and brief creators, review posts, run influencer programs and creator
+  ad campaigns, and get reports for whoever acts on them. Use for "/aspire" (with agents, help,
+  getting started, fee calculator, or quality review), "what can /aspire do", "first time with
+  Atlas", "connect Atlas", "connect my Instagram", "how did last week go", "schedule the weekly
+  readout", "find creators for the campaign", "vet these creators", "review this post", "best
+  hooks to reuse as ads", "build a PPA pitch", "start the CAS campaign for {brand}", "where is
+  the {brand} campaign", "pull the client's decisions", "set up our influencer program", "where
+  is the {program} program", "what do we owe creators", "TikTok Shop", "what should we do
+  next", or a short, vague ask ("find me people"), which the prompt coach tightens first.
 metadata:
   author: Aspire
 ---
