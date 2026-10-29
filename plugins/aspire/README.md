@@ -75,6 +75,8 @@ Plugin skills are namespaced, so the canonical command is `/aspire:aspire`. The 
 - Starter guide: once Atlas is connected, an organization that hasn't finished onboarding (no brand profile, no linked account, or no brand context yet) gets a private page that explains /aspire, the jobs it does and who each is for, the setup steps ahead and what each asks, what stays safe, and five prompts to try. Onboarding then continues as usual. Ask "what can /aspire do" any time to see it again.
 - Account review: the first-insights phase asks which account to cover - the brand's connected accounts, or a network and handle the user types. A typed handle that Atlas does not hold, or holds from more than 24 hours ago, is fetched through Aspire discovery first; naming the handle is the approval for that fetch.
 - `/aspire:aspire polish` (also "improve my prompt") coaches a weak ask: it names what is missing in a short verdict, asks the two gaps that matter most, and rewrites the prompt with `[placeholders]`. It also runs on its own before a flow launches when an ask is missing key inputs, so a vague ask like "find me people" is tightened first without `polish`. Say "just run it" to skip it. It never runs in scheduled runs or for routine asks, and it writes nothing to Atlas.
+- `/aspire:aspire` is the only way in: it reads who is asking and who will act on the answer, loads the brand's memory and your own, picks the agent that owns the job, and asks everything it needs in one picker round, repeating your question back first so you can correct it. Every agent returns the same result packet, and `/aspire` confirms what it proposes by level: reads run without asking, saves are confirmed once per batch, each message, order, or payment is confirmed on its own, and anything that uses extra credits states the cost first. Up to three questions can run at once.
+- Shortcuts go straight to a job and keep every confirmation: `/aspire:aspire vet`, `list review`, `campaign`, `content review`, `payments`, `reports`, and `account`.
 - `/aspire:aspire agents` lists every subagent in the plugin with a one-line purpose and its trigger phrases, then asks which one to run and hands off to that agent's flow (connection check, profile, and confirmations included). Read from the `agents/` folder at run time, so it stays current as agents are added. No Atlas connection is needed to see the list; picking an agent starts one.
 - Trigger phrases: "get started with Atlas", "connect Atlas", "onboard my brand", "connect my Instagram to Atlas".
 - Creator brief: "create a content brief for next week", "find creators to make this", "what should we post next week". Runs the `atlas-creator-brief` agent for a connected brand. Marketplace discovery is only run with the user's explicit choice.
@@ -118,7 +120,7 @@ Readouts are designed to run on a schedule. The skill offers to create both sche
 Daily prompt:
 
 ```
-Run the Atlas daily insights report for {brand} (handles: {@handle1 on instagram, @handle2 on tiktok}).
+/aspire:aspire reports daily. Run the Atlas daily insights report for {brand} (handles: {@handle1 on instagram, @handle2 on tiktok}).
 Use the Aspire Atlas connection, find {brand}'s Atlas profile by name, and use the brand's saved readout calibrations for the window,
 thresholds, lead metric, and delivery routing. Launch the atlas-daily-insights-report agent in
 unattended mode. Do not ask questions. Do not state today's date in the launch message; the
@@ -130,7 +132,7 @@ card and stop. Deliver only to the destinations saved in the brand's readout rou
 Weekly prompt:
 
 ```
-Run the Atlas weekly insights report for {brand} (handles: {@handle1 on instagram, @handle2 on tiktok})
+/aspire:aspire reports weekly. Run the Atlas weekly insights report for {brand} (handles: {@handle1 on instagram, @handle2 on tiktok})
 for the previous Monday to Sunday. Use the Aspire Atlas connection, find {brand}'s Atlas profile by name, and use the brand's saved
 readout calibrations for thresholds, lead metric, audience, and delivery routing. Launch the
 atlas-weekly-insights-report agent in unattended mode. Do not ask questions. Do not state today's date
@@ -152,7 +154,7 @@ destinations saved in the brand's readout routing.
 The market signal runs weekly, ideally an hour before the weekly readout so the readout's product and marketing sections carry this week's run. Same prerequisites as the readouts, plus market signal setup completed once. Name the task `Atlas market signal: {brand}`.
 
 ```
-Run the Atlas market signal for {brand} (handles: {@handle1 on instagram}). Use the Aspire
+/aspire:aspire run the Atlas market signal for {brand} (handles: {@handle1 on instagram}). Use the Aspire
 Atlas connection, find {brand}'s Atlas profile by name, and use the brand's saved market signal calibrations for the competitors, topics,
 readers, and delivery routing. Launch the atlas-market-signal agent in unattended mode. Do not
 ask questions. Do not start any discovery. Do not state today's date in the launch message;
@@ -169,7 +171,7 @@ The discovery agent runs on its own two schedules, set from `campaign:{slug}-cad
 Discovery prompt:
 
 ```
-Run the Atlas creator discovery for {brand}, campaign {campaign-slug} (handles: {@handle1 on
+/aspire:aspire run the Atlas creator discovery for {brand}, campaign {campaign-slug} (handles: {@handle1 on
 instagram}). Use the Aspire Atlas connection, find {brand}'s Atlas profile by name, and use the campaign's saved calibrations for the
 criteria, pool target, and delivery routing. Launch the atlas-creator-discovery agent in
 unattended mode with job discover to fill the shortlist back to target. Do not ask questions. Do not record
