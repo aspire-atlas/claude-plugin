@@ -347,7 +347,7 @@ are answered by the launch. R3 is skipped: the campaign's saved cadence approves
 lanes (SKILL.md, **Guardrails**). R4 is answered by the CAS Run picker.
 
 **Fit score for a creator-ads lane** is the campaign's match score, out of 100: the one procedure
-in `cas-campaign.md`, **1d**, **Creator Selection**, **The match score**, with the lane's concept,
+in `cas-campaign-page-brief.md`, **Creator Selection**, **The match score**, with the lane's concept,
 the round's casting keywords and target cities, and the weights saved in `match` in
 `campaign:{slug}-cas` (the defaults there without it). Vetting runs it so its page and the
 campaign page show the same number for the same inputs. When `match` has a `basis`, the page says

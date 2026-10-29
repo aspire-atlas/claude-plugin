@@ -88,10 +88,14 @@ Never ask who the output is for in plain text, and never ask more than once per 
   lens ("Also for PMM"), at most five bullets each, built from the same analysis. Pull more
   data only when a lens needs a field the primary did not (a transcript for a cut list).
 - **Name what the reader needs but Atlas doesn't hold.** Spend, conversions, usage rights,
-  product telemetry: list them under data gaps and never infer them.
+  product telemetry: list them under data gaps and never infer them. On a page shared outside
+  the team (`artifact-standard.md`, section 2, **No platform disclosures**), name them only to
+  the requester in chat; the page may ask the reader to share their own figures as a next step,
+  never saying Atlas lacks them.
 - **End with a forward note.** The chat summary closes with two or three lines the requester
   can paste to the reader as they are: what it says, what it means for their decision, and the
-  page link. Plain text, Slack-ready, no internal names. Skip it for lens `team`.
+  page link. Plain text, Slack-ready, no internal names, and nothing about Atlas errors or
+  missing data. Skip it for lens `team`.
 - **Save the lens with the findings.** Every finding an agent writes carries
   `detail.recipient` = `{team, decision}` of the primary lens, and `detail.lens` on a finding
   written for a secondary lens. Later runs, the weekly lenses, and the quarterly roll-up read

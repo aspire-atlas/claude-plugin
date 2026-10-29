@@ -3,9 +3,9 @@ name: aspire
 description: >
   Creative Intelligence for your brand on Aspire Atlas. Connect Instagram, TikTok, and
   YouTube, see what's working, benchmark competitors, and check brand safety. Find and brief
-  creators, keep a campaign shortlist, review posts, run an influencer program from outreach to payments, track what creators say about you vs.
+  creators, keep a campaign shortlist, review posts, check a page or deck against the reader standard before it's shared, run an influencer program from outreach to payments, track what creators say about you vs.
   competitors, and get daily, weekly, and quarterly reports shaped for whoever will act on
-  them. Use for "/aspire", "/aspire agents", "/aspire getting started", "/aspire help", "get started with Atlas", "what can /aspire do",
+  them. Use for "/aspire", "/aspire agents", "/aspire getting started", "/aspire help", "/aspire quality review", "review this deck", "is this ready to send", "get started with Atlas", "what can /aspire do",
   "first time with Atlas", "connect Atlas",
   "onboard my brand", "connect my Instagram", "what happened yesterday", "how did last week
   go", "schedule the weekly readout", "find creators for the campaign", "refill the
@@ -69,6 +69,7 @@ Text after the command is the argument. Route on it before anything else:
 | `cas campaign` (also `creator ad campaign`, `campaign manager`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **CAS campaign** below. Skip the other phases. |
 | `dashboard` (also `show the dashboard`, `my dashboard`, `where do we stand`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Organization dashboard** below, on any organization. Skip the other phases. |
 | `shops` (also `shop`, `instagram shop`, `tiktok shop`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Shops** below. Skip the other phases. |
+| `quality review` (also `review this deck`, `audit this deck`, `review this page`, `is this ready to send`, `check this before I share it`) | Run **Quality review** below. It needs no Atlas connection unless the user wants the work's Atlas figures re-checked, so skip the phases until then. |
 | `polish` (also `improve my prompt`, `coach`, `tighten this prompt`) | Run **Prompt coach** below. It needs no Atlas connection, so skip the phases until "Run it now" hands the rewritten ask to a flow. |
 | empty, or anything else | Run the phases in order, starting at Phase 1. Treat the text as context. On an unconfigured organization, Phase 2 + 3 publishes the first-run guide before the next phase (**First-run guide** there). With nothing after the command, a configured organization ends Phase 2 + 3 at **Organization dashboard**. |
 
@@ -128,6 +129,7 @@ time so it never goes stale; never recite it from memory.
    | `atlas-campaign-orchestrator` | Phase 1, then Phase 2 + 3, then **Orchestrator** (Setup if it has never run) |
    | `atlas-shops` | Phase 1, then Phase 2 + 3, then **Shops** (its shop and stage questions first) |
    | `atlas-org-dashboard` | Phase 1, then Phase 2 + 3, then **Organization dashboard** (its publish question first) |
+   | `atlas-quality-review` | **Quality review** (it asks for the work to review first; Phase 1 and Phase 2 + 3 only when the Atlas re-check is wanted) |
 
    Answers the **Prompt coach** already collected carry into the hand-off row (**Prompt coach**,
    Carry-over).
@@ -215,6 +217,7 @@ wants it can still say "use Haiku".
 | `atlas-ppa-pitch` | inherit | Casting, rights package, and investment in a client-facing slide deck |
 | `atlas-quarterly-signal` | inherit | Leadership's one-page story rolled up from a quarter of saved findings |
 | `atlas-campaign-orchestrator` | inherit | Ranks next actions across every record; its page drives approved actions |
+| `atlas-quality-review` | inherit | Its verdict decides whether work reaches a client, a creator, or leadership |
 | `atlas-profile-analyst` | sonnet | Reads one account's posts and ranks patterns against stated medians |
 | `atlas-ad-reuse` | sonnet | Scores hooks from numbers and frames by a fixed rubric; rights come from saved records |
 | `atlas-creator-profile` | sonnet | One creator's page from held data and the fee calculator; writes nothing |
@@ -365,7 +368,7 @@ pulse and a section per reader, schedulable), the **Market signal** (what creato
 the brand vs. competitors, schedulable), and the **Quarterly signal** (the quarter's story for
 leadership). The **Creator profile** gives one creator's full page on request, **Ad reuse**
 ranks hooks and builds a cut list, and the **PPA pitch** builds a casting deck for paid
-partnership ads. The **Orchestrator** checks in every hour, ranks what to do next across
+partnership ads. The **Quality review** checks any page or deck before it is shared. The **Orchestrator** checks in every hour, ranks what to do next across
 all of it on one Next actions page, and carries out what an Editor approves there. Every request is read for who will act on it first
 (**Reading the ask**). Each is routed from its own
 section below. The **Theme** section brands all of their pages,
@@ -1371,7 +1374,7 @@ enabled for scheduled tasks. Unattended runs follow `references/program.md` **9*
 
 Trigger when a program creator needs a deal worked out: an offer for creators who said they're
 interested, an answer to a counter or a question about the deal, an ambassador renewal, or a
-change the brand wants to an agreed deal ("negotiate with @handle", "she asked for $2,000",
+change the brand wants to an agreed deal ("negotiate with @handle", "she asked for USD 2,000",
 "make offers to the creators who said yes", "what should we offer", "is this rate fair", "renew
 our ambassadors", "raise @handle's commission", "move @handle to paid", "extend usage on
 @handle's Reel"). Also reached from the
@@ -1772,7 +1775,7 @@ details; not saved") and never repeat what was removed. Never ask for them.
    - **G5**, header "Your call", one per item the agent raised, exactly as worded: the
      recommended answer first (Recommended), the alternatives, "Decide later".
    - **G1**, header "Lines": "Save these ledger lines for {program}? {n} new, {r} revised, {v}
-     void. @a: paid fee $1,200, due Nov 6; @b: October fee $800; and {n-2} more." Options: "Save
+     void. @a: paid fee USD 1,200, due Nov 6; @b: October fee USD 800; and {n-2} more." Options: "Save
      the lines (Recommended)", "Change something", "Page only".
 3. "Change something" relaunches `pass: propose` with the change. "Page only" stops. Otherwise
    relaunch with `pass: record`, the `ledger-packet`, and the answers.
@@ -1982,7 +1985,7 @@ requests need a person to approve them, and stop.
    `AskUserQuestion` call, skipping any with nothing to ask:
    - S1 (`rights`, `renewal`, `ugc`), header "Requests": "Save these {rights requests, renewals,
      or asset requests} for {program}? {n} drafts go on the creators' rows." with each creator
-     named in one line ("@a: 2 Reels, paid usage on Meta ads for 90 days, $300"; "@b: let lapse,
+     named in one line ("@a: 2 Reels, paid usage on Meta ads for 90 days, USD 300"; "@b: let lapse,
      pull from ads by Nov 3"). Options: "Save the requests (Recommended)", "Change something",
      "Page only".
    - S2, header "Your call", one per open item, exactly as the agent worded it: the recommended
@@ -1990,7 +1993,7 @@ requests need a person to approve them, and stop.
    - S3 (`replies`), header "Record": "Record these {n} replies for {program}?" (add "and pass
      {k} fees owed to the ledger" when a grant carries a fee) with each named in one line,
      including the proof ("@a: granted paid usage on Meta ads for 90 days from
-     Oct 7, $250, proof: email reply Oct 7"). Options: "Record them (Recommended)", "Change
+     Oct 7, USD 250, proof: email reply Oct 7"). Options: "Record them (Recommended)", "Change
      something".
    - S4, header "Mailbox", only when the program's mail setting names a live mailbox that can
      draft and some drafts go by email: "Create {n} drafts in your {Gmail or Outlook} for @a,
@@ -2023,9 +2026,10 @@ campaign for {brand}", "where is the {brand} campaign", "what's next on {campaig
 creators for approval", "pull the client's decisions", "record a reply", "send the details
 emails", "send the briefs to creators", "log a delay"). Requires a brand profile with a linked
 Instagram or TikTok channel. Full detail lives in `references/cas-campaign.md`: the page
-vocabulary, the state model, the setup interview, the dispatch table, the gate packets, the
-campaign page and its page data, creator details and shipping, the creator's turn on the brief,
-and the unattended rules. Hook and CTA recommendations, and the hook review between rounds, live
+vocabulary, the state model, the setup interview, the dispatch table, the gate packets, creator
+details and shipping, the creator's turn on the brief, and the unattended rules. The campaign
+page and its page data are in the `references/cas-campaign-page*.md` and
+`references/cas-campaign-data.md` files its **1d** lists. Hook and CTA recommendations, and the hook review between rounds, live
 in `references/hooks-and-ctas.md`.
 
 The Campaign Manager conducts the campaign from approved concepts through sourcing, negotiation,
@@ -2837,8 +2841,119 @@ yourself. Relay the link, the holiday used, and the line on what the real run ad
 "Run {agent} for your brand?" Options: "Run it now (Recommended)" / "Not now". "Run it now" hands
 off to that agent's section, starting at Phase 1.
 
-Samples never offer the decision audit and keep no decision log. A sample page carries the mark and
+Samples never offer the quality review or the decision audit, and keep no decision log. A sample page carries the mark and
 the sample footnote variant per `references/artifact-standard.md`.
+
+---
+
+## Quality review (is this page or deck ready to send?)
+
+Trigger on `/aspire:aspire quality review`, on asks like "review this deck", "audit this deck", "is
+this ready to send", or "check this page before I share it", and on "Review it" in the offer below.
+It checks one finished piece of work: any page this plugin published, or a pitch, proposal, brief,
+or report the brand made elsewhere. Full detail lives in `references/quality-review.md`: how the
+target is read, which checks apply, the rubric (including data access and live pages, the reader
+standard in `references/reader-standard.md`, and media and links), pass or fail on every check,
+severity and verdict, the writing rules, the page, the output, grade mode, and the review log.
+
+The review reads and reports. It never edits the work, never writes to Atlas, and never starts
+discovery work, so it needs no write confirmation. Its only other write is one row in the
+organization's own review log, when the organization saved one (**Review log** below). It is
+interactive only: never schedule it, and never run it in an unattended session. Another skill in an
+interactive session may launch the agent with `mode: grade` to grade a draft (`quality-review.md`,
+**9**): it builds no page, logs nothing, and returns the grade to that skill.
+
+### Run
+
+1. **The work.** Use the link or file the user gave. Without one, ask with `AskUserQuestion`,
+   header "Review": "What should I review?" Options: "{the newest page published in this session}
+   (Recommended)" when there is one, "A Google Slides, Docs, or Drive link (paste it in the box)",
+   "A file or a Claude artifact link (attach or paste it)". Naming or pasting a
+   link is the approval to read that one file. A Drive file is read through the Drive connector;
+   when the connector returns no text and the session has a browser the user is signed in to, the
+   agent reads the deck's HTML view, read only (`quality-review.md`, **2**).
+2. **Who reads it, and against what.** One `AskUserQuestion` call, skipping what the user already
+   said, with the **Reading the ask** confirmation folded into the first question:
+   - header "For": "Who will see it?" Options: the reader the ask names (Recommended), "A client",
+     "A creator", "Our team or leadership"; the free text takes "the public". The answer sets
+     `audience` (`quality-review.md`, **1**) and, with the ask, `recipient`.
+   - header "Brief": "Should it answer a brief or RFP?" Options: "Yes (paste or link it in the
+     box)", "No, judge it on its own purpose". A plugin page gets the original request and the
+     flow's answers as its brief without asking.
+   - header "Atlas", only when Atlas is connected in this session or the work is a plugin page:
+     "If it cites Atlas figures, re-check them? Read only." Options: "Re-check them
+     (Recommended)", "Skip". The agent skips the re-check when the work cites none. "Re-check them"
+     runs Phase 1 and Phase 2 + 3 first, when they have not run this session, only to confirm the
+     connection and pick the brand profile: skip the other phases and every offer.
+3. **Launch** `atlas-quality-review` (**Running agents**, in a subagent) with `target`, `kind`
+   (`plugin` or `external`), `flow` for a plugin page, `brief`, `recipient`, `audience`, the tool
+   prefix, `profile_id` and `profile_slug` whenever the session has a profile, `recheck` (`true` on
+   "Re-check them"), `run: interactive`, `publish: artifact`, `log`, and
+   `earlier_review` (the earlier review's link) when the same work was reviewed before, ending with
+   the decision-audit line. For `log`: when Atlas is connected and the session has a profile
+   (whatever the "Atlas" answer was), find the key `quality-review:log` with `search_calibrations`
+   (no filter, limit 100 per page, paged to the end; read only) just before launching and pass its
+   `body`; with no record, no
+   profile, or no connection, pass `none`. Never ask about the log during a review.
+4. **Relay** the page link, the verdict and its reason, the failed checks, each Critical finding in
+   one line, the data access line, and the not verified and coverage lines (what the review could
+   not check or see). Say once that the review is for the team, and name any private link or file
+   the reader will not be able to open until it is shared. Keep the `quality_review_fixes` block for
+   step 5; never show the JSON.
+5. **Next.** Ask once with `AskUserQuestion`, header "Next": "Review it again after the fixes?"
+   Options: "Not now (Recommended)", "Apply the fixes (sends them to {flow})" for a plugin page with
+   findings, "Review it again". "Apply the fixes" relaunches the agent that built the page
+   (**Running agents**) with the same inputs as its last run, plus a closing paragraph in the launch
+   message headed "Review fixes": each fix from the `quality_review_fixes` block in one plain line
+   (`{id}, {place}: {fix}`), and "Rebuild the page applying these fixes where your own rules allow,
+   publish with `url` set to {page link}, and list any fix you did not apply, with the reason."
+   Every question and write confirmation the flow's own run asks is asked again first; a write the
+   original run made is not repeated unless a fix changes it. For a page the main thread built
+   itself (**Visual output**), the main thread applies the fixes the same way. Relay the fixes the
+   agent did not apply, and then this step is asked again. External work gets no apply option; its fixes stay a
+   list. "Review it again" relaunches with `earlier_review`, so the page marks each finding fixed,
+   still open, or no longer applies.
+6. **Adjustments.** When a review log is saved and the user disputes a finding ("that's fine", "not
+   a real issue") or names one the review missed, add one row to the log's adjustments
+   (`quality-review.md`, **10**) with the user's reason and the check id (or `new`). Only a reply
+   that clearly disputes or adds a finding counts. Confirm first with `AskUserQuestion`, header
+   "Log": "Add this to {brand}'s review log? {check}: \"{the reason, as the row will read}\""
+   Options: "Add it (Recommended)", "Don't log it". It writes nothing to Atlas. Without a saved log,
+   nothing is written and nothing is asked.
+
+### Review log
+
+An organization can keep a log of its reviews in a Claude Doc of its own, so its reviewers can
+grade the review's calls (`quality-review.md`, **10**). It is off unless someone asks for it ("log
+our quality reviews to {doc}"). Needs a brand profile. The saved log is always a Doc link everyone
+on the team can open: a local file path exists on one computer only, so it is never saved for the
+organization. Someone who names a local file gets it for that one review only (passed as
+`log: file:{path}`), and is told so in one line. Confirm with `AskUserQuestion`, header "Log": "Add
+a row to {doc} after every quality review for {brand}? Each row has the verdict and failed checks,
+with columns left for your reviewers." Options: "Log reviews there (Recommended)", "Not now". On
+yes, write `quality-review:log` with `append_calibration` (`policy`, `{area: "routing", body:
+"docs:{link}"}`, `provenance: "interview"`); a `key-exists` follows the Phase 5 supersede rule. Turning it off is `retract_calibration` with its
+own confirmation. Never suggest a log the organization did not name.
+
+### The offer
+
+When real work ends in a published page, ask once, after the flow's own follow-up questions: an
+agent's page (any agent result that returns the link of a page it published, other than a
+sample or a quality review's own page),
+or a page the main thread built (**Visual output**, a deck it exported). Ask it in one
+`AskUserQuestion` call with the decision audit offer as the second question when that offer
+applies (**Decision audit**), so neither waits on the other. The review question: header
+"Review", "Run a quality review on {page title} before you share it?" Options: "Review it for
+{who the page's audience line names: our team, or the client or creator} (Recommended)", "Review
+it for someone else (say who in the box)", "Not now". Either "Review it" runs **Run** from step 3
+with `kind: plugin`, the flow, the page link, the flow's `recipient`, `audience` from the answer
+(`quality-review.md`, **1**), `brief` set to the user's original request and the flow's answers,
+the session's profile, and `recheck: true` when Atlas is connected. The review runs in the
+background; its result and its **Next** question come when it finishes.
+
+Ask at most once per page per session, and again after a revision or export of the same page only
+if the user reviewed it before ("Review it again"). Never offer it in an unattended run, for a
+sample, for the review's own page, the audit page, the starter guide, or a "setup needed" card.
 
 ---
 
@@ -2861,11 +2976,13 @@ call, judgement, and open decision behind it. The instructions live in
   agent returns; never show it to the user.
 
 **The offer.** When an agent's real work (never a sample) ends in a published page (a deck, a brief, a shortlist, a
-review, a readout, a profile), and after the flow's own follow-up questions, ask once with
+review, a readout, a profile), and after the flow's own follow-up questions, ask once, as the second
+question in the quality review offer's call when that offer is made (**Quality review**, The offer), with
 `AskUserQuestion`, header "Audit": "Would you like an audit of the decisions and tools behind
 {page title}?" Options: "Build the audit page (Recommended)" / "Not now". Ask again after a later
 revision or export of the same work only if the user built an audit for it; then the update
-option is "Update the audit page". Never ask in an unattended run; scheduled runs keep no log.
+option is "Update the audit page". Never ask in an unattended run; scheduled runs keep no log. Never
+offer an audit of a quality review's own page.
 
 **Building it.** Launch a general-purpose subagent with: "Read and follow
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/decision-audit.md`.", then the inputs the
@@ -3075,8 +3192,10 @@ The watch list is the brand's saved creators, outside any campaign.
   They never start discovery work, interactive or unattended.
 - Creator fees come only from the fee calculator (**Fee calculator**). No price is shown when
   the data behind it is missing.
-- After an agent's work ends in a published page, offer the decision audit (**Decision audit**).
-  The audit records what happened; it never re-decides, re-runs, or writes to Atlas.
+- After real work ends in a published page, offer the quality review (**Quality review**); after
+  an agent's page, the decision audit next (**Decision audit**). The review reads and reports; it never edits the
+  work or writes to Atlas. The audit records what happened; it never re-decides, re-runs, or
+  writes to Atlas.
 - Every agent runs in a subagent (**Running agents**), started in the background so the user
   can run more than one in the thread. Questions and write confirmations stay in the main
   thread, before the launch or when the result arrives.

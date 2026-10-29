@@ -371,6 +371,10 @@ page for creators.
 **The key `library:cadence` belongs to the content library** (`program.md`, **Brand-wide
 library**). It is a `policy` record; every other flow drops `library:` keys the same way.
 
+**The key `quality-review:log` belongs to the quality review** (`quality-review.md`, **10**): where
+the organization keeps its own review log. It is a `policy` record; every other flow drops
+`quality-review:` keys the same way.
+
 **Read every page.** `limit 100` on `search_calibrations` is the page size, not a cap. Pass
 each response's `nextCursor` back as `cursor` until none is returned, then filter. Lessons,
 hard rules and superseded versions keep growing, so a single page can miss the records a

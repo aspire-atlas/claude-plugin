@@ -41,6 +41,8 @@ bash scripts/check-tool-contract.sh
 bash scripts/check-agent-roster.sh
 bash scripts/check-artifact-standard.sh
 bash scripts/check-palette.sh
+bash scripts/check-skill-args.sh
+bash scripts/check-directory.sh
 ```
 
 Try the plugin from a checkout in Claude Code:

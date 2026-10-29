@@ -174,14 +174,14 @@ let ticker: { cancel: () => void } | null = null
 const band: { renders: number; surface: string | null; crab: Character | null } = { renders: 0, surface: null, crab: null }
 const pickCrab = (): Character => AGENT_CHARACTERS[Math.floor(Math.random() * AGENT_CHARACTERS.length)] as Character
 
-const tick = async ($: EngineInterface): Promise<void> => {
+async function tick($: EngineInterface): Promise<void> {
   const at = await $.clock.now()
   await syncStatus($)
   const t = await read($, turn)
   if ((await read($, agents)).some(a => a.status === 'running') || (t && t.end === undefined)) await update($, now, () => at)
 }
 
-const startTicking = ($: EngineInterface): void => {
+function startTicking($: EngineInterface): void {
   if (ticker) return
   ticker = $.clock.every(1000, () => {
     tick($).catch(() => undefined)
@@ -202,7 +202,9 @@ async function activate($: EngineInterface, kind: TriggerKind, detail: string): 
 
 type Count = 'prompts' | 'skillTools' | 'progressReports' | 'atlasResults' | 'agents'
 
-const count = ($: EngineInterface, key: Count) => update($, seen, s => ({ ...s, [key]: s[key] + 1 }))
+async function count($: EngineInterface, key: Count): Promise<void> {
+  await update($, seen, s => ({ ...s, [key]: s[key] + 1 }))
+}
 
 async function reset($: EngineInterface): Promise<void> {
   ticker?.cancel()
@@ -231,7 +233,7 @@ async function reset($: EngineInterface): Promise<void> {
 }
 
 // The progress line under the prompt, for when the band is not drawn. One per plugin; cleared as soon as the band shows or the run ends.
-const setStatus = async ($: EngineInterface, text: string | undefined, force = false): Promise<void> => {
+async function setStatus($: EngineInterface, text: string | undefined, force = false): Promise<void> {
   try {
     if (!force && (text ?? null) === (await read($, statusLine))) return
     // The state holds JSON, so "no line" is null there.
@@ -241,7 +243,7 @@ const setStatus = async ($: EngineInterface, text: string | undefined, force = f
     // A convenience.
   }
 }
-const syncStatus = async ($: EngineInterface): Promise<void> => {
+async function syncStatus($: EngineInterface): Promise<void> {
   try {
     const p = (await isOn($)) ? await read($, progress) : null
     const isFallback = !!p && !p.isFinished && band.renders === 0 && !(await read($, isBandHidden))
@@ -264,7 +266,7 @@ const syncStatus = async ($: EngineInterface): Promise<void> => {
 }
 
 /** Panel rows still `running` that the engine no longer lists end here: done when it says completed, failed otherwise. */
-const reconcileAgents = async ($: EngineInterface): Promise<void> => {
+async function reconcileAgents($: EngineInterface): Promise<void> {
   try {
     if (!(await read($, agents)).some(a => a.status === 'running')) return
     const listed = await $.agent.list()
@@ -284,7 +286,7 @@ const reconcileAgents = async ($: EngineInterface): Promise<void> => {
   }
 }
 
-const isOn = async ($: EngineInterface): Promise<boolean> => {
+async function isOn($: EngineInterface): Promise<boolean> {
   try {
     return await read($, isActive)
   } catch {
@@ -293,7 +295,7 @@ const isOn = async ($: EngineInterface): Promise<boolean> => {
 }
 
 /** The /aspire flow now reporting progress (the skill has not finished it), or null: what the question dialog and the spinner speak of. */
-const flowOf = async ($: EngineInterface): Promise<Progress | null> => {
+async function flowOf($: EngineInterface): Promise<Progress | null> {
   try {
     if (!(await read($, isActive))) return null
     const p = await read($, progress)
@@ -601,7 +603,7 @@ const tierFor = (columns: number): number => {
   return i === -1 ? TIER_MIN.length : i
 }
 
-const refreshContext = async ($: EngineInterface): Promise<void> => {
+async function refreshContext($: EngineInterface): Promise<void> {
   const { context } = await $.session.usage()
   if (typeof context.percent === 'number') {
     const percent = context.percent
