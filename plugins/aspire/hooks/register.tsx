@@ -1887,8 +1887,9 @@ export const register: Register = on => {
     }
 
     // Each section: a header that opens and closes it, then rows (desktop drawings) or text (terminal and the rest).
-    // A row may be a sub-accordion's header (`h` is its height); its children follow only while it is open.
-    type Row = { id: string; h: number; alt: string; draw: (W: number, tail: number) => string; onPress?: () => void }
+    // A row may be a sub-accordion's header; its children follow only while it is open. The row's height is
+    // `height`, never `h`: the plugin directory reserves h and Fragment in a .tsx file, which JSX compiles to.
+    type Row = { id: string; height: number; alt: string; draw: (W: number, tail: number) => string; onPress?: () => void }
     type Section = { key: string; title: string; summary: string; rows: Row[]; text: () => JSX.Element }
     const empty = 'No agents yet. Aspire agents show here as they start.'
     // Pressing an agent opens its task list under it; pressing again closes it.
@@ -1898,9 +1899,9 @@ export const register: Register = on => {
         const tasks = agentTasks(a)
         const isTasksOpen = isOpen(key)
         return [
-          { id: a.id, h: ROW_H, alt: `${a.description}: ${modelName(a.model)}, ${state}, ${isTasksOpen ? 'tasks open' : 'tasks collapsed'}`, draw: (W, tail) => agentSvg(W, a, at, tail), onPress: toggle(key) },
+          { id: a.id, height: ROW_H, alt: `${a.description}: ${modelName(a.model)}, ${state}, ${isTasksOpen ? 'tasks open' : 'tasks collapsed'}`, draw: (W, tail) => agentSvg(W, a, at, tail), onPress: toggle(key) },
           ...(isTasksOpen
-            ? [{ id: `${a.id}-tasks`, h: agentTasksH(tasks), alt: `${a.description} tasks: ${tasks.map(t => `${t.kind === 'done' ? 'done' : t.kind === 'now' ? 'now' : 'to do'} ${t.text}`).join(', ') || 'none reported yet'}`, draw: (W: number, tail: number) => agentTasksSvg(W, a, tasks, tail) }]
+            ? [{ id: `${a.id}-tasks`, height: agentTasksH(tasks), alt: `${a.description} tasks: ${tasks.map(t => `${t.kind === 'done' ? 'done' : t.kind === 'now' ? 'now' : 'to do'} ${t.text}`).join(', ') || 'none reported yet'}`, draw: (W: number, tail: number) => agentTasksSvg(W, a, tasks, tail) }]
             : []),
         ]
       })
@@ -1975,9 +1976,9 @@ export const register: Register = on => {
         summary: `${shown.label} · ${percent}`,
         rows:
           plan && !isReportLeading(report, plan)
-            ? [{ id: 'progress', h: planH(plan), alt: `${title}: ${shown.label}, ${percent}`, draw: (W, tail) => planBodySvg(W, title, shown, plan, tail) }]
+            ? [{ id: 'progress', height: planH(plan), alt: `${title}: ${shown.label}, ${percent}`, draw: (W, tail) => planBodySvg(W, title, shown, plan, tail) }]
             : [
-                { id: 'progress', h: PROGRESS_H + tasks.length * TASK_H, alt: `${title}: ${shown.label}, ${percent}`, draw: (W, tail) => progressBodySvg(W, title, shown, tasks, tail) },
+                { id: 'progress', height: PROGRESS_H + tasks.length * TASK_H, alt: `${title}: ${shown.label}, ${percent}`, draw: (W, tail) => progressBodySvg(W, title, shown, tasks, tail) },
               ],
         text: () =>
           plan && !isReportLeading(report, plan) ? (
@@ -2020,7 +2021,7 @@ export const register: Register = on => {
         summary: list.length ? `${fmtCount(list.length, 'agent', 'agents')} · ${fmtTime(spanOf(list, at))}` : '',
         rows: running.length
           ? agentRows(running, 'running')
-          : [{ id: 'running-note', h: NOTE_H, alt: empty, draw: (W, tail) => noteSvg(W, list.length ? 'Nothing running right now.' : empty, tail) }],
+          : [{ id: 'running-note', height: NOTE_H, alt: empty, draw: (W, tail) => noteSvg(W, list.length ? 'Nothing running right now.' : empty, tail) }],
         text: () => <Box flexDirection="column">{running.length ? running.map(row) : <Text dimColor>{list.length ? 'Nothing running right now.' : empty}</Text>}</Box>,
       },
       ...(finished.length
@@ -2034,9 +2035,9 @@ export const register: Register = on => {
           const entries = ROSTER.filter(r => r.group === g.key)
           const groupOpen = isOpen(`group:${g.key}`)
           return [
-            { id: `group:${g.key}`, h: SUB_H, alt: `${g.title}, ${entries.length}, ${groupOpen ? 'open' : 'collapsed'}`, draw: (W, tail) => subHeaderSvg(W, g.title, String(entries.length), groupOpen, tail), onPress: toggle(`group:${g.key}`) },
+            { id: `group:${g.key}`, height: SUB_H, alt: `${g.title}, ${entries.length}, ${groupOpen ? 'open' : 'collapsed'}`, draw: (W, tail) => subHeaderSvg(W, g.title, String(entries.length), groupOpen, tail), onPress: toggle(`group:${g.key}`) },
             ...(groupOpen
-              ? entries.map(r => ({ id: `start-${r.type}`, h: CARD_H, alt: `${r.name}: ${r.blurb}`, draw: (W: number, tail: number) => cardSvg(W, r, list, tail, p.leaving === r.type), onPress: startAgent(r) }))
+              ? entries.map(r => ({ id: `start-${r.type}`, height: CARD_H, alt: `${r.name}: ${r.blurb}`, draw: (W: number, tail: number) => cardSvg(W, r, list, tail, p.leaving === r.type), onPress: startAgent(r) }))
               : []),
           ]
         }),
@@ -2092,8 +2093,8 @@ export const register: Register = on => {
                     const tail = i === c.rows.length - 1 ? TAIL : 0
                     return (
                       <Box key={r.id} flexDirection="column">
-                        <Svg source={r.draw(W, tail)} alt={r.alt} width={W} height={r.h + tail} />
-                        {r.onPress ? pressable(r.id, r.h, r.onPress) : null}
+                        <Svg source={r.draw(W, tail)} alt={r.alt} width={W} height={r.height + tail} />
+                        {r.onPress ? pressable(r.id, r.height, r.onPress) : null}
                       </Box>
                     )
                   })}
