@@ -1,4 +1,4 @@
-// Run with: claude plugin test plugins/aspire
+// Run with: claude plugin test plugins/aspire-mod
 // That every hex in the hooks' sources is in the palette is held by scripts/check-palette.sh: a hooks test cannot read files.
 import { expect, test } from 'claude-code/testing'
 

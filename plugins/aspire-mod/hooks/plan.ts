@@ -14,18 +14,18 @@ import type { End, Item, Turn } from '../types'
 import { clip, fmtTime } from './format'
 
 /** The tools that write the agent's task list. */
-export const TASK_TOOLS: readonly string[] = ['TaskCreate', 'TaskUpdate', 'TodoWrite']
+const TASK_TOOLS: readonly string[] = ['TaskCreate', 'TaskUpdate', 'TodoWrite']
 /** The desktop app's task list, and the call that ends a turn and checks it off. */
 const PLAN_TOOL = /^mcp__ccd_turn__update_plan$/
 const WRAP_TOOL = /^mcp__ccd_turn__wrap_up$/
 export const isTaskTool = (tool: string): boolean => TASK_TOOLS.includes(tool) || PLAN_TOOL.test(tool) || WRAP_TOOL.test(tool)
 
 /** Tool calls a step is guessed to take before any step has finished. */
-export const DEFAULT_CALLS = 4
+const DEFAULT_CALLS = 4
 /** The highest estimate a step shows before its task is marked done. */
-export const MAX_ESTIMATE = 0.95
+const MAX_ESTIMATE = 0.95
 /** A plan of more than WINDOW + 1 tasks shows WINDOW of them around the current one. */
-export const WINDOW = 5
+const WINDOW = 5
 
 type Input = Readonly<Record<string, unknown>>
 const str = (v: unknown): string => (typeof v === 'string' ? v.trim() : '')
@@ -164,7 +164,7 @@ export const estimate = (items: readonly Item[], at: number): number => {
 }
 
 /** What a task row shows: done, the one now, the next one, later ones, or the one a stop left. */
-export type RowKind = 'done' | 'now' | 'next' | 'later' | 'halted'
+type RowKind = 'done' | 'now' | 'next' | 'later' | 'halted'
 export type Row = { kind: RowKind; text: string; frac: number; status: string; doing?: string }
 
 /** The plan as data: the request, its steps and their bars, and how it ended. */

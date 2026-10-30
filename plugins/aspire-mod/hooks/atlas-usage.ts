@@ -266,7 +266,7 @@ export const readAtlasOrg = (result: unknown): AtlasOrgReading | null => {
 }
 
 /** The tool is a `get_status` of some MCP server. */
-export const isStatusTool = (tool: string): boolean => /^mcp__.+__get_status$/.test(tool)
+const isStatusTool = (tool: string): boolean => /^mcp__.+__get_status$/.test(tool)
 
 /**
  * The tool name is the Aspire Atlas data connector's, by the rule the skill
@@ -281,7 +281,7 @@ export const isAtlasToolName = (tool: string): boolean =>
  * object. Used for connectors whose tool names carry an id instead of a name
  * (a claude.ai connector seen from the desktop app).
  */
-export const looksLikeAtlasStatus = (result: unknown): boolean => {
+const looksLikeAtlasStatus = (result: unknown): boolean => {
   try {
     return rootsOf(result).some(root => isRecord(root) && isRecord(root.organizations))
   } catch {
@@ -312,10 +312,6 @@ export const fmtAtlasUsage = (c: AtlasTokenCosts): string => {
   return figures + unit
 }
 
-/** What the band shows with no reading: a dash, and at full width how to get one. */
-export const ATLAS_ABSENT = '—'
-export const ATLAS_ABSENT_HINT = '—, run /aspire to refresh'
-
 
 // ---------------------------------------------------------------------------
 // Credits: the `credits` block of get_status.
@@ -330,7 +326,7 @@ const postsOf = (v: unknown): { count: number; credits: number } | undefined => 
 }
 
 /** Reads one credits block; null when it holds no usable balance. */
-export const parseCredits = (raw: unknown): AtlasCredits | null => {
+const parseCredits = (raw: unknown): AtlasCredits | null => {
   if (!isRecord(raw) || !isRecord(raw.balance)) return null
   const b = raw.balance
   const granted = num(b.granted)
@@ -478,9 +474,9 @@ export type CreditsView = {
 }
 
 /** At or under this share left, the bar turns amber. */
-export const CREDITS_LOW = 0.25
+const CREDITS_LOW = 0.25
 /** At or under this share left, the bar turns red. */
-export const CREDITS_CRITICAL = 0.1
+const CREDITS_CRITICAL = 0.1
 
 /**
  * The bar's fill and color from a credits reading: fill is remaining / granted, clamped 0..1 and 0 when over or

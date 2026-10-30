@@ -34,7 +34,7 @@ import { BRAND, ILLUSTRATION as I } from './palette'
 import { AGENT_CHARACTERS, COSTUME_KEYFRAMES, VARIANT_CHARACTERS } from './costumes'
 
 /** What picks a character: the agent type and what the run is on. */
-export type CharacterRun = {
+type CharacterRun = {
   type: string
   model: string
   effort?: string
@@ -226,9 +226,8 @@ export const COACH_CRAB: Character = {
 /** The plain Aspire-green crab, the one the progress bar carries. */
 export const PLAIN_CRAB: Character = FALLBACK
 
-/** The grid is 30 units wide, props included. */
-export const CRAB_BOX = 30
-export const CRAB_SCALE = 1.1
+/** The grid is 30 units wide, props included; drawn at this scale. */
+const CRAB_SCALE = 1.1
 
 // Pure CSS, run by the compositor: no redraws. Periods divide one second, so the
 // once-a-second redraw of a running row restarts them in phase. Every crab walks;
@@ -250,7 +249,7 @@ ${VARIANT_CHARACTERS.map(c => c.css).join('\n')}
 </style>`
 
 /** One idle crab's breathing: how long a breath takes and where in it the crab starts, in seconds. */
-export type Breath = { period: number; delay: number }
+type Breath = { period: number; delay: number }
 
 /** A stable rate and start for an agent type, so the crabs in a list never breathe in step. */
 export const breathOf = (type: string): Breath => {

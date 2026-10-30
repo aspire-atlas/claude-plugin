@@ -1,4 +1,4 @@
-// Run with: claude plugin test plugins/aspire
+// Run with: claude plugin test plugins/aspire-mod
 import { expect, test } from 'claude-code/testing'
 
 import type { Item } from '../types'
