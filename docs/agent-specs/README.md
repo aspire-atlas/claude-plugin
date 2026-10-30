@@ -4,7 +4,7 @@ Every Atlas agent and every skill is written down here in one format. A spec is 
 `/aspire` routes from and the proposal page lists. The agent that actually runs is the file in
 `plugins/aspire/agents/`. These docs are not shipped in the plugin.
 
-As of 29 Oct 2026 there are 31 agents carrying 165 skills, matching the "Every skill, by agent"
+As of 30 Oct 2026 there are 31 agents carrying 167 skills, matching the "Every skill, by agent"
 table on the Atlas Agent Team proposal page.
 
 ## What is in this folder
