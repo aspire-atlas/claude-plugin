@@ -70,7 +70,7 @@ The `aspire` plugin is markdown and JSON only. The progress bar above the prompt
 /plugin install aspire-mod@aspire-atlas-beta
 ```
 
-It stays inert until `/aspire` runs, reads only what already passes through the session, and makes no network, file, or process calls. Without it, `/aspire` shows its progress in the session's task list. Details in the [mod README](plugins/aspire-mod/README.md) and its [SECURITY.md](plugins/aspire-mod/SECURITY.md).
+Install it only next to the beta `aspire`. It does not install `aspire` for you, and official `aspire` 4.2.x and earlier already include this mod, so adding it there would draw everything twice. It stays inert until `/aspire` runs, reads only what already passes through the session, and makes no network, file, or process calls. Without it, `/aspire` shows its progress in the session's task list. Details in the [mod README](plugins/aspire-mod/README.md) and its [SECURITY.md](plugins/aspire-mod/SECURITY.md).
 
 ## Support
 
