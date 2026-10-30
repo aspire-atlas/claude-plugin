@@ -18,7 +18,7 @@ Answers who these creators are, whether they fit, and whether they drive action.
 
 ## Output
 
-For each creator: a fit score out of 100 in six parts with fixed weights (audience 30, topic 25, engagement against its size band 20, cadence 10, format 10, market 5), each part naming the field or post behind it, and a part with no data scored zero and listed as missing. Beside the score, unscored: the audience panel (gender, age bands, top locations), median engagement and view rates, cadence, the top and lowest posts, the post to cite to the creator, and the audience fit and paid track record signals rated strong, typical, weak, or not judged. In a program it also returns engagement lift against the creator's own baseline, judged only with 2 or more program posts and 5 or more of their own posts.
+For each creator: a fit score out of 100 in six parts with fixed weights (audience 30, topic 25, engagement against its size band 20, cadence 10, format 10, market 5), each part naming the field or post behind it, and a part with no data scored zero and listed as missing. A dormant account is capped at 50 overall. Beside the score, unscored: the audience panel (gender, age bands, top locations), median engagement and view rates, cadence, the top and lowest posts, the post to cite to the creator, and the audience fit and paid track record signals rated strong, typical, weak, or not judged. In a program it also returns engagement lift against the creator's own baseline, judged only with 2 or more program posts and 5 or more of their own posts.
 
 ## Callable
 

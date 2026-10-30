@@ -67,7 +67,7 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Writes to Atlas
 
-Findings, under the one batch confirmation at launch or the standing approval a scheduled report got at setup. The daily report saves up to five insights, plus three per open launch pulse. The weekly report saves its patterns and next steps and closes action items that are now met. The quarterly report saves its findings when the person confirms. The program dashboard saves a snapshot after approval. The proposal page lists this agent as Read; the agent that runs is at Write level in `orchestration.md` section 7, which is the level `/aspire` confirms.
+Findings, under the one batch confirmation at launch or the standing approval a scheduled report got at setup. The daily report saves up to five insights, plus three per open launch pulse. The weekly report saves its patterns and next steps and closes action items that are now met. The quarterly report saves its findings when the person confirms. The program dashboard saves a snapshot after approval.
 
 ## Non-goals
 

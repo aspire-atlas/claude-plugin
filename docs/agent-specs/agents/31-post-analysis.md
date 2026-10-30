@@ -62,7 +62,7 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 Its findings on the post, only when the person picks "Save findings" at launch. That launch
 question is the one batch confirmation: it names the save before the run, and "Page only" saves
 nothing. The findings are what went well, each risk, and each recommendation, all under one run
-key for the post, so a later run reads them back as the earlier analysis. The proposal page lists this agent as Read; the agent that runs is at Spend level in `orchestration.md` section 7, since it refetches the post, and `/aspire` states that cost first.
+key for the post, so a later run reads them back as the earlier analysis.
 
 ## Non-goals
 
