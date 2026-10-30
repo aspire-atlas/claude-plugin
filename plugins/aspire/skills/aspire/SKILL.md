@@ -246,6 +246,13 @@ confirmations, with a `gate` named for what it approves (`approve-profile`,
 `approve-calibrations`). Verdicts Editors give on the orchestrator's Next actions page send no
 feedback event yet.
 
+### Examples library
+
+Off unless someone names a Claude Doc of approved examples for a brand profile; one "Examples"
+confirmation writes `examples:library`, and the main thread fills the launch block's `examples`
+from it before launching the agent that builds the page (`skills/page-standard/examples.md`,
+**The examples library**). Never suggest one.
+
 ---
 
 ## Model tiers (which model each agent runs on)
