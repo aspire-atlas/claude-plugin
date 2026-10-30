@@ -54,7 +54,7 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Writes to Atlas
 
-Each rule as an `automation:{slug}` calibration (trigger, condition, action, guardrails, approver, stop condition, and status: draft, testing, live, paused, retired), saved by `/aspire` on one batch question when the person turns the rule on, and superseded, never deleted, when it changes. Each run's matches, what it did, and what it held as `automation-run` findings, and the page as a `page` finding, under the standing approval the rule's setup saved. The `automation:{slug}` calibration and the `automation-run` finding are both new; the build adds them to `program.md`.
+Each rule as an `automation:{slug}` calibration (trigger, condition, action, guardrails, approver, routing, stop condition, and status: draft, testing, live, paused, retired), saved by `/aspire` on one batch question when the person turns the rule on, and superseded, never deleted, when it changes. Each run's matches, what it did, and what it held as `automation-run` findings, and the page as a `page` finding, under the standing approval the rule's setup saved. The `automation:{slug}` calibration and the `automation-run` finding are both new; the build adds them to `program.md`.
 
 An action that reaches someone outside the brand is a Send, confirmed one item at a time, exactly as for any Send agent: the rule queues the draft and the item waits in the run's queue until a person confirms it in a session. A rule never sends unattended; the skill `reward-re-engage-refresh-escalate-actions` says why and what would change that. An action that writes another agent's record type is handed to that agent through `/aspire` as a new action, never written by this agent.
 

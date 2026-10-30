@@ -16,7 +16,7 @@ Carries out a matched rule's action by handing it to the agent that owns the wor
 
 ## Output
 
-Per match, one of four actions, each done by the agent that owns it: reward (a thank-you or a gift: Outreach and Brief (13) or Product Fulfillment (16); a cash bonus is money, so it is refused like any Spend), re-engage (a note to a dormant or slipping creator: Ambassador Program (22) or Outreach and Brief (13)), refresh (rebuild a page or rerun a report: the owning report agent), or escalate (an alert to the approver in chat and the saved Slack channel). A Read or Write action runs under the rule's standing approval. A Send action is drafted and queued; nothing reaches anyone until a person confirms it.
+Per match, one of four actions, each done by the agent that owns it: reward (a thank-you or a gift: Outreach and Brief (13) or Product Fulfillment (16); a cash bonus is money, so it is refused like any Spend), re-engage (a note to a dormant or slipping creator: Ambassador Program (22) or Outreach and Brief (13)), refresh (rebuild a page or rerun a report: the owning report agent), or escalate (an alert to the approver on the rule's routing, which a scheduled run posts to Slack and the next session repeats in chat). A Read or Write action runs under the rule's standing approval. A Send action is drafted and queued; nothing reaches anyone until a person confirms it.
 
 **Sends wait for a person.** Every Send a rule triggers is confirmed one item at a time, the same as any other Send. A rule finds the matches and writes the drafts while nobody is watching, so the person's work drops to reading a queue and answering one question per item. It does not send on its own, even inside limits the person set.
 

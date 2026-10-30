@@ -11,7 +11,7 @@ Shows where competitors put creator money that the brand does not.
 
 ## Inputs
 
-- From brand memory: the brand's rosters by tier, network, and content theme, and the market signal topics.
+- From brand memory: the brand's rosters by tier and network, and the market signal topics. Roster rows carry no theme, so the brand's themes come from its roster creators' posts in Atlas, read the same way as the competitors' partners.
 - From the launch message: the partnerships by competitor.
 
 ## Output

@@ -16,7 +16,7 @@ Turns a rule the person describes in their own words into a rule with a trigger,
 
 ## Output
 
-A rule draft in plain words and as fields: the trigger (an event Atlas records, such as a stage move, a delivered post, a reply, or a date), the condition (filters on the records it reads; a performance condition, such as a creator below their own median, is read through U5 Performance baseline), the action (one of the four in `reward-re-engage-refresh-escalate-actions`, and the agent that does it), the guardrails (a daily item cap, quiet hours, and per-creator limits such as one message a week), the approver, and the stop condition (an end date, a count, or a state such as the program ending). Anything the words leave open becomes a question with a default, never a guess. A rule that would spend credits or money is refused here.
+A rule draft in plain words and as fields: the trigger (an event Atlas records, such as a stage move, a delivered post, a reply, or a date), the condition (filters on the records it reads; a performance condition, such as a creator below their own median, is read through U5 Performance baseline), the action (one of the four in `reward-re-engage-refresh-escalate-actions`, and the agent that does it), the guardrails (a daily item cap, quiet hours, and per-creator limits such as one message a week), the approver and where alerts go (the program's saved routing by default), and the stop condition (an end date, a count, or a state such as the program ending). Anything the words leave open becomes a question with a default, never a guess. A rule that would spend credits or money is refused here.
 
 ## Callable
 
