@@ -55,7 +55,7 @@ The band's `Atlas tokens: used / limit` figure shows what your organization has 
 
 ### Third-party code
 
-The progress bar, the band, and the panel are adapted from the savvy-progress and session-band mods in [claude-kit](https://github.com/johnnyvizz/claude-kit), Copyright (c) 2026 johnnyvizz, under the MIT License. The MIT notice is kept at the top of `hooks/register.tsx` and `hooks/characters.ts`; `hooks/format.ts` and `hooks/progress.ts` point to it. The steps behind the bar (`hooks/plan.ts`) and the Progress section's view are adapted from [plain-view](https://github.com/ice-lfernandes/claude-code-mods/tree/main/plain-view) in claude-code-mods, Copyright (c) 2026 Lucas Fernandes, under the MIT License; that notice is also at the top of `hooks/register.tsx`. MIT code can ship inside this Apache-2.0 plugin as long as that notice stays with it.
+The progress bar, the band, and the panel are adapted from the savvy-progress and session-band mods in [claude-kit](https://github.com/johnnyvizz/claude-kit), Copyright (c) 2026 johnnyvizz, under the MIT License. The MIT notice is kept at the top of `hooks/register.tsx` and `hooks/characters.ts`; `hooks/format.ts`, `hooks/progress.ts` and the drawings in `hooks/render-*.ts` point to it. The steps behind the bar (`hooks/plan.ts`) and the Progress section's view are adapted from [plain-view](https://github.com/ice-lfernandes/claude-code-mods/tree/main/plain-view) in claude-code-mods, Copyright (c) 2026 Lucas Fernandes, under the MIT License; that notice is also at the top of `hooks/register.tsx`. MIT code can ship inside this Apache-2.0 plugin as long as that notice stays with it.
 
 ## License
 
