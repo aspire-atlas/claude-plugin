@@ -21,6 +21,9 @@ a person makes the final call. Its findings do reach the scheduled readouts, tho
 daily and weekly readouts read every review saved since their last run (see **Feeding the
 readouts**).
 
+Never schedule it, and never run it in an unattended session: if `AskUserQuestion` is
+unavailable, say in one line that content review needs a person to supply the post, and stop.
+
 ## Setup: calibrate the reviewer once, for everyone
 
 Before asking anything, call `search_calibrations` (no filter, limit 100 per page, paged to the end,
@@ -61,6 +64,11 @@ Rules:
   (Recommended)" / "Change" per item. Changes go through `supersede_calibration` with its own
   confirmation.
 
+**When setup is done.** Setup is done when `review:verdict-rule` and `review:disclosure` exist
+and `review:brand-rules` and `review:safety-scope` are each either saved or recorded as a
+`decline`; the main thread then skips to the review. Otherwise it asks the missing questions C1
+to C4, one `AskUserQuestion` each, in order, then confirms the batch and writes the records.
+
 ## Per-review questions
 
 Asked by the main thread for every review. Skip any the user already answered.
@@ -96,6 +104,25 @@ Fields: `format` (and length), `angle`, `mustInclude[]`, `avoid[]`, `hashtags[]`
 `mentions[]`, `cta`, `link`, `postWindow`, `rights`, `successTarget`, `disclosure`. Any field
 the brief does not specify is passed as `not specified`. Never fill a gap from memory or from
 another deliverable.
+
+## Main thread: the review
+
+What the **Content review** section of SKILL.md does around the agent.
+
+1. Ask P1 to P3 with `AskUserQuestion`, skipping any the user already answered (a pasted link
+   answers P3; "Thursday's Reel" answers P2). Normalize the chosen deliverable per
+   **Normalizing the brief**. For a draft, collect the caption and the local paths of the
+   attached media. If a video comes without a transcript, say once that spoken content can't be
+   checked without one, and accept one if offered.
+2. Ask P4, the write confirmation. Run only on "Run the review".
+3. Launch `atlas-content-review` with: tool prefix, `profile_id`, `profile_slug`, brand handles
+   and networks, `stage`, the normalized deliverable, the brief source, the post inputs, and
+   `recipient` (SKILL.md, **Reading the ask**: `brand` for "is this safe" or "approve";
+   `performance` or `creative` when the user asks whether it can run as an ad, which adds the ad
+   reuse check). For a published post, state that the user approved fetching it.
+4. Relay the verdict with its go or no-go, the required edits, the page link, and anything it
+   could not check. Offer to draft the edit notes as a message to the creator. The notes are the
+   agent's; do not add copy the brand's red lines forbid.
 
 ## The checks
 
@@ -301,6 +328,18 @@ Rules:
   it lists each such change under "Needs the main thread" in its summary (the record's key,
   the current wording, the proposed wording or "retract", and why), and the main thread
   offers each one.
+
+**In the main thread.** When the agent reports "asked", relay what the user decided and what
+was saved, and ask no feedback question again. If its summary has a "Needs the main thread"
+line, offer each change there through its own Destructive tools confirmation
+(`supersede_calibration` or `retract_calibration`), one per call; the agent never makes them.
+When it returns a feedback packet instead, run F1 to F4 yourself, before anything else in the
+conversation, and write each answer as above. F3's "hard rule" option saves nothing itself: it
+adds the lesson to F4. Each rule selected in F4 becomes a `review:rule-*` red line (**Hard rules
+for every review**). If a correction targets a red line, a hard rule, or the disclosure rule, or
+contradicts a saved lesson, offer to change that record through its Destructive tools
+confirmation instead of saving a new one. Never save a lesson or a hard rule the user has not
+seen worded.
 
 ## Hard rules for every review
 

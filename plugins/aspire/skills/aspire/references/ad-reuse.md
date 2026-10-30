@@ -290,3 +290,33 @@ One post has no pool. Retention still uses the level order, with two changes: le
 quartile to score against, so the creator average is shown beside the score and Retention is
 scored on level 3; and **Hook evidence** cites any measured rate without confirming or capping.
 A draft has no views or watch time yet, so its Retention is listed as missing.
+
+## Partnership content (main thread)
+
+The **Partnership content** section of SKILL.md (creator posts the brand can run as Meta
+partnership ads) has no agent and no reference of its own; these are its steps. Inputs, output,
+the empty reasons, ad code rules, and the boost call are in `atlas-tools.md`, **Partnership
+content**.
+
+1. **Profile.** Use the brand's profile from Phase 2 + 3 and pass `asProfileId` explicitly on
+   every call. A defaulted scope hides the ad code, and the `search_posts` overlay and filter
+   refuse it.
+2. **Read.** Call `search_partnership_content` with the user's filters (creator handles, dates,
+   `adEligibility` `AD_READY`, `isRecommended`, `hasAdCode`, or a pasted `adCode`). Use
+   `search_posts` with the `partnership` filter when the ask also needs what Atlas holds about the
+   posts (transcripts, analysis, an `esFilter`); its hits then carry `partnershipAds`.
+3. **Nothing back.** Read `empty.reason` and tell the user which link is missing (the table in
+   `atlas-tools.md`). A missing Meta Business or Instagram link offers the `meta` connection
+   (Phase 4.2), with the business picked under **Meta businesses**.
+4. **Show it.** One line per post: the creator's `@handle`, the post link, whether it is ad
+   ready and permitted in plain words, whether Meta recommends it, whether the brand has run it,
+   and organic engagement (never added to paid), with "changed on {asOf}". Never show ids.
+5. **Ad codes.** Give a code only to the person asking, in this conversation, and only when they
+   need it to run the ad. Never put a code on a page, in a delivery, in a saved finding, or in a
+   message to a creator, and never repeat a pasted one back.
+6. **Run it (optional).** When the user wants to run a post, plan it with the Meta Ads
+   connector's `ads_boost_ig_post`, `confirmed=false` first, using `igMediaId` and
+   `brand.igUserId`, or the code. Show the plan, confirm with `AskUserQuestion` ("Create this ad,
+   paused, from **@{creator}**'s post?" Options: Not yet (Recommended) / Create it paused), then
+   call it with `confirmed=true`. Without the Meta Ads connector, say the post can be run from
+   Meta Ads Manager.

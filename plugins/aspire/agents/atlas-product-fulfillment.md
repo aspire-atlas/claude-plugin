@@ -18,7 +18,7 @@ profile id and slug, the brand's linked handles with networks, the program slug,
 (`interactive`, or `unattended` for the scheduled shipping check, which is always `mode:
 status`), `recipient` (default `team`),
 `connections` (`program.md`, **4**), and the approvals the main thread collected, each by its
-F-number from the **Product fulfillment** section of SKILL.md:
+F-number from `references/fulfillment.md`, **Pickers**:
 
 - **F1 picks**: the confirmed product per creator (product, options when known, value), or
   `creator-choice` for named creators, or `same:{product}` for everyone.

@@ -554,6 +554,41 @@ framework, name, shot recipe, length.
 - Budgets: images under 8MB and the page under 10MB, per **Images**. A deck with 15 creators drops
   to three photos per creator before cutting quality.
 
+## The main thread's steps
+
+The **PPA pitch** section of SKILL.md runs these, in order.
+
+0. **Profile.** Use the brand's profile from Phase 2 + 3. When the organization has no profile
+   for this brand, ask: "Create a {brand} profile so the pitch can be saved (Recommended)" (Phase
+   4.1) or "Build it without one" (nothing is pre-filled or saved, and the agent gets `profile:
+   none`). Never borrow another brand's profile.
+1. **Read first.** Load the pre-fill digest (**Pre-fill: what Atlas already knows**) before the
+   first question, so every recommended option comes from what Atlas holds and says so.
+2. **Presentation.** With `aspire_user` (SKILL.md, **Aspire users**), flag it in one line and ask
+   A1 to A4 in one call. Otherwise use the brand-team defaults without asking.
+3. **Frame, shape, casting.** Ask B (with the **Reading the ask** confirmation as B2), then C,
+   then D, one `AskUserQuestion` call each, skipping what the user already said. B4 with no
+   products held offers web research of the brand's own site; show what it finds before using
+   it. A follow-up with nothing saved collects round {n}'s lanes with the template in **B**.
+4. **Plan.** Launch `atlas-ppa-pitch` in mode `plan` with the tool prefix, `profile_id`,
+   `profile_slug` (or `profile: none` with `organization_id`, the `get_status`
+   `organizations.selected.id`), the linked handles and networks, `presentation`, `recipient`,
+   and the answers. Relay its lanes as a table and ask E per product, then F per lane, four per
+   call. Changes go back to the agent in mode `plan` for that product or lane only. Ask its
+   **Decisions needed** (names, product spelling, a term conflict) in the same calls.
+5. **Production and commercials.** Ask G, then H (H2's figures in one plain message from the
+   template, echoed back and confirmed), and end the last call with I, the save confirmation.
+6. **Build.** Launch the agent in mode `build` with every answer and whether I approved the
+   save. Show the link, three bullets (shape, cast, cost), and up to six cast creators as
+   creator cards from its `creator-cards` block.
+7. **Review, then export** (**Review and export**). Changes run mode `revise` and ask Review
+   again. PowerPoint and Google Slides run mode `export`. If the agent returns the PowerPoint
+   step, invoke the session's PowerPoint skill yourself from the model it returns. No PowerPoint
+   skill: say so in one line and offer what is possible.
+
+Package prices (H2) are asked every run and never saved. Never offer the Aspire look, service
+packages, or the agency voice without `aspire_user`.
+
 ## The questionnaire
 
 All questions use `AskUserQuestion`, at most four per call, two to four options each, the
