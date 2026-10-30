@@ -28,7 +28,9 @@ None. No question in the map routes here yet.
 
 ## Universal skills used
 
-_Pending: set in ASP-4103._
+- U1 Creator intelligence
+- U3 Brand safety and conflicts
+- U5 Performance baseline
 
 ## Shared skills
 
@@ -41,7 +43,11 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Trigger phrases
 
-_Pending: set in ASP-4103._
+- "find TikTok Shop creators for {product}"
+- "who sells products like ours on TikTok Shop"
+- "rank Shop creators by GMV"
+- "who should we invite to our TikTok Shop"
+- "which affiliates actually sell"
 
 ## Writes to Atlas
 
@@ -49,4 +55,7 @@ Nothing. It publishes its page and saves no records.
 
 ## Non-goals
 
-_Pending: set in ASP-4103._
+- Sending invites, approving samples, or tracking collabs. TikTok Shop Campaigns (21) does that from this agent's invite list.
+- Setting a commission. The rate comes from the program's saved affiliate terms, or from Negotiator (14).
+- Creators with no Shop history. Creator Search (05) finds those.
+- Opening or setting up the Shop. `atlas-shops` plans that.
