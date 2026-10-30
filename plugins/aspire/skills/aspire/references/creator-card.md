@@ -9,6 +9,11 @@ The one larger view, a single creator's full profile page, embeds this same card
 
 ## Where it renders
 
+When the host renders the creator tools' own cards widget (`search_creators`, `lookup_creators`,
+`search_creator_marketplace`), a plain "show me" answer in chat needs no plugin card and no image
+embedding: say the readout and stop. The table below is the path for published pages, the
+actions row, and every host that shows no widget (a terminal, or a plain-text host).
+
 | Surface | How | Actions row |
 | ------- | --- | ----------- |
 | Main thread, 1 to 6 creators | Inline widget, one `show_widget` call holding all the cards in a grid. Every image embedded as a data URI (see **Images**) | Shown |

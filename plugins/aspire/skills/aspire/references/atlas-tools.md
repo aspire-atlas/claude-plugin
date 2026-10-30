@@ -63,7 +63,7 @@ and are outside any run.
 
 | Phase | Tool | Purpose | Notes |
 | ----- | ---- | ------- | ----- |
-| 2, 3 | `get_status` | Orgs, selected org, profiles, channels, expired auths, next-step links | Call once per session. `asOrganizationId` to switch org. Keep the organization and profile `id`s it returns. |
+| 2, 3 | `get_status` | Orgs, selected org, profiles, channels, expired auths, next-step links | Call once per session. Also returns `aspireUser`, `dashboardUrl`, `setup` and `work`. `asOrganizationId` to switch org. Keep the organization and profile `id`s it returns. |
 | 2 | `list_my_organizations` | Cheap org re-check | |
 | 3 | `list_my_profiles` | Cheap profile re-check | Every organization the caller can act on, each with its live profiles (`id`, `slug`, `name`) in one call |
 | 3 | `get_profile` | One profile's detail | `{found:false}` is normal |
@@ -76,6 +76,10 @@ and are outside any run.
 | 4.3 | `add_hashtags` / `remove_hashtags` / `list_hashtags` / `list_available_hashtags` | Watch-list | Networks: `instagram`, `tiktok`. Per-row results. TikTok: 50 cap, eligibility gate, 7-day removal lock. |
 | 4.3 | `list_hashtag_posts` | Posts carrying one tracked hashtag on one network, newest first | Read only. `hashtag` + `network` (`instagram`, `tiktok`), optional `since` / `until` (default last 90 days), `sort` (`postedAt` or a metric, descending). Page with `nextCursor` → `cursor`, keeping hashtag, network and sort unchanged. `hashtag-not-tracked` and `no-linked-channel` are normal states, not failures. With a metric sort, dedupe on `externalId`. |
 | 5 | `search_calibrations` | Read brand memory | `q`, `kinds`, `keyPrefix`, `includeSuperseded`, `includeProposed`. If `unavailable`: stop, do not guess. |
+| 5 | `get_brand_context` | Every applied calibration in one call | `kinds`, `keyPrefix`, `includeSuperseded`; capped at 500 records (`truncated`), then page with `search_calibrations`. Prefer it for a whole read. If `unavailable`: stop, do not guess. |
+| 5 | `get_onboarding_form` | Which of the seven core brand questions are answered, declined, or open | Read only here: use `open`, ask each with `AskUserQuestion`, write with `append_calibration`. Never save through its form widget. |
+| 0 | `mint_run_id` | A run id for `runId` | `agent` (`aspire` or an `atlas-…` name); no side effects |
+| fees, theme | `get_fee_rate_card`, `calculate_creator_fee`, `get_brand_theme` | The rate card and its label; a fee from the card and the creator's median views; the validated brand look | Read only; preferred over reading `fees:rate-card` and `theme:brand` yourself. See `fees.md`, `theme.md`. |
 | 5 | `append_calibration` | Write one fact | One active record per (kind, key). `key-exists` → supersede. `proposed` = recorded, not applied. |
 | 5 | `supersede_calibration` | Replace a fact | Compare-and-set on `ifVersion` |
 | 5 | `retract_calibration` | Withdraw a fact | Same standing as set |

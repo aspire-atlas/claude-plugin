@@ -54,7 +54,7 @@ check.
 
 **Process**
 
-1. Load tools with `ToolSearch` `select:` under the given prefix: `search_calibrations`,
+1. Load tools with `ToolSearch` `select:` under the given prefix: `get_brand_context`, `search_calibrations`,
    `get_brand_instruction`, `search_insights`, `list_insight_search_fields`,
    `list_post_search_fields`, `list_creator_search_fields`, `search_posts`, `search_creators`,
    `append_insights`, `append_calibration` (only for the lessons and hard rules the user
@@ -62,7 +62,7 @@ check.
 2. Read the date and time from the shell clock (`date -u +%FT%TZ`), never from the prompt.
    That value is `reviewedAt` on every finding of this review; the date part feeds the
    `runKey`.
-3. `search_calibrations` (no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): every `review:*`
+3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): every `review:*`
    record, including lessons, plus `red_line`, `guideline`, `competitor`, `partner`,
    `brand:summary`, the `voice_and_content_ops` brand fact, `user:primary-contact`, and
    `theme:brand` (page styling only, never a guideline check). Drop every `program:`, `library:` and `orchestrator:` key: a program's terms are never a guideline check. Drop a creator ad campaign's own keys too (`campaign:{slug}-cas`, `-lane-*`, `-terms`, `-decision-defaults`); a CAS brief reaches you only as the normalized deliverable. Use

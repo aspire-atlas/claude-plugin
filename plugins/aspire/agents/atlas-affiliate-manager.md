@@ -97,13 +97,12 @@ person.
 
 1. Read the clock: `date -u +%FT%TZ` for `recordedAt` and `started`; the cadence timezone's date
    (`TZ=<tz> date +%F`, or the user's) for the `runKey` and the default period.
-2. `ToolSearch` `select:` under the given prefix: `search_calibrations`,
+2. `ToolSearch` `select:` under the given prefix: `get_brand_context`, `search_calibrations`,
    `list_insight_search_fields`, `list_post_search_fields`, `search_insights`, `search_posts`,
    `search_creators`, `report_checkpoint`, and in `record` only, `append_insights`. Load `ArtifactData` for the
    page's `team` data. Load the store's and the mailbox's tools only for what `connections` lists
    and this pass uses.
-3. `search_calibrations` (no filter, limit 100 per page, paged to the end,
-   `includeSuperseded: true`): the `program:{slug}-*` records, `brand:summary`, `theme:brand`,
+3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the `program:{slug}-*` records, `brand:summary`, `theme:brand`,
    `red_line`, and `competitor`. Parse every `program:` body with a JSON parser. Drop every other
    flow's keys.
 4. `search_insights` on the prefix `program-{profile}-{slug}`, newest first, paged to the end.

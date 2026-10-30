@@ -77,13 +77,12 @@ step needs one of those, skip that step and name it in your output as needing a 
 1. Read the time from the shell clock (`date -u +%FT%TZ`), never from the prompt. That value is
    `recordedAt`; the date in the program's cadence timezone when one is saved (`TZ=<tz> date
    +%F`) is today and feeds the `runKey`.
-2. `ToolSearch` `select:` under the given prefix: `search_calibrations`,
+2. `ToolSearch` `select:` under the given prefix: `get_brand_context`, `search_calibrations`,
    `list_creator_search_fields`, `list_post_search_fields`, `list_insight_search_fields`,
    `search_creators`, `search_posts`, `search_insights`, `report_checkpoint`, and in `record` only,
    `append_insights`. In `record` with K4 approvals, load the mailbox's draft tool named in
    `connections`.
-3. `search_calibrations` (no filter, limit 100 per page, paged to the end,
-   `includeSuperseded: true`). Keep `program:{slug}-program`, `-terms`, `-outreach`, and
+3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`). Keep `program:{slug}-program`, `-terms`, `-outreach`, and
    `-cadence`, `brand:summary`, the `voice_and_content_ops` brand fact, `guideline:voice`,
    `red_line` (not `review:` keys), `competitor`, every `creator:*` record, and `theme:brand`.
    Drop `vetting:`, `review:`, `library:`, `orchestrator:`, and `campaign:` keys and other programs' keys. Parse every

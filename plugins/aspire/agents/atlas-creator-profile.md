@@ -40,11 +40,12 @@ gaps, and stop as for an unresolved handle when Atlas does not hold the account.
 
 **Process:**
 
-1. Load tools: `ToolSearch` with `select:` for `search_calibrations`, `list_post_search_fields`,
+1. Load tools: `ToolSearch` with `select:` for `get_brand_context`, `search_calibrations`, `list_post_search_fields`,
    `list_creator_search_fields`, `search_posts`, `search_creators`, `lookup_creators`, and
    `report_checkpoint` under the given prefix.
-2. **Read the brand's calibrations.** `search_calibrations` (no filter, limit 100 per page, paged to the
-   end, `includeSuperseded: true`). Take `theme:brand` and `fees:rate-card` if present. Use
+2. **Read the brand's calibrations.** `get_brand_context` with `includeSuperseded: true`
+   (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`,
+   no filter, limit 100 per page, paged to the end, `includeSuperseded: true`). Take `theme:brand` and `fees:rate-card` if present. Use
    `competitor` and `partner` records only to say whether the handle matches one (a classification,
    not a benchmark), and the brand summary and goal only to frame relevance. Ignore every key starting
    `review:`.

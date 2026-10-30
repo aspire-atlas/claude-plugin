@@ -152,8 +152,9 @@ lists them. Agents work only from a message that carries it (**11**).
  "examples": ["{link of each approved example for this question}"]}
 ```
 
-- `runId` is minted once per launch from the shell, never made up: the agent's own name as its
-  file names it (no `aspire:` prefix; Atlas refuses an id whose name part differs from `agent`), the UTC time
+- `runId` is minted once per launch, never made up, with `mint_run_id` (its `agent` is the
+  agent's own name as its file names it, no `aspire:` prefix; Atlas refuses an id whose name part
+  differs from `agent`). Without that tool, from the shell: the name, the UTC time
   from `date -u +%Y%m%dt%H%M%S`, and the output of `openssl rand -hex 2`, joined by hyphens, in
   lower case (`atlas-creator-vetting-20261029t140312-a3f9`). A relaunch of the same run (its
   `record` pass, or its next mode) keeps the id. With no shell, leave `runId` out; the agent takes
