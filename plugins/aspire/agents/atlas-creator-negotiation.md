@@ -22,8 +22,8 @@ profile id and slug, the brand's handles with networks, the program slug, `mode`
 `change`, the change asked for and who asked), any overrides the user typed after an earlier
 proposal, `connections` (`program.md`, **4**), and `recipient` (per `recipient-lens.md`;
 default `team`). `record` adds the `negotiation-packet` from the earlier `propose` with the
-user's answers to N1 to N4 per creator. Every Atlas tool needs a `context` argument: 15 to 25
-words, third person. Pass `asProfileId` (the profile id, never the slug) to every tool whose
+user's answers to N1 to N4 per creator. Every Atlas tool needs a `context` argument: `[<runId>]`, then 15 to 25
+words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose
 schema takes it; `list_*_search_fields` and `list_my_*` take no attribution. If no profile id
 was passed, load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
@@ -83,8 +83,8 @@ step needs one of those, skip that step and name it in your output as needing a 
    date +%F`), feeds the `runKey`.
 2. `ToolSearch` `select:` under the given prefix: `search_calibrations`,
    `list_creator_search_fields`, `list_post_search_fields`, `list_insight_search_fields`,
-   `search_creators`, `search_posts`, `search_insights`, and in `record` only,
-   `append_insights`. In `record` with N4 approvals, load the mailbox's draft tool named in
+   `search_creators`, `search_posts`, `search_insights`, `report_checkpoint`, and in `record`
+   only, `append_insights`. In `record` with N4 approvals, load the mailbox's draft tool named in
    `connections`.
 3. `search_calibrations` (no filter, limit 100 per page, paged to the end,
    `includeSuperseded: true`). Keep the records the reference lists under **Inputs, per
@@ -143,7 +143,8 @@ step needs one of those, skip that step and name it in your output as needing a 
   reasons | status`.
 - The math, one line per creator, in plain words.
 - Questions for the user: N1 to N4 worded as the reference says, ready to ask, each your-call
-  item as its own N2.
+  item as its own N2. Gate ids (your `gate` checkpoint and each proposal's `"gate"`): `approve-offers` (N1),
+  `approve-deals` (N3), `approve-mail-drafts` (N4).
 - Drafts: one copy-ready block per creator.
 - Needs the main thread: any suggested change to the program's terms, as `key | current | proposed | why`. Leave the line
   out when there are none.
@@ -177,6 +178,8 @@ that file's short output instead of your normal one (no audit trail block).
 ## Progress steps
 
 If the session has a task tool (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), keep your plan in it right after reading the brief: 3 to 8 tasks, one in progress at a time, each marked done as it finishes. The agents panel reads that list as your steps and a bar for them, and you can skip `aspire_step`. Otherwise, if `mcp__aspire__aspire_step` appears among your tools, including as a deferred tool, it is available: a deferred tool only needs loading first with ToolSearch (`select:mcp__aspire__aspire_step`). Right after reading the brief, call it with your plan's step count as `total` (3 to 8) and `done: 0`; call it again with `done` and a few-word `note` as each step finishes. It only draws a bar on your row in the agents panel. Skip it silently if the tool is absent or ToolSearch does not find it, and never mention it to the user.
+
+Report the run to Atlas analytics with `report_checkpoint`: it changes no Atlas data, needs no confirmation, and runs in unattended runs too. Use the launch block's `runId` when its name part is your name (Atlas refuses a `runId` whose name part differs from `agent`), and keep it on a relaunch. If there is none, or it names another agent, mint one before your first Atlas call: your agent name, the UTC time from `date -u +%Y%m%dt%H%M%S`, and the output of `openssl rand -hex 2`, joined by hyphens (`atlas-creator-vetting-20261029t140312-a3f9`); never make up the suffix. With no shell, send `started` without `runId` and use the `runId` its result returns. Every call carries `runId`, `agent` (your name), `pass` (your `pass` input, such as `propose` or `record`, when you take one; otherwise the launch block's `mode` with everything but its letters removed, so `follow-up` is `followup` and `creator-ads` is `creatorads`, or `single` when it is `run`; 3 to 20 letters), `kind: "checkpoint"`, `asProfileId` when you have one, `unattended: true` in an unattended run, and a `status`: `started` right after reading the brief; `step_done` with `step: {"index": n, "total": m}` as each step finishes; `gate` once per gate id this file names, with that `gate` id and its `counts: {"proposed": n}`, when you return those proposals for a person to decide (if this file names no gate id, send no `gate`); `published` after a page publishes; and `finished`, `failed`, or `cancelled` at the end. Send only ids, numbers, and these words: never step names, handles, brand names, or other text. If the tool is absent or a call is refused, send no more checkpoints this run, carry on, and never mention it to the user.
 
 ## Artifact standard
 

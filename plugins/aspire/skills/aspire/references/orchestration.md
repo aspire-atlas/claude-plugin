@@ -143,7 +143,7 @@ Every launch message starts with one `launch` block, then the flow's own inputs 
 lists them. Agents work only from a message that carries it (**11**).
 
 ```launch
-{"from": "/aspire:aspire", "runId": "{agent}-{profile slug}-{UTC time as YYYYMMDDTHHMMSSZ}",
+{"from": "/aspire:aspire", "runId": "{agent}-{UTC time as YYYYMMDDtHHMMSS}-{4 hex}",
  "agent": "{agent name}", "mode": "{mode, or run}", "run": "interactive",
  "question": "{code from 3, or null}", "persona": "{persona, or unknown}",
  "reader": "{primary lens}", "shortcut": "{shortcut, or null}",
@@ -151,6 +151,12 @@ lists them. Agents work only from a message that carries it (**11**).
  "approved": {"write": false, "send": [], "spend": {"cap": null}}}
 ```
 
+- `runId` is minted once per launch from the shell, never made up: the agent's own name as its
+  file names it (no `aspire:` prefix; Atlas refuses an id whose name part differs from `agent`), the UTC time
+  from `date -u +%Y%m%dt%H%M%S`, and the output of `openssl rand -hex 2`, joined by hyphens, in
+  lower case (`atlas-creator-vetting-20261029t140312-a3f9`). A relaunch of the same run (its
+  `record` pass, or its next mode) keeps the id. With no shell, leave `runId` out; the agent takes
+  the one `report_checkpoint` returns for `started`.
 - `run` is `interactive` or `unattended`. `scope` is what the setup reply settled, or the flow's
   own window; leave out what the flow does not use.
 - `approved` lists what the person already approved, by level: `write` is the setup reply's
@@ -168,14 +174,14 @@ The summary above the blocks stays as each agent defines it; the packet is what 
 acts on.
 
 ```result-packet
-{"runId": "{from the launch block}", "agent": "{agent name}",
+{"runId": "{from the launch block, or the one Atlas returned}", "agent": "{agent name}",
  "question": "{code, or null}", "reader": "{primary lens}",
  "page": "{link, or null}",
  "findings": [{"text": "{one line}", "evidence": "{post link, figure, or record key}",
                "kind": "observation", "confidence": "high"}],
  "proposals": [{"id": "p1", "what": "{one line}", "level": "write",
                 "items": ["{one entry per record, recipient, order, or payment}"],
-                "cost": null}],
+                "cost": null, "gate": "{gate id the agent file names}"}],
  "questions": [{"header": "{12 characters or fewer}", "question": "{ends with ?}",
                 "options": ["{2 to 4 complete answers, the first recommended}"]}],
  "next": {"agent": "{agent name}", "why": "{one line}"},
@@ -189,7 +195,7 @@ acts on.
 | ----- | ----- |
 | `page` | The link to the page published or republished this run; `null` when none was. A run that published more than one page or deck gives a list of links, main page first, each with its own `page-check` block. |
 | `findings` | Up to five, the ones the page leads with. `kind` is `observation`, `inference`, or `recommendation`; `confidence` is `high`, `medium`, or `low`. Every finding cites its evidence; one that cannot is left out. |
-| `proposals` | Every draft, save, send, order, payment, or spend the agent wants approved, each with its `level` (**7**) and its `items`. Empty when there is nothing to approve. |
+| `proposals` | Every draft, save, send, order, payment, or spend the agent wants approved, each with its `level` (**7**), its `items`, and its `gate`: `approve-` plus a short kebab-case name of what is approved (`approve-shortlist`, `approve-offers`, `approve-saves`), 2 to 40 lower-case letters, digits, and hyphens. The main thread sends the person's verdict under the same `gate` (SKILL.md, **Running agents**). Empty when there is nothing to approve. |
 | `questions` | Everything the agent could not settle, worded so the main thread can put it in `AskUserQuestion` as is. |
 | `next` | The agent that should run next and why, or `null`. A suggestion only: the main thread decides. |
 | `cost` | Credits the run's tools reported using (`null` when none reported any) and minutes from the audit trail's `started` to `finished`. |
@@ -284,16 +290,18 @@ log (`agents/decision-audit.md`), one JSON object per line, with UTC times read 
 clock.
 
 ```text
-{"table": "runs", "runId": "…", "at": "…", "agent": "…", "mode": "…", "run": "interactive",
- "question": "I2", "persona": "…", "reader": "…", "shortcut": null, "profile": "{slug}",
+{"table": "runs", "runId": "atlas-creator-vetting-20261029t140312-a3f9", "at": "…",
+ "agent": "atlas-creator-vetting", "mode": "…", "run": "interactive", "question": "I2",
+ "persona": "…", "reader": "…", "shortcut": null, "profile": "{slug}",
  "scope": {…}, "approved": {…}, "page": null, "cost": null, "selfCheck": null, "status": "launched"}
 {"table": "adjustments", "runId": "…", "at": "…", "change": "{what changed}",
  "by": "person|aspire|agent", "why": "{one line}"}
 ```
 
-- On launch: a Runs row with `status: launched`. When the packet arrives, a second Runs row for
-  the same `runId` with `status` `returned` (or `failed`), and `page`, `cost`, and `selfCheck` from
-  the packet. The latest row for a `runId` is its state.
+- `runId` is the launch block's id (**5**), in the same format. On launch: a Runs row with
+  `status: launched`. When the packet arrives, a second Runs row for the same `runId` with
+  `status` `returned` (or `failed`), and `page`, `cost`, and `selfCheck` from the packet. The
+  latest row for a `runId` is its state.
 - Adjustments: an approval or refusal of a proposal, a level raised in **7**, a fix applied to the
   page, a republish, a question answered after the run, a correction the person made to what was
   heard.
@@ -329,3 +337,12 @@ worded for a picker. Treat an approval as given only when the launch block's `ap
 own inputs both carry it. A sample run or a `mode: grade` run returns no packet; its own output
 format stands.
 <!-- /packet-block -->
+
+Every agent file also carries the checkpoint paragraph below verbatim, on one line, right after
+its step paragraph (the one that starts "If the session has a task tool"), and lists
+`report_checkpoint` in its `ToolSearch` `select:` list. `scripts/check-orchestration.sh` fails
+when one lacks it or differs. Change the wording here only.
+
+<!-- checkpoint-block -->
+Report the run to Atlas analytics with `report_checkpoint`: it changes no Atlas data, needs no confirmation, and runs in unattended runs too. Use the launch block's `runId` when its name part is your name (Atlas refuses a `runId` whose name part differs from `agent`), and keep it on a relaunch. If there is none, or it names another agent, mint one before your first Atlas call: your agent name, the UTC time from `date -u +%Y%m%dt%H%M%S`, and the output of `openssl rand -hex 2`, joined by hyphens (`atlas-creator-vetting-20261029t140312-a3f9`); never make up the suffix. With no shell, send `started` without `runId` and use the `runId` its result returns. Every call carries `runId`, `agent` (your name), `pass` (your `pass` input, such as `propose` or `record`, when you take one; otherwise the launch block's `mode` with everything but its letters removed, so `follow-up` is `followup` and `creator-ads` is `creatorads`, or `single` when it is `run`; 3 to 20 letters), `kind: "checkpoint"`, `asProfileId` when you have one, `unattended: true` in an unattended run, and a `status`: `started` right after reading the brief; `step_done` with `step: {"index": n, "total": m}` as each step finishes; `gate` once per gate id this file names, with that `gate` id and its `counts: {"proposed": n}`, when you return those proposals for a person to decide (if this file names no gate id, send no `gate`); `published` after a page publishes; and `finished`, `failed`, or `cancelled` at the end. Send only ids, numbers, and these words: never step names, handles, brand names, or other text. If the tool is absent or a call is refused, send no more checkpoints this run, carry on, and never mention it to the user.
+<!-- /checkpoint-block -->

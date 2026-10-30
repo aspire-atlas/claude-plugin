@@ -55,7 +55,7 @@ Rules:
 ## Data pull (both agents)
 
 Filter-only path, no `queryText`, unless noted. Every call carries a `context` argument
-(15 to 25 words, third person).
+(`[<runId>]`, then 15 to 25 words, third person; the run id prefix does not count toward them).
 
 1. `search_calibrations` as above. Extract: readout calibrations, `red_line`, `guideline`,
    `competitor`, `partner`, `brand:summary`, `target:weekly-health`, `theme:brand`. Drop every

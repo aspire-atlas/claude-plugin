@@ -15,7 +15,8 @@ or `personal`), `viewer` (the publisher's name, Atlas role, and the `user:` reco
 matched, or none; it shapes the build and appears only in the footnote), the saved dashboard link for the scope (refresh only), `recipient` (per
 `recipient-lens.md`; default `team`), and the approvals the main thread collected, per the
 reference's **1**: D1 (publish, and save the link) or D2 (rebuild). Every Atlas tool needs a
-`context` argument: 15 to 25 words, third person. Pass `asProfileId` (the profile id, never the
+`context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count
+toward them). Pass `asProfileId` (the profile id, never the
 slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`,
 `list_*_search_fields` and `list_my_*` take no attribution.
 
@@ -49,7 +50,7 @@ folder, and the `page` and `snapshot` sections of `program-dashboard.md`, `orche
 1. Read the time from the shell clock (`date -u +%FT%TZ`) once; that is the snapshot's time.
    Load tools with `ToolSearch` `select:` under the given prefix: `get_status`,
    `search_calibrations`, `search_insights`, `list_insight_search_fields`,
-   `list_post_search_fields`, `search_posts`, `list_hashtags`, `list_hashtag_posts`, and `append_calibration` (only with D1 save). Keep each
+   `list_post_search_fields`, `search_posts`, `list_hashtags`, `list_hashtag_posts`, `report_checkpoint`, and `append_calibration` (only with D1 save). Keep each
    loaded tool's input schema: the page's live reads use the same argument names.
 2. `get_status` for the organization, then for the profile. `search_calibrations` (no filter,
    limit 100, paged to the end). Parse every `program:` body with a JSON parser. Resolve the
@@ -102,6 +103,8 @@ one (no audit trail block).
 ## Progress steps
 
 If the session has a task tool (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), keep your plan in it right after reading the brief: 3 to 8 tasks, one in progress at a time, each marked done as it finishes. The agents panel reads that list as your steps and a bar for them, and you can skip `aspire_step`. Otherwise, if `mcp__aspire__aspire_step` appears among your tools, including as a deferred tool, it is available: a deferred tool only needs loading first with ToolSearch (`select:mcp__aspire__aspire_step`). Right after reading the brief, call it with your plan's step count as `total` (3 to 8) and `done: 0`; call it again with `done` and a few-word `note` as each step finishes. It only draws a bar on your row in the agents panel. Skip it silently if the tool is absent or ToolSearch does not find it, and never mention it to the user.
+
+Report the run to Atlas analytics with `report_checkpoint`: it changes no Atlas data, needs no confirmation, and runs in unattended runs too. Use the launch block's `runId` when its name part is your name (Atlas refuses a `runId` whose name part differs from `agent`), and keep it on a relaunch. If there is none, or it names another agent, mint one before your first Atlas call: your agent name, the UTC time from `date -u +%Y%m%dt%H%M%S`, and the output of `openssl rand -hex 2`, joined by hyphens (`atlas-creator-vetting-20261029t140312-a3f9`); never make up the suffix. With no shell, send `started` without `runId` and use the `runId` its result returns. Every call carries `runId`, `agent` (your name), `pass` (your `pass` input, such as `propose` or `record`, when you take one; otherwise the launch block's `mode` with everything but its letters removed, so `follow-up` is `followup` and `creator-ads` is `creatorads`, or `single` when it is `run`; 3 to 20 letters), `kind: "checkpoint"`, `asProfileId` when you have one, `unattended: true` in an unattended run, and a `status`: `started` right after reading the brief; `step_done` with `step: {"index": n, "total": m}` as each step finishes; `gate` once per gate id this file names, with that `gate` id and its `counts: {"proposed": n}`, when you return those proposals for a person to decide (if this file names no gate id, send no `gate`); `published` after a page publishes; and `finished`, `failed`, or `cancelled` at the end. Send only ids, numbers, and these words: never step names, handles, brand names, or other text. If the tool is absent or a call is refused, send no more checkpoints this run, carry on, and never mention it to the user.
 
 ## Artifact standard
 

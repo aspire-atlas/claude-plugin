@@ -18,7 +18,7 @@ source (`csv`, `pasted`, `aspire-app`, or `cas-lane`), the criteria source (`vet
 slug, or a campaign lane: the campaign slug and the lane),
 the handles the user approved fetching (R3), whether the user approved saving the
 recommendations (R4), and `recipient` (one or more lenses per `recipient-lens.md`; default
-`team`). Every Atlas tool needs a `context` argument: 15 to 25 words, third person. Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
+`team`). Every Atlas tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-vetting.md` before starting. It
 holds the checks, the recommendation rule, the feedback loop, the creator calibrations, the
@@ -66,7 +66,7 @@ the list as approved for fetching.
    `get_brand_instruction`, `list_creator_search_fields`, `list_post_search_fields`,
    `list_insight_search_fields`, `search_creators`, `search_posts`, `search_insights`,
    `append_insights`, `append_calibration` (only for what the user saves in step 11), and
-   `lookup_creators` when R3 approved any fetches.
+   `lookup_creators` when R3 approved any fetches, and `report_checkpoint`.
 2. Read the time from the shell clock (`date -u +%FT%TZ`), never from the prompt. That value
    is `vettedAt` on every finding; its date part feeds the `runKey`.
 3. `search_calibrations` (no filter, limit 100 per page, paged to the end,
@@ -106,7 +106,13 @@ the list as approved for fetching.
       F3 when a lesson generalizes. Write the answers per the reference: F1 as `feedback`
       findings, each note as a `creator:*` guideline, a lesson as a `vetting:lesson-*`
       guideline. A creator who already has a `creator:*` record goes under "Needs the main
-      thread" instead of a new record.
+      thread" instead of a new record. After each answer that approves, edits, or rejects,
+      call `report_checkpoint` yourself with `kind: "feedback"`, the run's `runId`, `agent`,
+      `pass`, that question's gate id as `gate`, `feedback: {"verdict": "approved"}` (or
+      `"edited"`, `"rejected"`, `"skipped"`), and `counts: {"proposed": n, "approved": k}`, no
+      free text; skip it silently when the tool is absent or refused. When you hand the
+      questions to the main thread instead, the main thread sends it (SKILL.md, **Running
+      agents**).
     - If it is not available (usual for a subagent), write nothing more and return the feedback
       packet (below); the main thread asks F1 to F3.
 
@@ -123,7 +129,9 @@ the list as approved for fetching.
 - Saved calls applied: the `creator:*` records and lessons that changed a call.
 - Feedback: either "asked" with the user's answers and what was saved, or the feedback
   packet: the numbered recommendations as `#n @handle | recommendation | two reasons`, and
-  any proposed lesson.
+  any proposed lesson. Gate ids (your `gate` checkpoint and each proposal's `"gate"`): `approve-recommendations` (F1),
+  `approve-creator-notes` (F2), `approve-lesson` (F3), and `approve-record-changes` for
+  "Needs the main thread".
 - Needs the main thread: each change to a saved record, as `key | current wording | proposed
   wording or "retract" | why`. Leave the line out when there are none.
 - Forward note: two or three lines the requester can paste to the reader (skip for lens `team`).
@@ -144,6 +152,8 @@ and return that file's short output instead of your normal one (no audit trail b
 ## Progress steps
 
 If the session has a task tool (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), keep your plan in it right after reading the brief: 3 to 8 tasks, one in progress at a time, each marked done as it finishes. The agents panel reads that list as your steps and a bar for them, and you can skip `aspire_step`. Otherwise, if `mcp__aspire__aspire_step` appears among your tools, including as a deferred tool, it is available: a deferred tool only needs loading first with ToolSearch (`select:mcp__aspire__aspire_step`). Right after reading the brief, call it with your plan's step count as `total` (3 to 8) and `done: 0`; call it again with `done` and a few-word `note` as each step finishes. It only draws a bar on your row in the agents panel. Skip it silently if the tool is absent or ToolSearch does not find it, and never mention it to the user.
+
+Report the run to Atlas analytics with `report_checkpoint`: it changes no Atlas data, needs no confirmation, and runs in unattended runs too. Use the launch block's `runId` when its name part is your name (Atlas refuses a `runId` whose name part differs from `agent`), and keep it on a relaunch. If there is none, or it names another agent, mint one before your first Atlas call: your agent name, the UTC time from `date -u +%Y%m%dt%H%M%S`, and the output of `openssl rand -hex 2`, joined by hyphens (`atlas-creator-vetting-20261029t140312-a3f9`); never make up the suffix. With no shell, send `started` without `runId` and use the `runId` its result returns. Every call carries `runId`, `agent` (your name), `pass` (your `pass` input, such as `propose` or `record`, when you take one; otherwise the launch block's `mode` with everything but its letters removed, so `follow-up` is `followup` and `creator-ads` is `creatorads`, or `single` when it is `run`; 3 to 20 letters), `kind: "checkpoint"`, `asProfileId` when you have one, `unattended: true` in an unattended run, and a `status`: `started` right after reading the brief; `step_done` with `step: {"index": n, "total": m}` as each step finishes; `gate` once per gate id this file names, with that `gate` id and its `counts: {"proposed": n}`, when you return those proposals for a person to decide (if this file names no gate id, send no `gate`); `published` after a page publishes; and `finished`, `failed`, or `cancelled` at the end. Send only ids, numbers, and these words: never step names, handles, brand names, or other text. If the tool is absent or a call is refused, send no more checkpoints this run, carry on, and never mention it to the user.
 
 ## Artifact standard
 
