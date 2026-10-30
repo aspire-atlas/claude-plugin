@@ -27,7 +27,9 @@ None. No question in the map routes here yet.
 
 ## Universal skills used
 
-_Pending: set in ASP-4105._
+- U2 Content intelligence
+- U3 Brand safety and conflicts
+- U5 Performance baseline
 
 ## Shared skills
 
@@ -39,7 +41,13 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Trigger phrases
 
-_Pending: set in ASP-4105._
+- "what's trending in our category"
+- "what formats are rising"
+- "which sounds are picking up"
+- "trend scout"
+- "is this trend worth testing"
+- "write a test brief for this trend"
+- "who is starting this trend"
 
 ## Writes to Atlas
 
@@ -47,4 +55,8 @@ Nothing. It publishes its page and saves no records.
 
 ## Non-goals
 
-_Pending: set in ASP-4105._
+- Sounds, formats, and topics outside what Atlas holds (tracked hashtags, the brand's and competitors' posts, program creators). It names the gap and never runs a web search or starts discovery work.
+- How creators talk about the brand against competitors. Market Signal (02) does that.
+- The full content brief and the creators to make it. Outreach and Brief (13) takes the test brief.
+- Adding a hashtag to the watch list. It names the hashtag, and the hashtag setup in `/aspire` adds it with its own confirmation.
+- Breaking down one post second by second. Post Analysis (31) does that.
