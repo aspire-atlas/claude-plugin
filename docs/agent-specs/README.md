@@ -82,6 +82,25 @@ Skill files are written in each agent's wave ticket (ASP-4102 to ASP-4105).
 A field the proposal page does not settle reads `_Pending: set in ASP-NNNN._`, naming the ticket
 that fills it. The check counts them and does not fail on them.
 
+## Permission levels that differ from the running agents
+
+The `permission` header is the level on the proposal page, and `--compare` holds it there. For
+these agents the running `atlas-*` agents have a different level in `orchestration.md` section 7,
+and section 7 is the level `/aspire` confirms. Change a header only together with the proposal page, then drop
+its row here.
+
+| Agent | Header | Running agents' level | Why |
+| ----- | ------ | --------------------- | --- |
+| 02 Market Signal | Read | Write | Saves findings |
+| 05 Creator Search | Write | Spend | Starts discovery work |
+| 06 Creator Vetting | Write | Spend | Fetches handles Atlas does not hold |
+| 07 Creator List Review | Write | Spend | Fetches handles Atlas does not hold |
+| 08 Creator Profile | Read | Spend | Refreshes a stale handle |
+| 18 Creator Payments | Send | Write | Records invoices and payments, never pays |
+| 27 Account Analyst | Write | Spend | Refreshes a public handle the person named |
+| 29 Reports | Read | Write | Each report saves its findings or snapshot |
+| 31 Post Analysis | Read | Spend | Refetches the post |
+
 ## The check
 
 ```sh

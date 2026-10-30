@@ -28,7 +28,7 @@ None. No question in the map routes here yet.
 
 ## Universal skills used
 
-_Pending: set in ASP-4102._
+None. It writes the brand memory the universal skills read (red lines, competitors, partners, goals and targets) but runs none of them.
 
 ## Shared skills
 
@@ -42,12 +42,24 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Trigger phrases
 
-_Pending: set in ASP-4102._
+- "onboard my brand"
+- "first time with Atlas"
+- "connect Atlas"
+- "connect my Instagram"
+- "/aspire" with nothing after it, on an organization with no brand context yet
+- "set up our brand context"
+- "add a competitor" or "change our red lines"
 
 ## Writes to Atlas
 
-_Pending: set in ASP-4102._
+Brand memory, as calibrations on the brand profile: the brand summary, the person's role, one record per competitor and per partner, the 90-day goal, one record per red line, the tracking scope, and, in the optional set, delivery cadence, voice, the weekly target and teammates. A skipped question is saved as a decline so it is never asked again. Hashtags the person names go on the watch list.
+
+Write. Each answer is saved as soon as the person gives it, and picking or typing the answer is the approval for that one record. Web findings are saved only after the person chooses to record or edit them. Changing a fact already saved shows both versions and asks once before replacing it.
 
 ## Non-goals
 
-_Pending: set in ASP-4102._
+- Choosing the organization, creating the profile and connecting channels stay with `/aspire` itself; this agent starts once a channel is linked.
+- The first read of the connected accounts and next week's pushes: 27 Account Analyst.
+- How creators talk about the brand against its competitors: 02 Market Signal.
+- Which creators the competitors partner with: 04 Competitor Roster.
+- Checking a creator or a post against the red lines it saves: 06 Creator Vetting and 17 Content Review.
