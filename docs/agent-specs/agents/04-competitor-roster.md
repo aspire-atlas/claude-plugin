@@ -27,7 +27,9 @@ None. No question in the map routes here yet.
 
 ## Universal skills used
 
-_Pending: set in ASP-4105._
+- U1 Creator intelligence
+- U3 Brand safety and conflicts
+- U4 Market and competitor signal
 
 ## Shared skills
 
@@ -35,11 +37,16 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Connects to
 
-- Atlas partnership content
+- Atlas posts and creators (posts that tag or mention each competitor)
 
 ## Trigger phrases
 
-_Pending: set in ASP-4105._
+- "who are our competitors working with"
+- "which creators does {competitor} partner with"
+- "competitor roster"
+- "find creators who already work with brands like us"
+- "who should we poach from {competitor}"
+- "where are competitors spending on creators that we aren't"
 
 ## Writes to Atlas
 
@@ -47,4 +54,8 @@ Nothing. It publishes its page and saves no records.
 
 ## Non-goals
 
-_Pending: set in ASP-4105._
+- Saving a prospect to a campaign pool. It hands the net-new list to Creator Search (05), which scores and saves them.
+- Vetting a prospect for brand safety, conflicts, and fit. Creator Vetting (06) does that; it only flags a live exclusivity signal.
+- Reaching out to a competitor's creator. Outreach and Brief (13) does that.
+- Competitors Atlas does not index. It names them, and Account Analyst (27) reviews a handle the person names.
+- Share of voice and what creators say about the brand. Market Signal (02) does that.
