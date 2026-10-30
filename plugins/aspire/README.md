@@ -2,6 +2,17 @@
 
 Onboarding for the Atlas platform (https://atlas.aspire.io). Takes a new or returning user from "not connected" to first insights on their brand's social accounts.
 
+## Install
+
+In Claude Code:
+
+```shell
+/plugin marketplace add aspire-atlas/claude-plugin
+/plugin install aspire@aspire-atlas
+```
+
+The repository [README](https://github.com/aspire-atlas/claude-plugin#readme) covers the Claude app and the beta channel.
+
 ## Components
 
 | Component | Name | Purpose |
@@ -10,6 +21,7 @@ Onboarding for the Atlas platform (https://atlas.aspire.io). Takes a new or retu
 | MCP server | `Aspire Atlas Organization Admin` | Support only. Organization members at `https://atlas.aspire.io/mcp/admin-organization` (HTTP, OAuth). Tools appear as `mcp__Aspire_Atlas_Organization_Admin__*`. Used only when someone asks; every invite is confirmed. |
 | MCP server | `Meta Ads` | Optional. Meta's hosted ads MCP server at `https://mcp.facebook.com/ads` (HTTP, OAuth with Facebook through Aspire's Meta app). Run by Meta, not Aspire. Tools appear as `mcp__Meta_Ads__*`. |
 | Skill | `/aspire:aspire` | Six phase onboarding flow: connection check, auth and org selection, org status, profile and social connect, brand context capture, first insights |
+| Skill | `page-standard` | Shared by the agents, not a command. The parts every published page holds and the R1 to R12 reader checks it passes before it is published |
 | Skill | `/aspire:org-admin` | Support only. Lists organization members and pending invitations and sends confirmed invitations when someone asks. Uses Aspire Atlas Organization Admin |
 | Mod | Band above the prompt | Claude Code terminal and desktop app, from 4.0.0; elsewhere the skill shows its progress another way (see the surface table below). Once `/aspire` runs: a progress bar (`Aspire: {organization}`, onboarding progress, percent), then turn, response speed, Atlas token costs from `get_status`, and context fill. See [Band and agents panel](#band-and-agents-panel-claude-code). |
 | Mod | `/aspire-agents-info` | Claude Code only, from 4.0.0. Shows or hides the Aspire agents panel: running and finished agents with model, context fill, and time. `/aspire-agents-info status` says whether the mod is on, what switched it on, and what it has seen. |
@@ -39,8 +51,9 @@ Onboarding for the Atlas platform (https://atlas.aspire.io). Takes a new or retu
 | Agent | `atlas-program-dashboard` | One page for the whole program: goals and pace, the creator funnel, posts delivered, content and rights, results, spend and return, roster health, and what needs attention next. Money shows only to the team's editors. Schedulable weekly. |
 | Agent | `atlas-campaign-orchestrator` | Works out what to do next across every program, creator ad campaign, discovery campaign, and report, ranked on one Next actions page. Editors approve proposals on the page; the hourly run saves the approved records and mailbox drafts and reports in Slack. It never sends, orders, or changes a store. Runs hourly. |
 | Agent | `atlas-shops` | A setup and management plan for an Instagram Shop, a TikTok Shop, or both: a readiness checklist, the step order and where each step is done, a catalog and content plan from the brand's best product posts, creators Atlas already holds matched to shop roles (TikTok Shop affiliate invites, LIVE, Instagram product tagging, partnership ads), a running cadence, and the policy and dropshipping risks. Platform rules are hedged and point to Commerce Manager and Seller Center. Reads a connected store's products and stock only and never changes a shop or store. Interactive only. |
+| Agent | `atlas-quality-review` | Checks a finished page, deck, or document before it is shared: any page the plugin publishes, or a pitch, proposal, brief, or report made elsewhere (Google Slides or Docs, a Drive file, .pptx, .pdf, or a Claude artifact link). Marks every brief requirement and every check pass or fail, including the reader standard (answer first, numbers with context, owned next steps, decisions kept separate, plain language) and media and links (timecodes, images, in-page links), quotes every finding with the fix, recomputes the work's own sums, checks who can and cannot see each figure (live reads, other connectors, tools a reader can't reach, private links), optionally re-checks cited Atlas figures read only, and gives a verdict: Ready, Ready with fixes, or Not ready. Writes nothing to Atlas and never edits the work. Interactive only. |
 
-**Agent models.** To save tokens, `/aspire` runs the agents that read, tally, draft, or publish on Sonnet: the profile analyst, ad reuse, creator profile, creator discovery, the daily and weekly insights reports, market signal, outreach, product fulfillment, affiliate manager, content library, content sourcing, deliverable tracker, roster manager, program ledger, both dashboards, and shops. The eight that judge brand safety from video frames, price deals, rank next actions, or write for leadership run on the model your session uses: post analysis, content review, creator vetting, creator negotiation, creator brief, PPA pitch, quarterly signal, and the campaign orchestrator. `/aspire` says which model an agent started on in one line; say "use Opus" to run it again on a bigger model. Scheduled runs use the same tiers without asking. The table is in the skill's **Model tiers** section and in each agent's `model:` line.
+**Agent models.** To save tokens, `/aspire` runs the agents that read, tally, draft, or publish on Sonnet: the profile analyst, ad reuse, creator profile, creator discovery, the daily and weekly insights reports, market signal, outreach, product fulfillment, affiliate manager, content library, content sourcing, deliverable tracker, roster manager, program ledger, both dashboards, and shops. The nine that judge brand safety from video frames, price deals, rank next actions, write for leadership, or decide whether work is ready to send run on the model your session uses: post analysis, content review, creator vetting, creator negotiation, creator brief, PPA pitch, quarterly signal, the campaign orchestrator, and quality review. `/aspire` says which model an agent started on in one line; say "use Opus" to run it again on a bigger model. Scheduled runs use the same tiers without asking. The table is in the skill's **Model tiers** section and in each agent's `model:` line.
 
 ## Setup
 
@@ -62,6 +75,8 @@ Plugin skills are namespaced, so the canonical command is `/aspire:aspire`. The 
 - Starter guide: once Atlas is connected, an organization that hasn't finished onboarding (no brand profile, no linked account, or no brand context yet) gets a private page that explains /aspire, the jobs it does and who each is for, the setup steps ahead and what each asks, what stays safe, and five prompts to try. Onboarding then continues as usual. Ask "what can /aspire do" any time to see it again.
 - Account review: the first-insights phase asks which account to cover - the brand's connected accounts, or a network and handle the user types. A typed handle that Atlas does not hold, or holds from more than 24 hours ago, is fetched through Aspire discovery first; naming the handle is the approval for that fetch.
 - `/aspire:aspire polish` (also "improve my prompt") coaches a weak ask: it names what is missing in a short verdict, asks the two gaps that matter most, and rewrites the prompt with `[placeholders]`. It also runs on its own before a flow launches when an ask is missing key inputs, so a vague ask like "find me people" is tightened first without `polish`. Say "just run it" to skip it. It never runs in scheduled runs or for routine asks, and it writes nothing to Atlas.
+- `/aspire:aspire` is the only way in: it reads who is asking and who will act on the answer, loads the brand's memory and your own, picks the agent that owns the job, and asks everything it needs in one picker round, repeating your question back first so you can correct it. Every agent returns the same result packet, and `/aspire` confirms what it proposes by level: reads run without asking, saves are confirmed once per batch, each message, order, or payment is confirmed on its own, and anything that uses extra credits states the cost first. Up to three questions can run at once.
+- Shortcuts go straight to a job and keep every confirmation: `/aspire:aspire vet`, `list review`, `campaign`, `content review`, `payments`, `reports`, and `account`.
 - `/aspire:aspire agents` lists every subagent in the plugin with a one-line purpose and its trigger phrases, then asks which one to run and hands off to that agent's flow (connection check, profile, and confirmations included). Read from the `agents/` folder at run time, so it stays current as agents are added. No Atlas connection is needed to see the list; picking an agent starts one.
 - Trigger phrases: "get started with Atlas", "connect Atlas", "onboard my brand", "connect my Instagram to Atlas".
 - Creator brief: "create a content brief for next week", "find creators to make this", "what should we post next week". Runs the `atlas-creator-brief` agent for a connected brand. Marketplace discovery is only run with the user's explicit choice.
@@ -79,6 +94,7 @@ Plugin skills are namespaced, so the canonical command is `/aspire:aspire`. The 
 - PPA pitch: "build a PPA pitch", "casting deck for partnership ads", "the pitch for round two". A questionnaire pre-filled from what Atlas already knows (products, earlier pitches, the shortlist, vetting calls, hook patterns, rate card) covers the frame, the product groups and schedule, the casting profile, the lanes and the creator for each, production and rights, and cost. The deck is published as an artifact of 16:9 slides to review in chat, then exported to PowerPoint with the session's PowerPoint skill, ready to open in Google Drive as Google Slides (or built natively when a Google Slides connector is connected, after a confirmation). Signed in with an Aspire email, it also asks how Aspire's managed services team wants to present it. Package prices are asked each time and never saved.
 - CAS campaign: "start the CAS campaign for {brand}", "where is the {brand} campaign", "pull the client's decisions". Runs a creator ad campaign from one shared page with six tabs: Home (where the round stands, what's waiting on whom, the program terms, files, and the pacing calendar), Master Brief (concepts, hooks, CTAs and the variant plan, with comments and sign off), Creator Selection (the match score and the client's decisions), Selected Creators (each creator's eight steps, fees, contract, shipping, and cut tiles), Content Review (cut versions, frame comments, and approvals), and Ad Performance (cost per sale against target, read from the brand's own ad account, and what to change for the next round). Share it with the agency as Editor and the client's approvers as Contributor; agency only details such as creator contacts, addresses, rates, and budget never reach the client. Rounds, an inbox, a searchable history, and Excel or CSV export work across every tab. The client's decisions are recorded in Atlas only after a confirmation.
 - Samples: ask about any agent ("what does the vetting agent do?") or type `/aspire:aspire sample`, and the skill offers a sample of the page that agent makes, built from invented data around the most recent US holiday. Samples need no Atlas connection, use sample brands and sample creator handles that can't belong to real accounts, and save nothing. After a sample, the skill asks whether to run the agent for your brand.
+- Quality review: `/aspire:aspire quality review`, "review this deck", or "is this ready to send". Paste a link or attach a file (a Google Slides or Docs link, a Drive file, a .pptx, .pdf, or .docx, or a Claude artifact), say who will read it and whether it should answer a brief or RFP. The review page gives a verdict (Ready, Ready with fixes, Not ready), scores each requirement, lists strengths and findings worst first with the quote, why it matters, and the fix, shows where the work's numbers disagree or don't add up, flags data some readers can't see (live pages, figures from other connectors, private tools and links), and mocks up the biggest fixes. After any agent publishes a page, the skill offers a quality review before the decision audit. It reads only and writes nothing to Atlas.
 - Decision audit: after any agent publishes a page, the skill asks whether you'd like an audit of the decisions and tools behind it. The audit page leads with how long the work took from request to finish, split into time waiting on you, agent work, and the rest, then records every step in order with its time: each question with every option offered and the one chosen, each kind of tool call and what it returned, the agent's own judgements and what it dropped, the pages published and their checks, the final decision set, and anything still open. It writes nothing to Atlas.
 - Quarterly signal: "how did influencer do this quarter", "QBR". One outcome-first page rolled up from the readouts, briefs, reviews, shortlists, and market signal runs saved in Atlas. Cost efficiency appears only when you give the spend.
 - Influencer program: "set up our influencer program", "start an ambassador program", "where is the {program} program". A short setup covers the program's deal types (gifting, paid posts, ambassador, affiliate), goals, budget, standard terms, products, outreach voice and channels, where updates go, and what runs on its own. After that, the program manager shows where every creator is and offers the next step: write first messages, record replies, make offers, collect details and order product, set up codes, check posts, request rights, update payments, review the roster, or update the dashboard. Every message is a draft. A connected Gmail, Outlook, or store is used only after a confirmation each time, and nothing is sent unless you ask in that session. A creator ad campaign stays in the CAS campaign flow.
@@ -105,7 +121,7 @@ Readouts are designed to run on a schedule. The skill offers to create both sche
 Daily prompt:
 
 ```
-Run the Atlas daily insights report for {brand} (handles: {@handle1 on instagram, @handle2 on tiktok}).
+/aspire:aspire reports daily. Run the Atlas daily insights report for {brand} (handles: {@handle1 on instagram, @handle2 on tiktok}).
 Use the Aspire Atlas connection, find {brand}'s Atlas profile by name, and use the brand's saved readout calibrations for the window,
 thresholds, lead metric, and delivery routing. Launch the atlas-daily-insights-report agent in
 unattended mode. Do not ask questions. Do not state today's date in the launch message; the
@@ -117,7 +133,7 @@ card and stop. Deliver only to the destinations saved in the brand's readout rou
 Weekly prompt:
 
 ```
-Run the Atlas weekly insights report for {brand} (handles: {@handle1 on instagram, @handle2 on tiktok})
+/aspire:aspire reports weekly. Run the Atlas weekly insights report for {brand} (handles: {@handle1 on instagram, @handle2 on tiktok})
 for the previous Monday to Sunday. Use the Aspire Atlas connection, find {brand}'s Atlas profile by name, and use the brand's saved
 readout calibrations for thresholds, lead metric, audience, and delivery routing. Launch the
 atlas-weekly-insights-report agent in unattended mode. Do not ask questions. Do not state today's date
@@ -139,7 +155,7 @@ destinations saved in the brand's readout routing.
 The market signal runs weekly, ideally an hour before the weekly readout so the readout's product and marketing sections carry this week's run. Same prerequisites as the readouts, plus market signal setup completed once. Name the task `Atlas market signal: {brand}`.
 
 ```
-Run the Atlas market signal for {brand} (handles: {@handle1 on instagram}). Use the Aspire
+/aspire:aspire run the Atlas market signal for {brand} (handles: {@handle1 on instagram}). Use the Aspire
 Atlas connection, find {brand}'s Atlas profile by name, and use the brand's saved market signal calibrations for the competitors, topics,
 readers, and delivery routing. Launch the atlas-market-signal agent in unattended mode. Do not
 ask questions. Do not start any discovery. Do not state today's date in the launch message;
@@ -156,7 +172,7 @@ The discovery agent runs on its own two schedules, set from `campaign:{slug}-cad
 Discovery prompt:
 
 ```
-Run the Atlas creator discovery for {brand}, campaign {campaign-slug} (handles: {@handle1 on
+/aspire:aspire run the Atlas creator discovery for {brand}, campaign {campaign-slug} (handles: {@handle1 on
 instagram}). Use the Aspire Atlas connection, find {brand}'s Atlas profile by name, and use the campaign's saved calibrations for the
 criteria, pool target, and delivery routing. Launch the atlas-creator-discovery agent in
 unattended mode with job discover to fill the shortlist back to target. Do not ask questions. Do not record
@@ -230,6 +246,13 @@ From 4.0.0 the plugin includes a Claude Code mod built on function hooks, an ear
 
 The mod reads only what already passes through the session and makes no network, file, or process calls; see [SECURITY.md](../../SECURITY.md). Its tests run with `claude plugin test plugins/aspire`.
 
+### What each hook does
+
+- **Tools the mod answers itself.** The mod registers two tools of its own, `aspire_progress` (the `/aspire` skill's progress, main session only) and `aspire_step` (an agent's own steps, agents only), and its `tool.call` hooks on those two names return the answer, because no other tool stands behind them. The answer is a short status line (`ok: …; band: visible on …`, or `ignored: …` for a call from the wrong place). No other tool is answered by the mod: every other `tool.call` hook passes the call on and returns what Claude Code gives back.
+- **Prompt hooks.** `prompt.submit` reads whether the submitted prompt starts with `/aspire` or `/aspire:aspire` and, if it does, switches the mod on and counts it. `session.receive` reads a subagent's or peer session's hand-back text for claude.ai artifact links and logs each new one as a dim line. Both pass the prompt or message on unchanged; neither edits, adds to, or drops it.
+- **Agent hook.** `agent.spawn` lets the agent start first, then reads its type, description, and model to add a row to the agents panel (and switches the mod on for an `aspire:*` agent). It changes nothing about the agent: its prompt, instructions, tools, settings, and model are passed on as they came, and a denied start is left denied.
+- **Credentials.** No part of the plugin reads a token, API key, or other credential from your machine, its environment, or its files. Each connector signs in with its own vendor through Claude's OAuth flow (Aspire Atlas with `atlas.aspire.io`, Meta Ads with Meta), and Claude holds the result. The Meta Ads client ID in `.mcp.json` is the public ID of Aspire's Meta app, not a secret. The skill's mentions of tokens are Atlas token costs, an expired connector sign-in, and design tokens for page styling.
+
 ### Where progress shows
 
 The bar and band draw only where the host renders the slot above the prompt. The `aspire_progress` result ends with `band: visible on {surface}`, `not-drawn`, `hidden-by-user` or `unknown`, and the skill picks its channel from that, once per run. Where the bar is not drawn (and not hidden by you), the mod shows the same progress as one line under the prompt (`Connecting: step 2 of 4, Get organizations ▰▰▱▱ 50%`) and clears it when the run finishes or the bar appears. When an `aspire:*` agent's hand-back mentions a claude.ai artifact link (a subagent's publish draws no card in the main transcript), the mod logs one dim line per new link, `◆ Aspire · Artifact published: {link}`.
@@ -244,22 +267,9 @@ The bar and band draw only where the host renders the slot above the prompt. The
 
 Dismissing the bar with `✕` starts no fallback. `/aspire-agents-info status` adds a `Band:` line: how many times the slot has been drawn and on which surface, or that it never was.
 
-### Atlas token costs in get_status
+### Atlas token costs
 
-TODO: confirm with the Atlas server team. The server change has not shipped, so this is the shape the mod assumes; `hooks/atlas-usage.ts` is the only code that reads it, and `types/index.d.ts` documents it too.
-
-The mod looks for an object named `tokenCosts` anywhere in the `get_status` result JSON. When there are several, the one under `organizations.selected` wins, then the shallowest:
-
-```json
-{ "organizations": { "selected": { "id": "org_…", "tokenCosts": {
-    "used": 12400, "limit": 50000, "remaining": 37600,
-    "period": "2026-10", "unit": "tokens" } } } }
-```
-
-- `used` (number) is required: what the period has used. Without it, `limit - remaining` is used when both are present; otherwise there is no reading.
-- `limit` and `remaining` (numbers), `period` and `unit` (strings; leave `unit` out for plain tokens) are optional.
-- Also accepted: `token_costs`, `tokenCost`, or `tokenUsage` for the object; `usedTokens`, `tokensUsed`, `consumed`, or `spent` for `used`; `quota`, `allowance`, or `cap` for `limit`; `left`, `balance`, or `available` for `remaining`; plain numeric strings for numbers.
-- A `get_status` result without it clears the band's figure.
+The band's `Atlas tokens: used / limit` figure shows what your organization has used in the current period, read from the latest answer Atlas gives to `get_status`. When Atlas doesn't report token costs for your organization, the figure stays blank: the mod never estimates it and never shows Claude's own usage in its place. The fields the mod reads are documented in `types/index.d.ts`.
 
 ### Third-party code
 

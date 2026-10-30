@@ -11,7 +11,7 @@ in the main thread, inside the CAS campaign section.
 Read in this order. An earlier source outranks a later one when they disagree.
 
 1. **The changes applied from Ad Performance.** The round's `change-r{n}-{id}` notes, which come in
-   `current_brief` (`cas-campaign.md`, **Ad Performance**, **Changes for round {t}**). They rest on
+   `current_brief` (`cas-campaign-page-results.md`, **Ad Performance**, **Changes for round {t}**). They rest on
    the paid partnership ads' results, so they outrank everything below. A pattern a line keeps
    leads the concept's hooks, in H1 when Apply set its type; a pattern a line replaces is not used
    on that concept; and a CTA type a line leads with is C1. Keeping a pattern never keeps its
@@ -72,7 +72,7 @@ trigger, no saved results yet"). Show it on the brief page under the hook.
 
 A hook or CTA that follows a change line from Ad Performance gives a reason from the pattern's fit
 with the concept's trigger and persona, never its paid result or that results chose it: results by
-hook, CTA and framework are agency only (`cas-campaign.md`, **Ad Performance**, **Compare**), and
+hook, CTA and framework are agency only (`cas-campaign-page-results.md`, **Ad Performance**, **Compare**), and
 the reason shows to the client. The agency reads the source on the change note.
 
 ## Limits
@@ -117,7 +117,7 @@ Atlas holds: no lookups, no marketplace, no discovery.
 
 These are organic results from the creators' own posts. Paid results (hook rate and cost per
 sale from the partnership ads) are Ad Performance's, judged by the saved decision defaults in
-`campaign:{slug}-decision-defaults` (`cas-campaign.md`, **Ad Performance**).
+`campaign:{slug}-decision-defaults` (`cas-campaign-page-results.md`, **Ad Performance**).
 
 **How the two feed the next brief.** There is one way to change a brief from results: **Changes
 for round {t}** on Ad Performance, whose accepted lines an Editor applies to the round's brief. The

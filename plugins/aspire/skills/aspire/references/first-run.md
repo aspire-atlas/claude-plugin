@@ -17,7 +17,7 @@ Show the page when all of these hold:
    ("get started with Atlas", "onboard my brand", "connect Atlas", "connect my Instagram",
    "first time with Atlas"), or the user replied "connected" to resume Phase 1. Never when the
    argument routes elsewhere (`agents`, `sample`, `fee calculator`, `program`, `next`,
-   `cas campaign`, `shops`), and never when the ask names a flow ("vet these creators"): that
+   `cas campaign`, `shops`, `quality review`), and never when the ask names a flow ("vet these creators"): that
    flow runs as it does today.
 2. **Atlas answered.** Phase 1 found the connection live and `get_status` returned without an
    auth error (**2**).

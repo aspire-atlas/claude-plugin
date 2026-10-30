@@ -24,7 +24,8 @@ whose only tools are `authenticate` and `complete_authentication` is not signed 
 prefix whose tools include `get_status`, and treat the connection as needing a sign in only
 when no prefix has it. Resolve once in Phase 1.5 and use everywhere. Load tools per phase
 with one `ToolSearch` `select:` call each, or `+Aspire_Atlas` with `max_results: 50` to load
-all at once and drop the `organization_admin` results.
+all at once and drop the `organization_admin` results. Every `select:` list of Atlas tools
+includes `report_checkpoint`.
 
 ## Organization admin connector
 
@@ -34,9 +35,12 @@ invitations) belongs to the `org-admin` skill. Its tools and rules are in
 
 ## Universal argument
 
-Every tool requires `context`: 15 to 25 words, third person, no first person, no
-credentials. It is analytics only. Example: "Onboarding flow creating the brand profile so
-social channels and brand memory have a home in the organization."
+Every tool requires `context`: `[<runId>]` (the current run's id, `orchestration.md` **5**), then
+15 to 25 words, third person, no first person, no credentials. The run id prefix does not count
+toward the words. It is analytics only. Example: "[aspire-20261029t140312-a3f9] Onboarding flow
+creating the brand profile so social channels and brand memory have a home in the organization."
+Live pages that call Atlas through the `mcp` capability (`org-dashboard.md`) send no `context`
+and are outside any run.
 
 ## Attribution model
 
@@ -114,6 +118,7 @@ social channels and brand memory have a home in the organization."
 | Shops | `search_calibrations`, `list_post_search_fields`, `list_creator_search_fields`, `list_insight_search_fields`, `search_posts`, `search_creators`, `search_insights`, `list_hashtags`, `list_hashtag_posts`, `append_insights` (record pass, after W4) | `atlas-shops`: a setup and management plan for Instagram Shop and TikTok Shop; writes `plan`, `step`, `shop-creator`, and its `page` finding on `runKey` prefix `shops-*`; reads program, library, discovery, vetting, and ad reuse findings | `shops.md`; interactive only; reads only what Atlas holds and a connected store's products and stock; never changes a shop or store; no lookups or discovery |
 | Avoid in onboarding | `lookup_creators`, `lookup_posts`, `start_business_discovery`, `search_creator_marketplace`, `get_job_status` | Start discovery work beyond the accounts Atlas already holds | Only on explicit user request. The one routine use is `atlas-profile-analyst` in named-handle mode: the user typing a network and handle in Phase 6 is the approval, and the agent calls `lookup_creators` only when Atlas holds nothing for that handle or the record is over 24 hours old. `lookup_creators` has no status-check tool; re-call it with the same item to re-read a `fetching` result, and `creatorDeepAnalysis` defaults to `true` there, so recent posts come with the account. Attribute it with `asProfileId`. Creator vetting is another: R3 "Fetch them" approves `lookup_creators` for exactly the listed handles Atlas does not hold, batched up to 100 per call. `atlas-post-analysis` is another: pasting the post's link approves `lookup_posts` for that post, and Q2 "Refresh the account first" approves `lookup_creators` for its author only. The other routine use is `atlas-content-review` on a published post: pasting the link is the approval, and the agent calls `lookup_posts` once for that post only when Atlas does not hold it, with `creatorDeepAnalysis` left at its default `false`. `atlas-deliverable-tracker` is another: T0 approves `lookup_posts` for exactly the post links the user pasted, in an interactive check only, with `creatorDeepAnalysis` `false`. A TikTok miss is a paid vendor call. |
 | Utility | `get_more_tools` | Server-side tool discovery | Do not call during onboarding; the phase map above is the supported surface. |
+| Utility | `report_checkpoint` | Records a checkpoint or a feedback verdict for an agent run, for product analytics | Changes no Atlas data and costs no credits. Ids, numbers, and enums only, never names, handles, or free text. Needs no confirmation and may run unattended. Skip it silently when it is absent or a call is refused. Fields and when to send them: SKILL.md **Checkpoints**. |
 
 ## Partnership content (Meta partnership ads)
 
@@ -273,7 +278,7 @@ confirmation.
 State-creating calls (`create_profile`, `connect_channel` start, `append_calibration`,
 `add_hashtags`, `append_insights`) also need a confirmation, per the Guardrails in SKILL.md,
 but a single confirmation may cover a batch of the same kind (for example, all Phase 5
-answers the user just gave).
+answers the user just gave). `report_checkpoint` changes no Atlas data and needs none.
 
 ## Visual fields (for Visual output)
 
@@ -370,6 +375,10 @@ page for creators.
 
 **The key `library:cadence` belongs to the content library** (`program.md`, **Brand-wide
 library**). It is a `policy` record; every other flow drops `library:` keys the same way.
+
+**The key `quality-review:log` belongs to the quality review** (`quality-review.md`, **10**): where
+the organization keeps its own review log. It is a `policy` record; every other flow drops
+`quality-review:` keys the same way.
 
 **Read every page.** `limit 100` on `search_calibrations` is the page size, not a cap. Pass
 each response's `nextCursor` back as `cursor` until none is returned, then filter. Lessons,

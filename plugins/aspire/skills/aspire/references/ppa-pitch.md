@@ -214,7 +214,9 @@ Left column:
 - Five stats in a row, label in small caps over the value: Hook rate, Interaction, Median views,
   Reach ratio, Engagement. A missing value is an em dash, and the right column carries one italic
   note: "{Stats} not shown: {plain reason}." ("Engagement not shown: likes are hidden on most of
-  Sam's posts.").
+  Sam's posts."). The reason is about the creator or the platform, never Atlas, a tool, or data
+  collection (`artifact-standard.md`, section 2, **No platform disclosures**); when that is the only
+  reason, show the em dash with no note and tell the user under Data gaps.
 - Photos (**Assets**): up to four in a row, cropped square, thin accent border; with two or three,
   the row keeps the same photo size and ends early; with none, the profile picture alone at its
   own size, at 11cqw, with the rationale growing to fill the column.
@@ -547,7 +549,7 @@ framework, name, shot recipe, length.
   in the review step, never a stock or generated image.
 - **Brand logo:** the `theme` look follows `theme.md`, **Logo**.
 - **No Pillow.** The **Images** snippet needs Pillow. When `python3 -c "import PIL"` fails, build
-  the deck without images (initials, empty photo rows, no thumbnails), say so under Data gaps, and
+  the deck without images (initials, empty photo rows, no thumbnails, and no note about it on a slide), say so under Data gaps, and
   tell the user Pillow is needed for images. Never install anything.
 - Budgets: images under 8MB and the page under 10MB, per **Images**. A deck with 15 creators drops
   to three photos per creator before cutting quality.

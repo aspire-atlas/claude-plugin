@@ -174,14 +174,14 @@ let ticker: { cancel: () => void } | null = null
 const band: { renders: number; surface: string | null; crab: Character | null } = { renders: 0, surface: null, crab: null }
 const pickCrab = (): Character => AGENT_CHARACTERS[Math.floor(Math.random() * AGENT_CHARACTERS.length)] as Character
 
-const tick = async ($: EngineInterface): Promise<void> => {
+async function tick($: EngineInterface): Promise<void> {
   const at = await $.clock.now()
   await syncStatus($)
   const t = await read($, turn)
   if ((await read($, agents)).some(a => a.status === 'running') || (t && t.end === undefined)) await update($, now, () => at)
 }
 
-const startTicking = ($: EngineInterface): void => {
+function startTicking($: EngineInterface): void {
   if (ticker) return
   ticker = $.clock.every(1000, () => {
     tick($).catch(() => undefined)
@@ -202,7 +202,27 @@ async function activate($: EngineInterface, kind: TriggerKind, detail: string): 
 
 type Count = 'prompts' | 'skillTools' | 'progressReports' | 'atlasResults' | 'agents'
 
-const count = ($: EngineInterface, key: Count) => update($, seen, s => ({ ...s, [key]: s[key] + 1 }))
+// One case per key, with no computed member, so nothing $ reaches uses brackets.
+function bump(s: Seen, key: Count): Seen {
+  switch (key) {
+    case 'prompts':
+      return { ...s, prompts: s.prompts + 1 }
+    case 'skillTools':
+      return { ...s, skillTools: s.skillTools + 1 }
+    case 'progressReports':
+      return { ...s, progressReports: s.progressReports + 1 }
+    case 'atlasResults':
+      return { ...s, atlasResults: s.atlasResults + 1 }
+    case 'agents':
+      return { ...s, agents: s.agents + 1 }
+  }
+}
+
+// Named so no other binding in this file shares it: the plugin directory resolves a helper that takes $ by its
+// name, and blocked 4.1.0 and 4.1.1 while `count` was also a number parameter in the drawing code.
+async function countSeen($: EngineInterface, key: Count): Promise<void> {
+  await update($, seen, s => bump(s, key))
+}
 
 async function reset($: EngineInterface): Promise<void> {
   ticker?.cancel()
@@ -231,7 +251,7 @@ async function reset($: EngineInterface): Promise<void> {
 }
 
 // The progress line under the prompt, for when the band is not drawn. One per plugin; cleared as soon as the band shows or the run ends.
-const setStatus = async ($: EngineInterface, text: string | undefined, force = false): Promise<void> => {
+async function setStatus($: EngineInterface, text: string | undefined, force = false): Promise<void> {
   try {
     if (!force && (text ?? null) === (await read($, statusLine))) return
     // The state holds JSON, so "no line" is null there.
@@ -241,7 +261,7 @@ const setStatus = async ($: EngineInterface, text: string | undefined, force = f
     // A convenience.
   }
 }
-const syncStatus = async ($: EngineInterface): Promise<void> => {
+async function syncStatus($: EngineInterface): Promise<void> {
   try {
     const p = (await isOn($)) ? await read($, progress) : null
     const isFallback = !!p && !p.isFinished && band.renders === 0 && !(await read($, isBandHidden))
@@ -264,7 +284,7 @@ const syncStatus = async ($: EngineInterface): Promise<void> => {
 }
 
 /** Panel rows still `running` that the engine no longer lists end here: done when it says completed, failed otherwise. */
-const reconcileAgents = async ($: EngineInterface): Promise<void> => {
+async function reconcileAgents($: EngineInterface): Promise<void> {
   try {
     if (!(await read($, agents)).some(a => a.status === 'running')) return
     const listed = await $.agent.list()
@@ -284,7 +304,7 @@ const reconcileAgents = async ($: EngineInterface): Promise<void> => {
   }
 }
 
-const isOn = async ($: EngineInterface): Promise<boolean> => {
+async function isOn($: EngineInterface): Promise<boolean> {
   try {
     return await read($, isActive)
   } catch {
@@ -293,7 +313,7 @@ const isOn = async ($: EngineInterface): Promise<boolean> => {
 }
 
 /** The /aspire flow now reporting progress (the skill has not finished it), or null: what the question dialog and the spinner speak of. */
-const flowOf = async ($: EngineInterface): Promise<Progress | null> => {
+async function flowOf($: EngineInterface): Promise<Progress | null> {
   try {
     if (!(await read($, isActive))) return null
     const p = await read($, progress)
@@ -309,8 +329,13 @@ const shortTool = (tool: string): string => tool.replace(/^mcp__.*__/, '')
 /** `mcp__<server>__` of each connector that has answered as Aspire Atlas, for a server whose name does not say so. Names only. */
 const atlasServers = new Set<string>()
 const serverOf = (tool: string): string => /^(mcp__.+?__)/.exec(tool)?.[1] ?? ''
-/** An Atlas connector tool (the progress and step tools are the mod's own and never count). */
-const isAtlasTool = (tool: string): boolean => tool.startsWith('mcp__') && tool !== PROGRESS_TOOL && tool !== STEP_TOOL && (isAtlasToolName(tool) || atlasServers.has(serverOf(tool)))
+/** Atlas's analytics checkpoint (`report_checkpoint`), by its bare name: its rows keep Claude Code's own drawing, from any connector. */
+const isCheckpointTool = (tool: string): boolean => shortTool(tool) === 'report_checkpoint'
+/** An Atlas connector tool (the progress and step tools are the mod's own and never count, nor does the checkpoint). */
+const isAtlasTool = (tool: string): boolean =>
+  tool.startsWith('mcp__') && tool !== PROGRESS_TOOL && tool !== STEP_TOOL && !isCheckpointTool(tool) && (isAtlasToolName(tool) || atlasServers.has(serverOf(tool)))
+/** A call's `context` without the `[runId]` an agent puts first (only the minted shape), so the row reads as the sentence alone. */
+const withoutRunId = (context: string): string => context.replace(/^\s*\[(?:aspire|atlas-[a-z0-9-]{2,60})-\d{8}t\d{6}-[0-9a-f]{4}\]\s*/, '')
 
 // ---------------------------------------------------------------------------
 // The Artifact card: the transcript's result row for a published Artifact.
@@ -601,7 +626,7 @@ const tierFor = (columns: number): number => {
   return i === -1 ? TIER_MIN.length : i
 }
 
-const refreshContext = async ($: EngineInterface): Promise<void> => {
+async function refreshContext($: EngineInterface): Promise<void> {
   const { context } = await $.session.usage()
   if (typeof context.percent === 'number') {
     const percent = context.percent
@@ -1114,7 +1139,7 @@ export const register: Register = on => {
       if ((await read($, notice)) !== null) await update($, notice, () => null)
       if (typeof e.text === 'string' && ASPIRE_PROMPT.test(e.text)) {
         await activate($, 'prompt', e.text.trim().split(/\s/, 1)[0] ?? '/aspire')
-        await count($, 'prompts')
+        await countSeen($, 'prompts')
       }
     } catch {
       // Switching on is a convenience: the prompt goes on whatever happens here.
@@ -1131,7 +1156,7 @@ export const register: Register = on => {
       const skill = (e as { skill?: unknown }).skill
       if (typeof skill === 'string' && ASPIRE_SKILL.test(skill.trim().replace(/^\//, ''))) {
         await activate($, 'skill-tool', skill.trim())
-        await count($, 'skillTools')
+        await countSeen($, 'skillTools')
       }
     } catch {
       // As above.
@@ -1146,7 +1171,7 @@ export const register: Register = on => {
     if (e.agentId) return { result: 'ignored: only the main session reports Aspire progress' }
     try {
       await activate($, 'progress', 'aspire_progress')
-      await count($, 'progressReports')
+      await countSeen($, 'progressReports')
       const before = await read($, progress)
       const p = await update($, progress, prev => mergeProgress(prev, e as unknown as ProgressInput))
       if (!before || before.isFinished || before.title !== p?.title) band.crab = null
@@ -1210,13 +1235,13 @@ export const register: Register = on => {
     try {
       if (result.deny !== undefined || result.isError) return result
       const tool = String(e.tool)
-      if (tool === PROGRESS_TOOL || tool === STEP_TOOL) return result
+      if (tool === PROGRESS_TOOL || tool === STEP_TOOL || isCheckpointTool(tool)) return result
       const payload = { result: result.result, text: result.text }
       const isStatus = isAtlasStatusCall(tool, payload)
       if (!isStatus && !isAtlasToolName(tool)) return result
       if (serverOf(tool)) atlasServers.add(serverOf(tool))
       await activate($, 'atlas-tool', shortTool(tool))
-      await count($, 'atlasResults')
+      await countSeen($, 'atlasResults')
       if (isStatus) {
         const at = await $.clock.now()
         const costs = readAtlasUsage(payload)
@@ -1255,8 +1280,7 @@ export const register: Register = on => {
     const ui = $.ui.resolve(e)
     const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
     const Raster = e.surface === 'terminal' && 'Raster' in ui ? ui.Raster : null
-    if ((!Svg && !Raster) || tool === PROGRESS_TOOL || tool === STEP_TOOL || !tool.startsWith('mcp__')) return next(e)
-    if (!(isAtlasToolName(tool) || atlasServers.has(serverOf(tool))) || !(await isOn($))) return next(e)
+    if ((!Svg && !Raster) || !isAtlasTool(tool) || !(await isOn($))) return next(e)
     const { Box, Text } = ui
     // The terminal draws no Svg: the small cell mark beside Claude Code's own row, which keeps its description and result.
     if (!Svg && Raster) {
@@ -1271,9 +1295,9 @@ export const register: Register = on => {
     if (!Svg) return next(e)
     const name = shortTool(tool).replace(/_/g, ' ')
     const state = e.props.isInterrupted ? 'interrupted' : e.props.isErrored ? 'failed' : e.props.isRunning ? 'running' : ''
-    // Every Atlas tool takes a `context`: a sentence on why the call is made, which the row shows as its description.
+    // Every Atlas tool takes a `context`: a sentence on why the call is made, which the row shows as its description, less its run id.
     const input = e.props.input !== null && typeof e.props.input === 'object' ? (e.props.input as Readonly<Record<string, unknown>>) : {}
-    const description = str(input.context)
+    const description = str(withoutRunId(str(input.context) ?? ''))
     return (
       <Box flexDirection="row" gap={1}>
         <Svg source={e.props.isRunning ? spinnerSvg(18) : logoSvg(18, false)} alt="Aspire Atlas" width={18} height={18} />
@@ -1341,9 +1365,10 @@ export const register: Register = on => {
   })
 
   // A collapsed run of Atlas calls: the mark beside Claude Code's own group row, which keeps its descriptions, results and failures. A
-  // group that holds any other tool, and a group the person expanded, keep Claude Code's own drawing alone.
+  // group that holds any other tool, and a group the person expanded, keep Claude Code's own drawing alone. Checkpoints in the run
+  // are passed over, so they neither brand a group nor stop one being branded.
   on('ui.render', { component: 'ToolGroup' }, async ($, e, next) => {
-    const calls = e.props.calls
+    const calls = e.props.calls.filter(c => !isCheckpointTool(String(c.tool)))
     if (e.props.isExpanded || calls.length === 0 || !calls.every(c => isAtlasTool(String(c.tool))) || !(await isOn($))) return next(e)
     const ui = $.ui.resolve(e)
     const { Box } = ui
@@ -1556,7 +1581,7 @@ export const register: Register = on => {
         return [...list.filter(a => a.id !== run.id), run].slice(-MAX_RUNS)
       })
       await update($, now, () => at)
-      await count($, 'agents')
+      await countSeen($, 'agents')
 
       // The panel opens by itself once per session, for the first aspire:* agent.
       if (isAspire && !(await read($, panel)).isAutoOpened) {
@@ -1867,8 +1892,9 @@ export const register: Register = on => {
     }
 
     // Each section: a header that opens and closes it, then rows (desktop drawings) or text (terminal and the rest).
-    // A row may be a sub-accordion's header (`h` is its height); its children follow only while it is open.
-    type Row = { id: string; h: number; alt: string; draw: (W: number, tail: number) => string; onPress?: () => void }
+    // A row may be a sub-accordion's header; its children follow only while it is open. The row's height is
+    // `height`, never `h`: the plugin directory reserves h and Fragment in a .tsx file, which JSX compiles to.
+    type Row = { id: string; height: number; alt: string; draw: (W: number, tail: number) => string; onPress?: () => void }
     type Section = { key: string; title: string; summary: string; rows: Row[]; text: () => JSX.Element }
     const empty = 'No agents yet. Aspire agents show here as they start.'
     // Pressing an agent opens its task list under it; pressing again closes it.
@@ -1878,9 +1904,9 @@ export const register: Register = on => {
         const tasks = agentTasks(a)
         const isTasksOpen = isOpen(key)
         return [
-          { id: a.id, h: ROW_H, alt: `${a.description}: ${modelName(a.model)}, ${state}, ${isTasksOpen ? 'tasks open' : 'tasks collapsed'}`, draw: (W, tail) => agentSvg(W, a, at, tail), onPress: toggle(key) },
+          { id: a.id, height: ROW_H, alt: `${a.description}: ${modelName(a.model)}, ${state}, ${isTasksOpen ? 'tasks open' : 'tasks collapsed'}`, draw: (W, tail) => agentSvg(W, a, at, tail), onPress: toggle(key) },
           ...(isTasksOpen
-            ? [{ id: `${a.id}-tasks`, h: agentTasksH(tasks), alt: `${a.description} tasks: ${tasks.map(t => `${t.kind === 'done' ? 'done' : t.kind === 'now' ? 'now' : 'to do'} ${t.text}`).join(', ') || 'none reported yet'}`, draw: (W: number, tail: number) => agentTasksSvg(W, a, tasks, tail) }]
+            ? [{ id: `${a.id}-tasks`, height: agentTasksH(tasks), alt: `${a.description} tasks: ${tasks.map(t => `${t.kind === 'done' ? 'done' : t.kind === 'now' ? 'now' : 'to do'} ${t.text}`).join(', ') || 'none reported yet'}`, draw: (W: number, tail: number) => agentTasksSvg(W, a, tasks, tail) }]
             : []),
         ]
       })
@@ -1955,9 +1981,9 @@ export const register: Register = on => {
         summary: `${shown.label} · ${percent}`,
         rows:
           plan && !isReportLeading(report, plan)
-            ? [{ id: 'progress', h: planH(plan), alt: `${title}: ${shown.label}, ${percent}`, draw: (W, tail) => planBodySvg(W, title, shown, plan, tail) }]
+            ? [{ id: 'progress', height: planH(plan), alt: `${title}: ${shown.label}, ${percent}`, draw: (W, tail) => planBodySvg(W, title, shown, plan, tail) }]
             : [
-                { id: 'progress', h: PROGRESS_H + tasks.length * TASK_H, alt: `${title}: ${shown.label}, ${percent}`, draw: (W, tail) => progressBodySvg(W, title, shown, tasks, tail) },
+                { id: 'progress', height: PROGRESS_H + tasks.length * TASK_H, alt: `${title}: ${shown.label}, ${percent}`, draw: (W, tail) => progressBodySvg(W, title, shown, tasks, tail) },
               ],
         text: () =>
           plan && !isReportLeading(report, plan) ? (
@@ -2000,7 +2026,7 @@ export const register: Register = on => {
         summary: list.length ? `${fmtCount(list.length, 'agent', 'agents')} · ${fmtTime(spanOf(list, at))}` : '',
         rows: running.length
           ? agentRows(running, 'running')
-          : [{ id: 'running-note', h: NOTE_H, alt: empty, draw: (W, tail) => noteSvg(W, list.length ? 'Nothing running right now.' : empty, tail) }],
+          : [{ id: 'running-note', height: NOTE_H, alt: empty, draw: (W, tail) => noteSvg(W, list.length ? 'Nothing running right now.' : empty, tail) }],
         text: () => <Box flexDirection="column">{running.length ? running.map(row) : <Text dimColor>{list.length ? 'Nothing running right now.' : empty}</Text>}</Box>,
       },
       ...(finished.length
@@ -2014,9 +2040,9 @@ export const register: Register = on => {
           const entries = ROSTER.filter(r => r.group === g.key)
           const groupOpen = isOpen(`group:${g.key}`)
           return [
-            { id: `group:${g.key}`, h: SUB_H, alt: `${g.title}, ${entries.length}, ${groupOpen ? 'open' : 'collapsed'}`, draw: (W, tail) => subHeaderSvg(W, g.title, String(entries.length), groupOpen, tail), onPress: toggle(`group:${g.key}`) },
+            { id: `group:${g.key}`, height: SUB_H, alt: `${g.title}, ${entries.length}, ${groupOpen ? 'open' : 'collapsed'}`, draw: (W, tail) => subHeaderSvg(W, g.title, String(entries.length), groupOpen, tail), onPress: toggle(`group:${g.key}`) },
             ...(groupOpen
-              ? entries.map(r => ({ id: `start-${r.type}`, h: CARD_H, alt: `${r.name}: ${r.blurb}`, draw: (W: number, tail: number) => cardSvg(W, r, list, tail, p.leaving === r.type), onPress: startAgent(r) }))
+              ? entries.map(r => ({ id: `start-${r.type}`, height: CARD_H, alt: `${r.name}: ${r.blurb}`, draw: (W: number, tail: number) => cardSvg(W, r, list, tail, p.leaving === r.type), onPress: startAgent(r) }))
               : []),
           ]
         }),
@@ -2072,8 +2098,8 @@ export const register: Register = on => {
                     const tail = i === c.rows.length - 1 ? TAIL : 0
                     return (
                       <Box key={r.id} flexDirection="column">
-                        <Svg source={r.draw(W, tail)} alt={r.alt} width={W} height={r.h + tail} />
-                        {r.onPress ? pressable(r.id, r.h, r.onPress) : null}
+                        <Svg source={r.draw(W, tail)} alt={r.alt} width={W} height={r.height + tail} />
+                        {r.onPress ? pressable(r.id, r.height, r.onPress) : null}
                       </Box>
                     )
                   })}

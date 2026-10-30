@@ -471,7 +471,7 @@ safety colors (`--ac-neg`, `--ac-neu`, the ok and warn dots and tiles) keep thei
 
 ### The CAS campaign page
 
-The CAS campaign page is built on the Atlas design system tokens (`cas-campaign.md`, **Design
+The CAS campaign page is built on the Atlas design system tokens (`cas-campaign-page-results.md`, **Design
 standards**), not on the page tokens above. On that page the theme sets only the tokens below, in
 each mode from that mode's values, and the block goes right after the page's **Tokens** block.
 Surfaces, text, borders and the font stay Atlas's, and `fonts` and `radius` are not used there.

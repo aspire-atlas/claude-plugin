@@ -7,12 +7,18 @@ source sentence anywhere else: point here.
 
 The two pieces say everything the page needs to say about itself:
 
-- **Who prepared it:** the mark, which is Aspire Atlas. A page never names Claude, a model, an
-  assistant, or the person who asked for it.
+- **Who prepared it:** the mark, which is Aspire Atlas. A page never names Claude, a model, or an
+  assistant, and names the person who asked for it only in the "Prepared by" line a page for a
+  VP or budget owner carries (`skills/page-standard/SKILL.md`, section 2). Creators, approvers,
+  and other people a flow shows stay as that flow sets them.
 - **For whom:** the header's "Prepared for" chip (recipient-lens.md), and, on a page shared outside
   the team, the audience in the source line.
 - **When:** the "as of" time in the source line, which changes every time the page is republished or
   its data is refreshed. There is no separate prepared date.
+
+What a page says, part by part, and the R1 to R12 checks (`reader-standard.md`) it passes before
+it is published are set by the shared skill `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`.
+This file sets only the mark and the source line.
 
 Applies to: pages published with the Artifact tool, the PPA deck (HTML and exports), the inline
 creator card widget, the decision audit page, sample pages, and any page the main thread builds.
@@ -69,12 +75,19 @@ added, it does not replace them). Markup:
     page (the client's approvers), the PPA pitch deck (the client or presenter's audience), and any other
     page the user says will be shared. The order form stays "Internal use only" (its team contributors
     are the audience) and keeps its own "For your team only" notice, which this line does not replace.
+- **No platform disclosures.** A page with the shared audience line says nothing about Atlas's
+  own performance, errors, or missing data: no data gaps or limitations section; no failed,
+  partial, or retried read; no stale, delayed, or "not available in Atlas" note; no platform or
+  posts Atlas could not collect; and no fallback or snapshot explained by a failure. Those go to
+  the requester in the chat summary. The page shows what was found, and a section with nothing to
+  show is left out without comment. The source line, its as-of time, and a dated snapshot label
+  stay. Team pages keep their data gaps.
 - Data from a connector other than Atlas (a store, ad account, mailbox, or Drive file) is added to the
   source sentence: "Source: Aspire Atlas cross-platform indexing (...), and {source label} data for
   {what it fills}. Data compiled ..." Never present the other connector's figures as Atlas's.
 - Never name Claude, a model, or an assistant, and never add the requester's name, email, id, slug,
-  or role. "AI brand memory" is the fixed name of the data layer, not a statement about who wrote
-  the page.
+  or role to the source line. "AI brand memory" is the fixed name of the data layer, not a
+  statement about who wrote the page.
 
 The source sentence's fixed wording is: `Source: Aspire Atlas cross-platform indexing ({networks}).
 Data compiled via proprietary AI brand memory as of {asOfDate}.` Keep it as one sentence pair; the
@@ -84,6 +97,11 @@ check script finds it in this file only.
 
 - **Sample pages** (mode `sample`): carry the mark, and replace the source line with "Sample.
   Invented data for {holiday} {year}. Not from Atlas. Not for any decision." Keep the sample banner.
+- **Review pages** (a quality review's page): carry the mark, and replace the source line with
+  "Reviewed from {the work's title}, read from {where: an artifact, Google Drive, a file} as of
+  {asOfDate}." When the review re-checked Atlas figures, add the standard source sentence after it;
+  when it did not, add nothing about Atlas. Then "Rubric version {n}." from `quality-review.md`, then
+  the team audience line.
 - **Pages with no Atlas data** (the first-run starter page, the setup-needed cards): carry the mark,
   and replace the source line with "No Atlas data on this page."
 - **The order form**: Contributors edit it, so its header shows "Last edited {time}" from the page
@@ -102,9 +120,11 @@ check script finds it in this file only.
 1. The mark is inline, once, at the top right; nothing recolors it; the header still fits at phone
    width.
 2. The source line has the as-of time from the shell clock and a networks list that matches the data;
-   the page names no Claude, model, assistant, requester, email, or id.
+   the page names no Claude, model, assistant, email, or id, and names the requester only in a
+   "Prepared by" line (page-standard, section 2).
 3. The header carries the "Prepared for" chip (recipient-lens.md) so the page says who it is for.
-4. The audience line matches who will see the page.
+4. The audience line matches who will see the page, and a page with the shared line carries no
+   platform disclosures (section 2).
 5. The page source stays ASCII and keeps its size budget (the full mark is about 27KB of the page's
    budget).
 
@@ -132,6 +152,10 @@ Every page, deck, or card you publish carries the animated Aspire Atlas mark at 
 one source line at the end, as
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md` sets out: the mark and the
 variants in sections 1 and 3, the source line in section 2. Take the as-of time from the shell clock
-and change it on every republish. Never name Claude, a model, or the requester on a page. A sample
-page follows the sample variant. Files for import (CSV) and chat or mail text carry neither.
+and change it on every republish. Never name Claude or a model on a page, and name the requester
+only in the "Prepared by" line the page standard sets. A sample page follows the sample variant.
+Files for import (CSV) and chat or mail text carry neither.
+
+Before you publish a page, follow `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md` and
+return its `page-check` block just before your audit trail block.
 <!-- /agent-block -->
