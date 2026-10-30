@@ -32,7 +32,10 @@ When I weigh one creator, I want a full profile: audience, top and worst posts, 
 
 ## Universal skills used
 
-_Pending: set in ASP-4102._
+- U1 Creator intelligence
+- U3 Brand safety and conflicts
+- U5 Performance baseline
+- U7 Pricing and return
 
 ## Shared skills
 
@@ -44,7 +47,14 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Trigger phrases
 
-_Pending: set in ASP-4102._
+- "full profile for @handle"
+- "creator profile"
+- "show me @handle's portfolio"
+- "deep dive on @handle"
+- "what would @handle cost"
+- "should we work with @handle, and what would it cost?"
+- "a senior leader wants this creator, give me a point of view"
+- Taking up the offer of the full profile after an account review of a creator
 
 ## Writes to Atlas
 
@@ -52,4 +62,10 @@ Nothing. It publishes its page and saves no records.
 
 ## Non-goals
 
-_Pending: set in ASP-4102._
+- Finding new creators. 05 Creator Search does that.
+- Approving, maybe-ing or rejecting a creator and saving the call. 06 Creator Vetting does that, and runs after this agent for I3.
+- Reviewing a brand, shop or publisher account. It stops and points to 27 Account Analyst.
+- Reading one post in depth. 31 Post Analysis does that.
+- Agreeing the fee with the creator. It shows a fee range only; 14 Negotiator works out the offer.
+- Reaching out to the creator. 13 Outreach and Brief does that.
+- Saving its next steps as action items. They stay on the page as recommendations.

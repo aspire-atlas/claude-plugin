@@ -33,7 +33,11 @@ When I have to report, I want daily, weekly, campaign, creator and quarterly rep
 
 ## Universal skills used
 
-_Pending: set in ASP-4102._
+- U1 Creator intelligence
+- U2 Content intelligence
+- U3 Brand safety and conflicts
+- U4 Market and competitor signal
+- U5 Performance baseline
 
 ## Shared skills
 
@@ -47,12 +51,32 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Trigger phrases
 
-_Pending: set in ASP-4102._
+- "daily insights" or "daily insights report"
+- "what happened yesterday on our accounts" or "yesterday's numbers"
+- "launch pulse" or "how is the launch landing"
+- "weekly insights" or "weekly insights report"
+- "how did last week go" or "week in review"
+- "could we make a version of this report for leadership?"
+- "how did influencer do this quarter", "quarterly review" or "QBR"
+- "put together the quarter for leadership" or "is our creator program working"
+- "program dashboard" or "how is the program doing"
+- "are we on track for our goals"
+- "/aspire reports" or "report", with daily, weekly or quarter after it
+- A scheduled task named "Atlas daily insights report", "Atlas weekly insights report" or
+  "Atlas program dashboard"
 
 ## Writes to Atlas
 
-Nothing. It publishes its page and saves no records.
+Findings, under the one batch confirmation at launch or the standing approval a scheduled report got at setup. The daily report saves up to five insights, plus three per open launch pulse. The weekly report saves its patterns and next steps and closes action items that are now met. The quarterly report saves its findings when the person confirms. The program dashboard saves a snapshot after approval.
 
 ## Non-goals
 
-_Pending: set in ASP-4102._
+- Running the market signal. It reads the saved findings of 02 Market signal and never re-runs
+  them.
+- Reviewing the brand's own accounts and proposing pushes: 27 Account analyst.
+- Breaking down one post: 31 Post analysis.
+- Reviewing a post against the brief: 17 Content review.
+- Acting on what the program dashboard shows. Each open item names its next step and the agent
+  that handles it, such as 15 Campaign manager, 16 Product fulfillment or 18 Creator payments.
+- Keeping the ledger. Spend comes from 18 Creator payments and shows only in the team view.
+- Saving the readout setup and its schedule. That is the Readouts setup in `/aspire`.

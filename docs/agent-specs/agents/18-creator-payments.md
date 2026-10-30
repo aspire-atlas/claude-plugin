@@ -29,7 +29,7 @@ None. No question in the map routes here yet.
 
 ## Universal skills used
 
-_Pending: set in ASP-4102._
+- U7 Pricing and return
 
 ## Shared skills
 
@@ -42,12 +42,33 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Trigger phrases
 
-_Pending: set in ASP-4102._
+- "update payments"
+- "what do we owe creators"
+- "what's been paid"
+- "where are we against budget"
+- "how much budget is left"
+- "here's the payments export"
+- "these invoices came in"
+- "mark @handle's fee paid"
+- "which invoices are overdue"
+- "export the ledger for finance"
+- "/aspire payments", "payment" or "ledger"
 
 ## Writes to Atlas
 
-_Pending: set in ASP-4102._
+Write. New, revised and void ledger lines, the invoices and payments matched to them, the
+answers to its "your call" items, and the ledger page link. Each batch is one confirmation: one
+for the lines, one for a CSV's column mapping, one for the matches. It records payments made in
+the core Aspire platform or the brand's finance tool and never pays. Releasing a payment would be
+a Send, one confirmation per payment, and the agent that runs today does not do it. An
+unattended run saves nothing.
 
 ## Non-goals
 
-_Pending: set in ASP-4102._
+- Agreeing fees, payment timing and terms: 14 Negotiator.
+- Working out commission from sales: 19 Affiliate program, which hands its lines in.
+- Rights and UGC fees: 23 UGC commissioner and 26 Content library and rights hand their lines in.
+- Placing product orders: 16 Product fulfillment. Product shows as a cost, never cash owed.
+- Knowing whether a post went up. A fee due on posting waits on 15 Campaign manager.
+- The program's overall view of spend and sales: 29 Reports.
+- Messaging a creator about a payment: 13 Outreach and brief.
