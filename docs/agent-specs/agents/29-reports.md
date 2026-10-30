@@ -62,9 +62,11 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 - "put together the quarter for leadership" or "is our creator program working"
 - "program dashboard" or "how is the program doing"
 - "are we on track for our goals"
-- "organization dashboard", "show me where we stand" or "rebuild the dashboard"
+- "organization dashboard", "show the dashboard", "my dashboard" or "rebuild the dashboard"
+- "where do we stand" or "show me where we stand"
 - "what should I do next in Atlas" or "make my own dashboard"
 - A bare `/aspire:aspire` on a configured organization
+- "/aspire dashboard"
 - "/aspire reports" or "report", with daily, weekly or quarter after it
 - A scheduled task named "Atlas daily insights report", "Atlas weekly insights report" or
   "Atlas program dashboard"

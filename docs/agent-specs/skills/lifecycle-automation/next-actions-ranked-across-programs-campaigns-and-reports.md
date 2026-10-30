@@ -11,12 +11,13 @@ Ranks one list of next actions across every influencer program, creator ad campa
 
 ## Inputs
 
-- From brand memory: every setup record and the working state of each program and campaign, the saved limits for the hourly run, and the Editors who approve.
+- From brand memory: every setup record and the working state of each program and campaign, the execution policy that sets what the hourly run may carry out, and the routing (the Slack channel and the people it messages).
+- From the page: decisions by anyone the page is shared with as Editor.
 - From the launch message: publish or read mode, and the reader.
 
 ## Output
 
-The Next actions page, where Editors approve proposals, and the ranked list for the result packet. The hourly run hands each approved action to its owning agent through `/aspire`, inside the saved limits. It launches no agent, decides nothing and writes nothing to Atlas.
+The Next actions page, where Editors approve proposals, and the ranked list for the result packet. The ranking launches no agent, decides nothing and writes no Atlas record. The hourly run then hands each approved action to its owning agent through `/aspire`, inside the saved execution policy: an approval covers only that agent's Atlas records and mailbox drafts, never a send, an order, or a store code.
 
 ## Callable
 
