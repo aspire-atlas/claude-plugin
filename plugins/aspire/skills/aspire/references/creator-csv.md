@@ -56,7 +56,8 @@ Every row carries two tags, in this order, before any other:
    - Fewer than 3 analyzed posts and no safety flag: `Brand Safety: Not Checked`.
 
    When the run drew a creator card for the creator, the tag matches that card's tile; a vetting
-   run's own brand safety review is the source for its creators.
+   run's own brand safety review is the source for its creators. A creator with neither is
+   counted over their posts from the last 90 days.
 
 A vetting run adds `Vetting: Approve`, `Vetting: Maybe`, or (only when the user asked for every
 creator) `Vetting: Reject` after the brand safety tag.
@@ -72,10 +73,14 @@ Remove any `|` or `,` from a tag's text so it stays one tag. Example:
   comment, a tag the user typed) that starts with `=`, `+`, `-`, `@`, a tab or a carriage return
   gets a leading `'`, so no spreadsheet runs it as a formula. Handles (written without the `@`),
   links, and the plugin's own tags never need one.
-- Named `{campaign or brand slug}-aspire-members-{YYYY-MM-DD}.csv`, saved in the session's working
-  folder.
-- A vetting list that runs in batches makes one file: the main thread passes the first batch's
-  path as `csv_path` to every later batch, which appends its rows without a header row.
+- Named `{slug}-aspire-members-{YYYY-MM-DD}.csv`, where the slug is the vetting list's slug, the
+  campaign slug, or the brand slug, in that order. When that name is already taken by another
+  list, add `-2`, `-3` and so on. Saved in the session's scratchpad folder (the working directory
+  when there is none), as the finance CSV is.
+- A vetting list that runs in batches makes one file. The first batch writes it, header row
+  included even when it has no rows; the main thread passes that path as `csv_path` to every
+  later batch, which appends its rows with no header row and no second byte order mark, each row
+  ending in CRLF.
 - No mark, source line, or footnote: its columns are an import format. The date goes in the file
   name and the source in the hand-off message.
 

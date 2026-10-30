@@ -1098,10 +1098,11 @@ it.
 - **Asked after a run, or for a search you ran**: write the file yourself from the rows the
   reference's **Which creators** names. Take each creator's brand safety from the creator card
   the run showed. For the rest, read them in batches, not one call per creator: one
-  `search_creators` call per network with every handle in a `terms` filter (email, names,
-  channels), and one `search_posts` call per network for their posts' `analysis.brandSafety`,
-  plus the brand's `red_line` calibrations and competitors for the card's other safety flags.
-  Never start discovery or lookups for it.
+  `search_creators` query per network with every handle in a `terms` filter (email, names,
+  channels), and one `search_posts` query per network on those handles over the last 90 days for
+  their posts' `analysis.brandSafety`, plus the brand's `red_line` calibrations and competitors
+  for the card's other safety flags. Run each at `limit` 100 and page with `cursor` to the end;
+  one page is not the whole answer. Never start discovery or lookups for it.
 - When the user names Aspire groups, projects, owners or extra tags, they go in those columns as
   given. No question is needed: writing the file is not an Atlas write.
 
