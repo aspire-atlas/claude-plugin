@@ -58,6 +58,67 @@ Rules:
   written to Atlas**). A run with neither (pass 1, "Show them here only") saves the link at the
   next run that has one.
 
+## Main thread steps
+
+The **Creator outreach** section of SKILL.md points here; the main thread follows these steps.
+Each O question is one `AskUserQuestion` question, asked exactly as worded in **Approvals
+(asked by the main thread)**, with these headers: O1 "Drafts", O2 "Mailbox", O3 "Send", O4
+"Replies".
+
+**Launch inputs** for `atlas-creator-outreach`: tool prefix, `profile_id`, `profile_slug`,
+brand handles and networks, the program slug, `mode` (`first-touch`, `follow-up`, or
+`triage`), `run: interactive`, `connections`, `recipient`, and the O1 and O2 answers with the
+named creators. Add the O3 answer, the replies or `source: mailbox`, or the reply packet and
+the O4 answer when a step below says so.
+
+**Write first messages or follow-ups**
+
+1. Read the roster and drafts (`search_insights` on the program prefix, paged). Name the
+   creators the run covers: stage Approved with no unsent first-touch draft, or stage Contacted
+   with a follow-up due (**Who gets a message**). None: say so and stop.
+2. One `AskUserQuestion` call with O1, plus O2 when email is a program channel, the mail
+   connection can create drafts, and the outreach record names that mailbox. When the mailbox
+   is not connected, say once: "Drafts will be ready to copy here and on the outreach page."
+   and offer the connection per `program.md` **4**.
+3. Launch `atlas-creator-outreach` with `mode` `first-touch` or `follow-up` and the inputs
+   above.
+4. Relay the page link and the headline, show each draft ready to copy from the `drafts` block
+   (one block per creator and channel), and name any bracketed blanks to fill. When the agent
+   returns a `mail-drafts` block, ask O2 then, create the drafts in the mailbox yourself, and
+   write each `draft` again with `mailDraftId`. The agent saves the outreach page link itself
+   as a `page` finding under O1.
+5. Say once: "Send them yourself, then tell me 'sent them' and I'll start the follow-up clock."
+   On "sent them", mark sent per `program.md` **5**, with `nextFollowUpAt` from **Follow-up
+   timing**.
+
+**Send from the mailbox** (only when the user asks to send in this session)
+
+Ask O3 with every recipient named as @handle and template. Only email drafts already in the
+mailbox can be sent; DMs and Aspire messages are always sent by the user. On "Send", relaunch
+the agent in the drafts' mode with `creators` set to the named creators and the O3 answer. It
+reads each draft back, sends it, and marks it sent in the same write.
+
+**Record replies**
+
+1. Pasted replies: collect each reply's text, who it is from, the channel, and the date when the
+   user gives it. Mailbox: only when the outreach record's `watchReplies` is on and the mailbox
+   can read threads; otherwise ask the user to paste them.
+2. Launch the agent in `mode: triage` (pass 1) with the replies or `source: mailbox`. It returns
+   a reply packet and writes nothing.
+3. Ask O4 with one line per reply: @handle, class, the record, the next move. Several replies
+   are one picker. On "Change something", reword the packet from the user's words and ask once
+   more.
+4. On "Record them", relaunch the agent in `mode: triage` (pass 2) with the packet and the O4
+   answer. It writes the `reply` and `roster` findings and republishes the outreach page.
+5. Offer the single next move from the packet: "Make offers" (`atlas-creator-negotiation`,
+   `mode: offer`, for interested paid, ambassador, and affiliate creators), "Answer @handle's
+   counter" (`atlas-creator-negotiation`, `mode: counter`), "Record @handle's deal"
+   (`atlas-creator-negotiation`, `mode: counter`, for paid, ambassador, and affiliate creators
+   who accepted the offer), "Collect @handle's details" (`atlas-product-fulfillment`, with the
+   reply text, for details replies and gifting creators who accepted), "Record @handle's rights
+   answer" (`atlas-content-sourcing`, `mode: replies`; `mode: rights` when no request is open
+   yet), or the answer to a question the user types.
+
 ## Who gets a message
 
 Read the roster per `program.md` **1**: the newest `roster` finding per creator wins. Then, per
@@ -382,6 +443,19 @@ launches `mode: reply-check`, `run: unattended`. It follows `program.md` **9**:
   Record them in Claude: 'record replies for {program}'. {page link}". Handles and classes
   only, never a reply's text, an email address, or an address.
 - Setup missing or Atlas unauthorized: the setup-needed card from `program.md` **9**.
+
+**Scheduling it.** The daily reply check is scheduled only when P9 approved it, `watchReplies`
+is on, and the outreach page has been published once interactively (its `page` finding
+exists). Task name "Atlas program reply check: {brand} - {program}", per `program.md` **8**.
+Prompt:
+
+> Run the Atlas program reply check for {brand}, program {program name}, handles {handles and
+> networks}. Launch atlas-creator-outreach in mode reply-check, run unattended. Use the saved
+> program records. Read the date from the shell clock. Do not ask questions. Record no replies,
+> create no mailbox drafts, and send nothing to creators.
+
+The task needs Aspire Atlas and the user's mail connection (plus Slack or email, when routed)
+enabled for scheduled tasks.
 
 ## State written to Atlas
 

@@ -52,10 +52,23 @@ Rules:
   (Recommended)" / "Change" per item. Changes go through `supersede_calibration` with its own
   confirmation.
 
+**In the main thread.** Call `search_calibrations` with `asProfileId` = `profile_id`. If all six
+keys are present, skip to the run: tell the user in one line that the saved setup is being used
+and offer "Change setup" as an option on the run question. Otherwise ask the missing questions
+R1 to R6, one `AskUserQuestion` each, in order. Daily and weekly are configured together in this
+one pass; the only per-cadence answer is the time in R1 and the readers in R6. Never ask in plain
+text. Never skip a question the user has not answered or declined. The R2 standing approval
+covers any destination named on an R6 reader too; say so in the batch confirmation. Confirm the
+batch once with `AskUserQuestion` ("Save these readout preferences for {brand}? Everyone on the
+team and every scheduled run will use them."), then write all answers with
+`append_calibration`, `provenance: "interview"`. A teammate changing a saved answer is shown
+current vs new, and each change uses `supersede_calibration` with the Destructive tools
+confirmation, one confirmation per key.
+
 ## Data pull (both agents)
 
 Filter-only path, no `queryText`, unless noted. Every call carries a `context` argument
-(15 to 25 words, third person).
+(`[<runId>]`, then 15 to 25 words, third person; the run id prefix does not count toward them).
 
 1. `search_calibrations` as above. Extract: readout calibrations, `red_line`, `guideline`,
    `competitor`, `partner`, `brand:summary`, `target:weekly-health`, `theme:brand`. Drop every
@@ -303,6 +316,71 @@ README). Rules for the agents:
   needs a fresh sign in" and stop.
 - If a search returns nothing for the window, report "no posts indexed for {window}" rather
   than inventing numbers, and still deliver the page and summary.
+
+## Main thread: the run and the launch pulse
+
+What the **Readouts** section of SKILL.md does around the agents.
+
+**The run.** Ask once with `AskUserQuestion`: "Which insights report?" Options: "Weekly (last
+week)", "Daily (yesterday)", "Both now", "Change setup". Then launch
+`atlas-weekly-insights-report` and/or `atlas-daily-insights-report` with: tool prefix,
+`profile_id`, `profile_slug`, linked handles and networks, run mode `interactive`, `recipient`
+(the lens SKILL.md **Reading the ask** confirmed, or the saved R6 lenses when it found none), and
+the target window only if the user named one. Never pass "today" or any date the main thread
+assumed: session headers can be a day stale, and a wrong "today" shifts the whole readout by a
+day (or a week). The agents resolve the date themselves (**Resolving "today"**) and refuse a
+repeat window. Relay each agent's summary and page link, including the resolved window it
+reports. When an agent asks the main thread to confirm delivery, ask with `AskUserQuestion`
+("Post to {channel} and email {recipients}?" Options: Send (Recommended) / Page only this time)
+and relay the answer.
+
+**Setting up a launch pulse** (**Daily launch pulse**). Offer it after a campaign brief, or when
+the user asks how a launch is landing:
+
+1. Ask in one `AskUserQuestion` call: the window (from the brief's first post date to its end
+   (Recommended), or typed), the launch terms creators would use (options inferred from the
+   campaign brief; free text for the rest), and who reads it (Campaign team (Recommended) /
+   Product team / Both), with an optional destination typed per reader.
+2. Confirm the write with `AskUserQuestion` ("Save a launch pulse for {campaign} from {start}
+   to {end}? The daily readout, scheduled runs included, will add it and deliver to
+   {destinations} without asking each time."), then write `campaign:{slug}-pulse` with
+   `append_calibration`.
+3. If the daily readout is not scheduled, offer the schedule below; the pulse rides on it.
+   Readout setup must exist first.
+
+## Scheduling (main thread)
+
+The mechanics SKILL.md **Readouts**, Schedule names, which other flows' schedules reuse. After the
+first successful run, or whenever the user asks to schedule, offer with `AskUserQuestion`: "Set up
+the recurring schedules now?" Options: "Yes, daily and weekly (Recommended)", "Weekly only",
+"Daily only", "Not now". On yes:
+
+1. Read the times and timezone from `policy:readout-cadence`. Convert to UTC cron. Daily
+   `M H * * *`; weekly `M H * * D` (0 = Sunday). If the UTC conversion crosses midnight, shift
+   the weekday too.
+2. Create the scheduled tasks with the session's scheduled-task tools (Cowork: the
+   `create_trigger` tool on the Claude Code Remote server; load it with `ToolSearch` first).
+   Never use local cron tools; they die with the session. First list the existing scheduled
+   tasks and look for ones named "Atlas daily readout: {brand}" or "Atlas weekly readout:
+   {brand}" (the names before the rename). Offer to replace each in the step 3 confirmation:
+   update its name and prompt in place when the tools allow, otherwise create the new task and
+   delete the old one only after the new one exists. Never leave both running, which would
+   deliver twice. One task per cadence:
+   - Name: "Atlas daily insights report: {brand}" / "Atlas weekly insights report: {brand}".
+   - Prompt: the standalone templates in the README under **Scheduling the readouts**, with
+     `{brand}` filled with the profile's exact Atlas `name` (from `get_status`), and the handles
+     and networks filled in. Runs find the profile by that name. The prompt must say "do not ask
+     questions" and "use the saved readout calibrations", and must not state a date; the
+     templates tell the run to read the date from the shell clock.
+   - Notifications: push on.
+3. Confirm both tasks in one `AskUserQuestion` before creating them, listing name, local time,
+   and destinations. Create only on the confirming option.
+4. Tell the user: the tasks run in fresh sessions, so Aspire Atlas (and Slack or email, if
+   routed) must be enabled for scheduled tasks in their Claude settings, and the task's
+   approval setting should be "Automatically approve" or the run will stall on the first
+   permission prompt. Mention the task can be paused or edited from the scheduled tasks list.
+5. If the scheduled-task tools are not present in the session, do not fake it: point the user
+   to the manual steps in the README and stop.
 
 ## Atlas quirks that apply here
 

@@ -18,6 +18,8 @@
 #   - a plugin with a mod says in its README what its hooks do (MOD_ANSWERS_FOR_TOOL,
 #     MOD_HOOKS_OPERATION, MOD_HOOKS_POLICY_EVENT): each tool it registers, each prompt, message
 #     and agent event it hooks, and the tools it answers itself
+#   - every skill's description is at most 1,024 characters, the skill spec's limit. The directory
+#     has not flagged this, but a reviewer or a later scan can, so it is held here too
 # plugin.json carrying no version is check-channel.sh's rule, kept on purpose; it is not checked here.
 #
 #   scripts/check-directory.sh
@@ -26,6 +28,7 @@ cd "$(dirname "$0")/.."
 . scripts/plugins.sh
 
 MAX_BYTES=262144
+MAX_DESC=1024
 KNOWN_READ=216907
 fail=0
 err() { echo "FAIL $*"; fail=1; }
@@ -51,6 +54,40 @@ for p in $(plugin_names); do
       [ -n "$hit" ] && err "$f:${hit%%:*}: h and Fragment are what JSX compiles to; give this a name of its own"
     done <<<"$(grep -nE "$jsxname" "$f" | grep -vE '^[0-9]+:[[:space:]]*(//|/\*|\*)' || true)"
   done < <(find "$src" -type f \( -name '*.tsx' -o -name '*.jsx' \) | sort)
+
+  # Skill descriptions within the skill spec's limit, read as YAML folds them: continuation lines
+  # (of a > or | block, or of a wrapped plain or quoted value) joined by single spaces, a blank
+  # line kept as one newline. Outside a block, the quotes around a quoted value and its escapes
+  # (\" and '') count as the text they stand for, and a plain value ends at " #", where YAML's
+  # comment starts. wc -m counts characters, not bytes, so curly quotes and accents count once.
+  while IFS= read -r f; do
+    desc=$(awk '
+      { sub(/\r$/, "") }
+      NR == 1 && /^---[[:space:]]*$/ { fm = 1; next }
+      fm && /^---[[:space:]]*$/ { exit }
+      fm && /^description:/ {
+        found = 1; cont = 1
+        v = $0; sub(/^description:[[:space:]]*/, "", v)
+        if (v ~ /^[>|]/) blk = 1; else d = v
+        next
+      }
+      fm && cont && /^[[:space:]]*$/ { d = d "\n"; next }
+      fm && cont && /^[[:space:]]+/ {
+        v = $0; sub(/^[[:space:]]+/, "", v)
+        d = (d == "" || d ~ /\n$/ ? d v : d " " v); next
+      }
+      fm && cont { cont = 0 }
+      END {
+        if (!found) exit 1
+        sub(/\n+$/, "", d)
+        if (!blk && d ~ /^"/) { sub(/^"/, "", d); sub(/"[[:space:]]*$/, "", d); gsub(/\\"/, "\"", d) }
+        else if (!blk && d ~ /^'\''/) { sub(/^'\''/, "", d); sub(/'\''[[:space:]]*$/, "", d); gsub(/'\'\''/, "'\''", d) }
+        else if (!blk) sub(/[[:space:]]+#.*$/, "", d)
+        printf "%s", d
+      }' "$f") || { err "$f: no description in its frontmatter"; continue; }
+    len=$(printf '%s' "$desc" | LC_ALL=C.UTF-8 wc -m | tr -d ' ')
+    [ "$len" -le "$MAX_DESC" ] || err "$f: description is $len characters, over the $MAX_DESC the skill spec allows"
+  done < <(find "$src/skills" -name SKILL.md 2>/dev/null | sort)
 
   H=$src/hooks
   compgen -G "$H/*.ts*" >/dev/null || continue
@@ -96,5 +133,5 @@ for p in $(plugin_names); do
   fi
 done
 
-[ "$fail" -eq 0 ] && echo "OK   plugins pass the directory's mod form, file size, and hook documentation checks"
+[ "$fail" -eq 0 ] && echo "OK   plugins pass the directory's mod form, file size, skill description, and hook documentation checks"
 exit "$fail"

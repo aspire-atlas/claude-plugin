@@ -406,6 +406,54 @@ the K2 items first, then K3 to K5.
 - K5 launches `atlas-creator-discovery` for the campaign with the `lookalike-seeds` block and
   `recipient` `growth`. With no campaign saved, it offers **Creator discovery** Setup instead.
 
+### Running the review (main thread)
+
+Moved here from the **Roster review** section of SKILL.md, which points at it.
+
+1. Read the program's setup records and working state as the **Program manager** does. The
+   review needs the program, terms, and outreach records (`-program`, `-terms`, `-outreach`);
+   missing or unparseable: run **Program setup** first. A program with no creator at Agreed or
+   later: say so in one line and offer the next step from the dispatch instead.
+2. Launch `atlas-roster-manager` with: tool prefix, `profile_id`, `profile_slug`, brand handles
+   and networks, the program slug, `mode: review`, `pass: propose`, `connections`, and
+   `recipient` (`team` by default; `growth` when the ask is about where to spend). Pass
+   `creators` or `types` when the user named them. No confirmation is needed: `propose` writes
+   nothing.
+3. Relay the page link, the segment counts, one line per creator, and the drafts. Then ask K1
+   and K2, at most four questions per call (**Guardrails**, Pickers). K2 is asked exactly as the
+   agent worded it: the recommended answer first (Recommended), the alternatives, "Decide
+   later". Example: "@marco missed 3 of 4 posts since July and hasn't replied in 40 days. Pause
+   him, drop him from {program}, or keep him on?" Options: "Pause him (Recommended)", "Drop him
+   from {program}", "Keep him on", "Decide later". More than three K2 items: ask the K2 items in
+   their own calls of up to four, then K1.
+4. "Change something" relaunches `pass: propose` with the change as an override. Otherwise,
+   in a second `AskUserQuestion` call, skipping any with nothing to ask, K3 to K5:
+   - K3 only when the `renewals` block has entries.
+   - K4 only when K1 saved, there are email drafts, and the program's mail setting names a live
+     mailbox that can draft.
+   - K5 only when the `lookalike-seeds` block has seeds. With no discovery campaign saved for
+     the program, K5 asks instead: "Start a discovery shortlist for {program}, seeded with
+     {stars}?" Options: "Set up discovery (Recommended)", "Not now".
+5. On K1 "Save the review", launch the agent again with `pass: record`, the `roster-packet`, and
+   the K1 and K4 answers. K1 is the write confirmation; K4 is the mailbox confirmation.
+6. For each K2 answer of pause or drop, write the `rosterChange` row from the packet with
+   `append_insights` as a new `roster` finding (stage Paused or Dropped, `yourCall` cleared,
+   `detail.by` "Program manager"). The K2 answer is that write's confirmation. "Keep" writes
+   nothing. "Decide later" writes the creator's newest `roster` row again with `yourCall` set to
+   the question and `yourCallDeferredAt` (**Influencer program**, Decide later).
+7. On K3 "Start the renewals", launch `atlas-creator-negotiation` with `mode: renewal`, `pass:
+   propose`, the renewal creators, and the `renewals` block, after step 5 has written the review
+   (or straight away when K1 was "Page only"). Then follow **Creator negotiation**.
+8. On K5, run **Creator discovery** Run for the campaign with `recipient` `growth` and the
+   `lookalike-seeds` block (discovery also reads the saved stars itself); with no campaign, run
+   its Setup for the program's discovery campaign first and save the slug to the program per
+   the Phase 5 supersede rule.
+9. Sending follows **Influencer program**, Drafts: only when the user asks in this session,
+   after the picker that names every recipient. "Sent them" marks drafts sent with one picker.
+
+If `AskUserQuestion` is unavailable, say in one line that the review needs a person to approve
+it, and stop.
+
 ## Records written
 
 All on the program's working state (`program.md`, **Working state**): `append_insights`, role

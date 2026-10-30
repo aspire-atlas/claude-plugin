@@ -3,6 +3,33 @@
 Used by the `atlas-creator-brief` agent. Page structure, campaign mode, fit rubric, pricing method (from the fee
 calculator), and Atlas quirks learned on 2026-09-16 against the live server.
 
+## Questions (main thread)
+
+The **Creator brief** section of SKILL.md settles these with `AskUserQuestion` before it launches
+the agent, skipping any the user already answered. In campaign mode it also settles the campaign
+(a saved `campaign:*-brief`, or "a new campaign", which runs **Creator discovery** Setup first
+unless the user declines) and the first post date.
+
+1. **Scope.** If a `red_line` calibration blocks AI generated content (ignore `review:` keys,
+   which are content review only), offer "Strategy brief only (Recommended)" vs "Include draft
+   copy (overrides the red line; record the exception first)". Never produce copy without the
+   override.
+2. **Creator sourcing.** "Already in Atlas", "Atlas creator marketplace (searches beyond your
+   connected accounts)", or "Both". The marketplace path needs this explicit choice.
+3. **Lookback and roles.** Default 90 days. Roles: collab posts, expert POV clips, customer
+   features, event coverage (multiSelect).
+
+Launch inputs: tool prefix, `profile_id`, `profile_slug`, linked handles and networks,
+`brief_mode` (`campaign` when the ask names a launch, date, or campaign; otherwise `week`), target
+week (next Monday to Friday unless given) or the campaign slug, first post date, and end date,
+`recipient` (**Reading the ask**), lookback, and the three answers. The main thread relays the
+summary, the published page, and any decisions the agent needs (guideline conflicts, budget
+tier), and shows the first-pick creators inline as creator cards from the agent's
+`creator-cards` block. In campaign mode, after the brief, it offers the launch pulse
+(**Readouts**, **Launch pulse**) and says that each draft can go through **Content review** as it
+arrives. `brief_mode` `creator-ads` is launched only from **CAS campaign**, Run, row 10
+(`cas-campaign.md`).
+
 ## Page structure
 
 One self-contained HTML page, published with the Artifact tool. Sections in order:

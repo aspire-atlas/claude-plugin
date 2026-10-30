@@ -67,6 +67,57 @@ Rules:
   **5** in the main thread.
 - A waiver is the user's alone (**Waived**). The tracker never proposes one as a default.
 
+## Main thread steps
+
+The **Deliverable tracker** section of SKILL.md points here; the main thread follows these
+steps. The check is interactive in two passes; the daily posting check is its unattended form.
+Every T question is one `AskUserQuestion` call, never plain text, asked as worded in
+**Approvals (asked by the main thread)**, with these headers: T0 "Fetch", T1 "Save", T2
+"Matches" (multiSelect), T3 "Drafts", T4 "Mailbox", T5 "Your call". Launch
+`atlas-deliverable-tracker` with the tool prefix, `profile_id`, `profile_slug`, the brand's
+linked handles and networks, the program slug, `mode`, `pass`, `connections`, `recipient`
+(`team` by default), any `creators` the user named, and the approvals, and end with the
+decision-audit line.
+
+1. Read the program's setup records and working state as the **Program manager** does. Missing
+   or unparseable program records: run **Program setup** first.
+2. **Pasted links.** When the user pasted links to creators' posts, ask T0 first. Pass the links
+   (with the creator and deliverable when the user said) and the answer.
+3. Launch with `mode: check`, `pass: propose`. No confirmation is needed: `propose` writes
+   nothing.
+4. Relay the page link, the headline, the needs-a-fix lines (missing disclosure first), late
+   and missing, and due this week. Then ask T2 and T5, skipping any with nothing to ask. T2:
+   one option per match, with the agent's description (the caption's first words and why it is
+   unsure); more than four, the first four, then the rest in the next call. T5: one per open
+   item, exactly as the agent worded it, the recommended answer first, then the alternatives
+   and "Decide later". Posts whose only unclear part is the paid partnership label come as one
+   multiSelect for the run ("Which of these posts carry it?"); Atlas can't see the label, so it
+   is never treated as missing. When T2 or T5 answers change a status, relaunch
+   `pass: propose` with them as `overrides` and relay the new counts.
+5. Then ask T1, T3 (only when there are drafts) and T4, at most four questions per call
+   (SKILL.md **Guardrails**, Pickers).
+6. "Change something" relaunches `pass: propose` with the change as an override. Otherwise
+   launch `pass: record` with the `tracker-packet` and T1 to T5. T1 and T3 are the write
+   confirmations; T4 is the mailbox confirmation. The agent saves the tracker page's link as a
+   `page` finding with the first approved write.
+7. Relay what was written and the drafts ready to copy. Sending follows SKILL.md **Influencer
+   program**, Drafts: only when the user asks in this session, after the picker that names
+   every recipient. "Sent them" marks drafts sent with one picker.
+8. **Hand-offs** (**Hand-offs (returned, never run)**), one line each, never run without the
+   user's pick: posted posts go to the content library on its next build (offer **Content
+   library** when it has no page or is more than 7 days old); "Check on brief?" posts offer
+   **Content review**; posted paid and ambassador posts are the next step for the ledger.
+
+**Waiving** is the user's alone (**Waived**). "Waive @a's second Story" asks T5 for that row
+("Waive @a's {deliverable}? It stops counting as owed." Options: "Keep it owed (Recommended)",
+"Waive it") and records it through a `record` pass with T1.
+
+**Scheduling it.** Follow SKILL.md **Readouts**, Schedule, for the mechanics, and `program.md`,
+**8**, for the task name "Atlas program posting check: {brand} - {program}" (daily), launching
+`atlas-deliverable-tracker` with `run: unattended`. The P9 "Daily posting check" answer is the
+standing approval for what **Daily posting check (unattended)** allows. Schedule it only after
+the tracker page has been published once interactively and its `page` finding exists.
+
 ## The owed list
 
 Read the program state per `program.md` **1**: the newest finding per identity by

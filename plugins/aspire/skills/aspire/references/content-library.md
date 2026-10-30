@@ -65,6 +65,73 @@ The library's link is a `page` finding (key `library`, `program.md`, **Working s
 agent writes it itself on first publish under the same L2 approval as the catalog. On "Page
 only" it writes nothing, so the next run publishes a new page; say so in the summary.
 
+## Running the library (main thread)
+
+Moved here from the **Content library** section of SKILL.md, which points at it.
+
+### Run
+
+1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end,
+   `includeSuperseded: true`) and keep the active `program:*-program` records. Pick the mode from
+   the ask: a question about specific content is `query`; "what expires" is `expiring`;
+   "build", "update", or a first run is `build`.
+2. Ask L1 to L3 in one `AskUserQuestion` call, with the **Reading the ask** confirmation (`team`
+   by default; `performance` and `creative` for "cleared for ads" or "what can we run"; `brand`
+   for "is any of it risky"), skipping what the user already said. Headers and wording:
+   - L1, header "Content": "Which content?" One option per active program (up to three), and
+     "All our programs and everything about {brand}" (Recommended when there is no program or
+     several). For `build`, a second question, header "Window": "Last 180 days (Recommended)",
+     "Everything Atlas holds", or typed. For `expiring`, header "Horizon": "Next 30 days
+     (Recommended)", "Next 60 days", "Next 90 days".
+   - L2 (`build` only), header "Save": "Save the catalog and the page link to Atlas, so the
+     team and scheduled runs can search it?" Options: "Save (Recommended)", "Page only".
+   - L3 (`build` and `expiring`, only when the program's routing names Slack or email), header
+     "Alert": "Post the expiring-rights alert to {channel} and email {recipients}?" Options:
+     "Post (Recommended)", "Page only this time".
+3. Launch `atlas-content-library` with the tool prefix, `profile_id`, `profile_slug`, the
+   linked handles and networks, `mode`, the program slug or `all`, L1 to L3, the user's question
+   for `query`, `connections`, and `recipient`, ending with the decision-audit line.
+4. Relay the page link, the headline, and the cards from the agent's `visual-data` block per
+   **Visual output**. Say once that rights shown come from the brand's records and agreed deals,
+   and that the signed agreement decides paid use.
+5. **Needs the main thread.** Relay any proposal for content sourcing as a line, never as a
+   write. The library saves its own page link as a `page` finding under L2.
+6. **Hand-offs.** When the agent lists assets worth requesting or rights to renew, offer once
+   with `AskUserQuestion`, header "Next": "Request rights for these {n} posts?" Options:
+   "Request rights (Recommended)", "Not now". The first launches `atlas-content-sourcing` with
+   the asset list: `mode: rights` for the worth-requesting rows, `mode: renewal` for the rights
+   to renew. The library never drafts a request itself.
+
+### Schedule
+
+Follow **Readouts**, Schedule, for the mechanics, and `program.md`, **8**, for the task name
+"Atlas program library refresh: {brand} - {program}" (weekly), launching
+`atlas-content-library` with `mode: build`, `run: unattended`. The P9 "Weekly content library
+refresh" answer is the standing approval; it lets scheduled runs save `asset` findings.
+Unattended runs never ask, never write rights, and post only to the saved routing. Schedule it
+only after the library has been built once interactively and its `page` finding exists.
+
+**The whole brand.** A library built for "All our programs and everything about {brand}" has no
+P9 and no program routing. After its first saved build, offer once with `AskUserQuestion`,
+header "Schedule": "Refresh the {brand} content library every week on {day} at {time}
+{timezone}? Scheduled runs save the catalog to Atlas and post the expiring-rights alert where
+you choose next, without asking each time." Options: "Schedule it (Recommended)", "Not now";
+the free text takes another day or time. On "Schedule it", ask once, header "Alerts": "Where
+should the library alert go?" (multiSelect): Published page + chat (always on); Slack channel
+(type it); Email (type recipients). The confirm writes the
+`library:cadence` calibration with `append_calibration` (`policy`, `{area: "cadence", cadence:
+"weekly", body: "library weekly <DAY HH:MM>, <IANA timezone>", routing: "page; slack:#channel;
+email:a@x.com"}` in the `program:{slug}-routing` body format, `provenance: "interview"`; a
+`key-exists` follows the Phase 5 supersede rule) and creates the task "Atlas content library
+refresh: {brand}", launching `atlas-content-library` with `mode: build`, `run: unattended`, and
+program `all`. That record is the standing approval for the refresh, the `asset` findings, and
+the alert. Prompt:
+
+> Run the Atlas content library for {brand}, all programs, handles {handles and networks}.
+> Launch atlas-content-library with mode build, run unattended, program all. Use the saved
+> records. Read the date from the shell clock. Do not ask questions. Write no rights records
+> and send nothing to creators.
+
 ## Collecting assets
 
 Read only what Atlas holds. Never call `lookup_posts`, `lookup_creators`,

@@ -189,6 +189,10 @@ never guessed.
 | Format match | 10 | `mediaKind` / `instagram.mediaProductType` mix vs. the formats the campaign needs |
 | Market fit | 5 | Country and language against the criteria |
 
+Infer a trait from what the posts show, never from a number or label the creator states in a bio.
+A niche fandom or subculture the criteria name is a theme, not a keyword: count the posts that
+are about it, whatever words they use.
+
 Risk flags are reported, never scored: competitor mention, a `red_line` match in recent
 content, no contact route, or a follower-to-engagement pattern that looks bought. A flagged
 candidate still appears, with the flag on its card.
@@ -216,15 +220,26 @@ wins. `search_insights` returns findings tenant-wide, so always filter on the pr
 
 ## The living page
 
-One page per campaign, republished to the same path every run so the link stays stable.
-Sections in order:
+One page per campaign, republished to the same path every run so the link stays stable. It is
+the working list behind question **I1** ("Which creators should we contact for this launch, and
+why?"). The page that answers I1 is the vetting slate built from this pool
+(`creator-vetting.md`, **The page**), so the result packet's `next` names the vetting agent
+whenever undecided candidates are ready to vet. Build this page from the page blocks
+(`skills/page-standard/blocks.md`). Sections in order:
 
-1. **Header** — brand, campaign name, network chips, pool counts (undecided / accepted /
-   rejected against target), run timestamp, a "Prepared for" chip fed by `recipient` (`recipient-lens.md`), and the animated mark at the top right.
-2. **Since last run** — added, re-scored up or down, went dormant, decided. One line each;
+1. **Header** (3.1, 3.2): brand, campaign name, network chips with the creators found per
+   platform, pool counts (undecided / accepted / rejected against target), run timestamp, a
+   "Prepared for" chip fed by `recipient` (`recipient-lens.md`), and the animated mark at the
+   top right.
+2. **Answer** (3.3), written last: where the pool stands and what to do with it ("50 in the
+   pool, 12 new this run. Vet the top 20 next."), then **Decisions** (3.5): the candidates to
+   accept or reject, by number, or "Nothing needs approval" when the pool holds no new ones.
+   Then **Next steps** (3.6), its own section: which numbers to vet next and by when, and any
+   tier that ran dry with what would refill it.
+3. **Since last run**: added, re-scored up or down, went dormant, decided. One line each;
    "no change" is a valid line.
-3. **Active list** — accepted creators as creator cards, so the working set is visible first.
-4. **Shortlist** — the undecided pool, grouped by tier, ranked by fit score inside it.
+4. **Active list**: accepted creators as creator cards, so the working set is visible first.
+5. **Shortlist**: the undecided pool, grouped by tier, ranked by fit score inside it.
    Numbered from 1 across the whole shortlist, stable for the run, because those numbers are
    what the user replies with. Each candidate is a creator card (`creator-card.md`): the fit
    score in the ring; flow chips `#{number}` and the tier (`Added by team` for `manual`), then
@@ -235,10 +250,11 @@ Sections in order:
    (`fees.md`, **Applying the rates**) on the campaign's platforms: "Est. fee {open} to {max},
    target {target}" (marked "est. from engagement" when the calculator estimated the views), or nothing when it gives no price. The page footer carries the rate
    label once.
-5. **Rejected this cycle** — collapsed list of handles with the reason recorded, so a
+6. **Rejected this cycle**: collapsed list of handles with the reason recorded, so a
    decision is auditable.
-6. **Criteria** — the saved criteria in plain words, so a reader can see what "fit" meant.
-7. **Footer** — sources, a note that images are a snapshot, "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote. The mark and the footnote follow [artifact-standard.md](artifact-standard.md).
+7. **Criteria and scoring** (3.11): the saved criteria in plain words, the scoring table's
+   components and weights, and the platform counts again, so a reader can see what "fit" meant.
+8. **Footer**: sources, a note that images are a snapshot, "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote. The mark and the footnote follow [artifact-standard.md](artifact-standard.md).
 
 More than 12 candidates means a chart leads the shortlist: fit score by tier, or follower
 count against engagement rate with the pool plotted. Embed every image with the snippet in
@@ -287,6 +303,58 @@ S9 sets a time for each. The scheduled tasks are named "Atlas creator discovery:
 {campaign}" (`job: discover`) and "Atlas creator shortlist: {brand} - {campaign}" (`job:
 shortlist`). A task with the older bare name "Atlas creator discovery" runs `job: discover`,
 and one named "Atlas creator discovery digest: {brand} - {campaign}" runs `job: shortlist`.
+
+## Main thread: setup, run, and schedule
+
+What the **Creator discovery** section of SKILL.md does around the agent. The agent never runs
+setup, never asks these questions, and never records a decision.
+
+**Setup check.** Call `search_calibrations` (no filter, limit 100 per page, paged to the end,
+`includeSuperseded: true`). If the five campaign keys exist for the campaign in question
+(`campaign:{slug}-brief`, `-criteria`, `-pool`, `-routing`, `-cadence`), skip to the run and
+offer "Change setup" as an option on the run question. Several campaigns may be saved; ask with
+`AskUserQuestion` which one when more than one is active. Otherwise run **Setup** above:
+
+1. Ask S1: what the campaign is, in the user's own words.
+2. **Then write the refinement questions.** Read the S1 answer together with `brand:summary`,
+   `brand:business-context`, and the `competitor`, `red_line` and `guideline` records (not
+   `review:` keys, which are content review only, nor `theme:` keys, which style pages), and from
+   those compose 3 to 5 `AskUserQuestion` questions covering the dimensions above, in their
+   order, skipping anything S1 already settled. The options are inferred from the brief and the
+   brand context, never generic. Never ask more than five, never ask in plain text.
+3. Ask S7 (pool target), S8 (routing) and S9 (cadence), with the two standing-approval
+   statements above. Those two confirmations are the standing approvals.
+4. Confirm the batch once with `AskUserQuestion` ("Save this campaign setup for {brand}?
+   Everyone on the team and every scheduled run will use it."), then write all five records
+   with `append_calibration`, `provenance: "interview"`. A `key-exists` follows the Phase 5
+   supersede rule in SKILL.md with its own confirmation.
+
+**The run question.** Ask once with `AskUserQuestion`: "What should the discovery agent do?"
+Options: "Fill the shortlist to {target}", "Show the current shortlist", "Record decisions on the
+shortlist", "Change setup". Then launch `atlas-creator-discovery` with: tool prefix,
+`profile_id`, `profile_slug`, the campaign slug, the brand handles and networks, run mode
+`interactive`, `job` (`view` for "Show the current shortlist", else `discover`), and `recipient`
+(SKILL.md, **Reading the ask**; `growth` when the ask is for more creators like the ones
+working). Relay its summary, the page link, and the numbered range the user can decide against.
+Show the candidates added this run inline as creator cards from the agent's `creator-cards`
+block (top six by fit score, badged with their shortlist numbers).
+
+**Recording decisions** ("Record decisions on the shortlist", or a reply against the page
+numbers) stays in the main thread, never the agent, per **Decisions** above. Rejected creators
+never reappear; accepted ones free their slot for the next run.
+
+**Scheduling.** A CAS campaign's discovery runs only from **CAS campaign** (`cas-campaign.md`):
+when the campaign's `campaign:{slug}-brief` has the `type: creator-ads` line, never schedule
+discovery for it; offer the CAS weekly call instead. Otherwise, after the first successful run,
+or whenever the user asks, offer with `AskUserQuestion`: "Set up the recurring discovery now?"
+Options: "Yes, discovery and shortlist (Recommended)", "Discovery only", "Shortlist only", "Not
+now". On yes, follow the same mechanics as SKILL.md **Readouts**, Schedule (`readout.md`,
+**Scheduling (main thread)**): read the times and timezone from `campaign:{slug}-cadence`,
+convert to UTC cron, create one task per job with the session's scheduled-task tools, named as in
+**Jobs and task names**, confirm both in one `AskUserQuestion` before creating them, and tell the
+user the tasks run in fresh sessions so Aspire Atlas must be enabled for scheduled tasks. Prompts
+must say "do not ask questions", name the brand by its exact Atlas profile `name` and the
+campaign slug, and state no date.
 
 ## Scheduled (unattended) runs
 

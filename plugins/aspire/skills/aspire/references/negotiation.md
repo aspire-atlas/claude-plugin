@@ -409,6 +409,44 @@ the questions from it and passes it back to `record` with the answers. It holds 
 carries `yourCall` `{question, options: [{label, move, number, levers}], recommended}`, and its
 `terms`, `roster` and `draft` are those of the recommended answer.
 
+## Main thread steps
+
+The **Creator negotiation** section of SKILL.md points here; the main thread follows these
+steps. Negotiation is interactive only. Never schedule it; if `AskUserQuestion` is unavailable,
+say in one line that a deal needs a person to approve it, and stop. A creator ad campaign's fees
+stay in **Rates and terms** (`rates-and-terms.md`).
+
+1. Read the program's setup records and working state as the **Program manager** does. Missing
+   or unparseable program records: run **Program setup** first. Pick the mode (**Modes**):
+   `offer` for interested creators with no open terms, `counter` for a counter or deal
+   question, an accepted offer to record as the deal (or a reply the user pastes here),
+   `renewal` for ambassadors the roster review handed over (pass its `renewals` block),
+   `change` for a change to an agreed deal from the affiliate manager, the roster manager, or
+   the user (pass what changes, from, to, and who asked).
+2. A pasted reply that names no roster creator is asked about once. Several creators run in one
+   launch.
+3. Launch `atlas-creator-negotiation` with: tool prefix, `profile_id`, `profile_slug`, brand
+   handles and networks, the program slug, `mode`, `pass: propose`, the creators (and the pasted
+   reply text, the `renewals` block, or the change), `connections`, and `recipient` (`team` by
+   default). No confirmation is needed: `propose` writes nothing.
+4. Relay the page link, one line per creator (offer, counter, move, reasons), the math, and the
+   drafts. Then ask the agent's questions from **The questions (main thread)**, skipping any
+   with nothing to ask, with these headers: N1 "Moves", N2 "Your call" (one per open item,
+   exactly as the agent worded it), N3 "Deal", N4 "Mailbox" (only when the program's mail
+   setting names a live mailbox that can draft). At most four questions per call: N2 items
+   first, four per call, then N1, N3 and N4 (SKILL.md **Guardrails**, Pickers).
+5. "Change something" relaunches `pass: propose` with the change as an override. Otherwise
+   launch it again with `pass: record`, the `negotiation-packet`, and the answers. N1 and N3 are
+   the write confirmations; N4 is the mailbox confirmation.
+6. Relay what was written, the terms summary links, and the next steps. The agent saves the
+   negotiation page's link as a `page` finding with the first approved write.
+7. Sending follows SKILL.md **Influencer program**, Drafts: only when the user asks in this
+   session, after the picker that names every recipient. "Sent them" marks drafts sent with one
+   picker.
+
+When the fees used the Aspire recommended rates, make the fee calculator offer from SKILL.md
+**Fee calculator**, Offers, after the reply.
+
 ## The questions (main thread)
 
 After `propose`, in one `AskUserQuestion` call when they fit (up to four questions), skipping any

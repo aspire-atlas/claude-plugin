@@ -48,9 +48,9 @@ Read all of it before judging anything, and keep a coverage note for **4.0**.
 | .pptx, .pdf, .docx in Drive | The Drive connector's read. When it returns no text (an upload with no index, or a file over the connector's size limit) and the session has a browser the user is signed in to, open `https://docs.google.com/presentation/d/{id}/htmlpresent` for a deck and read the page text. The connector's read and download tools are both fine; never edit, move, share, or comment on the file |
 | Local file | The session's pptx, pdf, or docx skill to extract the text; read .html and .md directly |
 
-Nothing readable: say what was tried, publish nothing, write no log row, and stop (**8**). Speaker
-notes, sticky notes, and presenter labels that come through with the text are reported as "check
-whether these show on the slide", never as certain on-slide text.
+Nothing readable: say what was tried, publish nothing, write the not-run log row (**10**), and
+stop (**8**). Speaker notes, sticky notes, and presenter labels that come through with the text are
+reported as "check whether these show on the slide", never as certain on-slide text.
 
 ## 3. Which checks apply
 
@@ -393,8 +393,9 @@ Then the agent's audit trail block, as every agent ends.
 
 ## 9. Grade mode (for other skills)
 
-Another skill can call the agent with `mode: grade` to grade a draft it made, inside an interactive
-session, so the draft is not graded by the same run that wrote it.
+A flow in `/aspire:aspire` can launch the agent with `mode: grade` to grade a draft it made, inside
+an interactive session, so the draft is not graded by the same run that wrote it. The launch carries
+the `launch` block (`orchestration.md` **5**) like any other; grade mode returns no result packet.
 
 - Inputs: `target` (required), `checks` (`reader-standard`, the default, or `all`), and optionally
   `evidence_dir`, `brief`, `recipient`, and `audience`.
@@ -435,11 +436,130 @@ not name.
   log already has that id; `failed_checks` is
   semicolon-separated `{id} {name}`; `expert_verdict`, `agreement`, and `critique` are always left
   empty for the organization's reviewers to fill in. A file that doesn't exist yet is created with
-  the header. Grade mode, sample mode, and an unreadable target write no row.
+  the header. Grade mode and sample mode write no row. A review that ran but published no page
+  logs its verdict as usual. A review that could not run (an unreadable target) still writes a
+  row, with `verdict` set to `Not run: {why, in a few words}` and the check columns and counts left
+  empty, so the log holds every review that was asked for. `rubric_version` names the version of the checks that made the
+  call; it goes up whenever a check is added, split, or dropped, so agreement is counted per
+  version.
 - **Adjustments.** When the user disputes a finding or names one the review missed, and confirms
   it, the main thread adds a row beside the log (a second table in the Doc, or `{name}-adjustments.csv` next to the
   file): `review_id,date,by,what_changed,why,check,lesson`, with `check` set to the check id or
-  `new`.
+  `new`. Feedback given later, with the reviewed work's link, adds a row the same way (SKILL.md,
+  **Quality review**, Feedback later), matched to the newest row whose `target` is that link.
 - **Calibrating the checks.** Every 20 rows that have a reviewer's verdict, work out how often the
   review and the reviewers agree on each check. A check below 80% agreement gets rewritten or split.
   This is the organization's own process; the plugin does not run it.
+
+## 11. The main thread: run, offer, and review log
+
+What the **Quality review** section of SKILL.md does around the agent: the questions, the launch,
+the follow-ups, the review log setting, and the offer after other flows' pages. SKILL.md names
+(**Running agents**, **Reading the ask**, **Visual output**, **Decision audit**, Phase 1 to 3,
+the Phase 5 supersede rule, the vetting and content review feedback sections) are sections of
+SKILL.md. The review needs no write confirmation: it never edits the work, never writes to Atlas,
+and never starts discovery work. It is interactive only: never schedule it, and never run it in an
+unattended session.
+
+### 11.1 Run
+
+1. **The work.** Use the link or file the user gave. Without one, ask with `AskUserQuestion`,
+   header "Review": "What should I review?" Options: "{the newest page published in this session}
+   (Recommended)" when there is one, "A Google Slides, Docs, or Drive link (paste it in the box)",
+   "A file or a Claude artifact link (attach or paste it)". Naming or pasting a
+   link is the approval to read that one file. A Drive file is read through the Drive connector;
+   when the connector returns no text and the session has a browser the user is signed in to, the
+   agent reads the deck's HTML view, read only (**2**).
+2. **Who reads it, and against what.** One `AskUserQuestion` call, skipping what the user already
+   said, with the **Reading the ask** confirmation folded into the first question:
+   - header "For": "Who will see it?" Options: the reader the ask names (Recommended), "A client",
+     "A creator", "Our team or leadership"; the free text takes "the public". The answer sets
+     `audience` (**1**) and, with the ask, `recipient`.
+   - header "Brief": "Should it answer a brief or RFP?" Options: "Yes (paste or link it in the
+     box)", "No, judge it on its own purpose". A plugin page gets the original request and the
+     flow's answers as its brief without asking.
+   - header "Atlas", only when Atlas is connected in this session or the work is a plugin page:
+     "If it cites Atlas figures, re-check them? Read only." Options: "Re-check them
+     (Recommended)", "Skip". The agent skips the re-check when the work cites none. "Re-check them"
+     runs Phase 1 and Phase 2 + 3 first, when they have not run this session, only to confirm the
+     connection and pick the brand profile: skip the other phases and every offer.
+3. **Launch** `atlas-quality-review` (**Running agents**, in a subagent) with `target`, `kind`
+   (`plugin` or `external`), `flow` for a plugin page, `brief`, `recipient`, `audience`, the tool
+   prefix, `profile_id` and `profile_slug` whenever the session has a profile, `recheck` (`true` on
+   "Re-check them"), `run: interactive`, `publish: artifact`, `log`, and
+   `earlier_review` (the earlier review's link) when the same work was reviewed before,
+   `page_check` (the page's `page-check` block, when the agent returned one), ending with
+   the decision-audit line. For `log`: when Atlas is connected and the session has a profile
+   (whatever the "Atlas" answer was), find the key `quality-review:log` with `search_calibrations`
+   (no filter, limit 100 per page, paged to the end; read only) just before launching and pass its
+   `body`; with no record, no
+   profile, or no connection, pass `none`. Never ask about the log during a review.
+4. **Relay** the page link, the verdict and its reason, the failed checks, each Critical finding in
+   one line, the data access line, and the not verified and coverage lines (what the review could
+   not check or see). Say once that the review is for the team, and name any private link or file
+   the reader will not be able to open until it is shared. Keep the `quality_review_fixes` block for
+   step 5; never show the JSON.
+5. **Next.** Ask once with `AskUserQuestion`, header "Next": "Review it again after the fixes?"
+   Options: "Not now (Recommended)", "Apply the fixes (sends them to {flow})" for a plugin page with
+   findings, "Review it again". "Apply the fixes" relaunches the agent that built the page
+   (**Running agents**) with the same inputs as its last run, plus a closing paragraph in the launch
+   message headed "Review fixes": each fix from the `quality_review_fixes` block in one plain line
+   (`{id}, {place}: {fix}`), and "Rebuild the page applying these fixes where your own rules allow,
+   publish with `url` set to {page link}, and list any fix you did not apply, with the reason."
+   Every question and write confirmation the flow's own run asks is asked again first; a write the
+   original run made is not repeated unless a fix changes it. For a page the main thread built
+   itself (**Visual output**), the main thread applies the fixes the same way. Relay the fixes the
+   agent did not apply, and then this step is asked again. External work gets no apply option; its fixes stay a
+   list. "Review it again" relaunches with `earlier_review`, so the page marks each finding fixed,
+   still open, or no longer applies.
+6. **Adjustments.** When a review log is saved and the user disputes a finding ("that's fine", "not
+   a real issue") or names one the review missed, add one row to the log's adjustments
+   (**10**) with the user's reason and the check id (or `new`). Only a reply
+   that clearly disputes or adds a finding counts. Confirm first with `AskUserQuestion`, header
+   "Log": "Add this to {brand}'s review log? {check}: \"{the reason, as the row will read}\""
+   Options: "Add it (Recommended)", "Don't log it". It writes nothing to Atlas. Without a saved log,
+   nothing is written and nothing is asked.
+7. **Feedback later.** Someone may give feedback on reviewed work in a later conversation
+   ("feedback on {link}: the headline is wrong", "/aspire:aspire feedback {link}"). Find the
+   saved log as in step 3, read it, and find the newest row whose `target` is the same work:
+   compare a Claude artifact link by its id (either link form), and any other link without its
+   query, fragment, or trailing slash. With a match, word the adjustment, name the check it relates
+   to (or `new`), and confirm with the "Log" question in step 6. With no match, feedback on a
+   vetting or content review page goes to that flow's own feedback (**Feedback: save the team's
+   call on each creator**, **Feedback: teach the next review**); for any other work, say it has no
+   review in the log and offer to review it (step 1). Without a saved log, only that hand-off or
+   offer runs, and nothing is written.
+
+### 11.2 Setting the review log
+
+An organization can keep a log of its reviews in a Claude Doc of its own, so its reviewers can
+grade the review's calls (**10**). It is off unless someone asks for it ("log
+our quality reviews to {doc}"). Needs a brand profile. The saved log is always a Doc link everyone
+on the team can open: a local file path exists on one computer only, so it is never saved for the
+organization. Someone who names a local file gets it for that one review only (passed as
+`log: file:{path}`), and is told so in one line. Confirm with `AskUserQuestion`, header "Log": "Add
+a row to {doc} after every quality review for {brand}? Each row has the verdict and failed checks,
+with columns left for your reviewers." Options: "Log reviews there (Recommended)", "Not now". On
+yes, write `quality-review:log` with `append_calibration` (`policy`, `{area: "routing", body:
+"docs:{link}"}`, `provenance: "interview"`); a `key-exists` follows the Phase 5 supersede rule. Turning it off is `retract_calibration` with its
+own confirmation. Never suggest a log the organization did not name.
+
+### 11.3 The offer
+
+When real work ends in a published page, ask once, after the flow's own follow-up questions: an
+agent's page (any agent result that returns the link of a page it published, other than a
+sample or a quality review's own page),
+or a page the main thread built (**Visual output**, a deck it exported). Ask it in one
+`AskUserQuestion` call with the decision audit offer as the second question when that offer
+applies (**Decision audit**), so neither waits on the other. The review question: header
+"Review", "Run a quality review on {page title} before you share it?" Options: "Review it for
+{who the page's audience line names: our team, or the client or creator} (Recommended)", "Review
+it for someone else (say who in the box)", "Not now". Either "Review it" runs **Run** from step 3
+with `kind: plugin`, the flow, the page link, the flow's `recipient`, `audience` from the answer
+(**1**), `brief` set to the user's original request and the flow's answers,
+the session's profile, and `recheck: true` when Atlas is connected. The review runs in the
+background; its result and its **Next** question come when it finishes.
+
+Ask at most once per page per session, and again after a revision or export of the same page only
+if the user reviewed it before ("Review it again"). Never offer it in an unattended run, for a
+sample, for the review's own page, the audit page, the starter guide, or a "setup needed" card.
