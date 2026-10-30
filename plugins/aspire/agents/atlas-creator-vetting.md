@@ -142,6 +142,8 @@ the list as approved for fetching.
   `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-card.md` (**Agent hand-off**), badged
   with their page numbers.
 
+**Creator CSV.** When the main thread passes `csv: aspire-member`, also write this batch's Approve and Maybe creators (Reject too only when the main thread says the user asked for every creator); when it also passes `csv_path`, append to that file without a header row as a CSV per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-csv.md` (read it first; **Which creators** sets the rows), and put its path and row count in your output. Without that input, write no CSV. Never in sample mode or an unattended run.
+
 ## Sample mode
 
 When the launch message says `mode: sample`, skip the Atlas reads, writes, and deliveries in your

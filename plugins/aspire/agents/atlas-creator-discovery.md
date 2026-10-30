@@ -132,6 +132,8 @@ the category read of paid partners belongs to vetting.
   **Agent hand-off**) for the top six candidates added this run, badged with their shortlist
   numbers. It does not count toward the word limit.
 
+**Creator CSV.** When the main thread passes `csv: aspire-member`, also write the undecided pool as the shortlist page shows it as a CSV per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-csv.md` (read it first; **Which creators** sets the rows), and put its path and row count in your output. Without that input, write no CSV. Never in sample mode or an unattended run.
+
 ## Sample mode
 
 When the launch message says `mode: sample`, skip the Atlas reads, writes, and deliveries in your
