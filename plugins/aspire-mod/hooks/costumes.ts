@@ -17,9 +17,9 @@ const PALETTE: Record<string, string> = {
 const BODY = BRAND.teal
 const INK = I.ink
 
-export type Anim = 'sway' | 'bounce' | 'pulse' | 'blink' | 'spin'
+type Anim = 'sway' | 'bounce' | 'pulse' | 'blink' | 'spin'
 
-export type Costume = {
+type Costume = {
   key: string
   name: string
   /** The agent type that wears it, or null for a variant. */
