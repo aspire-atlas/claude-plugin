@@ -18,7 +18,7 @@ The two pieces say everything the page needs to say about itself:
 
 What a page says, part by part, and the R1 to R12 checks (`reader-standard.md`) it passes before
 it is published are set by the shared skill `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`.
-This file sets only the mark and the source line.
+This file sets only the mark, the source line, and how a page prints (section 6).
 
 Applies to: pages published with the Artifact tool, the PPA deck (HTML and exports), the inline
 creator card widget, the decision audit page, sample pages, and any page the main thread builds.
@@ -127,6 +127,8 @@ check script finds it in this file only.
    platform disclosures (section 2).
 5. The page source stays ASCII and keeps its size budget (the full mark is about 27KB of the page's
    budget).
+6. The page carries the print block, its dark mode applies on screen only, and its footer names the
+   page (section 6).
 
 ## 5. For new agents and new kinds of page
 
@@ -159,3 +161,67 @@ Files for import (CSV) and chat or mail text carry neither.
 Before you publish a page, follow `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md` and
 return its `page-check` block just before your audit trail block.
 <!-- /agent-block -->
+
+## 6. Print and PDF
+
+A reader who saves a page as a PDF, or prints it, gets the page as their browser prints it. The
+page's own print rules are all that shape that file, so every page carries them. Applies to the
+same surfaces as the rest of this file. Decks follow their own export (section 3).
+
+**What a printed page must do:**
+
+- **Print in the light theme.** Dark-mode rules apply on screen only:
+  `@media screen and (prefers-color-scheme:dark){...}` and `@media screen{:root[data-theme="dark"]{...}}`.
+  Never write a bare `@media (prefers-color-scheme:dark)` or an unwrapped `[data-theme="dark"]`
+  rule on a page; the light tokens then print, in the brand's own colors when a theme is saved.
+- **Keep fills.** Chips, tiles, bars, and table headers print even when the reader's "Background
+  graphics" setting is off (`print-color-adjust: exact`).
+- **Leave out what only works on screen.** Buttons, menus, tab bars, and anything marked
+  `data-print="hide"`. Every tab panel prints, one after another, with its tab's label as a heading
+  (`data-label` on the panel). Every `<details>` prints open.
+- **Break pages in sensible places.** A heading never ends a page. A card, a figure, a table row,
+  or a list item is never split across two pages. A long table repeats its header row on every page.
+- **Show every image whole.** No image is wider than the page. A large image (a chart, a
+  storyboard, a full-width photo) sits in a `<figure>` and is scaled to fit one page, never cut
+  across two. Small thumbnails keep their crop.
+- **Carry a footer on every page.** The page's short title on the left and "Page N of M" on the
+  right, drawn by the page margin rules in the print block. Never build the footer from a
+  `position:fixed` element: browsers draw it on top of the page's own text. Browsers without page
+  margin rules print without the footer; nothing else changes.
+- **Let the reader choose the paper.** The print block sets margins, never a paper size, so Letter
+  and A4 both work.
+
+**The print block.** Paste it as the last style in the page `<head>`, after the theme block, with
+`{pageTitle}` the page's short title (40 characters at most, ASCII, with any `"` or `\` removed).
+The page standard's style block (`skills/page-standard/blocks.md`) already carries the rules; a
+page built on it pastes only the `@page` rule. Restyle print for one page by adding rules of its
+own after it, never by editing this block.
+
+<!-- print-style -->
+```html
+<style>
+@page{margin:14mm 14mm 18mm;
+  @bottom-left{content:"{pageTitle}";vertical-align:top;padding-top:3mm;border-top:.5pt solid var(--border);font:8pt var(--font-body,system-ui,sans-serif);color:var(--muted)}
+  @bottom-right{content:"Page " counter(page) " of " counter(pages);vertical-align:top;padding-top:3mm;border-top:.5pt solid var(--border);font:8pt var(--font-body,system-ui,sans-serif);color:var(--muted)}}
+/* print-rules */
+@media print{
+  *,*::before,*::after{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  html,body{background:transparent!important}
+  body{font-size:10.5pt;line-height:1.45}
+  button,nav,[role="tablist"],[data-print="hide"]{display:none!important}
+  [role="tabpanel"][hidden]{display:block!important}
+  [role="tabpanel"][data-label]::before{content:attr(data-label);display:block;font-weight:600;margin:12pt 0 6pt}
+  details::details-content{content-visibility:visible}
+  details>summary{list-style:none}
+  h1,h2,h3,h4,summary,.pb-split-rule{break-after:avoid}
+  figure,tr,li,blockquote,.pb-card,.pb-post,.pb-frame,.pb-score,.pb-rights,[data-print="keep"]{break-inside:avoid}
+  p,li{orphans:3;widows:3}
+  thead{display:table-header-group}
+  img,svg,video,canvas{max-width:100%!important}
+  figure img,img[data-print="fit"]{display:block;width:auto;height:auto;max-height:200mm;margin-inline:auto;object-fit:contain}
+}
+/* /print-rules */
+</style>
+```
+<!-- /print-style -->
+

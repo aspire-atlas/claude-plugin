@@ -64,7 +64,7 @@ One self-contained HTML page, published with the Artifact tool. Sections in orde
 8. **Footer.** Sources, date, the rate label, "costs are estimates from public view counts, not quotes", contact email note, then the artifact-standard footnote. The mark and the footnote follow [artifact-standard.md](artifact-standard.md).
 
 Design: token palette on `:root` with dark redefinitions under both the media query and
-`[data-theme="dark"]`. Fonts from Google Fonts with fallbacks (Instrument Sans display, IBM
+`[data-theme="dark"]`, on screen only (`artifact-standard.md`, section 6). Fonts from Google Fonts with fallbacks (Instrument Sans display, IBM
 Plex Sans body, IBM Plex Mono data). Bullets use a positioned marker with left padding,
 never a grid per list item (a grid splits inline bold labels into their own cells).
 Categorical chart palette from the dataviz reference, validated. One axis per chart.

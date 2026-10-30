@@ -359,12 +359,13 @@ Put the theme block in the page `<head>`, after the page's own tokens, so its va
   --chart-1:{light.chart[0]};/* … through --chart-6 */
   --font-display:"{fonts.display}",ui-sans-serif,system-ui,sans-serif;--font-body:"{fonts.body}",ui-sans-serif,system-ui,sans-serif;
   --font-mono:"{fonts.mono}",ui-monospace,monospace;--font-display-stretch:{fonts.displayStretch};--radius:{radius}}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){/* the same names with the dark values */}}
-:root[data-theme="dark"]{/* the same names with the dark values */}
+@media screen and (prefers-color-scheme:dark){:root:not([data-theme="light"]){/* the same names with the dark values */}}
+@media screen{:root[data-theme="dark"]{/* the same names with the dark values */}}
 </style>
 ```
 
-Leave the font variables out when `fonts` is `null`, `--font-mono` out when `fonts.mono` is
+The dark values apply on screen only, so a printed page or PDF takes the light ones
+(`artifact-standard.md`, section 6). Leave the font variables out when `fonts` is `null`, `--font-mono` out when `fonts.mono` is
 `null`, `--font-display-stretch` out when `fonts.displayStretch` is `null`, and `--radius` out
 when `radius` is `null`. The page's layout and structure stay
 exactly as its own reference describes. Map the roles onto the page's own tokens:
@@ -424,8 +425,8 @@ rather than `brand`, because the card draws its fit ring as text on the card sur
 ```html
 <style>
 .ac-card,:root[data-theme="light"] .ac-card{--ac-card:var(--surface);--ac-fg:var(--text);--ac-muted:var(--muted);--ac-border:var(--border);--ac-soft:var(--bg);--ac-tile:var(--tile,var(--bg));--ac-brand:var(--brand-ink);--ac-on-brand:var(--surface);--ac-neutral-bg:var(--flat-bg,var(--bg));--ac-neutral-fg:var(--flat,var(--muted))}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ac-card{--ac-card:var(--surface);--ac-fg:var(--text);--ac-muted:var(--muted);--ac-border:var(--border);--ac-soft:var(--bg);--ac-tile:var(--tile,var(--bg));--ac-brand:var(--brand-ink);--ac-on-brand:var(--surface);--ac-neutral-bg:var(--flat-bg,var(--bg));--ac-neutral-fg:var(--flat,var(--muted))}}
-:root[data-theme="dark"] .ac-card,.dark .ac-card{--ac-card:var(--surface);--ac-fg:var(--text);--ac-muted:var(--muted);--ac-border:var(--border);--ac-soft:var(--bg);--ac-tile:var(--tile,var(--bg));--ac-brand:var(--brand-ink);--ac-on-brand:var(--surface);--ac-neutral-bg:var(--flat-bg,var(--bg));--ac-neutral-fg:var(--flat,var(--muted))}
+@media screen and (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ac-card{--ac-card:var(--surface);--ac-fg:var(--text);--ac-muted:var(--muted);--ac-border:var(--border);--ac-soft:var(--bg);--ac-tile:var(--tile,var(--bg));--ac-brand:var(--brand-ink);--ac-on-brand:var(--surface);--ac-neutral-bg:var(--flat-bg,var(--bg));--ac-neutral-fg:var(--flat,var(--muted))}}
+@media screen{:root[data-theme="dark"] .ac-card,.dark .ac-card{--ac-card:var(--surface);--ac-fg:var(--text);--ac-muted:var(--muted);--ac-border:var(--border);--ac-soft:var(--bg);--ac-tile:var(--tile,var(--bg));--ac-brand:var(--brand-ink);--ac-on-brand:var(--surface);--ac-neutral-bg:var(--flat-bg,var(--bg));--ac-neutral-fg:var(--flat,var(--muted))}}
 .ac-card{font-family:var(--font-body);border-radius:var(--radius,12px);box-shadow:none}
 .ac-card .ac-handle,.ac-card .ac-stat b{font-family:var(--font-display);font-stretch:var(--font-display-stretch)}
 .ac-card .ac-tile,.ac-card .ac-thumb{border-radius:calc(var(--radius,12px) - 4px)}
@@ -441,8 +442,8 @@ leave out the `font-family` and `font-stretch` declarations. Leave out `font-str
 ```html
 <style>
 .ac-card,:root[data-theme="light"] .ac-card{--ac-card:{light.surface};--ac-fg:{light.text};--ac-muted:{light.muted};--ac-border:{light.border};--ac-soft:{light.bg};--ac-tile:{light.bg};--ac-brand:{light.brandInk};--ac-on-brand:{light.surface};--ac-neutral-bg:{light.bg};--ac-neutral-fg:{light.muted}}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ac-card{--ac-card:{dark.surface};--ac-fg:{dark.text};--ac-muted:{dark.muted};--ac-border:{dark.border};--ac-soft:{dark.bg};--ac-tile:{dark.bg};--ac-brand:{dark.brandInk};--ac-on-brand:{dark.surface};--ac-neutral-bg:{dark.bg};--ac-neutral-fg:{dark.muted}}}
-:root[data-theme="dark"] .ac-card,.dark .ac-card{--ac-card:{dark.surface};--ac-fg:{dark.text};--ac-muted:{dark.muted};--ac-border:{dark.border};--ac-soft:{dark.bg};--ac-tile:{dark.bg};--ac-brand:{dark.brandInk};--ac-on-brand:{dark.surface};--ac-neutral-bg:{dark.bg};--ac-neutral-fg:{dark.muted}}
+@media screen and (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ac-card{--ac-card:{dark.surface};--ac-fg:{dark.text};--ac-muted:{dark.muted};--ac-border:{dark.border};--ac-soft:{dark.bg};--ac-tile:{dark.bg};--ac-brand:{dark.brandInk};--ac-on-brand:{dark.surface};--ac-neutral-bg:{dark.bg};--ac-neutral-fg:{dark.muted}}}
+@media screen{:root[data-theme="dark"] .ac-card,.dark .ac-card{--ac-card:{dark.surface};--ac-fg:{dark.text};--ac-muted:{dark.muted};--ac-border:{dark.border};--ac-soft:{dark.bg};--ac-tile:{dark.bg};--ac-brand:{dark.brandInk};--ac-on-brand:{dark.surface};--ac-neutral-bg:{dark.bg};--ac-neutral-fg:{dark.muted}}}
 .ac-card{font-family:"{fonts.body}",ui-sans-serif,system-ui,sans-serif;border-radius:{radius};box-shadow:none}
 .ac-card .ac-handle,.ac-card .ac-stat b{font-family:"{fonts.display}",ui-sans-serif,system-ui,sans-serif;font-stretch:{fonts.displayStretch}}
 .ac-card .ac-tile,.ac-card .ac-thumb{border-radius:calc({radius} - 4px)}
@@ -461,8 +462,8 @@ safety colors (`--ac-neg`, `--ac-neu`, the ok and warn dots and tiles) keep thei
 ```html
 <style>
 .acp,:root[data-theme="light"] .acp{--ac-card:var(--surface);--ac-fg:var(--text);--ac-muted:var(--muted);--ac-border:var(--border);--ac-soft:var(--bg);--ac-brand:var(--brand-ink);--ac-on-brand:var(--surface);--ac-chart-1:var(--chart-1);--ac-chart-2:var(--chart-2,var(--muted))}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .acp{--ac-card:var(--surface);--ac-fg:var(--text);--ac-muted:var(--muted);--ac-border:var(--border);--ac-soft:var(--bg);--ac-brand:var(--brand-ink);--ac-on-brand:var(--surface);--ac-chart-1:var(--chart-1);--ac-chart-2:var(--chart-2,var(--muted))}}
-:root[data-theme="dark"] .acp,.dark .acp{--ac-card:var(--surface);--ac-fg:var(--text);--ac-muted:var(--muted);--ac-border:var(--border);--ac-soft:var(--bg);--ac-brand:var(--brand-ink);--ac-on-brand:var(--surface);--ac-chart-1:var(--chart-1);--ac-chart-2:var(--chart-2,var(--muted))}
+@media screen and (prefers-color-scheme:dark){:root:not([data-theme="light"]) .acp{--ac-card:var(--surface);--ac-fg:var(--text);--ac-muted:var(--muted);--ac-border:var(--border);--ac-soft:var(--bg);--ac-brand:var(--brand-ink);--ac-on-brand:var(--surface);--ac-chart-1:var(--chart-1);--ac-chart-2:var(--chart-2,var(--muted))}}
+@media screen{:root[data-theme="dark"] .acp,.dark .acp{--ac-card:var(--surface);--ac-fg:var(--text);--ac-muted:var(--muted);--ac-border:var(--border);--ac-soft:var(--bg);--ac-brand:var(--brand-ink);--ac-on-brand:var(--surface);--ac-chart-1:var(--chart-1);--ac-chart-2:var(--chart-2,var(--muted))}}
 .acp{font-family:var(--font-body)}
 .acp h1,.acp h2,.acp .acp-big{font-family:var(--font-display);font-stretch:var(--font-display-stretch)}
 .acp .acp-panel,.acp .acp-note{border-radius:var(--radius,12px);box-shadow:none}
@@ -489,8 +490,8 @@ Surfaces, text, borders and the font stay Atlas's, and `fonts` and `radius` are 
 <style>
 :root{--primary:{light.brand};--primary-foreground:{light.onBrand};--ring:{light.brandInk};
   --chart-1:{light.chart[0]};--chart-1-foreground:{on(light.chart[0])};/* … through --chart-5 */}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){/* the same names with the dark values */}}
-:root[data-theme="dark"]{/* the same names with the dark values */}
+@media screen and (prefers-color-scheme:dark){:root:not([data-theme="light"]){/* the same names with the dark values */}}
+@media screen{:root[data-theme="dark"]{/* the same names with the dark values */}}
 </style>
 ```
 
@@ -506,8 +507,8 @@ semantic colors.
 ```html
 <style>
 .ac-card,:root[data-theme="light"] .ac-card{--ac-card:var(--card);--ac-fg:var(--card-foreground);--ac-muted:var(--muted-foreground);--ac-border:var(--border);--ac-soft:var(--muted);--ac-tile:var(--muted);--ac-brand:var(--ring);--ac-on-brand:var(--card);--ac-neutral-bg:var(--muted);--ac-neutral-fg:var(--muted-foreground)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ac-card{--ac-card:var(--card);--ac-fg:var(--card-foreground);--ac-muted:var(--muted-foreground);--ac-border:var(--border);--ac-soft:var(--muted);--ac-tile:var(--muted);--ac-brand:var(--ring);--ac-on-brand:var(--card);--ac-neutral-bg:var(--muted);--ac-neutral-fg:var(--muted-foreground)}}
-:root[data-theme="dark"] .ac-card,.dark .ac-card{--ac-card:var(--card);--ac-fg:var(--card-foreground);--ac-muted:var(--muted-foreground);--ac-border:var(--border);--ac-soft:var(--muted);--ac-tile:var(--muted);--ac-brand:var(--ring);--ac-on-brand:var(--card);--ac-neutral-bg:var(--muted);--ac-neutral-fg:var(--muted-foreground)}
+@media screen and (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ac-card{--ac-card:var(--card);--ac-fg:var(--card-foreground);--ac-muted:var(--muted-foreground);--ac-border:var(--border);--ac-soft:var(--muted);--ac-tile:var(--muted);--ac-brand:var(--ring);--ac-on-brand:var(--card);--ac-neutral-bg:var(--muted);--ac-neutral-fg:var(--muted-foreground)}}
+@media screen{:root[data-theme="dark"] .ac-card,.dark .ac-card{--ac-card:var(--card);--ac-fg:var(--card-foreground);--ac-muted:var(--muted-foreground);--ac-border:var(--border);--ac-soft:var(--muted);--ac-tile:var(--muted);--ac-brand:var(--ring);--ac-on-brand:var(--card);--ac-neutral-bg:var(--muted);--ac-neutral-fg:var(--muted-foreground)}}
 .ac-card{font-family:'Inter',ui-sans-serif,system-ui,sans-serif;border-radius:0.75rem;box-shadow:none}
 .ac-card .ac-tile,.ac-card .ac-thumb{border-radius:calc(0.75rem - 4px)}
 </style>

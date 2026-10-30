@@ -118,7 +118,9 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
 2. **Draft the page** for this question and this reader, from the blocks in
    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/blocks.md`. They already carry the markup in
    section 5. The blocks set what each part holds and the order of its evidence; the flow's
-   reference and this reader set the layout.
+   reference and this reader set the layout. Add the print rule with the page's title as
+   `skills/aspire/references/artifact-standard.md`, section 6, sets, so the page saves to PDF
+   in the light theme with a footer on every page.
 3. **Self-check R1 to R12.** Run the script in section 5 for R1, R2, R6, and R11, and judge the
    others against `reader-standard.md`. Fix every fail you can and check again.
 4. **Publish**, even when a check still fails, and report it in the page check (section 7).

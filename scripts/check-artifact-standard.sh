@@ -10,6 +10,8 @@
 #     from the tokens, keep the Starter Guide palette, and a page built from all of them passes the self-check
 #   - the standard's source sentence is written in that one file only, so the wording cannot drift
 #   - the references that define a published page link the standard
+#   - the standard's print block (section 6) holds the page footer and the print rules, the page
+#     blocks' style carries the same rules, and no page CSS in a skill turns on dark mode in print
 # What an agent actually publishes is not checked here; this keeps the instructions in step.
 #
 #   scripts/check-artifact-standard.sh
@@ -65,6 +67,28 @@ for f in ad-reuse affiliate cas-campaign content-library content-review content-
   [ -f "$R/$f.md" ] || { err "$R/$f.md is missing"; continue; }
   grep -q 'artifact-standard' "$R/$f.md" || err "$f.md does not link artifact-standard.md"
 done
+
+# Print (section 6): the print block holds the footer and the print rules, the page blocks' style
+# carries the same rules word for word, and every dark-mode rule a skill writes for a page is
+# screen only, so a printed page or PDF takes the light tokens.
+print_style=$(awk '/^<!-- print-style -->$/{f=1;next} /^<!-- \/print-style -->$/{f=0} f' "$STD")
+if [ -z "$print_style" ]; then
+  err "the standard has no <!-- print-style --> block (section 6)"
+else
+  for need in '@page{' '@bottom-left{content:"{pageTitle}"' 'counter(page) " of " counter(pages)' \
+    'print-color-adjust:exact' 'thead{display:table-header-group}' 'img[data-print="fit"]'; do
+    grep -qF "$need" <<< "$print_style" || err "the standard's print block lost '$need'"
+  done
+  ! LC_ALL=C grep -q '[^ -~]' <<< "$print_style" || err "the standard's print block holds non-ASCII text; pages stay ASCII"
+  print_rules=$(awk '/^\/\* print-rules \*\/$/{f=1} f{print} /^\/\* \/print-rules \*\/$/{f=0}' <<< "$print_style")
+  [ -n "$print_rules" ] || err "the standard's print block has no /* print-rules */ section"
+  bl_rules=$(awk '/^\/\* print-rules \*\/$/{f=1} f{print} /^\/\* \/print-rules \*\/$/{f=0}' "$P/skills/page-standard/blocks.md")
+  [ "$print_rules" = "$bl_rules" ] || err "blocks.md's print rules differ from artifact-standard.md's print block; copy them from section 6"
+fi
+while IFS= read -r hit; do
+  err "${hit%%:*} turns on dark mode in print (line ${hit#*:}); wrap it in @media screen (artifact-standard.md, section 6)"
+done < <(grep -rnE '^[[:space:]]*(@media \(prefers-color-scheme: ?dark\)|:root\[data-theme="dark"\])|"&:where\(\[data-theme=dark\]' \
+  plugins/*/skills --include='*.md' | cut -d: -f1,2 || true)
 
 # The page standard: a shared skill no one can call as a command, which the agent block links, and
 # whose self-check script passes the good fixture and fails each bad one on the check it names.
@@ -159,5 +183,5 @@ else
   fi
 fi
 
-[ "$fail" -eq 0 ] && echo "OK   artifact standard is linked from every agent and page reference; ${ran:-page check not run}"
+[ "$fail" -eq 0 ] && echo "OK   artifact standard is linked from every agent and page reference, pages print in the light theme; ${ran:-page check not run}"
 exit "$fail"
