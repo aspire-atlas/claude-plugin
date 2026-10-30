@@ -28,7 +28,8 @@ None. No question in the map routes here yet.
 
 ## Universal skills used
 
-_Pending: set in ASP-4103._
+- U5 Performance baseline
+- U7 Pricing and return
 
 ## Shared skills
 
@@ -41,12 +42,20 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Trigger phrases
 
-_Pending: set in ASP-4103._
+- "set up codes for the affiliates"
+- "create discount codes for the creators"
+- "is anyone leaking our codes"
+- "check coupon sites for our codes"
+- "rotate @handle's code"
+- "retire the dead codes"
 
 ## Writes to Atlas
 
-_Pending: set in ASP-4103._
+Code records (`codeStatus` planned, live, or retired, with a `leakage` field when a scan flags one) as `affiliate` findings, the `code-live` drafts, and the page as a `page` finding, on one batch question. Creating, changing, or turning off a code in the store is a Send: one question per code, recorded in the same run. The coupon-site scan runs only when the person asks for it. Tier changes go back as `roster` rows for the Roster review section of `/aspire` to write.
 
 ## Non-goals
 
-_Pending: set in ASP-4103._
+- The sales report and commission owed. Affiliate Program (19) does that.
+- Changing a creator's commission outside the program's terms. Negotiator (14) does that.
+- Sending a new code to a creator. It drafts the message; Outreach and Brief (13) sends.
+- Deleting a code. A code is turned off, never deleted.
