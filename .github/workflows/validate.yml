@@ -60,6 +60,9 @@ jobs:
       - name: Every agent carries the orchestration contract and has a permission level
         run: bash scripts/check-orchestration.sh
 
+      - name: Every agent and skill spec follows the spec format
+        run: bash scripts/check-agent-specs.sh
+
       - name: Every color in the mod's hooks comes from the palette
         run: bash scripts/check-palette.sh
 
