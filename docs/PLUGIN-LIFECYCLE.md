@@ -229,6 +229,7 @@ These are product and safety commitments. A PR that breaks one is blocked in rev
   | Uses a credential from the user's machine (`MCP_FORWARDS_CREDENTIAL_ENV`) | Nothing reads a credential; the connectors sign in with their own vendor through OAuth, and the Meta Ads client ID is public. A reviewer confirms it. |
   | Image or font file the code could run, assets passed unread (`UNREAD_ASSET_REFERENCED`, `ASSETS_PASSED_UNREAD`) | `assets/icon.png` is the listing icon and the marks and spinner are SVG; nothing runs them. A reviewer confirms it. |
   | Validation didn't finish (`VALIDATION_INCOMPLETE`) | The validator's own state; a reviewer looks at that version. |
+  | Reports usage to an outside endpoint (security scan, 5.0.0) | `report_checkpoint` and the `context` sentence on every Atlas call are Atlas product analytics. The plugin README's **Usage data** section and the listing description say so plainly, as the scan asks; keep both true when a checkpoint field or the `context` rule changes. |
 - Optional but worth doing: submit the Atlas MCP server to the Connectors Directory. A plugin that bundles a directory-listed connector shows fewer install warnings and has a better chance at the Anthropic Verified badge.
 
 ## 11. Access and permissions
