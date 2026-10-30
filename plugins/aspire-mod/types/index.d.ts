@@ -1,5 +1,5 @@
 // State contract of the Aspire mod (hooks/register.tsx): the progress bar and
-// band above the prompt, and the agents panel. `claude plugin validate plugins/aspire` holds
+// band above the prompt, and the agents panel. `claude plugin validate plugins/aspire-mod` holds
 // every $.state key the module names to this file.
 
 /**
@@ -145,7 +145,7 @@ export type ProgressTask = {
  * The aspire skill's progress, as the bar draws it.
  *
  * The skill reports through the mod's `aspire_progress` tool
- * (`mcp__aspire__aspire_progress`; the main session only, a subagent's call is
+ * (`mcp__aspire-mod__aspire_progress`; the main session only, a subagent's call is
  * ignored). Until it reports, the bar shows a baseline from the latest Atlas
  * `get_status` result (OrgState.checkpoints): onboarding checkpoints done out
  * of 6, where 1 is Atlas answered, 2 an organization selected, 3 a brand
@@ -251,7 +251,7 @@ export type Seen = {
 
 declare module 'claude-code' {
   interface PluginState {
-    aspire: {
+    'aspire-mod': {
       /** False until an Aspire event (see Trigger); every hook passes through until then. */
       isActive: boolean
       trigger: Trigger | null

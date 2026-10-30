@@ -100,7 +100,7 @@ Report with the progress tool: title `Prompt coach`, tasks `Read the ask`, `Ask 
 
 ## The card and the fallback
 
-Call `mcp__aspire__aspire_progress` with `coach: { verdict, step }` when the verdict is shown.
+Call `mcp__aspire-mod__aspire_progress` with `coach: { verdict, step }` when the verdict is shown.
 `verdict` is the one line, at most 140 characters; `step` is "Round 1 of 3" and so on. Send
 `coach: null` (or `finished: true`) to clear it when the loop ends. Wording: plain, no score, no
 jargon, name the missing inputs in the user's words ("window", "who reads it", "save"), and never

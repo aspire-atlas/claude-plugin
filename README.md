@@ -5,6 +5,7 @@ Claude plugins for the [Aspire Atlas](https://atlas.aspire.io) platform. Works i
 | Plugin | What it does | Command |
 | ------ | ------------ | ------- |
 | [`aspire`](plugins/aspire) | Onboards a brand onto Atlas, connects Instagram and TikTok, delivers first insights, plans weekly and campaign creator briefs, runs an influencer program (outreach, negotiation, product, affiliate codes, content rights, payments, and a program dashboard), tracks what creators say about the brand vs. competitors, and runs schedulable daily and weekly readouts and a quarterly roll-up, each shaped for the team that will act on it. Bundles its Aspire connectors. | `/aspire:aspire` |
+| [`aspire-mod`](plugins/aspire-mod) | Optional, beta channel only. A Claude Code mod that draws `/aspire`'s progress bar and band above the prompt and an Aspire agents panel. `aspire` works fully without it. | `/aspire-agents-info` |
 
 ## Install (official channel)
 
@@ -63,7 +64,13 @@ Full details in the [plugin README](plugins/aspire/README.md).
 
 ## Band and agents panel in Claude Code
 
-From 4.0.0, once `/aspire` runs in a Claude Code session, the plugin shows a progress bar above the prompt (`Aspire: {organization}` and onboarding progress), a band under it (Atlas token costs, response speed, context), and an Aspire agents panel (`/aspire-agents-info`; `/aspire-agents-info status` checks that the mod is on). It reads only what already passes through the session and makes no network, file, or process calls. Details in the [plugin README](plugins/aspire/README.md#band-and-agents-panel-claude-code).
+The `aspire` plugin is markdown and JSON only. The progress bar above the prompt (`Aspire: {organization}` and onboarding progress), the band under it (Atlas token costs, response speed, context), and the Aspire agents panel (`/aspire-agents-info`) ship in a separate, optional Claude Code mod, [`aspire-mod`](plugins/aspire-mod), on the beta channel only:
+
+```shell
+/plugin install aspire-mod@aspire-atlas-beta
+```
+
+It stays inert until `/aspire` runs, reads only what already passes through the session, and makes no network, file, or process calls. Without it, `/aspire` shows its progress in the session's task list. Details in the [mod README](plugins/aspire-mod/README.md) and its [SECURITY.md](plugins/aspire-mod/SECURITY.md).
 
 ## Support
 
@@ -74,4 +81,4 @@ From 4.0.0, once `/aspire` runs in a Claude Code session, the plugin shows a pro
 
 ## License
 
-[Apache-2.0](LICENSE). Copyright Aspire. The Claude Code mod includes code adapted from [claude-kit](https://github.com/johnnyvizz/claude-kit) under the MIT License; its notice is kept in the files that carry that code.
+[Apache-2.0](LICENSE). Copyright Aspire. The optional `aspire-mod` plugin includes code adapted from [claude-kit](https://github.com/johnnyvizz/claude-kit) under the MIT License; its notice is kept in the files that carry that code.

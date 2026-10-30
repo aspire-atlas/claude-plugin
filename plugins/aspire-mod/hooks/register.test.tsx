@@ -3,9 +3,9 @@ import type { On } from 'claude-code'
 import { expect, mock, test } from 'claude-code/testing'
 import type { Engine } from 'claude-code/testing'
 
-const PLUGIN = 'aspire'
+const PLUGIN = 'aspire-mod'
 const STATUS_TOOL = 'mcp__Aspire_Atlas__get_status'
-const PROGRESS_TOOL = 'mcp__aspire__aspire_progress'
+const PROGRESS_TOOL = 'mcp__aspire-mod__aspire_progress'
 const band = { hasSurvey: false, isWorking: false, maxRows: 4, bodyColumns: 120, scroll: { offset: 0, bodyRows: 4 }, view: {} } as const
 const pane = { title: '', isFocused: false, bodyColumns: 60, placement: 'dock', scroll: { offset: 0, bodyRows: 30 }, view: {} } as const
 
@@ -374,7 +374,7 @@ test("the right-panel icon at the bar's far right opens the panel, on desktop an
 test('an agent reports its steps; the panel draws them, and the main session cannot', async ($, on) => {
   world(on, () => WITH_COSTS)
   await spawn($, 'aspire:atlas-market-signal', 'Signal for the week')
-  const STEP_TOOL = 'mcp__aspire__aspire_step'
+  const STEP_TOOL = 'mcp__aspire-mod__aspire_step'
   const agentId = 'agent-Signal-for-the-week'
   expect(await $.tool.call({ tool: STEP_TOOL, total: 5, done: 2, note: 'reading posts' } as never)).toMatchObject({ result: 'ignored: only agents report steps' })
   expect(await $.tool.call({ tool: STEP_TOOL, agentId, total: 5, done: 2, note: 'reading posts' } as never)).toMatchObject({ result: 'ok' })
@@ -730,7 +730,7 @@ test('idle crabs breathe at their own rate and start at their own point', async 
 
 test('an agent step call from an unknown agent changes nothing and does not switch the mod on', async ($, on) => {
   world(on, () => WITH_COSTS)
-  expect(await $.tool.call({ tool: 'mcp__aspire__aspire_step', agentId: 'ghost', total: 3 } as never)).toMatchObject({ result: 'ok' })
+  expect(await $.tool.call({ tool: 'mcp__aspire-mod__aspire_step', agentId: 'ghost', total: 3 } as never)).toMatchObject({ result: 'ok' })
   expect(await status($)).toMatch(/Aspire mod: loaded, off/)
 })
 
@@ -993,7 +993,7 @@ test("an agent's own task list draws its steps on its row, and wins over aspire_
   }
   expect(await drawn()).toContain('1/3 Compare the competitors')
   // aspire_step does not override the list.
-  await $.tool.call({ tool: 'mcp__aspire__aspire_step', agentId, total: 9, done: 8, note: 'other' } as never)
+  await $.tool.call({ tool: 'mcp__aspire-mod__aspire_step', agentId, total: 9, done: 8, note: 'other' } as never)
   expect(await drawn()).toContain('1/3 Compare the competitors')
   // A main-session call never touches the agent's row; another agent's does not either.
   await $.tool.call({ tool: 'TodoWrite', todos: [{ content: 'Main task', status: 'pending' }] } as never)
@@ -1011,7 +1011,7 @@ test('pressing a running agent opens its task list, on desktop and in the termin
   world(on, () => WITH_COSTS)
   await spawn($, 'aspire:atlas-market-signal', 'Signal for the week')
   const agentId = 'agent-Signal-for-the-week'
-  await $.tool.call({ tool: 'mcp__aspire__aspire_step', agentId, total: 3, done: 1, note: 'reading posts' } as never)
+  await $.tool.call({ tool: 'mcp__aspire-mod__aspire_step', agentId, total: 3, done: 1, note: 'reading posts' } as never)
   const desktop = await $.ui.mount({ plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'aspire-agents', props: pane as never })
   const sources = async () => (await desktop.findAll({ type: 'Svg' })).map(el => String(el.props.source)).join('')
   expect(await sources()).not.toContain('reading posts<')
