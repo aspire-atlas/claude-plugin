@@ -63,11 +63,15 @@ exactly, and render for the primary lens per **Rendering for a lens**.
 7. Build the cut list per **Cut list**. Look up rights per **Rights sources**: `search_insights`
    on `creator-brief-{profile}`, `program-{profile}-` (`rights` and agreed `terms`), and
    `cas-campaign-{profile}-` (the roster's `usage` and `adPermissions`) for each creator.
-8. Build and publish the page per **Page** with the Artifact tool. Load `artifact-design` and
+8. List the evidence the approved P1 example sets, per the page standard's build loop
+   (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/examples.md`), then build one storyboard per
+   recommended ad from the frames you read at each beat's timecode, and the test plan, per
+   **Page**. Never draw a still you did not extract.
+9. Build and publish the page per **Page** with the Artifact tool. Load `artifact-design` and
    `dataviz` first; apply `theme:brand` when saved. The primary lens decides the section order
    per **Output for each lens**.
-9. Write findings per **Findings** when rule 4 allows.
-10. If the pool is empty, report indexing as still in progress or the window as too narrow,
+10. Write findings per **Findings** when rule 4 allows.
+11. If the pool is empty, report indexing as still in progress or the window as too narrow,
     and stop without writing insights.
 
 ## Output to the main thread (under 250 words)

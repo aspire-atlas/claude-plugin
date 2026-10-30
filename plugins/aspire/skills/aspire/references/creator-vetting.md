@@ -304,29 +304,62 @@ run.
 
 ## The page
 
+The page answers question **I1**, "Which creators should we contact for this launch, and why?",
+whenever the list is a discovery pool or a campaign's list, and must match the evidence of its
+approved example (`skills/page-standard/examples.md`, I1). A list vetted with no campaign
+behind it gets the same page without the launch clock. Build it from the page blocks
+(`skills/page-standard/blocks.md`); the block numbers below are that file's.
+
 One page per list, published to a new path per run; a re-run of the same list republishes to
 the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
 
-1. **Header** with the "Prepared for" chip, the animated mark at the top right, the list name and source, the criteria used
-   (brand or campaign), network chips, and counts: Approve, Maybe, Reject, Can't vet.
-2. **Headline**: how many to approve and the one thing that decided the most rejects.
-3. **Approve**, **Maybe**, **Reject**, **Can't vet**, in that order, each a grid of creator
-   cards (`creator-card.md`, page mode, no actions) ranked by fit score, numbered from 1
-   across the whole page because those numbers are what the user replies with. On each card:
-   the fit score in the ring; flow chips `#{number}` and the recommendation; safety results
-   in the brand safety tile per the card's **Brand safety** rule; `{DETAILS}` with the two
-   reasons, what would settle a Maybe, the calibrations and lessons applied, an earlier
-   vetting or discovery state, the contact route, and "Est. fee {open} to {max}, target
-   {target}" when the calculator gives one.
-4. **Safety summary**: a table of creators by category, only the rows with a Flag or Fail.
-5. **Criteria and rules**: the criteria, thresholds, safety scope, and hard rejects in plain
-   words, so a reader can see what fit meant.
-6. **Not vetted**: handles that could not be resolved, other networks, the brand's own
-   handles, with the reason for each.
-7. **Footer**: sources, the fee rate label once, a note that images are a snapshot, and
-   "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote. The mark and the footnote follow [artifact-standard.md](artifact-standard.md).
+1. **Header** (3.1, 3.2) with the "Prepared for" chip, the animated mark at the top right, the
+   list name and source, the criteria used (brand or campaign) with the launch, its audiences,
+   and its goal when the criteria name them, and the creators and posts read per platform.
+2. **Answer** (3.3), written last: how many were reviewed and how many to contact, and by when
+   ("49 creators reviewed. Contact 11 this week."), and the one thing that decided the most
+   rejects. Under it, the verdict tally: a bar of Approve, Maybe, Reject, and Can't vet, then a
+   column per verdict with its count and the reasons behind it as chips. When the user asked for
+   a number and the list came up short, the answer says so ("11 of the 20 asked for") and the
+   page never pads it.
+3. **Decisions** (3.5): approving the creators to contact, with the date outreach should start,
+   and any brand rule the team must settle before a verdict holds (for example, a red line a
+   creator sits on the edge of). Questions that settle one creator stay on that creator's card.
+4. **Next steps** (3.6): in order, each with its week, the creators it covers by number, and
+   what it should change: contact the approvals, settle the Maybes, line up the backups.
+5. **Up to three insights** (3.4): what shaped the verdicts across the list, each with its
+   comparison and a "So:" line.
+6. **Approve**, **Maybe**, **Reject**, **Can't vet**, in that order, each a grid of creator
+   cards (3.7; `creator-card.md`, page mode, no actions) ranked by fit score, numbered from 1
+   across the whole page because those numbers are what the user replies with. When the
+   criteria name audiences, the Approve grid is grouped by audience with a subtotal per group
+   and any open slot named. On each card: the fit score in the ring; flow chips `#{number}` and
+   the recommendation; safety results in the brand safety tile per the card's **Brand safety**
+   rule; three proof posts in the thumbnails; `{DETAILS}` with the two reasons, a watch line
+   (the one thing to keep an eye on), what would settle a Maybe or "Backup" when it only fills
+   a gap, the calibrations and lessons applied, an earlier vetting or discovery state, the
+   contact route, "Est. fee {open} to {max}, target {target}" when the calculator gives one
+   with where the rates came from, and the expected return when the fee has one: the bundled
+   median views the fee is priced on (`fees.md`, **How a fee is calculated**). Never show a
+   return the run did not work out.
+   Reject and Can't vet are grouped by reason (3.16), one score row per creator with the score
+   and why not, rather than full cards.
+7. **Safety summary**: a table of creators by category, only the rows with a Flag or Fail.
+8. **Launch clock** (3.17), when the criteria name a launch date: from offers out to the first
+   read of results, worked back from that date.
+9. **How the verdict was made** (3.11): the fit score's components and weights, the safety
+   results, the recommendation order and the thresholds, the hard rejects, every saved call or
+   lesson that changed a verdict, and the platform counts again.
+10. **What's missing** (3.12): creators Atlas could not read, networks not covered, and data a
+    verdict would firm up with (for example, audience demographics).
+11. **Not vetted**: handles that could not be resolved, other networks, the brand's own
+    handles, with the reason for each.
+12. **Atlas can draft next** (3.13): first messages to the approvals, offers at the fee
+    calculator's open rate, and the questions to the Maybes.
+13. **Footer**: sources, the fee rate label once, a note that images are a snapshot, and
+    "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote. The mark and the footnote follow [artifact-standard.md](artifact-standard.md).
 
-More than 12 creators: a chart leads the page (fit score against the recommendation lines, in a
+More than 12 creators: a chart sits under the verdict tally (fit score against the recommendation lines, in a
 creator-ads lane the score without Budget vs target, which is what the lines decide,
 or follower count against engagement rate, colored by recommendation). Images follow
 `creator-card.md`, **Images**, page profile, cutting thumbnails per card before quality on a

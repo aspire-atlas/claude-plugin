@@ -216,15 +216,26 @@ wins. `search_insights` returns findings tenant-wide, so always filter on the pr
 
 ## The living page
 
-One page per campaign, republished to the same path every run so the link stays stable.
-Sections in order:
+One page per campaign, republished to the same path every run so the link stays stable. It is
+the working list behind question **I1** ("Which creators should we contact for this launch, and
+why?"). The page that answers I1 is the vetting slate built from this pool
+(`creator-vetting.md`, **The page**), so the result packet's `next` names the vetting agent
+whenever undecided candidates are ready to vet. Build this page from the page blocks
+(`skills/page-standard/blocks.md`). Sections in order:
 
-1. **Header** — brand, campaign name, network chips, pool counts (undecided / accepted /
-   rejected against target), run timestamp, a "Prepared for" chip fed by `recipient` (`recipient-lens.md`), and the animated mark at the top right.
-2. **Since last run** — added, re-scored up or down, went dormant, decided. One line each;
+1. **Header** (3.1, 3.2): brand, campaign name, network chips with the creators found per
+   platform, pool counts (undecided / accepted / rejected against target), run timestamp, a
+   "Prepared for" chip fed by `recipient` (`recipient-lens.md`), and the animated mark at the
+   top right.
+2. **Answer** (3.3), written last: where the pool stands and what to do with it ("50 in the
+   pool, 12 new this run. Vet the top 20 next."), then **Decisions** (3.5): the candidates to
+   accept or reject, by number, or "Nothing needs approval" when the pool holds no new ones.
+   Then **Next steps** (3.6), its own section: which numbers to vet next and by when, and any
+   tier that ran dry with what would refill it.
+3. **Since last run**: added, re-scored up or down, went dormant, decided. One line each;
    "no change" is a valid line.
-3. **Active list** — accepted creators as creator cards, so the working set is visible first.
-4. **Shortlist** — the undecided pool, grouped by tier, ranked by fit score inside it.
+4. **Active list**: accepted creators as creator cards, so the working set is visible first.
+5. **Shortlist**: the undecided pool, grouped by tier, ranked by fit score inside it.
    Numbered from 1 across the whole shortlist, stable for the run, because those numbers are
    what the user replies with. Each candidate is a creator card (`creator-card.md`): the fit
    score in the ring; flow chips `#{number}` and the tier (`Added by team` for `manual`), then
@@ -235,10 +246,11 @@ Sections in order:
    (`fees.md`, **Applying the rates**) on the campaign's platforms: "Est. fee {open} to {max},
    target {target}" (marked "est. from engagement" when the calculator estimated the views), or nothing when it gives no price. The page footer carries the rate
    label once.
-5. **Rejected this cycle** — collapsed list of handles with the reason recorded, so a
+6. **Rejected this cycle**: collapsed list of handles with the reason recorded, so a
    decision is auditable.
-6. **Criteria** — the saved criteria in plain words, so a reader can see what "fit" meant.
-7. **Footer** — sources, a note that images are a snapshot, "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote. The mark and the footnote follow [artifact-standard.md](artifact-standard.md).
+7. **Criteria and scoring** (3.11): the saved criteria in plain words, the scoring table's
+   components and weights, and the platform counts again, so a reader can see what "fit" meant.
+8. **Footer**: sources, a note that images are a snapshot, "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote. The mark and the footnote follow [artifact-standard.md](artifact-standard.md).
 
 More than 12 candidates means a chart leads the shortlist: fit score by tier, or follower
 count against engagement rate with the pool plotted. Embed every image with the snippet in

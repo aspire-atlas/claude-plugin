@@ -175,24 +175,74 @@ date shows as expired.
 
 - **Performance** (primary): ranked licensing candidates by hook score, the pattern table,
   and one line per candidate on why it should convert as paid. Then the cut list.
-- **Creative** (primary): the cut list first, grouped by post, with frame thumbnails at the in
-  and out points; the ranking follows.
+- **Creative** (primary): the storyboards and the cut list first, right after the next steps,
+  grouped by post, with frame thumbnails at the in and out points; the ranking follows.
 - Both lenses are one hand-off (Performance picks, Creative cuts), so the page always carries
   both sections; the primary lens decides the order.
 
 ## Page (ad reuse agent)
 
-Title "<Brand> Ad Reuse: {window}", republished to the same path for the same brand. Sections:
-header with the "Prepared for" chip and the animated mark at the top right; headline (the top pattern and the top candidate); the
-pattern table, whose "Retention" column gives the median retention score and the level mix
-per pattern ("3 measured, 2 proxy"); ranked candidate cards (media, author, hook score ring
-with the retention label beside it as a small chip, "Measured", "Creator average, not this
-post" or "Proxy", the first-3-seconds frame strip with any measured early rate cited beside
-the opening frame, metric row); the cut list table; rights and gaps; footer with sources and
-"numbers come from Atlas as of {timestamp}", then the artifact-standard footnote. Labels on the page are plain words only, never a
-field name. The mark and the footnote follow [artifact-standard.md](artifact-standard.md).
+The page answers question **P1**, "Which creator posts should we run as ads, and how do we cut
+them?", and must match the evidence of its approved example (`skills/page-standard/examples.md`,
+P1). Build it from the page blocks (`skills/page-standard/blocks.md`); the block numbers below are
+that file's.
 
-When `reuse_scope` includes `creators`, rights and gaps adds one line: "Creator posts rarely
+Title "<Brand> Ad Reuse: {window}", republished to the same path for the same brand. One page per
+brand: a run over two brands publishes two pages. Sections, in this order for the `performance`
+lens (**Output for each lens** sets the order for `creative`):
+
+1. **Header** (3.1, 3.2): the "Prepared for" chip, the animated mark at the top right, the brand,
+   the window, and the posts considered per platform with the count that had measured data.
+2. **Answer** (3.3): the decision, written last ("12 posts scored. Run 4 as ads, starting with
+   @handle's demo."), and a one-line takeaway naming the top pattern.
+3. **Decisions** (3.5): what needs approval before any spend, each with its date when the test
+   plan sets one: licensing each candidate whose rights are not held, the test budget, and access
+   to the ad account or the raw files. With none, "Nothing needs approval."
+4. **Next steps** (3.6): up to four recommendations, ranked, each with who does it (performance or
+   creative), by when, and what it should change.
+5. **What the scores show** (3.4): up to three insights, each with its comparison and a "So:"
+   line. The headline insight's chart is seconds to the first product appearance by candidate;
+   the pattern table, whose "Retention" column gives the median retention score and the level
+   mix per pattern ("3 measured, 2 proxy"), is the second visual.
+6. **Every post scored** (3.16): one row per candidate considered for frame work, ranked by hook
+   score: thumbnail, handle, source (brand or creator), date, length, the score bar with the
+   retention label as a small chip ("Measured", "Creator average, not this post" or "Proxy"),
+   the verdict (run, cut first, or leave), and a one-line note. The recommended candidates keep
+   their card: media, the first-3-seconds frame strip with any measured early rate cited beside
+   the opening frame, and the metric row.
+7. **Cut structure and storyboards** (3.9): the structure every 15-second cut shares (hook 0 to
+   3s, brand 3 to 6s, build 6 to 9s, reveal 9 to 12s, end card +2s, per the page standard) and
+   the specs from **Cut list**. Then one storyboard per recommended ad: the badge (its rank),
+   the hook line, handle, date, pattern, cut length, and the tests it runs in; a still for every
+   beat, taken from the frames read at that beat's timecode, or an insert tile naming what to add
+   when the post has no usable frame there; the timecodes, a one-line description per beat, the
+   duration strip, and edit notes. A 6-second bumper keeps the hook, the brand, and the end card;
+   a 30-second cut lengthens the build. Timecodes from frames carry "±1.5s" and every timecode
+   stays a draft until a 1-second frame scan confirms it (`quality-review.md`, 4.15).
+8. **Cut list** table, one row per cut (**Cut list**).
+9. **Test plan** (3.15): one test per variable (hook pattern, opening line, cut length, or
+   placement), each with the ads in it, the metric it is judged on, the hypothesis, and its
+   Scale, Fix, and Stop rules. A rule's threshold comes from the brand's saved targets or the
+   account's own results; with neither, the rule names the metric and says the threshold is set
+   from the first test week. Then the test weeks as a timeline (3.17).
+10. **Rights** (3.10): one row per recommended candidate with its source and expiry, from
+    **Rights sources**.
+11. **How it was scored** (3.11): the six components with their weights, what full marks and
+    zero mean for each, the retention levels and thresholds, the hook evidence rule, the score
+    bands behind the verdicts, and any override, then the platform counts again. The ratings
+    matrix (every candidate by component) sits in a `details`.
+12. **What's missing** (3.12): paid results ("Paid results need a connected Meta ad account: they
+    would show which of these cuts already ran and what they cost"), boosted views where organic
+    is not held, and candidates scored on cover frames only.
+13. **Atlas can draft next** (3.13): the brief for the next creator round, built from the
+    patterns that led, and the rights requests for candidates without them.
+14. **Footer** with sources and "numbers come from Atlas as of {timestamp}", then the
+    artifact-standard footnote.
+
+Labels on the page are plain words only, never a field name. The mark and the footnote follow
+[artifact-standard.md](artifact-standard.md).
+
+When `reuse_scope` includes `creators`, what's missing adds one line: "Creator posts rarely
 carry measured watch time, because it comes from the account owner's insights. Most creator
 candidates score retention on the creator average or the proxy." Images follow `creator-card.md`, **Images**, page profile;
 frames follow `content-review.md`, **The page**, page mechanics. Load `artifact-design` and

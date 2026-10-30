@@ -723,8 +723,8 @@ video. Each quote carries who said it and links to where.
 ## 5. The validated examples, block by block
 
 Aspire's reviewers approved one page for each of three questions. Each can be rebuilt from these
-blocks with nothing left out. Read the example in full before you build a page for the same
-question (`SKILL.md`, section 4). The tables below say which block holds each of its elements, and
+blocks with nothing left out. The evidence each sets is in `examples.md`; read the example in
+full when the launch links it (`SKILL.md`, section 4). The tables below say which block holds each of its elements, and
 which elements stay the flow's own sections (section 6). "Adds" marks what the blocks require and
 the example lacked, so the rebuilt page passes a check the example did not.
 
