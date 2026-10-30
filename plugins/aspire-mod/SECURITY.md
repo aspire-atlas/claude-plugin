@@ -4,7 +4,7 @@ Report a vulnerability as for the rest of this repository: see the root [SECURIT
 
 ## What ships
 
-One Claude Code mod: a TypeScript function-hooks module (`hooks/register.tsx` and the files it imports), its state contract (`types/index.d.ts`), and its tests. No shell scripts or binaries, nothing installed, no environment variables or API keys. It depends on the `aspire` plugin, whose `/aspire` skill and `aspire:*` agents switch it on; `aspire` works fully without it.
+One Claude Code mod: a TypeScript function-hooks module (`hooks/register.tsx` and the files it imports), its state contract (`types/index.d.ts`), and its tests. No shell scripts or binaries, nothing installed, no environment variables or API keys. It works alongside the `aspire` plugin, whose `/aspire` skill and `aspire:*` agents switch it on, and installs nothing else; `aspire` works fully without it.
 
 ## What the mod can and cannot do
 

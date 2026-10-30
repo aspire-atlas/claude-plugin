@@ -11,7 +11,12 @@ On the beta channel, in Claude Code, next to `aspire`:
 /plugin install aspire-mod@aspire-atlas-beta
 ```
 
-It declares `aspire` as a dependency, so installing it also installs `aspire` when that is missing. It is not on the official channel yet.
+Install it from the same channel as `aspire`, which it needs and does not install for you:
+
+- **Beta `aspire`**: install `aspire-mod` from the beta marketplace as above.
+- **Official `aspire` 4.2.x and earlier**: do not install `aspire-mod`. Those versions already include this mod, so adding it would draw the bar and panel twice. Official `aspire` drops its built-in mod in its next major version.
+
+`aspire-mod` lists no dependency on purpose. A declared dependency is installed from the add-on's own marketplace, so on the beta channel it would add the beta `aspire` next to an official one, and the root README warns against having both. Without `aspire`, the mod loads and stays inert. It is not on the official channel yet.
 
 ## What it does
 
