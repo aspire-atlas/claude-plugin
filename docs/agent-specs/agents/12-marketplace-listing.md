@@ -28,7 +28,9 @@ None. No question in the map routes here yet.
 
 ## Universal skills used
 
-_Pending: set in ASP-4103._
+- U3 Brand safety and conflicts
+- U6 Rights and usage
+- U7 Pricing and return
 
 ## Shared skills
 
@@ -40,12 +42,20 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Trigger phrases
 
-_Pending: set in ASP-4103._
+- "post this campaign to the marketplace"
+- "write the marketplace listing"
+- "open applications for the campaign"
+- "what should we ask applicants"
+- "who applied"
+- "close the listing"
 
 ## Writes to Atlas
 
-_Pending: set in ASP-4103._
+The listing draft (copy, questions, and rules) as `listing` findings (a new record type the build adds to `program.md`) and the page as a `page` finding, on one batch question. Posting, updating, or closing a listing on the Aspire marketplace is a Send: one question per listing, and the result is recorded as a `listing` finding with its link in the same run. It never records a decision on an applicant.
 
 ## Non-goals
 
-_Pending: set in ASP-4103._
+- Deciding which applicants to accept. Creator List Review (07) and Creator Vetting (06) do that.
+- Setting the campaign's goal, budget, or timeline. Campaign Planner (11) does that.
+- Reaching named creators directly. Outreach and Brief (13) does that.
+- Pricing a deal with one creator. Negotiator (14) does that.

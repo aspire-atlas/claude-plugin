@@ -29,7 +29,9 @@ None. No question in the map routes here yet.
 
 ## Universal skills used
 
-_Pending: set in ASP-4103._
+- U1 Creator intelligence
+- U5 Performance baseline
+- U7 Pricing and return
 
 ## Shared skills
 
@@ -42,12 +44,20 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Trigger phrases
 
-_Pending: set in ASP-4103._
+- "affiliate report"
+- "report sales and commission"
+- "who's driving sales"
+- "what do we owe in commission"
+- "here's the Impact export"
+- "enroll the affiliates"
 
 ## Writes to Atlas
 
-_Pending: set in ASP-4103._
+Enrollment and the period's report as `affiliate` findings and the page as a `page` finding, on one batch question. Commission owed goes to Creator Payments (18) as a `ledger-lines` block, never as a `ledger` finding. It never writes `roster` or `terms`.
 
 ## Non-goals
 
-_Pending: set in ASP-4103._
+- Creating, rotating, or retiring discount codes. Promo Codes (20) does that.
+- Changing a creator's deal. Raises, hybrid moves, and promotions go to Negotiator (14).
+- Paying commission. Creator Payments (18) does that.
+- Setting up the program's affiliate terms. The Influencer program section of `/aspire` does that.
