@@ -5,7 +5,7 @@ team: 6 Organic and operations
 personas: Influencer Manager, Paid Social Manager, Organic Social Manager
 wave: 1
 permission: Read
-plugin_agents: atlas-daily-insights-report, atlas-weekly-insights-report, atlas-quarterly-signal, atlas-program-dashboard
+plugin_agents: atlas-daily-insights-report, atlas-weekly-insights-report, atlas-quarterly-signal, atlas-program-dashboard, atlas-org-dashboard
 ---
 
 # Reports
@@ -22,7 +22,7 @@ When I have to report, I want daily, weekly, campaign, creator and quarterly rep
 | O4 | Could we make a version of this report for leadership? | VP of marketing | Readout | None yet |
 | O6 | Tell us about a risky post before it spreads. | Brand and legal | Alert in chat and Slack | None yet |
 
-## Skills carried (6)
+## Skills carried (7)
 
 1. Daily insights with baseline
 2. Weekly insights with next steps
@@ -30,6 +30,7 @@ When I have to report, I want daily, weekly, campaign, creator and quarterly rep
 4. Per-creator report
 5. Quarterly one-pager for leadership
 6. Reader-shaped sections
+7. Organization dashboard for a bare /aspire
 
 ## Universal skills used
 
@@ -61,13 +62,16 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 - "put together the quarter for leadership" or "is our creator program working"
 - "program dashboard" or "how is the program doing"
 - "are we on track for our goals"
+- "organization dashboard", "show me where we stand" or "rebuild the dashboard"
+- "what should I do next in Atlas" or "make my own dashboard"
+- A bare `/aspire:aspire` on a configured organization
 - "/aspire reports" or "report", with daily, weekly or quarter after it
 - A scheduled task named "Atlas daily insights report", "Atlas weekly insights report" or
   "Atlas program dashboard"
 
 ## Writes to Atlas
 
-Findings, under the one batch confirmation at launch or the standing approval a scheduled report got at setup. The daily report saves up to five insights, plus three per open launch pulse. The weekly report saves its patterns and next steps and closes action items that are now met. The quarterly report saves its findings when the person confirms. The program dashboard saves a snapshot after approval.
+Findings, under the one batch confirmation at launch or the standing approval a scheduled report got at setup. The daily report saves up to five insights, plus three per open launch pulse. The weekly report saves its patterns and next steps and closes action items that are now met. The quarterly report saves its findings when the person confirms. The program dashboard saves a snapshot after approval. The organization dashboard saves nothing itself; `/aspire` saves its link to brand memory, or a personal link for one person, in the Organization dashboard setup.
 
 ## Non-goals
 
