@@ -17,6 +17,9 @@ run, creator discovery, and every teammate start from it. The recommendations ar
 insights, so a creator vetted once is never vetted blind again.
 
 Vetting is interactive only. A person supplies the list and a person makes the final call.
+Never schedule it; if `AskUserQuestion` is unavailable, say in one line that vetting needs a
+person to supply the list and make the call, and stop. For one creator in depth, use
+**Creator profile** in SKILL.md; to find new creators, **Creator discovery**.
 
 ## Setup: define what fit means, once, for everyone
 
@@ -48,6 +51,13 @@ Rules:
   teammate's vetting will use it."), then write the records. A `key-exists` follows the
   Phase 5 supersede rule with its own confirmation. Calibrations are organization-wide; say so
   in the confirmation when the organization has more than one profile.
+
+**When setup is done.** Setup is done when `vetting:criteria` and `vetting:thresholds` exist
+and `vetting:safety-scope` and `vetting:hard-rejects` are each saved or recorded as a `decline`;
+the main thread then skips to the run. A run against a campaign's criteria needs no setup: it
+uses `vetting:thresholds` when saved, else the defaults (70 and 50), labelled as defaults. The
+main thread may offer V2 alone; it is not required. Otherwise it asks the missing questions V1
+to V4, one `AskUserQuestion` each, in order, then confirms the batch once and writes the records.
 
 **Keys starting `vetting:` belong to creator vetting only**, like `review:` keys belong to
 content review. Every other flow drops them.
@@ -107,6 +117,27 @@ R3 is asked only after the main thread has checked which handles Atlas holds
 filter on the whole list), and only when some are missing. R3 option 1 is the approval for
 `lookup_creators` on exactly those handles, and the agent does not ask again. R4 is the write
 confirmation for the recommendation findings; the feedback answers carry their own.
+
+## Main thread: the run
+
+What the **Creator vetting** section of SKILL.md does around the agent.
+
+1. **Get the list** per **Getting the list**, from the R1 answer (skip R1 when the user already
+   attached a file or pasted handles). Show what was found and the list name.
+2. **Check what Atlas holds**: `search_creators` with a `terms` filter on the username field,
+   one call per network.
+3. Ask R2 to R4 in one `AskUserQuestion` call with the **Reading the ask** confirmation (SKILL.md)
+   when it applies (`team` by default; `brand` for "are these safe"; `campaign` when the list is
+   a launch lineup). Skip R3 when Atlas holds every creator.
+4. Launch `atlas-creator-vetting` with: tool prefix, `profile_id`, `profile_slug`, brand handles
+   and networks, the normalized list, the list name, slug and source, the criteria source, the
+   approved fetches, the R4 answer, and `recipient`. A list over 100 creators runs in batches of
+   100; say how many and launch them one at a time.
+5. Relay the page link, the counts, and the approved creators and top maybes inline as creator
+   cards from the agent's `creator-cards` block, badged with their page numbers. When R2 named a
+   campaign, offer to add the approved creators to its shortlist per SKILL.md **Creator card
+   actions**, "Add @handle on {network} to a campaign shortlist", with one confirmation for the
+   batch.
 
 ## The checks
 
@@ -256,6 +287,16 @@ Rules:
   `retract_calibration`, each with its own Destructive tools confirmation. The agent never
   calls either; it lists each under "Needs the main thread" (`key | current wording | proposed
   wording or "retract" | why`).
+
+**In the main thread.** When the agent reports "asked", relay what the user decided and what
+was saved. When it returns a feedback packet, run F1 to F3 yourself, before anything else in the
+conversation, and offer each "Needs the main thread" change through its own Destructive tools
+confirmation (`supersede_calibration` or `retract_calibration`), one per call.
+
+**Feedback outside a run.** Feedback about a creator outside a run ("never use @handle again",
+"@handle was great to work with") is saved the same way: word the note, confirm it with
+`AskUserQuestion` ("Save this about @handle for future vetting and discovery?"), then write the
+`creator:*` record, or offer the supersede when one exists.
 
 ### Creator calibrations
 

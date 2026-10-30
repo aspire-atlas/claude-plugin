@@ -21,7 +21,7 @@ default `team`), `connections` (`program.md`, **4**), and for `report` the perio
 source (A6: `store`, or `csv` with the uploaded file's path), and any mapping change the user
 typed. Named creators narrow the run. `record` adds the `affiliate-packet` from the earlier
 `propose` with the user's answers to A1 to A9 and the your-call items, each by its number from
-the **Affiliate manager** section of SKILL.md. `codes` with A4 carries the codes the user
+`references/affiliate.md`, **The questions (main thread)**. `codes` with A4 carries the codes the user
 entered or turned off from the sheet, and the date.
 
 Every Atlas tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId`

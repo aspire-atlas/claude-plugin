@@ -714,6 +714,129 @@ Rules:
   named on the status screen as "left open when round {n} ended", never written, and their
   reminders are removed.
 
+## The main thread's steps
+
+What the **CAS campaign** section of SKILL.md runs at each step, in the main thread. Several
+campaigns may be saved; ask which one with `AskUserQuestion` when more than one is active.
+
+### Status
+
+Read the setup records and the working state (`search_insights` on the campaign's prefix, paged).
+Find each round that is not done (**Rounds**, **Which round**) and its row in the dispatch table
+(**1c**), reading from the bottom up. Show one screen: per round, its month, dates and state,
+its row's status line and the four steps (1 Concepts approved, 2 Creators approved, 3 Fees
+approved, 4 Briefs approved) each with done and its date, out with the client and its due date,
+or its planned date; then the round's current step and up next from its **Round steps**, read
+after the page's step edits are pulled or labelled "as of the last pull" when they aren't; the
+creator counts by concept, anything marked your call needed, and the campaign page link,
+opened on the tab the next step is on (Creator Selection for creators, Selected Creators for fees
+and shipping, Master Brief for briefs and creator changes, else Home), and the new tags from the
+page per **Delivering tags**. Then one `AskUserQuestion`, header "Next": the one next step the
+**One next step** rule picks (Recommended), plus "Log a delay" and "Change setup", with "Start
+round {n+1}" in place of "Change setup" when **Starting the next round** offers it. Never offer
+more than one next step. When there are new tags for the client and a saved destination, the
+same call carries a second question, header "Tags", that confirms posting them; nothing about
+tags is sent without that answer.
+
+### Run
+
+Launch what the row names, then record what came back. Every agent launch here also carries
+the tool prefix, `profile_id`, and `profile_slug`:
+
+- **Discovery** (rows 2 and 3): `atlas-creator-discovery` with the campaign slug, run mode
+  `interactive`, `campaign_type` `creator-ads`, the lane to fill, and `recipient` (`campaign`).
+- **Vetting** (row 4): `atlas-creator-vetting` with the lane's pool as the list (the lane's
+  undecided candidates from discovery), the lane as the criteria source, and `recipient`
+  (`campaign`, then `brand`). The Run picker is the write confirmation: "Screen the {concept}
+  creators and save the results to Atlas?" If `vetting:thresholds` is missing, the run uses the
+  defaults (70 and 50), labelled as defaults; you may offer V2 from `creator-vetting.md` first
+  and write it with its own confirmation, but it is not required.
+- **Sending a step for approval** (rows 4, 7, 11): per **Gate packets**. The campaign page is the
+  approval page, linked to Creator Selection, Selected Creators or Master Brief; the CM shares it
+  with the client as Contributor. The briefs can also be sent from the page's Send for sign off;
+  the next pull records that send, its reminder and the step line.
+- **Pull the client's decisions** (rows 5, 8, 11, 12, 15, and whenever the CM asks "what did they
+  approve"): read the page data per **Pulling decisions**, show every Priority Yes, Yes, Maybe
+  and No by name, with its reason and who decided, plus shipping, status and ad permission edits,
+  and record them with one picker. Creator decisions are read from each client's own decisions
+  and checked first: a call from an account seen on Aspire's side is dropped, and an account the
+  CM hasn't confirmed as {brand}'s is asked about once. The client's fee approval is read from
+  their own approval item and checked the same way (an account never seen on Aspire's side,
+  confirmed as step 3's approver, newer than the send, and the fees still what they approved),
+  then recorded as step 3 approved. A brief sent for sign off on the page is recorded as step 4
+  sent. The client's brief sign off is read from their own sign off item and checked first
+  (written by an account never seen on Aspire's side and confirmed by the CM as the step's
+  approver, answering the newest send, the brief still what they signed); one that fails is
+  named with why and never recorded, and one that passes is named with the signer ("{name}
+  signed off the round {n} brief on {date}") and, on the confirm, locks each concept from the
+  signed copy and records step 4 as approved. A client who can't write on the page signs off
+  outside it; record that only as their word, with how it was given, per **Gate 4**. Priority Yes
+  and Yes record as approved, No as rejected. A Maybe stays open on the page with a question
+  back to the client. A surprise reason the client picked ("Why pass: Too expensive") is named
+  in their words and recorded on the creator. When an Editor applied a tuned match score on the
+  page since the last pull, offer it after the batch, in one picker of its own: "Save the tuned
+  match score for {campaign}?" with the weights before and after, how many client decisions it
+  learned from and the agreement before and after, and "Save it (Recommended)" or "Keep it on
+  the page only". Saving supersedes `match` in `campaign:{slug}-cas`, so discovery and vetting
+  for this campaign score with the same weights. It is the campaign's calibration, never a
+  brand-wide one, and the page never writes it itself.
+- **Record a reply** (rows 7, 10, 14, or whenever the CM pastes one): per `rates-and-terms.md`,
+  **Replies**. One picker proposes the record and the next move; a reply that changes what the
+  client approved becomes "your call needed" for the client.
+- **Rates** (row 6): the **Rates and terms** section of SKILL.md (`rates-and-terms.md`).
+- **Send the details emails** (row 9): per **1f**. One draft per contracted creator, shown ready
+  to copy; the CM sends them and says when they went.
+- **Brief** (row 10): `atlas-creator-brief` with `brief_mode` `creator-ads`, the campaign slug,
+  the round, the lanes, and `recipient` (`campaign`, then `creative`). Confirm the write first:
+  "Write the round {n} briefs for {concepts} and save them to the campaign?" Pass
+  `current_brief` when the page already holds the round's brief (a re-run after notes, or after
+  changes from Ad Performance were applied to it). After the run, load the brief page's data
+  block into the Master Brief tab and save it as the original (**1d**, **Master Brief**,
+  **Loading the brief**).
+- **Send the briefs to creators** (row 13): per **1g**. A changed brief from a creator goes back
+  to `atlas-creator-brief` with `revision` for the differences in plain words, then to the client
+  on the Master Brief tab.
+- **Start the next round** (once the newest round's step 4 is cleared and no later round exists,
+  offered in place of "Change setup"): per **Rounds**, **Starting the next round**. One picker
+  names the new round's month and dates, which creators carry forward, and the new round's
+  brief: every signed off concept plus those deferred to it, then writes the round, the
+  returning creators' rows and the new round's brief without touching the earlier round.
+- **Import a brief** (when the CM asks, or the page couldn't read the doc): per **1d**, **Master
+  Brief**, **Importing a brief**, **Importing from the chat**. A Google Docs link is read only
+  with a Google Drive connector this session already has; otherwise ask the CM to paste the
+  brief's text. One picker shows what was found and what it replaces, then writes the page data
+  and the brief findings.
+- **Ads in market** (row 17): save the cost per sale target when none is saved, with one
+  `AskUserQuestion` (C6a's question) and the supersede rule; otherwise name the variants to
+  retire or refresh with their reasons. The results themselves are read at every publish, per
+  **1d**, **Ad Performance**, **Reading the results**; nothing about them is written to Atlas,
+  and retiring an ad is done in Meta Ads Manager.
+- **Production** (row 16): the **Content review** section of SKILL.md for each draft. Once
+  creators have posted, the hook review from `hooks-and-ctas.md`, run here in the main thread:
+  it matches the creators' posts to the briefed hooks, shows which led, and saves the results
+  after one confirmation, so the next round's briefs lead with what worked.
+- **Post the tags** (whenever **Status** shows new tags for the client): per **Delivering
+  tags**, on the "Tags" answer only. Send posts each to the routing destinations and records it
+  as sent; "Keep on the page only" records it as kept. Tags for Aspire are shown to the CM and
+  never posted, and unattended runs never list or post tags.
+
+After each step, write the outcome per this reference, republish the campaign page with its page
+data, run **Checking the roles** and **Checking the edits** (`cas-campaign-data.md`) when they
+apply (the first stops a send that would show the client an agency only value), post the step
+line when a step moved, and show the new status in one line.
+
+### Schedule
+
+Follow **Readouts**, Schedule, in SKILL.md for the mechanics, and **Reminders and the weekly
+call** below for names and prompts. After setup, offer the weekly call once with
+`AskUserQuestion` ("Set up the weekly call agenda for {campaign} at {slot}?" Options: "Yes
+(Recommended)" / "Not now"). Approval reminders need no offer: C6 approved them, so sending a
+step creates its reminder and closing it removes it. C6 also approved the daily results refresh,
+which the status screen creates once a round is in market or launches within 7 days, and
+removes once no round is in market or ended in the last 14 days and none launches within 7
+days; it republishes the page to the same link and posts nothing. If the scheduled-task tools
+are missing, say so and stop; never fake a schedule. Unattended runs follow **Unattended runs**.
+
 ## Gate packets
 
 Every packet is the campaign page (**1d**), linked to the tab the client acts on: Creator

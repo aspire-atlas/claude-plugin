@@ -21,8 +21,8 @@ older wording means `run: unattended` (see `readout.md`, **Run flag**)), `recipi
 blocks from this session, and for `payments` mode the source (G2: the pasted text, or `csv` with
 the uploaded file's path) and any mapping change or event the user gave (G3). Named creators
 narrow the run. `pass: record` adds the `ledger-packet` from the earlier `propose` with the
-user's answers to G1, G3, G4, and G5, each by its number from the **Program ledger** section of
-SKILL.md.
+user's answers to G1, G3, G4, and G5, each by its number from `references/program-ledger.md`,
+**The questions (main thread)**.
 
 Every Atlas tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run
 id prefix does not count toward them). Pass `asProfileId`

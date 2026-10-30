@@ -53,6 +53,35 @@ Rules:
   on the team and every scheduled run will use it."), then write the five records. A
   `key-exists` follows the Phase 5 supersede rule.
 
+More setup rules for the main thread (the **Market signal** section of SKILL.md, Setup):
+
+- If `market-signal:scope`, `-topics`, `-lenses`, `-routing`, and `-cadence` all exist, skip to
+  the run and offer "Change setup" on the run question. Otherwise ask the missing questions M1 to
+  M5, one `AskUserQuestion` each, in order.
+- When **Reading the ask** already confirmed readers, preselect them as M3's recommended option.
+- On M3 and M4, state that scheduled runs will post to the named destinations and save their
+  findings to Atlas without asking each time. That is the standing approval for both.
+
+## Run and schedule (main thread)
+
+**Run.** Launch `atlas-market-signal` with: tool prefix, `profile_id`, `profile_slug`, the brand
+handles and networks, run mode `interactive`, `recipient` (the lenses from **Reading the ask**,
+else the saved M3 lenses), and a window only if the user named one. Confirm the write before
+launching in the same `AskUserQuestion` call as the lens ("Save the findings to Atlas?" Save
+(Recommended) / Page only) and pass the answer. Relay the headline, the page link, and the
+forward note. When the agent asks to confirm delivery, ask as in SKILL.md **Readouts**, Run. When
+it names competitors Atlas does not index, offer an account review of each (Phase 6, mode
+`handle`), which is the approved way to fetch one.
+
+**Schedule.** After the first successful run, if M5 is weekly, offer with `AskUserQuestion`:
+"Track this weekly?" Options: "Yes, weekly (Recommended)" / "Not now". Follow SKILL.md
+**Readouts**, Schedule, for the mechanics: UTC cron from `market-signal:cadence`, one task named
+"Atlas market signal: {brand}", the prompt from the README under **Scheduling the market
+signal**, confirmed before creating. When the weekly readout is set up, offer to add the
+`product` and `pmm` lenses to R6 so its page carries the parity and messaging sections from this
+run. Unattended runs never ask, never start discovery, and publish a "setup needed" card when
+setup is incomplete (**Scheduled (unattended) runs**).
+
 ## Data method
 
 Filter path unless noted, `context` on every call, only field paths from the census.
