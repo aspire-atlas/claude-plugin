@@ -70,10 +70,10 @@ under the standing approval saved at program setup.
 
 - Setting up the program and its terms. That is the influencer program setup in `/aspire`, and
   this agent stops when the setup records are missing.
-- Sending a chase, a fix request or a thank-you. It drafts them; 13 Outreach and brief sends.
-- Checking a post against the brief or the brand guidelines: 17 Content review.
-- Adding posted content to the library and tracking its rights: 26 Content library and rights.
-- Paying for a posted deliverable: 18 Creator payments.
-- Shipping product and tracking delivery: 16 Product fulfillment.
-- Breaking down one post second by second: 31 Post analysis.
+- Sending a chase, a fix request or a thank-you. It drafts them, and the person sends them.
+- Checking a post against the brief or the brand guidelines: 17 Content Review.
+- Adding posted content to the library and tracking its rights: 26 Content Library and Rights.
+- Paying for a posted deliverable: 18 Creator Payments.
+- Shipping product and tracking delivery: 16 Product Fulfillment.
+- Breaking down one post second by second: 31 Post Analysis.
 - Waiving a deliverable. Only the person waives, and the agent never recommends it.

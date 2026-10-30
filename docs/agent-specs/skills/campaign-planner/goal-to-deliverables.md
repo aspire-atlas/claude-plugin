@@ -16,7 +16,7 @@ Turns the campaign's goal into a deliverable list sized to the campaign window, 
 
 ## Output
 
-A list of deliverables, each with its phase, format and length, angle, must include, and avoid: at least one launch-day post per first-pick creator, teasers only when the brand's history shows them working, and sustain posts through the window. A red line on AI-written content makes it strategy only, with no captions or scripts. The agent is not built yet; the creator brief's campaign mode does this today.
+A list of deliverables, each with its phase, format and length, angle, must include, and avoid: at least one launch-day post per first-pick creator, teasers only when the brand's history shows them working, and sustain posts through the window. A red line on AI-written content makes it strategy only, with no captions or scripts. The agent is not built yet; the creator brief's campaign mode does this until it is.
 
 ## Callable
 

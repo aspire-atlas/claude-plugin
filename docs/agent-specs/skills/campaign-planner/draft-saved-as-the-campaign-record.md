@@ -16,7 +16,7 @@ Saves the signed-off plan as the campaign's record so later agents read the same
 
 ## Output
 
-The records to save, worded for one batch confirmation, then the saved record keys. With "Page only", nothing is saved and the output says so. The agent is not built yet; today the campaign setup in `/aspire` saves the campaign description, and the creator brief saves one action item per deliverable.
+The records to save, worded for one batch confirmation, then the saved record keys. With "Page only", nothing is saved and the output says so. The agent is not built yet. Until it is, the campaign setup in `/aspire` saves the campaign description, and the creator brief saves one action item per deliverable.
 
 ## Callable
 

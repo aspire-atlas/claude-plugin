@@ -16,7 +16,7 @@ Is meant to release a creator's payment through Aspire once the person confirms 
 
 ## Output
 
-Not built yet. The agent that runs today never pays and never moves money. It records a payment made in the core Aspire platform or the brand's finance tool, from that tool's export, and marks the line paid with the date and the payment reference.
+Not built yet. The running ledger agent never pays and never moves money. It records a payment made in the core Aspire platform or the brand's finance tool, from that tool's export, and marks the line paid with the date and the payment reference.
 
 ## Callable
 

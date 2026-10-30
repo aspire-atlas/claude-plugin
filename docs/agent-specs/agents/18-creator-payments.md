@@ -60,15 +60,15 @@ Write. New, revised and void ledger lines, the invoices and payments matched to 
 answers to its "your call" items, and the ledger page link. Each batch is one confirmation: one
 for the lines, one for a CSV's column mapping, one for the matches. It records payments made in
 the core Aspire platform or the brand's finance tool and never pays. Releasing a payment would be
-a Send, one confirmation per payment, and the agent that runs today does not do it. An
+a Send, one confirmation per payment, and the running ledger agent does not do it. An
 unattended run saves nothing.
 
 ## Non-goals
 
 - Agreeing fees, payment timing and terms: 14 Negotiator.
-- Working out commission from sales: 19 Affiliate program, which hands its lines in.
-- Rights and UGC fees: 23 UGC commissioner and 26 Content library and rights hand their lines in.
-- Placing product orders: 16 Product fulfillment. Product shows as a cost, never cash owed.
-- Knowing whether a post went up. A fee due on posting waits on 15 Campaign manager.
+- Working out commission from sales: 19 Affiliate Program, which hands its lines in.
+- Rights and UGC fees: 23 UGC Commissioner and 26 Content Library and Rights hand their lines in.
+- Placing product orders: 16 Product Fulfillment. Product shows as a cost, never cash owed.
+- Knowing whether a post went up. A fee due on posting waits on 15 Campaign Manager.
 - The program's overall view of spend and sales: 29 Reports.
-- Messaging a creator about a payment: 13 Outreach and brief.
+- Messaging a creator about a payment: 13 Outreach and Brief.

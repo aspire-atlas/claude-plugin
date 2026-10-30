@@ -67,16 +67,16 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Writes to Atlas
 
-Findings, under the one batch confirmation at launch or the standing approval a scheduled report got at setup. The daily report saves up to five insights, plus three per open launch pulse. The weekly report saves its patterns and next steps and closes action items that are now met. The quarterly report saves its findings when the person confirms. The program dashboard saves a snapshot after approval.
+Findings, under the one batch confirmation at launch or the standing approval a scheduled report got at setup. The daily report saves up to five insights, plus three per open launch pulse. The weekly report saves its patterns and next steps and closes action items that are now met. The quarterly report saves its findings when the person confirms. The program dashboard saves a snapshot after approval. The proposal page lists this agent as Read; the agent that runs is at Write level in `orchestration.md` section 7, which is the level `/aspire` confirms.
 
 ## Non-goals
 
-- Running the market signal. It reads the saved findings of 02 Market signal and never re-runs
+- Running the market signal. It reads the saved findings of 02 Market Signal and never re-runs
   them.
-- Reviewing the brand's own accounts and proposing pushes: 27 Account analyst.
-- Breaking down one post: 31 Post analysis.
-- Reviewing a post against the brief: 17 Content review.
+- Reviewing the brand's own accounts and proposing pushes: 27 Account Analyst.
+- Breaking down one post: 31 Post Analysis.
+- Reviewing a post against the brief: 17 Content Review.
 - Acting on what the program dashboard shows. Each open item names its next step and the agent
-  that handles it, such as 15 Campaign manager, 16 Product fulfillment or 18 Creator payments.
-- Keeping the ledger. Spend comes from 18 Creator payments and shows only in the team view.
+  that handles it, such as 15 Campaign Manager, 16 Product Fulfillment or 18 Creator Payments.
+- Keeping the ledger. Spend comes from 18 Creator Payments and shows only in the team view.
 - Saving the readout setup and its schedule. That is the Readouts setup in `/aspire`.

@@ -16,7 +16,7 @@ Shows what Atlas holds about the brand and lets the person change a saved fact i
 
 ## Output
 
-For a fact that is already saved: the current version and the new one side by side, and, once the person confirms, the replacement of the old record. A web finding the person edits becomes their own answer. A single snapshot view of the whole brand memory is not built yet; today a returning organization gets a three to five line summary of its profile and channels.
+For a fact that is already saved: the current version and the new one side by side, and, once the person confirms, the replacement of the old record. A web finding the person edits becomes their own answer. A single snapshot view of the whole brand memory is not built yet. A returning organization gets a three to five line summary of its profile and channels.
 
 ## Callable
 

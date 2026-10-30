@@ -16,7 +16,7 @@ Records the brand's hard no's (topics, creators or content types to block or esc
 
 ## Output
 
-One red line per rule, each with its action (block or escalate), what it applies to, and the rule in the person's words. Today the question offers "Standard brand safety only" and saves only the brand's own rules; a GARM tier default saved as its own record is not built yet.
+One red line per rule, each with its action (block or escalate), what it applies to, and the rule in the person's words. The question offers "Standard brand safety only" and saves only the brand's own rules; a GARM tier default saved as its own record is not built yet.
 
 ## Callable
 

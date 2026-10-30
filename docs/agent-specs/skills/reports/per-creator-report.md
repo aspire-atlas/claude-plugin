@@ -16,7 +16,7 @@ Shows how each creator in the program performed against their own baseline.
 
 ## Output
 
-No standalone per-creator report exists today. The program dashboard gives each creator a row: program posts, engagement against their own baseline (judged with two or more program posts and five or more of their own), and their top post. The weekly report's growth section names the creators to back next.
+Not built yet as a standalone report. The program dashboard gives each creator a row: program posts, engagement against their own baseline (judged with two or more program posts and five or more of their own), and their top post. The weekly report's growth section names the creators to back next.
 
 ## Callable
 

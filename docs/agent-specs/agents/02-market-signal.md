@@ -57,7 +57,7 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Writes to Atlas
 
-Up to 12 findings per run with `append_insights`. An interactive run saves only when the person picked Save at launch, which is the one batch confirmation. A scheduled run saves under the standing approval given at setup. A leadership (O3) page saves nothing.
+Up to 12 findings per run with `append_insights`. An interactive run saves only when the person picked Save at launch, which is the one batch confirmation. A scheduled run saves under the standing approval given at setup. A leadership (O3) page saves nothing. The proposal page lists this agent as Read; the agent that runs is at Write level in `orchestration.md` section 7, which is the level `/aspire` confirms.
 
 ## Non-goals
 

@@ -16,7 +16,7 @@ Publishes the content brief creators work from as one visual page, for a week or
 
 ## Output
 
-The brief page link, with the deliverables, guardrails, first-pick creators with their fees, and the timeline. Today outreach drafts are plain text with no attachment and no link to the brief, so the person shares the brief page with creators.
+The brief page link, with the deliverables, guardrails, first-pick creators with their fees, and the timeline. Outreach drafts are plain text with no attachment and no link to the brief, so the person shares the brief page with creators.
 
 ## Callable
 

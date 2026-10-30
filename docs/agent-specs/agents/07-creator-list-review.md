@@ -54,13 +54,9 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Writes to Atlas
 
-The same saves as 06 Creator Vetting, since the same agent runs both. When the person picks
-"Save" before the run, one batch confirmation covers one recommendation insight per creator on the
-list and a run summary that records the list's name and source and the handles that could not be
-read. The team's call on each creator is saved as a feedback insight under its own question. Notes
-about single creators and lessons are saved as calibrations only after the person sees the
-wording and chooses to save it. Fetching creators Atlas does not hold uses paid lookups, approved
-for the named handles before the run.
+The same saves, under the same approvals, as 06 Creator Vetting, since the same agent runs both.
+The one difference is the run summary, which records the list's name and source and the handles
+that could not be read.
 
 ## Non-goals
 

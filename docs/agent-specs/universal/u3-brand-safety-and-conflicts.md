@@ -13,7 +13,7 @@ Answers whether a creator or post is safe, disclosed, and free of rival deals.
 ## Inputs
 
 - From brand memory: the red lines with their action (block, flag, escalate), the safety scope and hard rejects, the brand safety instruction, competitors and partners with spelling variants, the disclosure rule, `review:rule-*` records, and earlier brand safety and content review findings.
-- From Atlas: brand safety ratings across the 12 industry categories for each post, the paid partnership marker, and the post text and transcript.
+- From Atlas: brand safety ratings across the 12 industry categories for each post, the post text and transcript, and the paid partnership marker where a search field holds one. The platform's paid partnership label itself is not held, so its absence is never read as missing disclosure.
 - From the launch message or deal: the disclosure wording and must-include list a deal requires.
 
 ## Output
