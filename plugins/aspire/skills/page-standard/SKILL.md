@@ -111,9 +111,9 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
 1. **List the evidence the approved example sets** for the launch block's `question`, from
    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/examples.md` (storyboards, test plan, cards with
    thumbnails), when this flow is the one that file's row names as building the page. A flow that
-   only feeds another (discovery feeding vetting for I1) skips this step. Read every example the launch block's `examples` lists in full first: its
-   sections and evidence, not its embedded images (strip `data:` URIs from your copy). Match the
-   evidence, never copy the sections or the layout. A code with no example, or a launch with no `question`, skips this
+   only feeds another (discovery feeding vetting for I1) skips this step. Read every example the launch block's `examples` lists and list the
+   evidence, per `examples.md` steps 1 and 2. Match the evidence, never copy the sections or the
+   layout. A code with no example, or a launch with no `question`, skips this
    step.
 2. **Draft the page** for this question and this reader, from the blocks in
    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/blocks.md`. They already carry the markup in

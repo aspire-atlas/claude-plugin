@@ -248,35 +248,10 @@ feedback event yet.
 
 ### Examples library
 
-An organization can keep the pages its reviewers approved as examples in a Claude Doc of its own:
-a table with one row per example, holding its question code, brand, link, kind of page, who built
-it, and what makes it work. A question aims for two or three, each for a different brand. Before
-an agent builds a page for a question, it reads every approved example for that question
-(`skills/page-standard/examples.md`). The library is read only to fill the launch block, and its
-links never appear on a page or in a draft.
-
-- **Where it is saved.** The key `examples:library` (`policy`, `{area: "routing", body:
-  "docs:{link}"}`). It is off unless someone asks for it ("read examples from {doc}", "use
-  {doc} as our examples library"). Needs a brand profile. Confirm with `AskUserQuestion`, header
-  "Examples": "Read the approved examples in {doc} before building pages for {brand}?" Options:
-  "Use it (Recommended)", "Not now". On yes, write it with `append_calibration`,
-  `provenance: "interview"`; a `key-exists` follows the Phase 5 supersede rule. Turning it off is
-  `retract_calibration` with its own confirmation. Never suggest a library the person did not
-  name.
-- **Filling the launch block.** When the launch's `question` has a row in
-  `skills/page-standard/examples.md` and the launched agent is the one that row names as
-  building the page, find `examples:library` with `search_calibrations` (no filter, limit 100
-  per page, paged to the end; read only) just before launching. With a record, read the doc with
-  the docs connector's `read` and find its table of approved examples (the table with a question
-  and a link per row; a table of pages still waiting for review is not it). Put the link of every
-  row whose question carries the launch's code in `examples`, including a row that names it as the
-  code the question was asked as ("I8 (asked as P4)" matches a P4 launch). With no record, no
-  profile, no connection, or a doc that cannot be read, pass `[]` and launch anyway. A doc that
-  cannot be read gets one line to the user after the launch in an interactive run, and an
-  Adjustments row in the run log (`references/orchestration.md` **9**) in an unattended one.
-  Never ask about the library during a launch.
-- **Adding an example** is the organization's call, made outside a run: its reviewer adds the row
-  to the doc. This skill never adds a row on its own.
+Off unless someone names a Claude Doc of approved examples for a brand profile; one "Examples"
+confirmation writes `examples:library`, and the main thread fills the launch block's `examples`
+from it before launching the agent that builds the page (`skills/page-standard/examples.md`,
+**The examples library**). Never suggest one.
 
 ---
 
