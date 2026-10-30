@@ -50,6 +50,41 @@ in.
 - An unattended run asks nothing. P9's "Weekly dashboard" is the standing approval for the
   snapshot, and P8 is the standing approval for the post.
 
+### Running the dashboard (main thread)
+
+Moved here from the **Program dashboard** section of SKILL.md, which points at it.
+
+1. Read the program's setup records as the **Program manager** does. Missing or unparseable
+   program records: run **Program setup** first.
+2. Ask B1 and B2 in one `AskUserQuestion` call, with the **Reading the ask** confirmation when
+   it applies (default `team`; `leadership` for "are we on track", "for my manager", "for the
+   exec update"; `growth` for "where is the money going").
+3. Launch `atlas-program-dashboard` with the tool prefix, `profile_id`, `profile_slug`, the
+   brand's linked handles and networks, the program slug, `run: interactive`, `connections`,
+   `recipient`, and the B1 and B2 answers, and end with the decision-audit line. B1 is the write
+   confirmation; B2 is the delivery confirmation.
+4. Relay the page link, the headline, the attention list with each item's next step, and the
+   not-tracked list. On first publish, say once: "Share this dashboard with your team as Editor
+   to see goals and spend. Never share it with creators."
+5. Offer the first attention item as the single next step, the way the Program manager does
+   (header "Next": the step (Recommended), "Change setup"). Never launch it without the pick.
+6. Ask B3 only when the agent returned "Weekly task: ready to create" (P9 named "Weekly
+   dashboard", the page now has a saved link, and no task named "Atlas program dashboard:
+   {brand} - {program}" exists).
+
+**Schedule.** Follow **Readouts**, Schedule, for the mechanics, and `program.md` **8** for the
+task name "Atlas program dashboard: {brand} - {program}" (weekly, at the day and time saved in
+the program's cadence), launching `atlas-program-dashboard` with `run: unattended`. Prompt:
+
+> Run the Atlas program dashboard for {brand}, program {program name}, handles {handles and
+> networks}, using the saved program records. Read the date from the shell clock. Do not ask
+> questions. Republish the dashboard, save the weekly snapshot only if the program's saved
+> schedule names the weekly dashboard, and post the summary to the saved routing.
+
+Create the task only after the dashboard has been published once interactively and its link is
+saved (B3). Scheduled runs never ask, decide, draft, or send, and show missing records as "not
+tracked yet". Aspire Atlas, and Slack or email when routed, must be enabled for scheduled tasks.
+
 ## What it reads
 
 ### Setup records

@@ -17,6 +17,9 @@ run, creator discovery, and every teammate start from it. The recommendations ar
 insights, so a creator vetted once is never vetted blind again.
 
 Vetting is interactive only. A person supplies the list and a person makes the final call.
+Never schedule it; if `AskUserQuestion` is unavailable, say in one line that vetting needs a
+person to supply the list and make the call, and stop. For one creator in depth, use
+**Creator profile** in SKILL.md; to find new creators, **Creator discovery**.
 
 ## Setup: define what fit means, once, for everyone
 
@@ -48,6 +51,13 @@ Rules:
   teammate's vetting will use it."), then write the records. A `key-exists` follows the
   Phase 5 supersede rule with its own confirmation. Calibrations are organization-wide; say so
   in the confirmation when the organization has more than one profile.
+
+**When setup is done.** Setup is done when `vetting:criteria` and `vetting:thresholds` exist
+and `vetting:safety-scope` and `vetting:hard-rejects` are each saved or recorded as a `decline`;
+the main thread then skips to the run. A run against a campaign's criteria needs no setup: it
+uses `vetting:thresholds` when saved, else the defaults (70 and 50), labelled as defaults. The
+main thread may offer V2 alone; it is not required. Otherwise it asks the missing questions V1
+to V4, one `AskUserQuestion` each, in order, then confirms the batch once and writes the records.
 
 **Keys starting `vetting:` belong to creator vetting only**, like `review:` keys belong to
 content review. Every other flow drops them.
@@ -108,12 +118,40 @@ filter on the whole list), and only when some are missing. R3 option 1 is the ap
 `lookup_creators` on exactly those handles, and the agent does not ask again. R4 is the write
 confirmation for the recommendation findings; the feedback answers carry their own.
 
+## Main thread: the run
+
+What the **Creator vetting** section of SKILL.md does around the agent.
+
+1. **Get the list** per **Getting the list**, from the R1 answer (skip R1 when the user already
+   attached a file or pasted handles). Show what was found and the list name.
+2. **Check what Atlas holds**: `search_creators` with a `terms` filter on the username field,
+   one call per network.
+3. Ask R2 to R4 in one `AskUserQuestion` call with the **Reading the ask** confirmation (SKILL.md)
+   when it applies (`team` by default; `brand` for "are these safe"; `campaign` when the list is
+   a launch lineup). Skip R3 when Atlas holds every creator.
+4. Launch `atlas-creator-vetting` with: tool prefix, `profile_id`, `profile_slug`, brand handles
+   and networks, the normalized list, the list name, slug and source, the criteria source, the
+   approved fetches, the R4 answer, and `recipient`. A list over 100 creators runs in batches of
+   100; say how many and launch them one at a time.
+5. Relay the page link, the counts, and the approved creators and top maybes inline as creator
+   cards from the agent's `creator-cards` block, badged with their page numbers. When R2 named a
+   campaign, offer to add the approved creators to its shortlist per SKILL.md **Creator card
+   actions**, "Add @handle on {network} to a campaign shortlist", with one confirmation for the
+   batch.
+
 ## The checks
 
 Every check returns **Pass**, **Flag**, **Fail**, or **Can't check**, with the evidence it
 rests on: a permalink with a quoted caption line, a transcript line, or a field and its
 value. "Can't check" says what would make it checkable. Never guess from a bio alone what a
 creator's posts show.
+
+Run brand fit before brand safety for every creator, so the page shows how close a creator came
+on fit before what safety found. Infer a trait from what the posts show, never from a number or
+label the creator states: "mom of three" or "70% women" in a bio is a lead to check against the
+posts, not evidence. A niche fandom or subculture the criteria name (a show, a game, a team) is a
+theme, not a keyword: count the posts that are about it, whatever words they use, not only the
+posts that contain its name.
 
 **What to read per creator.** `search_creators` for the account (followers, bio, country,
 verification, contact fields, `analysis` fields the creator census lists).
@@ -206,6 +244,15 @@ hard reject, or a saved team call on another creator. Every recommendation carri
 two reasons in plain words, and every Maybe says what would settle it ("check their last 3
 Reels for alcohol before approving").
 
+**Near-misses when the rules loosen.** When a `vetting:thresholds` or `vetting:criteria` record
+(or the campaign's `-criteria`) was superseded by a looser one since an earlier vetting run (a
+lower line, a wider size band, a market or format added), list the creators whose earlier call
+came from the fit score alone (rule 5, not a saved call, hard stop, missing data, or safety cap):
+a Reject within 10 points under the old maybe line, a Maybe within 10 points under the old approve
+line, or one that missed only on the criterion that changed. They go in
+**Next steps** as "Re-screen under the new rules", each with the earlier score and what changed.
+Re-vet them only when the user adds them to a list; never change an earlier call yourself.
+
 ## The feedback loop
 
 Asked straight after the run, while the page is in view. The agent asks when
@@ -240,6 +287,16 @@ Rules:
   `retract_calibration`, each with its own Destructive tools confirmation. The agent never
   calls either; it lists each under "Needs the main thread" (`key | current wording | proposed
   wording or "retract" | why`).
+
+**In the main thread.** When the agent reports "asked", relay what the user decided and what
+was saved. When it returns a feedback packet, run F1 to F3 yourself, before anything else in the
+conversation, and offer each "Needs the main thread" change through its own Destructive tools
+confirmation (`supersede_calibration` or `retract_calibration`), one per call.
+
+**Feedback outside a run.** Feedback about a creator outside a run ("never use @handle again",
+"@handle was great to work with") is saved the same way: word the note, confirm it with
+`AskUserQuestion` ("Save this about @handle for future vetting and discovery?"), then write the
+`creator:*` record, or offer the supersede when one exists.
 
 ### Creator calibrations
 
@@ -304,29 +361,68 @@ run.
 
 ## The page
 
+When the launch block's `question` is **I1** ("Which creators should we contact for this launch,
+and why?"), the page must match the evidence of its approved example
+(`skills/page-standard/examples.md`, I1). Every vetting page has the sections below; the ones
+that need a campaign (audience groups, the launch clock) appear only when the criteria give what
+they need. Build it from the page blocks
+(`skills/page-standard/blocks.md`); the block numbers below are that file's.
+
 One page per list, published to a new path per run; a re-run of the same list republishes to
 the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
 
-1. **Header** with the "Prepared for" chip, the animated mark at the top right, the list name and source, the criteria used
-   (brand or campaign), network chips, and counts: Approve, Maybe, Reject, Can't vet.
-2. **Headline**: how many to approve and the one thing that decided the most rejects.
-3. **Approve**, **Maybe**, **Reject**, **Can't vet**, in that order, each a grid of creator
-   cards (`creator-card.md`, page mode, no actions) ranked by fit score, numbered from 1
-   across the whole page because those numbers are what the user replies with. On each card:
-   the fit score in the ring; flow chips `#{number}` and the recommendation; safety results
-   in the brand safety tile per the card's **Brand safety** rule; `{DETAILS}` with the two
-   reasons, what would settle a Maybe, the calibrations and lessons applied, an earlier
-   vetting or discovery state, the contact route, and "Est. fee {open} to {max}, target
-   {target}" when the calculator gives one.
-4. **Safety summary**: a table of creators by category, only the rows with a Flag or Fail.
-5. **Criteria and rules**: the criteria, thresholds, safety scope, and hard rejects in plain
-   words, so a reader can see what fit meant.
-6. **Not vetted**: handles that could not be resolved, other networks, the brand's own
-   handles, with the reason for each.
-7. **Footer**: sources, the fee rate label once, a note that images are a snapshot, and
-   "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote. The mark and the footnote follow [artifact-standard.md](artifact-standard.md).
+1. **Header** (3.1, 3.2) with the "Prepared for" chip, the animated mark at the top right, the
+   list name and source, the criteria used (brand or campaign) with the launch, its audiences,
+   and its goal when the criteria name them, and the creators and posts read per platform.
+2. **Answer** (3.3), written last: how many were reviewed and how many to contact, and by when
+   ("49 creators reviewed. Contact 11 this week."), and the one thing that decided the most
+   rejects. Under it, the verdict tally: a bar of Approve, Maybe, Reject, and Can't vet, then a
+   column per verdict with its count and the reasons behind it as chips. When the user asked for
+   a number and the list came up short, the answer says so ("11 of the 20 asked for") and the
+   page never pads it.
+3. **Decisions** (3.5): approving the creators to contact, with the date outreach should start,
+   and any brand rule the team must settle before a verdict holds (for example, a red line a
+   creator sits on the edge of). Questions that settle one creator stay on that creator's card.
+4. **Next steps** (3.6): in order, each with its week, the creators it covers by number, and
+   what it should change: contact the approvals, settle the Maybes, line up the backups.
+5. **Up to three insights** (3.4): what shaped the verdicts across the list, each with its
+   comparison and a "So:" line.
+6. **Approve**, **Maybe**, **Reject**, **Can't vet**, in that order, each a grid of creator
+   cards (3.7; `creator-card.md`, page mode, no actions) ranked by fit score, numbered from 1
+   across the whole page in the order shown, because those numbers are what the user replies
+   with. When the
+   criteria name audiences, the Approve grid is grouped by audience with a subtotal per group;
+   when they also set how many creators each audience needs, a group short of it names the open
+   slot. On each card: the fit score in the ring; flow chips `#{number}` and
+   the recommendation; safety results in the brand safety tile per the card's **Brand safety**
+   rule; three proof posts in the thumbnails; `{DETAILS}` with the two reasons, a watch line
+   (the one thing to keep an eye on), what would settle a Maybe (a Maybe that only fills a gap
+   says "Backup: take if {creator} declines" instead; it stays a Maybe in the findings), the calibrations and lessons applied, an earlier vetting or discovery state, the
+   contact route, "Est. fee {open} to {max}, target {target}" when the calculator gives one
+   with where the rates came from, and the expected return when the fee has one: the bundled
+   median views the fee is priced on (`fees.md`, **How a fee is calculated**). Never show a
+   return the run did not work out.
+   Reject and Can't vet are grouped by reason (3.16), one row per creator with its `#{number}`
+   and why not, rather than full cards. A Reject row carries its score; a Can't vet row carries
+   no score, only what would make it checkable. In a creator-ads lane each row
+   also carries the four ad figures.
+7. **Safety summary**: a table of creators by category, only the rows with a Flag or Fail.
+8. **Launch clock** (3.17), when the criteria name a launch date: the weeks from today to that
+   date, with each next step placed in its week and the launch marked. No stage gets a date the
+   next steps did not set.
+9. **How the verdict was made** (3.11): the fit score's components and weights, the safety
+   results, the recommendation order and the thresholds, the hard rejects, every saved call or
+   lesson that changed a verdict, and the platform counts again.
+10. **What's missing** (3.12): creators Atlas could not read, networks not covered, and data a
+    verdict would firm up with (for example, audience demographics).
+11. **Not vetted**: handles on other networks and the brand's own handles, with the reason for
+    each. A handle that could not be resolved is listed once, under Can't vet.
+12. **Atlas can draft next** (3.13): first messages to the approvals, offers at the fee
+    calculator's open rate, and the questions to the Maybes.
+13. **Footer**: sources, the fee rate label once, a note that images are a snapshot, and
+    "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote. The mark and the footnote follow [artifact-standard.md](artifact-standard.md).
 
-More than 12 creators: a chart leads the page (fit score against the recommendation lines, in a
+More than 12 creators: a chart sits under the verdict tally (fit score against the recommendation lines, in a
 creator-ads lane the score without Budget vs target, which is what the lines decide,
 or follower count against engagement rate, colored by recommendation). Images follow
 `creator-card.md`, **Images**, page profile, cutting thumbnails per card before quality on a

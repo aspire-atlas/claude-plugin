@@ -38,6 +38,17 @@ any the user already answered.
 | Q2 | Compare it with the account's own recent posts? | 1) Use what Atlas holds (Recommended); 2) Refresh the account first (description: "Atlas fetches the account's recent posts. Takes a minute or two."); 3) Skip the baseline |
 | Q3 | Save the findings to Atlas, so they show up in later reports and searches? | 1) Save findings (Recommended); 2) Page only |
 
+Pasting the link is the approval to fetch that one post; Q2's "Refresh the account first" is the
+approval to fetch its author. With no `AskUserQuestion` (a scheduled or headless run), say in one
+line that post analysis needs a person to supply the post, and stop.
+
+The main thread then launches `atlas-post-analysis` with the tool prefix, `profile_id`,
+`profile_slug`, the link, `recipient`, `baseline`, whether the user approved saving, any earlier
+analysis of the same post, and the brand digest (**Inputs**). It relays the page link, the
+headline, the brands on screen, the safety read with the cleanest trim, any corrections to an
+earlier analysis, and the data gaps, and offers **Content review** when the user has a brief for
+the post and **Ad reuse** when they want hooks across many posts.
+
 ## Fetching the post
 
 1. `search_posts` on `url` or the network's shortcode (`instagram.shortcode`,

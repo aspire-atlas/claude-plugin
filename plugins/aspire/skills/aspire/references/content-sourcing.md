@@ -68,6 +68,43 @@ Rules:
   that names every recipient. Marking sent uses the main thread's picker. A rights draft marked
   sent leaves its `rights` finding at requested; nothing more is written.
 
+### Running content sourcing (main thread)
+
+Moved here from the **Content sourcing** section of SKILL.md, which points at it.
+
+Rights records live on a program. When the library ran for the whole brand and more than one
+program is active, ask which program the requests belong to. If `AskUserQuestion` is
+unavailable, say in one line that rights requests need a person to approve them, and stop.
+
+1. Read the program's setup records as the **Program manager** does. Missing or unparseable:
+   run **Program setup** first. Pick the mode: `rights` for posts the user or the library named,
+   `renewal` for what is expiring, `ugc` for new content, `replies` for a creator's answer.
+2. `renewal` only, unless the user named the window: ask S0. Ask too, in the same call, header
+   "In ads": "Are any of these running in ads right now? Name them, or skip." Options: "None
+   that I know of (Recommended)", "Yes (type the creators or links)".
+3. Launch `atlas-content-sourcing` with: tool prefix, `profile_id`, `profile_slug`, brand
+   handles and networks, the program slug, `mode`, `pass: propose`, the posts (the library's
+   worth-requesting rows or the user's links), the horizon and posts in ads, the UGC focus, or
+   each reply's text, sender, channel, date and source, plus `connections` and `recipient`
+   (`team` by default; `performance` or `creative` for "what can we run"), ending with the
+   decision-audit line. No confirmation is needed: `propose` writes nothing.
+4. Relay the page link, the headline, one line per creator, what was left out as covered by a
+   deal, and the drafts. Show the `visual-data` cards per **Visual output**. Then ask S1 to S4 in
+   one `AskUserQuestion` call, skipping any with nothing to ask (S4 only when the program's mail
+   setting names a live mailbox that can draft and some drafts go by email), at most four per
+   call (**Guardrails**, Pickers).
+5. "Change something" relaunches `pass: propose` with the change as an override. Otherwise
+   launch again with `pass: record`, the `sourcing-packet`, and the answers.
+6. Relay what was written. Say plainly for every grant given only by DM or comment: "Get this
+   in writing before paid use." When the agent returns a `ledger-lines` block, pass it to
+   `atlas-program-ledger` as its next step (**Fees owed: the ledger hand-off**). Sourcing never
+   writes the ledger itself.
+7. Sending follows **Influencer program**, Drafts. Grants recorded after this point show on the
+   next content library run.
+
+On the first publish, say once: "Share this page with your team as Editor to see the budget.
+Never share it with creators."
+
 ## Inputs, per post or creator
 
 Read with the agent's own calls, every pass:

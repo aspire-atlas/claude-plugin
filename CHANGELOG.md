@@ -6,6 +6,30 @@ The version lives in exactly one place: `plugins[].version` in `.claude-plugin/m
 
 ## [Unreleased]
 
+## [5.0.0] - 2026-10-30
+
+Major release. The plugin is markdown and JSON only again: the Claude Code mod it bundled since 4.0.0 (the progress bar and band above the prompt, the Aspire agents panel, and `/aspire-agents-info`) is no longer part of it. `/aspire` and every agent show their progress in the session's task list instead, and everything else works as before.
+
+### Removed
+- The bundled Claude Code mod: `hooks/`, `types/`, the `types` manifest field, and `/aspire-agents-info`. It continues on the beta channel as a separate, optional plugin, `aspire-mod`, which is not on this channel.
+- Four spinner images nothing used.
+
+### Added
+- Every agent launch follows one orchestration contract: only `/aspire` launches an agent, each agent returns a result packet with what it proposes and at which permission level, and the questions it could not settle.
+- Agents report their progress to Atlas analytics as checkpoints (ids, counts and status words only, never names, handles or text), which change no Atlas data.
+- Shared page blocks that every agent page is built from, and the daily insights, profile and orchestrator pages rebuilt on them.
+- The quality review logs reviews that could not run and feedback given later, and carries it into the next review.
+- The plugin listing links its documentation, support and terms of service pages.
+
+### Changed
+- `/aspire` loads faster and uses about 40% fewer tokens: the skill file drops from 234 KB to 139 KB, and each flow's step-by-step detail lives in its reference, read when that flow runs. Questions, options and confirmations are unchanged.
+- SECURITY.md describes what the CAS campaign page stores and who sees it.
+- The listing icon is recompressed, pixel for pixel the same.
+
+### Fixed
+- The skill's description is within the 1,024-character limit.
+- Agents report a step as done for every step of their plan, and report that they started only once.
+
 ## [4.2.0] - 2026-10-29
 
 Minor release. Adds the page standard every agent page follows and checks before it is published, and fixes the next line in the Claude Code mod that the Anthropic plugin directory could not read.
@@ -223,7 +247,8 @@ First public release. Versioning restarts at 1.0.0; earlier 0.x builds were inte
 - Two release channels: `aspire-atlas` (official, pinned) and `aspire-atlas-beta` (tracks `develop`).
 - Apache-2.0 license.
 
-[Unreleased]: https://github.com/aspire-atlas/claude-plugin/compare/v4.2.0...HEAD
+[Unreleased]: https://github.com/aspire-atlas/claude-plugin/compare/v5.0.0...HEAD
+[5.0.0]: https://github.com/aspire-atlas/claude-plugin/compare/v4.2.0...v5.0.0
 [4.2.0]: https://github.com/aspire-atlas/claude-plugin/compare/v4.1.2...v4.2.0
 [4.1.2]: https://github.com/aspire-atlas/claude-plugin/compare/v4.1.1...v4.1.2
 [4.1.1]: https://github.com/aspire-atlas/claude-plugin/compare/v4.1.0...v4.1.1

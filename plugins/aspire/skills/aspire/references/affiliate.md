@@ -333,6 +333,59 @@ More than four questions: ask the your-call items first, then the rest in a seco
 offered as a hand-off to `atlas-creator-negotiation` in `mode: change` with the change, after the
 record pass.
 
+## Main thread steps
+
+The **Affiliate manager** section of SKILL.md points here; the main thread follows these steps.
+The affiliate manager is interactive only. Never schedule it; if `AskUserQuestion` is
+unavailable, say in one line that codes and commission need a person to confirm them, and stop.
+Every question is one `AskUserQuestion` call, never plain text, asked as worded in **The
+questions (main thread)**. Launch `atlas-affiliate-manager` with the tool prefix,
+`profile_id`, `profile_slug`, the program slug, the linked handles and networks, `recipient`
+(`team` by default), `connections`, `mode`, `pass`, and the A answers, and end with the
+decision-audit line.
+
+**Say what the store can do**, once per session when a step uses it, in one line, per
+`program.md`, **4** (**Creating codes in the store**, **Retiring codes**). Never why. When the
+store is missing, offer to connect it once and carry on with the sheet or an upload.
+
+**Codes**
+
+1. Launch with `mode: codes`, `pass: propose`. It writes nothing and creates nothing.
+2. Relay the page link, one line per creator (`@a: SAM20, 20% off, in Shopify`), the sheet path
+   when there is one, and any code that collided. Then ask Y, A1, A2 and A3, at most four
+   questions per call (SKILL.md **Guardrails**, Pickers), skipping what has nothing to ask.
+3. "Change something" relaunches `pass: propose` with the change. "Page only" stops. Otherwise
+   relaunch with `pass: record`, the `affiliate-packet`, and the answers. A2 needs A1 "Save":
+   with "Page only", never create codes in the store.
+4. Relay what was written, the codes the store refused (now on the sheet), and the `code-live`
+   drafts ready to copy.
+5. **Sheet codes.** When the user says the sheet codes are in the store (or turned off), ask A4.
+   Relaunch `mode: codes`, `pass: record` with A4.
+
+**Report**
+
+1. Ask A5 and A6 in one call. An export from the store or any affiliate platform works. When
+   the user already attached a file, skip A6.
+2. Launch with `mode: report`, `pass: propose`, A5, and A6 (the file's path for an upload).
+3. Relay the page link, the headline (revenue with its source and currency, orders, commission
+   owed), one line per creator, and the timeline's line: "Sales and posts on the same days are a
+   correlation, not proof." Then ask A7 (export only), A8, A9 (only when the agent recommends
+   retiring codes) and Y (raises, hybrid moves, promotions to paid, commission figures that
+   differ from the platform's), skipping what has nothing to ask, your-call items first and at
+   most four questions per call.
+4. A7 "Change something" relaunches `pass: propose` with the change. Otherwise relaunch with
+   `pass: record`, the packet, and the answers.
+5. Relay what was written. Pass the `ledger-lines` block to `atlas-program-ledger` as its next
+   step; the affiliate manager never writes ledger lines itself.
+6. **Hand-offs.** For each your-call answer that changes a deal (a raise, hybrid, or paid),
+   offer once, header "Next": "Take @a's {change} to negotiation?" Options: "Draft it
+   (Recommended)", "Not now". The first launches `atlas-creator-negotiation` in `mode: change`
+   with the change.
+
+A1, A4 and A8 confirm Atlas writes; A2 and A9 the store; A3 the mailbox. Sending the
+`code-live` drafts follows SKILL.md **Influencer program**, Drafts: only when the user asks in
+this session, after the picker that names every recipient.
+
 ## The packet
 
 `propose` ends with a fenced JSON block labelled `affiliate-packet`. `record` uses it and never

@@ -428,6 +428,9 @@ The same cycle, with a person present:
   confirmation the section asks, held approvals included. The person can send, place orders,
   and do anything else the section allows.
 - After the flow finishes, run steps 2, 6, 7, and 8 so the page reflects it.
+- Every launch carries the tool prefix, `profile_id`, `profile_slug`, the brand's linked handles
+  and networks, `recipient`, and `connections` (`program.md` **4**) when the flow is a program
+  flow.
 
 ## 8. Slack
 
@@ -469,6 +472,12 @@ The hourly task runs the cycle with nobody present:
 Runs in the main thread (**Orchestrator**, Setup), one `AskUserQuestion` per turn, prefilled from
 what Atlas holds: the programs, CAS campaigns, discovery campaigns, readout and program routing.
 
+The Orchestrator requires a brand profile with a linked Instagram or TikTok channel. First call
+`search_calibrations` (no filter, limit 100 per page, paged to the end). If the four
+`orchestrator:*` records exist, skip the interview and run the cycle (**7**). Otherwise ask X1 to
+X5, one `AskUserQuestion` each, and say plainly what X4 and X5 approve; X6 confirms the batch
+once.
+
 | # | Question | Options | Writes |
 | - | -------- | ------- | ------ |
 | X1 | What should I keep an eye on for {brand}? | Everything: every program, campaign, and report (Recommended); Pick programs and campaigns (multiSelect follow-up listing each by name) | `scope` |
@@ -499,7 +508,8 @@ Rules:
 Same mechanics as **Readouts**, Schedule, in SKILL.md: the session's scheduled-task tools,
 never local cron; list existing tasks first; a standalone prompt that says "do not ask questions"
 and states no date. X6 is the standing approval for this task. Schedule only after the page has
-been published once and its `page` finding exists.
+been published once and its `page` finding exists. If the scheduled-task tools are missing, say so and
+stop; never fake a schedule.
 
 - Name: "Atlas next actions: {brand}".
 - Cron: `0 * * * *`, every hour on the hour, in UTC. The run itself checks the cadence's hours,

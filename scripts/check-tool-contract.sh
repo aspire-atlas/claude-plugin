@@ -89,8 +89,8 @@ done
 known=$(jq -r '.surfaces[] | keys[]' "$C" | sort -u)
 
 # Tool-shaped names that are not Atlas tools: connector sign-in, other
-# connectors' tools, and Python in snippets.
-allow="complete_authentication create_trigger create_file add_argument get_flattened_data"
+# connectors' tools, the desktop app's plan tool, and Python in snippets.
+allow="complete_authentication create_trigger create_file add_argument get_flattened_data update_plan"
 
 # 2. Every tool-shaped name resolves. Tool-shaped = starts with a verb an Atlas
 #    tool uses, written in backticks or as a call.

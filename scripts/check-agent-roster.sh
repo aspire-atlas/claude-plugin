@@ -5,7 +5,9 @@
 #   - the Model tiers table in the same skills, whose model must match each
 #     agent's frontmatter `model:`
 #   - the plugin README's agent table (plugins/<name>/README.md)
-#   - the agents panel's roster and costumes (hooks/roster.ts, hooks/costumes.ts)
+#   - the agents panel's roster and costumes (hooks/roster.ts, hooks/costumes.ts),
+#     in the plugin itself or in its companion mod plugin, plugins/<name>-mod
+#     (aspire's panel ships in plugins/aspire-mod)
 # and that nothing is listed that has no agent file. The hooks files are only
 # checked where they exist. Agent names start with `atlas-` in every plugin.
 #
@@ -59,13 +61,17 @@ check_plugin() { # plugin name
   done
   compare "the README agent table" "$readme"
 
-  if [ -f "$P/hooks/roster.ts" ]; then
-    roster=$(grep -oE "type: '$p:atlas-[a-z-]+'" "$P/hooks/roster.ts" | grep -oE 'atlas-[a-z-]+' | sort -u)
-    compare "the agents panel roster (hooks/roster.ts)" "$roster"
+  # The panel's files sit in the plugin's own hooks or in its companion mod plugin's.
+  # The folder is read directly, so the check still runs on main, where the mod's entry is held back.
+  local H=$P/hooks
+  [ -d "$H" ] || H=plugins/$p-mod/hooks
+  if [ -f "$H/roster.ts" ]; then
+    roster=$(grep -oE "type: '$p:atlas-[a-z-]+'" "$H/roster.ts" | grep -oE 'atlas-[a-z-]+' | sort -u)
+    compare "the agents panel roster ($H/roster.ts)" "$roster"
   fi
-  if [ -f "$P/hooks/costumes.ts" ]; then
-    costumes=$(grep -oE "agent: '$p:atlas-[a-z-]+'" "$P/hooks/costumes.ts" | grep -oE 'atlas-[a-z-]+' | sort -u)
-    compare "the crab costumes (hooks/costumes.ts)" "$costumes"
+  if [ -f "$H/costumes.ts" ]; then
+    costumes=$(grep -oE "agent: '$p:atlas-[a-z-]+'" "$H/costumes.ts" | grep -oE 'atlas-[a-z-]+' | sort -u)
+    compare "the crab costumes ($H/costumes.ts)" "$costumes"
   fi
 
   echo "     $p: $(wc -l <<<"$agents" | tr -d ' ') agents"

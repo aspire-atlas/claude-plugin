@@ -57,13 +57,19 @@ jobs:
       - name: Every agent and page reference links the artifact standard
         run: bash scripts/check-artifact-standard.sh
 
+      - name: Every agent carries the orchestration contract and has a permission level
+        run: bash scripts/check-orchestration.sh
+
+      - name: Every agent and skill spec follows the spec format
+        run: bash scripts/check-agent-specs.sh
+
       - name: Every color in the mod's hooks comes from the palette
         run: bash scripts/check-palette.sh
 
       - name: No $<digit> or $ARGUMENTS in a skill or command body (argument substitution)
         run: bash scripts/check-skill-args.sh
 
-      - name: What the plugin directory's scan blocks (mod form, file size, hook docs)
+      - name: What the plugin directory's scan blocks (mod form, file size, hook docs), and skill description length
         run: bash scripts/check-directory.sh
 
       - name: Changelogs are edited only on release branches
