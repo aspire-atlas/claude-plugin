@@ -23,8 +23,9 @@ this question and this reader need first, then fit the nine parts to it.
 
 This skill sets what a page says. `skills/aspire/references/artifact-standard.md` sets the mark
 and the source line, `skills/aspire/references/recipient-lens.md` sets the reader, and
-`skills/aspire/references/theme.md` sets the colors and type, and `blocks.md` in this folder holds
-the parts each page is built from, with their markup. **The flow's own reference wins**
+`skills/aspire/references/theme.md` sets the colors and type, `blocks.md` in this folder holds
+the parts each page is built from, with their markup, and `examples.md` lists the evidence each
+approved example sets, by question code. **The flow's own reference wins**
 wherever it sets a rule: its layout, what its page leaves out, who sees money, and the form its
 evidence takes. This skill fills in what the reference leaves open.
 
@@ -107,10 +108,13 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
 
 ## 4. Build loop
 
-1. **Read the validated example** for the same question, when the flow's reference or the launch
-   message names one. Read its sections and evidence, not its embedded images: strip `data:` URIs
-   from your copy first. List the evidence elements this page must match (storyboards, test plan,
-   cards with thumbnails). Match the evidence, not the layout.
+1. **List the evidence the approved example sets** for the launch block's `question`, from
+   `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/examples.md` (storyboards, test plan, cards with
+   thumbnails), when this flow is the one that file's row names as building the page. A flow that
+   only feeds another (discovery feeding vetting for I1) skips this step. When the launch message links the example itself, read it in full first: its
+   sections and evidence, not its embedded images (strip `data:` URIs from your copy). Match the
+   evidence, not the layout. A code with no example, or a launch with no `question`, skips this
+   step.
 2. **Draft the page** for this question and this reader, from the blocks in
    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/blocks.md`. They already carry the markup in
    section 5. The blocks set what each part holds and the order of its evidence; the flow's
