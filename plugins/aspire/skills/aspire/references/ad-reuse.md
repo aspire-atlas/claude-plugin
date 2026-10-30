@@ -60,7 +60,9 @@ How to read them:
   creators Atlas has seen there. They describe the creator's Reels on average, never this post.
 
 Frames follow `content-review.md`, **Media**: the same extractor order and working folder.
-Sample the opening densely (0, 0.5, 1, 1.5, 2, 2.5 and 3 seconds), then every 3 seconds.
+Sample the opening densely (0, 0.5, 1, 1.5, 2, 2.5 and 3 seconds), then every 3 seconds. For each
+recommended cut, also extract a frame at every storyboard beat's timecode (**Page**, item 7),
+measured from the cut's in point.
 View every frame extracted. With the cover only, score the hook components "Can't check" and
 say so; never infer the opening from a cover.
 

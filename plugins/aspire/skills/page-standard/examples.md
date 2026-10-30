@@ -9,8 +9,8 @@ Before you build a page, find the launch block's `question` here (`orchestration
 
 1. **The launch message names the example's link:** read it with the Artifact tool's `read`
    action, in full. Strip its `data:` URIs from your copy first and read its sections and
-   evidence, not its images. If it cannot be read (no access, or the link fails), say so in the
-   page check's `stillFailing` as "Example not read: {reason}" and go on.
+   evidence, not its images. If it cannot be read (no access, or the link fails), record "Example not
+   read: {reason}" in the audit trail's data gaps and go on.
 2. **Either way,** list the evidence elements below for the code. Your page must carry each of
    them, or say in one line why this run could not.
 

@@ -83,7 +83,9 @@ Filter path unless noted, `context` on every call, only field paths from the cen
    `market-signal-{profile}`, newest first, limit 50. Before pulling data, compare the resolved
    window with the newest run's `detail.window` (not its `runKey`, whose form differs between
    weekly and custom windows). If they match, apply the readouts' duplicate-window guard:
-   re-check the clock once, then publish with a "Repeat window" banner and write nothing.
+   re-check the clock once, then publish with a "Repeat window" banner and write nothing. A
+   leadership page (**Leadership page (O3)**) still writes nothing but carries no banner; note the
+   repeat in the audit trail instead.
 
 ## Analysis rules
 
@@ -190,8 +192,8 @@ Below the split, in the order the claims use them:
     summary as an email draft.
 14. **Footer** as on the team page.
 
-The leadership page is delivered only to the recipients the launch block's `approved.send` names,
-never to the saved routing on its own. Scheduled runs build the team page.
+The leadership page is never posted to the saved routing: its link goes back to the main thread,
+for the requester to send on. Scheduled runs build the team page.
 
 ## Findings
 

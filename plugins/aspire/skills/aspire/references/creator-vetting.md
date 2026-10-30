@@ -331,7 +331,8 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
    comparison and a "So:" line.
 6. **Approve**, **Maybe**, **Reject**, **Can't vet**, in that order, each a grid of creator
    cards (3.7; `creator-card.md`, page mode, no actions) ranked by fit score, numbered from 1
-   across the whole page because those numbers are what the user replies with. When the
+   across the whole page in the order shown, because those numbers are what the user replies
+   with. When the
    criteria name audiences, the Approve grid is grouped by audience with a subtotal per group
    and any open slot named. On each card: the fit score in the ring; flow chips `#{number}` and
    the recommendation; safety results in the brand safety tile per the card's **Brand safety**
@@ -342,8 +343,9 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
    with where the rates came from, and the expected return when the fee has one: the bundled
    median views the fee is priced on (`fees.md`, **How a fee is calculated**). Never show a
    return the run did not work out.
-   Reject and Can't vet are grouped by reason (3.16), one score row per creator with the score
-   and why not, rather than full cards.
+   Reject and Can't vet are grouped by reason (3.16), one score row per creator with its
+   `#{number}`, the score, and why not, rather than full cards. In a creator-ads lane each row
+   also carries the four ad figures.
 7. **Safety summary**: a table of creators by category, only the rows with a Flag or Fail.
 8. **Launch clock** (3.17), when the criteria name a launch date: from offers out to the first
    read of results, worked back from that date.
