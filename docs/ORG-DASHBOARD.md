@@ -24,7 +24,7 @@ what is still open.
 - Viewers without Aspire Atlas connected see the snapshot, labelled with its age.
 - No spend, budget, sales, or members appear on the page; each program's own dashboard keeps
   money, and member questions stay in the support skill.
-- The plugin mod is unchanged apart from the agent roster and costume entries.
+- The mod (now `plugins/aspire-mod`) is unchanged apart from the agent roster and costume entries.
 
 ## Open
 

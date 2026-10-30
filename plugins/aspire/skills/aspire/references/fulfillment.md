@@ -369,6 +369,82 @@ a person can also run it to see where parcels are without recording anything.
 It never asks, records a status, moves a stage, writes `fulfillment` or `roster`, drafts,
 orders, or writes page data rows. Unattended runs follow `program.md`, **9**.
 
+## Main thread steps
+
+The **Product fulfillment** section of SKILL.md points here; the main thread follows these
+steps. Fulfillment is interactive. Every question is one `AskUserQuestion` call, never plain
+text; the tool adds its own free text field. Launch `atlas-product-fulfillment` with the tool
+prefix, `profile_id`, `profile_slug`, the program slug, the linked handles and networks,
+`recipient`, `connections`, `mode`, and the F answers, and end with the decision-audit line.
+
+### Pickers
+
+| # | Header | When | Question | Options |
+| - | ------ | ---- | -------- | ------- |
+| F1 | Product | Plan, after `step: propose` | "Send these products?" The free text field takes changes ("@b gets the knife set"). | Use these picks (Recommended); Let each creator choose from the catalog; Same product for everyone (type it) |
+| F2 | Save | Plan, with F1 | "Save the picks to {program}, publish the order form, and write the details requests?" | Save and publish (Recommended); Page only |
+| F3 | Mailbox | Plan, with F1, only when the program's mail setting names a live mailbox and some requests go by email; Track, for check-ins going by email | "Create {n} drafts in your {Gmail or Outlook} for @a, @b and {n-2} more? Nothing is sent." | Create the drafts (Recommended); I'll copy them |
+| F4 | Orders | Order, when the store can place orders | "Place {n} orders in {store}? @a: {product}, {options}, to {city}; …" | Not yet (Recommended); Place these {n} |
+| F5 | Record | Before any mode, Order, and Track, when there are details replies (recorded by outreach triage), order form changes, or pasted tracking | "Record these details?" naming each creator in one line | Record them (Recommended); Change something |
+| F5 `store-status` | Store | Track, with F5, when the store can read orders | "Record the shipping and delivery {store} reports for {program}, and start the posting window for what arrived?" | Record them (Recommended); Show me first |
+| F6 | Ordered | Order sheet, when the user says the orders went in | "Mark orders for @a, @b and {n-2} more as placed {date}?" | Mark placed (Recommended); Change something |
+
+F2, F5 and F6 confirm Atlas writes; F3 is the mailbox confirmation; F4 is the store confirmation (and records the orders it places).
+
+**Before any mode**, when the program has an order form: read its `rows` with the Artifact
+tool's page data reads, compare each row's `updatedAt` with the creator's newest `fulfillment`,
+and show one line per changed creator ("@a: size M, ships to Austin, TX"). Ask F5 with them.
+Show city and region in chat, never the street.
+
+**Plan** (who gets what, and the details requests)
+
+1. Launch with `mode: plan`, `step: propose`. It writes nothing.
+2. Show its picks as a short list (`@a: {product}, {reason}`), the creators skipped and why, and
+   any item over the value limit or out of stock. Then one call with up to three questions:
+   F1, F2, and F3.
+3. Launch with `step: write` and the answers. Relay the order form link, the drafts ready to
+   copy, and, on the first publish, the share line (**The order form page**, First publish).
+   The agent saves the form's link as a `page` finding under F2.
+
+**Order** (after details arrive)
+
+1. F5 first when there are details replies (recorded by outreach triage) or order form changes.
+2. Launch with `mode: order`, F2 and F5. It returns either the store batch or the order sheet.
+3. Store batch (the store can place orders): ask F4. On "Place", relaunch `mode: order` with
+   F4. Never place an order on an earlier yes. F4 also approves recording each order it places,
+   so a placed order is saved as ordered in the same run even when F2 was never asked this
+   session, and an order already recorded is never offered again.
+4. Order sheet: relay the file path and the page link. When the user says the orders went in,
+   ask F6 and relaunch `mode: order` with F6.
+
+**Track** (shipping, arrival, the posting clock)
+
+1. One call: F5 for pasted tracking and order form changes, and F5 `store-status` when the
+   store can read orders. "Show me first" launches with F2 `page-only` and asks again with the
+   agent's list.
+2. Launch with `mode: track`. Relay arrivals, late parcels, and the check-in drafts. Offer F3
+   for check-ins going by email.
+3. Hand the creators who arrived to `atlas-deliverable-tracker` with their posting dates, as the
+   next step in one line. For gifting, show each creator's posting odds with its evidence.
+
+**Say what the store can do**, once per session when a step uses it, in one line, per
+`program.md`, **4**. Never why it cannot do more.
+
+**Addresses** show only on the order form, in the order sheet, in a confirmed store order, and
+in the `fulfillment` record. Never in chat beyond city and region, on another page, or in a
+channel post.
+
+**Status** (read-only). "Where are the packages?" with nothing to record launches
+`mode: status`: counts, parcels the store shows delivered that Atlas has not recorded, and
+parcels past their window. Offer **Track** to record them.
+
+**Schedule.** P9 "Daily shipping check (only with product)" creates "Atlas program shipping
+check: {brand} - {program}" (`program.md`, **8**), launching the agent with `mode: status`,
+`run: unattended`. It reads Atlas, the store's orders, and the order form, republishes the
+order form, and posts the counts to the saved routing. It records nothing, drafts nothing,
+places nothing, and writes no `fulfillment`; it may write only the `page` finding (**Status
+mode**).
+
 ## What this agent never does
 
 - Pick a product above the cap, or one out of stock.

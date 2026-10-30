@@ -368,6 +368,54 @@ More than four questions: the your-call items first, then the rest in a second c
 something" relaunches `propose` with the change. "Decide later" leaves the row unmatched or the
 line as it is.
 
+### Running the ledger (main thread)
+
+Moved here from the **Program ledger** section of SKILL.md, which points at it.
+
+**Launch.** Launch `atlas-program-ledger` with the tool prefix, `profile_id`, `profile_slug`,
+the program slug, the linked handles and networks, `recipient` (`team` by default),
+`connections`, `mode`, `pass`, any `ledger-lines` blocks from this session, and the G answers,
+and end with the decision-audit line. Every question is one `AskUserQuestion` call, never plain
+text. If `AskUserQuestion` is unavailable, say in one line that the ledger needs a person to
+confirm it, and stop.
+
+**Never keep payment details.** When the user pastes or uploads anything with bank details, tax
+ids, or card numbers, the agent strips them before reading; relay its one line ("Removed 2 bank
+details; not saved") and never repeat what was removed. Never ask for them.
+
+**Build (Update payments).**
+
+1. Launch with `mode: build`, `pass: propose`. It writes nothing.
+2. Relay the page link, the headline (budget, paid, committed, product cost, forecast to term
+   end, remaining, per currency) and the overdue count. Then ask G5 and G1, your-call items
+   first and at most four questions per call (**Guardrails**, Pickers), skipping what has
+   nothing to ask.
+3. "Change something" relaunches `pass: propose` with the change. "Page only" stops. Otherwise
+   relaunch with `pass: record`, the `ledger-packet`, and the answers.
+4. Relay what was written, the finance CSV path, and anything overdue.
+
+**Record invoices and payments.**
+
+1. When nothing is attached or pasted yet, ask G2. Then wait for the paste or the file.
+2. Launch with `mode: payments`, `pass: propose`, and the pasted text or the file's path.
+3. Relay the page link, the removed-details line when there is one, the matches one per line,
+   and the unmatched rows with their reasons. Then ask G5, G3, and G4, your-call items first and
+   at most four questions per call (**Guardrails**, Pickers). G3 is asked for a CSV only (or
+   when the rows do not say invoice or payment); add "Are these invoices or payments?" when the
+   rows do not say.
+4. G3 "Change something" relaunches `pass: propose` with the change. Otherwise relaunch with
+   `pass: record`, the packet, and the answers. Never match an unmatched row yourself; the user
+   picks the line in G5 or leaves it.
+5. Relay what was written and the new headline.
+
+**Export.** On "export the ledger" or "send finance the CSV", launch `mode: export`. It writes
+nothing to Atlas. Relay the CSV path and the page link, and say the page has "Download finance
+CSV" for Editors. Sharing the file is the user's step.
+
+**Who sees the page.** On first publish relay once the line in **The page** ("Share this page
+with your team as Editor to see amounts and the budget; Contributors see statuses only. Never
+share it with creators.").
+
 ## The packet
 
 `propose` ends with a fenced JSON block labelled `ledger-packet`. `record` uses it and never

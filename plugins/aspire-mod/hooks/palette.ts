@@ -12,7 +12,7 @@
  */
 
 /** A color with its light and dark values. */
-export type Pair = { readonly light: string; readonly dark: string }
+type Pair = { readonly light: string; readonly dark: string }
 
 export const BRAND = {
   /** The mark's teal and the accent of every bar, dot and running state; mid-tone, so it reads on light and dark. */

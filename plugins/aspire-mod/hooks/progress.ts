@@ -14,7 +14,7 @@ import { clip } from './format'
 import type { PlanView } from './plan'
 
 /** Onboarding checkpoints: 4 visible in get_status, 2 more only through reported progress. */
-export const STEPS = 6
+const STEPS = 6
 
 // The tool's schema is advice to the model, not a check: what a call may ask
 // the bar to draw is bounded here.
@@ -128,13 +128,13 @@ const norm = (s: string): string => s.toLowerCase().replace(/\s+/g, ' ').trim()
 export const agentName = (type: string): string => type.replace(/^aspire:/, '').replace(/^atlas-/, '').replace(/-/g, ' ')
 
 /** What the bar says until the skill reports its first tasks. */
-export const INITIALIZING = 'Initializing…'
+const INITIALIZING = 'Initializing…'
 
 /** What the bar says for each onboarding checkpoint the mod sees in get_status, until the skill reports its own tasks. */
-export const CHECKPOINT_LABELS = ['', 'Atlas connected', 'Organization picked', 'Profile ready', 'Channel linked'] as const
+const CHECKPOINT_LABELS = ['', 'Atlas connected', 'Organization picked', 'Profile ready', 'Channel linked'] as const
 
 /** What the bar says when no set of tasks is in process: the last run finished and nothing is running. */
-export const AWAITING = 'Awaiting next assignment'
+const AWAITING = 'Awaiting next assignment'
 
 const shown = (ratio: number, label: string, total: number, isFinished: boolean, source: Shown['source']): Shown => ({
   ratio,

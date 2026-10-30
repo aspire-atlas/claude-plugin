@@ -89,22 +89,22 @@ import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
 import type { AgentRun, AtlasCreditsReading, AtlasReading, BandStats, Coach, Item, Notice, OrgState, Panel, Progress, Seen, Trigger, TriggerKind, Turn } from '../types'
-import { creditsOf, isOrgSelected, creditsView, fmtAtlasUsage, fmtCredits, isAtlasStatusCall, isAtlasToolName, readAtlasCredits, readAtlasOrg, readAtlasUsage } from './atlas-usage'
-import type { CreditsView } from './atlas-usage'
-import { ACCENT, BRAND, DOC, NEUTRAL, SEMANTIC, THIRD_PARTY, pairCss } from './palette'
-import { ASPIRE, COACH_CRAB, CRAB_CSS, breathOf, characterOf, crab } from './characters'
+import { creditsOf, creditsView, fmtAtlasUsage, fmtCredits, isAtlasStatusCall, isAtlasToolName, isOrgSelected, readAtlasCredits, readAtlasOrg, readAtlasUsage } from './atlas-usage'
+import { ASPIRE, characterOf } from './characters'
 import type { Character } from './characters'
 import { AGENT_CHARACTERS } from './costumes'
-import { logoMarkup, logoSvg, spinnerSvg, terminalMark } from './logo'
+import { logoSvg, spinnerSvg, terminalMark } from './logo'
 import { GROUPS, ROSTER } from './roster'
 import type { RosterEntry } from './roster'
-import { clip, fitText, fmtTime, fmtTokens, modelName, textWidth, windowOf, xml } from './format'
+import { clip, fmtTime, fmtTokens, modelName, windowOf } from './format'
 import { applyTask, countCall, doingOf, endTurn, isTaskTool, planOf, startTurn, stepsOf as stepsFromItems, touch } from './plan'
-import type { PlanView } from './plan'
-import type { ProgressInput, Shown } from './progress'
 import { barText, coachOf, isReportLeading, mergeProgress, orgStateFrom, percentOf, shownOf, titleOf } from './progress'
-
-const PLUGIN = 'aspire'
+import type { ProgressInput } from './progress'
+import { ARTIFACT_URL_RE, artifactUrl, ASPIRE_PROMPT, ASPIRE_SKILL, atlasServers, isAspireAgent, isAtlasTool, isCheckpointTool, loggedLinks, MAX_LOGGED, MAX_PUBLISHED, published, serverOf, shortTool, slackDraft, str, withoutRunId } from './triggers'
+import { BAR_ROW_H, DOC_ICON, DONE, METER_FIT, METER_LAYOUT_MAX, meterSvg, SLACK_MARK } from './render-bar'
+import { BAND_CRAB_W, COACH_H, coachLabel, coachSvg, crabSvg, dotSvg, MAX_SPEED, MIN_SECONDS, MIN_TOKENS, NOTICE_H, noticeSvg, noticeText } from './render-band'
+import { ctxOf, elapsed, fmtCount, HEADER_H, headerSvg, norm, planBodySvg, planH, PROGRESS_H, progressBodySvg, ROW_H, runModel, spanOf, SUB_H, subHeaderSvg, TAIL, TASK_H } from './render-pane'
+import { agentSvg, agentTasks, agentTasksH, agentTasksSvg, CARD_H, cardSvg, CREDIT_H, creditsCardSvg, ctxBar, noTasksText, NOTE_H, noteSvg, STATUS_GLYPH, stepsOf } from './render-cards'
 
 const BLANK_SEEN: Seen = {
   prompts: 0,
@@ -117,37 +117,33 @@ const BLANK_SEEN: Seen = {
 }
 const BLANK_ORG: OrgState = { name: null, checkpoints: 0 }
 
-const isActive = atom({ plugin: 'aspire', key: 'isActive' } as const, false)
-const trigger = atom({ plugin: 'aspire', key: 'trigger' } as const, null as Trigger | null)
-const seen = atom({ plugin: 'aspire', key: 'seen' } as const, BLANK_SEEN)
-const progress = atom({ plugin: 'aspire', key: 'progress' } as const, null as Progress | null)
-const turn = atom({ plugin: 'aspire', key: 'turn' } as const, null as Turn | null)
-const items = atom({ plugin: 'aspire', key: 'items' } as const, [] as Item[])
-const org = atom({ plugin: 'aspire', key: 'org' } as const, BLANK_ORG)
-const atlas = atom({ plugin: 'aspire', key: 'atlas' } as const, null as AtlasReading | null)
-const creditsAtom = atom({ plugin: 'aspire', key: 'credits' } as const, null as AtlasCreditsReading | null)
-const stats = atom({ plugin: 'aspire', key: 'stats' } as const, { turn: 0, speed: null, context: 0 } as BandStats)
-const isBandHidden = atom({ plugin: 'aspire', key: 'isBandHidden' } as const, false)
-const agents = atom({ plugin: 'aspire', key: 'agents' } as const, [] as AgentRun[])
+const isActive = atom({ plugin: 'aspire-mod', key: 'isActive' } as const, false)
+const trigger = atom({ plugin: 'aspire-mod', key: 'trigger' } as const, null as Trigger | null)
+const seen = atom({ plugin: 'aspire-mod', key: 'seen' } as const, BLANK_SEEN)
+const progress = atom({ plugin: 'aspire-mod', key: 'progress' } as const, null as Progress | null)
+const turn = atom({ plugin: 'aspire-mod', key: 'turn' } as const, null as Turn | null)
+const items = atom({ plugin: 'aspire-mod', key: 'items' } as const, [] as Item[])
+const org = atom({ plugin: 'aspire-mod', key: 'org' } as const, BLANK_ORG)
+const atlas = atom({ plugin: 'aspire-mod', key: 'atlas' } as const, null as AtlasReading | null)
+const creditsAtom = atom({ plugin: 'aspire-mod', key: 'credits' } as const, null as AtlasCreditsReading | null)
+const stats = atom({ plugin: 'aspire-mod', key: 'stats' } as const, { turn: 0, speed: null, context: 0 } as BandStats)
+const isBandHidden = atom({ plugin: 'aspire-mod', key: 'isBandHidden' } as const, false)
+const agents = atom({ plugin: 'aspire-mod', key: 'agents' } as const, [] as AgentRun[])
 /** The cards that start open; the agent roster's groups start collapsed. */
 const DEFAULT_OPEN = ['progress', 'running', 'finished', 'agents']
-const panel = atom({ plugin: 'aspire', key: 'panel' } as const, { isAutoOpened: false, open: DEFAULT_OPEN, leaving: null } as Panel)
-const now = atom({ plugin: 'aspire', key: 'now' } as const, 0)
+const panel = atom({ plugin: 'aspire-mod', key: 'panel' } as const, { isAutoOpened: false, open: DEFAULT_OPEN, leaving: null } as Panel)
+const now = atom({ plugin: 'aspire-mod', key: 'now' } as const, 0)
 /** The "queued in the prompt box" notice above the prompt (desktop); null when none shows. */
-const notice = atom({ plugin: 'aspire', key: 'notice' } as const, null as Notice | null)
+const notice = atom({ plugin: 'aspire-mod', key: 'notice' } as const, null as Notice | null)
 /** How long the notice stays, in milliseconds. */
 const NOTICE_MS = 6000
 /** The prompt coach card above the bar; null when none shows. Set only by the skill's progress report. */
-const coach = atom({ plugin: 'aspire', key: 'coach' } as const, null as Coach | null)
+const coach = atom({ plugin: 'aspire-mod', key: 'coach' } as const, null as Coach | null)
 /** The progress line last put under the prompt (undefined when none), kept in session state so a module reload still knows to clear it. */
-const statusLine = atom({ plugin: 'aspire', key: 'statusLine' } as const, null as string | null)
+const statusLine = atom({ plugin: 'aspire-mod', key: 'statusLine' } as const, null as string | null)
 /** How long the coach card stays without a new report, in milliseconds. */
 const COACH_MS = 5 * 60 * 1000
 
-/** The aspire skill: `/aspire`, `/aspire:aspire`, or the Skill tool's `aspire:aspire`. */
-const ASPIRE_SKILL = /^(aspire:)?aspire$/
-/** A prompt typed as `/aspire` or `/aspire:aspire`, with or without arguments; not `/aspire-agents-info`. */
-const ASPIRE_PROMPT = /^\s*\/(aspire:)?aspire(?=\s|$)/
 // The panel's command is `/aspire-agents-info`, written as a literal where it is
 // registered and matched (the validator reads literals). Not `/aspire agents`,
 // the skill's own list of agents, and not a prefix of any skill command.
@@ -155,13 +151,13 @@ const PANE = 'aspire-agents'
 const PANE_TITLE = 'Aspire agents'
 const MAX_RUNS = 200
 // The progress tool as the model calls it: mcp__<plugin>__<name>.
-const PROGRESS_TOOL = 'mcp__aspire__aspire_progress'
-const STEP_TOOL = 'mcp__aspire__aspire_step'
+export const PROGRESS_TOOL = 'mcp__aspire-mod__aspire_progress'
+export const STEP_TOOL = 'mcp__aspire-mod__aspire_step'
 
 // ---------------------------------------------------------------------------
-// Switching on.
-
-const isAspireAgent = (type: string, plugin: string | undefined): boolean => type.startsWith('aspire:') || plugin === PLUGIN
+// Switching on, and the state helpers the hooks share. Every hook and every $.state call stays in this file:
+// `claude plugin validate` reads a state call only against an atom made in the same file. The drawings are in
+// render-*.ts and the pure matching helpers in triggers.ts.
 
 // The one timer: running agents' clocks. Started when
 // the mod switches on, never before; a reload starts it again from session.start.
@@ -323,309 +319,6 @@ async function flowOf($: EngineInterface): Promise<Progress | null> {
   }
 }
 
-/** `get_status` from `mcp__<server>__get_status`, for the status line. */
-const shortTool = (tool: string): string => tool.replace(/^mcp__.*__/, '')
-
-/** `mcp__<server>__` of each connector that has answered as Aspire Atlas, for a server whose name does not say so. Names only. */
-const atlasServers = new Set<string>()
-const serverOf = (tool: string): string => /^(mcp__.+?__)/.exec(tool)?.[1] ?? ''
-/** Atlas's analytics checkpoint (`report_checkpoint`), by its bare name: its rows keep Claude Code's own drawing, from any connector. */
-const isCheckpointTool = (tool: string): boolean => shortTool(tool) === 'report_checkpoint'
-/** An Atlas connector tool (the progress and step tools are the mod's own and never count, nor does the checkpoint). */
-const isAtlasTool = (tool: string): boolean =>
-  tool.startsWith('mcp__') && tool !== PROGRESS_TOOL && tool !== STEP_TOOL && !isCheckpointTool(tool) && (isAtlasToolName(tool) || atlasServers.has(serverOf(tool)))
-/** A call's `context` without the `[runId]` an agent puts first (only the minted shape), so the row reads as the sentence alone. */
-const withoutRunId = (context: string): string => context.replace(/^\s*\[(?:aspire|atlas-[a-z0-9-]{2,60})-\d{8}t\d{6}-[0-9a-f]{4}\]\s*/, '')
-
-// ---------------------------------------------------------------------------
-// The Artifact card: the transcript's result row for a published Artifact.
-
-/** What a publish call said about its page, by the call's id: the result carries the URL, the call carries the title and description. */
-const published = new Map<string, { title?: string; description?: string; file?: string }>()
-const MAX_PUBLISHED = 50
-const str = (v: unknown): string | undefined => (typeof v === 'string' && v.trim() ? v.trim() : undefined)
-const ARTIFACT_URL_RE = /https:\/\/claude\.ai\/(?:code\/)?artifact\/[A-Za-z0-9_-]+/g
-/** Artifact links a subagent hand-back has already logged, bounded. */
-const loggedLinks = new Set<string>()
-const MAX_LOGGED = 100
-const artifactUrl = (out: unknown, depth = 0): string | undefined => {
-  if (typeof out === 'string') return out.match(ARTIFACT_URL_RE)?.[0]
-  if (!out || typeof out !== 'object' || depth > 3) return undefined
-  const direct = str((out as Record<string, unknown>).url)
-  if (direct) return direct
-  for (const v of Array.isArray(out) ? out : Object.values(out)) {
-    const found = artifactUrl(v, depth + 1)
-    if (found) return found
-  }
-  return undefined
-}
-const slackDraft = (url: string): string =>
-  `Share this artifact on Slack: ${url}. Ask me with AskUserQuestion which channel or person, write a short message, show it, and post only after I confirm.`
-
-// ---------------------------------------------------------------------------
-// The progress bar (from savvy-progress): title, bar, percent, and the crab.
-
-const DONE = SEMANTIC.done
-
-// The classes each drawing's <style> block switches between light and dark, all from the palette.
-const METER_CSS = pairCss({ k: ['fill', NEUTRAL.track], tk: ['fill', NEUTRAL.tick] })
-const BAR_ROW_CSS = pairCss({ t: ['fill', NEUTRAL.ink], m: ['fill', NEUTRAL.soft], k: ['fill', NEUTRAL.track], tk: ['fill', NEUTRAL.tick] })
-const BAND_CSS = pairCss({
-  t: ['fill', NEUTRAL.ink],
-  m: ['fill', NEUTRAL.soft],
-  k: ['fill', NEUTRAL.track],
-  tk: ['fill', NEUTRAL.tick],
-  pk: ['stroke', NEUTRAL.soft],
-  pf: ['fill', NEUTRAL.soft],
-})
-const PANE_THEME_CSS = pairCss({
-  t: ['fill', NEUTRAL.ink],
-  s: ['fill', NEUTRAL.subtle],
-  m: ['fill', NEUTRAL.muted],
-  k: ['fill', NEUTRAL.track],
-  tk: ['fill', NEUTRAL.tick],
-  ln: ['stroke', NEUTRAL.track],
-  cv: ['stroke', NEUTRAL.muted],
-  sw: ['fill', NEUTRAL.swatch],
-  tile: ['fill', NEUTRAL.surface],
-  er: ['stroke', SEMANTIC.error],
-  ef: ['fill', SEMANTIC.error],
-})
-// The whole row is one SVG: the desktop wraps sibling elements onto new lines,
-// so title, bar, percent, and the agent counter with its crab live in one
-// drawing, with blank Buttons laid over it to take the presses.
-const BAR_ROW_H = 22
-/** The Artifact card's document icon, after the Claude Docs artifact icon: a page whose lines, letter and check draw in one after another, then rest, then repeat. */
-const DOC_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="46" viewBox="0 0 40 46">
-<style>
-.pg{fill:${DOC.page.light};stroke:${DOC.pageEdge.light}}.ln{fill:${DOC.line.light}}.ls{fill:${DOC.faint.light}}.ab{fill:${DOC.accent.light}}.ck{fill:${DOC.check.light}}.cm{stroke:${DOC.checkMark.light}}
-@media (prefers-color-scheme: dark){.pg{fill:${DOC.page.dark};stroke:${DOC.pageEdge.dark}}.ln{fill:${DOC.line.dark}}.ls{fill:${DOC.faint.dark}}.ab{fill:${DOC.accent.dark}}.ck{fill:${DOC.check.dark}}.cm{stroke:${DOC.checkMark.dark}}}
-.d{transform-box:fill-box;transform-origin:0 50%;animation:dr 3.6s ease-out infinite both}
-.d2{animation-delay:.25s}.d3{animation-delay:.5s}.d4{animation-delay:.75s}.d5{animation-delay:1s}
-.pp{transform-box:fill-box;transform-origin:50% 50%;animation:pp 3.6s ease-out infinite both;animation-delay:.6s}
-.fa{animation:fa 3.6s ease-out infinite both;animation-delay:.3s}
-@keyframes dr{0%,4%{transform:scaleX(0)}22%,86%{transform:scaleX(1)}96%,100%{transform:scaleX(1);opacity:0}}
-@keyframes pp{0%,10%{transform:scale(0)}26%{transform:scale(1.25)}34%,86%{transform:scale(1)}96%,100%{transform:scale(1);opacity:0}}
-@keyframes fa{0%,6%{opacity:0}22%,86%{opacity:1}96%,100%{opacity:0}}
-@media (prefers-reduced-motion: reduce){.d,.pp,.fa{animation:none}}
-</style>
-<rect class="pg" x="2" y="1" width="36" height="44" rx="7" stroke-width="0.6"/>
-<rect class="ln d" x="9" y="7" width="14" height="3.4" rx="1.7"/>
-<text class="ab fa" x="8.5" y="26" font-family="Georgia,serif" font-size="15" font-weight="600">A</text>
-<rect class="ls d d2" x="19" y="15" width="13" height="2.6" rx="1.3"/>
-<rect class="ls d d3" x="19" y="20.5" width="11" height="2.6" rx="1.3"/>
-<rect class="ls d d3" x="9" y="28" width="23" height="2.6" rx="1.3"/>
-<g class="pp"><circle class="ck" cx="11" cy="35.5" r="2.8"/><path class="cm" d="M9.6 35.6l1.1 1.1 2-2.2" fill="none" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/></g>
-<rect class="ls d d4" x="15.5" y="34.2" width="12" height="2.6" rx="1.3"/>
-</svg>`
-/** The Slack mark (four coloured pill pairs), its own brand colours in light and dark. */
-const SLACK_MARK = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="60 60 150 150"><path fill="${THIRD_PARTY.slackRed}" d="M99.4,151.2c0,7.1-5.8,12.9-12.9,12.9c-7.1,0-12.9-5.8-12.9-12.9c0-7.1,5.8-12.9,12.9-12.9h12.9V151.2z"/><path fill="${THIRD_PARTY.slackRed}" d="M105.9,151.2c0-7.1,5.8-12.9,12.9-12.9s12.9,5.8,12.9,12.9v32.3c0,7.1-5.8,12.9-12.9,12.9s-12.9-5.8-12.9-12.9V151.2z"/><path fill="${THIRD_PARTY.slackBlue}" d="M118.8,99.4c-7.1,0-12.9-5.8-12.9-12.9c0-7.1,5.8-12.9,12.9-12.9s12.9,5.8,12.9,12.9v12.9H118.8z"/><path fill="${THIRD_PARTY.slackBlue}" d="M118.8,105.9c7.1,0,12.9,5.8,12.9,12.9s-5.8,12.9-12.9,12.9H86.5c-7.1,0-12.9-5.8-12.9-12.9s5.8-12.9,12.9-12.9H118.8z"/><path fill="${THIRD_PARTY.slackGreen}" d="M170.6,118.8c0-7.1,5.8-12.9,12.9-12.9c7.1,0,12.9,5.8,12.9,12.9s-5.8,12.9-12.9,12.9h-12.9V118.8z"/><path fill="${THIRD_PARTY.slackGreen}" d="M164.1,118.8c0,7.1-5.8,12.9-12.9,12.9c-7.1,0-12.9-5.8-12.9-12.9V86.5c0-7.1,5.8-12.9,12.9-12.9c7.1,0,12.9,5.8,12.9,12.9V118.8z"/><path fill="${THIRD_PARTY.slackYellow}" d="M151.2,170.6c7.1,0,12.9,5.8,12.9,12.9c0,7.1-5.8,12.9-12.9,12.9c-7.1,0-12.9-5.8-12.9-12.9v-12.9H151.2z"/><path fill="${THIRD_PARTY.slackYellow}" d="M151.2,164.1c-7.1,0-12.9-5.8-12.9-12.9c0-7.1,5.8-12.9,12.9-12.9h32.3c7.1,0,12.9,5.8,12.9,12.9c0,7.1-5.8,12.9-12.9,12.9H151.2z"/></svg>`
-const BAR_H = 16
-const CRAB_W = 0
-const CELL = 3
-
-// Deterministic noise so the dither does not shimmer between redraws.
-const noise = (x: number, y: number): number => {
-  const s = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453
-  return s - Math.floor(s)
-}
-
-/** Pixels twinkle in four out-of-phase groups; a finished bar settles to a slow glow. */
-const twinkleCss = (shown: Shown): string => `.t0,.t1,.t2,.t3{animation:tw ${shown.isFinished ? 3.2 : 2.2}s ease-in-out infinite}
-.t1{animation-duration:${shown.isFinished ? 3.8 : 2.8}s;animation-delay:-.7s}.t2{animation-duration:${shown.isFinished ? 4.4 : 1.9}s;animation-delay:-1.3s}.t3{animation-duration:${shown.isFinished ? 3.5 : 3.3}s;animation-delay:-.4s}
-@keyframes tw{0%,100%{opacity:1}50%{opacity:${shown.isFinished ? 0.8 : 0.3}}}
-@media (prefers-reduced-motion: reduce){.t0,.t1,.t2,.t3{animation:none}}`
-
-/** The dithered bar and its step pill at (0,0): BAR_W wide, BAR_H tall. */
-const meterGroup = (shown: Shown, BAR_W: number): string => {
-  const color = shown.isFinished ? DONE : ASPIRE
-  const fillW = Math.round(BAR_W * shown.ratio)
-
-  // Dithered fill: sparse at the start, dense toward the head.
-  const dots: string[] = []
-  const cols = Math.floor(fillW / CELL)
-  const rows = Math.floor(BAR_H / CELL)
-  for (let c = 0; c < cols; c++) {
-    const density = 0.35 + 0.6 * Math.pow(c / Math.max(1, cols), 1.2)
-    for (let r = 0; r < rows; r++) {
-      if (noise(c, r) < density) dots.push(`<rect class="t${Math.floor(noise(r, c) * 4)}" x="${c * CELL + 1}" y="${r * CELL + 1}" width="2" height="2"/>`)
-    }
-  }
-  const ticks: string[] = []
-  for (let i = 1; i < shown.total; i++) {
-    const x = Math.round((BAR_W * i) / shown.total)
-    if (x > fillW + 4) ticks.push(`<rect x="${x}" y="${BAR_H / 2 - 4}" width="1.5" height="8" rx="0.75"/>`)
-  }
-
-  const pill = fitText(shown.label, 11, Math.max(20, BAR_W - 18))
-  const pillW = Math.min(BAR_W, Math.round(18 + textWidth(pill, 11)))
-  const pillX = Math.max(0, Math.min(BAR_W - pillW, fillW - pillW))
-
-  return `<defs><clipPath id="aspire-bar-clip"><rect x="0" y="0" width="${BAR_W}" height="${BAR_H}" rx="${BAR_H / 2}"/></clipPath><clipPath id="aspire-fill-clip"><rect x="0" y="0" width="${Math.max(fillW, BAR_H)}" height="${BAR_H}" rx="${BAR_H / 2}"/></clipPath></defs>
-<rect class="k" width="${BAR_W}" height="${BAR_H}" rx="${BAR_H / 2}"/>
-<g clip-path="url(#aspire-bar-clip)">
-<g clip-path="url(#aspire-fill-clip)"><g fill="${color}">${dots.join('')}</g></g>
-<g class="tk">${ticks.join('')}</g>
-</g>
-<rect x="${pillX}" width="${pillW}" height="${BAR_H}" rx="${BAR_H / 2}" fill="${color}"/>
-<text x="${pillX + pillW / 2}" y="${BAR_H / 2 + 4}" text-anchor="middle" font-family="${FONT}" font-size="11" font-weight="600" fill="${BRAND.white}">${xml(pill)}</text>`
-}
-
-/** The bar row's shapes, without a style block: the band wraps them in their own, the panel's progress card in the panel's. */
-const barShapes = (title: string, shown: Shown, W: number): string => {
-  // The title takes what it needs, up to 40% of the row; the bar takes the rest.
-  const label = fitText(title, 13, Math.max(60, W * 0.4))
-  const BAR_X = Math.round(16 + textWidth(label, 13) + 12)
-  const BAR_W = Math.max(60, W - BAR_X - 46 - CRAB_W)
-  const color = shown.isFinished ? DONE : ASPIRE
-  const y0 = (BAR_ROW_H - BAR_H) / 2
-
-  return `<circle cx="5" cy="${BAR_ROW_H / 2}" r="4" fill="${color}"/>
-<text class="t" x="16" y="${BAR_ROW_H / 2 + 4.5}" font-family="${FONT}" font-size="13" font-weight="500">${xml(label)}</text>
-<g transform="translate(${BAR_X},${y0})">
-${meterGroup(shown, BAR_W)}
-</g>
-<text class="m" x="${W - CRAB_W - 6}" y="${BAR_ROW_H / 2 + 4.5}" text-anchor="end" font-family="${FONT}" font-size="12.5" font-variant-numeric="tabular-nums">${percentOf(shown)}</text>
-`
-}
-
-/** Wide enough that the host always clamps the drawing to the room the row leaves it, never grows it past that. */
-const METER_SLOT_MAX = 4000
-/** The widest layout the band's bar is drawn for: its dots stay well under the host's cap on an Svg's source. */
-const METER_LAYOUT_MAX = 1000
-/** How much of the estimated room the bar is laid out for: a little under 1, so a small misjudgement shrinks the bar a hair instead of leaving a visible gap. */
-const METER_FIT = 0.95
-
-/**
- * Only the dithered bar and its step pill, for the band's row, where Buttons carry the text either side of it.
- *
- * The host takes a drawing's own width up to its slot, and the band cannot know that room in pixels (a column's width differs by
- * font and screen). So the markup is laid out at `W`, the room estimated from the column count (METER_FIT), and declares a width past
- * any slot with `preserveAspectRatio="xMinYMid meet"`: the host clamps it to the room the row leaves and fits the whole drawing
- * inside it at one scale. `meet` never magnifies: a bar wider than the room shrinks a little, and one that falls short stays at its
- * natural size, so the pill's text is always 11px. (`slice` scaled the drawing up to cover the room, which enlarged the text and
- * cropped the pill's top and bottom whenever the guess ran low.)
- */
-const meterSvg = (shown: Shown, W: number): string => `<svg xmlns="http://www.w3.org/2000/svg" width="${METER_SLOT_MAX}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}" preserveAspectRatio="xMinYMid meet">
-<style>
-${METER_CSS}
-${twinkleCss(shown)}
-</style>
-<g transform="translate(0,${(BAR_ROW_H - BAR_H) / 2})">
-${meterGroup(shown, W)}
-</g>
-</svg>`
-
-// The band's right edge: the agent counter (a walking crab and the count) after the percent.
-const BAND_CRAB_SCALE = 0.6
-const BAND_CRAB_W = 36 * BAND_CRAB_SCALE
-/** The crab and the count sit together at the row's right edge: this is the room they take, gaps included. */
-/** The far right edge: the right-panel icon that opens the side panel. */
-const EDGE_W = 30
-const panelIcon = (x: number): string => {
-  const y = (BAR_ROW_H - 14) / 2
-  return `<g transform="translate(${x},${y})"><rect class="pk" x="0.75" y="0.75" width="18.5" height="12.5" rx="2.5" fill="none" stroke-width="1.5"/><path class="pf" d="M12 1.5h5.5a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H12z"/></g>`
-}
-const countWidth = (count: number): number => Math.ceil(8 + textWidth(`×${count}`, 12.5) + 4 + BAND_CRAB_W + 10)
-
-/**
- * The queued notice: one Svg row with the pressed agent's own animated crab, and the text.
- * Light and dark values come from the media query; the crab's motion stops under prefers-reduced-motion (CRAB_CSS).
- */
-const NOTICE_H = 26
-const noticeText = (name: string): string => `${name} is queued in the prompt box. Press Enter to run it.`
-const noticeSvg = (character: Character, name: string, W: number): string => {
-  const scale = 0.7
-  const textX = 10 + 36 * scale + 8
-  const text = fitText(noticeText(name), 13, Math.max(40, W - textX - 8))
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${NOTICE_H}" viewBox="0 0 ${W} ${NOTICE_H}">
-<style>
-${pairCss({ nt: ['fill', NEUTRAL.ink] })}
-</style>
-${CRAB_CSS}
-${crab(10, (NOTICE_H - 30 * scale) / 2, character, false, true, scale)}
-<text class="nt" x="${textX}" y="${NOTICE_H / 2 + 4.5}" font-family="${FONT}" font-size="13" font-weight="500">${xml(text)}</text>
-</svg>`
-}
-
-/**
- * The prompt coach card: one Svg row like the notice, with the coach crab, the round label (when there is one) and the verdict.
- * Same light and dark teal; the crab's motion stops under prefers-reduced-motion (CRAB_CSS).
- */
-const COACH_H = 26
-const coachLabel = (verdict: string, step: string | null): string => (step ? `${step} · ${verdict}` : verdict)
-const coachSvg = (verdict: string, step: string | null, W: number): string => {
-  const scale = 0.7
-  const textX = 10 + 36 * scale + 8
-  const text = fitText(coachLabel(verdict, step), 13, Math.max(40, W - textX - 8))
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${COACH_H}" viewBox="0 0 ${W} ${COACH_H}">
-<style>
-${pairCss({ ct: ['fill', NEUTRAL.ink] })}
-</style>
-${CRAB_CSS}
-${crab(10, (COACH_H - 30 * scale) / 2, COACH_CRAB, false, true, scale)}
-<text class="ct" x="${textX}" y="${COACH_H / 2 + 4.5}" font-family="${FONT}" font-size="13" font-weight="500">${xml(text)}</text>
-</svg>`
-}
-
-/** The band's whole row in one drawing: title, bar, percent, and the agent counter with its crab. */
-const bandSvg = (title: string, shown: Shown, W: number, count: number, character: Character): string => `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}">
-<style>
-${BAND_CSS}
-${twinkleCss(shown)}
-</style>
-${CRAB_CSS}
-${barShapes(title, shown, W - EDGE_W - countWidth(count))}
-${crab(W - EDGE_W - countWidth(count) + 10, (BAR_ROW_H - 30 * BAND_CRAB_SCALE) / 2, character, false, true, BAND_CRAB_SCALE)}
-<text class="m" x="${W - EDGE_W - 8}" y="${BAR_ROW_H / 2 + 4.5}" text-anchor="end" font-family="${FONT}" font-size="12.5" font-variant-numeric="tabular-nums">×${count}</text>
-${panelIcon(W - EDGE_W + 4)}
-</svg>`
-
-/** The bar's agent counter crab alone, for the band's row between the percent Button and the count Button: an animated, randomly drawn crab. */
-const crabSvg = (character: Character): string => {
-  const W = Math.ceil(BAND_CRAB_W + 4)
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}">
-${CRAB_CSS}
-${crab(2, (BAR_ROW_H - 30 * BAND_CRAB_SCALE) / 2, character, false, true, BAND_CRAB_SCALE)}
-</svg>`
-}
-
-/** The title's bullet as a tiny Svg (a Button holds only text, so its dot would be plain white): Aspire teal, the done green once finished. */
-const dotSvg = (shown: Shown): string => {
-  const fill = shown.isFinished ? `fill="${DONE}"` : `class="dt"`
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="${BAR_ROW_H}" viewBox="0 0 12 ${BAR_ROW_H}">
-<style>${pairCss({ dt: ['fill', ACCENT] })}</style>
-<circle ${fill} cx="6" cy="${BAR_ROW_H / 2}" r="4"/>
-</svg>`
-}
-
-const barSvg = (title: string, shown: Shown, W: number): string => `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${BAR_ROW_H}" viewBox="0 0 ${W} ${BAR_ROW_H}">
-<style>
-${BAR_ROW_CSS}
-${twinkleCss(shown)}
-</style>
-${barShapes(title, shown, W)}
-</svg>`
-
-// ---------------------------------------------------------------------------
-// The band above the prompt (from session-band), now the bar's second row.
-
-// Responses shorter than this are mostly tool-call stubs: their timing is noise.
-const MIN_TOKENS = 20
-// A response that arrived in one burst cannot be timed; such readings are dropped.
-const MIN_SECONDS = 0.5
-const MAX_SPEED = 1000
-
-// Density by the band's width in cells, so the row shrinks instead of wrapping:
-// 0 full; 1 no context bar; 2 compact turn/speed, short Atlas label; 3 no turn,
-// smaller icons; 4 no speed. Thresholds are minimum bodyColumns for each tier.
-const TIER_MIN = [96, 80, 64, 50] as const
-const GAPS = [3, 2, 2, 1, 1] as const
-const tierFor = (columns: number): number => {
-  const i = TIER_MIN.findIndex(min => columns >= min)
-  return i === -1 ? TIER_MIN.length : i
-}
-
 async function refreshContext($: EngineInterface): Promise<void> {
   const { context } = await $.session.usage()
   if (typeof context.percent === 'number') {
@@ -633,324 +326,6 @@ async function refreshContext($: EngineInterface): Promise<void> {
     await update($, stats, s => ({ ...s, context: percent }))
   }
 }
-
-// ---------------------------------------------------------------------------
-// The agents panel (from savvy-progress), English only.
-
-const fmtCount = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`
-
-const elapsed = (a: AgentRun, at: number): number => (a.endedAt ?? Math.max(at, a.startedAt)) - a.startedAt
-
-const spanOf = (list: AgentRun[], at: number): number => {
-  if (!list.length) return 0
-  const start = Math.min(...list.map(a => a.startedAt))
-  const end = Math.max(...list.map(a => a.endedAt ?? Math.max(at, a.startedAt)))
-  return end - start
-}
-
-const runModel = (a: AgentRun): string => (a.effort ? `${modelName(a.model)} · ${a.effort}` : modelName(a.model))
-
-const ctxOf = (a: AgentRun): number => (a.contextMax ? Math.min(100, Math.round((a.contextTokens / a.contextMax) * 100)) : 0)
-
-const norm = (s: string): string => s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim()
-
-const FONT = "-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif"
-
-// The panel is one accordion, in the look of Claude's own sidebar: sections that show
-// only their top edge (a thin line that curves down at both ends), a small title with a
-// light chevron after it, a muted value on the right, and sub-accordions inside.
-const ROW_H = 62
-const HEADER_H = 40
-const SUB_H = 28
-const CARD_R = 12
-const TAIL = 8
-
-const PANE_CSS = `<style>
-${PANE_THEME_CSS}
-.live{animation:p 1.6s ease-in-out infinite}@keyframes p{50%{opacity:.3}}
-@media (prefers-reduced-motion: reduce){.live{animation:none}}
-</style>`
-
-const svg = (W: number, H: number, body: string): string =>
-  `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${PANE_CSS}${CRAB_CSS}${body}</svg>`
-
-const statusMark = (x: number, y: number, status: string, color: string): string => {
-  if (status === 'running') return `<circle class="live" cx="${x}" cy="${y}" r="3.5" fill="${color}"/>`
-  if (status === 'done') return `<path d="M${x - 5} ${y}l3.5 3.5 6.5-7" fill="none" stroke="${DONE}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`
-  return `<path d="M${x - 4} ${y - 4}l8 8M${x + 4} ${y - 4}l-8 8" class="er" stroke-width="1.8" stroke-linecap="round"/>`
-}
-
-/** One drawn row of the accordion; `edge` draws a section's top edge, `tail` is the space left under a section's last row. */
-const rowSvg = (W: number, H: number, edge: boolean, tail: number, body: string): string =>
-  svg(
-    W,
-    H + tail,
-    `${edge ? `<path class="ln" fill="none" stroke-width="1" d="M0.5 ${CARD_R}A${CARD_R} ${CARD_R} 0 0 1 ${CARD_R} 0.5H${W - CARD_R}A${CARD_R} ${CARD_R} 0 0 1 ${W - 0.5} ${CARD_R}"/>` : ''}${body}`,
-  )
-
-/** A thin chevron: down when open, right when collapsed, with its tip near (x, y). */
-const chevron = (x: number, y: number, isOpen: boolean): string =>
-  `<path class="cv" fill="none" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" d="${isOpen ? `M${x} ${y - 2}l3.5 3.5 3.5-3.5` : `M${x + 1.5} ${y - 4}l3.5 3.5-3.5 3.5`}"/>`
-
-/** A section's header: the title, a light chevron right after it, and a muted value on the right. */
-const headerSvg = (W: number, title: string, summary: string, isOpen: boolean, edge: boolean, tail: number): string => {
-  const shownTitle = fitText(title, 13, W - 90)
-  const tx = 16 + textWidth(shownTitle, 13) + 7
-  const room = Math.max(0, W - 16 - (tx + 12) - 8)
-  return rowSvg(
-    W,
-    HEADER_H,
-    edge,
-    tail,
-    `<text class="t" x="16" y="${edge ? 26 : 24}" font-family="${FONT}" font-size="13" font-weight="500">${xml(shownTitle)}</text>
-${chevron(tx, edge ? 24 : 22, isOpen)}
-${summary && room > 24 ? `<text class="s" x="${W - 16}" y="${edge ? 26 : 24}" text-anchor="end" font-family="${FONT}" font-size="12" font-variant-numeric="tabular-nums">${xml(fitText(summary, 12, room))}</text>` : ''}`,
-  )
-}
-
-/** A sub-accordion's header: a chevron on the left, the label, and a count on the right. */
-const subHeaderSvg = (W: number, title: string, count: string, isOpen: boolean, tail: number): string =>
-  rowSvg(
-    W,
-    SUB_H,
-    false,
-    tail,
-    `${chevron(16, 14, isOpen)}
-<text class="t" x="36" y="18" font-family="${FONT}" font-size="12">${xml(fitText(title, 12, W - 100))}</text>
-<text class="s" x="${W - 16}" y="18" text-anchor="end" font-family="${FONT}" font-size="12" font-variant-numeric="tabular-nums">${xml(count)}</text>`,
-  )
-
-/** The progress section's body: the bar the band shows, then one row for each task the skill reported. */
-const PROGRESS_H = 34
-const TASK_H = 22
-const progressBodySvg = (W: number, title: string, shown: Shown, tasks: { title: string; isDone: boolean }[], tail: number): string =>
-  rowSvg(
-    W,
-    PROGRESS_H + tasks.length * TASK_H,
-    false,
-    tail,
-    `<style>${twinkleCss(shown)}</style><g transform="translate(16,${(PROGRESS_H - BAR_ROW_H) / 2 - 2})">${barShapes(title, shown, W - 32)}</g>${tasks
-      .map(
-        (t, i) =>
-          `<rect ${t.isDone ? `fill="${DONE}"` : 'class="sw"'} x="${HEAD_TEXT_X}" y="${PROGRESS_H + i * TASK_H + 6}" width="10" height="10" rx="2.5"/>
-<text class="${t.isDone ? 't' : 's'}" x="${HEAD_TEXT_X + 17}" y="${PROGRESS_H + i * TASK_H + 15}" font-family="${FONT}" font-size="12">${xml(fitText(t.title, 12, W - 117))}</text>
-<text class="s" x="${W - 16}" y="${PROGRESS_H + i * TASK_H + 15}" text-anchor="end" font-family="${FONT}" font-size="11">${t.isDone ? 'done' : ''}</text>`,
-      )
-      .join('')}`,
-  )
-
-/** The progress section's body for the agent's own plan: the request and its time, the step bar, then a row and a bar for each step. */
-const PLAN_HEAD_H = 28
-const PLAN_TOP = PLAN_HEAD_H + PROGRESS_H - 12
-const PLAN_ROW_H = 24
-const PLAN_NOTE_H = 18
-const PLAN_DOING_H = 20
-// The bar's bullet sits at x 21 with its label at 32; the heading's star shares that centre and the title that
-// edge, and a step's bullet is centred under the label's first letter, with the same 7px from bullet to text.
-const MARK_X = 21
-const HEAD_TEXT_X = 32
-const STEP_X = 36
-const STEP_TEXT_X = 47
-const STOPPED = SEMANTIC.stopped
-const planH = (view: PlanView): number =>
-  PLAN_TOP +
-  6 +
-  (view.before ? PLAN_NOTE_H : 0) +
-  view.rows.reduce((n, r) => n + PLAN_ROW_H + (r.kind === 'now' && r.doing ? PLAN_DOING_H : 0), 0) +
-  (view.after ? PLAN_NOTE_H : 0) +
-  (view.files ? PLAN_NOTE_H : 0)
-const planBodySvg = (W: number, title: string, shown: Shown, view: PlanView, tail: number): string => {
-  const accent = view.state === 'stopped' ? STOPPED : view.state === 'done' ? DONE : ASPIRE
-  const badgeW = view.badge ? textWidth(`✓ ${view.badge}`, 12) + 8 : 0
-  const timeW = textWidth(view.time, 11) + 8
-  const font = `font-family="${FONT}"`
-  let y = PLAN_TOP
-  const parts: string[] = [
-    `${
-      view.badge
-        ? `<text x="16" y="18" ${font} font-size="12" font-weight="500"><tspan fill="${accent}" font-weight="600">${view.state === 'done' ? '✓' : '■'} ${xml(view.badge)}</tspan><tspan class="t" dx="8">${xml(fitText(view.title, 12, W - 32 - badgeW - timeW))}</tspan></text>`
-        : `<text x="${MARK_X}" y="18" text-anchor="middle" fill="${accent}" ${font} font-size="11">✦</text>
-<text class="t" x="${HEAD_TEXT_X}" y="18" ${font} font-size="12" font-weight="500">${xml(fitText(view.title, 12, W - HEAD_TEXT_X - 16 - timeW))}</text>`
-    }
-<text class="s" x="${W - 16}" y="18" text-anchor="end" ${font} font-size="11" font-variant-numeric="tabular-nums">${xml(view.time)}</text>
-<style>${twinkleCss(shown)}</style><g transform="translate(16,${PLAN_HEAD_H - 2})">${barShapes(title, shown, W - 32)}</g>`,
-  ]
-  const note = (text: string) => {
-    parts.push(`<text class="s" x="${STEP_TEXT_X}" y="${y + 13}" ${font} font-size="11">${xml(text)}</text>`)
-    y += PLAN_NOTE_H
-  }
-  if (view.before) note(`✓ ${view.before}`)
-  const statusW = 46
-  const miniW = 40
-  const barX = W - 16 - statusW - 6 - miniW
-  for (const r of view.rows) {
-    const color = r.kind === 'done' ? DONE : r.kind === 'now' ? ASPIRE : STOPPED
-    const cy = y + 12
-    const icon =
-      r.kind === 'done'
-        ? `<path d="M${STEP_X - 4} ${cy}l3 3 5-6" fill="none" stroke="${DONE}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`
-        : r.kind === 'now'
-          ? `<circle cx="${STEP_X}" cy="${cy}" r="4" fill="${ASPIRE}"/>`
-          : r.kind === 'halted'
-            ? `<rect x="${STEP_X - 3.5}" y="${cy - 3.5}" width="7" height="7" rx="1.5" fill="${STOPPED}"/>`
-            : `<circle class="cv" cx="${STEP_X}" cy="${cy}" r="3.5" fill="none" stroke-width="1.2"/>`
-    parts.push(
-      `${icon}<text class="${r.kind === 'now' ? 't' : r.kind === 'done' ? 't' : 's'}" x="${STEP_TEXT_X}" y="${y + 16}" ${font} font-size="12"${r.kind === 'now' ? ' font-weight="600"' : ''}>${xml(fitText(r.text, 12, barX - STEP_TEXT_X - 10))}</text>
-<rect class="k" x="${barX}" y="${y + 10}" width="${miniW}" height="4" rx="2"/>${r.frac > 0 ? `<rect x="${barX}" y="${y + 10}" width="${Math.max(3, Math.round(miniW * r.frac))}" height="4" rx="2" fill="${color}"/>` : ''}
-<text ${r.kind === 'now' ? `fill="${ASPIRE}" font-weight="600"` : 'class="s"'} x="${W - 16}" y="${y + 15}" text-anchor="end" ${font} font-size="11" font-variant-numeric="tabular-nums">${xml(r.status)}</text>`,
-    )
-    y += PLAN_ROW_H
-    if (r.kind === 'now' && r.doing) {
-      parts.push(`<text class="s" x="${STEP_TEXT_X}" y="${y + 6}" ${font} font-size="11">${xml(fitText(r.doing, 11, W - STEP_TEXT_X - 16))}</text>`)
-      y += PLAN_DOING_H
-    }
-  }
-  if (view.after) note(`○ ${view.after}`)
-  if (view.files) note(view.files)
-  return rowSvg(W, planH(view), false, tail, parts.join('\n'))
-}
-
-/** The credits bar's amber and red, with dark-mode variants (teal is ASPIRE above 25% left, amber at 25% or less, red at 10% or less or when out). */
-const BAR_CSS = pairCss({ 'cb-low': ['fill', SEMANTIC.warn], 'cb-critical': ['fill', SEMANTIC.error] })
-
-/** The credits card, fixed at the top and not collapsible: the Aspire mark and the organization's credits from the latest get_status. */
-const CREDIT_H = 78
-
-/** The Aspire mark, animated: the A and the I in white over the progress bar's twinkling dither, in a 512 box. */
-const LOGO = logoMarkup()
-const LOGO_SIZE = 56
-const LOGO_GAP = 10
-/** The mark's width in terminal columns, at the 8px a column the desktop grid is sized by. */
-const LOGO_COLS = Math.round(LOGO_SIZE / 8)
-
-const creditsCardSvg = (W: number, v: CreditsView): string => {
-  const pad = 10
-  const x0 = LOGO_SIZE + LOGO_GAP
-  const cardW = W - x0
-  const barW = cardW - pad * 2
-  const fill = Math.round(barW * v.ratio)
-  const left = x0 + pad
-  const right = W - pad
-  const text = (x: number, y: number, cls: string, size: number, body: string, extra = '') =>
-    `<text class="${cls}" x="${x}" y="${y}" ${extra} font-family="${FONT}" font-size="${size}" font-variant-numeric="tabular-nums">${xml(body)}</text>`
-  const bigW = textWidth(v.big, 22) + 6
-  return svg(
-    W,
-    CREDIT_H + 4,
-    `<style>${BAR_CSS}</style><g transform="translate(0,${Math.round((CREDIT_H - 4 - LOGO_SIZE) / 2)}) scale(${LOGO_SIZE / 512})"><title>Aspire</title>${LOGO}</g>
-<rect class="tile" x="${x0}" y="0" width="${cardW}" height="${CREDIT_H - 4}" rx="8"/>
-${text(left, 17, 's', 11, v.title)}
-${v.tag ? text(right, 17, 's', 11, v.tag, 'text-anchor="end"') : ''}
-<text class="${v.isOver ? 'ef' : 't'}" x="${left}" y="42" font-family="${FONT}" font-size="22" font-weight="600" font-variant-numeric="tabular-nums">${xml(v.big)}</text>
-${v.sub ? text(left + bigW, 42, 's', 12, v.sub) : ''}
-<rect class="k" x="${left}" y="50" width="${barW}" height="4" rx="2"/>
-${v.ratio > 0 ? `<rect ${v.tone === 'ok' ? `fill="${ASPIRE}"` : `class="cb-${v.tone}"`} x="${left}" y="50" width="${Math.max(3, fill)}" height="4" rx="2"/>` : ''}
-${v.metaLeft ? text(left, 68, 's', 11, v.metaLeft) : ''}
-${v.metaRight ? text(right, 68, 's', 11, v.metaRight, 'text-anchor="end"') : ''}`,
-  )
-}
-
-/** One line of muted text, for a section with nothing in it yet. */
-const NOTE_H = 28
-const noteSvg = (W: number, note: string, tail: number): string =>
-  rowSvg(W, NOTE_H, false, tail, `<text class="s" x="16" y="18" font-family="${FONT}" font-size="12">${xml(fitText(note, 12, W - 32))}</text>`)
-
-/** What an agent reported through aspire_step: `2/5 reading posts`, and the fraction. */
-const stepsOf = (a: AgentRun): { text: string; ratio: number } | null =>
-  a.stepTotal ? { text: `${a.stepDone ?? 0}/${a.stepTotal}${a.stepNote ? ` ${a.stepNote}` : ''}`, ratio: Math.min(1, (a.stepDone ?? 0) / a.stepTotal) } : null
-
-/** An agent's task list for its open row: its own task list when it keeps one, else the steps it reported, else nothing yet. */
-type AgentTask = { text: string; kind: 'done' | 'now' | 'todo' }
-const agentTasks = (a: AgentRun): AgentTask[] => {
-  if (a.items?.length) return a.items.map(i => ({ text: i.subject, kind: i.status === 'completed' ? 'done' : i.status === 'in_progress' ? 'now' : 'todo' }))
-  if (!a.stepTotal) return []
-  const done = Math.min(a.stepDone ?? 0, a.stepTotal)
-  return Array.from({ length: a.stepTotal }, (_, n): AgentTask => {
-    const kind = n < done ? 'done' : n === done && a.status === 'running' ? 'now' : 'todo'
-    return { text: kind === 'now' && a.stepNote ? a.stepNote : `Step ${n + 1}`, kind }
-  })
-}
-/** The line under an open row that has no task list: what it is doing now while it runs, else that it reported none. */
-const noTasksText = (a: AgentRun): string =>
-  a.status === 'running' && a.doing ? `No task list from this agent. Working: ${a.doing} · ${a.calls ?? 0} calls` : 'No tasks reported yet.'
-const AGENT_TASK_H = 22
-const agentTasksH = (tasks: AgentTask[]): number => Math.max(1, tasks.length) * AGENT_TASK_H + 8
-/** The task rows under an agent's row, drawn like the Progress section's: a bullet, the task, and done on the right. */
-const agentTasksSvg = (W: number, a: AgentRun, tasks: AgentTask[], tail: number): string => {
-  const color = characterOf(a).color
-  const font = `font-family="${FONT}"`
-  const body = tasks.length
-    ? tasks
-        .map((t, i) => {
-          const y = 4 + i * AGENT_TASK_H
-          const mark =
-            t.kind === 'done'
-              ? `<rect fill="${DONE}" x="50" y="${y + 6}" width="10" height="10" rx="2.5"/>`
-              : t.kind === 'now'
-                ? `<rect fill="${color}" x="50" y="${y + 6}" width="10" height="10" rx="2.5"/>`
-                : `<rect class="sw" x="50" y="${y + 6}" width="10" height="10" rx="2.5"/>`
-          return `${mark}<text class="${t.kind === 'todo' ? 's' : 't'}" x="67" y="${y + 15}" ${font} font-size="12"${t.kind === 'now' ? ' font-weight="600"' : ''}>${xml(fitText(t.text, 12, W - 67 - 60))}</text>
-<text class="s" x="${W - 16}" y="${y + 15}" text-anchor="end" ${font} font-size="11">${t.kind === 'done' ? 'done' : t.kind === 'now' ? 'now' : ''}</text>`
-        })
-        .join('')
-    : `<text class="s" x="50" y="19" ${font} font-size="12">${xml(fitText(noTasksText(a), 12, W - 50 - 16))}</text>`
-  return rowSvg(W, agentTasksH(tasks), false, tail, body)
-}
-
-const agentSvg = (W: number, a: AgentRun, at: number, tail: number): string => {
-  const character = characterOf(a)
-  const ctx = ctxOf(a)
-  const textW = W - 50 - 16 - 24
-  const meta = [runModel(a)]
-  if (a.round > 1) meta.push(`round ${a.round}`)
-  if (a.status === 'failed') meta.push('error')
-  const steps = stepsOf(a)
-  const stats = `${steps ? `${steps.text} · ` : ''}ctx ${ctx}% · ${fmtTokens(a.contextTokens)}  ${fmtTime(elapsed(a, at))}`
-  // A finished run is a full bar; a running one shows its reported steps, else its context fill, grey.
-  const progress = a.status === 'done' ? 1 : steps ? steps.ratio : null
-  const fillW = Math.round(textW * (progress ?? ctx / 100))
-  return rowSvg(
-    W,
-    ROW_H,
-    false,
-    tail,
-    `${crab(10, 12, character, false, a.status === 'running')}
-<text class="t" x="50" y="18" font-family="${FONT}" font-size="12" font-weight="500">${xml(fitText(a.description || a.type, 12, textW))}</text>
-<text x="50" y="33" font-family="${FONT}" font-size="11"><tspan fill="${character.color}">${xml(fitText(a.type, 11, textW / 2))}</tspan><tspan class="s">  ${xml(meta.join('  ·  '))}</tspan></text>
-<text class="s" x="${50 + textW}" y="47" text-anchor="end" font-family="${FONT}" font-size="11" font-variant-numeric="tabular-nums">${stats}</text>
-<rect class="k" x="50" y="52" width="${textW}" height="4" rx="2"/><rect${progress === null ? ' class="m"' : ''} x="50" y="52" width="${fillW}" height="4" rx="2"${progress === null ? '' : ` fill="${character.color}"`}/>
-${statusMark(W - 22, 14, a.status, character.color)}`,
-  )
-}
-
-const CARD_H = 52
-
-/** A crab row for one agent type, indented under its group: costume, name, what it makes, and whether it ran this session. */
-const cardSvg = (W: number, entry: RosterEntry, list: AgentRun[], tail: number, isLeaving = false): string => {
-  const character = characterOf({ type: entry.type, model: '' })
-  const runs = list.filter(a => a.type === entry.type)
-  const isRunning = runs.some(a => a.status === 'running')
-  const state = isRunning ? 'running' : runs.length ? `ran ${runs.length}×` : ''
-  const textW = W - 62 - 84
-  return rowSvg(
-    W,
-    CARD_H,
-    false,
-    tail,
-    `${crab(24, 8, character, false, isRunning || isLeaving, undefined, isRunning || isLeaving ? undefined : breathOf(entry.type), isLeaving)}
-<text class="t" x="62" y="22" font-family="${FONT}" font-size="12" font-weight="500">${xml(fitText(entry.name, 12, textW))}</text>
-<text class="s" x="62" y="38" font-family="${FONT}" font-size="11">${xml(fitText(entry.blurb, 11, textW))}</text>
-${isRunning ? `<circle class="live" cx="${W - 76}" cy="20" r="3.5" fill="${character.color}"/>` : runs.length ? `<path d="M${W - 80} 20l3.5 3.5 6.5-7" fill="none" stroke="${DONE}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
-${state ? `<text class="s" x="${W - 16}" y="24" text-anchor="end" font-family="${FONT}" font-size="11">${state}</text>` : ''}`,
-  )
-}
-
-const ctxBar = (pct: number, width: number): string => {
-  const filled = Math.round((width * pct) / 100)
-  return '█'.repeat(filled) + '░'.repeat(Math.max(0, width - filled))
-}
-
-const STATUS_GLYPH: Record<string, string> = { running: '●', done: '✓', failed: '✗' }
 
 // Opens the agents pane, or closes it when it is up; true when it ends up open.
 async function togglePane($: EngineInterface): Promise<boolean> {
@@ -1698,7 +1073,7 @@ export const register: Register = on => {
     // reminder and the button row, in CSS pixels, since an Svg takes a size and not a percentage.
     const iconH = 2 + 22 + (description ? Math.min(4, Math.ceil(clip(description, 240).length / 70)) * 20 : 0) + 52 + 10
     const share = () => {
-      void $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: slackDraft(url), mode: 'replace' } as never).catch(() => undefined)
+      void $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire-mod' }, text: slackDraft(url), mode: 'replace' } as never).catch(() => undefined)
       $.ui.toast('◆ Aspire · A Slack message is drafted in the prompt box. Press Enter to ask Claude to share it.', { timeoutMs: 6000 })
     }
     return (
@@ -1755,11 +1130,10 @@ export const register: Register = on => {
     const titleW = Math.max(8, Math.min(30, title.length + 2, Math.floor((cols || 100) / 3)))
     const fixedW = shown.label.length + percent.length + 4 + String(list.length).length + 2 * 4 + 2
     const textBarW = Math.min(40, (cols || 100) - titleW - fixedW)
-    const barColor = shown.isFinished ? DONE : ASPIRE
     // Pressing the title drafts the organization change in the prompt, as pressing an agent drafts its start: the person reads it
     // and presses Enter, and the skill asks which organization with a question.
     const changeOrg = () =>
-      void $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: '/aspire:aspire org', mode: 'replace' } as never).catch(() => undefined)
+      void $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire-mod' }, text: '/aspire:aspire org', mode: 'replace' } as never).catch(() => undefined)
     // The desktop draws the bar itself as an Svg (the dithered fill and step pill), between a title Button and an agents Button.
     // An Svg takes no press and the host ignores absolute, so nothing lies over it: the presses sit on the Buttons beside it.
     if (band.crab === null) band.crab = pickCrab()
@@ -1872,7 +1246,7 @@ export const register: Register = on => {
             await update($, panel, prev => ({ ...prev, leaving: null }))
           }
         }
-        await $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: `/aspire:aspire run ${r.type.replace(/^aspire:/, '')}`, mode: 'replace' } as never)
+        await $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire-mod' }, text: `/aspire:aspire run ${r.type.replace(/^aspire:/, '')}`, mode: 'replace' } as never)
         // On the desktop, with the band drawn, the notice is a branded row above the bar with the agent's own crab; it clears itself.
         // Anywhere else (the terminal, a hidden band, no Svg) the SDK's plain-text toast carries it.
         const isShown = e.surface === 'desktop' && band.renders > 0 && !(await read($, isBandHidden)) && (await isOn($))

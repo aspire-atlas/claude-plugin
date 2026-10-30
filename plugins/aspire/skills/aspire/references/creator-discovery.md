@@ -304,6 +304,58 @@ S9 sets a time for each. The scheduled tasks are named "Atlas creator discovery:
 shortlist`). A task with the older bare name "Atlas creator discovery" runs `job: discover`,
 and one named "Atlas creator discovery digest: {brand} - {campaign}" runs `job: shortlist`.
 
+## Main thread: setup, run, and schedule
+
+What the **Creator discovery** section of SKILL.md does around the agent. The agent never runs
+setup, never asks these questions, and never records a decision.
+
+**Setup check.** Call `search_calibrations` (no filter, limit 100 per page, paged to the end,
+`includeSuperseded: true`). If the five campaign keys exist for the campaign in question
+(`campaign:{slug}-brief`, `-criteria`, `-pool`, `-routing`, `-cadence`), skip to the run and
+offer "Change setup" as an option on the run question. Several campaigns may be saved; ask with
+`AskUserQuestion` which one when more than one is active. Otherwise run **Setup** above:
+
+1. Ask S1: what the campaign is, in the user's own words.
+2. **Then write the refinement questions.** Read the S1 answer together with `brand:summary`,
+   `brand:business-context`, and the `competitor`, `red_line` and `guideline` records (not
+   `review:` keys, which are content review only, nor `theme:` keys, which style pages), and from
+   those compose 3 to 5 `AskUserQuestion` questions covering the dimensions above, in their
+   order, skipping anything S1 already settled. The options are inferred from the brief and the
+   brand context, never generic. Never ask more than five, never ask in plain text.
+3. Ask S7 (pool target), S8 (routing) and S9 (cadence), with the two standing-approval
+   statements above. Those two confirmations are the standing approvals.
+4. Confirm the batch once with `AskUserQuestion` ("Save this campaign setup for {brand}?
+   Everyone on the team and every scheduled run will use it."), then write all five records
+   with `append_calibration`, `provenance: "interview"`. A `key-exists` follows the Phase 5
+   supersede rule in SKILL.md with its own confirmation.
+
+**The run question.** Ask once with `AskUserQuestion`: "What should the discovery agent do?"
+Options: "Fill the shortlist to {target}", "Show the current shortlist", "Record decisions on the
+shortlist", "Change setup". Then launch `atlas-creator-discovery` with: tool prefix,
+`profile_id`, `profile_slug`, the campaign slug, the brand handles and networks, run mode
+`interactive`, `job` (`view` for "Show the current shortlist", else `discover`), and `recipient`
+(SKILL.md, **Reading the ask**; `growth` when the ask is for more creators like the ones
+working). Relay its summary, the page link, and the numbered range the user can decide against.
+Show the candidates added this run inline as creator cards from the agent's `creator-cards`
+block (top six by fit score, badged with their shortlist numbers).
+
+**Recording decisions** ("Record decisions on the shortlist", or a reply against the page
+numbers) stays in the main thread, never the agent, per **Decisions** above. Rejected creators
+never reappear; accepted ones free their slot for the next run.
+
+**Scheduling.** A CAS campaign's discovery runs only from **CAS campaign** (`cas-campaign.md`):
+when the campaign's `campaign:{slug}-brief` has the `type: creator-ads` line, never schedule
+discovery for it; offer the CAS weekly call instead. Otherwise, after the first successful run,
+or whenever the user asks, offer with `AskUserQuestion`: "Set up the recurring discovery now?"
+Options: "Yes, discovery and shortlist (Recommended)", "Discovery only", "Shortlist only", "Not
+now". On yes, follow the same mechanics as SKILL.md **Readouts**, Schedule (`readout.md`,
+**Scheduling (main thread)**): read the times and timezone from `campaign:{slug}-cadence`,
+convert to UTC cron, create one task per job with the session's scheduled-task tools, named as in
+**Jobs and task names**, confirm both in one `AskUserQuestion` before creating them, and tell the
+user the tasks run in fresh sessions so Aspire Atlas must be enabled for scheduled tasks. Prompts
+must say "do not ask questions", name the brand by its exact Atlas profile `name` and the
+campaign slug, and state no date.
+
 ## Scheduled (unattended) runs
 
 A scheduled run starts a fresh session with nobody to answer questions.

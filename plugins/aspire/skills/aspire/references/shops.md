@@ -81,6 +81,24 @@ Rules:
   answers and nothing is written.
 - Each W5 hand-off runs through its own section of SKILL.md and asks its own confirmations. The
   shops plan never starts discovery, drafts outreach, or requests rights itself.
+- **Connections.** Detect a store connection per `program.md` **4** and pass `connections`.
+  Without one, say once in one line that a connected store lets the plan check products and
+  stock, and go on.
+- **No linked channel.** Say the plan will have no posts to work from and can't be saved, offer
+  Phase 4.2 in one line, and go on page only if the user wants. Skip W4.
+- **No `AskUserQuestion`.** Say in one line that the shops plan needs a person to answer its
+  questions, and stop. Never schedule it.
+- **Launch** `atlas-shops` with the tool prefix, `profile_id`, `profile_slug`, the linked handles
+  and networks, `pass: propose`, W1 and W2, anything the user named (launch date, products,
+  markets, fulfillment, owner, commission), `connections`, and `recipient`, ending with the
+  decision-audit line. No confirmation is needed: `propose` writes nothing. Then relay the page
+  link, the headline, one readiness line per shop, the first three steps, and the top creators
+  as creator cards from the agent's `creator-cards` block, and ask W3 and W4. After W4, launch
+  again with `pass: record`, the `shops-packet`, and the answers, relay what was written, and
+  offer W5 once. W5's hand-offs go to **Creator discovery**, **Content sourcing**, **Ad reuse**,
+  **PPA pitch**, or **Influencer program**.
+- On the first publish, say once in chat: "Requirements change. Commerce Manager and Seller
+  Center show the current ones for your market."
 
 ## Platform guide
 

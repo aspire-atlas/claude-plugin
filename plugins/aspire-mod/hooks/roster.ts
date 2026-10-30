@@ -2,7 +2,7 @@
 // hand beside `agents/*.md`: the mod makes no file calls, so it cannot read the
 // folder. Add a line here when an agent is added or renamed.
 
-export type RosterGroup = {
+type RosterGroup = {
   key: string
   title: string
 }

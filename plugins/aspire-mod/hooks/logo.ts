@@ -1,7 +1,7 @@
 // The animated Aspire mark: the AI letters over a field of squares that shuffle slowly. Every square fades in and out on its own
 // cycle (7 to 23 seconds, in one of four shapes, from its own starting point), so the pattern keeps changing and takes minutes
-// to repeat. The two files in assets/ are this output, written at 20 and 10 squares across:
-//   bun -e "import {logoSvg} from './plugins/aspire/hooks/logo.ts'; await Bun.write('plugins/aspire/assets/aspire-animated.svg', logoSvg(512, true, 20)); await Bun.write('plugins/aspire/assets/aspire-animated-small.svg', logoSvg(512, true, 10))"
+// to repeat. The two files in the aspire plugin's assets/ are this output, written at 20 and 10 squares across:
+//   bun -e "import {logoSvg} from './plugins/aspire-mod/hooks/logo.ts'; await Bun.write('plugins/aspire/assets/aspire-animated.svg', logoSvg(512, true, 20)); await Bun.write('plugins/aspire/assets/aspire-animated-small.svg', logoSvg(512, true, 10))"
 // Change the mark here, rewrite both files, and keep them in step.
 
 import { BRAND } from './palette'

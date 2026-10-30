@@ -53,6 +53,3 @@ export const modelName = (id: string): string => {
 
 /** Context window of a model: Haiku 4.5 and the Claude 3 models 200K, the rest 1M. */
 export const windowOf = (model: string): number => (/haiku-4|claude-3/i.test(model) ? 200_000 : 1_000_000)
-
-export const pad2 = (n: number): string => String(n).padStart(2, '0')
-

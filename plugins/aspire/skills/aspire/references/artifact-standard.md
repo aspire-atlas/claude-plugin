@@ -42,7 +42,7 @@ source in the hand-off message instead.
   put the mark at the far right and the chip to its left.
 - Its squares shuffle slowly, each on its own cycle of 7 to 23 seconds, so the pattern keeps changing
   and takes minutes to repeat. It honors `prefers-reduced-motion` already (the squares hold still).
-  Do not add script, and do not edit the file: it is generated from `hooks/logo.ts`.
+  Do not add script, and do not edit the file: it is generated from `plugins/aspire-mod/hooks/logo.ts`.
 - A deck exported to PowerPoint or Google Slides cannot play the animation: the pptx skill draws the
   small mark as a static image in the top right of each slide; if it cannot, it leaves the mark off
   the export and says so in the hand-off. The HTML deck always carries it.

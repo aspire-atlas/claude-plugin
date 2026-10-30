@@ -1,4 +1,4 @@
-// Run with: claude plugin test plugins/aspire
+// Run with: claude plugin test plugins/aspire-mod
 import { expect, test } from 'claude-code/testing'
 
 import { FULL_GRID, SMALL_GRID, logoSvg, spinnerSvg } from './logo'

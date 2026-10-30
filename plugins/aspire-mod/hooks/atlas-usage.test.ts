@@ -1,4 +1,4 @@
-// Run with: claude plugin test plugins/aspire
+// Run with: claude plugin test plugins/aspire-mod
 import { expect, test } from 'claude-code/testing'
 
 import { creditsBar, creditsOf, creditsView, isOrgSelected, fmtAmount, fmtAtlasUsage, fmtCredits, fmtDay, readAtlasCredits, isAtlasStatusCall, isAtlasToolName, parseTokenCosts, readAtlasOrg, readAtlasUsage, toAmount } from './atlas-usage'
@@ -138,7 +138,7 @@ test('isAtlasToolName: the Atlas connectors by name, never the admin connector o
   expect(isAtlasToolName('mcp__plugin_aspire_Aspire_Atlas__get_status')).toBe(true)
   expect(isAtlasToolName('mcp__Aspire_Atlas_Organization_Admin__list_members')).toBe(false)
   expect(isAtlasToolName('mcp__claude_ai_Atlassian__getJiraIssue')).toBe(false)
-  expect(isAtlasToolName('mcp__aspire__aspire_progress')).toBe(false)
+  expect(isAtlasToolName('mcp__aspire-mod__aspire_progress')).toBe(false)
 })
 
 const CREDITS_BLOCK = {
