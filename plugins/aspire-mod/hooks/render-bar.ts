@@ -14,15 +14,6 @@ export const DONE = SEMANTIC.done
 
 // The classes each drawing's <style> block switches between light and dark, all from the palette.
 const METER_CSS = pairCss({ k: ['fill', NEUTRAL.track], tk: ['fill', NEUTRAL.tick] })
-export const BAR_ROW_CSS = pairCss({ t: ['fill', NEUTRAL.ink], m: ['fill', NEUTRAL.soft], k: ['fill', NEUTRAL.track], tk: ['fill', NEUTRAL.tick] })
-export const BAND_CSS = pairCss({
-  t: ['fill', NEUTRAL.ink],
-  m: ['fill', NEUTRAL.soft],
-  k: ['fill', NEUTRAL.track],
-  tk: ['fill', NEUTRAL.tick],
-  pk: ['stroke', NEUTRAL.soft],
-  pf: ['fill', NEUTRAL.soft],
-})
 export const PANE_THEME_CSS = pairCss({
   t: ['fill', NEUTRAL.ink],
   s: ['fill', NEUTRAL.subtle],

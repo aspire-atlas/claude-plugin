@@ -1,4 +1,4 @@
-// Run with: claude plugin test plugins/aspire
+// Run with: claude plugin test plugins/aspire-mod
 import type { On } from 'claude-code'
 import { expect, mock, test } from 'claude-code/testing'
 import type { Engine } from 'claude-code/testing'

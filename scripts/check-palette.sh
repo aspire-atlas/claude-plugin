@@ -2,7 +2,7 @@
 # Checks the palette of every plugin with a mod (plugins/<name>/hooks/palette.ts):
 #   - a plugin whose hooks hold TypeScript sources has a palette.ts
 #   - every color literal (#rgb, #rrggbb, 0xrrggbb) in the hooks' sources is a color the palette holds
-#   - the drawing sources (register.tsx, characters.ts, costumes.ts, where they exist) write no color literal at all (hex or rgba): they take theirs from the palette
+#   - the drawing sources (register.tsx, render-*.ts, characters.ts, costumes.ts, where they exist) write no color literal at all (hex or rgba): they take theirs from the palette
 # A color is added to palette.ts with a role, or it is not used.
 #
 #   scripts/check-palette.sh
@@ -41,10 +41,11 @@ for p in $(plugin_names); do
     done < <(hexes < "$f" | sort -u)
   done
 
-  for f in register.tsx characters.ts costumes.ts; do
-    [ -f "$H/$f" ] || continue
-    if [ -n "$(hexes < "$H/$f")" ]; then echo "FAIL $H/$f writes a color literal; take it from the palette"; fail=1; fi
-    if grep -vE '^[[:space:]]*(//|/\*|\*)' "$H/$f" | grep -qE 'rgba?\('; then echo "FAIL $H/$f writes an rgb()/rgba() color; take it from the palette"; fail=1; fi
+  for f in "$H"/register.tsx "$H"/render-*.ts "$H"/characters.ts "$H"/costumes.ts; do
+    [ -f "$f" ] || continue
+    case "$f" in *.test.ts) continue ;; esac
+    if [ -n "$(hexes < "$f")" ]; then echo "FAIL $f writes a color literal; take it from the palette"; fail=1; fi
+    if grep -vE '^[[:space:]]*(//|/\*|\*)' "$f" | grep -qE 'rgba?\('; then echo "FAIL $f writes an rgb()/rgba() color; take it from the palette"; fail=1; fi
   done
 done
 

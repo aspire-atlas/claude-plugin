@@ -1130,7 +1130,6 @@ export const register: Register = on => {
     const titleW = Math.max(8, Math.min(30, title.length + 2, Math.floor((cols || 100) / 3)))
     const fixedW = shown.label.length + percent.length + 4 + String(list.length).length + 2 * 4 + 2
     const textBarW = Math.min(40, (cols || 100) - titleW - fixedW)
-    const barColor = shown.isFinished ? DONE : ASPIRE
     // Pressing the title drafts the organization change in the prompt, as pressing an agent drafts its start: the person reads it
     // and presses Enter, and the skill asks which organization with a question.
     const changeOrg = () =>

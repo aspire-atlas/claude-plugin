@@ -1,4 +1,4 @@
-// Run with: claude plugin test plugins/aspire
+// Run with: claude plugin test plugins/aspire-mod
 import { expect, test } from 'claude-code/testing'
 
 import { creditsBar, creditsOf, creditsView, isOrgSelected, fmtAmount, fmtAtlasUsage, fmtCredits, fmtDay, readAtlasCredits, isAtlasStatusCall, isAtlasToolName, parseTokenCosts, readAtlasOrg, readAtlasUsage, toAmount } from './atlas-usage'

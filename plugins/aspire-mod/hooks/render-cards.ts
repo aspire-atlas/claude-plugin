@@ -21,8 +21,6 @@ export const CREDIT_H = 78
 const LOGO = logoMarkup()
 const LOGO_SIZE = 56
 const LOGO_GAP = 10
-/** The mark's width in terminal columns, at the 8px a column the desktop grid is sized by. */
-const LOGO_COLS = Math.round(LOGO_SIZE / 8)
 
 export const creditsCardSvg = (W: number, v: CreditsView): string => {
   const pad = 10
