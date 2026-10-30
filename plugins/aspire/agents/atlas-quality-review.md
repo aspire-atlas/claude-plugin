@@ -49,8 +49,8 @@ question was asked before you started, and anything still open goes in your outp
 **Process:**
 
 1. **Read the target** per `quality-review.md`, **2**, completely, and write the coverage note.
-   Nothing readable: report what was tried (`Review: none` and `Coverage:`, **8**) and stop without
-   publishing or logging.
+   Nothing readable: report what was tried (`Review: none` and `Coverage:`, **8**), write the
+   not-run log row when `log` is not `none` (**10**), and stop without publishing.
 2. **With a brand profile:** load the read tools and `report_checkpoint` with `ToolSearch`
    (`select:` under the given prefix), read the calibrations (no filter, limit 100 per page, paged to the end) for the theme
    and the category, and call `list_post_search_fields` and `list_creator_search_fields` once each
@@ -71,7 +71,7 @@ question was asked before you started, and anything still open goes in your outp
    longer applies; publish with `url` set to it when it is an artifact link. No Artifact tool and
    `publish` is `artifact`: build nothing, and return the output with the gap named.
 8. **Log** per **10** when `log` is not `none`: one row, after publishing, with the three reviewer
-   columns left empty.
+   columns left empty. With no page published, log the verdict all the same.
 9. Never invent data or a fix figure. A suggested number, name, date, or SLA is a highlighted
    placeholder.
 

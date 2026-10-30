@@ -115,6 +115,13 @@ rests on: a permalink with a quoted caption line, a transcript line, or a field 
 value. "Can't check" says what would make it checkable. Never guess from a bio alone what a
 creator's posts show.
 
+Run brand fit before brand safety for every creator, so the page shows how close a creator came
+on fit before what safety found. Infer a trait from what the posts show, never from a number or
+label the creator states: "mom of three" or "70% women" in a bio is a lead to check against the
+posts, not evidence. A niche fandom or subculture the criteria name (a show, a game, a team) is a
+theme, not a keyword: count the posts that are about it, whatever words they use, not only the
+posts that contain its name.
+
 **What to read per creator.** `search_creators` for the account (followers, bio, country,
 verification, contact fields, `analysis` fields the creator census lists).
 `search_posts` filtered on the author username field, the last 90 days, sorted by posted
@@ -205,6 +212,15 @@ changed ("Passed under saved lesson: …"). A lesson never relaxes a red line, a
 hard reject, or a saved team call on another creator. Every recommendation carries its top
 two reasons in plain words, and every Maybe says what would settle it ("check their last 3
 Reels for alcohol before approving").
+
+**Near-misses when the rules loosen.** When a `vetting:thresholds` or `vetting:criteria` record
+(or the campaign's `-criteria`) was superseded by a looser one since an earlier vetting run (a
+lower line, a wider size band, a market or format added), list the creators whose earlier call
+came from the fit score alone (rule 5, not a saved call, hard stop, missing data, or safety cap):
+a Reject within 10 points under the old maybe line, a Maybe within 10 points under the old approve
+line, or one that missed only on the criterion that changed. They go in
+**Next steps** as "Re-screen under the new rules", each with the earlier score and what changed.
+Re-vet them only when the user adds them to a list; never change an earlier call yourself.
 
 ## The feedback loop
 
