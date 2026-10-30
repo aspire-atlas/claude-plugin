@@ -35,7 +35,8 @@ F-number from the **Product fulfillment** section of SKILL.md:
 - **F6 placed**: the named creators whose orders the user placed from the order sheet, with the
   date.
 
-Every Atlas tool needs a `context` argument: 15 to 25 words, third person. Pass `asProfileId`
+Every Atlas tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run
+id prefix does not count toward them). Pass `asProfileId`
 (the profile id, never the slug) to every tool whose schema takes it; `list_*_search_fields` and
 `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load
 `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in
@@ -113,8 +114,8 @@ addresses) and never write its `page` finding; name "Publish the order form" as 
    (`TZ=<tz> date +%F`, or the user's) for the `runKey`.
 2. Load tools with `ToolSearch` `select:` under the given prefix: `search_calibrations`,
    `search_insights`, `list_insight_search_fields`, `list_post_search_fields`,
-   `list_creator_search_fields`, `search_posts`, `search_creators`, and `append_insights` (with
-   F2 `save`, or for a status run's `page` finding). Call the three `list_*_search_fields` tools
+   `list_creator_search_fields`, `search_posts`, `search_creators`, `report_checkpoint`, and
+   `append_insights` (with F2 `save`, or for a status run's `page` finding). Call the three `list_*_search_fields` tools
    once each before the first search and use only paths they return. Load `ArtifactData` for the
    order form's page data. Load the mail and store tools only for what `connections` lists and
    this run uses.
@@ -176,6 +177,9 @@ addresses) and never write its `page` finding; name "Publish the order form" as 
 - Needs confirmation: each item worded as its picker (question, options, the named creators),
   grouped by F-number: picks over the value limit or out of stock, order form changes, the store
   order batch, orders placed from the sheet.
+  Gate ids, one per approval point, used in your `gate` checkpoint and in each proposal's
+  `"gate"`: F1 `approve-picks`, F2 `approve-saves`, F3 `approve-mailbox-drafts`, F4
+  `approve-store-orders`, F5 `approve-records`, F6 `approve-placed-orders`.
 - Needs the main thread: a catalog that differs from the store, and any your-call question, as `what | current | proposed | why`. Leave the line
   out when there are none.
 - Closing line: findings written (or "nothing saved"), the `runKey`, and the page link.
@@ -197,6 +201,8 @@ file's short output instead of your normal one (no audit trail block).
 ## Progress steps
 
 If the session has a task tool (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), keep your plan in it right after reading the brief: 3 to 8 tasks, one in progress at a time, each marked done as it finishes. The agents panel reads that list as your steps and a bar for them, and you can skip `aspire_step`. Otherwise, if `mcp__aspire__aspire_step` appears among your tools, including as a deferred tool, it is available: a deferred tool only needs loading first with ToolSearch (`select:mcp__aspire__aspire_step`). Right after reading the brief, call it with your plan's step count as `total` (3 to 8) and `done: 0`; call it again with `done` and a few-word `note` as each step finishes. It only draws a bar on your row in the agents panel. Skip it silently if the tool is absent or ToolSearch does not find it, and never mention it to the user.
+
+Report the run to Atlas analytics with `report_checkpoint`: it changes no Atlas data, needs no confirmation, and runs in unattended runs too. Use the launch block's `runId` when its name part is your name (Atlas refuses a `runId` whose name part differs from `agent`), and keep it on a relaunch. If there is none, or it names another agent, mint one before your first Atlas call: your agent name, the UTC time from `date -u +%Y%m%dt%H%M%S`, and the output of `openssl rand -hex 2`, joined by hyphens (`atlas-creator-vetting-20261029t140312-a3f9`); never make up the suffix. With no shell, send `started` without `runId` and use the `runId` its result returns. Every call carries `runId`, `agent` (your name), `pass` (the launch block's `mode` in lower-case letters only, or `single` when it is `run`), `kind: "checkpoint"`, `asProfileId` when you have one, `unattended: true` in an unattended run, and a `status`: `started` right after reading the brief; `step_done` with `step: {"index": n, "total": m}` as each step finishes; `gate` once per gate id, with that `gate` id and its `counts: {"proposed": n}`, when you return proposals for a person to decide; `published` after a page publishes; and `finished`, `failed`, or `cancelled` at the end. Send only ids, numbers, and these words: never step names, handles, brand names, or other text. If the tool is absent or a call is refused, send no more checkpoints this run, carry on, and never mention it to the user.
 
 ## Artifact standard
 

@@ -1324,6 +1324,53 @@ test('desktop: an Atlas tool row is the animated mark and the call name; the ter
   }
 })
 
+test("desktop: an Atlas row shows its context without the leading run id; a bracket later in the sentence stays", async ($, on) => {
+  world(on, () => WITH_COSTS)
+  toolEngineRow(on)
+  await typeAspire($)
+  const context = '[atlas-creator-vetting-20261029t140312-a3f9] Vetting agent searching posts for the [spring] shortlist.'
+  const row = await toolRow($, 'desktop', 'mcp__Aspire_Atlas__search_posts', { input: { context } })
+  expect(await row.find({ type: 'Text', text: /^Vetting agent searching posts for the \[spring\] shortlist\.$/ })).toBeDefined()
+  expect(await row.find({ type: 'Text', text: /a3f9/ })).toBeUndefined()
+  await row.unmount()
+})
+
+test('report_checkpoint keeps the engine row and group, by name and after its connector has answered as Atlas; other Atlas rows are still branded', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  toolEngineRow(on)
+  engineSite(on, 'ToolGroup', 'engine group')
+  // A connector whose tool names do not say Atlas, known only by answering like get_status, so every tool on it counts as Atlas.
+  on('tool.call', { tool: 'mcp__abc123__get_status' }, () => mcpResult(WITH_COSTS) as never)
+  await typeAspire($)
+  const call = (tool: string) => ({ tool, input: {}, isRunning: false, isErrored: false })
+  const unbranded = async () => {
+    for (const tool of ['mcp__Aspire_Atlas__report_checkpoint', 'mcp__abc123__report_checkpoint']) {
+      const row = await toolRow($, 'desktop', tool, { input: { context: '[aspire-20261029t140312-a3f9] Checkpoint.' } })
+      expect(await row.find({ type: 'Text', text: /^engine row$/ })).toBeDefined()
+      expect(await row.find({ type: 'Text', text: /^Aspire Atlas$/ })).toBeUndefined()
+      await row.unmount()
+      const cells = await toolRow($, 'terminal', tool)
+      expect(await cells.find({ type: 'Raster' })).toBeUndefined()
+      await cells.unmount()
+      for (const calls of [[call(tool)], [call('mcp__Aspire_Atlas__search_posts'), call(tool)]]) {
+        const group = await siteOf($, 'desktop', 'ToolGroup', { calls, isActive: false, isExpanded: false })
+        expect(await group.find({ type: 'Text', text: /^engine group$/ })).toBeDefined()
+        expect(await group.find({ type: 'Svg' })).toBeUndefined()
+        await group.unmount()
+      }
+    }
+  }
+  await unbranded()
+  await $.tool.call({ tool: 'mcp__abc123__get_status', context: 'Checking the session.' } as never)
+  await unbranded()
+  const other = await toolRow($, 'desktop', 'mcp__abc123__search_posts')
+  expect(await other.find({ type: 'Text', text: /^Aspire Atlas$/ })).toBeDefined()
+  await other.unmount()
+  const group = await siteOf($, 'desktop', 'ToolGroup', { calls: [call('mcp__abc123__search_posts')], isActive: false, isExpanded: false })
+  expect(await group.find({ type: 'Svg' })).toBeDefined()
+  await group.unmount()
+})
+
 test('an Atlas tool row stays the engine row until the mod is on', async ($, on) => {
   world(on, () => WITH_COSTS)
   toolEngineRow(on)
