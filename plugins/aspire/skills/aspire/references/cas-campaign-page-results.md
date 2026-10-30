@@ -1317,8 +1317,8 @@ Dark mode follows the viewer's system setting. The page has no theme toggle.
 <script>
 const v = (n) => `var(--${n})`, pair = (n) => ({DEFAULT: v(n), foreground: v(`${n}-foreground`)});
 tailwind.config = {darkMode: ["variant", [
-  "@media (prefers-color-scheme: dark) { &:not(:where([data-theme=light], [data-theme=light] *)) }",
-  "&:where([data-theme=dark], [data-theme=dark] *)"]],
+  "@media screen and (prefers-color-scheme: dark) { &:not(:where([data-theme=light], [data-theme=light] *)) }",
+  "@media screen { &:where([data-theme=dark], [data-theme=dark] *) }"]],
   theme: {extend: {
     colors: {background: v("background"), foreground: v("foreground"), card: pair("card"),
       popover: pair("popover"), primary: pair("primary"), secondary: pair("secondary"),
@@ -1335,8 +1335,8 @@ tailwind.config = {darkMode: ["variant", [
   --chart-1:#1e4945;--chart-2:#366c63;--chart-3:#4e8e81;--chart-4:#7ab19f;--chart-5:#e3f1bb;
   --chart-1-foreground:#ffffff;--chart-2-foreground:#ffffff;--chart-3-foreground:#09090b;
   --chart-4-foreground:#09090b;--chart-5-foreground:#09090b}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){/* the dark values below */}}
-:root[data-theme="dark"]{--background:hsl(222.2 84% 4.9%);--foreground:hsl(210 40% 98%);
+@media screen and (prefers-color-scheme:dark){:root:not([data-theme="light"]){/* the dark values below */}}
+@media screen{:root[data-theme="dark"]{--background:hsl(222.2 84% 4.9%);--foreground:hsl(210 40% 98%);
   --card:hsl(222.2 84% 4.9%);--card-foreground:hsl(210 40% 98%);--popover:hsl(222.2 84% 4.9%);
   --popover-foreground:hsl(210 40% 98%);--primary:hsl(210 40% 98%);--primary-foreground:hsl(222.2 47.4% 11.2%);
   --secondary:hsl(217.2 32.6% 17.5%);--secondary-foreground:hsl(210 40% 98%);--muted:hsl(217.2 32.6% 17.5%);
@@ -1345,7 +1345,7 @@ tailwind.config = {darkMode: ["variant", [
   --input:hsl(217.2 32.6% 17.5%);--ring:hsl(212.7 26.8% 83.9%);
   --chart-1:hsl(220 70% 50%);--chart-2:hsl(160 60% 45%);--chart-3:hsl(30 80% 55%);--chart-4:hsl(280 65% 60%);
   --chart-5:hsl(340 75% 55%);--chart-1-foreground:#ffffff;--chart-2-foreground:#09090b;
-  --chart-3-foreground:#09090b;--chart-4-foreground:#09090b;--chart-5-foreground:#09090b}
+  --chart-3-foreground:#09090b;--chart-4-foreground:#09090b;--chart-5-foreground:#09090b}}
 *,*::before,*::after{border-color:var(--border)}
 html,body{max-width:100%;overflow-x:clip}
 [hidden]{display:none!important}
@@ -1393,7 +1393,12 @@ body{background-color:var(--background);color:var(--foreground);font-family:'Int
 </style>
 ```
 
-The `@media (prefers-color-scheme:dark)` block repeats the `:root[data-theme="dark"]` values
+Paste the print block from `artifact-standard.md`, section 6, after this style, with the campaign's
+name as the title. Each tab is its own screen, so a printed page holds the tab on screen, and its
+tab bar shows which tab, filter, or sort was printed; leave the tab bars and their panels as they
+are. The viewer carries `data-print="hide"`, and every section's content prints open.
+
+The `@media screen and (prefers-color-scheme:dark)` block repeats the `:root[data-theme="dark"]` values
 exactly; it is shortened above only to save space here. Write both in full on the page. The
 `[hidden]` rule keeps a closed Sheet, Dialog or tooltip hidden even though its classes set a
 `display`. The config's colors and radii let prefixed classes (`data-[state=active]:bg-background`,
@@ -1483,7 +1488,7 @@ visible edge on a card. A Switch keeps the `role="switch"` and `data-state` attr
 | | trigger | `flex min-w-0 flex-1 items-start gap-3 rounded-md text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring [&[data-state=open]>svg]:rotate-180`, on a `button` with `aria-expanded`, `aria-controls` and `data-state` (`open` or `closed`) |
 | | title, summary | `text-xl font-semibold leading-none tracking-tight`, `mt-1.5 text-sm text-muted-foreground break-words`, in a `min-w-0 flex-1` block |
 | | chevron | the Lucide `chevron-down`, `mt-0.5 size-4 shrink-0 text-muted-foreground transition-transform motion-reduce:transition-none`, last in the trigger |
-| | content | the Card content, with `data-state` and `hidden` while closed |
+| | content | the Card content, with `data-state` and `hidden` while closed, and `data-print="open"` so it prints open |
 | Count tile | | `flex min-w-0 flex-col items-start gap-1 rounded-xl border bg-card p-4 text-left shadow hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring aria-[pressed=true]:ring-2 aria-[pressed=true]:ring-ring`, on a `button` with `aria-pressed` |
 | Status dot | | `inline-block size-2 shrink-0 rounded-full`, with the status's dot class from **Content Review**, **Statuses**; `aria-hidden="true"`, since the trigger's label names every status |
 | List row | | `flex w-full min-w-0 items-start gap-3 rounded-md p-2 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring`, on a `button` |
