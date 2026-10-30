@@ -157,7 +157,7 @@ republishes to the same path. Icon `checklist`. The description is one sentence 
 
 **Design.** A document, not a dashboard: one reading column about 860px wide, a serif display face
 for headings, a sans body, a mono face only for step numbers and tags. Token palette on `:root`
-with dark redefinitions under both the media query and `[data-theme="dark"]`, on screen only (`artifact-standard.md`, section 6). Chosen options carry
+with dark redefinitions under both the media query and `[data-theme="dark"]`, on screen only, and the print block from `artifact-standard.md`, section 6. Chosen options carry
 a filled marker and bold text; options not chosen stay visible in muted text. Open decisions and
 findings that shaped the work sit in a tinted flag box. Wide tables scroll inside their own
 container. Step numbers are a real sequence, so number them.

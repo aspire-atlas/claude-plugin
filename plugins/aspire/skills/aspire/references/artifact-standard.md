@@ -166,7 +166,8 @@ return its `page-check` block just before your audit trail block.
 
 A reader who saves a page as a PDF, or prints it, gets the page as their browser prints it. The
 page's own print rules are all that shape that file, so every page carries them. Applies to the
-same surfaces as the rest of this file. Decks follow their own export (section 3).
+same surfaces as the rest of this file, except decks, which keep the print rules in
+`ppa-pitch.md`.
 
 **What a printed page must do:**
 
@@ -176,9 +177,13 @@ same surfaces as the rest of this file. Decks follow their own export (section 3
   rule on a page; the light tokens then print, in the brand's own colors when a theme is saved.
 - **Keep fills.** Chips, tiles, bars, and table headers print even when the reader's "Background
   graphics" setting is off (`print-color-adjust: exact`).
-- **Leave out what only works on screen.** Buttons, menus, tab bars, and anything marked
-  `data-print="hide"`. Every tab panel prints, one after another, with its tab's label as a heading
-  (`data-label` on the panel). Every `<details>` prints open.
+- **Leave out what only works on screen, and nothing else.** Mark controls that hold no content
+  (a copy button, a filter bar, a tab bar whose panels carry their own label, a dialog) with
+  `data-print="hide"`; `nav` is left out too. Never hide a button that holds content (a section
+  title, a count tile, a list row). Every tab panel prints, one after another, with its tab's
+  label as a heading (`data-label` on the panel). Collapsed content that hides with `hidden` and is
+  not a tab panel carries `data-print="open"` so it prints. Every `<details>` prints open in
+  Chrome and Edge; other browsers keep a closed one closed.
 - **Break pages in sensible places.** A heading never ends a page. A card, a figure, a table row,
   or a list item is never split across two pages. A long table repeats its header row on every page.
 - **Show every image whole.** No image is wider than the page. A large image (a chart, a
@@ -194,22 +199,23 @@ same surfaces as the rest of this file. Decks follow their own export (section 3
 **The print block.** Paste it as the last style in the page `<head>`, after the theme block, with
 `{pageTitle}` the page's short title (40 characters at most, ASCII, with any `"` or `\` removed).
 The page standard's style block (`skills/page-standard/blocks.md`) already carries the rules; a
-page built on it pastes only the `@page` rule. Restyle print for one page by adding rules of its
+page built on it pastes only the `@page` rule. A page whose reference gives its own style (the
+Starter Guide, the CAS campaign page, the creator brief, the decision audit) pastes the whole block. Restyle print for one page by adding rules of its
 own after it, never by editing this block.
 
 <!-- print-style -->
 ```html
 <style>
 @page{margin:14mm 14mm 18mm;
-  @bottom-left{content:"{pageTitle}";vertical-align:top;padding-top:3mm;border-top:.5pt solid var(--border);font:8pt var(--font-body,system-ui,sans-serif);color:var(--muted)}
-  @bottom-right{content:"Page " counter(page) " of " counter(pages);vertical-align:top;padding-top:3mm;border-top:.5pt solid var(--border);font:8pt var(--font-body,system-ui,sans-serif);color:var(--muted)}}
+  @bottom-left{content:"{pageTitle}";vertical-align:top;padding-top:3mm;border-top:.5pt solid var(--border,#D8E0E1);font:8pt var(--font-body,system-ui,sans-serif);color:var(--muted-foreground,var(--muted,#56656A))}
+  @bottom-right{content:"Page " counter(page) " of " counter(pages);vertical-align:top;padding-top:3mm;border-top:.5pt solid var(--border,#D8E0E1);font:8pt var(--font-body,system-ui,sans-serif);color:var(--muted-foreground,var(--muted,#56656A))}}
 /* print-rules */
 @media print{
   *,*::before,*::after{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   html,body{background:transparent!important}
   body{font-size:10.5pt;line-height:1.45}
-  button,nav,[role="tablist"],[data-print="hide"]{display:none!important}
-  [role="tabpanel"][hidden]{display:block!important}
+  nav,[data-print="hide"]{display:none!important}
+  [role="tabpanel"][hidden],[data-print="open"][hidden]{display:block!important}
   [role="tabpanel"][data-label]::before{content:attr(data-label);display:block;font-weight:600;margin:12pt 0 6pt}
   details::details-content{content-visibility:visible}
   details>summary{list-style:none}

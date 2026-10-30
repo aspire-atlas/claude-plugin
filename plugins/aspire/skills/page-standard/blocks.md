@@ -236,8 +236,8 @@ The default tokens name the Atlas fonts. A page that keeps them loads them befor
   *,*::before,*::after{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   html,body{background:transparent!important}
   body{font-size:10.5pt;line-height:1.45}
-  button,nav,[role="tablist"],[data-print="hide"]{display:none!important}
-  [role="tabpanel"][hidden]{display:block!important}
+  nav,[data-print="hide"]{display:none!important}
+  [role="tabpanel"][hidden],[data-print="open"][hidden]{display:block!important}
   [role="tabpanel"][data-label]::before{content:attr(data-label);display:block;font-weight:600;margin:12pt 0 6pt}
   details::details-content{content-visibility:visible}
   details>summary{list-style:none}

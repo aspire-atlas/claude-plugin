@@ -462,6 +462,7 @@ tiles keep their semantic colors (`theme.md`, **Creator card**).
 .ac-tile span{font-size:12px;line-height:16px;color:var(--ac-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ac-net{display:flex;flex-direction:column;gap:16px}
 .ac-net[hidden]{display:none}
+@media print{.ac-net[hidden]{display:flex!important}.ac-net[data-net]::before{content:attr(data-net);font:600 11px/1 ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--ac-muted)}.ac-card{break-inside:avoid}}
 .ac-stats{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);border-top:1px solid var(--ac-border);border-bottom:1px solid var(--ac-border);padding:12px 0}
 .ac-stat{display:flex;flex-direction:column;gap:2px;align-items:center;text-align:center;padding:0 8px}
 .ac-stat+.ac-stat{border-left:1px solid var(--ac-border)}

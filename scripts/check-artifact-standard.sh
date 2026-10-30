@@ -87,8 +87,8 @@ else
 fi
 while IFS= read -r hit; do
   err "${hit%%:*} turns on dark mode in print (line ${hit#*:}); wrap it in @media screen (artifact-standard.md, section 6)"
-done < <(grep -rnE '^[[:space:]]*(@media \(prefers-color-scheme: ?dark\)|:root\[data-theme="dark"\])|"&:where\(\[data-theme=dark\]' \
-  plugins/*/skills --include='*.md' | cut -d: -f1,2 || true)
+done < <(grep -rnE '(prefers-color-scheme: ?dark|data-theme=.?dark|(^|[ ,}])\.dark[ .{,]).*\{' \
+  plugins/*/skills plugins/*/agents --include='*.md' | grep -v 'screen' | cut -d: -f1,2 || true)
 
 # The page standard: a shared skill no one can call as a command, which the agent block links, and
 # whose self-check script passes the good fixture and fails each bad one on the check it names.

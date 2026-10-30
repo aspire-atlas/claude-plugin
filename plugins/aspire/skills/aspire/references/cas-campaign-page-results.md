@@ -1393,6 +1393,11 @@ body{background-color:var(--background);color:var(--foreground);font-family:'Int
 </style>
 ```
 
+Paste the print block from `artifact-standard.md`, section 6, after this style, with the campaign's
+name as the title. Each tab's content carries `role="tabpanel"` and `data-label` with the tab's
+name, so every tab prints with its name as a heading; the tab list and the viewer carry
+`data-print="hide"`; every section's content prints open.
+
 The `@media screen and (prefers-color-scheme:dark)` block repeats the `:root[data-theme="dark"]` values
 exactly; it is shortened above only to save space here. Write both in full on the page. The
 `[hidden]` rule keeps a closed Sheet, Dialog or tooltip hidden even though its classes set a
@@ -1451,7 +1456,7 @@ visible edge on a card. A Switch keeps the `role="switch"` and `data-state` attr
 | | outline, secondary | `rounded-sm text-foreground`, `rounded-sm border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80` |
 | Tabs | list | `inline-flex h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground` |
 | | trigger | `inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow` |
-| | content | `mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2` |
+| | content | `mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2`, with `role="tabpanel"` and `data-label` (the tab's name) |
 | Table | table, header, body | `w-full caption-bottom text-sm`, `[&_tr]:border-b`, `[&_tr:last-child]:border-0` |
 | | row | `border-b transition-colors hover:bg-muted data-[state=selected]:bg-muted` |
 | | head | `h-10 px-2 text-left align-middle font-medium text-foreground whitespace-nowrap [&:has([role=checkbox])]:pr-0` |
@@ -1483,7 +1488,7 @@ visible edge on a card. A Switch keeps the `role="switch"` and `data-state` attr
 | | trigger | `flex min-w-0 flex-1 items-start gap-3 rounded-md text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring [&[data-state=open]>svg]:rotate-180`, on a `button` with `aria-expanded`, `aria-controls` and `data-state` (`open` or `closed`) |
 | | title, summary | `text-xl font-semibold leading-none tracking-tight`, `mt-1.5 text-sm text-muted-foreground break-words`, in a `min-w-0 flex-1` block |
 | | chevron | the Lucide `chevron-down`, `mt-0.5 size-4 shrink-0 text-muted-foreground transition-transform motion-reduce:transition-none`, last in the trigger |
-| | content | the Card content, with `data-state` and `hidden` while closed |
+| | content | the Card content, with `data-state` and `hidden` while closed, and `data-print="open"` so it prints open |
 | Count tile | | `flex min-w-0 flex-col items-start gap-1 rounded-xl border bg-card p-4 text-left shadow hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring aria-[pressed=true]:ring-2 aria-[pressed=true]:ring-ring`, on a `button` with `aria-pressed` |
 | Status dot | | `inline-block size-2 shrink-0 rounded-full`, with the status's dot class from **Content Review**, **Statuses**; `aria-hidden="true"`, since the trigger's label names every status |
 | List row | | `flex w-full min-w-0 items-start gap-3 rounded-md p-2 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring`, on a `button` |

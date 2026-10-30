@@ -163,6 +163,10 @@ the same change.
 Never add a support-only connector or skill, prices, customer names, or internal tools to this
 page.
 
+Paste the print block from `artifact-standard.md`, section 6, as the last style in the `<head>`, with
+the title `Atlas Starter Guide`, so the guide saves to PDF cleanly. The copy buttons carry
+`data-print="hide"`.
+
 ```html
 <title>Atlas Starter Guide</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -426,11 +430,11 @@ footer{border-top:1px solid var(--border);padding-top:20px;color:var(--muted);fo
 <section aria-labelledby="h-try">
   <div class="sec-head"><h2 id="h-try">Try these first</h2></div>
   <ul class="prompts">
-    <li class="prompt"><code>/aspire:aspire sample</code><button class="copy" type="button" data-copy="/aspire:aspire sample">Copy</button><p class="why">See what any agent makes, built from invented data. No setup needed.</p></li>
-    <li class="prompt"><code>how is our Instagram doing</code><button class="copy" type="button" data-copy="how is our Instagram doing">Copy</button><p class="why">A review of your account with next week's content pushes.</p></li>
-    <li class="prompt"><code>how did last week go</code><button class="copy" type="button" data-copy="how did last week go">Copy</button><p class="why">Last week against the week before and your 8-week median.</p></li>
-    <li class="prompt"><code>find creators for the campaign</code><button class="copy" type="button" data-copy="find creators for the campaign">Copy</button><p class="why">Starts a shortlist after a few questions about the campaign.</p></li>
-    <li class="prompt"><code>/aspire:aspire agents</code><button class="copy" type="button" data-copy="/aspire:aspire agents">Copy</button><p class="why">Every agent in one list, with the phrases that start each one.</p></li>
+    <li class="prompt"><code>/aspire:aspire sample</code><button class="copy" type="button" data-print="hide" data-copy="/aspire:aspire sample">Copy</button><p class="why">See what any agent makes, built from invented data. No setup needed.</p></li>
+    <li class="prompt"><code>how is our Instagram doing</code><button class="copy" type="button" data-print="hide" data-copy="how is our Instagram doing">Copy</button><p class="why">A review of your account with next week's content pushes.</p></li>
+    <li class="prompt"><code>how did last week go</code><button class="copy" type="button" data-print="hide" data-copy="how did last week go">Copy</button><p class="why">Last week against the week before and your 8-week median.</p></li>
+    <li class="prompt"><code>find creators for the campaign</code><button class="copy" type="button" data-print="hide" data-copy="find creators for the campaign">Copy</button><p class="why">Starts a shortlist after a few questions about the campaign.</p></li>
+    <li class="prompt"><code>/aspire:aspire agents</code><button class="copy" type="button" data-print="hide" data-copy="/aspire:aspire agents">Copy</button><p class="why">Every agent in one list, with the phrases that start each one.</p></li>
   </ul>
 </section>
 
