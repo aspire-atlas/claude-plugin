@@ -113,7 +113,8 @@ The default tokens name the Atlas fonts. A page that keeps them loads them befor
 .pb-muted{color:var(--muted)}
 .pb-num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 .pb-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr))}
-.pb-chip{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:2px 9px;font:500 .78rem/1.5 var(--font-body);border:1px solid var(--border);background:var(--bg);color:var(--text);white-space:nowrap}
+.pb-chip{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:2px 9px;font:500 .78rem/1.5 var(--font-body);border:1px solid var(--border);background:var(--bg);color:var(--text);white-space:nowrap;max-width:100%}
+@media (max-width:640px){.pb-chip{white-space:normal}}
 .pb-ok{background:var(--pb-ok-bg);color:var(--pb-ok);border-color:transparent}
 .pb-warn{background:var(--pb-warn-bg);color:var(--pb-warn);border-color:transparent}
 .pb-bad{background:var(--pb-bad-bg);color:var(--pb-bad);border-color:transparent}
@@ -174,7 +175,7 @@ The default tokens name the Atlas fonts. A page that keeps them loads them befor
 .pb-bar span.pb-end{background:var(--muted)}
 .pb-notes{margin:0;padding-left:18px;font-size:.88rem}
 .pb-rights{display:grid;grid-template-columns:minmax(0,2fr) repeat(3,minmax(0,1fr)) auto;gap:6px 12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:.9rem}
-@media (max-width:640px){.pb-rights{grid-template-columns:1fr auto}.pb-rights>*:nth-child(n+2):not(.pb-chip){grid-column:1}}
+@media (max-width:640px){.pb-rights{grid-template-columns:1fr auto}.pb-rights>*:first-child{grid-column:1;grid-row:1}.pb-rights>.pb-chip{grid-column:2;grid-row:1}.pb-rights>*:not(:first-child):not(.pb-chip){grid-column:1/-1}}
 /* 3.11 method, 3.12 missing, 3.13 draft next */
 .pb-method details{border-top:1px solid var(--border);padding:10px 0}
 .pb-method summary{cursor:pointer;font-weight:600}
@@ -283,6 +284,8 @@ beneath it. Write it last, from the decision the page supports (`SKILL.md`, sect
 
 - The headline is the conclusion, never a topic title. "Contact 11 creators this week" passes;
   "Creator performance overview" fails.
+- It is the page's first heading. A `band` header (`theme.md`, **Header**) shows the logo or brand
+  name and the kind of page as plain text, never as a second `h1`.
 - The takeaway gives the one number or reason that backs the headline, compared with something.
 - A page that sorts items into verdicts (a slate, a ranked list) may add the tally under the
   takeaway: a bar with one span per verdict, `flex` set to its count, and one line per verdict
@@ -757,7 +760,7 @@ the example lacked, so the rebuilt page passes a check the example did not.
 | "Prepared by" (not in the example) | 3.1, adds |
 | The answer and its lede | 3.3 |
 | Four verdict cards, one per section, each linking to it | 3.4, summary variant |
-| Three decisions (one with a deadline in the text) | 3.5, adds a deadline or "no deadline" and the approver to each |
+| Three decisions (one with a deadline in the text) | 3.5, adds the approver to each, and the deadline as `data-by` where there is one |
 | One screen of answer and decisions, then the detail | 3.14 |
 | Each section's claim, evidence, big numbers, and "What this means for you" | 3.4, with `pb-stat` lines and the "So:" line |
 | Period, share, and growth bar charts | 3.4, the chart in each section's headline insight |
@@ -804,9 +807,9 @@ it)
 
 Some sections answer one question only: a competitor table with threat levels, a message
 ownership table, a 2x2 positioning map, a fee against fit scatter, a calculator, a pitch anatomy
-strip, a section menu, brand tabs. The flow's reference builds them, and they are not blocks. They
+strip, a section menu. The flow's reference builds them, and they are not blocks. They
 still follow section 1: tokens only, status colors from the status tokens, light and dark, and phone
-width. They reuse `pb-card`, `pb-chip`, `pb-label`, `pb-table`, and `pb-grid`, so the page reads as
+width. A page never holds two brands: each brand gets its own page (section 5, P1). They reuse `pb-card`, `pb-chip`, `pb-label`, `pb-table`, and `pb-grid`, so the page reads as
 one piece. A chart is inline SVG with a table of the same values in a `details` under it. A
 calculator needs script; the blocks never do, so the page states the calculator's default result
 in plain text where the blocks show it, and the page still reads correctly without script.

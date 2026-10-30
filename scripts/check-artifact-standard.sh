@@ -7,7 +7,7 @@
 #   - the page standard stays a non-command skill, its tool list matches the Atlas tool contract,
 #     and its self-check script gives every fixture in scripts/fixtures/page-standard/ its result
 #   - the page blocks (skills/page-standard/blocks.md) have a snippet per block, take colors only
-#     from the tokens, and a page built from all of them passes the self-check
+#     from the tokens, keep the Starter Guide palette, and a page built from all of them passes the self-check
 #   - the standard's source sentence is written in that one file only, so the wording cannot drift
 #   - the references that define a published page link the standard
 # What an agent actually publishes is not checked here; this keeps the instructions in step.
@@ -94,13 +94,18 @@ else
       grep -qx "<!-- block:$b -->" "$BL" || { err "$BL lists the $b block but has no <!-- block:$b --> snippet"; continue; }
       snippet=$(section "block:$b")
       grep -qF "data-block=\"$b\"" <<< "$snippet" || err "$BL's $b snippet does not carry data-block=\"$b\""
-      ! grep -qE "(fill|stroke|stop-color|color|background|border)[a-z-]*(=\"|:) *$color" <<< "$snippet" ||
+      ! grep -qE "(fill|stroke|stop-color|color|background|border|outline|shadow)[a-z-]*(=\"|:)[^;\"]*$color" <<< "$snippet" ||
         err "$BL's $b snippet writes a color; take it from the tokens"
     done
     style=$(section block-style)
     [ -n "$style" ] || err "$BL has no <!-- block-style --> section"
     hexes=$(awk '/^\/\* Page blocks/{f=1} f' <<< "$style" | grep -oE "$color" | sort -u | tr '\n' ' ' || true)
     [ -z "$hexes" ] || err "$BL's block styles write colors ($hexes); take them from the tokens"
+    # The default tokens are the Atlas Starter Guide's palette: every token both set in light mode
+    # (their first :root rule) has the same value in each.
+    light() { awk '/^:root\{/{f=1} f{print} f&&/\}/{exit}' | tr ';{}' '\n\n\n' | sed -nE 's/^[[:space:]]*(--[a-z0-9-]+):(.*)$/\1=\2/p' | sort; }
+    drift=$(join -t= <(light <<< "$style") <(light < "$R/first-run.md") | awk -F= '$2!=$3{print $1" "$2" vs "$3}' | tr '\n' ',' || true)
+    [ -z "$drift" ] || err "$BL's default tokens differ from first-run.md's palette: $drift"
     ! LC_ALL=C grep -q '[^ -~]' "$BL" || err "$BL holds non-ASCII text; pages stay ASCII"
   fi
   # The script's tool list matches the Atlas tool contract, so R11 catches every tool name.
