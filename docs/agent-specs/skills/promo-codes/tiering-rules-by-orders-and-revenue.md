@@ -17,7 +17,7 @@ Proposes each code's tier from its orders and revenue over the saved window, aga
 
 ## Output
 
-A proposed tier per code with the figures behind it. A change outside the program's terms comes back as a question.
+A proposed tier per code with the figures behind it, returned as a `roster` row for the Roster review section of `/aspire` to write. A change outside the program's terms comes back as a question.
 
 ## Callable
 

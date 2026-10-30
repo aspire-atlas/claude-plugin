@@ -59,6 +59,6 @@ Invites, samples, collabs, and the period's report as `shop-campaign` findings (
 ## Non-goals
 
 - Finding and ranking Shop creators. TikTok Shop Creator Search (10) does that.
-- Opening the Shop or planning its setup. `atlas-shops` does that.
+- Opening the Shop or planning its setup. That stays the setup plan in `atlas-shops`; this agent is its running side.
 - Choosing a commission rate. It comes from the program's saved affiliate terms, or Negotiator (14).
 - Paying creators. Creator Payments (18) does that.

@@ -11,7 +11,7 @@ Scores each creator on GMV per video and per LIVE, and on conversion from views 
 
 ## Inputs
 
-- From brand memory: `program:{slug}-terms` for the affiliate commission the brand pays, when a program exists.
+- From brand memory: nothing. It scores only this run's figures.
 - From the launch message: the rows from Shop creator metrics read.
 
 ## Output

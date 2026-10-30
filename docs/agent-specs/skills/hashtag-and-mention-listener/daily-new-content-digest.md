@@ -11,7 +11,7 @@ Builds the day's digest of new posts: the strongest against the hashtag's median
 
 ## Inputs
 
-- From brand memory: the routing saved at setup, and the `page` finding for the digest.
+- From brand memory: the routing saved at setup, and the digest's `page` finding (a `digest` key the build adds to `program.md`).
 - From the launch message: the new posts.
 
 ## Output

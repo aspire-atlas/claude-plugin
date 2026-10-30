@@ -51,7 +51,7 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Writes to Atlas
 
-Code records (`codeStatus` planned, live, or retired, with a `leakage` field when a scan flags one) as `affiliate` findings, the `code-live` drafts, and the page as a `page` finding, on one batch question. Creating, changing, or turning off a code in the store is a Send: one question per code, recorded in the same run. The coupon-site scan runs only when the person asks for it.
+Code records (`codeStatus` planned, live, or retired, with a `leakage` field when a scan flags one) as `affiliate` findings, the `code-live` drafts, and the page as a `page` finding, on one batch question. Creating, changing, or turning off a code in the store is a Send: one question per code, recorded in the same run. The coupon-site scan runs only when the person asks for it. Tier changes go back as `roster` rows for the Roster review section of `/aspire` to write.
 
 ## Non-goals
 

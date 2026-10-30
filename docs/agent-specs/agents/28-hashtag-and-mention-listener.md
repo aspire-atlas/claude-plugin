@@ -54,7 +54,7 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Writes to Atlas
 
-Posts seen, repost candidates, and alerts as `listening` findings (a new record type the build defines; until then `atlas-daily-insights-report` saves them as its daily insights), rights asks as `draft` findings, and the page as a `page` finding, on one batch question. Sending a rights ask to a creator is a Send: one question per creator. Red-line alerts go to the routing saved at setup with no question, and a scheduled run saves only what its setup approved.
+Posts seen, repost candidates, and alerts as `listening` findings (a new record type the build defines; until then `atlas-daily-insights-report` saves them as its daily insights), rights asks as `draft` findings, and the page as a `page` finding, on one batch question. Sending a rights ask to a creator is a Send: one question per creator. It never writes `rights`; a creator's yes goes to Content Library and Rights (26) to record. Red-line alerts go to the routing saved at setup with no question, and a scheduled run saves only what its setup approved.
 
 ## Non-goals
 
