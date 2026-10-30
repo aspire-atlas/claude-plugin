@@ -6,6 +6,8 @@
 #     that block and the standards name (another plugin links to aspire's files rather than copying)
 #   - the page standard stays a non-command skill, its tool list matches the Atlas tool contract,
 #     and its self-check script gives every fixture in scripts/fixtures/page-standard/ its result
+#   - the page blocks (skills/page-standard/blocks.md) have a snippet per block, take colors only
+#     from the tokens, and a page built from all of them passes the self-check
 #   - the standard's source sentence is written in that one file only, so the wording cannot drift
 #   - the references that define a published page link the standard
 # What an agent actually publishes is not checked here; this keeps the instructions in step.
@@ -75,6 +77,32 @@ else
     err "$PS must set user-invocable: false in its frontmatter (it is never a command)"
   grep -qF 'skills/page-standard/SKILL.md' <<< "$canon" || err "the agent block does not link skills/page-standard/SKILL.md"
   [ -f "$FX/pass.html" ] || err "$FX/pass.html is missing (the page check needs a page that passes)"
+  # The page blocks: linked from the page standard, one snippet per block in the table, colors only
+  # from the tokens, and ASCII like the pages they go into.
+  BL=$P/skills/page-standard/blocks.md
+  blocks=""
+  if [ ! -f "$BL" ]; then
+    err "$BL is missing"
+  else
+    grep -qF 'skills/page-standard/blocks.md' "$PS" || err "$PS does not link skills/page-standard/blocks.md"
+    blocks=$(awk -F'|' '/^\| Block \| Skeleton part/{f=1;next} f&&/^\|/{print $4} f&&!/^\|/{exit}' "$BL" | grep -o '`[a-z-]*`' | tr -d '`' | tr '\n' ' ' || true)
+    [ -n "$blocks" ] || err "$BL has no block table"
+    # A fenced snippet between <!-- NAME --> and <!-- /NAME -->, without its fence lines.
+    section() { awk -v n="$1" '$0=="<!-- " n " -->"{f=1;next} $0=="<!-- /" n " -->"{f=0} f' "$BL" | sed '1d;$d'; }
+    color='(#[0-9A-Fa-f]{3,8}([^0-9A-Za-z_-]|$)|(rgba?|hsla?|oklch)\()'
+    for b in $blocks; do
+      grep -qx "<!-- block:$b -->" "$BL" || { err "$BL lists the $b block but has no <!-- block:$b --> snippet"; continue; }
+      snippet=$(section "block:$b")
+      grep -qF "data-block=\"$b\"" <<< "$snippet" || err "$BL's $b snippet does not carry data-block=\"$b\""
+      ! grep -qE "(fill|stroke|stop-color|color|background|border)[a-z-]*(=\"|:) *$color" <<< "$snippet" ||
+        err "$BL's $b snippet writes a color; take it from the tokens"
+    done
+    style=$(section block-style)
+    [ -n "$style" ] || err "$BL has no <!-- block-style --> section"
+    hexes=$(awk '/^\/\* Page blocks/{f=1} f' <<< "$style" | grep -oE "$color" | sort -u | tr '\n' ' ' || true)
+    [ -z "$hexes" ] || err "$BL's block styles write colors ($hexes); take them from the tokens"
+    ! LC_ALL=C grep -q '[^ -~]' "$BL" || err "$BL holds non-ASCII text; pages stay ASCII"
+  fi
   # The script's tool list matches the Atlas tool contract, so R11 catches every tool name.
   listed=$(awk '/^TOOLS = frozenset\("""/{f=1;next} f&&/^"""/{f=0} f' "$PS" | tr -s ' ' '\n' | sed '/^$/d' | sort -u)
   known=$(jq -r '.surfaces[] | keys[]' contract/atlas-mcp-tools.json | sort -u)
@@ -102,6 +130,24 @@ else
       esac
     done
     ran="page check gives every fixture its result"
+
+    # The page blocks: a page assembled from every block passes the page check, so a block can't
+    # drift from the markup the script reads.
+    if [ -n "$blocks" ]; then
+      section block:coverage > "$tmp/coverage.html"
+      {
+        echo '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Page blocks</title>'
+        echo "$style"
+        echo '</head><body>'
+        section block:scope | sed -e "/the coverage strip (3.2) goes here/{r $tmp/coverage.html" -e 'd;}'
+        for b in $blocks; do case $b in scope|coverage) ;; *) section "block:$b" ;; esac; done
+        echo '<footer class="atlas-footnote"><p>Internal use only. Not for public publishing.</p></footer></body></html>'
+      } > "$tmp/blocks.html"
+      out=$(python3 -I "$tmp/page_check.py" "$tmp/blocks.html" 2>&1) && code=0 || code=$?
+      [ "$code" -eq 0 ] && [ "$(grep -c '"result": "pass"' <<< "$out")" -eq 4 ] ||
+        err "a page built from every block in $BL does not pass the page check (exit $code): $out"
+      ran="$ran, and a page built from every block passes it"
+    fi
   else
     echo "SKIP page check fixtures (no python3)"
     ran="page check fixtures not run (no python3)"

@@ -23,7 +23,8 @@ this question and this reader need first, then fit the nine parts to it.
 
 This skill sets what a page says. `skills/aspire/references/artifact-standard.md` sets the mark
 and the source line, `skills/aspire/references/recipient-lens.md` sets the reader, and
-`skills/aspire/references/theme.md` sets the colors and type. **The flow's own reference wins**
+`skills/aspire/references/theme.md` sets the colors and type, and `blocks.md` in this folder holds
+the parts each page is built from, with their markup. **The flow's own reference wins**
 wherever it sets a rule: its layout, what its page leaves out, who sees money, and the form its
 evidence takes. This skill fills in what the reference leaves open.
 
@@ -110,7 +111,10 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    message names one. Read its sections and evidence, not its embedded images: strip `data:` URIs
    from your copy first. List the evidence elements this page must match (storyboards, test plan,
    cards with thumbnails). Match the evidence, not the layout.
-2. **Draft the page** for this question and this reader, with the markup in section 5.
+2. **Draft the page** for this question and this reader, from the blocks in
+   `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/blocks.md`. They already carry the markup in
+   section 5. The blocks set what each part holds and the order of its evidence; the flow's
+   reference and this reader set the layout.
 3. **Self-check R1 to R12.** Run the script in section 5 for R1, R2, R6, and R11, and judge the
    others against `reader-standard.md`. Fix every fail you can and check again.
 4. **Publish**, even when a check still fails, and report it in the page check (section 7).
