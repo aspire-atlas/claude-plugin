@@ -304,10 +304,11 @@ run.
 
 ## The page
 
-The page answers question **I1**, "Which creators should we contact for this launch, and why?",
-whenever the list is a discovery pool or a campaign's list, and must match the evidence of its
-approved example (`skills/page-standard/examples.md`, I1). A list vetted with no campaign
-behind it gets the same page without the launch clock. Build it from the page blocks
+When the launch block's `question` is **I1** ("Which creators should we contact for this launch,
+and why?"), the page must match the evidence of its approved example
+(`skills/page-standard/examples.md`, I1). Every vetting page has the sections below; the ones
+that need a campaign (audience groups, the launch clock) appear only when the criteria give what
+they need. Build it from the page blocks
 (`skills/page-standard/blocks.md`); the block numbers below are that file's.
 
 One page per list, published to a new path per run; a re-run of the same list republishes to
@@ -333,29 +334,32 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
    cards (3.7; `creator-card.md`, page mode, no actions) ranked by fit score, numbered from 1
    across the whole page in the order shown, because those numbers are what the user replies
    with. When the
-   criteria name audiences, the Approve grid is grouped by audience with a subtotal per group
-   and any open slot named. On each card: the fit score in the ring; flow chips `#{number}` and
+   criteria name audiences, the Approve grid is grouped by audience with a subtotal per group;
+   when they also set how many creators each audience needs, a group short of it names the open
+   slot. On each card: the fit score in the ring; flow chips `#{number}` and
    the recommendation; safety results in the brand safety tile per the card's **Brand safety**
    rule; three proof posts in the thumbnails; `{DETAILS}` with the two reasons, a watch line
-   (the one thing to keep an eye on), what would settle a Maybe or "Backup" when it only fills
-   a gap, the calibrations and lessons applied, an earlier vetting or discovery state, the
+   (the one thing to keep an eye on), what would settle a Maybe (a Maybe that only fills a gap
+   says "Backup: take if {creator} declines" instead; it stays a Maybe in the findings), the calibrations and lessons applied, an earlier vetting or discovery state, the
    contact route, "Est. fee {open} to {max}, target {target}" when the calculator gives one
    with where the rates came from, and the expected return when the fee has one: the bundled
    median views the fee is priced on (`fees.md`, **How a fee is calculated**). Never show a
    return the run did not work out.
-   Reject and Can't vet are grouped by reason (3.16), one score row per creator with its
-   `#{number}`, the score, and why not, rather than full cards. In a creator-ads lane each row
+   Reject and Can't vet are grouped by reason (3.16), one row per creator with its `#{number}`
+   and why not, rather than full cards. A Reject row carries its score; a Can't vet row carries
+   no score, only what would make it checkable. In a creator-ads lane each row
    also carries the four ad figures.
 7. **Safety summary**: a table of creators by category, only the rows with a Flag or Fail.
-8. **Launch clock** (3.17), when the criteria name a launch date: from offers out to the first
-   read of results, worked back from that date.
+8. **Launch clock** (3.17), when the criteria name a launch date: the weeks from today to that
+   date, with each next step placed in its week and the launch marked. No stage gets a date the
+   next steps did not set.
 9. **How the verdict was made** (3.11): the fit score's components and weights, the safety
    results, the recommendation order and the thresholds, the hard rejects, every saved call or
    lesson that changed a verdict, and the platform counts again.
 10. **What's missing** (3.12): creators Atlas could not read, networks not covered, and data a
     verdict would firm up with (for example, audience demographics).
-11. **Not vetted**: handles that could not be resolved, other networks, the brand's own
-    handles, with the reason for each.
+11. **Not vetted**: handles on other networks and the brand's own handles, with the reason for
+    each. A handle that could not be resolved is listed once, under Can't vet.
 12. **Atlas can draft next** (3.13): first messages to the approvals, offers at the fee
     calculator's open rate, and the questions to the Maybes.
 13. **Footer**: sources, the fee rate label once, a note that images are a snapshot, and

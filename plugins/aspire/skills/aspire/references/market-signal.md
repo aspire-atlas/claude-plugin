@@ -122,8 +122,8 @@ section. Each follows `recipient-lens.md`, **Rendering for a lens**.
   offering the `atlas-ad-reuse` agent for the cut list.
 - **Campaign:** three bullets: what the brand won on, the language to borrow, and what to
   avoid, for the next brief.
-- **Leadership** (question O3, passed as the launch's reader; never an M3 lens): the whole page
-  changes shape, per **Leadership page (O3)**. The saved lenses' sections move below the split.
+- **Leadership** (question O3; never an M3 lens): the whole page changes shape, per
+  **Leadership page (O3)**. The saved lenses' sections go below the split, in its item 11.
 
 ## Page
 
@@ -144,7 +144,8 @@ decisions section (3.5) and next steps (3.6) after it, up to three insights (3.4
 
 ## Leadership page (O3)
 
-When the launch's reader is `leadership`, the page answers question **O3**, "Leadership wants to
+When the launch block's `question` is O3, or it has no `question` and its reader is
+`leadership`, the page answers question **O3**, "Leadership wants to
 know where we stand against competitors, and what to do", and must match the evidence of its
 approved example (`skills/page-standard/examples.md`, O3). Title "<Brand> Competitive Brief:
 {window}", published to its own path so the team's weekly page keeps its link. The page is split
@@ -155,20 +156,22 @@ Above the split:
 1. **Header** (3.1, 3.2): the brand band with "Prepared for" and "Prepared by" (the page
    standard's reader rules), the window, and the posts per platform for the brand and each
    competitor.
-2. **Answer** (3.3), written last: where the brand stands in one sentence, and the lede.
-3. **Three claims** (3.4, summary variant): one card per claim, each linking to its section
-   below. Draw them from share of voice, features compared, friction, and framing: the three
-   that most change what leadership should do.
-4. **Decisions** (3.5): up to three, each with who approves it and its deadline when it has one
+2. **Answer** (3.3), written last: where the brand stands in one sentence, and a lede that
+   names the claims below.
+3. **Decisions** (3.5): up to three, each with who approves it and its deadline when it has one
    (`data-by`). A deadline is a real date: the next run, a launch on the brand's calendar, or the
    date the action that depends on it must start.
-5. **Action plan** (3.6): one row per action: what, the owner as a role (social, product
+4. **Action plan** (3.6), at most five rows: one row per action: what, the owner as a role (social, product
    marketing, product, performance) unless the brand's saved team names a person, when, how
    you will know it worked, and how strong the evidence is (the number of creators and posts
    behind it).
 
 Below the split, in the order the claims use them:
 
+5. **Up to three claims** (3.4, summary variant first): one card per claim, each linking to its
+   section, drawn from share of voice, features compared, friction, and framing, picking those
+   that most change what leadership should do. Fewer claims with evidence means fewer cards;
+   never pad to three.
 6. **One section per claim** (3.4): the claim, the evidence with big numbers, the comparison
    (the baseline, or a competitor), a chart for the headline claim (share of voice by period, or
    share and growth by entity), the organic and paid split, and "What this means for you" as the
@@ -184,8 +187,9 @@ Below the split, in the order the claims use them:
 10. **Comparison posts** ordered by opening strength (the retention proxy in **Reuse
     candidates**) as post cards (3.8), then **In their words**: up to 8 quotes (3.18), each
     linked.
-11. **Full data and method** (3.11): the data tables and how creators describe each product in
-    a `details`, the method with the platform counts again, and numbered sources.
+11. **Full data and method** (3.11): the data tables, how creators describe each product, and
+    each saved lens's section, each in a `details`; then the method with the platform counts
+    again, and numbered sources.
 12. **What's missing** (3.12): competitors not indexed, sets capped, and paid results ("Paid
     results need a connected Meta ad account").
 13. **Atlas can draft next** (3.13): the brief update for the next campaign, and the leadership
@@ -197,7 +201,10 @@ for the requester to send on. Scheduled runs build the team page.
 
 ## Findings
 
-Findings are written only with approval: interactive runs when the user chose to save them in
+A leadership page (**Leadership page (O3)**) saves no findings, whatever the launch approved:
+the weekly team run owns each window's findings, and a leadership run left out of them never
+trips the duplicate-window guard for that window. Otherwise, findings are written only with
+approval: interactive runs when the user chose to save them in
 the launch question, unattended runs on the M3 and M4 setup confirmation, which says scheduled
 runs save their findings to Atlas.
 

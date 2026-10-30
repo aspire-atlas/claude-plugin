@@ -61,14 +61,15 @@ findings, delivery, and the unattended rules. Follow them exactly.
 7. Analyze per **Analysis rules**: share of voice, features compared, friction, framing, reuse
    candidates, and what changed since the last run.
 8. Render per **Rendering for each lens**: the primary lens first, one section per other lens.
-9. Build and publish the page per **Page**, republishing to the same path. When the primary
-   lens is `leadership` (question O3), the page has its own path and title instead; first list the evidence the approved O3 example sets, per the
+9. Build and publish the page per **Page**, republishing to the same path. When the launch block's
+   `question` is O3, or it has no `question` and the primary lens is `leadership`, the page has
+   its own path and title instead; first list the evidence the approved O3 example sets, per the
    page standard's build loop (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/examples.md`) and build the
    leadership page per **Leadership page (O3)**. Load
    `artifact-design` and `dataviz` first; apply `theme:brand` when saved.
 10. Deliver per **Delivery**, including per-lens destinations. Report any that failed. A
     leadership page is not delivered: return its link.
-11. Write findings per **Findings**, 12 at most, `detail.recipient` on each, only when rule 5
+11. Except for a leadership page, which saves none, write findings per **Findings**, 12 at most, `detail.recipient` on each, only when rule 5
     allows.
 
 ## Output to the main thread (under 250 words, ordered for the primary lens)

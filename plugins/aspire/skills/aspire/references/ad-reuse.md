@@ -68,6 +68,11 @@ say so; never infer the opening from a cover.
 
 ## Hook score (out of 100)
 
+**Verdict bands.** 70 and up: **run**. 50 to 69: **cut first** (it works only as a cut of its
+strongest segment). Under 50: **leave**. One override: a `red_line` hit or a competitor in frame
+makes it **leave** at any score, with the reason. The page's method shows these bands as they are
+here.
+
 Every component names its evidence: a quoted transcript line with its timestamp, a frame with
 its timestamp, or a field and its value. A component with no data scores zero and is listed
 as missing.
@@ -212,14 +217,15 @@ lens (**Output for each lens** sets the order for `creative`):
    the verdict (run, cut first, or leave), and a one-line note. The recommended candidates keep
    their card: media, the first-3-seconds frame strip with any measured early rate cited beside
    the opening frame, and the metric row.
-7. **Cut structure and storyboards** (3.9): the structure every 15-second cut shares (hook 0 to
-   3s, brand 3 to 6s, build 6 to 9s, reveal 9 to 12s, end card +2s, per the page standard) and
-   the specs from **Cut list**. Then one storyboard per recommended ad: the badge (its rank),
+7. **Cut structure and storyboards** (3.9): the five beats every cut shares (hook 0 to 3s,
+   brand 3 to 6s, build 6 to 9s, reveal 9 to 12s, then the end card, per the page standard) and
+   the specs from **Cut list**. On a 15-second cut the end card runs 12 to 15s. Then one storyboard per recommended ad: the badge (its rank),
    the hook line, handle, date, pattern, cut length, and the tests it runs in; a still for every
    beat, taken from the frames read at that beat's timecode, or an insert tile naming what to add
    when the post has no usable frame there; the timecodes, a one-line description per beat, the
-   duration strip, and edit notes. A 6-second bumper keeps the hook, the brand, and the end card;
-   a 30-second cut lengthens the build. Timecodes from frames carry "±1.5s" and every timecode
+   duration strip, and edit notes. A 6-second bumper has two beats: the hook 0 to 3s, then
+   the brand with the end card 3 to 6s. A 30-second cut lengthens the build to 6 to 24s, with the
+   reveal 24 to 27s and the end card 27 to 30s. The duration strip always adds up to the cut length. Timecodes from frames carry "±1.5s" and every timecode
    stays a draft until a 1-second frame scan confirms it (`quality-review.md`, 4.15).
 8. **Cut list** table, one row per cut (**Cut list**).
 9. **Test plan** (3.15): one test per variable (hook pattern, opening line, cut length, or
@@ -230,8 +236,8 @@ lens (**Output for each lens** sets the order for `creative`):
 10. **Rights** (3.10): one row per recommended candidate with its source and expiry, from
     **Rights sources**.
 11. **How it was scored** (3.11): the six components with their weights, what full marks and
-    zero mean for each, the retention levels and thresholds, the hook evidence rule, the score
-    bands behind the verdicts, and any override, then the platform counts again. The ratings
+    zero mean for each, the retention levels and thresholds, the hook evidence rule, the verdict
+    bands and the override (**Hook score**, **Verdict bands**), then the platform counts again. The ratings
     matrix (every candidate by component) sits in a `details`.
 12. **What's missing** (3.12): paid results ("Paid results need a connected Meta ad account: they
     would show which of these cuts already ran and what they cost"), boosted views where organic

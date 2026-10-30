@@ -64,9 +64,10 @@ exactly, and render for the primary lens per **Rendering for a lens**.
    on `creator-brief-{profile}`, `program-{profile}-` (`rights` and agreed `terms`), and
    `cas-campaign-{profile}-` (the roster's `usage` and `adPermissions`) for each creator.
 8. List the evidence the approved P1 example sets, per the page standard's build loop
-   (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/examples.md`), then build one storyboard per
-   recommended ad from the frames you read at each beat's timecode, and the test plan, per
-   **Page**. Never draw a still you did not extract.
+   (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/examples.md`). For each recommended ad (its
+   candidate's first cut), extract and view a frame at every beat's timecode, measured from the
+   cut's in point, per **What to read per candidate**. Then build its storyboard and the test
+   plan per **Page**. Never draw a still you did not extract.
 9. Build and publish the page per **Page** with the Artifact tool. Load `artifact-design` and
    `dataviz` first; apply `theme:brand` when saved. The primary lens decides the section order
    per **Output for each lens**.

@@ -95,9 +95,9 @@ the list as approved for fetching.
    early results.
 8. Compute the estimated fee per `fees.md`, **Applying the rates**, when `fees:rate-card` or
    the recommended rates apply; no price when the data is missing.
-9. List the evidence the approved I1 example sets, per the page standard's build loop
-   (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/examples.md`) whenever the list is a discovery
-   pool or a campaign's list. Build the page per the reference (load `artifact-design`, and `dataviz` for a chart; apply
+9. When the launch block's `question` is I1, list the evidence the approved I1 example sets,
+   per the page standard's build loop (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/examples.md`).
+   Build the page per the reference (load `artifact-design`, and `dataviz` for a chart; apply
    `theme:brand` when saved per `theme.md`, **Applying the theme**) and publish it with the
    Artifact tool.
 10. When R4 was "Save", write the recommendation findings and the run summary with

@@ -110,7 +110,8 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
 
 1. **List the evidence the approved example sets** for the launch block's `question`, from
    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/examples.md` (storyboards, test plan, cards with
-   thumbnails). When the launch message links the example itself, read it in full first: its
+   thumbnails), when this flow is the one that file's row names as building the page. A flow that
+   only feeds another (discovery feeding vetting for I1) skips this step. When the launch message links the example itself, read it in full first: its
    sections and evidence, not its embedded images (strip `data:` URIs from your copy). Match the
    evidence, not the layout. A code with no example, or a launch with no `question`, skips this
    step.
