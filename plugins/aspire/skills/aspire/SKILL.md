@@ -35,7 +35,7 @@ run one; it starts no phase until an agent is picked.
 Every run that goes past listing agents or showing a sample starts here, before Phase 1 and
 before routing the argument. Do both of these in your first tool calls:
 
-1. **Load the progress tool.** Call `ToolSearch` with `select:mcp__aspire__aspire_progress`
+1. **Load the progress tool.** Call `ToolSearch` with `select:mcp__aspire-mod__aspire_progress`
    (put it in the same call as any other load). It is a deferred tool, so it cannot be called
    until it is loaded. Skip it silently when ToolSearch does not find it.
 2. **Keep the session's task list.** One task per step you report (the steps of the group now
@@ -369,7 +369,7 @@ worked examples - lives in `references/prompt-coach.md`.
    count that flow's critical inputs still missing (the reference indexes them; each flow's own
    section is the source for what it asks).
 2. **Verdict.** One short line in plain words, no score ("3 of 6 inputs for Ad reuse: missing
-   window, reader, save"). Show it as the coach card: call `mcp__aspire__aspire_progress` with
+   window, reader, save"). Show it as the coach card: call `mcp__aspire-mod__aspire_progress` with
    `coach: { verdict, step }` (verdict at most 140 characters, `step` "Round 1 of 3"), plus the
    usual `title` `Prompt coach` and `tasks` `Read the ask`, `Ask the gaps`, `Rewrite the prompt`.
    Where the bar is not drawn or the tool is missing, say the same verdict as one chat line.
@@ -432,10 +432,10 @@ and the **Fee calculator** sets the creator rates behind every fee they show.
 
 ## Progress bar
 
-In Claude Code, the plugin can draw an Aspire progress bar above the prompt. If the tool
-`mcp__aspire__aspire_progress` appears among your tools, including as a deferred tool, it is
+In Claude Code, the optional `aspire-mod` plugin can draw an Aspire progress bar above the prompt. If the tool
+`mcp__aspire-mod__aspire_progress` appears among your tools, including as a deferred tool, it is
 available: a deferred tool only needs loading first with ToolSearch
-(`select:mcp__aspire__aspire_progress`). When running the phases, report them as three groups,
+(`select:mcp__aspire-mod__aspire_progress`). When running the phases, report them as three groups,
 one run each. A new `title` starts a new run, so each group's bar starts over at 0%. Send the
 group's `tasks` in order when it starts, then call again as each task finishes with `done` and
 `phase` naming the task in progress:
@@ -449,7 +449,7 @@ group's `tasks` in order when it starts, then call again as each task finishes w
 Finish each group with `finished: true` before starting the next. A group that does not run is
 never reported, so the bar never shows steps the run skips. Call it once more with
 `finished: true` when onboarding closes, or when a routed flow takes over after Phase 2 + 3.
-Agents never call it (a subagent's call is ignored); they report their own steps on their panel row with `mcp__aspire__aspire_step`, which the agent files describe.
+Agents never call it (a subagent's call is ignored); they report their own steps on their panel row with `mcp__aspire-mod__aspire_step`, which the agent files describe.
 
 **Every other flow reports its own steps, never onboarding's.** When a flow starts (the creator
 brief, discovery, vetting, a review, a readout, the orchestrator, a program step, and the rest),

@@ -32,6 +32,5 @@
     "tiktok",
     "youtube"
   ],
-  "mcpServers": "./.mcp.json",
-  "types": "./types/index.d.ts"
+  "mcpServers": "./.mcp.json"
 }

@@ -38,6 +38,25 @@
         "tiktok",
         "youtube"
       ]
+    },
+    {
+      "name": "aspire-mod",
+      "displayName": "Aspire Atlas mod (beta)",
+      "source": "./plugins/aspire-mod",
+      "description": "Optional add-on for the Aspire Atlas plugin: a progress bar and band above the prompt and an agents panel while /aspire runs, display only. Install it alongside the aspire plugin; it stays inert until /aspire runs.",
+      "author": {
+        "name": "Aspire"
+      },
+      "homepage": "https://atlas.aspire.io",
+      "repository": "https://github.com/aspire-atlas/claude-plugin",
+      "license": "Apache-2.0",
+      "category": "marketing",
+      "keywords": [
+        "aspire",
+        "atlas",
+        "progress bar",
+        "agents panel"
+      ]
     }
   ]
 }

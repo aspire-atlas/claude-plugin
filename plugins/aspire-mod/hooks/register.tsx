@@ -104,7 +104,8 @@ import type { PlanView } from './plan'
 import type { ProgressInput, Shown } from './progress'
 import { barText, coachOf, isReportLeading, mergeProgress, orgStateFrom, percentOf, shownOf, titleOf } from './progress'
 
-const PLUGIN = 'aspire'
+// The plugin whose skill and agents switch the mod on; this mod ships as its own plugin, aspire-mod.
+const ASPIRE_PLUGIN = 'aspire'
 
 const BLANK_SEEN: Seen = {
   prompts: 0,
@@ -117,30 +118,30 @@ const BLANK_SEEN: Seen = {
 }
 const BLANK_ORG: OrgState = { name: null, checkpoints: 0 }
 
-const isActive = atom({ plugin: 'aspire', key: 'isActive' } as const, false)
-const trigger = atom({ plugin: 'aspire', key: 'trigger' } as const, null as Trigger | null)
-const seen = atom({ plugin: 'aspire', key: 'seen' } as const, BLANK_SEEN)
-const progress = atom({ plugin: 'aspire', key: 'progress' } as const, null as Progress | null)
-const turn = atom({ plugin: 'aspire', key: 'turn' } as const, null as Turn | null)
-const items = atom({ plugin: 'aspire', key: 'items' } as const, [] as Item[])
-const org = atom({ plugin: 'aspire', key: 'org' } as const, BLANK_ORG)
-const atlas = atom({ plugin: 'aspire', key: 'atlas' } as const, null as AtlasReading | null)
-const creditsAtom = atom({ plugin: 'aspire', key: 'credits' } as const, null as AtlasCreditsReading | null)
-const stats = atom({ plugin: 'aspire', key: 'stats' } as const, { turn: 0, speed: null, context: 0 } as BandStats)
-const isBandHidden = atom({ plugin: 'aspire', key: 'isBandHidden' } as const, false)
-const agents = atom({ plugin: 'aspire', key: 'agents' } as const, [] as AgentRun[])
+const isActive = atom({ plugin: 'aspire-mod', key: 'isActive' } as const, false)
+const trigger = atom({ plugin: 'aspire-mod', key: 'trigger' } as const, null as Trigger | null)
+const seen = atom({ plugin: 'aspire-mod', key: 'seen' } as const, BLANK_SEEN)
+const progress = atom({ plugin: 'aspire-mod', key: 'progress' } as const, null as Progress | null)
+const turn = atom({ plugin: 'aspire-mod', key: 'turn' } as const, null as Turn | null)
+const items = atom({ plugin: 'aspire-mod', key: 'items' } as const, [] as Item[])
+const org = atom({ plugin: 'aspire-mod', key: 'org' } as const, BLANK_ORG)
+const atlas = atom({ plugin: 'aspire-mod', key: 'atlas' } as const, null as AtlasReading | null)
+const creditsAtom = atom({ plugin: 'aspire-mod', key: 'credits' } as const, null as AtlasCreditsReading | null)
+const stats = atom({ plugin: 'aspire-mod', key: 'stats' } as const, { turn: 0, speed: null, context: 0 } as BandStats)
+const isBandHidden = atom({ plugin: 'aspire-mod', key: 'isBandHidden' } as const, false)
+const agents = atom({ plugin: 'aspire-mod', key: 'agents' } as const, [] as AgentRun[])
 /** The cards that start open; the agent roster's groups start collapsed. */
 const DEFAULT_OPEN = ['progress', 'running', 'finished', 'agents']
-const panel = atom({ plugin: 'aspire', key: 'panel' } as const, { isAutoOpened: false, open: DEFAULT_OPEN, leaving: null } as Panel)
-const now = atom({ plugin: 'aspire', key: 'now' } as const, 0)
+const panel = atom({ plugin: 'aspire-mod', key: 'panel' } as const, { isAutoOpened: false, open: DEFAULT_OPEN, leaving: null } as Panel)
+const now = atom({ plugin: 'aspire-mod', key: 'now' } as const, 0)
 /** The "queued in the prompt box" notice above the prompt (desktop); null when none shows. */
-const notice = atom({ plugin: 'aspire', key: 'notice' } as const, null as Notice | null)
+const notice = atom({ plugin: 'aspire-mod', key: 'notice' } as const, null as Notice | null)
 /** How long the notice stays, in milliseconds. */
 const NOTICE_MS = 6000
 /** The prompt coach card above the bar; null when none shows. Set only by the skill's progress report. */
-const coach = atom({ plugin: 'aspire', key: 'coach' } as const, null as Coach | null)
+const coach = atom({ plugin: 'aspire-mod', key: 'coach' } as const, null as Coach | null)
 /** The progress line last put under the prompt (undefined when none), kept in session state so a module reload still knows to clear it. */
-const statusLine = atom({ plugin: 'aspire', key: 'statusLine' } as const, null as string | null)
+const statusLine = atom({ plugin: 'aspire-mod', key: 'statusLine' } as const, null as string | null)
 /** How long the coach card stays without a new report, in milliseconds. */
 const COACH_MS = 5 * 60 * 1000
 
@@ -155,13 +156,13 @@ const PANE = 'aspire-agents'
 const PANE_TITLE = 'Aspire agents'
 const MAX_RUNS = 200
 // The progress tool as the model calls it: mcp__<plugin>__<name>.
-const PROGRESS_TOOL = 'mcp__aspire__aspire_progress'
-const STEP_TOOL = 'mcp__aspire__aspire_step'
+const PROGRESS_TOOL = 'mcp__aspire-mod__aspire_progress'
+const STEP_TOOL = 'mcp__aspire-mod__aspire_step'
 
 // ---------------------------------------------------------------------------
 // Switching on.
 
-const isAspireAgent = (type: string, plugin: string | undefined): boolean => type.startsWith('aspire:') || plugin === PLUGIN
+const isAspireAgent = (type: string, plugin: string | undefined): boolean => type.startsWith('aspire:') || plugin === ASPIRE_PLUGIN
 
 // The one timer: running agents' clocks. Started when
 // the mod switches on, never before; a reload starts it again from session.start.
@@ -1698,7 +1699,7 @@ export const register: Register = on => {
     // reminder and the button row, in CSS pixels, since an Svg takes a size and not a percentage.
     const iconH = 2 + 22 + (description ? Math.min(4, Math.ceil(clip(description, 240).length / 70)) * 20 : 0) + 52 + 10
     const share = () => {
-      void $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: slackDraft(url), mode: 'replace' } as never).catch(() => undefined)
+      void $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire-mod' }, text: slackDraft(url), mode: 'replace' } as never).catch(() => undefined)
       $.ui.toast('◆ Aspire · A Slack message is drafted in the prompt box. Press Enter to ask Claude to share it.', { timeoutMs: 6000 })
     }
     return (
@@ -1759,7 +1760,7 @@ export const register: Register = on => {
     // Pressing the title drafts the organization change in the prompt, as pressing an agent drafts its start: the person reads it
     // and presses Enter, and the skill asks which organization with a question.
     const changeOrg = () =>
-      void $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: '/aspire:aspire org', mode: 'replace' } as never).catch(() => undefined)
+      void $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire-mod' }, text: '/aspire:aspire org', mode: 'replace' } as never).catch(() => undefined)
     // The desktop draws the bar itself as an Svg (the dithered fill and step pill), between a title Button and an agents Button.
     // An Svg takes no press and the host ignores absolute, so nothing lies over it: the presses sit on the Buttons beside it.
     if (band.crab === null) band.crab = pickCrab()
@@ -1872,7 +1873,7 @@ export const register: Register = on => {
             await update($, panel, prev => ({ ...prev, leaving: null }))
           }
         }
-        await $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire' }, text: `/aspire:aspire run ${r.type.replace(/^aspire:/, '')}`, mode: 'replace' } as never)
+        await $.prompt.fill({ origin: { kind: 'plugin', name: 'aspire-mod' }, text: `/aspire:aspire run ${r.type.replace(/^aspire:/, '')}`, mode: 'replace' } as never)
         // On the desktop, with the band drawn, the notice is a branded row above the bar with the agent's own crab; it clears itself.
         // Anywhere else (the terminal, a hidden band, no Svg) the SDK's plain-text toast carries it.
         const isShown = e.surface === 'desktop' && band.renders > 0 && !(await read($, isBandHidden)) && (await isOn($))
