@@ -80,15 +80,31 @@ else
     grep -qF "$need" <<< "$print_style" || err "the standard's print block lost '$need'"
   done
   ! LC_ALL=C grep -q '[^ -~]' <<< "$print_style" || err "the standard's print block holds non-ASCII text; pages stay ASCII"
-  print_rules=$(awk '/^\/\* print-rules \*\/$/{f=1} f{print} /^\/\* \/print-rules \*\/$/{f=0}' <<< "$print_style")
-  [ -n "$print_rules" ] || err "the standard's print block has no /* print-rules */ section"
-  bl_rules=$(awk '/^\/\* print-rules \*\/$/{f=1} f{print} /^\/\* \/print-rules \*\/$/{f=0}' "$P/skills/page-standard/blocks.md")
-  [ "$print_rules" = "$bl_rules" ] || err "blocks.md's print rules differ from artifact-standard.md's print block; copy them from section 6"
+  grep -qF '/* print-rules */' <<< "$print_style" || err "the standard's print block has no /* print-rules */ section"
 fi
+for f in "$P/skills/page-standard/blocks.md" "$P/skills/page-standard/SKILL.md"; do
+  grep -qF 'artifact-standard.md`, section 6' "$f" || err "$f does not point to the print block (artifact-standard.md, section 6)"
+done
+# Each dark-mode match is tested on its own: inline code is dropped, then every @media screen block
+# (to its closing brace, or to the end of the line), and whatever dark rule is left is a print leak.
 while IFS= read -r hit; do
   err "${hit%%:*} turns on dark mode in print (line ${hit#*:}); wrap it in @media screen (artifact-standard.md, section 6)"
-done < <(grep -rnE '(prefers-color-scheme: ?dark|data-theme=.?dark|(^|[ ,}])\.dark[ .{,]).*\{' \
-  plugins/*/skills plugins/*/agents --include='*.md' | grep -v 'screen' | cut -d: -f1,2 || true)
+done < <(grep -rnE 'prefers-color-scheme: ?dark|data-theme=.?dark|\.dark[ .{,]' plugins/*/skills plugins/*/agents --include='*.md' |
+  awk '{
+    line = $0; sub(/^[^:]*:[0-9]*:/, "", line); gsub(/`[^`]*`/, "", line)
+    while ((i = index(line, "@media screen")) > 0) {
+      j = i; depth = 0; opened = 0
+      while (j <= length(line)) {
+        ch = substr(line, j, 1)
+        if (ch == "{") { depth++; opened = 1 } else if (ch == "}") { depth--; if (opened && depth == 0) break }
+        j++
+      }
+      line = substr(line, 1, i - 1) substr(line, j + 1)
+    }
+    t = line; sub(/^[[:space:]]+/, "", t)
+    if (line ~ /prefers-color-scheme: ?dark|data-theme=.?dark|(^|[ ,}])\.dark[ .{,]/ && (line ~ /\{/ || t ~ /^(@media|:root|\[|\.|html)/))
+      { split($0, a, ":"); print a[1] ":" a[2] }
+  }' || true)
 
 # The page standard: a shared skill no one can call as a command, which the agent block links, and
 # whose self-check script passes the good fixture and fails each bad one on the check it names.

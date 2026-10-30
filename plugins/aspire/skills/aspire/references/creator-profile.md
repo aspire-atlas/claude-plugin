@@ -111,7 +111,9 @@ the page footer that images are a snapshot. The page carries the animated Aspire
 ## Style block
 
 Once per page, in the `<head>`, after the creator card's style block. The profile carries the
-same `--ac-*` tokens as the card, so it follows the host and the saved theme the same way.
+same `--ac-*` tokens as the card, so it follows the host and the saved theme the same way. Then
+paste the print block from `artifact-standard.md`, section 6, with the creator's handle as the
+title.
 
 ```html
 <style>

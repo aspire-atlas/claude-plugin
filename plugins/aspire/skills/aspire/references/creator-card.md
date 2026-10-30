@@ -509,7 +509,7 @@ rule in the data table says so, and drop the comments themselves. Repeat `.ac-ne
   </div>
 
   <!-- if 2+ channels -->
-  <div class="ac-chips" role="tablist" aria-label="Creator profiles">
+  <div class="ac-chips" role="tablist" aria-label="Creator profiles" data-print="hide">
     <button type="button" class="ac-chip" role="tab" aria-selected="true" data-net="instagram" onclick="var c=this.closest('.ac-card');c.querySelectorAll('.ac-chip').forEach(function(b){b.setAttribute('aria-selected',b===this)},this);c.querySelectorAll('.ac-net').forEach(function(n){n.hidden=n.dataset.net!==this.dataset.net},this)">{ICON_INSTAGRAM}<span>{FOLLOWERS}</span></button>
     <!-- one button per channel; only the primary has aria-selected="true", the rest "false" -->
   </div>

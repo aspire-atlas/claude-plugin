@@ -26,9 +26,9 @@ build it.
 - **Light and dark.** The default tokens and the theme both set a dark mode, on screen only, so a
   printed page or PDF always uses the light tokens. Blocks never set a color outside the tokens,
   so they follow the mode with nothing extra.
-- **Print.** The style block carries the print rules from `skills/aspire/references/artifact-standard.md`,
-  section 6. The page adds that section's `@page` rule with its own title, after the theme block.
-  A large image or chart image sits in a `<figure>`, so it prints whole on one page.
+- **Print.** After the theme block, paste the print block from
+  `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md`, section 6, with the page's
+  title. A large image or chart image carries `data-print="fit"`, so it prints whole on one page.
 - **Phone width.** Every block works at 360px with no sideways page scroll. Grids wrap, tables turn
   into one card per row under 640px (put `data-label` on every cell), and only the storyboard strip
   scrolls sideways, inside its own box.
@@ -230,25 +230,6 @@ The default tokens name the Atlas fonts. A page that keeps them loads them befor
 .pb-quote blockquote{margin:0;font-size:.98rem}
 .pb-quote figcaption{font-size:.82rem;color:var(--muted)}
 .pb-quote a{color:inherit}
-/* Print (skills/aspire/references/artifact-standard.md, section 6). The page adds the @page rule with its title. */
-/* print-rules */
-@media print{
-  *,*::before,*::after{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  html,body{background:transparent!important}
-  body{font-size:10.5pt;line-height:1.45}
-  nav,[data-print="hide"]{display:none!important}
-  [role="tabpanel"][hidden],[data-print="open"][hidden]{display:block!important}
-  [role="tabpanel"][data-label]::before{content:attr(data-label);display:block;font-weight:600;margin:12pt 0 6pt}
-  details::details-content{content-visibility:visible}
-  details>summary{list-style:none}
-  h1,h2,h3,h4,summary,.pb-split-rule{break-after:avoid}
-  figure,tr,li,blockquote,.pb-card,.pb-post,.pb-frame,.pb-score,.pb-rights,[data-print="keep"]{break-inside:avoid}
-  p,li{orphans:3;widows:3}
-  thead{display:table-header-group}
-  img,svg,video,canvas{max-width:100%!important}
-  figure img,img[data-print="fit"]{display:block;width:auto;height:auto;max-height:200mm;margin-inline:auto;object-fit:contain}
-}
-/* /print-rules */
 @media print{.pb-beats{grid-auto-flow:row;grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}}
 </style>
 ```
