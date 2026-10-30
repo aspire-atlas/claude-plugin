@@ -67,8 +67,9 @@ are saved by `/aspire` during setup, with one batch confirmation, never by this 
 
 ## Non-goals
 
-- Checking each candidate for brand safety, competitor deals and disclosure, and the final
-  approve, maybe or reject call. That is 06 Creator Vetting, which builds the slate from this pool.
+- Checking each candidate for brand safety, competitor deals and disclosure, and the final approve,
+  maybe or reject call. That is 06 Creator Vetting; for a creator ad campaign, 09 Ads Creator Finder
+  builds the Gate 2 slate from its lane runs.
 - Reviewing a list the team already has. That is 07 Creator List Review.
 - One creator in depth, with what they would cost. That is 08 Creator Profile.
 - Casting creators by their paid track record for partnership ads. That is 09 Ads Creator Finder.
