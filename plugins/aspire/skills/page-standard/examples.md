@@ -1,22 +1,27 @@
 # Approved examples, by question
 
 Aspire's reviewers mark a page Pass and approve it as an example of how to answer one question.
-This file lists the question codes that have an approved example and the evidence each one sets.
-The examples themselves are customer pages, so this file holds no brand names and no links.
+A question aims for two or three examples, each for a different brand: a new example that answers
+the question another way teaches more than one that looks like an existing one. This file lists
+the question codes that have an approved example and the evidence those examples set. The
+examples themselves are customer pages, so this file holds no brand names and no links.
 
 Before you build a page, find the launch block's `question` here (`orchestration.md`, **3** and
 **5**). When it has a row:
 
-1. **The launch message names the example's link:** read it with the Artifact tool's `read`
-   action, in full. Strip its `data:` URIs from your copy first and read its sections and
-   evidence, not its images. If it cannot be read (no access, or the link fails), record "Example not
-   read: {reason}" in the audit trail's data gaps and go on.
-2. **Either way,** list the evidence elements below for the code. Your page must carry each of
-   them, or say in one line why this run could not.
+1. **Read every example the launch block's `examples` lists,** each in full, with the Artifact
+   tool's `read` action. Strip its `data:` URIs from your copy first and read its sections and
+   evidence, not its images. One that cannot be read (no access, or the link fails) goes in the
+   audit trail's data gaps as "Example not read: {reason}"; read the rest and go on.
+2. **List the evidence elements to match:** the ones below for the code, plus any element every
+   example you read carries that the list leaves out. Where the examples differ, each is one good
+   answer, not a rule. Your page must carry each element on the list, or say in one line why this
+   run could not.
 
-Match the evidence, never the layout or the wording: a new brand and a new reader get their own
-page. Never name another customer's example on a page. A code with no row has no approved example
-yet: build from the skeleton and the blocks alone.
+Match the evidence, never the sections, the layout, or the wording: a new brand and a new reader
+get their own page. Never name another customer's example on a page. With `examples` empty, the
+list below is the evidence to match. A code with no row has no approved example yet: build from
+the skeleton and the blocks alone.
 
 <!-- examples -->
 | Code | Kind of page | Reader | Built by flow |

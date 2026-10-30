@@ -246,6 +246,34 @@ confirmations, with a `gate` named for what it approves (`approve-profile`,
 `approve-calibrations`). Verdicts Editors give on the orchestrator's Next actions page send no
 feedback event yet.
 
+### Examples library
+
+Aspire keeps approved examples in a Claude Doc: one row per example with its question code,
+brand, link, kind of page, who built it, and what makes it work. A question aims for two or
+three, each for a different brand. Before an agent builds a page for a question, it reads every
+approved example for that question in full (`skills/page-standard/examples.md`). The examples
+are other brands' pages, so the library is read only to fill the launch block, and its links
+never appear on a page, in a draft, or in a reply to anyone outside Aspire.
+
+- **Where it is saved.** The key `examples:library` (`policy`, `{area: "routing", body:
+  "docs:{link}"}`). It is off unless someone asks for it ("read examples from {doc}", "use
+  {doc} as our examples library"). Needs a brand profile. Confirm with `AskUserQuestion`, header
+  "Examples": "Read the approved examples in {doc} before building pages for {brand}?" Options:
+  "Use it (Recommended)", "Not now". On yes, write it with `append_calibration`,
+  `provenance: "interview"`; a `key-exists` follows the Phase 5 supersede rule. Turning it off is
+  `retract_calibration` with its own confirmation. Never suggest a library the person did not
+  name.
+- **Filling the launch block.** When the launch's `question` has a row in
+  `skills/page-standard/examples.md` and the launched agent is the one that row names as
+  building the page, find `examples:library` with `search_calibrations` (no filter, limit 100
+  per page, paged to the end; read only) just before launching. With a record, read the doc's
+  Examples tab (its examples table, not the rows waiting for review) and put the link of every
+  row whose question is that code in `examples`. With no record, no profile, no connection, or a
+  doc that cannot be read, pass `[]` and launch anyway; a doc that cannot be read gets one line
+  to the user after the launch. Never ask about the library during a launch.
+- **Adding an example** is a reviewer's call, made outside a run: an Aspire reviewer marks the
+  run Pass in the run log and approves it as an example. This skill never adds a row on its own.
+
 ---
 
 ## Model tiers (which model each agent runs on)

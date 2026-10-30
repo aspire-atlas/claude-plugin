@@ -89,7 +89,7 @@ want = {
     "result-packet": ["runId", "agent", "question", "reader", "page", "findings", "proposals",
                       "questions", "next", "cost", "coverage", "selfCheck"],
     "launch": ["from", "runId", "agent", "mode", "run", "question", "persona", "reader",
-               "shortcut", "scope", "approved"],
+               "shortcut", "scope", "approved", "examples"],
 }
 bad = 0
 for tag, keys in want.items():

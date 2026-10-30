@@ -380,6 +380,10 @@ library**). It is a `policy` record; every other flow drops `library:` keys the 
 the organization keeps its own review log. It is a `policy` record; every other flow drops
 `quality-review:` keys the same way.
 
+**The key `examples:library` belongs to the main thread** (SKILL.md, **Examples library**): the
+Claude Doc that holds Aspire's approved examples. It is a `policy` record; every flow drops
+`examples:` keys the same way.
+
 **Read every page.** `limit 100` on `search_calibrations` is the page size, not a cap. Pass
 each response's `nextCursor` back as `cursor` until none is returned, then filter. Lessons,
 hard rules and superseded versions keep growing, so a single page can miss the records a
