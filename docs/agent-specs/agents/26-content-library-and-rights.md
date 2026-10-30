@@ -60,16 +60,20 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 `asset` findings for new or changed assets and the library `page` finding, on one batch question
 ("Save" or "Page only"). Rights and renewal requests for posts that already exist are saved as
-`draft` findings, on one batch question; 13 Outreach and Brief sends them. It skips a post with an
-open request (a `draft` for that post and usage, or a `rights` finding requested under 14 days ago)
-and shows that request again instead. A grant a creator gave, passed in from 24 Organic to Ads, 28
-Hashtag and Mention Listener, or a pasted reply, is recorded as a `rights` finding with its proof
-and whether it is in writing, on one batch question naming each. Asset requests are the exception:
-23 UGC Commissioner records those itself. A grant that carries a fee goes to Creator Payments (18)
-as a `ledger-lines` block, never as a `ledger` finding. Rights from a deal are derived at read time
-and never written. A scheduled refresh saves `asset` findings and posts the expiring-rights alert to
-the routing approved once at setup. The running `atlas-content-library` agent reads rights only;
-until the build moves grants here, `atlas-content-sourcing` records them.
+`draft` findings, each with a `rights` finding at `requested` or `renewal requested`, on one batch
+question; 13 Outreach and Brief sends them. It skips a post by the brand or a competitor, a creator
+with a saved reject or an open your-call question, an asset blocked on brand safety, and a creator
+with no route. A request under 14 days old is shown again, never drafted twice; one declined in the
+last 90 days is skipped; after 14 days with no answer, the new draft is a follow-up on the same
+terms. A grant a creator gave, passed in from 24 Organic to Ads, 28 Hashtag and Mention Listener, or
+a pasted reply, is recorded as a `rights` finding with its proof and whether it is in writing, on
+one batch question naming each. A counter or a decline on those posts is recorded the same way, at
+`countered` or `declined`. Asset requests are the exception: 23 UGC Commissioner records those
+itself. A grant that carries a fee goes to Creator Payments (18) as a `ledger-lines` block, never as
+a `ledger` finding. Rights from a deal are derived at read time and never written. A scheduled
+refresh saves `asset` findings and posts the expiring-rights alert to the routing approved once at
+setup. The running `atlas-content-library` agent reads rights only; until the build moves grants
+here, `atlas-content-sourcing` records them.
 
 ## Non-goals
 

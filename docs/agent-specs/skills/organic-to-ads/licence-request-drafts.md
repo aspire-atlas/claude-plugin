@@ -19,8 +19,10 @@ Drafts a short paid-usage request for each top candidate the brand does not yet 
 
 One draft per creator, covering several posts when there are several, with the usage, channels,
 duration and fee. Fees come from the program's usage fees or the person's number, else a `[fee]`
-blank. It skips a post with an open request (a `draft` for that post and usage, or a `rights`
-finding requested under 14 days ago) and shows that request again instead. Sending goes through 13
+blank. It skips a post by the brand or a competitor, a creator with a saved reject or an open
+your-call question, an asset blocked on brand safety, and a creator with no route. A request under
+14 days old is shown again, never drafted twice; one declined in the last 90 days is skipped; after
+14 days with no answer, the new draft is a follow-up on the same terms. Sending goes through 13
 Outreach and Brief, one question per creator.
 
 ## Callable

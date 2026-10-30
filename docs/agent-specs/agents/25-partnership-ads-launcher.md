@@ -66,9 +66,9 @@ request to a creator is a Send, one question per creator, and covers only an ema
 the brand's mailbox, unchanged; direct messages are never sent. A YouTube budget question (P5) is
 answered as a plan only: Atlas holds no YouTube ad results and there is no YouTube launch path. The
 test plan and each in-flight call are saved as `action_item` findings and each learning as a
-`went_well` or `needs_improvement` finding, anchored to the creator's account and the post, with
-`detail.findingType` `ad-test`, `ad-call` or `ad-learning` (new types the build defines), on one
-batch question. It never saves an ad code: not on a page, in a finding, in a draft, or in a
+`went_well` or `needs_improvement` finding, one anchored to the creator's account and one to the
+post, with `detail.findingType` `ad-test`, `ad-call` or `ad-learning` (new types the build defines),
+on one batch question. It never saves an ad code: not on a page, in a finding, in a draft, or in a
 delivery. Without the Meta Ads connector it says what to run in Meta Ads Manager and launches
 nothing. An unattended run never launches and never changes a budget.
 

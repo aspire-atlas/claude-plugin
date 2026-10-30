@@ -17,9 +17,9 @@ Tracks each brief from sent to delivered and flags the late ones.
 ## Output
 
 Per brief: sent, due, delivered or late, with days late. A delivered asset is recorded with its
-delivery date and files, and its fee is handed to Creator Payments (18), due 30 days after the
-brief's due date, with the basis "on delivery". A late one gets a short, polite chase as a draft. It
-never marks an asset delivered without the files or the creator's message.
+delivery date and files, and the ledger line handed in at agreement is marked earned. A late one
+gets a short, polite chase as a draft. It never marks an asset delivered without the files or the
+creator's message.
 
 ## Callable
 

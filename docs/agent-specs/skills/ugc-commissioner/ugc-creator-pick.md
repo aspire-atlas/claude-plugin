@@ -11,8 +11,9 @@ Picks program creators whose own posts show they can make the missing asset.
 
 ## Inputs
 
-- From brand memory: the roster (stage Agreed or later), deliverables from the last 90 days, the
-  creators' library assets, and saved creator rejects.
+- From brand memory: the roster (stage Agreed or later, not Dropped, Declined or Paused, not a
+  `creator:*` reject), deliverables from the last 90 days, the creators' library assets, and saved
+  creator rejects.
 - From the launch message: the gaps.
 
 ## Output

@@ -59,9 +59,12 @@ Each asset request as a `rights` finding with its shot list, specs, due date, pa
 date and files in `assetSpec`. Grants on posts that already exist stay with Content Library and
 Rights (26). Sending a brief is a Send, one question per creator naming the pay and the due date,
 and covers only an email draft already in the brand's mailbox, unchanged, with no blank left. Direct
-messages and Aspire messages are never sent; the person sends them. Any fee owed goes to Creator
-Payments (18) as a `ledger-lines` block, never as a `ledger` finding. It never writes `asset`
-findings: a delivered asset joins the library once it is posted and Atlas holds the post. The
+messages and Aspire messages are never sent; the person sends them. When an asset request is agreed,
+its fee and any product go to Creator Payments (18) as a `ledger-lines` block (a `ugc` line and a
+`product` line, due 30 days after the brief's due date, basis "on delivery"), never as a `ledger`
+finding. It never writes `asset` findings: a delivered asset joins the library once it is posted and
+Atlas holds the post. At that point it writes a new `rights` version keyed by the `postId` and the
+same usage, keeping the `ugcId` as a back-reference, so the library shows the asset as cleared. The
 running `atlas-content-sourcing` agent drafts briefs and never sends; sending waits on the build.
 
 ## Non-goals

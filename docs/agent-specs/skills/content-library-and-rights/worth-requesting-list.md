@@ -21,9 +21,11 @@ At most 12 videos with ad readiness of 60 or more and in the library's top quart
 brand safety, with no current paid rights, not declined in the last 90 days, and not by a
 competitor. Each row has its two strongest score parts, the hook pattern, the products, and what
 reuse would need cleared. For the rows the person picks, it drafts one rights request per creator,
-never asking for what the deal already grants. It skips a post with an open request (a `draft` for
-that post and usage, or a `rights` finding requested under 14 days ago) and shows that request again
-instead.
+never asking for what the deal already grants. It skips a post by the brand or a competitor, a
+creator with a saved reject or an open your-call question, an asset blocked on brand safety, and a
+creator with no route. A request under 14 days old is shown again, never drafted twice; one declined
+in the last 90 days is skipped; after 14 days with no answer, the new draft is a follow-up on the
+same terms.
 
 ## Callable
 

@@ -20,7 +20,8 @@ Counts the cleared assets the library holds per product, format, theme and hook 
 At most five gaps, ranked by catalog order and then by how much better the missing pattern does in
 the library. A gap is a product with fewer than two cleared videos, or a product with a theme or
 hook pattern the brand's best posts use and none cleared. Persona is "not checked" when no audience
-is tagged.
+is tagged. Agreed or delivered asset requests not yet posted count toward their cell, so a gap is
+never commissioned twice.
 
 ## Callable
 

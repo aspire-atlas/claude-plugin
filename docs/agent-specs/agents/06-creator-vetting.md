@@ -75,5 +75,6 @@ schedule.
 - Contacting the approved creators. That is 13 Outreach and Brief.
 - Agreeing fees and terms. That is 14 Negotiator.
 - Reviewing a post before it goes live. That is 17 Content Review.
-- Building the Gate 2 slate for a creator ad campaign. That is 09 Ads Creator Finder, which
-  reads this agent's lane runs (persona fit, paid track record, and the four ad figures).
+- Building the Gate 2 slate for a creator ad campaign. That is 09 Ads Creator Finder, which reads
+  this agent's lane runs (persona fit, paid track record, and the four ad figures). Today
+  `atlas-creator-vetting` returns the slate itself; the build moves it to 09.
