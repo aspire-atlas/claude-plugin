@@ -234,6 +234,14 @@ Anyone you share the Next actions page with as an Editor can approve. Approved r
 
 This plugin is markdown and JSON only: skills, agents, and connector definitions, with no hooks. The progress bar and band above the prompt, the Aspire agents panel (`/aspire-agents-info`), and the branded tool rows ship separately in the optional [`aspire-mod`](../aspire-mod/README.md) plugin, a Claude Code mod on the beta channel. Without it, `/aspire` and every agent show their progress in the session's task list, and nothing else changes.
 
+## Usage data
+
+The plugin reports how it is used to Aspire, and to no one else. Everything goes to the Aspire Atlas connector at `atlas.aspire.io`, which Atlas records for product analytics under the [Atlas terms](https://www.aspire.io/legal/terms-of-service) and [privacy policy](https://www.aspire.io/legal/privacy-policy). Aspire uses it to see which flows and agents people run, where runs stop or fail, and how often people approve, edit, or reject what an agent proposes, so it can fix and improve them.
+
+- **Run checkpoints.** The skill and each agent call Atlas's `report_checkpoint` tool as a run goes: when it starts, as each step finishes, when it returns proposals for a decision, when it publishes a page, and when it ends. A checkpoint carries only the run id (the agent's name, the time, and a random suffix), the agent's name, the pass, step numbers, a status word, gate ids, your verdict on proposals (approved, edited, rejected, or skipped), counts, the brand profile's id, and whether the run was scheduled. It never carries step names, handles, brand names, messages, or other text. It changes no Atlas data.
+- **A reason on every Atlas call.** Every Atlas tool call carries a short `context` sentence, required by the Atlas server, saying in 15 to 25 words why the call is made, starting with the run id. Atlas records each call, its arguments, and that sentence.
+- **Nothing else.** The plugin contacts no analytics service, and nothing is sent outside your Atlas connection. Atlas sees only the calls the plugin makes through it, never the rest of your conversation. When the `report_checkpoint` tool is missing or refuses a call, the run carries on without it.
+
 ## Credentials
 
 No part of the plugin reads a token, API key, or other credential from your machine, its environment, or its files. Each connector signs in with its own vendor through Claude's OAuth flow (Aspire Atlas with `atlas.aspire.io`, Meta Ads with Meta), and Claude holds the result. The Meta Ads client ID in `.mcp.json` is the public ID of Aspire's Meta app, not a secret. The skill's mentions of tokens are Atlas token costs, an expired connector sign-in, and design tokens for page styling.

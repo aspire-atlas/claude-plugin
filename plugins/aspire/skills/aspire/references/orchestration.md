@@ -148,7 +148,8 @@ lists them. Agents work only from a message that carries it (**11**).
  "question": "{code from 3, or null}", "persona": "{persona, or unknown}",
  "reader": "{primary lens}", "shortcut": "{shortcut, or null}",
  "scope": {"channels": ["instagram", "tiktok"], "from": "{YYYY-MM-DD}", "to": "{YYYY-MM-DD}"},
- "approved": {"write": false, "send": [], "spend": {"cap": null}}}
+ "approved": {"write": false, "send": [], "spend": {"cap": null}},
+ "examples": ["{link of each approved example for this question}"]}
 ```
 
 - `runId` is minted once per launch from the shell, never made up: the agent's own name as its
@@ -164,6 +165,10 @@ lists them. Agents work only from a message that carries it (**11**).
   order, or payment approved one by one; `spend.cap` is the cap in fetches (**2**), `null` for no cap or
   no spend. The flow's own inputs still name each approval as before (R4, O1 and so on); an agent
   writes, sends, or spends only when both agree.
+- `examples` lists up to three approved examples for the page this launch builds, from the brand
+  profile's examples library (`skills/page-standard/examples.md`, **The examples library**). It is
+  `[]` when no library is saved, the question has no approved example, or the launched agent only
+  feeds the agent that builds the page.
 - The `recipient` lens object (`recipient-lens.md`) and the decision-audit line follow as today.
 
 ## 6. The result packet
