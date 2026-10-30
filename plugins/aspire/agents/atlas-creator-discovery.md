@@ -103,7 +103,9 @@ the category read of paid partners belongs to vetting.
    component. A component with no data scores zero and is listed as missing.
 9. Write `action_item` findings for every candidate added or re-scored, per the reference's
    `detail` shape, with an `idempotencyKey` per candidate per run.
-10. Build and republish the living page to the same path, applying `theme:brand` when saved
+10. Build and republish the living page to the same path per the reference, **The living
+    page**: it is the working list behind question I1, and the slate that answers I1 is the
+    vetting page built from this pool. Apply `theme:brand` when saved
     per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`, **Applying the theme**, then deliver per
     `campaign:{slug}-routing`.
 

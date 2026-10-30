@@ -63,6 +63,7 @@ Text after the command is the argument. Route on it before anything else:
 | `dashboard` (also `show the dashboard`, `my dashboard`, `where do we stand`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Organization dashboard** below, on any organization. Skip the other phases. |
 | `shops` (also `shop`, `instagram shop`, `tiktok shop`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Shops** below. Skip the other phases. |
 | `quality review` (also `review this deck`, `audit this deck`, `review this page`, `is this ready to send`, `check this before I share it`) | Run **Quality review** below. It needs no Atlas connection unless the user wants the work's Atlas figures re-checked, so skip the phases until then. |
+| `feedback {link}` (also `feedback on {link}`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Quality review**, Run step 7 (Feedback later). Skip the other phases. |
 | `polish` (also `improve my prompt`, `coach`, `tighten this prompt`) | Run **Prompt coach** below. It needs no Atlas connection, so skip the phases until "Run it now" hands the rewritten ask to a flow. |
 | A shortcut: `vet`, `list review`, `campaign`, `content review`, `payments`, `reports`, `account` (and the aliases in `references/orchestration.md` **4**) | A routing hint only. Run Phase 1 and Phase 2 + 3 to confirm the connection and pick the brand profile, then run that shortcut's section per `references/orchestration.md` **4**, skipping only the "what do you need" step: memory, the setup reply, and every approval still run. Text after the shortcut is context. |
 | empty, or anything else | In an unattended run (a scheduled task, whose prompt says not to ask questions), run Phase 1 and Phase 2 + 3, then the flow the text names, per `references/orchestration.md` **1**, Unattended runs. Otherwise run the phases in order, starting at Phase 1. Treat the text as context. On an unconfigured organization, Phase 2 + 3 publishes the first-run guide before the next phase (**First-run guide** there). With nothing after the command, a configured organization ends Phase 2 + 3 at **Organization dashboard**. |
@@ -2907,7 +2908,8 @@ the sample footnote variant per `references/artifact-standard.md`.
 ## Quality review (is this page or deck ready to send?)
 
 Trigger on `/aspire:aspire quality review`, on asks like "review this deck", "audit this deck", "is
-this ready to send", or "check this page before I share it", and on "Review it" in the offer below.
+this ready to send", or "check this page before I share it", on "Review it" in the offer below, and
+on feedback about reviewed work (Run step 7).
 It checks one finished piece of work: any page this plugin published, or a pitch, proposal, brief,
 or report the brand made elsewhere. Full detail lives in `references/quality-review.md`: how the
 target is read, which checks apply, the rubric (including data access and live pages, the reader
@@ -2979,6 +2981,16 @@ interactive session may launch the agent with `mode: grade` to grade a draft (`q
    "Log": "Add this to {brand}'s review log? {check}: \"{the reason, as the row will read}\""
    Options: "Add it (Recommended)", "Don't log it". It writes nothing to Atlas. Without a saved log,
    nothing is written and nothing is asked.
+7. **Feedback later.** Someone may give feedback on reviewed work in a later conversation
+   ("feedback on {link}: the headline is wrong", "/aspire:aspire feedback {link}"). Find the
+   saved log as in step 3, read it, and find the newest row whose `target` is the same work:
+   compare a Claude artifact link by its id (either link form), and any other link without its
+   query, fragment, or trailing slash. With a match, word the adjustment, name the check it relates
+   to (or `new`), and confirm with the "Log" question in step 6. With no match, feedback on a
+   vetting or content review page goes to that flow's own feedback (**Feedback: save the team's
+   call on each creator**, **Feedback: teach the next review**); for any other work, say it has no
+   review in the log and offer to review it (step 1). Without a saved log, only that hand-off or
+   offer runs, and nothing is written.
 
 ### Review log
 

@@ -48,9 +48,9 @@ Read all of it before judging anything, and keep a coverage note for **4.0**.
 | .pptx, .pdf, .docx in Drive | The Drive connector's read. When it returns no text (an upload with no index, or a file over the connector's size limit) and the session has a browser the user is signed in to, open `https://docs.google.com/presentation/d/{id}/htmlpresent` for a deck and read the page text. The connector's read and download tools are both fine; never edit, move, share, or comment on the file |
 | Local file | The session's pptx, pdf, or docx skill to extract the text; read .html and .md directly |
 
-Nothing readable: say what was tried, publish nothing, write no log row, and stop (**8**). Speaker
-notes, sticky notes, and presenter labels that come through with the text are reported as "check
-whether these show on the slide", never as certain on-slide text.
+Nothing readable: say what was tried, publish nothing, write the not-run log row (**10**), and
+stop (**8**). Speaker notes, sticky notes, and presenter labels that come through with the text are
+reported as "check whether these show on the slide", never as certain on-slide text.
 
 ## 3. Which checks apply
 
@@ -436,11 +436,17 @@ not name.
   log already has that id; `failed_checks` is
   semicolon-separated `{id} {name}`; `expert_verdict`, `agreement`, and `critique` are always left
   empty for the organization's reviewers to fill in. A file that doesn't exist yet is created with
-  the header. Grade mode, sample mode, and an unreadable target write no row.
+  the header. Grade mode and sample mode write no row. A review that ran but published no page
+  logs its verdict as usual. A review that could not run (an unreadable target) still writes a
+  row, with `verdict` set to `Not run: {why, in a few words}` and the check columns and counts left
+  empty, so the log holds every review that was asked for. `rubric_version` names the version of the checks that made the
+  call; it goes up whenever a check is added, split, or dropped, so agreement is counted per
+  version.
 - **Adjustments.** When the user disputes a finding or names one the review missed, and confirms
   it, the main thread adds a row beside the log (a second table in the Doc, or `{name}-adjustments.csv` next to the
   file): `review_id,date,by,what_changed,why,check,lesson`, with `check` set to the check id or
-  `new`.
+  `new`. Feedback given later, with the reviewed work's link, adds a row the same way (SKILL.md,
+  **Quality review**, Feedback later), matched to the newest row whose `target` is that link.
 - **Calibrating the checks.** Every 20 rows that have a reviewer's verdict, work out how often the
   review and the reviewers agree on each check. A check below 80% agreement gets rewritten or split.
   This is the organization's own process; the plugin does not run it.
