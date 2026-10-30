@@ -79,6 +79,8 @@ When `brief_mode` is `creator-ads`, follow **Creator-ads mode** in the reference
 - Build one self-contained HTML page following the structure in the reference file. Load the `artifact-design` and `dataviz` skills first. If `theme:brand` is saved, apply it to the page, its charts, and its creator cards per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`, **Applying the theme**; otherwise keep the reference's design. Publish with the Artifact tool, title "<Brand> Creator Brief" (campaign mode: "<Brand> Campaign Brief: <Campaign>"), favicon 🎬. Republish to the same path on a later run for the same brand in week mode, and to one path per campaign in campaign mode, so a campaign brief never replaces the weekly brief or another campaign's.
 - Write back to Atlas with `append_insights`: one `runKey` (`creator-brief-{profile}-{week}`, or `creator-brief-{profile}-{campaign}-{first post date}` in campaign mode), role `account_review`, entity = the brand account, kind `action_item` per deliverable with `priority`, plus `went_well` and `needs_improvement` findings for the top theme and weakest theme. Carry `detail.recipient`, and in campaign mode `detail.campaign` and `detail.phase`. Supply an `idempotencyKey` per finding.
 
+**Creator CSV.** When the main thread passes `csv: aspire-member`, also write the creators this brief recommends as a CSV per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-csv.md` (read it first; **Which creators** sets the rows), and put its path and row count in your output. Without that input, write no CSV. Never in sample mode or an unattended run.
+
 ## Output to the main thread (under 250 words)
 
 - One line: what was published and for which week or campaign, answering the primary lens's decision.
