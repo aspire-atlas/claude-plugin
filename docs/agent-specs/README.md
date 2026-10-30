@@ -96,7 +96,9 @@ its row here.
 | 06 Creator Vetting | Write | Spend | Fetches handles Atlas does not hold |
 | 07 Creator List Review | Write | Spend | Fetches handles Atlas does not hold |
 | 08 Creator Profile | Read | Spend | Refreshes a stale handle |
+| 09 Ads Creator Finder | Write | Spend | Starts marketplace searches for the ranking passes |
 | 18 Creator Payments | Send | Write | Records invoices and payments, never pays |
+| 23 UGC Commissioner | Send | Write | Saves asset requests as drafts, never sends |
 | 27 Account Analyst | Write | Spend | Refreshes a public handle the person named |
 | 29 Reports | Read | Write | Each report saves its findings or snapshot |
 | 31 Post Analysis | Read | Spend | Refetches the post |
