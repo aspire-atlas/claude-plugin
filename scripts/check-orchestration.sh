@@ -7,6 +7,7 @@
 #   - every agent the question codes and shortcuts route to has a file
 #   - every shortcut in the contract is named in SKILL.md's Arguments table
 #   - the result packet and launch block examples parse as JSON and carry every field
+#   - every agent carries the checkpoint paragraph (section 11) exactly once, verbatim
 # What an agent actually returns at run time is not checked here; this keeps the instructions in step.
 #
 #   scripts/check-orchestration.sh
@@ -24,6 +25,9 @@ err() { echo "FAIL $*"; fail=1; }
 
 # One numbered section of the contract, by its heading number.
 section() { awk -v n="$1" '$0 ~ "^## "n"\\. "{f=1;next} f&&/^## /{f=0} f' "$REF"; }
+
+ckpt=$(awk '/<!-- checkpoint-block -->/{f=1;next} /<!-- \/checkpoint-block -->/{f=0} f' "$REF" | sed '/^$/d')
+[ "$(wc -l <<<"$ckpt" | tr -d ' ')" = 1 ] && [ -n "$ckpt" ] || err "the contract has no one-line <!-- checkpoint-block --> section"
 
 canon=$(awk '/<!-- packet-block -->/{f=1;next} /<!-- \/packet-block -->/{f=0} f' "$REF" | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}')
 [ -n "$canon" ] || err "the contract has no <!-- packet-block --> section"
@@ -47,6 +51,9 @@ for p in $(plugin_names); do
     mine=$(awk '/^## Orchestration contract$/{f=1;next} f&&/^## /{f=0} f' "$f" | sed -e '/./,$!d' -e :a -e '/^\n*$/{$d;N;ba' -e '}')
     [ -n "$mine" ] || { err "$p: $name has no '## Orchestration contract' section (copy the block from orchestration.md, section 11)"; continue; }
     [ "$mine" = "$canon" ] || err "$p: $name's Orchestration contract block differs from the one in orchestration.md"
+    n=$(grep -cxF -- "$ckpt" "$f" || true)
+    [ "$n" = 1 ] || err "$p: $name carries the checkpoint paragraph $n times; want it once, verbatim from orchestration.md, section 11"
+    grep -q '`report_checkpoint`' "$f" || err "$p: $name does not load report_checkpoint"
     n=$(awk -v a="$name" '$1==a' <<<"$levels" | wc -l | tr -d ' ')
     [ "$n" = 1 ] || err "$p: $name has $n rows in the permission level table (orchestration.md, section 7); want 1"
   done

@@ -160,7 +160,14 @@ packet, and the permission levels. This section is how a launch runs; that file 
 and what comes back. Agents refuse a launch without the `launch` block, so a person reaches an
 agent only through this skill or a shortcut.
 
-1. **Launch.** Use the Agent tool with `subagent_type` `aspire:{agent}` (the name without the
+1. **Launch.** Mint the run id first, once per launch, from the shell, never made up: the agent
+   name, the UTC time from `date -u +%Y%m%dt%H%M%S`, and the output of `openssl rand -hex 2`,
+   joined by hyphens (`atlas-creator-vetting-20261029t140312-a3f9`). Put it in the launch
+   block's `runId`. The name is the agent's own, as its file names it (`atlas-creator-vetting`, never
+   `aspire:atlas-creator-vetting` or an older name the agent replaced): Atlas refuses a `runId`
+   whose name part differs from the `agent` the call sends. A relaunch of the same run (its `record` pass, or its next mode) keeps the
+   id. With no shell, leave `runId` out; the agent takes the one Atlas returns and puts it in its packet's `runId`, which the feedback uses. Use the Agent
+   tool with `subagent_type` `aspire:{agent}` (the name without the
    prefix gets it added), a `description` equal to the task it runs (**Progress bar**), a prompt
    that starts with the `launch` block (`references/orchestration.md` **5**) followed by the
    inputs the flow lists, `run_in_background: true`, and the `model` from **Model tiers**
@@ -187,7 +194,10 @@ agent only through this skill or a shortcut.
    report and act on its `result-packet` block: relay the summary, page link, and decisions it
    needs, confirm its `proposals` by permission level (`references/orchestration.md` **7**: Write
    once per batch, Send one by one, Spend with the cost first), ask its `questions`, log the
-   return and every change after it (**9** there), then run the flow's next step (the `record`
+   return and every change after it (**9** there). After each `AskUserQuestion` that approves,
+   edits, or rejects a proposal, send the feedback checkpoint (**Checkpoints** below) with that
+   proposal's `gate`; creator vetting and content review send it themselves when they asked
+   their own feedback questions, so never send it twice. Then run the flow's next step (the `record`
    launch after a `propose` pass, which is another subagent). A result without a packet
    (other than a sample, a `mode: grade` run, or the agent's "Not started" line) is treated as
    having proposed nothing: carry out nothing from it and say so. Check the result
@@ -216,6 +226,24 @@ agent only through this skill or a shortcut.
    rule; the hourly "Run /aspire:aspire next" prompt already does): offer once, in an interactive session, to update its prompt. When an agent answers
    "Not started: run the aspire:aspire skill", run this skill with that request, in a scheduled
    run too.
+
+**Checkpoints.** `report_checkpoint` records a run's progress and the person's verdicts for
+Atlas product analytics. It changes no Atlas data, so it needs no `AskUserQuestion` and runs in
+unattended runs too. If the tool is absent or a call is refused, skip it silently, carry on, and
+never mention it to the user. Send only ids, numbers, and the fixed words below; never names,
+handles, or other text. After each `AskUserQuestion` that approves, edits, or rejects proposals,
+call it with `kind: "feedback"`, the run's `runId` and `agent`, the `pass` the agent sent for the
+pass that returned the proposals (its `pass` input such as `propose`, else the launch block's
+`mode` with everything but its letters removed, or `single` for `run`), its `gate`,
+`feedback: {"verdict": "approved"}` (or `edited`, `rejected`, `skipped`), and
+`counts: {"proposed": n, "approved": k}`. This skill's own flows (onboarding and each setup
+section) are runs too, as `agent: "aspire"` with their own id minted the same way
+(`aspire-20261029t140312-a3f9`; with no shell, send `started` without one and use the one it
+returns): `kind: "checkpoint"` with `status` `started` when the flow starts and `finished` when
+it ends, `pass` `onboarding` or `setup`, no step numbers, and a feedback event at each of their
+confirmations, with a `gate` named for what it approves (`approve-profile`,
+`approve-calibrations`). Verdicts Editors give on the orchestrator's Next actions page send no
+feedback event yet.
 
 ---
 
@@ -510,7 +538,7 @@ The connection must come through the Claude connector, not an ad hoc request.
 ### 1.2 If live
 
 - Load the core Atlas tools in one `ToolSearch` call (see `references/atlas-tools.md`
-  for the tool list and load order).
+  for the tool list and load order), with `report_checkpoint` in the `select:` list.
 - Tell the user in one line that Atlas is connected, then proceed to Phase 2.
 
 ### 1.3 If not connected: guided add
@@ -598,8 +626,10 @@ it; the `org-admin` skill does (see **Organization admin**).
 ## Phase 2 + 3: Status, organization, and routing
 
 Tool prefix: the one observed in 1.5 (for the org-installed connector it is `mcp__Aspire_Atlas__`).
-Every Atlas tool requires a `context` argument: 15 to 25 words, third person, describing why the
-call is being made. Write a fresh one per call.
+Every Atlas tool requires a `context` argument: `[<runId>]` (the current run's id, `aspire-…` for
+this skill's own flows), then 15 to 25 words, third person, describing why the call is being made
+(the run id prefix does not count toward them). A call made outside any run (a one-off read
+between flows) has no prefix; never invent or reuse an id for it. Write a fresh one per call.
 
 1. Call `get_status` once. It returns organizations, the selected org, its profiles, and each
    profile's connected channels (including expired authorizations).
@@ -3176,7 +3206,8 @@ The watch list is the brand's saved creators, outside any campaign.
 - **Every state change is confirmed through `AskUserQuestion`, never plain text.** This covers
   creating a profile, starting a channel connection, writing a calibration, adding hashtags,
   and writing insights. One confirmation may cover a batch of the same kind (for example the
-  Phase 5 answers just given).
+  Phase 5 answers just given). `report_checkpoint` changes no Atlas data and is never confirmed
+  (**Checkpoints**).
 - **Destructive actions get their own confirmation, one call per confirmation:**
   `delete_profile`, `unlink_channel`, `supersede_calibration`, `retract_calibration`,
   `remove_hashtags`, `set_brand_instruction`. Use the exact question, object name, and

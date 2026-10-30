@@ -16,7 +16,9 @@ number right and sourced, does it hold together, and can every reader actually s
 `evidence_dir` and `media_dir`, an optional brand profile id and slug with the Atlas tool prefix,
 `recheck`, an optional `earlier_review` (a link or a local file), `publish` (`artifact`, the
 default, `file:{path}`, or `none`), `log` (`file:{path}`, `docs:{link}`, or `none`, the default),
-`checks` in grade mode, and `run` (always `interactive`). Every Atlas tool needs a `context` argument: 15 to 25 words, third person.
+`checks` in grade mode, and `run` (always `interactive`). Every Atlas tool needs a `context`
+argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward
+them).
 Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it.
 
 Read these before starting:
@@ -49,10 +51,11 @@ question was asked before you started, and anything still open goes in your outp
 1. **Read the target** per `quality-review.md`, **2**, completely, and write the coverage note.
    Nothing readable: report what was tried (`Review: none` and `Coverage:`, **8**) and stop without
    publishing or logging.
-2. **With a brand profile:** load the read tools with `ToolSearch` (`select:` under the given
-   prefix), read the calibrations (no filter, limit 100 per page, paged to the end) for the theme
+2. **With a brand profile:** load the read tools and `report_checkpoint` with `ToolSearch`
+   (`select:` under the given prefix), read the calibrations (no filter, limit 100 per page, paged to the end) for the theme
    and the category, and call `list_post_search_fields` and `list_creator_search_fields` once each
-   before any search. Use only field paths they return.
+   before any search. Use only field paths they return. Without a brand profile, load only
+   `report_checkpoint` the same way.
 3. **Pick the checks** per **3**.
 4. **Run the rubric** per **4**, in order, 4.0 to 4.15 with the reader standard as 4.14: one
    PASS, FAIL, or N/A line per check with its reason, and each finding with its id, quote, place,
@@ -90,6 +93,8 @@ short output instead of your normal one (no audit trail block).
 ## Progress steps
 
 If the session has a task tool (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), keep your plan in it right after reading the brief: 3 to 8 tasks, one in progress at a time, each marked done as it finishes. The agents panel reads that list as your steps and a bar for them, and you can skip `aspire_step`. Otherwise, if `mcp__aspire__aspire_step` appears among your tools, including as a deferred tool, it is available: a deferred tool only needs loading first with ToolSearch (`select:mcp__aspire__aspire_step`). Right after reading the brief, call it with your plan's step count as `total` (3 to 8) and `done: 0`; call it again with `done` and a few-word `note` as each step finishes. It only draws a bar on your row in the agents panel. Skip it silently if the tool is absent or ToolSearch does not find it, and never mention it to the user.
+
+Report the run to Atlas analytics with `report_checkpoint`: it changes no Atlas data, needs no confirmation, and runs in unattended runs too. Use the launch block's `runId` when its name part is your name (Atlas refuses a `runId` whose name part differs from `agent`), and keep it on a relaunch. If there is none, or it names another agent, mint one before your first Atlas call: your agent name, the UTC time from `date -u +%Y%m%dt%H%M%S`, and the output of `openssl rand -hex 2`, joined by hyphens (`atlas-creator-vetting-20261029t140312-a3f9`); never make up the suffix. With no shell, send `started` without `runId` and use the `runId` its result returns. Every call carries `runId`, `agent` (your name), `pass` (your `pass` input, such as `propose` or `record`, when you take one; otherwise the launch block's `mode` with everything but its letters removed, so `follow-up` is `followup` and `creator-ads` is `creatorads`, or `single` when it is `run`; 3 to 20 letters), `kind: "checkpoint"`, `asProfileId` when you have one, `unattended: true` in an unattended run, and a `status`: `started` right after reading the brief; `step_done` with `step: {"index": n, "total": m}` as each step finishes; `gate` once per gate id this file names, with that `gate` id and its `counts: {"proposed": n}`, when you return those proposals for a person to decide (if this file names no gate id, send no `gate`); `published` after a page publishes; and `finished`, `failed`, or `cancelled` at the end. Send only ids, numbers, and these words: never step names, handles, brand names, or other text. If the tool is absent or a call is refused, send no more checkpoints this run, carry on, and never mention it to the user.
 
 ## Artifact standard
 

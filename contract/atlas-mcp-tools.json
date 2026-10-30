@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-17",
+  "generated": "2026-10-30",
   "source": "apps/api/lib/mcp/tools-list.golden.json",
   "surfaces": {
     "/mcp": {
@@ -52,6 +52,7 @@
         "required": [],
         "paths": [
           "asProfileId",
+          "billingAccountId",
           "channel",
           "elicitationId",
           "replace",
@@ -233,6 +234,34 @@
           "asProfileId",
           "hashtags",
           "networks"
+        ]
+      },
+      "report_checkpoint": {
+        "required": [
+          "agent",
+          "kind",
+          "pass"
+        ],
+        "paths": [
+          "agent",
+          "asOrganizationId",
+          "asProfileId",
+          "counts",
+          "counts.approved",
+          "counts.proposed",
+          "feedback",
+          "feedback.rating",
+          "feedback.reason",
+          "feedback.verdict",
+          "gate",
+          "kind",
+          "pass",
+          "runId",
+          "status",
+          "step",
+          "step.index",
+          "step.total",
+          "unattended"
         ]
       },
       "retract_calibration": {
@@ -502,6 +531,8 @@
           "billingAccountId",
           "hashtag",
           "network",
+          "platform",
+          "platformAccountId",
           "savedSearchId"
         ]
       },

@@ -329,8 +329,13 @@ const shortTool = (tool: string): string => tool.replace(/^mcp__.*__/, '')
 /** `mcp__<server>__` of each connector that has answered as Aspire Atlas, for a server whose name does not say so. Names only. */
 const atlasServers = new Set<string>()
 const serverOf = (tool: string): string => /^(mcp__.+?__)/.exec(tool)?.[1] ?? ''
-/** An Atlas connector tool (the progress and step tools are the mod's own and never count). */
-const isAtlasTool = (tool: string): boolean => tool.startsWith('mcp__') && tool !== PROGRESS_TOOL && tool !== STEP_TOOL && (isAtlasToolName(tool) || atlasServers.has(serverOf(tool)))
+/** Atlas's analytics checkpoint (`report_checkpoint`), by its bare name: its rows keep Claude Code's own drawing, from any connector. */
+const isCheckpointTool = (tool: string): boolean => shortTool(tool) === 'report_checkpoint'
+/** An Atlas connector tool (the progress and step tools are the mod's own and never count, nor does the checkpoint). */
+const isAtlasTool = (tool: string): boolean =>
+  tool.startsWith('mcp__') && tool !== PROGRESS_TOOL && tool !== STEP_TOOL && !isCheckpointTool(tool) && (isAtlasToolName(tool) || atlasServers.has(serverOf(tool)))
+/** A call's `context` without the `[runId]` an agent puts first (only the minted shape), so the row reads as the sentence alone. */
+const withoutRunId = (context: string): string => context.replace(/^\s*\[(?:aspire|atlas-[a-z0-9-]{2,60})-\d{8}t\d{6}-[0-9a-f]{4}\]\s*/, '')
 
 // ---------------------------------------------------------------------------
 // The Artifact card: the transcript's result row for a published Artifact.
@@ -1230,7 +1235,7 @@ export const register: Register = on => {
     try {
       if (result.deny !== undefined || result.isError) return result
       const tool = String(e.tool)
-      if (tool === PROGRESS_TOOL || tool === STEP_TOOL) return result
+      if (tool === PROGRESS_TOOL || tool === STEP_TOOL || isCheckpointTool(tool)) return result
       const payload = { result: result.result, text: result.text }
       const isStatus = isAtlasStatusCall(tool, payload)
       if (!isStatus && !isAtlasToolName(tool)) return result
@@ -1275,8 +1280,7 @@ export const register: Register = on => {
     const ui = $.ui.resolve(e)
     const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
     const Raster = e.surface === 'terminal' && 'Raster' in ui ? ui.Raster : null
-    if ((!Svg && !Raster) || tool === PROGRESS_TOOL || tool === STEP_TOOL || !tool.startsWith('mcp__')) return next(e)
-    if (!(isAtlasToolName(tool) || atlasServers.has(serverOf(tool))) || !(await isOn($))) return next(e)
+    if ((!Svg && !Raster) || !isAtlasTool(tool) || !(await isOn($))) return next(e)
     const { Box, Text } = ui
     // The terminal draws no Svg: the small cell mark beside Claude Code's own row, which keeps its description and result.
     if (!Svg && Raster) {
@@ -1291,9 +1295,9 @@ export const register: Register = on => {
     if (!Svg) return next(e)
     const name = shortTool(tool).replace(/_/g, ' ')
     const state = e.props.isInterrupted ? 'interrupted' : e.props.isErrored ? 'failed' : e.props.isRunning ? 'running' : ''
-    // Every Atlas tool takes a `context`: a sentence on why the call is made, which the row shows as its description.
+    // Every Atlas tool takes a `context`: a sentence on why the call is made, which the row shows as its description, less its run id.
     const input = e.props.input !== null && typeof e.props.input === 'object' ? (e.props.input as Readonly<Record<string, unknown>>) : {}
-    const description = str(input.context)
+    const description = str(withoutRunId(str(input.context) ?? ''))
     return (
       <Box flexDirection="row" gap={1}>
         <Svg source={e.props.isRunning ? spinnerSvg(18) : logoSvg(18, false)} alt="Aspire Atlas" width={18} height={18} />
@@ -1361,9 +1365,10 @@ export const register: Register = on => {
   })
 
   // A collapsed run of Atlas calls: the mark beside Claude Code's own group row, which keeps its descriptions, results and failures. A
-  // group that holds any other tool, and a group the person expanded, keep Claude Code's own drawing alone.
+  // group that holds any other tool, and a group the person expanded, keep Claude Code's own drawing alone. Checkpoints in the run
+  // are passed over, so they neither brand a group nor stop one being branded.
   on('ui.render', { component: 'ToolGroup' }, async ($, e, next) => {
-    const calls = e.props.calls
+    const calls = e.props.calls.filter(c => !isCheckpointTool(String(c.tool)))
     if (e.props.isExpanded || calls.length === 0 || !calls.every(c => isAtlasTool(String(c.tool))) || !(await isOn($))) return next(e)
     const ui = $.ui.resolve(e)
     const { Box } = ui

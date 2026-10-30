@@ -22,8 +22,8 @@ reply moves), O2 (create mailbox drafts for the named creators), O3 (send the na
 O4 (record the named replies, with the user's changes). Optionally: `creators` (handles to
 limit the run to, all on the roster), `rewrite` (rewrite unsent drafts), and for `triage` the
 pasted `replies` (text, who it is from, channel, date when known) or `source: mailbox`, and in
-pass 2 the reply packet from pass 1. Every Atlas tool needs a `context` argument: 15 to 25
-words, third person. Pass `asProfileId` (the profile id, never the slug) to every tool whose
+pass 2 the reply packet from pass 1. Every Atlas tool needs a `context` argument: `[<runId>]`, then 15 to 25
+words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose
 schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields`
 and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load
 `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in
@@ -86,8 +86,8 @@ passes.
    finding of the run. Load tools with `ToolSearch` `select:` under the given prefix:
    `search_calibrations`, `search_insights`, `list_insight_search_fields`,
    `list_post_search_fields`, `list_creator_search_fields`, `search_creators`, `search_posts`,
-   and `append_insights` (only when O1 or O4 was passed, O2 or O3 needs a record written, or
-   an unattended run must save the page link).
+   `append_insights` (only when O1 or O4 was passed, O2 or O3 needs a record written, or
+   an unattended run must save the page link), and `report_checkpoint`.
    When `connections` was not passed (a scheduled run), detect the mail connection yourself per
    `program.md` **4**. Load the connected mailbox's tools only when the run will use them: its
    draft tool for O2, its send tool for O3, its thread search and read tools for mailbox
@@ -158,6 +158,8 @@ passes.
 - Needs the main thread: creators skipped and why (saved reject, competitor, a red line on
   AI-written copy, an open "your call") and replies that need a match. Leave out when none.
 - Forward note: two lines the requester can paste to the reader (skip for lens `team`).
+- Gate ids (your `gate` checkpoint and each proposal's `"gate"`): `approve-drafts` (O1),
+  `approve-mail-drafts` (O2), `approve-send` (O3), `approve-replies` (O4).
 - Closing line: findings written (or "nothing saved"), the `runKey`, and the page link.
 - A fenced `drafts` block: one entry per draft, `{"handle", "network", "channel", "template",
   "to" ("creator" or "manager"), "subject", "body", "blanks"}`, so the main thread can show
@@ -183,6 +185,8 @@ nothing, and return that file's short output instead of your normal one (no audi
 ## Progress steps
 
 If the session has a task tool (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), keep your plan in it right after reading the brief: 3 to 8 tasks, one in progress at a time, each marked done as it finishes. The agents panel reads that list as your steps and a bar for them, and you can skip `aspire_step`. Otherwise, if `mcp__aspire__aspire_step` appears among your tools, including as a deferred tool, it is available: a deferred tool only needs loading first with ToolSearch (`select:mcp__aspire__aspire_step`). Right after reading the brief, call it with your plan's step count as `total` (3 to 8) and `done: 0`; call it again with `done` and a few-word `note` as each step finishes. It only draws a bar on your row in the agents panel. Skip it silently if the tool is absent or ToolSearch does not find it, and never mention it to the user.
+
+Report the run to Atlas analytics with `report_checkpoint`: it changes no Atlas data, needs no confirmation, and runs in unattended runs too. Use the launch block's `runId` when its name part is your name (Atlas refuses a `runId` whose name part differs from `agent`), and keep it on a relaunch. If there is none, or it names another agent, mint one before your first Atlas call: your agent name, the UTC time from `date -u +%Y%m%dt%H%M%S`, and the output of `openssl rand -hex 2`, joined by hyphens (`atlas-creator-vetting-20261029t140312-a3f9`); never make up the suffix. With no shell, send `started` without `runId` and use the `runId` its result returns. Every call carries `runId`, `agent` (your name), `pass` (your `pass` input, such as `propose` or `record`, when you take one; otherwise the launch block's `mode` with everything but its letters removed, so `follow-up` is `followup` and `creator-ads` is `creatorads`, or `single` when it is `run`; 3 to 20 letters), `kind: "checkpoint"`, `asProfileId` when you have one, `unattended: true` in an unattended run, and a `status`: `started` right after reading the brief; `step_done` with `step: {"index": n, "total": m}` as each step finishes; `gate` once per gate id this file names, with that `gate` id and its `counts: {"proposed": n}`, when you return those proposals for a person to decide (if this file names no gate id, send no `gate`); `published` after a page publishes; and `finished`, `failed`, or `cancelled` at the end. Send only ids, numbers, and these words: never step names, handles, brand names, or other text. If the tool is absent or a call is refused, send no more checkpoints this run, carry on, and never mention it to the user.
 
 ## Artifact standard
 
