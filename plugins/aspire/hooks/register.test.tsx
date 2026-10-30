@@ -1333,6 +1333,20 @@ test("desktop: an Atlas row shows its context without the leading run id; a brac
   expect(await row.find({ type: 'Text', text: /^Vetting agent searching posts for the \[spring\] shortlist\.$/ })).toBeDefined()
   expect(await row.find({ type: 'Text', text: /a3f9/ })).toBeUndefined()
   await row.unmount()
+  // Only the minted run id shape is taken off; any other leading bracket is part of the sentence.
+  const draft = await toolRow($, 'desktop', 'mcp__Aspire_Atlas__search_posts', { input: { context: '[draft] Content review reading the creator post.' } })
+  expect(await draft.find({ type: 'Text', text: /^\[draft\] Content review reading the creator post\.$/ })).toBeDefined()
+  await draft.unmount()
+})
+
+test('a report_checkpoint result does not switch the mod on or count as an Atlas result', async ($, on) => {
+  world(on, () => WITH_COSTS)
+  on('tool.call', { tool: 'mcp__Aspire_Atlas__report_checkpoint' }, () => mcpResult({ accepted: true, runId: 'aspire-20261029t140312-a3f9' }) as never)
+  await $.tool.call({ tool: 'mcp__Aspire_Atlas__report_checkpoint', context: 'Checkpoint.' } as never)
+  expect(await status($)).toMatch(/^Aspire mod: loaded, off\./)
+  await typeAspire($)
+  await $.tool.call({ tool: 'mcp__Aspire_Atlas__report_checkpoint', context: 'Checkpoint.' } as never)
+  expect(await status($)).toMatch(/0 Atlas results/)
 })
 
 test('report_checkpoint keeps the engine row and group, by name and after its connector has answered as Atlas; other Atlas rows are still branded', async ($, on) => {
@@ -1352,12 +1366,17 @@ test('report_checkpoint keeps the engine row and group, by name and after its co
       const cells = await toolRow($, 'terminal', tool)
       expect(await cells.find({ type: 'Raster' })).toBeUndefined()
       await cells.unmount()
-      for (const calls of [[call(tool)], [call('mcp__Aspire_Atlas__search_posts'), call(tool)]]) {
+      // A group of checkpoints alone, or with another tool, keeps the engine row; a checkpoint beside Atlas calls does not stop the mark.
+      for (const calls of [[call(tool)], [call(tool), call('Bash')]]) {
         const group = await siteOf($, 'desktop', 'ToolGroup', { calls, isActive: false, isExpanded: false })
         expect(await group.find({ type: 'Text', text: /^engine group$/ })).toBeDefined()
         expect(await group.find({ type: 'Svg' })).toBeUndefined()
         await group.unmount()
       }
+      const mixed = await siteOf($, 'desktop', 'ToolGroup', { calls: [call('mcp__Aspire_Atlas__search_posts'), call(tool)], isActive: false, isExpanded: false })
+      expect(await mixed.find({ type: 'Text', text: /^engine group$/ })).toBeDefined()
+      expect(await mixed.find({ type: 'Svg' })).toBeDefined()
+      await mixed.unmount()
     }
   }
   await unbranded()

@@ -181,7 +181,7 @@ acts on.
                "kind": "observation", "confidence": "high"}],
  "proposals": [{"id": "p1", "what": "{one line}", "level": "write",
                 "items": ["{one entry per record, recipient, order, or payment}"],
-                "cost": null, "gate": "approve-shortlist"}],
+                "cost": null, "gate": "{gate id the agent file names}"}],
  "questions": [{"header": "{12 characters or fewer}", "question": "{ends with ?}",
                 "options": ["{2 to 4 complete answers, the first recommended}"]}],
  "next": {"agent": "{agent name}", "why": "{one line}"},
@@ -337,3 +337,12 @@ worded for a picker. Treat an approval as given only when the launch block's `ap
 own inputs both carry it. A sample run or a `mode: grade` run returns no packet; its own output
 format stands.
 <!-- /packet-block -->
+
+Every agent file also carries the checkpoint paragraph below verbatim, on one line, right after
+its step paragraph (the one that starts "If the session has a task tool"), and lists
+`report_checkpoint` in its `ToolSearch` `select:` list. `scripts/check-orchestration.sh` fails
+when one lacks it or differs. Change the wording here only.
+
+<!-- checkpoint-block -->
+Report the run to Atlas analytics with `report_checkpoint`: it changes no Atlas data, needs no confirmation, and runs in unattended runs too. Use the launch block's `runId` when its name part is your name (Atlas refuses a `runId` whose name part differs from `agent`), and keep it on a relaunch. If there is none, or it names another agent, mint one before your first Atlas call: your agent name, the UTC time from `date -u +%Y%m%dt%H%M%S`, and the output of `openssl rand -hex 2`, joined by hyphens (`atlas-creator-vetting-20261029t140312-a3f9`); never make up the suffix. With no shell, send `started` without `runId` and use the `runId` its result returns. Every call carries `runId`, `agent` (your name), `pass` (your `pass` input, such as `propose` or `record`, when you take one; otherwise the launch block's `mode` with everything but its letters removed, so `follow-up` is `followup` and `creator-ads` is `creatorads`, or `single` when it is `run`; 3 to 20 letters), `kind: "checkpoint"`, `asProfileId` when you have one, `unattended: true` in an unattended run, and a `status`: `started` right after reading the brief; `step_done` with `step: {"index": n, "total": m}` as each step finishes; `gate` once per gate id this file names, with that `gate` id and its `counts: {"proposed": n}`, when you return those proposals for a person to decide (if this file names no gate id, send no `gate`); `published` after a page publishes; and `finished`, `failed`, or `cancelled` at the end. Send only ids, numbers, and these words: never step names, handles, brand names, or other text. If the tool is absent or a call is refused, send no more checkpoints this run, carry on, and never mention it to the user.
+<!-- /checkpoint-block -->

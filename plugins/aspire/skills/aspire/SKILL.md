@@ -232,8 +232,9 @@ Atlas product analytics. It changes no Atlas data, so it needs no `AskUserQuesti
 unattended runs too. If the tool is absent or a call is refused, skip it silently, carry on, and
 never mention it to the user. Send only ids, numbers, and the fixed words below; never names,
 handles, or other text. After each `AskUserQuestion` that approves, edits, or rejects proposals,
-call it with `kind: "feedback"`, the run's `runId` and `agent`, the `pass` that returned the
-proposals (the launch block's `mode` in lower-case letters, or `single` for `run`), its `gate`,
+call it with `kind: "feedback"`, the run's `runId` and `agent`, the `pass` the agent sent for the
+pass that returned the proposals (its `pass` input such as `propose`, else the launch block's
+`mode` with everything but its letters removed, or `single` for `run`), its `gate`,
 `feedback: {"verdict": "approved"}` (or `edited`, `rejected`, `skipped`), and
 `counts: {"proposed": n, "approved": k}`. This skill's own flows (onboarding and each setup
 section) are runs too, as `agent: "aspire"` with their own id minted the same way
@@ -241,7 +242,8 @@ section) are runs too, as `agent: "aspire"` with their own id minted the same wa
 returns): `kind: "checkpoint"` with `status` `started` when the flow starts and `finished` when
 it ends, `pass` `onboarding` or `setup`, no step numbers, and a feedback event at each of their
 confirmations, with a `gate` named for what it approves (`approve-profile`,
-`approve-calibrations`).
+`approve-calibrations`). Verdicts Editors give on the orchestrator's Next actions page send no
+feedback event yet.
 
 ---
 
@@ -626,7 +628,8 @@ it; the `org-admin` skill does (see **Organization admin**).
 Tool prefix: the one observed in 1.5 (for the org-installed connector it is `mcp__Aspire_Atlas__`).
 Every Atlas tool requires a `context` argument: `[<runId>]` (the current run's id, `aspire-…` for
 this skill's own flows), then 15 to 25 words, third person, describing why the call is being made
-(the run id prefix does not count toward them). Write a fresh one per call.
+(the run id prefix does not count toward them). A call made outside any run (a one-off read
+between flows) has no prefix; never invent or reuse an id for it. Write a fresh one per call.
 
 1. Call `get_status` once. It returns organizations, the selected org, its profiles, and each
    profile's connected channels (including expired authorizations).

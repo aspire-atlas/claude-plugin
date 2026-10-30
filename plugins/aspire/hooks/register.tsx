@@ -334,8 +334,8 @@ const isCheckpointTool = (tool: string): boolean => shortTool(tool) === 'report_
 /** An Atlas connector tool (the progress and step tools are the mod's own and never count, nor does the checkpoint). */
 const isAtlasTool = (tool: string): boolean =>
   tool.startsWith('mcp__') && tool !== PROGRESS_TOOL && tool !== STEP_TOOL && !isCheckpointTool(tool) && (isAtlasToolName(tool) || atlasServers.has(serverOf(tool)))
-/** A call's `context` without the `[runId]` an agent puts first, so the row reads as the sentence alone. */
-const withoutRunId = (context: string): string => context.replace(/^\s*\[[a-z0-9-]{1,100}\]\s*/, '')
+/** A call's `context` without the `[runId]` an agent puts first (only the minted shape), so the row reads as the sentence alone. */
+const withoutRunId = (context: string): string => context.replace(/^\s*\[(?:aspire|atlas-[a-z0-9-]{2,60})-\d{8}t\d{6}-[0-9a-f]{4}\]\s*/, '')
 
 // ---------------------------------------------------------------------------
 // The Artifact card: the transcript's result row for a published Artifact.
@@ -1235,7 +1235,7 @@ export const register: Register = on => {
     try {
       if (result.deny !== undefined || result.isError) return result
       const tool = String(e.tool)
-      if (tool === PROGRESS_TOOL || tool === STEP_TOOL) return result
+      if (tool === PROGRESS_TOOL || tool === STEP_TOOL || isCheckpointTool(tool)) return result
       const payload = { result: result.result, text: result.text }
       const isStatus = isAtlasStatusCall(tool, payload)
       if (!isStatus && !isAtlasToolName(tool)) return result
@@ -1365,9 +1365,10 @@ export const register: Register = on => {
   })
 
   // A collapsed run of Atlas calls: the mark beside Claude Code's own group row, which keeps its descriptions, results and failures. A
-  // group that holds any other tool, and a group the person expanded, keep Claude Code's own drawing alone.
+  // group that holds any other tool, and a group the person expanded, keep Claude Code's own drawing alone. Checkpoints in the run
+  // are passed over, so they neither brand a group nor stop one being branded.
   on('ui.render', { component: 'ToolGroup' }, async ($, e, next) => {
-    const calls = e.props.calls
+    const calls = e.props.calls.filter(c => !isCheckpointTool(String(c.tool)))
     if (e.props.isExpanded || calls.length === 0 || !calls.every(c => isAtlasTool(String(c.tool))) || !(await isOn($))) return next(e)
     const ui = $.ui.resolve(e)
     const { Box } = ui
