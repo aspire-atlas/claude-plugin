@@ -111,14 +111,16 @@ the page footer that images are a snapshot. The page carries the animated Aspire
 ## Style block
 
 Once per page, in the `<head>`, after the creator card's style block. The profile carries the
-same `--ac-*` tokens as the card, so it follows the host and the saved theme the same way.
+same `--ac-*` tokens as the card, so it follows the host and the saved theme the same way. Then
+paste the print block from `artifact-standard.md`, section 6, with the creator's handle as the
+title.
 
 ```html
 <style>
 .acp{--ac-card:var(--surface-2,#fff);--ac-fg:var(--text-primary,#09090b);--ac-muted:var(--text-secondary,#52525c);--ac-border:var(--border,#e4e4e7);--ac-soft:var(--secondary,#f4f4f5);--ac-brand:#1e4945;--ac-on-brand:#fff;--ac-ok-bg:#dcfce7;--ac-ok-fg:#166534;--ac-warn-bg:#fef9c3;--ac-warn-fg:#854d0e;--ac-ok-dot:#15803d;--ac-warn-dot:#ca8a04;--ac-neg:#b91c1c;--ac-neu:#d4d4d8;--ac-chart-1:#1e4945;--ac-chart-2:#7ab19f;
   max-width:800px;margin:0 auto;display:flex;flex-direction:column;gap:40px;color:var(--ac-fg);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:13px;line-height:18px}
-@media (prefers-color-scheme:dark){.acp{--ac-card:var(--surface-2,hsl(222 47% 9%));--ac-fg:var(--text-primary,hsl(210 40% 98%));--ac-muted:var(--text-secondary,hsl(215 20% 65%));--ac-border:var(--border,hsl(217 33% 20%));--ac-soft:hsl(217 33% 17%);--ac-brand:#7ab19f;--ac-on-brand:#0b1f1d;--ac-ok-bg:hsl(143 64% 24%);--ac-ok-fg:hsl(142 77% 73%);--ac-warn-bg:hsl(40 70% 20%);--ac-warn-fg:hsl(48 96% 70%);--ac-ok-dot:#4ade80;--ac-warn-dot:#facc15;--ac-neg:#f87171;--ac-neu:hsl(217 20% 40%);--ac-chart-1:#a8d5c4;--ac-chart-2:#4e8e81}}
-:root[data-theme="dark"] .acp,.dark .acp{--ac-card:var(--surface-2,hsl(222 47% 9%));--ac-fg:var(--text-primary,hsl(210 40% 98%));--ac-muted:var(--text-secondary,hsl(215 20% 65%));--ac-border:var(--border,hsl(217 33% 20%));--ac-soft:hsl(217 33% 17%);--ac-brand:#7ab19f;--ac-on-brand:#0b1f1d;--ac-ok-bg:hsl(143 64% 24%);--ac-ok-fg:hsl(142 77% 73%);--ac-warn-bg:hsl(40 70% 20%);--ac-warn-fg:hsl(48 96% 70%);--ac-ok-dot:#4ade80;--ac-warn-dot:#facc15;--ac-neg:#f87171;--ac-neu:hsl(217 20% 40%);--ac-chart-1:#a8d5c4;--ac-chart-2:#4e8e81}
+@media screen and (prefers-color-scheme:dark){.acp{--ac-card:var(--surface-2,hsl(222 47% 9%));--ac-fg:var(--text-primary,hsl(210 40% 98%));--ac-muted:var(--text-secondary,hsl(215 20% 65%));--ac-border:var(--border,hsl(217 33% 20%));--ac-soft:hsl(217 33% 17%);--ac-brand:#7ab19f;--ac-on-brand:#0b1f1d;--ac-ok-bg:hsl(143 64% 24%);--ac-ok-fg:hsl(142 77% 73%);--ac-warn-bg:hsl(40 70% 20%);--ac-warn-fg:hsl(48 96% 70%);--ac-ok-dot:#4ade80;--ac-warn-dot:#facc15;--ac-neg:#f87171;--ac-neu:hsl(217 20% 40%);--ac-chart-1:#a8d5c4;--ac-chart-2:#4e8e81}}
+@media screen{:root[data-theme="dark"] .acp,.dark .acp{--ac-card:var(--surface-2,hsl(222 47% 9%));--ac-fg:var(--text-primary,hsl(210 40% 98%));--ac-muted:var(--text-secondary,hsl(215 20% 65%));--ac-border:var(--border,hsl(217 33% 20%));--ac-soft:hsl(217 33% 17%);--ac-brand:#7ab19f;--ac-on-brand:#0b1f1d;--ac-ok-bg:hsl(143 64% 24%);--ac-ok-fg:hsl(142 77% 73%);--ac-warn-bg:hsl(40 70% 20%);--ac-warn-fg:hsl(48 96% 70%);--ac-ok-dot:#4ade80;--ac-warn-dot:#facc15;--ac-neg:#f87171;--ac-neu:hsl(217 20% 40%);--ac-chart-1:#a8d5c4;--ac-chart-2:#4e8e81}}
 :root[data-theme="light"] .acp{--ac-card:var(--surface-2,#fff);--ac-fg:var(--text-primary,#09090b);--ac-muted:var(--text-secondary,#52525c);--ac-border:var(--border,#e4e4e7);--ac-soft:#f4f4f5;--ac-brand:#1e4945;--ac-on-brand:#fff;--ac-ok-bg:#dcfce7;--ac-ok-fg:#166534;--ac-warn-bg:#fef9c3;--ac-warn-fg:#854d0e;--ac-ok-dot:#15803d;--ac-warn-dot:#ca8a04;--ac-neg:#b91c1c;--ac-neu:#d4d4d8;--ac-chart-1:#1e4945;--ac-chart-2:#7ab19f}
 .acp *{box-sizing:border-box}
 .acp .ac-card{max-width:none}

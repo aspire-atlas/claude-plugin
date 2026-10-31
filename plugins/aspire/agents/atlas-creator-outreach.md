@@ -84,7 +84,7 @@ passes.
 
 1. Read the time from the shell clock (`date -u +%FT%TZ`) once; that is `recordedAt` for every
    finding of the run. Load tools with `ToolSearch` `select:` under the given prefix:
-   `search_calibrations`, `search_insights`, `list_insight_search_fields`,
+   `get_brand_context`, `search_calibrations`, `search_insights`, `list_insight_search_fields`,
    `list_post_search_fields`, `list_creator_search_fields`, `search_creators`, `search_posts`,
    `append_insights` (only when O1 or O4 was passed, O2 or O3 needs a record written, or
    an unattended run must save the page link), and `report_checkpoint`.
@@ -93,8 +93,7 @@ passes.
    draft tool for O2, its send tool for O3, its thread search and read tools for mailbox
    triage and the reply check. Load the Slack and email delivery tools only for `reply-check`,
    and only when the routing names them and they exist.
-2. `search_calibrations` (no filter, limit 100 per page, paged to the end,
-   `includeSuperseded: true`): the `program:{slug}-*` records, `brand:summary`,
+2. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the `program:{slug}-*` records, `brand:summary`,
    `brand:business-context`, the `voice_and_content_ops` brand fact, `guideline:voice`,
    `red_line` (not `review:` keys), `competitor`, `partner`, every `creator:*` record,
    `fees:rate-card`, and `theme:brand`. Drop `vetting:`, `review:`, `library:`, `orchestrator:`, and `campaign:` keys.

@@ -28,7 +28,10 @@ None. No question in the map routes here yet.
 
 ## Universal skills used
 
-_Pending: set in ASP-4104._
+- U1 Creator intelligence
+- U2 Content intelligence
+- U6 Rights and usage
+- U7 Pricing and return
 
 ## Shared skills
 
@@ -41,12 +44,35 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Trigger phrases
 
-_Pending: set in ASP-4104._
+- "we need more videos of {product}"
+- "commission UGC"
+- "ask creators for new content"
+- "fill the gaps in the content library"
+- "order ad creative from our creators"
+- "which UGC is late"
 
 ## Writes to Atlas
 
-_Pending: set in ASP-4104._
+Each asset request as a `rights` finding with its shot list, specs, due date, pay and usage in
+`assetSpec`, and each brief as a `draft` finding, on one batch question. It is the one writer of
+`rights` for its own asset requests: requested, countered, granted or declined, with the delivery
+date and files in `assetSpec`. Grants on posts that already exist stay with Content Library and
+Rights (26). Sending a brief is a Send, one question per creator naming the pay and the due date,
+and covers only an email draft already in the brand's mailbox, unchanged, with no blank left. Direct
+messages and Aspire messages are never sent; the person sends them. When an asset request is agreed,
+its fee and any product go to Creator Payments (18) as a `ledger-lines` block (a `ugc` line and a
+`product` line, due 30 days after the brief's due date, basis "on delivery"), never as a `ledger`
+finding. It never writes `asset` findings: a delivered asset joins the library once it is posted and
+Atlas holds the post. At that point it writes a new `rights` version keyed by the `postId` and the
+same usage, keeping the `ugcId` as a back-reference, so the library shows the asset as cleared. The
+running `atlas-content-sourcing` agent drafts briefs and never sends; sending waits on the build.
 
 ## Non-goals
 
-_Pending: set in ASP-4104._
+- Asking for rights to posts that already exist. 26 Content Library and Rights does that, and
+  24 Organic to Ads drafts licence requests for its ad candidates.
+- Finding creators outside the program. 05 Creator Search and 09 Ads Creator Finder do that.
+- Changing a creator's deal. 14 Negotiator does that. A counter on an asset request's pay comes
+  back here as a your-call question.
+- Paying the creator. 18 Creator Payments does that.
+- Reviewing the delivered asset against the brief. 17 Content Review does that.

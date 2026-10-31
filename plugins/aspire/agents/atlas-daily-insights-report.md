@@ -25,8 +25,7 @@ run rules. Follow it exactly.
 
 ## Standing rules
 
-1. **Calibrations first.** `search_calibrations` (no filter, limit 100 per page, paged to the end,
-   `includeSuperseded: true`). If `policy:readout-cadence`, `policy:readout-routing`,
+1. **Calibrations first.** `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`). If `policy:readout-cadence`, `policy:readout-routing`,
    `guideline:readout-thresholds`, `guideline:readout-focus`, `policy:readout-escalation`,
    `guideline:readout-audience`, or `brand:summary` is missing:
    interactive mode returns one line to the main thread asking it to run readout setup;
@@ -42,7 +41,7 @@ run rules. Follow it exactly.
 
 ## Process
 
-1. Load tools: `ToolSearch` with `select:` for `search_calibrations`, `list_post_search_fields`,
+1. Load tools: `ToolSearch` with `select:` for `get_brand_context`, `search_calibrations`, `list_post_search_fields`,
    `search_posts`, `search_creators`, `search_insights`, `list_hashtag_posts`,
    `append_insights`, `report_checkpoint` under the given prefix. Load the Slack and email send tools only if the routing names them and they exist.
 2. **Clock check, then window.** Read the R1 timezone from `policy:readout-cadence`, then

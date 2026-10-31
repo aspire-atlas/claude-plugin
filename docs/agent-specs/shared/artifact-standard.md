@@ -24,3 +24,9 @@ Never user-callable. Every agent links it, and it is never counted in an agent's
 ## Lives in today
 
 `plugins/aspire/skills/page-standard/SKILL.md` and `plugins/aspire/skills/aspire/references/reader-standard.md` (ASP-4525)
+
+The reviewer side is `plugins/aspire/agents/atlas-quality-review.md`, which checks a finished
+page or deck against the same standard and gives a verdict of Ready, Ready with fixes, or Not
+ready. It belongs to the shared tier, not to the 31 agents, and runs only through `/aspire` (the
+quality review shortcut or the review offer after a page is published). Its rubric reads the R1 to
+R12 checks from `reader-standard.md` rather than keeping a second copy.

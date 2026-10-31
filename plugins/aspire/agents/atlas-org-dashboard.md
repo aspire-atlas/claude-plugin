@@ -49,10 +49,11 @@ folder, and the `page` and `snapshot` sections of `program-dashboard.md`, `orche
 
 1. Read the time from the shell clock (`date -u +%FT%TZ`) once; that is the snapshot's time.
    Load tools with `ToolSearch` `select:` under the given prefix: `get_status`,
-   `search_calibrations`, `search_insights`, `list_insight_search_fields`,
+   `get_brand_context`, `search_calibrations`, `search_insights`, `list_insight_search_fields`,
    `list_post_search_fields`, `search_posts`, `list_hashtags`, `list_hashtag_posts`, `report_checkpoint`, and `append_calibration` (only with D1 save). Keep each
    loaded tool's input schema: the page's live reads use the same argument names.
-2. `get_status` for the organization, then for the profile. `search_calibrations` (no filter,
+2. `get_status` for the organization, then for the profile. `get_brand_context` (`truncated` true:
+   page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter,
    limit 100, paged to the end). Parse every `program:` body with a JSON parser. Resolve the
    viewer's `user:` record and the saved goals per the reference's **6**.
 3. `list_insight_search_fields` and `list_post_search_fields` once; use only paths they return.

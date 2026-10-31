@@ -29,7 +29,10 @@ None. No question in the map routes here yet.
 
 ## Universal skills used
 
-_Pending: set in ASP-4103._
+- U1 Creator intelligence
+- U3 Brand safety and conflicts
+- U5 Performance baseline
+- U7 Pricing and return
 
 ## Shared skills
 
@@ -42,12 +45,20 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Trigger phrases
 
-_Pending: set in ASP-4103._
+- "invite creators to our TikTok Shop"
+- "handle the sample requests"
+- "how is TikTok Shop doing"
+- "TikTok Shop GMV by creator"
+- "plan a TikTok LIVE"
+- "which collabs are stuck"
 
 ## Writes to Atlas
 
-_Pending: set in ASP-4103._
+Invites, samples, collabs, and the period's report as `shop-campaign` findings (a new record type the build adds to `program.md`), invite messages and collab chases as `draft` findings, and the page as a `page` finding, on one batch question. Each invite sent and each sample approved in Partner Center is a Send: one question per creator, recorded in the same run.
 
 ## Non-goals
 
-_Pending: set in ASP-4103._
+- Finding and ranking Shop creators. TikTok Shop Creator Search (10) does that.
+- Opening the Shop or planning its setup. That stays the setup plan in `atlas-shops`; this agent is its running side.
+- Choosing a commission rate. It comes from the program's saved affiliate terms, or Negotiator (14).
+- Paying creators. Creator Payments (18) does that.

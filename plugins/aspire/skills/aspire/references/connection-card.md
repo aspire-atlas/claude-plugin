@@ -5,6 +5,16 @@ browser (`connectUrl` on start, `resultUrl` when the status is awaiting-selectio
 the older "relay the link verbatim" behavior. The card describes the connection process and
 shows the network's logo beside the animated Aspire Atlas mark, lists what Atlas will do, and carries one button that opens the link through the app's link dialog.
 
+## When the host renders the connect widget
+
+`connect_channel` ships its own connect widget for hosts that render MCP Apps. When the tool
+result shows that widget (the host displays the connect panel with the sign-in button), build
+no card: say one line, "Use the button above to sign in to {network}. I'll keep watching for it
+to finish.", and keep polling per Phase 4.2 (the same `elicitationId` calls, the same
+**Expired links** rule). Do the same for the awaiting-selection `resultUrl`. When the host
+shows no widget (Claude Code's terminal, or any host that returns plain text only), or you
+cannot tell, use the card and the **Fallback** below exactly as before.
+
 ## Rendering
 
 1. Load the widget tool once per session: `ToolSearch` with query

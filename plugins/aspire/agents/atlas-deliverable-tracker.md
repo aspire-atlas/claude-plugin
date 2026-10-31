@@ -85,7 +85,7 @@ step needs one of those, skip that step and name it in your output as needing a 
 
 1. Read the time from the shell clock (`date -u +%FT%TZ`) once; that is `recordedAt` for every
    finding of the run. Load tools with `ToolSearch` `select:` under the given prefix:
-   `search_calibrations`, `search_insights`, `list_insight_search_fields`,
+   `get_brand_context`, `search_calibrations`, `search_insights`, `list_insight_search_fields`,
    `list_post_search_fields`, `list_creator_search_fields`, `search_posts`, `search_creators`,
    `append_insights` (only in `record`, or unattended when a write is allowed), and
    `lookup_posts` (only in `check` with T0), and `report_checkpoint`. In `record` with T4, load the connected mailbox's
@@ -93,8 +93,7 @@ step needs one of those, skip that step and name it in your output as needing a 
    only when the routing names them and they exist. When `connections` was not passed (a
    scheduled run), detect the mail connection per `program.md` **4**; an unattended run never
    uses it.
-2. `search_calibrations` (no filter, limit 100 per page, paged to the end,
-   `includeSuperseded: true`): the `program:{slug}-*` records, `brand:summary`, the
+2. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the `program:{slug}-*` records, `brand:summary`, the
    `voice_and_content_ops` brand fact, `guideline:voice`, every `creator:*` record, and
    `theme:brand`. Drop `vetting:`, `review:`, `library:`, `orchestrator:`, `campaign:` keys and other programs' keys. Parse
    every JSON body with a JSON parser. Resolve today as the shell date in the cadence timezone

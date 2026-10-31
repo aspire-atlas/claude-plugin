@@ -48,6 +48,16 @@
           "runKey"
         ]
       },
+      "calculate_creator_fee": {
+        "required": [
+          "items"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "items"
+        ]
+      },
       "connect_channel": {
         "required": [],
         "paths": [
@@ -79,12 +89,36 @@
           "reason"
         ]
       },
+      "get_brand_context": {
+        "required": [],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "includeSuperseded",
+          "keyPrefix",
+          "kinds"
+        ]
+      },
       "get_brand_instruction": {
         "required": [
           "agentType"
         ],
         "paths": [
           "agentType",
+          "asOrganizationId",
+          "asProfileId"
+        ]
+      },
+      "get_brand_theme": {
+        "required": [],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId"
+        ]
+      },
+      "get_fee_rate_card": {
+        "required": [],
+        "paths": [
           "asOrganizationId",
           "asProfileId"
         ]
@@ -100,6 +134,13 @@
       "get_more_tools": {
         "required": [],
         "paths": []
+      },
+      "get_onboarding_form": {
+        "required": [],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId"
+        ]
       },
       "get_profile": {
         "required": [],
@@ -223,6 +264,14 @@
           "creatorDeepAnalysis",
           "forceRefresh",
           "items"
+        ]
+      },
+      "mint_run_id": {
+        "required": [
+          "agent"
+        ],
+        "paths": [
+          "agent"
         ]
       },
       "remove_hashtags": {
