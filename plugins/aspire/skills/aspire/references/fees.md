@@ -9,6 +9,18 @@ A creator fee is always a calculation from the brand's CPM ladder and the creato
 counts. No flow prices a creator any other way: never from memory, a follower count, or a
 benchmark fetched mid-run.
 
+## Reading the rates and pricing with the server
+
+Prefer the server's tools. `get_fee_rate_card` returns the brand's saved `fees:rate-card` or the
+Aspire recommended ladder, with its `source` and the label to show next to any fee.
+`calculate_creator_fee` prices one item per deliverable from the rate card and the creator's own
+median `viewCount`, applying the rules below (median of the last 10 posts, at least 3 with
+views, no guessing; it returns the gap in plain words and `priced: false` instead). Show the
+rate card and its label with the fee, as **Showing the rates** says. When either tool returns
+`unavailable`, stop: do not use a local document or a default. When the tool is not in the
+connector's list (an older server), read `fees:rate-card` from the calibrations and apply
+**How a fee is calculated** yourself, exactly as below.
+
 ## How a fee is calculated
 
 The calculator prices on CPM: what the brand pays per 1,000 views, applied to the views the
@@ -154,7 +166,8 @@ conflicts, content review checks, discovery criteria, and red-line scans leave i
 Main thread only. Agents never run it, and an unattended session never runs it. Every question
 goes through `AskUserQuestion`, per the question format rule in SKILL.md Phase 5.
 
-**F0. Read first.** `search_calibrations` (no filter, limit 100 per page, paged to the end,
+**F0. Read first.** `get_fee_rate_card` (its `saved` field says whether a record exists; tool
+absent: `search_calibrations`, no filter, limit 100 per page, paged to the end,
 `includeSuperseded: true`). If `fees:rate-card` exists, show it (**Showing the rates**) and
 ask "Keep {brand}'s current creator rates?" Options: "Keep them (Recommended)", "Change them",
 "Go back to Aspire's recommended rates". "Change them" continues at F1 with the saved values
@@ -231,8 +244,10 @@ The worked example uses 250,000 bundled views, labeled as an example, never a re
 
 ## Applying the rates (every flow)
 
-Every flow that shows a creator fee already reads all calibrations. Take `fees:rate-card` from
-that read, apply **How a fee is calculated**, and label the fees. Agents never ask about the
+Every flow that shows a creator fee takes the rate card from `get_fee_rate_card` and prices with
+`calculate_creator_fee` (see **Reading the rates and pricing with the server**). When those tools
+are absent, take `fees:rate-card` from the calibrations read the flow already made, apply
+**How a fee is calculated**, and label the fees. Agents never ask about the
 calculator and never offer to set it up. Unattended runs apply a saved rate card the same way,
 and the Aspire ladder without one.
 

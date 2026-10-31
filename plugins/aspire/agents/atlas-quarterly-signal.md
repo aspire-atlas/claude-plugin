@@ -38,13 +38,12 @@ exactly.
 
 ## Process
 
-1. Load tools with `ToolSearch` `select:` under the given prefix: `search_calibrations`,
+1. Load tools with `ToolSearch` `select:` under the given prefix: `get_brand_context`, `search_calibrations`,
    `list_post_search_fields`, `list_insight_search_fields`, `search_posts`, `search_creators`,
    `search_insights`, `append_insights`, `report_checkpoint`.
 2. **Clock, then quarter.** Read the timezone from `policy:readout-cadence` (UTC when absent),
    then `TZ=<tz> date +%F` via Bash. Resolve the quarter and the prior quarter.
-3. `search_calibrations` (no filter, limit 100 per page, paged to the end,
-   `includeSuperseded: true`): `brand:summary`, the 90-day goal, `guideline:readout-focus`
+3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): `brand:summary`, the 90-day goal, `guideline:readout-focus`
    (the lead metric), `target:weekly-health`, `competitor`, and `theme:brand`. Drop every
    `review:` key.
 4. `list_post_search_fields` and `list_insight_search_fields` once each; use only paths they

@@ -90,7 +90,8 @@ counts as no theme, and the flow's own design applies.
 Main thread only. Agents never run it, and an unattended session never runs it. Every question
 goes through `AskUserQuestion`, per the question format rule in SKILL.md Phase 5.
 
-**T0. Read first.** `search_calibrations` (no filter, limit 100 per page, paged to the end,
+**T0. Read first.** `get_brand_theme` (its `source` says saved or default; tool absent:
+`search_calibrations`, no filter, limit 100 per page, paged to the end,
 `includeSuperseded: true`). If `theme:brand` exists, render it with the comparison widget
 (one option) and ask "Keep {brand}'s current theme?" Options: "Keep it (Recommended)", "Change
 it", "Go back to the Aspire default". "Change it" continues at T1. "Go back to the Aspire
@@ -339,8 +340,10 @@ values, and say that the preview could not be drawn.
 
 ### Reading
 
-Every flow that publishes a page already reads all calibrations. Take `theme:brand` from that
-read. A missing or retracted record means the flow's own design rules apply unchanged: that is
+Every flow that publishes a page reads the theme with `get_brand_theme` (a validated palette,
+fonts, logo, header style and radius; `source` default means no saved theme). When the tool is
+absent, take `theme:brand` from the calibrations read the flow already made. If it returns
+`unavailable`, stop rather than assume a default. A missing or retracted record means the flow's own design rules apply unchanged: that is
 the Aspire default, and nothing below applies. Agents never ask about the theme and never
 offer to set one up. Unattended runs apply a saved theme the same way. The theme never touches the
 animated Aspire Atlas mark: it stays at the top right, is never recolored or replaced by the

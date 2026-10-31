@@ -61,14 +61,14 @@ the category read of paid partners belongs to vetting.
 
 **Process**
 
-1. Load tools with `ToolSearch` `select:` under the given prefix: `search_calibrations`,
+1. Load tools with `ToolSearch` `select:` under the given prefix: `get_brand_context`, `search_calibrations`,
    `search_insights`, `list_insight_search_fields`, `list_post_search_fields`,
    `list_creator_search_fields`, `search_posts`, `search_creators`, `search_creator_marketplace`,
    `get_job_status`, `list_creator_marketplace_labels`, `lookup_creators`, `append_insights`,
    `report_checkpoint`.
 2. Resolve the date from the shell clock in the cadence record's timezone (`TZ=<tz> date +%F`),
    never from the prompt or the session header.
-3. Read `search_calibrations` (no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the five
+3. Read `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the five
    campaign records, plus `brand:summary`, every `competitor`, `partner`, `red_line`, and
    `guideline`. Drop every key starting `review:` (content review only), `vetting:` (creator
    vetting only), `program:` (influencer program only), `library:` (content library only), or `orchestrator:` (the orchestrator only), and the CAS keys (`-cas`, `-lane-*`, `-decision-defaults`, `-terms`) of any

@@ -53,7 +53,7 @@ Text after the command is the argument. Route on it before anything else:
 | -------- | ------ |
 | `agents` (also `list agents`, `show agents`) | Run **List agents** below. Skip the phases unless the user picks an agent to run. |
 | `run {agent}` (an agent name from the list, with or without the `aspire:` prefix; the agents panel drafts this when someone presses an agent) | Skip steps 1 to 4 of **List agents** and start at step 5 for that agent: the sample question, then its hand-off row. The agent itself always starts in a subagent (**Running agents**). An unknown name: run **List agents** from step 1. |
-| `org` (also `change organization`, `switch org`; the progress bar's title drafts it) | Run Phase 1, then call `get_status`, ask which organization with `AskUserQuestion` (header "Organization", one option per organization, the selected one first), then call `get_status` again with `asOrganizationId` set to the choice (even when it is the organization already selected: the progress bar and credits follow the named call, not the default), and give the Phase 2 + 3 route summary. Change nothing in Atlas. |
+| `org` (also `change organization`, `switch org`; the progress bar's title drafts it) | Run Phase 1, then call `get_status`, ask which organization with `AskUserQuestion` (header "Organization", one option per organization, the selected one first; this explicit argument is the only time the question is asked), then call `get_status` again with `asOrganizationId` set to the choice (even when it is the organization already selected: the progress bar and credits follow the named call, not the default), and give the Phase 2 + 3 route summary. Change nothing in Atlas. |
 | `getting started` (also `help`, `get started`, `start`, `guide`, `starter guide`, `what can you do`, `how does this work`) | Show the Atlas Starter Guide: publish the page in `references/first-run.md` (**7**, on request), say its link in one line, then make the **Sample artifacts** offer for Atlas as a whole. It needs no Atlas connection, so skip the phases and Phase 1. When Atlas happens to be connected already, use the `On request` status line; otherwise none. Never answer these with a text summary instead of the page, and never run onboarding unless the user asks to set up. |
 | `sample` (also `sample {agent}`, `show me a sample`, `example`) | Run **Sample artifacts** below. No Atlas connection is needed, so skip the phases. |
 | `fee calculator` (also `fees`, `pricing`, `rate card`, `creator rates`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Fee calculator** below. Skip the other phases. |
@@ -161,10 +161,10 @@ packet, and the permission levels. This section is how a launch runs; that file 
 and what comes back. Agents refuse a launch without the `launch` block, so a person reaches an
 agent only through this skill or a shortcut.
 
-1. **Launch.** Mint the run id first, once per launch, from the shell, never made up: the agent
-   name, the UTC time from `date -u +%Y%m%dt%H%M%S`, and the output of `openssl rand -hex 2`,
-   joined by hyphens (`atlas-creator-vetting-20261029t140312-a3f9`). Put it in the launch
-   block's `runId`. The name is the agent's own, as its file names it (`atlas-creator-vetting`, never
+1. **Launch.** Mint the run id first, once per launch, never made up: call `mint_run_id` with
+   the agent's name (`atlas-creator-vetting`). Tool absent: the agent
+   name, the UTC time from `date -u +%Y%m%dt%H%M%S`, and `openssl rand -hex 2`, joined by
+   hyphens (`atlas-creator-vetting-20261029t140312-a3f9`). Put it in the launch block's `runId`. The name is the agent's own, as its file names it (`atlas-creator-vetting`, never
    `aspire:atlas-creator-vetting` or an older name the agent replaced): Atlas refuses a `runId`
    whose name part differs from the `agent` the call sends. A relaunch of the same run (its `record` pass, or its next mode) keeps the
    id. With no shell, leave `runId` out; the agent takes the one Atlas returns and puts it in its packet's `runId`, which the feedback uses. Use the Agent
@@ -183,9 +183,9 @@ agent only through this skill or a shortcut.
    user can keep going, and the model when the table gave one, with how to change it
    ("Profile analyst is running in the background on Sonnet to save tokens. Say 'use Opus' to
    run it again on a bigger model. Ask for anything else meanwhile."). An agent on `inherit`
-   names no model and offers no override. An override ("use Opus", "use the bigger model")
-   applies to that launch only: launch the agent again with the model named, and the next
-   launch goes back to the table. Then end the turn. Never wait on it, poll it, or sleep.
+   names no model and offers no override. An override ("use Opus") applies to that launch
+   only: launch again with the model named; the next launch goes back to the table. Then end
+   the turn. Never wait on it, poll it, or sleep.
 3. **Ask before, never during.** Every question, write confirmation, and picker the flow lists
    for the launch is asked first, in the main thread, because agents never ask: in one setup
    reply (`references/orchestration.md` **2**) that repeats the question with its code, names the
@@ -433,9 +433,8 @@ leadership). The **Creator profile** gives one creator's full page on request, *
 ranks hooks and builds a cut list, and the **PPA pitch** builds a casting deck for paid
 partnership ads. The **Quality review** checks any page or deck before it is shared. The **Orchestrator** checks in every hour, ranks what to do next across
 all of it on one Next actions page, and carries out what an Editor approves there. Every request is read for who will act on it first
-(**Reading the ask**). Each is routed from its own
-section below. The **Theme** section brands all of their pages,
-and the **Fee calculator** sets the creator rates behind every fee they show.
+(**Reading the ask**) and routed from its own section below. The **Theme** section brands all
+their pages, and the **Fee calculator** sets the creator rates behind every fee.
 
 ## Progress bar
 
@@ -449,7 +448,7 @@ group's `tasks` in order when it starts, then call again as each task finishes w
 
 | Group | `title` | `tasks` | Runs |
 | ----- | ------- | ------- | ---- |
-| 1 | `Connecting` | `Verify Aspire Atlas` (Phase 1), `Get organizations`, `Pick the organization`, `Get status` (Phase 2 + 3) | Every run. Mark `Pick the organization` done at once when there is one organization. |
+| 1 | `Connecting` | `Verify Aspire Atlas` (Phase 1), `Get organizations`, `Pick the organization`, `Get status` (Phase 2 + 3) | Every run. Mark `Pick the organization` done at once when no question is asked. |
 | 2 | `Onboarding` | `Create the brand profile` (4.1), `Connect a social account` (4.2), `Confirm the account` (4.2 terminal status) | Only when Phase 3 routed to Phase 4. Drop `Create the brand profile` when the profile exists. Skip the group for an existing org with a connected channel. |
 | 3 | `Brand questions` | One task per Phase 5 question still to ask (skip keys already saved), then `Theme and rates offers` and `First insights` (Phase 6) | Optional. Start it only when Phase 5 runs. A declined question is marked done, not left open. |
 
@@ -460,12 +459,11 @@ Agents never call it (a subagent's call is ignored); they report their own steps
 
 **Every other flow reports its own steps, never onboarding's.** When a flow starts (the creator
 brief, discovery, vetting, a review, a readout, the orchestrator, a program step, and the rest),
-call it once with that flow's name as `title` and the steps this run will actually take as
-`tasks`, in order, a few words each ("Read the account", "Find creators", "Publish the brief").
-A new `title` starts a new run, so the onboarding steps are gone. Call it again as each step
-finishes with `done` (or the list with `done: true` on finished steps), and with `phase` naming
-the step in progress. Re-send `tasks` when the plan changes, for example when a question adds
-or drops a step. Call it with `finished: true` when the flow ends.
+call it once with that flow's name as `title` and the steps this run will take as `tasks`, in
+order, a few words each ("Read the account", "Find creators", "Publish the brief"). A new
+`title` starts a new run, so the onboarding steps are gone. Call it again as each step finishes
+with `done` (or `done: true` on finished steps) and `phase` naming the step in progress, re-send
+`tasks` when the plan changes, and send `finished: true` when the flow ends.
 
 Launch each agent with an Agent `description` equal to the task it runs. The bar then marks that
 task done when the agent finishes and names it while it runs, even if you forget to report. A
@@ -635,16 +633,21 @@ it; the `org-admin` skill does (see **Organization admin**).
 
 Tool prefix: the one observed in 1.5 (for the org-installed connector it is `mcp__Aspire_Atlas__`).
 Every Atlas tool requires a `context` argument: `[<runId>]` (the current run's id, `aspire-…` for
-this skill's own flows), then 15 to 25 words, third person, describing why the call is being made
-(the run id prefix does not count toward them). A call made outside any run (a one-off read
-between flows) has no prefix; never invent or reuse an id for it. Write a fresh one per call.
+this skill's own flows), then 15 to 25 words, third person, on why the call is made (the id
+prefix does not count). A call outside any run has no prefix; never invent or reuse an id.
+Write a fresh `context` per call.
 
 1. Call `get_status` once. It returns organizations, the selected org, its profiles, and each
    profile's connected channels (including expired authorizations).
 2. **Auth check.** An unauthorized error means the connector token lapsed: render one connector
    card (Phase 1 rules) with "Aspire Atlas needs a fresh sign in. Click Connect above."
-3. **Organization.** One org: use it, name it once in the summary. Several: `AskUserQuestion`
-   with the org names, then call `get_status` again with `asOrganizationId` set to the chosen org's `id`, always, even when the choice is the organization `get_status` already selected: the progress bar and the credits follow the named call, never the default.
+3. **Organization.** When `get_status` already returns a selected organization, use it without
+   asking which one: name it once in the summary and add "say /aspire:aspire org to switch".
+   Ask only for the explicit `org` argument (the `org` row), or when none is selected and
+   several exist (`AskUserQuestion` with the org names). Keep passing `asOrganizationId` (that
+   org's `id`) explicitly on every later call, since the server is stateless; after an explicit
+   choice call `get_status` again with it, even when it is the one already selected: the
+   progress bar and credits follow the named call.
 4. **Route.**
    - `profiles` empty → **new org**. Go to Phase 4.
    - Profiles exist, none with a connected channel → **profile only**. Skip 4.1, go to 4.2
@@ -658,16 +661,16 @@ between flows) has no prefix; never invent or reuse an id for it. Write a fresh 
    context, never a named flow) and the organization is unconfigured (new org, profile only,
    or existing with no brand context on any linked profile, from the Phase 5 calibration
    read), publish the starter page in `references/first-run.md` once per organization per
-   session, say one line with the link, and continue at the phase the route names in the same
-   reply. It runs only after `get_status` answered: when Phase 1 finds Atlas not connected, the
-   guided add comes alone, with no page. It never blocks or replaces a phase, and never runs
-   unattended. The reference holds the trigger rules, the page, and the re-run rules.
+   session, say one line with the link, and continue at the route's phase in the same reply.
+   It runs only after `get_status` answered (Phase 1 finding Atlas not connected gets the guided
+   add alone), never blocks or replaces a phase, and never runs unattended. The reference holds
+   the trigger and re-run rules.
 
-Once a profile is chosen or created, keep its `id` in working state as `profile_id` and its
-`slug` as `profile_slug`. Pass `asProfileId` = `profile_id` to every Atlas tool whose schema
-takes it (or `asOrganizationId` = the org's `id` where a flow says so); tools reject slugs.
-`create_profile` takes `asOrganizationId` only, and `get_job_status`,
-`list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take neither. The slug is
+Once a profile is chosen or created, keep its `id` as `profile_id` and its `slug` as
+`profile_slug`. Pass `asProfileId` = `profile_id` to every Atlas tool whose schema takes it (or
+`asOrganizationId` = the org's `id` where a flow says so); tools reject slugs.
+`create_profile` takes `asOrganizationId` only; `get_job_status`,
+`list_creator_marketplace_labels`, `list_*_search_fields`, `list_my_*` and `mint_run_id` take neither. The slug is
 for naming only: record keys, file names, and the profile slug handed to agents. Never
 construct either value. When `profile_id` is missing (a resumed session, or a scheduled run
 whose prompt names only the brand), re-read it with `list_my_profiles` and match the brand by
@@ -680,16 +683,16 @@ Speak in handles and brand names. Never surface slugs, ids, or tool names.
 ### Aspire users
 
 Aspire's managed services team sometimes works inside a brand's own organization on the brand's
-behalf. Recognize them from the caller's email in the `get_status` response: an address whose
-domain, after the `@`, is exactly `aspireiq.com` or `aspire.io` (case-insensitive) sets
-`aspire_user = true` for the session. Anything else, a missing email, or a lookalike domain
+behalf. Recognize them from `aspireUser` in the `get_status` response: `true` sets `aspire_user = true`
+for the session. When `get_status` has no `aspireUser` field (an older server), fall back to
+the caller's email: an address whose domain, after the `@`, is exactly `aspireiq.com` or
+`aspire.io` (case-insensitive) sets it. Anything else, a missing email, or a lookalike domain
 (`aspire.io.example.com`, `notaspire.io`) leaves it `false`. A typed claim ("I work at Aspire")
 never sets it.
 
 The flag only adds presentation options to flows that have them (today, **PPA pitch**). When
-one applies, say it in one line ("You're signed in with an Aspire email, so I'll check how you
-want to present this for {brand}.") and ask that flow's questions; the user can always choose
-the brand-team options. It never unlocks data, skips a confirmation, changes a role, or reaches
+one applies, say so in one line ("You're signed in with an Aspire email, so I'll check how you
+want to present this for {brand}.") and ask that flow's questions. It never unlocks data, skips a confirmation, changes a role, or reaches
 another organization: the caller's Atlas permissions decide all of that. Never mention the flag
 to a caller who does not have it.
 
@@ -727,20 +730,20 @@ to a caller who does not have it.
    in the **Meta businesses** group. Partnership content needs it and the brand's Instagram on
    the same profile (`references/atlas-tools.md`, **Partnership content**).
 2. For each chosen channel, call `connect_channel` with `channel` and `asProfileId`.
-   Show the returned `connectUrl` as the **account connection card**: an inline HTML card that
-   explains the sign-in steps and carries one button that opens the link in the browser. Build
-   and render it exactly per `references/connection-card.md` (widget tool, template, one-line
-   follow-up text). Never paste the raw link into the reply when the card rendered. If the widget
-   tool is unavailable or fails, use the card's **Fallback** (plain text, never a Markdown link).
+   When the host renders the tool's own connect widget (the result shows it), do not build a
+   second card: say one line ("Use the button above to sign in to {network}.") and go to step 3.
+   Otherwise show the returned `connectUrl` as the **account connection card**, built and
+   rendered exactly per `references/connection-card.md`; never paste the raw link when the card
+   rendered. If the widget tool is unavailable or fails, use its **Fallback** (plain text, never
+   a Markdown link).
 3. Immediately call `connect_channel` again with only `elicitationId`. Each call long-polls
    about 30 seconds. Keep calling until the response reports a terminal status or its own
    `message` says to stop and check with the user. Never stop on a fixed call count. Never
    restart with `channel` + `asProfileId` on a timeout; that issues a second link. When the
    `message` says to stop, follow the card's **Expired links** rule: say the link may have
    expired and offer a fresh one.
-4. If status is awaiting-selection, render the follow-up variant of the connection card with
-   `resultUrl` and the "Finish picking accounts" button (the original link cannot be reopened),
-   or its text fallback with `resultUrl` in the code block.
+4. If status is awaiting-selection, show the card's follow-up variant (or its text fallback)
+   with `resultUrl`; the original link cannot be reopened.
 5. Terminal statuses:
    - `complete`: read `outcome`. Confirm each entry in `linkedAccounts` by handle, and list
      any discovered but unselected accounts as available to add later. With `outcome`
@@ -800,10 +803,10 @@ option where the reference file lists it. Open questions (brand summary, competi
 get options: the options are starting points, and the free text field carries the real answer.
 If a question truly has one path, state it and continue; do not ask.
 
-**Follow-ups and missing details use the same tool.** A question stays an `AskUserQuestion` when
-it is a follow-up, when an earlier answer left a detail open (a product name, a date, a niche, a
-handle), and when the answer was only an option with no typed detail. Never ask it as chat text,
-never ask it through a `wrap_up` reply button, and never hand the user a template to fill in.
+**Follow-ups and missing details use the same tool.** A follow-up, a detail an earlier answer
+left open (a product name, a date, a niche, a handle), and an option answered with no typed
+detail all stay `AskUserQuestion`s. Never ask them as chat text or through a `wrap_up` reply
+button, and never hand the user a template to fill in.
 Every such question comes with suggestions and a blank: 2 to 4 options inferred from brand
 memory, earlier answers in this session, the saved calibrations, or a quick web check of the
 brand's own site, each worded as a complete answer (for example a real product from the site, or
@@ -831,9 +834,14 @@ the web option; only the person can answer those.
 
 Rules:
 
-- Before asking anything, call `search_calibrations` (no filter, limit 100 per page, paged to the end) with
-  `asProfileId` = `profile_id`. Skip any question whose key is already occupied. Pass
-  `includeSuperseded: true` so moved facts are not re-asked as new.
+- Before asking anything, call `get_brand_context` with `asProfileId` = `profile_id` and
+  `includeSuperseded: true` (all applied records in one call; `truncated` true means page the
+  rest with `search_calibrations`). When the tool is absent, call `search_calibrations` (no
+  filter, limit 100 per page, paged to the end) with the same arguments. Skip any question
+  whose key is already occupied; `includeSuperseded` keeps moved facts from being re-asked as
+  new. `get_onboarding_form` is an optional read of which of the seven core questions are
+  answered, declined, or open; never use its form to save: ask each open question with
+  `AskUserQuestion` and write with `append_calibration` as below.
 - Write each answer with `append_calibration` right after it is given, `provenance:
   "interview"` (or `"web"` per the web research option above), `statement` under 280
   characters, supporting prose in `detail`.
@@ -1891,11 +1899,20 @@ Whenever the user asks to see, show, list, rank, compare, or visualize posts, cr
 performance, default to a visual deliverable. Text-only replies are the fallback, not the
 default, and only when the user asks for text or the data has no media at all.
 
+**When the host renders the tool's own widget.** Atlas's creator tools (`search_creators`,
+`lookup_creators`, `search_creator_marketplace`) draw creator cards and its post tools
+(`search_posts`, `list_hashtag_posts`, `lookup_posts`) draw a post grid with inline thumbnails.
+When the result shows that widget, a plain "show me" answer needs no plugin card, no
+`show_widget` call, and no cdn image embedding: give the 3 to 5 bullet readout and the next
+step. Build the plugin card or page (the rest of this section and `references/creator-card.md`)
+when the host shows no widget (Claude Code's terminal, plain-text hosts), when you cannot tell,
+for a published page, for 7 or more creators the user wants kept, and whenever an agent or a
+flow here names the card (the actions row, the shortlist, a profile).
+
 **Always include the visuals the data carries:**
 
-- Posts: the post media (`media.mediaUrl`, falling back to `media.thumbnailUrl`) plus the
-  author's profile picture (`instagram.account.profilePictureUrl` or
-  `tiktok.account.profileImage`). Project these fields in `search_posts`.
+- Posts: `media.mediaUrl` (else `media.thumbnailUrl`) and the author's picture
+  (`instagram.account.profilePictureUrl` or `tiktok.account.profileImage`), projected in `search_posts`.
 - Creators: always the creator card in `references/creator-card.md`, which sets the fields to
   pull, the sections, and the leave-out rules. The one exception is a single creator's full
   profile page (`references/creator-profile.md`), which carries the same card at full width.
@@ -1905,18 +1922,16 @@ default, and only when the user asks for text or the data has no media at all.
 - 1 to 12 items → **cards**: media, handle with profile picture, format chip, date, caption
   excerpt, metric row (likes, comments, views or saves and shares), one-line takeaway, link to
   the post. Rank number when the request is a ranking.
-- More than 12 items, or any question about trends, cadence, or format mix → **chart** first
-  (bar for ranking, line for over time, small multiples for format or theme comparison),
-  then cards for the top 3 to 5.
-- Creators → creator cards. One to six render inline in chat with the action buttons; seven
-  or more go on a published page without them. Comparisons of 3 or more creators add a bar
-  chart of the comparison metric above the cards.
-- A single creator the user names ("show me @handle", "who is @handle") → one inline creator
-  card from what Atlas already holds. If Atlas holds nothing, say so and offer an account
-  review (Phase 6, mode `handle`); never call `lookup_creators` just to draw a card.
-- A single creator's full profile or portfolio ("full profile for @handle") → the creator
-  profile page (`references/creator-profile.md`), built by the `atlas-creator-profile` agent
-  (**Creator profile**). It is the only other creator layout, and it is a page only.
+- More than 12 items, or any question about trends, cadence, or format mix → a **chart**
+  first (bar for ranking, line over time, small multiples for format or theme), then cards for
+  the top 3 to 5.
+- Creators → creator cards: one to six inline with the action buttons, seven or more on a
+  published page without them. Three or more add a bar chart of the comparison metric above.
+- A single named creator ("show me @handle") → one inline card from what Atlas holds. If it
+  holds nothing, say so and offer an account review (Phase 6, mode `handle`); never call
+  `lookup_creators` just to draw a card.
+- A single creator's full profile or portfolio → the page in `references/creator-profile.md`,
+  built by the `atlas-creator-profile` agent (**Creator profile**), the only other creator layout.
 
 **Mechanics:**
 
@@ -1932,12 +1947,10 @@ default, and only when the user asks for text or the data has no media at all.
   rendered box at 2x from the full-size source and sets its `width` and `height`. Give every image an `alt` of
   the caption excerpt, and keep an `onerror` placeholder tile with the format chip for images
   the snippet could not fetch. Note once in the page footer that images are a snapshot. Every page
-  carries the animated Aspire Atlas mark and the footnote per `references/artifact-standard.md`.
-- Never fabricate an image. If a post has no media fields, show the placeholder tile, not a
-  stock or generated picture.
-- In the chat reply, give a 3 to 5 bullet readout of the numbers alongside the visual so the
-  user can scan without opening it. For inline creator cards, the bullets add only what the
-  card cannot show.
+  carries the mark and footnote per `references/artifact-standard.md`.
+- Never fabricate an image: a post with no media fields gets the placeholder tile.
+- In the chat reply, give a 3 to 5 bullet readout alongside the visual; for inline creator
+  cards, only what the card cannot show.
 
 ---
 

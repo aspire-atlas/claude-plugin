@@ -55,10 +55,11 @@ dispatch sources it names: `program.md` (**1**, **3**), `program-dashboard.md` (
 ## Process: `mode: plan`
 
 1. Read the time from the shell clock (`date -u +%FT%TZ`) once. Load with `ToolSearch`
-   `select:` under the given prefix: `get_status`, `search_calibrations`, `search_insights`,
+   `select:` under the given prefix: `get_status`, `get_brand_context`, `search_calibrations`, `search_insights`,
    `list_insight_search_fields`, `search_creators`, and `report_checkpoint`.
-2. `get_status` once for the linked channels. `search_calibrations` with no filter, limit 100
-   per page, paged to the end, `includeSuperseded: false`. Parse the `orchestrator:*` bodies and
+2. `get_status` once for the linked channels. `get_brand_context` (applied records only;
+   `truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`
+   with no filter, limit 100 per page, paged to the end, `includeSuperseded: false`). Parse the `orchestrator:*` bodies and
    every `program:{slug}-*` and `campaign:{slug}-*` body with a JSON parser. Resolve today in the
    cadence timezone (`TZ=<tz> date +%F`).
 3. Work out what is in scope from `orchestrator:scope`: the programs, the CAS campaigns (a

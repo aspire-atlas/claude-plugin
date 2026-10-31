@@ -43,15 +43,14 @@ findings, delivery, and the unattended rules. Follow them exactly.
 
 ## Process
 
-1. Load tools with `ToolSearch` `select:` under the given prefix: `search_calibrations`,
+1. Load tools with `ToolSearch` `select:` under the given prefix: `get_brand_context`, `search_calibrations`,
    `list_post_search_fields`, `search_posts`, `search_creators`, `list_hashtag_posts`,
    `search_insights`, `append_insights`, `report_checkpoint`. Load the Slack and email send tools only if the
    routing names them and they exist.
 2. **Clock, then window.** Read the timezone from `market-signal:cadence` in the step 3
    calibration read, done first (UTC for "on demand"), then `TZ=<tz> date +%F` via Bash. Resolve the window and the four-week baseline
    per the reference. Record the shell date, timezone, and window in the footer and summary.
-3. `search_calibrations` (no filter, limit 100 per page, paged to the end,
-   `includeSuperseded: true`): the market signal records, `brand:summary`, every `competitor`
+3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the market signal records, `brand:summary`, every `competitor`
    (with `spellingVariants`), `red_line`, and `theme:brand`. Drop every `review:`, `program:`, `library:` and `orchestrator:` key.
 4. **Duplicate-window guard** per the reference, before pulling data.
 5. `list_post_search_fields` once; use only paths it returns. Find the partnership marker, the
