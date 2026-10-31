@@ -31,7 +31,8 @@ When I plan or report, I want to know how creators talk about us against competi
 
 ## Universal skills used
 
-_Pending: set in ASP-4102._
+- U4 Market and competitor signal
+- U2 Content intelligence
 
 ## Shared skills
 
@@ -45,12 +46,26 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Trigger phrases
 
-_Pending: set in ASP-4102._
+- "what are creators saying about us vs {competitor}"
+- "how are we talked about compared with {competitor}"
+- "where do we stand against competitors, and what should we do"
+- "competitive signal"
+- "share of voice"
+- "market signal"
+- "are we behind on features"
+- A scheduled task named "Atlas market signal: {brand}"
 
 ## Writes to Atlas
 
-Nothing. It publishes its page and saves no records.
+Up to 12 findings per run with `append_insights`. An interactive run saves only when the person picked Save at launch, which is the one batch confirmation. A scheduled run saves under the standing approval given at setup. A leadership (O3) page saves nothing.
 
 ## Non-goals
 
-_Pending: set in ASP-4102._
+- Setting up what it tracks (competitors, topics, readers, destinations, cadence) stays with `/aspire`'s market signal setup; the agent never interviews anyone.
+- Saving new competitor records: 01 Brand Context Builder.
+- Fetching a competitor Atlas does not index: 27 Account Analyst, as a review of that handle.
+- The cut list for the comparison videos it ranks: 24 Organic to Ads.
+- Which creators the competitors partner with: 04 Competitor Roster.
+- Formats and sounds rising in the category: 03 Trend Scout.
+- Writing the brief its campaign lens feeds: 13 Outreach and Brief.
+- The weekly readout that can carry its parity and messaging sections: 29 Reports.

@@ -28,7 +28,8 @@ None. No question in the map routes here yet.
 
 ## Universal skills used
 
-_Pending: set in ASP-4102._
+- U5 Performance baseline
+- U7 Pricing and return
 
 ## Shared skills
 
@@ -41,12 +42,21 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Trigger phrases
 
-_Pending: set in ASP-4102._
+- "campaign brief"
+- "we launch on the 14th and need creators"
+- "plan the spring campaign"
+- "draft the campaign plan for sign-off"
+- "what will this campaign cost"
 
 ## Writes to Atlas
 
-_Pending: set in ASP-4102._
+The signed-off draft as the campaign's record in brand memory: the campaign description and window, its deliverables, budget split, timeline, and measurement targets. One batch confirmation names what the save holds before anything is written. "Page only" saves nothing.
 
 ## Non-goals
 
-_Pending: set in ASP-4102._
+- Finding creators for the plan. That is 05 Creator Search.
+- Deciding on candidates. That is 06 Creator Vetting.
+- Writing to creators and sending them the brief. That is 13 Outreach and Brief.
+- Pricing a single creator's deal or answering a counter. That is 14 Negotiator.
+- Running the campaign once it is live. That is 15 Campaign Manager.
+- Setting the brand's creator rates. The fee calculator setup in `/aspire` does that; this agent only reads the saved rates.

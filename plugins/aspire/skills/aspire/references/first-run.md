@@ -163,6 +163,10 @@ the same change.
 Never add a support-only connector or skill, prices, customer names, or internal tools to this
 page.
 
+Paste the print block from `artifact-standard.md`, section 6, as the last style in the `<head>`, with
+the title `Atlas Starter Guide`, so the guide saves to PDF cleanly. The copy buttons carry
+`data-print="hide"`.
+
 ```html
 <title>Atlas Starter Guide</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -179,14 +183,14 @@ page.
   --font-body:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
   --font-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
   --radius:10px}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+@media screen and (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0E1415;--surface:#162022;--text:#E6EDEE;--muted:#9BAAAD;--border:#2A3739;
   --brand:#5DB3A9;--on-brand:#0B1A19;--brand-ink:#7FCBC1;--tint:#18302E;--code-bg:#1C2729;
   --thumb:#101A1B;--line:#2F4143;--c1:#5DB3A9;--c2:#6B8A86;--c3:#E0A94F;color-scheme:dark}}
-:root[data-theme="dark"]{
+@media screen{:root[data-theme="dark"]{
   --bg:#0E1415;--surface:#162022;--text:#E6EDEE;--muted:#9BAAAD;--border:#2A3739;
   --brand:#5DB3A9;--on-brand:#0B1A19;--brand-ink:#7FCBC1;--tint:#18302E;--code-bg:#1C2729;
-  --thumb:#101A1B;--line:#2F4143;--c1:#5DB3A9;--c2:#6B8A86;--c3:#E0A94F;color-scheme:dark}
+  --thumb:#101A1B;--line:#2F4143;--c1:#5DB3A9;--c2:#6B8A86;--c3:#E0A94F;color-scheme:dark}}
 body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 var(--font-body)}
 .wrap{max-width:68rem;margin:0 auto;padding-inline:clamp(16px,4vw,40px);padding-block:32px 56px;display:grid;gap:56px}
 h1,h2,h3,h4{font-family:var(--font-display);text-wrap:balance;margin:0;line-height:1.2}
@@ -426,11 +430,11 @@ footer{border-top:1px solid var(--border);padding-top:20px;color:var(--muted);fo
 <section aria-labelledby="h-try">
   <div class="sec-head"><h2 id="h-try">Try these first</h2></div>
   <ul class="prompts">
-    <li class="prompt"><code>/aspire:aspire sample</code><button class="copy" type="button" data-copy="/aspire:aspire sample">Copy</button><p class="why">See what any agent makes, built from invented data. No setup needed.</p></li>
-    <li class="prompt"><code>how is our Instagram doing</code><button class="copy" type="button" data-copy="how is our Instagram doing">Copy</button><p class="why">A review of your account with next week's content pushes.</p></li>
-    <li class="prompt"><code>how did last week go</code><button class="copy" type="button" data-copy="how did last week go">Copy</button><p class="why">Last week against the week before and your 8-week median.</p></li>
-    <li class="prompt"><code>find creators for the campaign</code><button class="copy" type="button" data-copy="find creators for the campaign">Copy</button><p class="why">Starts a shortlist after a few questions about the campaign.</p></li>
-    <li class="prompt"><code>/aspire:aspire agents</code><button class="copy" type="button" data-copy="/aspire:aspire agents">Copy</button><p class="why">Every agent in one list, with the phrases that start each one.</p></li>
+    <li class="prompt"><code>/aspire:aspire sample</code><button class="copy" type="button" data-print="hide" data-copy="/aspire:aspire sample">Copy</button><p class="why">See what any agent makes, built from invented data. No setup needed.</p></li>
+    <li class="prompt"><code>how is our Instagram doing</code><button class="copy" type="button" data-print="hide" data-copy="how is our Instagram doing">Copy</button><p class="why">A review of your account with next week's content pushes.</p></li>
+    <li class="prompt"><code>how did last week go</code><button class="copy" type="button" data-print="hide" data-copy="how did last week go">Copy</button><p class="why">Last week against the week before and your 8-week median.</p></li>
+    <li class="prompt"><code>find creators for the campaign</code><button class="copy" type="button" data-print="hide" data-copy="find creators for the campaign">Copy</button><p class="why">Starts a shortlist after a few questions about the campaign.</p></li>
+    <li class="prompt"><code>/aspire:aspire agents</code><button class="copy" type="button" data-print="hide" data-copy="/aspire:aspire agents">Copy</button><p class="why">Every agent in one list, with the phrases that start each one.</p></li>
   </ul>
 </section>
 

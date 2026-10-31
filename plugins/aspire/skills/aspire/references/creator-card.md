@@ -9,6 +9,11 @@ The one larger view, a single creator's full profile page, embeds this same card
 
 ## Where it renders
 
+When the host renders the creator tools' own cards widget (`search_creators`, `lookup_creators`,
+`search_creator_marketplace`), a plain "show me" answer in chat needs no plugin card and no image
+embedding: say the readout and stop. The table below is the path for published pages, the
+actions row, and every host that shows no widget (a terminal, or a plain-text host).
+
 | Surface | How | Actions row |
 | ------- | --- | ----------- |
 | Main thread, 1 to 6 creators | Inline widget, one `show_widget` call holding all the cards in a grid. Every image embedded as a data URI (see **Images**) | Shown |
@@ -425,8 +430,8 @@ tiles keep their semantic colors (`theme.md`, **Creator card**).
 .ac-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;align-items:start}
 .ac-card{--ac-card:var(--surface-2,#fff);--ac-fg:var(--text-primary,#09090b);--ac-muted:var(--text-secondary,#52525c);--ac-border:var(--border,#e4e4e7);--ac-soft:var(--secondary,#f9fafb);--ac-tile:#f5f5f5;--ac-brand:#1e4945;--ac-on-brand:#fff;--ac-ok-bg:#dcfce7;--ac-ok-fg:#166534;--ac-warn-bg:#fef9c3;--ac-warn-fg:#854d0e;--ac-neutral-bg:#f3f4f6;--ac-neutral-fg:#1f2937;
   max-width:360px;background:var(--ac-card);color:var(--ac-fg);border:1px solid var(--ac-border);border-radius:12px;box-shadow:0 1px 2px 0 rgb(0 0 0/.05);padding:20px;box-sizing:border-box;display:flex;flex-direction:column;gap:16px;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:13px;line-height:18px}
-@media (prefers-color-scheme:dark){.ac-card{--ac-card:var(--surface-2,hsl(222 47% 9%));--ac-fg:var(--text-primary,hsl(210 40% 98%));--ac-muted:var(--text-secondary,hsl(215 20% 65%));--ac-border:var(--border,hsl(217 33% 20%));--ac-soft:hsl(217 33% 17%);--ac-tile:hsl(217 33% 17%);--ac-brand:#7ab19f;--ac-on-brand:#0b1f1d;--ac-ok-bg:hsl(143 64% 24%);--ac-ok-fg:hsl(142 77% 73%);--ac-warn-bg:hsl(40 70% 20%);--ac-warn-fg:hsl(48 96% 70%);--ac-neutral-bg:hsl(217 33% 17%);--ac-neutral-fg:hsl(210 40% 80%)}}
-:root[data-theme="dark"] .ac-card,.dark .ac-card{--ac-card:var(--surface-2,hsl(222 47% 9%));--ac-fg:var(--text-primary,hsl(210 40% 98%));--ac-muted:var(--text-secondary,hsl(215 20% 65%));--ac-border:var(--border,hsl(217 33% 20%));--ac-soft:hsl(217 33% 17%);--ac-tile:hsl(217 33% 17%);--ac-brand:#7ab19f;--ac-on-brand:#0b1f1d;--ac-ok-bg:hsl(143 64% 24%);--ac-ok-fg:hsl(142 77% 73%);--ac-warn-bg:hsl(40 70% 20%);--ac-warn-fg:hsl(48 96% 70%);--ac-neutral-bg:hsl(217 33% 17%);--ac-neutral-fg:hsl(210 40% 80%)}
+@media screen and (prefers-color-scheme:dark){.ac-card{--ac-card:var(--surface-2,hsl(222 47% 9%));--ac-fg:var(--text-primary,hsl(210 40% 98%));--ac-muted:var(--text-secondary,hsl(215 20% 65%));--ac-border:var(--border,hsl(217 33% 20%));--ac-soft:hsl(217 33% 17%);--ac-tile:hsl(217 33% 17%);--ac-brand:#7ab19f;--ac-on-brand:#0b1f1d;--ac-ok-bg:hsl(143 64% 24%);--ac-ok-fg:hsl(142 77% 73%);--ac-warn-bg:hsl(40 70% 20%);--ac-warn-fg:hsl(48 96% 70%);--ac-neutral-bg:hsl(217 33% 17%);--ac-neutral-fg:hsl(210 40% 80%)}}
+@media screen{:root[data-theme="dark"] .ac-card,.dark .ac-card{--ac-card:var(--surface-2,hsl(222 47% 9%));--ac-fg:var(--text-primary,hsl(210 40% 98%));--ac-muted:var(--text-secondary,hsl(215 20% 65%));--ac-border:var(--border,hsl(217 33% 20%));--ac-soft:hsl(217 33% 17%);--ac-tile:hsl(217 33% 17%);--ac-brand:#7ab19f;--ac-on-brand:#0b1f1d;--ac-ok-bg:hsl(143 64% 24%);--ac-ok-fg:hsl(142 77% 73%);--ac-warn-bg:hsl(40 70% 20%);--ac-warn-fg:hsl(48 96% 70%);--ac-neutral-bg:hsl(217 33% 17%);--ac-neutral-fg:hsl(210 40% 80%)}}
 :root[data-theme="light"] .ac-card{--ac-card:var(--surface-2,#fff);--ac-fg:var(--text-primary,#09090b);--ac-muted:var(--text-secondary,#52525c);--ac-border:var(--border,#e4e4e7);--ac-soft:#f9fafb;--ac-tile:#f5f5f5;--ac-brand:#1e4945;--ac-on-brand:#fff;--ac-ok-bg:#dcfce7;--ac-ok-fg:#166534;--ac-warn-bg:#fef9c3;--ac-warn-fg:#854d0e;--ac-neutral-bg:#f3f4f6;--ac-neutral-fg:#1f2937}
 .ac-card *{box-sizing:border-box}
 .ac-card svg{flex-shrink:0}
@@ -462,6 +467,7 @@ tiles keep their semantic colors (`theme.md`, **Creator card**).
 .ac-tile span{font-size:12px;line-height:16px;color:var(--ac-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ac-net{display:flex;flex-direction:column;gap:16px}
 .ac-net[hidden]{display:none}
+@media print{.ac-net[hidden]{display:flex!important}.ac-net[data-net]::before{content:attr(data-net);font:600 11px/1 ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--ac-muted)}.ac-card{break-inside:avoid}}
 .ac-stats{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);border-top:1px solid var(--ac-border);border-bottom:1px solid var(--ac-border);padding:12px 0}
 .ac-stat{display:flex;flex-direction:column;gap:2px;align-items:center;text-align:center;padding:0 8px}
 .ac-stat+.ac-stat{border-left:1px solid var(--ac-border)}
@@ -508,7 +514,7 @@ rule in the data table says so, and drop the comments themselves. Repeat `.ac-ne
   </div>
 
   <!-- if 2+ channels -->
-  <div class="ac-chips" role="tablist" aria-label="Creator profiles">
+  <div class="ac-chips" role="tablist" aria-label="Creator profiles" data-print="hide">
     <button type="button" class="ac-chip" role="tab" aria-selected="true" data-net="instagram" onclick="var c=this.closest('.ac-card');c.querySelectorAll('.ac-chip').forEach(function(b){b.setAttribute('aria-selected',b===this)},this);c.querySelectorAll('.ac-net').forEach(function(n){n.hidden=n.dataset.net!==this.dataset.net},this)">{ICON_INSTAGRAM}<span>{FOLLOWERS}</span></button>
     <!-- one button per channel; only the primary has aria-selected="true", the rest "false" -->
   </div>

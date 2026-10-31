@@ -74,7 +74,7 @@ Everything below is read at build time to bake in a snapshot, and again by the p
 | Read | Tool | Used for |
 | ---- | ---- | -------- |
 | Organizations, role, profiles, channels, authorization state, credits | `get_status` (selected organization, then `asProfileId` for the brand) | Credits, profile cards, setup strip |
-| All calibrations | `search_calibrations`, no filter, limit 100, paged to the end, `includeSuperseded: false` | Brand context, goals, the viewer's `user:` record, readouts and other setup state, programs, campaigns, the saved links |
+| All calibrations | `get_brand_context` (`truncated` true: page the rest with `search_calibrations`); tool absent: `search_calibrations`, no filter, limit 100, paged to the end, `includeSuperseded: false` | Brand context, goals, the viewer's `user:` record, readouts and other setup state, programs, campaigns, the saved links |
 | Recent posts and the baseline | `search_posts` on the brand's linked handles, last 28 days and the 28 before | Performance snapshot |
 | Tracked hashtags and their posts | `list_hashtags`, `list_hashtag_posts` (per profile, `asProfileId`) | Hashtag chart on each profile tab |
 | Latest findings per area | `search_insights` on the prefixes: `readout-` (daily and weekly report runs), `orchestrator-{profile}`, `program-{profile}-`, `creator-discovery-{profile}`, `market-signal-{profile}`, `quarterly-signal-{profile}`, `cas-` | Latest report links, Next actions, program and campaign state |
@@ -324,9 +324,11 @@ and nothing else, and every step it names runs through its own section with its 
 confirmations. It is one page per brand profile, shared by the team, and each person can keep
 their own.
 
-1. **Find it.** From the Phase 5 read (`search_calibrations`, no filter, paged to the end), look
-   for `user:{slug}-dashboard` (the caller's own) and `brand:dashboard`. The caller's own link
-   wins when both exist. Match the caller's `user:` record by the name or email `get_status`
+1. **Find it.** When `get_status` returned `dashboardUrl`, that is the shared link: use it
+   before reading any calibration, and still look for `user:{slug}-dashboard` (the caller's
+   own) in the Phase 5 read (`get_brand_context`, or `search_calibrations`, no filter, paged to
+   the end, when the tool is absent). Without `dashboardUrl`, look for `brand:dashboard` there
+   too. The caller's own link wins when both exist. Match the caller's `user:` record by the name or email `get_status`
    returned (**6**).
 2. **A link exists.** Say it in one line with the link, give the next step from the page in one
    line (run the agent with `mode: refresh` only when the user asks to rebuild, or the saved

@@ -59,13 +59,12 @@ lens. Follow them exactly.
 
 1. Read the start time from the shell clock (`date -u +%Y-%m-%dT%H:%M:%SZ`). For `sample`, skip
    to **Sample mode**.
-2. Load tools with `ToolSearch` `select:` under the given prefix: `search_calibrations`,
+2. Load tools with `ToolSearch` `select:` under the given prefix: `get_brand_context`, `search_calibrations`,
    `list_post_search_fields`, `list_insight_search_fields`, `search_posts`, `search_creators`,
    `search_insights`, `list_hashtags`, `list_hashtag_posts`, `report_checkpoint`, and `append_insights` for `build`.
    Load the Slack and email send tools only when the routing names them and
    they exist.
-3. `search_calibrations` (no filter, limit 100 per page, paged to the end,
-   `includeSuperseded: true`): every `program:*` record (one program, or every active program
+3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): every `program:*` record (one program, or every active program
    for the whole brand), `brand:summary`, `brand:business-context`, `competitor`, `red_line`,
    `market-signal:topics`, `library:cadence` (for `all`), and `theme:brand`. Drop `review:`, `vetting:`, `orchestrator:`, `creator:`, `fees:`,
    and the CAS campaign keys. Parse every JSON body with a JSON parser.

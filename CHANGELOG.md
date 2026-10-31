@@ -6,6 +6,21 @@ The version lives in exactly one place: `plugins[].version` in `.claude-plugin/m
 
 ## [Unreleased]
 
+## [5.2.0] - 2026-10-30
+
+Minor release. The plugin uses the Atlas server's inline widgets and new tools when they are there, asks fewer questions at the start, exports creator lists for Aspire, and prints its pages cleanly. Every flow keeps its earlier path when the server does not offer the new ones.
+
+### Added
+- Atlas server widgets and tools: the plugin uses the new `get_brand_context`, `mint_run_id`, `get_fee_rate_card`, `calculate_creator_fee`, `get_brand_theme`, and `get_onboarding_form` tools and the server's inline widgets. Each has a fallback to the earlier path when the server does not offer it.
+- Creator CSV: ask for any creator list (a discovery shortlist, a vetting run, a creator brief, a creator-ads lane, or a search) as a CSV and get an Aspire member import file in one fixed format.
+- Pages print and save to PDF cleanly: scroll boxes print at full size, tabbed pages print the tab on screen, and the creator profile has a print step.
+
+### Changed
+- The plugin skips the organization question when one is already selected.
+- When the host draws the Atlas connect widget, the plugin shows it instead of its own connection card.
+- The Atlas tool contract is refreshed to the current server tool list.
+- Every agent follows the updated artifact standard and page blocks.
+
 ## [5.1.0] - 2026-10-30
 
 Minor release. Says plainly what the plugin reports to Aspire Atlas for product analytics, which the Anthropic plugin directory asked for, and lets a brand point agents at its own approved example pages.
@@ -258,6 +273,7 @@ First public release. Versioning restarts at 1.0.0; earlier 0.x builds were inte
 - Apache-2.0 license.
 
 [Unreleased]: https://github.com/aspire-atlas/claude-plugin/compare/v5.1.0...HEAD
+[5.2.0]: https://github.com/aspire-atlas/claude-plugin/compare/v5.1.0...v5.2.0
 [5.1.0]: https://github.com/aspire-atlas/claude-plugin/compare/v5.0.0...v5.1.0
 [5.0.0]: https://github.com/aspire-atlas/claude-plugin/compare/v4.2.0...v5.0.0
 [4.2.0]: https://github.com/aspire-atlas/claude-plugin/compare/v4.1.2...v4.2.0

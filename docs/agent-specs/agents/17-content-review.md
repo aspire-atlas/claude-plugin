@@ -29,7 +29,10 @@ None. No question in the map routes here yet.
 
 ## Universal skills used
 
-_Pending: set in ASP-4102._
+- U2 Content intelligence
+- U3 Brand safety and conflicts
+- U5 Performance baseline
+- U6 Rights and usage
 
 ## Shared skills
 
@@ -41,12 +44,34 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Trigger phrases
 
-_Pending: set in ASP-4102._
+- "review this post"
+- "review a post"
+- "content review"
+- "check this draft against the brief"
+- "is this post on brief"
+- "brand safety check on this post"
+- "approve this creator's draft"
+- "can this post run as an ad" (adds the ad reuse score)
 
 ## Writes to Atlas
 
-_Pending: set in ASP-4102._
+- The review's findings: the verdict, each Fail and Flag, each required edit, up to three
+  standout passes, and a close for any earlier edit this post now passes. One batch
+  confirmation, asked before the run, names the save.
+- The person's own call on the review. The feedback question says it will be saved, so the
+  answer is its confirmation.
+- A review lesson, only after the person sees it worded and picks "Save as a review rule".
+- Hard rules for every review, only the ones the person selects in the hard rules question,
+  which says they will be saved.
+- Never a change to a saved rule or lesson. It hands those to `/aspire`, which asks for each one
+  on its own.
 
 ## Non-goals
 
-_Pending: set in ASP-4102._
+- Running the review setup. `/aspire` asks those questions once for the whole organization.
+- Breaking down a post with no brief. 31 Post Analysis does that.
+- Sending the edit notes to the creator. 13 Outreach and Brief does that.
+- Ranking many posts for reuse as ads. 24 Organic to Ads does that; this agent scores only the one post under review.
+- Asking for usage rights. 26 Content Library and Rights does that.
+- Tracking who posted and chasing late deliverables. 15 Campaign Manager does that.
+- Vetting the creator before a deal. 06 Creator Vetting does that.

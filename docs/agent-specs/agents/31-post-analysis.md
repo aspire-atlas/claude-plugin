@@ -32,7 +32,10 @@ When I have one post to judge, I want it broken down second by second, with the 
 
 ## Universal skills used
 
-_Pending: set in ASP-4102._
+- U2 Content intelligence
+- U3 Brand safety and conflicts
+- U5 Performance baseline
+- U6 Rights and usage
 
 ## Shared skills
 
@@ -44,12 +47,28 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Trigger phrases
 
-_Pending: set in ASP-4102._
+- "analyze this post"
+- "post analysis"
+- "break down this Reel"
+- "break down this one post"
+- "what brands are in this video"
+- "is this post safe to sponsor"
+- "there's profanity in this video, can it run on paid?"
+- "should we partner with this show"
+- "how did this post do"
 
 ## Writes to Atlas
 
-Nothing. It publishes its page and saves no records.
+Its findings on the post, only when the person picks "Save findings" at launch. That launch
+question is the one batch confirmation: it names the save before the run, and "Page only" saves
+nothing. The findings are what went well, each risk, and each recommendation, all under one run
+key for the post, so a later run reads them back as the earlier analysis.
 
 ## Non-goals
 
-_Pending: set in ASP-4102._
+- Checking a post against a brief. 17 Content Review does that.
+- Ranking many posts for reuse as ads. 24 Organic to Ads does that.
+- Asking for rights or tracking when they expire. 26 Content Library and Rights does that.
+- Profiling the creator behind the post. 08 Creator Profile does that.
+- Launching the post as a partnership ad. 25 Partnership Ads Launcher does that.
+- Any post that is not on Instagram or TikTok, and any scheduled run. It needs a person to supply the post.

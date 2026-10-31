@@ -112,15 +112,14 @@ addresses) and never write its `page` finding; name "Publish the order form" as 
 
 1. Read the clock: `date -u +%FT%TZ` for `recordedAt` and `started`; the cadence timezone's date
    (`TZ=<tz> date +%F`, or the user's) for the `runKey`.
-2. Load tools with `ToolSearch` `select:` under the given prefix: `search_calibrations`,
+2. Load tools with `ToolSearch` `select:` under the given prefix: `get_brand_context`, `search_calibrations`,
    `search_insights`, `list_insight_search_fields`, `list_post_search_fields`,
    `list_creator_search_fields`, `search_posts`, `search_creators`, `report_checkpoint`, and
    `append_insights` (with F2 `save`, or for a status run's `page` finding). Call the three `list_*_search_fields` tools
    once each before the first search and use only paths they return. Load `ArtifactData` for the
    order form's page data. Load the mail and store tools only for what `connections` lists and
    this run uses.
-3. `search_calibrations` (no filter, limit 100 per page, paged to the end,
-   `includeSuperseded: true`): the `program:{slug}-*` records, `brand:summary`, `theme:brand`,
+3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the `program:{slug}-*` records, `brand:summary`, `theme:brand`,
    and `user:primary-contact`. Parse every body with a JSON parser. Drop every other flow's
    keys. A missing setup record in an unattended run publishes the "setup needed" card per
    `program.md`, **9**, and stops.

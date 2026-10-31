@@ -29,7 +29,7 @@ None. No question in the map routes here yet.
 
 ## Universal skills used
 
-_Pending: set in ASP-4103._
+- U1 Creator intelligence
 
 ## Shared skills
 
@@ -42,12 +42,20 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Trigger phrases
 
-_Pending: set in ASP-4103._
+- "collect details and order product"
+- "what should we send @handle"
+- "place the gifting orders"
+- "where are the packages"
+- "did the product arrive"
+- "pull the order form"
 
 ## Writes to Atlas
 
-_Pending: set in ASP-4103._
+Picks, details, and statuses as `fulfillment` findings, stage moves as `roster` findings, details requests as `draft` findings, and the order form as a `page` finding, on one batch question. Each store order is a Send: one question per order, recorded as `ordered` with its order reference in the same run. A full address lives only in the order form's data, the order sheet, the store order, and the `fulfillment` finding.
 
 ## Non-goals
 
-_Pending: set in ASP-4103._
+- Chasing the post once the product arrives. Campaign Manager (15) takes the hand-off.
+- Paying for product or tracking its cost against budget. Creator Payments (18) does that.
+- Setting up the program or its catalog. The Influencer program section of `/aspire` does that.
+- Sharing the order form with creators. It holds every creator's address and stays with the brand's team.

@@ -30,7 +30,10 @@ When I plan partnership ads, I want creators with proven paid performance (hook 
 
 ## Universal skills used
 
-_Pending: set in ASP-4104._
+- U1 Creator intelligence
+- U3 Brand safety and conflicts
+- U5 Performance baseline
+- U7 Pricing and return
 
 ## Shared skills
 
@@ -43,12 +46,36 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Trigger phrases
 
-_Pending: set in ASP-4104._
+- "Cast creators into a partnership ads plan."
+- "cast creators for partnership ads"
+- "find creators for the creator ad campaign"
+- "fill the lanes"
+- "who has run ads well for brands like us"
+- "casting deck"
+- "PPA pitch"
+- "build the pitch for round two"
 
 ## Writes to Atlas
 
-_Pending: set in ASP-4104._
+Each creator it adds to a lane is saved as an undecided candidate with the lane, the rankings that
+found them, and the ad figures, under the campaign's saved cadence: the standing approval set once
+at setup, in interactive and scheduled runs alike. When the person saves the deck, one `cast`
+finding per cast creator and one pitch `summary`, on one batch question. When the agency sends the
+Gate 2 slate, one `roster` candidate per slate creator with the agency's pick note, confirmed by the
+send itself. Today the CAS campaign section of `/aspire` writes those `roster` candidates; the build
+moves them here. The ranking passes start creator marketplace searches, which use credits; `/aspire`
+states the cost before the run, as it does for discovery. It never writes a client's decision on the
+slate: those come back through the CAS campaign section of `/aspire`.
 
 ## Non-goals
 
-_Pending: set in ASP-4104._
+- Ranking creators on TikTok ad performance. At launch it casts from Meta's rankings only: Atlas
+  holds Meta's ad rankings and ad figures for Instagram, and Atlas has no TikTok equivalent.
+  TikTok creators can still be cast from what Atlas holds, and their cards say "Hook rate is not
+  available on TikTok." Revisit when Atlas holds TikTok ad results.
+- Finding creators for organic posts or a gifting program. That is 05 Creator Search.
+- Screening each lane's pool for brand safety, persona fit and paid track record. That is 06
+  Creator Vetting run on the lane; this agent builds the Gate 2 slate from its newest run.
+- Pricing and agreeing each creator's fee. That is 14 Negotiator.
+- Pulling the client's decisions on the slate. The CAS campaign section of `/aspire` does that.
+- Launching the ads. That is 25 Partnership Ads Launcher.

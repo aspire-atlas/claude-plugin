@@ -118,7 +118,9 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
 2. **Draft the page** for this question and this reader, from the blocks in
    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/blocks.md`. They already carry the markup in
    section 5. The blocks set what each part holds and the order of its evidence; the flow's
-   reference and this reader set the layout.
+   reference and this reader set the layout. Add the print block with the page's title as
+   `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md`, section 6, sets, so the page saves to PDF
+   in the light theme with a footer on every page.
 3. **Self-check R1 to R12.** Run the script in section 5 for R1, R2, R6, and R11, and judge the
    others against `reader-standard.md`. Fix every fail you can and check again.
 4. **Publish**, even when a check still fails, and report it in the page check (section 7).
@@ -211,13 +213,14 @@ CLOSES = {"li": ({"li"}, {"ul", "ol"}), "dt": ({"dt", "dd"}, {"dl"}), "dd": ({"d
 ATTRS = ("alt", "title", "aria-label", "placeholder", "value")
 # Atlas tool names, kept equal to contract/atlas-mcp-tools.json by scripts/check-artifact-standard.sh.
 TOOLS = frozenset("""
-add_hashtags append_calibration append_insights cancel_invitation connect_channel create_organization
-create_profile delete_organization delete_profile get_brand_instruction get_job_status get_more_tools
+add_hashtags append_calibration append_insights calculate_creator_fee cancel_invitation connect_channel
+create_organization create_profile delete_organization delete_profile get_brand_context get_brand_instruction
+get_brand_theme get_fee_rate_card get_job_status get_more_tools get_onboarding_form
 get_profile get_status invite_member leave_organization list_ad_accounts list_ad_search_fields
 list_available_hashtags list_channels list_creator_marketplace_labels list_creator_search_fields
 list_hashtag_posts list_hashtags list_insight_search_fields list_invitations list_members
 list_my_organizations list_my_profiles list_post_search_fields lookup_creators lookup_posts
-remove_hashtags remove_member report_checkpoint retract_calibration search_ads search_calibrations
+mint_run_id remove_hashtags remove_member report_checkpoint retract_calibration search_ads search_calibrations
 search_creator_marketplace search_creators search_insights search_partnership_content search_posts
 set_brand_instruction start_business_discovery supersede_calibration switch_billing_account
 unlink_channel update_member_role update_organization update_profile
