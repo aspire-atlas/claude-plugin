@@ -215,7 +215,7 @@ ATTRS = ("alt", "title", "aria-label", "placeholder", "value")
 TOOLS = frozenset("""
 add_hashtags append_calibration append_insights calculate_creator_fee cancel_invitation connect_channel
 create_organization create_profile delete_organization delete_profile get_brand_context get_brand_instruction
-get_brand_theme get_fee_rate_card get_job_status get_more_tools get_onboarding_form
+get_brand_theme get_creator get_dashboard get_fee_rate_card get_job_status get_more_tools get_onboarding_form
 get_profile get_status invite_member leave_organization list_ad_accounts list_ad_search_fields
 list_available_hashtags list_channels list_creator_marketplace_labels list_creator_search_fields
 list_hashtag_posts list_hashtags list_insight_search_fields list_invitations list_members

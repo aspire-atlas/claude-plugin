@@ -39,8 +39,8 @@ Every tool requires `context`: `[<runId>]` (the current run's id, `orchestration
 15 to 25 words, third person, no first person, no credentials. The run id prefix does not count
 toward the words. It is analytics only. Example: "[aspire-20261029t140312-a3f9] Onboarding flow
 creating the brand profile so social channels and brand memory have a home in the organization."
-Live pages that call Atlas through the `mcp` capability (`org-dashboard.md`) send no `context`
-and are outside any run.
+Live pages that call Atlas through the `mcp` capability send no `context` and are outside any
+run.
 
 ## Attribution model
 
@@ -64,6 +64,7 @@ and are outside any run.
 | Phase | Tool | Purpose | Notes |
 | ----- | ---- | ------- | ----- |
 | 2, 3 | `get_status` | Orgs, selected org, profiles, channels, expired auths, next-step links | Call once per session. Also returns `aspireUser`, `dashboardUrl`, `setup` and `work`. `asOrganizationId` to switch org. Keep the organization and profile `id`s it returns. |
+| 3 | `get_dashboard` | The organization dashboard: the same view as `get_status`, drawn as the dashboard widget | Only for **Organization dashboard**, never the session's first call. The widget reads the rest itself: counts that read no posts for every profile, and a profile's newest posts and accounts only when its tab is opened. Absent on an older server: use `get_status`. |
 | 2 | `list_my_organizations` | Cheap org re-check | |
 | 3 | `list_my_profiles` | Cheap profile re-check | Every organization the caller can act on, each with its live profiles (`id`, `slug`, `name`) in one call |
 | 3 | `get_profile` | One profile's detail | `{found:false}` is normal |
