@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-30",
+  "generated": "2026-10-31",
   "source": "apps/api/lib/mcp/tools-list.golden.json",
   "surfaces": {
     "/mcp": {
@@ -114,6 +114,25 @@
         "paths": [
           "asOrganizationId",
           "asProfileId"
+        ]
+      },
+      "get_creator": {
+        "required": [
+          "handle",
+          "network"
+        ],
+        "paths": [
+          "asProfileId",
+          "handle",
+          "network"
+        ]
+      },
+      "get_dashboard": {
+        "required": [],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "billingAccountId"
         ]
       },
       "get_fee_rate_card": {

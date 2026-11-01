@@ -245,7 +245,6 @@ packet after the run.
 | `atlas-daily-insights-report` | write | Saves the day's insights |
 | `atlas-deliverable-tracker` | write | Saves statuses and stage moves, and creates chase drafts in the mailbox |
 | `atlas-market-signal` | write | Saves findings |
-| `atlas-org-dashboard` | write | Saves the dashboard link to memory |
 | `atlas-post-analysis` | spend | Refetches the post |
 | `atlas-ppa-pitch` | write | Saves the pitch |
 | `atlas-product-fulfillment` | send | Places orders in a connected store |

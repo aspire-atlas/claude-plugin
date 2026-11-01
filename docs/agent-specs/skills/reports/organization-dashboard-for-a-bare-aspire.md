@@ -7,18 +7,16 @@ owner: 29-reports
 
 ## What it does
 
-Builds the one live page a bare `/aspire` opens: the organization's profiles and channels, credits used, setup gaps, the newest posts and pages per profile, every program and campaign with where it stands, and the one next step to take.
+Shows the organization dashboard a bare `/aspire` opens, by calling the Atlas server's `get_dashboard` tool: its widget draws the organization's profiles and channels, credits, setup gaps, the saved goals with their evidence, things of interest, each profile's posts per day, own accounts, newest posts and tracked hashtags, every program and campaign, the newest saved work, and the one next step to take, shaped by the viewer's role.
 
 ## Inputs
 
-- From brand memory: the publisher's role and goals from onboarding, the saved dashboard link if one exists, and every program, discovery campaign and creator ad campaign record.
-- From the launch message: who publishes (brand or personal copy) and the reader.
+- The organization and, when named, the brand profile, from Phase 2 + 3 of `/aspire`.
 
 ## Output
 
-One page that reads Atlas live through each viewer's own connection and falls back to a snapshot built into the page, with no spend and no members shown, and the page link for the result packet. It moves, drafts and sends nothing.
+The server's dashboard widget, which reads Atlas live through the viewer's own connection, or a short readout from `get_status` where no widget renders. Nothing is published, saved, moved, drafted or sent, and no spend or members are shown.
 
 ## Callable
 
-Never user-callable. Only the agent that owns it, or every agent for a shared or universal skill,
-runs it.
+Runs in the `/aspire` main thread, on a bare run for a configured organization or on `/aspire dashboard`. No agent owns it.

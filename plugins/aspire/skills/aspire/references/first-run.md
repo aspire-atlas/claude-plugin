@@ -144,7 +144,7 @@ Text fallback, when there is no page:
 - Never blocks onboarding: whatever happens to the page, the next phase still starts.
 
 **The dashboard.** On a configured organization a bare `/aspire:aspire` opens the organization
-dashboard instead (`org-dashboard.md`), and this page is not shown. An unconfigured one gets this
+dashboard instead (**Organization dashboard** in `SKILL.md`), and this page is not shown. An unconfigured one gets this
 page first, and the dashboard is offered once brand context is saved.
 
 ## 8. The page
