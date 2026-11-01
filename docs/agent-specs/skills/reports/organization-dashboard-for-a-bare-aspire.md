@@ -7,7 +7,7 @@ owner: 29-reports
 
 ## What it does
 
-Shows the organization dashboard a bare `/aspire` opens, by calling the Atlas server's `get_dashboard` tool: its widget draws the organization's profiles and channels, credits, setup gaps, the saved goals with their evidence, things of interest, each profile's posts per day, own accounts, newest posts and tracked hashtags, every program and campaign, the newest saved work, and the one next step to take, shaped by the viewer's role.
+Shows the organization dashboard a bare `/aspire` opens, by calling the Atlas server's `get_dashboard` tool: its widget draws the organization's profiles and channels, credits, setup gaps, the saved goals with their evidence, things of interest, each profile's posts per week and tracked hashtags (and, once its tab is opened, its own accounts and newest posts), every program and campaign, the newest saved work, and the one next step to take, shaped by the viewer's role.
 
 ## Inputs
 

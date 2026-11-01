@@ -920,9 +920,9 @@ recommends only, and writes nothing: no spend, no members, nothing moved, drafte
    named a brand). Where the host renders the tool's widget, it draws the dashboard and reads the
    rest itself: an Overview (credits, the next step, things of interest, the saved goals with their
    evidence, the brand questions and the Atlas setup checklist, brand profiles, programs and
-   campaigns, the newest saved work) and a tab per brand profile (its setup, posts per day against
-   the 28 days before, things of interest, its own accounts as creator cards, its newest posts, its
-   tracked hashtags). The caller's role and stated relationship set what leads and what starts
+   campaigns, the newest saved work) and a tab per brand profile (its setup, posts per week against
+   the 28 days before, things of interest, its tracked hashtags, and, once the tab is opened, its own
+   accounts as creator cards and its newest posts). The caller's role and stated relationship set what leads and what starts
    open. Build no page or card beside it and repeat none of its numbers; say one line with the
    next step.
 2. **Fallback.** When `get_dashboard` is not among the Atlas tools (an older server), or the host
