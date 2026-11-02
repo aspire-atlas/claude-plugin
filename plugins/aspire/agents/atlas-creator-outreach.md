@@ -96,7 +96,7 @@ passes.
 2. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the `program:{slug}-*` records, `brand:summary`,
    `brand:business-context`, the `voice_and_content_ops` brand fact, `guideline:voice`,
    `red_line` (not `review:` keys), `competitor`, `partner`, every `creator:*` record,
-   `fees:rate-card`, and `theme:brand`. Drop `vetting:`, `review:`, `library:`, `orchestrator:`, and `campaign:` keys.
+   `fees:rate-card`, and `theme:brand`. Drop `vetting:`, `review:`, `library:`, `orchestrator:`, `ad-reuse:`, and `campaign:` keys.
    Parse every JSON body with a JSON parser. Resolve today as the shell date in the cadence
    timezone (`TZ=<tz> date +%F`), or the user's when there is no cadence.
 3. `list_insight_search_fields`, `list_post_search_fields`, and `list_creator_search_fields`

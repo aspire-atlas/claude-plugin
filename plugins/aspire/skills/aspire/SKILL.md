@@ -987,7 +987,8 @@ both are passed by default. Detail lives in `references/ad-reuse.md`. For one po
    `recipient`, a digest of the brand's calibrations (competitors, red lines, partners, and the
    `ad-reuse:account-map` record when saved), and whether the user approved the write. It reads
    only what Atlas holds, and returns the found and briefed paths as two lists.
-   When its result packet carries an `approve-account-map` proposal, ask once with
+   When its result packet carries an `approve-account-map` proposal (it returns one only when the
+   user chose Save in step 1; never ask it after Page only), ask once with
    `AskUserQuestion` whether to save it (Save the account map (Recommended) / Not now). On yes,
    write it per `references/ad-reuse.md`, **Account map record**: `append_calibration` when none
    is saved, or `supersede_calibration` with the saved record's `ifVersion` to add new accounts.

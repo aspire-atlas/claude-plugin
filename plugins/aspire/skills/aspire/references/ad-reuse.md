@@ -24,7 +24,7 @@ needs exactly which moments to cut, at what length, for which placement.
     subject, never by whether one appears: count the brand's products against all products the
     post features. When a single competitor has more products than the brand, leave the post
     out as a competitor's video. When the brand has a third or more of the products, or has one
-    and at most two other brands appear, keep it as **brand-led**, at most 2 in the prefiltered
+    product and at most two other products appear in all, keep it as **brand-led**, at most 2 in the prefiltered
     12. Anything else is a multi-brand look: leave it out and count it. Many looks in beauty,
     fashion and home show several brands, and leaving out every one of them empties the pool. A
     brand-led post's competitor in frame is named on its card ("brand-led, {competitor} also
@@ -32,17 +32,19 @@ needs exactly which moments to cut, at what length, for which placement.
   - `both` (default).
 - **Two paths: found or briefed.** Before ranking, label each creator post `found` (made
   unprompted) or `briefed` (the brand asked for it). Briefed means a deliverable on a program
-  deal, a partnership-ads permission on the post, or a partnership hashtag (#ad, #sponsored,
-  #partner, #ambassador, the brand's partner tag) together with a tag for this brand. A
-  partnership hashtag with no tag for this brand is another brand's sponsored post: set it aside
-  and count it. When the path can't be told, use found and say "path unclear". Rank and show the
+  deal, a partnership-ads permission on the post, the brand's own partner tag (from its
+  `partner` records or the program's must-include tags) on its own, or a generic partnership
+  hashtag (#ad, #sponsored, #partner, #ambassador) together with a tag for this brand. The
+  brand's partner tag is itself a tag for this brand. A generic partnership hashtag with no tag
+  for this brand is another brand's sponsored post: set it aside and count it. When the path can't be told, use found and say "path unclear". Rank and show the
   two paths separately, never as one list. On the briefed path, product focus and the subject
   screen are shown but not weighted, because nearly every briefed post passes them; read the
   deal's usage before proposing any rights request. On the found path, the subject and
   competitor screens apply in full. Within each path, rank by the hook score. Its openings,
-  sound-off and standalone components are known before any ad runs; Retention on a briefed post
-  never uses level 3, because the post's own counts may include the brand's paid delivery
-  (**Retention levels**, **Counts that include paid delivery**). Show the post's own views and
+  sound-off and standalone components are known before any ad runs; Retention on a post already
+  run as an ad never uses level 3, because its counts include paid delivery (**Retention
+  levels**, **Counts that include paid delivery**). Both paths share the verdict bands, so a
+  briefed post that never ran keeps level 3 like a found post. Show the post's own views and
   engagement as "organic traction", and never compare them across paths. A program deliverable
   is read from the program's findings with `search_insights`.
 - **Formats:** video only (Reels, TikTok videos). Carousels and images are left out with a
@@ -53,9 +55,8 @@ needs exactly which moments to cut, at what length, for which placement.
   measured retention on the post when held, then the author's creator average, then views per
   follower against the author's own median (saves plus shares per view when views are
   missing). Rank within a level by its percentile in the pool, and rank level 1 ahead of level
-  2 ahead of level 3 at the same percentile. A post whose counts include paid delivery
-  (**Counts that include paid delivery**: every briefed post, and any post already run as an
-  ad) never ranks on level 3: it ranks on level 1 or 2 when held, and otherwise after every post
+  2 ahead of level 3 at the same percentile. A post already run as an ad (**Counts that include
+  paid delivery**) never ranks on level 3: it ranks on level 1 or 2 when held, and otherwise after every post
   with a usable signal on its path, newest first, marked "no retention signal before paid".
   Name how many were considered, how many had measured data, and how many ranked with no
   signal.
@@ -152,15 +153,16 @@ Rules:
 - A level 2 quartile needs held values for 4 or more authors in the pool. With fewer, level 2
   has no data: fall to level 3, and say so.
 - With no data at any level, Retention scores zero and is listed as missing.
-- **Counts that include paid delivery.** Two kinds of post: every briefed post, and any post
-  already run as an ad. A post has run as an ad when its partnership-ads usage shows the brand
+- **Counts that include paid delivery.** A post already run as an ad. A post has run as an ad when its partnership-ads usage shows the brand
   has run it (`search_partnership_content`, or `partnershipAds` on `search_posts`), or when
   `search_ads` with `groupBy` post and the post's `igMediaIds` returns a row for it (call
   `list_ad_search_fields` first; no linked ad account returns no rows, which means "not known",
   never "never ran"). These reads take only `adUsage`, `permissionStatus` and `hasAdCode`. The
   same calls return the brand's `adCode`, which works like a password: never carry it into the
   page, a finding, the visual payload, the result packet or any other output; say "has an ad
-  code" where it matters. For these posts level 3 has no data: score Retention from level 1 or 2,
+  code" where it matters. When the run status is not known (no partnership-ads data and no linked
+  ad account), a briefed post keeps level 3, labelled "Proxy, may include paid delivery". For a
+  post that has run as an ad, level 3 has no data: score Retention from level 1 or 2,
   and with neither, Retention is missing (zero, listed as missing). There is no other fallback.
   Label an already-run post "already run as an ad: counts include paid delivery". Never rank a
   post higher because an ad inflated its counts.
@@ -270,8 +272,9 @@ lens (**Output for each lens** sets the order for `creative`):
    the opening frame, and the metric row.
 7. **Cut structure and storyboards** (3.9): the five beats every cut shares (hook 0 to 3s,
    brand 3 to 6s, build 6 to 9s, reveal 9 to 12s, then the end card, per the page standard) and
-   the specs from **Cut list**. On a 15-second cut the end card runs 12 to 15s. Then one storyboard per recommended ad: the badge (its rank within its path, F1, F2, B1; recommended ads are taken from both paths per
-   the agent's top candidates rule, at most three from each),
+   the specs from **Cut list**. On a 15-second cut the end card runs 12 to 15s. Then one storyboard per recommended ad: the badge (its rank within its path, F1, F2, B1; recommended ads follow the agent's top
+   candidates rule: up to five, at most three from a path unless the other path has fewer than
+   two),
    the hook line, handle, date, pattern, cut length, and the tests it runs in; a still for every
    beat, taken from the frames read at that beat's timecode, or an insert tile naming what to add
    when the post has no usable frame there; the timecodes, a one-line description per beat, the
@@ -375,10 +378,10 @@ quartile to score against, so the creator average is shown beside the score and 
 scored on level 3; and **Hook evidence** cites any measured rate without confirming or capping.
 A draft has no views or watch time yet, so its Retention is listed as missing.
 
-Content review keeps the level 3 proxy even though a post under a brief is a briefed post, an
-exception to **Counts that include paid delivery**: it scores one post as advice, ranks nothing,
-and doesn't load `search_ads`, so it can't tell whether the post has run as an ad. Its Retention
-label reads "Proxy, may include paid delivery" whenever level 3 is used on a published post.
+Content review doesn't load `search_ads`, so it can't tell whether the post has run as an ad
+(**Counts that include paid delivery**): it scores one post as advice and ranks nothing, so it
+keeps the level 3 proxy, labelled "Proxy, may include paid delivery" whenever level 3 is used on a
+published post.
 
 ## Partnership content (main thread)
 

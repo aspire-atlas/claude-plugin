@@ -16,7 +16,7 @@ Decides whether a post that also shows other brands is still the brand's video, 
 
 ## Output
 
-Per post: the brand's share of the products it features and a label. Competitor's video when a single competitor has more products than the brand (left out, with the brand named). Brand is the subject when it has a third or more of the products, or one product and at most two other brands (kept, at most 2 in the top 12). Multi-brand look otherwise (left out and counted, available when the person asks for more). Captions are matched on whole words. Partners count toward other brands but never make a post a competitor's.
+Per post: the brand's share of the products it features and a label. Competitor's video when a single competitor has more products than the brand (left out, with the brand named). Brand is the subject when it has a third or more of the products, or one product and at most two other products in all (kept, at most 2 in the top 12). Multi-brand look otherwise (left out and counted, available when the person asks for more). Captions are matched on whole words. Partners count toward other brands but never make a post a competitor's.
 
 ## Callable
 

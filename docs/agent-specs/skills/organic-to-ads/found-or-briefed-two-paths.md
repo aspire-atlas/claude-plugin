@@ -25,9 +25,10 @@ path learns about hooks, formats and creators carries to the other.
 ## Output
 
 Each candidate labelled `found` or `briefed`, with the rule that placed it. In order: a deliverable
-on a deal or a program's posts owed; a partnership-ads permission on the post; a partnership
-hashtag (#ad, #sponsored, #partner, #ambassador, or the brand's partner tag) together with a tag
-for this brand. A post with a partnership hashtag but no tag for this brand is another brand's
+on a deal or a program's posts owed; a partnership-ads permission on the post; the brand's own
+partner tag on its own (it is itself a tag for this brand); a generic partnership hashtag (#ad,
+#sponsored, #partner, #ambassador) together with a tag for this brand. A post with a generic
+partnership hashtag but no tag for this brand is another brand's
 sponsored post: it is set aside on both paths and counted. A post whose path can't be told goes to
 found, the stricter path, labelled "path unclear". Gifted-only posts are found, labelled "seeded".
 
