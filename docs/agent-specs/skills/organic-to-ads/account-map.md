@@ -16,7 +16,7 @@ Sorts the accounts posting about the brand into creators and everyone else, so c
 
 ## Output
 
-Each author labelled creator, brand-owned (own or regional account), retailer or reseller, deal or news page, team or sponsorship account, or another brand's sponsored post, with the evidence for the label (handle, caption wording, posting mix). Brand-owned accounts are excluded; the rest are counted and set aside unless the person includes them. Uncertain labels are flagged, never guessed. A proposed map is returned for one batch question; until it is saved, every count on the page reads "unconfirmed account map".
+Each author labelled creator, brand-owned (own or regional account), retailer or reseller, deal or news page, team or sponsorship account, or another brand's sponsored post, with the evidence for the label (handle, caption wording, posting mix). Brand-owned accounts are excluded; the rest are counted and set aside unless the person includes them. Uncertain labels are flagged, never guessed. A proposed map, or only the authors a saved map doesn't list, is returned as a `write` proposal for one batch question; the saved record is a `guideline` under the ad-reuse-only `ad-reuse:account-map` key, which every other flow drops; until it is saved, every count on the page reads "unconfirmed account map".
 
 ## Callable
 

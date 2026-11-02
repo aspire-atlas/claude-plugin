@@ -42,15 +42,21 @@ exactly, and render for the primary lens per **Rendering for a lens**.
 
 1. Load tools with `ToolSearch` `select:` under the given prefix: `list_post_search_fields`,
    `search_posts`, `search_creators`, `search_calibrations`, `search_insights`,
-   `list_hashtag_posts`, `append_insights`, `report_checkpoint`.
+   `list_hashtag_posts`, `search_partnership_content`, `list_ad_search_fields`, `search_ads`,
+   `append_insights`, `report_checkpoint`. The three partnership and ads tools are read only and
+   serve one rule: finding posts whose counts include paid delivery (`ad-reuse.md`, **Counts
+   that include paid delivery**).
 2. When the launch carries no calibration digest, read `search_calibrations` (no filter, limit
-   100 per page, paged to the end) for `competitor`, `red_line`, and `theme:brand` before
-   building the pool: the pool excludes competitors, and "Ready for paid" and the no-AI-copy
-   rule need the red lines. Drop every `review:`, `program:`, `library:` and `orchestrator:` key, and a creator ad campaign's `campaign:{slug}-cas`, `-lane-*`, `-terms` and `-decision-defaults`.
+   100 per page, paged to the end) for `competitor`, `red_line`, `theme:brand`, and
+   `ad-reuse:account-map` before building the pool: the competitor screen needs the
+   competitors, "Ready for paid" and the no-AI-copy rule need the red lines, and a saved account
+   map is followed, never proposed again (`ad-reuse.md`, **Account map record**). Drop every `review:`, `program:`, `library:` and `orchestrator:` key, and a creator ad campaign's `campaign:{slug}-cas`, `-lane-*`, `-terms` and `-decision-defaults`.
 3. Call `list_post_search_fields` once and use only field paths it returns. Never guess a path.
 4. Build the candidate pool per **Candidate pool**: the window, the sources for `reuse_scope`,
-   video only, then the prefilter to the top 12, ranked in the retention level order (measured
-   on the post, then the creator average, then views per follower). Use `search_creators` for
+   the account map, the competitor screen, the two paths, video only, then the posts whose
+   counts include paid delivery, then the prefilter to the top 12, ranked in the retention level
+   order (measured on the post, then the creator average, then views per follower, never for a
+   briefed or already-run post). Use `search_creators` for
    each author's follower count and creator figures, and `search_posts` for each author's own
    median. Count the candidates with measured data.
 5. Read and frame each candidate per **What to read per candidate**. View every frame
@@ -83,8 +89,10 @@ exactly, and render for the primary lens per **Rendering for a lens**.
   or "not measurable yet".
 - Top candidates: up to five, each with its path (found or briefed), hook score, retention
   level (Measured, Creator average, or Proxy), pattern, and the first cut's timestamps.
-- Account map: the counts set aside by kind, and, when no `ad-reuse:account-map` record was in
-  the digest, the proposed map for the main thread to offer to save.
+- Account map: the counts set aside by kind, and whether a saved map was followed. A map to
+  save goes in the result packet's `proposals`, never here: level `write`, gate
+  `approve-account-map`, `what` "Save the account map" (or "Add {n} accounts to the saved
+  account map"), and one `items` entry per account as `@handle (platform): label`.
 - Rights: one line; creator posts show "Not held in Atlas: confirm usage rights before paid
   use" unless a record says otherwise.
 - Data gaps: candidates left out (non-video, cover only, no metrics), how many were

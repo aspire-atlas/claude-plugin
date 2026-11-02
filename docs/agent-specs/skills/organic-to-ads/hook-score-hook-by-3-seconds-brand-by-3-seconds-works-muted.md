@@ -11,7 +11,8 @@ Scores each candidate video on how well its opening works as an ad.
 
 ## Inputs
 
-- From brand memory: competitors (excluded from the pool), red lines, and the brand theme.
+- From brand memory: competitors (for the competitor and multi-brand screen, which keeps brand-led
+  posts), red lines, and the brand theme.
 - From the launch message: the scope (the brand's own posts, creators' posts, or both), the window,
   and any placements named.
 
@@ -24,9 +25,11 @@ with no data scores zero and is listed as missing. A cover alone never stands in
 The brand's own partnership disclosure never costs "ready for paid" points. A post that has already
 run as an ad is labelled so, and its counts are not used for retention or reach, because they
 include the ad's own delivery. Every candidate carries a snapshot of its components and counts at
-the run. Candidates are ranked within their path (found or briefed). On the briefed path, Retention
-never uses the post's own counts (level 3), which may include the brand's paid delivery; it uses the
-creator average or the creator's median views on their other posts. The post's own views and
+the run. Candidates are ranked within their path (found or briefed). On the briefed path, and for
+any post already run as an ad, Retention never uses the post's own counts (level 3), which may
+include the brand's paid delivery, in the score or in the prefilter: it uses the measured value or
+the creator average, and with neither it is missing. A brand-led post with a competitor in frame is
+not forced to "leave" and keeps its "ready for paid" points for that competitor. The post's own views and
 engagement are shown as "organic traction" and never compared across paths.
 
 ## Callable

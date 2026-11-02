@@ -63,7 +63,7 @@ The ranked candidates, on one batch question: one `went_well` per leading hook p
 most) and one `action_item` per licensing candidate (six at most), each with its hook score, cuts,
 retention source and rights status. Each licence request is saved as a `draft` finding and a
 `rights` finding at `requested`, on the same question, so other agents see the request. It skips a
-post by the brand or a competitor, a creator with a saved reject or an open your-call question, an
+post by the brand, a competitor's video (one the competitor screen left out; a brand-led co-feature is kept), a creator with a saved reject or an open your-call question, an
 asset blocked on brand safety, and a creator with no route. A request under 14 days old is shown
 again, never drafted twice; one declined in the last 90 days is skipped; after 14 days with no
 answer, the new draft is a follow-up on the same terms. Sending one is a Send that 13 Outreach and
@@ -71,8 +71,8 @@ Brief does, one question per creator. It writes no other `rights` status: the cr
 (granted, countered or declined) goes to 26 Content Library and Rights to record. On "Page only" it
 publishes and saves nothing, and an unattended run saves nothing. The running `atlas-ad-reuse` agent
 drafts nothing; until the build, licence requests go through `atlas-content-sourcing`. The account
-map, when the person confirms it, is saved by the main thread as the `ad-reuse:account-map` calibration after the same batch
-question. Each `action_item` carries a `snapshot` of the score's components and counts at the run,
+map is proposed in the result packet (gate `approve-account-map`), and, when the person confirms it, saved by the main thread as the `ad-reuse:account-map` calibration after the same batch
+question, or superseded to add new accounts; a saved map is followed, never proposed again. Each `action_item` carries a `snapshot` of the score's components and counts at the run,
 so 25 Partnership Ads Launcher's learning compares results with what was known before launch.
 Each `action_item` also carries its `path` (`found` or `briefed`) and the rule that placed it; the
 page shows the two paths as two lists, never one ranking.

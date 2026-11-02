@@ -22,10 +22,10 @@ Answers what the brand may run, and what it needs to ask for.
 ## Output
 
 A clearance checklist (likeness, trademarks, league or team marks, audio); the rights line on an ad reuse score; and a pro-rata usage fee for adding or extending usage, or, when no fee is saved, a suggested range for that post: an opening offer, a target and a
-walk-away, from U7's price for the creator's views adjusted for existing content and for the usage
+walk-away (U7's open, target and max, rounded to USD 10), from U7's price for the creator's views adjusted for existing content and for the usage
 asked (duration, partnership ads, exclusivity), checked against the fees the brand's creators
 accepted or countered before, and capped at what the ad can earn back when the person gives a
-budget and a target return. A range that rises with views is capped at the upper quarter of the
+budget and a target return. A range that rises with views is capped at the 75th percentile of the
 fees the brand's creators accepted before, when there are 10 or more; with neither that nor a
 budget, any target above the brand's median past fee carries a "no ceiling known" warning. For
 briefed content the deal's usage terms are read first: only usage the deal doesn't grant is asked
