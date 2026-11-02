@@ -15,7 +15,8 @@ needs exactly which moments to cut, at what length, for which placement.
     marker the census exposes is read for the path (**Two paths**), never as a rank boost.
   - **Who posted (account map).** Before ranking, sort the authors into creators and the rest:
     the brand's own and regional accounts (excluded), retailers and resellers, deal and news
-    pages, and accounts posting another brand's sponsored content. Keep only creators unless the
+    pages, team or sponsorship accounts (a sports team, league, event or venue account posting
+    the brand as its sponsor), and accounts posting another brand's sponsored content. Keep only creators unless the
     person asked otherwise, and name how many of each were set aside. When an
     `ad-reuse:account-map` record is saved (**Account map record**), follow its labels and sort
     only the authors it doesn't list.
@@ -156,7 +157,10 @@ Rules:
   has run it (`search_partnership_content`, or `partnershipAds` on `search_posts`), or when
   `search_ads` with `groupBy` post and the post's `igMediaIds` returns a row for it (call
   `list_ad_search_fields` first; no linked ad account returns no rows, which means "not known",
-  never "never ran"). For these posts level 3 has no data: score Retention from level 1 or 2,
+  never "never ran"). These reads take only `adUsage`, `permissionStatus` and `hasAdCode`. The
+  same calls return the brand's `adCode`, which works like a password: never carry it into the
+  page, a finding, the visual payload, the result packet or any other output; say "has an ad
+  code" where it matters. For these posts level 3 has no data: score Retention from level 1 or 2,
   and with neither, Retention is missing (zero, listed as missing). There is no other fallback.
   Label an already-run post "already run as an ad: counts include paid delivery". Never rank a
   post higher because an ad inflated its counts.
@@ -266,7 +270,8 @@ lens (**Output for each lens** sets the order for `creative`):
    the opening frame, and the metric row.
 7. **Cut structure and storyboards** (3.9): the five beats every cut shares (hook 0 to 3s,
    brand 3 to 6s, build 6 to 9s, reveal 9 to 12s, then the end card, per the page standard) and
-   the specs from **Cut list**. On a 15-second cut the end card runs 12 to 15s. Then one storyboard per recommended ad: the badge (its rank),
+   the specs from **Cut list**. On a 15-second cut the end card runs 12 to 15s. Then one storyboard per recommended ad: the badge (its rank within its path, F1, F2, B1; recommended ads are taken from both paths per
+   the agent's top candidates rule, at most three from each),
    the hook line, handle, date, pattern, cut length, and the tests it runs in; a still for every
    beat, taken from the frames read at that beat's timecode, or an insert tile naming what to add
    when the post has no usable frame there; the timecodes, a one-line description per beat, the
@@ -369,6 +374,11 @@ One post has no pool. Retention still uses the level order, with two changes: le
 quartile to score against, so the creator average is shown beside the score and Retention is
 scored on level 3; and **Hook evidence** cites any measured rate without confirming or capping.
 A draft has no views or watch time yet, so its Retention is listed as missing.
+
+Content review keeps the level 3 proxy even though a post under a brief is a briefed post, an
+exception to **Counts that include paid delivery**: it scores one post as advice, ranks nothing,
+and doesn't load `search_ads`, so it can't tell whether the post has run as an ad. Its Retention
+label reads "Proxy, may include paid delivery" whenever level 3 is used on a published post.
 
 ## Partnership content (main thread)
 

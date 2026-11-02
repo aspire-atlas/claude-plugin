@@ -28,7 +28,9 @@ include the ad's own delivery. Every candidate carries a snapshot of its compone
 the run. Candidates are ranked within their path (found or briefed). On the briefed path, and for
 any post already run as an ad, Retention never uses the post's own counts (level 3), which may
 include the brand's paid delivery, in the score or in the prefilter: it uses the measured value or
-the creator average, and with neither it is missing. A brand-led post with a competitor in frame is
+the creator average, and with neither it is missing. The one exception is 17 Content Review's single-post
+ad reuse check, which keeps the proxy, labelled "may include paid delivery". Detecting a post that
+has run as an ad reads only whether it ran and whether it has an ad code, never the code itself. A brand-led post with a competitor in frame is
 not forced to "leave" and keeps its "ready for paid" points for that competitor. The post's own views and
 engagement are shown as "organic traction" and never compared across paths.
 

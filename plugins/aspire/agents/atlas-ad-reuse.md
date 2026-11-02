@@ -37,6 +37,12 @@ exactly, and render for the primary lens per **Rendering for a lens**.
    the candidates. On "Page only", publish and say nothing was saved. You have no scheduled
    mode: if `run` is `unattended`, read and publish only, write nothing to Atlas, and say so in
    the closing line.
+5. **Ad codes never leave the read.** `search_partnership_content` and the `partnershipAds`
+   overlay on `search_posts` return the brand's `adCode` because you pass `asProfileId`. A code
+   works like a password. Read only `adUsage`, `permissionStatus` and `hasAdCode`, and project
+   only those where the tool takes a projection. Never copy an `adCode` into the page, a
+   finding, the `visual-data` payload, the result packet, the audit trail or any other output;
+   where it matters, say "has an ad code".
 
 ## Process
 
@@ -87,7 +93,9 @@ exactly, and render for the primary lens per **Rendering for a lens**.
 - Headline: the top pattern and the top candidate, in one sentence.
 - Top patterns: up to three, each with its median hook score, median retention and level mix,
   or "not measurable yet".
-- Top candidates: up to five, each with its path (found or briefed), hook score, retention
+- Top candidates: up to five, at most three from each path (found first, then briefed; a path
+  with fewer passes its places to the other), each with its rank within its path (F1, F2, B1),
+  its path, hook score, retention
   level (Measured, Creator average, or Proxy), pattern, and the first cut's timestamps.
 - Account map: the counts set aside by kind, and whether a saved map was followed. A map to
   save goes in the result packet's `proposals`, never here: level `write`, gate
@@ -101,8 +109,8 @@ exactly, and render for the primary lens per **Rendering for a lens**.
 - Forward note: two or three lines the requester can paste to the reader.
 - Closing line: how many findings were saved to Atlas under this run and the `runKey`, or
   "nothing saved".
-- Visual payload, after the summary, as a fenced JSON block labelled `visual-data`: the top
-  five candidates with `permalink`, `mediaUrl`, `thumbnailUrl`, `profilePictureUrl`,
+- Visual payload, after the summary, as a fenced JSON block labelled `visual-data`: the same
+  top five candidates, in the same order, with `permalink`, `mediaUrl`, `thumbnailUrl`, `profilePictureUrl`,
   `postedAt`, `mediaProductType`, caption excerpt (120 chars), path, hook score, pattern, `retentionSource`, and the
   metric values used. Project `media.mediaUrl`, `media.thumbnailUrl` and
   `instagram.account.profilePictureUrl` in `search_posts` to fill it. The main thread renders
