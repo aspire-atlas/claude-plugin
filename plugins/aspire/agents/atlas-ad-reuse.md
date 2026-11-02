@@ -81,8 +81,10 @@ exactly, and render for the primary lens per **Rendering for a lens**.
 - Headline: the top pattern and the top candidate, in one sentence.
 - Top patterns: up to three, each with its median hook score, median retention and level mix,
   or "not measurable yet".
-- Top candidates: up to five, each with hook score, retention level (Measured, Creator
-  average, or Proxy), pattern, and the first cut's timestamps.
+- Top candidates: up to five, each with its path (found or briefed), hook score, retention
+  level (Measured, Creator average, or Proxy), pattern, and the first cut's timestamps.
+- Account map: the counts set aside by kind, and, when no `ad-reuse:account-map` record was in
+  the digest, the proposed map for the main thread to offer to save.
 - Rights: one line; creator posts show "Not held in Atlas: confirm usage rights before paid
   use" unless a record says otherwise.
 - Data gaps: candidates left out (non-video, cover only, no metrics), how many were
@@ -93,7 +95,7 @@ exactly, and render for the primary lens per **Rendering for a lens**.
   "nothing saved".
 - Visual payload, after the summary, as a fenced JSON block labelled `visual-data`: the top
   five candidates with `permalink`, `mediaUrl`, `thumbnailUrl`, `profilePictureUrl`,
-  `postedAt`, `mediaProductType`, caption excerpt (120 chars), hook score, pattern, `retentionSource`, and the
+  `postedAt`, `mediaProductType`, caption excerpt (120 chars), path, hook score, pattern, `retentionSource`, and the
   metric values used. Project `media.mediaUrl`, `media.thumbnailUrl` and
   `instagram.account.profilePictureUrl` in `search_posts` to fill it. The main thread renders
   this as post cards.

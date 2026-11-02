@@ -11,13 +11,41 @@ needs exactly which moments to cut, at what length, for which placement.
 - **Sources**, per the `reuse_scope` input:
   - `own`: the brand's linked handles.
   - `creators`: posts by other accounts that mention or tag the brand's handles, or carry a
-    tracked hashtag (`list_hashtag_posts`), excluding the brand's own handles and every
-    `competitor`. Posts with the partnership marker the census exposes rank first, because
-    usage rights are likelier to be negotiable.
+    tracked hashtag (`list_hashtag_posts`), excluding the brand's own handles. Posts with the
+    partnership marker the census exposes rank first, because usage rights are likelier to be
+    negotiable.
+  - **Who posted (account map).** Before ranking, sort the authors into creators and the rest:
+    the brand's own and regional accounts (excluded), retailers and resellers, deal and news
+    pages, and accounts posting another brand's sponsored content. Keep only creators unless the
+    person asked otherwise, and name how many of each were set aside. When the calibration
+    digest carries an `ad-reuse:account-map` record, follow it.
+  - **Competitors on screen.** Judge a post that also shows a `competitor` by which brand is the
+    subject, never by whether one appears: count the brand's products against all products the
+    post features. When a single competitor has more products than the brand, leave the post
+    out as a competitor's video. When the brand has a third or more of the products, or has one
+    and at most two other brands appear, keep it, at most 2 in the prefiltered 12. Anything else
+    is a multi-brand look: leave it out and count it. Many looks in beauty, fashion and home
+    show several brands, and leaving out every one of them empties the pool.
   - `both` (default).
+- **Two paths: found or briefed.** Before ranking, label each creator post `found` (made
+  unprompted) or `briefed` (the brand asked for it). Briefed means a deliverable on a program
+  deal, a partnership-ads permission on the post, or a partnership hashtag (#ad, #sponsored,
+  #partner, #ambassador, the brand's partner tag) together with a tag for this brand. A
+  partnership hashtag with no tag for this brand is another brand's sponsored post: set it aside
+  and count it. When the path can't be told, use found and say "path unclear". Rank and show the
+  two paths separately, never as one list. On the briefed path, product focus and the subject
+  screen are shown but not weighted, because nearly every briefed post passes them; read the
+  deal's usage before proposing any rights request. On the found path, the subject and
+  competitor screens apply in full. Within each path, rank by the hook score. Its openings, sound-off and
+  standalone components are known before any ad runs; for Retention on a briefed post, skip
+  level 3 (the post's own counts may include the brand's paid delivery) and use level 2 or the
+  creator's median views on their other posts. Show the post's own views and engagement as
+  "organic traction", and never compare them across paths. A program deliverable is read from
+  the program's findings with `search_insights`.
 - **Formats:** video only (Reels, TikTok videos). Carousels and images are left out with a
   one-line note: they carry no hook timing.
-- **Prefilter:** rank the pool by the lead reuse signal and take the top 12 into frame work.
+- **Prefilter:** rank the pool by the lead reuse signal and take the top 12 into frame work
+  (with both paths, 8 found and 4 briefed; a path with fewer passes its slots to the other).
   The signal follows the retention level order in **Hook score**, **Retention levels**:
   measured retention on the post when held, then the author's creator average, then views per
   follower against the author's own median (saves plus shares per view when views are
@@ -84,7 +112,7 @@ as missing.
 | Works without sound | 15 | On-screen text or captions carry the point; `analysis.overlayText` or frames show it |
 | Retention | 20 | Scored from the first level in **Retention levels** that has data |
 | Standalone segment | 10 | A self-contained 6 to 15 second stretch that makes sense without the rest |
-| Ready for paid | 10 | Disclosure present where paid, no competitor in frame, no `red_line` hit, no third-party music flagged in the caption |
+| Ready for paid | 10 | Disclosure present where paid, no competitor in frame, no `red_line` hit, no third-party music flagged in the caption. The brand's own partnership disclosure (its partner hashtag, a paid partnership label naming the brand) is what a partnership ad needs, so it never costs points; only another brand's disclosure does |
 
 ### Retention levels
 
@@ -116,6 +144,11 @@ Rules:
 - A level 2 quartile needs held values for 4 or more authors in the pool. With fewer, level 2
   has no data: fall to level 3, and say so.
 - With no data at any level, Retention scores zero and is listed as missing.
+- **Already run as an ad.** When the post has run as an ad (its partnership-ads usage shows it,
+  or `search_ads` lists it), its views, engagement and views per follower include the ad's own
+  delivery. Level 3 then has no data for that post: fall to level 2, or score Retention as
+  missing, and label the post "already run as an ad: counts include paid delivery". Never rank a
+  post higher because an ad inflated its counts.
 - The finding states the value and its field in plain words, for example "average watch time
   9.1s of an 18s Reel (51%)" or "creator hook rate 38%, not this post".
 
@@ -276,6 +309,11 @@ Written only when the main thread's launch says the user chose to save the candi
 - `hookEvidence[]`: one entry per measured rate cited for "Hook by 3 seconds", with the rate,
   what it measures in plain words, its level, and its effect (`confirmed`, `capped`, or
   `none`).
+
+- `path`: `found` or `briefed`, with `pathRule`, the rule that placed it.
+- `snapshot`: the component scores and the counts the score used (views, likes, comments,
+  shares, saves, followers) as they stood at this run, so a later result can be compared with
+  what was known before launch rather than with counts the ad itself raised.
 
 `idempotencyKey` per finding.
 

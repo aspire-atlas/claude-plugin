@@ -984,8 +984,12 @@ both are passed by default. Detail lives in `references/ad-reuse.md`. For one po
    "Save the ranked candidates to Atlas?" (Save (Recommended) / Page only).
 2. Launch `atlas-ad-reuse` with the tool prefix, `profile_id`, `profile_slug`,
    the linked handles and networks, `reuse_scope`, the window, any placements named,
-   `recipient`, a digest of the brand's calibrations (competitors, red lines, partners), and
-   whether the user approved the write. It reads only what Atlas holds.
+   `recipient`, a digest of the brand's calibrations (competitors, red lines, partners, and the
+   `ad-reuse:account-map` record when saved), and whether the user approved the write. It reads
+   only what Atlas holds, and returns the found and briefed paths as two lists.
+   When it returns a proposed account map, ask once with `AskUserQuestion` whether to save it
+   (Save the account map (Recommended) / Not now), and on yes write it with `append_calibration`
+   as `ad-reuse:account-map`.
 3. Relay the page link, the top patterns, the top candidates as post cards per **Visual
    output**, and the rights line. Say plainly that usage rights for creator posts are not held
    in Atlas unless a brief or record says otherwise.
