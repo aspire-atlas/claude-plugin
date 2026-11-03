@@ -1,0 +1,104 @@
+# Ads launcher reference (partnership ads: test, launch paused, read in flight, learn)
+
+The rules for `atlas-ads-launcher` and the **Ads launch** section of `SKILL.md`. It takes posts
+the brand has cleared (from `atlas-ad-reuse`, the content library's cleared-for-ads shelf, or a link
+the person names), designs a test, plans each ad through the Meta Ads connector, reads results in
+flight, and writes back what each test taught. This is a first version: it plans, creates ads
+paused after the person's yes, and reads results. It never turns an ad on, never changes a budget,
+and never runs a TikTok or YouTube launch.
+
+## Passes
+
+| Pass | What the agent does | What the main thread does after |
+| ---- | ------------------- | ------------------------------- |
+| `plan` | Checks each post's ad code status, designs the test, and plans each ad with `ads_boost_ig_post` `confirmed=false` | States the total budget and cap per test, then asks once per ad with `AskUserQuestion`; on yes it calls `ads_boost_ig_post` `confirmed=true` itself (ad created paused) |
+| `monitor` | Reads live results with `search_ads` and calls each ad (**In flight**) | Relays the calls; any budget or status change is the person's step in Meta Ads Manager |
+| `record` | Saves the approved test plan, in-flight calls and learnings to Atlas | Nothing more |
+
+A pass runs only when its launch says so. `plan` and `monitor` write nothing to Atlas.
+
+## Inputs
+
+- The posts: each with its post id, network, path (`found` or `briefed`, from the ad reuse
+  findings), the score `snapshot` when it came from ad reuse, and its rights status.
+- The objective (sales by default), the total budget and its currency, the audiences, and the
+  campaign's decision defaults when a creator ad campaign is saved (`campaign:{slug}-decision-defaults`:
+  cost per sale target, spend floor).
+- The Meta Ads connector state: connected or not, the ad account, and the Instagram account.
+
+## Rights and ad codes
+
+- **Rights first.** A post runs only when its rights status says paid usage is granted: a
+  `rights` finding at `granted` with paid usage, a deal that grants it, or partnership-ads
+  permission on the post. Anything else is "rights not cleared" and goes to
+  `atlas-content-sourcing` in `next`; it is never planned.
+- **Ad code status.** Check each post with `search_partnership_content`. Read only `adEligibility`,
+  `permissionStatus` and `hasAdCode`. A post is ready when it is `AD_READY` and `AUTHORIZED`, or a
+  code exists. A code works like a password: never copy an `adCode` into a page, finding, packet,
+  draft or audit trail, and never repeat one back; say "has an ad code".
+- **Not ready.** Propose a short `send` draft asking the creator to grant partnership ad
+  permission in the app. It never asks for a code in a message.
+
+## Test design
+
+- **One variable per test**: hook pattern, opening line, cut length, creator, audience, or path
+  (found against briefed for the same product). Each test has a hypothesis, the audience and
+  objective, the budget per test, the spend floor before judging, and a rule: **Scale** when
+  cost per sale beats the target by 20% or more after the floor; **Fix** when click-through is at
+  or above the account's median but cost per sale misses; **Stop** when both miss after the floor.
+- **Budget.** The total never passes the stated budget. Without a cost per sale target, ask for one
+  in `questions` before any plan. A budget in a currency other than the ad account's is never
+  converted: ask for it in the account's currency.
+- **Paths stay apart.** A test never mixes found and briefed posts in one variable cell unless the
+  path is the variable. The learning keeps the path.
+- **No forecasts.** Never promise reach or results or quote a benchmark. A "what would it buy"
+  question gets how many tests, creators and variants each budget covers above the spend floor.
+  YouTube has no ad results in Atlas and no launch path: the plan is the creator and variant side
+  only. TikTok has no launch path yet: give the steps for TikTok Ads Manager.
+
+## Planning each ad
+
+- Call `ads_boost_ig_post` with `confirmed=false` per ad: `ig_media_id` and `sponsor_id` when the
+  brand holds ongoing permission, or the code when one exists (the code goes only into this call),
+  plus `ad_account_id` and `ig_account_id` from the connector. Return the plan per ad as a `spend`
+  proposal: the post, the test it belongs to, the daily budget and cap, and the audience.
+- Without the Meta Ads connector, return what to set up in Meta Ads Manager per ad, and nothing
+  else.
+- Never call it with `confirmed=true`. The main thread does that, one ad per question.
+
+## In flight
+
+Read the launched ads with `list_ad_search_fields` once, then `search_ads` for the window (default
+the last 7 days), one row per ad per currency. Per ad: spend, cost per sale against the target,
+hook rate, hold rate and click-through, and one status:
+
+| Status | When |
+| ------ | ---- |
+| Testing | Under the spend floor |
+| Not spending | Testing with no spend in the last 48 hours |
+| Winning | Past the floor and cost per sale at least 20% under the target |
+| Watch | Past the floor and within 20% of the target either way |
+| Fatigued | Was Winning, and hook rate or click-through fell 25% or more over the last 7 days against the 7 before |
+| Retire | Past the floor and cost per sale more than 20% over the target, or rights expire within 7 days |
+
+Each ad gets one move with its reason (scale, hold, refresh the cut, stop) and whether a soft
+result points at the creative (hook or hold rate down) or the setup (click-through steady, cost per
+sale up). Paid and organic figures are never added together, and currencies are never converted.
+Moves are recommendations only: the person makes them in Meta Ads Manager.
+
+## Learning
+
+On `record`, one `went_well` or `needs_improvement` finding per closed test, anchored to the post
+and the creator, with `detail.findingType` `ad-learning`, the post's `path`, the ad reuse
+`snapshot` it was chosen with, what ran, the result against the target, and the lesson in one line,
+labelled observation or inference. The test plan and each in-flight call are `action_item` findings
+with `findingType` `ad-test` and `ad-call`. All on one batch question, `runKey` prefix
+`ads-launcher-{profile}-`.
+
+## Page
+
+Title "<Brand> Ads Launch: {test name}", republished to the same path. Sections: header; answer
+(what is ready, what is waiting on rights or codes, what is paused and waiting to be turned on);
+decisions (each ad to approve, the total budget and cap); next steps; the test plan; the in-flight
+table when there are live ads; learnings; how it was worked out; what is missing. Amounts show in
+the ad account's currency and only to Editors.

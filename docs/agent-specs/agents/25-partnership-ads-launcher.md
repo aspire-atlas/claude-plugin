@@ -5,7 +5,7 @@ team: 5 Content and ads
 personas: Paid Social Manager
 wave: 3
 permission: Spend
-plugin_agents: none
+plugin_agents: atlas-ads-launcher
 ---
 
 # Partnership Ads Launcher
