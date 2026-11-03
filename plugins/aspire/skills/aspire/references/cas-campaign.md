@@ -194,10 +194,11 @@ The campaign object:
 `profileId` is the brand Profile the campaign runs for: the `profile_id` from Phase 2 + 3, an
 id, never a slug. Setup records are saved for the whole organization, so without it every Profile
 in the organization lists the campaign; with it, `get_cas_campaign` and the other `get_cas_*`
-tools can keep each Profile's campaigns apart. Setup writes it on every new campaign, from the chat
-(C7) and from the setup widget. A campaign saved without it (set up before this key existed, or by
-a setup widget that did not write it) reads as the whole organization's, as before. When the
-organization has more than one live Profile, the status screen offers once, in its own picker,
+tools can keep each Profile's campaigns apart. Setup in the chat (C7) writes it on every new
+campaign; the setup widget does not write it yet. A campaign saved without it (set up before this
+key existed, or through the setup widget) reads as the whole organization's, as before. When the
+organization has more than one live Profile, the status screen offers it once per session, in its
+own picker,
 "Save {campaign} as {brand}'s campaign?", with "Save it (Recommended)" and "Not now", and writes
 it through the supersede rule with its own Destructive tools confirmation. It never moves a
 campaign from one Profile to another: a different `profileId` is a question for the CM.
@@ -634,11 +635,18 @@ or the SOW per **Carrying the pitch forward**), `criteria` (the shared criteria,
   itself, with the same choices, and saves the records with `append_calibration` once the person
   presses Save after its review. Ask none of those questions in chat and build no summary beside
   it; say one line ("Fill in the campaign setup above and press Save.") and wait. Save sends a
-  message back to the chat with what was saved. Then:
-  - Write the Gate 1 finding and the Round 1 `round` finding (C7's findings) after one
-    `AskUserQuestion`: "Record the concepts as approved by {approver} on {date} and start round 1
-    of {campaign}?", with "Record it (Recommended)" and "Change something". Use the approver,
-    date and planned dates the message names.
+  message back to the chat, and the form's hand-off (in the model's context) lists each record
+  with what `append_calibration` did, the approver and date, the planned send dates and the
+  concepts' source. Then:
+  - Once every record is applied (none waiting on an owner or proposed), write C7's findings
+    after one `AskUserQuestion`: "Record the concepts as approved by {approver} on {date} and
+    start round 1 of {campaign}?", with "Record it (Recommended)" and "Change something". It
+    writes the Gate 1 finding, the Round 1 `round` finding with its default `plan`, a `planned`
+    gate finding per gate the CM gave a send date for (C4), and, when the concepts came from the
+    pitch, the pitch's cast creators as undecided candidates in each concept's pool (**Carrying
+    the pitch forward**). Use the approver, date and planned dates the hand-off names.
+  - A record waiting on an owner, or proposed, is not applied: say so in one line, write no
+    finding yet, and finish once an owner approves.
   - A record the message calls already on file was not changed: show the saved and the new
     versions and run the supersede rule with its own confirmation for each one the CM wants to
     replace. Never write over a saved record.
@@ -786,9 +794,12 @@ The rule for every one:
   then ask the step's own `AskUserQuestion` as this reference words it.
 - **Where it draws none** (Claude Code's terminal, a plain-text host, or you cannot tell), show
   the step in chat as this reference says, from the same result: its text is the fallback.
-- **When the tool is not among the Atlas tools** (an older server) **or fails**, read the
-  records yourself, as below. On `unavailable`, never answer from a guess: say the campaign
-  could not be read and stop.
+- **When the tool is not among the Atlas tools** (an older server), or fails with
+  `internal-error`, read the records yourself, as below. On `unavailable`, never answer from a
+  guess: say the campaign could not be read and stop. On `unauthorized` or `forbidden`, say the
+  caller can't see this campaign and stop: never read around the tool, which would skip the
+  client view. On `not-found`, list the campaigns (`get_cas_campaign` without `campaignId`) and
+  ask which one.
 - **Widgets never write.** A button in a widget sends a message to the chat that names the
   campaign and the step ("On the "{campaign}" creator ad campaign: Draft a counter for @marco.").
   Treat it as the CM asking for that step: run it here with its own confirmation, exactly as if
@@ -803,8 +814,8 @@ chat.
 Call `get_cas_campaign` with `campaignId` and `asProfileId`. It returns the rounds, each round's
 dispatch row (**1c**) with its status line and one next step, the gates and the roster: take the
 row from it rather than working it out again. Where the host draws the widget, it is the status
-screen: say one line with the next step and go to the `AskUserQuestion` below. Without the tool,
-or when it fails other than `unavailable`, read the setup records and the working state
+screen: say one line with the next step and go to the `AskUserQuestion` below. When **Widgets**
+says to read the records yourself, read the setup records and the working state
 (`search_insights` on the campaign's prefix, paged), find each round that is not done (**Rounds**,
 **Which round**) and its row in the dispatch table (**1c**), reading from the bottom up. Without
 the widget, show one screen: per round, its month, dates and state,
@@ -827,7 +838,8 @@ tags is sent without that answer.
 
 Launch what the row names, then record what came back. Every agent launch here also carries
 the tool prefix, `profile_id`, and `profile_slug`. Where a step has a widget (**Widgets**), show
-it at the start of the step and again after its write, so the person sees the step move:
+it at the start of the step, and again after its write only where the host draws it (in chat, the
+one line status after the step is enough):
 `get_cas_selection` for sourcing, screening and Gate 2 (rows 2 to 5), `get_cas_rates` for offers,
 replies and Gate 3 (rows 6 to 8), `get_cas_briefs` for the briefs, the creators' replies and Gates
 4 and 4b (rows 10 to 15), and `get_cas_results` for production and the round in market (rows 16

@@ -1481,7 +1481,8 @@ records exist), then C0 (the concepts), then `get_cas_setup_form` (**The setup w
 the host draws the setup form, it asks the rest and saves after its own Save; then record Gate 1
 and Round 1 after one confirmation. Where it draws none, ask C1, C3 to C6 and C6a, one
 `AskUserQuestion` each, C2 only when C0 found nothing, and C7 to confirm the batch before any
-write. Either way the campaign record carries the brand Profile's id (`profileId`). C5 is the standing approval
+write. Chat setup saves the brand Profile's id (`profileId`) on the campaign record; a campaign
+without it is offered it from **Status**. C5 is the standing approval
 to deliver and C6 the standing approval for this campaign's scheduled tasks; say so plainly.
 A `key-exists` follows the Phase 5 supersede rule with its own confirmation.
 
