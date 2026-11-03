@@ -569,7 +569,7 @@ uploads. So:
 - **The agency and a client inside the organization** shared as Contributor play every uploaded
   tile their side may see.
 - **A client approver from outside the organization**, or anyone the page treats as a read only
-  client, reads no page data, and cuts live only there (**What the client sees** under Content
+  client, reads no page data, and the page reads cuts only from there (**What the client sees** under Content
   Review). For them the block shows one line in place of the tiles: "Cuts show here for people who
   can open this page's data. Ask {CM name} for access." No tile, poster or count renders.
 - **An upload that can't load** (removed, or the browser refuses it) shows the `film` icon and
@@ -815,7 +815,8 @@ cut** on each for the agency.
 #### Statuses
 
 A cut's status is the status of its newest version, worked out live from the page data. Nobody
-sets it by hand, and no record stores it. The rows below are read in order, and the first that
+sets it by hand, and no record the page reads stores it: the `cut` finding in Atlas is a copy the
+page never reads back (`cas-campaign.md`, **Pulling decisions**, **The cut records**). The rows below are read in order, and the first that
 holds is the status, so a version with a call never reads as in QA.
 
 **The call on a version** is the client's call that counts on it (**The status flow**, **The call
@@ -1013,9 +1014,9 @@ the older one opens read only for them: its comments stay readable, and it takes
 comment, since the cut's status follows the newest version. That is a view, not a secret: a
 version in QA is in client readable page data (`reviews`), and nothing in it is agency only.
 
-A read only client reads no page data (**Who sees what**), and cuts live only there, so for them
+A read only client reads no page data (**Who sees what**), and the page reads cuts only from there, so for them
 the queue shows one line in place of its parts: "Cuts show here for people who can open this
-page's data. Ask {CM name} for access." Cut calls have no campaign record (**Pulling decisions**),
+page's data. Ask {CM name} for access." Cut calls count only from the page's own data (**Pulling decisions**, **The cut calls**),
 so such an approver can't approve a cut from the chat either: the CM shares the page with them
 from inside the organization, or the client's calls come from an approver who can open it.
 
@@ -1727,8 +1728,8 @@ capability, to suggest checks 1 to 7 for an uploaded version. Claude only sugges
 confirms each one.
 
 - **What Claude can be given.** A `sample` call takes text and images, never sound or video, and a
-  cut has no transcript on the page: cuts live only in page data, never in Atlas, so there is no
-  Atlas transcript of one (**What this flow never does**). So the suggestion reads still frames
+  cut has no transcript on the page: a cut's video lives only in page data, never in Atlas (its
+  `cut` finding holds the record, not the file), so there is no Atlas transcript of one (**What this flow never does**). So the suggestion reads still frames
   only, and anything only heard (a spoken hook, a spoken CTA, a spoken disclosure) comes back Not
   sure. It can't replace watching the cut with sound on.
 - **The Button.** A ghost Button "Suggest ticks" with the Lucide `sparkles` icon above the rows,

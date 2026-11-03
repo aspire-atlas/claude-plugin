@@ -96,7 +96,9 @@ text, whatever the source:
   **Working state**), the creator's concept from their newest `roster` finding, then the newest
   `brief` finding for that concept with `locked: true`. When the creator's newest
   `brief-revision` is approved and `locked`, it replaces the concept's brief for that creator.
-  Read the brief page (`briefPage`) with the Artifact tool's `read` action for the full brief.
+  The finding's `content` is the full brief (`cas-campaign.md`, **Working state**, **The brief's
+  content**); only a finding with no `content` sends you to the brief page (`briefPage`), read
+  with the Artifact tool's `read` action.
   Never treat `campaign:{slug}-cas`, `-lane-*`, `-terms` or `-decision-defaults` as guidelines.
 - **Pasted or attached:** read it as given.
 

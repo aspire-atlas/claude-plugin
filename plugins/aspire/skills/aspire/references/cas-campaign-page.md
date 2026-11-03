@@ -35,8 +35,9 @@ menu says. A client approver outside it reads the page itself but nothing from t
 nothing they do saves. Their read only view says so in one line: "Your choices can't save from
 this account. Tell {CM name} your decisions." The CM then records them in the chat, the way a
 decision typed in chat is recorded (**Gate 2: the creators**). Cut approvals are the exception:
-a cut call has no campaign record and a call from Aspire's side never counts, so they can't be
-recorded from the chat (**Content Review**, **The status flow**). Such an approver approves cuts
+the page counts a cut call only from the client's own page data, and a call from Aspire's side
+never counts, so they can't be recorded from the chat (the `cut` finding only copies what the page
+counted) (**Content Review**, **The status flow**). Such an approver approves cuts
 through a teammate at {brand} who can open the page as Contributor, or once the CM shares the page
 with them from inside the organization. Say this to the CM in the same first-publish message when
 the client's approvers are outside the organization.
@@ -645,7 +646,7 @@ itself carries what the records said at the last publish: the rounds, the roster
 and brief states, the client's open items, the sync slot and the Slack channel. So for a read only
 client, **Where we stand**, **Waiting on you**, **Aspire is on it** and **Next check in** are built
 from those published values, and each shows one line under its title: "As of {publish time}."
-Cuts live only in page data, so the pace verdict and the cut rows don't render for them, and no
+The page reads cuts only from page data, so the pace verdict and the cut rows don't render for them, and no
 section ever reads "Nothing" or "No weekly sync set yet." only because page data can't be read.
 
 #### The Simple view

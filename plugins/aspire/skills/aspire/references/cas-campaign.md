@@ -330,8 +330,9 @@ record type the newest finding per identity wins, by `detail.recordedAt`.
 | `roster` | the creator's account + round | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while a candidate; `went_well` approved; `needs_improvement` rejected | `handle`, `network`, `name`, `descriptor`, `location` (the last three only when edited on the page), `lane`, `persona` (the persona's name in the round's brief, **1d**, **Creator Selection**, **Concept and persona**), `slate` (candidate, approved, maybe, rejected), `priority` (true for a Priority Yes), `clientReason` (the reason on a Priority Yes or Yes against the recommendation), `rejectReason`, `clientQuestion`, `pickNote` (why we picked them), `rate` (offered, countered, agreed, declined), `offer` `{open, target, max}`, `counter`, `agreed`, `currency` (the ISO code every amount on the row is in, never converted; USD when left out), `replyWindow` (how long the creator has to reply, in words, per `rates-and-terms.md`, **Reply window**), `deliverables`, `usage`, `exclusivity`, `termNotes`, `contact` `{email, phone, manager}`, `tier`, `decidedBy` (`{writer, name, at, score, band}`: the page account whose call was recorded, their name, when, and the match score and band they saw), `surprise` (`{kind, reason, text, at}`: the client's surprise reason on that call, `kind` `pass` or `pick`, **1d**, **Creator Selection**, **Deciding**), `lastContactAt`, `waitingOn` (client, agency, creator), `yourCall` (the question to the client, while one is open), `adPermissions` (granted, pending), `details` `{status, address, pickup, visitDate, product, options, availability, deliveryNote}` (`address` being `{line1, line2, city, region, postal, country}`), `shipping` `{status, item, carrier, tracking, shippedAt, deliveredAt, eta}` (`status` not shipped, shipped, delivered, returned or kept), `contract` `{status, signedAt}`, `payment` `{status, at, paidPct}`, `rates` `{ugc, reel, usage90}` (the round's rates per deliverable), `footage` `{counts, at}`, `briefState` (sent, accepted, changed, approved, locked), `variantPlan` (the creator's overrides of the concept's variant plan for the round, one entry per overridden field, `[{variant, field, lane, value, by, at}]`, `field` being framework, length, hook, cta or post (the variant's live post, `{url, igMediaId}`) and `by` and `at` that field's own writer and time, **1d**, **Selected Creators**, **Concept and variant plan**), `shipDate`, `vetting` (the four figures and the recommendation), `returning` (true when carried from an earlier round), `fromRound` (the round it was carried from), `source` (chat, reply, page, or carried) |
 | `draft` | the creator + the template | The creator's account | `action_item` `low` while not sent; `went_well` once sent | `handle`, `template` (offer, counter, accept, chase, details, brief, brief-notes), `subject`, `body`, `sentAt` |
 | `reply` | one per exchange, never replaced | The creator's account | `went_well` `low` | `handle`, `receivedAt`, `summary` (one plain line), `record` (what it wrote to the roster), `nextMove` |
-| `brief` | lane + round | The brand's account | `action_item` `medium` while a draft; `went_well` when locked | `lane`, `locked`, `briefPage`, `version`, `edits` (the edits pulled from the page, one plain line each: the part, from, to, and who), `added` (true for a concept added on the page), `removed` (true for a concept taken out of this round's brief), `deferred` (true for a concept deferred to the next round), `carriedForward` (the round a deferred concept came from), `importedFrom` (`{label, url, kind}` of the document an import read), `startedFrom` (the round whose signed off brief it started from), `reopened` (`{reason, name, at}` when the agency reopened a signed off brief), `fromResults` (the lines applied from Ad Performance, one plain line each with the round they came from, **1d**, **Ad Performance**, **Changes for round {t}**) |
+| `brief` | lane + round | The brand's account | `action_item` `medium` while a draft; `went_well` when locked | `lane`, `locked`, `briefPage`, `version`, `edits` (the edits pulled from the page, one plain line each: the part, from, to, and who), `added` (true for a concept added on the page), `removed` (true for a concept taken out of this round's brief), `deferred` (true for a concept deferred to the next round), `carriedForward` (the round a deferred concept came from), `importedFrom` (`{label, url, kind}` of the document an import read), `startedFrom` (the round whose signed off brief it started from), `reopened` (`{reason, name, at}` when the agency reopened a signed off brief), `fromResults` (the lines applied from Ad Performance, one plain line each with the round they came from, **1d**, **Ad Performance**, **Changes for round {t}**), `agencyEdits` (the `edits` lines about the variant plan, kept apart so a client never reads them), `agencyFromResults` (the `fromResults` lines read from `agency/brief-round-r{round}`), `content` (the lane's whole brief, **The brief's content** below) |
 | `brief-revision` | the creator + round | The creator's account | `action_item` `medium` while waiting on the client; `went_well` once approved | `handle`, `lane`, `basedOn` (the locked lane brief's version), `changes` (one plain line each: what, from, to), `text` (the creator's version), `status` (waiting, approved, notes sent), `locked` |
+| `cut` | the cut (`{net}-{handle}-r{round}-{variant}`) | The creator's account | `action_item` `medium` while With Aspire QA, Needs client review or Changes requested; `went_well` when Approved | `cut` (the page's cut id), `handle`, `network`, `lane` (the concept it was cut for), `variant` (1 to 5), `title`, `version` (the newest version sent to {brand}, `null` while none is), `link` (that version's address for a linked version, empty for an upload), `asset` (that version's upload asset id, empty for a link), `reviewLink` (the campaign page's address with `#review/r{round}/{cut}/v{version}`), `sentAt`, `status` (`qa`, `client-review`, `changes` or `approved`: With Aspire QA, Needs client review, Changes requested, Approved), `verdict` (`approved`, `changes`, or `null` while no call counts on `version`), `verdictBy` (`{writer, name, at, confirmed}`: the page account whose call counts, its name, when, and true once the CM confirmed it as {brand}'s), `openComments` (open client readable threads on `version`), `check` (`{hook, brand, product, cta, captions, safezone, disclosure, runtime}`, each pass, fail or `null`, the brief check on `version`), `latestVersion` (the newest version, sent or in Aspire QA), `versions` (how many), `firstAddedAt` (the `addedAt:` of its first version) |
 | `hook` | one per hook or CTA, never replaced | The brand's account | `went_well` `low` | `lane`, `type` (hook, cta), `text`, `pattern`, `firstBriefed` (round and date) |
 | `hook-review` | hook + round | The brand's account | `went_well` when it led; `needs_improvement` when it lagged or was not used; `action_item` `low` when held or not measurable | `lane`, `hook` (the text), `pattern`, `postsMatched`, `vsMedian`, `result` (led, held, lagged, not used, not measurable yet) |
 | `page-sides` | the campaign | The brand's account | `went_well` `low` | `editors` (`{viewerId: firstSeenAt}`, every id Claude has seen with an `editors/{id}` marker or an `activity-editors/{id}` document, never removed), `approvers` (`{viewerId: {name, gate, gates, confirmedAt}}`, the page accounts the CM confirmed as a step's approver: `gate` the first step it was confirmed for and `gates` every step since, a record with no `gates` reading as `[gate]`), `deciders` (`{viewerId: {name, confirmedAt}}`, the page accounts the CM confirmed as {brand}'s for creator decisions and cut calls), `refused` (`{"{writer}/{item}": at}`, sign offs the CM said not to record, `{writer}/fees-r{round}` for a fee approval, whose value is the refused item's `at`, so a later item from that writer isn't refused, `{writer}/decisions` for an account whose creator decisions don't count, and `{writer}/cut-calls` for one whose cut calls don't). Written in the same answer as the pull that saw something new (**Pulling decisions**, **The creator decisions**, **The cut calls**, **The fee approval** and **The brief sign off**) |
@@ -341,6 +342,80 @@ A roster finding carries the whole row, not only what changed: copy the newest f
 detail for that creator and round, change what moved, and write it as the new finding. That keeps
 the newest finding per creator per round complete on its own. A roster finding written before
 rounds were recorded is the round in its `detail.round`.
+
+**The brief's content.** Every `brief` finding carries `content`: the lane's whole brief for the
+round, so the newest finding per lane and round is the full brief on its own, the way a roster
+finding is the whole row. It takes the brief agent's data block shape (`creator-brief.md`,
+**Creator-ads mode**, **The data block**), cut to the one lane:
+
+```json
+{"schema": 1, "version": 3, "title": "…", "summary": "…", "tone": "…", "dos": ["…"],
+ "donts": ["…"], "disclosure": "…", "fileNaming": "…", "notice": "",
+ "concept": {"lane": "{lane}", "order": 1, "name": "…", "line": "…", "personas": ["…"],
+   "trigger": "…", "framework": {"code": "PAS", "name": "Problem, agitate, solve"},
+   "story": "…", "sellingPoints": ["…"], "problem": "…", "agitate": "…", "solve": "…",
+   "beats": [{"n": 1, "name": "Hook", "seconds": "0-3", "what": "…"}],
+   "hooks": [{"n": 1, "type": "question", "line": "…", "shown": "…", "overlay": "…", "why": "…"}],
+   "ctas": [{"n": 1, "type": "direct", "line": "…", "destination": "…", "moment": "…", "why": "…"}],
+   "body": "…", "length": "30 seconds", "runtime": {"instagram": "…", "tiktok": "…"},
+   "broll": [{"n": 1, "shot": "…", "beat": "…"}],
+   "product": {"id": "…", "name": "…", "sku": "…"},
+   "coverage": {"passed": 3, "of": 3, "failed": []}},
+ "variants": [{"n": 1, "framework": {"code": "PAS", "name": "…"}, "length": "30 seconds",
+   "hook": 1, "cta": 1, "vo": "…", "broll": [1, 4, 7], "note": "…"}],
+ "variantCheck": {"passed": true, "failed": []}}
+```
+
+- **What it holds.** The brief as its writer last saw it: the brief agent's data block for its
+  run (`creator-brief.md`, **Writes**), the page's parts after the edits a pull records (**Pulling
+  decisions**), the import's parts for an import, and the locked version's copy for a sign off
+  (**Gate 4**). When loading the agent's block keeps a part someone edited on the page since the
+  last pull (`cas-campaign-page-brief.md`, **Loading the brief**), that edit's stamp is newer than
+  the pull, so the next pull records it with the lane's `content` as the page holds it. `version` is the finding's own `version`. The round's parts (`title`
+  to `notice`) are the same on every lane's finding for the round. `variants` is the variant build
+  (`agency/brief-{lane}-r{round}`) and `variantCheck` its check. The shapes are the page's, not
+  the data block's where they differ: `variants` and `variantCheck` sit at the top of `content`,
+  never inside `concept` (the data block keeps them in each concept), and a variant's `framework` is `{code, name}` (the code matched
+  to `frameworks`), and `product` carries its `id` (matched as **Loading the brief** matches it,
+  empty when not in scope).
+- **How it is written.** Long text is plain text by the data block's own text rule
+  (`creator-brief.md`, **The data block**: a blank line between paragraphs, "- " or "1. " at the
+  start of a list line), with two spaces per list level and a link as "text (address)", so no
+  reader parses HTML and every writer uses the same list marks. Every part is kept, a hook's or
+  CTA's `why` and the coverage included, unlike **Copy creator brief**.
+- **Size.** A finding has a size limit, so each lane's `brief` finding goes in an `append_insights`
+  call of its own, after the rest of the answer's findings, and an oversize brief never sinks the
+  gate, roster or cut findings beside it. When one is still too large, the longest text parts are
+  shortened, longest first, and `content.truncated` lists them, so a reader shows "Shortened, the
+  full text is on the campaign page" for those parts. A bracketed blank stays a bracketed blank, and a part the
+  brief doesn't have yet is an empty string or an empty list, never left out. A removed or
+  deferred concept keeps the content it had. The **Casting** part and the `change-r{n}-{id}` notes
+  are not parts of the brief and stay out, as they stay out of the data block.
+- **A finding from before.** A `brief` finding with no `content` was written before this field:
+  a reader takes the full brief from its `briefPage`, read with the Artifact tool's `read`, and
+  the next `brief` finding for that lane and round carries `content`.
+
+**The cut record.** One `cut` finding per cut, so a cut ties to its creator, concept and variant
+in Atlas and not only on the page. The page's `reviews` and `cut-calls` stay the source of truth:
+the page never reads a `cut` finding back, a cut's status on the page follows only the client's
+own calls (**1d**, **Content Review**, **The status flow**), and a cut call is never recorded from
+the chat. A `cut` finding is Atlas's copy of what the page counted at the last pull, written by
+**Pulling decisions**, **The cut calls**. The newest finding per cut wins. Like a roster finding it
+carries the whole record each time, so a newer version, a send, a call, an undone approval or a
+call whose account the CM refused each write a new finding with every field.
+
+**Who reads which field.** These names are the contract the Atlas server's campaign read and its
+widgets use, so a field is renamed only here and in the same change on the server. The page's
+**Who sees what** (`cas-campaign-page.md`) decides what a client caller gets:
+
+| Record | Fields the agency only reads | A client caller gets |
+| ------ | ---------------------------- | -------------------- |
+| `brief` | `briefPage`, `content.variants`, `content.variantCheck`, `agencyEdits`, `agencyFromResults`, `importedFrom`; and on a finding with no `content` (written before these fields), `edits` and `fromResults` too, since those could hold agency lines | Every other field |
+| `cut` | `verdictBy.writer` (a page account id) and `verdictBy.confirmed` (the agency's "Aspire to confirm") | Every other field, `verdictBy.name` and `verdictBy.at` included. A version in Aspire QA is a view, not a secret (`cas-campaign-page-creators.md`, **Content Review**), so `latestVersion` reads as "Aspire is checking version {k}"; a cut with no version sent has no file to show |
+
+Every other record type (`round`, `gate`, `roster`, `draft`, `reply`, `brief-revision`, `hook`,
+`hook-review`, `page-sides`, `ledger`) and any field not named here is agency only for a client
+caller until a row here says otherwise, so a server read fails closed.
 
 ### Rounds
 
@@ -520,8 +595,8 @@ brief run (row 10) writes new ones, leading with the patterns that worked. Round
 only read: it stays as it was and signed off.
 
 **Past rounds are read only.** Once a round is done, nothing more is written for it: no roster,
-gate, brief, revision or round finding, in the chat or from a pull, except the done finding
-above. A change on the page stamped before the round ended (its `at` before the in-market window's
+gate, brief, revision, cut or round finding, in the chat or from a pull, except the done finding
+above and what a pull records for a change stamped before the end. A change on the page stamped before the round ended (its `at` before the in-market window's
 end or `closedAt`) still counts and is pulled; one stamped after is dropped. On the page a done
 round's brief, cuts, calls and edits render as labels (**1d**, **Round switcher**). A correction
 goes into the next round.
@@ -1095,9 +1170,10 @@ made them a yes: Love their content)", and the roster finding gets it as `surpri
 A creator still Unreviewed is named as waiting. Nothing on the page reaches Atlas without this
 picker.
 
-**The cut calls.** Approve, Request changes and Undo approval on a cut have no campaign record:
-cuts and their versions live only in page data (**1d**, **Content Review**), so the picker names
-the calls and writes no cut record to Atlas; the only thing recorded is who decided, in
+**The cut calls.** Approve, Request changes and Undo approval on a cut are made only on the page:
+cuts and their versions live in page data (**1d**, **Content Review**), and the page counts a call
+only from the client's own `cut-calls`, never from Atlas. The pull records what the page counted
+as one `cut` finding per cut (**Working state**, **The cut record**), plus who decided, in
 `page-sides` (step 3 below). They are checked the way creator decisions are,
 so the picker never names a call the page wouldn't count. Read every writer's items under
 `cut-calls` (a document in `cut-calls/{id}/items/{cut}-v{version}` is one person's call on one
@@ -1130,8 +1206,34 @@ names each with who made it: "@a V3, version 2: approved by {name} (stays on the
 for changes whose `open` threads are all resolved or gone now, or which names none, adds "(no open
 comment)", since the page asks for one and the rules can't. A call from
 an account the CM hasn't confirmed yet counts on the page from the moment it is made, and the
-agency sees "Aspire to confirm" on it until this check; the answer here keeps or ends it. The answer writes
-only the `page-sides` finding when it changed, and the `sides/campaign` copy with it.
+agency sees "Aspire to confirm" on it until this check; the answer here keeps or ends it.
+
+**The cut records.** After the checks, every cut with at least one version under
+`reviews/cut-{cut}/versions`, in each live round and in each round that ended since the last pull
+(with only the versions and calls stamped before its end, **Past rounds are read only**), gets a `cut` finding when it has none yet or its newest one differs
+in any field (a replaced file's `link` or `asset`, a resolved thread's `openComments` and a moved
+concept's `lane` included). Its fields:
+
+- `version`, `link`, `asset`, `sentAt` and `check` from the newest version with a `sentAt:` (the
+  newest sent to {brand}), and `latestVersion`, `versions` and `firstAddedAt` from every version;
+  `reviewLink` from the page's own address, `#review/r{round}/{cut}` with no version while
+  `version` is `null`. A cut with no version sent yet has `version`, `link`,
+  `asset` and `sentAt` `null`.
+- `status` from the checked call, so it never disagrees with `verdict`: `qa` while the newest
+  version has no `sentAt:`, else `verdict` when it isn't `null` (`approved` or `changes`), else
+  `client-review`. It matches the page's status (**1d**, **Content Review**, **The status flow**)
+  once the page reads `sides/campaign`, a refused account's calls then reading Not counted.
+- `verdict` and `verdictBy` from the call that counts on `version`, after checks 1 to 3: `null`
+  when none counts, when it was taken back with Undo approval, or when its account was refused
+  in this answer. `verdictBy.confirmed` is true once its account is in `deciders` or `approvers`.
+- `openComments` counts the open threads under `comments` on `version`, never one kept under
+  `agency/comments`.
+- `lane`, `variant` and `title` are `lane:`, `variant:` and `title` in `reviews/cut-{cut}`;
+  `handle` and `network` come from `creator:`.
+
+The picker names them in one line per round ("Round {n}: {k} cut records to Atlas, {a} approved,
+{c} changes requested, {r} waiting on {brand}"), never the file. The answer writes the `cut`
+findings, then the `page-sides` finding when it changed, and the `sides/campaign` copy with it.
 
 **The creator decisions.** Read every writer's items under `decisions` (a document in
 `decisions/{id}/items` is one creator's call for one round), the `reset-` stamps on
@@ -1247,7 +1349,7 @@ and what they can't**). Before it is offered:
 The picker line: "{name} signed off the round {n} brief on {date}: {concepts}. This clears step 4."
 On the answer, in this order: the locked version of the round's brief and of each concept, written
 from the item's copy (**1e**, **Brief versions and Reset to original**); a `brief` finding per
-covered lane with `locked` true and the next `version`; Gate 4 `cleared` with `clearedAt` the
+covered lane with `locked` true, the next `version` and `content` from the locked version (**Working state**, **The brief's content**); Gate 4 `cleared` with `clearedAt` the
 item's time, `clearedBy` the signer's name and `signoff` `{signer, name, at, item, via: "page"}`,
 and a ledger line when it was late; the `page-sides` finding when it changed; remove the reminder;
 post the step line; republish, which removes the agency's "Not recorded yet" item. A request for
@@ -1280,16 +1382,19 @@ the client's calls, each named with who made it. The `send-` and `reopen-` stamp
   with `started`) runs **Rounds**, **Starting the next round**, with the carried creators the page
   wrote, named in the picker as "Start round {n} for {month}, started on the page by {name}: {k}
   returning creators".
-- **The brief.** One `brief` finding per lane and round that changed, with the next `version` and
-  `edits`, an edit to the brief's tone of voice, do's, don'ts, disclosure or file naming counting
+- **The brief.** One `brief` finding per lane and round that changed, with the next `version`,
+  `edits`, and `content` as the page holds the lane with the edits in (**Working state**, **The
+  brief's content**), an edit to the brief's tone of voice, do's, don'ts, disclosure or file naming counting
   as a change to every lane. A reset or a restored version is named as one line ("{Concept} reset
   to the original by {name}", "Round 2 brief restored to the version from {time} by {name}") and
-  its fields are recorded like any edit. Every new `brief` finding copies `locked`, `removed` and
-  `deferred` from the lane's newest one for the same round unless this pull changes them; a lane's
+  its fields are recorded like any edit. Every new `brief` finding copies `locked`, `removed`,
+  `deferred` and `content` from the lane's newest one for the same round unless this pull changes
+  them, so a reopen, a deferral or a bring back still carries the whole brief; a lane's
   first finding in a round starts with all three false, and with `carriedForward` when the concept
   came in deferred, so a tone edit that touches every
   lane never brings back a removed concept or unlocks a signed off one. The variant plan comes
-  back as `edits` lines on the same finding. The lane's next brief run starts from the edited text.
+  back as `agencyEdits` lines on the same finding, never `edits`. A restore from **Versions** is named
+  in `agencyEdits` too. The lane's next brief run starts from the edited text.
 - **Casting.** An edit to a concept's **Casting** is not a brief edit and writes no `brief`
   finding. It supersedes `casting` in the lane's `campaign:{slug}-lane-{lane}` record with the
   concept's keywords and cities in full, named in its own line of the picker ("Casting for
@@ -1321,7 +1426,8 @@ the client's calls, each named with who made it. The `send-` and `reopen-` stamp
   changes from round {n}'s results applied by {name}"). The parts an apply wrote are `manual`
   stamps and are recorded as the brief edits they are, on the same `brief` findings. Each applied
   line, from `change-r{n}-{id}` on `brief-rounds/r{t}` and `agency/brief-round-r{t}`, goes on the
-  `brief` finding of the lane it names as a `fromResults` line, and a line that names no lane (a
+  `brief` finding of the lane it names as a `fromResults` line, or an `agencyFromResults` line when it
+  came from `agency/brief-round-r{t}` (**Who reads which field**), and a line that names no lane (a
   framework or a creator line) on every lane's finding for the round, as a tone edit does. A lane
   with no `brief` finding in the round yet gets its first one, as an import's does. A line
   whose note a reset or restore removed before the pull isn't recorded. The proposals and calls in
@@ -1644,4 +1750,5 @@ Follow the readout rules (`readout.md`, **Scheduled (unattended) runs**):
   refreshing one is done in Meta Ads Manager, and nothing on the page or in a scheduled run
   pauses, boosts or edits an ad.
 - Editing the cuts. Aspire's editors cut the variants outside this flow; the page tracks, reviews
-  and approves them (**1d**, **Content Review**), and keeps them only in page data.
+  and approves them (**1d**, **Content Review**), and keeps the files only in page data. Atlas
+  holds each cut's record (**The cut record**), never its video.
