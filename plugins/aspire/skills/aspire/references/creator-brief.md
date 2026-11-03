@@ -238,9 +238,8 @@ and holds nothing the page itself doesn't show the agency.
 **Writes**, on the main thread's confirmation: a `brief` finding per lane (`locked: false`,
 `briefPage`, `version`, and `content`: that lane's part of the data block in the shape
 `cas-campaign.md`, **Working state**, **The brief's content** gives, the round's parts with the
-one concept and its variants, each variant's `framework` written as `{code, name}` from
-`frameworks` and the `product` with the `id` of the product in scope its name matches, empty when
-none does), then a `hook` finding per new hook and CTA, all per
+one concept and its variants, with the shape changes that section's **What it holds** names),
+then a `hook` finding per new hook and CTA, all per
 `cas-campaign.md`, **Working state**. No `creator-brief-*` findings in this mode.
 
 ### A creator's revision
