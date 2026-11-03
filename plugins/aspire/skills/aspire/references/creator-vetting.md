@@ -495,7 +495,8 @@ in plain words, never price, because the CM may pass it on to the client; the Ga
 shows the recommendation to the agency only (`cas-campaign.md`, **Gate 2**).
 
 **Output rows carry the four figures**: hook rate, Reels interaction rate, past paid partners,
-and partnership readiness, in each finding's `detail.adFigures` and on each card, beside the
+and partnership readiness, in each finding's `detail.adFigures` (with the key names
+`creator-discovery.md`, **Ad figures on every card**, pins) and on each card, beside the
 recommendation. Findings also carry `detail.campaign` and `detail.lane`. The CAS campaign
 composes the Gate 2 packet from them.
 
