@@ -109,11 +109,19 @@ A change later goes through `supersede_calibration` with its own Destructive too
    `mediaKind` and `instagram.mediaProductType`. Price per **What each creator gets**, with the
    rate per deliverable (UGC video, Reel collab, 90 day usage) and the expected cost.
 3. Show **Contract and rates** (below) for the agency, and the offer drafts (**Drafts**) in chat.
+   Where the host draws the rates widget (`get_cas_rates`, `cas-campaign.md`, **Widgets**), it is
+   the Contract and rates screen: show the drafts only. Its row buttons ("Draft a counter for
+   @marco", "Record @marco's reply") come back as chat messages and run here with their own
+   confirmation.
 4. One `AskUserQuestion`: "Save opening offers for {n} creators to the campaign? Totals at
    target: {total}. An offer email draft goes on each creator's row." Options: "Save the offers
    (Recommended)", "Change something". On save, write a `roster` finding per creator with `rate`
-   `offered` and `offer` `{open, target, max}`, an `offer` draft per creator, then republish the
-   campaign page.
+   `offered`, `offer` `{open, target, max}`, `currency` (the ISO code the offer is in, USD unless
+   the fee calculator or the CM priced it in another) and `replyWindow` (**Reply window**, in
+   words: "about two days" or "one to two weeks, through a manager"), an `offer` draft per
+   creator, then republish the campaign page. The rates widget (`get_cas_rates`) shows its reply
+   window column only once a row carries `replyWindow`, and shows each row's amounts in that row's
+   `currency`. Every later roster finding for the creator carries both forward.
 
 ## Drafts
 
@@ -251,9 +259,10 @@ For each reply:
    "Change something" is always the last option. Several replies at once are one batch picker
    naming each creator, record and next move.
 3. **One confirm writes**: the `roster` finding (`countered` with `counter`, `agreed` with
-   `agreed`, or `declined`; a term the creator wants changed goes in `termNotes` and never
-   changes the campaign's saved terms), a `reply` finding with its date for the reply log, and
-   the next `draft` on the row. Then republish the campaign page.
+   `agreed`, or `declined`, with the row's `currency` and `replyWindow`; a term the creator wants
+   changed goes in `termNotes` in the CM's words and never changes the campaign's saved terms), a
+   `reply` finding with its date for the reply log, and the next `draft` on the row. Then
+   republish the campaign page.
 
 ### Your call needed
 

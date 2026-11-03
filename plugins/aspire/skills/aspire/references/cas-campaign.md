@@ -158,7 +158,7 @@ setup.
 | `campaign:{slug}-criteria` | `guideline` | What every lane shares: networks, market, hard exclusions | `{concern: "requirement", appliesTo: ["creator-discovery", "{slug}"], body: "<one line per dimension>"}` |
 | `campaign:{slug}-pool` | `guideline` | The target per lane: three times the creators each lane needs | `{concern: "ceiling", appliesTo: ["creator-discovery", "{slug}"], body: "per lane: <lane>=<target>, ..."}` |
 | `campaign:{slug}-routing` | `policy` | Where the page, gate lines and the sync agenda go (C5) | `{area: "routing", body: "page; slack:#channel; channelLink:<url>; email:a@x.com,b@x.com"}`. `slack:` is always the channel's name, which every post uses; `channelLink:` is optional, read only by the page's **Open Slack channel**. Keys match exactly up to the colon |
-| `campaign:{slug}-cadence` | `policy` | The weekly sync slot, timezone and length (C6) | `{area: "cadence", cadence: "sync", body: "sync weekly <DAY HH:MM>, <minutes> min, <IANA timezone>"}`. The time zone stays the last part, so every reader takes it from there; the length is optional, and a body without it reads as no length saved |
+| `campaign:{slug}-cadence` | `policy` | The weekly sync slot, timezone and length (C6) | `{area: "cadence", cadence: "weekly", body: "sync weekly <DAY HH:MM>, <minutes> min, <IANA timezone>"}`. `cadence` is `"weekly"`, never `"sync"`: `append_calibration` refuses `"sync"`, and the setup widget writes `"weekly"` too, so both write the same record. A record saved earlier with `"sync"` reads the same. The time zone stays the last part, so every reader takes it from there; the length is optional, and a body without it reads as no length saved |
 | `campaign:{slug}-cas` | `guideline` | Package, term, approvers and backups per gate, turnaround per gate, round, the page link | `{concern: "requirement", appliesTo: ["cas-campaign", "{slug}"], body: "<the campaign object, serialized with json.dumps>"}` |
 | `campaign:{slug}-lane-{lane}` | `guideline` | One lane: concept, framework and trigger, persona, casting filter, creators needed, and where it came from | `{concern: "requirement", appliesTo: ["cas-campaign", "creator-discovery", "creator-vetting", "creator-brief", "{slug}"], body: "<the lane object, serialized with json.dumps>"}` |
 | `campaign:{slug}-decision-defaults` | `guideline` | The rules later performance reads will use | `{concern: "preference", appliesTo: ["cas-campaign", "{slug}"], body: "<the defaults object, serialized with json.dumps>"}` |
@@ -172,7 +172,7 @@ The campaign object:
  "gates": {"2": {"approver": "Name", "backup": "Name", "turnaroundHours": 48},
            "3": {"approver": "Name", "backup": "Name", "turnaroundHours": 48},
            "4": {"approver": "Name", "backup": "Name", "turnaroundHours": 48}},
- "round": 1, "budgetUsd": 20000,
+ "profileId": "<the brand Profile's id>", "round": 1, "budgetUsd": 20000,
  "sow": {"deliverables": [{"id": "d1", "label": "Hooks", "count": 3},
                           {"id": "d2", "label": "Bodies", "count": 1},
                           {"id": "d3", "label": "CTAs", "count": 2},
@@ -190,6 +190,19 @@ The campaign object:
                        "budget": 0.15, "contentReach": 0.15},
            "tuned": {"performance": {"at": "2026-11-12T16:40:00Z", "by": "Name"}}}}
 ```
+
+`profileId` is the brand Profile the campaign runs for: the `profile_id` from Phase 2 + 3, an
+id, never a slug. Setup records are saved for the whole organization, so without it every Profile
+in the organization lists the campaign; with it, `get_cas_campaign` and the other `get_cas_*`
+tools can keep each Profile's campaigns apart. Setup in the chat (C7) writes it on every new
+campaign; the setup widget does not write it yet. A campaign saved without it (set up before this
+key existed, or through the setup widget) reads as the whole organization's, as before. When the
+organization has more than one live Profile, and the campaign's working state is on this
+Profile's own prefix (`cas-campaign-{profile}-{slug}`, **Working state**) with none under another
+Profile's, the status screen offers it once per session, in its own picker,
+"Save {campaign} as {brand}'s campaign?", with "Save it (Recommended)" and "Not now", and writes
+it through the supersede rule with its own Destructive tools confirmation. A campaign with another Profile's working state, or none
+yet, is never offered it. It never moves a campaign from one Profile to another: a different `profileId` is a question for the CM.
 
 `round` is the first round's number. Every round, the first included, is a `round` finding in the
 working state (**Rounds**), so starting a round never changes this record. `package.variants` is
@@ -314,7 +327,7 @@ record type the newest finding per identity wins, by `detail.recordedAt`.
 | ---------- | -------- | ------ | ---- | ----------- |
 | `gate` | gate + round (Gate 4b: gate + round + the creator) | The brand's own account on its first linked network | `action_item` `high` while planned, open or slipped; `went_well` when cleared | `gate` (1, 2, 3, 4, `4b`), `status` (planned, open, cleared, slipped), `plannedAt`, `sentAt`, `dueAt`, `clearedAt`, `clearedBy`, `daysSlipped`, `reminderTask` (the task name). Gate 1 adds `source` (where the concepts were read from). Gate 3 adds `approval` `{approver, name, at, item, via, recordedBy}` (the approver's viewer id, their name, when, the `fees` item, `page` or `chat`, and for `chat` the CM who recorded it). Gate 4 adds `signoff` `{signer, name, at, item, via, recordedBy}` (the signer's viewer id, their name, when, the `signoffs` item, `page` or `chat`, and for `chat` the CM who recorded it), `reopenedAt` and `reopenReason`. Gate 4b adds `handle` and `network` |
 | `round` | round | The brand's account | `action_item` `medium` while planned, in production or in market; `went_well` when done | `round`, `label`, `month`, `build` `{start, end}`, `inMarket` `{start, end}`, `launchDate`, `state` (planned, in production, in market, done), `steps` (`{"1": {plannedAt, dueAt}, …}` for steps 1 to 4), `plan` (every step of the round, the four approvals included, **Round steps** below), `closedAt` (set when the CM closes the round early), `startedFrom` (the round it was started from, empty for the first), `creators` (`new`, `same`, or `same-and-new`: how the round was started) |
-| `roster` | the creator's account + round | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while a candidate; `went_well` approved; `needs_improvement` rejected | `handle`, `network`, `name`, `descriptor`, `location` (the last three only when edited on the page), `lane`, `persona` (the persona's name in the round's brief, **1d**, **Creator Selection**, **Concept and persona**), `slate` (candidate, approved, maybe, rejected), `priority` (true for a Priority Yes), `clientReason` (the reason on a Priority Yes or Yes against the recommendation), `rejectReason`, `clientQuestion`, `pickNote` (why we picked them), `rate` (offered, countered, agreed, declined), `offer` `{open, target, max}`, `counter`, `agreed`, `deliverables`, `usage`, `exclusivity`, `termNotes`, `contact` `{email, phone, manager}`, `tier`, `decidedBy` (`{writer, name, at, score, band}`: the page account whose call was recorded, their name, when, and the match score and band they saw), `surprise` (`{kind, reason, text, at}`: the client's surprise reason on that call, `kind` `pass` or `pick`, **1d**, **Creator Selection**, **Deciding**), `lastContactAt`, `waitingOn` (client, agency, creator), `yourCall` (the question to the client, while one is open), `adPermissions` (granted, pending), `details` `{status, address, pickup, visitDate, product, options, availability, deliveryNote}` (`address` being `{line1, line2, city, region, postal, country}`), `shipping` `{status, item, carrier, tracking, shippedAt, deliveredAt, eta}` (`status` not shipped, shipped, delivered, returned or kept), `contract` `{status, signedAt}`, `payment` `{status, at, paidPct}`, `rates` `{ugc, reel, usage90}` (the round's rates per deliverable), `footage` `{counts, at}`, `briefState` (sent, accepted, changed, approved, locked), `variantPlan` (the creator's overrides of the concept's variant plan for the round, one entry per overridden field, `[{variant, field, lane, value, by, at}]`, `field` being framework, length, hook, cta or post (the variant's live post, `{url, igMediaId}`) and `by` and `at` that field's own writer and time, **1d**, **Selected Creators**, **Concept and variant plan**), `shipDate`, `vetting` (the four figures and the recommendation), `returning` (true when carried from an earlier round), `fromRound` (the round it was carried from), `source` (chat, reply, page, or carried) |
+| `roster` | the creator's account + round | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while a candidate; `went_well` approved; `needs_improvement` rejected | `handle`, `network`, `name`, `descriptor`, `location` (the last three only when edited on the page), `lane`, `persona` (the persona's name in the round's brief, **1d**, **Creator Selection**, **Concept and persona**), `slate` (candidate, approved, maybe, rejected), `priority` (true for a Priority Yes), `clientReason` (the reason on a Priority Yes or Yes against the recommendation), `rejectReason`, `clientQuestion`, `pickNote` (why we picked them), `rate` (offered, countered, agreed, declined), `offer` `{open, target, max}`, `counter`, `agreed`, `currency` (the ISO code every amount on the row is in, never converted; USD when left out), `replyWindow` (how long the creator has to reply, in words, per `rates-and-terms.md`, **Reply window**), `deliverables`, `usage`, `exclusivity`, `termNotes`, `contact` `{email, phone, manager}`, `tier`, `decidedBy` (`{writer, name, at, score, band}`: the page account whose call was recorded, their name, when, and the match score and band they saw), `surprise` (`{kind, reason, text, at}`: the client's surprise reason on that call, `kind` `pass` or `pick`, **1d**, **Creator Selection**, **Deciding**), `lastContactAt`, `waitingOn` (client, agency, creator), `yourCall` (the question to the client, while one is open), `adPermissions` (granted, pending), `details` `{status, address, pickup, visitDate, product, options, availability, deliveryNote}` (`address` being `{line1, line2, city, region, postal, country}`), `shipping` `{status, item, carrier, tracking, shippedAt, deliveredAt, eta}` (`status` not shipped, shipped, delivered, returned or kept), `contract` `{status, signedAt}`, `payment` `{status, at, paidPct}`, `rates` `{ugc, reel, usage90}` (the round's rates per deliverable), `footage` `{counts, at}`, `briefState` (sent, accepted, changed, approved, locked), `variantPlan` (the creator's overrides of the concept's variant plan for the round, one entry per overridden field, `[{variant, field, lane, value, by, at}]`, `field` being framework, length, hook, cta or post (the variant's live post, `{url, igMediaId}`) and `by` and `at` that field's own writer and time, **1d**, **Selected Creators**, **Concept and variant plan**), `shipDate`, `vetting` (the four figures and the recommendation), `returning` (true when carried from an earlier round), `fromRound` (the round it was carried from), `source` (chat, reply, page, or carried) |
 | `draft` | the creator + the template | The creator's account | `action_item` `low` while not sent; `went_well` once sent | `handle`, `template` (offer, counter, accept, chase, details, brief, brief-notes), `subject`, `body`, `sentAt` |
 | `reply` | one per exchange, never replaced | The creator's account | `went_well` `low` | `handle`, `receivedAt`, `summary` (one plain line), `record` (what it wrote to the roster), `nextMove` |
 | `brief` | lane + round | The brand's account | `action_item` `medium` while a draft; `went_well` when locked | `lane`, `locked`, `briefPage`, `version`, `edits` (the edits pulled from the page, one plain line each: the part, from, to, and who), `added` (true for a concept added on the page), `removed` (true for a concept taken out of this round's brief), `deferred` (true for a concept deferred to the next round), `carriedForward` (the round a deferred concept came from), `importedFrom` (`{label, url, kind}` of the document an import read), `startedFrom` (the round whose signed off brief it started from), `reopened` (`{reason, name, at}` when the agency reopened a signed off brief), `fromResults` (the lines applied from Ad Performance, one plain line each with the round they came from, **1d**, **Ad Performance**, **Changes for round {t}**) |
@@ -609,12 +622,50 @@ the pitch's creators as candidates (one discovery finding each, with `detail.lan
 `creator-discovery.md`, **State written to Atlas**), and a Gate 1 finding: `gate` 1, `status`
 cleared, `clearedBy`, `clearedAt`, `source`.
 
+### The setup widget
+
+Once C0 has read and confirmed the concepts and who approved them, call `get_cas_setup_form` with
+`asProfileId`, `brandName`, `conceptSource` (C0's source: `pitch`, `artifact`, `slides`,
+`pasted`, or `typed` after C2), `concepts` (each concept's parts as C0 read them, a part the
+source does not hold left blank, with the casting keywords and cities per **The lane object**),
+`approvedBy` and `approvedOn`, and when held: `campaign` (C1's starters, carried from the pitch
+or the SOW per **Carrying the pitch forward**), `criteria` (the shared criteria, below), `currency`
+(the one ad account's, for C6a) and `files` (**Files found in setup**).
+
+- **Where the host draws the widget** (the result shows the form), the form asks C1 and C3 to C7
+  itself, with the same choices, and saves the records with `append_calibration` once the person
+  presses Save after its review. Ask none of those questions in chat and build no summary beside
+  it; say one line ("Fill in the campaign setup above and press Save.") and wait. Save sends a
+  message back to the chat, and the form's hand-off (in the model's context) lists each record
+  with what `append_calibration` did, the approver and date, the planned send dates and the
+  concepts' source. Then:
+  - Once every record is applied (none waiting on an owner or proposed), write C7's findings
+    after one `AskUserQuestion`: "Record the concepts as approved by {approver} on {date} and
+    start round 1 of {campaign}?", with "Record it (Recommended)" and "Change something". It
+    writes the Gate 1 finding, the Round 1 `round` finding with its default `plan`, a `planned`
+    gate finding per gate the CM gave a send date for (C4), and, when the concepts came from the
+    pitch, the pitch's cast creators as undecided candidates in each concept's pool (**Carrying
+    the pitch forward**). Use the approver, date and planned dates the hand-off names.
+  - A record waiting on an owner, or proposed, is not applied: say so in one line, write no
+    finding yet, and finish once an owner approves.
+  - A record the message calls already on file was not changed: show the saved and the new
+    versions and run the supersede rule with its own confirmation for each one the CM wants to
+    replace. Never write over a saved record.
+  - A record that did not save is asked again in chat with its own question from the table
+    below, then written after its own confirmation.
+  - A campaign name already saved (the form saved nothing) follows C1's rule below.
+  - When the saved `campaign:{slug}-cas` has no `profileId`, offer it per **Setup records**,
+    `profileId`.
+- **Where the host draws no widget** (Claude Code's terminal, a plain-text host, or you cannot
+  tell), or `get_cas_setup_form` is not among the Atlas tools, or it fails: ask C1 to C7 in chat
+  per the table below. The records written are the same either way.
+
 ### The questions
 
 | # | Question | Options | Writes |
 | - | -------- | ------- | ------ |
 | C0 | Where are the approved concepts for {brand}? (above) | The pitch saved in Atlas; a link to the deck as a Claude artifact; a link to the deck in Google Slides; paste the concepts as text | Lanes with their source, Gate 1 cleared |
-| C1 | What is the campaign? Give its name, the package (creators times variants) and the usage term dates. | Starters drawn from `brand:summary` and the pitch, for example "{Brand} spring launch, 9 creators x 3 variants, 90-day term"; the free text carries the real answer | `campaign:{slug}-brief`, `campaign:{slug}-cas` (name, package, term) |
+| C1 | What is the campaign? Give its name, the package (creators times variants) and the usage term dates. | Starters drawn from `brand:summary` and the pitch, for example "{Brand} spring launch, 9 creators x 3 variants, 90-day term"; the free text carries the real answer | `campaign:{slug}-brief`, `campaign:{slug}-cas` (name, package, term, `profileId`) |
 | C2 | Only when C0 found nothing. Paste one concept: the concept, framework and trigger, persona, casting filter, and how many creators it needs. | 1) Add this concept; 2) That's all the concepts. A pasted concept goes in the free text. Repeat until the user picks option 2. | `campaign:{slug}-lane-{lane}` per lane (`source` `typed`), `campaign:{slug}-pool` (3 times each lane's need) |
 | C3 | Who approves creators, fees and briefs on the client side, and who is the backup? | 1) The same approver and backup for every step (type them); 2) A different approver per step (type them) | `campaign:{slug}-cas` (gates) |
 | C4 | How long does the client get at each approval? | 1) 48 hours each (Recommended); 2) 24 hours each; 3) I'll set them per step (type them). Planned send dates per step may go in the free text too. | `campaign:{slug}-cas` (turnaround); a `planned` gate finding per gate with a date |
@@ -717,13 +768,61 @@ Rules:
 ## The main thread's steps
 
 What the **CAS campaign** section of SKILL.md runs at each step, in the main thread. Several
-campaigns may be saved; ask which one with `AskUserQuestion` when more than one is active.
+campaigns may be saved; `get_cas_campaign` without `campaignId` lists them, and when more than one
+is active, ask which one with `AskUserQuestion`.
+
+### Widgets
+
+Atlas has a read tool per step that, in a host that renders MCP Apps (Claude desktop and
+claude.ai), also draws the step as a widget. Every one takes `asProfileId`, and all but the setup
+form take the campaign slug as `campaignId` (optional on `get_cas_campaign`, which lists the
+campaigns without it), reads saved records only, and costs nothing. The server shapes each result for
+whoever calls: the agency sees everything and the client only their own view (**1d**, **Who sees
+what**), so never add an agency only value beside a widget.
+
+| Step | Dispatch rows | Tool | Widget |
+| ---- | ------------- | ---- | ------ |
+| Status | any | `get_cas_campaign` | The campaign dashboard: rounds, steps, gates, roster per concept, the row's status line and next step |
+| Setup | 1 | `get_cas_setup_form` | The setup form (**1b**, **The setup widget**) |
+| Creator selection | 2 to 5 | `get_cas_selection` | Each concept's pool against its target, the creators with their ad figures, and Gate 2 calls |
+| Rates and terms | 6 to 8 | `get_cas_rates` | Offers, counters, replies, the reply window, your call needed, committed spend, Gate 3 |
+| Briefs | 10 to 15 | `get_cas_briefs` | Each concept's brief, its hooks and CTAs, each creator's reply, Gate 4 and Gate 4b |
+| Results | 16 and 17 | `get_cas_results` | Go live date, the cost per sale target, the hook review and each creator's variants |
+
+The rule for every one:
+
+- **Where the host draws the widget** (the result shows it), it is the step's screen. Build no
+  page, card or table beside it and repeat none of its numbers; say one line with the next step,
+  then ask the step's own `AskUserQuestion` as this reference words it.
+- **Where it draws none** (Claude Code's terminal, a plain-text host, or you cannot tell), show
+  the step in chat as this reference says, from the same result: its text is the fallback.
+- **When the tool is not among the Atlas tools** (an older server), or fails with
+  `internal-error`, read the records yourself, as below. On `unavailable`, never answer from a
+  guess: say the campaign could not be read and stop. On `unauthorized` or `forbidden`, say the
+  caller can't see this campaign and stop: never read around the tool, which would skip the
+  client view. On `not-found`, list the campaigns (`get_cas_campaign` without `campaignId`) and
+  ask which one.
+- **Widgets never write.** A button in a widget sends a message to the chat that names the
+  campaign and the step ("On the "{campaign}" creator ad campaign: Draft a counter for @marco.").
+  Treat it as the CM asking for that step: run it here with its own confirmation, exactly as if
+  it were typed. The setup form is the one widget that saves, and only after its own Save.
+- The records the step writes are the same whether the widget or the chat was used.
+
+The campaign page (**1d**) stays the client's approval page; widgets are for the person in the
+chat.
 
 ### Status
 
-Read the setup records and the working state (`search_insights` on the campaign's prefix, paged).
-Find each round that is not done (**Rounds**, **Which round**) and its row in the dispatch table
-(**1c**), reading from the bottom up. Show one screen: per round, its month, dates and state,
+Call `get_cas_campaign` with `campaignId` and `asProfileId`. It returns the rounds, each round's
+dispatch row (**1c**) with its status line and one next step, the gates and the roster: take the
+row from it rather than working it out again. The server reads Atlas only, so when the page
+holds what Atlas doesn't yet (a send for sign off on the page not yet recorded, step edits not yet
+pulled, **Pulling decisions**), offer the pull as the next step instead of the server's. Where the host draws the widget, it is the status
+screen: say one line with the next step and go to the `AskUserQuestion` below. When **Widgets**
+says to read the records yourself, read the setup records and the working state
+(`search_insights` on the campaign's prefix, paged), find each round that is not done (**Rounds**,
+**Which round**) and its row in the dispatch table (**1c**), reading from the bottom up. Without
+the widget, show one screen: per round, its month, dates and state,
 its row's status line and the four steps (1 Concepts approved, 2 Creators approved, 3 Fees
 approved, 4 Briefs approved) each with done and its date, out with the client and its due date,
 or its planned date; then the round's current step and up next from its **Round steps**, read
@@ -731,7 +830,8 @@ after the page's step edits are pulled or labelled "as of the last pull" when th
 creator counts by concept, anything marked your call needed, and the campaign page link,
 opened on the tab the next step is on (Creator Selection for creators, Selected Creators for fees
 and shipping, Master Brief for briefs and creator changes, else Home), and the new tags from the
-page per **Delivering tags**. Then one `AskUserQuestion`, header "Next": the one next step the
+page per **Delivering tags**. Where the widget is drawn, still name the new tags in one line:
+the widget reads Atlas, not the page. Then one `AskUserQuestion`, header "Next": the one next step the
 **One next step** rule picks (Recommended), plus "Log a delay" and "Change setup", with "Start
 round {n+1}" in place of "Change setup" when **Starting the next round** offers it. Never offer
 more than one next step. When there are new tags for the client and a saved destination, the
@@ -741,7 +841,14 @@ tags is sent without that answer.
 ### Run
 
 Launch what the row names, then record what came back. Every agent launch here also carries
-the tool prefix, `profile_id`, and `profile_slug`:
+the tool prefix, `profile_id`, and `profile_slug`. Where a step has a widget (**Widgets**), show
+it at the start of the step, and again after its write only where the host draws it (in chat, the
+one line status after the step is enough):
+`get_cas_selection` for sourcing, screening and Gate 2 (rows 2 to 5), `get_cas_rates` for offers,
+replies and Gate 3 (rows 6 to 8), `get_cas_briefs` for the briefs, the creators' replies and Gates
+4 and 4b (rows 10 to 15), and `get_cas_results` for production and the round in market (rows 16
+and 17; it holds no paid figure, so the results still come from `search_ads` per **1d**, **Ad
+Performance**, **Reading the results**).
 
 - **Discovery** (rows 2 and 3): `atlas-creator-discovery` with the campaign slug, run mode
   `interactive`, `campaign_type` `creator-ads`, the lane to fill, and `recipient` (`campaign`).
@@ -867,11 +974,28 @@ Composed from the newest vetting run per lane (`creator-vetting-{profile}` prefi
   per creator for the client, for example '@a lives the concept: early shifts, bikes to work'").
   A blank line keeps vetting's reason, rewritten in plain words.
 - On send, also write a `roster` candidate for every creator on the slate, with `pickNote`, and
-  `lane` and `persona` as **The match score**'s **Concept and persona** sets them.
+  `lane` and `persona` as **The match score**'s **Concept and persona** sets them, and `vetting`
+  (the four figures and the recommendation) from the lane's vetting run. `get_cas_selection` reads
+  the recommendation from the roster only, never from vetting's own findings, so a slate creator
+  without `vetting` shows no recommendation in the widget.
+- **The selection widget.** At rows 2 to 5, call `get_cas_selection` with `campaignId`,
+  `asProfileId` and, for a round other than the current one, `round`, per **Widgets**: it shows
+  each concept's pool against its target and the slate with the ad figures. Where it draws, it is
+  the slate screen for the row 4 send and the row 5 pull; without it, show the slate in chat.
 
 **Closing Gate 2** runs through **Pulling decisions** below. The CM may still type the
 client's decisions in chat ("yes to @a and @b, priority yes to @e, no to @c for tone"; approve
-reads as Yes and reject as No); resolve them the same way and confirm them in the same picker. Gate 2 clears once no creator is still awaiting a
+reads as Yes and reject as No); resolve them the same way and confirm them in the same picker.
+The selection widget's **Send decisions** sends them as one message in its own format: "Record
+the Gate 2 creator decisions for the "{campaign}" creator ad campaign, Round {n}, given in the
+creator selection widget: Priority Yes @maya (Instagram); No @noor (Instagram) (reason:
+"Price"). No call yet: @lee (TikTok). Confirm them in the one Gate 2 picker before recording
+anything." Each call is a verdict (Priority Yes, Yes, Maybe, No), the handle with its network in
+brackets, and for a No the reason in quotes when one was given; calls are split by `;`, and "No
+call yet" names the creators still waiting. Read it the same way: the reason on a No is its
+`rejectReason`, a creator under "No call yet" stays awaiting, and nothing is recorded before the
+one Gate 2 picker. They came through the chat, not from the page, so each roster finding is written
+with `source` `chat`. Gate 2 clears once no creator is still awaiting a
 decision; a Maybe stays open with a question back to the client and does not hold the gate.
 After the picker, write in this order:
 

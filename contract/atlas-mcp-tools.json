@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-31",
+  "generated": "2026-11-03",
   "source": "apps/api/lib/mcp/tools-list.golden.json",
   "surfaces": {
     "/mcp": {
@@ -116,6 +116,85 @@
           "asProfileId"
         ]
       },
+      "get_cas_briefs": {
+        "required": [
+          "campaignId"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "campaignId"
+        ]
+      },
+      "get_cas_campaign": {
+        "required": [],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "campaignId"
+        ]
+      },
+      "get_cas_rates": {
+        "required": [
+          "campaignId"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "campaignId"
+        ]
+      },
+      "get_cas_results": {
+        "required": [
+          "campaignId"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "campaignId"
+        ]
+      },
+      "get_cas_selection": {
+        "required": [
+          "campaignId"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "campaignId",
+          "round"
+        ]
+      },
+      "get_cas_setup_form": {
+        "required": [
+          "brandName",
+          "conceptSource",
+          "concepts"
+        ],
+        "paths": [
+          "approvedBy",
+          "approvedOn",
+          "asOrganizationId",
+          "asProfileId",
+          "brandName",
+          "campaign",
+          "campaign.creators",
+          "campaign.description",
+          "campaign.name",
+          "campaign.termEnd",
+          "campaign.termStart",
+          "campaign.usageDays",
+          "campaign.variants",
+          "conceptSource",
+          "concepts",
+          "criteria",
+          "criteria.exclusions",
+          "criteria.market",
+          "criteria.networks",
+          "currency",
+          "files"
+        ]
+      },
       "get_creator": {
         "required": [
           "handle",
@@ -166,6 +245,17 @@
         "paths": [
           "asOrganizationId",
           "asProfileId"
+        ]
+      },
+      "get_shop_analytics": {
+        "required": [],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "endDate",
+          "startDate",
+          "tiktokShopId",
+          "view"
         ]
       },
       "get_status": {
