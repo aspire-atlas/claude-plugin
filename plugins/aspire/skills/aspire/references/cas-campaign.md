@@ -353,15 +353,21 @@ finding is the whole row. It takes the brief agent's data block shape (`creator-
  "variantCheck": {"passed": true, "failed": []}}
 ```
 
-- **What it holds.** The brief as the page holds it once the write lands: the brief agent's data
-  block for its run (`creator-brief.md`, **Writes**), the page's parts after the edits a pull
-  records (**Pulling decisions**), the import's parts for an import, and the locked version's copy
-  for a sign off (**Gate 4**). `version` is the finding's own `version`. The round's parts (`title`
+- **What it holds.** The brief as its writer last saw it: the brief agent's data block for its
+  run (`creator-brief.md`, **Writes**), the page's parts after the edits a pull records (**Pulling
+  decisions**), the import's parts for an import, and the locked version's copy for a sign off
+  (**Gate 4**). When loading the agent's block keeps a part someone edited on the page since the
+  last pull (`cas-campaign-page-brief.md`, **Loading the brief**), that edit's stamp is newer than
+  the pull, so the next pull records it with the lane's `content` as the page holds it. `version` is the finding's own `version`. The round's parts (`title`
   to `notice`) are the same on every lane's finding for the round. `variants` is the variant build
-  (`agency/brief-{lane}-r{round}`) and `variantCheck` its check.
-- **How it is written.** Long text is plain text, converted from the page's rich text the way
-  **Copy creator brief** converts it (lists as "- " or "1. " lines, a blank line between
-  paragraphs), so no reader parses HTML. A bracketed blank stays a bracketed blank, and a part the
+  (`agency/brief-{lane}-r{round}`) and `variantCheck` its check. The shapes are the page's, not
+  the data block's where they differ: a variant's `framework` is `{code, name}` (the code matched
+  to `frameworks`), and `product` carries its `id` (matched as **Loading the brief** matches it,
+  empty when not in scope).
+- **How it is written.** Long text is plain text, converted from the page's rich text by the page's
+  own plain text rule (`cas-campaign-page-brief.md`, **Rich text**, **Everywhere else**: lists as
+  "- " or "1. " lines, a blank line between paragraphs), so no reader parses HTML. Every part is
+  kept, a hook's or CTA's `why` and the coverage included, unlike **Copy creator brief**. A bracketed blank stays a bracketed blank, and a part the
   brief doesn't have yet is an empty string or an empty list, never left out. A removed or
   deferred concept keeps the content it had. The **Casting** part and the `change-r{n}-{id}` notes
   are not parts of the brief and stay out, as they stay out of the data block.
@@ -384,8 +390,12 @@ widgets use, so a field is renamed only here and in the same change on the serve
 
 | Record | Fields the agency only reads | A client caller gets |
 | ------ | ---------------------------- | -------------------- |
-| `brief` | `briefPage`, `content.variants`, `content.variantCheck`, `edits` lines naming the variant plan | The rest of `content`, `locked`, `version`, `added`, `removed`, `deferred` |
+| `brief` | `briefPage`, `content.variants`, `content.variantCheck`, `edits` lines naming the variant plan, `fromResults` lines read from `agency/brief-round-r{round}` (the hook, CTA, framework and creator lines), `importedFrom` | Every other field |
 | `cut` | `latestVersion` and `versions` while the newest version is in Aspire QA | Every other field. A cut with no version sent reads as its `status` only, With Aspire QA, never its file |
+
+So a reader can tell them apart, an `edits` line about the variant plan and a `fromResults` line
+written from `agency/brief-round-r{round}` each start with `agency: `, and the server drops those
+lines for a client caller.
 
 ### Rounds
 
@@ -1068,8 +1078,9 @@ an account the CM hasn't confirmed yet counts on the page from the moment it is 
 agency sees "Aspire to confirm" on it until this check; the answer here keeps or ends it.
 
 **The cut records.** After the checks, every cut of each live round with at least one version
-under `reviews/cut-{cut}/versions` gets a `cut` finding when its newest one, or none, differs in
-`version`, `latestVersion`, `sentAt`, `status`, `verdict`, `verdictBy` or `check`. Its fields:
+under `reviews/cut-{cut}/versions` gets a `cut` finding when it has none yet or its newest one differs
+in any field (a replaced file's `link` or `asset`, a resolved thread's `openComments` and a moved
+concept's `lane` included). Its fields:
 
 - `version`, `link`, `asset`, `sentAt` and `check` from the newest version with a `sentAt:` (the
   newest sent to {brand}), and `latestVersion`, `versions` and `firstAddedAt` from every version;
@@ -1083,7 +1094,8 @@ under `reviews/cut-{cut}/versions` gets a `cut` finding when its newest one, or 
   in this answer. `verdictBy.confirmed` is true once its account is in `deciders` or `approvers`.
 - `openComments` counts the open threads under `comments` on `version`, never one kept under
   `agency/comments`.
-- `lane` is `lane:` in `reviews/cut-{cut}`; `handle` and `network` come from `creator:`.
+- `lane`, `variant` and `title` are `lane:`, `variant:` and `title` in `reviews/cut-{cut}`;
+  `handle` and `network` come from `creator:`.
 
 The picker names them in one line per round ("Round {n}: {k} cut records to Atlas, {a} approved,
 {c} changes requested, {r} waiting on {brand}"), never the file. The answer writes the `cut`
@@ -1246,7 +1258,7 @@ the client's calls, each named with who made it. The `send-` and `reopen-` stamp
   first finding in a round starts with all three false, and with `carriedForward` when the concept
   came in deferred, so a tone edit that touches every
   lane never brings back a removed concept or unlocks a signed off one. The variant plan comes
-  back as `edits` lines on the same finding. The lane's next brief run starts from the edited text.
+  back as `edits` lines on the same finding, each starting `agency: `. The lane's next brief run starts from the edited text.
 - **Casting.** An edit to a concept's **Casting** is not a brief edit and writes no `brief`
   finding. It supersedes `casting` in the lane's `campaign:{slug}-lane-{lane}` record with the
   concept's keywords and cities in full, named in its own line of the picker ("Casting for
@@ -1278,7 +1290,8 @@ the client's calls, each named with who made it. The `send-` and `reopen-` stamp
   changes from round {n}'s results applied by {name}"). The parts an apply wrote are `manual`
   stamps and are recorded as the brief edits they are, on the same `brief` findings. Each applied
   line, from `change-r{n}-{id}` on `brief-rounds/r{t}` and `agency/brief-round-r{t}`, goes on the
-  `brief` finding of the lane it names as a `fromResults` line, and a line that names no lane (a
+  `brief` finding of the lane it names as a `fromResults` line (starting `agency: ` when it came
+  from `agency/brief-round-r{t}`, **Who reads which field**), and a line that names no lane (a
   framework or a creator line) on every lane's finding for the round, as a tone edit does. A lane
   with no `brief` finding in the round yet gets its first one, as an import's does. A line
   whose note a reset or restore removed before the pull isn't recorded. The proposals and calls in
