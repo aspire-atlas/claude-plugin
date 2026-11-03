@@ -95,7 +95,8 @@ exactly, and render for the primary lens per **Rendering for a lens**.
 - Top patterns: up to three, each with its median hook score, median retention and level mix,
   or "not measurable yet".
 - Top candidates: up to five, found first, then briefed; at most three from a path unless the
-  other path has fewer than two (9 found and 1 briefed gives 4 and 1), each with its rank within its path (F1, F2, B1),
+  other path has fewer than two (9 found and 1 briefed gives 4 and 1); one post per creator, the
+  next post on the path filling the slot; at most one briefed multi-brand look, labelled so; each with its rank within its path (F1, F2, B1),
   its path, hook score, retention
   level (Measured, Creator average, or Proxy), pattern, and the first cut's timestamps.
 - Account map: the counts set aside by kind, and whether a saved map was followed. Propose a

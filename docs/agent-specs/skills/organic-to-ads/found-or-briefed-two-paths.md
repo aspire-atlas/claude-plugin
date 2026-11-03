@@ -27,9 +27,12 @@ path learns about hooks, formats and creators carries to the other.
 Each candidate labelled `found` or `briefed`, with the rule that placed it. In order: a deliverable
 on a deal or a program's posts owed; a partnership-ads permission on the post; the brand's own
 partner tag on its own (it is itself a tag for this brand); a generic partnership hashtag (#ad,
-#sponsored, #partner, #ambassador) together with a tag for this brand. A post with a generic
-partnership hashtag but no tag for this brand is another brand's
-sponsored post: it is set aside on both paths and counted. A post whose path can't be told goes to
+#sponsored, #partner, #ambassador) together with a tag for this brand (any hashtag carrying the
+brand's or a product's name counts); or a generic partnership hashtag on a post where this brand
+is the only brand featured, labelled "briefed, untagged" (retailers the post shops from don't
+count as another brand). A post with a generic partnership hashtag, no tag for this brand and
+another brand featured is another brand's sponsored post: it is set aside on both paths and
+counted. A post whose path can't be told goes to
 found, the stricter path, labelled "path unclear". Gifted-only posts are found, labelled "seeded".
 
 What each path weighs:
@@ -51,7 +54,7 @@ are learned from results on either path and used by both. A path with fewer than
 own uses the other path's learning at half weight. Product focus, subject share, brief compliance
 and engagement thresholds are learned per path. A found creator whose ad beats the brand's median
 is suggested for a brief; a briefed creator whose deliverables keep losing is flagged for the roster
-review. The page says which path the brand's best results came from in the last 90 days.
+review. The page says which path the brand's best results came from in the last 90 days. The top five holds one post per creator and at most one briefed multi-brand look.
 
 ## Callable
 
