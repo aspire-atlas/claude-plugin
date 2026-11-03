@@ -51,7 +51,7 @@ findings, delivery, and the unattended rules. Follow them exactly.
    calibration read, done first (UTC for "on demand"), then `TZ=<tz> date +%F` via Bash. Resolve the window and the four-week baseline
    per the reference. Record the shell date, timezone, and window in the footer and summary.
 3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the market signal records, `brand:summary`, every `competitor`
-   (with `spellingVariants`), `red_line`, and `theme:brand`. Drop every `review:`, `program:`, `library:` and `orchestrator:` key.
+   (with `spellingVariants`), `red_line`, and `theme:brand`. Drop every `review:`, `program:`, `library:`, `orchestrator:` and `ad-reuse:` key.
 4. **Duplicate-window guard** per the reference, before pulling data.
 5. `list_post_search_fields` once; use only paths it returns. Find the partnership marker, the
    transcript, overlay text, tone, and featured-brand fields; name any missing under gaps.

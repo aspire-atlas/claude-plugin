@@ -68,7 +68,8 @@ last 90 days is skipped; after 14 days with no answer, the new draft is a follow
 terms. A grant a creator gave, passed in from 24 Organic to Ads, 28 Hashtag and Mention Listener, or
 a pasted reply, is recorded as a `rights` finding with its proof and whether it is in writing, on
 one batch question naming each. A counter or a decline on those posts is recorded the same way, at
-`countered` or `declined`. Asset requests are the exception: 23 UGC Commissioner records those
+`countered` or `declined`. Each of these carries the fee offered and the fee agreed when there was
+one, so U6's suggested ranges learn what this brand's creators accept. Asset requests are the exception: 23 UGC Commissioner records those
 itself. A grant that carries a fee goes to Creator Payments (18) as a `ledger-lines` block, never as
 a `ledger` finding. Rights from a deal are derived at read time and never written. A scheduled
 refresh saves `asset` findings and posts the expiring-rights alert to the routing approved once at

@@ -11,19 +11,55 @@ needs exactly which moments to cut, at what length, for which placement.
 - **Sources**, per the `reuse_scope` input:
   - `own`: the brand's linked handles.
   - `creators`: posts by other accounts that mention or tag the brand's handles, or carry a
-    tracked hashtag (`list_hashtag_posts`), excluding the brand's own handles and every
-    `competitor`. Posts with the partnership marker the census exposes rank first, because
-    usage rights are likelier to be negotiable.
+    tracked hashtag (`list_hashtag_posts`), excluding the brand's own handles. The partnership
+    marker the census exposes is read for the path (**Two paths**), never as a rank boost.
+  - **Who posted (account map).** Before ranking, sort the authors into creators and the rest:
+    the brand's own and regional accounts (excluded), retailers and resellers, deal and news
+    pages, team or sponsorship accounts (a sports team, league, event or venue account posting
+    the brand as its sponsor), and accounts posting another brand's sponsored content. Keep only creators unless the
+    person asked otherwise, and name how many of each were set aside. When an
+    `ad-reuse:account-map` record is saved (**Account map record**), follow its labels and sort
+    only the authors it doesn't list.
+  - **Competitors on screen.** Judge a post that also shows a `competitor` by which brand is the
+    subject, never by whether one appears: count the brand's products against all products the
+    post features. When a single competitor has more products than the brand, leave the post
+    out as a competitor's video. When the brand has a third or more of the products, or has one
+    product and at most two other products appear in all, keep it as **brand-led**, at most 2 in the prefiltered
+    12. Anything else is a multi-brand look: leave it out and count it. Many looks in beauty,
+    fashion and home show several brands, and leaving out every one of them empties the pool. A
+    brand-led post's competitor in frame is named on its card ("brand-led, {competitor} also
+    shown") and never forces **leave** (**Verdict bands**).
   - `both` (default).
+- **Two paths: found or briefed.** Before ranking, label each creator post `found` (made
+  unprompted) or `briefed` (the brand asked for it). Briefed means a deliverable on a program
+  deal, a partnership-ads permission on the post, the brand's own partner tag (from its
+  `partner` records or the program's must-include tags) on its own, or a generic partnership
+  hashtag (#ad, #sponsored, #partner, #ambassador) together with a tag for this brand. The
+  brand's partner tag is itself a tag for this brand. A generic partnership hashtag with no tag
+  for this brand is another brand's sponsored post: set it aside and count it. When the path can't be told, use found and say "path unclear". Rank and show the
+  two paths separately, never as one list. On the briefed path, product focus and the subject
+  screen are shown but not weighted, because nearly every briefed post passes them; read the
+  deal's usage before proposing any rights request. On the found path, the subject and
+  competitor screens apply in full. Within each path, rank by the hook score. Its openings,
+  sound-off and standalone components are known before any ad runs; Retention on a post already
+  run as an ad never uses level 3, because its counts include paid delivery (**Retention
+  levels**, **Counts that include paid delivery**). Both paths share the verdict bands, so a
+  briefed post that never ran keeps level 3 like a found post. Show the post's own views and
+  engagement as "organic traction", and never compare them across paths. A program deliverable
+  is read from the program's findings with `search_insights`.
 - **Formats:** video only (Reels, TikTok videos). Carousels and images are left out with a
   one-line note: they carry no hook timing.
-- **Prefilter:** rank the pool by the lead reuse signal and take the top 12 into frame work.
+- **Prefilter:** rank the pool by the lead reuse signal and take the top 12 into frame work
+  (with both paths, 8 found and 4 briefed; a path with fewer passes its slots to the other).
   The signal follows the retention level order in **Hook score**, **Retention levels**:
   measured retention on the post when held, then the author's creator average, then views per
   follower against the author's own median (saves plus shares per view when views are
   missing). Rank within a level by its percentile in the pool, and rank level 1 ahead of level
-  2 ahead of level 3 at the same percentile. Name how many were considered and how many had
-  measured data.
+  2 ahead of level 3 at the same percentile. A post already run as an ad (**Counts that include
+  paid delivery**) never ranks on level 3: it ranks on level 1 or 2 when held, and otherwise after every post
+  with a usable signal on its path, newest first, marked "no retention signal before paid".
+  Name how many were considered, how many had measured data, and how many ranked with no
+  signal.
 - Read only what Atlas holds. Never call `lookup_posts`, `lookup_creators`, or any discovery
   tool for this mode.
 
@@ -69,9 +105,10 @@ say so; never infer the opening from a cover.
 ## Hook score (out of 100)
 
 **Verdict bands.** 70 and up: **run**. 50 to 69: **cut first** (it works only as a cut of its
-strongest segment). Under 50: **leave**. One override: a `red_line` hit or a competitor in frame
-makes it **leave** at any score, with the reason. The page's method shows these bands as they are
-here.
+strongest segment). Under 50: **leave**. One override: a `red_line` hit, or a competitor in
+frame on a post that isn't brand-led (**Candidate pool**, **Competitors on screen**), makes it
+**leave** at any score, with the reason. A brand-led post keeps its band. The page's method shows
+these bands as they are here.
 
 Every component names its evidence: a quoted transcript line with its timestamp, a frame with
 its timestamp, or a field and its value. A component with no data scores zero and is listed
@@ -84,7 +121,7 @@ as missing.
 | Works without sound | 15 | On-screen text or captions carry the point; `analysis.overlayText` or frames show it |
 | Retention | 20 | Scored from the first level in **Retention levels** that has data |
 | Standalone segment | 10 | A self-contained 6 to 15 second stretch that makes sense without the rest |
-| Ready for paid | 10 | Disclosure present where paid, no competitor in frame, no `red_line` hit, no third-party music flagged in the caption |
+| Ready for paid | 10 | Disclosure present where paid, no competitor in frame (a brand-led post's co-featured competitor doesn't count against it), no `red_line` hit, no third-party music flagged in the caption. The brand's own partnership disclosure (its partner hashtag, a paid partnership label naming the brand) is what a partnership ad needs, so it never costs points; only another brand's disclosure does |
 
 ### Retention levels
 
@@ -116,6 +153,19 @@ Rules:
 - A level 2 quartile needs held values for 4 or more authors in the pool. With fewer, level 2
   has no data: fall to level 3, and say so.
 - With no data at any level, Retention scores zero and is listed as missing.
+- **Counts that include paid delivery.** A post already run as an ad. A post has run as an ad when its partnership-ads usage shows the brand
+  has run it (`search_partnership_content`, or `partnershipAds` on `search_posts`), or when
+  `search_ads` with `groupBy` post and the post's `igMediaIds` returns a row for it (call
+  `list_ad_search_fields` first; no linked ad account returns no rows, which means "not known",
+  never "never ran"). These reads take only `adUsage`, `permissionStatus` and `hasAdCode`. The
+  same calls return the brand's `adCode`, which works like a password: never carry it into the
+  page, a finding, the visual payload, the result packet or any other output; say "has an ad
+  code" where it matters. When the run status is not known (no partnership-ads data and no linked
+  ad account), a briefed post keeps level 3, labelled "Proxy, may include paid delivery". For a
+  post that has run as an ad, level 3 has no data: score Retention from level 1 or 2,
+  and with neither, Retention is missing (zero, listed as missing). There is no other fallback.
+  Label an already-run post "already run as an ad: counts include paid delivery". Never rank a
+  post higher because an ad inflated its counts.
 - The finding states the value and its field in plain words, for example "average watch time
   9.1s of an 18s Reel (51%)" or "creator hook rate 38%, not this post".
 
@@ -180,8 +230,9 @@ date shows as expired.
 
 ## Output for each lens
 
-- **Performance** (primary): ranked licensing candidates by hook score, the pattern table,
-  and one line per candidate on why it should convert as paid. Then the cut list.
+- **Performance** (primary): licensing candidates as two lists, found then briefed, each
+  ranked by hook score; the pattern table; and one line per candidate on why it should convert
+  as paid. Then the cut list.
 - **Creative** (primary): the storyboards and the cut list first, right after the next steps,
   grouped by post, with frame thumbnails at the in and out points; the ranking follows.
 - Both lenses are one hand-off (Performance picks, Creative cuts), so the page always carries
@@ -211,15 +262,19 @@ lens (**Output for each lens** sets the order for `creative`):
    line. The headline insight's chart is seconds to the first product appearance by candidate;
    the pattern table, whose "Retention" column gives the median retention score and the level
    mix per pattern ("3 measured, 2 proxy"), is the second visual.
-6. **Every post scored** (3.16): one row per candidate considered for frame work, ranked by hook
-   score: thumbnail, handle, source (brand or creator), date, length, the score bar with the
+6. **Every post scored** (3.16): two tables, **Found** then **Briefed**, never merged, each with
+   one row per candidate on that path considered for frame work, ranked by hook score within its
+   table: thumbnail, handle, source (brand or creator), date, length, organic traction, the score
+   bar with the
    retention label as a small chip ("Measured", "Creator average, not this post" or "Proxy"),
    the verdict (run, cut first, or leave), and a one-line note. The recommended candidates keep
    their card: media, the first-3-seconds frame strip with any measured early rate cited beside
    the opening frame, and the metric row.
 7. **Cut structure and storyboards** (3.9): the five beats every cut shares (hook 0 to 3s,
    brand 3 to 6s, build 6 to 9s, reveal 9 to 12s, then the end card, per the page standard) and
-   the specs from **Cut list**. On a 15-second cut the end card runs 12 to 15s. Then one storyboard per recommended ad: the badge (its rank),
+   the specs from **Cut list**. On a 15-second cut the end card runs 12 to 15s. Then one storyboard per recommended ad: the badge (its rank within its path, F1, F2, B1; recommended ads follow the agent's top
+   candidates rule: up to five, at most three from a path unless the other path has fewer than
+   two),
    the hook line, handle, date, pattern, cut length, and the tests it runs in; a still for every
    beat, taken from the frames read at that beat's timecode, or an insert tile naming what to add
    when the post has no usable frame there; the timecodes, a one-line description per beat, the
@@ -277,7 +332,39 @@ Written only when the main thread's launch says the user chose to save the candi
   what it measures in plain words, its level, and its effect (`confirmed`, `capped`, or
   `none`).
 
+On every `action_item` only (a `went_well` pattern can span both paths, so it carries `paths`,
+the count per path, `{ "found": 3, "briefed": 1 }`, instead):
+
+- `path`: `found` or `briefed`, with `pathRule`, the rule that placed it.
+- `snapshot`: the component scores and the counts the score used (views, likes, comments,
+  shares, saves, followers) as they stood at this run, so a later result can be compared with
+  what was known before launch rather than with counts the ad itself raised.
+
 `idempotencyKey` per finding.
+
+## Account map record
+
+The account map is brand memory, saved by the main thread only after the person confirms it
+(SKILL.md, **Ad reuse**, step 2). The agent never writes it; it returns a proposed map in its
+result packet's `proposals` (level `write`, gate `approve-account-map`).
+
+| Field | Value |
+| ----- | ----- |
+| `kind` | `guideline` |
+| `key` | `ad-reuse:account-map` |
+| `statement` | "Who counts as a creator for {brand}'s ad reuse: {n} accounts labelled." (under 280 characters) |
+| `detail` | `{concern: "preference", appliesTo: ["ad-reuse"], accounts: [{handle, platform: instagram\|tiktok, label, evidence}], includeNonCreators: false, sourceRunKey}` |
+| `provenance` | `interview`: the person confirmed it |
+
+`label` is one of `creator`, `brand_owned`, `retailer`, `deal_page`, `team`, or
+`other_brand_sponsored`. `evidence` is one plain line (the caption wording or posting mix behind
+the label).
+
+**Reading it back.** The launch digest carries it when saved; without a digest, the agent's own
+`search_calibrations` read keeps the `ad-reuse:account-map` key. Follow its labels as saved and
+sort only authors it doesn't list. When those new authors exist, propose only them, as an update
+to the saved record; the main thread then writes the merged map with `supersede_calibration` and
+the record's `ifVersion`, never a second `append_calibration`. With nothing new, propose nothing.
 
 ## Ad reuse check (content review)
 
@@ -290,6 +377,11 @@ One post has no pool. Retention still uses the level order, with two changes: le
 quartile to score against, so the creator average is shown beside the score and Retention is
 scored on level 3; and **Hook evidence** cites any measured rate without confirming or capping.
 A draft has no views or watch time yet, so its Retention is listed as missing.
+
+Content review doesn't load `search_ads`, so it can't tell whether the post has run as an ad
+(**Counts that include paid delivery**): it scores one post as advice and ranks nothing, so it
+keeps the level 3 proxy, labelled "Proxy, may include paid delivery" whenever level 3 is used on a
+published post.
 
 ## Partnership content (main thread)
 

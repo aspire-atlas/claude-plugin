@@ -68,7 +68,9 @@ answered as a plan only: Atlas holds no YouTube ad results and there is no YouTu
 test plan and each in-flight call are saved as `action_item` findings and each learning as a
 `went_well` or `needs_improvement` finding, one anchored to the creator's account and one to the
 post, with `detail.findingType` `ad-test`, `ad-call` or `ad-learning` (new types the build defines),
-on one batch question. It never saves an ad code: not on a page, in a finding, in a draft, or in a
+on one batch question. Each learning carries the post's path (`found` or `briefed`, from 24) and
+the score snapshot 24 saved, so both paths learn from shared signals and keep their own weights.
+It never saves an ad code: not on a page, in a finding, in a draft, or in a
 delivery. Without the Meta Ads connector it says what to run in Meta Ads Manager and launches
 nothing. An unattended run never launches and never changes a budget.
 

@@ -85,7 +85,7 @@ step needs one of those, skip that step and name it in your output as needing a 
 3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`). Keep `program:{slug}-program`, `-terms`, `-outreach`, and
    `-cadence`, `brand:summary`, the `voice_and_content_ops` brand fact, `guideline:voice`,
    `red_line` (not `review:` keys), `competitor`, every `creator:*` record, and `theme:brand`.
-   Drop `vetting:`, `review:`, `library:`, `orchestrator:`, and `campaign:` keys and other programs' keys. Parse every
+   Drop `vetting:`, `review:`, `library:`, `orchestrator:`, `ad-reuse:`, and `campaign:` keys and other programs' keys. Parse every
    `program:` body with a JSON parser.
 4. `search_insights` on the prefix `program-{profile}-{slug}`, newest first, paged to the end.
    Keep the newest finding per identity for `roster`, `terms`, `deliverable`, `fulfillment`,
