@@ -197,11 +197,12 @@ in the organization lists the campaign; with it, `get_cas_campaign` and the othe
 tools can keep each Profile's campaigns apart. Setup in the chat (C7) writes it on every new
 campaign; the setup widget does not write it yet. A campaign saved without it (set up before this
 key existed, or through the setup widget) reads as the whole organization's, as before. When the
-organization has more than one live Profile, the status screen offers it once per session, in its
-own picker,
+organization has more than one live Profile, and the campaign's working state is on this
+Profile's own prefix (`cas-campaign-{profile}-{slug}`, **Working state**) with none under another
+Profile's, the status screen offers it once per session, in its own picker,
 "Save {campaign} as {brand}'s campaign?", with "Save it (Recommended)" and "Not now", and writes
-it through the supersede rule with its own Destructive tools confirmation. It never moves a
-campaign from one Profile to another: a different `profileId` is a question for the CM.
+it through the supersede rule with its own Destructive tools confirmation. A campaign with another Profile's working state, or none
+yet, is never offered it. It never moves a campaign from one Profile to another: a different `profileId` is a question for the CM.
 
 `round` is the first round's number. Every round, the first included, is a `round` finding in the
 working state (**Rounds**), so starting a round never changes this record. `package.variants` is
@@ -773,8 +774,9 @@ is active, ask which one with `AskUserQuestion`.
 ### Widgets
 
 Atlas has a read tool per step that, in a host that renders MCP Apps (Claude desktop and
-claude.ai), also draws the step as a widget. Every one takes `asProfileId` and the campaign slug
-as `campaignId`, reads saved records only, and costs nothing. The server shapes each result for
+claude.ai), also draws the step as a widget. Every one takes `asProfileId`, and all but the setup
+form take the campaign slug as `campaignId` (optional on `get_cas_campaign`, which lists the
+campaigns without it), reads saved records only, and costs nothing. The server shapes each result for
 whoever calls: the agency sees everything and the client only their own view (**1d**, **Who sees
 what**), so never add an agency only value beside a widget.
 
@@ -813,7 +815,9 @@ chat.
 
 Call `get_cas_campaign` with `campaignId` and `asProfileId`. It returns the rounds, each round's
 dispatch row (**1c**) with its status line and one next step, the gates and the roster: take the
-row from it rather than working it out again. Where the host draws the widget, it is the status
+row from it rather than working it out again. The server reads Atlas only, so when the page
+holds what Atlas doesn't yet (a send for sign off on the page not yet recorded, step edits not yet
+pulled, **Pulling decisions**), offer the pull as the next step instead of the server's. Where the host draws the widget, it is the status
 screen: say one line with the next step and go to the `AskUserQuestion` below. When **Widgets**
 says to read the records yourself, read the setup records and the working state
 (`search_insights` on the campaign's prefix, paged), find each round that is not done (**Rounds**,
