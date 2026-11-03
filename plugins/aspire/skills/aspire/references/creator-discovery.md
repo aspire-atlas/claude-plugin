@@ -423,7 +423,15 @@ Everything above applies, with these changes:
   campaigns.
 - **Recommendation passes** fill each lane from Meta's own rankings, per the block below.
 - **Ad figures on every card**, in `{DETAILS}` and in `detail.adFigures`, drawn per
-  `creator-card.md`, **Creator-ads details**:
+  `creator-card.md`, **Creator-ads details**. Write `detail.adFigures` with exactly these keys,
+  each a number, list or string as Atlas returned it, and leave out a key Atlas holds nothing
+  for: `hookRate`, `reelsInteractionRate`, `pastPaidPartners` (the names), `partnershipReadiness`
+  ("Ready", "Partly" or "Not yet"), `isPaidPartnershipMessagesEnabled`, `views`, `interactions`,
+  `reach`, `engagedAccounts`, `category` and `contactRoute` (the route in words, never the
+  address). `get_cas_selection` reads them for the selection widget; it also accepts the
+  Instagram field names cited below (`reelsHookRate`, `pastBrandPartnershipPartners`,
+  `totalViews`, `accountInteractions`, `creatorMarketplaceReach`, `creatorEngagedAccounts`), so
+  a finding written earlier still shows. The figures:
   - Hook rate (`instagram.reelsHookRate`)
   - Reels interaction rate (`instagram.reelsInteractionRate`)
   - Past paid partners (`instagram.pastBrandPartnershipPartners`, named, at most five)

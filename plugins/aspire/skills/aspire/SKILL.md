@@ -1454,7 +1454,7 @@ campaign for {brand}", "where is the {brand} campaign", "what's next on {campaig
 creators for approval", "pull the client's decisions", "record a reply", "send the details
 emails", "send the briefs to creators", "log a delay"). Requires a brand profile with a linked
 Instagram or TikTok channel. Before any step, read `references/cas-campaign.md` (**Page
-vocabulary**, **1a** to **1c**, **The main thread's steps**, **Gate packets**, **Pulling
+vocabulary**, **1a** to **1c**, **The main thread's steps** with its **Widgets**, **Gate packets**, **Pulling
 decisions**, **1f**, **1g**, **Reminders and the weekly call**, **Unattended runs**) and follow it. The campaign page and its page data are in the `references/cas-campaign-page*.md`
 and `references/cas-campaign-data.md` files its **1d** lists; read the one the step needs. Hook
 and CTA recommendations, and the hook review between rounds, live in `references/hooks-and-ctas.md`.
@@ -1477,14 +1477,18 @@ into page data the client can read (**1d**, **Who sees what**, and **1e**).
 ### Setup
 
 Run **1b** of the reference: `search_calibrations` first (skip to **Status** when the setup
-records exist), then C0 (the concepts), C1, C3 to C6 and C6a, one `AskUserQuestion` each, C2 only
-when C0 found nothing, and C7 to confirm the batch before any write. C5 is the standing approval
+records exist), then C0 (the concepts), then `get_cas_setup_form` (**The setup widget**). Where
+the host draws the setup form, it asks the rest and saves after its own Save; then record Gate 1
+and Round 1 after one confirmation. Where it draws none, ask C1, C3 to C6 and C6a, one
+`AskUserQuestion` each, C2 only when C0 found nothing, and C7 to confirm the batch before any
+write. Either way the campaign record carries the brand Profile's id (`profileId`). C5 is the standing approval
 to deliver and C6 the standing approval for this campaign's scheduled tasks; say so plainly.
 A `key-exists` follows the Phase 5 supersede rule with its own confirmation.
 
 ### Status
 
-Per **The main thread's steps**, **Status**: one screen per live round, then one
+Per **The main thread's steps**, **Status**: `get_cas_campaign`, whose widget is the status
+screen where the host draws it (**Widgets**); otherwise one screen per live round in chat. Then one
 `AskUserQuestion`, header "Next", with the one next step (Recommended), "Log a delay" and
 "Change setup" (or "Start round {n+1}"); never more than one next step. New tags for the client
 are posted only on the same call's "Tags" answer.
@@ -1492,7 +1496,10 @@ are posted only on the same call's "Tags" answer.
 ### Run
 
 Per **The main thread's steps**, **Run**: launch what the dispatch row names, with the tool
-prefix, `profile_id` and `profile_slug`, then record what came back.
+prefix, `profile_id` and `profile_slug`, then record what came back. Show the step's widget where
+the host draws it (`get_cas_selection`, `get_cas_rates`, `get_cas_briefs`, `get_cas_results`, per
+**Widgets**) and the same step in chat where it does not. A widget's button comes back as a chat
+message and runs here with its own confirmation; widgets never write.
 
 - `atlas-creator-discovery` (rows 2, 3): run mode `interactive`, `campaign_type` `creator-ads`,
   the campaign slug, the lane, `recipient` `campaign`.
