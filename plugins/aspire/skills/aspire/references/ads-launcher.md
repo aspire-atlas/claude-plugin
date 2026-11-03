@@ -58,7 +58,8 @@ A pass runs only when its launch says so. `plan` and `monitor` write nothing to 
   in `questions` before any plan. A budget in a currency other than the ad account's is never
   converted: ask for it in the account's currency.
 - **Paths stay apart.** A test never mixes found and briefed posts in one variable cell unless the
-  path is the variable. The learning keeps the path.
+  path is the variable. The learning keeps the path. When the path is the variable, compare return, never click-through:
+  across real ad accounts, briefed posts clicked less than found posts but returned more.
 - **No forecasts.** Never promise reach or results or quote a benchmark. A "what would it buy"
   question gets how many tests, creators and variants each budget covers above the spend floor.
   YouTube has no ad results in Atlas and no launch path: the plan is the creator and variant side
