@@ -360,13 +360,13 @@ record families under its campaign slug:
 | Family | Where | Keys or prefix | Read by |
 | ------ | ----- | -------------- | ------- |
 | Setup | Calibrations | `campaign:{slug}-brief` (with `type: creator-ads`), `-criteria`, `-pool`, `-routing`, `-cadence` (shared with creator discovery), plus `-cas`, `-lane-{lane}`, `-decision-defaults`, `-terms` | The CAS campaign, and discovery, vetting, and the brief in creator-ads mode |
-| Working state | Insights | `runKey` prefix `cas-campaign-{profile}-{slug}`, `detail.recordType` `round`, `gate` (Gates 1 to 4, and 4b per creator), `roster`, `draft`, `reply`, `brief`, `brief-revision`, `hook`, `hook-review`, or `ledger` | The CAS campaign, and the brief in creator-ads mode (roster, hook log, and a creator's brief revision) |
+| Working state | Insights | `runKey` prefix `cas-campaign-{profile}-{slug}`, `detail.recordType` `round`, `gate` (Gates 1 to 4, and 4b per creator), `roster`, `draft`, `reply`, `brief` (with the lane's full brief as `content`), `brief-revision`, `cut` (one per creator variant: its version, link and the client's verdict), `hook`, `hook-review`, `page-sides`, or `ledger` | The CAS campaign, and the brief in creator-ads mode (roster, hook log, and a creator's brief revision) |
 | Page data | The campaign page, not Atlas | `client/*` (the client's decisions, notes, approvals, shipping edits), `edits/*` (the agency's per round creator edits), `program/*`, `briefs/*`, `brief-rounds/*`, `creators/*` and `reviews/*` (the agency's edits in place), `comments/*`, `activity/*`, `activity-editors/*`, `tags-client/*` and `tags-agency/*` (tags for each side), `agency/*` (agency-only fields), `data/users/{id}/*` (each person's own state). Every editable value is a stamp with who made it | The CAS campaign, through **Pulling decisions**; comments, activity, tags and each person's own state stay on the page; new tags are listed and, after a confirm, posted by **Delivering tags** |
 
 The new record types: a `round` is one round of the campaign with its dates and state, per round;
 a `brief-revision` is one creator's version of the brief, per creator per
 round; a `reply` is one line in the reply log, never replaced; a `draft` is the email waiting on
-the creator's row; an agency edit from the page lands as a `roster` finding with `source`
+the creator's row; a `cut` is Atlas's copy of one cut as the page counted it at the last pull; an agency edit from the page lands as a `roster` finding with `source`
 `page`. Done marks are never written to Atlas.
 
 The keys `-cas`, `-lane-*`, `-decision-defaults`, and `-terms` belong to the CAS campaign only.
