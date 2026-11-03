@@ -20,4 +20,4 @@ method in step with the core.
 
 | Agent | Variant | Output |
 | ----- | ------- | ------ |
-| `atlas-brand-snapshot` | public | `{ title, answer, figures, data }`, `data` a `BrandSnapshotReport` version 1 |
+| `atlas-brand-snapshot` | public or connected, chosen by the core from the Profile's linked channels | `{ title, answer, figures, data }`, `data` a `BrandSnapshotReport` version 1 |
