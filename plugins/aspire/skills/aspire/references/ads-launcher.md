@@ -46,6 +46,14 @@ A pass runs only when its launch says so. `plan` and `monitor` write nothing to 
   objective, the budget per test, the spend floor before judging, and a rule: **Scale** when
   cost per sale beats the target by 20% or more after the floor; **Fix** when click-through is at
   or above the account's median but cost per sale misses; **Stop** when both miss after the floor.
+- **Spend floor.** Return is judged per ad only after USD 1,000 of spend (or the decision
+  defaults' spend floor, in the account's currency; ask for it when the account is not in USD).
+  Click-through settles much sooner (by about USD 100) but does not tell you which ads will
+  return: use it only to say whether a soft result points at the creative or the setup, never to
+  call an ad Winning or to scale it. Budget each ad in a test to reach the floor, so a test with
+  four ads needs at least four floors; with less, test fewer ads.
+- **Confirm before scaling.** An ad that is Winning at the floor is "Winning (early)"; call it
+  Winning only once it still beats the target at twice the floor.
 - **Budget.** The total never passes the stated budget. Without a cost per sale target, ask for one
   in `questions` before any plan. A budget in a currency other than the ad account's is never
   converted: ask for it in the account's currency.
@@ -74,11 +82,12 @@ hook rate, hold rate and click-through, and one status:
 
 | Status | When |
 | ------ | ---- |
-| Testing | Under the spend floor |
+| Testing | Under the spend floor (click-through is shown, but no return call is made) |
 | Not spending | Testing with no spend in the last 48 hours |
-| Winning | Past the floor and cost per sale at least 20% under the target |
+| Winning (early) | Past the floor and cost per sale at least 20% under the target |
+| Winning | Still at least 20% under the target at twice the floor |
 | Watch | Past the floor and within 20% of the target either way |
-| Fatigued | Was Winning, and hook rate or click-through fell 25% or more over the last 7 days against the 7 before |
+| Fatigued | Was Winning, and over the last 14 days both cost per sale rose 25% or more against the ad's own figure up to that point and click-through fell 25% or more. A one-week click-through drop alone is not fatigue: week-to-week return moves that much for about a third of ads anyway |
 | Retire | Past the floor and cost per sale more than 20% over the target, or rights expire within 7 days |
 
 Each ad gets one move with its reason (scale, hold, refresh the cut, stop) and whether a soft
