@@ -48,10 +48,11 @@ content**, for the ad code rules.
    connector's `ads_boost_ig_post` only on `pass: plan` and only when the launch says it is
    connected.
 2. Read the brand's rights records with `search_insights` (`rights` findings, `program-{profile}-`
-   terms, `cas-campaign-{profile}-` usage) for each post, and drop any post without granted paid
-   usage.
-3. On `plan`: check each post's ad code status, design the tests per **Test design**, and plan each
-   ad per **Planning each ad**. With no cost per sale target or a budget in another currency, stop
+   terms, `cas-campaign-{profile}-` usage) and each post's partnership ad permission with
+   `search_partnership_content`, then drop any post with neither granted paid usage nor that
+   permission (`ads-launcher.md`, **Rights and ad codes**).
+3. On `plan`: check each remaining post's ad code status, design the tests per **Test design**,
+   and plan each ad per **Planning each ad**. With no cost per sale target or a budget in another currency, stop
    before planning and return the question.
 4. On `monitor`: read results per **In flight** for the window and call each ad.
 5. On `record`: save the approved test plan, calls and learnings per **Learning**, on one batch.

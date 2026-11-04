@@ -44,14 +44,18 @@ A pass runs only when its launch says so. `plan` and `monitor` write nothing to 
 - **One variable per test**: hook pattern, opening line, cut length, creator, audience, or path
   (found against briefed for the same product). Each test has a hypothesis, the audience and
   objective, the budget per test, the spend floor before judging, and a rule: **Scale** when
-  cost per sale beats the target by 20% or more after the floor; **Fix** when click-through is at
-  or above the account's median but cost per sale misses; **Stop** when both miss after the floor.
+  the ad is Winning (cost per sale 20% or more under the target at twice the floor, per
+  **Confirm before scaling**); **Fix** when, past the floor, click-through is at or above the
+  account's median but cost per sale misses; **Stop** when both miss after the floor. These
+  match the statuses in **In flight**: Scale is Winning, Fix is Watch with "fix the setup", Stop
+  is Retire.
 - **Spend floor.** Return is judged per ad only after USD 1,000 of spend (or the decision
   defaults' spend floor, in the account's currency; ask for it when the account is not in USD).
   Click-through settles much sooner (by about USD 100) but does not tell you which ads will
   return: use it only to say whether a soft result points at the creative or the setup, never to
-  call an ad Winning or to scale it. Budget each ad in a test to reach the floor, so a test with
-  four ads needs at least four floors; with less, test fewer ads.
+  call an ad Winning or to scale it. Budget each ad in a test to reach the floor, plus one more
+  floor to take the leading ad to twice the floor, so a test with four ads needs at least five
+  floors; with less, test fewer ads.
 - **Confirm before scaling.** An ad that is Winning at the floor is "Winning (early)"; call it
   Winning only once it still beats the target at twice the floor.
 - **Budget.** The total never passes the stated budget. Without a cost per sale target, ask for one
@@ -73,13 +77,18 @@ A pass runs only when its launch says so. `plan` and `monitor` write nothing to 
   proposal: the post, the test it belongs to, the daily budget and cap, and the audience.
 - Without the Meta Ads connector, return what to set up in Meta Ads Manager per ad, and nothing
   else.
-- Never call it with `confirmed=true`. The main thread does that, one ad per question.
+- Never call it with `confirmed=true`. The main thread does that, one ad per question. The packet
+  never carries a code: for an ad planned with a code, the proposal says "has an ad code" with the
+  post's `igMediaId`, and the main thread reads the code again itself just before its call.
 
 ## In flight
 
-Read the launched ads with `list_ad_search_fields` once, then `search_ads` for the window (default
-the last 7 days), one row per ad per currency. Per ad: spend, cost per sale against the target,
-hook rate, hold rate and click-through, and one status:
+Read the launched ads with `list_ad_search_fields` once, then `search_ads` with `groupBy` ad and
+the launched ads' `igMediaIds` three times: for the window (default the last 7 days), for each
+ad's life to date (`dateFrom` its first day of spend, which the fatigue rule compares against),
+and with `groupBy` day for the last 2 days (for Not spending). One row per ad per currency. Per
+ad: spend, cost per sale against the target, hook rate, hold rate and click-through, and one
+status:
 
 | Status | When |
 | ------ | ---- |
@@ -87,9 +96,9 @@ hook rate, hold rate and click-through, and one status:
 | Not spending | Testing with no spend in the last 48 hours |
 | Winning (early) | Past the floor and cost per sale at least 20% under the target |
 | Winning | Still at least 20% under the target at twice the floor |
-| Watch | Past the floor and within 20% of the target either way |
+| Watch | Past the floor and within 20% of the target either way, or more than 20% over it with click-through at or above the account's median (move: fix the setup) |
 | Fatigued | Was Winning, and its return over the last 7 days is under 75% of its own return up to that point (cost per sale about a third higher). Click-through and frequency are shown but never decide it: across real ad accounts, neither gave more warning than the return drop alone, and a click-through drop on its own was no warning at all |
-| Retire | Past the floor and cost per sale more than 20% over the target, or rights expire within 7 days |
+| Retire | Past the floor, cost per sale more than 20% over the target and click-through under the account's median, or rights expire within 7 days |
 
 Each ad gets one move with its reason (scale, hold, refresh the cut, stop) and whether a soft
 result points at the creative (hook or hold rate down) or the setup (click-through steady, cost per

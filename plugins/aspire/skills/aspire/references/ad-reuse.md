@@ -40,7 +40,10 @@ needs exactly which moments to cut, at what length, for which placement.
   brand's name or one of its product names (a brand-plus-product tag counts). A generic
   partnership hashtag on a post where this brand is the only brand featured is briefed too,
   labelled "briefed, untagged"; retailers and marketplaces the post shops from (a grocery,
-  beauty or pet store, Amazon, Target, Walmart) never count as another brand here. A generic
+  beauty or pet store, Amazon, Target, Walmart) never count as another brand here. An
+  affiliate disclosure is not a brief: when the caption's only partnership signal is a
+  storefront or affiliate link or wording (an Amazon storefront, LTK, "affiliate",
+  "commissionable", "I earn from links"), the post is found, labelled "affiliate". A generic
   partnership hashtag with no tag for this brand and another brand featured is another brand's
   sponsored post: set it aside and count it. When the path can't be told, use found and say "path unclear". Rank and show the
   two paths separately, never as one list. On the briefed path, product focus and the subject

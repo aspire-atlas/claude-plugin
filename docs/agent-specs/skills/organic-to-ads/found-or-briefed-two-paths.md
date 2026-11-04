@@ -30,7 +30,8 @@ partner tag on its own (it is itself a tag for this brand); a generic partnershi
 #sponsored, #partner, #ambassador) together with a tag for this brand (any hashtag carrying the
 brand's or a product's name counts); or a generic partnership hashtag on a post where this brand
 is the only brand featured, labelled "briefed, untagged" (retailers the post shops from don't
-count as another brand). A post with a generic partnership hashtag, no tag for this brand and
+count as another brand; a post whose only partnership signal is an affiliate or storefront link
+is found, labelled "affiliate"). A post with a generic partnership hashtag, no tag for this brand and
 another brand featured is another brand's sponsored post: it is set aside on both paths and
 counted. A post whose path can't be told goes to
 found, the stricter path, labelled "path unclear". Gifted-only posts are found, labelled "seeded".

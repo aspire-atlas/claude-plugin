@@ -1039,7 +1039,10 @@ signed in. Detail lives in `references/ads-launcher.md`.
 4. After a `plan` packet, state the total budget and the cap per test in the ad account's
    currency, then ask once per ad with `AskUserQuestion` (Create it paused (Recommended) / Skip
    this one). On yes, call the Meta Ads connector's `ads_boost_ig_post` with `confirmed=true` for
-   that ad only. Never turn an ad on or change a budget: say the person turns each ad on in Meta
+   that ad only. For an ad the packet marks "has an ad code", first read the code with
+   `search_partnership_content` (`asProfileId`, the creator's handle in `creatorHandles`, and
+   `hasAdCode: true`), take the row whose `igMediaId` is the post's, and pass its code straight
+   into that call; never show, repeat or save it (`references/atlas-tools.md`, **Ad codes**). Never turn an ad on or change a budget: say the person turns each ad on in Meta
    Ads Manager. Unattended runs never plan or create ads.
 5. Ask once whether to save the test plan, calls and learnings (Save (Recommended) / Page only),
    and on yes relaunch with `pass: record`.
