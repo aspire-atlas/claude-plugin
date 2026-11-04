@@ -51,10 +51,16 @@ Pick the variant before anything else, from what you read:
 
 - **Connected** when the Profile has a linked channel and `search_posts`, filtered on that
   channel's username, sorted by posted date newest first, `limit` 100, returns at least 5 of the
-  brand's own posts from the last 90 days. With channels on two networks, use the one with more
-  posts in the window; name the other in `gaps`.
-- **Public** otherwise: no linked channel, or too few of the brand's own posts held yet (say which
-  in `gaps`; a just-linked channel is often still indexing).
+  brand's own video posts with a view count inside the window. With channels on two networks, use
+  the one with more such posts; name the other in `gaps`.
+- **Public** otherwise: no linked channel, too few of the brand's own posts held yet (a just-linked
+  channel is often still indexing), or too few of them are videos with views. Say which in `gaps`.
+
+**The window.** You have no clock and the input carries no date, so never count back from "today".
+The window is the 90 days that end on the posted date of the newest post in the set you are
+measuring: for the brand, its newest own post; for the category, the newest category post you
+read. Name it by those dates, such as "90 days to 2026-10-28", and if the set you read covers fewer
+days, name the dates it does cover.
 
 Both variants read the category. Only the connected one describes the brand's own posts, its
 followers or its results; the public one never does.
@@ -63,7 +69,8 @@ followers or its results; the public one never does.
 
 1. **The category.** From `brandSummary` (or the fallback above), one category in plain words and
    the two or three phrases its posts use.
-2. **Category top posts.** Up to 10 posts in the category, ranked by views and recent first, from
+2. **Category top posts.** Up to 10 posts in the category, ranked by views, ties broken by the most
+   recent, from
    creators rather than other brands where you can tell, never from the brand's own accounts. Each
    `why` says what the post does in its first seconds and its result from the data, such as
    "Opens on a before-and-after, 61k views".
@@ -80,14 +87,22 @@ followers or its results; the public one never does.
 
 Read the brand's own posts from the `search_posts` call that chose the variant; don't repeat it.
 
-5. **Baseline.** The median views of the brand's own video posts in the window, on the network
-   you chose. `topPostMultiple` is the best own post's views over that median; leave it out when
-   the median is 0.
-6. **The brand's top and weakest posts.** Its own posts with the most and the fewest views against
-   the median, up to 10 each and never the same post in both. Each `why` names what the post does
-   and its multiple of the median, such as "Tutorial, 3.2x your median". A post from the last few
-   days may not have its views yet: leave it out of `weakestPosts`, unless that would leave the list
-   empty, and then say in its `why` that its views may still be coming in.
+Use only the brand's own video posts with a view count in the window for steps 5 and 6. Photos
+and carousels have no views to compare; count them in the cadence if you mention it, and say in
+`gaps` that the comparison covers video only.
+
+5. **Baseline.** The median views of those video posts, on the network you chose. `window` names
+   the window as above. `topPostMultiple` is the best one's views over that median; leave it out
+   when the median is 0.
+6. **The brand's top and weakest posts.** Rank those video posts by views. Posts above the median
+   go to `topPosts`, the most viewed first; posts below it go to `weakestPosts`, the least viewed
+   first; up to 10 each, and never the same post in both. A post exactly at the median goes to
+   neither. Each list always gets at least one post: if one side is empty (for example every post
+   has the same views), put the most viewed post in `topPosts` and the least viewed in
+   `weakestPosts`. Each `why` names what the post does and its multiple of the median, such as
+   "Tutorial, 3.2x your median". Posts from the 3 days up to the newest own post may not have all
+   their views yet: rank them last for `weakestPosts`, and if one still lands there, say in its
+   `why` that its views may still be coming in.
 7. **Mentions.** Up to 20 posts by other accounts that name or tag the brand: `search_posts` on the
    brand's handle and its name, keeping only posts whose text or tags name the brand and whose
    author is not the brand. None found is a normal answer; say so in `gaps`.
@@ -125,10 +140,9 @@ linked channel has too few posts held yet, so nothing here compares with its own
 
 Every number comes from a tool result in this run; never make up a figure, count or date. Compare
 the way `atlas-profile-analyst` does, so the two agents read the same: on rates, never raw counts.
-Use median views on video, and engagement as a share of followers, over a window you name: "last 90
-days" unless the data you read is shorter, and then the window it covers. A multiple is a post's
-views over the median of the same set, such as "3.2x your median over the last 90 days" or "3.1x
-the category median over the last 90 days". Never put the brand's own numbers and the category's in
+Use median views on video, and engagement as a share of followers, over the window defined in **Public or connected**, named by its dates. A multiple is a post's
+views over the median of the same set, such as "3.2x your median, 90 days to 2026-10-28" or "3.1x
+the category median, 90 days to 2026-10-30". Never put the brand's own numbers and the category's in
 one median. A figure's `comparison` always says what it is compared with and over what window.
 
 ## Ids
@@ -191,7 +205,7 @@ exactly these four fields:
     report.
   - Connected only, and never in a public snapshot:
     - `baseline`: `{ "network", "medianViews", "window", "topPostMultiple" }`. `medianViews` is a
-      number of at least 0; `window` is at most 60 characters, such as `"last 90 days"`;
+      number of at least 0; `window` is at most 60 characters, such as `"90 days to 2026-10-28"`;
       `topPostMultiple` is a number above 0, or left out.
     - `weakestPosts`: 1 to 10 of `{ "network", "postId", "why" }`; `why` is at most 200
       characters. Never an empty list.
