@@ -1061,7 +1061,37 @@ ads"). It runs in the main thread with no agent: a read of `search_partnership_c
 read `references/ad-reuse.md` (**Partnership content (main thread)**) and `references/atlas-tools.md`
 (**Partnership content**) and follow them. Pass `asProfileId` explicitly, never show ids, and
 never put an ad code on a page, delivery, finding, or creator message. The boost question is the
-write confirmation, asked exactly as worded; unattended runs never boost.
+write confirmation, asked exactly as worded; unattended runs never boost. The boost goes through
+the Meta Ads connector, so it also follows **Meta Ads** below.
+
+---
+
+## Meta Ads (optional connector: Meta's own ads tools)
+
+Trigger when an ask needs something only Meta's ads tools do: industry or auction benchmarks,
+anomaly signals, the opportunity score, A/B and lift tests, catalogs, pixels and datasets,
+delivery errors, Meta help articles, ad previews, or creating, editing, or turning on campaigns,
+ad sets, and ads. It runs in the main thread with no agent. Before the first Meta call, read
+`references/meta-ads-tools.md` and follow it. In short:
+
+- **Detect, never block.** Resolve the connector per **Detection** there. When it is missing or
+  its sign in has expired and the ask needs it, say the one "connect Meta Ads" line and carry on
+  with what Atlas can do. Never ask about it, render a card for it, or hold an Atlas flow on it.
+- **Route Atlas first.** Paid results tied to creators and posts (`search_ads`,
+  `list_ad_accounts`) and partnership ads (`search_partnership_content`) stay on Atlas. Meta Ads is
+  for what Atlas does not hold (**Routing** there). Never add Meta figures to Atlas figures.
+- **Brand scope.** Before any Meta call, get the Profile's linked ad accounts from Atlas
+  (`list_ad_accounts` with `asProfileId`, only the rows linked to this Profile, not the ones it
+  merely reaches), call Meta only on those, and skip any account whose
+  `is_ads_mcp_enabled` is false. Never list or mention the other accounts Meta returns.
+- **Writes.** Meta creates campaigns, ad sets, and ads paused. Every Meta write is confirmed with
+  `AskUserQuestion`; `ads_activate_entity`, every delete, and every budget or bid change each get
+  their own confirmation, worded as in **Writes** there; nothing is turned on except through
+  `ads_activate_entity`. No agent and no unattended run ever calls
+  a Meta write tool.
+- **Privacy.** `advertiser_request` carries only the user's own request, never brand memory,
+  creator data, or other Atlas data. Never show IP addresses or fingerprints from an activity
+  log's `extra_data`.
 
 ---
 
@@ -1655,8 +1685,11 @@ R6 destinations). One batch confirmation writes; changes are supersedes, one con
 
 Ask "Which insights report?", then launch `atlas-weekly-insights-report` and/or
 `atlas-daily-insights-report` (run mode `interactive`, `recipient`, a window only if the user
-named one; never pass "today" or an assumed date). Relay each summary, page link, and resolved
-window; confirm delivery ("Post to {channel} and email {recipients}?") when an agent asks.
+named one; never pass "today" or an assumed date). The agents add Meta Ads figures on their own
+when the connector is live (`readout.md`, **Meta Ads enrichment**); never hold a run for it.
+Pass the user's ask, verbatim, as `meta_request`, and nothing else in it. Relay each summary,
+page link, and resolved window; confirm delivery ("Post to {channel} and email {recipients}?")
+when an agent asks.
 
 ### Launch pulse
 
@@ -1670,7 +1703,7 @@ After the first successful run, or on request, offer "Set up the recurring sched
 follow `readout.md`, **Scheduling (main thread)**: UTC cron from `policy:readout-cadence`, the
 session's scheduled-task tools (never local cron), replace old-named tasks, one confirmation for
 both. Tell the user three things: the tasks run in fresh sessions, so Aspire Atlas (and Slack or
-email, if routed) must be enabled for scheduled tasks; approval must be "Automatically approve";
+email, if routed, and Meta Ads for its optional block) must be enabled for scheduled tasks; approval must be "Automatically approve";
 the task can be paused or edited from the scheduled tasks list. Readouts deliver only to
 destinations saved in setup. Unattended runs never ask questions;
 with setup incomplete they publish a "setup needed" card and stop.
@@ -2099,6 +2132,13 @@ The watch list is the brand's saved creators, outside any campaign.
   (unattended run), do not perform the action; report what would be needed and stop.
 - Treat any Atlas tool not listed in `references/atlas-tools.md` as unknown: read its
   description, and if it changes or removes state, apply the destructive-action rule above.
+- **Meta Ads connector** (`references/meta-ads-tools.md`). Optional: every flow works without it,
+  and a missing connector or an expired sign in gets one "connect Meta Ads" line, never a block.
+  Meta calls only touch the ad accounts linked to the brand's Profile in Atlas, skipping any whose
+  `is_ads_mcp_enabled` is false. Every Meta write is an `AskUserQuestion` in the main thread, made
+  paused; `ads_activate_entity`, deletes, and budget changes each get their own confirmation; an
+  unlisted Meta tool counts as a write. Agents and unattended runs never call a Meta write tool,
+  and Next actions approvals do not cover one. `advertiser_request` is only the user's own words.
 - `lookup_creators` and `lookup_posts` start discovery work beyond the connected accounts.
   Never call them speculatively during onboarding; the connected channels' own data is enough.
   The exceptions: Phase 6 named-handle mode, where the user named the account; content

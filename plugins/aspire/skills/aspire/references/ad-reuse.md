@@ -407,7 +407,8 @@ content**.
    need it to run the ad. Never put a code on a page, in a delivery, in a saved finding, or in a
    message to a creator, and never repeat a pasted one back.
 6. **Run it (optional).** When the user wants to run a post, plan it with the Meta Ads
-   connector's `ads_boost_ig_post`, `confirmed=false` first, using `igMediaId` and
+   connector's `ads_boost_ig_post` on one of the brand's own ad accounts (`meta-ads-tools.md`,
+   **Brand scope**), `confirmed=false` first, using `igMediaId` and
    `brand.igUserId`, or the code. Show the plan, confirm with `AskUserQuestion` ("Create this ad,
    paused, from **@{creator}**'s post?" Options: Not yet (Recommended) / Create it paused), then
    call it with `confirmed=true`. Without the Meta Ads connector, say the post can be run from

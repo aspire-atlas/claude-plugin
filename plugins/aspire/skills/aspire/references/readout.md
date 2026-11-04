@@ -118,6 +118,34 @@ Metric definitions:
   baseline median. Report the metric, the baseline median, and the percent delta.
 - Cadence = posts per day (daily) or per week (weekly), against the baseline.
 
+## Meta Ads enrichment (optional, both agents)
+
+When the Meta Ads connector is live, the daily and weekly reports add one **Meta Ads** block from
+Meta's read tools. The report never depends on it. Follow `meta-ads-tools.md` (**Detection**,
+**Brand scope**, **Privacy**, **Reports**); in short:
+
+1. After the Atlas data pull, detect the connector with one `ToolSearch` (`+Meta_Ads
+   ads_get_ad_accounts`). Not found, or only `authenticate` tools: skip to step 4. Found: load
+   the reads step 3 uses with one `ToolSearch` `select:` call under the resolved prefix.
+2. Scope: `list_ad_accounts` with `asProfileId`, keeping only the rows marked as linked to this
+   Profile (an account it lists that is merely reachable is out of scope), then
+   `ads_get_ad_accounts`; keep only those linked accounts, dropping any whose
+   `is_ads_mcp_enabled` is false. None left: skip to step 4.
+3. Read, for the report window and the kept accounts only: `ads_insights_anomaly_signal` and
+   `ads_get_errors` (daily and weekly); the weekly adds `ads_insights_performance_trend`,
+   `ads_insights_industry_benchmark`, `ads_insights_auction_ranking_benchmarks`, and
+   `ads_get_opportunity_score`. `advertiser_request` is the `meta_request` input (the user's own
+   words) when the launch carries one, and otherwise the fixed line in `meta-ads-tools.md`
+   **Privacy**, always in an unattended run. Each figure is labelled "Meta Ads", kept apart from
+   Atlas's figures and from organic, and turned into an insight with a next step (a swing to
+   check, a delivery error to fix, a recommendation to try).
+4. Whenever the block is left out (connector missing, sign in expired, no linked or enabled
+   account, a call failed), add "Meta Ads data not included: {reason}" to the page's "What is
+   missing" and finish the report as normal. Never fail, stop, or retry more than once.
+
+Never a Meta write tool, in any run mode. Findings drawn from the block may join the run's
+`append_insights` under the same limits, with `detail.source: "meta_ads"`.
+
 ## Resolving "today" (both readouts)
 
 The date a run starts on comes from the shell clock, never from text. Run
@@ -314,6 +342,8 @@ README). Rules for the agents:
   `start_business_discovery`.
 - If Atlas returns an unauthorized error, publish the "setup needed" card with "Aspire Atlas
   needs a fresh sign in" and stop.
+- Meta Ads is optional: a missing connector or an expired Meta sign in leaves its block out
+  (**Meta Ads enrichment**) and the run carries on. Never call a Meta write tool.
 - If a search returns nothing for the window, report "no posts indexed for {window}" rather
   than inventing numbers, and still deliver the page and summary.
 
