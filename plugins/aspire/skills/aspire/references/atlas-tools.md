@@ -27,6 +27,13 @@ with one `ToolSearch` `select:` call each, or `+Aspire_Atlas` with `max_results:
 all at once and drop the `organization_admin` results. Every `select:` list of Atlas tools
 includes `report_checkpoint`.
 
+## Meta Ads connector
+
+The bundled, optional **Meta Ads** connector is Meta's own ads MCP server. Its tools, which ones
+change data, and the rules for using them (detection, routing, brand scope, writes, privacy, and
+report enrichment) are in `meta-ads-tools.md`. Atlas stays the source for paid results tied to
+creators and posts (`search_ads`, `list_ad_accounts`) and for partnership ads.
+
 ## Organization admin connector
 
 The bundled **Aspire Atlas Organization Admin** connector (organization members and
@@ -256,13 +263,16 @@ Meta; its tools need their own sign in):
   permission (`ACCOUNT_LEVEL_AD_PARTNERSHIP`); or `ad_code` = the code, which names the post on its
   own. In the overlay, `brand` is the `sponsor_id`.
 - It also needs `ad_account_id` and `ig_account_id` (the brand's ad account and Instagram account,
-  from the Meta Ads connector).
+  from the Meta Ads connector). The ad account is one linked to the Profile in Atlas with
+  `is_ads_mcp_enabled` true in Meta (`meta-ads-tools.md`, **Brand scope**); never another one the
+  Facebook sign in can reach.
 - Call with `confirmed=false` first and show the user the plan. Call with `confirmed=true` only
   after they approve it with `AskUserQuestion`. The ad is created paused. Unattended runs never
   boost.
 
 When the Meta Ads connector is not connected, say what to run and that the brand can do it in
-Meta Ads Manager; never pass the code anywhere else.
+Meta Ads Manager; never pass the code anywhere else. Turning the ad on is `ads_activate_entity`,
+with its own confirmation, or the brand's step in Meta Ads Manager (`meta-ads-tools.md`, **Writes**).
 
 ## Destructive tools: confirmation is mandatory
 

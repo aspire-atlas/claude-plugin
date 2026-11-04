@@ -257,6 +257,12 @@ packet after the run.
 | `atlas-shops` | write | Saves the plan |
 | `atlas-weekly-insights-report` | write | Saves the week's insights |
 
+**Meta Ads writes are never an agent's.** No agent proposes or makes a write through the Meta Ads
+connector, whatever its level: those writes are the main thread's, one `AskUserQuestion` each, per
+`meta-ads-tools.md` **Writes**. A packet proposal that would write to Meta is not offered and is
+logged (**9**, Adjustments). The daily and weekly insights reports may read Meta Ads as optional
+enrichment at their Read level.
+
 **Enforcing it from the packet.** When a packet arrives:
 
 1. Group `proposals` by level. Judge each by what it does, not by its label: a proposal that
