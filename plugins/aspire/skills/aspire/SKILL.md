@@ -53,7 +53,7 @@ Text after the command is the argument. Route on it before anything else:
 | -------- | ------ |
 | `agents` (also `list agents`, `show agents`) | Run **List agents** below. Skip the phases unless the user picks an agent to run. |
 | `run {agent}` (an agent name from the list, with or without the `aspire:` prefix; the agents panel drafts this when someone presses an agent) | Skip steps 1 to 4 of **List agents** and start at step 5 for that agent: the sample question, then its hand-off row. The agent itself always starts in a subagent (**Running agents**). An unknown name: run **List agents** from step 1. |
-| `org` (also `change organization`, `switch org`; the progress bar's title drafts it) | Run Phase 1, then call `get_status`, ask which organization with `AskUserQuestion` (header "Organization", one option per organization, the selected one first; this explicit argument is the only time the question is asked), then call `get_status` again with `asOrganizationId` set to the choice (even when it is the organization already selected: the progress bar and credits follow the named call, not the default), and give the Phase 2 + 3 route summary. Change nothing in Atlas. |
+| `org` (also `change organization`, `switch org`; the progress bar's title drafts it) | Run Phase 1, then call `get_status`, ask which organization with `AskUserQuestion` (header "Organization", one option per organization, the selected one first; besides a bare run's selector in Phase 2 + 3 step 3, this explicit argument is the only time the question is asked), then call `get_status` again with `asOrganizationId` set to the choice (even when it is the organization already selected: the progress bar and credits follow the named call, not the default), and give the Phase 2 + 3 route summary. Change nothing in Atlas. |
 | `getting started` (also `help`, `get started`, `start`, `guide`, `starter guide`, `what can you do`, `how does this work`) | Show the Atlas Starter Guide: publish the page in `references/first-run.md` (**7**, on request), say its link in one line, then make the **Sample artifacts** offer for Atlas as a whole. It needs no Atlas connection, so skip the phases and Phase 1. When Atlas happens to be connected already, use the `On request` status line; otherwise none. Never answer these with a text summary instead of the page, and never run onboarding unless the user asks to set up. |
 | `sample` (also `sample {agent}`, `show me a sample`, `example`) | Run **Sample artifacts** below. No Atlas connection is needed, so skip the phases. |
 | `fee calculator` (also `fees`, `pricing`, `rate card`, `creator rates`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Fee calculator** below. Skip the other phases. |
@@ -446,7 +446,7 @@ group's `tasks` in order when it starts, then call again as each task finishes w
 
 | Group | `title` | `tasks` | Runs |
 | ----- | ------- | ------- | ---- |
-| 1 | `Connecting` | `Verify Aspire Atlas` (Phase 1), `Get organizations`, `Pick the organization`, `Get status` (Phase 2 + 3) | Every run. Mark `Pick the organization` done at once when no question is asked. |
+| 1 | `Connecting` | `Verify Aspire Atlas` (Phase 1), `Get organizations`, `Pick the organization`, `Get status` (Phase 2 + 3) | Every run. Mark `Pick the organization` done at once when no question is asked; on a bare run it stays in progress while the selector waits. |
 | 2 | `Onboarding` | `Create the brand profile` (4.1), `Connect a social account` (4.2), `Confirm the account` (4.2 terminal status) | Only when Phase 3 routed to Phase 4. Drop `Create the brand profile` when the profile exists. Skip the group for an existing org with a connected channel. |
 | 3 | `Brand questions` | One task per Phase 5 question still to ask (skip keys already saved), then `Theme and rates offers` and `First insights` (Phase 6) | Optional. Start it only when Phase 5 runs. A declined question is marked done, not left open. |
 
@@ -639,20 +639,32 @@ Write a fresh `context` per call.
    profile's connected channels (including expired authorizations).
 2. **Auth check.** An unauthorized error means the connector token lapsed: render one connector
    card (Phase 1 rules) with "Aspire Atlas needs a fresh sign in. Click Connect above."
-3. **Organization.** When `get_status` already returns a selected organization, use it without
-   asking which one: name it once in the summary and add "say /aspire:aspire org to switch".
-   Ask only for the explicit `org` argument (the `org` row), or when none is selected and
-   several exist (`AskUserQuestion` with the org names). Keep passing `asOrganizationId` (that
-   org's `id`) explicitly on every later call, since the server is stateless; after an explicit
-   choice call `get_status` again with it, even when it is the one already selected: the
-   progress bar and credits follow the named call.
+3. **Organization.** On a bare `/aspire:aspire` run interactively (nothing after the command,
+   not unattended) where the caller belongs to more than one organization, the organization
+   selector comes first and comes alone. The `get_status` call in step 1 draws it where the host
+   renders the tool's widget. End the turn there: no bullets, no summary, no first-run guide, no
+   dashboard, and no other tool call or question in that reply; at most one line, "Pick the
+   organization to work in." The pick comes back as the user's next message (the widget's
+   selection, or a typed name): match it by name, ignoring case, to the organizations in that
+   result, call `get_status` again with its `asOrganizationId`, and only then go on to step 4.
+   Where the host draws no widget, ask instead with `AskUserQuestion` (header "Organization", one
+   option per organization, the selected one first) and continue from the answer the same way.
+   With exactly one organization there is nothing to pick: go straight to step 4.
+   Every other run (an argument, context, or a named flow): when `get_status` already returns a
+   selected organization, use it without asking which one: name it once in the summary and add
+   "say /aspire:aspire org to switch". Ask only for the explicit `org` argument (the `org` row),
+   or when none is selected and several exist (`AskUserQuestion` with the org names).
+   Keep passing `asOrganizationId` (that org's `id`) explicitly on every later call, since the
+   server is stateless; after an explicit choice call `get_status` again with it, even when it
+   is the one already selected: the progress bar and credits follow the named call.
 4. **Route.**
    - `profiles` empty → **new org**. Go to Phase 4.
    - Profiles exist, none with a connected channel → **profile only**. Skip 4.1, go to 4.2
      with the existing profile (ask which one if several).
-   - Profiles with channels → **existing**. Give a 3 to 5 bullet summary (profile, channels,
-     any expired auth). With nothing after the command, go on to **Organization dashboard**,
-     which replaces the Phase 5 gap check and the offers; with an argument or context, run
+   - Profiles with channels → **existing**. With nothing after the command, go straight to
+     **Organization dashboard** with no summary first: it replaces the bullets, the Phase 5 gap
+     check, and the offers. With an argument or context, give a 3 to 5 bullet summary (profile,
+     channels, any expired auth), then run
      the Phase 5 gap check and offer Phase 6, the weekly creator brief (see **Creator brief**
      below), or a re-connect for expired channels.
 5. **First-run guide.** When the phases run from the top (empty argument or onboarding
@@ -660,6 +672,7 @@ Write a fresh `context` per call.
    or existing with no brand context on any linked profile, from the Phase 5 calibration
    read), publish the starter page in `references/first-run.md` once per organization per
    session, say one line with the link, and continue at the route's phase in the same reply.
+   On a bare run it waits for the organization pick in step 3, like everything else.
    It runs only after `get_status` answered (Phase 1 finding Atlas not connected gets the guided
    add alone), never blocks or replaces a phase, and never runs unattended. The reference holds
    the trigger and re-run rules.
@@ -912,7 +925,8 @@ against competitors goes to **Market signal**.
 ## Organization dashboard (where the organization stands, and what to do next)
 
 Trigger on a bare `/aspire:aspire` for a configured organization (the **existing** route of
-Phase 2 + 3), on `/aspire:aspire dashboard`, and when the user asks to see the dashboard, where
+Phase 2 + 3, right after the organization pick in its step 3, never in the same reply as the
+selector), on `/aspire:aspire dashboard`, and when the user asks to see the dashboard, where
 they stand, or what to do next in Atlas. It runs in the main thread with no agent, shows and
 recommends only, and writes nothing: no spend, no members, nothing moved, drafted, or sent.
 
@@ -924,7 +938,7 @@ recommends only, and writes nothing: no spend, no members, nothing moved, drafte
    the 28 days before, things of interest, its tracked hashtags, and, once the tab is opened, its own
    accounts as creator cards and its newest posts). The caller's role and stated relationship set what leads and what starts
    open. Build no page or card beside it and repeat none of its numbers; say one line with the
-   next step.
+   next step, then ask step 3 in the same reply.
 2. **Fallback.** When `get_dashboard` is not among the Atlas tools (an older server), or the host
    shows no widget, use the `get_status` result already in hand (its status card draws where
    widgets render) and give a 3 to 5 bullet readout: channels and any lapsed one, credits left,
