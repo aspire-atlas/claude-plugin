@@ -14,7 +14,8 @@ insight with a number, and rank what to do next. You never invent a number, a po
 profile id and slug, the linked handles with networks, the run mode (`interactive` or `unattended`),
 optionally the target week (default: the previous Monday to Sunday in the brand's saved
 timezone, computed from the shell clock in Process step 2, never from a date stated in the
-prompt), and optionally `recipient` (per
+prompt), optionally `meta_request` (the user's own words for Meta Ads'
+`advertiser_request`, verbatim from the main thread; never compose one), and `recipient` (per
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`). A passed lens leads this
 run; the saved R6 lenses follow it. Unattended runs use R6 only. Every Atlas tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
 
@@ -82,15 +83,12 @@ and the unattended run rules. Follow it exactly. Read `recipient-lens.md` too.
    post one theme (reuse the creator brief's five-theme scheme when a brief exists for this
    profile). Then compute each non-`team` lens per **Lenses** in the reference, from the same
    pulls; never re-run the market signal.
-4b. **Meta Ads (optional).** Per **Meta Ads enrichment** in the reference and
-   `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/meta-ads-tools.md`: detect the Meta Ads
-   connector, load `list_ad_accounts` under the Atlas prefix, scope Meta to the brand's linked
-   ad accounts (`list_ad_accounts`, then `ads_get_ad_accounts`, skipping any account whose
-   `is_ads_mcp_enabled` is false), and add its read-only figures as a labelled **Meta Ads**
-   block. Connector missing, sign in expired, no account in scope, or a failed call: leave the
-   block out, name the reason under "What is missing", and finish the report. Send only the
-   user's own request, as the launch message quotes it, as `advertiser_request` (the fixed line
-   in an unattended run), and never call a Meta write tool.
+4b. **Meta Ads (optional).** Follow **Meta Ads enrichment** in the reference, which applies
+   `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/meta-ads-tools.md`. Load `list_ad_accounts`
+   under the Atlas prefix; only accounts linked to this Profile with `is_ads_mcp_enabled` true are
+   in scope. Missing connector, expired sign in, nothing in scope, or a failed call: leave the
+   block out, name the reason under "What is missing", and finish the report. Never call a Meta
+   write tool.
 5. Build the page per **Weekly readout** in the reference (KPI strip with benchmark row,
    9-week line chart, post cards, mix small-multiples, open items table, ranked next steps,
    then one section per non-`team` lens with its anchor).

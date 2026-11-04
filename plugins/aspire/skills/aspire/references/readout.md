@@ -125,17 +125,20 @@ Meta's read tools. The report never depends on it. Follow `meta-ads-tools.md` (*
 **Brand scope**, **Privacy**, **Reports**); in short:
 
 1. After the Atlas data pull, detect the connector with one `ToolSearch` (`+Meta_Ads
-   ads_get_ad_accounts`). Not found, or only `authenticate` tools: skip to step 4.
-2. Scope: `list_ad_accounts` with `asProfileId` for the brand's linked ad accounts, then
-   `ads_get_ad_accounts`; keep only the linked accounts, dropping any whose `is_ads_mcp_enabled`
-   is false. None left: skip to step 4.
+   ads_get_ad_accounts`). Not found, or only `authenticate` tools: skip to step 4. Found: load
+   the reads step 3 uses with one `ToolSearch` `select:` call under the resolved prefix.
+2. Scope: `list_ad_accounts` with `asProfileId`, keeping only the rows marked as linked to this
+   Profile (an account it lists that is merely reachable is out of scope), then
+   `ads_get_ad_accounts`; keep only those linked accounts, dropping any whose
+   `is_ads_mcp_enabled` is false. None left: skip to step 4.
 3. Read, for the report window and the kept accounts only: `ads_insights_anomaly_signal` and
    `ads_get_errors` (daily and weekly); the weekly adds `ads_insights_performance_trend`,
    `ads_insights_industry_benchmark`, `ads_insights_auction_ranking_benchmarks`, and
-   `ads_get_opportunity_score`. `advertiser_request` is the user's own request, as the launch message quotes it, in an
-   interactive run, and the fixed line in `meta-ads-tools.md` **Privacy** in an unattended one. Each figure
-   is labelled "Meta Ads", kept apart from Atlas's figures and from organic, and turned into an
-   insight with a next step (a swing to check, a delivery error to fix, a recommendation to try).
+   `ads_get_opportunity_score`. `advertiser_request` is the `meta_request` input (the user's own
+   words) when the launch carries one, and otherwise the fixed line in `meta-ads-tools.md`
+   **Privacy**, always in an unattended run. Each figure is labelled "Meta Ads", kept apart from
+   Atlas's figures and from organic, and turned into an insight with a next step (a swing to
+   check, a delivery error to fix, a recommendation to try).
 4. Whenever the block is left out (connector missing, sign in expired, no linked or enabled
    account, a call failed), add "Meta Ads data not included: {reason}" to the page's "What is
    missing" and finish the report as normal. Never fail, stop, or retry more than once.

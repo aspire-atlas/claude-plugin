@@ -1081,11 +1081,13 @@ ad sets, and ads. It runs in the main thread with no agent. Before the first Met
   `list_ad_accounts`) and partnership ads (`search_partnership_content`) stay on Atlas. Meta Ads is
   for what Atlas does not hold (**Routing** there). Never add Meta figures to Atlas figures.
 - **Brand scope.** Before any Meta call, get the Profile's linked ad accounts from Atlas
-  (`list_ad_accounts` with `asProfileId`), call Meta only on those, and skip any account whose
+  (`list_ad_accounts` with `asProfileId`, only the rows linked to this Profile, not the ones it
+  merely reaches), call Meta only on those, and skip any account whose
   `is_ads_mcp_enabled` is false. Never list or mention the other accounts Meta returns.
 - **Writes.** Meta creates campaigns, ad sets, and ads paused. Every Meta write is confirmed with
   `AskUserQuestion`; `ads_activate_entity`, every delete, and every budget or bid change each get
-  their own confirmation, worded as in **Writes** there. No agent and no unattended run ever calls
+  their own confirmation, worded as in **Writes** there; nothing is turned on except through
+  `ads_activate_entity`. No agent and no unattended run ever calls
   a Meta write tool.
 - **Privacy.** `advertiser_request` carries only the user's own request, never brand memory,
   creator data, or other Atlas data. Never show IP addresses or fingerprints from an activity
@@ -1685,7 +1687,9 @@ Ask "Which insights report?", then launch `atlas-weekly-insights-report` and/or
 `atlas-daily-insights-report` (run mode `interactive`, `recipient`, a window only if the user
 named one; never pass "today" or an assumed date). The agents add Meta Ads figures on their own
 when the connector is live (`readout.md`, **Meta Ads enrichment**); never hold a run for it.
-Relay each summary, page link, and resolved window; confirm delivery ("Post to {channel} and email {recipients}?") when an agent asks.
+Pass the user's ask, verbatim, as `meta_request`, and nothing else in it. Relay each summary,
+page link, and resolved window; confirm delivery ("Post to {channel} and email {recipients}?")
+when an agent asks.
 
 ### Launch pulse
 
@@ -1699,7 +1703,7 @@ After the first successful run, or on request, offer "Set up the recurring sched
 follow `readout.md`, **Scheduling (main thread)**: UTC cron from `policy:readout-cadence`, the
 session's scheduled-task tools (never local cron), replace old-named tasks, one confirmation for
 both. Tell the user three things: the tasks run in fresh sessions, so Aspire Atlas (and Slack or
-email, if routed) must be enabled for scheduled tasks; approval must be "Automatically approve";
+email, if routed, and Meta Ads for its optional block) must be enabled for scheduled tasks; approval must be "Automatically approve";
 the task can be paused or edited from the scheduled tasks list. Readouts deliver only to
 destinations saved in setup. Unattended runs never ask questions;
 with setup incomplete they publish a "setup needed" card and stop.

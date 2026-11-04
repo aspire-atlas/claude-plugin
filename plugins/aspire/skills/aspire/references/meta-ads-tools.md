@@ -82,7 +82,10 @@ names an ad account linked to the brand's Profile in Atlas.
 
 1. **Get the brand's accounts from Atlas.** `list_ad_accounts` with `asProfileId` (and
    `list_channels` for the Profile's `meta_ads` and `meta_business` channels). The brand's ad
-   accounts are the ones linked to this Profile. None linked: make no account-level Meta call;
+   accounts are only the ones linked to this Profile: its `meta_ads` channels, or the rows
+   `list_ad_accounts` marks as linked to this Profile. `list_ad_accounts` also lists accounts the
+   brand's Meta logins can merely reach; those are not in scope. None linked: make no
+   account-level Meta call;
    say the brand has no ad account linked in Atlas and offer the `meta` connection (Phase 4.2 in
    SKILL.md, approving ad account access in the Meta sign in).
 2. **Match them in Meta.** `ads_get_ad_accounts`, then keep only the accounts whose id matches a
@@ -106,11 +109,12 @@ outside brand scope, and it is read only.
 
 - **`advertiser_request`.** Meta's tools ask for the request in the user's own words. Send only
   the user's request from this conversation, in their wording, trimmed to the part this call
-  serves. Never put brand memory, calibrations, creator handles or data, post text, figures from
+  serves. An agent gets it only as its `meta_request` input, which the main thread fills with the
+  user's words verbatim (or leaves out); without it the agent sends the fixed line below. Never put brand memory, calibrations, creator handles or data, post text, figures from
   Atlas, a page's content, or any other Atlas data in it, and never paraphrase it into something
   the user did not ask. An unattended or scheduled run, which has no user words, sends the fixed
   line "Scheduled {daily|weekly} insights report: ad performance for the report window." and
-  nothing else.
+  nothing else. An interactive agent launched without `meta_request` sends the same line.
 - **No Atlas data in Meta inputs** beyond the ids a call needs (an Instagram media id or the
   brand's Instagram user id for `ads_boost_ig_post`, or an ad code under the ad code rules in
   `atlas-tools.md`). Never build a Meta custom audience from Atlas data: creator lists, audience
@@ -121,7 +125,7 @@ outside brand scope, and it is read only.
   and never show an IP address or fingerprint from anywhere in the result. Show who changed what,
   on which object, and when.
 - Meta results are never saved to Atlas wholesale. A finding drawn from them is saved only the way
-  the flow's own findings are, with its source "Meta Ads".
+  the flow's own findings are, with `detail.source: "meta_ads"` (shown as "Meta Ads").
 
 ## Writes
 
@@ -130,7 +134,11 @@ no agent calls a Meta write tool.
 
 - **Paused first.** `ads_create_campaign`, `ads_create_ad_set`, `ads_create_ad`, and
   `ads_boost_ig_post` create their object paused. Never ask Meta to create anything active, and
-  never pass a status that would start delivery.
+  never pass a status that would start delivery. Turning something on goes only through
+  `ads_activate_entity`: never set an active status with `ads_update_entity`.
+- **Budget at creation.** A budget, spend cap, or bid set by `ads_create_campaign` (a campaign
+  budget) or `ads_create_ad_set` is named in that write's own confirmation, with the amount, the
+  currency, and per day or in total. Nothing spends until the object is turned on.
 - **Plan, then confirm.** Where a write takes `confirmed`, call it with `confirmed=false` first and
   show the plan. Every Meta write is confirmed with `AskUserQuestion` (never plain text) naming the
   ad account, the object, and what changes, with the safe option first, before the call that
@@ -141,8 +149,8 @@ no agent calls a Meta write tool.
   - `ads_activate_entity` (starts spending): "Turn on **{campaign, ad set, or ad name}** in
     {ad account}? It starts spending {budget and currency} {per day or in total}." Options: Keep it
     paused (Recommended) / Turn it on.
-  - Budget and bid changes: `ads_update_entity` that touches a daily or lifetime budget, a spend
-    cap, or a bid, and the budget set on `ads_create_ad_set`: "Change the budget on **{name}**
+  - Budget and bid changes: `ads_update_entity` that changes a daily or lifetime budget, a spend
+    cap, or a bid on an existing campaign or ad set: "Change the budget on **{name}**
     from {old} to {new} {currency}?" Options: Keep {old} (Recommended) / Change to {new}. Say the
     old and the new amount in the account's currency.
   - Deletes and removals: `ads_delete_custom_audience`, `ads_catalog_delete_product`,
@@ -211,10 +219,10 @@ classified correctly.
 
 | Tool | Kind | Use |
 | ---- | ---- | --- |
-| `ads_create_campaign` | Write | Creates a campaign, paused |
+| `ads_create_campaign` | Write | Creates a campaign, paused; a campaign budget is said in the confirmation |
 | `ads_create_ad_set` | Write | Creates an ad set, paused; its budget is said in the confirmation |
 | `ads_create_ad` | Write | Creates an ad, paused |
-| `ads_update_entity` | Write; **own confirmation** for a budget, spend cap, or bid | Edits a campaign, ad set, or ad |
+| `ads_update_entity` | Write; **own confirmation** for a budget, spend cap, or bid | Edits a campaign, ad set, or ad; never sets it active (use `ads_activate_entity`) |
 | **`ads_activate_entity`** | Write, **own confirmation** | Turns a paused object on; it starts spending |
 | `ads_create_creative` | Write | Creates a creative |
 | `ads_get_creatives`, `ads_get_creative_ads`, `ads_get_ad_images`, `ads_get_ad_videos` | Read | Creatives and media on an ad account |
