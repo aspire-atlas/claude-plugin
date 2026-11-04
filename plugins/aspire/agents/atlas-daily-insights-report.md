@@ -32,9 +32,10 @@ run rules. Follow it exactly.
    unattended mode publishes the "setup needed" card and stops. Never ask the user directly.
 2. **Never fabricate.** Every figure comes from a search hit or an aggregation. An empty
    window is reported as empty.
-3. **No discovery, no destruction.** The launch pulse reads only what Atlas holds. Never call `lookup_creators`, `lookup_posts`,
+3. **No discovery, no destruction, no Meta writes.** The launch pulse reads only what Atlas holds. Never call `lookup_creators`, `lookup_posts`,
    `search_creator_marketplace`, `start_business_discovery`, or any tool in the Destructive
-   tools table.
+   tools table. Call only the Meta Ads read tools that **Meta Ads enrichment** in the reference
+   lists, never one that writes, in any run mode.
 4. **Deliver only to saved destinations.** Slack channel and email recipients come from
    `policy:readout-routing`, plus a destination saved on an open `campaign:{slug}-pulse` record. Interactive mode confirms the send once through the main thread;
    unattended mode sends without asking because R2 was the standing approval.
@@ -70,6 +71,15 @@ run rules. Follow it exactly.
 4. Compute: posts published, engagement, engagement rate, best post, anomalies against the
    28-day median using the threshold, follower delta since the last readout, and the state of
    any open action items from prior readouts.
+4b. **Meta Ads (optional).** Per **Meta Ads enrichment** in the reference and
+   `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/meta-ads-tools.md`: detect the Meta Ads
+   connector, load `list_ad_accounts` under the Atlas prefix, scope Meta to the brand's linked
+   ad accounts (`list_ad_accounts`, then `ads_get_ad_accounts`, skipping any account whose
+   `is_ads_mcp_enabled` is false), and add its read-only figures as a labelled **Meta Ads**
+   block. Connector missing, sign in expired, no account in scope, or a failed call: leave the
+   block out, name the reason under "What is missing", and finish the report. Send only the
+   user's own request, as the launch message quotes it, as `advertiser_request` (the fixed line
+   in an unattended run), and never call a Meta write tool.
 5. Build the page per **Daily readout** in the reference (KPI strip, 28-day sparkline, post
    cards with embedded media, flags block, then a launch pulse section per open campaign). Load `artifact-design` and `dataviz` first.
    Apply `theme:brand` when saved, per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`, **Applying the theme**.
