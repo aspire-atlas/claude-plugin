@@ -643,13 +643,17 @@ Write a fresh `context` per call.
    not unattended) where the caller belongs to more than one organization, the organization
    selector comes first and comes alone. The `get_status` call in step 1 draws it where the host
    renders the tool's widget. End the turn there: no bullets, no summary, no first-run guide, no
-   dashboard, and no other tool call or question in that reply; at most one line, "Pick the
-   organization to work in." The pick comes back as the user's next message (the widget's
-   selection, or a typed name): match it by name, ignoring case, to the organizations in that
-   result, call `get_status` again with its `asOrganizationId`, and only then go on to step 4.
-   Where the host draws no widget, ask instead with `AskUserQuestion` (header "Organization", one
-   option per organization, the selected one first) and continue from the answer the same way.
-   With exactly one organization there is nothing to pick: go straight to step 4.
+   dashboard, and no other tool call or question in that reply; one line only, "Pick the
+   organization above, then say continue." A pick in the widget does not post a message: it
+   records `selectedOrganizationId` in the model context, so the user's next message is what
+   resumes the run. On that message use the `selectedOrganizationId` the widget recorded; with
+   none, match a typed name to the organizations in that result, ignoring case; with no match
+   or more than one, ask with `AskUserQuestion`. Then call `get_status` again with that
+   `asOrganizationId`, and only then go on to step 4. Where the host draws no widget, or you
+   cannot tell (Claude Code's terminal, plain-text hosts), ask with `AskUserQuestion` instead
+   (header "Organization", one option per organization, the selected one first) and continue
+   from the answer the same way. With exactly one organization there is nothing to pick: go
+   straight to step 4.
    Every other run (an argument, context, or a named flow): when `get_status` already returns a
    selected organization, use it without asking which one: name it once in the summary and add
    "say /aspire:aspire org to switch". Ask only for the explicit `org` argument (the `org` row),
