@@ -88,7 +88,7 @@ hook rate, hold rate and click-through, and one status:
 | Winning (early) | Past the floor and cost per sale at least 20% under the target |
 | Winning | Still at least 20% under the target at twice the floor |
 | Watch | Past the floor and within 20% of the target either way |
-| Fatigued | Was Winning, and over the last 14 days both cost per sale rose 25% or more against the ad's own figure up to that point and click-through fell 25% or more. A one-week click-through drop alone is not fatigue: week-to-week return moves that much for about a third of ads anyway |
+| Fatigued | Was Winning, and its return over the last 7 days is under 75% of its own return up to that point (cost per sale about a third higher). Click-through and frequency are shown but never decide it: across real ad accounts, neither gave more warning than the return drop alone, and a click-through drop on its own was no warning at all |
 | Retire | Past the floor and cost per sale more than 20% over the target, or rights expire within 7 days |
 
 Each ad gets one move with its reason (scale, hold, refresh the cut, stop) and whether a soft
