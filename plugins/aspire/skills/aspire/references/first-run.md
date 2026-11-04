@@ -39,11 +39,11 @@ set up gets the status summary, as today, and sees the page when they ask what /
    it would delay the one thing the user has to do.
 2. Phase 1 live: the one line that Atlas is connected, then `get_status` (Phase 2 + 3 step 1).
    An auth error renders the connector card per step 2, and no page.
-3. Settle the organization (step 3). With several, the org picker comes first, so the page
-   names the right one.
+3. Settle the organization (step 3). With several, the org selector comes first and alone:
+   the reply ends there, and the page waits for the pick, so it names the right one.
 4. Route (step 4), and run the check in **3**. Unconfigured: publish the page (**5**), say the
-   one line (**6**), then continue at the phase the route names. Configured: no page; the
-   status summary as today.
+   one line (**6**), then continue at the phase the route names. Configured: no page; a bare
+   run goes straight to the organization dashboard, any other the status summary as today.
 5. A "connected" reply that resumes Phase 1 follows the same order from the top.
 
 ## 3. Unconfigured: the existing route, plus the Phase 5 read
