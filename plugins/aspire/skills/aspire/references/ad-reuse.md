@@ -26,7 +26,10 @@ needs exactly which moments to cut, at what length, for which placement.
     post features. When a single competitor has more products than the brand, leave the post
     out as a competitor's video. When the brand has a third or more of the products, or has one
     product and at most two other products appear in all, keep it as **brand-led**, at most 2 in the prefiltered
-    12. Anything else is a multi-brand look: leave it out and count it. Many looks in beauty,
+    12. Anything else is a multi-brand look: on the found path, leave it out and count it. On
+    the briefed path the screen is against the brief only (**Two paths**), so a multi-brand look
+    the brief asked for (a gift guide or round-up deliverable) stays, labelled "briefed
+    multi-brand look", and at most one reaches the top five; any other is left out and counted. Many looks in beauty,
     fashion and home show several brands, and leaving out every one of them empties the pool. A
     brand-led post's competitor in frame is named on its card ("brand-led, {competitor} also
     shown") and never forces **leave** (**Verdict bands**).
