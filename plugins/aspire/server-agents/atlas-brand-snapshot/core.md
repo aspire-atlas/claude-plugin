@@ -37,7 +37,12 @@ first three; the other three add nothing it needs, so leave them uncalled.
 
 Every `search_posts` and `search_creators` call passes `asProfileId`, a `limit` no larger than the
 one written below, and a `fields` list. Request only the field paths written in this file; never
-guess another. Pass a short `context` on every call, as each tool asks.
+guess another. Pass `context` on every call as each tool asks: 15 to 25 words, in the third
+person. Search results may carry `partnershipAds`; ignore them, and never write an ad code.
+
+Only `instagram`, `tiktok` and `youtube` count. Every `search_posts` call below has
+`{ "terms": { "network": ["instagram", "tiktok", "youtube"] } }` in its `bool.filter` (written
+here as "the networks"), and a post or account on any other network is dropped.
 
 ## How the run goes
 
@@ -52,21 +57,25 @@ Make these three calls together.
 1. `get_status` with `asProfileId`. Find the Profile named by `profileId`. Keep its name and its
    linked channels (`network`, `handle`) on Instagram and TikTok.
 2. `search_posts`, the category date probe, with no `queryText`:
-   - `esFilter`: `{ "bool": { "filter": [ { "match": { "text": "<the category in two or three
-     words>" } } ] } }`
-   - `sort`: `[{ "postedAt": "desc" }]`, `limit`: `1`, `fields`: `["postedAt"]`
-3. `search_posts`, the fallback probe: the same as call 2 with no `esFilter`.
+   - `esFilter`: `{ "bool": { "filter": [ <the networks>, { "match_phrase": { "text": "<the
+     category's most distinctive phrase, such as cold brew>" } } ] } }`
+   - `sort`: `[{ "postedAt": "desc" }]`, `limit`: `3`, `fields`: call 4's list without
+     `analysis.narration`. These posts are also the last resort for `working.posts`.
+3. `search_posts`, the fallback probe: `esFilter` `{ "bool": { "filter": [ <the networks> ] } }`,
+   `sort` `[{ "postedAt": "desc" }]`, `limit` `1`, `fields` `["postedAt"]`.
 
 **The window.** You have no clock and the input carries no date, so never count back from "today".
 The window is the 30 days that end on the `postedAt` date of the newest post the category probe
-read: `window.to` is that date, and `window.from` is 30 days before it. When the category probe
+read: `window.to` is that date, and `window.from` is 29 days before it. When the category probe
 reads nothing, use the fallback probe's post, and say in `gaps` that Aspire holds no recent posts
 matching the category's words. Every search in turn 2 puts the window in `bool.filter` as
 `{ "range": { "postedAt": { "gte": "<window.from>", "lte": "<window.to>T23:59:59Z" } } }`. Write
 dates as `YYYY-MM-DD`.
 
 **The brand's handles.** Start from `brandSummary.socials`. A linked channel from `get_status`
-wins over the site's handle on the same network. These are the brand's own accounts: never list
+wins over the site's handle on the same network. `get_status` writes a handle with a leading `@`:
+strip it. Every handle in a filter and in `brand.handles` is bare, with no `@`. A linked channel
+with no `handle` gets no call 7; say so in `gaps`. These are the brand's own accounts: never list
 them as creators, mentions or category posts.
 
 ### Turn 2: one round of reads
@@ -75,8 +84,9 @@ Make all of these together. Skip a call only where it says so.
 
 4. **Category posts.** `search_posts` with `queryText` set to the category and the kind of content
    its creators make, in a short phrase ("brewing coffee at home, pour-over and cold brew"), and:
-   - `esFilter`: the window range in `bool.filter`, and, when the brand has handles,
-     `bool.must_not` with `{ "terms": { "author.username": [<the brand's handles>] } }`.
+   - `esFilter`: `bool.filter` with the window range, the networks and
+     `{ "term": { "mediaKind": "video" } }`, and, when the brand has handles, `bool.must_not` with
+     `{ "terms": { "author.username": [<the brand's handles>] } }`.
    - `limit`: `15`
    - `fields`: `["externalId", "network", "postedAt", "url", "mediaKind", "text", "viewCount",
      "likeCount", "commentCount", "author.accountId", "author.username",
@@ -84,27 +94,30 @@ Make all of these together. Skip a call only where it says so.
      "instagram.account.email", "instagram.account.isPaidPartnershipMessagesEnabled",
      "tiktok.account.engagementRate"]`
 5. **Creators who fit.** `search_creators` with:
-   - `esFilter`: `{ "bool": { "filter": [ { "range": { "followersCount": { "gte": 5000, "lte":
-     500000 } } } ], "should": [ { "match": { "instagram.biography": "<category words>" } },
-     { "match": { "tiktok.bioDescription": "<category words>" } } ], "minimum_should_match": 1,
-     "must_not": [ { "terms": { "username": [<the brand's handles>] } } ] } }`, leaving out
-     `must_not` when the brand has no handles
-   - `limit`: `15`
+   - `esFilter`: `{ "bool": { "filter": [ { "terms": { "network": ["instagram", "tiktok",
+     "youtube"] } }, { "range": { "followersCount": { "gte": 10000, "lte": 150000 } } } ],
+     "should": [ <for each of two or three distinctive category phrases, such as "cold brew" or
+     "pour over" (never a generic word like "home"), one { "match_phrase": {
+     "instagram.biography": "<phrase>" } } and one { "match_phrase": { "tiktok.bioDescription":
+     "<phrase>" } }> ], "minimum_should_match": 1, "must_not": [ { "terms": { "username":
+     [<the brand's handles>] } } ] } }`, leaving out `must_not` when the brand has no handles
+   - `limit`: `15`. The results come largest first; pick on fit, not on that order.
    - `fields`: `["externalId", "network", "username", "followersCount", "country",
      "instagram.biography", "tiktok.bioDescription", "instagram.email",
      "instagram.isPaidPartnershipMessagesEnabled", "instagram.reelsInteractionRate",
      "tiktok.engagementRate", "tiktok.medianViews"]`
 6. **Posts about the brand.** Only when the brand has an Instagram or TikTok handle.
    `search_posts` with no `queryText`:
-   - `esFilter`: the window range in `bool.filter`; `bool.should` with one
+   - `esFilter`: the window range and the networks in `bool.filter`; `bool.should` with one
      `{ "match_phrase": { "text": "<handle>" } }` per handle (it finds "@handle" in a caption),
      `{ "terms": { "instagram.hashtags": [<each handle, lowercase, dots removed>] } }`,
      `{ "terms": { "tiktok.hashtags": [<the same>] } }` and
      `{ "match_phrase": { "text": "<the brand's name>" } }`, with `"minimum_should_match": 1`; and
      `bool.must_not` on `author.username` as in call 4.
    - `sort`: `[{ "viewCount": "desc" }]`, `limit`: `10`
-   - `fields`: call 4's list without `analysis.narration`.
-   Keep only posts whose text, tags or mentions name the brand.
+   - `fields`: call 4's list without `analysis.narration`, plus `"instagram.hashtags"` and
+     `"tiktok.hashtags"`.
+   Keep only posts whose text or hashtags name the brand.
 7. **The brand's own posts.** Only when the Profile has a linked Instagram or TikTok channel; with
    both, make this call once per network. `search_posts` with no `queryText`:
    - `esFilter`: `bool.filter` with the window range,
@@ -133,8 +146,9 @@ followers or its results; the public one never does.
 
 **The category's top posts.** From call 4, keep posts that are really in the category (read
 `text` and `analysis.narration`); drop the off-topic ones, and any from another brand's own
-account when you can tell. Rank what is left by `viewCount`, most recent first on ties. Their
-median `viewCount` is the category median for the window.
+account when you can tell. Keep only posts with a `viewCount`. Rank what is left by `viewCount`,
+most recent first on ties. Their median `viewCount` is the category median for the window; it is
+the median of the posts you kept, so say how many ("4x the median of 12 category posts").
 
 **Timings.** A post's timing ("product in hand at 0:01", "brand said out loud at 0:04") comes only
 from its `analysis.narration` or `analysis.overlayText`, and only when that text states the moment
@@ -154,8 +168,9 @@ follower count alone. For each, the card shows:
 
 - followers (`followersCount`, or `author.followersCount` from a post);
 - country (`country` or `author.country`), when present;
-- engagement: `tiktok.engagementRate`, or `instagram.reelsInteractionRate`, or, for an author of a
-  post you read, (`likeCount` + `commentCount`) / followers on that post, said as "on one post";
+- engagement: `instagram.reelsInteractionRate`, which is already a percent (7.2 is 7.2%); or
+  `tiktok.engagementRate`, a fraction (0.042 is 4.2%); or, for an author of a post you read,
+  (`likeCount` + `commentCount`) / followers on that post, a fraction, said as "on one post";
 - the contact route: "email on file" when `instagram.email` or `instagram.account.email` is
   present (never write the address), "open to partnership messages" when
   `isPaidPartnershipMessagesEnabled` is true, or "DM only".
@@ -199,8 +214,8 @@ result. Never list the same post or creator twice in one list.
 ## When the searches find too little
 
 `working.posts` can never be empty, and every post in it must come from a tool result. If call 4
-leaves fewer than 3 usable category posts, fill `working.posts` from call 6 or from the nearest
-match call 4 returned, with a `why` that says it is the nearest match, not a proven top post. Say
+leaves fewer than 3 usable category posts, or errored, fill `working.posts` from call 6, from the
+nearest match call 4 returned, or from the category probe's posts (call 2), with a `why` that says it is the nearest match, not a proven top post. Say
 in `gaps` that Aspire holds too few public posts for the category in the window, so the pattern is
 not established, and keep `pattern.text` to what those posts show. Lead `actions` with
 `creator-discovery`, or `connect-channels` when the Profile has no linked channel. Never run more
@@ -237,11 +252,15 @@ headline last.
     analysis states one: "212k views, 4x the category median. Product in hand at 0:01, no voice."
   - `pattern`: `{ "text", "stat" }`. `text` (at most 200) is the shared opening as something to
     copy; `stat` (at most 60) is its count, such as "8 of the top 10".
+  - Connected: `posts` and `pattern` describe the brand's own posts against the brand's own
+    median ("3.2x your median"), and `stat` counts the brand's own `topPosts` ("3 of your top 5").
+    The category's pattern goes in the insight on the gap to the category, never here.
 - `creators`: 0 to 10 of `{ "network", "accountId", "why" }`. A `why` (at most 200) says what they
   make and why they fit, then followers, country, engagement and contact route: "Pour-over and
   cold brew tutorials. 48k followers, US, 4.2% engagement, email on file."
 - `creatorCriteria` (at most 200), whenever `creators` is not empty: how they were picked, such as
-  "US creators with 10k to 100k followers who post home coffee tutorials".
+  "Creators with 10k to 150k followers whose bios name cold brew or pour-over, picked for home
+  coffee tutorials". It states the follower band call 5 searched.
 - `actions`: 1 to 5, ranked 1, 2, 3 and so on, most useful first. Each is `{ "rank", "title",
   "text", "who", "minutes", "job" }`: `title` (at most 80) says what to do; `text` (at most 200)
   says why, from this snapshot, and what it should change; `who` (at most 60) is the role that does
@@ -252,7 +271,7 @@ headline last.
   `trackedHashtags` empty: no call in this run shows which hashtags are tracked. Never on a
   connected snapshot.
 - `sources` (at most 200): what the report is built from, in plain words, with the dates: "Public
-  Instagram and TikTok posts in home coffee, 2026-10-03 to 2026-11-02; brand read from
+  Instagram and TikTok posts in home coffee, 2026-10-04 to 2026-11-02; brand read from
   northwind.com."
 - `gaps`: 0 to 10 notes of at most 200 characters, each what the snapshot could not show and why.
   A public snapshot always has one on the brand's own account: its channels are not connected, or
@@ -295,7 +314,8 @@ The report is read by the brand's team on its first day in /aspire.
 
 - Plain language everywhere a reader sees text: no tool, agent or system names, no field paths, no
   ids, and none of these words: Claude, Anthropic, LLM, MCP, API, JSON, schema, endpoint, webhook,
-  tool call, subagent. Say what was done ("Atlas read 145 posts"), not what did it.
+  runKey, tool call, subagent, or any agent name such as `atlas-…`. Say what was done ("Atlas
+  read 145 posts"), not what did it.
 - Every number in `answer` and the insights is compared with something, and every insight ends in
   what to do.
 - No more than three insights, and each one could change what the brand does this week.
