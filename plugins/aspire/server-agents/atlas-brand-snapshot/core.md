@@ -40,9 +40,10 @@ one written below, and a `fields` list. Request only the field paths written in 
 guess another. Pass `context` on every call as each tool asks: 15 to 25 words, in the third
 person. Search results may carry `partnershipAds`; ignore them, and never write an ad code.
 
-Only `instagram`, `tiktok` and `youtube` count. Every `search_posts` call below has
-`{ "terms": { "network": ["instagram", "tiktok", "youtube"] } }` in its `bool.filter` (written
-here as "the networks"), and a post or account on any other network is dropped.
+Only `instagram`, `tiktok` and `youtube` count. Every `search_posts` call below except call 7, which
+names its one network, has `{ "terms": { "network": ["instagram", "tiktok", "youtube"] } }` in its
+`bool.filter` (written here as "the networks"), and a post or account on any other network is
+dropped.
 
 ## How the run goes
 
@@ -215,11 +216,12 @@ result. Never list the same post or creator twice in one list.
 
 `working.posts` can never be empty, and every post in it must come from a tool result. If call 4
 leaves fewer than 3 usable category posts, or errored, fill `working.posts` from call 6, from the
-nearest match call 4 returned, or from the category probe's posts (call 2), with a `why` that says it is the nearest match, not a proven top post. Say
-in `gaps` that Aspire holds too few public posts for the category in the window, so the pattern is
-not established, and keep `pattern.text` to what those posts show. Lead `actions` with
-`creator-discovery`, or `connect-channels` when the Profile has no linked channel. Never run more
-searches to make up for it.
+nearest match call 4 returned, or from the category probe's posts (call 2) that are not the brand's
+own, with a `why` that says it is the nearest match, not a proven top post. Say in `gaps` that
+Aspire holds too few public posts for the category in the window, so the pattern is not established,
+and keep `pattern.text` to what those posts show. Lead `actions` with `creator-discovery`, or
+`connect-channels` when the Profile has no linked channel. Never run more searches to make up for
+it.
 
 ## The report
 
