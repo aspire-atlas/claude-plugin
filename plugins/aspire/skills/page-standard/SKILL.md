@@ -116,18 +116,27 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    layout. A code with no example, or a launch with no `question`, skips this
    step.
 2. **Refresh the shortlist** when the page shows creators' posts or figures derived from them
-   (latest posts, median views, engagement). Call `lookup_creators` with `forceRefresh: true`,
-   `entityKind: "account"`, each creator's network as `schema` and handle as `identifier`, and the
-   run's own `asOrganizationId` and `asProfileId`, up to 100 items per call. Include only the final
-   shortlist the page will show, never a search result or a candidate pool, and only creators the
-   run already read as held by Atlas (a `found` item), so the call starts no discovery. A refresh
-   spends vendor budget for every creator in it. A `refresh` result of `started`, or `skipped` with
-   reason `recently-refreshed`, counts as refreshed; report a `failed` one in the page's "what is
-   missing" part. The first response carries what Atlas already held, so re-read the same items with
-   `lookup_creators` without `forceRefresh` about every 15 seconds, up to roughly 3 minutes, and
-   build the page from the re-read data. Skip any creator the flow's own reference already refreshed
-   in this run (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/account-resolution.md`). Scheduled
-   runs do this too.
+   (latest posts, median views, engagement), unless the flow's reference rules out lookups (the
+   content library reads only what Atlas holds, in every mode). Call `lookup_creators` with
+   `forceRefresh: true`, `entityKind: "account"`, each creator's network as `schema` and handle as
+   `identifier`, and the run's own `asOrganizationId` and `asProfileId`, up to 100 items per call.
+   Include only the final shortlist the page will show, never a search result or a candidate pool,
+   and only creators the run already confirmed Atlas holds (a `found` item from `lookup_creators`, or
+   an account `search_creators` returned), so the call starts no discovery. A refresh spends vendor
+   budget for every creator in it.
+   - The first response carries what Atlas already held. Re-read the same items with
+     `lookup_creators` without `forceRefresh` about every 15 seconds, up to roughly 3 minutes.
+   - A creator counts as refreshed when its `refresh` result is `skipped` with reason
+     `recently-refreshed`, or when a re-read after a `started` result shows the account indexed after
+     the refresh call. A creator still `fetching` at the limit, or whose refresh `failed`, keeps the
+     data Atlas held: name it with that data's last-indexed time in the page's "what is missing"
+     part, or in the page check's `gaps` on a page shared outside the team (section 1).
+   - Then re-run the flow's own searches for the refreshed creators and compute every post-derived
+     figure over the flow's own window (its days or post count), never over only the 10 recent posts
+     a `lookup_creators` re-read carries.
+   - Skip any creator the flow's own reference already refreshed in this run
+     (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/account-resolution.md`). Scheduled runs make
+     this refresh too, except in a flow that rules out lookups.
 3. **Draft the page** for this question and this reader, from the blocks in
    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/blocks.md`. They already carry the markup in
    section 5. The blocks set what each part holds and the order of its evidence; the flow's
