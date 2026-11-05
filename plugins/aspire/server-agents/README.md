@@ -22,4 +22,4 @@ top: the connector's tool names, the page and its mark, and any confirmations.
 
 | Agent | Variant | Output |
 | ----- | ------- | ------ |
-| `atlas-brand-snapshot` | public or connected, chosen by the core from the Profile's linked channels | `{ title, answer, figures, data }`, `data` a `BrandSnapshotReport` version 1 |
+| `atlas-brand-snapshot` | public or connected, chosen by the core from the Profile's linked channels | `{ title, answer, figures, data }`, `data` a `BrandSnapshotReport` version 2 |
