@@ -115,15 +115,41 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    evidence, per `examples.md` steps 1 and 2. Match the evidence, never copy the sections or the
    layout. A code with no example, or a launch with no `question`, skips this
    step.
-2. **Draft the page** for this question and this reader, from the blocks in
+2. **Refresh the shortlist** when the page shows creators' posts or figures derived from them
+   (latest posts, median views, engagement), unless the flow's reference rules out lookups (the
+   content library reads only what Atlas holds, in every mode). Call `lookup_creators` with
+   `forceRefresh: true`, `entityKind: "account"`, each creator's network as `schema` and handle as
+   `identifier`, and the run's own `asOrganizationId` and `asProfileId`, up to 100 items per call.
+   Include only the final shortlist the page will show, never a search result or a candidate pool,
+   and only creators the run already confirmed Atlas holds (a `found` item from `lookup_creators`, or
+   an account `search_creators` returned), so the call starts no discovery. A refresh spends vendor
+   budget for every creator in it.
+   - The first response carries what Atlas already held. Re-read the same items with
+     `lookup_creators` without `forceRefresh` about every 15 seconds, up to roughly 3 minutes.
+   - A creator counts as refreshed when its `refresh` result is `skipped` with reason
+     `recently-refreshed`, or when a re-read after a `started` result shows the account indexed after
+     the refresh call. A creator still `fetching` at the limit, or whose refresh `failed`, keeps the
+     data Atlas held: name it with that data's last-indexed time in the page's "what is missing"
+     part, or in the page check's `gaps` on a page shared outside the team (section 1).
+   - Then re-run the flow's own searches for the refreshed creators. Search indexing lags the
+     lookup: if a creator's searches come back empty, or their newest post is older than the newest
+     post the re-read carries, retry once after about 30 seconds. A creator whose searches still lag
+     the re-read is reported like an unrefreshed one, with the time of the refresh, in "what is
+     missing" or the page check's `gaps`. Compute every post-derived figure over the flow's own
+     window (its days or post count), never over only the 10 recent posts
+     a `lookup_creators` re-read carries.
+   - Skip any creator the flow's own reference already refreshed in this run
+     (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/account-resolution.md`). Scheduled runs make
+     this refresh too, except in a flow that rules out lookups.
+3. **Draft the page** for this question and this reader, from the blocks in
    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/blocks.md`. They already carry the markup in
    section 5. The blocks set what each part holds and the order of its evidence; the flow's
    reference and this reader set the layout. Add the print block with the page's title as
    `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md`, section 6, sets, so the page saves to PDF
    in the light theme with a footer on every page.
-3. **Self-check R1 to R12.** Run the script in section 5 for R1, R2, R6, and R11, and judge the
+4. **Self-check R1 to R12.** Run the script in section 5 for R1, R2, R6, and R11, and judge the
    others against `reader-standard.md`. Fix every fail you can and check again.
-4. **Publish**, even when a check still fails, and report it in the page check (section 7).
+5. **Publish**, even when a check still fails, and report it in the page check (section 7).
 
 Write the headline last. Draft every other part, then write the headline from the decision the
 page supports.
