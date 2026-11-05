@@ -131,9 +131,12 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
      the refresh call. A creator still `fetching` at the limit, or whose refresh `failed`, keeps the
      data Atlas held: name it with that data's last-indexed time in the page's "what is missing"
      part, or in the page check's `gaps` on a page shared outside the team (section 1).
-   - Then re-run the flow's own searches for the refreshed creators (search indexing lags the
-     lookup, so retry once after about 30 seconds if they come back empty) and compute every
-     post-derived figure over the flow's own window (its days or post count), never over only the 10 recent posts
+   - Then re-run the flow's own searches for the refreshed creators. Search indexing lags the
+     lookup: if a creator's searches come back empty, or their newest post is older than the newest
+     post the re-read carries, retry once after about 30 seconds. A creator whose searches still lag
+     the re-read is reported like an unrefreshed one, with the time of the refresh, in "what is
+     missing" or the page check's `gaps`. Compute every post-derived figure over the flow's own
+     window (its days or post count), never over only the 10 recent posts
      a `lookup_creators` re-read carries.
    - Skip any creator the flow's own reference already refreshed in this run
      (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/account-resolution.md`). Scheduled runs make
