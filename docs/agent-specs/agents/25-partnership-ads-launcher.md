@@ -5,7 +5,7 @@ team: 5 Content and ads
 personas: Paid Social Manager
 wave: 3
 permission: Spend
-plugin_agents: none
+plugin_agents: atlas-ads-launcher
 ---
 
 # Partnership Ads Launcher
@@ -59,8 +59,9 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 ## Writes to Atlas
 
 Spend. Before any launch it states the total budget and the cap per test in the ad account's
-currency, and each ad is confirmed one by one. Ads go through the Meta Ads connector, planned with
-`confirmed=false` first and created paused. Turning an ad on is the person's step in Meta Ads
+currency, and each ad is confirmed one by one. The agent holds no Meta Ads connector tool: it
+returns each ad's exact arguments, and the main thread previews it with `confirmed=false`, creates
+it paused with the same arguments after the person's yes, and checks it came back paused. Turning an ad on is the person's step in Meta Ads
 Manager, and the page says so; the agent never turns an ad on or raises a budget. Sending an ad code
 request to a creator is a Send, one question per creator, and covers only an email draft already in
 the brand's mailbox, unchanged; direct messages are never sent. A YouTube budget question (P5) is

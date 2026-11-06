@@ -16,7 +16,8 @@ needs exactly which moments to cut, at what length, for which placement.
   - **Who posted (account map).** Before ranking, sort the authors into creators and the rest:
     the brand's own and regional accounts (excluded), retailers and resellers, deal and news
     pages, team or sponsorship accounts (a sports team, league, event or venue account posting
-    the brand as its sponsor), and accounts posting another brand's sponsored content. Keep only creators unless the
+    the brand as its sponsor), agencies and vendors posting client work, and accounts posting
+    another brand's sponsored content. Keep only creators unless the
     person asked otherwise, and name how many of each were set aside. When an
     `ad-reuse:account-map` record is saved (**Account map record**), follow its labels and sort
     only the authors it doesn't list.
@@ -25,7 +26,10 @@ needs exactly which moments to cut, at what length, for which placement.
     post features. When a single competitor has more products than the brand, leave the post
     out as a competitor's video. When the brand has a third or more of the products, or has one
     product and at most two other products appear in all, keep it as **brand-led**, at most 2 in the prefiltered
-    12. Anything else is a multi-brand look: leave it out and count it. Many looks in beauty,
+    12. Anything else is a multi-brand look: on the found path, leave it out and count it. On
+    the briefed path the screen is against the brief only (**Two paths**), so a multi-brand look
+    the brief asked for (a gift guide or round-up deliverable) stays, labelled "briefed
+    multi-brand look", and at most one reaches the top five; any other is left out and counted. Many looks in beauty,
     fashion and home show several brands, and leaving out every one of them empties the pool. A
     brand-led post's competitor in frame is named on its card ("brand-led, {competitor} also
     shown") and never forces **leave** (**Verdict bands**).
@@ -35,8 +39,16 @@ needs exactly which moments to cut, at what length, for which placement.
   deal, a partnership-ads permission on the post, the brand's own partner tag (from its
   `partner` records or the program's must-include tags) on its own, or a generic partnership
   hashtag (#ad, #sponsored, #partner, #ambassador) together with a tag for this brand. The
-  brand's partner tag is itself a tag for this brand. A generic partnership hashtag with no tag
-  for this brand is another brand's sponsored post: set it aside and count it. When the path can't be told, use found and say "path unclear". Rank and show the
+  brand's partner tag is itself a tag for this brand, and so is any hashtag that carries the
+  brand's name or one of its product names (a brand-plus-product tag counts). A generic
+  partnership hashtag on a post where this brand is the only brand featured is briefed too,
+  labelled "briefed, untagged"; retailers and marketplaces the post shops from (a grocery,
+  beauty or pet store, Amazon, Target, Walmart) never count as another brand here. An
+  affiliate disclosure is not a brief: when the caption's only partnership signal is a
+  storefront or affiliate link or wording (an Amazon storefront, LTK, "affiliate",
+  "commissionable", "I earn from links"), the post is found, labelled "affiliate". A generic
+  partnership hashtag with no tag for this brand and another brand featured is another brand's
+  sponsored post: set it aside and count it. When the path can't be told, use found and say "path unclear". Rank and show the
   two paths separately, never as one list. On the briefed path, product focus and the subject
   screen are shown but not weighted, because nearly every briefed post passes them; read the
   deal's usage before proposing any rights request. On the found path, the subject and
@@ -53,8 +65,8 @@ needs exactly which moments to cut, at what length, for which placement.
   (with both paths, 8 found and 4 briefed; a path with fewer passes its slots to the other).
   The signal follows the retention level order in **Hook score**, **Retention levels**:
   measured retention on the post when held, then the author's creator average, then views per
-  follower against the author's own median (saves plus shares per view when views are
-  missing). Rank within a level by its percentile in the pool, and rank level 1 ahead of level
+  follower against the author's own median (likes plus comments per follower when views
+  are missing, labelled "Proxy (no views)"). Rank within a level by its percentile in the pool, and rank level 1 ahead of level
   2 ahead of level 3 at the same percentile. A post already run as an ad (**Counts that include
   paid delivery**) never ranks on level 3: it ranks on level 1 or 2 when held, and otherwise after every post
   with a usable signal on its path, newest first, marked "no retention signal before paid".
@@ -144,7 +156,7 @@ Thresholds are starting points. Tune them here, not in the prose.
 | 1 | YouTube | `totalYoutubeAvgViewPercentage` | 50% or more | Linear: 20 × value ÷ 50% |
 | 2 | Instagram | The author's `reelsHookRate` | The pool's top quartile of held values | Linear: 20 × value ÷ the top quartile's lower bound |
 | 3 | Any | Views per follower against the author's own median | 1.5x the median or more | Linear: 20 × ratio ÷ 1.5 |
-| 3 | Any, no views | Saves plus shares per view | The author's top quartile | Linear: 20 × value ÷ the top quartile's lower bound |
+| 3 | Any, no views | Likes plus comments per follower against the author's own median, labelled "Proxy (no views)" | 1.5x the median or more | Linear: 20 × ratio ÷ 1.5 |
 
 Rules:
 
@@ -274,7 +286,7 @@ lens (**Output for each lens** sets the order for `creative`):
    brand 3 to 6s, build 6 to 9s, reveal 9 to 12s, then the end card, per the page standard) and
    the specs from **Cut list**. On a 15-second cut the end card runs 12 to 15s. Then one storyboard per recommended ad: the badge (its rank within its path, F1, F2, B1; recommended ads follow the agent's top
    candidates rule: up to five, at most three from a path unless the other path has fewer than
-   two),
+   two, one post per creator, and at most one briefed multi-brand look),
    the hook line, handle, date, pattern, cut length, and the tests it runs in; a still for every
    beat, taken from the frames read at that beat's timecode, or an insert tile naming what to add
    when the post has no usable frame there; the timecodes, a one-line description per beat, the
@@ -356,8 +368,9 @@ result packet's `proposals` (level `write`, gate `approve-account-map`).
 | `detail` | `{concern: "preference", appliesTo: ["ad-reuse"], accounts: [{handle, platform: instagram\|tiktok, label, evidence}], includeNonCreators: false, sourceRunKey}` |
 | `provenance` | `interview`: the person confirmed it |
 
-`label` is one of `creator`, `brand_owned`, `retailer`, `deal_page`, `team`, or
-`other_brand_sponsored`. `evidence` is one plain line (the caption wording or posting mix behind
+`label` is one of `creator`, `brand_owned`, `retailer`, `deal_page`, `team`,
+`agency_or_vendor` (an agency, platform or vendor posting a case study or client work about the
+brand), or `other_brand_sponsored`. `evidence` is one plain line (the caption wording or posting mix behind
 the label).
 
 **Reading it back.** The launch digest carries it when saved; without a digest, the agent's own

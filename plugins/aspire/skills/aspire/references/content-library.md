@@ -185,8 +185,9 @@ The full hook score needs frames. A library holds hundreds of posts, so:
 
 1. **Every video** is scored from fields: hook by 3 seconds and brand by 3 seconds from timed
    transcript lines and overlay text, works without sound from overlay text, the retention
-   proxy from views per follower against the author's own median (or saves plus shares per
-   view), the standalone segment from transcript timing, ready for paid from disclosure,
+   proxy from views per follower against the author's own median (or likes plus comments per
+   follower against that median when views are missing, labelled "Proxy (no views)", per
+   `ad-reuse.md`, **Retention levels**), the standalone segment from transcript timing, ready for paid from disclosure,
    competitors, red lines, and music. A component with no data scores zero and is listed as
    missing. Basis `fields`.
 2. **The top 12 new or changed videos by field score** in each build are then read with frames

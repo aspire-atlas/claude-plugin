@@ -37,6 +37,7 @@ export const ROSTER: readonly RosterEntry[] = [
   { type: 'aspire:atlas-creator-discovery', name: 'Creator discovery', blurb: 'Keeps a campaign shortlist full and scored', group: 'discover' },
   { type: 'aspire:atlas-creator-vetting', name: 'Creator vetting', blurb: 'Approve, maybe or reject a list of creators', group: 'discover' },
   { type: 'aspire:atlas-ad-reuse', name: 'Ad reuse', blurb: 'Best hooks to reuse as ads, with a cut list', group: 'discover' },
+  { type: 'aspire:atlas-ads-launcher', name: 'Ads launcher', blurb: 'Tests, paused partnership ads and in-flight calls', group: 'measure' },
 
   { type: 'aspire:atlas-creator-brief', name: 'Creator brief', blurb: 'A weekly or campaign brief with creators', group: 'create' },
   { type: 'aspire:atlas-ppa-pitch', name: 'PPA pitch', blurb: 'A casting deck for paid partnership ads', group: 'create' },
