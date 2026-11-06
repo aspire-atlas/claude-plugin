@@ -243,8 +243,11 @@ headline last.
   - `comparison` (at most 160): what it is compared with, with a number, and the window by its
     dates ("vs 9,100 for the category, 30 days to 2026-11-02").
   - `so` (at most 200): what to do about it. A hedge, when one is needed, goes here.
-- `figures`: 0 to 3 of `{ "label" (60), "value" (a number, or a string of at most 60),
-  "comparison" (140) }`. Optional; leave it out when no single number earns a tile.
+- `figures`: 0 to 3 of `{ "label" (60), "value" (a whole number, or a string of at most 60),
+  "comparison" (140) }`. Optional; leave it out when no single number earns a tile. A number is
+  drawn as a count, so only a whole count (`212000`) is a number. A rate, share or amount is a
+  string with its unit, such as "4.1%", "3.2x" or "$1,200", never `0.041` or `4.1`; money keeps
+  its currency ("EUR 1,200", "£900").
 - `working`: what is working.
   - `heading` (at most 120): what the card shows, such as "What's working in home coffee, 30 days
     to 2026-11-02" or, connected, "What's working on your feed".
@@ -339,6 +342,8 @@ Check the report against each rule below by name, fix what fails, then answer.
   `baseline.window`) holds a tool name, a word joined by underscores, a UUID or an id such as
   `org_…`.
 - `networks-cover-posts`: every `working.posts[].network` is in `networks`.
+- `figure-display-string`: every `figures[].value` that is a number is a whole count; a rate,
+  share or amount is a string with its unit ("4.1%", "$1,200").
 - And the shape: `creatorCriteria` present when `creators` is not empty; at most one handle per
   network; ranks unique and ascending; `minutes` whole numbers from 1 to 240; `locked` only on a
   public snapshot; `topPosts`, `weakestPosts` and `baseline` on every connected snapshot and never
