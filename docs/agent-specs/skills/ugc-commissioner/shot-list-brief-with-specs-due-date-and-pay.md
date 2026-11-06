@@ -19,7 +19,10 @@ Writes a short brief per creator that a creator can shoot from without a call.
 
 Per creator: one line on what to make, three to five shots with the hook first, the specs (9:16 for
 video by default, length, raw files plus the edit, no licensed music, captions as a separate file),
-the due date (14 days from sending when none is given), and the pay. It never asks for a claim the
+the due date (14 days from sending when none is given), and the pay. When the asset is for
+partnership ads, the deliverable is the live post plus the partnership ad code, with the raw files
+as a second deliverable: a file alone can't run as a partnership ad, so delivery counts only when
+both arrive. The brief says where to send the code and never asks for it in a direct message. It never asks for a claim the
 brand has not made, a before-and-after a red line rules out, or a minor on screen.
 
 ## Callable
