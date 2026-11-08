@@ -100,6 +100,7 @@ time so it never goes stale; never recite it from memory.
    | ------------ | ----------- |
    | `atlas-profile-analyst` | Phase 1, then Phase 2 + 3 for the profile and handles, then Phase 6 (its target question first) |
    | `atlas-ad-reuse` | Phase 1, then Phase 2 + 3, then **Ad reuse** (its window, sources, and save questions first) |
+   | `atlas-ads-launcher` | Phase 1, then Phase 2 + 3, then **Ads launch** (the posts, objective, budget and connector check first) |
    | `atlas-creator-profile` | Phase 1, then Phase 2 + 3, then **Creator profile** (it asks for the handle and network first) |
    | `atlas-creator-brief` | Phase 1, then Phase 2 + 3, then **Creator brief** (its three questions first) |
    | `atlas-creator-discovery` | Phase 1, then Phase 2 + 3, then **Creator discovery**, Setup if the campaign is new, then Run |
@@ -278,6 +279,7 @@ wants it can still say "use Haiku".
 | `atlas-quality-review` | inherit | Its verdict decides whether work reaches a client, a creator, or leadership |
 | `atlas-profile-analyst` | sonnet | Reads one account's posts and ranks patterns against stated medians |
 | `atlas-ad-reuse` | sonnet | Scores hooks from numbers and frames by a fixed rubric; rights come from saved records |
+| `atlas-ads-launcher` | sonnet | Plans tests and paused ads by fixed rules and reads results against a stated target; never spends |
 | `atlas-creator-profile` | sonnet | One creator's page from held data and the fee calculator; writes nothing |
 | `atlas-creator-discovery` | sonnet | Scores candidates against saved criteria; the user decides each one |
 | `atlas-daily-insights-report` | sonnet | Short templated report against a baseline |
@@ -333,6 +335,7 @@ team catalog, and how agents render for a lens are in `references/recipient-lens
    | `brand`, `performance` | What is in someone's post, how it did, and whether to sponsor, partner with, or reuse it (no brief) | **Post analysis** |
    | `brand`, `campaign` | Which creators on a list to approve | **Creator vetting** |
    | `performance`, `creative` | Hooks, ads, licensing, a cut list | **Ad reuse**; for one post, **Content review** with the ad reuse check |
+   | `performance`, `growth` | Run cleared posts as partnership ads, set up a test, how live creator ads are doing, scale, hold or stop | **Ads launch** |
    | `leadership`, `performance` | A pitch or casting deck for partnership ads, whitelisting, creators to license | **PPA pitch** |
    | `performance` | Which creator posts the brand can run as partnership ads now, permissions, an ad code | **Partnership content** |
    | Any | What to do next across everything, what needs me, where everything stands | **Orchestrator** |
@@ -874,7 +877,8 @@ Rules:
 Trigger once at least one channel reports linked, or whenever the user asks for an account
 review. A request for one creator's full profile, portfolio, or deep dive ("full profile for
 @handle") is not an account review: route it to **Creator profile** below. A request about
-hooks, ads, licensing, or a cut list goes to **Ad reuse**; what creators say about the brand
+hooks, ads to reuse, licensing, or a cut list goes to **Ad reuse**; running cleared posts as
+partnership ads, or a read on live creator ads, goes to **Ads launch**; what creators say about the brand
 against competitors goes to **Market signal**.
 
 1. **Pick the target.** Ask once with `AskUserQuestion`, header "Account": "Which account
@@ -1013,6 +1017,51 @@ both are passed by default. Detail lives in `references/ad-reuse.md`. For one po
 3. Relay the page link, the top patterns, the top candidates as post cards per **Visual
    output**, and the rights line. Say plainly that usage rights for creator posts are not held
    in Atlas unless a brief or record says otherwise.
+
+---
+
+## Ads launch (partnership ads: test, launch paused, read in flight)
+
+Trigger when the user wants cleared creator posts run as partnership ads, a test set up, or a read
+on live creator ads ("launch the partnership ads", "run @handle's post as an ad", "should we scale,
+hold or stop"). Requires a brand profile; launching also needs the bundled Meta Ads connector
+signed in. Detail lives in `references/ads-launcher.md`.
+
+1. Ask once with `AskUserQuestion`, skipping what the user already said: which posts (the latest
+   ad reuse shortlist (Recommended), the content library's cleared-for-ads shelf, or links) and
+   the total budget in the ad account's currency, typed. The objective is sales: this version
+   plans and reads nothing else, so when the user asks for traffic or awareness, say so and offer
+   the setup steps for Meta Ads Manager instead. For a read on live ads, ask only the window (Last 7 days (Recommended), Last
+   14 days, Last 30 days).
+2. Check the Meta Ads connector. When it is not connected, say the plan can still be built and the
+   ads set up in Meta Ads Manager, and offer to sign it in.
+3. Launch `atlas-ads-launcher` with the tool prefix, `profile_id`, `profile_slug`, `pass: plan` (or
+   `monitor` for a read), the posts with their path, snapshot and rights status, the objective,
+   budget and currency, the campaign's slug and decision defaults when a creator ad campaign is
+   saved, the connector state with the ad account and Instagram account, and for `monitor` the
+   window and the `igMediaIds` of any ads created this session. The agent holds no Meta Ads
+   connector tool; every connector call below is the main thread's.
+4. After a `plan` packet, state the total budget and the cap per test in the ad account's
+   currency. Then, per ad in the `approve-ads-launch` proposal, in order:
+   - For an `ad-code` route, read the code with `search_partnership_content` (`asProfileId`, the
+     creator's handle in `creatorHandles`, and `hasAdCode: true`) and take the row whose
+     `igMediaId` is the ad's. Pass the code only into the two calls below; never show, repeat or
+     save it (`references/atlas-tools.md`, **Ad codes**).
+   - Preview it with the Meta Ads connector's `ads_boost_ig_post` `confirmed=false`, using exactly
+     the arguments the proposal pins (`references/ads-launcher.md`, **Planning each ad**). If the
+     preview differs from the proposal (another post, account, budget or cap), stop for that ad
+     and say what differs.
+   - Ask with `AskUserQuestion` (Create it paused (Recommended) / Skip this one), showing the
+     preview's post, budget and cap.
+   - On yes, call `confirmed=true` with the same arguments, for that ad only. Then read the status
+     the result returns: say "created paused" only when it is paused. With any other status, or
+     none, tell the person at once to check that ad in Meta Ads Manager and pause it if it is
+     running.
+   Never turn an ad on or change a budget: say the person turns each ad on in Meta Ads Manager.
+   Unattended runs never plan or create ads.
+5. Ask once whether to save the test plan, calls and learnings (the `approve-ads-learnings`
+   proposal: Save (Recommended) / Page only), and on yes relaunch with `pass: record` and the
+   `igMediaIds` of the ads created.
 
 ---
 

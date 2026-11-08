@@ -100,8 +100,8 @@ person asks something close, use the nearest code and its wording in the setup r
 | P2 | There's profanity in this video. Can it run on paid? | `performance` | `atlas-post-analysis` | Ready |
 | P3 | Which posts do we still have rights to, and when do they expire? | `performance` | `atlas-content-library` | Ready |
 | P4 | Cast creators into a partnership ads plan. | `leadership` (the budget owner) | `atlas-ppa-pitch` | Ready |
-| P5 | What would 50K, 100K or 200K buy on YouTube? | `leadership` | None | Waiting on a connected Meta ad account |
-| P6 | The campaign softened. Is it the creative or the setup? | `growth` | None | Waiting on a connected Meta ad account |
+| P5 | What would 50K, 100K or 200K buy on YouTube? | `leadership` | `atlas-ads-launcher` (`plan`, tests and variants only) | Ready for the creator and variant side; YouTube has no ad results or launch path in Atlas |
+| P6 | The campaign softened. Is it the creative or the setup? | `growth` | `atlas-ads-launcher` (`monitor`) | Ready once a Meta ad account is linked |
 | O1 | Why did last week's Reels do so well? | `team` | `atlas-profile-analyst` | Ready |
 | O2 | What are creators saying about us vs. our biggest competitors? | `team` | `atlas-market-signal` | Ready |
 | O3 | Leadership wants to know where we stand against competitors, and what to do. | `leadership` | `atlas-market-signal` | Ready |
@@ -231,6 +231,7 @@ packet after the run.
 | Agent | Level | What reaches it |
 | ----- | ----- | --------------- |
 | `atlas-ad-reuse` | write | Saves the ranked candidates |
+| `atlas-ads-launcher` | spend | Plans paused ads and holds no Meta Ads tool; the main thread previews and creates each after its own yes |
 | `atlas-affiliate-manager` | send | Creates discount codes in a connected store |
 | `atlas-campaign-orchestrator` | read | Ranks next actions; writes nothing |
 | `atlas-content-library` | write | Saves the library's records |
