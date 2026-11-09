@@ -463,7 +463,7 @@ One page per brand, title "{Brand} Shops Plan", republished to the link in the `
 with key `shops` (read it with the Artifact tool first). Without one, publish a new page and
 republish to the same file path within the session. Load `artifact-design` before building and
 `dataviz` for any chart; apply `theme:brand` per `theme.md`, **Applying the theme**; draw creators
-with the creator card (`creator-card.md`, page profile, no actions); embed post images per
+with the creator card (`creator-card.md`, page profile); embed post images per
 `creator-card.md`, **Images**; render for `recipient`. The page declares no page data
 capability. In `propose`, the page carries a "Draft plan" chip; `record` replaces it with the
 saved or page-only state.

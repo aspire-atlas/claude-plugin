@@ -264,8 +264,8 @@ site's mono token when it has one (add it to `href`), else IBM Plex Mono.
 
 **T4. Logo.** "Show {brand}'s logo in page headers?"
 
-- Found: "Use the logo from {domain} (Recommended)", described as "shown in the preview
-  above", and "No logo, brand name only".
+- Found: "Use the logo from {domain} (Recommended)", described as "found on {domain}"
+  ("shown in the preview above" when a preview is on screen), and "No logo, brand name only".
 - Not found: "No logo, brand name only (Recommended)" and "I'll paste a logo URL".
 
 The free text field takes a public `https` URL to an SVG or PNG. A local file cannot be used,
@@ -343,7 +343,8 @@ descriptions again.
 
 ### Comparison widget
 
-Drawn only under **Showing the palettes**. Rendered in chat with the widget tool, loaded the way `connection-card.md` loads it
+Drawn only under **Showing the palettes**. It carries the small animated Aspire Atlas mark
+(28px) in its free top corner, per `artifact-standard.md`, **Variants**. Rendered in chat with the widget tool, loaded the way `connection-card.md` loads it
 (`read_me` with `modules: ["mockup"]` once, silently). `show_widget` title
 `atlas_theme_options` (or `atlas_theme_preview` for T0 and T5), one loading message such as
 `["Building theme previews"]`. Every color is written literally from the build output, so the
@@ -404,8 +405,9 @@ text color. Put any other logo on a chip (`class="tc-chip-logo"`,
 `background:{surface}` of the other mode) when its `tone` matches what is behind it: a dark
 logo on a dark pane or dark band, a light logo on a light pane or light band.
 
-**Artifact.** When the user asked to see the palettes and the session is Claude Code, or the
-widget tool is missing or its call fails, publish the same markup as a page with the Artifact
+**Artifact.** Only under **Showing the palettes**, like the widget. When the user has asked
+and the widget cannot be used (the session is Claude Code, the widget tool is missing, or its
+call fails), publish the same markup as a page with the Artifact
 tool (load `artifact-design` first), titled "<Brand> Theme Options"; a page may embed the logo.
 Open it for the user with the Artifact tool's `open` action, and link it in the reply, before
 asking T2 again. For T0 and T5, republish to the same file path so
@@ -1260,9 +1262,10 @@ python3 logo_embed.py https://example.com/logo.svg > logo.json   # or a logo-inl
 ```
 
 Redirect the output to a file in the scratch folder, as above, and read only the small fields
-(`ok`, `format`, `tone`, `opaqueBg`, `bytes`, `width`, `height`, `error`). Put `dataUri` or
-`markup` into a page or the record from that file; never print or read either into the
-conversation.
+(`ok`, `format`, `tone`, `opaqueBg`, `bytes`, `width`, `height`, `error`). Put `dataUri` into a page from
+that file; never print or read it into the conversation. `markup` is SVG text, not image data:
+read it only to save `logo.svg` in the record (under 12KB) or to place it in a page or a
+preview the user asked for.
 
 Prints `{ok, format, tone, opaqueBg, bytes, dataUri}` (SVG adds `markup`, raster adds `width`
 and `height`), or `{"ok": false, "error"}`. It strips scripts, event handlers, and external

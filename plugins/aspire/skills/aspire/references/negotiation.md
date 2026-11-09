@@ -606,7 +606,7 @@ One page per program, the negotiation page, republished to the same link
 (its `page` finding, key `negotiation`). Title "{Brand} {Program}: Negotiation". Load
 `artifact-design` and `artifact-capabilities` before building and `dataviz` for the spend chart;
 apply `theme:brand` per `theme.md`; draw creators with the creator card (`creator-card.md`, page
-profile, no actions); render for `recipient`.
+profile); render for `recipient`.
 
 **Who sees what.** The page is for the brand's team and is never shared with a creator or a
 manager. The page itself holds everything except the money that only the team should see,

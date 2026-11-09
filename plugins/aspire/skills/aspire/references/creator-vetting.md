@@ -438,7 +438,7 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
 5. **Up to three insights** (3.4): what shaped the verdicts across the list, each with its
    comparison and a "So:" line.
 6. **Approve**, **Maybe**, **Reject**, **Can't vet**, in that order, each a grid of creator
-   cards (3.7; `creator-card.md`, page mode, no actions) ranked by fit score, numbered from 1
+   cards (3.7; `creator-card.md`, page mode) ranked by fit score, numbered from 1
    across the whole page in the order shown, because those numbers are what the user replies
    with. When the
    criteria name audiences, the Approve grid is grouped by audience with a subtotal per group;

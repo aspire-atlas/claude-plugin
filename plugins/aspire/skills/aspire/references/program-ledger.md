@@ -530,7 +530,7 @@ The agent never writes `roster`, `terms`, `fulfillment`, `deliverable`, `affilia
 One page per program, the ledger page, republished to the link in the `page` finding with key
 `ledger`. Title "{Brand} {Program}: Ledger". Load `artifact-design` and `artifact-capabilities`
 before building and `dataviz` for the chart; apply `theme:brand` per `theme.md`, **Applying the
-theme**; draw creators with the creator card (`creator-card.md`, page profile, no actions);
+theme**; draw creators with the creator card (`creator-card.md`, page profile);
 render for `recipient`.
 
 **Who sees what.** Every figure on this page is money, so every amount lives in page data under

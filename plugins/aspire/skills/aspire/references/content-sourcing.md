@@ -655,7 +655,7 @@ One page per program, the sourcing tracker, title "{Brand} {Program}: Content So
 republished to the link in the `page` finding with key `sourcing` (read it with the Artifact
 tool first). Load `artifact-design` and `artifact-capabilities` before building and `dataviz`
 for the charts; apply `theme:brand` per `theme.md`, **Applying the theme**; draw creators with
-the creator card (`creator-card.md`, page profile, no actions); post images per
+the creator card (`creator-card.md`, page profile); post images per
 `creator-card.md`, **Images** (`thumb@120x150`); render for `recipient`. Rights badges keep the
 library's semantic colors.
 

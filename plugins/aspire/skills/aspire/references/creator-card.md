@@ -44,8 +44,8 @@ published pages only (**Images**).
 
 **When the user asks to see cards or posts:**
 
-- The host draws Atlas's tool widgets: call `lookup_creators` with the chosen handles, or
-  `lookup_posts` with the chosen posts' ids, per **Where it renders**, **Cards in chat**. The
+- The host draws Atlas's tool widgets: call `lookup_creators` for the chosen creators, or
+  `lookup_posts` for the chosen posts, per **Where it renders**, **Cards in chat**. The
   host draws Atlas's own card, its thumbnails never enter the conversation, and the reply says
   the readout and stops.
 - The host draws no widget: the **Markdown fallback**, with post links and no images.
@@ -186,15 +186,24 @@ draws Atlas's tool widgets:
 
 1. Pick the creators: the ones the reply just named, the ones the user names, or the entries
    of an agent's `creator-cards` block. At most six per call.
-2. Call `lookup_creators` with those handles and networks, `asProfileId` set, and `forceRefresh`
-   left off. Posts work the same way: `lookup_posts` with the chosen posts' ids, at most twelve.
-3. The host draws Atlas's card from the result. Say the readout and stop: at most three points
+2. Confirm Atlas holds each one. A hit from `search_creators` or `search_posts` in this session
+   is held. An entry from an agent's block, a marketplace result, or a handle the user typed
+   may not be: check it with `search_creators` on the handle and network (for a post,
+   `search_posts` on its link), and leave out any Atlas does not hold.
+3. Call `lookup_creators` with one item per creator (`schema` = the network, `entityKind`
+   `account`, `identifier` = the handle), `asProfileId` set, and `forceRefresh` left off.
+   Posts work the same way, at most twelve: `lookup_posts` with one item per post (`schema` =
+   the network, `entityKind` `post`, `identifier` = the post's link), `creatorDeepAnalysis`
+   `false`.
+4. The host draws Atlas's card from the result. Say the readout and stop: at most three points
    the card cannot show (why this creator, what is missing, the next step). Never repeat the
    card's numbers, never build a plugin card beside it, and never fetch or embed an image.
 
-Only for creators and posts Atlas already holds: a search hit, an agent's result, or a saved
-record. A call for one of those starts no discovery. When Atlas holds nothing for a handle, say
-so and offer an account review (Phase 6, mode `handle`); never fetch an account to draw its card.
+A call for a creator or post Atlas holds starts no discovery, which is why step 2 comes first.
+Name any creator left out in step 2, say Atlas does not hold them, and offer an account review
+(Phase 6, mode `handle`); never fetch an account to draw its card. A result that comes back
+`fetching` or empty for an item is not polled or retried: say that creator's card is not ready
+and give their line from the **Markdown fallback** instead.
 
 When you cannot tell whether the host draws widgets, make the call. If the user says nothing
 appeared, give the **Markdown fallback** from the same result and use it for the rest of the
@@ -256,8 +265,7 @@ true` in the output). Each kind has a default box, a largest box, and a largest 
 | `post` | Post cards, aspect ratio kept, fit to the width | 360 wide | 1080x1920 | 450KB |
 | `detail` | Hero and detail panels (a tall post panel, the post under review), fit inside the box | 480x1000 | 1440x2560 | 800KB |
 
-The snippet has one profile, `page`, and it is the default. `--profile=page` is accepted and
-means the same thing.
+The snippet has one profile, `page`. A `--profile=` flag is accepted and ignored.
 
 Write the kind as `kind@W` or `kind@WxH` with the CSS size when the layout differs from the
 default, for example `detail@480x1000=` for a tall panel 480px wide. Add `+text` for a post that
@@ -453,7 +461,7 @@ def embed(key, urls, profile, q):
 profile, q, items = "page", 85, []
 for arg in sys.argv[1:]:
     if arg.startswith("--profile="):
-        profile = arg.split("=", 1)[1]
+        pass  # one profile; the flag is accepted so older commands still run
     elif arg.startswith("--quality="):
         q = max(80, min(95, int(arg.split("=", 1)[1])))
     else:
