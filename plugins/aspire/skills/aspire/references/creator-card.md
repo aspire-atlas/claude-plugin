@@ -1,25 +1,22 @@
 # Creator card
 
-The one way this plugin shows a creator. Any flow that identifies, lists, ranks, compares, or
-recommends a creator renders it with this card: a single lookup, search and marketplace
-results, the discovery shortlist, the creator brief, and any creator named in a review or an
-account analysis. The layout is the compact Aspire creator card; only the placeholders change.
-The one larger view, a single creator's full profile page, embeds this same card
-(`creator-profile.md`).
+The one layout this plugin uses when a creator is drawn: on a published page (a shortlist, a
+brief, a review, an account analysis) and, in chat, only when the user asks to see cards. A
+chat reply names creators in text first (**Visual output**). The layout is the compact Aspire
+creator card; only the placeholders change. The one larger view, a single creator's full
+profile page, embeds this same card (`creator-profile.md`).
 
-The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
-in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+The main thread's part of this flow lives here. A bold section name in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
 
 ## Contents
 
 - [Visual output (posts and creators)](#visual-output-posts-and-creators)
 - [Creator card actions](#creator-card-actions)
 - [Where it renders](#where-it-renders)
-- [Inline rendering](#inline-rendering)
 - [Page rendering](#page-rendering)
 - [Images](#images)
 - [Data: what fills each section](#data-what-fills-each-section)
-- [Actions (inline only)](#actions-inline-only)
+- [Actions](#actions)
 - [Style block](#style-block)
 - [Card template](#card-template)
 - [Icons](#icons)
@@ -28,69 +25,80 @@ in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Se
 
 ## Visual output (posts and creators)
 
-Whenever the user asks to see, show, list, rank, compare, or visualize posts, creators, or
-performance, default to a visual deliverable. Text-only replies are the fallback, not the
-default, and only when the user asks for text or the data has no media at all.
+**The chat reply is the answer.** When the user asks to find, list, rank, compare, vet, or
+review posts or creators, answer in text:
 
-**When the host renders the tool's own widget.** Atlas's creator tools (`search_creators`,
-`lookup_creators`, `search_creator_marketplace`) draw creator cards and its post tools
-(`search_posts`, `list_hashtag_posts`, `lookup_posts`) draw a post grid with inline thumbnails.
-When the result shows that widget, a plain "show me" answer needs no plugin card, no
-`show_widget` call, and no cdn image embedding: give the 3 to 5 bullet readout and the next
-step. Build the plugin card or page (the rest of this section and this file)
-when the host shows no widget (Claude Code's terminal, plain-text hosts), when you cannot tell,
-for a published page, for 7 or more creators the user wants kept, and whenever an agent or a
-flow here names the card (the actions row, the shortlist, a profile).
+- Up to three points, each naming the creator or post and the number behind it.
+- The next step, in one line.
+- One link: the page, when the flow published one. With no page, the top creator's profile
+  or the top post.
 
-**Always include the visuals the data carries:**
+Text is the default on every host. A card, an image, or a chart appears in chat only when the
+user asks to see it ("show me the cards", "show the posts", "show me @handle's card", "chart
+it"). An ask to find, list, or rank is not an ask to see. Never draw one unasked, and never
+build a page the user did not ask for just to show results.
 
-- Posts: `media.mediaUrl` (else `media.thumbnailUrl`) and the author's picture
-  (`instagram.account.profilePictureUrl` or `tiktok.account.profileImage`), projected in `search_posts`.
-- Creators: always the creator card in this file, which sets the fields to
-  pull, the sections, and the leave-out rules. The one exception is a single creator's full
-  profile page (`references/creator-profile.md`), which carries the same card at full width.
+**No image data in the conversation.** Never put a data URI in a reply, a tool call, a widget,
+or an agent's summary, and never fetch an image to show it in chat. Images are embedded on
+published pages only (**Images**).
 
-**Default shapes:**
+**When the user asks to see cards or posts:**
 
-- 1 to 12 items → **cards**: media, handle with profile picture, format chip, date, caption
+- The host draws Atlas's tool widgets: call `lookup_creators` for the chosen creators, or
+  `lookup_posts` for the chosen posts, per **Where it renders**, **Cards in chat**. The
+  host draws Atlas's own card, its thumbnails never enter the conversation, and the reply says
+  the readout and stops.
+- The host draws no widget: the **Markdown fallback**, with post links and no images.
+- A single named creator ("show me @handle") → one card from what Atlas holds. If it holds
+  nothing, say so and offer an account review (Phase 6, mode `handle`); never fetch an account
+  just to draw a card.
+- A single creator's full profile or portfolio → the page in `references/creator-profile.md`,
+  built by the `atlas-creator-profile` agent (**Creator profile**), the only other creator layout.
+
+**When a search tool draws its own card.** On a server where `search_creators`,
+`search_creator_marketplace`, `search_posts`, or `list_hashtag_posts` still draws cards under the
+call, the reply is the same: lead with the text answer and treat it as the readout under the
+host's card. Build nothing beside the card and repeat none of its numbers.
+
+**Pages.** Build a page when the user asks for one, asks for a chart, or wants seven or more
+creators kept. Its shapes:
+
+- 1 to 12 posts → **cards**: media, handle with profile picture, format chip, date, caption
   excerpt, metric row (likes, comments, views or saves and shares), one-line takeaway, link to
   the post. Rank number when the request is a ranking.
 - More than 12 items, or any question about trends, cadence, or format mix → a **chart**
   first (bar for ranking, line over time, small multiples for format or theme), then cards for
   the top 3 to 5.
-- Creators → creator cards: one to six inline with the action buttons, seven or more on a
-  published page without them. Three or more add a bar chart of the comparison metric above.
-- A single named creator ("show me @handle") → one inline card from what Atlas holds. If it
-  holds nothing, say so and offer an account review (Phase 6, mode `handle`); never call
-  `lookup_creators` just to draw a card.
-- A single creator's full profile or portfolio → the page in `references/creator-profile.md`,
-  built by the `atlas-creator-profile` agent (**Creator profile**), the only other creator layout.
+- Creators → the creator card in this file, which sets the fields to pull, the sections, and
+  the leave-out rules. Three or more add a bar chart of the comparison metric above.
+- Posts carry `media.mediaUrl` (else `media.thumbnailUrl`) and the author's picture
+  (`instagram.account.profilePictureUrl` or `tiktok.account.profileImage`), projected in
+  `search_posts`. Project them only when a page will be built.
 
-**Mechanics:**
+**Page mechanics:**
 
 - Build a single self-contained HTML page and publish it with the Artifact tool when the
   session has it (load `artifact-design`, and `dataviz` for any chart, first). Apply the saved
   theme to the page, its charts, and its creator cards per `references/theme.md`, **Applying
-  the theme**. Inline creator cards take the card override from the same section. Fall back to
-  `SendUserFile` with the rendered HTML, or inline image links in the reply, when Artifact is
-  absent.
-- Media URLs come from `cdn.aspire.io`, which neither inline widgets nor published pages can
-  load. Embed every image as a data URI with the snippet in this file,
-  **Images** (inline profile for widgets, page profile for pages), which sizes each image to its
+  the theme**. With no Artifact tool, fall back to `SendUserFile` with the rendered HTML, or
+  to the text answer with post links.
+- Media URLs come from `cdn.aspire.io`, which a published page cannot load. Embed every page
+  image as a data URI with the snippet in this file, **Images**, which sizes each image to its
   rendered box at 2x from the full-size source and sets its `width` and `height`. Give every image an `alt` of
   the caption excerpt, and keep an `onerror` placeholder tile with the format chip for images
   the snippet could not fetch. Note once in the page footer that images are a snapshot. Every page
   carries the mark and footnote per `references/artifact-standard.md`.
 - Never fabricate an image: a post with no media fields gets the placeholder tile.
-- In the chat reply, give a 3 to 5 bullet readout alongside the visual; for inline creator
-  cards, only what the card cannot show.
+- The chat reply beside a page is the same text answer: up to three points, the next step, and
+  the page link.
 
 ## Creator card actions
 
-The inline card's buttons send these messages; users may also type them. Each message is a
-request, never an approval: every write below is confirmed with `AskUserQuestion` first, and
-unattended runs never act on them. Resolve the creator with `search_creators` on the handle
-and network (never `lookup_creators`); if Atlas does not hold it, say so and stop.
+Messages the user types after a creator is named or shown; the Markdown fallback lists them.
+Each message is a request, never an approval: every write below is confirmed with
+`AskUserQuestion` first, and unattended runs never act on them. Resolve the creator with
+`search_creators` on the handle and network (never `lookup_creators`); if Atlas does not hold
+it, say so and stop.
 
 **"Draft outreach to @handle on {network}"**
 
@@ -147,35 +155,66 @@ The watch list is the brand's saved creators, outside any campaign.
    time, and `idempotencyKey` `watchlist-{entityId}-save-{changedAt}`. Instagram and TikTok
    only; the insights store takes no other network, so say that for YouTube and stop.
 3. **"Show my watch list"**: `search_insights` on the `creator-watchlist-{profile}` prefix,
-   newest record per `entityId` (by `detail.changedAt`) wins, keep `watching: true`, render as
-   creator cards. Removing someone writes a new finding with `watching: false` after the same
+   newest record per `entityId` (by `detail.changedAt`) wins, keep `watching: true`, list them
+   in text (handle, network, date saved); cards only when the user asks (**Cards in chat**). Removing someone writes a new finding with `watching: false` after the same
    kind of confirmation, with its own `changedAt` and `idempotencyKey`
    `watchlist-{entityId}-remove-{changedAt}`, so a save and a removal on the same day never
    collide; never a destructive tool.
 
 ## Where it renders
 
-When the host renders the creator tools' own cards widget (`search_creators`, `lookup_creators`,
-`search_creator_marketplace`), a plain "show me" answer in chat needs no plugin card and no image
-embedding: say the readout and stop. The table below is the path for published pages, the
-actions row, and every host that shows no widget (a terminal, or a plain-text host).
+In chat the answer is text (**Visual output**). The table is where a card is drawn once the user
+asks to see one, or a flow publishes a page.
 
-| Surface | How | Actions row |
-| ------- | --- | ----------- |
-| Main thread, 1 to 6 creators | Inline widget, one `show_widget` call holding all the cards in a grid. Every image embedded as a data URI (see **Images**) | Shown |
-| Main thread, 7 or more creators | Published page (Visual output in SKILL.md); more than 12 leads with a chart | Hidden |
-| Agents (brief, discovery, account analyst, content review) | Inside the agent's published page | Hidden |
-| No widget tool, or the call fails | The Markdown fallback below | n/a |
-| One creator's full profile or portfolio view | Published page, the card at full width with the evidence sections below it (`creator-profile.md`) | Hidden |
-| The CAS campaign page (`cas-campaign-page.md`) | Published page, page profile, one card per creator, with the concept as the first flow chip and the "Hook post" and "Paid partnership" marks on its thumbnails; the same card, without thumbnails, sits in the creator viewer's **Profile**, after the match and the concept (`cas-campaign.md`, **Creator Selection**, **The creator viewer**) | Hidden |
+| Surface | How | Images |
+| ------- | --- | ------ |
+| Main thread, the user asked to see cards, and the host draws Atlas's tool widgets | `lookup_creators` with the chosen handles (**Cards in chat**). The host draws Atlas's own card; the plugin builds nothing | The host loads them; none enter the conversation |
+| Main thread, the user asked to see cards, and the host draws no widget (a terminal, a plain-text host) | The **Markdown fallback** below | None; post links only |
+| Main thread, 7 or more creators the user wants kept, or the user asks for a page | Published page (**Visual output**, Pages); more than 12 leads with a chart | Embedded, **Images** |
+| Agents (brief, discovery, account analyst, content review) | Inside the agent's published page | Embedded, **Images** |
+| One creator's full profile or portfolio view | Published page, the card at full width with the evidence sections below it (`creator-profile.md`) | Embedded, **Images** |
+| The CAS campaign page (`cas-campaign-page.md`) | Published page, one card per creator, with the concept as the first flow chip and the "Hook post" and "Paid partnership" marks on its thumbnails; the same card, without thumbnails, sits in the creator viewer's **Profile**, after the match and the concept (`cas-campaign.md`, **Creator Selection**, **The creator viewer**) | Embedded, **Images** |
 
-Agents never call `show_widget`; the main thread can. When an agent returns a creator the user
-should see in chat, the main thread renders the card from the agent's numbers.
+The plugin never builds a creator card as an inline widget, and never calls `show_widget` for
+one. Agents never call `lookup_creators` or `lookup_posts` to draw a card; only the main thread
+does, and only when the user asks.
 
-**Agent hand-off.** An agent whose creators the main thread shows inline ends its summary
-with a fenced JSON block labelled `creator-cards`: an array, at most six entries, one per
-person, holding the values already worked out under the rules below, with omitted sections
-left out as keys rather than set to null.
+### Cards in chat
+
+When the user asks to see cards ("show me the cards", "show me @handle's card") and the host
+draws Atlas's tool widgets:
+
+1. Pick the creators: the ones the reply just named, the ones the user names, or the entries
+   of an agent's `creator-cards` block. At most six per call.
+2. Confirm Atlas holds each one. A hit from `search_creators` or `search_posts` in this session
+   is held. An entry from an agent's block, a marketplace result, or a handle the user typed
+   may not be: check it with `search_creators` on the handle and network (for a post,
+   `search_posts` on its link), and leave out any Atlas does not hold.
+3. Call `lookup_creators` with one item per creator (`schema` = the network, `entityKind`
+   `account`, `identifier` = the handle), `asProfileId` set, and `forceRefresh` left off.
+   Posts work the same way, at most twelve: `lookup_posts` with one item per post (`schema` =
+   the network, `entityKind` `post`, `identifier` = the post's link), `creatorDeepAnalysis`
+   `false`.
+4. The host draws Atlas's card from the result. Say the readout and stop: at most three points
+   the card cannot show (why this creator, what is missing, the next step). Never repeat the
+   card's numbers, never build a plugin card beside it, and never fetch or embed an image.
+
+A call for a creator or post Atlas holds starts no discovery, which is why step 2 comes first.
+Name any creator left out in step 2, say Atlas does not hold them, and offer an account review
+(Phase 6, mode `handle`); never fetch an account to draw its card. A result that comes back
+`fetching` or empty for an item is not polled or retried: say that creator's card is not ready
+and give their line from the **Markdown fallback** instead.
+
+When you cannot tell whether the host draws widgets, make the call. If the user says nothing
+appeared, give the **Markdown fallback** from the same result and use it for the rest of the
+session. Claude Code's terminal and plain-text hosts draw none: go straight to the fallback.
+
+### Agent hand-off
+
+An agent that names creators the user may want to see ends its summary with a fenced JSON block
+labelled `creator-cards`: an array, at most six entries, one per person, holding the values
+already worked out under the rules below, with omitted sections left out as keys rather than
+set to null.
 
 ```json
 [{"handle":"…","network":"instagram","name":"…","descriptor":"…","avatarUrl":"…",
@@ -187,36 +226,13 @@ left out as keys rather than set to null.
   "sentiment":{"pct":88,"tone":"ok"}}]
 ```
 
-The main thread renders from this block and does not query Atlas again for these creators.
-`avatarUrl` and `thumbUrl` stay remote URLs in the hand-off block; `thumbUrl` is the post's
-`media.mediaUrl` and `media.thumbnailUrl` joined by `|`, largest first, exactly as the **Images**
-snippet takes them. The main thread embeds them (see **Images**) before rendering. Agents never send data URIs through the summary.
-
-## Inline rendering
-
-1. Load the widget tool once per session: `ToolSearch` with query
-   `select:mcp__visualize__read_me,mcp__visualize__show_widget`.
-2. Call `mcp__visualize__read_me` with `modules: ["mockup"]` silently before the first card,
-   unless this session already did for the connection card. Never mention it.
-3. Embed every image before building the card. The widget sandbox blocks `cdn.aspire.io`, so
-   a remote URL renders blank. Run the **Images** snippet with the inline profile and put each
-   returned `dataUri` into `{AVATAR}` and `{THUMB}`. An image with `ok: false` falls back the
-   normal way: initials for the avatar, and the cell is left out for a thumbnail. Never put a
-   `cdn.aspire.io` URL in `widget_code`.
-4. Call `mcp__visualize__show_widget` with:
-   - `title`: `atlas_creator_card_{handle}` for one creator, `atlas_creator_cards` for several.
-   - `loading_messages`: one short neutral message, for example `["Loading creator profile"]`.
-   - `widget_code`: the style block once, then one card per creator inside
-     `<div class="ac-grid">`. Add the small animated Aspire Atlas mark (28px) in the widget's free
-     top corner (the card's fit ring keeps its corner) and, under the cards, the one-line widget
-     footnote, both per `artifact-standard.md`, **Variants**. They count toward the 300KB of data URIs.
-5. Reply after the card with at most three bullets the card cannot show (why this creator, what
-   is missing, the next step). Never repeat the card's numbers in text.
-
-If `read_me` documents a different way for a widget to send a message back to the chat than
-`sendPrompt(text)`, use that one in the action buttons. If it documents none, leave the
-actions row out.
-
+The main thread does not show the block. It names these creators in its text reply from the
+block's values, without querying Atlas again, and keeps the block for two later uses: the
+handles for `lookup_creators` when the user asks to see the cards, and the values for the
+**Markdown fallback** or a page. `avatarUrl` and `thumbUrl` stay remote URLs; `thumbUrl` is the
+post's `media.mediaUrl` and `media.thumbnailUrl` joined by `|`, largest first, exactly as the
+**Images** snippet takes them. Only a flow that builds a page embeds them. Neither an agent's
+summary nor the main thread's reply ever carries a data URI.
 ## Page rendering
 
 Put the style block in the page `<head>` once and the cards wherever the page structure calls
@@ -224,31 +240,32 @@ for them, inside `<div class="ac-grid">`. A page the main thread publishes for 7
 carries the full animated Aspire Atlas mark at the top right and the full footnote at the end, per
 `artifact-standard.md`; a page another flow publishes takes them from that flow's reference. The page's own tokens are not used by the card; the
 card carries Aspire's, unless the brand has a saved theme: then add the card override from
-`theme.md`, **Creator card**, right after the style block, on pages and inline alike. Embed images with the **Images** snippet and `--profile=page`: `avatar` and `thumb` at their
-default boxes fit the card at 2x. Leave
-out the actions row. Flow-specific detail goes in the `{DETAILS}` slot, never in extra markup
-around the card.
+`theme.md`, **Creator card**, right after the style block. Embed images with the **Images** snippet: `avatar` and `thumb` at their
+default boxes fit the card at 2x. Flow-specific detail goes in the `{DETAILS}` slot, never in
+extra markup around the card.
 
 ## Images
 
-Every image in the plugin, on a card, a post card, or a page panel, is embedded as a data URI,
-inline and on pages alike. No surface can load `cdn.aspire.io` directly: the widget sandbox
-allows only a short list of script and font hosts, and published pages allow no outside
-images. This section is the one set of rules for fetching, sizing, compressing, and placing
-them; every flow that shows an image uses it.
+Images are embedded on published pages only. Every image on a page (a card, a post card, a
+page panel) is a data URI, because a published page allows no outside images and cannot load
+`cdn.aspire.io`. Nothing in chat carries image data: the main thread never runs this snippet
+for a reply, and never puts a data URI in a reply, a tool call, or a widget. This section is
+the one set of rules for fetching, sizing, compressing, and placing page images; every flow
+that builds a page uses it.
 
 **Size to the rendered box, at 2x.** Pass each image's rendered CSS size and the snippet
 targets twice that in device pixels, so it stays sharp on retina screens. It never upscales:
 a source smaller than the target is embedded at its own size and CSS scales it (`native:
-true` in the output). Each kind has a default box and, per profile, a largest box and a
-largest data URI:
+true` in the output). Each kind has a default box, a largest box, and a largest data URI:
 
-| Kind | Use | Default CSS box | Largest box, inline | Largest box, page | Largest data URI, inline / page |
-| ---- | --- | --------------- | ------------------- | ----------------- | ------------------------------- |
-| `avatar` | Profile pictures, square crop | 56x56 | 112x112 | 192x192 | 16KB / 32KB |
-| `thumb` | Card thumbnails, cropped to the box (square by default) | 120x120 | 240x240 | 480x480 | 40KB / 120KB |
-| `post` | Post cards, aspect ratio kept, fit to the width | 360 wide | 720x1280 | 1080x1920 | 160KB / 450KB |
-| `detail` | Hero and detail panels (a tall post panel, the post under review), fit inside the box | 480x1000 | 960x1920 | 1440x2560 | 320KB / 800KB |
+| Kind | Use | Default CSS box | Largest box | Largest data URI |
+| ---- | --- | --------------- | ----------- | ---------------- |
+| `avatar` | Profile pictures, square crop | 56x56 | 192x192 | 32KB |
+| `thumb` | Card thumbnails, cropped to the box (square by default) | 120x120 | 480x480 | 120KB |
+| `post` | Post cards, aspect ratio kept, fit to the width | 360 wide | 1080x1920 | 450KB |
+| `detail` | Hero and detail panels (a tall post panel, the post under review), fit inside the box | 480x1000 | 1440x2560 | 800KB |
+
+The snippet has one profile, `page`. A `--profile=` flag is accepted and ignored.
 
 Write the kind as `kind@W` or `kind@WxH` with the CSS size when the layout differs from the
 default, for example `detail@480x1000=` for a tall panel 480px wide. Add `+text` for a post that
@@ -286,10 +303,6 @@ and `cssHeight` (half of them). Use them so the browser never stretches the imag
 
 **Budgets.** Cut the number of images before cutting quality.
 
-- Inline widget: all images in one `show_widget` call under 300KB of data URIs (the `bytes`
-  field, summed). An avatar and three thumbnails come to about 30 to 60KB a card. Over
-  300KB, drop to two thumbnails per card, then one, before cutting cards; only then rerun
-  with `--quality=80`.
 - Published page: all images under 8MB of data URIs and the whole page under 10MB (the
   artifact limit is 16MB). Over 8MB, in this order: two thumbnails per creator card instead
   of three; `post` cards past the first five as `thumb`; drop images from collapsed or
@@ -299,7 +312,8 @@ and `cssHeight` (half of them). Use them so the browser never stretches the imag
 - The snippet's output is large. Redirect it to a file in the scratch folder (`python3
   embed_media.py … > media.jsonl`), read only the small fields (`ok`, `format`, `width`,
   `height`, `cssWidth`, `cssHeight`, `native`, `bytes`), and put each `dataUri` into the page
-  from that file as you assemble the HTML. Never retype a data URI.
+  from that file as you assemble the HTML. Never retype a data URI, and never print or read a
+  `dataUri` field back into the conversation.
 
 **The CAS campaign page** embeds each post it shows once, as `post@360`, and uses that one image
 for the card's thumbnail and the creator viewer, in place of `thumb`; its order for dropping
@@ -325,7 +339,7 @@ Pillow. It prints one JSON line per image, in argument order: `{"kind","url","ok
 "dataUri"}` or `{"kind","url","ok":false,"error"}`.
 
 ```bash
-python3 embed_media.py [--profile=page] [--quality=85] 'avatar=<url>' \
+python3 embed_media.py [--quality=85] 'avatar=<url>' \
   'thumb=<mediaUrl>|<thumbnailUrl>' 'post@320=<mediaUrl>|<thumbnailUrl>' \
   'detail+text@480x1000=<mediaUrl>|<thumbnailUrl>' > media.jsonl
 ```
@@ -340,9 +354,7 @@ from PIL import Image, ImageOps, features
 KINDS = {"avatar": ((56, 56), True), "thumb": ((120, 120), True),
          "post": ((360, 0), False), "detail": ((480, 1000), False)}
 # profile -> kind: (largest box in device px, largest data URI in characters)
-PROFILES = {"inline": {"avatar": ((112, 112), 16_000), "thumb": ((240, 240), 40_000),
-                       "post": ((720, 1280), 160_000), "detail": ((960, 1920), 320_000)},
-            "page": {"avatar": ((192, 192), 32_000), "thumb": ((480, 480), 120_000),
+PROFILES = {"page": {"avatar": ((192, 192), 32_000), "thumb": ((480, 480), 120_000),
                      "post": ((1080, 1920), 450_000), "detail": ((1440, 2560), 800_000)}}
 UA = {"User-Agent": "Mozilla/5.0 (compatible; aspire-atlas-plugin)"}
 MAX_READ = 30_000_000
@@ -446,10 +458,10 @@ def embed(key, urls, profile, q):
             "native": native, "bytes": len(uri), "dataUri": uri}
 
 
-profile, q, items = "inline", 85, []
+profile, q, items = "page", 85, []
 for arg in sys.argv[1:]:
     if arg.startswith("--profile="):
-        profile = arg.split("=", 1)[1]
+        pass  # one profile; the flag is accepted so older commands still run
     elif arg.startswith("--quality="):
         q = max(80, min(95, int(arg.split("=", 1)[1])))
     else:
@@ -493,8 +505,7 @@ fill in from web copy. The one exception is the header row, which always shows.
 | Sentiment tile | `{SENTIMENT}` | Sum of `commentSentimentBreakdown.positive.count` over the sum of positive, neutral, and negative counts, across the posts | Needs 20 or more classified comments. Label "{pct}% positive" / "Comments". Success tone at 70% and up, neutral from 40% to 69%, warning below 40% |
 | Stats | `{STATS}` | Per network, below | Two or three cells; drop a cell with no data |
 | Thumbnails | `{THUMBS}` | Three posts: the flow's evidence posts first, then the most recent | `media.mediaUrl`, falling back to `media.thumbnailUrl` (the full-size poster on video), per **Images**. Play glyph on video. Each links to its permalink |
-| Details | `{DETAILS}` | The calling flow | Pages only. Empty by default |
-| Actions | `{ACTIONS}` | Fixed | Inline only |
+| Details | `{DETAILS}` | The calling flow | Empty by default |
 
 **Badges.** Two kinds, in this order:
 
@@ -551,22 +562,21 @@ is the one the user asked about or the flow searched; its block is shown and the
 `hidden`. The chip script switches blocks. With one channel, leave the chips out and render
 one `.ac-net` block with no `hidden`.
 
-## Actions (inline only)
+## Actions
 
-Each button sends a chat message; the message is a request, not an approval. Whatever it
-leads to follows the normal confirmation rules in SKILL.md.
+The card has no buttons. The three actions are messages the user types, and the Markdown
+fallback ends with a line that names them. Each message is a request, not an approval: whatever
+it leads to follows the normal confirmation rules in SKILL.md.
 
-| Button | Message sent | Handled by |
-| ------ | ------------ | ---------- |
-| Draft Outreach | `Draft outreach to @{HANDLE} on {NETWORK}` | **Creator card actions** in SKILL.md |
-| Add to list (user-plus) | `Add @{HANDLE} on {NETWORK} to a campaign shortlist` | **Creator card actions** in SKILL.md |
-| Save (heart) | `Save @{HANDLE} on {NETWORK} to the watch list` | **Creator card actions** in SKILL.md |
-
-Escape `'` in the handle as `\'` inside the `onclick` string.
+| Action | Message | Handled by |
+| ------ | ------- | ---------- |
+| Draft outreach | `Draft outreach to @{HANDLE} on {NETWORK}` | **Creator card actions** above |
+| Add to a shortlist | `Add @{HANDLE} on {NETWORK} to a campaign shortlist` | **Creator card actions** above |
+| Save to the watch list | `Save @{HANDLE} on {NETWORK} to the watch list` | **Creator card actions** above |
 
 ## Style block
 
-Once per widget or page. Colors follow the host theme in light and dark mode where the host
+Once per page. Colors follow the host theme in light and dark mode where the host
 defines the variable, and fall back to the Aspire tokens where it does not. A saved brand
 theme replaces the surfaces, text, borders, brand color, corners, and fonts; the ok and warn
 tiles keep their semantic colors (`theme.md`, **Creator card**).
@@ -627,11 +637,7 @@ tiles keep their semantic colors (`theme.md`, **Creator card**).
 .ac-details:empty{display:none}
 .ac-details dt{font-size:12px;color:var(--ac-muted)}
 .ac-details dd{margin:0 0 4px}
-.ac-actions{display:flex;align-items:center;gap:8px}
-.ac-btn{height:40px;border-radius:8px;border:1px solid var(--ac-border);background:var(--ac-card);color:var(--ac-fg);font:inherit;font-size:14px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
-.ac-btn.ac-main{flex:1;min-width:0;background:var(--ac-brand);border-color:var(--ac-brand);color:var(--ac-on-brand)}
-.ac-btn.ac-icon{width:40px;flex-shrink:0}
-.ac-btn:focus-visible,.ac-chip:focus-visible,.ac-thumb:focus-visible{outline:2px solid var(--ac-brand);outline-offset:2px}
+.ac-chip:focus-visible,.ac-thumb:focus-visible{outline:2px solid var(--ac-brand);outline-offset:2px}
 </style>
 ```
 
@@ -692,15 +698,8 @@ rule in the data table says so, and drop the comments themselves. Repeat `.ac-ne
     </div>
   </div>
 
-  <!-- pages only, when the flow has detail -->
+  <!-- when the flow has detail -->
   <dl class="ac-details">{DETAILS}</dl>
-
-  <!-- inline only -->
-  <div class="ac-actions">
-    <button type="button" class="ac-btn ac-main" onclick="sendPrompt('Draft outreach to @{HANDLE} on {NETWORK}')">Draft Outreach</button>
-    <button type="button" class="ac-btn ac-icon" aria-label="Add to list" title="Add to list" onclick="sendPrompt('Add @{HANDLE} on {NETWORK} to a campaign shortlist')">{ICON_USER_PLUS}</button>
-    <button type="button" class="ac-btn ac-icon" aria-label="Save" title="Save" onclick="sendPrompt('Save @{HANDLE} on {NETWORK} to the watch list')">{ICON_HEART}</button>
-  </div>
 </article>
 ```
 
@@ -748,14 +747,13 @@ Paste as-is. 24px viewBox, stroke icons, `currentColor`.
 | `{ICON_SHIELD_ALERT}` | 14 | `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>` |
 | `{ICON_SMILE}` | 14 | `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01"/><path d="M15 9h.01"/></svg>` |
 | `{ICON_PLAY}` | 12 | `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg>` |
-| `{ICON_USER_PLUS}` | 16 | `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 21a8 8 0 0 1 13.292-6"/><circle cx="10" cy="8" r="5"/><path d="M19 16v6"/><path d="M22 19h-6"/></svg>` |
-| `{ICON_HEART}` | 16 | `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>` |
 
 `{NET_ICON}` is the primary network's icon at `width="13" height="13"` and `stroke-width="2"`.
 
 ## Markdown fallback
 
-When the widget cannot render, one block per creator, same leave-out rules:
+For a host that draws no widget, when the user asks to see cards. One block per creator, same
+leave-out rules, post links and no images:
 
 ```markdown
 **@{HANDLE}** · {SUBTITLE} · Fit {FIT}
@@ -774,8 +772,10 @@ Then offer the three actions as one line: "Reply 'draft outreach', 'add to a sho
 - Never show an internal id, slug, field name, or tool name on a card. Flow text copied into
   `{DETAILS}` (rationale, risk flags) often quotes field names: rewrite them as plain words
   ("past brand partners list", not `instagram.pastBrandPartnershipPartners`).
-- Every image is embedded as a data URI (see **Images**). Remote CDN URLs never appear in
-  widget code or page HTML. Pages still note once in the footer that images are a snapshot.
+- On a page, every image is embedded as a data URI (see **Images**), and a remote CDN URL never
+  appears in page HTML. Pages note once in the footer that images are a snapshot.
+- In chat, no image data: never a data URI in a reply, a tool call, or an agent's summary. Cards
+  in chat are drawn by the host from Atlas's own tools, or written as the Markdown fallback.
 - One card per person, not per channel. Two hits that are the same person (the same
   `channels` entry) render once.
 - Escape every value that comes from Atlas or the web (`&`, `<`, `>`, `"`, `'`) before placing

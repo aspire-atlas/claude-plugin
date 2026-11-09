@@ -28,7 +28,7 @@ skipping what the user answered. Never produce copy past a red line without the 
 marketplace needs its explicit choice.
 
 Launch `atlas-creator-brief` (`brief_mode` `week` or `campaign`) with the inputs the reference
-lists. Relay the summary, the page, decisions, and first picks as creator cards. In campaign
+lists. Relay the summary, the page, decisions, and first picks by name, in text (cards only on request). In campaign
 mode, offer the launch pulse (**Readouts**, **Launch pulse**) and **Content review** for drafts.
 `brief_mode` `creator-ads` is launched only from **CAS campaign**, Run, row 10.
 
@@ -53,8 +53,8 @@ Launch inputs: tool prefix, `profile_id`, `profile_slug`, linked handles and net
 week (next Monday to Friday unless given) or the campaign slug, first post date, and end date,
 `recipient` (**Reading the ask**), lookback, and the three answers. The main thread relays the
 summary, the published page, and any decisions the agent needs (guideline conflicts, budget
-tier), and shows the first-pick creators inline as creator cards from the agent's
-`creator-cards` block. In campaign mode, after the brief, it offers the launch pulse
+tier), and names the first-pick creators in text. It keeps the agent's `creator-cards` block;
+the cards appear only when the user asks to see them (`creator-card.md`, **Cards in chat**). In campaign mode, after the brief, it offers the launch pulse
 (**Readouts**, **Launch pulse**) and says that each draft can go through **Content review** as it
 arrives. `brief_mode` `creator-ads` is launched only from **CAS campaign**, Run, row 10
 (`cas-campaign.md`).

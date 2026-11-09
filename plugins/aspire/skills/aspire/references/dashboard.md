@@ -23,7 +23,7 @@ recommends only, and writes nothing: no spend, no members, nothing moved, drafte
    shows no widget, use the `get_status` result already in hand (its status card draws where
    widgets render) and give a 3 to 5 bullet readout: channels and any lapsed one, credits left,
    setup done of total, programs and campaigns. Posts and creators, when asked for, come from
-   `search_posts` and `search_creators` per **Visual output**.
+   `search_posts` and `search_creators` and are answered in text per **Visual output**.
 3. **Next.** One `AskUserQuestion`, header "Next": the widget's next step (Recommended), then one
    or two more from this order, first that applies: reconnect a lapsed channel, connect a profile
    with no channel, answer the brand questions (fewer than 3 answered), the orchestrator's open

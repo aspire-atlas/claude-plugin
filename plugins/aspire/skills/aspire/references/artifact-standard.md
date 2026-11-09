@@ -20,8 +20,8 @@ What a page says, part by part, and the R1 to R12 checks (`reader-standard.md`) 
 it is published are set by the shared skill `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`.
 This file sets only the mark, the source line, and how a page prints (section 6).
 
-Applies to: pages published with the Artifact tool, the PPA deck (HTML and exports), the inline
-creator card widget, the decision audit page, sample pages, and any page the main thread builds.
+Applies to: pages published with the Artifact tool, the PPA deck (HTML and exports), the theme
+preview widget, the decision audit page, sample pages, and any page the main thread builds.
 Does not apply to: Slack posts, email and mailbox drafts, chat replies, the account connection
 card, the theme options preview, and files made for import (CSV order sheet, code sheet, finance
 export). A CSV keeps its columns exactly; carry the date and the source in the file name and say the
@@ -42,7 +42,7 @@ source in the hand-off message instead.
 - Full pages: paste `${CLAUDE_PLUGIN_ROOT}/assets/aspire-animated.svg` inline (read the file; about
   27KB, ASCII) as an inline `<svg>`, 40px square, in the header's right-hand group, with
   `role="img"` and `aria-label="Aspire Atlas"` kept as the file has them. One copy per page.
-- Widgets, slides, and anything with several copies or a 300KB budget (the inline creator card):
+- Widgets, slides, and anything with several copies (the theme preview widget):
   paste `${CLAUDE_PLUGIN_ROOT}/assets/aspire-animated-small.svg` (about 8KB), 28px.
 - Never load it from a URL: published pages and widgets cannot load outside images. Never recolor,
   restyle, or replace it, and never let the brand theme recolor it; it keeps its own dark tile. Give
@@ -116,10 +116,11 @@ check script finds it in this file only.
   and replace the source line with "No Atlas data on this page."
 - **The order form**: Contributors edit it, so its header shows "Last edited {time}" from the page
   data `updatedAt` beside the freshness chip; its source line is the standard one with the team audience line.
-- **Inline widgets** (the creator card): the small mark, 28px, in the corner that is free (the card's
-  fit ring keeps its place), and one line under the cards: "Source: Aspire Atlas cross-platform
-  indexing ({networks}), as of {asOfDate}. Internal use only." The full sentence is on the page when
-  a card grid becomes one.
+- **Inline widgets** (the theme preview, drawn only when the user asks to see it): the small mark,
+  28px, in the corner that is free. A widget that shows Atlas data adds one line under it: "Source:
+  Aspire Atlas cross-platform indexing ({networks}), as of {asOfDate}. Internal use only." The full
+  sentence is on the page. Creator and post cards in chat are Atlas's own, drawn by the host; the
+  plugin builds no widget for them (`creator-card.md`, **Cards in chat**).
 - **Decks**: the small mark top right of every slide, and the source line on the last slide
   ("Thank you"), unless a slide's footer band can carry it without crossing the render checks. A deck
   for a client uses the shared-page audience line.

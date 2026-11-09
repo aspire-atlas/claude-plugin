@@ -634,8 +634,9 @@ The **PPA pitch** section of SKILL.md runs these, in order.
 5. **Production and commercials.** Ask G, then H (H2's figures in one plain message from the
    template, echoed back and confirmed), and end the last call with I, the save confirmation.
 6. **Build.** Launch the agent in mode `build` with every answer and whether I approved the
-   save. Show the link, three bullets (shape, cast, cost), and up to six cast creators as
-   creator cards from its `creator-cards` block.
+   save. Show the link and three bullets (shape, cast, cost), naming the cast in text.
+   Keep its `creator-cards` block; the cards appear only when the user asks to see them
+   (`creator-card.md`, **Cards in chat**).
 7. **Review, then export** (**Review and export**). Changes run mode `revise` and ask Review
    again. PowerPoint and Google Slides run mode `export`. If the agent returns the PowerPoint
    step, invoke the session's PowerPoint skill yourself from the model it returns. No PowerPoint

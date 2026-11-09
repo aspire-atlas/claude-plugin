@@ -469,7 +469,7 @@ One page per program, title "{Brand} {Program}: Dashboard", republished to the l
 pages are for the brand's team, never for creators. Load `artifact-design` and
 `artifact-capabilities` before building and `dataviz` before the first chart; apply
 `theme:brand` per `theme.md`, **Applying the theme**; draw creators with the creator card
-(`creator-card.md`, page profile, no actions); embed post images per `creator-card.md`,
+(`creator-card.md`, page profile); embed post images per `creator-card.md`,
 **Images** (`post@240` for top posts, `avatar` for creators); render for `recipient`
 (`recipient-lens.md`). Status colors (on time, late, missing, needs a fix, ahead, behind) keep
 their meaning under any theme, with an icon and a label.

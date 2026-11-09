@@ -23,11 +23,11 @@ account) or to Phase 5 (brand context). Phase 6 is `references/account-review.md
 | 6 | Subagent evaluates connected accounts and produces first insights | Implemented |
 
 Three standing rules apply across phases: brand-facing calibration questions offer a web
-research option whose findings are shown before anything is written (Phase 5), any
-request to show posts or creators is answered visually with the post media and profile
-pictures (Visual output, after Phase 6), and every page, creator card, and chart uses the
-brand's saved theme when there is one (**Theme**). Every creator is shown with the creator
-card (`references/creator-card.md`), in chat or on a page.
+research option whose findings are shown before anything is written (Phase 5), the chat
+reply is the answer in text, with cards and images only when the user asks to see them
+(**Visual output**), and every page, creator card, and chart uses the brand's saved theme when
+there is one (**Theme**). A creator drawn on a page uses the creator card
+(`references/creator-card.md`).
 
 ## Progress bar: the onboarding groups
 

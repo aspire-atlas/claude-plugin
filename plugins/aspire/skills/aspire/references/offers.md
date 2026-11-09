@@ -12,7 +12,8 @@ Agents never offer it.
 
 - At the end of Phase 5, before Phase 6.
 - Before the first page-producing flow the user starts in a session: the creator brief,
-  creator discovery, a content review, a readout, or a Visual output page.
+  creator discovery, a content review, a readout, or a page the user asked for under **Visual
+  output**.
 
 Ask with `AskUserQuestion`: "Put Atlas's pages in {brand}'s colors? It takes about two
 minutes." Options: "Set it up now (Recommended)", "Not now", "Don't ask again". "Not now" goes
