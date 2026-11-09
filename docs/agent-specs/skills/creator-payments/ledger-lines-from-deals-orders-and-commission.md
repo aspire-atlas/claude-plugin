@@ -22,15 +22,15 @@ Builds one ledger line for everything the brand owes or spends on the program, w
 One line per thing owed or spent: fees per deal or per ambassador month, product cost per order,
 commission per closed period, rights or UGC fees, and ad share per closed month for a UGC deal that
 pays a share of ad revenue (kind `ad-share`: the Meta-reported purchase value of the creator's ads
-times the agreed share, up to the deal's cap, labelled "Meta-reported"). A share of ad spend is used
-only when the deal names it and the return bar above which it applies. Ad share is worked out per
-currency, never converted and never added to organic figures, and no rate is suggested: the share
-and the cap are the brand's own. It uses the attribution window the deal names (else the ad
-account's own) and never sums across windows. An ad-share line is due 30 days after the month closes
-unless the deal's payment timing says otherwise, with basis "Meta-reported, closed month". Each line
-has its kind, amount, currency, due date or "due on posting", status and basis. New, revised and
-void lines come back for one batch approval, and changes to a line past accrued come back as a "your
-call" item.
+times the agreed share, up to the deal's monthly cap, labelled "Meta-reported"). A share of ad spend
+is used only when the deal names it and the return bar above which it applies. Ad share is worked
+out per currency, never converted and never added to organic figures, and no rate is suggested: the
+share and the monthly cap are the brand's own. It uses the attribution window the deal names (else
+the ad account's own) and never sums across windows. An ad-share line is due 30 days after the month
+closes unless the deal's payment timing says otherwise, with basis "Meta-reported, closed month".
+Each line has its kind, amount, currency, due date or "due on posting", status and basis. New,
+revised and void lines come back for one batch approval, and changes to a line past accrued come
+back as a "your call" item.
 
 ## Callable
 
