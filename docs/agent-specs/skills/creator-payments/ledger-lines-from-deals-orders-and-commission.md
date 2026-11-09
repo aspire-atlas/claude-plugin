@@ -12,8 +12,9 @@ Builds one ledger line for everything the brand owes or spends on the program, w
 ## Inputs
 
 - From brand memory: the program setup records (term, budget, types, payment timing, usage fees, affiliate payout, product values), and the program's `terms`, `deliverable`, `fulfillment`, `affiliate`, `rights` and `ledger` findings.
-- From Atlas, for a UGC deal paid by ad share: the brand's paid results (`search_ads`) for the ads
-  that ran the creator's posts in the brand's linked ad account, per currency.
+- From Atlas, for a UGC deal paid by ad share: the brand's paid results (`search_ads`, the
+  creator's posts by `igMediaIds`, `paidPurchaseValue` and `paidSpend`) in the brand's linked ad
+  account, one row per currency and attribution window.
 - From the launch message: the program slug, `mode` (`build`), `pass`, any ledger lines handed in from other agents this session, named creators, and the approval that saves the lines.
 
 ## Output
@@ -23,7 +24,9 @@ that pays a share of ad revenue (kind `ad-share`: the Meta-reported purchase val
 ads times the agreed share, up to the deal's cap, labelled "Meta-reported"). A share of ad spend is
 only used when the deal names it and the return bar it applies above. Ad share is worked out per
 currency, never converted and never added to organic figures, and no rate is suggested: the share
-and the cap are the brand's own. Each line has its kind, amount, currency, due date or "due on posting", status and basis. New, revised and void lines come back for one batch approval, and changes to a line past accrued come back as a "your call" item.
+and the cap are the brand's own. It uses the attribution window the deal names (else the ad
+account's own) and never sums across windows. An ad-share line is due 30 days after the month
+closes unless the deal's payment timing says otherwise, with basis "Meta-reported, closed month". Each line has its kind, amount, currency, due date or "due on posting", status and basis. New, revised and void lines come back for one batch approval, and changes to a line past accrued come back as a "your call" item.
 
 ## Callable
 
