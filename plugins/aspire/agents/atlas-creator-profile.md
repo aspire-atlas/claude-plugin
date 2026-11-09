@@ -89,7 +89,8 @@ gaps, and stop as for an unresolved handle when Atlas does not hold the account.
 - Data gaps: lead with the freshness line (indexed through {timestamp}, refreshed in this run or not).
 - Forward note, for a lens other than `team`: two lines the requester can paste to the reader.
 - A `creator-cards` block with one entry for the creator, built per `creator-card.md`, **Agent
-  hand-off**. The main thread shows it inline before the summary.
+  hand-off**. The main thread leads with your headline, bullets, and the page link in text, and
+  draws the card only when the user asks to see it.
 
 ## Sample mode
 

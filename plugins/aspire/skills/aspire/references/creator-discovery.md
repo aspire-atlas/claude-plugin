@@ -44,7 +44,7 @@ approvals to deliver and to run discovery unattended.
 
 Ask the run question, then launch `atlas-creator-discovery` (run mode `interactive`, `job`
 `discover` or `view`, campaign slug, `recipient`). Relay the summary, page link, numbered range,
-and the top six new candidates as creator cards. Recording decisions stays in the main thread:
+and the top new candidates by name, in text (cards only on request). Recording decisions stays in the main thread:
 one confirmation naming the rejected handles, then `append_insights`. Ask every question exactly
 as worded in the reference, at most four per call (**Guardrails**); the batch and decision
 confirmations confirm writes, S8 sends.
@@ -389,8 +389,9 @@ shortlist", "Change setup". Then launch `atlas-creator-discovery` with: tool pre
 `interactive`, `job` (`view` for "Show the current shortlist", else `discover`), and `recipient`
 (SKILL.md, **Reading the ask**; `growth` when the ask is for more creators like the ones
 working). Relay its summary, the page link, and the numbered range the user can decide against.
-Show the candidates added this run inline as creator cards from the agent's `creator-cards`
-block (top six by fit score, badged with their shortlist numbers).
+Name the top candidates added this run in text, with their shortlist numbers and fit scores.
+Keep the agent's `creator-cards` block (top six by fit score); the cards appear only when the
+user asks to see them (`creator-card.md`, **Cards in chat**).
 
 **Recording decisions** ("Record decisions on the shortlist", or a reply against the page
 numbers) stays in the main thread, never the agent, per **Decisions** above. Rejected creators

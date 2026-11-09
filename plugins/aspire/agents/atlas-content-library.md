@@ -124,7 +124,8 @@ lens. Follow them exactly.
 - A fenced JSON block labelled `visual-data` with up to six result or shelf cards: `permalink`,
   `mediaUrl`, `thumbnailUrl`, `profilePictureUrl`, `postedAt`, `mediaProductType`, caption
   excerpt (120 characters), `adScore`, `hookPattern`, `products`, `rights` (the badge text),
-  and `rightsEnd`. The main thread renders these as post cards.
+  and `rightsEnd`. The main thread answers in text and keeps these for when the user asks to
+  see the posts; the URLs stay remote URLs, never image data.
 
 ## Sample mode
 

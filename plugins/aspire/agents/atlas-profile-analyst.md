@@ -105,10 +105,11 @@ findings and pushes only, saying in the summary that nothing was saved.
   `profilePictureUrl`, `postedAt`, `mediaProductType`, caption excerpt (120 chars), and the
   metric values used; plus the per-period series behind the headline (date, posts, likes,
   comments). Project `media.mediaUrl`, `media.thumbnailUrl` and
-  `instagram.account.profilePictureUrl` in `search_posts` to fill it. The main thread renders
-  this as cards and a chart; keep it under 60 rows.
+  `instagram.account.profilePictureUrl` in `search_posts` to fill it. The main thread answers
+  in text and keeps this for when the user asks to see the posts or a chart; the URLs stay
+  remote URLs, never image data. Keep it under 60 rows.
 - Mode `handle` only: a `creator-cards` block with one entry for the reviewed account, built
-  per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-card.md` (**Agent hand-off**). The main thread shows it before the summary.
+  per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-card.md` (**Agent hand-off**). The main thread leads with your text summary and draws the card only when the user asks to see it.
 
 ## Sample mode
 

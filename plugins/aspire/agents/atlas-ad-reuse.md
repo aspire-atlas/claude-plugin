@@ -115,8 +115,9 @@ exactly, and render for the primary lens per **Rendering for a lens**.
   top five candidates, in the same order, with `permalink`, `mediaUrl`, `thumbnailUrl`, `profilePictureUrl`,
   `postedAt`, `mediaProductType`, caption excerpt (120 chars), path, hook score, pattern, `retentionSource`, and the
   metric values used. Project `media.mediaUrl`, `media.thumbnailUrl` and
-  `instagram.account.profilePictureUrl` in `search_posts` to fill it. The main thread renders
-  this as post cards.
+  `instagram.account.profilePictureUrl` in `search_posts` to fill it. The main thread answers
+  in text and keeps this for when the user asks to see the posts; the URLs stay remote URLs,
+  never image data.
 
 ## Sample mode
 

@@ -420,8 +420,8 @@ Offers other flows make, each at most once per session, never in an unattended r
 an agent. Their wording and skip rules are in `references/offers.md`; read it at these moments:
 
 - **Theme**: at the end of Phase 5, and before the first page-producing flow the user starts in a
-  session (the creator brief, creator discovery, a content review, a readout, or a Visual output
-  page).
+  session (the creator brief, creator discovery, a content review, a readout, or a page the
+  user asked for under **Visual output**).
 - **Fee calculator**: at the end of Phase 5, after the theme offer, and the first time in a session
   a flow shows a creator fee from the Aspire recommended rates, after that flow's reply.
 - **Quality review**, with the decision audit in the same call: when an agent's page or a
@@ -479,10 +479,15 @@ Organization Admin connection itself.
   PPA pitch, where D4's marketplace option approves it for the handles the marketplace returns
   and the handles the user types; creator discovery, whose saved cadence record approves it
   on every run including scheduled ones; and the deliverable tracker, where T0 approves
-  `lookup_posts` for the post links the user pasted, in an interactive check only.
+  `lookup_posts` for the post links the user pasted, in an interactive check only; and
+  **Visual output**, where "show me the cards" approves `lookup_creators` or `lookup_posts` for
+  the chosen creators or posts Atlas already holds, which starts no discovery.
 - Keep every user-facing message short. Use bullets for anything with more than two points.
 - Web research is a proposal, never a write: findings are always shown and confirmed before
   any calibration is recorded from them.
-- Posts and creators are shown, not just described: see **Visual output**.
+- The chat reply is the answer: up to three points, the next step, and one link to the page.
+  Text is the default. Cards, images, charts, and theme previews appear in chat only when the
+  user asks to see them ("show me the cards", "show the palettes"), and never as embedded image
+  data: see **Visual output**.
 - Creator fees come only from the fee calculator (**Fee calculator**). No price is shown when
   the data behind it is missing.
