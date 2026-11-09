@@ -4,6 +4,44 @@ Shared by the `atlas-market-signal` agent and the **Market signal** section of S
 the setup questions, the calibrations, the data method, the analysis rules, the page, the
 findings, delivery, and the unattended rules.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Market signal (what creators say about the brand vs. competitors)](#market-signal-what-creators-say-about-the-brand-vs-competitors)
+- [Why the market signal agent exists](#why-the-market-signal-agent-exists)
+- [Setup: define the tracking once, for everyone](#setup-define-the-tracking-once-for-everyone)
+- [Run and schedule (main thread)](#run-and-schedule-main-thread)
+- [Data method](#data-method)
+- [Analysis rules](#analysis-rules)
+- [Rendering for each lens](#rendering-for-each-lens)
+- [Page](#page)
+- [Leadership page (O3)](#leadership-page-o3)
+- [Findings](#findings)
+- [Delivery](#delivery)
+- [Scheduled (unattended) runs](#scheduled-unattended-runs)
+
+## Market signal (what creators say about the brand vs. competitors)
+
+Trigger when the user asks what creators are saying about the brand compared with competitors,
+how the brand is talked about, share of voice, whether the brand is behind on a feature, or to
+track any of that. Requires a brand profile; linked channels are not required. It is not an
+account review: Phase 6 looks at accounts, the market signal at the conversation. Read
+this file (**Setup**, **Run and schedule (main thread)**, **Scheduled
+(unattended) runs**) and follow it.
+
+### Setup
+
+Ask M1 to M5 exactly as worded, one per call; M3 and M4 are the standing approval to deliver and
+save findings. Confirm the batch once, then write. `add_hashtags` gets its own confirmation.
+
+### Run
+
+Launch `atlas-market-signal` (run mode `interactive`) with the save question in the lens call.
+Offer the weekly schedule ("Atlas market signal: {brand}") after the first run. Unattended runs
+never ask, never start discovery, and publish a "setup needed" card when setup is incomplete.
+
 ## Why the market signal agent exists
 
 The account analyst and the readouts look at accounts. The market signal looks at the

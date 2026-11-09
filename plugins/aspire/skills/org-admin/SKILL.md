@@ -21,6 +21,13 @@ and email, and organizations by name.
 Tools and rules for the admin connection: `references/org-admin-tools.md`. Atlas tools and
 their prefixes: `../aspire/references/atlas-tools.md`.
 
+## Contents
+
+- [1. Organization and role](#1-organization-and-role)
+- [2. Connection](#2-connection)
+- [3. What the user asked for](#3-what-the-user-asked-for)
+- [Guardrails](#guardrails)
+
 ## 1. Organization and role
 
 The organization and the caller's role come from Atlas, not from the admin connection.

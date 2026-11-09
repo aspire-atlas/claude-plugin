@@ -1,7 +1,7 @@
 # Aspire Atlas Organization Admin tool reference
 
-Last verified 2026-10-05 against the live server, signed in: 10 tools plus `get_more_tools`,
-of which the plugin uses three. Re-check before each official release.
+The plugin uses three of the server's tools. Re-check the list against the live server, signed
+in, before each official release.
 
 Server: `https://atlas.aspire.io/mcp/admin-organization` (streamable HTTP, OAuth), bundled as
 **Aspire Atlas Organization Admin**. Its own OAuth scope is `mcp:admin-organization`, separate

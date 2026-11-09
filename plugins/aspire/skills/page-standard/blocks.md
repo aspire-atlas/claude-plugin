@@ -10,6 +10,15 @@ goes between them.
 Read this file with `SKILL.md`. That file says what each part must say. This file says how to
 build it.
 
+## Contents
+
+- [1. Rules for every block](#1-rules-for-every-block)
+- [2. Default tokens and the style block](#2-default-tokens-and-the-style-block)
+- [3. The blocks](#3-the-blocks)
+- [4. Building a page from the blocks](#4-building-a-page-from-the-blocks)
+- [5. The validated examples, block by block](#5-the-validated-examples-block-by-block)
+- [6. Sections the flow builds itself](#6-sections-the-flow-builds-itself)
+
 ## 1. Rules for every block
 
 - **Tokens only.** A block takes its colors, type, and corners from the page tokens in

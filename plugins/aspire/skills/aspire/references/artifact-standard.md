@@ -27,6 +27,16 @@ card, the theme options preview, and files made for import (CSV order sheet, cod
 export). A CSV keeps its columns exactly; carry the date and the source in the file name and say the
 source in the hand-off message instead.
 
+## Contents
+
+- [1. The mark](#1-the-mark)
+- [2. The source line](#2-the-source-line)
+- [3. Variants](#3-variants)
+- [4. Before publishing](#4-before-publishing)
+- [5. For new agents and new kinds of page](#5-for-new-agents-and-new-kinds-of-page)
+- [Artifact standard](#artifact-standard)
+- [6. Print and PDF](#6-print-and-pdf)
+
 ## 1. The mark
 
 - Full pages: paste `${CLAUDE_PLUGIN_ROOT}/assets/aspire-animated.svg` inline (read the file; about

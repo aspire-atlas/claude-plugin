@@ -9,6 +9,50 @@ A creator fee is always a calculation from the brand's CPM ladder and the creato
 counts. No flow prices a creator any other way: never from memory, a follower count, or a
 benchmark fetched mid-run.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Fee calculator (creator rates for every fee)](#fee-calculator-creator-rates-for-every-fee)
+- [Reading the rates and pricing with the server](#reading-the-rates-and-pricing-with-the-server)
+- [How a fee is calculated](#how-a-fee-is-calculated)
+- [The record](#the-record)
+- [The questionnaire](#the-questionnaire)
+- [Applying the rates (every flow)](#applying-the-rates-every-flow)
+
+## Fee calculator (creator rates for every fee)
+
+Trigger on `/aspire:aspire fee calculator` (see **Arguments**), or when the user asks to set,
+change, or check the brand's creator rates, CPM, or what the plugin offers creators. Requires a
+brand profile. Full detail lives in this file: the calculation, the Aspire
+recommended rates, the questionnaire, the record, and how every flow applies it.
+
+The rates are brand memory, not session state. They are one `fees:rate-card` calibration, and
+every creator fee the plugin shows uses them: the creator profile page, the creator brief, the
+discovery shortlist, Draft Outreach, and any flow added later. Without one, flows use the
+Aspire recommended rates and say so.
+
+### Setup
+
+1. Ask F0 to F4 from the reference, one `AskUserQuestion` each, in order, skipping any the user
+   already answered (typed CPMs answer F3 and go straight to F4's result). F2's benchmark check
+   follows the Phase 5 web research rule: findings go to the user as bullets with sources, and
+   they are context only; they never change the rates by themselves.
+2. F3 offers Aspire's recommended rates or the brand's own, built by adjusting Aspire's.
+3. F5 is the write confirmation. Save with `append_calibration`, per the reference. A
+   `key-exists` response follows the Phase 5 supersede rule with its own confirmation. Going
+   back to Aspire's rates is `retract_calibration`, with its own confirmation.
+
+Rates are refreshed only when someone runs the fee calculator again.
+
+### Applying
+
+Agents read `fees:rate-card` with their own calibration read and apply it per **Applying the
+rates** in the reference. The main thread passes nothing extra, and applies it the same way to
+any fee it shows itself. No flow prices a creator any other way, and a fee the calculator
+cannot compute is left out, never estimated.
+
 ## Reading the rates and pricing with the server
 
 Prefer the server's tools. `get_fee_rate_card` returns the brand's saved `fees:rate-card` or the

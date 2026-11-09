@@ -7,6 +7,46 @@ client approves on the campaign page's Selected Creators tab. Main thread only; 
 this, and an unattended run never does. Nothing here sends email or reads a mailbox: the CM sends
 from their own mail and pastes the replies.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Rates and terms (CAS step 13 and Gate 3)](#rates-and-terms-cas-step-13-and-gate-3)
+- [What each creator gets](#what-each-creator-gets)
+- [Expected cost](#expected-cost)
+- [Target rate](#target-rate)
+- [Terms, asked once per campaign](#terms-asked-once-per-campaign)
+- [Drafting the rates](#drafting-the-rates)
+- [Drafts](#drafts)
+- [Replies](#replies)
+- [Contract and rates](#contract-and-rates)
+- [Closing Gate 3](#closing-gate-3)
+
+## Rates and terms (CAS step 13 and Gate 3)
+
+Reached from the **CAS campaign** dispatch table once creators are approved, or when the user
+asks to draft fees, record a reply, or record the client's fee approval on a creator ad campaign.
+Full detail lives in this file.
+
+1. If `campaign:{slug}-terms` is missing, ask T1 and T2, confirm the pair once, and write it.
+2. Draft an opening offer for every approved creator, from the fee calculator (**Fee
+   calculator**). Say on the page when the Aspire recommended rates were used.
+3. Show contract and rates (Selected Creators) and the offer drafts, then confirm saving the
+   offers in one picker.
+4. Keep one email draft on each creator's row per the reference's **Drafts** (offer, counter,
+   accept, chase). The CM sends them from their own mail; mark them sent when the CM says so.
+5. Record each pasted reply per the reference's **Replies**: one picker for the record and the
+   next move. A fee above the maximum, a different deliverable, usage or product, or a creator
+   dropping out goes to the client as "your call needed". A creator past their reply window gets
+   a chase draft.
+6. Record the client's fee approval per the reference's **Closing Gate 3**, read back from the
+   client's own approval on the page and checked per `references/cas-campaign.md`, **Pulling
+   decisions**, **The fee approval**. Then the details emails start; contracts and shipping run in the core Aspire platform.
+
+When the fees used the Aspire recommended rates, make the fee calculator offer from **Fee
+calculator**, Offers, after the reply.
+
 ## What each creator gets
 
 For every creator whose newest `roster` finding is `approved`:

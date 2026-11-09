@@ -10,6 +10,47 @@ Read `program.md` first. Its state model (the `ledger` row, **Currencies**, **Le
 hand-off**, **Who owns a deal**), **7** (pages) and **What program flows never do** apply here
 unchanged.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Program ledger (what we owe creators, invoices, payments, and budget)](#program-ledger-what-we-owe-creators-invoices-payments-and-budget)
+- [What the agent does](#what-the-agent-does)
+- [Modes](#modes)
+- [Inputs](#inputs)
+- [Building the lines](#building-the-lines)
+- [Line identity](#line-identity)
+- [Statuses](#statuses)
+- [Recording invoices and payments](#recording-invoices-and-payments)
+- [Budget](#budget)
+- [The finance export](#the-finance-export)
+- [The questions (main thread)](#the-questions-main-thread)
+- [The packet](#the-packet)
+- [Records written](#records-written)
+- [The page](#the-page)
+- [Sample mode](#sample-mode)
+- [What the ledger never does](#what-the-ledger-never-does)
+
+## Program ledger (what we owe creators, invoices, payments, and budget)
+
+Trigger: "update payments", "what do we owe creators", "what's been paid", "where are we against
+budget", "how much budget is left", "which invoices are overdue", "these invoices came in",
+"mark @handle's fee paid", "export the ledger for finance"; an attached payments or invoices
+export; a `ledger-lines` block from the affiliate manager or content sourcing; or the **Program
+manager** dispatch's "Update payments". Requires a saved program (**Program setup**). The ledger
+records; it never pays. Interactive only: never schedule it; without `AskUserQuestion`, say in
+one line that the ledger needs a person to confirm it, and stop.
+
+Before step 1, read this file (**The questions (main thread)** and
+**Running the ledger (main thread)**) and follow it. Launch `atlas-program-ledger` with `mode`
+`build`, `payments`, or `export` (`pass: propose`, then `pass: record` with the `ledger-packet`;
+inputs: tool prefix, `profile_id`, `profile_slug`, handles and networks, program slug,
+`connections`, `recipient`, `ledger-lines` blocks, the G answers). G1 and G4 confirm the writes,
+G2 the source, G3 the columns, G5 each your-call item; ask them exactly as worded there, at most
+four per call (**Guardrails**, Pickers). Never match an unmatched row yourself. Amounts are for
+Editors only; never keep, ask for, or repeat bank details, tax ids, or card numbers.
+
 ## What the agent does
 
 The job: know what the brand owes creators, what has been invoiced, what has been paid, and

@@ -6,6 +6,47 @@ form page, ordering, tracking, the posting odds for gifting, the fields this age
 state model, and the read-only status mode (the shipping check). The state model, connected tools, drafts and
 sending, and the order form's data rules are in `program.md`; this file only adds to them.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Product fulfillment (product picks, the order form, shipping)](#product-fulfillment-product-picks-the-order-form-shipping)
+- [Why the agent exists](#why-the-agent-exists)
+- [Who is owed product](#who-is-owed-product)
+- [Picking the product](#picking-the-product)
+- [Details requests](#details-requests)
+- [Recording details and status](#recording-details-and-status)
+- [The order form page](#the-order-form-page)
+- [Ordering](#ordering)
+- [Tracking](#tracking)
+- [Posting odds (gifting)](#posting-odds-gifting)
+- [State written to Atlas](#state-written-to-atlas)
+- [Status mode (the shipping check)](#status-mode-the-shipping-check)
+- [Main thread steps](#main-thread-steps)
+- [What this agent never does](#what-this-agent-never-does)
+
+## Product fulfillment (product picks, the order form, shipping)
+
+Trigger: "collect details and order product", "send product to the creators", "what should we
+send @handle", "order the product", "where are the packages", "did the product arrive", "pull
+the order form", or the Program manager's "Collect details and order product". Requires a saved
+program (**Program setup**) with a catalog. Before any mode, read this file
+(**Main thread steps**, **Pickers**) and follow it; order form data rules: `references/program.md`,
+**6**.
+
+Fulfillment is interactive. Agent `atlas-product-fulfillment`, modes `plan` (`step: propose`
+then `write`), `order`, `track`, `status` (read-only). Inputs: tool prefix, `profile_id`,
+`profile_slug`, program slug, handles and networks, `recipient`, `connections`, `mode`, the F
+answers; end with the decision-audit line. F2, F5 and F6 confirm writes; F3 the mailbox; F4 the
+store. Ask them exactly as worded there, at most four
+per call (**Guardrails**, Pickers). Addresses never show in chat beyond city and region. Hand
+arrivals to `atlas-deliverable-tracker`.
+
+Schedule: P9 "Daily shipping check (only with product)" creates "Atlas program shipping check:
+{brand} - {program}", `mode: status`, `run: unattended`. It records nothing, drafts nothing,
+places nothing, and writes only the `page` finding.
+
 ## Why the agent exists
 
 Product is where a creator program goes quiet. Sizes go missing in email threads, parcels

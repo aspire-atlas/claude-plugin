@@ -5,6 +5,54 @@ publishes a page or renders a creator card, which applies the saved theme. The t
 color, chart series, header style, fonts, and the logo. It is one Atlas calibration, so every
 teammate, every agent, and every scheduled run draws the same brand.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Theme (brand colors, fonts, and logo on every page)](#theme-brand-colors-fonts-and-logo-on-every-page)
+- [What the theme changes, and what it never touches](#what-the-theme-changes-and-what-it-never-touches)
+- [The record](#the-record)
+- [The interview](#the-interview)
+- [Applying the theme (every flow)](#applying-the-theme-every-flow)
+- [Snippets](#snippets)
+
+## Theme (brand colors, fonts, and logo on every page)
+
+Trigger when the user asks to brand Atlas's pages, set up or change the theme, use the brand's
+colors, fonts, or logo, or says the pages don't look like their brand. Requires a brand
+profile. Full detail lives in this file: the interview, web discovery, the four
+palettes, the preview widget, the record, and how every flow applies it.
+
+The theme is brand memory, not session state. It is one `theme:brand` calibration, and every
+page, creator card, and chart uses it, for every teammate and every scheduled run. Without
+one, pages keep the Aspire default.
+
+### Setup
+
+1. Ask T0 to T4 from the reference, one `AskUserQuestion` each, in order, skipping any the user
+   already answered (a named domain answers T1; typed hex codes skip discovery). T1's research
+   option follows the Phase 5 web research rule. The findings go to the user as bullets with
+   sources before any palette is shown, and nothing is written from them directly. Sources rank
+   in this order: a design-token file the user pastes, then the site's own design tokens (the
+   palette the site shows, or the one named after the brand), then colors ranked by how often
+   the site uses them. The ranking is a last resort, because it blends every theme a site ships.
+2. T2 compares the brand's own palette, as found, with three variations on it: Brand-forward,
+   Quiet, and Complement. Each is shown in light and dark with the comparison widget, or on
+   a published page when the widget tool is missing. Presets replace the four when there is no
+   website. Never offer a palette that fails its contrast checks.
+3. T5 is the write confirmation. Save with `append_calibration`, per the reference. A
+   `key-exists` response follows the Phase 5 supersede rule with its own confirmation. Going
+   back to the Aspire default is `retract_calibration`, with its own confirmation.
+
+### Applying
+
+Agents read `theme:brand` with their own calibration read and apply it. The main thread passes
+nothing extra. The main thread applies it too, to every page and inline creator card it builds
+itself, per **Applying the theme** in the reference. Semantic colors (verdicts, pass and fail,
+ok and warn, above and below the baseline) never take brand colors. The animated Aspire Atlas
+mark keeps its own colors (`references/artifact-standard.md`).
+
 ## What the theme changes, and what it never touches
 
 The theme changes:

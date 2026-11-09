@@ -5,6 +5,10 @@ dispatch table, gate packets and flows, and its **1d** maps every part of the ca
 its file. A section named here without a file, such as **Gate 2** or **1e**, is in the file
 that map gives.
 
+## Contents
+
+- [1e. Page data: what the page keeps and how it is read back](#1e-page-data-what-the-page-keeps-and-how-it-is-read-back)
+
 ## 1e. Page data: what the page keeps and how it is read back
 
 The page keeps what people do on it in its own shared data, using the published page's ability

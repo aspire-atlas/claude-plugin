@@ -9,6 +9,48 @@ agent writes, the terms summary, and the negotiation page. It is the program cou
 Read `program.md` first. Its state model, page vocabulary, **4** (connected tools), **5**
 (drafts and sending) and **7** (pages) apply here unchanged.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Creator negotiation (offers, counters, renewals, and deal changes in a program)](#creator-negotiation-offers-counters-renewals-and-deal-changes-in-a-program)
+- [What the agent does](#what-the-agent-does)
+- [Modes](#modes)
+- [Inputs, per creator](#inputs-per-creator)
+- [The price ladder](#the-price-ladder)
+- [The performance read](#the-performance-read)
+- [The move](#the-move)
+- [Drafts](#drafts)
+- [The decision packet](#the-decision-packet)
+- [Main thread steps](#main-thread-steps)
+- [The questions (main thread)](#the-questions-main-thread)
+- [Records written](#records-written)
+- [The terms summary](#the-terms-summary)
+- [The page](#the-page)
+- [What negotiation never does](#what-negotiation-never-does)
+
+## Creator negotiation (offers, counters, renewals, and deal changes in a program)
+
+Trigger: "negotiate with @handle", "she asked for USD 2,000", "make offers to the creators who
+said yes", "what should we offer", "is this rate fair", "renew our ambassadors", "raise
+@handle's commission", "move @handle to paid", "extend usage on @handle's Reel", or the
+**Program manager** dispatch. Requires a saved program (**Influencer program**, Program setup).
+A creator ad campaign's fees stay in **Rates and terms**. Before step 1, read
+this file (**Main thread steps**, **The questions (main thread)**) and follow
+it.
+
+Negotiation is interactive only. Never schedule it; if `AskUserQuestion` is unavailable, say in
+one line that a deal needs a person to approve it, and stop.
+
+Agent `atlas-creator-negotiation`, modes `offer`, `counter`, `renewal`, `change`, passes
+`propose` (writes nothing) then `record` with the `negotiation-packet`. Inputs: tool prefix,
+`profile_id`, `profile_slug`, handles and networks, program slug, `mode`, `pass`, the creators
+(reply text, `renewals` block, or change), `connections`, `recipient`. N1 and N3 confirm writes;
+N4 the mailbox. Ask them exactly as worded there, N2 (one per your-call item) first, at most
+four per call (**Guardrails**, Pickers). Sending follows **Influencer program**, Drafts.
+After Aspire recommended rates, offer **Fee calculator**, Offers.
+
 ## What the agent does
 
 The job: get a fair deal inside budget, and say when it needs the user's call. For each creator

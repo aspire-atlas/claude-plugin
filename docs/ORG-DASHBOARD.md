@@ -1,7 +1,7 @@
 # Organization dashboard: design notes
 
 What a bare `/aspire:aspire` shows on a configured organization. The working steps are the
-**Organization dashboard** section of `plugins/aspire/skills/aspire/SKILL.md`; this note records
+**Organization dashboard** section, in `plugins/aspire/skills/aspire/references/dashboard.md`; this note records
 the decisions and what is still open.
 
 ## Decisions

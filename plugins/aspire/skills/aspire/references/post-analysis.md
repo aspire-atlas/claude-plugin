@@ -6,6 +6,36 @@ partner with, or reuse it: how it performed, everything a viewer sees and hears 
 people, language), how brand-safe it is, how the sponsorship is disclosed, and what it means
 for the brand asking.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Post analysis (one published post, in depth)](#post-analysis-one-published-post-in-depth)
+- [Why the post analysis agent exists](#why-the-post-analysis-agent-exists)
+- [Inputs](#inputs)
+- [Questions (main thread)](#questions-main-thread)
+- [Fetching the post](#fetching-the-post)
+- [Video: frames, shots, and audio](#video-frames-shots-and-audio)
+- [The page](#the-page)
+- [State written to Atlas](#state-written-to-atlas)
+- [Rules](#rules)
+
+## Post analysis (one published post, in depth)
+
+Trigger when the user asks to analyze, break down, or explain one published post, asks what
+brands or people are in a video, or asks whether a post or the account behind it is safe to
+sponsor, partner with, or reuse ("analyze this post", "what brands are in this Reel", "should we
+sponsor this show"). Requires a brand profile and the post's link; no brief (a brief goes to
+**Content review**). Before step 1, read this file (**Inputs**, **Questions
+(main thread)**) and follow it. Interactive only: never schedule it.
+
+Ask Q1 to Q3 exactly as worded, with the **Reading the ask** confirmation. Q3 is the write
+confirmation; the pasted link and Q2's "Refresh the account first" approve the fetches. Launch
+`atlas-post-analysis` with the tool prefix, `profile_id`, `profile_slug`, the link, `recipient`,
+`baseline`, the save answer, any earlier analysis, and the brand digest. Relay as the reference
+says; offer **Content review** or **Ad reuse**.
+
 ## Why the post analysis agent exists
 
 Content review checks a post against a brief the brand wrote. Post analysis needs no brief: the

@@ -1,10 +1,22 @@
 # Atlas MCP tool reference
 
 Server: `https://atlas.aspire.io/mcp` (streamable HTTP, OAuth handled by the connector).
-Last verified 2026-10-05 against the live server: 35 tools. The surface changes without
-notice; when a tool named here is missing, or an unlisted `*Aspire_Atlas*` tool appears (other than the admin connector's `*Organization_Admin*` tools), note
+The surface changes without notice; when a tool named here is missing, or an unlisted `*Aspire_Atlas*` tool appears (other than the admin connector's `*Organization_Admin*` tools), note
 it in the run summary so the plugin can be updated. Never call an unlisted tool that changes
 state without first checking the **Destructive tools** section below.
+
+## Contents
+
+- [Tool name prefix](#tool-name-prefix)
+- [Meta Ads connector](#meta-ads-connector)
+- [Organization admin connector](#organization-admin-connector)
+- [Universal argument](#universal-argument)
+- [Attribution model](#attribution-model)
+- [Phase map](#phase-map)
+- [Partnership content (Meta partnership ads)](#partnership-content-meta-partnership-ads)
+- [Destructive tools: confirmation is mandatory](#destructive-tools-confirmation-is-mandatory)
+- [Visual fields (for Visual output)](#visual-fields-for-visual-output)
+- [Calibration kinds (for Phase 5)](#calibration-kinds-for-phase-5)
 
 ## Tool name prefix
 

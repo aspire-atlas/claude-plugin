@@ -16,6 +16,50 @@ and pages (**7**) apply as written. The library is this flow's input and reads i
 | A creator's deal | `program.md`, **Who owns a deal** |
 | Fees on the calculator | `fees.md`, **How a fee is calculated**, **Applying the rates** |
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Content sourcing (rights to creator content, and new content from program creators)](#content-sourcing-rights-to-creator-content-and-new-content-from-program-creators)
+- [Why content sourcing exists](#why-content-sourcing-exists)
+- [Modes](#modes)
+- [The questions (main thread)](#the-questions-main-thread)
+- [Inputs, per post or creator](#inputs-per-post-or-creator)
+- [Who gets a request](#who-gets-a-request)
+- [Proposing rights terms](#proposing-rights-terms)
+- [Fees](#fees)
+- [Renewal](#renewal)
+- [UGC: commissioning what the library is missing](#ugc-commissioning-what-the-library-is-missing)
+- [Recording replies](#recording-replies)
+- [Fees owed: the ledger hand-off](#fees-owed-the-ledger-hand-off)
+- [Drafts](#drafts)
+- [Your call](#your-call)
+- [The decision packet](#the-decision-packet)
+- [Records written](#records-written)
+- [The sourcing page](#the-sourcing-page)
+- [What content sourcing never does](#what-content-sourcing-never-does)
+
+## Content sourcing (rights to creator content, and new content from program creators)
+
+Trigger: "request rights", "get the rights to these posts", "can we run @handle's video as an
+ad", "renew the rights", "which rights should we renew", "we need more videos of {product}",
+"commission UGC", "@handle said yes to the usage", "record the rights reply"; also the **Content
+library** hand-off, a reply classed rights in outreach triage, and the **Program manager**
+dispatch's "Request rights". Requires a saved program (**Influencer program**, Program setup).
+Interactive only: never schedule it; the library's scheduled refresh posts the expiring-rights
+alert. Without `AskUserQuestion`, say in one line that rights requests need a person to approve
+them, and stop.
+
+Before step 1, read this file (**The questions (main thread)** and
+**Running content sourcing (main thread)**) and follow it. Launch `atlas-content-sourcing` with
+`mode` `rights`, `renewal`, `ugc`, or `replies` (`pass: propose`, then `pass: record` with the
+`sourcing-packet`; inputs: tool prefix, `profile_id`, `profile_slug`, handles and networks,
+program slug, `connections`, `recipient`, the posts, horizon, UGC focus, or replies). S0 picks
+the horizon, S1 and S3 confirm the writes, S2 each your-call item, S4 the mailbox; ask them
+exactly as worded there, at most four per call (**Guardrails**, Pickers). Fees owed go to
+`atlas-program-ledger`. Sending follows **Influencer program**, Drafts.
+
 ## Why content sourcing exists
 
 A strong creator post is worth little to an ad team until the brand may use it. Asking late,

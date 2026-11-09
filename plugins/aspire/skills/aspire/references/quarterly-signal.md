@@ -5,6 +5,39 @@ Serves the `leadership` lens (`recipient-lens.md`): is this worth the investment
 the story for the quarter? The decision it feeds is budget, headcount, and where influencer
 sits in the channel mix. It lands in a quarterly business review.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Quarterly signal (the quarter's story for leadership)](#quarterly-signal-the-quarters-story-for-leadership)
+- [Why the quarterly signal exists](#why-the-quarterly-signal-exists)
+- [Inputs and window](#inputs-and-window)
+- [What it reads](#what-it-reads)
+- [The page: one page, outcome first](#the-page-one-page-outcome-first)
+- [Findings](#findings)
+- [Unattended runs](#unattended-runs)
+
+## Quarterly signal (the quarter's story for leadership)
+
+Trigger when the user asks how the creator or influencer program did this quarter, for a
+QBR, a quarter in review, or whether the program is working. Requires a brand profile. Full
+detail lives in this file.
+
+1. Ask in one `AskUserQuestion` call, together with the **Reading the ask** confirmation
+   (default `leadership`): which quarter (last completed quarter (Recommended), quarter to
+   date, or typed dates or a fiscal quarter), and "Save the quarter's findings to Atlas?"
+   (Save (Recommended) / Page only). If the user mentions spend, take the number as typed;
+   never ask for it, and never estimate it. When no spend was typed and a program dashboard has
+   saved ledger figures, add a third question, header "Spend": "Show the program's paid amount
+   from the ledger on this page? Everyone it's shared with will see it." Options: "Leave spend
+   out (Recommended)" / "Show it". Pass the answer as `ledger_spend` (`omit` or `show`).
+2. Launch `atlas-quarterly-signal` with: tool prefix, `profile_id`, `profile_slug`, linked handles and
+   networks, run mode `interactive`, `recipient`, the quarter, any spend given, `ledger_spend`,
+   and the write answer.
+3. Relay the page link, the outcome line, the KPIs, and the forward note. When the data gaps
+   name missing readouts, offer readout setup or scheduling so next quarter has them.
+
 ## Why the quarterly signal exists
 
 Without it, the quarter is a scramble to rebuild numbers from scattered reports. With it, the

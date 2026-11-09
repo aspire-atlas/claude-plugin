@@ -9,6 +9,51 @@ commission lines it hands to the ledger, and the affiliate page.
 Read `program.md` first. Its state model, page vocabulary, **4** (connected tools), **5**
 (drafts and sending) and **7** (pages) apply here unchanged.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Affiliate manager (codes, sales, and commission in a program)](#affiliate-manager-codes-sales-and-commission-in-a-program)
+- [What the agent does](#what-the-agent-does)
+- [Modes](#modes)
+- [Inputs](#inputs)
+- [Who is an affiliate here](#who-is-an-affiliate-here)
+- [Codes](#codes)
+- [The sales report](#the-sales-report)
+- [Sales and posts timeline](#sales-and-posts-timeline)
+- [Recommendations](#recommendations)
+- [Retiring codes](#retiring-codes)
+- [The questions (main thread)](#the-questions-main-thread)
+- [Main thread steps](#main-thread-steps)
+- [The packet](#the-packet)
+- [Records written](#records-written)
+- [Commission lines for the ledger](#commission-lines-for-the-ledger)
+- [The page](#the-page)
+- [Sample mode](#sample-mode)
+- [What the affiliate manager never does](#what-the-affiliate-manager-never-does)
+
+## Affiliate manager (codes, sales, and commission in a program)
+
+Trigger: "set up codes", "create discount codes for the creators", "affiliate report", "report
+sales and commission", "how are the affiliate codes doing", "who's driving sales", "what do we
+owe in commission", "retire the dead codes", an attached store or platform export, or
+the **Program manager** dispatch's "Set up codes" or "Report sales and commission". Requires a
+saved program (**Program setup**) with affiliate terms or a hybrid deal. Before step 1, read
+this file (**Main thread steps**, **The questions (main thread)**) and follow
+it.
+
+The affiliate manager is interactive only. Never schedule it; if `AskUserQuestion` is
+unavailable, say in one line that codes and commission need a person to confirm them, and stop.
+
+Agent `atlas-affiliate-manager`, modes `codes` and `report`, passes `propose` then `record` with
+the `affiliate-packet`. Inputs: tool prefix, `profile_id`, `profile_slug`, program slug, handles
+and networks, `recipient`, `connections`, `mode`, `pass`, the A answers; end with the
+decision-audit line. A1, A4 and A8 confirm writes; A2 and A9 the store; A3 the mailbox; Y (one per
+your-call item) first. Ask them exactly as worded there, at most four per call
+(**Guardrails**, Pickers). Pass `ledger-lines` to `atlas-program-ledger`; deal changes go to
+`atlas-creator-negotiation` (`mode: change`). Sending follows **Influencer program**, Drafts.
+
 ## What the agent does
 
 The job: every affiliate and hybrid creator has one working code, and the team knows who is

@@ -5,6 +5,43 @@ it (audience, best and weakest posts, engagement, sentiment, brand safety, partn
 peers, next steps). Use it for a portfolio or profile view of a single creator. Everywhere else
 a creator is shown, the compact card in `creator-card.md` stays the only layout.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Creator profile (full page for one creator)](#creator-profile-full-page-for-one-creator)
+- [When it renders](#when-it-renders)
+- [Page layout](#page-layout)
+- [Data behind each section](#data-behind-each-section)
+- [Images](#images)
+- [Style block](#style-block)
+- [Page template](#page-template)
+- [Rules](#rules)
+
+## Creator profile (full page for one creator)
+
+Trigger when the user asks for one creator's full profile, portfolio, or deep dive, or what a
+named creator would cost ("full profile for @handle", "show me @handle's portfolio"). Requires
+a brand profile. The page is described in this file, and its fees come
+from the **Fee calculator**.
+
+1. Read the target: one network and one handle with the `@` stripped. If the network is
+   missing, ask with `AskUserQuestion` (Instagram / TikTok). Only those two are searchable in
+   Atlas today; for YouTube, say so and offer the other two. A handle that is one of the
+   profile's own linked handles is an account review (Phase 6, mode `own`), not a profile.
+2. Naming the handle **is** the approval for fetching it from Atlas when the held data is
+   missing or over a day old, as in Phase 6; neither the skill nor the agent asks again.
+3. Launch the `atlas-creator-profile` subagent with the tool prefix, `profile_id`, `profile_slug`, the
+   network and handle, any comparison accounts the user named, `recipient` (**Reading the
+   ask**), and a note that the user approved the fetch. It writes nothing to Atlas, so it needs no write confirmation.
+4. Show the creator card inline from the agent's `creator-cards` block, then the page link,
+   then the agent's summary bullets and fee line. Never repeat the card's numbers in text.
+5. If the agent reports a brand account, say so and offer an account review (Phase 6, mode
+   `handle`). If it reports the handle could not be resolved, relay what was tried.
+6. When the fees used the Aspire recommended rates, make the fee calculator offer from **Fee
+   calculator**, Offers, after the reply.
+
 ## When it renders
 
 | Trigger | Built by | Surface |

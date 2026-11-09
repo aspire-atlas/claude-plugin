@@ -5,6 +5,54 @@ Holds the setup interview, getting the list, the per-run questions, the checks, 
 recommendation rule, the feedback loop that saves what the team says about each creator, the
 state written to Atlas, and the page.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Creator vetting (approve, maybe, or reject a list of creators)](#creator-vetting-approve-maybe-or-reject-a-list-of-creators)
+- [Why the vetting agent exists](#why-the-vetting-agent-exists)
+- [Setup: define what fit means, once, for everyone](#setup-define-what-fit-means-once-for-everyone)
+- [Getting the list](#getting-the-list)
+- [Per-run questions](#per-run-questions)
+- [Main thread: the run](#main-thread-the-run)
+- [The checks](#the-checks)
+- [The recommendation](#the-recommendation)
+- [The feedback loop](#the-feedback-loop)
+- [State written to Atlas](#state-written-to-atlas)
+- [The page](#the-page)
+- [Creator-ads lanes (CAS campaigns)](#creator-ads-lanes-cas-campaigns)
+- [Atlas quirks that apply here](#atlas-quirks-that-apply-here)
+
+## Creator vetting (approve, maybe, or reject a list of creators)
+
+Trigger when the user has a list of creators to decide on: a CSV export from Aspire, pasted
+handles, or "the creators in our Aspire program" ("vet these creators", "which of these should we
+approve", "screen these applicants"). Requires a brand profile. Interactive only: never schedule
+it; without `AskUserQuestion`, say vetting needs a person to supply the list and make the call,
+and stop. One creator in depth is **Creator profile**; new creators, **Creator discovery**.
+Before anything, read this file (**Setup**, **Getting the list**,
+**Per-run questions**, **Main thread: the run**, **The feedback loop**) and follow it.
+
+### Setup
+
+V1 to V4, one at a time, one batch confirmation. A campaign's criteria need no setup. Every
+question is asked exactly as worded in the reference, at most four per call (**Guardrails**).
+
+### Run
+
+Get the list (R1; the Aspire app only with a browser tool, the user signs in, read only), check
+what Atlas holds, ask R2 to R4 in one call (R3 approves the fetches, R4 the write), then launch
+`atlas-creator-vetting` with the list, criteria source, approved fetches, R4 answer, and
+`recipient`, in batches of 100. Relay the page, counts, and creator cards; offer the shortlist add.
+
+### Feedback: save the team's call on each creator
+
+Every run ends with F1 to F3 (the agent's or yours, before anything else). F1 confirms its own
+write; notes are shown worded before saving. Supersedes and retractions are the main thread's,
+one Destructive tools confirmation each. Feedback outside a run: "Save this about @handle for
+future vetting and discovery?"
+
 ## Why the vetting agent exists
 
 Creator discovery finds creators. Vetting starts from a list the team already has: applicants

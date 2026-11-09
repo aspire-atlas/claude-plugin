@@ -5,6 +5,42 @@ dispatch table, gate packets and flows, and its **1d** maps every part of the ca
 its file. A section named here without a file, such as **Gate 2** or **1e**, is in the file
 that map gives.
 
+## Contents
+
+- [Selected Creators](#selected-creators)
+  - [Steps](#steps)
+  - [What we're waiting on](#what-were-waiting-on)
+  - [Round totals](#round-totals)
+  - [The toolbar](#the-toolbar)
+  - [The card](#the-card)
+  - [Details to add](#details-to-add)
+  - [Creator records](#creator-records)
+  - [Concept and variant plan](#concept-and-variant-plan)
+  - [Cut tiles](#cut-tiles)
+  - [Status updates](#status-updates)
+  - [Contract and rates](#contract-and-rates)
+  - [Shipping](#shipping)
+  - [Brief and content](#brief-and-content)
+- [Content Review](#content-review)
+  - [Whose cuts are here](#whose-cuts-are-here)
+  - [Statuses](#statuses)
+  - [The queue](#the-queue)
+  - [Adding a cut](#adding-a-cut)
+  - [What the client sees](#what-the-client-sees)
+  - [A done round](#a-done-round)
+  - [The review panel](#the-review-panel)
+  - [The player](#the-player)
+  - [Comments on a cut](#comments-on-a-cut)
+  - [Drawing on the frame](#drawing-on-the-frame)
+  - [Agency only comments on a cut](#agency-only-comments-on-a-cut)
+  - [Sharing a cut](#sharing-a-cut)
+  - [A linked cut in the panel](#a-linked-cut-in-the-panel)
+  - [The status block](#the-status-block)
+  - [Versions](#versions)
+  - [Compare](#compare)
+  - [The status flow](#the-status-flow)
+  - [The brief check](#the-brief-check)
+
 ### Selected Creators
 
 Everyone under contract for the round in view, one card each, with the step they are on, what's

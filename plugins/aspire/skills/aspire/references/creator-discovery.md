@@ -4,6 +4,59 @@ Shared by the `atlas-creator-discovery` agent and the **Creator discovery** sect
 Holds the setup interview, the campaign calibrations, the tier model, scoring, the pool state
 machine, the page structure, delivery, and the rules for scheduled (unattended) runs.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Creator discovery (standing creator shortlist per campaign)](#creator-discovery-standing-creator-shortlist-per-campaign)
+- [Why the discovery agent exists](#why-the-discovery-agent-exists)
+- [Setup: the interview is generated, not fixed](#setup-the-interview-is-generated-not-fixed)
+- [The pool](#the-pool)
+- [Tiers: where candidates come from, and in what order](#tiers-where-candidates-come-from-and-in-what-order)
+- [Scoring](#scoring)
+- [State written to Atlas](#state-written-to-atlas)
+- [The living page](#the-living-page)
+- [Decisions](#decisions)
+- [Delivery](#delivery)
+- [Jobs and task names](#jobs-and-task-names)
+- [Main thread: setup, run, and schedule](#main-thread-setup-run-and-schedule)
+- [Scheduled (unattended) runs](#scheduled-unattended-runs)
+- [Creator-ads mode (CAS campaigns)](#creator-ads-mode-cas-campaigns)
+- [Atlas quirks that apply here](#atlas-quirks-that-apply-here)
+
+## Creator discovery (standing creator shortlist per campaign)
+
+Trigger when the user asks to find creators for a campaign, refill or review a shortlist, ask who
+to add, or schedule any of that. Requires a brand profile; linked channels help but are not
+required. Keeps a pool of undecided candidates at a saved target (default 50) for one named
+campaign; it is not the creator brief. Before anything, read this file
+(**Setup**, **Decisions**, **Jobs and task names**, **Main thread: setup, run, and schedule**) and
+follow it.
+
+### Setup
+
+Skip to **Run** when the five `campaign:{slug}-*` keys exist; otherwise S1, 3 to 5 generated
+questions, S7 to S9, then one batch confirmation before writing. S8 and S9 are the standing
+approvals to deliver and to run discovery unattended.
+
+### Run
+
+Ask the run question, then launch `atlas-creator-discovery` (run mode `interactive`, `job`
+`discover` or `view`, campaign slug, `recipient`). Relay the summary, page link, numbered range,
+and the top six new candidates as creator cards. Recording decisions stays in the main thread:
+one confirmation naming the rejected handles, then `append_insights`. Ask every question exactly
+as worded in the reference, at most four per call (**Guardrails**); the batch and decision
+confirmations confirm writes, S8 sends.
+
+### Schedule (two schedules, one pass)
+
+Never for a CAS campaign (`type: creator-ads`); offer the CAS weekly call instead. Otherwise offer
+"Set up the recurring discovery now?" and follow **Readouts**, Schedule. This is the only flow
+that may start discovery work on a schedule, and only under the `campaign:{slug}-cadence` record
+the user saved. Unattended runs never ask questions and never record a verdict; with setup
+incomplete they publish a "setup needed" card and stop.
+
 ## Why the discovery agent exists
 
 The creator brief plans one week and sources creators for it. Creator discovery is the layer under

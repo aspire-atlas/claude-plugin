@@ -6,6 +6,46 @@ attention list, the snapshot it saves, the page, delivery, and the unattended ru
 `program.md` first. Its state model, page vocabulary, **3** (the dispatch), **4** (connected
 tools), **7** (pages), **8** (schedules) and **9** (unattended runs) apply here as written.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Program dashboard (how the whole program is doing)](#program-dashboard-how-the-whole-program-is-doing)
+- [Why the dashboard exists](#why-the-dashboard-exists)
+- [Modes](#modes)
+- [Approvals (asked by the main thread)](#approvals-asked-by-the-main-thread)
+- [What it reads](#what-it-reads)
+- [The numbers](#the-numbers)
+- [The snapshot](#the-snapshot)
+- [The page](#the-page)
+- [Delivery](#delivery)
+- [Unattended runs](#unattended-runs)
+- [Sample mode](#sample-mode)
+- [What the dashboard never does](#what-the-dashboard-never-does)
+
+## Program dashboard (how the whole program is doing)
+
+Trigger: "program dashboard", "how is {program} doing", "show the dashboard", "update the
+dashboard", "are we on track for our goals", "program overview"; also the **Program manager**
+dispatch's "Update the dashboard" and "Show the dashboard" in its Next picker. Requires a saved
+program (**Influencer program**, Program setup). The quarter's story stays in **Quarterly
+signal**. It reads and shows; it never acts.
+
+Before step 1, read this file (**Approvals** and **Running the dashboard
+(main thread)**) and follow it. Ask B1 (write) and B2 (delivery) before launching
+`atlas-program-dashboard` with `run: interactive` (inputs: tool prefix, `profile_id`,
+`profile_slug`, handles and networks, program slug, `connections`, `recipient`), exactly as
+worded there (**Guardrails**, Pickers); B3 creates the weekly task. Spend and goals are for
+Editors only.
+
+### Schedule
+
+The task "Atlas program dashboard: {brand} - {program}" (weekly) launches
+`atlas-program-dashboard` with `run: unattended`, created only after one interactive publish
+(B3); its prompt is in the reference. P9's "Weekly dashboard" is the standing approval for the
+snapshot, and P8 for the post. Scheduled runs never ask, decide, draft, or send.
+
 ## Why the dashboard exists
 
 Every program agent owns one part of the work and one page. The question a program owner and

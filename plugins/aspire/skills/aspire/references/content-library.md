@@ -20,6 +20,51 @@ the tagging and scoring of other flows rather than defining its own:
 | Topics creators talk about | `market-signal.md`, the `market-signal:topics` record, when saved |
 | Rights records | `program.md`, the `rights` record type, written by `atlas-content-sourcing` |
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Content library (creator content about the brand, and the rights to use it)](#content-library-creator-content-about-the-brand-and-the-rights-to-use-it)
+- [Scope: one program, or the whole brand](#scope-one-program-or-the-whole-brand)
+- [Modes](#modes)
+- [Approvals (main thread)](#approvals-main-thread)
+- [Running the library (main thread)](#running-the-library-main-thread)
+- [Collecting assets](#collecting-assets)
+- [Tagging each asset](#tagging-each-asset)
+- [Rights](#rights)
+- [Expiring rights](#expiring-rights)
+- [Worth requesting](#worth-requesting)
+- [Query mode](#query-mode)
+- [The library page](#the-library-page)
+- [Asset findings](#asset-findings)
+- [Delivery](#delivery)
+- [Unattended runs](#unattended-runs)
+- [What the library never does](#what-the-library-never-does)
+
+## Content library (creator content about the brand, and the rights to use it)
+
+Trigger: "content library", "what creator content do we have", "find unboxing videos of
+{product}", "what's cleared for ads", "what can we use in ads", "which rights expire soon",
+"update the content library". Requires a brand profile with a linked Instagram or TikTok
+channel; a program is optional (without one, it covers the whole brand).
+
+Before step 1, read this file (**Approvals (main thread)** and **Running
+the library (main thread)**) and follow it. Launch `atlas-content-library` with `mode` `build`,
+`query`, or `expiring` (inputs: tool prefix, `profile_id`, `profile_slug`, handles and networks,
+program slug or `all`, `connections`, `recipient`, L1 to L3, the question for `query`). L1 picks
+the content, L2 confirms the write, L3 the alert; ask them exactly as worded there
+(**Guardrails**, Pickers). Worth-requesting rows and rights to renew hand off to **Content
+sourcing**; the library never drafts a request.
+
+### Schedule
+
+Steps: the reference's Schedule. "Atlas program library refresh: {brand} - {program}" (weekly;
+P9 "Weekly content library refresh" is the standing approval) and, for the whole brand, "Atlas
+content library refresh: {brand}" (`library:cadence` is the standing approval), both `mode:
+build`, `run: unattended`, scheduled only after one interactive build. Unattended runs never
+ask, never write rights, and post only to the saved routing.
+
 ## Scope: one program, or the whole brand
 
 The program is optional.

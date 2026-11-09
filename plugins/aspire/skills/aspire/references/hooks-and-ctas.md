@@ -6,6 +6,16 @@ rounds. Used by the **CAS campaign** section of SKILL.md (`cas-campaign.md`), an
 (`creator-brief.md`, **Creator-ads mode**). There is no agent for this. The hook review runs
 in the main thread, inside the CAS campaign section.
 
+## Contents
+
+- [Where recommendations come from](#where-recommendations-come-from)
+- [Hook patterns](#hook-patterns)
+- [Writing the hooks (3 per lane)](#writing-the-hooks-3-per-lane)
+- [Writing the CTAs (2 per lane)](#writing-the-ctas-2-per-lane)
+- [Every recommendation says why](#every-recommendation-says-why)
+- [Limits](#limits)
+- [The hook review (between rounds)](#the-hook-review-between-rounds)
+
 ## Where recommendations come from
 
 Read in this order. An earlier source outranks a later one when they disagree.

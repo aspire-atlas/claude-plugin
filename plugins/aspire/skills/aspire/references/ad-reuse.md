@@ -5,6 +5,65 @@ optional **Ad reuse** check. Serves the `performance` and `creative` lenses
 (`recipient-lens.md`): Performance decides what to license and put spend behind; Creative
 needs exactly which moments to cut, at what length, for which placement.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Ad reuse (hooks and cut lists)](#ad-reuse-hooks-and-cut-lists)
+- [Partnership content (creator posts the brand can run as partnership ads)](#partnership-content-creator-posts-the-brand-can-run-as-partnership-ads)
+- [Candidate pool (ad reuse agent)](#candidate-pool-ad-reuse-agent)
+- [What to read per candidate](#what-to-read-per-candidate)
+- [Hook score (out of 100)](#hook-score-out-of-100)
+- [Cut list](#cut-list)
+- [Output for each lens](#output-for-each-lens)
+- [Page (ad reuse agent)](#page-ad-reuse-agent)
+- [Findings (ad reuse agent)](#findings-ad-reuse-agent)
+- [Account map record](#account-map-record)
+- [Ad reuse check (content review)](#ad-reuse-check-content-review)
+- [Partnership content (main thread)](#partnership-content-main-thread)
+
+## Ad reuse (hooks and cut lists)
+
+Trigger when the user asks for the best hooks, which creator content to reuse or license as
+ads, or clips and a cut list for editors ("pull the best hooks from last month's creator
+posts", "send creative the good stuff to cut down"). Requires a brand profile with a linked
+channel. Serves the `performance` and `creative` lenses, which hand off to each other, so
+both are passed by default. Detail lives in this file. For one post, use
+**Content review**, whose ad reuse check covers the same ground.
+
+1. Ask once with `AskUserQuestion`, skipping what the user already said, in the same call as
+   the **Reading the ask** confirmation: the window (last 30 days (Recommended), last 90 days,
+   or typed), and the sources ("The brand's and creators' posts (Recommended)", "Only our own
+   posts", "Only creators' posts about us"). Add the write confirmation as the last question:
+   "Save the ranked candidates to Atlas?" (Save (Recommended) / Page only).
+2. Launch `atlas-ad-reuse` with the tool prefix, `profile_id`, `profile_slug`,
+   the linked handles and networks, `reuse_scope`, the window, any placements named,
+   `recipient`, a digest of the brand's calibrations (competitors, red lines, partners, and the
+   `ad-reuse:account-map` record when saved), and whether the user approved the write. It reads
+   only what Atlas holds, and returns the found and briefed paths as two lists.
+   When its result packet carries an `approve-account-map` proposal (it returns one only when the
+   user chose Save in step 1; never ask it after Page only), ask once with
+   `AskUserQuestion` whether to save it (Save the account map (Recommended) / Not now). On yes,
+   write it per this file, **Account map record**: `append_calibration` when none
+   is saved, or `supersede_calibration` with the saved record's `ifVersion` to add new accounts.
+3. Relay the page link, the top patterns, the top candidates as post cards per **Visual
+   output**, and the rights line. Say plainly that usage rights for creator posts are not held
+   in Atlas unless a brief or record says otherwise.
+
+## Partnership content (creator posts the brand can run as partnership ads)
+
+Trigger when the user asks which creator posts the brand can run as partnership ads, which posts
+Meta recommends, whether a creator gave permission, what is ad ready, or pastes a partnership ad
+code to find its post ("what can we boost from creators", "which tagged posts can we run as
+ads"). It runs in the main thread with no agent: a read of `search_partnership_content` (and
+`search_posts` with `partnership`) on the brand's profile, plus an optional boost. Before step 1,
+read this file (**Partnership content (main thread)**) and `references/atlas-tools.md`
+(**Partnership content**) and follow them. Pass `asProfileId` explicitly, never show ids, and
+never put an ad code on a page, delivery, finding, or creator message. The boost question is the
+write confirmation, asked exactly as worded; unattended runs never boost. The boost goes through
+the Meta Ads connector, so it also follows **Meta Ads**.
+
 ## Candidate pool (ad reuse agent)
 
 - **Window:** the one the user named ("last month"), default the last 30 days.

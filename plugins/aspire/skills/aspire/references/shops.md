@@ -18,6 +18,47 @@ this flow leans on:
 | The reader | `recipient-lens.md` |
 | The page theme | `theme.md`, **Applying the theme** |
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Shops (Instagram Shop and TikTok Shop setup and management)](#shops-instagram-shop-and-tiktok-shop-setup-and-management)
+- [Why the shops agent exists](#why-the-shops-agent-exists)
+- [Scope](#scope)
+- [Inputs](#inputs)
+- [The questions (main thread)](#the-questions-main-thread)
+- [Platform guide](#platform-guide)
+- [Checking current rules](#checking-current-rules)
+- [What the plan reads](#what-the-plan-reads)
+- [The readiness checklist](#the-readiness-checklist)
+- [The step order](#the-step-order)
+- [Catalog and content plan](#catalog-and-content-plan)
+- [The creator-to-shop plan](#the-creator-to-shop-plan)
+- [The management cadence](#the-management-cadence)
+- [Risks and policy watch-outs](#risks-and-policy-watch-outs)
+- [Your call](#your-call)
+- [The plan packet](#the-plan-packet)
+- [Records written](#records-written)
+- [The shops page](#the-shops-page)
+- [Unattended](#unattended)
+- [What the shops agent never does](#what-the-shops-agent-never-does)
+
+## Shops (Instagram Shop and TikTok Shop setup and management)
+
+Trigger when the user wants to set up, open, or run an Instagram Shop or a TikTok Shop, sell
+through Instagram or TikTok, or work out which posts and creators should drive shop sales ("set
+up Instagram Shop", "open a TikTok Shop", "sell on TikTok", "should we open a TikTok Shop", "tag
+products on Instagram", "TikTok Shop affiliates", "manage our TikTok Shop"). Requires a brand
+profile; a linked channel gives the plan posts and lets it save. Before step 1, read
+this file (**The questions (main thread)**, **Your call**) and follow it.
+
+The plan is guidance: Claude never touches Commerce Manager, Seller Center, a shop, or a store,
+and never asks for business documents, tax ids, or payout details. Interactive only: never
+schedule it. Launch `atlas-shops` in `pass: propose`, then `pass: record`, with `connections`.
+Ask W1 and W2, then W3 (four per call) and W4 exactly as worded; W4 "Save the plan" is the write
+confirmation. W5 offers hand-offs, each through its own section.
+
 ## Why the shops agent exists
 
 Opening a shop on Instagram or TikTok is a run of small steps in tools Atlas cannot see

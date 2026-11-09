@@ -29,6 +29,16 @@ approved example sets, by question code. **The flow's own reference wins**
 wherever it sets a rule: its layout, what its page leaves out, who sees money, and the form its
 evidence takes. This skill fills in what the reference leaves open.
 
+## Contents
+
+- [1. The skeleton](#1-the-skeleton)
+- [2. Reader rules](#2-reader-rules)
+- [3. Evidence standards](#3-evidence-standards)
+- [4. Build loop](#4-build-loop)
+- [5. Markup and the scripted checks (R1, R2, R6, R11)](#5-markup-and-the-scripted-checks-r1-r2-r6-r11)
+- [6. How each check is judged](#6-how-each-check-is-judged)
+- [7. The page check in the result](#7-the-page-check-in-the-result)
+
 ## 1. The skeleton
 
 | # | Part | What it holds | Check |

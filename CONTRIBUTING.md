@@ -99,6 +99,7 @@ It sets `main` as default, requires PRs plus the `validate` and `gate` checks on
 - Never show internal ids, slugs, or tool names to the user. Handles (`@name`) are the anchor.
 - Re-verify the tool surface against the live server before each official release and update `skills/aspire/references/atlas-tools.md` and `skills/org-admin/references/org-admin-tools.md`. Run `bash scripts/check-tool-contract.sh --golden <path to the server's tools-list.golden.json>`: it fails when `contract/atlas-mcp-tools.json` has drifted from the server. Refresh it with `--update` and fix what `bash scripts/check-tool-contract.sh` then flags. CI runs the offline check on every push.
 - No secrets, customer names, or internal URLs in any file. CI scans for credential patterns; treat a hit as a blocker.
+- `skills/aspire/SKILL.md` is a router: it connects, settles the organization and profile, and sends each request to one flow. A flow's steps live in its own file under `skills/aspire/references/` (the reference its agent shares, or a new one), never in `SKILL.md`. Add a row to the router's **Sections** index for a new flow, keep `SKILL.md` under 500 lines, and give any skill file over 100 lines a `## Contents` section.
 
 ## Internal mirror (Aspire staff)
 

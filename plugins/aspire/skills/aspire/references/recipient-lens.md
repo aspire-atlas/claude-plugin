@@ -3,6 +3,14 @@
 Shared by every agent and by **Reading the ask** in SKILL.md. Holds the lens shape, the team
 catalog, how the main thread infers and confirms a lens, and how an agent renders for one.
 
+## Contents
+
+- [Why lenses exist](#why-lenses-exist)
+- [The lens](#the-lens)
+- [Team catalog](#team-catalog)
+- [Inferring and confirming (main thread)](#inferring-and-confirming-main-thread)
+- [Rendering for a lens (every agent)](#rendering-for-a-lens-every-agent)
+
 ## Why lenses exist
 
 Every request has two users. The **requester** types the ask. The **recipient** is the person

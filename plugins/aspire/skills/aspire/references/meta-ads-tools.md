@@ -13,6 +13,47 @@ brand's, and its write tools change live ads that spend real money. Every rule b
 one of those two reasons. Atlas (`atlas-tools.md`) stays the first source for everything it
 holds; Meta Ads is an optional extra and no flow ever waits on it.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Meta Ads (optional connector: Meta's own ads tools)](#meta-ads-optional-connector-metas-own-ads-tools)
+- [Detection](#detection)
+- [Routing](#routing)
+- [Brand scope (before any Meta call)](#brand-scope-before-any-meta-call)
+- [Privacy](#privacy)
+- [Writes](#writes)
+- [Reports (optional enrichment)](#reports-optional-enrichment)
+- [Tools](#tools)
+
+## Meta Ads (optional connector: Meta's own ads tools)
+
+Trigger when an ask needs something only Meta's ads tools do: industry or auction benchmarks,
+anomaly signals, the opportunity score, A/B and lift tests, catalogs, pixels and datasets,
+delivery errors, Meta help articles, ad previews, or creating, editing, or turning on campaigns,
+ad sets, and ads. It runs in the main thread with no agent. Before the first Meta call, read
+this file and follow it. In short:
+
+- **Detect, never block.** Resolve the connector per **Detection** there. When it is missing or
+  its sign in has expired and the ask needs it, say the one "connect Meta Ads" line and carry on
+  with what Atlas can do. Never ask about it, render a card for it, or hold an Atlas flow on it.
+- **Route Atlas first.** Paid results tied to creators and posts (`search_ads`,
+  `list_ad_accounts`) and partnership ads (`search_partnership_content`) stay on Atlas. Meta Ads is
+  for what Atlas does not hold (**Routing** there). Never add Meta figures to Atlas figures.
+- **Brand scope.** Before any Meta call, get the Profile's linked ad accounts from Atlas
+  (`list_ad_accounts` with `asProfileId`, only the rows linked to this Profile, not the ones it
+  merely reaches), call Meta only on those, and skip any account whose
+  `is_ads_mcp_enabled` is false. Never list or mention the other accounts Meta returns.
+- **Writes.** Meta creates campaigns, ad sets, and ads paused. Every Meta write is confirmed with
+  `AskUserQuestion`; `ads_activate_entity`, every delete, and every budget or bid change each get
+  their own confirmation, worded as in **Writes** there; nothing is turned on except through
+  `ads_activate_entity`. No agent and no unattended run ever calls
+  a Meta write tool.
+- **Privacy.** `advertiser_request` carries only the user's own request, never brand memory,
+  creator data, or other Atlas data. Never show IP addresses or fingerprints from an activity
+  log's `extra_data`.
+
 ## Detection
 
 Resolve once, the first time a flow could use Meta Ads, and reuse the result for the run.
