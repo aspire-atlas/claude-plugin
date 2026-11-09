@@ -143,8 +143,10 @@ else
     [ -z "$hexes" ] || err "$BL's block styles write colors ($hexes); take them from the tokens"
     # The default tokens are the Atlas Starter Guide's palette: every token both set in light mode
     # (their first :root rule) has the same value in each.
-    light() { awk '/^:root\{/{f=1} f{print} f&&/\}/{exit}' | tr ';{}' '\n\n\n' | sed -nE 's/^[[:space:]]*(--[a-z0-9-]+):(.*)$/\1=\2/p' | sort; }
-    drift=$(join -t= <(light <<< "$style") <(light < "$R/first-run.md") | awk -F= '$2!=$3{print $1" "$2" vs "$3}' | tr '\n' ',' || true)
+    # join needs both lists sorted on the token name alone, in one collation: a whole-line sort puts
+    # --brand-ink before --brand ('-' < '='), which older joins only warn about and newer ones reject.
+    light() { awk '/^:root\{/{f=1} f{print} f&&/\}/{exit}' | tr ';{}' '\n\n\n' | sed -nE 's/^[[:space:]]*(--[a-z0-9-]+):(.*)$/\1=\2/p' | LC_ALL=C sort -t= -k1,1; }
+    drift=$(LC_ALL=C join -t= <(light <<< "$style") <(light < "$R/first-run.md") | awk -F= '$2!=$3{print $1" "$2" vs "$3}' | tr '\n' ',' || true)
     [ -z "$drift" ] || err "$BL's default tokens differ from first-run.md's palette: $drift"
     ! LC_ALL=C grep -q '[^ -~]' "$BL" || err "$BL holds non-ASCII text; pages stay ASCII"
   fi
