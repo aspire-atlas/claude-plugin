@@ -539,7 +539,7 @@ One page per program, the affiliate page, republished to the link in the `page` 
 key `affiliate`. Title "{Brand} {Program}: Affiliate". Load `artifact-design` and
 `artifact-capabilities` before building and `dataviz` for the charts; apply `theme:brand` per
 `theme.md`, **Applying the theme**; draw creators with the creator card (`creator-card.md`, page
-profile, no actions); render for `recipient`.
+profile); render for `recipient`.
 
 **Who sees what.** The page is for the brand's team, never a creator. The sales goal, the
 budget, and the commission and discount maximums live only in page data under `team`,

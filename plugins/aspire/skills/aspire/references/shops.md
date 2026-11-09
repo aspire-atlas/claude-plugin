@@ -134,7 +134,8 @@ Rules:
   markets, fulfillment, owner, commission), `connections`, and `recipient`, ending with the
   decision-audit line. No confirmation is needed: `propose` writes nothing. Then relay the page
   link, the headline, one readiness line per shop, the first three steps, and the top creators
-  as creator cards from the agent's `creator-cards` block, and ask W3 and W4. After W4, launch
+  by name, in text (keep the agent's `creator-cards` block; cards only on request, per
+  `creator-card.md`, **Cards in chat**), and ask W3 and W4. After W4, launch
   again with `pass: record`, the `shops-packet`, and the answers, relay what was written, and
   offer W5 once. W5's hand-offs go to **Creator discovery**, **Content sourcing**, **Ad reuse**,
   **PPA pitch**, or **Influencer program**.
@@ -462,7 +463,7 @@ One page per brand, title "{Brand} Shops Plan", republished to the link in the `
 with key `shops` (read it with the Artifact tool first). Without one, publish a new page and
 republish to the same file path within the session. Load `artifact-design` before building and
 `dataviz` for any chart; apply `theme:brand` per `theme.md`, **Applying the theme**; draw creators
-with the creator card (`creator-card.md`, page profile, no actions); embed post images per
+with the creator card (`creator-card.md`, page profile); embed post images per
 `creator-card.md`, **Images**; render for `recipient`. The page declares no page data
 capability. In `propose`, the page carries a "Draft plan" chip; `record` replaces it with the
 saved or page-only state.

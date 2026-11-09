@@ -35,8 +35,11 @@ from the **Fee calculator**.
 3. Launch the `atlas-creator-profile` subagent with the tool prefix, `profile_id`, `profile_slug`, the
    network and handle, any comparison accounts the user named, `recipient` (**Reading the
    ask**), and a note that the user approved the fetch. It writes nothing to Atlas, so it needs no write confirmation.
-4. Show the creator card inline from the agent's `creator-cards` block, then the page link,
-   then the agent's summary bullets and fee line. Never repeat the card's numbers in text.
+4. Lead with text: the agent's headline, up to three of its summary bullets, the fee line, the
+   next step, and the page link. Draw no card. Keep the agent's `creator-cards` block: when
+   the user asks to see the card ("show me the card"), the host draws it from `lookup_creators`
+   on that handle, per `creator-card.md`, **Cards in chat**, and the reply adds only what the
+   card cannot show.
 5. If the agent reports a brand account, say so and offer an account review (Phase 6, mode
    `handle`). If it reports the handle could not be resolved, relay what was tried.
 6. When the fees used the Aspire recommended rates, make the fee calculator offer from **Fee
@@ -49,8 +52,9 @@ from the **Fee calculator**.
 | "Full profile for @handle", "creator profile", "portfolio", "deep dive on @handle", "what would @handle cost" | `atlas-creator-profile`, launched from SKILL.md, **Creator profile** | Published page |
 | An account review of a creator, when the user takes up the offer of the full profile | The same agent, on the same handle | Published page |
 
-The profile is a page only. It is too large for an inline widget: in chat, the main thread
-shows the compact card inline (from the agent's `creator-cards` block) and links the page.
+The profile is a page only. In chat, the main thread answers in text and links the page; the
+compact card appears only when the user asks to see it, drawn by the host from
+`lookup_creators` (`creator-card.md`, **Cards in chat**).
 Brand accounts never get a creator profile; they get an account review. The agent writes
 nothing to Atlas: Next steps are recommendations on the page, not saved action items.
 
@@ -66,8 +70,7 @@ The page body is the page header (the theme's `header` rule when a theme is save
 
 1. **Creator card**, full width. Build it exactly as `creator-card.md` describes (fields,
    leave-out rules, badges, tiles, stats, network chips), with its style block, and with two
-   changes: leave out the thumbnails row (Top posts replaces it) and the actions row (pages
-   never carry actions). The profile's style block widens it.
+   changes: leave out the thumbnails row (Top posts replaces it). The profile's style block widens it.
 2. **Summary**
 3. **Profile & audience**
 4. **Top posts**

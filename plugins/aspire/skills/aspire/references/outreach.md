@@ -560,7 +560,7 @@ written to Atlas**). The page is for the brand's team, never for creators. Load
    contacted shows the counts and "too few to rate", never a percent. Auto-replies never count.
 8. **No reply yet**: creators past their tier window since the last note, and creators at No
    reply, with the date of the last note.
-9. **Creators**: creator cards (`creator-card.md`, page mode, no actions), grouped by stage,
+9. **Creators**: creator cards (`creator-card.md`, page mode), grouped by stage,
    with no fit ring unless a vetting or discovery fit score is on record. `{DETAILS}`: type,
    stage, channels, last contact, next follow-up, waiting on, the post the first touch cited,
    and "Your call needed" with the question when one is open.

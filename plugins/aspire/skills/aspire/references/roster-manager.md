@@ -548,7 +548,7 @@ The agent never writes `roster`, `terms`, `deliverable`, `fulfillment`, `affilia
 One page per program, the roster health page, republished to the same link (its `page` finding,
 key `roster`). Title "{Brand} {Program}: Roster Health". Load `artifact-design` and
 `artifact-capabilities` before building and `dataviz` for the charts; apply `theme:brand` per
-`theme.md`; draw creators with the creator card (`creator-card.md`, page mode, no actions);
+`theme.md`; draw creators with the creator card (`creator-card.md`, page mode);
 render for `recipient` (`recipient-lens.md`).
 
 **Who sees what.** The page is for the brand's team, never for creators. Costs in money and the

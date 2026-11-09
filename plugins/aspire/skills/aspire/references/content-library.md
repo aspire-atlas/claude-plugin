@@ -136,8 +136,9 @@ Moved here from the **Content library** section of SKILL.md, which points at it.
 3. Launch `atlas-content-library` with the tool prefix, `profile_id`, `profile_slug`, the
    linked handles and networks, `mode`, the program slug or `all`, L1 to L3, the user's question
    for `query`, `connections`, and `recipient`, ending with the decision-audit line.
-4. Relay the page link, the headline, and the cards from the agent's `visual-data` block per
-   **Visual output**. Say once that rights shown come from the brand's records and agreed deals,
+4. Relay the page link and the headline, and name the top results from the agent's
+   `visual-data` block in text per **Visual output** (the posts are drawn only when the user
+   asks to see them). Say once that rights shown come from the brand's records and agreed deals,
    and that the signed agreement decides paid use.
 5. **Needs the main thread.** Relay any proposal for content sourcing as a line, never as a
    write. The library saves its own page link as a `page` finding under L2.

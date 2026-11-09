@@ -44,7 +44,7 @@ question is asked exactly as worded in the reference, at most four per call (**G
 Get the list (R1; the Aspire app only with a browser tool, the user signs in, read only), check
 what Atlas holds, ask R2 to R4 in one call (R3 approves the fetches, R4 the write), then launch
 `atlas-creator-vetting` with the list, criteria source, approved fetches, R4 answer, and
-`recipient`, in batches of 100. Relay the page, counts, and creator cards; offer the shortlist add.
+`recipient`, in batches of 100. Relay the page and counts in text (cards only on request); offer the shortlist add.
 
 ### Feedback: save the team's call on each creator
 
@@ -181,8 +181,10 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    and networks, the normalized list, the list name, slug and source, the criteria source, the
    approved fetches, the R4 answer, and `recipient`. A list over 100 creators runs in batches of
    100; say how many and launch them one at a time.
-5. Relay the page link, the counts, and the approved creators and top maybes inline as creator
-   cards from the agent's `creator-cards` block, badged with their page numbers. When R2 named a
+5. Answer in text: the counts, up to three points naming the approved creators and top maybes
+   with their page numbers, the next step, and the page link. Keep the agent's `creator-cards`
+   block; the cards appear only when the user asks to see them (`creator-card.md`, **Cards in
+   chat**). When R2 named a
    campaign, offer to add the approved creators to its shortlist per SKILL.md **Creator card
    actions**, "Add @handle on {network} to a campaign shortlist", with one confirmation for the
    batch.
@@ -436,7 +438,7 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
 5. **Up to three insights** (3.4): what shaped the verdicts across the list, each with its
    comparison and a "So:" line.
 6. **Approve**, **Maybe**, **Reject**, **Can't vet**, in that order, each a grid of creator
-   cards (3.7; `creator-card.md`, page mode, no actions) ranked by fit score, numbered from 1
+   cards (3.7; `creator-card.md`, page mode) ranked by fit score, numbered from 1
    across the whole page in the order shown, because those numbers are what the user replies
    with. When the
    criteria name audiences, the Approve grid is grouped by audience with a subtotal per group;

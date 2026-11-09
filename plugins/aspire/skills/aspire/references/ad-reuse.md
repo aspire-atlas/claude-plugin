@@ -47,8 +47,8 @@ both are passed by default. Detail lives in this file. For one post, use
    `AskUserQuestion` whether to save it (Save the account map (Recommended) / Not now). On yes,
    write it per this file, **Account map record**: `append_calibration` when none
    is saved, or `supersede_calibration` with the saved record's `ifVersion` to add new accounts.
-3. Relay the page link, the top patterns, the top candidates as post cards per **Visual
-   output**, and the rights line. Say plainly that usage rights for creator posts are not held
+3. Relay the page link, the top patterns, the top candidates by name in text per **Visual
+   output** (the posts are drawn only when the user asks to see them), and the rights line. Say plainly that usage rights for creator posts are not held
    in Atlas unless a brief or record says otherwise.
 
 ## Partnership content (creator posts the brand can run as partnership ads)
