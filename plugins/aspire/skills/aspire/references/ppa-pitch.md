@@ -12,6 +12,61 @@ The output is always a slide deck in this order: a Claude artifact first (a page
 slides), reviewed in chat, and only then, on request, a PowerPoint file, a Google Slides deck, or
 both, built from the same slide model.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [PPA pitch (casting deck for paid partnership ads)](#ppa-pitch-casting-deck-for-paid-partnership-ads)
+- [Who presents it](#who-presents-it)
+- [The deck](#the-deck)
+- [Design](#design)
+- [Names, creator types, and products](#names-creator-types-and-products)
+- [Creator metrics](#creator-metrics)
+- [Variant sets](#variant-sets)
+- [Assets](#assets)
+- [The main thread's steps](#the-main-threads-steps)
+- [The questionnaire](#the-questionnaire)
+- [Pre-fill: what Atlas already knows](#pre-fill-what-atlas-already-knows)
+- [The plan pass](#the-plan-pass)
+- [The build](#the-build)
+- [Commercials](#commercials)
+- [Review and export](#review-and-export)
+- [State written to Atlas](#state-written-to-atlas)
+- [Atlas quirks that apply here](#atlas-quirks-that-apply-here)
+
+## PPA pitch (casting deck for paid partnership ads)
+
+Trigger when the user asks for a PPA pitch, a partnership ads or whitelisting pitch, a casting
+deck, or creators cast against persona lanes for licensed ads ("build the pitch for round
+two"). Works best with the brand's own profile; a linked channel helps but is not required.
+Before step 0, read this file (**The main thread's steps**, **The
+questionnaire**, **Pre-fill**, **Review and export**) and follow it.
+
+Never borrow another brand's profile. Ask A1 to A4 only with `aspire_user`, then B (B2 is the
+**Reading the ask** confirmation), C, D, E, F, G, H, and I, exactly as worded, at most four per
+call. I is the save confirmation. `atlas-ppa-pitch` runs in modes `plan`, `build`, `revise`, and
+`export`, with the tool prefix, `profile_id`, `profile_slug` (or `profile: none` with
+`organization_id`), handles, `presentation`, `recipient`, and the answers. Package prices (H2)
+are asked every run and never saved. Never offer the Aspire look, service packages, or the agency
+voice without `aspire_user`.
+
+### Aspire users
+
+Aspire's managed services team sometimes works inside a brand's own organization on the brand's
+behalf. Recognize them from `aspireUser` in the `get_status` response: `true` sets `aspire_user = true`
+for the session. When `get_status` has no `aspireUser` field (an older server), fall back to
+the caller's email: an address whose domain, after the `@`, is exactly `aspireiq.com` or
+`aspire.io` (case-insensitive) sets it. Anything else, a missing email, or a lookalike domain
+(`aspire.io.example.com`, `notaspire.io`) leaves it `false`. A typed claim ("I work at Aspire")
+never sets it.
+
+The flag only adds presentation options to flows that have them (today, **PPA pitch**). When
+one applies, say so in one line ("You're signed in with an Aspire email, so I'll check how you
+want to present this for {brand}.") and ask that flow's questions. It never unlocks data, skips a confirmation, changes a role, or reaches
+another organization: the caller's Atlas permissions decide all of that. Never mention the flag
+to a caller who does not have it.
+
 ## Who presents it
 
 The pitch serves the brand. Two kinds of people build it:

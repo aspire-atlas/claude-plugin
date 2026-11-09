@@ -16,6 +16,20 @@ No agent ever launches another agent.
 The **Orchestrator** section and `references/orchestrator.md` are a different thing: the Next
 actions page and its hourly run. That run is one more caller of this contract.
 
+## Contents
+
+- [1. Routing (every request, in this order)](#1-routing-every-request-in-this-order)
+- [2. The setup reply (one picker round)](#2-the-setup-reply-one-picker-round)
+- [3. Question codes](#3-question-codes)
+- [4. Shortcuts](#4-shortcuts)
+- [5. The launch block](#5-the-launch-block)
+- [6. The result packet](#6-the-result-packet)
+- [7. Permission levels](#7-permission-levels)
+- [8. Several questions at once](#8-several-questions-at-once)
+- [9. The run log](#9-the-run-log)
+- [10. Close-out](#10-close-out)
+- [11. The block every agent carries](#11-the-block-every-agent-carries)
+
 ## 1. Routing (every request, in this order)
 
 1. **Who asks, and who acts.** The **persona** is who asks; the **reader** is who acts on the

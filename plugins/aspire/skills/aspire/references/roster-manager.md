@@ -6,6 +6,46 @@ lookalike seeds, the decision packet, the records the agent writes, and the rost
 Read `program.md` first. Its state model, page vocabulary, **4** (connected tools), **5**
 (drafts and sending) and **7** (pages) apply here unchanged.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Roster review (renew, rebook, re-engage, or retire)](#roster-review-renew-rebook-re-engage-or-retire)
+- [What the agent does](#what-the-agent-does)
+- [Modes](#modes)
+- [Who is reviewed](#who-is-reviewed)
+- [Reads, per creator](#reads-per-creator)
+- [The signals](#the-signals)
+- [Segments](#segments)
+- [Your call](#your-call)
+- [Renewals](#renewals)
+- [Drafts](#drafts)
+- [Lookalike seeds](#lookalike-seeds)
+- [The decision packet](#the-decision-packet)
+- [The questions (main thread)](#the-questions-main-thread)
+- [Records written](#records-written)
+- [The page](#the-page)
+- [What the roster manager never does](#what-the-roster-manager-never-does)
+
+## Roster review (renew, rebook, re-engage, or retire)
+
+Trigger: "review the roster", "roster health", "how are our ambassadors doing", "who should we
+renew", "who should we rebook", "which creators are slipping", "who should we drop", "ambassador
+renewals"; also the **Program manager** dispatch when ambassador renewals are inside the notice
+window. Requires a saved program (**Influencer program**, Program setup). Interactive only:
+never schedule it; without `AskUserQuestion`, say in one line that the review needs a person to
+approve it, and stop.
+
+Before step 1, read this file (**The questions (main thread)** and
+**Running the review (main thread)**) and follow it. Launch `atlas-roster-manager` (`mode:
+review`; `pass: propose`, then `pass: record` with the `roster-packet`; inputs: tool prefix,
+`profile_id`, `profile_slug`, handles and networks, program slug, `connections`, `recipient`,
+optional `creators`, `types`). K1 confirms the writes, K2 each pause or drop (the main thread
+writes the `roster` row), K4 the mailbox; K3 hands renewals to **Creator negotiation**, K5
+lookalikes to **Creator discovery**. Ask them exactly as worded there, at most four per call
+(**Guardrails**, Pickers). Sending follows **Influencer program**, Drafts.
+
 ## What the agent does
 
 The job: keep the roster healthy. For every creator on an active or recent deal it reads what

@@ -4,6 +4,54 @@ Shared by the `atlas-content-review` agent and the **Content review** section of
 Holds the setup interview, the per-review questions, the checks, the verdict rule, the
 feedback loop that teaches future reviews, the state written to Atlas, and the page.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Content review (one post against its brief)](#content-review-one-post-against-its-brief)
+- [Why the content review agent exists](#why-the-content-review-agent-exists)
+- [Setup: calibrate the reviewer once, for everyone](#setup-calibrate-the-reviewer-once-for-everyone)
+- [Per-review questions](#per-review-questions)
+- [Main thread: the review](#main-thread-the-review)
+- [The checks](#the-checks)
+- [Verdict](#verdict)
+- [The feedback loop](#the-feedback-loop)
+- [Hard rules for every review](#hard-rules-for-every-review)
+- [State written to Atlas](#state-written-to-atlas)
+- [Feeding the readouts](#feeding-the-readouts)
+- [The page](#the-page)
+- [Atlas quirks that apply here](#atlas-quirks-that-apply-here)
+
+## Content review (one post against its brief)
+
+Trigger when the user asks to review a post or a creator's draft, check content against a brief,
+check whether a post is on brief, run a brand safety check on a post, or approve a draft. Requires
+a brand profile. Interactive only: never schedule it and never run it unattended; without
+`AskUserQuestion`, say content review needs a person to supply the post, and stop. Saved reviews
+still reach the readouts. Before anything, read this file (**Setup**,
+**Per-review questions**, **Main thread: the review**, **The feedback loop**, **Hard rules for
+every review**) and follow it.
+
+### Setup
+
+C1 to C4, one at a time (C3 and C4 may be declined), one batch confirmation. Every question is
+asked exactly as worded in the reference, at most four per call (**Guardrails**). P4, F1, F3 and F4
+confirm writes.
+
+### Review
+
+P1 to P3, then P4 (the write confirmation; run only on "Run the review"). Launch
+`atlas-content-review` with `stage`, the normalized deliverable, brief source, post inputs, and
+`recipient` (`performance` or `creative` adds the ad reuse check). Relay the verdict, edits, page
+link, and gaps; offer to draft the edit notes for the creator.
+
+### Feedback: teach the next review
+
+Every review ends with F1 to F4 (the agent's or yours, before anything else). F4 saves hard rules
+as `review:rule-*` red lines. Changes to saved rules are the main thread's, one Destructive tools
+confirmation each. Never save a lesson or rule the user has not seen worded.
+
 ## Why the content review agent exists
 
 The creator brief says what a piece of content must do. Content review checks one post

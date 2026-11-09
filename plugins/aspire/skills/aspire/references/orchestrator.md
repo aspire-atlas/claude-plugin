@@ -22,6 +22,69 @@ actions (`mode: plan`), then builds the page (`mode: publish`). The **Orchestrat
 SKILL.md runs the setup interview, reads approvals off the page, launches each flow's agent,
 saves the packets and outcomes, and posts to Slack.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Orchestrator (what to do next across the brand)](#orchestrator-what-to-do-next-across-the-brand)
+- [Page vocabulary](#page-vocabulary)
+- [1. The lifecycle](#1-the-lifecycle)
+- [2. State model](#2-state-model)
+- [3. The action catalog](#3-the-action-catalog)
+- [4. Execution policy](#4-execution-policy)
+- [5. The Next actions page](#5-the-next-actions-page)
+- [6. The cycle](#6-the-cycle)
+- [7. Interactive: `/aspire:aspire next`](#7-interactive-aspireaspire-next)
+- [8. Slack](#8-slack)
+- [9. Unattended runs](#9-unattended-runs)
+- [10. Setup interview](#10-setup-interview)
+- [11. Schedule](#11-schedule)
+- [12. Autonomy levels (design note)](#12-autonomy-levels-design-note)
+- [What the orchestrator never does](#what-the-orchestrator-never-does)
+
+## Orchestrator (what to do next across the brand)
+
+Trigger when the user asks what to do next across their creator marketing ("what's next", "what
+should we do next", "what needs me", "next actions", "where does everything stand"), or when the
+hourly task "Atlas next actions: {brand}" fires. Requires a brand profile with a linked Instagram
+or TikTok channel. Read this file (**4**, **6**, **7**, **9**, **10**, **11**)
+and follow it. It reads the Program manager's and the CAS Campaign Manager's dispatch tables and
+never replaces them; each flow keeps its own section and confirmations.
+
+### Setup
+
+Ask X1 to X5 (one each), then X6, exactly as worded in the reference's **10**. X6 confirms the
+batch and is the standing approval for the orchestrator's own bookkeeping findings (`run`, `plan`,
+`packet`, `execution`, `page` on the `orchestrator-` prefix); say so at X6.
+
+### Run
+
+The reference's **6** with **7**: the status screen, waiting approvals, then the "Next" question.
+The pick runs through that flow's own section with every confirmation it asks.
+
+### Monitor (the hourly run)
+
+Never asks. On the Next actions page, an Editor's approval covers Atlas records and mailbox
+drafts only, within `orchestrator:execution` and **4** (`page-approved`; nothing under
+`suggest`). Launches carry `run: unattended`, `via: orchestrator`.
+
+### Schedule
+
+**Readouts**, Schedule, plus the reference's **11**. X6 is the standing approval.
+
+**From the guardrails:**
+
+- **Approvals on the Next actions page.** In the hourly orchestrator run, an Editor's approval on
+  the Next actions page stands in for `AskUserQuestion`, under the saved
+  `orchestrator:execution` level and only for the approvals this file's **4**
+  allows: Atlas records and mailbox drafts. Sending, orders, store changes, files, lookups,
+  discovery, setup records, and destructive tools always need a person in a session, and so do
+  deals over a maximum, over budget, outside the standard terms, or changing the deal type. The
+  run's own bookkeeping findings on the `orchestrator-` prefix (`run`, `plan`, `packet`,
+  `execution`, `page`) are written without asking: X6 at setup is their standing approval, as a
+  cadence record is for its flow.
+
 ## Page vocabulary
 
 | On the page | In the records |

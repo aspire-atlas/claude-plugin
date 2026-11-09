@@ -5,6 +5,39 @@ dispatch table, gate packets and flows, and its **1d** maps every part of the ca
 its file. A section named here without a file, such as **Gate 2** or **1e**, is in the file
 that map gives.
 
+## Contents
+
+- [Ad Performance](#ad-performance)
+  - [Where the results come from](#where-the-results-come-from)
+  - [Reading the results](#reading-the-results)
+  - [The target and the floor](#the-target-and-the-floor)
+  - [Status](#status)
+  - [Cost per sale against target](#cost-per-sale-against-target)
+  - [Headline numbers](#headline-numbers)
+  - [Weekly spend and return](#weekly-spend-and-return)
+  - [Variants ranked](#variants-ranked)
+  - [Compare](#compare)
+  - [Who watched](#who-watched)
+  - [Changes for round {t}](#changes-for-round-t)
+  - [Responsive and roles](#responsive-and-roles)
+- [Inbox](#inbox)
+  - [Opening each type](#opening-each-type)
+- [Tagging](#tagging)
+- [History](#history)
+- [Export](#export)
+  - [Sheets per tab](#sheets-per-tab)
+- [Footer](#footer)
+- [Where each part lives](#where-each-part-lives)
+- [Page mechanics](#page-mechanics)
+- [Editing in place](#editing-in-place)
+- [Design standards](#design-standards)
+  - [Tokens](#tokens)
+  - [Banned on the page](#banned-on-the-page)
+  - [Component classes](#component-classes)
+  - [Brand theme on the page](#brand-theme-on-the-page)
+  - [Responsive](#responsive)
+  - [Checklist before publishing](#checklist-before-publishing)
+
 ### Ad Performance
 
 How the round in view's partnership ads sold against {brand}'s cost per sale target, read from

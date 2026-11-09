@@ -6,6 +6,68 @@ new one) and by the **Readouts**
 section of SKILL.md. Holds the calibration set, metric definitions, page structures, delivery
 mechanics, and the rules for scheduled (unattended) runs.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Readouts (daily and weekly performance digests)](#readouts-daily-and-weekly-performance-digests)
+- [Why readouts exist](#why-readouts-exist)
+- [Readout calibrations (shared brand memory)](#readout-calibrations-shared-brand-memory)
+- [Data pull (both agents)](#data-pull-both-agents)
+- [Meta Ads enrichment (optional, both agents)](#meta-ads-enrichment-optional-both-agents)
+- [Resolving "today" (both readouts)](#resolving-today-both-readouts)
+- [Daily readout](#daily-readout)
+- [Daily launch pulse (campaign window)](#daily-launch-pulse-campaign-window)
+- [Weekly readout](#weekly-readout)
+- [Page mechanics](#page-mechanics)
+- [Delivery (Slack and email)](#delivery-slack-and-email)
+- [Scheduled (unattended) runs](#scheduled-unattended-runs)
+- [Main thread: the run and the launch pulse](#main-thread-the-run-and-the-launch-pulse)
+- [Scheduling (main thread)](#scheduling-main-thread)
+- [Atlas quirks that apply here](#atlas-quirks-that-apply-here)
+
+## Readouts (daily and weekly performance digests)
+
+Trigger when the user asks for a daily or weekly readout, "what happened yesterday", "how did last
+week go", a weekly social report, a recurring digest, or to schedule any of these. Requires at
+least one linked channel with indexed posts. Before anything, read this file
+(**Readout calibrations**, **Main thread: the run and the launch pulse**, **Scheduling (main
+thread)**, **Delivery**) and follow it.
+
+### Setup
+
+The six readout keys are shared brand memory. Ask the missing R1 to R6 one at a time, never in
+plain text, exactly as worded in the reference; R2 is the standing approval to deliver (it covers
+R6 destinations). One batch confirmation writes; changes are supersedes, one confirmation per key.
+
+### Run
+
+Ask "Which insights report?", then launch `atlas-weekly-insights-report` and/or
+`atlas-daily-insights-report` (run mode `interactive`, `recipient`, a window only if the user
+named one; never pass "today" or an assumed date). The agents add Meta Ads figures on their own
+when the connector is live (`readout.md`, **Meta Ads enrichment**); never hold a run for it.
+Pass the user's ask, verbatim, as `meta_request`, and nothing else in it. Relay each summary,
+page link, and resolved window; confirm delivery ("Post to {channel} and email {recipients}?")
+when an agent asks.
+
+### Launch pulse
+
+While a campaign window is open, the daily readout adds a launch pulse. Offer it after a campaign
+brief or when the user asks how a launch is landing: one question call, one write confirmation
+for `campaign:{slug}-pulse`. It rides on the daily schedule; readout setup must exist first.
+
+### Schedule (two schedules, one pass)
+
+After the first successful run, or on request, offer "Set up the recurring schedules now?" and
+follow `readout.md`, **Scheduling (main thread)**: UTC cron from `policy:readout-cadence`, the
+session's scheduled-task tools (never local cron), replace old-named tasks, one confirmation for
+both. Tell the user three things: the tasks run in fresh sessions, so Aspire Atlas (and Slack or
+email, if routed, and Meta Ads for its optional block) must be enabled for scheduled tasks; approval must be "Automatically approve";
+the task can be paused or edited from the scheduled tasks list. Readouts deliver only to
+destinations saved in setup. Unattended runs never ask questions;
+with setup incomplete they publish a "setup needed" card and stop.
+
 ## Why readouts exist
 
 Onboarding asks every brand how findings should reach them (`policy:cadence`) and what a good

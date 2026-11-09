@@ -9,6 +9,17 @@ the page leads the phases, it never replaces or skips one.
 The page is about Atlas, not the brand, so it holds no Atlas data beyond the organization and
 profile names, writes nothing, and needs no confirmation.
 
+## Contents
+
+- [1. When to show it](#1-when-to-show-it)
+- [2. Order with Phase 1 and Phase 2 + 3](#2-order-with-phase-1-and-phase-2--3)
+- [3. Unconfigured: the existing route, plus the Phase 5 read](#3-unconfigured-the-existing-route-plus-the-phase-5-read)
+- [4. What the page may use from `get_status`](#4-what-the-page-may-use-from-get_status)
+- [5. Building and publishing](#5-building-and-publishing)
+- [6. What to say in chat](#6-what-to-say-in-chat)
+- [7. Showing it again](#7-showing-it-again)
+- [8. The page](#8-the-page)
+
 ## 1. When to show it
 
 Show the page when all of these hold:

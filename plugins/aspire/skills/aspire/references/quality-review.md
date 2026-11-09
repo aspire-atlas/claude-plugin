@@ -15,6 +15,53 @@ It never changes the work it reviews, never writes to Atlas, and never starts di
 only writes are its own review page and, when `log` is set, one row in the organization's own review
 log (**10**). It records what it saw and what to fix; the person decides what to change.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Quality review (is this page or deck ready to send?)](#quality-review-is-this-page-or-deck-ready-to-send-1)
+- [1. Inputs](#1-inputs)
+- [2. Reading the target](#2-reading-the-target)
+- [3. Which checks apply](#3-which-checks-apply)
+- [4. The rubric](#4-the-rubric)
+- [5. Severity and verdict](#5-severity-and-verdict)
+- [6. Writing rules](#6-writing-rules)
+- [7. The page](#7-the-page)
+- [8. Output to the main thread](#8-output-to-the-main-thread)
+- [9. Grade mode (for other skills)](#9-grade-mode-for-other-skills)
+- [10. The review log](#10-the-review-log)
+- [11. The main thread: run, offer, and review log](#11-the-main-thread-run-offer-and-review-log)
+
+## Quality review (is this page or deck ready to send?)
+
+Trigger on `/aspire:aspire quality review`, on "review this deck", "audit this deck", "is this
+ready to send", or "check this page before I share it", on "Review it" in **The offer**, and on
+feedback about reviewed work (Run step 7). It checks one finished piece of work: a plugin page, or
+a pitch, proposal, brief, or report made elsewhere. It reads and reports: it never edits the work,
+never writes to Atlas, never starts discovery work, and needs no write confirmation. Interactive
+only: never schedule it or run it unattended. Another skill may launch it with `mode: grade`
+(`quality-review.md`, **9**). Before anything, read this file (**1**, **8**,
+**10**, **11**) and follow **11**, asking every question exactly as worded there.
+
+### Run
+
+1. **The work**: the link or file given, else the "Review" question.
+2. **Who reads it, and against what**: one call ("For", "Brief", "Atlas").
+3. **Launch** `atlas-quality-review` (**Running agents**) with the inputs in **11.1**, `log` read
+   from `quality-review:log`.
+4. **Relay** the page link, verdict, failed checks, Critical findings, data access, and coverage.
+5. **Next**: "Review it again after the fixes?"; "Apply the fixes" relaunches the flow that built
+   the page with a "Review fixes" paragraph.
+6. **Adjustments**: with a saved log, a disputed or missed finding gets a confirmed "Log" row.
+7. **Feedback later**: match the saved log row and confirm as in step 6, else hand vetting and
+   content review feedback to those flows or offer a review.
+
+### Review log
+
+Off unless the organization names a Doc; one "Log" confirmation writes `quality-review:log`
+(**11.2**). Never suggest one.
+
 ## 1. Inputs
 
 | Input | What it is |

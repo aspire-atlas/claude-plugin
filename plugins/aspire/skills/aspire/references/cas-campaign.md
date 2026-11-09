@@ -18,6 +18,115 @@ Two names to keep apart. The **Campaign Manager** is this flow. The **CM** is th
 the campaign on the agency side, who sends the emails, pastes the replies, and confirms what the
 client decided on the page.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [CAS campaign (creator ad campaign manager)](#cas-campaign-creator-ad-campaign-manager)
+- [Why it is a section, not an agent](#why-it-is-a-section-not-an-agent)
+- [Page vocabulary](#page-vocabulary)
+- [1a. State model](#1a-state-model)
+- [1b. Setup interview](#1b-setup-interview)
+- [1c. Dispatch table](#1c-dispatch-table)
+- [The main thread's steps](#the-main-threads-steps)
+- [Gate packets](#gate-packets)
+- [1d. The campaign page](#1d-the-campaign-page)
+- [1e. Page data](#1e-page-data)
+- [1f. Creator details and product shipping](#1f-creator-details-and-product-shipping)
+- [1g. The creator's turn on the brief](#1g-the-creators-turn-on-the-brief)
+- [Agency edits on the page](#agency-edits-on-the-page)
+- [Reminders and the weekly call](#reminders-and-the-weekly-call)
+- [Unattended runs](#unattended-runs)
+- [What this flow never does](#what-this-flow-never-does)
+
+## CAS campaign (creator ad campaign manager)
+
+Trigger when the user asks to start, check, or move a creator ad campaign ("start the CAS
+campaign for {brand}", "where is the {brand} campaign", "what's next on {campaign}", "send the
+creators for approval", "pull the client's decisions", "record a reply", "send the details
+emails", "send the briefs to creators", "log a delay"). Requires a brand profile with a linked
+Instagram or TikTok channel. Before any step, read this file (**Page
+vocabulary**, **1a** to **1c**, **The main thread's steps** with its **Widgets**, **Gate packets**, **Pulling
+decisions**, **1f**, **1g**, **Reminders and the weekly call**, **Unattended runs**) and follow it. The campaign page and its page data are in the `references/cas-campaign-page*.md`
+and `references/cas-campaign-data.md` files its **1d** lists; read the one the step needs. Hook
+and CTA recommendations, and the hook review between rounds, live in `references/hooks-and-ctas.md`.
+
+The Campaign Manager conducts the campaign from approved concepts through sourcing, negotiation,
+product shipping, and briefing. It reads where the campaign is, offers the single next step,
+launches the agent or section that does the work, records the outcome, and sets the reminder.
+It never does the heavy lifting itself. Everything a person sees uses the **Page
+vocabulary**. The flow never sends
+email, never reads a mailbox, and never writes to a sheet or a slides file: the CM sends from
+their own mail and pastes the replies. A Google Docs, Slides or Sheets link is read only when the
+session, or the agency person on the page, already has a Google Drive connector; the flow never
+adds a connector or asks for one.
+
+The agency (shared as Editor) sees and writes everything except the client's own calls; the
+client (shared as Contributor) writes only their own calls, comments, shipping updates and done
+marks, and anyone else reads the client's view. Agency only fields never go into the page or
+into page data the client can read (**1d**, **Who sees what**, and **1e**).
+
+### Setup
+
+Run **1b** of the reference: `search_calibrations` first (skip to **Status** when the setup
+records exist), then C0 (the concepts; C2 only when C0 found nothing), then `get_cas_setup_form` (**The setup
+widget**). Where
+the host draws the setup form, it asks the rest and saves after its own Save; then record Gate 1
+and Round 1 after one confirmation. Where it draws none, ask C1, C3 to C6 and C6a, one
+`AskUserQuestion` each, and C7 to confirm the batch before any
+write. Chat setup saves the brand Profile's id (`profileId`) on the campaign record; a campaign
+without it is offered it from **Status**. C5 is the standing approval
+to deliver and C6 the standing approval for this campaign's scheduled tasks; say so plainly.
+A `key-exists` follows the Phase 5 supersede rule with its own confirmation.
+
+### Status
+
+Per **The main thread's steps**, **Status**: `get_cas_campaign`, whose widget is the status
+screen where the host draws it (**Widgets**); otherwise one screen per live round in chat. Then one
+`AskUserQuestion`, header "Next", with the one next step (Recommended), "Log a delay" and
+"Change setup" (or "Start round {n+1}"); never more than one next step. New tags for the client
+are posted only on the same call's "Tags" answer.
+
+### Run
+
+Per **The main thread's steps**, **Run**: launch what the dispatch row names, with the tool
+prefix, `profile_id` and `profile_slug`, then record what came back. Show the step's widget where
+the host draws it (`get_cas_selection`, `get_cas_rates`, `get_cas_briefs`, `get_cas_results`, per
+**Widgets**) and the same step in chat where it does not. A widget's button comes back as a chat
+message and runs here with its own confirmation; widgets never write.
+
+- `atlas-creator-discovery` (rows 2, 3): run mode `interactive`, `campaign_type` `creator-ads`,
+  the campaign slug, the lane, `recipient` `campaign`.
+- `atlas-creator-vetting` (row 4): the lane's pool, the lane as criteria, `recipient`
+  `campaign` then `brand`.
+- `atlas-creator-brief` (row 10, and `revision` for a creator's changed brief): `brief_mode`
+  `creator-ads`, the slug, round and lanes, `recipient` `campaign` then `creative`, and
+  `current_brief` when the page holds one.
+- Rates (row 6) go to **Rates and terms**; drafts to **Content review** (row 16).
+
+The vetting and brief Run pickers, gate sends, Pulling decisions pickers, the tuned match
+score save, Start round, Import a brief and the tag post each confirm their write, asked
+exactly as worded in the reference, at most four per call (**Guardrails**). After each step,
+republish the page, run the role and edit checks, and post the step line when a step moved.
+
+### Schedule
+
+Per **The main thread's steps**, **Schedule**, with **Readouts**, Schedule, for the mechanics:
+offer the weekly call once after setup; C6 already approved the approval reminders and the daily
+results refresh. If the scheduled-task tools are missing, say so and stop; never fake a schedule.
+
+Unattended runs never ask, never decide, never pull the page data, and never launch an agent.
+They publish and post only, and publish a "setup needed" card when the records are missing.
+
+**From the guardrails:**
+
+- **Inside a CAS campaign**, one picker confirms a whole gate batch: every decision (Priority
+  Yes, Yes, Maybe, No) is named in the question, and that one answer covers all the writes the close makes.
+  The campaign's saved sync cadence (C6) is the standing approval for paid discovery on that
+  campaign: the creator marketplace and paid lookups for its lanes, without asking again. The
+  defaults for brand users everywhere else are unchanged.
+
 ## Why it is a section, not an agent
 
 The Campaign Manager conducts. It reads where the campaign is, shows one status screen, offers

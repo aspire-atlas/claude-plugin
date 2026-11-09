@@ -1,7 +1,36 @@
 # Creator brief reference
 
 Used by the `atlas-creator-brief` agent. Page structure, campaign mode, fit rubric, pricing method (from the fee
-calculator), and Atlas quirks learned on 2026-09-16 against the live server.
+calculator), and Atlas quirks seen on the live server.
+
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Creator brief (weekly content plan with creators)](#creator-brief-weekly-content-plan-with-creators)
+- [Questions (main thread)](#questions-main-thread)
+- [Page structure](#page-structure)
+- [Campaign mode](#campaign-mode)
+- [Creator-ads mode (the CAS master brief)](#creator-ads-mode-the-cas-master-brief)
+- [Fit rubric](#fit-rubric)
+- [Pricing method](#pricing-method)
+- [Atlas quirks](#atlas-quirks)
+
+## Creator brief (weekly content plan with creators)
+
+Trigger when the user asks for a content brief, a creator brief, what to post next week, a plan
+for next week's content, creators to make it, or creators for a dated launch or campaign
+(campaign mode). Requires at least one linked channel with indexed posts. Before launching, read
+this file (**Questions (main thread)**) and ask its three questions (scope,
+creator sourcing, lookback and roles), plus the campaign and first post date in campaign mode,
+skipping what the user answered. Never produce copy past a red line without the override; the
+marketplace needs its explicit choice.
+
+Launch `atlas-creator-brief` (`brief_mode` `week` or `campaign`) with the inputs the reference
+lists. Relay the summary, the page, decisions, and first picks as creator cards. In campaign
+mode, offer the launch pulse (**Readouts**, **Launch pulse**) and **Content review** for drafts.
+`brief_mode` `creator-ads` is launched only from **CAS campaign**, Run, row 10.
 
 ## Questions (main thread)
 
@@ -329,7 +358,7 @@ fetched during the run.
    picks at target.
 5. Name the rate label and the view window in the "how the costs were set" box.
 
-## Atlas quirks (verified 2026-09-16)
+## Atlas quirks
 
 - `search_posts` returns `media.mediaUrl` and `media.thumbnailUrl` as null when projected as
   leaf paths. Project the `media` container instead; the URLs are present.
@@ -339,7 +368,7 @@ fetched during the run.
 - `/thumbnail` routes on `cdn.aspire.io` return 404 on image posts, where the base media URL is
   the full-size image. On video posts the base URL is the video file and `/thumbnail` is the
   full-size poster. Pass both, `mediaUrl` first, to the **Images** snippet in `creator-card.md`.
-- **Marketplace search** (re-verified 2026-10-07). One `search_creator_marketplace` call
+- **Marketplace search**. One `search_creator_marketplace` call
   searches Instagram and/or TikTok for one keyword, or on filters alone:
   `search_creator_marketplace({ keyword, networks, instagram: { filters }, tiktok: { filters }, asProfileId })`.
   Set `networks` to the networks you want (it defaults to both) and send a filter block only

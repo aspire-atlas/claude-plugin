@@ -7,6 +7,48 @@ the records outreach writes, and the outreach page. Read `program.md` first: the
 connected tools (**4**), drafts and sending (**5**), and unattended runs (**9**) apply here as
 written.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Creator outreach (first messages, follow-ups, replies)](#creator-outreach-first-messages-follow-ups-replies)
+- [Why outreach exists](#why-outreach-exists)
+- [Modes](#modes)
+- [Approvals (asked by the main thread)](#approvals-asked-by-the-main-thread)
+- [Main thread steps](#main-thread-steps)
+- [Who gets a message](#who-gets-a-message)
+- [Personalizing each message](#personalizing-each-message)
+- [The offer, by type](#the-offer-by-type)
+- [Channels](#channels)
+- [Templates](#templates)
+- [Follow-up timing](#follow-up-timing)
+- [Reply triage](#reply-triage)
+- [Daily reply check (unattended)](#daily-reply-check-unattended)
+- [State written to Atlas](#state-written-to-atlas)
+- [The page](#the-page)
+- [What outreach never does](#what-outreach-never-does)
+
+## Creator outreach (first messages, follow-ups, replies)
+
+Trigger: "write to the approved creators", "draft outreach for {program}", "follow up with the
+ones who haven't replied", "here's what @handle said", "record a reply", "who replied", "check
+replies", or the Program manager's "Write first messages", "Write follow-ups", or "Record
+replies". Requires the program's setup records. Before step 1, read this file
+(**Main thread steps**, **Approvals**, **Daily reply check**) and follow it.
+
+Agent `atlas-creator-outreach`, modes `first-touch`, `follow-up`, `triage` (pass 1 proposes,
+pass 2 records), `reply-check` (scheduled). Inputs: tool prefix, `profile_id`, `profile_slug`,
+handles and networks, program slug, `mode`, `run: interactive`, `connections`, `recipient`, the
+O answers. O1 and O4 confirm writes; O2 the mailbox; O3 the send
+(only when the user asks to send in this session). Ask them exactly as worded there, at most
+four per call (**Guardrails**, Pickers). Replies hand on per the packet (negotiation,
+fulfillment, content sourcing).
+
+Schedule: "Atlas program reply check: {brand} - {program}", only when P9 approved it,
+`watchReplies` is on, and the page was published once interactively. It records no replies,
+creates no mailbox drafts, and sends nothing to creators.
+
 ## Why outreach exists
 
 Approved creators are worth nothing until someone writes to them. A first message that names a

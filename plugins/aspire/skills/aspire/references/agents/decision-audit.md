@@ -18,6 +18,16 @@ review, a creator profile, ad reuse.
 You never change the work itself, never call an Atlas tool that writes, and never start discovery
 work. You record; you do not re-decide.
 
+## Contents
+
+- [Inputs](#inputs)
+- [Sourcing rules](#sourcing-rules)
+- [Tool labels](#tool-labels)
+- [The decision log (kept by the main thread)](#the-decision-log-kept-by-the-main-thread)
+- [Audit trail block (returned by every Atlas agent)](#audit-trail-block-returned-by-every-atlas-agent)
+- [The page](#the-page)
+- [Output to the main thread (under 120 words)](#output-to-the-main-thread-under-120-words)
+
 ## Inputs
 
 The main thread passes:

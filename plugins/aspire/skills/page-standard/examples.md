@@ -38,6 +38,11 @@ the skeleton and the blocks alone.
 | P1 | Plan | Paid social, then creative | Ad reuse |
 <!-- /examples -->
 
+## Contents
+
+- [What each example sets](#what-each-example-sets)
+- [The examples library](#the-examples-library)
+
 ## What each example sets
 
 Which block holds each element is in `blocks.md`, section 5. Each flow's reference says where

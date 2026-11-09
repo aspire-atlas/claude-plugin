@@ -7,6 +7,49 @@ the records the tracker writes, the daily posting check, and the tracker page. R
 first: the state model, **Who owns a deal**, connected tools (**4**), drafts and sending
 (**5**), pages (**7**), and unattended runs (**9**) apply here as written.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Deliverable tracker (posts owed, posted, late, missing, and disclosure)](#deliverable-tracker-posts-owed-posted-late-missing-and-disclosure)
+- [Why the tracker exists](#why-the-tracker-exists)
+- [Modes](#modes)
+- [Approvals (asked by the main thread)](#approvals-asked-by-the-main-thread)
+- [Main thread steps](#main-thread-steps)
+- [The owed list](#the-owed-list)
+- [Matching posts](#matching-posts)
+- [Checks on each matched post](#checks-on-each-matched-post)
+- [Status](#status)
+- [Drafts](#drafts)
+- [State written to Atlas](#state-written-to-atlas)
+- [Hand-offs (returned, never run)](#hand-offs-returned-never-run)
+- [Daily posting check (unattended)](#daily-posting-check-unattended)
+- [The page](#the-page)
+- [What the tracker never does](#what-the-tracker-never-does)
+
+## Deliverable tracker (posts owed, posted, late, missing, and disclosure)
+
+Trigger: "check posts", "did everyone post", "who hasn't posted yet", "which posts are late",
+"are the creators disclosing", "what's due this week", "waive @handle's Story", or the
+**Program manager** dispatch's "Check posts". Requires a saved program (**Influencer program**,
+Program setup). A single post checked against a brief stays in **Content review**. Before step
+1, read this file (**Main thread steps**, **Approvals**) and follow
+it.
+
+Agent `atlas-deliverable-tracker`, `mode: check`, passes `propose` (writes nothing) then
+`record`. Inputs: tool prefix, `profile_id`, `profile_slug`, handles
+and networks, program slug, `mode`, `pass`, `connections`, `recipient`, named `creators`, the T
+answers; end with the decision-audit line. T0 approves fetching pasted links; T1 and T3 confirm
+writes; T4 the mailbox; T2 and T5 go first. Ask them exactly as worded there, at most four per
+call (**Guardrails**, Pickers). Only the user waives. Hand-offs: **Content library**,
+**Content review**, the ledger. Sending follows **Influencer program**, Drafts.
+
+Schedule: "Atlas program posting check: {brand} - {program}" (daily, `run: unattended`), with
+P9 "Daily posting check" as the standing approval, only after the tracker page was published
+once interactively. It never asks, drafts, chases, fetches a post, confirms a match, waives, or
+moves a creator.
+
 ## Why the tracker exists
 
 The question every program owner asks: did every creator post what they agreed, on time, with

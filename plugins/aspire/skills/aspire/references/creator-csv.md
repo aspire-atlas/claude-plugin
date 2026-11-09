@@ -7,6 +7,41 @@ a list of creators; never invent other columns or reorder these. Files that are 
 creators (the order sheet, the code sheet, the finance CSV, the CAS page's **Export**) keep their
 own formats.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Creator CSV (a list of creators as an Aspire member import)](#creator-csv-a-list-of-creators-as-an-aspire-member-import)
+- [Which creators](#which-creators)
+- [Columns](#columns)
+- [Tags](#tags)
+- [File](#file)
+- [Hand-off](#hand-off)
+
+## Creator CSV (a list of creators as an Aspire member import)
+
+Trigger when the user asks for a CSV of creators from a search: a discovery shortlist, a vetting
+run, the creators on a creator brief, a creator-ads lane, or a search you ran ("export these as a
+CSV", "give me a CSV of the shortlist", "a CSV I can import into Aspire"). Every such file uses
+the format in this file, whatever flow found the creators; read it and follow
+it.
+
+- **Asked with the run**: pass `csv: aspire-member` to `atlas-creator-discovery`,
+  `atlas-creator-vetting` or `atlas-creator-brief`, and relay the path and row count it returns.
+  For a vetting list in batches, pass the first batch's path as `csv_path` to every later batch,
+  and say when the user asked for every creator, rejects included.
+- **Asked after a run, or for a search you ran**: write the file yourself from the rows the
+  reference's **Which creators** names. Take each creator's brand safety from the creator card
+  the run showed. For the rest, read them in batches, not one call per creator: one
+  `search_creators` query per network with every handle in a `terms` filter (email, names,
+  channels), and one `search_posts` query per network on those handles over the last 90 days for
+  their posts' `analysis.brandSafety`, plus the brand's `red_line` calibrations and competitors
+  for the card's other safety flags. Run each at `limit` 100 and page with `cursor` to the end;
+  one page is not the whole answer. Never start discovery or lookups for it.
+- When the user names Aspire groups, projects, owners or extra tags, they go in those columns as
+  given. No question is needed: writing the file is not an Atlas write.
+
 ## Which creators
 
 | Result | Rows |

@@ -7,6 +7,13 @@ SKILL.md offers it and launches it. In a session where plugin agents do not load
 launches a general-purpose subagent with "Read and follow the agent file
 `${CLAUDE_PLUGIN_ROOT}/agents/{agent}.md`, mode `sample`, and this file", or follows both itself.
 
+## Contents
+
+- [Rules](#rules)
+- [Which holiday](#which-holiday)
+- [What each agent's sample shows](#what-each-agents-sample-shows)
+- [Output to the main thread (under 80 words)](#output-to-the-main-thread-under-80-words)
+
 ## Rules
 
 1. **No Atlas, no writes.** A sample calls no Atlas tool, starts no discovery, saves nothing,

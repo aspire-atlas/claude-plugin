@@ -7,6 +7,152 @@ account analysis. The layout is the compact Aspire creator card; only the placeh
 The one larger view, a single creator's full profile page, embeds this same card
 (`creator-profile.md`).
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Visual output (posts and creators)](#visual-output-posts-and-creators)
+- [Creator card actions](#creator-card-actions)
+- [Where it renders](#where-it-renders)
+- [Inline rendering](#inline-rendering)
+- [Page rendering](#page-rendering)
+- [Images](#images)
+- [Data: what fills each section](#data-what-fills-each-section)
+- [Actions (inline only)](#actions-inline-only)
+- [Style block](#style-block)
+- [Card template](#card-template)
+- [Icons](#icons)
+- [Markdown fallback](#markdown-fallback)
+- [Rules](#rules)
+
+## Visual output (posts and creators)
+
+Whenever the user asks to see, show, list, rank, compare, or visualize posts, creators, or
+performance, default to a visual deliverable. Text-only replies are the fallback, not the
+default, and only when the user asks for text or the data has no media at all.
+
+**When the host renders the tool's own widget.** Atlas's creator tools (`search_creators`,
+`lookup_creators`, `search_creator_marketplace`) draw creator cards and its post tools
+(`search_posts`, `list_hashtag_posts`, `lookup_posts`) draw a post grid with inline thumbnails.
+When the result shows that widget, a plain "show me" answer needs no plugin card, no
+`show_widget` call, and no cdn image embedding: give the 3 to 5 bullet readout and the next
+step. Build the plugin card or page (the rest of this section and this file)
+when the host shows no widget (Claude Code's terminal, plain-text hosts), when you cannot tell,
+for a published page, for 7 or more creators the user wants kept, and whenever an agent or a
+flow here names the card (the actions row, the shortlist, a profile).
+
+**Always include the visuals the data carries:**
+
+- Posts: `media.mediaUrl` (else `media.thumbnailUrl`) and the author's picture
+  (`instagram.account.profilePictureUrl` or `tiktok.account.profileImage`), projected in `search_posts`.
+- Creators: always the creator card in this file, which sets the fields to
+  pull, the sections, and the leave-out rules. The one exception is a single creator's full
+  profile page (`references/creator-profile.md`), which carries the same card at full width.
+
+**Default shapes:**
+
+- 1 to 12 items → **cards**: media, handle with profile picture, format chip, date, caption
+  excerpt, metric row (likes, comments, views or saves and shares), one-line takeaway, link to
+  the post. Rank number when the request is a ranking.
+- More than 12 items, or any question about trends, cadence, or format mix → a **chart**
+  first (bar for ranking, line over time, small multiples for format or theme), then cards for
+  the top 3 to 5.
+- Creators → creator cards: one to six inline with the action buttons, seven or more on a
+  published page without them. Three or more add a bar chart of the comparison metric above.
+- A single named creator ("show me @handle") → one inline card from what Atlas holds. If it
+  holds nothing, say so and offer an account review (Phase 6, mode `handle`); never call
+  `lookup_creators` just to draw a card.
+- A single creator's full profile or portfolio → the page in `references/creator-profile.md`,
+  built by the `atlas-creator-profile` agent (**Creator profile**), the only other creator layout.
+
+**Mechanics:**
+
+- Build a single self-contained HTML page and publish it with the Artifact tool when the
+  session has it (load `artifact-design`, and `dataviz` for any chart, first). Apply the saved
+  theme to the page, its charts, and its creator cards per `references/theme.md`, **Applying
+  the theme**. Inline creator cards take the card override from the same section. Fall back to
+  `SendUserFile` with the rendered HTML, or inline image links in the reply, when Artifact is
+  absent.
+- Media URLs come from `cdn.aspire.io`, which neither inline widgets nor published pages can
+  load. Embed every image as a data URI with the snippet in this file,
+  **Images** (inline profile for widgets, page profile for pages), which sizes each image to its
+  rendered box at 2x from the full-size source and sets its `width` and `height`. Give every image an `alt` of
+  the caption excerpt, and keep an `onerror` placeholder tile with the format chip for images
+  the snippet could not fetch. Note once in the page footer that images are a snapshot. Every page
+  carries the mark and footnote per `references/artifact-standard.md`.
+- Never fabricate an image: a post with no media fields gets the placeholder tile.
+- In the chat reply, give a 3 to 5 bullet readout alongside the visual; for inline creator
+  cards, only what the card cannot show.
+
+## Creator card actions
+
+The inline card's buttons send these messages; users may also type them. Each message is a
+request, never an approval: every write below is confirmed with `AskUserQuestion` first, and
+unattended runs never act on them. Resolve the creator with `search_creators` on the handle
+and network (never `lookup_creators`); if Atlas does not hold it, say so and stop.
+
+**"Draft outreach to @handle on {network}"**
+
+1. Read `brand:summary`, `brand:business-context`, `guideline:voice`, any `competitor` and
+   `red_line` records (not `review:` keys), and any campaign the creator is in
+   (`search_insights` on the `creator-discovery-{profile}` prefix, newest record for the
+   creator's `entityId`).
+2. Draft one message in chat: a subject line and a body under 120 words, in the brand's voice,
+   naming one specific post of theirs from Atlas and the campaign when there is one. A fee is
+   only the open offer from the fee calculator (`references/fees.md`) for the campaign's
+   platforms, or the channel the card shows; when it cannot be computed, write `[fee]`. Never
+   state a date or a product the calibrations do not hold; leave a bracketed blank.
+3. Name the contact route Atlas holds (`instagram.email`, `youtube.youtubeBusinessEmail`,
+   Instagram partnership messages when `isPaidPartnershipMessagesEnabled`), or say there is
+   none.
+4. Never send. If a mail tool is connected and an email is known, offer with
+   `AskUserQuestion`: "Keep it here (Recommended)" / "Save as an email draft". Only the second
+   option creates the draft.
+5. A `red_line` that blocks AI-written copy: give talking points instead of a draft and say
+   why. A `competitor` handle: say it is saved as a competitor and ask before drafting.
+
+**"Add @handle on {network} to a campaign shortlist"**
+
+1. Instagram and TikTok only: discovery and the insights store take no other network. For
+   YouTube, say so and stop before asking anything.
+2. Find the campaigns: `campaign:*-brief` keys in `search_calibrations`. None: offer creator
+   discovery setup and stop. Several: ask which one with `AskUserQuestion`.
+3. Read the creator's newest record for that campaign (`search_insights` on the
+   `creator-discovery-{profile}-{campaign}` prefix, the creator's `entityId`):
+   - Already accepted: say so and stop.
+   - Already undecided: say it is on the shortlist as #{number} and stop.
+   - Rejected before: say when and why, then offer only "Accept onto the active list" and
+     "Leave it rejected (Recommended)". A rejected creator cannot come back as a candidate,
+     because discovery never re-surfaces one.
+   - Not in the campaign: ask how, "Add to the active list (Recommended)" (`went_well`,
+     accepted) or "Add as a candidate" (`action_item`, undecided, priority `medium`; the next
+     discovery run scores it).
+4. Write one finding with `append_insights` under that campaign's runKey for today, following
+   `references/creator-discovery.md`, **State written to Atlas** and **Added by the team**,
+   with `tier` `manual`, `source` `creator card`, and `idempotencyKey`
+   `card-add-{campaign}-{entityId}-{YYYY-MM-DD}`. A new verdict never edits the old one.
+   Republishing the shortlist page is the discovery agent's job on its next run; say so.
+
+**"Save @handle on {network} to the watch list"**
+
+The watch list is the brand's saved creators, outside any campaign.
+
+1. Confirm with `AskUserQuestion`: "Save @handle to {brand}'s watch list?" Options: "Save
+   (Recommended)" / "Cancel".
+2. Write one finding with `append_insights`: runKey `creator-watchlist-{profile}-{YYYY-MM-DD}`,
+   role `account_review`, `schema` = network, `entityKind` `account`, `entityId` = the
+   network's account id from the search hit, `kind` `action_item`, `priority` `low`, rationale
+   "Saved from a creator card", `detail.watching: true`, `detail.changedAt` = the current UTC
+   time, and `idempotencyKey` `watchlist-{entityId}-save-{changedAt}`. Instagram and TikTok
+   only; the insights store takes no other network, so say that for YouTube and stop.
+3. **"Show my watch list"**: `search_insights` on the `creator-watchlist-{profile}` prefix,
+   newest record per `entityId` (by `detail.changedAt`) wins, keep `watching: true`, render as
+   creator cards. Removing someone writes a new finding with `watching: false` after the same
+   kind of confirmation, with its own `changedAt` and `idempotencyKey`
+   `watchlist-{entityId}-remove-{changedAt}`, so a save and a removal on the same day never
+   collide; never a destructive tool.
+
 ## Where it renders
 
 When the host renders the creator tools' own cards widget (`search_creators`, `lookup_creators`,

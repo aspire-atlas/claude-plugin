@@ -5,6 +5,37 @@ dispatch table, gate packets and flows, and its **1d** maps every part of the ca
 its file. A section named here without a file, such as **Gate 2** or **1e**, is in the file
 that map gives.
 
+## Contents
+
+- [Master Brief](#master-brief)
+  - [The brief and its parts](#the-brief-and-its-parts)
+  - [Brief status](#brief-status)
+  - [Tone of voice and don'ts](#tone-of-voice-and-donts)
+  - [A concept](#a-concept)
+  - [Rich text](#rich-text)
+  - [The variant plan](#the-variant-plan)
+  - [Frameworks](#frameworks)
+  - [Adding and removing a concept](#adding-and-removing-a-concept)
+  - [Reset to original and versions](#reset-to-original-and-versions)
+  - [Importing a brief](#importing-a-brief)
+  - [Starting from the last round](#starting-from-the-last-round)
+  - [Deferring a concept](#deferring-a-concept)
+  - [Comments and sign off](#comments-and-sign-off)
+  - [Creator changes](#creator-changes)
+  - [Loading the brief](#loading-the-brief)
+- [Creator Selection](#creator-selection)
+  - [Summary](#summary)
+  - [The toolbar](#the-toolbar)
+  - [Table](#table)
+  - [Cards](#cards)
+  - [Deciding](#deciding)
+  - [The creator viewer](#the-creator-viewer)
+  - [Copy decisions](#copy-decisions)
+  - [Tiers](#tiers)
+  - [Where each field comes from](#where-each-field-comes-from)
+  - [The match score](#the-match-score)
+  - [Match score tuning](#match-score-tuning)
+
 ### Master Brief
 
 The round's master brief: one brief per round, made of one concept per lane, in the modular shape

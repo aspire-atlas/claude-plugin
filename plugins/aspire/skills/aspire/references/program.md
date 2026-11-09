@@ -14,6 +14,74 @@ mixed. A creator ad campaign (Creator Ad Services, partnership ads) is not a pro
 the **CAS campaign** section and `cas-campaign.md`, and nothing here changes it. The two never
 share records.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Influencer program (gifting, paid posts, ambassadors, affiliates)](#influencer-program-gifting-paid-posts-ambassadors-affiliates)
+- [Program types](#program-types)
+- [Page vocabulary](#page-vocabulary)
+- [1. State model](#1-state-model)
+- [2. Setup interview](#2-setup-interview)
+- [3. Program manager (status and next step)](#3-program-manager-status-and-next-step)
+- [4. Connected tools (mail and store)](#4-connected-tools-mail-and-store)
+- [5. Drafts and sending](#5-drafts-and-sending)
+- [6. The order form (collecting creator details)](#6-the-order-form-collecting-creator-details)
+- [7. Pages](#7-pages)
+- [8. Reminders and schedules](#8-reminders-and-schedules)
+- [9. Unattended runs](#9-unattended-runs)
+- [What program flows never do](#what-program-flows-never-do)
+
+## Influencer program (gifting, paid posts, ambassadors, affiliates)
+
+Trigger when the user asks to set up, check, or move an influencer program ("set up our
+influencer program", "start an ambassador program", "where is the {program} program", "what's
+next on {program}", "who do we need to reach out to", "record a reply", "pull the order form").
+Full detail lives in this file: program types, page vocabulary, the state model,
+the setup interview, the dispatch table, connected tools, drafts and sending, the order form,
+and the unattended rules. A creator ad campaign is not a program: it stays in **CAS campaign**.
+Requires a brand profile with a linked Instagram or TikTok channel.
+
+Before the first program step in a session, detect the user's mail and store connections per the
+reference's **4** and keep the `connections` object for every launch. Say what a connection can
+do when a step uses it, never why it cannot do more.
+
+### Program setup
+
+1. Call `search_calibrations` (no filter, limit 100 per page, paged to the end,
+   `includeSuperseded: true`). Several programs may be saved; ask which with `AskUserQuestion`
+   when more than one is active, with "Start a new program" as the last option.
+2. For a new program, ask P1 to P9 from the reference, one `AskUserQuestion` each, skipping what
+   does not apply. Say plainly what P7b, P8 and P9 approve.
+3. P10 confirms the batch once, then write every record with `append_calibration`. A
+   `key-exists` follows the Phase 5 supersede rule with its own confirmation.
+4. Offer to fill the roster (the reference's **Filling the roster**).
+
+### Program manager
+
+Read the setup records and the working state (`search_insights` on the program's prefix,
+paged). Show the status screen and offer the single next step from the reference's
+**3. Program manager**. Launch what the row names with the inputs listed there, relay what the
+agent asks the main thread to confirm, record the outcome, and show the new status in one line.
+
+- **Drafts** from any program agent follow the reference's **5**: shown ready to copy, created in
+  the mailbox only after their confirmation, sent only when the user asks in this session and
+  confirms the named recipients.
+- **"Sent them"** marks drafts sent with one picker (**5**, Marking sent).
+- **Pasted replies** go to `atlas-creator-outreach` in `mode: triage`.
+- **"Pull the order form"** reads the order form's page data and records it with one picker
+  (**6**, Reading it back).
+- **"Decide later"** on any your-call picker writes the creator's roster row with
+  `yourCallDeferredAt`, so the item stays on the status screen without leading the next step for
+  7 days (**3**, Decide later).
+
+### Schedule
+
+Follow **Readouts**, Schedule, for the mechanics and the reference's **8** for task names. P9 is
+the standing approval for the tasks it names. Unattended runs follow the reference's **9**: they
+never ask, decide, send, create mailbox drafts, or change a store.
+
 ## Program types
 
 | Type | What the creator gets | What the brand gets | Agents that act on it |

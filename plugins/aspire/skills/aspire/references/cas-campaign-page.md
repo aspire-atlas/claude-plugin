@@ -5,6 +5,10 @@ dispatch table, gate packets and flows, and its **1d** maps every part of the ca
 its file. A section named here without a file, such as **Gate 2** or **1e**, is in the file
 that map gives.
 
+## Contents
+
+- [1d. The campaign page](#1d-the-campaign-page)
+
 ## 1d. The campaign page
 
 One page per campaign, one link, republished to the same path on every change. The link is saved

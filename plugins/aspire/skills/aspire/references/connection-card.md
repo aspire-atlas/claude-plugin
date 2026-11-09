@@ -5,6 +5,16 @@ browser (`connectUrl` on start, `resultUrl` when the status is awaiting-selectio
 the older "relay the link verbatim" behavior. The card describes the connection process and
 shows the network's logo beside the animated Aspire Atlas mark, lists what Atlas will do, and carries one button that opens the link through the app's link dialog.
 
+## Contents
+
+- [When the host renders the connect widget](#when-the-host-renders-the-connect-widget)
+- [Rendering](#rendering)
+- [Text fallback](#text-fallback)
+- [Placeholders](#placeholders)
+- [The two logos](#the-two-logos)
+- [Template](#template)
+- [Rules](#rules)
+
 ## When the host renders the connect widget
 
 `connect_channel` ships its own connect widget for hosts that render MCP Apps. When the tool
