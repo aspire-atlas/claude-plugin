@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-03",
+  "generated": "2026-11-09",
   "source": "apps/api/lib/mcp/tools-list.golden.json",
   "surfaces": {
     "/mcp": {
@@ -67,7 +67,8 @@
           "elicitationId",
           "replace",
           "returnUrl",
-          "share"
+          "share",
+          "skipHeldAccounts"
         ]
       },
       "create_profile": {
@@ -238,6 +239,14 @@
         "paths": [
           "asOrganizationId",
           "asProfileId"
+        ]
+      },
+      "get_onboarding_report": {
+        "required": [],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "reportId"
         ]
       },
       "get_profile": {
