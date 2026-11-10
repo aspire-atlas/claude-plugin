@@ -28,6 +28,7 @@ plugins/<name>/                   One plugin per folder; every folder has a mark
   agents/*.md                     Subagents. Namespaced as <plugin>:<agent>.
 scripts/plugins.sh                The per-plugin conventions (folder, changelog, tag) the checks and workflows share.
 scripts/check-*.sh                Channel contract and content checks; each loops over every plugin. CI runs them on every push and PR.
+scripts/eval/                     Page eval: reruns the example questions and grades each new page (bun run eval:pages).
 CHANGELOG.md                      Official releases of aspire only.
 ```
 
@@ -53,6 +54,19 @@ Try the plugin from a checkout in Claude Code:
 /plugin marketplace add ./path/to/claude-plugin
 /plugin install aspire@aspire-atlas-beta
 ```
+
+## Testing a change to a rule
+
+A pull request that adds or changes a rule (a check, a page-standard step, an agent's or a flow's instructions for what goes on a page) reruns the example questions before it is opened:
+
+```bash
+bun run eval:pages                 # or: --only <code> for the question the rule is about
+bun run eval:pages --compare <the newest baseline's date> latest
+```
+
+Paste the run's table (`scripts/eval/.runs/<time>/table.md`) into the pull request body, with the compare output when a result moved. Run it once without the rule first: if the page already gets it right, the rule is not needed. A check that fails on the approved page is a finding about the check, so say so in the pull request. Setup, what the table means, and what a rerun may do are in [scripts/eval/README.md](scripts/eval/README.md). CI does not run it; `bun run eval:test` covers the harness itself.
+
+After the pull request merges and the results hold, store a baseline with `bun run eval:pages --baseline --from latest` and commit `scripts/eval/baselines/<date>/`.
 
 ## Shipping to beta
 
