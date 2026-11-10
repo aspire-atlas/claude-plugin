@@ -7,33 +7,40 @@ agent's own file says what it does with the result.
 
 ## Resolve
 
-Do this before any analysis. Call `list_creator_search_fields` first and look for a
-last-indexed or last-updated field on the account record. The user approved the fetch below by
-naming the handle.
+Do this before any analysis. The user approved the fetch below by naming the handle.
 
 - Read what Atlas holds: `search_creators` filtered on the username field for that handle and
   network, and `search_posts` filtered on the author username field, sorted by posted date desc,
-  `limit: 1`.
-- **Current** means Atlas holds the account *and* its record was last indexed under 24 hours ago,
-  measured against the real clock (`date -u` in the shell, never an assumed "today"). If the creator
-  field census exposes no last-indexed or last-updated field, fall back to the newest indexed post
-  being under 24 hours old. Anything else is stale: no account record, no posts, or a timestamp 24
-  hours or older. The fallback will mark an account that posts less than daily as stale and trigger a
-  refresh; that is the intended direction.
+  `limit: 1`. Never pass a wildcard `exclude` (such as `*`) to `search_creators` here: it drops the
+  channel's `freshness`.
+- Read the matching channel's `freshness { lastFetchedAt, newestPostAt, postsHeld, postsHeld30d }`.
+  `lastFetchedAt` is when Atlas last fetched the account, whether or not anything changed. Never use
+  `snapshotAt` (it moves only on a material change) or `indexedAt` (the search index's write time) as
+  the last fetch.
+- **Current** means Atlas holds the account *and* `lastFetchedAt` is under 24 hours ago, measured
+  against the real clock (`date -u` in the shell, never an assumed "today"). When `freshness` is absent
+  (unknown, not zero) or `lastFetchedAt` is null (Atlas has no fetch of its own on record), fall back to
+  `newestPostAt`, or the newest indexed post, being under 24 hours old. Anything else is stale: no
+  account record, no posts, or a timestamp 24 hours or older. The fallback will mark an account that
+  posts less than daily as stale and trigger a refresh; that is the intended direction.
 - Stale → refresh with `lookup_creators`: one item, `schema` = the network, `entityKind` = `account`,
   `identifier` = the handle, and `creatorDeepAnalysis` left at its default `true` so the account's
   recent posts are ingested with it. The user approved this fetch by naming the handle, so do not ask
   again, and run it at most once per handle per run.
 - A `fetching` result means discovery started. There is no status-check tool for it: re-call
   `lookup_creators` with the same item to re-read, about every 15 seconds, up to roughly 3 minutes.
-  The `found` response carries the account document and its 10 most recent posts; read freshness from
-  that. Search indexing lags the lookup by a short interval, so re-run the searches from the first
+  The `found` response carries the account document, with `freshness` on each channel, and its 10
+  most recent posts; read freshness from that. Search indexing lags the lookup by a short interval, so re-run the searches from the first
   bullet after it settles, and retry once after ~30 seconds if they come back empty.
 - `unresolvable` (including `account-not-discoverable`, cached for 7 days) or still nothing after the
   refresh: report the handle as not found or not yet indexed, say what was tried, and stop without
   writing anything. Never analyze a handle you could not resolve, and never substitute a similar one.
-- Keep the resolved freshness — the newest indexed post's timestamp, the account's last-indexed
-  timestamp if the census has one, and whether a refresh ran — and report it in the summary.
+- Keep the resolved freshness (`lastFetchedAt`, `newestPostAt`, `postsHeld`, and whether a refresh
+  ran) and report it in the summary as one line: "last fetched {lastFetchedAt}, newest post
+  {newestPostAt}, {postsHeld} posts held". With `freshness` absent, say the freshness is unknown and
+  give the newest indexed post; with `lastFetchedAt` null, say "not fetched by Atlas yet". Posts
+  published after `newestPostAt` are not held yet: a period after it reads "Atlas has no data for
+  {period}", never "no posts".
 
 ## Peer set
 

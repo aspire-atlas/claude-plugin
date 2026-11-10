@@ -17,6 +17,7 @@ A bold section name with no file beside it (**Influencer program**, **CAS campai
 - [Attribution model](#attribution-model)
 - [Phase map](#phase-map)
 - [Partnership content (Meta partnership ads)](#partnership-content-meta-partnership-ads)
+- [Data freshness](#data-freshness)
 - [Destructive tools: confirmation is mandatory](#destructive-tools-confirmation-is-mandatory)
 - [Visual fields (for Visual output)](#visual-fields-for-visual-output)
 - [Calibration kinds (for Phase 5)](#calibration-kinds-for-phase-5)
@@ -94,7 +95,7 @@ run.
 | 4.1 | `update_profile` | Rename | Slug never changes |
 | 4.1 | `delete_profile` | Remove a profile | **Destructive, irreversible.** Refused while channels are linked. See Destructive tools. |
 | 4.2 | `connect_channel` | Start / resume social connection | Start: `channel` + `asProfileId` → `connectUrl`, `elicitationId` (show `connectUrl` via the card in **Connection card**). Resume: `elicitationId` only, long-polls ~30s. Channels: `meta`, `tiktok`, `tiktok_one`, `youtube`. The `meta` sign-in can also approve ad account access, which links the brand's Meta ad accounts for `search_ads`, and its account picker has a **Meta businesses** group: picking the brand's business there links it as a `meta_business` channel, which partnership content needs (**Partnership content** below). A `complete` status carries `outcome` (`all-linked`, `partially-linked`, `none-linked`); an account another profile holds is a `failedAccounts[].error` `already-linked`, with that profile's id in `discoveredAccounts[].accounts[].alreadyLinkedToProfileId` (matched by `platformAccountId`) → see `unlink_channel`. |
-| 4.2 | `list_channels` | Live connections on a profile | Returns `platform` + `platformAccountId`; empty list is a normal first-run state. Read before `unlink_channel`. |
+| 4.2 | `list_channels` | Live connections on a profile | Returns `platform` + `platformAccountId`; empty list is a normal first-run state. Instagram, TikTok, YouTube and Pinterest connections also carry `freshness` (see **Data freshness**). Read before `unlink_channel`. |
 | 4.2 | `unlink_channel` | Disconnect an account from a profile | **Destructive.** Needs `platform` (`instagram`, `facebook`, `tiktok`, `tiktok_one`, `youtube`, `meta_ads` for an ad account, `meta_business` for a Meta Business) + `platformAccountId` from `list_channels`. Collected data is kept. See Destructive tools. |
 | 4.3 | `add_hashtags` / `remove_hashtags` / `list_hashtags` / `list_available_hashtags` | Watch-list | Networks: `instagram`, `tiktok`. Per-row results. TikTok: 50 cap, eligibility gate, 7-day removal lock. |
 | 4.3 | `list_hashtag_posts` | Posts carrying one tracked hashtag on one network, newest first | Read only. `hashtag` + `network` (`instagram`, `tiktok`), optional `since` / `until` (default last 90 days), `sort` (`postedAt` or a metric, descending). Page with `nextCursor` → `cursor`, keeping hashtag, network and sort unchanged. `hashtag-not-tracked` and `no-linked-channel` are normal states, not failures. With a metric sort, dedupe on `externalId`. |
@@ -110,7 +111,7 @@ run.
 | 6 | `list_post_search_fields` | Live field census for posts | Call before any `esFilter` on posts |
 | 6 | `list_creator_search_fields` | Live field census for accounts | |
 | 6 | `search_posts` | Posts by filter, optional semantic `queryText` | Filter-only is sub-100ms; semantic takes seconds. `aggs` on filter path only. With an explicit `asProfileId`, Instagram hits carry the `partnershipAds` overlay and the `partnership` filter is accepted; neither works on a defaulted scope. See **Partnership content**. |
-| 6 | `search_creators` | Accounts by filter | No per-post fields here |
+| 6 | `search_creators` | Accounts by filter | No per-post fields here. Each channel carries `freshness` (see **Data freshness**). |
 | Discovery | `search_creator_marketplace` | Start a creator-marketplace search on Instagram and/or TikTok | `{ keyword (optional, 1 to 100 chars), networks (default both), instagram: { filters }, tiktok: { filters } }`. Each network takes its own filters; a filter block for a network not in `networks`, or any old top-level `filters`, is rejected. Returns `jobs.instagram` / `jobs.tiktok`: `{ jobId, runId }` when started (poll `get_job_status` with **each** `jobId`) or `{ skipped: true, reason }` (`no-seat`, `unavailable`, `rate-limited`, `internal-error`). Fails only when every requested network was skipped. TikTok: `countryCodes` defaults to `["US"]` (echoed in `jobs.tiktok.appliedDefaults`), only 26 supported countries (an unsupported one fails the whole call), one region per search, `stateProvinces` only with `["US"]`; `jobs.tiktok.seat` says whose TikTok One seat ran it (keyword results are personalized per seat). Without `keyword`, every requested network needs at least one filter of its own. `instagram.filters.similarToCreators` (one to five handles, lookalikes) is sent only without `keyword`. Instagram also takes `creatorLanguage`, `recommendationType` (a keyword-less anchor on its own; never with `similarToCreators`), and the yes-only `verifiedAccount`, `hasPublicContactEmail`, `hasPortfolio`, `featuredInPaidAds` and `excludeMessagedCreators`. Starts discovery work: see **Avoid in onboarding**. |
 | Discovery | `list_creator_marketplace_labels` | TikTok content and industry labels | Read only. `{ network: "tiktok" }` → `contentLabels` / `industryLabels` with `id` and `name`; pass ids as `tiktok.filters.contentLabelIds` / `industryLabelIds`. An unknown id fails the search. A search that names label ids is skipped `no-seat` when Aspire has no default TikTok One seat: retry without them. `unavailable` with `retryable: false` means no default seat is configured; search without labels, which runs only on the profile's own TikTok One seat, and if TikTok is then skipped, report it as not searched. |
 | Paid ads | `list_ad_accounts` | The Meta ad accounts the brand's connected Meta logins can reach | Read only; one Profile (`asProfileId`). Shows each account's name, currency, status and the caller's role, and whether this Profile already has one linked. Linking is done through `connect_channel` with channel `meta`, approving ad account access in the Meta sign-in; an account reachable only through a Business or another login is listed but not offered there. |
@@ -289,6 +290,31 @@ Meta; its tools need their own sign in):
 When the Meta Ads connector is not connected, say what to run and that the brand can do it in
 Meta Ads Manager; never pass the code anywhere else. Turning the ad on is `ads_activate_entity`,
 with its own confirmation, or the brand's step in Meta Ads Manager (**Meta Ads**, **Writes**).
+
+## Data freshness
+
+`freshness { lastFetchedAt, newestPostAt, postsHeld, postsHeld30d }` says how current Atlas's data on
+an account is. It comes back on each channel of `lookup_creators` (`items[].document.channels[]`) and
+`search_creators` (`hits[].document.channels[]`), at the top level of `get_creator` beside `totalPosts`,
+and on each Instagram, TikTok, YouTube and Pinterest connection from `list_channels`.
+
+- `lastFetchedAt` is when Atlas last fetched the account, whether or not anything changed. It is the
+  only "last fetched" or "last refreshed" time. `snapshotAt` moves only when something material
+  changed, and `indexedAt` is when the search index last wrote the record: never show either as the
+  last fetch.
+- `newestPostAt` is the newest post Atlas holds. A post published after it is not held yet, so a
+  period after it with no posts reads "Atlas has no data for {period}", never "no posts".
+- `postsHeld` counts every post Atlas holds for the account and `postsHeld30d` those published in the
+  last 30 days. On `get_creator`, `totalPosts` counts the posts in the search index; the two can differ
+  while posts are being indexed. Say "posts held" for `postsHeld`.
+- `freshness` absent means unknown, not zero: it could not be read, Atlas does not hold the account,
+  or the platform has no creator account (a Facebook Page, an ad account, a TikTok business account,
+  LinkedIn, TikTok Shop). Say the freshness is unknown.
+- `lastFetchedAt` null means Atlas has no fetch of its own on record, which includes an account only
+  listening sources have fetched. Say "not fetched by Atlas yet", and use `newestPostAt` alone.
+- `freshness` is not an index field: it cannot be filtered, sorted or projected. `search_creators`
+  drops it when an `exclude` wildcard matches `network` or `externalId` (such as `*`), so never exclude
+  with a wildcard when the answer needs freshness.
 
 ## Destructive tools: confirmation is mandatory
 

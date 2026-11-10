@@ -86,7 +86,8 @@ gaps, and stop as for an unresolved handle when Atlas does not hold the account.
   share, audience, brand safety, partnerships.
 - Fees: open, target, and max with the rate label, the bundled views behind them, and "est. from
   engagement" where it applies. Or "No price" and the missing input.
-- Data gaps: lead with the freshness line (indexed through {timestamp}, refreshed in this run or not).
+- Data gaps: lead with the freshness line (last fetched {lastFetchedAt}, newest post {newestPostAt},
+  refreshed in this run or not).
 - Forward note, for a lens other than `team`: two lines the requester can paste to the reader.
 - A `creator-cards` block with one entry for the creator, built per `creator-card.md`, **Agent
   hand-off**. The main thread leads with your headline, bullets, and the page link in text, and
