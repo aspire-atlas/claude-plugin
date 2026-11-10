@@ -4,7 +4,7 @@ The one layout this plugin uses when a creator is drawn: on a published page (a 
 brief, a review, an account analysis) and, in chat, only when the user asks to see cards. A
 chat reply names creators in text first (**Visual output**). The layout is the compact Aspire
 creator card; only the placeholders change. The one larger view, a single creator's full
-profile page, embeds this same card (`creator-profile.md`).
+profile page, embeds this same card (**Creator profile**).
 
 The main thread's part of this flow lives here. A bold section name in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
 
@@ -52,7 +52,7 @@ published pages only (**Images**).
 - A single named creator ("show me @handle") → one card from what Atlas holds. If it holds
   nothing, say so and offer an account review (Phase 6, mode `handle`); never fetch an account
   just to draw a card.
-- A single creator's full profile or portfolio → the page in `references/creator-profile.md`,
+- A single creator's full profile or portfolio → the page in **Creator profile**,
   built by the `atlas-creator-profile` agent (**Creator profile**), the only other creator layout.
 
 **When a search tool draws its own card.** On a server where `search_creators`,
@@ -79,7 +79,7 @@ creators kept. Its shapes:
 
 - Build a single self-contained HTML page and publish it with the Artifact tool when the
   session has it (load `artifact-design`, and `dataviz` for any chart, first). Apply the saved
-  theme to the page, its charts, and its creator cards per `references/theme.md`, **Applying
+  theme to the page, its charts, and its creator cards per **Theme**, **Applying
   the theme**. With no Artifact tool, fall back to `SendUserFile` with the rendered HTML, or
   to the text answer with post links.
 - Media URLs come from `cdn.aspire.io`, which a published page cannot load. Embed every page
@@ -87,7 +87,7 @@ creators kept. Its shapes:
   rendered box at 2x from the full-size source and sets its `width` and `height`. Give every image an `alt` of
   the caption excerpt, and keep an `onerror` placeholder tile with the format chip for images
   the snippet could not fetch. Note once in the page footer that images are a snapshot. Every page
-  carries the mark and footnote per `references/artifact-standard.md`.
+  carries the mark and footnote per **Artifact standard**.
 - Never fabricate an image: a post with no media fields gets the placeholder tile.
 - The chat reply beside a page is the same text answer: up to three points, the next step, and
   the page link.
@@ -108,7 +108,7 @@ it, say so and stop.
    creator's `entityId`).
 2. Draft one message in chat: a subject line and a body under 120 words, in the brand's voice,
    naming one specific post of theirs from Atlas and the campaign when there is one. A fee is
-   only the open offer from the fee calculator (`references/fees.md`) for the campaign's
+   only the open offer from the fee calculator (**Fee calculator**) for the campaign's
    platforms, or the channel the card shows; when it cannot be computed, write `[fee]`. Never
    state a date or a product the calibrations do not hold; leave a bracketed blank.
 3. Name the contact route Atlas holds (`instagram.email`, `youtube.youtubeBusinessEmail`,
@@ -137,7 +137,7 @@ it, say so and stop.
      accepted) or "Add as a candidate" (`action_item`, undecided, priority `medium`; the next
      discovery run scores it).
 4. Write one finding with `append_insights` under that campaign's runKey for today, following
-   `references/creator-discovery.md`, **State written to Atlas** and **Added by the team**,
+   **Creator discovery**, **State written to Atlas** and **Added by the team**,
    with `tier` `manual`, `source` `creator card`, and `idempotencyKey`
    `card-add-{campaign}-{entityId}-{YYYY-MM-DD}`. A new verdict never edits the old one.
    Republishing the shortlist page is the discovery agent's job on its next run; say so.
@@ -172,8 +172,8 @@ asks to see one, or a flow publishes a page.
 | Main thread, the user asked to see cards, and the host draws no widget (a terminal, a plain-text host) | The **Markdown fallback** below | None; post links only |
 | Main thread, 7 or more creators the user wants kept, or the user asks for a page | Published page (**Visual output**, Pages); more than 12 leads with a chart | Embedded, **Images** |
 | Agents (brief, discovery, account analyst, content review) | Inside the agent's published page | Embedded, **Images** |
-| One creator's full profile or portfolio view | Published page, the card at full width with the evidence sections below it (`creator-profile.md`) | Embedded, **Images** |
-| The CAS campaign page (`cas-campaign-page.md`) | Published page, one card per creator, with the concept as the first flow chip and the "Hook post" and "Paid partnership" marks on its thumbnails; the same card, without thumbnails, sits in the creator viewer's **Profile**, after the match and the concept (`cas-campaign.md`, **Creator Selection**, **The creator viewer**) | Embedded, **Images** |
+| One creator's full profile or portfolio view | Published page, the card at full width with the evidence sections below it (**Creator profile**) | Embedded, **Images** |
+| The CAS campaign page (**CAS campaign** **1d**) | Published page, one card per creator, with the concept as the first flow chip and the "Hook post" and "Paid partnership" marks on its thumbnails; the same card, without thumbnails, sits in the creator viewer's **Profile**, after the match and the concept (**CAS campaign**, **Creator Selection**, **The creator viewer**) | Embedded, **Images** |
 
 The plugin never builds a creator card as an inline widget, and never calls `show_widget` for
 one. Agents never call `lookup_creators` or `lookup_posts` to draw a card; only the main thread
@@ -238,9 +238,9 @@ summary nor the main thread's reply ever carries a data URI.
 Put the style block in the page `<head>` once and the cards wherever the page structure calls
 for them, inside `<div class="ac-grid">`. A page the main thread publishes for 7 or more creators
 carries the full animated Aspire Atlas mark at the top right and the full footnote at the end, per
-`artifact-standard.md`; a page another flow publishes takes them from that flow's reference. The page's own tokens are not used by the card; the
+**Artifact standard**; a page another flow publishes takes them from that flow's reference. The page's own tokens are not used by the card; the
 card carries Aspire's, unless the brand has a saved theme: then add the card override from
-`theme.md`, **Creator card**, right after the style block. Embed images with the **Images** snippet: `avatar` and `thumb` at their
+**Theme**, **Creator card**, right after the style block. Embed images with the **Images** snippet: `avatar` and `thumb` at their
 default boxes fit the card at 2x. Flow-specific detail goes in the `{DETAILS}` slot, never in
 extra markup around the card.
 
@@ -317,7 +317,7 @@ and `cssHeight` (half of them). Use them so the browser never stretches the imag
 
 **The CAS campaign page** embeds each post it shows once, as `post@360`, and uses that one image
 for the card's thumbnail and the creator viewer, in place of `thumb`; its order for dropping
-images past 8MB is in `cas-campaign-page-brief.md`, **The creator viewer**, **How the media reaches the
+images past 8MB is in **CAS campaign**, **Creator Selection**, **The creator viewer**, **How the media reaches the
 viewer**. No surface embeds a video: the snippet never downloads one.
 
 **Failures.**
@@ -498,7 +498,7 @@ fill in from web copy. The one exception is the header row, which always shows.
 | Subtitle | `{SUBTITLE}` | Name · descriptor, per **Subtitle** below | No name and no descriptor: leave the line out |
 | Topics | `{TOPICS}`, `{TOPICS_MORE}` | Top two `analysis.aestheticTags` by post count across the 12 posts, or `youtube.youtubeTopicCategories` | Count tags case-insensitively and show each in its most common spelling. A tag must appear on 3 or more posts. `+N` counts the other tags that pass; omit when zero |
 | Audience | `{AUDIENCE}` | Instagram: `instagram.creatorEngagedAccountsBreakdowns` (engaged accounts, top gender share, top age band). TikTok: `tiktok.audienceGenders` and `tiktok.audienceAges` with the follower count | Only when a gender or age breakdown has results; they are often empty. Format `33.4K, Female 79%, 25-34` |
-| Fit ring | `{FIT}` | The fit score the current flow computed or read from Atlas (discovery `fitScore`); in a CAS campaign, the stored match score (`cas-campaign-page-brief.md`, **The match score**) | Only a 0 to 100 score from a stated rubric. Flows without one leave the ring out; the brief shows its Strong or Partial read as a badge instead |
+| Fit ring | `{FIT}` | The fit score the current flow computed or read from Atlas (discovery `fitScore`); in a CAS campaign, the stored match score (**CAS campaign**, **Creator Selection**, **The match score**) | Only a 0 to 100 score from a stated rubric. Flows without one leave the ring out; the brief shows its Strong or Partial read as a badge instead |
 | Network chips | `{CHIPS}` | One chip per entry in `channels` with its `followersCount` | Only when there are two or more channels. The primary one is `aria-selected="true"` |
 | Badges | `{BADGES}` | See **Badges** below | Flow chips, then up to two card badges, then an outline `+N` chip |
 | Brand safety tile | `{SAFETY}` | `analysis.brandSafety` on the posts, plus the flow's **safety** risk flags only | Needs 3 or more analyzed posts, or a safety flag. See **Brand safety** below |
@@ -579,7 +579,7 @@ it leads to follows the normal confirmation rules in SKILL.md.
 Once per page. Colors follow the host theme in light and dark mode where the host
 defines the variable, and fall back to the Aspire tokens where it does not. A saved brand
 theme replaces the surfaces, text, borders, brand color, corners, and fonts; the ok and warn
-tiles keep their semantic colors (`theme.md`, **Creator card**).
+tiles keep their semantic colors (**Theme**, **Creator card**).
 
 ```html
 <style>
@@ -709,7 +709,7 @@ rule in the data table says so, and drop the comments themselves. Repeat `.ac-ne
 
 ### Creator-ads details
 
-A creator ad campaign's discovery card (`creator-discovery.md`, **Creator-ads mode**) puts the
+A creator ad campaign's discovery card (**Creator discovery**, **Creator-ads mode**) puts the
 ad figures in `{DETAILS}`, one `<dt>`/`<dd>` pair each, in this order and with these labels:
 
 | Label | Value |

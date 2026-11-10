@@ -7,6 +7,9 @@ SKILL.md offers it and launches it. In a session where plugin agents do not load
 launches a general-purpose subagent with "Read and follow the agent file
 `${CLAUDE_PLUGIN_ROOT}/agents/{agent}.md`, mode `sample`, and this file", or follows both itself.
 
+A bold section name with no file beside it (**Artifact standard**, **Fee calculator**) is another part of this skill;
+`SKILL.md`'s **Sections** index names its file.
+
 ## Contents
 
 - [Rules](#rules)
@@ -34,11 +37,11 @@ launches a general-purpose subagent with "Read and follow the agent file
    - A banner at the top of the page says: "Sample · invented data for {holiday} {year}. Not from
      Atlas." The page carries the mark and the sample source
      line in place of the real one (the sample variant in
-     [`artifact-standard.md`](../artifact-standard.md)).
+     **Artifact standard**).
 3. **The real page, smaller.** Follow the agent's own reference for page structure, section
    order, chrome, and wording rules, with every section present, at the smallest size that still
    shows how it works: three creators where the real page has ten, five posts where it has
-   fifty, one deliverable per phase. Fees use the Aspire recommended rates from `fees.md` on the
+   fifty, one deliverable per phase. Fees use the Aspire recommended rates from **Fee calculator** on the
    sample's view counts and are labelled as forecasts. A section the agent leaves out when data is
    missing appears in the sample with sample data, so the reader sees it.
 4. **Holiday theme.** The sample's campaign is set around the holiday (the angle in the table).
@@ -71,7 +74,7 @@ Memorial Day, Juneteenth, Veterans Day) are left out, so a sample campaign never
 | Thanksgiving | Fourth Thursday of November | Kettle & Crumb | Hosting the Thanksgiving table | `#B5651D` | `#6B3E26` | `#6B3E26` |
 | Christmas | 25 December | Ridgeline Outfitters | Gifts under the tree | `#1F6B45` | `#B3232E` | `#1F5A3B` |
 
-Check the `ink` value against the page background with the contrast function in `theme.md`,
+Check the `ink` value against the page background with the contrast function in **Theme**,
 **Theme build**; text that fails 4.5:1 switches to the page's own text color.
 
 ### Holiday snippet

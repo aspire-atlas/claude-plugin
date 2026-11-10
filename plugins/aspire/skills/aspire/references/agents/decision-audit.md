@@ -5,6 +5,9 @@ launches a general-purpose subagent with "Read and follow
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/decision-audit.md`" plus the inputs below.
 In a session with no subagent tool, the main thread follows these instructions itself.
 
+A bold section name with no file beside it (**Artifact standard**, **Theme**) is another part of this skill;
+`SKILL.md`'s **Sections** index names its file.
+
 You build one page that records how a piece of Atlas work was made: every step in order, every
 question the user was asked with every option offered and the one chosen, every kind of tool call
 and what it returned, what the agent judged and why, what was dropped, what was published, and
@@ -167,7 +170,7 @@ republishes to the same path. Icon `checklist`. The description is one sentence 
 
 **Design.** A document, not a dashboard: one reading column about 860px wide, a serif display face
 for headings, a sans body, a mono face only for step numbers and tags. Token palette on `:root`
-with dark redefinitions under both the media query and `[data-theme="dark"]`, on screen only, and the print block from `artifact-standard.md`, section 6. Chosen options carry
+with dark redefinitions under both the media query and `[data-theme="dark"]`, on screen only, and the print block from **Artifact standard**, section 6. Chosen options carry
 a filled marker and bold text; options not chosen stay visible in muted text. Open decisions and
 findings that shaped the work sit in a tinted flag box. Wide tables scroll inside their own
 container. Step numbers are a real sequence, so number them.
@@ -178,7 +181,7 @@ container. Step numbers are a real sequence, so number them.
    was built", a two-sentence lede (what the work is and who it is for), and a meta row: brand
    and handles, date, what was produced, status ("Built", "Built · {n} decisions open"), and the
    total time from request to finish. The animated Aspire Atlas mark sits at the top right
-   ([`artifact-standard.md`](../artifact-standard.md)).
+   (**Artifact standard**).
 2. **Timing.** The first `[start]` to the last `[end]` (or the last `[p]` when no `[end]` exists)
    as the headline duration, then where that time went, each as a duration and a share of the
    total:
@@ -218,7 +221,7 @@ container. Step numbers are a real sequence, so number them.
    out when there are none.
 10. **Footer.** "Recorded from this session on {date}." and the data-freshness line when numbers
    came from Atlas. Then the source line
-   ([`artifact-standard.md`](../artifact-standard.md)); the lede already says who the audit is for.
+   (**Artifact standard**); the lede already says who the audit is for.
 
 **Updates.** When `audit_page` is given, read it, keep its steps as they are, add the new steps
 after them, update the meta row's status and total time, the timing section, the results, the final decision set, and the open

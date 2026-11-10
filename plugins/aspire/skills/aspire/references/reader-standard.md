@@ -8,11 +8,11 @@ are defined. Two things run them:
 
 - **The page standard** (`skills/page-standard/SKILL.md`): every agent checks its own page against
   them before it publishes, and reports the result in its page check.
-- **The quality review** (`quality-review.md`): runs them as check **4.14**, after the accuracy
+- **The quality review** (`SKILL.md` **Quality review**): runs them as check **4.14**, after the accuracy
   checks, on any page or deck before it is shared.
 
 Each check returns PASS, FAIL, or N/A with a one-line reason; which ones are N/A for a kind of target
-is in `quality-review.md`, **3**.
+is in **Quality review**, **3**.
 
 | ID | Check | Passes when | Fails when, for example | Default severity on FAIL |
 | --- | --- | --- | --- | --- |
@@ -26,7 +26,7 @@ is in `quality-review.md`, **3**.
 | R8 | Shows its working | Scores and recommendations explain how they were reached, with the weights behind any score | A score with no explanation | High |
 | R9 | Names what's missing | On a team page, missing data is named, with what connecting it would add | Says nothing about missing ad data | Medium; High when the gap would change the decision |
 | R10 | Fits the reader | A VP or budget owner sees the answer, decisions, and next steps on one screen, with "Prepared by" at the top and detail below. A client sees the client version: no revision history and no named rejects | A VP brief that opens with the method | High when `recipient` is `leadership` or the page names a VP or budget owner; else Medium |
-| R11 | Plain language | No agent, skill, tool, or system names in the body, and no jargon. The Aspire Atlas mark and the source line `artifact-standard.md` requires are exempt | "The atlas-market-signal agent found" | Medium when `audience` is `team`; High otherwise |
+| R11 | Plain language | No agent, skill, tool, or system names in the body, and no jargon. The Aspire Atlas mark and the source line **Artifact standard** requires are exempt | "The atlas-market-signal agent found" | Medium when `audience` is `team`; High otherwise |
 | R12 | Built for this question | The page's sections and visuals come from what this question and reader need | A launch timeline on a one-creator profile | High |
 
 ## How to judge them
@@ -39,11 +39,11 @@ is in `quality-review.md`, **3**.
   checking its own page judges R7 against what its run read, and treats storyboard timecodes as
   drafts until a 1-second frame scan confirms them.
 - **R2** is n/a on a page that covers one post, one creator, or one account on one network
-  (`quality-review.md`, **3**).
+  (**Quality review**, **3**).
 - **Links.** R7 covers evidence links only; every other broken link is filed as the table in
-  `quality-review.md`, **4.15**, **Broken links**, says.
+  **Quality review**, **4.15**, **Broken links**, says.
 - **R2 and R9 outside the team.** When `audience` is `client`, `creator`, or `public` (the page
-  carries the shared audience line from `artifact-standard.md`, section 2), gaps go to the
+  carries the shared audience line from **Artifact standard**, section 2), gaps go to the
   requester, never onto the page. R9 is N/A ("gaps go to the requester"). R2 passes when the page
   lists the platforms it covers with their post counts and claims no others; a page that names a
   platform Atlas could not collect fails **4.11**, item 5, not R2.

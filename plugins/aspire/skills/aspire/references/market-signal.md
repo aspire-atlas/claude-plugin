@@ -46,7 +46,7 @@ never ask, never start discovery, and publish a "setup needed" card when setup i
 
 The account analyst and the readouts look at accounts. The market signal looks at the
 conversation: posts by creators about the brand and the competitors it names. The
-same run feeds several readers (`recipient-lens.md`):
+same run feeds several readers (**Recipient lens**):
 
 - **Product** gets a parity read: which capability was compared, where the brand won or lost,
   and what users complained about.
@@ -125,7 +125,7 @@ setup is incomplete (**Scheduled (unattended) runs**).
 Filter path unless noted, `context` on every call, only field paths from the census.
 
 1. **Window.** Default the most recent completed Monday to Sunday in the M5 timezone, from
-   the shell clock (`readout.md`, **Resolving "today"**), whatever day the run starts on. That
+   the shell clock (**Readouts**, **Resolving "today"**), whatever day the run starts on. That
    keeps scheduled, on-demand, and weekly-readout windows on the same ISO weeks. Baseline: the
    four weeks before. A caller may pass an earlier window of any length.
 2. **Entities.** The brand (its name, its handles, its tracked hashtags) and each M1
@@ -169,7 +169,7 @@ Filter path unless noted, `context` on every call, only field paths from the cen
   least 3 creators). A phrase is **spreading** when its creator count is at least double its
   baseline and at least 3.
 - **Reuse candidates.** The comparison videos with the strongest openings, ranked by the
-  retention proxy in `ad-reuse.md`. List them; the cut list is the `atlas-ad-reuse` agent's job.
+  retention proxy in **Ad reuse**. List them; the cut list is the `atlas-ad-reuse` agent's job.
 - **What changed.** Against the last run: share-of-voice moves of 3 points or more, new or
   flipped feature outcomes, new friction issues, new spreading phrases.
 - Competitors not indexed (no posts in the window and none in the baseline): say so and
@@ -179,7 +179,7 @@ Filter path unless noted, `context` on every call, only field paths from the cen
 ## Rendering for each lens
 
 The primary M3 lens (or the lens passed in the launch) leads. Every other saved lens gets a
-section. Each follows `recipient-lens.md`, **Rendering for a lens**.
+section. Each follows **Recipient lens**, **Rendering for a lens**.
 
 - **Product:** what changed on top, then features compared (won, lost, even, with the clips as
   evidence), then friction with quotes. No marketing gloss.
@@ -200,9 +200,9 @@ creators per entity, organic and paid split); the primary lens section; the othe
 sections; comparison post cards with media and the quoted line; a verbatim wall (at most 12
 quotes, each linked); method and gaps (sets capped, competitors not indexed, fields missing);
 footer with "numbers come from Atlas as of {timestamp}" and a note that images are a snapshot, then the
-artifact-standard footnote. The mark and the footnote follow [artifact-standard.md](artifact-standard.md).
-Images follow `creator-card.md`, **Images**, page profile. Load `artifact-design` and
-`dataviz` first; apply `theme:brand` per `theme.md`, **Applying the theme**.
+artifact-standard footnote. The mark and the footnote follow **Artifact standard**.
+Images follow **Creator card**, **Images**, page profile. Load `artifact-design` and
+`dataviz` first; apply `theme:brand` per **Theme**, **Applying the theme**.
 
 Build the page from the page blocks (`skills/page-standard/blocks.md`): the header and coverage
 strip (3.1, 3.2) with the brand's and each competitor's posts per platform, the answer (3.3), a
@@ -296,7 +296,7 @@ findings anchor to the post (`entityKind` `post`, the network's own media id). A
 ## Delivery
 
 Read `market-signal:routing` and the per-lens destinations in `market-signal:lenses`. The page
-and chat summary always ship. Slack and email follow `readout.md`, **Delivery**. A lens with
+and chat summary always ship. Slack and email follow **Readouts**, **Delivery**. A lens with
 its own destination gets its own message: that lens's three bullets and the page link with
 the lens section's anchor (`#lens-product`). Interactive runs confirm the sends once;
 unattended runs send on the M3 and M4 standing approval. Never send anywhere else.
@@ -305,7 +305,7 @@ unattended runs send on the M3 and M4 standing approval. Never send anywhere els
 
 - Never ask a question. If `market-signal:scope`, `-topics`, `-lenses`, `-routing`, or
   `-cadence` is missing, publish a one-card page "<Brand> Market Signal: setup needed" (it still carries the mark and the
-  footnote, with the "No Atlas data on this page" variant in [artifact-standard.md](artifact-standard.md)) listing what is
+  footnote, with the "No Atlas data on this page" variant in **Artifact standard**) listing what is
   missing, write nothing, and end with "Run /aspire:aspire and ask for market signal setup."
 - No discovery and no destruction: never call `lookup_*`, `search_creator_marketplace`,
   `start_business_discovery`, `add_hashtags`, or any Destructive tool.

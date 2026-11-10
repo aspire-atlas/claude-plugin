@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-09",
+  "generated": "2026-11-10",
   "source": "apps/api/lib/mcp/tools-list.golden.json",
   "surfaces": {
     "/mcp": {
@@ -574,7 +574,8 @@
           "exclude",
           "fields",
           "limit",
-          "sort"
+          "sort",
+          "widgetExtras"
         ]
       },
       "search_insights": {
@@ -638,7 +639,8 @@
           "partnership.isRecommended",
           "partnership.permissionStatus",
           "queryText",
-          "sort"
+          "sort",
+          "widgetExtras"
         ]
       },
       "set_brand_instruction": {

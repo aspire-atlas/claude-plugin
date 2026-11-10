@@ -297,9 +297,9 @@ and the Aspire ladder without one.
 
 | Flow | What it prices | Shows |
 | ---- | -------------- | ----- |
-| Creator profile page (`creator-profile.md`) | A bundle of one post on each of the creator's channels in the brand's platforms | Open, target, max; each channel's median views in the note, and a single-channel target for the primary channel |
-| Creator brief (`creator-brief.md`) | The deliverables the brief assigns the creator, as one bundle | Target in the creator row, open to max in the rationale, scenario totals at target |
-| Discovery shortlist (`creator-discovery.md`) | A bundle on the campaign's platforms, or the creator's primary channel when the campaign names none | "Est. fee {open} to {max}, target {target}" in the card's details |
+| Creator profile page (**Creator profile**) | A bundle of one post on each of the creator's channels in the brand's platforms | Open, target, max; each channel's median views in the note, and a single-channel target for the primary channel |
+| Creator brief (**Creator brief**) | The deliverables the brief assigns the creator, as one bundle | Target in the creator row, open to max in the rationale, scenario totals at target |
+| Discovery shortlist (**Creator discovery**) | A bundle on the campaign's platforms, or the creator's primary channel when the campaign names none | "Est. fee {open} to {max}, target {target}" in the card's details |
 | Draft Outreach (SKILL.md, **Creator card actions**) | The campaign's platforms, or the channel the card shows | The open fee only, never target or max; else `[fee]` |
 
 Any flow added later that shows a creator fee uses this section too.

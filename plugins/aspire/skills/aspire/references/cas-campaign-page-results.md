@@ -1,9 +1,9 @@
 # CAS campaign page: Ad Performance to Design standards
 
-Part of the CAS campaign reference. `cas-campaign.md` holds the state model, setup interview,
-dispatch table, gate packets and flows, and its **1d** maps every part of the campaign page to
-its file. A section named here without a file, such as **Gate 2** or **1e**, is in the file
-that map gives.
+Part of the CAS campaign reference. Its main file holds the state model, setup interview,
+dispatch table, gate packets and flows, and `SKILL.md` **Sections** maps every part of the
+campaign page to its file. A section named here without a file, such as **Gate 2** or **1e**,
+is in the file that map gives.
 
 ## Contents
 
@@ -109,7 +109,7 @@ cleared), at every publish:
 batches of 100 with the same other arguments, and the batches' rows are put together before
 anything is summed. A row comes back in one batch only, since each ad has one creator and one post.
 
-The `search_ads` rules hold everywhere (`atlas-tools.md`, **Paid ads**, and
+The `search_ads` rules hold everywhere (**Atlas tools**, **Paid ads**, and
 `list_ad_search_fields`, which Claude calls before the first read in a session):
 
 - **One figure per currency.** Every row carries its `currency`. Money is added only within one
@@ -133,7 +133,7 @@ The `search_ads` rules hold everywhere (`atlas-tools.md`, **Paid ads**, and
   variant rows alike.
 - **Paid only.** Nothing here adds organic figures from `search_posts`.
 - **No ad code.** `search_ads` rows carry no ad code, and the page never holds one, from any tool,
-  in any part of the page or page data (`atlas-tools.md`, **Ad codes**).
+  in any part of the page or page data (**Atlas tools**, **Ad codes**).
 
 The figures, each worked out from sums over the matched ads in the results currency:
 
@@ -628,7 +628,7 @@ kind with no leader and nothing over the band proposes nothing.
 | Creator, more | "Rebook @{handle} and give them more of the spend" | The creator is named best on cost per sale | No part: a note on the brief | Agency only |
 | Creator, less | "Move spend away from @{handle}" | The creator is over the Watch band | No part: a note on the brief | Agency only |
 
-`{pattern}` is the hook's type (`ad-reuse.md`, **Hook patterns**), and a hook keeps its concept,
+`{pattern}` is the hook's type (**Ad reuse**, **Hook patterns**), and a hook keeps its concept,
 since hook numbers belong to a concept (**Compare**, **Groups**). **Keep a hook means keep its
 pattern, never its words.** Every hook and CTA in the log is refused in every round (**Rounds**,
 **The new round's brief**), so a kept hook is a new line in the same pattern, written by the next
@@ -1210,7 +1210,7 @@ What the export can't do yet, said plainly:
 
 "Page republished on every change. Numbers come from Atlas as of {time}. Post images are
 embedded snapshots; creator emails and the agency only Aspire notes never show to the client." Plus the
-fee rate label once. Then the artifact-standard footnote (`artifact-standard.md`). The page is
+fee rate label once. Then the artifact-standard footnote (**Artifact standard**). The page is
 shared with the client's approvers, so its source line uses the standard's shared-page audience
 line. The client view and the agency view each carry their own footnote, and the agency-only
 notes never appear in the client view's footnote. For editors only, any brand theme fallbacks
@@ -1261,9 +1261,9 @@ name the tab, never an older name for the part:
 ### Page mechanics
 
 Load `artifact-design` before building, and `dataviz` for any chart. Build every screen to
-**Design standards** below. Apply `theme:brand` per `theme.md`, **The CAS campaign page**. Concept chips use the theme's chart series; status pills and
+**Design standards** below. Apply `theme:brand` per **Theme**, **The CAS campaign page**. Concept chips use the theme's chart series; status pills and
 decisions keep their semantic colors under any theme. Creators are drawn with the creator card,
-images embedded per `creator-card.md`, **Images**, page profile. Publish with the Artifact tool
+images embedded per **Creator card**, **Images**, page profile. Publish with the Artifact tool
 and the page data capabilities in **1e**. The client's view is complete without the agency data,
 and the page renders before its data loads.
 
@@ -1336,7 +1336,7 @@ Dialog, Sheet, Select, Input, Textarea, Switch, Progress, Tooltip, Avatar, Separ
 Collapsible. Every section on a tab is a Card with a Collapsible header (**Collapsing sections**).
 Skeleton is the loading state of anything that waits for page data. Icons are Lucide, at the
 sizes the component gives them (`size-4` in buttons). The creator card keeps its own markup from
-`creator-card.md` and takes its colors from these tokens (**Brand theme on the page**).
+**Creator card** and takes its colors from these tokens (**Brand theme on the page**).
 
 #### Tokens
 
@@ -1426,7 +1426,7 @@ body{background-color:var(--background);color:var(--foreground);font-family:'Int
 </style>
 ```
 
-Paste the print block from `artifact-standard.md`, section 6, after this style, with the campaign's
+Paste the print block from **Artifact standard**, section 6, after this style, with the campaign's
 name as the title. Each tab is its own screen, so a printed page holds the tab on screen, and its
 tab bar shows which tab, filter, or sort was printed; leave the tab bars and their panels as they
 are. The viewer carries `data-print="hide"`, and every section's content prints open.
@@ -1451,7 +1451,7 @@ is `inline-flex`, so it takes the 44px height; a link inside a sentence stays in
   style, and no `style` attribute that sets a color, border or radius. No theme object in script
   (`const theme = {...}`) applied through inline styles, and no `style="background:var(--card)"`.
   Colors live only in the page's style blocks: **Tokens**, the theme block, and the creator card's own style block with its override. Two exceptions: the Aspire Atlas mark
-  is pasted as it is (`artifact-standard.md`), and a chart library that needs color values reads
+  is pasted as it is (**Artifact standard**), and a chart library that needs color values reads
   them from the CSS variables at run time (`getComputedStyle(document.documentElement)`), never from
   literals in the script.
 - Cards with any corner but `rounded-xl`.
@@ -1575,21 +1575,21 @@ label each series in text, so no chart reads by color alone.
 
 #### Brand theme on the page
 
-Read `theme:brand` the way `theme.md`, **Applying the theme**, **Reading**, says. No theme, or one
+Read `theme:brand` the way **Theme**, **Applying the theme**, **Reading**, says. No theme, or one
 that does not parse: the Atlas tokens above stand. With a theme, it overrides these tokens only,
-in each mode from that mode's values. The table is in `theme.md`, **The CAS campaign page**:
+in each mode from that mode's values. The table is in **Theme**, **The CAS campaign page**:
 
 - `--primary` and `--primary-foreground`: buttons, switches, progress, tooltips and the header
   band.
 - `--ring`: focus rings.
 - `--chart-1` to `--chart-5` and their foregrounds: concept colors and charts.
-- The header band and the logo, per `theme.md`, **Header** and **Logo**.
+- The header band and the logo, per **Theme**, **Header** and **Logo**.
 
 Surfaces, text, borders and the font stay Atlas's, so every brand's page reads the same way.
 Status pills, decisions, deltas and alerts keep their semantic colors.
 
 **Contrast check.** Before publishing, check every overridden token in each mode with `contrast()`
-from `theme.md`, **Theme build**, against the thresholds below. A token that fails takes the
+from **Theme**, **Theme build**, against the thresholds below. A token that fails takes the
 Atlas default for that token in that mode. A fill and its foreground fall back together
 (`--primary` with `--primary-foreground`, `--chart-n` with `--chart-n-foreground`), so a brand
 fill never meets an Atlas foreground; any other token falls back alone:
@@ -1601,14 +1601,14 @@ fill never meets an Atlas foreground; any other token falls back alone:
 | `--primary` on `--background`, when the page uses it as text (link buttons) | 4.5:1, else links use `text-foreground` with an underline |
 | `--ring` on `--background` | 4.5:1 (it is also the creator card's fit ring, drawn as text) |
 | each `--chart-n` on `--card` | 3:1 |
-| `--chart-n-foreground` on `--chart-n` | 4.5:1: white or near-black, whichever `on()` in `theme.md` picks; if neither reads, the chip shows a `border-chart-{n}` dot and `text-foreground` instead |
+| `--chart-n-foreground` on `--chart-n` | 4.5:1: white or near-black, whichever `on()` in **Theme** picks; if neither reads, the chip shows a `border-chart-{n}` dot and `text-foreground` instead |
 
 Each fallback is one line in `agency/design` (**1e**): "{mode} mode: the brand's {role} did not
 read clearly on {what}, so the page uses the Atlas default." The footer shows these lines under
 an "Agency only" rule, to editors only. The client never sees them. A theme with nothing to fall
 back on writes no lines and shows nothing.
 
-**The creator card** on this page takes the override in `theme.md`, **The CAS campaign page**,
+**The creator card** on this page takes the override in **Theme**, **The CAS campaign page**,
 in place of the one in **Creator card**, so its surfaces and text follow these tokens and its fit
 ring follows `--ring`.
 

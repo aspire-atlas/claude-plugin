@@ -5,16 +5,16 @@ The job: get the rights to the creator content the brand wants, and commission t
 is missing. Holds the modes, the questions the main thread asks, how terms are proposed, fees,
 the drafts, recording replies, the records, the ledger hand-off, and the sourcing page.
 
-Read `program.md` first: the state model, connected tools (**4**), drafts and sending (**5**),
+Read **Influencer program** first: the state model, connected tools (**4**), drafts and sending (**5**),
 and pages (**7**) apply as written. The library is this flow's input and reads its output:
 
 | What | Defined in |
 | ---- | ---------- |
-| Worth requesting, expiring rights, the rights join, "from the deal" | `content-library.md`, **Rights**, **Expiring rights**, **Worth requesting** |
-| Ad readiness score, hook patterns | `ad-reuse.md`, **Hook score**, **Hook patterns**, via the library's `asset` findings |
-| Channels, voice, the manager rule, follow-up timing | `outreach.md`, **Channels**, **Follow-up timing** |
-| A creator's deal | `program.md`, **Who owns a deal** |
-| Fees on the calculator | `fees.md`, **How a fee is calculated**, **Applying the rates** |
+| Worth requesting, expiring rights, the rights join, "from the deal" | **Content library**, **Rights**, **Expiring rights**, **Worth requesting** |
+| Ad readiness score, hook patterns | **Ad reuse**, **Hook score**, **Hook patterns**, via the library's `asset` findings |
+| Channels, voice, the manager rule, follow-up timing | **Creator outreach**, **Channels**, **Follow-up timing** |
+| A creator's deal | **Influencer program**, **Who owns a deal** |
+| Fees on the calculator | **Fee calculator**, **How a fee is calculated**, **Applying the rates** |
 
 The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
 in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
@@ -76,7 +76,7 @@ is missing. People send. Sourcing drafts, records, and proposes.
 | `renewal` | Grants and deal usage ending within 30, 60, or 90 days: renew or let lapse, with renewal drafts | `rights` (renewal requested), `draft`, the `page` finding |
 | `ugc` | Finds gaps in the library, picks program creators who fit, and drafts short asset requests | `rights` (`requestKind` `new-ugc`, requested), `draft`, the `page` finding |
 | `replies` | Records a creator's answer to a rights, renewal, or asset request: granted, declined, or countered | `rights`, `reply` (when pasted straight in), `roster` (only `waitingOn` and `yourCall`), `draft`, the `page` finding |
-| `sample` | The page from invented data (`agents/sample-artifact.md`) | Nothing |
+| `sample` | The page from invented data (**Sample artifacts**, the agent brief) | Nothing |
 
 Every mode runs in two passes. **`propose`** reads, works out terms, drafts, publishes the page
 with every item marked "Proposed", writes nothing, and returns the `sourcing-packet`. The main
@@ -108,7 +108,7 @@ Rules:
   lands on a your-call item is still asked as S2.
 - S1 and S3 are the Atlas write confirmations, and they cover the sourcing page's `page`
   finding on its first publish. S4 is the mailbox confirmation. "Page only" writes nothing.
-- Sending follows `program.md` **5**: only when the user asks in this session, after the picker
+- Sending follows **Influencer program** **5**: only when the user asks in this session, after the picker
   that names every recipient. Marking sent uses the main thread's picker. A rights draft marked
   sent leaves its `rights` finding at requested; nothing more is written.
 
@@ -186,7 +186,7 @@ A post or creator is skipped, and listed with the reason, when:
 
 **Creators off the roster.** The library catalogs posts that tag or mention the brand from
 creators who are not on any roster. A rights request to them is the one message any program flow
-drafts to a creator off the roster (`program.md`, **State model**, Creators off the roster):
+drafts to a creator off the roster (**Influencer program**, **State model**, Creators off the roster):
 never an asset request, an offer, or a program invitation. Their findings are anchored to their
 own account like any other, and they are never added to the roster.
 
@@ -196,7 +196,7 @@ Per post, four things: usage, channels, duration, and fee. Each comes from the r
 anything the records do not hold is a proposal the user approves in S1, or a blank.
 
 **1. What the deal already grants.** Work out the deal's usage per post with the library's
-rule (`content-library.md`, **Rights**, "From the deal"): the creator's newest agreed `terms`,
+rule (**Content library**, **Rights**, "From the deal"): the creator's newest agreed `terms`,
 else the program's terms for their type, applied only to posts matched to their deliverables.
 Gifting deals grant no usage. Never request what the deal already grants:
 
@@ -245,20 +245,20 @@ A rights or asset fee comes from one of these, in order, and nowhere else:
 
 Rules:
 
-- Without the `rights` block every rights or UGC fee is the user's number (`program.md`, **State
+- Without the `rights` block every rights or UGC fee is the user's number (**Influencer program**, **State
   model**). Never estimate a usage fee any other way: never from the fee calculator's CPM, a
   benchmark, a follower count, or memory.
 - The fee calculator prices posts, not usage. Its figure for a post may show only as a reference
   on the page's team data, in USD, never in a draft.
 - Organic repost asks for no fee by default ("credit and a tag"), unless the user sets one.
 - An asset request (UGC) has no calculator fee: it is not a post on the creator's handle
-  (`fees.md`, work the calculator does not price). Its fee is the user's number, product from
+  (**Fee calculator**, work the calculator does not price). Its fee is the user's number, product from
   the catalog, or both; the `rights` block prices only the usage it grants. Never a number the user did not give.
-- No fee, budget, or maximum of another creator ever appears in a draft (`program.md` **5**).
+- No fee, budget, or maximum of another creator ever appears in a draft (**Influencer program** **5**).
 
 ## Renewal
 
-**Who is up.** From the library's join (`content-library.md`, **Expiring rights**): every grant
+**Who is up.** From the library's join (**Content library**, **Expiring rights**): every grant
 and every deal usage whose end date falls within the S0 horizon, plus those that ended in the
 last 30 days. Per item: the asset, the creator, the usage and channels, the end date, days left,
 the ad readiness score and its basis, and whether it is cleared for ads.
@@ -282,7 +282,7 @@ the grant asked for removal at expiry.
 **Renew** drafts the renewal (template `rights-renewal`) and, on S1, writes a `rights` finding
 with `requestKind` `renewal`, status `renewal requested`, `renews` (the grant's identity, or
 `deal` with the `terms` version), and the proposed new end date. Deal usage stays "from the
-deal" and is never written as a grant (`program.md`, **Deal usage**); an agreed renewal of it
+deal" and is never written as a grant (**Influencer program**, **Deal usage**); an agreed renewal of it
 is, and the library then shows the grant.
 
 A renewal fee follows **Fees**. A creator whose deal included the usage at no extra fee is
@@ -382,9 +382,9 @@ pass writes the `rights` finding again with `assetSpec.deliveredAt` and `assetSp
 
 ## Fees owed: the ledger hand-off
 
-Sourcing never writes `ledger` (`program.md`, **Ledger lines hand-off**). When the `record` pass writes a
+Sourcing never writes `ledger` (**Influencer program**, **Ledger lines hand-off**). When the `record` pass writes a
 grant or an agreed asset request with a fee or product, it returns a fenced JSON block labelled
-`ledger-lines`, one line each, with exactly the fields `program.md` lists:
+`ledger-lines`, one line each, with exactly the fields **Influencer program** lists:
 
 ```json
 [{"lineId": "rights-ig-creatorhandle-{postId}-paid-usage",
@@ -410,16 +410,16 @@ grant or an agreed asset request with a fee or product, it returns a fenced JSON
 
 ## Drafts
 
-Every message is a `draft` finding (`program.md` **5**), shown ready to copy, created in the
+Every message is a `draft` finding (**Influencer program** **5**), shown ready to copy, created in the
 mailbox only after S4, never sent by the agent. Identity: creator + template + channel.
 
-**Channels** follow `outreach.md`, **Channels**, with one change of order: for rights, email
+**Channels** follow **Creator outreach**, **Channels**, with one change of order: for rights, email
 first, because a written yes is the proof that matters. Then an Aspire message for roster
 creators when the program uses it, then a DM. Email goes to the roster contact or the manager,
 else a business email Atlas holds. Creators off the roster get email when Atlas holds one, else
 a DM.
 
-**Voice** per `outreach.md`: `outreach.voice`, `outreach.sender`, first name only, no emoji
+**Voice** per **Creator outreach**: `outreach.voice`, `outreach.sender`, first name only, no emoji
 unless the voice asks, no praise words with nothing behind them. To a creator with a manager,
 address the manager and name the creator.
 
@@ -433,7 +433,7 @@ the records cannot fill are bracketed blanks (`[fee]`, `[due date]`), listed und
 draft with a blank is never sent.
 
 Drafts to creators are text, not pages, so they carry no footnote
-([`artifact-standard.md`](artifact-standard.md)).
+(**Artifact standard**).
 
 ### The templates
 
@@ -596,14 +596,14 @@ the recommended answer.
 
 ## Records written
 
-`append_insights` per `program.md`, **Working state**: role `account_review`, runKey
+`append_insights` per **Influencer program**, **Working state**: role `account_review`, runKey
 `program-{profile}-{slug}-{YYYY-MM-DD}`, `schema` the creator's network, `entityKind` `account`,
 `entityId` the network's own account id. Each finding carries `detail.recordType`,
 `detail.program`, `detail.recordedAt` (one shell timestamp per write), `detail.by`
 `atlas-content-sourcing`, and `detail.recipient`. Copy the newest finding's detail for the same
 identity and change what moved. Batches of up to 25.
 
-**`rights` identity**: the post + the usage (`program.md`). One finding per post per usage, so
+**`rights` identity**: the post + the usage (**Influencer program**). One finding per post per usage, so
 the library's "for that usage" join holds; the newest wins. `version` counts the findings for one
 identity and keeps each idempotencyKey unique. A new UGC request has no post yet: its identity is
 `ugc-{net}-{handle}-{n}` in `postUrl`'s place (`ugcId`), until the delivered asset is posted.
@@ -616,14 +616,14 @@ identity and keeps each idempotencyKey unique. A new UGC request has no post yet
 | S3, countered | `countered` | `action_item` `medium` |
 | S3, declined | `declined` | `needs_improvement` |
 
-**Fields this agent adds to `rights`** (beyond `program.md`'s list, which holds `proof` and
+**Fields this agent adds to `rights`** (beyond **Influencer program**'s list, which holds `proof` and
 `inWriting`): `postId`, `network`, `version`, `ugcId`, `durationDays`, `currency`, `feeSource`
 (`terms`, `user`, `none`), `counter` (their ask), `renews` (a grant identity, or `deal`
 with the `terms` version), `dealCovers` (what the deal already granted, when the request extends
 it), `requestedAt`, `grantedAt`, `notes`. `assetSpec` holds `what`, `shotList`, `specs`, `due`,
 `comp`, `gap`, `hookPattern`, `deliveredAt`, `files`.
 
-**`draft`**: `program.md` fields plus `to`, `posts` (the post links it covers), `blanks`, and
+**`draft`**: **Influencer program** fields plus `to`, `posts` (the post links it covers), `blanks`, and
 `step`. **`reply`**: only for a reply pasted straight in; triage's replies are never written
 again. Class `rights`, `source` `pasted`.
 
@@ -654,9 +654,9 @@ own account on its first linked network, `went_well` `low`.
 One page per program, the sourcing tracker, title "{Brand} {Program}: Content Sourcing",
 republished to the link in the `page` finding with key `sourcing` (read it with the Artifact
 tool first). Load `artifact-design` and `artifact-capabilities` before building and `dataviz`
-for the charts; apply `theme:brand` per `theme.md`, **Applying the theme**; draw creators with
-the creator card (`creator-card.md`, page profile); post images per
-`creator-card.md`, **Images** (`thumb@120x150`); render for `recipient`. Rights badges keep the
+for the charts; apply `theme:brand` per **Theme**, **Applying the theme**; draw creators with
+the creator card (**Creator card**, page profile); post images per
+**Creator card**, **Images** (`thumb@120x150`); render for `recipient`. Rights badges keep the
 library's semantic colors.
 
 **Who sees what.** The page is for the brand's team, never for creators. Fees offered and agreed
@@ -685,7 +685,7 @@ Sections, in order:
 
 1. **Header**: the program, "Prepared for" chip, when the records were read, counts: wanted,
    requested, countered, granted this month, expiring in 30 days, asset requests open. The
-   animated Aspire Atlas mark sits at the top right ([`artifact-standard.md`](artifact-standard.md)).
+   animated Aspire Atlas mark sits at the top right (**Artifact standard**).
 2. **Your call needed**: one card per open item, the answers with the recommendation first.
    Done marks per viewer.
 3. **Requests by status**: tabs for Wanted, Requested, Countered, Granted, Declined. Each row:
@@ -706,7 +706,7 @@ Sections, in order:
 9. **Footer**: "Read from Atlas as of {timestamp}", where fees came from ("your usage fees" or
    "your number"), "Rights shown are what your records say. The signed agreement decides paid use.", and
    a link to the content library page. Then the footnote with the team audience line
-   ([`artifact-standard.md`](artifact-standard.md)).
+   (**Artifact standard**).
 
 **Lens order.** `team` keeps the order above. `performance` and `creative` lead with Expiring
 and Granted this month. `brand` moves the proof lines and "Get this in writing" up.

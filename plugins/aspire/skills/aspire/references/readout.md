@@ -103,7 +103,7 @@ Rules:
   confirmation may an unattended run send anything.
 - Confirm the batch once before writing (Guardrails: one confirmation may cover a batch of the
   same kind). Then write all six.
-- R6 lenses are `team`, `leadership`, `product`, `pmm`, and `growth` (`recipient-lens.md`).
+- R6 lenses are `team`, `leadership`, `product`, `pmm`, and `growth` (**Recipient lens**).
   Option 3 saves both `product` and `pmm`. A destination named on a lens is covered by the R2
   standing approval; say so in the same confirmation. A saved R6 in the older wording maps as:
   "The social team" is `team`, "Marketing leadership" is `leadership`, "Both" is `team` then
@@ -134,7 +134,7 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
 
 1. `search_calibrations` as above. Extract: readout calibrations, `red_line`, `guideline`,
    `competitor`, `partner`, `brand:summary`, `target:weekly-health`, `theme:brand`. Drop every
-   `review:` key (content review only; see `atlas-tools.md`). `theme:brand` styles the page
+   `review:` key (content review only; see **Atlas tools**). `theme:brand` styles the page
    and is never a guideline.
 2. `list_post_search_fields` once. Use only paths it returns.
 3. `search_posts` per linked handle: `author.username` = handle, `postedAt` gte the window
@@ -164,7 +164,7 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
    `userVerdict`; `check` with `result: "Fail"` feeds the most failed check; `edit` is a
    required edit. Open edits span every review, not just the window: an `edit` stays open
    until a `close` finding names its `idempotencyKey` in `detail.closes`. See
-   `content-review.md`, **Feeding the readouts**. Read only; never write a review finding.
+   **Content review**, **Feeding the readouts**. Read only; never write a review finding.
    A content review edit is closed only by a later review's `close` finding, never by a
    readout: the readout's own resolving `went_well` applies to readout and brief items only.
 7. Red-line scan: for each `red_line` with `action: block|flag|escalate`, one semantic
@@ -183,7 +183,7 @@ Metric definitions:
 ## Meta Ads enrichment (optional, both agents)
 
 When the Meta Ads connector is live, the daily and weekly reports add one **Meta Ads** block from
-Meta's read tools. The report never depends on it. Follow `meta-ads-tools.md` (**Detection**,
+Meta's read tools. The report never depends on it. Follow **Meta Ads** (**Detection**,
 **Brand scope**, **Privacy**, **Reports**); in short:
 
 1. After the Atlas data pull, detect the connector with one `ToolSearch` (`+Meta_Ads
@@ -197,7 +197,7 @@ Meta's read tools. The report never depends on it. Follow `meta-ads-tools.md` (*
    `ads_get_errors` (daily and weekly); the weekly adds `ads_insights_performance_trend`,
    `ads_insights_industry_benchmark`, `ads_insights_auction_ranking_benchmarks`, and
    `ads_get_opportunity_score`. `advertiser_request` is the `meta_request` input (the user's own
-   words) when the launch carries one, and otherwise the fixed line in `meta-ads-tools.md`
+   words) when the launch carries one, and otherwise the fixed line in **Meta Ads**
    **Privacy**, always in an unattended run. Each figure is labelled "Meta Ads", kept apart from
    Atlas's figures and from organic, and turned into an insight with a next step (a swing to
    check, a delivery error to fix, a recommendation to try).
@@ -243,7 +243,7 @@ engagement rate, followers with delta). One 28-day sparkline of the lead metric 
 yesterday marked. Cards for yesterday's posts (media, metric row, one-line takeaway). Flags
 block. A content reviews block when any review ran yesterday: one row per review with
 verdict chip, creator, deliverable, open edits, and the review page link. Footer with the CDN
-expiry note, then the artifact-standard footnote ([artifact-standard.md](artifact-standard.md)). Republish to the same path each day.
+expiry note, then the artifact-standard footnote (**Artifact standard**). Republish to the same path each day.
 
 Insights written (`append_insights`): `runKey` `readout-daily-{profile}-{YYYY-MM-DD}`,
 role `account_review`, `schema` = network, `entityKind` account or post, `entityId` the
@@ -265,7 +265,7 @@ named there is covered by the R2 standing approval, and the confirmation says so
 On every daily run, read every `campaign:*-pulse` record and keep those whose window covers the
 target date. A caller may also pass a campaign slug for an on-demand pulse. For each one:
 
-1. **Campaign creators live.** The campaign's accepted creators (`creator-discovery.md`, **State
+1. **Campaign creators live.** The campaign's accepted creators (**Creator discovery**, **State
    written to Atlas**): their posts on the target date that mention the brand. Engagement per
    post against each creator's own median.
 2. **Mentions.** A semantic `search_posts` with `queryText` = the pulse topics, filtered to the
@@ -320,7 +320,7 @@ section list below. The others:
 - **Growth:** creator posts about the brand in the week (collab posts on the brand's account,
   partnership-marked posts, and mentions by accounts other than the brand), per creator and per
   format: engagement per post against the creator's own median and the brand's median, and the
-  estimated fee from the fee calculator (`fees.md`) per 1,000 engagements, labelled as estimated
+  estimated fee from the fee calculator (**Fee calculator**) per 1,000 engagements, labelled as estimated
   because Atlas holds no spend. End with one recommendation: where the next dollar goes. Each
   creator that beat both medians gets a `went_well` finding with `detail.creator`,
   `detail.lens: "growth"`, and `detail.seedEligible: true`, which feeds discovery's lookalike tier.
@@ -339,7 +339,7 @@ Page, sections in order:
    per review with creator, verdict chip, open edits, and the review page link.
 7. Next steps, ranked.
 7b. One section per non-`team` lens, per **Lenses** above, in R6 order.
-8. Footer: sources, a note that images are a snapshot, "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote ([artifact-standard.md](artifact-standard.md)).
+8. Footer: sources, a note that images are a snapshot, "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote (**Artifact standard**).
 
 Insights written: `runKey` `readout-weekly-{profile}-{ISO week, e.g. 2026-W38}`, role
 `account_review`. Kinds: `went_well` per top post pattern, `needs_improvement` per bottom
@@ -351,14 +351,14 @@ findings carry `detail.lens`. Growth creator findings are outside the 3 next-ste
 
 ## Page mechanics
 
-Embed every image as a data URI with the snippet in `creator-card.md`, **Images**, page
+Embed every image as a data URI with the snippet in **Creator card**, **Images**, page
 profile, which also sets how the `<img>` is sized: `post@{card media width}` for post cards
 (the CSS width of the card's media, 360 by default), `detail@{W}x{H}` for a larger media panel
 (for example `detail@480x1000` for a tall carousel panel), `+text` on posts that are mostly text
 or graphics, and `avatar` for profile pictures. Pass `media.mediaUrl` first and
 `media.thumbnailUrl` after it, so each post comes from the full-size image or poster. Keep the
 images under 8MB and the page under 10MB, cutting images before quality per **Images**. Load the
-`artifact-design` and `dataviz` skills before building. Apply the saved brand theme (`theme:brand`) per `theme.md`, **Applying the theme**; without one, the design here stands. Flags, deltas, and verdict
+`artifact-design` and `dataviz` skills before building. Apply the saved brand theme (`theme:brand`) per **Theme**, **Applying the theme**; without one, the design here stands. Flags, deltas, and verdict
 chips keep their semantic colors. Publish with the Artifact tool,
 title "<Brand> Daily Insights Report" or "<Brand> Weekly Insights Report", and republish to the same path
 each run so the link in Slack or email stays stable. Note once in the footer that images are
@@ -398,7 +398,7 @@ README). Rules for the agents:
 
 - Never ask a question. If any of the six readout calibrations or `brand:summary` is missing,
   publish a one-card page titled "<Brand> Insights Report: setup needed" listing the missing items (it still carries the mark and the footnote, with the
-  "No Atlas data on this page" variant in [artifact-standard.md](artifact-standard.md)),
+  "No Atlas data on this page" variant in **Artifact standard**),
   write nothing to Atlas, and end with "Run /aspire:aspire and ask for readout setup."
 - Never run a destructive tool. Never call `lookup_*`, `search_creator_marketplace`, or
   `start_business_discovery`.
@@ -476,7 +476,7 @@ the recurring schedules now?" Options: "Yes, daily and weekly (Recommended)", "W
 
 ## Atlas quirks that apply here
 
-Inherited from `creator-brief.md`: project the `media` and `instagram.account` containers, not
+Inherited from **Creator brief**: project the `media` and `instagram.account` containers, not
 leaf URLs; exclude stories with `exists mediaKind`; `/thumbnail` routes 404 on image posts; published
 pages cannot load `cdn.aspire.io` images. New for readouts: `search_insights` returns findings
 tenant-wide, so always filter on the `detail.account_review.runKey` prefix; and `aggs` only work on the filter path,

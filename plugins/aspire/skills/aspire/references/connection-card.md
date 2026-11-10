@@ -5,6 +5,9 @@ browser (`connectUrl` on start, `resultUrl` when the status is awaiting-selectio
 the older "relay the link verbatim" behavior. The card describes the connection process and
 shows the network's logo beside the animated Aspire Atlas mark, lists what Atlas will do, and carries one button that opens the link through the app's link dialog.
 
+A bold section name with no file beside it (**Artifact standard**, **Theme**) is another part of this skill;
+`SKILL.md`'s **Sections** index names its file.
+
 ## Contents
 
 - [When the host renders the connect widget](#when-the-host-renders-the-connect-widget)
@@ -116,11 +119,11 @@ network's logo on the left, the animated Aspire Atlas mark on the right.
 - **Network logo.** A rounded tile in the network's own color with the white Tabler brand icon
   (`{ICON}`), as in the template. Never draw a network's logo by hand, never use its gradient, and
   keep the tile's color to the `{NETWORK_COLOR}` values above.
-- **Aspire mark.** The small animated mark (**artifact-standard.md**, section 1, widget variant),
+- **Aspire mark.** The small animated mark (**Artifact standard**, section 1, widget variant),
   never recolored or edited, shown at 84px to match the network tile. Its squares shuffle on their
   own and hold still under reduced motion. One copy per card.
 - **Placement.** The card is a widget, so the mark's usual top-right corner does not apply. It takes
-  the right-hand tile of the logo pair. The source line is not added to this card (artifact-standard.md,
+  the right-hand tile of the logo pair. The source line is not added to this card (**Artifact standard**,
   Does not apply to).
 
 ## Template

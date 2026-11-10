@@ -1,9 +1,9 @@
 # CAS campaign page: Selected Creators and Content Review
 
-Part of the CAS campaign reference. `cas-campaign.md` holds the state model, setup interview,
-dispatch table, gate packets and flows, and its **1d** maps every part of the campaign page to
-its file. A section named here without a file, such as **Gate 2** or **1e**, is in the file
-that map gives.
+Part of the CAS campaign reference. Its main file holds the state model, setup interview,
+dispatch table, gate packets and flows, and `SKILL.md` **Sections** maps every part of the
+campaign page to its file. A section named here without a file, such as **Gate 2** or **1e**,
+is in the file that map gives.
 
 ## Contents
 
@@ -254,7 +254,7 @@ to that hash opens the card expanded and scrolls to it.
     first, one line each with its date and summary; and the email drafts for the creator (offer,
     counter, accept, chase, details, brief), each with its template, subject, whether and when it
     was sent, and a ghost Button "Copy draft". Drafts are written and sent from the chat
-    (`rates-and-terms.md`, **Drafts**, **1f**), never from the card.
+    (**Rates and terms**, **Drafts**, **1f**), never from the card.
 
 #### Details to add
 
@@ -313,7 +313,7 @@ round** carries into the new round's roster, so the page and Atlas agree in ever
 | ------ | ------ | --------- |
 | Contract | `contract`, `{status, signedAt}`: `status` not-sent, sent or signed, read as Not sent, Sent and Signed; `signedAt` the signed date | Agency, a Select and a date Input |
 | Rates | `rate-ugc`, `rate-reel`, `rate-usage90` on `agency/creator-{net}-{handle}-r{round}`, the round's three rates per deliverable, copied by Claude at each publish from the round's roster `rates`, which the chat writes when they are recorded (**Rates and terms**). A page from before kept them on `agency/creator-{net}-{handle}`: they read as the newest round's when its own document has none, and the next publish writes them there | The chat only |
-| Contracted total | Not stored: the agreed fee plus its allowlisting uplift, as **Totals** gives it (`rates-and-terms.md`, **Contract and rates**) | Nobody; worked out |
+| Contracted total | Not stored: the agreed fee plus its allowlisting uplift, as **Totals** gives it (**Rates and terms**, **Contract and rates**) | Nobody; worked out |
 | Payment | `payment`, `{status, at, paidPct}`: `status` invoice-sent, half-paid, paid or on-hold, read as Invoice sent, "50% paid, the rest on final cut sign off", Paid in full and On hold; `at` its date; `paidPct` 0, 50 or 100, set with the status (an On hold keeps the one before it). The amount paid so far is `paidPct` of the contracted total, worked out on the Editor's page, so no amount is stored. `paidPct` is client readable and tells the client only whether half was paid before an On hold, never an amount | Agency, a Select; shown and saved only once the fees are sent |
 | Ship to | `shipTo`, `{kind, confirmed, visitDate}`: `kind` home or pickup; `confirmed` true once the address is confirmed for this round; `visitDate` for a pickup. Never any part of the address | Agency; Claude from the details reply |
 | Shipping | `productStatus` (not-shipped, shipped, delivered, returned or kept), `item` (what was sent: the round's product and its options, from the details reply), `shipping` (the carrier), `tracking`, `shippedAt`, `deliveredAt`, `eta` (typed only), `etaEstimate` (from **Mark shipped**), each its own stamp, on both `client/creator-{net}-{handle}-r{round}` and this document | Both sides; the newer `at` wins per field (**Who sees what**) |
@@ -710,7 +710,7 @@ and only once the fees are sent; the agency also sees the rate per deliverable, 
 counter and the agreed fee. Before the fees are sent, the client sees the creators and "Fees show
 here once they are sent for your approval." **Totals**, agency only, close the section: the
 campaign at open, target and max, and at what is agreed so far, with the allowlisting uplift as its
-own line unless allowlisting is off. Full detail: `rates-and-terms.md`, **Contract and rates**.
+own line unless allowlisting is off. Full detail: **Rates and terms**, **Contract and rates**.
 
 Once the fees are sent, each agency row also carries the creator's contract record (status and signed
 date), the round's rates per deliverable, the contracted total, and the payment status with the
@@ -758,7 +758,7 @@ What the section's header shows, for both sides:
 - **After step 3 is cleared**, the client's header stays "Fees approved {date}", and the page
   compares the fees with the copy in Gate 3's recorded `approval`. A fee, a creator or the uplift
   that changed since shows the agency only a warning Badge "Fees changed after approval" with the
-  lines that differ. A change like that goes to the client as a your call (`rates-and-terms.md`,
+  lines that differ. A change like that goes to the client as a your call (**Rates and terms**,
   **Replies**), recorded in the chat; it never reopens step 3 on its own.
 - **Not counted** (warning), for the agency only, on an approval from an account on Aspire's side
   or one the CM refused.
@@ -852,7 +852,7 @@ cut** on each for the agency.
 
 A cut's status is the status of its newest version, worked out live from the page data. Nobody
 sets it by hand, and no record the page reads stores it: the `cut` finding in Atlas is a copy the
-page never reads back (`cas-campaign.md`, **Pulling decisions**, **The cut records**). The rows below are read in order, and the first that
+page never reads back (**CAS campaign**, **Pulling decisions**, **The cut records**). The rows below are read in order, and the first that
 holds is the status, so a version with a call never reads as in QA.
 
 **The call on a version** is the client's call that counts on it (**The status flow**, **The call
@@ -1775,7 +1775,7 @@ confirms each one.
 - **The frames.** The page draws frames of the version's own video onto a canvas: 0.5, 1, 1.5, 2,
   2.5, 3, 3.5 and 4 seconds; one every 3 seconds from there to 5 seconds before the end; each
   second of the final 5 seconds; and 0.2 seconds before the end. It follows **Which frames** in
-  `content-review.md`, with more frames in the windows the checks name. Past the count
+  **Content review**, with more frames in the windows the checks name. Past the count
   `sample.limits()` allows, middle frames are dropped first. Each frame is scaled to 720 pixels tall
   and saved as JPEG at 0.85 quality, under the largest file the limits allow. The upload is served
   from the page's own address, so the canvas can be read; a frame that can't be drawn is left out
