@@ -1,10 +1,13 @@
 # Hooks and CTAs reference
 
 How a CAS campaign recommends hooks and CTAs, and how it learns which ones worked between
-rounds. Used by the **CAS campaign** section of SKILL.md (`cas-campaign.md`), and by the
+rounds. Used by the **CAS campaign** section of SKILL.md, and by the
 `atlas-creator-brief` agent in creator-ads mode when it writes each lane's hooks and CTAs
-(`creator-brief.md`, **Creator-ads mode**). There is no agent for this. The hook review runs
+(**Creator brief**, **Creator-ads mode**). There is no agent for this. The hook review runs
 in the main thread, inside the CAS campaign section.
+
+A bold section name with no file beside it (**Creator brief**, **Ad reuse**) is another part of this skill;
+`SKILL.md`'s **Sections** index names its file.
 
 ## Contents
 
@@ -21,7 +24,7 @@ in the main thread, inside the CAS campaign section.
 Read in this order. An earlier source outranks a later one when they disagree.
 
 1. **The changes applied from Ad Performance.** The round's `change-r{n}-{id}` notes, which come in
-   `current_brief` (`cas-campaign-page-results.md`, **Ad Performance**, **Changes for round {t}**). They rest on
+   `current_brief` (**CAS campaign**, **Ad Performance**, **Changes for round {t}**). They rest on
    the paid partnership ads' results, so they outrank everything below. A pattern a line keeps
    leads the concept's hooks, in H1 when Apply set its type; a pattern a line replaces is not used
    on that concept; and a CTA type a line leads with is C1. Keeping a pattern never keeps its
@@ -41,7 +44,7 @@ Never invent a performance figure to justify a hook.
 
 ## Hook patterns
 
-Use the pattern list in `ad-reuse.md`, **Hook patterns**, so every flow tags hooks the same
+Use the pattern list in **Ad reuse**, **Hook patterns**, so every flow tags hooks the same
 way: question, bold claim, result first, demo first, before and after, POV or relatable
 moment, comparison or reaction, list or number, face-to-camera statement.
 
@@ -82,7 +85,7 @@ trigger, no saved results yet"). Show it on the brief page under the hook.
 
 A hook or CTA that follows a change line from Ad Performance gives a reason from the pattern's fit
 with the concept's trigger and persona, never its paid result or that results chose it: results by
-hook, CTA and framework are agency only (`cas-campaign-page-results.md`, **Ad Performance**, **Compare**), and
+hook, CTA and framework are agency only (**CAS campaign**, **Ad Performance**, **Compare**), and
 the reason shows to the client. The agency reads the source on the change note.
 
 ## Limits
@@ -95,7 +98,7 @@ the reason shows to the client. The agency reads the source on the change note.
   direction: what the line must do and must not say, with the pattern and the reason, never a
   scripted line.
 - **Coverage.** Every hook's "Shown" part needs footage asked for, and the beats must fit the
-  shortest runtime with the hook inside the first three seconds (`creator-brief.md`, **Editing
+  shortest runtime with the hook inside the first three seconds (**Creator brief**, **Editing
   coverage check**).
 
 ## The hook review (between rounds)
@@ -105,7 +108,7 @@ when the user asks how the hooks did. Main thread only, interactive only. It rea
 Atlas holds: no lookups, no marketplace, no discovery.
 
 1. **Find the posts.** `search_posts` for the round's roster creators (the authors' handles),
-   posted from the round's Gate 4 clearing to the end of its in-market window (`cas-campaign.md`,
+   posted from the round's Gate 4 clearing to the end of its in-market window (**CAS campaign**,
    **Rounds**), so rounds that overlap never score the same post, video only (`exists mediaKind`,
    Reels and TikTok videos), that mention or tag the brand. Project `postedAt`, `text`, `url`,
    `author.username`, the metrics, `media` (container), and `analysis.transcript` and
@@ -123,11 +126,11 @@ Atlas holds: no lookups, no marketplace, no discovery.
    patterns that led, and the ones to drop.
 5. **Save it.** One `AskUserQuestion`: "Save the round {n} hook results? Later brief runs
    weigh them when they pick hook patterns." Options: "Save (Recommended)", "Page only". On save,
-   write a `hook-review` finding per hook (`cas-campaign.md`, **Working state**).
+   write a `hook-review` finding per hook (**CAS campaign**, **Working state**).
 
 These are organic results from the creators' own posts. Paid results (hook rate and cost per
 sale from the partnership ads) are Ad Performance's, judged by the saved decision defaults in
-`campaign:{slug}-decision-defaults` (`cas-campaign-page-results.md`, **Ad Performance**).
+`campaign:{slug}-decision-defaults` (**CAS campaign**, **Ad Performance**).
 
 **How the two feed the next brief.** There is one way to change a brief from results: **Changes
 for round {t}** on Ad Performance, whose accepted lines an Editor applies to the round's brief. The

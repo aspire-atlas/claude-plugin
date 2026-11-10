@@ -4,6 +4,9 @@ Used by **Running agents** and **Reading the ask** in SKILL.md, and by every age
 block in **11**. It is the one shape every launch and every result takes, so `/aspire` can run
 any agent without reading a different format for each.
 
+A bold section name with no file beside it (**Meta Ads**, **Orchestrator**) is another part of this skill;
+`SKILL.md`'s **Sections** index names its file.
+
 `/aspire` is the front door. A person never picks an agent and never reaches one, or the shared
 page standard, except through `/aspire:aspire` or one of its shortcuts (**4**). The organization
 admin skill is a separate support skill and keeps its own command. `/aspire` knows who is
@@ -13,7 +16,7 @@ publishes one page, and returns a result packet (**6**). `/aspire` reads the pac
 approvals its permission levels require (**7**), logs the run (**9**), and decides what runs next.
 No agent ever launches another agent.
 
-The **Orchestrator** section and `references/orchestrator.md` are a different thing: the Next
+The **Orchestrator** section is a different thing: the Next
 actions page and its hourly run. That run is one more caller of this contract.
 
 ## Contents
@@ -33,12 +36,12 @@ actions page and its hourly run. That run is one more caller of this contract.
 ## 1. Routing (every request, in this order)
 
 1. **Who asks, and who acts.** The **persona** is who asks; the **reader** is who acts on the
-   answer. Read the persona from the person's own `user:` record (`onboarding-questions.md`,
+   answer. Read the persona from the person's own `user:` record (**Onboarding questions**,
    questions 2 and 11) by its `role`: creators, influencers, partnerships, ambassadors, affiliates,
    or gifting is `influencer-manager`; paid, performance, ads, media, or growth is
    `paid-social-manager`; social, community, content, or organic is `organic-social-manager`.
    With no record, or a role that fits none, ask it in the setup reply (**2**). Read the reader per
-   **Reading the ask** (`recipient-lens.md`). The reader sets the page layout, so it goes to the
+   **Reading the ask** (**Recipient lens**). The reader sets the page layout, so it goes to the
    agent; the persona only steers routing and the question code.
 2. **Load memory.** Call `search_calibrations` once (no filter, paged to the end,
    `includeSuperseded: false`) for the brand's memory and the person's `user:` record, unless
@@ -184,7 +187,7 @@ lists them. Agents work only from a message that carries it (**11**).
   profile's examples library (`skills/page-standard/examples.md`, **The examples library**). It is
   `[]` when no library is saved, the question has no approved example, or the launched agent only
   feeds the agent that builds the page.
-- The `recipient` lens object (`recipient-lens.md`) and the decision-audit line follow as today.
+- The `recipient` lens object (**Recipient lens**) and the decision-audit line follow as today.
 
 ## 6. The result packet
 
@@ -273,7 +276,7 @@ packet after the run.
 
 **Meta Ads writes are never an agent's.** No agent proposes or makes a write through the Meta Ads
 connector, whatever its level: those writes are the main thread's, one `AskUserQuestion` each, per
-`meta-ads-tools.md` **Writes**. A packet proposal that would write to Meta is not offered and is
+**Meta Ads** **Writes**. A packet proposal that would write to Meta is not offered and is
 logged (**9**, Adjustments). The daily and weekly insights reports may read Meta Ads as optional
 enrichment at their Read level.
 
@@ -294,7 +297,7 @@ enrichment at their Read level.
 
 The existing exceptions stay as they are and are the only ones: the Orchestrator's hourly run may
 act on an Editor's approval on the Next actions page within its saved limits
-(`orchestrator.md` **4**), `atlas-creator-discovery` may start discovery work unattended under the
+(**Orchestrator** **4**), `atlas-creator-discovery` may start discovery work unattended under the
 cadence the person saved for that campaign, and an unattended run acts only on the standing
 approvals its setup saved. Unattended runs never confirm anything: a proposal without a standing approval waits for
 the next interactive session.
@@ -311,7 +314,7 @@ codes that share an agent, or where one needs the other's result (**3**), run on
 
 Every launch writes a Runs row and every later change to that run writes an Adjustments row. The
 main thread appends both to `run-log.jsonl` in the session's scratch folder, next to the decision
-log (`agents/decision-audit.md`), one JSON object per line, with UTC times read from the shell
+log (**Decision audit**), one JSON object per line, with UTC times read from the shell
 clock.
 
 ```text

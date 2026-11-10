@@ -3,6 +3,9 @@
 Shared by every agent and by **Reading the ask** in SKILL.md. Holds the lens shape, the team
 catalog, how the main thread infers and confirms a lens, and how an agent renders for one.
 
+A bold section name with no file beside it (**Artifact standard**, **Reading the ask**) is another part of this skill;
+`SKILL.md`'s **Sections** index names its file.
+
 ## Contents
 
 - [Why lenses exist](#why-lenses-exist)
@@ -97,7 +100,7 @@ Never ask who the output is for in plain text, and never ask more than once per 
   data only when a lens needs a field the primary did not (a transcript for a cut list).
 - **Name what the reader needs but Atlas doesn't hold.** Spend, conversions, usage rights,
   product telemetry: list them under data gaps and never infer them. On a page shared outside
-  the team (`artifact-standard.md`, section 2, **No platform disclosures**), name them only to
+  the team (**Artifact standard**, section 2, **No platform disclosures**), name them only to
   the requester in chat; the page may ask the reader to share their own figures as a next step,
   never saying Atlas lacks them.
 - **End with a forward note.** The chat summary closes with two or three lines the requester

@@ -82,21 +82,21 @@ Text after the command is the argument. Route on it before anything else:
 
 ## Sections (where each part of this skill lives)
 
-This file is the router: it connects, settles the organization and brand profile, works out who
-is asking and for whom, and sends the request to one flow. Read a flow's file only once its job is
-chosen, and read nothing else from `references/` before that. A flow that launches an agent also
-reads `references/running-agents.md`, and so do onboarding and every setup section, for
-**Checkpoints**. Other files, agents, and launch messages cite these sections
-as `SKILL.md` **{name}** or just **{name}**; this table says where each one now lives, with its
-heading unchanged.
+This file is the router: it connects, settles the organization and brand profile, works out who is asking and for whom, and sends the request to one flow. Read a flow's file only once its job is chosen, and read nothing else from `references/` before that. A flow that launches an agent also reads `references/running-agents.md`, and so do onboarding and every setup section, for **Checkpoints**.
+
+Other files, agents, and launch messages cite these sections as `SKILL.md` **{name}** or just **{name}**; this table says where each one lives, with its heading unchanged. No file under `references/` names another file there (only a launch message gives a subagent its brief's path): each cites a section by its name here. The first three rows are the shared files a flow reads with its own, with **Theme**, **Fee calculator**, **Creator card**, and the `page-standard` skill.
 
 | Section (as cited) | File |
 | ------------------ | ---- |
+| **Artifact standard** (the mark and the source line on every page) | `references/artifact-standard.md` |
+| **Orchestration contract** (the shape of every launch and result) | `references/orchestration.md` |
+| **Recipient lens** (who the reader is: the lens catalog and cues) | `references/recipient-lens.md` |
 | **List agents** | `references/agents-menu.md` (the hand-off table is **Agent hand-off** below) |
-| **Running agents**, **Checkpoints**, **Reading the ask**, **Campaign plan**, **Examples library**, **Decision audit** | `references/running-agents.md` |
-| Phase 1 guided add (1.1 steps 4 and 5, the one card rule, 1.3 to 1.4) | `references/connect.md` |
-| **Phase overview**, Phase 4, Phase 5 | `references/onboarding.md` |
-| Phase 6 (first insights, account review) | `references/account-review.md` |
+| **Running agents**, **Checkpoints**, **Reading the ask**, **Campaign plan**, **Examples library**, **Decision audit** | `references/running-agents.md` (the decision audit brief a subagent is handed: `references/agents/decision-audit.md`) |
+| **Atlas tools** (the tool list and load order, Phase map, **Partnership content**, Destructive tools, Calibration kinds) | `references/atlas-tools.md` |
+| Phase 1 guided add (1.1 steps 4 and 5, the one card rule, 1.3 to 1.4); **Connection card** | `references/connect.md`; `references/connection-card.md` |
+| **Phase overview**, Phase 4, Phase 5; **Onboarding questions** | `references/onboarding.md`; `references/onboarding-questions.md` |
+| Phase 6 (first insights, account review); **Account resolution** | `references/account-review.md`; `references/account-resolution.md` |
 | **Organization dashboard** | `references/dashboard.md` |
 | **Creator profile** | `references/creator-profile.md` |
 | **Ad reuse**, **Partnership content** | `references/ad-reuse.md` |
@@ -118,7 +118,13 @@ heading unchanged.
 | **Program dashboard** | `references/program-dashboard.md` |
 | **Content library** | `references/content-library.md` |
 | **Content sourcing** | `references/content-sourcing.md` |
-| **CAS campaign** | `references/cas-campaign.md` |
+| **CAS campaign** (state model, setup, **1a** to **1c**, gates, **1f**, **1g**) | `references/cas-campaign.md` |
+| **CAS campaign** **1d**, the campaign page: who sees what, header and tabs, round switcher, collapsing sections, **Home** | `references/cas-campaign-page.md` |
+| **CAS campaign**, **Master Brief** (with **Loading the brief**) and **Creator Selection** (with **The creator viewer**, **The match score**) | `references/cas-campaign-page-brief.md` |
+| **CAS campaign**, **Selected Creators** (with **Creator records**, **Contract and rates**, **The fee approval**) and **Content Review** | `references/cas-campaign-page-creators.md` |
+| **CAS campaign**, **Ad Performance** (with **Compare**, **Changes for round {t}**), **Inbox**, **Tagging**, **History**, **Export**, the footer, **Where each part lives**, **Page mechanics**, **Editing in place**, **Design standards** | `references/cas-campaign-page-results.md` |
+| **CAS campaign** **1e**, the page data: what the page keeps, program files and the scan, **The activity log**, tags and the inbox, reset decisions, brief versions, the role and edit checks | `references/cas-campaign-data.md` |
+| **Hooks and CTAs** (a CAS campaign's recommendations and the hook review) | `references/hooks-and-ctas.md` |
 | **Rates and terms** | `references/rates-and-terms.md` |
 | **Content review** | `references/content-review.md` |
 | **Post analysis** | `references/post-analysis.md` |
@@ -129,10 +135,10 @@ heading unchanged.
 | **Theme** (Setup, Applying) | `references/theme.md` |
 | **Fee calculator** (Setup, Applying) | `references/fees.md` |
 | **Theme**, Offers; **Fee calculator**, Offers; **Quality review**, The offer | `references/offers.md` (when: **Offers** below) |
-| **Sample artifacts** | `references/samples.md` |
-| **Quality review** (Run, Review log) | `references/quality-review.md` |
+| **Sample artifacts** | `references/samples.md` (the sample brief every agent reads: `references/agents/sample-artifact.md`) |
+| **Quality review** (Run, Review log); **Reader standard** (R1 to R12) | `references/quality-review.md`; `references/reader-standard.md` |
 | **Prompt coach** (and its Carry-over) | `references/prompt-coach.md` |
-| **Visual output**, **Creator card actions** | `references/creator-card.md` |
+| **Creator card** (**Visual output**, **Creator card actions**) | `references/creator-card.md` |
 | **Question format rule**, Phase 5 supersede rule | **Questions and writes** below |
 | Phase 5 web research rule | `references/onboarding.md` (Phase 5, **Web research option**) |
 | The Atlas Starter Guide | `references/first-run.md` |
@@ -448,7 +454,6 @@ Organization Admin connection itself.
   post, a confirmation per creator), ask them in order across as many calls as it takes, four at
   a time, before relaunching the agent. Never drop a question to fit, and never merge two
   decisions into one question to save a call.
-
 - Never fabricate org, account, or metric data. If a tool call fails, say so and stop.
 - **Every state change is confirmed through `AskUserQuestion`, never plain text.** This covers
   creating a profile, starting a channel connection, writing a calibration, adding hashtags,

@@ -52,7 +52,7 @@ Agents read `theme:brand` with their own calibration read and apply it. The main
 nothing extra. The main thread applies it too, to every page it builds
 itself, per **Applying the theme** in the reference. Semantic colors (verdicts, pass and fail,
 ok and warn, above and below the baseline) never take brand colors. The animated Aspire Atlas
-mark keeps its own colors (`references/artifact-standard.md`).
+mark keeps its own colors (**Artifact standard**).
 
 ## What the theme changes, and what it never touches
 
@@ -75,7 +75,7 @@ The theme never changes:
 - Slack and email messages, which are plain text.
 - The account connection card, which follows the host app.
 - Anything about content. `theme:` keys describe how Atlas's own pages look. They are never a
-  brand guideline for a post, a brief, or a review (see `atlas-tools.md`, Calibration kinds).
+  brand guideline for a post, a brief, or a review (see **Atlas tools**, Calibration kinds).
 
 ## The record
 
@@ -344,7 +344,7 @@ descriptions again.
 ### Comparison widget
 
 Drawn only under **Showing the palettes**. It carries the small animated Aspire Atlas mark
-(28px) in its free top corner, per `artifact-standard.md`, **Variants**. Rendered in chat with the widget tool, loaded the way `connection-card.md` loads it
+(28px) in its free top corner, per **Artifact standard**, **Variants**. Rendered in chat with the widget tool, loaded the way **Connection card** loads it
 (`read_me` with `modules: ["mockup"]` once, silently). `show_widget` title
 `atlas_theme_options` (or `atlas_theme_preview` for T0 and T5), one loading message such as
 `["Building theme previews"]`. Every color is written literally from the build output, so the
@@ -425,7 +425,7 @@ absent, take `theme:brand` from the calibrations read the flow already made. If 
 the Aspire default, and nothing below applies. Agents never ask about the theme and never
 offer to set one up. Unattended runs apply a saved theme the same way. The theme never touches the
 animated Aspire Atlas mark: it stays at the top right, is never recolored or replaced by the
-theme, and keeps its own dark tile (`artifact-standard.md`).
+theme, and keeps its own dark tile (**Artifact standard**).
 
 ### Page tokens
 
@@ -446,7 +446,7 @@ Put the theme block in the page `<head>`, after the page's own tokens, so its va
 ```
 
 The dark values apply on screen only, so a printed page or PDF takes the light ones
-(`artifact-standard.md`, section 6). Leave the font variables out when `fonts` is `null`, `--font-mono` out when `fonts.mono` is
+(**Artifact standard**, section 6). Leave the font variables out when `fonts` is `null`, `--font-mono` out when `fonts.mono` is
 `null`, `--font-display-stretch` out when `fonts.displayStretch` is `null`, and `--radius` out
 when `radius` is `null`. The page's layout and structure stay
 exactly as its own reference describes. Map the roles onto the page's own tokens:
@@ -470,7 +470,7 @@ brand name and the page title. `rule`: a 4px `brand` top rule on the page's norm
 `plain`: the page's normal header. The logo sits at the start of the header, 28px high,
 `width:auto`, with `alt` from `logo.alt`. The Aspire Atlas mark stays at the top right of every
 header style, never recolored or replaced; a `band` header leaves room for it at the far right and
-does not draw behind it (`artifact-standard.md`). Use the chip rule from **Comparison widget** when its
+does not draw behind it (**Artifact standard**). Use the chip rule from **Comparison widget** when its
 `tone` matches what is behind it.
 
 ### Logo
@@ -491,7 +491,7 @@ color from outside the theme.
 
 ### Creator card
 
-The card carries Aspire's tokens (`creator-card.md`, **Style block**), which fall back to the
+The card carries Aspire's tokens (**Creator card**, **Style block**), which fall back to the
 host's `--surface-2`, `--text-primary`, `--text-secondary`, and `--secondary`. A themed page
 defines none of those, so without an override the card keeps Aspire's white and zinc in light
 mode and navy in dark mode. With a theme saved, add the override below right after the card's
@@ -514,14 +514,14 @@ rather than `brand`, because the card draws its fit ring as text on the card sur
 </style>
 ```
 
-The plugin draws no creator card as an inline widget (`creator-card.md`, **Where it
+The plugin draws no creator card as an inline widget (**Creator card**, **Where it
 renders**), so the override has no widget form.
 
 The card's ok and warn tiles keep their semantic colors; the neutral tile follows the theme.
 
 ### Creator profile
 
-The full-page creator profile (`creator-profile.md`) is page only, so it has no widget
+The full-page creator profile (**Creator profile**) is page only, so it has no widget
 variant. Add this block after the creator card override. It maps the profile's surfaces, text,
 borders, brand color, and chart series to the theme, in each mode. The sentiment and brand
 safety colors (`--ac-neg`, `--ac-neu`, the ok and warn dots and tiles) keep their semantic values.
@@ -539,7 +539,7 @@ safety colors (`--ac-neg`, `--ac-neu`, the ok and warn dots and tiles) keep thei
 
 ### The CAS campaign page
 
-The CAS campaign page is built on the Atlas design system tokens (`cas-campaign-page-results.md`, **Design
+The CAS campaign page is built on the Atlas design system tokens (**CAS campaign**, **Design
 standards**), not on the page tokens above. On that page the theme sets only the tokens below, in
 each mode from that mode's values, and the block goes right after the page's **Tokens** block.
 Surfaces, text, borders and the font stay Atlas's, and `fonts` and `radius` are not used there.

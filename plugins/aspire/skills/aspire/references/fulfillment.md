@@ -4,7 +4,7 @@ Shared by the `atlas-product-fulfillment` agent and the **Product fulfillment** 
 SKILL.md. Holds who is owed product, the pick rule, the details requests, recording, the order
 form page, ordering, tracking, the posting odds for gifting, the fields this agent adds to the
 state model, and the read-only status mode (the shipping check). The state model, connected tools, drafts and
-sending, and the order form's data rules are in `program.md`; this file only adds to them.
+sending, and the order form's data rules are in **Influencer program**; this file only adds to them.
 
 The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
 in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
@@ -32,7 +32,7 @@ Trigger: "collect details and order product", "send product to the creators", "w
 send @handle", "order the product", "where are the packages", "did the product arrive", "pull
 the order form", or the Program manager's "Collect details and order product". Requires a saved
 program (**Program setup**) with a catalog. Before any mode, read this file
-(**Main thread steps**, **Pickers**) and follow it; order form data rules: `references/program.md`,
+(**Main thread steps**, **Pickers**) and follow it; order form data rules: **Influencer program**,
 **6**.
 
 Fulfillment is interactive. Agent `atlas-product-fulfillment`, modes `plan` (`step: propose`
@@ -61,7 +61,7 @@ every order. The status mode, which the scheduled shipping check runs, only read
 ## Who is owed product
 
 Read the newest `roster`, `terms`, and `fulfillment` per creator. A creator's deal is their
-newest `terms` finding, or the program's terms for their type when there is none (`program.md`,
+newest `terms` finding, or the program's terms for their type when there is none (**Influencer program**,
 **Who owns a deal**). A creator is owed product when:
 
 | Type | Stage | And |
@@ -113,11 +113,11 @@ step but still checks the cap and stock per creator.
 One `draft` per creator owed product whose details are not yet received. Channel: email when
 the creator has `contact.email` and the program's channels include email; otherwise Instagram
 or TikTok DM, then Aspire message. To a creator with a manager, address the manager and name
-the creator. First name only. Follow `program.md`, **5**: never the budget, the program's
+the creator. First name only. Follow **Influencer program**, **5**: never the budget, the program's
 maximum, the product's value, another creator's terms, or a team note.
 
 The request asks the creator to reply with their details. It never links the order form, which
-is for the team only (`program.md`, **6**).
+is for the team only (**Influencer program**, **6**).
 
 Placeholders in braces come from the records. Anything the records do not hold is a bracketed
 blank for the user to fill, never invented. Write in the brand's voice from
@@ -164,7 +164,7 @@ the address. Written only once the user has decided the fix.
 
 DM and Aspire message versions are the same content in three short lines, no subject. Every
 draft is a `draft` finding. A mailbox draft is created only for F3's creators, after which the
-finding carries `mailDraftId`. Nothing is sent (`program.md`, **5**).
+finding carries `mailDraftId`. Nothing is sent (**Influencer program**, **5**).
 
 ## Recording details and status
 
@@ -181,9 +181,9 @@ Every record change comes from F5, line by line, or from F5 `store-status`.
 Rules:
 
 - Copy the newest `fulfillment` detail for the creator's `orderKey`, change what moved, and
-  write it whole (`program.md`, **1**). The same for `roster`.
+  write it whole (**Influencer program**, **1**). The same for `roster`.
 - Marking a details request sent moves the creator to Details requested in the main thread
-  (`program.md`, **5**). The next run with F2 `save` writes that creator's `fulfillment`
+  (**Influencer program**, **5**). The next run with F2 `save` writes that creator's `fulfillment`
   `requested`, since the send was already confirmed.
 - A reply asking for a different product above the cap, a product out of stock, or a lost or
   damaged parcel is an `issue`: set `fulfillment` `issue` with the problem in one line, and the
@@ -195,7 +195,7 @@ Rules:
 ## The order form page
 
 One page per program, the **order form**, republished to the link in its `page` finding (key
-`orderForm`). It is for the brand's team, never for creators (`program.md`, **6**). Title
+`orderForm`). It is for the brand's team, never for creators (**Influencer program**, **6**). Title
 "{Brand} {program name}: product orders". It is the only page that holds addresses, and it holds
 them only in its page data, never in the page's own HTML.
 
@@ -212,11 +212,11 @@ it):
  "downloads": true}
 ```
 
-This is `program.md`, **6**, exactly. `downloads` lets the team save the order sheet from the
+This is **Influencer program**, **6**, exactly. `downloads` lets the team save the order sheet from the
 page. In the share menu's words: the team shared as Contributor or Editor reads and edits
 rows; a Viewer or Commenter, and anyone outside the brand's organization, reads no rows at all.
 
-**Rows** at `rows/creator-{net}-{handle}`, fields per `program.md`, **6**: `product`, `options`,
+**Rows** at `rows/creator-{net}-{handle}`, fields per **Influencer program**, **6**: `product`, `options`,
 `shipTo` `{name, line1, line2, city, region, postalCode, country}`, `pickup`, `notes`, `status`,
 `carrier`, `tracking`, `updatedBy`, `updatedAt`. Done marks at `data/users/{id}/done`, field
 `items`. `{net}` is `ig` or `tt`.
@@ -227,16 +227,16 @@ value, no fee, no terms, no contact details.
 
 **Sections, in order:**
 
-1. **Header.** Brand theme per `theme.md`, **Applying the theme**. Title, then "Product orders ·
+1. **Header.** Brand theme per **Theme**, **Applying the theme**. Title, then "Product orders ·
    {n} creators · updated {time}". Under it, a notice that always shows: "For your team only.
    Don't share this form with creators: everyone who can open it sees every creator's address." A status strip with counts: Waiting on details, Ready to
    order, Ordered, Shipped, Delivered, Issue. The animated Aspire Atlas mark sits at the top right
-   ([`artifact-standard.md`](artifact-standard.md)).
+   (**Artifact standard**).
 2. **Your to-do.** Per viewer: rows missing details, rows ready to order, parcels past their
    delivery window, issues. Each with a checkbox; done marks save to the viewer's own
    `data/users/{id}/done`. "Show done" brings them back. Empty: "Nothing waiting on you."
 3. **Orders.** One row per creator owed product, grouped by status in the strip's order. Each
-   row: the creator (avatar per `creator-card.md`, **Images**, page profile, handle and name),
+   row: the creator (avatar per **Creator card**, **Images**, page profile, handle and name),
    product (a picker over the offered products when the creator chooses), options, ship to (the
    address fields) or pickup, delivery notes, status (a dropdown: to request, requested,
    received, ordered, shipped, delivered, issue), carrier, tracking. Fields are editable only
@@ -249,7 +249,7 @@ value, no fee, no terms, no contact details.
 5. **Footer.** "Addresses show to everyone this form is shared with, so share it only inside
    your team. Statuses from Atlas as
    of {time}." Plus "Product from {store}" when a store was read. Then the footnote from
-   [`artifact-standard.md`](artifact-standard.md) with the team audience line. Contributors edit this
+   **Artifact standard** with the team audience line. Contributors edit this
    page, so its header shows "Last edited {time}" from the page data `updatedAt` beside the freshness chip. The "For your team only" notice in the header stays.
 
 The page renders before its data loads and works with no rows. Load `artifact-design` before
@@ -353,17 +353,17 @@ sent one.
 
 ## State written to Atlas
 
-Under `program.md`, **1**: role `account_review`, `runKey` `program-{profile}-{slug}-{YYYY-MM-DD}`,
+Under **Influencer program**, **1**: role `account_review`, `runKey` `program-{profile}-{slug}-{YYYY-MM-DD}`,
 `schema` = network, `entityKind` `account`, `entityId` = the creator's account id from their
 `roster` finding. Written only with F2 `save`, except that F4, F5, and F6 each approve writing
 the `fulfillment` and `roster` records they cover (the agent's rule 2), and a `status` run
 writes only its `page` finding.
 
-**`fulfillment` adds** to the fields in `program.md`:
+**`fulfillment` adds** to the fields in **Influencer program**:
 
 | Field | What it holds |
 | ----- | ------------- |
-| `orderKey` | The identity with the creator, per `program.md`: `YYYY-MM` for an ambassador's monthly order, `1` otherwise |
+| `orderKey` | The identity with the creator, per **Influencer program**: `YYYY-MM` for an ambassador's monthly order, `1` otherwise |
 | `replacement` | True when this order replaces a lost, damaged, or wrong one |
 | `sku` | The catalog or store SKU of the variant |
 | `pickedBy` | `agent` (confirmed in F1), `user`, or `creator` |
@@ -392,7 +392,7 @@ the link changes. `idempotencyKey` `page-{slug}-orderForm`.
 ## Status mode (the shipping check)
 
 `mode: status` reads and reports; it records nothing. The scheduled task "Atlas program shipping
-check: {brand} - {program}" (P9 "Daily shipping check", `program.md`, **8**) runs it unattended;
+check: {brand} - {program}" (P9 "Daily shipping check", **Influencer program**, **8**) runs it unattended;
 a person can also run it to see where parcels are without recording anything.
 
 1. Read the setup records, the working state, and the order form's rows. With
@@ -401,14 +401,14 @@ a person can also run it to see where parcels are without recording anything.
 2. Work out, without writing: creators waiting on details, rows ready to order, parcels the store
    shows shipped or delivered that Atlas has not recorded, and parcels past their delivery window.
 3. Republish the order form to its `page` link (no row writes). Write a `page` finding only when
-   none exists, which a scheduled run should never meet (`program.md`, **8**).
+   none exists, which a scheduled run should never meet (**Influencer program**, **8**).
 4. Unattended, post to the saved routing in two or three lines: "{n} parcels show delivered in
    {store} and {m} are past their delivery window. {k} creators are waiting on details. Open the
    program to record them." Handles may appear; addresses, product values, and fees never do.
    Interactive, return the same lines to the main thread.
 
 It never asks, records a status, moves a stage, writes `fulfillment` or `roster`, drafts,
-orders, or writes page data rows. Unattended runs follow `program.md`, **9**.
+orders, or writes page data rows. Unattended runs follow **Influencer program**, **9**.
 
 ## Main thread steps
 
@@ -469,7 +469,7 @@ Show city and region in chat, never the street.
    next step in one line. For gifting, show each creator's posting odds with its evidence.
 
 **Say what the store can do**, once per session when a step uses it, in one line, per
-`program.md`, **4**. Never why it cannot do more.
+**Influencer program**, **4**. Never why it cannot do more.
 
 **Addresses** show only on the order form, in the order sheet, in a confirmed store order, and
 in the `fulfillment` record. Never in chat beyond city and region, on another page, or in a
@@ -480,7 +480,7 @@ channel post.
 parcels past their window. Offer **Track** to record them.
 
 **Schedule.** P9 "Daily shipping check (only with product)" creates "Atlas program shipping
-check: {brand} - {program}" (`program.md`, **8**), launching the agent with `mode: status`,
+check: {brand} - {program}" (**Influencer program**, **8**), launching the agent with `mode: status`,
 `run: unattended`. It reads Atlas, the store's orders, and the order form, republishes the
 order form, and posts the counts to the saved routing. It records nothing, drafts nothing,
 places nothing, and writes no `fulfillment`; it may write only the `page` finding (**Status

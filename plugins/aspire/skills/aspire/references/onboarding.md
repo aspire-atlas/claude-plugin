@@ -1,8 +1,8 @@
 # Onboarding (Phases 4 and 5)
 
 Used when Phase 2 + 3 routes to Phase 4 (a new organization, or a profile with no linked
-account) or to Phase 5 (brand context). Phase 6 is `references/account-review.md`; SKILL.md's
-**Sections** index routes to it.
+account) or to Phase 5 (brand context). SKILL.md's **Sections** index routes to
+Phase 6.
 
 ## Contents
 
@@ -27,7 +27,7 @@ research option whose findings are shown before anything is written (Phase 5), t
 reply is the answer in text, with cards and images only when the user asks to see them
 (**Visual output**), and every page, creator card, and chart uses the brand's saved theme when
 there is one (**Theme**). A creator drawn on a page uses the creator card
-(`references/creator-card.md`).
+(**Creator card**).
 
 ## Progress bar: the onboarding groups
 
@@ -67,7 +67,7 @@ never reported, so the bar never shows steps the run skips. Call it once more wi
 6. **Deleting a profile** (`delete_profile`) is irreversible and removes its hashtags, brand
    instruction, and every calibration. Do it only when the user asks in this session, never
    during onboarding to "clean up", and only after the `AskUserQuestion` confirmation in
-   `references/atlas-tools.md`, Destructive tools. A profile with linked accounts is refused by
+   **Atlas tools**, Destructive tools. A profile with linked accounts is refused by
    the server; do not unlink accounts to force a delete unless the user separately confirms
    that too.
 
@@ -78,12 +78,12 @@ never reported, so the bar never shows steps the run skips. Call it once more wi
    TikTok first: those two are what search and hashtag tracking read today. For partnership
    ads, the `meta` sign-in should also link the brand's Meta Business: tell the user to pick it
    in the **Meta businesses** group. Partnership content needs it and the brand's Instagram on
-   the same profile (`references/atlas-tools.md`, **Partnership content**).
+   the same profile (**Atlas tools**, **Partnership content**).
 2. For each chosen channel, call `connect_channel` with `channel` and `asProfileId`.
    When the host renders the tool's own connect widget (the result shows it), do not build a
    second card: say one line ("Use the button above to sign in to {network}.") and go to step 3.
    Otherwise show the returned `connectUrl` as the **account connection card**, built and
-   rendered exactly per `references/connection-card.md`; never paste the raw link when the card
+   rendered exactly per **Connection card**; never paste the raw link when the card
    rendered. If the widget tool is unavailable or fails, use its **Fallback** (plain text, never
    a Markdown link).
 3. Immediately call `connect_channel` again with only `elicitationId`. Each call long-polls
@@ -142,7 +142,7 @@ Entry condition: Phase 4.2 finished with at least one `complete` channel that li
 
 Brand context lives in Atlas's calibration layer, not in local notes, so every future session
 and every teammate inherits it. Ask each question with `AskUserQuestion`, one at a time, in the
-order given in `references/onboarding-questions.md`. That file maps each answer to a
+order given in **Onboarding questions**. That file maps each answer to a
 calibration `kind`, `key`, and `detail` shape, and supplies the option set for each question.
 
 Ask every question per SKILL.md's **Questions and writes** (the question format rule and

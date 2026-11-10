@@ -4,9 +4,9 @@ Used by the `atlas-creator-negotiation` agent and the **Creator negotiation** se
 SKILL.md. Holds the inputs, the price ladder for each program type, the performance read, the
 move rule, the levers, what becomes your call, the drafts, the decision packet, the records the
 agent writes, the terms summary, and the negotiation page. It is the program counterpart of
-`rates-and-terms.md`, which stays the CAS flow. The two never share records.
+**Rates and terms**, which stays the CAS flow. The two never share records.
 
-Read `program.md` first. Its state model, page vocabulary, **4** (connected tools), **5**
+Read **Influencer program** first. Its state model, page vocabulary, **4** (connected tools), **5**
 (drafts and sending) and **7** (pages) apply here unchanged.
 
 The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
@@ -108,7 +108,7 @@ And once per run: `program:{slug}-program`, `-terms`, `-catalog` and `-outreach`
 Three numbers per creator: open, target, max. Open and target come from the fee calculator.
 Max comes from the program's terms. Never price any other way.
 
-**The calculator part** (`fees.md`, **Applying the rates**). Price the deliverables in the
+**The calculator part** (**Fee calculator**, **Applying the rates**). Price the deliverables in the
 type's standard terms as one bundle, on the creator's own median views:
 
 - Each post counts once at its format's median views: "2 Reels" is twice the Reel median.
@@ -134,7 +134,7 @@ Rules:
   page says so: "The calculator's target is over your max; the max is the ceiling."
 - A calculator open above max means the creator costs more than the program allows. The move
   is your call: offer at max, raise the max for this creator, or skip.
-- **Currency** follows `program.md`: the calculator is USD; a program in another currency uses
+- **Currency** follows **Influencer program**: the calculator is USD; a program in another currency uses
   only the numbers typed into its terms, with the calculator figure as a USD reference, never
   converted.
 - **Hybrid.** A `paid` or `ambassador` deal with `commissionPct` prices the fee as above. The
@@ -154,7 +154,7 @@ ladder.
 | Signal | Number | Strong | Weak |
 | ------ | ------ | ------ | ---- |
 | Views | Median views ÷ followers, on the format priced | Top third of the program's roster creators in the same tier | Bottom third |
-| Engagement | Mean (likes + comments) ÷ followers over the last 12 posts, hidden likes left out (`creator-card.md` stats) | Top third of the roster in the same tier | Bottom third |
+| Engagement | Mean (likes + comments) ÷ followers over the last 12 posts, hidden likes left out (**Creator card** stats) | Top third of the roster in the same tier | Bottom third |
 | Paid track record | Posts with the paid partnership marker or a clear disclosure in 180 days, and past partners on the account | Two or more disclosed paid posts | A paid post with no disclosure (also a note) |
 | Audience fit | The newest vetting `fitScore` or discovery fit score for this creator; else the audience breakdown against the brand's market | At or above the vetting approve line | Under the maybe line |
 
@@ -294,7 +294,7 @@ set, show committed and offers out only.
 
 ## Drafts
 
-Every reply to a creator is a `draft` finding (`program.md`, **5**). Shown ready to copy in chat
+Every reply to a creator is a `draft` finding (**Influencer program**, **5**). Shown ready to copy in chat
 and on the page; created in the mailbox only after its own confirmation; never sent by the
 agent.
 
@@ -456,7 +456,7 @@ carries `yourCall` `{question, options: [{label, move, number, levers}], recomme
 The **Creator negotiation** section of SKILL.md points here; the main thread follows these
 steps. Negotiation is interactive only. Never schedule it; if `AskUserQuestion` is unavailable,
 say in one line that a deal needs a person to approve it, and stop. A creator ad campaign's fees
-stay in **Rates and terms** (`rates-and-terms.md`).
+stay in **Rates and terms**.
 
 1. Read the program's setup records and working state as the **Program manager** does. Missing
    or unparseable program records: run **Program setup** first. Pick the mode (**Modes**):
@@ -511,7 +511,7 @@ with nothing to ask:
 
 ## Records written
 
-All on the program's working state (`program.md`, **Working state**): `append_insights`, role
+All on the program's working state (**Influencer program**, **Working state**): `append_insights`, role
 `account_review`, runKey `program-{profile}-{slug}-{YYYY-MM-DD}`, `schema` the network,
 `entityKind` `account`, `entityId` the network's own account id. Each finding carries
 `detail.recordType`, `detail.program`, `detail.recordedAt` (the shell clock, the same on every
@@ -527,7 +527,7 @@ newest finding's detail and change what moved, so each finding is complete on it
 | N1, change | status `offered`, `changeOf` the agreed version, `change` | stage unchanged, `waitingOn` brand | change | none |
 | N3, agreement | status `agreed`, every field, `agreedAt`, `summaryUrl` | stage Agreed, `yourCall` cleared, `waitingOn` brand | accept | when pasted straight in |
 
-`waitingOn` stays brand while a draft is unsent; marking it sent (`program.md`, **5**) sets
+`waitingOn` stays brand while a draft is unsent; marking it sent (**Influencer program**, **5**) sets
 creator.
 
 **The `page` finding.** When no `page` finding with key `negotiation` exists, the first `record`
@@ -535,17 +535,17 @@ write (N1 or N3) adds one: `recordType` `page`, `key` `negotiation`, `url`, `tit
 the brand's own account on its first linked network, `went_well` `low`, idempotencyKey
 `neg-{slug}-page`. "Page only" writes nothing, so the link is saved on the next approved write.
 
-`terms` kinds follow `program.md`: `action_item` `medium` while offered or countered, `went_well`
+`terms` kinds follow **Influencer program**: `action_item` `medium` while offered or countered, `went_well`
 agreed, `needs_improvement` declined. Roster kinds the same way.
 
-Every agreed `terms` finding fills `program.md`'s list in full, including `postWithinDays`,
+Every agreed `terms` finding fills **Influencer program**'s list in full, including `postWithinDays`,
 `usageChannels`, `whitelisting` with `whitelistingDays`, and for the type `monthlyFee`,
 `termMonths` and `codeDiscountPct`, or `codeDiscountAmount` when the affiliate deal uses a
 fixed-amount code. `paymentTiming` is copied from the program's terms for the type, or the user's
 number when the deal changed it. `graceDays` and `mustInclude` are written on the deal only when they differ
 from the program's type block; readers fall back to the program otherwise.
 
-**Fields this agent adds to `terms`** (beyond `program.md`'s list): `currency`, `monthly` (the
+**Fields this agent adds to `terms`** (beyond **Influencer program**'s list): `currency`, `monthly` (the
 quota), `productAllowance`, `attributionDays`, `levers` (list), `move`, `reasons` (two lines), `pricing` `{basis, rateLabel,
 medians: {format: views}, open, target, max, roomRule}`, `read` `{views, engagement, paid,
 audience}` each `{value, call}`, `aboveMax` (true when the user chose a number above max),
@@ -580,7 +580,7 @@ Sections, on one screen, printable:
 
 1. **Header**: the brand, the program, the creator (name, handle, network), the date agreed,
    "Prepared for the agreement in Aspire". The animated Aspire Atlas mark sits at the top right
-   ([`artifact-standard.md`](artifact-standard.md)).
+   (**Artifact standard**).
 2. **Deliverables**: a table of what, how many, by when (the dates worked out from the product
    arriving or `termStart`).
 3. **Dates**: posting window, term start and end, renewal notice date for ambassadors.
@@ -593,25 +593,25 @@ Sections, on one screen, printable:
    discount, payout timing.
 8. **Footer**: "Terms as agreed on {date}. The agreement and payment run in Aspire." No budget,
    no max, no other creator, no performance read, no team note. Then the footnote from
-   [`artifact-standard.md`](artifact-standard.md) with the shared-page audience line (shared with the
+   **Artifact standard** with the shared-page audience line (shared with the
    creator for this agreement only); like the footer, it holds no budget, maximum, other creator, or
-   performance read, and nothing about Atlas data gaps or errors (`artifact-standard.md`,
+   performance read, and nothing about Atlas data gaps or errors (**Artifact standard**,
    section 2, **No platform disclosures**).
 
-Load `artifact-design`; apply `theme:brand` per `theme.md`.
+Load `artifact-design`; apply `theme:brand` per **Theme**.
 
 ## The page
 
 One page per program, the negotiation page, republished to the same link
 (its `page` finding, key `negotiation`). Title "{Brand} {Program}: Negotiation". Load
 `artifact-design` and `artifact-capabilities` before building and `dataviz` for the spend chart;
-apply `theme:brand` per `theme.md`; draw creators with the creator card (`creator-card.md`, page
+apply `theme:brand` per **Theme**; draw creators with the creator card (**Creator card**, page
 profile); render for `recipient`.
 
 **Who sees what.** The page is for the brand's team and is never shared with a creator or a
 manager. The page itself holds everything except the money that only the team should see,
 which lives in its page data under `team`, readable by Editors only, the way the CAS page keeps
-`agency` (`cas-campaign-data.md`). Declare on every publish:
+`agency` (**CAS campaign** **1e**). Declare on every publish:
 
 ```json
 {"db": {"rules": [
@@ -637,7 +637,7 @@ Sections, in order:
 
 1. **Header**: the program, "Prepared for" chip, counts by status (Offer to send, Waiting on
    creator, Your call needed, Agreed, Declined), the fee rate label. The animated Aspire Atlas mark
-   sits at the top right ([`artifact-standard.md`](artifact-standard.md)).
+   sits at the top right (**Artifact standard**).
 2. **Your call needed**: one card per open item: the creator, the question, the answers with the
    recommendation first, and why. Done marks per viewer.
 3. **Creators in negotiation**: one card per creator, grouped by type. In `{DETAILS}`: our offer,
@@ -650,7 +650,7 @@ Sections, in order:
    {mailbox}" when a mailbox draft exists.
 7. **Footer**: the fee rate label, "fees are estimates from public view counts, not quotes", and
    "numbers read from Atlas at {timestamp}". Then the footnote with the team audience line
-   ([`artifact-standard.md`](artifact-standard.md)).
+   (**Artifact standard**).
 
 In `propose`, every move shows "Proposed". In `record`, the approved ones show their new status
 and the rest stay proposed.
@@ -671,4 +671,4 @@ that link.
 - Change the program's terms, the catalog, or any calibration. A standard that keeps coming up
   ("every mid-tier creator asks for 60 days of usage") goes to the main thread as a suggested
   change to the terms.
-- Touch a creator ad campaign's records or `rates-and-terms.md`.
+- Touch a creator ad campaign's records or **Rates and terms**.

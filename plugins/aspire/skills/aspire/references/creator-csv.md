@@ -82,7 +82,7 @@ Every row carries two tags, in this order, before any other:
 
 1. `Atlas`.
 2. The creator's brand safety result, from the same count **n** as the creator card's brand
-   safety tile (**Brand safety** in [`creator-card.md`](creator-card.md)), red-line matches and
+   safety tile (**Brand safety** in **Creator card**), red-line matches and
    competitor mentions included:
    - n = 0 with 3 or more analyzed posts: `Brand Safe`.
    - n = 1: `Brand Safety: 1 Flag ({short name})`. n ≥ 2: `Brand Safety: {n} Flags ({short name})`.
