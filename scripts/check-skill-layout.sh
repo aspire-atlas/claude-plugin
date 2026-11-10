@@ -62,33 +62,55 @@ description() {
 }
 
 # Prints "contents|<file>: <what is wrong>" for a file over TOC_OVER lines. Headings and the
-# Contents section are read outside code fences. A heading's anchor is built the way GitHub builds
-# it: lower case, ASCII punctuation other than - and _ dropped, each space a hyphen, and -1, -2, ...
-# on a repeat. An <a id="..."> or name="..." also counts as a link target.
+# Contents section are read outside code fences; a fence closes only on a line of the same
+# character at least as long as the one that opened it, so a fence can hold a shorter one. A
+# heading's anchor is built the way GitHub builds it from the heading's text: a link counts as its
+# text and emphasis underscores are dropped, then lower case, ASCII punctuation other than - and _
+# dropped, each space a hyphen, and -1, -2, ... on a repeat. An id or name attribute of an HTML
+# tag outside a code span also counts as a link target.
 contents() {
   awk -v f="$1" -v over="$TOC_OVER" '
+    function runlen(s, c,   i) { i = 1; while (substr(s, i, 1) == c) i++; return i - 1 }
+    function plain(t,   a, w, n, i, out) {
+      while (match(t, /\[[^]]*\]\([^)]*\)/)) {
+        a = substr(t, RSTART + 1, RLENGTH - 1); sub(/\].*$/, "", a)
+        t = substr(t, 1, RSTART - 1) a substr(t, RSTART + RLENGTH)
+      }
+      n = split(t, w, " "); out = ""
+      for (i = 1; i <= n; i++) {
+        if (w[i] !~ /^`/) { sub(/^_+/, "", w[i]); sub(/_+$/, "", w[i]) }
+        out = out (i > 1 ? " " : "") w[i]
+      }
+      return out
+    }
     function slug(s) {
       s = tolower(s)
       gsub(/[!-,.\/:-@\[-^`{-~]/, "", s)
       gsub(/ /, "-", s)
       return s
     }
-    { sub(/\r$/, "") }
-    /^ ? ? ?(```|~~~)/ { fence = !fence; next }
-    fence { next }
+    { sub(/\r$/, ""); line = $0; sub(/^ ? ? ?/, "", line); c = substr(line, 1, 1) }
+    fence {
+      k = runlen(line, fc)
+      if (k >= fl && substr(line, k + 1) ~ /^[ \t]*$/) fence = 0
+      next
+    }
+    (c == "`" || c == "~") && runlen(line, c) >= 3 {
+      k = runlen(line, c)
+      if (c == "~" || index(substr(line, k + 1), "`") == 0) { fence = 1; fc = c; fl = k; next }
+    }
     /^#+ / && !/^#######/ {
       level = index($0, " ") - 1
       t = $0; sub(/^#+ +/, "", t); sub(/ +#+ *$/, "", t); sub(/ +$/, "", t)
-      if (level == 2 && t == "Contents" && !seen) { seen = 1; toc = 1; next }
-      if (level <= 2) toc = 0
-      s = slug(t)
+      s = slug(plain(t))
       if (s in n) { ids[s "-" n[s]] = 1; n[s]++ } else { ids[s] = 1; n[s] = 1 }
+      if (level == 2 && t == "Contents" && !seen) { seen = 1; toc = 1 } else if (level <= 2) toc = 0
       next
     }
     {
-      r = $0
-      while (match(r, /(id|name)="[^"]+"/)) {
-        a = substr(r, RSTART, RLENGTH); sub(/^[a-z]+="/, "", a); sub(/"$/, "", a)
+      r = $0; gsub(/`[^`]*`/, "", r)
+      while (match(r, /<[A-Za-z][^>]*[ \t](id|name)="[^"]+"/)) {
+        a = substr(r, RSTART, RLENGTH); sub(/^.*="/, "", a); sub(/"$/, "", a)
         ids[a] = 1; r = substr(r, RSTART + RLENGTH)
       }
     }
@@ -108,44 +130,64 @@ contents() {
     }' "$1"
 }
 
-# Prints "chain|<file>:<line>: ..." for each reference file another reference file cites, once per
-# cited file. $1: the skills/ folder, $2: the citing file, $3: its references/ folder.
+# Prints "chain|<file>:<line>: ...|<file>|<cited file>" for each reference file another reference
+# file cites, once per cited file. $1: the skills/ folder, $2: its absolute path, $3: the citing
+# file, $4: its references/ folder, $5: the .md files under that folder, one per line.
+# A citation is a token ending in .md: with references/ in it, the path after references/ in the
+# skill named just before it (skills/<name>/references/ or <name>/references/) or in the citing
+# file's own skill; with another folder in it, a path from the citing file's folder or from its
+# references/ folder; bare, a file of that name anywhere under its references/ folder. SKILL.md
+# and a path through a page-standard folder are never citations. A reference file in another
+# plugin is not resolved.
 chain() {
-  local S=$1 f=$2 R=$3 hit line tok rel target seen='|' other
-  while IFS= read -r hit; do
-    [ -n "$hit" ] || continue
-    line=${hit%%:*}; tok=${hit#*:}
-    tok=$(sed -E 's/\.md.$/.md/; s#^(\./)+##' <<< "$tok")
-    case $tok in SKILL.md|*/SKILL.md|*page-standard*) continue ;; esac
+  local S=$1 Sabs=$2 f=$3 R=$4 refs=$5 hits line tok t2 rel pre other target base self r seen='|'
+  hits=$(LC_ALL=C grep -noE '[A-Za-z0-9_./-]*[A-Za-z0-9_-]\.md([^A-Za-z0-9_-]|$)' "$f") || [ $? -eq 1 ] || return 1
+  [ -n "$hits" ] || return 0
+  # One line per distinct token, at its first line, without the character after .md or a leading ./
+  hits=$(LC_ALL=C awk -F: '{ t = $2; sub(/\.md[^A-Za-z0-9_-]*$/, ".md", t); while (t ~ /^\.\//) t = substr(t, 3)
+    if (!s[t]++) print $1 ":" t }' <<< "$hits") || return 1
+  while IFS=: read -r line tok; do
+    [ -n "$tok" ] || continue
+    t2=/$tok
+    case $t2 in */SKILL.md|*/page-standard/*) continue ;; esac
     target=
-    case $tok in
-      *references/*)
-        rel=${tok##*references/}
-        other=$(sed -nE 's#^(.*/)?skills/([^/]+)/references/.*#\2#p' <<< "$tok")
-        if [ -n "$other" ] && [ -f "$S/$other/references/$rel" ]; then target=$S/$other/references/$rel
+    case $t2 in
+      */references/*)
+        rel=${t2##*/references/}; pre=${t2%/references/*}; other=${pre##*/}
+        if [ -n "$other" ] && [ "$other" != .. ] && [ -f "$S/$other/references/$rel" ]; then target=$S/$other/references/$rel
         elif [ -f "$R/$rel" ]; then target=$R/$rel; fi ;;
-      */*)
-        if [ -f "$(dirname "$f")/$tok" ]; then target=$(dirname "$f")/$tok
+      /*/*)
+        if [ -f "${f%/*}/$tok" ]; then target=${f%/*}/$tok
         elif [ -f "$R/$tok" ]; then target=$R/$tok; fi ;;
-      *) target=$(find "$R" -type f -name "$tok" | sort | head -1) ;;
+      *)
+        case "$refs
+" in *"/$tok
+"*) while IFS= read -r r; do if [ "${r##*/}" = "$tok" ]; then target=$r; break; fi; done <<< "$refs" ;; esac ;;
     esac
     [ -n "$target" ] || continue
-    # Only a file under a references/ folder counts, and a file may name itself.
-    target=$(cd "$(dirname "$target")" && pwd -P)/${target##*/}
-    case $target in */references/*) ;; *) continue ;; esac
-    [ "$target" != "$(cd "$(dirname "$f")" && pwd -P)/${f##*/}" ] || continue
-    rel=${target##*/references/}
+    # Only a file under a skill's references/ folder counts, and a file may name itself.
+    case $target in
+      */../*|*/./*) target=$(cd "${target%/*}" && pwd -P)/${target##*/}; base=$Sabs; self=$Sabs/${f#"$S"/} ;;
+      *) base=$S; self=$f ;;
+    esac
+    [ "$target" != "$self" ] || continue
+    case $target in "$base"/*/references/*) ;; *) continue ;; esac
+    rel=${target#"$base"/*/references/}
     case $seen in *"|$rel|"*) continue ;; esac
     seen="$seen$rel|"
     echo "chain|$f:$line: cites references/$rel; a reference file is read from SKILL.md, never from another reference|$f|$rel"
-  done < <(grep -noE '[A-Za-z0-9_./-]*[A-Za-z0-9_-]\.md([^A-Za-z0-9_-]|$)' "$f" || true)
+  done <<< "$hits"
 }
 
 # Every finding in one skills/ folder, one per line: <rule>|<message>[|<citing file>|<cited file>].
+# Returns 1 when a file could not be read or checked, so a broken run never looks like a pass.
 check_tree() {
-  local S=$1 f desc len lines R
+  local S=$1 Sabs f desc len lines R last= refs= list
+  Sabs=$(cd "$S" && pwd -P) || return 1
+  list=$(find "$S" -mindepth 2 -maxdepth 2 -name SKILL.md | sort) || return 1
   while IFS= read -r f; do
-    lines=$(awk 'END { print NR }' "$f")
+    [ -n "$f" ] || continue
+    lines=$(awk 'END { print NR }' "$f") || return 1
     [ "$lines" -le "$MAX_LINES" ] || echo "lines|$f: $lines lines, over $MAX_LINES; move detail into a reference file"
     if desc=$(description "$f"); then
       len=$(printf '%s' "$desc" | LC_ALL=C.UTF-8 wc -m | tr -d ' ')
@@ -153,12 +195,19 @@ check_tree() {
     else
       echo "description|$f: no description in its frontmatter"
     fi
-  done < <(find "$S" -mindepth 2 -maxdepth 2 -name SKILL.md | sort)
+  done <<< "$list"
+  list=$(find "$S" -path "$S/*/references/*" -name '*.md' -type f | sort) || return 1
   while IFS= read -r f; do
-    R=${f%"${f#"$S"/*/references/}"}
-    chain "$S" "$f" "${R%/}"
-  done < <(find "$S" -path "$S/*/references/*" -name '*.md' -type f | sort)
-  while IFS= read -r f; do contents "$f"; done < <(find "$S" -name '*.md' -type f | sort)
+    [ -n "$f" ] || continue
+    R=${f%"${f#"$S"/*/references/}"}; R=${R%/}
+    if [ "$R" != "$last" ]; then refs=$(find "$R" -name '*.md' -type f | sort) || return 1; last=$R; fi
+    chain "$S" "$Sabs" "$f" "$R" "$refs" || return 1
+  done <<< "$list"
+  list=$(find "$S" -name '*.md' -type f | sort) || return 1
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    contents "$f" || return 1
+  done <<< "$list"
 }
 
 fail=0
@@ -171,7 +220,7 @@ if [ "$mode" != --tree ]; then
     [ -d "$d" ] || continue
     d=${d%/}; name=${d##*/}; cases=$((cases + 1))
     [ -d "$d/skills" ] || { err "$d has no skills/ folder"; continue; }
-    out=$(check_tree "$d/skills")
+    out=$(check_tree "$d/skills") || { err "could not check fixture $d: $out"; continue; }
     got=$(cut -d'|' -f1 <<< "$out" | sort -u | tr '\n' ' ' | sed 's/^ *//; s/ *$//')
     case $name in
       pass*) [ -z "$got" ] || err "fixture $d should pass and fails '$got': $out" ;;
@@ -193,15 +242,20 @@ if [ "$mode" != --fixtures ]; then
     src=$(plugin_src "$p")
     [ -d "$src/skills" ] || continue
     files=$((files + $(find "$src/skills" -name '*.md' -type f | wc -l)))
+    out=$(check_tree "$src/skills") || { err "could not check $src/skills: $out"; continue; }
     while IFS='|' read -r rule msg from to; do
       [ -n "$rule" ] || continue
-      if [ "$rule" = chain ] && grep -q "^$from|$to|..*" <<< "$ALLOW"; then
-        used="$used$from|$to
+      if [ "$rule" = chain ]; then
+        case "
+$ALLOW" in *"
+$from|$to|"?*)
+          used="$used$from|$to
 "
-        continue
+          continue ;;
+        esac
       fi
       err "$msg"
-    done < <(check_tree "$src/skills")
+    done <<< "$out"
   done
   while IFS='|' read -r from to reason; do
     [ -n "$from" ] || continue

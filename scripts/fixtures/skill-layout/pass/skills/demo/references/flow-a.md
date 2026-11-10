@@ -8,13 +8,17 @@ Called from SKILL.md, **Routing**. Pages follow `skills/page-standard/SKILL.md` 
 - [Steps](#steps)
 - [Steps, again](#steps-1)
 - [Anchor](#by-hand)
+- [Linked](#draft-steps-in-the-guide)
 
 ## Steps
 
-```
+````
 ## Not a heading
+```
+## Not a heading either
 See [nothing](#nothing).
 ```
+````
 
 Filler line 1.
 Filler line 2.
@@ -120,4 +124,7 @@ Filler line 100.
 ## Steps
 
 <a id="by-hand"></a>
+
+## _Draft_ steps in [the guide](https://example.com/guide)
+
 End.
