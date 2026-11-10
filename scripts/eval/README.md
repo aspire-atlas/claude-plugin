@@ -20,9 +20,10 @@ It runs on a developer's machine. CI does not run it.
 ## What it needs
 
 - `bun`, `python3`, and the `claude` CLI signed in (the same account that can open the approved pages).
-  The Claude Code it runs must have the Artifact tool: the plugin builds no page without it, and the
-  approved pages are read with it. The harness checks before it starts and stops when the tool is missing.
-  Without it, the approved pages can still be graded from files (`approvedFile`), with `--page`.
+  A Claude Code with the Artifact tool (a session on the web) publishes each page and reads the approved
+  pages from their links. One without it (a local terminal) still works: the flow saves its page as a
+  file, the table shows no link, and each approved page must be given as a file, either `approvedFile`
+  in `local.json` or a copy at `scripts/eval/.cache/approved/<code>.html`.
 - A test organization on the dev Atlas server, with a brand profile for each of the four brands behind the
   five questions (one brand has two questions). Each profile needs enough data for its question: either the
   brand's own data held in the organization, or its public handles and its competitors indexed. Write which

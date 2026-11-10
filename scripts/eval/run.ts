@@ -330,11 +330,9 @@ async function rerun(question: Question, config: any, local: Local, qDir: string
   // The same goes for every other connector this machine has (other Atlas servers, mail, chat): a rerun reads
   // the test connector and nothing else.
   const starting = await startingSession(work)
-  // The plugin builds no page without the Artifact tool, so there would be nothing to grade.
-  if (!starting.tools.includes('Artifact')) {
-    fail('this Claude Code has no Artifact tool, and the plugin builds no page without it. Update Claude Code (claude update), ' +
-      'or run the harness in a Claude Code session on the web, where pages can be published.')
-  }
+  // Without the Artifact tool the flow saves its page as a file (page standard, build loop, step 5).
+  const publishes = starting.tools.includes('Artifact')
+  if (!publishes) console.error('  this Claude Code cannot publish pages: the page will be a file, with no link')
   const refused = [...new Set(['plugin:aspire:Aspire Atlas', 'plugin:aspire:Aspire Atlas Organization Admin', 'plugin:aspire:Meta Ads',
     'Aspire Atlas', 'Aspire Atlas Organization Admin', 'claude.ai Aspire Atlas', ...starting.connectors])]
     .filter(name => name !== connector && name !== 'aspire-mod')
@@ -389,7 +387,7 @@ async function rerun(question: Question, config: any, local: Local, qDir: string
     }
     if (page.finished) {
       // Answering "go ahead" again would start whatever the flow offers next, which is another question's page.
-      problems.push('The flow finished its run without publishing a page')
+      if (!existsSync(captured)) problems.push('The flow finished its run without a page')
       break
     }
     if (rounds >= options.maxRounds) {
@@ -399,7 +397,7 @@ async function rerun(question: Question, config: any, local: Local, qDir: string
     rounds += 1
     prompt = question.reply ?? config.defaultReply
   }
-  if (existsSync(captured) && !link) problems.push('The run wrote a page but returned no link for it')
+  if (existsSync(captured) && !link) problems.push(publishes ? 'The run wrote a page but returned no link for it' : 'The page was saved as a file: this Claude Code cannot publish pages')
   if (!existsSync(captured) && link) problems.push('The run published a page but its file was not found, so the new page is not graded')
   return { link, rounds, transcriptTokens: last?.contextTokens ?? 0, billedTokens: billed, compactions, costUsd: cost, problems, model }
 }

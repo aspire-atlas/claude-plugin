@@ -176,11 +176,16 @@ export function findPage(turn: Turn): { link: string | null; file: string | null
   // An agent's result packet names the page it published, when the publish call itself was not in the stream.
   // A result packet also means an agent finished its run, page or no page: there is nothing left to confirm.
   const packets = fencedBlocks(turn.text, 'result-packet')
+  // On a host that cannot publish, the packet's page is the path of the file the page was saved to.
+  let saved: string | null = null
   for (const packet of packets) {
-    const page = parseJsonLoose(packet)?.page
-    if (typeof page === 'string' && page.length > 0) link = link ?? page
+    const value = parseJsonLoose(packet)?.page
+    const page = Array.isArray(value) ? value[0] : value
+    if (typeof page !== 'string' || page.length === 0) continue
+    if (/^https?:\/\//.test(page)) link = link ?? page
+    else saved = saved ?? page
   }
-  return { link, file: file ?? written, finished: packets.length > 0 }
+  return { link, file: file ?? saved ?? written, finished: packets.length > 0 }
 }
 
 export function fencedBlocks(text: string, label: string): string[] {

@@ -195,3 +195,8 @@ test('a result packet with no page means the flow finished without one', () => {
   const events = [{ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 't', content: '```result-packet\n{"page": null}\n```' }] } }]
   expect(findPage(summarizeTurn(events))).toEqual({ link: null, file: null, finished: true })
 })
+
+test('a file path in the result packet is the page on a host that cannot publish', () => {
+  const events = [{ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 't', content: '```result-packet\n{"page": "/tmp/work/brief.html"}\n```' }] } }]
+  expect(findPage(summarizeTurn(events))).toEqual({ link: null, file: '/tmp/work/brief.html', finished: true })
+})
