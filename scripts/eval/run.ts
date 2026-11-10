@@ -31,6 +31,7 @@ const USAGE = `bun run eval:pages [options]
   --timeout-min <n>        Minutes one turn may take (default: 45)
   --page <file>            With --only <code>: grade this page file as the new page, without a rerun
   --refresh-approved       Read the approved pages again instead of using the copies kept on this machine
+  --explain <run>          Print what each turn of a run did: its page tool calls and the end of its reply
   --dry-run                Print what would run, and run nothing
 
 A run is named by its folder under scripts/eval/.runs/, a baseline by its date, the newest run by "latest".`
@@ -45,7 +46,7 @@ type Local = {
   questions?: Record<string, { brand?: string; approved?: string | null; approvedFile?: string | null }>
 }
 type Options = {
-  only: string[] | null; baseline: string | null; from: string | null; compare: [string, string] | null
+  only: string[] | null; baseline: string | null; from: string | null; compare: [string, string] | null; explain: string | null
   model: string | null; judgeModel: string | null; maxRounds: number; timeoutMin: number
   refreshApproved: boolean; dryRun: boolean; page: string | null
 }
@@ -57,7 +58,7 @@ function fail(message: string): never {
 
 function parseArgs(argv: string[]): Options {
   const options: Options = {
-    only: null, baseline: null, from: null, compare: null, model: null, judgeModel: null,
+    only: null, baseline: null, from: null, compare: null, explain: null, model: null, judgeModel: null,
     maxRounds: 6, timeoutMin: 45, refreshApproved: false, dryRun: false, page: null,
   }
   const value = (i: number, flag: string) => (argv[i] && !argv[i].startsWith('--') ? argv[i] : fail(`${flag} needs a value`))
@@ -69,6 +70,7 @@ function parseArgs(argv: string[]): Options {
     } else if (flag === '--only') options.only = value(++i, flag).split(',').map(code => code.trim().toUpperCase())
     else if (flag === '--baseline') options.baseline = argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[++i] : today()
     else if (flag === '--from') options.from = value(++i, flag)
+    else if (flag === '--explain') options.explain = value(++i, flag)
     else if (flag === '--compare') options.compare = [value(++i, flag), value(++i, flag)]
     else if (flag === '--model') options.model = value(++i, flag)
     else if (flag === '--judge-model') options.judgeModel = value(++i, flag)
@@ -111,6 +113,37 @@ async function claude(args: string[], prompt: string, cwd: string, out: string, 
   await child.exited
   clearTimeout(timer)
   return summarizeTurn(parseStream(readFileSync(out, 'utf8')))
+}
+
+/** For a run that went wrong: what each turn called and how its reply ended, and what the approved read said. */
+function explain(name: string) {
+  const dir = name === 'latest' ? join(RUNS, readdirSync(RUNS).sort().at(-1) ?? '') : existsSync(join(RUNS, name)) ? join(RUNS, name) : name
+  if (!existsSync(dir)) fail(`no run named "${name}"`)
+  const show = (label: string, path: string) => {
+    const events = parseStream(readFileSync(path, 'utf8'))
+    const turn = summarizeTurn(events)
+    const init = events.find(event => event.type === 'system' && event.subtype === 'init')
+    const calls = turn.toolUses
+      .filter(use => /^(Artifact|Write|Task|Agent|Skill)$/.test(use.name))
+      .map(use => {
+        const detail = use.input.file_path ?? use.input.subagent_type ?? use.input.skill ?? use.input.url ?? ''
+        const result = turn.toolResults[use.id]
+        return `${use.name}${use.input.action ? `(${use.input.action})` : ''} ${detail}${result?.error ? ` -> refused: ${result.text.slice(0, 160)}` : ''}`
+      })
+    console.log(`\n== ${label}`)
+    if (init) console.log(`has Artifact tool: ${(init.tools ?? []).includes('Artifact')} · connectors: ${Object.entries(turn.connectors).map(([n, st]) => `${n}=${st}`).join(', ')}`)
+    console.log(`calls: ${calls.join(' | ') || 'none'}`)
+    console.log(`page found: ${JSON.stringify(findPage(turn))}`)
+    console.log(`reply ends: ${(turn.reply || '(no reply)').slice(-900)}`)
+  }
+  for (const code of readdirSync(dir)) {
+    const qDir = join(dir, code)
+    if (!statSync(qDir).isDirectory()) continue
+    const turns = readdirSync(qDir).filter(file => /^turn-\d+\.jsonl$/.test(file)).sort((a, b) => parseInt(a.slice(5)) - parseInt(b.slice(5)))
+    for (const file of turns) show(`${code} ${file.replace('.jsonl', '')}`, join(qDir, file))
+    const read = join(CACHE, `${code}.read.jsonl`)
+    if (existsSync(read)) show(`${code} approved page read`, read)
+  }
 }
 
 function resolveRun(name: string): RunResults {
@@ -436,6 +469,10 @@ async function main() {
   const eChecks: any[] = eFile.checks
   const names = checkNames(eChecks)
 
+  if (options.explain) {
+    explain(options.explain)
+    return
+  }
   if (options.compare) {
     process.stdout.write(compareRuns(resolveRun(options.compare[0]), resolveRun(options.compare[1]), eChecks))
     return
