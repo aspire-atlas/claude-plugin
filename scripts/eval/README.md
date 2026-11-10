@@ -29,12 +29,15 @@ It runs on a developer's machine. CI does not run it.
   `local.json` uses:
 
   ```bash
-  claude mcp add --transport http "Aspire_Atlas_Dev" https://{the dev Atlas host}/mcp
+  claude mcp add --scope user --transport http Aspire_Atlas_Dev https://{the dev Atlas host}/mcp
   ```
 
   The name takes letters, digits, hyphens and underscores only, and must contain `Aspire_Atlas` so the
   skill recognizes its tools. Then run `claude`, type `/mcp`, pick the connector, and authenticate. The signed-in person must belong to
-  the test organization. A server that does take a bearer token can use `mcp.tokenEnv` instead.
+  the test organization. `--scope user` matters: the harness runs Claude in its own folders, and a
+  connector added without it is seen only in the folder it was added from. The run stops if any other
+  Atlas connector is connected, because the plugin's bundled ones point at production. A server that does
+  take a bearer token can use `mcp.tokenEnv` instead.
 - `scripts/eval/local.json`, copied from `local.example.json`. It holds the dev server address, the test
   organization's name (added to each ask, since a person can belong to several), each question's brand
   name, and the link to its approved page. It is ignored by git: brand names and page links
