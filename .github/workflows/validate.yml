@@ -72,6 +72,15 @@ jobs:
       - name: What the plugin directory's scan blocks (mod form, file size, hook docs), and skill description length
         run: bash scripts/check-directory.sh
 
+      - name: The skill layout check gives every fixture its result
+        run: bash scripts/check-skill-layout.sh --fixtures
+
+      # TODO(2026-11-10, ASP-4093): remove continue-on-error once ASP-4093 lands the router split
+      # and the references no longer cite each other; until then this step reports and never blocks.
+      - name: Skill layout (SKILL.md length, description length, reference chains, tables of contents)
+        continue-on-error: true
+        run: bash scripts/check-skill-layout.sh --tree
+
       - name: Changelogs are edited only on release branches
         if: steps.channel.outputs.name == 'develop'
         run: |

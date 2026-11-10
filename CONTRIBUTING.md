@@ -45,7 +45,10 @@ bash scripts/check-agent-specs.sh
 bash scripts/check-palette.sh
 bash scripts/check-skill-args.sh
 bash scripts/check-directory.sh
+bash scripts/check-skill-layout.sh
 ```
+
+`check-skill-layout.sh` fails on a `SKILL.md` over 500 lines, a skill description over 1,024 characters, a file under `skills/*/references/` that cites another reference file (`SKILL.md` and `page-standard` are fine), or a Markdown file over 100 lines under `skills/` without a `## Contents` section whose links resolve to its headings; its fixtures are in `scripts/fixtures/skill-layout/`. Until ASP-4093 lands, CI reports its findings on the plugins without blocking.
 
 Try the plugin from a checkout in Claude Code:
 
