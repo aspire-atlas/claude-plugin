@@ -1,9 +1,9 @@
 # CAS campaign page: Master Brief and Creator Selection
 
-Part of the CAS campaign reference. `cas-campaign.md` holds the state model, setup interview,
-dispatch table, gate packets and flows, and its **1d** maps every part of the campaign page to
-its file. A section named here without a file, such as **Gate 2** or **1e**, is in the file
-that map gives.
+Part of the CAS campaign reference. Its main file holds the state model, setup interview,
+dispatch table, gate packets and flows, and `SKILL.md` **Sections** maps every part of the
+campaign page to its file. A section named here without a file, such as **Gate 2** or **1e**,
+is in the file that map gives.
 
 ## Contents
 
@@ -39,7 +39,7 @@ that map gives.
 ### Master Brief
 
 The round's master brief: one brief per round, made of one concept per lane, in the modular shape
-the brief agent writes (`creator-brief.md`, **Creator-ads mode**). The agency writes and edits it
+the brief agent writes (**Creator brief**, **Creator-ads mode**). The agency writes and edits it
 here; the client reads it, comments, and signs off the round's brief as a whole or asks for
 changes. Signing off is the step 4 approval. A round started from an earlier one opens with that round's locked brief for each
 concept, for the agency to change (**Rounds**, **The new round's brief**). Once the round is done
@@ -68,10 +68,10 @@ the page keeps**, and where each comes from in **Loading the brief** below.
   story, selling points, the hero beats (problem, agitate, solve), the beats with their seconds,
   hooks H1 to H3, CTAs C1 to C2, the body and its length, runtime per platform, numbered
   B-roll, and the editing coverage result. A concept has 3 hooks and 2 CTAs, the number the brief
-  agent writes (`hooks-and-ctas.md`).
-- **A hook**: its number, type (a hook pattern from `ad-reuse.md`, **Hook patterns**), the line
+  agent writes (**Hooks and CTAs**).
+- **A hook**: its number, type (a hook pattern from **Ad reuse**, **Hook patterns**), the line
   (what is said, or "no voice"), what is shown, the overlay text, and why it was recommended.
-- **A CTA**: its number, type (Direct or Soft, `hooks-and-ctas.md`, **Writing the CTAs**), the
+- **A CTA**: its number, type (Direct or Soft, **Hooks and CTAs**, **Writing the CTAs**), the
   line, where it sends people, the moment it lands, and why.
 - **A B-roll shot**: its number (B01, B02, …), what is filmed, and the beat it serves. A number is
   never reused in the round: removing B04 leaves B03 and B05, so a variant that names B05 still
@@ -449,7 +449,7 @@ same brief because:
   A changed Google Doc has a new modified time, so it is mapped again, as it should be. **Map
   again** is the only way to replace a stored mapping, and it saves the new one in its place.
 - **Claude only points, it never writes.** Claude is asked for the data block's shape
-  (`creator-brief.md`, **The data block**) with every text value copied word for word from the
+  (**Creator brief**, **The data block**) with every text value copied word for word from the
   document. The page then keeps a text value only when it appears in the document, compared after
   turning every run of spaces and line breaks into one space and curly quotes into straight ones,
   and drops the rest to **Couldn't use**. So two runs can differ only in which part a passage went
@@ -462,7 +462,7 @@ same brief because:
   words appear in the document ("30 seconds", "0-3"), like any text value; Claude never works one
   out. One the document doesn't give stays empty.
 - **Fixed choices are checked.** A hook's type must be one of the hook patterns
-  (`ad-reuse.md`, **Hook patterns**), a CTA's Direct or Soft, a framework one of the campaign's by
+  (**Ad reuse**, **Hook patterns**), a CTA's Direct or Soft, a framework one of the campaign's by
   its code or name, ignoring case; anything else is left empty and listed. A concept matches a
   round's concept by its name, ignoring case, and a product a product in scope by its name, as in
   **Loading the brief**.
@@ -810,7 +810,7 @@ text. Every part above can differ, the variant plan aside: a creator never sees 
 
 #### Loading the brief
 
-The brief agent publishes the round's brief page with a data block (`creator-brief.md`,
+The brief agent publishes the round's brief page with a data block (**Creator brief**,
 **Creator-ads mode**, **The data block**). Before a brief run, when the page has edits not yet pulled, Claude
 offers **Pulling decisions** first, then passes the brief as the page holds it to the run as
 `current_brief`, so the run starts from the agency's text, not the lane record. After the run, Claude reads the
@@ -822,7 +822,7 @@ persona, a selling point, a do, a don't, a variant's parts) gets a stamp with `v
 reset does, so a shorter re-run leaves nothing stale. The **Casting** part's `keyword-{n}` and
 `city-{id}`, and the `change-r{n}-{id}` notes from Ad Performance (**Brief status**, **Changes from
 round {n}**), are never in the block and never nulled this way; `current_brief` carries the
-change notes, agency lines included, so the run follows them (`hooks-and-ctas.md`, **Where
+change notes, agency lines included, so the run follows them (**Hooks and CTAs**, **Where
 recommendations come from**). Then Claude writes the original version (**1e**, **Brief versions and Reset to original**) and
 republishes. A part the agent left as a bracketed blank stays one, so the page
 shows what is missing. Nothing the agent writes is dropped:
@@ -908,11 +908,11 @@ rounds**, and the round in view when a round segment is picked.
   again the moment a decision arrives.
   - **Committed**: every agreed fee on the campaign, in every round, with the allowlisting uplift
     on each unless allowlisting is off: the agreed figure plus its uplift line in **Contract and
-    rates**' **Totals** (`rates-and-terms.md`, **Contract and rates**). It never comes from a typed number. Shown with
+    rates**' **Totals** (**Rates and terms**, **Contract and rates**). It never comes from a typed number. Shown with
     "{k} creators agreed".
   - **Approved, not contracted**: every creator with Priority Yes or Yes in a live round, from
     the page or recorded, whose fee is not agreed and who has not declined, at their expected cost
-    (`rates-and-terms.md`, **Expected cost**). Shown with "{a} creators".
+    (**Rates and terms**, **Expected cost**). Shown with "{a} creators".
   - **Unpriced**: the approved, not contracted creators with no expected cost, counted apart and
     left out of the figures above: "{u} approved creators aren't priced yet", with a soft Badge
     "Unpriced". Each name opens its row.
@@ -1005,7 +1005,7 @@ creator's first post, and the Notes cell at **Notes** (**The creator viewer**).
 
 #### Cards
 
-The creator card from `creator-card.md`, page profile, one per creator, in `grid grid-cols-1
+The creator card from **Creator card**, page profile, one per creator, in `grid grid-cols-1
 gap-4 sm:grid-cols-2 lg:grid-cols-3`, anchored `#selection/r{n}/{net}-{handle}`. Flow chips: the
 concept, filled with the theme's chart series in concept order, then the tier, the status labels,
 the band, a "Competitor conflict" or "Past competitor deal" Badge when there is one, the round
@@ -1241,13 +1241,13 @@ the creator's posts to pick from, the current one marked with `aria-current="tru
   show (the evidence posts first, then the most recent, with the **Hook post** among them on
   Instagram), then up to nine more of their posts from the last 90 days in Atlas, newest first, as
   link tiles with no image: the network icon, the format, the date and the views. Each
-  creator's posts are worked out at publish from the posts read for the card (`creator-card.md`,
+  creator's posts are worked out at publish from the posts read for the card (**Creator card**,
   **Data: what fills each section**), adding `text` (the caption) to the fields read. A creator
   not sent yet shows the posts and profile kept for them in `agency/pool-{net}-{handle}`, one
   document each (**1e**), never in the one `agency/pool` document, which holds only their row.
 - **The media**, in a box that keeps the post's shape, centred on `bg-muted`, capped in height
   on the image or video itself (the Viewer classes' media cap), never larger than
-  its embedded size (`creator-card.md`, **Images**, **Placing it**):
+  its embedded size (**Creator card**, **Images**, **Placing it**):
   - **A video with a stored copy**: a `video` element with `controls`, `playsinline`,
     `preload="metadata"` and the post's image as `poster`, from the page's asset store at
     `/_blob/{asset}`. It plays when the person presses play or Space, never on its own. Moving to
@@ -1291,7 +1291,7 @@ the creator's posts to pick from, the current one marked with `aria-current="tru
   the page's data and set as the source of the Table's and card's thumbnail (`object-fit: cover`
   in its box) and of the viewer's media (`object-fit: contain`). On this page it takes the place of
   the card's `thumb` for those posts. The page's budget is the card reference's: all images under
-  8MB of data URIs (`creator-card.md`, **Images**, **Budgets**). Over it, in this order, cutting the
+  8MB of data URIs (**Creator card**, **Images**, **Budgets**). Over it, in this order, cutting the
   number of images before their quality: drop the third post of creators decided in a Done round,
   then every creator's third post, then every creator's second post, then rerun at quality 80. Past
   that, a Hook post that isn't the creator's first post falls back to the card's `thumb`, and then
@@ -1325,9 +1325,9 @@ the creator's posts to pick from, the current one marked with `aria-current="tru
    scored yet".
 2. **Concept and persona**: the concept chip and the persona, labels for the client, the Selects
    for the agency (**The match score**, **Concept and persona**).
-3. **The creator card**, page profile, from `creator-card.md`, at the panel's width, with the
+3. **The creator card**, page profile, from **Creator card**, at the panel's width, with the
    Cards view's flow chips and `{DETAILS}`. Its thumbnails are left out, because the post strip
-   shows the same posts. The card takes the theme override in `theme.md`, **The CAS campaign
+   shows the same posts. The card takes the theme override in **Theme**, **The CAS campaign
    page**.
 4. **About**, the parts the card doesn't show in full, each left out when Atlas holds nothing for
    it:
@@ -1340,7 +1340,7 @@ the creator's posts to pick from, the current one marked with `aria-current="tru
 5. **Audience**, per network, labelled with the network and with what it counts (engaged accounts
    or followers): the gender split, the age bands (up to five), the top countries (up to four) and
    the top cities (up to four), from the creator's demographics fields the way
-   `creator-profile.md`, **Profile & audience: audience panel**, reads them, at publish. A column
+   **Creator profile**, **Profile & audience: audience panel**, reads them, at publish. A column
    whose breakdown has no results is left out; with none: "Atlas holds no audience breakdown for
    @{handle}." Shares are text with a bar beside each, so none reads by its bar alone.
 6. **Rates and terms**, for the agency only, under a dashed rule headed "Agency only", read from
@@ -1405,7 +1405,7 @@ the Aspire notes in "Aspire notes", each note as "{name}, {date}: {text}", newes
 line.
 
 **Where the viewer's fields come from.** Read by Claude at publish, with the card's pulls
-(`creator-card.md`, **Data: what fills each section**) widened as below, and written into the page
+(**Creator card**, **Data: what fills each section**) widened as below, and written into the page
 itself for a creator sent to the client, or `agency/pool-{net}-{handle}` for one not sent yet. Every field path is
 checked against the live census (`list_creator_search_fields`, `list_post_search_fields`) first; one
 the census doesn't list leaves its part out, never guessed.
@@ -1416,7 +1416,7 @@ the census doesn't list leaves its part out, never guessed.
 | Category | `instagram.category`, as discovery reads it in creator-ads mode |
 | Verified | The creator's `verified`, one value per creator, which the card's `search_creators` call already projects |
 | Badges | `instagram.badges` |
-| Audience | The demographics fields `creator-profile.md` reads (`instagram.creatorEngagedAccountsBreakdowns`, `instagram.audienceDemographics`, `instagram.followerDemographics`; `tiktok.audienceGenders`, `tiktok.audienceAges` and the TikTok location breakdown), pulled without the card's `exclude` for each creator the page shows. Countries and cities are each a column only when the breakdown holds that kind of location. Atlas often holds countries alone: then the cities column is left out with "No city breakdown in Atlas", and the viewer never shows the creator's own City (**Where each field comes from**) as an audience figure |
+| Audience | The demographics fields **Creator profile** reads (`instagram.creatorEngagedAccountsBreakdowns`, `instagram.audienceDemographics`, `instagram.followerDemographics`; `tiktok.audienceGenders`, `tiktok.audienceAges` and the TikTok location breakdown), pulled without the card's `exclude` for each creator the page shows. Countries and cities are each a column only when the breakdown holds that kind of location. Atlas often holds countries alone: then the cities column is left out with "No city breakdown in Atlas", and the viewer never shows the creator's own City (**Where each field comes from**) as an audience figure |
 | Posts: media, format, date, figures, permalink | `search_posts` per creator, as for the card: `media`, `instagram.mediaProductType`, `postedAt`, `viewCount`, `likeCount`, `commentCount`, `instagram.permalink` or `url` |
 | Captions | `text` on the same posts |
 | Link tiles (up to nine more posts in 90 days) | The same call, which reads the creator's last 12 posts per channel; the posts it returns past the embedded ones, from the last 90 days |
@@ -1448,7 +1448,7 @@ From the larger of the creator's Instagram and TikTok followers: **Nano** under 
 roster's `tier` field is where discovery found the creator, a different thing, and is never shown
 as this tier. Worked out at publish
 from the follower counts Atlas holds and shown to both sides. The reply window keeps its own
-bands (`rates-and-terms.md`, **What each creator gets**), and other flows' tier words (a PPA
+bands (**Rates and terms**, **What each creator gets**), and other flows' tier words (a PPA
 pitch's casting bands, an influencer program's outreach) are their own: this page shows only
 these five.
 
@@ -1459,7 +1459,7 @@ these when Claude publishes; nothing on the page calls Atlas.
 
 | On the page | Where it shows | From |
 | ----------- | -------------- | ---- |
-| Handle, network, avatar | Creator | Discovery's finding (`entityId`, `schema`) and the search hit's username; the picture from `instagram.profilePictureUrl`, embedded per `creator-card.md` |
+| Handle, network, avatar | Creator | Discovery's finding (`entityId`, `schema`) and the search hit's username; the picture from `instagram.profilePictureUrl`, embedded per **Creator card** |
 | Name | Creator, search, sort | The search hit, or the agency's edit (`creators/{net}-{handle}`) |
 | Instagram and TikTok followers | Creator, sort, tier | `followersCount` per network, read for the card |
 | Tier | Creator, Tier filter, sort, search | Worked out from the followers (**Tiers**) |
@@ -1478,7 +1478,7 @@ these when Claude publishes; nothing on the page calls Atlas.
 | Latest posts, latest post date | Latest posts, sort | Discovery's `evidence` permalinks and the posts read for the card (`search_posts` per creator) |
 | Why we picked them | Notes | The CM's note at Gate 2, else vetting's reason in plain words |
 | Recommendation, vetting evidence, safety detail | Notes, agency only | The vetting finding |
-| Expected cost, cost per 1K reach | Notes, sort, Budget, agency only | `rates-and-terms.md`, **Expected cost**, and the reach above |
+| Expected cost, cost per 1K reach | Notes, sort, Budget, agency only | **Rates and terms**, **Expected cost**, and the reach above |
 
 A TikTok creator's hook rate shows "n/a (not on TikTok)" and their match score carries
 "Scored without hook rate, which TikTok doesn't report". Reach and engaged accounts, which Atlas
@@ -1523,11 +1523,11 @@ half way) runs the re-score for that creator again from the stored inputs. The i
   next publish" and the persona is the concept's first;
 - a concept's target cities;
 - a fee, offer or counter edited on the page, which changes that creator's expected cost
-  (`rates-and-terms.md`, **Expected cost**);
+  (**Rates and terms**, **Expected cost**);
 - allowlisting or the allowlisting uplift in Home's **Program terms**, which changes every
   creator's expected cost from its stored basis;
 - the budget total or the term dates on Home, which can change the target rate
-  (`rates-and-terms.md`, **Target rate**), and with it every creator's Budget vs target;
+  (**Rates and terms**, **Target rate**), and with it every creator's Budget vs target;
 - a weight (**Match score tuning**).
 
 A casting keyword added or changed on the page needs a read of the creators' posts, which only
@@ -1539,8 +1539,8 @@ mix of both. Only Editors and Claude write scores: `scores` sits under the page 
 which no Contributor can write (**1e**).
 
 **Discovery's and vetting's pages.** Discovery and vetting run the same procedure in creator-ads
-mode, with the agency's five factors (`creator-discovery.md`, **Creator-ads mode**;
-`creator-vetting.md`, **Creator-ads lanes**). Their pages show the score as of their run, dated.
+mode, with the agency's five factors (**Creator discovery**, **Creator-ads mode**;
+**Creator vetting**, **Creator-ads lanes**). Their pages show the score as of their run, dated.
 It matches the campaign page's when the inputs are the same. The inputs that can differ are named
 on their pages: a fee, offer or counter recorded since the run, weights tuned on the page and not
 yet pulled, a budget total, term dates, allowlisting, the uplift or casting edited on the page and
@@ -1589,7 +1589,7 @@ moves a score.
 - **Past paid partners**: the names in `instagram.pastBrandPartnershipPartners`. When vetting
   screened the creator's lane, this part is vetting's paid track record read instead, taken from
   the vetting finding's `detail.match.paidPartners`, which weighs partners in or near the brand's category
-  (`creator-vetting.md`, **Creator-ads lanes**): 1 for two or more in the category, 0.6 for one in
+  (**Creator vetting**, **Creator-ads lanes**): 1 for two or more in the category, 0.6 for one in
   it or two or more near it, 0.3 for partners outside it, 0 for none. So vetting's score and this
   one never disagree.
 - **Badges**: `instagram.badges`. Atlas passes them as Meta names them, so a badge counts when its
@@ -1597,10 +1597,10 @@ moves a score.
 - **Worked with the brand before**: the brand's name or handle in the past paid partners, a
   partnership marked post in Atlas that tags the brand's own handle, the brand's `partner` record
   for the creator, or an agreed fee for the creator in an earlier campaign of the brand's.
-- **Expected cost**: `rates-and-terms.md`, **Expected cost**.
-- **Target rate**: `rates-and-terms.md`, **Target rate**.
+- **Expected cost**: **Rates and terms**, **Expected cost**.
+- **Target rate**: **Rates and terms**, **Target rate**.
 - **Median views**: the median `viewCount` of the creator's last 10 Reels, as the fee calculator
-  reads it (`fees.md`, **Applying the rates**), over their Instagram followers; on TikTok,
+  reads it (**Fee calculator**, **Applying the rates**), over their Instagram followers; on TikTok,
   `tiktok.medianViews` over TikTok followers.
 - **Competitors**: the brand's saved `competitor` records, with their handles, names and spelling
   variants.
@@ -1641,7 +1641,7 @@ gap in Atlas, and "Scored without recent posts" says so.
   {brand}", one per competitor, the newest first, up to two and then "and {n} more".
 
 Both show to both sides, since the competitors are the brand's own. Vetting's competitor checks
-still decide its recommendation (`creator-vetting.md`, **The recommendation**); these two lines
+still decide its recommendation (**Creator vetting**, **The recommendation**); these two lines
 show what Atlas holds and change nothing else.
 
 **Bands.** 75 and up **Strong**, 60 and up **Good**, 45 and up **Possible**, under 45 **Weak**. A

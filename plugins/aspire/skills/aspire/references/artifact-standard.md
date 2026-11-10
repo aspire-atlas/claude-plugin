@@ -5,18 +5,21 @@ right and one source line at the end. This file is the one place that defines bo
 reference names where its header and footer go; this file says what goes in them. Never restate the
 source sentence anywhere else: point here.
 
+A bold section name with no file beside it (**Reader standard**, **Quality review**) is another part of this skill;
+`SKILL.md`'s **Sections** index names its file.
+
 The two pieces say everything the page needs to say about itself:
 
 - **Who prepared it:** the mark, which is Aspire Atlas. A page never names Claude, a model, or an
   assistant, and names the person who asked for it only in the "Prepared by" line a page for a
   VP or budget owner carries (`skills/page-standard/SKILL.md`, section 2). Creators, approvers,
   and other people a flow shows stay as that flow sets them.
-- **For whom:** the header's "Prepared for" chip (recipient-lens.md), and, on a page shared outside
+- **For whom:** the header's "Prepared for" chip (**Recipient lens**), and, on a page shared outside
   the team, the audience in the source line.
 - **When:** the "as of" time in the source line, which changes every time the page is republished or
   its data is refreshed. There is no separate prepared date.
 
-What a page says, part by part, and the R1 to R12 checks (`reader-standard.md`) it passes before
+What a page says, part by part, and the R1 to R12 checks (**Reader standard**) it passes before
 it is published are set by the shared skill `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`.
 This file sets only the mark, the source line, and how a page prints (section 6).
 
@@ -47,7 +50,7 @@ source in the hand-off message instead.
 - Never load it from a URL: published pages and widgets cannot load outside images. Never recolor,
   restyle, or replace it, and never let the brand theme recolor it; it keeps its own dark tile. Give
   it a 1px `var(--border)` outline so its edge shows on a dark page.
-- It sits at the opposite end from the brand's own logo (theme.md puts that at the start of the
+- It sits at the opposite end from the brand's own logo (**Theme** puts that at the start of the
   header). When a header already has a right-hand item (a freshness chip, a "Saved to Atlas" chip),
   put the mark at the far right and the chip to its left.
 - Its squares shuffle slowly, each on its own cycle of 7 to 23 seconds, so the pattern keeps changing
@@ -110,7 +113,7 @@ check script finds it in this file only.
 - **Review pages** (a quality review's page): carry the mark, and replace the source line with
   "Reviewed from {the work's title}, read from {where: an artifact, Google Drive, a file} as of
   {asOfDate}." When the review re-checked Atlas figures, add the standard source sentence after it;
-  when it did not, add nothing about Atlas. Then "Rubric version {n}." from `quality-review.md`, then
+  when it did not, add nothing about Atlas. Then "Rubric version {n}." from **Quality review**, then
   the team audience line.
 - **Pages with no Atlas data** (the first-run starter page, the setup-needed cards): carry the mark,
   and replace the source line with "No Atlas data on this page."
@@ -120,7 +123,7 @@ check script finds it in this file only.
   28px, in the corner that is free. A widget that shows Atlas data adds one line under it: "Source:
   Aspire Atlas cross-platform indexing ({networks}), as of {asOfDate}. Internal use only." The full
   sentence is on the page. Creator and post cards in chat are Atlas's own, drawn by the host; the
-  plugin builds no widget for them (`creator-card.md`, **Cards in chat**).
+  plugin builds no widget for them (**Creator card**, **Cards in chat**).
 - **Decks**: the small mark top right of every slide, and the source line on the last slide
   ("Thank you"), unless a slide's footer band can carry it without crossing the render checks. A deck
   for a client uses the shared-page audience line.
@@ -133,7 +136,7 @@ check script finds it in this file only.
 2. The source line has the as-of time from the shell clock and a networks list that matches the data;
    the page names no Claude, model, assistant, email, or id, and names the requester only in a
    "Prepared by" line (page-standard, section 2).
-3. The header carries the "Prepared for" chip (recipient-lens.md) so the page says who it is for.
+3. The header carries the "Prepared for" chip (**Recipient lens**) so the page says who it is for.
 4. The audience line matches who will see the page, and a page with the shared line carries no
    platform disclosures (section 2).
 5. The page source stays ASCII and keeps its size budget (the full mark is about 27KB of the page's
@@ -151,7 +154,7 @@ A new agent, or a flow that publishes a page:
 1. Copy the block below into the agent file, unchanged, just above its `## Audit trail` section.
    `scripts/check-artifact-standard.sh` fails when an agent lacks it or its copy differs.
 2. In the flow's reference, put one sentence in the page's Header item (the mark at the top right and
-   the "Prepared for" chip from recipient-lens.md) and one in the Footer item (the source line), each
+   the "Prepared for" chip from **Recipient lens**) and one in the Footer item (the source line), each
    linking this file. Keep the flow's own footer notes. Add the reference to the check script's list.
 3. Use the variants in section 3 for sample pages, pages with no Atlas data, widgets, decks, and
    import files. A new kind of surface gets its variant added to section 3, not described in the flow.
@@ -178,7 +181,7 @@ return its `page-check` block just before your audit trail block.
 A reader who saves a page as a PDF, or prints it, gets the page as their browser prints it. The
 page's own print rules are all that shape that file, so every page carries them. Applies to the
 same surfaces as the rest of this file, except decks, which keep the print rules in
-`ppa-pitch.md`.
+**PPA pitch**.
 
 **What a printed page must do:**
 

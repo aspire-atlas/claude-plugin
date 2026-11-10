@@ -183,7 +183,7 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    100; say how many and launch them one at a time.
 5. Answer in text: the counts, up to three points naming the approved creators and top maybes
    with their page numbers, the next step, and the page link. Keep the agent's `creator-cards`
-   block; the cards appear only when the user asks to see them (`creator-card.md`, **Cards in
+   block; the cards appear only when the user asks to see them (**Creator card**, **Cards in
    chat**). When R2 named a
    campaign, offer to add the approved creators to its shortlist per SKILL.md **Creator card
    actions**, "Add @handle on {network} to a campaign shortlist", with one confirmation for the
@@ -228,7 +228,7 @@ scores the same in both flows:
 | Market fit | 5 | Country and language against the criteria |
 
 A component with no data scores zero and is listed as missing. Also report, unscored: posts
-that mention the brand (a warm lead), the estimated fee per `fees.md`, **Applying the rates**,
+that mention the brand (a warm lead), the estimated fee per **Fee calculator**, **Applying the rates**,
 and the contact route Atlas holds.
 
 ### 2. Brand safety (every creator, every run)
@@ -401,7 +401,7 @@ disclosure, and audience checks), `redLineHits[]`, `hardRejectHits[]`, `riskFlag
 `calibrationsApplied[]` (the keys that shaped the call), `lessonsApplied[]`, `evidence[]`,
 `estFee` when the calculator gives one, `listName`, `listSource` (`csv`, `pasted`,
 `aspire-app`, or `cas-lane`), `campaign` when R2 named one, `reviewPage`, and `recipient`
-(`recipient-lens.md`). A `feedback` finding adds `userVerdict`, `agentVerdict`, and the user's
+(**Recipient lens**). A `feedback` finding adds `userVerdict`, `agentVerdict`, and the user's
 words verbatim. Supply an `idempotencyKey` per finding (`vet-{list-slug}-{entityId}-{findingType}`).
 
 **Reading it back.** `search_insights` with a `prefix` filter on
@@ -438,7 +438,7 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
 5. **Up to three insights** (3.4): what shaped the verdicts across the list, each with its
    comparison and a "So:" line.
 6. **Approve**, **Maybe**, **Reject**, **Can't vet**, in that order, each a grid of creator
-   cards (3.7; `creator-card.md`, page mode) ranked by fit score, numbered from 1
+   cards (3.7; **Creator card**, page mode) ranked by fit score, numbered from 1
    across the whole page in the order shown, because those numbers are what the user replies
    with. When the
    criteria name audiences, the Approve grid is grouped by audience with a subtotal per group;
@@ -450,7 +450,7 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
    says "Backup: take if {creator} declines" instead; it stays a Maybe in the findings), the calibrations and lessons applied, an earlier vetting or discovery state, the
    contact route, "Est. fee {open} to {max}, target {target}" when the calculator gives one
    with where the rates came from, and the expected return when the fee has one: the bundled
-   median views the fee is priced on (`fees.md`, **How a fee is calculated**). Never show a
+   median views the fee is priced on (**Fee calculator**, **How a fee is calculated**). Never show a
    return the run did not work out.
    Reject and Can't vet are grouped by reason (3.16), one row per creator with its `#{number}`
    and why not, rather than full cards. A Reject row carries its score; a Can't vet row carries
@@ -470,19 +470,19 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
 12. **Atlas can draft next** (3.13): first messages to the approvals, offers at the fee
     calculator's open rate, and the questions to the Maybes.
 13. **Footer**: sources, the fee rate label once, a note that images are a snapshot, and
-    "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote. The mark and the footnote follow [artifact-standard.md](artifact-standard.md).
+    "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote. The mark and the footnote follow **Artifact standard**.
 
 More than 12 creators: a chart sits under the verdict tally (fit score against the recommendation lines, in a
 creator-ads lane the score without Budget vs target, which is what the lines decide,
 or follower count against engagement rate, colored by recommendation). Images follow
-`creator-card.md`, **Images**, page profile, cutting thumbnails per card before quality on a
+**Creator card**, **Images**, page profile, cutting thumbnails per card before quality on a
 large list. Load `artifact-design`, and `dataviz` for any chart, and apply `theme:brand` per
-`theme.md`, **Applying the theme**. Approve, Maybe, and Reject keep their status colors under
+**Theme**, **Applying the theme**. Approve, Maybe, and Reject keep their status colors under
 any theme.
 
 ## Creator-ads lanes (CAS campaigns)
 
-Inside a CAS campaign (`cas-campaign.md`), the main thread launches vetting on one lane's
+Inside a CAS campaign (**CAS campaign**), the main thread launches vetting on one lane's
 discovery pool, with the lane as the criteria source. This is step 12's two paid screens:
 persona fit, and paid track record. Everything above applies, with these changes.
 
@@ -493,7 +493,7 @@ are answered by the launch. R3 is skipped: the campaign's saved cadence approves
 lanes (SKILL.md, **Guardrails**). R4 is answered by the CAS Run picker.
 
 **Fit score for a creator-ads lane** is the campaign's match score, out of 100: the one procedure
-in `cas-campaign-page-brief.md`, **Creator Selection**, **The match score**, with the lane's concept,
+in **CAS campaign**, **Creator Selection**, **The match score**, with the lane's concept,
 the round's casting keywords and target cities, and the weights saved in `match` in
 `campaign:{slug}-cas` (the defaults there without it). Vetting runs it so its page and the
 campaign page show the same number for the same inputs. When `match` has a `basis`, the page says
@@ -514,7 +514,7 @@ factors:
 - The category comes from `brand:summary` and `brand:business-context`, as in the creator
   brief's **Fit rubric**. "Near" means a category the same buyer shops in.
 - Performance, Budget vs target and Content reach are worked out exactly as that section says,
-  Budget vs target from `rates-and-terms.md`, **Expected cost** (before step 3, the calculator's
+  Budget vs target from **Rates and terms**, **Expected cost** (before step 3, the calculator's
   target plus the uplift, unless a roster finding holds an offer, counter or agreed fee) and
   **Target rate**, which reads `-cas` and `-terms`.
 - **The recommendation uses the score without Budget vs target**, the client's score in that
@@ -542,11 +542,11 @@ factors:
 above against `vetting:thresholds`. A creator who would be Can't vet appears on the slate as
 Maybe, with "not enough data to judge" as what would settle it. Every Reject carries its reason
 in plain words, never price, because the CM may pass it on to the client; the Gate 2 packet itself
-shows the recommendation to the agency only (`cas-campaign.md`, **Gate 2**).
+shows the recommendation to the agency only (**CAS campaign**, **Gate 2**).
 
 **Output rows carry the four figures**: hook rate, Reels interaction rate, past paid partners,
 and partnership readiness, in each finding's `detail.adFigures` (with the key names
-`creator-discovery.md`, **Ad figures on every card**, pins) and on each card, beside the
+**Creator discovery**, **Ad figures on every card**, pins) and on each card, beside the
 recommendation. Findings also carry `detail.campaign` and `detail.lane`. The CAS campaign
 composes the Gate 2 packet from them.
 

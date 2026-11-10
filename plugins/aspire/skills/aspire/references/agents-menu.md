@@ -3,6 +3,9 @@
 Used by SKILL.md's **Arguments** for `agents` and `run {agent}`. The hand-off table step 5
 names lives in SKILL.md (**Agent hand-off**), because the router owns where each agent goes.
 
+A bold section name with no file beside it (**Running agents**, **Prompt coach**) is another part of this skill;
+`SKILL.md`'s **Sections** index names its file.
+
 ## List agents
 
 Report every subagent the plugin ships, then let the user run one. Read the list from disk each
@@ -34,7 +37,7 @@ time so it never goes stale; never recite it from memory.
    Answers the **Prompt coach** already collected carry into the hand-off row (**Prompt coach**,
    Carry-over).
 
-   Older agent names resolve per **Running agents** (`references/running-agents.md`).
+   Older agent names resolve per **Running agents**.
 
    An agent on disk that is not in that table: run Phase 1 and Phase 2 + 3, then launch it
    with the tool prefix, `profile_id`, `profile_slug`, the linked handles and networks, and `recipient`

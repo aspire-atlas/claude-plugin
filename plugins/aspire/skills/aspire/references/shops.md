@@ -6,17 +6,17 @@ Holds the questions the main thread asks, the platform guide, what the plan read
 readiness checklist, the step order, the catalog and content plan, the creator-to-shop plan,
 the management cadence, the risks, the packet, the records, and the page.
 
-Read `program.md` **4** (connected tools) before using a store connection. Other references
+Read **Influencer program** **4** (connected tools) before using a store connection. Other references
 this flow leans on:
 
 | What | Defined in |
 | ---- | ---------- |
-| Creator cards and images | `creator-card.md`, **Page rendering**, **Images**, **Agent hand-off** |
-| Rights on creator posts, the cleared-for-ads shelf | `content-library.md`, **Rights**; `program.md`, **Working state** (`asset`, `rights`) |
-| Hook patterns | `ad-reuse.md`, **Hook patterns** |
-| Discovery and vetting verdicts | `creator-discovery.md` and `creator-vetting.md`, **State written to Atlas** |
-| The reader | `recipient-lens.md` |
-| The page theme | `theme.md`, **Applying the theme** |
+| Creator cards and images | **Creator card**, **Page rendering**, **Images**, **Agent hand-off** |
+| Rights on creator posts, the cleared-for-ads shelf | **Content library**, **Rights**; **Influencer program**, **Working state** (`asset`, `rights`) |
+| Hook patterns | **Ad reuse**, **Hook patterns** |
+| Discovery and vetting verdicts | **Creator discovery** and **Creator vetting**, **State written to Atlas** |
+| The reader | **Recipient lens** |
+| The page theme | **Theme**, **Applying the theme** |
 
 The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
 in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
@@ -93,7 +93,7 @@ platforms. The plan advises, orders the work, and keeps track when the team save
 | `platforms` | W1: `instagram-shop`, `tiktok-shop`, or both |
 | `stage` | W2, per platform: `not-started`, `setting-up` (applied, waiting on review, or part-built), or `selling` |
 | What the user named | A launch date, products, markets, a fulfillment model, a team owner, a commission rate: used as given and labelled "you said" |
-| `connections` | `program.md` **4**. Only `store.canReadProducts` and `store.canReadInventory` matter here |
+| `connections` | **Influencer program** **4**. Only `store.canReadProducts` and `store.canReadInventory` matter here |
 | `recipient` | **Reading the ask**. Default `team`; `leadership` for "should we open one"; `growth` for which creators or products should drive shop sales; `campaign` when a launch date is named |
 | `pass` | `propose` (default) or `record`, with the `shops-packet` and the W3 and W4 answers |
 | `run` | `interactive` only (see **Unattended**) |
@@ -122,7 +122,7 @@ Rules:
   answers and nothing is written.
 - Each W5 hand-off runs through its own section of SKILL.md and asks its own confirmations. The
   shops plan never starts discovery, drafts outreach, or requests rights itself.
-- **Connections.** Detect a store connection per `program.md` **4** and pass `connections`.
+- **Connections.** Detect a store connection per **Influencer program** **4** and pass `connections`.
   Without one, say once in one line that a connected store lets the plan check products and
   stock, and go on.
 - **No linked channel.** Say the plan will have no posts to work from and can't be saved, offer
@@ -135,7 +135,7 @@ Rules:
   decision-audit line. No confirmation is needed: `propose` writes nothing. Then relay the page
   link, the headline, one readiness line per shop, the first three steps, and the top creators
   by name, in text (keep the agent's `creator-cards` block; cards only on request, per
-  `creator-card.md`, **Cards in chat**), and ask W3 and W4. After W4, launch
+  **Creator card**, **Cards in chat**), and ask W3 and W4. After W4, launch
   again with `pass: record`, the `shops-packet`, and the answers, relay what was written, and
   offer W5 once. W5's hand-offs go to **Creator discovery**, **Content sourcing**, **Ad reuse**,
   **PPA pitch**, or **Influencer program**.
@@ -462,9 +462,9 @@ last plan: steps done, steps still open, and new checklist gaps.
 One page per brand, title "{Brand} Shops Plan", republished to the link in the `page` finding
 with key `shops` (read it with the Artifact tool first). Without one, publish a new page and
 republish to the same file path within the session. Load `artifact-design` before building and
-`dataviz` for any chart; apply `theme:brand` per `theme.md`, **Applying the theme**; draw creators
-with the creator card (`creator-card.md`, page profile); embed post images per
-`creator-card.md`, **Images**; render for `recipient`. The page declares no page data
+`dataviz` for any chart; apply `theme:brand` per **Theme**, **Applying the theme**; draw creators
+with the creator card (**Creator card**, page profile); embed post images per
+**Creator card**, **Images**; render for `recipient`. The page declares no page data
 capability. In `propose`, the page carries a "Draft plan" chip; `record` replaces it with the
 saved or page-only state.
 
@@ -473,7 +473,7 @@ Sections, in order:
 1. **Header**: the shops covered and the stage of each, the "Prepared for" chip, when Atlas was
    read, and whether platform rules were checked (with the date) or not. The "Draft plan" or
    "Saved to Atlas" chip sits to the left of the animated Aspire Atlas mark at the top right
-   (`artifact-standard.md`).
+   (**Artifact standard**).
 2. **Headline**: the decision line for the primary lens.
 3. **What changed** since the last plan (later runs only).
 4. **Readiness**: the checklist per platform.
@@ -488,7 +488,7 @@ Sections, in order:
 12. **Footer**: "Read from Atlas as of {timestamp}", the platform pages checked with their dates,
     and "Requirements change. Commerce Manager and Seller Center show the current ones for your
     market. This plan is guidance, not legal or tax advice." The artifact-standard footnote
-    follows (`artifact-standard.md`).
+    follows (**Artifact standard**).
 
 **Lens order.** `team` keeps the order above. `leadership` leads with the headline, readiness,
 and risks on one screen, with a go, wait, or not yet per shop and the reason. `growth` leads

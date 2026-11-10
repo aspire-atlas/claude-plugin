@@ -54,10 +54,10 @@ week (next Monday to Friday unless given) or the campaign slug, first post date,
 `recipient` (**Reading the ask**), lookback, and the three answers. The main thread relays the
 summary, the published page, and any decisions the agent needs (guideline conflicts, budget
 tier), and names the first-pick creators in text. It keeps the agent's `creator-cards` block;
-the cards appear only when the user asks to see them (`creator-card.md`, **Cards in chat**). In campaign mode, after the brief, it offers the launch pulse
+the cards appear only when the user asks to see them (**Creator card**, **Cards in chat**). In campaign mode, after the brief, it offers the launch pulse
 (**Readouts**, **Launch pulse**) and says that each draft can go through **Content review** as it
 arrives. `brief_mode` `creator-ads` is launched only from **CAS campaign**, Run, row 10
-(`cas-campaign.md`).
+(**CAS campaign**).
 
 ## Page structure
 
@@ -66,7 +66,7 @@ One self-contained HTML page, published with the Artifact tool. Sections in orde
 1. **Header.** Eyebrow with handle, network, "Content creation brief", target week (or the
    campaign name and window). Headline that names the strategy in one line. Meta row: owner,
    channel and follower count, creator count, prepared date, and the "Prepared for" chip
-   (`recipient-lens.md`), with the animated mark at the top right. Standing-rule banner (red) when a red line makes the brief strategy
+   (**Recipient lens**), with the animated mark at the top right. Standing-rule banner (red) when a red line makes the brief strategy
    only.
 2. **Objective and audience.** KPI strip: 90 day goal from calibrations, engaged audience age
    band, top country share, gender split (from `instagram.account.audienceDemographics` on any
@@ -81,7 +81,7 @@ One self-contained HTML page, published with the Artifact tool. Sections in orde
 4. **Guardrails.** Two boxes: required, off limits.
 5. **Creator shortlist.** Intro naming the discovery runs. Horizontal bar chart of followers
    colored by tier, bar label with Reel interaction rate. Then a creator card per creator
-   (`creator-card.md`): badges in order fit ("Strong fit" or "Partial fit"), tier, then the
+   (**Creator card**): badges in order fit ("Strong fit" or "Partial fit"), tier, then the
    card's own; no fit ring, because the rubric has no score. `{DETAILS}` holds angle, role,
    why, the recommended engagement cost (range and rationale), past partners in the
    category, contact, and the profile link. Then two boxes: budget scenarios, how the costs
@@ -90,15 +90,15 @@ One self-contained HTML page, published with the Artifact tool. Sections in orde
    post days, 7 day readout.
 7. **Measurement.** Table: piece, primary metric, target, benchmark from the brand's own
    medians, secondary metric.
-8. **Footer.** Sources, date, the rate label, "costs are estimates from public view counts, not quotes", contact email note, then the artifact-standard footnote. The mark and the footnote follow [artifact-standard.md](artifact-standard.md).
+8. **Footer.** Sources, date, the rate label, "costs are estimates from public view counts, not quotes", contact email note, then the artifact-standard footnote. The mark and the footnote follow **Artifact standard**.
 
 Design: token palette on `:root` with dark redefinitions under both the media query and
-`[data-theme="dark"]`, on screen only, and the print block from `artifact-standard.md`, section 6. Fonts from Google Fonts with fallbacks (Instrument Sans display, IBM
+`[data-theme="dark"]`, on screen only, and the print block from **Artifact standard**, section 6. Fonts from Google Fonts with fallbacks (Instrument Sans display, IBM
 Plex Sans body, IBM Plex Mono data). Bullets use a positioned marker with left padding,
 never a grid per list item (a grid splits inline bold labels into their own cells).
 Categorical chart palette from the dataviz reference, validated. One axis per chart.
 With a saved brand theme, its tokens, fonts, header, logo, and chart series replace these
-defaults: apply `theme:brand` per `theme.md`, **Applying the theme**.
+defaults: apply `theme:brand` per **Theme**, **Applying the theme**.
 
 ## Campaign mode
 
@@ -130,17 +130,17 @@ phases instead of one week of three posts.
 
 ## Creator-ads mode (the CAS master brief)
 
-For a CAS campaign (`brief_mode` `creator-ads`, `cas-campaign.md`), the brief is one master brief
+For a CAS campaign (`brief_mode` `creator-ads`, **CAS campaign**), the brief is one master brief
 per lane for one round, not a weekly plan and not campaign phases. Editors cut the ads
 from it, so it must be complete enough to edit from.
 
 **Inputs from Atlas.** The lane records (`campaign:{slug}-lane-{lane}`), the campaign record
-(`-cas`: package and term), the round the main thread names (`cas-campaign.md`, **Rounds**),
-and the roster (`cas-campaign.md`, **Working state**): the
+(`-cas`: package and term), the round the main thread names (**CAS campaign**, **Rounds**),
+and the roster (**CAS campaign**, **Working state**): the
 creators approved at Gate 2 with their agreed fees. Creators and fees come from the roster,
 never from a new search, and fees are shown as agreed. Also read the hook log
 (`recordType` `hook` on the campaign's prefix) and the saved findings this reference already
-uses, in the order `hooks-and-ctas.md`, **Where recommendations come from**, gives.
+uses, in the order **Hooks and CTAs**, **Where recommendations come from**, gives.
 
 **The brief as it stands.** When the lane already has a brief this round (a re-run after the
 client's notes), or the round started from an earlier one, the main thread passes `current_brief`:
@@ -149,7 +149,7 @@ over the lane record: the run keeps every part the notes don't ask to change, wo
 writes new hooks and CTAs where they are empty, and changes the rest only where the client's
 notes or a rule ask, saying which parts it changed. A hook or CTA with a type and no line was set
 by a change line from Ad Performance: write its line in that type. Follow the brief's change notes
-(`change-r{n}-{id}`, agency lines included) per `hooks-and-ctas.md`, **Where recommendations come
+(`change-r{n}-{id}`, agency lines included) per **Hooks and CTAs**, **Where recommendations come
 from**, and leave them out of the data block, since they aren't parts of the brief.
 
 **Once per round, for every lane:**
@@ -183,7 +183,7 @@ from**, and leave them out of the data block, since they aren't parts of the bri
 - **Hero beats**: problem, agitate and solve, one short paragraph each, named as the framework
   names its three beats when it isn't problem, agitate, solve.
 - **3 hooks, 2 CTAs, 1 body.** Hooks and CTAs are written and recommended per
-  `hooks-and-ctas.md`: its sources, its patterns, its rules, and a reason under each one. Each
+  **Hooks and CTAs**: its sources, its patterns, its rules, and a reason under each one. Each
   hook keeps its pattern, Said, Shown and Overlay; each CTA its type (direct or soft), action,
   destination and moment. The body carries the beats between the hook and the CTA, with its
   length in seconds.
@@ -197,7 +197,7 @@ from**, and leave them out of the data block, since they aren't parts of the bri
   None saved: a bracketed blank per network, and one line asking the CM to fill it.
 - **Variant plan**: V1 to the package's variants per creator (at most 5). V1 takes the concept's
   framework. V2 onward take the campaign's framework for their slot (`frameworks` in
-  `campaign:{slug}-cas`, else the defaults in `cas-campaign-page-brief.md`, **Master Brief**: V2 BAB,
+  `campaign:{slug}-cas`, else the defaults in **CAS campaign**, **Master Brief**: V2 BAB,
   V3 4Ps, V4 HSO, V5 SSS), unless that is the concept's framework already, in which case they
   take the next slot's. Each variant:
   its framework, length, which hook and CTA by number, the VO in a few lines, the B-roll shot numbers it uses,
@@ -208,7 +208,7 @@ from**, and leave them out of the data block, since they aren't parts of the bri
   agreed fee and ship date.
 
 A `red_line` that blocks AI-written copy still applies: hooks, CTAs and the body become
-directions, per `hooks-and-ctas.md`, **Limits**. Say so in the standing-rule banner.
+directions, per **Hooks and CTAs**, **Limits**. Say so in the standing-rule banner.
 
 **Editing coverage check**, before the page ships. Every brief must pass all three; fix the
 brief, never the check:
@@ -222,18 +222,18 @@ Show the result per lane on the page ("Coverage: 3 of 3 checks pass"). The varia
 own check, shown with the plan and never counted in the coverage result: every variant names a
 hook, a CTA and shots that exist, and its length holds its beats.
 
-**The hook log.** Follow `hooks-and-ctas.md`, **Limits**: read every hook and CTA ever briefed
+**The hook log.** Follow **Hooks and CTAs**, **Limits**: read every hook and CTA ever briefed
 on the campaign, never reuse one, and append every new one as a `hook` finding.
 
 **The page.** One page per round, a section per lane with an anchor (`#lane-{lane}`), the
 coverage result at the top of each section. Title "<Brand> Creator Ad Brief: <Campaign>, round
 {n}", republished to the same path for that round, carrying the data block below. It stays the full brief editors cut from; the
-client approves the same briefs on the campaign page's Master Brief tab (`cas-campaign.md`, **Gate
+client approves the same briefs on the campaign page's Master Brief tab (**CAS campaign**, **Gate
 4**), which the main thread builds from this page. Sections 2, 5 and 6 of **Page structure** drop out: the
 lanes set the audience, the roster replaces the shortlist, and the gates replace the timeline.
 
 **The data block.** The page carries the whole round's brief once more as data, so the campaign
-page loads it with nothing lost (`cas-campaign-page-brief.md`, **Master Brief**, **Loading the
+page loads it with nothing lost (**CAS campaign**, **Master Brief**, **Loading the
 brief**, which maps every field above to a part of the page): one
 `<script type="application/json" id="cas-brief-data">` element, written with `json.dumps` and then
 every `<`, `>` and `&` replaced with `\u003c`, `\u003e` and `\u0026`, so no text in it (a quoted
@@ -266,20 +266,20 @@ and holds nothing the page itself doesn't show the agency.
 
 **Writes**, on the main thread's confirmation: a `brief` finding per lane (`locked: false`,
 `briefPage`, `version`, and `content`: that lane's part of the data block in the shape
-`cas-campaign.md`, **Working state**, **The brief's content** gives, the round's parts with the
+**CAS campaign**, **Working state**, **The brief's content** gives, the round's parts with the
 one concept and its variants, with the shape changes that section's **What it holds** names),
 then a `hook` finding per new hook and CTA, all per
-`cas-campaign.md`, **Working state**. No `creator-brief-*` findings in this mode.
+**CAS campaign**, **Working state**. No `creator-brief-*` findings in this mode.
 
 ### A creator's revision
 
-After the briefs are approved, a creator may reply with their own version (`cas-campaign.md`,
+After the briefs are approved, a creator may reply with their own version (**CAS campaign**,
 **1g**). The main thread launches this mode with `brief_mode` `creator-ads`, the campaign slug,
 the round, and `revision`: the creator's handle and network, their concept, and their version as
 pasted. Then the agent compares, and does nothing else:
 
 1. Read the concept's newest locked `brief` finding as the approved brief, with its text as it
-   was signed off: the `locked` version saved when it was locked (`cas-campaign-data.md`,
+   was signed off: the `locked` version saved when it was locked (**CAS campaign** **1e**,
    **Brief versions and Reset to original**), passed by the main thread, never the page data as
    it is now, so an edit made after the lock is not taken as approved. Long text is compared as
    plain text, after the same conversion the page uses (lists as lines), so formatting is never
@@ -342,11 +342,11 @@ vocabulary; the names above are placeholders, not a fixed taxonomy.
 
 ## Pricing method
 
-Every engagement cost comes from the fee calculator (`fees.md`), never from benchmarks
+Every engagement cost comes from the fee calculator (**Fee calculator**), never from benchmarks
 fetched during the run.
 
 1. Read `fees:rate-card` from the calibration read in step 1; without one, use the Aspire
-   recommended rates. Label the costs as `fees.md` says.
+   recommended rates. Label the costs as **Fee calculator** says.
 2. Per creator: price the deliverables the brief assigns them as one bundle, per **How a fee
    is calculated** (median views of the last 10 posts per channel, bundled, times the CPM
    ladder). The creator row shows target; the rationale gives open to max and the bundled
@@ -367,7 +367,7 @@ fetched during the run.
   `instagram` container and exclude the three demographics blobs to keep the payload small.
 - `/thumbnail` routes on `cdn.aspire.io` return 404 on image posts, where the base media URL is
   the full-size image. On video posts the base URL is the video file and `/thumbnail` is the
-  full-size poster. Pass both, `mediaUrl` first, to the **Images** snippet in `creator-card.md`.
+  full-size poster. Pass both, `mediaUrl` first, to the **Images** snippet in **Creator card**.
 - **Marketplace search**. One `search_creator_marketplace` call
   searches Instagram and/or TikTok for one keyword, or on filters alone:
   `search_creator_marketplace({ keyword, networks, instagram: { filters }, tiktok: { filters }, asProfileId })`.
@@ -429,4 +429,4 @@ fetched during the run.
 - Stories appear as posts with `mediaKind` null and only `organicReach`. Exclude with
   `exists mediaKind`.
 - Published pages cannot load `cdn.aspire.io` images. Embed as data URIs with the snippet in
-  `creator-card.md`, **Images**, page profile, sized to each image's rendered box at 2x.
+  **Creator card**, **Images**, page profile, sized to each image's rendered box at 2x.

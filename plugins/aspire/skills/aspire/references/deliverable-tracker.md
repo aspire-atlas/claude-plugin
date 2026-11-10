@@ -3,7 +3,7 @@
 Used by the `atlas-deliverable-tracker` agent and the **Deliverable tracker** section of
 SKILL.md. Holds the modes, the approvals the main thread collects, how the owed list is built,
 how posts are matched, the checks on each post (disclosure first), the status rules, the drafts,
-the records the tracker writes, the daily posting check, and the tracker page. Read `program.md`
+the records the tracker writes, the daily posting check, and the tracker page. Read **Influencer program**
 first: the state model, **Who owns a deal**, connected tools (**4**), drafts and sending
 (**5**), pages (**7**), and unattended runs (**9**) apply here as written.
 
@@ -62,13 +62,13 @@ It reuses the checks of other flows rather than defining its own:
 
 | What | Defined in |
 | ---- | ---------- |
-| Disclosure: present, visible without tapping "more", buried in a hashtag block is not enough | `content-review.md`, **3. Brand safety** (Disclosure) and **Verdict** (a paid post with no disclosure is always the worst outcome) |
-| The paid partnership label is not held in Atlas: a gap, never "absent"; trackers treat it as unclear, never missing | `post-analysis.md`, **The page**, section 9; `program.md`, the terms object |
-| Spoken and on-screen words: `analysis.transcript` and `analysis.overlayText`, never inferred from visuals | `content-review.md`, **Media**, Atlas analysis fields |
-| The partnership marker the field census exposes | `creator-vetting.md` (Disclosure habits) and `outreach.md` (Pick the post) |
-| Templates, channels, voice, and what never goes in a draft | `outreach.md`, **Channels** and **Templates**; `program.md` **5** |
-| The deal for each creator | `program.md`, **Who owns a deal**; `negotiation.md`, **Records written** |
-| The posting date after product arrives | `fulfillment.md`, **Tracking**, On delivery (`postDueAt`) |
+| Disclosure: present, visible without tapping "more", buried in a hashtag block is not enough | **Content review**, **3. Brand safety** (Disclosure) and **Verdict** (a paid post with no disclosure is always the worst outcome) |
+| The paid partnership label is not held in Atlas: a gap, never "absent"; trackers treat it as unclear, never missing | **Post analysis**, **The page**, section 9; **Influencer program**, the terms object |
+| Spoken and on-screen words: `analysis.transcript` and `analysis.overlayText`, never inferred from visuals | **Content review**, **Media**, Atlas analysis fields |
+| The partnership marker the field census exposes | **Creator vetting** (Disclosure habits) and **Creator outreach** (Pick the post) |
+| Templates, channels, voice, and what never goes in a draft | **Creator outreach**, **Channels** and **Templates**; **Influencer program** **5** |
+| The deal for each creator | **Influencer program**, **Who owns a deal**; **Creator negotiation**, **Records written** |
+| The posting date after product arrives | **Product fulfillment**, **Tracking**, On delivery (`postDueAt`) |
 
 ## Modes
 
@@ -81,7 +81,7 @@ It reuses the checks of other flows rather than defining its own:
 `check` runs in two passes. **Pass `propose`** reads, builds the owed list, matches, checks,
 drafts, and publishes the page with every change marked proposed; it writes nothing to Atlas and
 returns the `tracker-packet`. The main thread asks T1 to T5. **Pass `record`** writes what was
-approved and republishes. An unattended launch (`run: unattended`, or older wording per `readout.md`, **Run flag**) runs the
+approved and republishes. An unattended launch (`run: unattended`, or older wording per **Readouts**, **Run flag**) runs the
 unattended row whatever mode it names.
 
 ## Approvals (asked by the main thread)
@@ -106,7 +106,7 @@ Rules:
 - T1 "Change something": the user's words become overrides on a new `propose`. "Page only"
   writes nothing; the page stays as proposed and the link is saved on the next approved run.
 - Without T1, write no `deliverable` or `roster` finding. Without T3, write no `draft`. Without
-  T4, create no mailbox draft. Nothing is ever sent by this agent: sending follows `program.md`
+  T4, create no mailbox draft. Nothing is ever sent by this agent: sending follows **Influencer program**
   **5** in the main thread.
 - A waiver is the user's alone (**Waived**). The tracker never proposes one as a default.
 
@@ -155,7 +155,7 @@ decision-audit line.
 ("Waive @a's {deliverable}? It stops counting as owed." Options: "Keep it owed (Recommended)",
 "Waive it") and records it through a `record` pass with T1.
 
-**Scheduling it.** Follow SKILL.md **Readouts**, Schedule, for the mechanics, and `program.md`,
+**Scheduling it.** Follow SKILL.md **Readouts**, Schedule, for the mechanics, and **Influencer program**,
 **8**, for the task name "Atlas program posting check: {brand} - {program}" (daily), launching
 `atlas-deliverable-tracker` with `run: unattended`. The P9 "Daily posting check" answer is the
 standing approval for what **Daily posting check (unattended)** allows. Schedule it only after
@@ -163,7 +163,7 @@ the tracker page has been published once interactively and its `page` finding ex
 
 ## The owed list
 
-Read the program state per `program.md` **1**: the newest finding per identity by
+Read the program state per **Influencer program** **1**: the newest finding per identity by
 `detail.recordedAt`. For each creator on the roster at stage Agreed or later (not Declined,
 Dropped, or No reply), take the deal: the newest `terms` finding with `status` agreed when one
 exists, and otherwise the program's terms for the creator's `type` (**Who owns a deal**).
@@ -173,7 +173,7 @@ deliverable:
 | Type | Deliverables | Due |
 | ---- | ------------ | --- |
 | `paid` | The agreed `terms.deliverables` list (what, count, due), one row per unit ("Reel 1", "Reel 2", "Story 1"). Without the list, parse the program's `terms.paid.deliverables` text ("1 Reel + 3 Stories") into the same rows | The row's own `due` when the deal dates it. Else the creator's newest `fulfillment` `postDueAt`. Else `agreedAt` plus `postWithinDays` when the deal ships no product. Else no due date: the row shows "no date set" and is never late |
-| `ambassador` | The monthly quota (`terms.monthly` from negotiation, else the program's `terms.ambassador.monthly`) for every month of the term that has started, one set of rows per month | The first day of that month plus `postWithinDays` (`program.md`: it counts from the start of each month), and never past the month's last day. The month's `fulfillment` `postDueAt` when it is later, because the product arrived late |
+| `ambassador` | The monthly quota (`terms.monthly` from negotiation, else the program's `terms.ambassador.monthly`) for every month of the term that has started, one set of rows per month | The first day of that month plus `postWithinDays` (**Influencer program**: it counts from the start of each month), and never past the month's last day. The month's `fulfillment` `postDueAt` when it is later, because the product arrived late |
 | `gifting`, `postExpected` `owed` | One post, or the rows the terms list | The `fulfillment` `postDueAt`, else `deliveredAt` plus `postWithinDays`. No delivery yet: not due |
 | `gifting`, `postExpected` `loose` | One **expected** post (`owed` false) | As above. Shown in its own section and never chased |
 | `gifting`, `postExpected` `none` | Nothing | |
@@ -190,7 +190,7 @@ Rules:
 - **A changed deal.** When a newer agreed `terms` version changes the deliverables, rows of the
   old version that are not posted are replaced; posted rows stay. Name the change on the page.
 - **Grace days.** `missing` comes `graceDays` after the due date: the deal's `graceDays` when it
-  holds one, else the program terms' `graceDays` for the type, else 3 (`program.md`, the terms
+  holds one, else the program terms' `graceDays` for the type, else 3 (**Influencer program**, the terms
   object). The page says which.
 - **Required items.** `mustInclude` from the deal, else from the program's terms block for the
   type (a tag, a link, the code), plus the creator's `code` on an affiliate or hybrid deal.
@@ -292,11 +292,11 @@ Check each part:
 
 - **Label.** Use the partnership marker when the census lists it: true is found. When the
   census does not list it, or it is empty, the label is "not held in Atlas": unclear, never
-  missing (`post-analysis.md`; `program.md`, the terms object). The label alone never makes a
+  missing (**Post analysis**; **Influencer program**, the terms object). The label alone never makes a
   post `missing` or `needs fix`.
 - **Words.** Look in the caption and `instagram.hashtags`. Found when they sit before the
   "more" cut (about the first 125 characters, or the first line); words only in a hashtag block
-  after the cut are buried (`content-review.md`: a Flag). An equivalent clear word counts
+  after the cut are buried (**Content review**: a Flag). An equivalent clear word counts
   ("#sponsored" where the deal says "#ad") and the check line names it. Vague words are not a
   disclosure: `#sp`, `#spon`, `#collab`, `#partner`, `#ambassador` alone, "thanks @brand".
 - **Spoken or on-screen.** From `analysis.transcript` and `analysis.overlayText`. With neither,
@@ -365,8 +365,8 @@ Each is returned as a T5 question, recommended answer first:
 
 ## Drafts
 
-Every draft follows `outreach.md`, **Channels** and **Templates** (voice, sender, greeting,
-word limits, the manager rule) and `program.md` **5** (never the budget, a maximum, a fee,
+Every draft follows **Creator outreach**, **Channels** and **Templates** (voice, sender, greeting,
+word limits, the manager rule) and **Influencer program** **5** (never the budget, a maximum, a fee,
 another creator's terms, a team note, or the approver's name). One draft per creator, template,
 and channel, naming every deliverable it covers. Placeholders come from the records; anything
 missing is a bracketed blank, listed. Never a threat, a payment condition, or a legal claim:
@@ -443,11 +443,11 @@ date} and haven't seen it yet. When can we expect it?" (missing); "Hi {first nam
 the post! Could you {fix}? It keeps it within the disclosure rules." (fix); "Hi {first name},
 thanks for the {format}, it came out great." only when a concrete line follows (thanks; never the date for a late post).
 
-Marking sent follows `program.md` **5** in the main thread.
+Marking sent follows **Influencer program** **5** in the main thread.
 
 ## State written to Atlas
 
-`append_insights` per `program.md` **1**: role `account_review`, runKey
+`append_insights` per **Influencer program** **1**: role `account_review`, runKey
 `program-{profile}-{slug}-{YYYY-MM-DD}` (the shell date in the cadence timezone), `schema` = the
 creator's network, `entityKind` `account`, `entityId` = the network's own account id from the
 roster row. Every finding carries `detail.recordType`, `detail.program`, `detail.recordedAt`
@@ -463,7 +463,7 @@ since the newest finding.
 | `roster` | `action_item` `medium`; `went_well` at Complete | `trk-roster-{slug}-{entityId}-{stage}-{YYYY-MM-DD}` |
 | `page` | `went_well` `low` | `trk-page-{slug}-tracker` |
 
-**Fields this reference adds to `deliverable`** (beyond `program.md`'s list): `deliverableKey`,
+**Fields this reference adds to `deliverable`** (beyond **Influencer program**'s list): `deliverableKey`,
 `type`, `format`, `network`, `month` (`YYYY-MM`, ambassadors), `count` (this row's number in the
 deliverable, "2 of 3"), `onTime`, `daysLate`, `graceDays`, `graceEndsAt`, `match` (`strong`,
 `confirmed`, `open`), `signals` (the brand signals found), `label` (`found`, `not held`,
@@ -483,7 +483,7 @@ v{version}`, `program terms`, or `fulfillment {orderKey}`), and `source` (`atlas
 | To Complete | Every row in the deal is `posted` or `waived`, no fix is open, and for an ambassador the term has ended |
 
 While a tracker draft is unsent, `waitingOn` is brand; marking it sent sets creator and
-`nextFollowUpAt` (`program.md` **5**). The tracker writes no other roster field.
+`nextFollowUpAt` (**Influencer program** **5**). The tracker writes no other roster field.
 
 **The page link.** On the tracker page's first publish, one `page` finding: anchored to the
 brand's own account on its first linked network, `detail.key` `tracker`, `url`, `title`. It goes
@@ -507,8 +507,8 @@ calibration.
 
 ## Daily posting check (unattended)
 
-The scheduled task "Atlas program posting check: {brand} - {program}" (`program.md` **8**)
-launches with `run: unattended`. It follows `program.md` **9**:
+The scheduled task "Atlas program posting check: {brand} - {program}" (**Influencer program** **8**)
+launches with `run: unattended`. It follows **Influencer program** **9**:
 
 - Never ask, decide, draft, send, create a mailbox draft, move a stage, confirm an open match,
   waive, or fetch a post. Never call `lookup_posts`.
@@ -519,29 +519,29 @@ launches with `run: unattended`. It follows `program.md` **9**:
   while a match is open, a Story is to confirm by hand, or Atlas holds no posts from the creator
   since the due date).
   Never write a row an open match, a confirmation, or a waiver would decide. Write the tracker
-  `page` finding only when it is missing (`program.md` **9**).
+  `page` finding only when it is missing (**Influencer program** **9**).
 - Republish the tracker page to the link in the newest `page` finding with key `tracker`. The
-  task is scheduled only after that finding exists (`program.md` **8**). The republish is silent,
+  task is scheduled only after that finding exists (**Influencer program** **8**). The republish is silent,
   so each run refreshes the source line's as-of time
-  (`artifact-standard.md`).
+  (**Artifact standard**).
 - Post to the routing in `program:{slug}-routing` when at least one row is late, missing, or
   needs a fix, or a new post was matched: "{program} posting check: {l} late (@a, @b), {m}
   missing (@c), {f} need a fix (@d), {p} new posts. Review in Claude: 'check posts for
   {program}'. {page link}". Handles and counts only, never a caption, an amount, or an address.
   Report any destination that could not be reached.
-- Setup missing or Atlas unauthorized: the setup-needed card from `program.md` **9**.
+- Setup missing or Atlas unauthorized: the setup-needed card from **Influencer program** **9**.
 
 ## The page
 
 One page per program, title "{Brand} {Program}: Posts", republished to the link in the newest
 `page` finding with key `tracker`. Program pages are for the brand's team, never for creators.
-Load `artifact-design` first and `dataviz` for the charts; apply `theme:brand` per `theme.md`,
-**Applying the theme**; draw creators with the creator card (`creator-card.md`, page profile, no
+Load `artifact-design` first and `dataviz` for the charts; apply `theme:brand` per **Theme**,
+**Applying the theme**; draw creators with the creator card (**Creator card**, page profile, no
 actions); render for the primary `recipient` lens. Sections, in order:
 
 1. **Header**: the "Prepared for" chip, the program name and term, type chips, and "checked
    {date}". The animated Aspire Atlas mark sits at the top right
-   ([`artifact-standard.md`](artifact-standard.md)).
+   (**Artifact standard**).
 2. **Headline**: one line. "{p} of {o} posts owed so far are up ({rate} on time). {l} late, {m}
    missing, {f} need a fix."
 3. **Needs a fix**: one row per post: creator, the post (cover and link), the deliverable, and
@@ -570,10 +570,10 @@ actions); render for the primary `recipient` lens. Sections, in order:
     the paid partnership label is not held in Atlas, shows as unclear, and is checked on the
     post itself, that
     Stories show only when Atlas holds them, and that images are a snapshot. Then the footnote with
-    the team audience line ([`artifact-standard.md`](artifact-standard.md)).
+    the team audience line (**Artifact standard**).
 
 When the program has a `posts` goal, its target and progress go only in the Editor-only page
-data at path `team` (`program.md` **7**), written after the publish; load `artifact-capabilities`
+data at path `team` (**Influencer program** **7**), written after the publish; load `artifact-capabilities`
 first. The page never shows the budget, a fee, a maximum, a target, a team note, an email
 address, or a street address. More than 12 creators: the headline and section 7 lead.
 

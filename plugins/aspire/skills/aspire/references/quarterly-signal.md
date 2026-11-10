@@ -1,7 +1,7 @@
 # Quarterly signal reference (the quarter's story for leadership)
 
 Shared by the `atlas-quarterly-signal` agent and the **Quarterly signal** section of SKILL.md.
-Serves the `leadership` lens (`recipient-lens.md`): is this worth the investment, and what is
+Serves the `leadership` lens (**Recipient lens**): is this worth the investment, and what is
 the story for the quarter? The decision it feeds is budget, headcount, and where influencer
 sits in the channel mix. It lands in a quarterly business review.
 
@@ -85,7 +85,7 @@ Fresh aggregates, filter path:
 
 - The brand's own posts in the quarter and the prior quarter, per linked handle: posts,
   engagement, views, engagement rate, format mix. Page with the cursor.
-- Creator posts about the brand (the mention set in `market-signal.md`, **Data method**, step
+- Creator posts about the brand (the mention set in **Market signal**, **Data method**, step
   3) in both quarters: posts, distinct creators, engagement, paid vs organic.
 - Current follower counts from `search_creators`, against the first saved follower count in
   the quarter's readout findings.
@@ -128,10 +128,10 @@ linkable. Sections:
 8. **Appendix:** links to the quarter's readout, brief, shortlist, and market signal pages,
    and each program's dashboard (`pageUrl` on its newest snapshot),
    where the findings carry them, then sources and data gaps. The page ends with the
-   artifact-standard footnote, and the mark and the footnote follow [artifact-standard.md](artifact-standard.md).
+   artifact-standard footnote, and the mark and the footnote follow **Artifact standard**.
 
 Keep it to one screen before the appendix. Load `artifact-design` and `dataviz` first; apply
-`theme:brand` per `theme.md`, **Applying the theme**.
+`theme:brand` per **Theme**, **Applying the theme**.
 
 ## Findings
 

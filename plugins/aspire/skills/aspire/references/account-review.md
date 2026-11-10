@@ -3,6 +3,9 @@
 Used at the end of onboarding, for any account review the user asks for, and for the
 `atlas-profile-analyst` hand-off.
 
+A bold section name with no file beside it (**Creator card**, **Readouts**) is another part of this skill;
+`SKILL.md`'s **Sections** index names its file.
+
 ## Phase 6: First insights
 
 Trigger once at least one channel reports linked, or whenever the user asks for an account
@@ -48,14 +51,14 @@ against competitors goes to **Market signal**.
 6. Present the subagent's executive summary: headline, 3 to 5 insights with numbers, next
    week's three content pushes (mode `own`), 2 to 3 ranked next steps, data gaps. Offer the
    creator brief in one line when a push needs creators. In mode `handle`, lead the data gaps with the freshness the
-   agent reports (indexed through {timestamp}, refreshed or not). Offer to go deeper on any
+   agent reports (last fetched {lastFetchedAt}, newest post {newestPostAt}, refreshed or not). Offer to go deeper on any
    item, and mention the findings are saved in Atlas and searchable later.
 7. The reply in step 6 is the answer, in text, per **Visual output**. Draw nothing unasked:
    no card, no post media, no chart. In mode `handle`, cut the reply to the headline, up to
    three insights, the freshness line, the next step, and one link (the account's top post; the
    review has no page), and offer the rest of the summary in one line. Keep the agent's
    `creator-cards` block and `visual-data` block for later. When the user asks to see them: "show me the card" draws the
-   account's card per `creator-card.md`, **Cards in chat** (the host draws it from
+   account's card per **Creator card**, **Cards in chat** (the host draws it from
    `lookup_creators` on the reviewed handle, which Atlas holds after this review); "show the
    posts" does the same with `lookup_posts` on the top and bottom posts; "chart it" builds a
    page with the engagement pattern the headline rests on. When the reviewed account is a

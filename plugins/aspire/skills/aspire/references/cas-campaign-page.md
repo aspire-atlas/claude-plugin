@@ -1,9 +1,9 @@
 # CAS campaign page: layout and Home
 
-Part of the CAS campaign reference. `cas-campaign.md` holds the state model, setup interview,
-dispatch table, gate packets and flows, and its **1d** maps every part of the campaign page to
-its file. A section named here without a file, such as **Gate 2** or **1e**, is in the file
-that map gives.
+Part of the CAS campaign reference. Its main file holds the state model, setup interview,
+dispatch table, gate packets and flows, and `SKILL.md` **Sections** maps every part of the
+campaign page to its file. A section named here without a file, such as **Gate 2** or **1e**,
+is in the file that map gives.
 
 ## Contents
 
@@ -219,9 +219,9 @@ The page is six tabs under one header. Each tab is its own screen with its own h
 attention lists, the inbox, a gate packet and the other tabs can open the page on the right tab
 and item. Labels, eyebrows, titles and ledes are in **Page vocabulary**, **Tabs**.
 
-1. **Header.** Brand theme per `theme.md`, **The CAS campaign page** (the band header with the logo
+1. **Header.** Brand theme per **Theme**, **The CAS campaign page** (the band header with the logo
    when the theme says so). The animated Aspire Atlas mark sits at the top right of the header
-   (`artifact-standard.md`). The header follows the open tab:
+   (**Artifact standard**). The header follows the open tab:
    - **Eyebrow**: "{Brand} · Round {n} · {tab eyebrow}", the round in view in the **Round
      switcher**. On Creator Selection with every round in view it reads "{Brand} · All rounds ·
      Casting".
@@ -964,7 +964,7 @@ rows.
      package reads "Worked out: {c} creators, {v} each". On phone **From** is a line under the
      value in `text-xs text-muted-foreground`.
    - **Allowlisting with nothing saved** reads "Yes" whenever `campaign:{slug}-terms` is saved,
-     because the uplift then applies to every fee (`rates-and-terms.md`, **What each creator
+     because the uplift then applies to every fee (**Rates and terms**, **What each creator
      gets**), with **From** "Campaign setup". So the client never sees an uplift with no
      Allowlisting row to explain it.
    - **The SOW against the plan.** The pace verdict and the Content Review card count the round's
@@ -987,7 +987,7 @@ rows.
 5. **Products in scope** (`home-products`). The products the campaign is for, from `products` in
    `campaign:{slug}-cas` and the agency's edits, one Card each in a `grid grid-cols-1 gap-4
    sm:grid-cols-2 lg:grid-cols-3` grid:
-   - **The photo**, when saved: a `thumb@240x180` image from `creator-card.md`, **Images**, page
+   - **The photo**, when saved: a `thumb@240x180` image from **Creator card**, **Images**, page
      profile, `w-full h-auto rounded-md`, with the product's name as its `alt`. Published pages
      load no outside image, so Claude fetches the photo link at publish and embeds it in the page
      itself. A link the agency set on the page since shows no image, and for the agency the line

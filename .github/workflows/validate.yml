@@ -72,6 +72,12 @@ jobs:
       - name: What the plugin directory's scan blocks (mod form, file size, hook docs), and skill description length
         run: bash scripts/check-directory.sh
 
+      - name: The skill layout check gives every fixture its result
+        run: bash scripts/check-skill-layout.sh --fixtures
+
+      - name: Skill layout (SKILL.md length, description length, reference chains, tables of contents)
+        run: bash scripts/check-skill-layout.sh --tree
+
       - name: Changelogs are edited only on release branches
         if: steps.channel.outputs.name == 'develop'
         run: |

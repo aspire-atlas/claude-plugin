@@ -11,7 +11,7 @@ sending, the order form, and the rules for unattended runs.
 An influencer program is a brand's standing work with creators: gifting and seeding, paid
 sponsored posts, an ambassador or always-on roster, and affiliate or commission deals, alone or
 mixed. A creator ad campaign (Creator Ad Services, partnership ads) is not a program: it runs in
-the **CAS campaign** section and `cas-campaign.md`, and nothing here changes it. The two never
+the **CAS campaign** section, and nothing here changes it. The two never
 share records.
 
 The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
@@ -121,7 +121,7 @@ main line: Declined, No reply, Paused (ambassador between terms), Dropped.
 ## 1. State model
 
 Two kinds of record, both keyed by the program slug, so a teammate, an agent, or a scheduled run
-reads the same program. The pattern is the CAS one (`cas-campaign.md`, **1a**), under its own
+reads the same program. The pattern is the CAS one (**CAS campaign**, **1a**), under its own
 keys and prefix.
 
 - **Setup records** are calibrations under `program:{slug}-*`. They change rarely; a change goes
@@ -191,7 +191,7 @@ The terms object, one block per type the program carries:
 ```
 
 Every amount is in the program budget's currency. `offer.source` `fee-calculator` prices each
-creator per `fees.md`, **Applying the rates**; a typed number is the user's. The fee calculator
+creator per **Fee calculator**, **Applying the rates**; a typed number is the user's. The fee calculator
 works in USD: a program in another currency uses only the numbers typed into its terms, and a
 calculator figure shows as a USD reference, never converted. `postExpected` is `none`, `loose`
 (hoped for), or `owed` (written into the terms). `firstTouch` is `invite` (the first message
@@ -273,7 +273,7 @@ reach, because Atlas holds views.
 | `affiliate` | the creator + the period | The creator's account | `went_well` when sales; `action_item` `low` when none | `handle`, `code`, `link`, `period` (`YYYY-MM`), `orders`, `revenue`, `aov`, `commission`, `currency`, `source` (store, csv), `codeStatus` (planned, live, retired) | affiliate manager |
 | `ledger` | `lineId`, newest status wins | The creator's account, or the brand's for program-level lines | `action_item` `medium` while owed; `went_well` paid; `went_well` `low` product cost; `action_item` `low` void | `lineId`, `handle`, `kind` (fee, product, commission, rights, ugc), `amount`, `currency`, `status` (accrued, invoiced, approved, paid, void), `dueAt`, `invoiceRef`, `paidAt`, `from` (the record it came from) | program ledger |
 | `page` | the page key | The brand's own account on its first linked network | `went_well` `low` | `key` (outreach, negotiation, orderForm, library, sourcing, tracker, roster, ledger, dashboard, affiliate), `url`, `title` | The agent that first publishes the page, in the same approval as its other writes; unattended runs may write it |
-| `snapshot` | the program + the date | The brand's own account on its first linked network | `went_well` `low` | The dashboard's headline numbers (full list in `program-dashboard.md`, **The snapshot**); a number not tracked is null, never 0 | program dashboard |
+| `snapshot` | the program + the date | The brand's own account on its first linked network | `went_well` `low` | The dashboard's headline numbers (full list in **Program dashboard**, **The snapshot**); a number not tracked is null, never 0 | program dashboard |
 | `roster-health` | the creator + the date | The creator's account | `went_well` star or steady; `needs_improvement` slipping, dormant, retire | `handle`, `segment` (star, steady, slipping, dormant, retire, insufficient; insufficient is `action_item` `low`), `seedEligible`, `quotaMet`, `trend`, `costPerEngagement`, `revenue`, `renewalDueAt`, `recommendation` | roster manager |
 
 A `roster` finding carries the whole row, not only what changed: copy the newest finding's
@@ -491,7 +491,7 @@ send.
 **Marking sent.** When the user says drafts went ("sent them all", "sent Alex's"), one picker
 names the drafts and the date; the confirm writes each `draft` again with `sentAt`, and the
 creator's `roster` row with `lastContactAt`, `nextFollowUpAt` (from `outreach.followUpDays` and
-the creator's tier, per `outreach.md`, **Follow-up timing**) and `waitingOn` creator. A details
+the creator's tier, per **Creator outreach**, **Follow-up timing**) and `waitingOn` creator. A details
 request marked sent also moves the creator to Details requested. A draft sent through the mailbox
 after the send confirmation is marked sent in the same write.
 
@@ -513,7 +513,7 @@ to two weeks through a manager.
 
 Product details (address or pickup, size, color, product choice) are collected on one published
 page per program, the **order form**, shared with the user, the way the CAS campaign page
-collects the client's shipping edits (`cas-campaign-page.md` and `cas-campaign-data.md`).
+collects the client's shipping edits (**CAS campaign** **1d** and **1e**).
 
 - The order form is for the brand's team, never for creators: anyone it is shared with can
   read every row, and so every creator's address. No flow suggests sharing it with a creator,
@@ -524,7 +524,7 @@ collects the client's shipping edits (`cas-campaign-page.md` and `cas-campaign-d
   color), ship to (name, address, city, region, postal code, country) or pickup, delivery notes,
   and status (to request, requested, received, ordered, shipped, delivered, issue, returned).
 - Publish with the Artifact tool and the page data capabilities below; load
-  `artifact-capabilities` and `artifact-design` first. Apply `theme:brand` per `theme.md`.
+  `artifact-capabilities` and `artifact-design` first. Apply `theme:brand` per **Theme**.
 
 ```json
 {"db": {"rules": [
@@ -567,17 +567,17 @@ lets the team download the order sheet from the page.
 
 Each program agent publishes one page, republished to the same link (its `page` finding). Load
 `artifact-design` before building and `dataviz` for any chart; apply `theme:brand` per
-`theme.md`; draw creators with the creator card (`creator-card.md`); render for `recipient`
-(`recipient-lens.md`). Program pages are for the brand's team, never for creators. Budget,
+**Theme**; draw creators with the creator card (**Creator card**); render for `recipient`
+(**Recipient lens**). Program pages are for the brand's team, never for creators. Budget,
 maximums and targets live only in Editor-only page data (path `team`, read and written by
 admins only, the way the CAS page keeps `agency`), never in the page itself. Addresses appear
 only on the order form. The footer says when the numbers were read from Atlas. The page's link
 is saved as a `page` finding on first publish.
 
 Every program page carries the animated Aspire Atlas mark at the top right and the source
-line from [`artifact-standard.md`](artifact-standard.md).
+line from **Artifact standard**.
 Program pages are team pages, so they use the team audience line; negotiation's terms summary is the
-one exception (`negotiation.md`). Files made for import (order sheet, code sheet, finance CSV)
+one exception (**Creator negotiation**). Files made for import (order sheet, code sheet, finance CSV)
 have no footnote.
 
 ## 8. Reminders and schedules
@@ -607,7 +607,7 @@ finding exists, so a scheduled run republishes to the same link.
 
 ## 9. Unattended runs
 
-Follow the readout rules (`readout.md`, **Scheduled (unattended) runs**):
+Follow the readout rules (**Readouts**, **Scheduled (unattended) runs**):
 
 - Never ask a question. Never decide: no stage move, no reply recorded, no terms, no order, no
   code, no ledger line, no pull of page data into Atlas.
@@ -621,7 +621,7 @@ Follow the readout rules (`readout.md`, **Scheduled (unattended) runs**):
   the page's Editor-only `team` page data.
 - **Orchestrator runs** (`via: orchestrator`) are the one exception: an Editor's approval on the
   Next actions page lets an agent's record pass write its records and create mailbox drafts,
-  per `orchestrator.md` **4**. They still never send, order, or change a store.
+  per **Orchestrator** **4**. They still never send, order, or change a store.
 - Resolve the date from the shell clock in the cadence timezone (`TZ=<tz> date +%F`).
 - If the program records are missing, publish a one-card page titled "<Brand> {Program}: setup
   needed" listing what is missing, write nothing, and end with "Run /aspire:aspire program to

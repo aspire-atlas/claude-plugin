@@ -9,6 +9,9 @@ the page leads the phases, it never replaces or skips one.
 The page is about Atlas, not the brand, so it holds no Atlas data beyond the organization and
 profile names, writes nothing, and needs no confirmation.
 
+A bold section name with no file beside it (**Artifact standard**, **Theme**) is another part of this skill;
+`SKILL.md`'s **Sections** index names its file.
+
 ## Contents
 
 - [1. When to show it](#1-when-to-show-it)
@@ -110,7 +113,7 @@ without a connection (**7**), use none of them.
    into the template, 40px, with its `role` and `aria-label`, a 1px `var(--border)` outline, never
    recolored). **Deliberate variant:** on this page the mark sits at the upper left, at the start of
    the header, because the page has no brand logo to take that corner and was asked for this
-   placement; [`artifact-standard.md`](artifact-standard.md) puts it at the top right on every other
+   placement; **Artifact standard** puts it at the top right on every other
    page, and nothing else should copy this. The footer keeps its two existing lines and adds the
    "No Atlas data on this page." source line for pages with no Atlas data (section 3 there). When
    the logo asset is regenerated, paste the new file into the template in the same change.
@@ -174,7 +177,7 @@ the same change.
 Never add a support-only connector or skill, prices, customer names, or internal tools to this
 page.
 
-Paste the print block from `artifact-standard.md`, section 6, as the last style in the `<head>`, with
+Paste the print block from **Artifact standard**, section 6, as the last style in the `<head>`, with
 the title `Atlas Starter Guide`, so the guide saves to PDF cleanly. The copy buttons carry
 `data-print="hide"`.
 
@@ -209,7 +212,7 @@ p{margin:0}
 code{font-family:var(--font-mono)}
 svg{display:block}
 .eyebrow{font-family:var(--font-mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--brand-ink)}
-/* The mark: upper left on this page (a deliberate variant of artifact-standard.md), 40px, never recolored. */
+/* The mark: upper left on this page (a deliberate variant of the artifact standard), 40px, never recolored. */
 .hero{display:grid;gap:24px}
 .top{display:flex;align-items:center;gap:14px}
 .mark{flex:none;width:40px;height:40px;border:1px solid var(--border);border-radius:9px}

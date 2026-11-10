@@ -71,7 +71,7 @@ Off unless the organization names a Doc; one "Log" confirmation writes `quality-
 | `kind` | `plugin` when the target is a page this plugin published (the main thread knows from the flow that made it), else `external` |
 | `flow` | For `plugin`: the flow and agent that made it ("Creator brief", `atlas-creator-brief`) |
 | `brief` | Optional: what the work was asked to answer (an RFP, a brief, the user's request in their words). Turns on check **4.1** |
-| `recipient` | The lens of whoever acts on the work (`recipient-lens.md`) |
+| `recipient` | The lens of whoever acts on the work (**Recipient lens**) |
 | `audience` | Who will see the work, which sets **4.11** (item 5, platform disclosures, applies outside the team), the audience line checked in **4.12**, the scope of **R2** and **R9**, and the severity of **R11**: `team` (the brand's own team, leadership included), `client` (a brand or agency outside the team), `creator`, or `public`. Default `team` |
 | `page_check` | Optional, for `plugin`: the `page-check` block the agent returned with the page (`skills/page-standard/SKILL.md`, section 7). Used in **4.14** |
 | `evidence_dir` | Optional: a folder with the raw output of the run that made the work, for **R7** |
@@ -104,7 +104,7 @@ reported as "check whether these show on the slide", never as certain on-slide t
 Every check runs on every target unless this table marks it `n/a`. A check marked `n/a` is listed
 on the page as not applicable, with the reason, never silently skipped.
 
-| Target | 4.x n/a | R checks n/a (`reader-standard.md`) |
+| Target | 4.x n/a | R checks n/a (**Reader standard**) |
 | ------ | ------- | ------------ |
 | A proposal, pitch, or RFP response | none | R2 unless it cites social data; R12 |
 | A plugin report or signal (readout, market signal, quarterly signal, profile, post analysis, ad reuse) | 4.6 Commercial, 4.8 People (unless it names a team) | none |
@@ -240,7 +240,7 @@ nobody outside the publisher's company can reach that company's private tools. C
 2. **Other connectors.** Figures from a connector other than Atlas (Meta Ads, a store, a mailbox,
    Drive, Slack, a calendar) were read through the publisher's own connection. Name each one, say
    who can refresh or check those figures and who cannot, and confirm the source line names the
-   connector (`artifact-standard.md`, section 2). A figure from another connector presented as
+   connector (**Artifact standard**, section 2). A figure from another connector presented as
    Atlas's is a finding.
 3. **Outside tools.** Any figure, chart, screenshot, or link that came from a tool outside the
    bundled connectors and the reader's own (a company BI or reporting tool, a private data store, a
@@ -272,7 +272,7 @@ nobody outside the publisher's company can reach that company's private tools. C
 ### 4.12 Artifact standard
 
 For pages this plugin published, and external work that carries the mark, run the checklist in
-`artifact-standard.md`, section 4 (**Before publishing**), against the variant section 3 sets for
+**Artifact standard**, section 4 (**Before publishing**), against the variant section 3 sets for
 that kind of page (sample, review, no Atlas data, inline widget, deck, order form). A page that uses
 its variant correctly passes. The audience line must match `audience`: a page whose footer says
 "Internal use only" while `audience` is `client`, `creator`, or `public` is a Critical finding.
@@ -286,7 +286,7 @@ inconsistent naming or capitalization. Broken links are not judged here: they ar
 
 ### 4.14 Reader standard
 
-Run every R check in `reader-standard.md`, in ID order, by the rules there: **R7** against
+Run every R check in **Reader standard**, in ID order, by the rules there: **R7** against
 `evidence_dir` when it is given, **R10** on a 1280×800 first screen, each FAIL a finding at its
 default severity or higher, and one defect filed once under its most specific check with both IDs
 listed in **Failed checks**.
@@ -362,10 +362,10 @@ Title "{Work title} Review". One page, published per `publish`: with the Artifac
 as a full HTML file (`file:{path}`), or not at all (`none`). A re-review reads `earlier_review`
 first; when it is an artifact link and `publish` is `artifact`, publish with `url` set to it, so
 the team keeps one link. Load `artifact-design`, and `dataviz` for any chart. Apply the brand's
-saved theme when there is a profile (`theme.md`, **Applying the theme**), semantic colors excepted.
+saved theme when there is a profile (**Theme**, **Applying the theme**), semantic colors excepted.
 Sections, in order, with these exact headings where quoted:
 
-1. **Header:** the mark at the top right and the "Prepared for" chip per `artifact-standard.md`; the
+1. **Header:** the mark at the top right and the "Prepared for" chip per **Artifact standard**; the
    work's title and where it lives; the verdict stamp (Ready, Ready with fixes, Not ready) and its
    one-sentence reason; the coverage line (**4.0**).
 2. **"Before you send"**: each Critical finding in one line, the top three fixes, and the share
@@ -385,7 +385,7 @@ Sections, in order, with these exact headings where quoted:
    sending** list (facts to source or confirm (**4.3**), the Atlas re-check results when it ran,
    timecodes not verified (**4.15**), and who must share what with the reader (**4.11**, item 4));
    and, on a re-review, **earlier findings** (each fixed, still open, or no longer applies).
-7. **Footer:** the coverage line again, then the source line per `artifact-standard.md`, section
+7. **Footer:** the coverage line again, then the source line per **Artifact standard**, section
    3, **Review pages**, with the rubric version and the team audience line (a review is for the
    team, never the work's reader).
 
@@ -442,7 +442,7 @@ Then the agent's audit trail block, as every agent ends.
 
 A flow in `/aspire:aspire` can launch the agent with `mode: grade` to grade a draft it made, inside
 an interactive session, so the draft is not graded by the same run that wrote it. The launch carries
-the `launch` block (`orchestration.md` **5**) like any other; grade mode returns no result packet.
+the `launch` block (**Orchestration contract** **5**) like any other; grade mode returns no result packet.
 
 - Inputs: `target` (required), `checks` (`reader-standard`, the default, or `all`), and optionally
   `evidence_dir`, `brief`, `recipient`, and `audience`.
