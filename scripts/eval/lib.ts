@@ -397,6 +397,16 @@ export function toolPrefix(connector: string): string {
   return `mcp__${connector.replace(/[^A-Za-z0-9_-]/g, '_')}__`
 }
 
+/** Connector names from the output of `claude mcp list`. A name may itself hold colons (plugin:aspire:Name). */
+export function parseConnectorList(output: string): string[] {
+  const names: string[] = []
+  for (const line of output.split('\n')) {
+    const match = line.match(/^(\S.*?): \S+.* - /)
+    if (match) names.push(match[1])
+  }
+  return names
+}
+
 export function fill(template: string, values: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (whole, key) => values[key] ?? whole)
 }

@@ -8,7 +8,7 @@ import { dirname, join, resolve } from 'node:path'
 import {
   ATLAS_READS, ATLAS_WRITES, HARNESS_VERSION, barChecks, compareRuns, extractPageCheckScript, fill, findJsonWithKey,
   findPage, forBaseline, normalizeResult, parsePageCheck, parseStream, renderQuestion, renderRun, rIds, stripDataUris,
-  summarizeTurn, toolPrefix, visibleTextLength,
+  parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength,
   type CheckDef, type PageChecks, type QuestionResult, type Result, type RunResults, type Turn,
 } from './lib'
 
@@ -270,6 +270,30 @@ function newestHtml(dirs: (string | null)[], since: number): string | null {
   return (best as { path: string } | null)?.path ?? null
 }
 
+/**
+ * Every connector a rerun would start with, by name. `claude mcp list` covers the ones added to Claude Code;
+ * the ones that come with the signed-in account only show when a session starts, so a session is started and
+ * stopped at its first line, before it asks the model anything.
+ */
+async function startingConnectors(cwd: string): Promise<string[]> {
+  const names = new Set(parseConnectorList(Bun.spawnSync(['claude', 'mcp', 'list'], { cwd }).stdout.toString()))
+  const child = Bun.spawn(['claude', '-p', '--output-format', 'stream-json', '--verbose', '--plugin-dir', PLUGIN], {
+    cwd, stdin: new Blob(['ok']), stdout: 'pipe', stderr: 'ignore',
+  })
+  const timer = setTimeout(() => child.kill(), 60_000)
+  let seen = ''
+  for await (const chunk of child.stdout) {
+    seen += new TextDecoder().decode(chunk)
+    const init = parseStream(seen).find(event => event.type === 'system' && event.subtype === 'init')
+    if (!init) continue
+    for (const server of init.mcp_servers ?? []) names.add(server.name)
+    break
+  }
+  clearTimeout(timer)
+  child.kill()
+  return [...names]
+}
+
 type Rerun = {
   link: string | null; rounds: number; transcriptTokens: number; billedTokens: number; compactions: number
   costUsd: number; problems: string[]; model: string | null
@@ -284,8 +308,11 @@ async function rerun(question: Question, config: any, local: Local, qDir: string
   const atlas = toolPrefix(connector)
   // The plugin's bundled connectors point at production. Their tools are refused whole, so a rerun can only
   // reach the test connector even on a machine that is signed in to them.
-  const refused = ['plugin:aspire:Aspire Atlas', 'plugin:aspire:Aspire Atlas Organization Admin', 'plugin:aspire:Meta Ads',
-    'Aspire Atlas', 'Aspire Atlas Organization Admin', 'claude.ai Aspire Atlas'].filter(name => name !== connector)
+  // The same goes for every other connector this machine has (other Atlas servers, mail, chat): a rerun reads
+  // the test connector and nothing else.
+  const refused = [...new Set(['plugin:aspire:Aspire Atlas', 'plugin:aspire:Aspire Atlas Organization Admin', 'plugin:aspire:Meta Ads',
+    'Aspire Atlas', 'Aspire Atlas Organization Admin', 'claude.ai Aspire Atlas', ...(await startingConnectors(work))])]
+    .filter(name => name !== connector && name !== 'aspire-mod')
   const args = [
     // With a token the connector comes from the harness's own file and nothing else loads. With a sign-in it is
     // the one the person added to Claude Code (user scope), which is where the sign-in is kept.

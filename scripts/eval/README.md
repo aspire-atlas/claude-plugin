@@ -36,8 +36,8 @@ It runs on a developer's machine. CI does not run it.
   skill recognizes its tools. Then run `claude`, type `/mcp`, pick the connector, and authenticate. The signed-in person must belong to
   the test organization. `--scope user` matters: the harness runs Claude in its own folders, and a
   connector added without it is seen only in the folder it was added from. The plugin's bundled
-  connectors point at production, so their tools are refused during a rerun, and the run stops if any
-  other Atlas connector is connected. A server that does
+  connectors point at production, so their tools are refused during a rerun, along with the tools of
+  every other connector the machine has. A server that does
   take a bearer token can use `mcp.tokenEnv` instead.
 - `scripts/eval/local.json`, copied from `local.example.json`. It holds the dev server address, the test
   organization's name (added to each ask, since a person can belong to several), each question's brand

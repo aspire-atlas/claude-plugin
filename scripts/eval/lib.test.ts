@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import {
   ATLAS_READS, ATLAS_WRITES, barChecks, compareRuns, extractPageCheckScript, fencedBlocks, fill, findJsonWithKey,
   findPage, forBaseline, normalizeResult, parsePageCheck, parseStream, renderRun, rIds, rResult, stripDataUris,
-  summarizeTurn, toolPrefix, visibleTextLength, type PageChecks, type QuestionResult, type RunResults,
+  parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, type PageChecks, type QuestionResult, type RunResults,
 } from './lib'
 
 const ROOT = join(import.meta.dir, '../..')
@@ -177,4 +177,16 @@ test('the question set, the checks, and the Atlas tool lists hold together', () 
   const contract = JSON.parse(readFileSync(join(ROOT, 'contract/atlas-mcp-tools.json'), 'utf8'))
   const tools = Object.keys(contract.surfaces['/mcp']).sort()
   expect([...ATLAS_READS, ...ATLAS_WRITES].sort()).toEqual(tools)
+})
+
+test('connector names are read from the list Claude Code prints', () => {
+  const out = [
+    'Checking MCP server health...', '',
+    'claude.ai Atlas Admin Dev: https://example.test/mcp/admin - ✔ Connected',
+    'plugin:aspire:Aspire Atlas: https://example.test/mcp (HTTP) - ! Needs authentication',
+    'Aspire_Atlas_Dev: https://example.test/mcp (HTTP) - ✔ Connected',
+    'local-tool: npx -y some-server --flag - ✗ Failed to connect',
+  ].join('\n')
+  expect(parseConnectorList(out)).toEqual(['claude.ai Atlas Admin Dev', 'plugin:aspire:Aspire Atlas', 'Aspire_Atlas_Dev', 'local-tool'])
+  expect(toolPrefix('claude.ai Atlas Admin Dev')).toBe('mcp__claude_ai_Atlas_Admin_Dev__')
 })
