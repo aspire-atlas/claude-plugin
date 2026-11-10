@@ -196,7 +196,7 @@ acts on.
 ```result-packet
 {"runId": "{from the launch block, or the one Atlas returned}", "agent": "{agent name}",
  "question": "{code, or null}", "reader": "{primary lens}",
- "page": "{link, or null}",
+ "page": "{link, the file's path, or null}",
  "findings": [{"text": "{one line}", "evidence": "{post link, figure, or record key}",
                "kind": "observation", "confidence": "high"}],
  "proposals": [{"id": "p1", "what": "{one line}", "level": "write",
@@ -213,7 +213,7 @@ acts on.
 
 | Field | Holds |
 | ----- | ----- |
-| `page` | The link to the page published or republished this run; `null` when none was. A run that published more than one page or deck gives a list of links, main page first, each with its own `page-check` block. |
+| `page` | The link to the page published or republished this run; the absolute path of its HTML file when the session has no Artifact tool (`skills/page-standard/SKILL.md`, section 4, step 5); `null` when the run built no page. A run that published more than one page or deck gives a list of links, main page first, each with its own `page-check` block. |
 | `findings` | Up to five, the ones the page leads with. `kind` is `observation`, `inference`, or `recommendation`; `confidence` is `high`, `medium`, or `low`. Every finding cites its evidence; one that cannot is left out. |
 | `proposals` | Every draft, save, send, order, payment, or spend the agent wants approved, each with its `level` (**7**), its `items`, and its `gate`: `approve-` plus a short kebab-case name of what is approved (`approve-shortlist`, `approve-offers`, `approve-saves`), 2 to 40 lower-case letters, digits, and hyphens. The main thread sends the person's verdict under the same `gate` (SKILL.md, **Running agents**). Empty when there is nothing to approve. |
 | `questions` | Everything the agent could not settle, worded so the main thread can put it in `AskUserQuestion` as is. |

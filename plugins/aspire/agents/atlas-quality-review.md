@@ -69,7 +69,8 @@ question was asked before you started, and anything still open goes in your outp
    Artifact tool, a full HTML file at the path, or no page. With `earlier_review`, read it first,
    keep the ids of findings that persist, and mark each earlier finding fixed, still open, or no
    longer applies; publish with `url` set to it when it is an artifact link. No Artifact tool and
-   `publish` is `artifact`: build nothing, and return the output with the gap named.
+   `publish` is `artifact`: save the review page as a file and return its path, per
+   `skills/page-standard/SKILL.md`, section 4, step 5.
 8. **Log** per **10** when `log` is not `none`: one row, after publishing, with the three reviewer
    columns left empty. With no page published, log the verdict all the same.
 9. Never invent data or a fix figure. A suggested number, name, date, or SLA is a highlighted
