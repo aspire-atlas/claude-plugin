@@ -80,7 +80,7 @@ For each question:
 4. **Reads the approved page.** From `approvedFile`, or by reading the link once and keeping a copy on this
    machine (`--refresh-approved` reads it again).
 5. **Runs the same checks on both pages**, each from a copy with embedded images removed:
-   - the page-check script, cut from `skills/page-standard/SKILL.md` on every run (R1, R2, R6, R11);
+   - the page-check script, cut from `skills/page-standard/page-check.md` on every run (R1, R2, R6, R11);
    - the quality review in grade mode, as a separate session that gets the page and the question and nothing
      from the run that built it (every R check);
    - a judge for the E-checks in `e-checks.json`, as another separate session with the same inputs. For E8

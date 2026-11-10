@@ -162,7 +162,7 @@ async function scripted(page: string, dir: string): Promise<{ results: Record<st
   const scriptDir = join(dir, 'page-check')
   mkdirSync(scriptDir, { recursive: true })
   const script = join(scriptDir, 'page_check.py')
-  writeFileSync(script, extractPageCheckScript(readFileSync(join(PLUGIN, 'skills/page-standard/SKILL.md'), 'utf8')))
+  writeFileSync(script, extractPageCheckScript(readFileSync(join(PLUGIN, 'skills/page-standard/page-check.md'), 'utf8')))
   const run = Bun.spawnSync(['python3', '-I', script, page])
   const parsed = parsePageCheck(run.stdout.toString())
   const note = run.exitCode === 2 || !Object.keys(parsed.results).length ? `the page-check script could not read the page (exit ${run.exitCode})` : null

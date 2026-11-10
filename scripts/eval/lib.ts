@@ -230,7 +230,7 @@ export function extractPageCheckScript(skillMarkdown: string): string {
   const lines = skillMarkdown.split('\n')
   const from = lines.indexOf('<!-- page-check -->')
   const to = lines.indexOf('<!-- /page-check -->')
-  if (from === -1 || to === -1 || to - from < 4) throw new Error('page-standard/SKILL.md has no page-check script')
+  if (from === -1 || to === -1 || to - from < 4) throw new Error('page-standard/page-check.md has no page-check script')
   return lines.slice(from + 2, to - 1).join('\n') + '\n'
 }
 
