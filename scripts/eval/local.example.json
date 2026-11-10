@@ -1,7 +1,7 @@
 {
   "mcp": {
     "url": "https://{the dev Atlas host}/mcp",
-    "name": "Aspire Atlas Dev"
+    "name": "Aspire_Atlas_Dev"
   },
   "organization": "{the test organization's name}",
   "questions": {

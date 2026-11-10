@@ -29,10 +29,11 @@ It runs on a developer's machine. CI does not run it.
   `local.json` uses:
 
   ```bash
-  claude mcp add --transport http "Aspire Atlas Dev" https://{the dev Atlas host}/mcp
+  claude mcp add --transport http "Aspire_Atlas_Dev" https://{the dev Atlas host}/mcp
   ```
 
-  Then run `claude`, type `/mcp`, pick the connector, and authenticate. The signed-in person must belong to
+  The name takes letters, digits, hyphens and underscores only, and must contain `Aspire_Atlas` so the
+  skill recognizes its tools. Then run `claude`, type `/mcp`, pick the connector, and authenticate. The signed-in person must belong to
   the test organization. A server that does take a bearer token can use `mcp.tokenEnv` instead.
 - `scripts/eval/local.json`, copied from `local.example.json`. It holds the dev server address, the test
   organization's name (added to each ask, since a person can belong to several), each question's brand
