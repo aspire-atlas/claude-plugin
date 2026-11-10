@@ -8,7 +8,7 @@ import { dirname, join, resolve } from 'node:path'
 import {
   ATLAS_READS, ATLAS_WRITES, HARNESS_VERSION, barChecks, compareRuns, extractPageCheckScript, fill, findJsonWithKey,
   findPage, forBaseline, normalizeResult, parsePageCheck, parseStream, renderQuestion, renderRun, rIds, stripDataUris,
-  summarizeTurn, visibleTextLength,
+  summarizeTurn, toolPrefix, visibleTextLength,
   type CheckDef, type PageChecks, type QuestionResult, type Result, type RunResults, type Turn,
 } from './lib'
 
@@ -18,7 +18,6 @@ const PLUGIN = join(ROOT, 'plugins/aspire')
 const RUNS = join(HERE, '.runs')
 const CACHE = join(HERE, '.cache/approved')
 const BASELINES = join(HERE, 'baselines')
-const ATLAS = 'mcp__Aspire_Atlas__'
 
 const USAGE = `bun run eval:pages [options]
 
@@ -41,7 +40,8 @@ type Question = {
   setsBarFor: number[]; reply?: string
 }
 type Local = {
-  mcp?: { url: string; tokenEnv: string }
+  mcp?: { url: string; name?: string; tokenEnv?: string }
+  organization?: string
   questions?: Record<string, { brand?: string; approved?: string | null; approvedFile?: string | null }>
 }
 type Options = {
@@ -280,18 +280,20 @@ async function rerun(question: Question, config: any, local: Local, qDir: string
   const work = join(qDir, 'work')
   mkdirSync(work, { recursive: true })
   const brand = local.questions?.[question.code]?.brand ?? fail(`local.json names no brand for ${question.code}`)
+  const connector = local.mcp?.name ?? 'Aspire Atlas'
+  const atlas = toolPrefix(connector)
   const args = [
     '--plugin-dir', PLUGIN, '--strict-mcp-config', '--mcp-config', atlasMcp, '--permission-mode', 'acceptEdits',
     '--allowedTools', 'Read', 'Write', 'Edit', 'Glob', 'Grep', 'Bash', 'Skill', 'Task', 'Agent', 'Artifact', 'ToolSearch',
-    'WebSearch', 'WebFetch', ...ATLAS_READS.map(tool => ATLAS + tool),
-    '--disallowedTools', ...ATLAS_WRITES.map(tool => ATLAS + tool),
+    'WebSearch', 'WebFetch', ...ATLAS_READS.map(tool => atlas + tool),
+    '--disallowedTools', ...ATLAS_WRITES.map(tool => atlas + tool),
     ...(options.model ? ['--model', options.model] : []),
   ]
   const problems: string[] = []
   const started = Date.now()
   let session: string | null = null
   let model: string | null = null
-  let prompt = `/aspire:aspire ${fill(question.ask, { brand })}`
+  let prompt = `/aspire:aspire ${fill(question.ask, { brand })}` + (local.organization ? ` Use the ${local.organization} organization.` : '')
   let rounds = 0
   let link: string | null = null
   let file: string | null = null
@@ -314,6 +316,11 @@ async function rerun(question: Question, config: any, local: Local, qDir: string
     // Copy the page while it is still there: a later turn may rewrite or remove it.
     if (file && existsSync(file)) copyFileSync(file, captured)
     if (link) break
+    if (rounds === 0 && turn.connectors[connector] !== 'connected') {
+      // Without Atlas the flow can only publish a setup page, which would be graded as if it were the answer.
+      fail(`the Atlas connector "${connector}" is ${turn.connectors[connector] ?? 'missing'}, not connected. ` +
+        (local.mcp?.tokenEnv ? 'The server refused the token.' : `Sign in once: claude mcp add --transport http "${connector}" ${local.mcp?.url}, then run claude, type /mcp and authenticate.`))
+    }
     if (turn.failed || !session) {
       problems.push(`The run stopped on turn ${rounds + 1} without publishing a page`)
       break
@@ -410,20 +417,21 @@ async function main() {
     for (const question of questions) {
       const entry = local.questions?.[question.code]
       console.log(`${question.code} · ${question.example}`)
-      console.log(`  ask: /aspire:aspire ${fill(question.ask, { brand: entry?.brand ?? '{brand}' })}`)
+      console.log(`  ask: /aspire:aspire ${fill(question.ask, { brand: entry?.brand ?? '{brand}' })}` + (local.organization ? ` Use the ${local.organization} organization.` : ''))
       console.log(`  approved page: ${entry?.approvedFile ?? entry?.approved ?? 'not set in local.json'}`)
       console.log(`  sets the bar for changes ${question.setsBarFor.join(', ')}: ${barChecks(question.setsBarFor, config.changes).join(', ')}`)
     }
     console.log(`plugin: ${PLUGIN} at ${commit()}`)
-    console.log(`Atlas: ${local.mcp?.url ?? 'not set in local.json'}; ${ATLAS_READS.length} tools allowed, ${ATLAS_WRITES.length} refused`)
+    console.log(`Atlas: ${local.mcp?.url ?? 'not set in local.json'} as "${local.mcp?.name ?? 'Aspire Atlas'}", ${local.mcp?.tokenEnv ? `token from ${local.mcp.tokenEnv}` : 'signed-in account'}; ${ATLAS_READS.length} tools allowed, ${ATLAS_WRITES.length} refused`)
     return
   }
 
   let token = ''
   if (!options.page) {
     if (!existsSync(localPath)) fail('scripts/eval/local.json is missing. Copy local.example.json and fill it in (scripts/eval/README.md).')
-    if (!local.mcp?.url || !local.mcp.tokenEnv) fail('local.json needs mcp.url and mcp.tokenEnv')
-    token = process.env[local.mcp.tokenEnv] ?? fail(`set ${local.mcp.tokenEnv} to a token for the test organization`)
+    if (!local.mcp?.url) fail('local.json needs mcp.url')
+    // With no tokenEnv the connector uses the sign-in Claude Code already holds for this server.
+    if (local.mcp.tokenEnv) token = process.env[local.mcp.tokenEnv] ?? fail(`set ${local.mcp.tokenEnv} to a token for the test organization`)
   }
 
   const runDir = join(RUNS, stamp())
@@ -433,7 +441,7 @@ async function main() {
   mkdirSync(secrets, { recursive: true, mode: 0o700 })
   const atlasMcp = join(secrets, 'atlas.json')
   const emptyMcp = join(secrets, 'none.json')
-  writeFileSync(atlasMcp, JSON.stringify({ mcpServers: { 'Aspire Atlas': { type: 'http', url: local.mcp?.url ?? '', headers: { Authorization: `Bearer ${token}` } } } }), { mode: 0o600 })
+  writeFileSync(atlasMcp, JSON.stringify({ mcpServers: { [local.mcp?.name ?? 'Aspire Atlas']: { type: 'http', url: local.mcp?.url ?? '', ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}) } } }), { mode: 0o600 })
   writeFileSync(emptyMcp, JSON.stringify({ mcpServers: {} }))
 
   const results: RunResults = {

@@ -24,9 +24,19 @@ It runs on a developer's machine. CI does not run it.
   five questions (one brand has two questions). Each profile needs enough data for its question: either the
   brand's own data held in the organization, or its public handles and its competitors indexed. Write which
   one each brand has in the `data` field of `local.json`, so a thin page can be told from a thin data set.
-- A token for that organization, in the environment variable `local.json` names.
-- `scripts/eval/local.json`, copied from `local.example.json`. It holds the dev server address, each
-  question's brand name, and the link to its approved page. It is ignored by git: brand names and page links
+- A sign-in to the dev Atlas connector, held by Claude Code. The connector takes a person's sign-in, not a
+  service account's token (those work on the REST API only). Once per machine, with the same connector name
+  `local.json` uses:
+
+  ```bash
+  claude mcp add --transport http "Aspire Atlas Dev" https://{the dev Atlas host}/mcp
+  ```
+
+  Then run `claude`, type `/mcp`, pick the connector, and authenticate. The signed-in person must belong to
+  the test organization. A server that does take a bearer token can use `mcp.tokenEnv` instead.
+- `scripts/eval/local.json`, copied from `local.example.json`. It holds the dev server address, the test
+  organization's name (added to each ask, since a person can belong to several), each question's brand
+  name, and the link to its approved page. It is ignored by git: brand names and page links
   are customer details and this repository is public. Take the brands and links from the examples library.
 
 ## Commands
@@ -51,7 +61,8 @@ For each question:
 
 1. **Asks it.** `claude -p` with the plugin loaded from `plugins/aspire` in this checkout, the dev Atlas
    connector in place of the bundled ones, and the question from `questions.json` as `/aspire:aspire ...`,
-   worded as the person who asked it.
+   worded as the person who asked it. When the connector is not connected at the start, the run stops there:
+   a page built without Atlas is never graded.
 2. **Answers what the flow asks back.** While no page is published, the harness resumes the session with one
    fixed reply (`defaultReply` in `questions.json`: yes to what was proposed, save nothing, send nothing).
    Each reply is one confirmation round. It stops at `--max-rounds`.
@@ -106,8 +117,8 @@ Paste `.runs/<time>/table.md` into the pull request. Its page links open only fo
 - It publishes each new page as a private artifact on the signed-in account.
 - It runs the plugin's shell snippets without asking. Posts and captions from Atlas are untrusted text, so
   run it on a development machine or in a container, never beside production credentials.
-- The token is written to a file in the system's temporary folder for the length of the run and removed
-  after it. It is never written under the checkout.
+- With `mcp.tokenEnv`, the token is written to a file in the system's temporary folder for the length of
+  the run and removed after it. It is never written under the checkout.
 
 ## Files
 

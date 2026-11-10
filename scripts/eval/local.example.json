@@ -1,8 +1,9 @@
 {
   "mcp": {
     "url": "https://{the dev Atlas host}/mcp",
-    "tokenEnv": "ATLAS_EVAL_TOKEN"
+    "name": "Aspire Atlas Dev"
   },
+  "organization": "{the test organization's name}",
   "questions": {
     "I4":  {"brand": "{brand}", "approved": "https://claude.ai/artifact/{id}", "approvedFile": null, "data": "held | public handles indexed"},
     "I11": {"brand": "{brand}", "approved": "https://claude.ai/artifact/{id}", "approvedFile": null, "data": "held | public handles indexed"},

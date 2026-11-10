@@ -11,6 +11,8 @@ export type Turn = {
   sessionId: string | null
   scratchpad: string | null
   model: string | null
+  /** Connector name to its state at the start of the turn (connected, needs-auth, failed). */
+  connectors: Record<string, string>
   /** Text the main thread wrote, plus what its subagents returned to it. */
   text: string
   /** The final reply of the turn, as `claude -p` reports it. */
@@ -116,7 +118,7 @@ function usageTotal(usage: Record<string, any> | undefined): number {
 
 export function summarizeTurn(events: Event[]): Turn {
   const turn: Turn = {
-    sessionId: null, scratchpad: null, model: null, text: '', reply: '', toolUses: [], toolResults: {},
+    sessionId: null, scratchpad: null, model: null, connectors: {}, text: '', reply: '', toolUses: [], toolResults: {},
     contextTokens: 0, billedTokens: 0, costUsd: 0, compactions: 0, failed: true,
   }
   const parts: string[] = []
@@ -126,6 +128,7 @@ export function summarizeTurn(events: Event[]): Turn {
       turn.sessionId = event.session_id ?? turn.sessionId
       turn.scratchpad = event.scratchpad_path ?? null
       turn.model = event.model ?? null
+      for (const server of event.mcp_servers ?? []) turn.connectors[server.name] = server.status
     } else if (event.type === 'system' && event.subtype === 'compact_boundary') {
       turn.compactions += 1
     } else if (event.type === 'assistant') {
@@ -387,6 +390,11 @@ export function barChecks(setsBarFor: number[], changes: Record<string, { checks
   const ids = new Set<string>()
   for (const change of setsBarFor) for (const id of changes[String(change)]?.checks ?? []) ids.add(id)
   return [...ids]
+}
+
+/** The prefix Claude Code gives a connector's tools: its name with anything but letters, digits, _ and - as _. */
+export function toolPrefix(connector: string): string {
+  return `mcp__${connector.replace(/[^A-Za-z0-9_-]/g, '_')}__`
 }
 
 export function fill(template: string, values: Record<string, string>): string {

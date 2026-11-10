@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import {
   ATLAS_READS, ATLAS_WRITES, barChecks, compareRuns, extractPageCheckScript, fencedBlocks, fill, findJsonWithKey,
   findPage, forBaseline, normalizeResult, parsePageCheck, parseStream, renderRun, rIds, rResult, stripDataUris,
-  summarizeTurn, visibleTextLength, type PageChecks, type QuestionResult, type RunResults,
+  summarizeTurn, toolPrefix, visibleTextLength, type PageChecks, type QuestionResult, type RunResults,
 } from './lib'
 
 const ROOT = join(import.meta.dir, '../..')
@@ -12,7 +12,7 @@ const line = (event: unknown) => JSON.stringify(event)
 
 function stream(): string {
   return [
-    line({ type: 'system', subtype: 'init', session_id: 's1', scratchpad_path: '/tmp/s', model: 'm' }),
+    line({ type: 'system', subtype: 'init', session_id: 's1', scratchpad_path: '/tmp/s', model: 'm', mcp_servers: [{ name: 'Aspire Atlas Dev', status: 'needs-auth' }] }),
     line({ type: 'assistant', message: { content: [{ type: 'text', text: 'Launching.' }, { type: 'tool_use', id: 't1', name: 'Task', input: {} }], usage: { input_tokens: 10, cache_read_input_tokens: 90, output_tokens: 5 } } }),
     line({ type: 'assistant', parent_tool_use_id: 't1', message: { content: [{ type: 'tool_use', id: 'w1', name: 'Write', input: { file_path: '/tmp/s/draft.html' } }], usage: { input_tokens: 999999 } } }),
     line({ type: 'assistant', parent_tool_use_id: 't1', message: { content: [{ type: 'tool_use', id: 'a1', name: 'Artifact', input: { file_path: '/tmp/s/page.html', icon: 'chart' } }] } }),
@@ -29,6 +29,8 @@ test('a turn is read from the stream: session, sizes, and the page it published'
   const turn = summarizeTurn(parseStream(stream()))
   expect(turn.sessionId).toBe('s1')
   expect(turn.model).toBe('m')
+  expect(turn.connectors).toEqual({ 'Aspire Atlas Dev': 'needs-auth' })
+  expect(toolPrefix('Aspire Atlas Dev')).toBe('mcp__Aspire_Atlas_Dev__')
   expect(turn.failed).toBe(false)
   expect(turn.contextTokens).toBe(500) // the main thread's last message, never a subagent's
   expect(turn.billedTokens).toBe(1200)
