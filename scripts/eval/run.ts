@@ -282,6 +282,10 @@ async function rerun(question: Question, config: any, local: Local, qDir: string
   const brand = local.questions?.[question.code]?.brand ?? fail(`local.json names no brand for ${question.code}`)
   const connector = local.mcp?.name ?? 'Aspire Atlas'
   const atlas = toolPrefix(connector)
+  // The plugin's bundled connectors point at production. Their tools are refused whole, so a rerun can only
+  // reach the test connector even on a machine that is signed in to them.
+  const refused = ['plugin:aspire:Aspire Atlas', 'plugin:aspire:Aspire Atlas Organization Admin', 'plugin:aspire:Meta Ads',
+    'Aspire Atlas', 'Aspire Atlas Organization Admin', 'claude.ai Aspire Atlas'].filter(name => name !== connector)
   const args = [
     // With a token the connector comes from the harness's own file and nothing else loads. With a sign-in it is
     // the one the person added to Claude Code (user scope), which is where the sign-in is kept.
@@ -289,7 +293,7 @@ async function rerun(question: Question, config: any, local: Local, qDir: string
     '--permission-mode', 'acceptEdits',
     '--allowedTools', 'Read', 'Write', 'Edit', 'Glob', 'Grep', 'Bash', 'Skill', 'Task', 'Agent', 'Artifact', 'ToolSearch',
     'WebSearch', 'WebFetch', ...ATLAS_READS.map(tool => atlas + tool),
-    '--disallowedTools', ...ATLAS_WRITES.map(tool => atlas + tool),
+    '--disallowedTools', ...ATLAS_WRITES.map(tool => atlas + tool), ...refused.map(name => toolPrefix(name).slice(0, -2)),
     ...(options.model ? ['--model', options.model] : []),
   ]
   const problems: string[] = []
@@ -324,9 +328,9 @@ async function rerun(question: Question, config: any, local: Local, qDir: string
       fail(`the Atlas connector "${connector}" is ${turn.connectors[connector] ?? 'missing'}, not connected. ` +
         (local.mcp?.tokenEnv ? 'The server refused the token.' : `Add it for every folder and sign in once: claude mcp add --scope user --transport http ${connector} ${local.mcp?.url}, then run claude, type /mcp, pick it and authenticate.`))
     }
-    // Any other Atlas connector that is live could answer in place of the test one (the plugin's bundled
-    // connectors point at production), so the run stops rather than risk reading the wrong server.
-    const others = Object.keys(turn.connectors).filter(name => name !== connector && /atlas/i.test(name) && turn.connectors[name] === 'connected')
+    // Any other live Atlas connector whose tools are not refused above could answer in place of the test one,
+    // so the run stops rather than risk reading the wrong server.
+    const others = Object.keys(turn.connectors).filter(name => name !== connector && !refused.includes(name) && /atlas/i.test(name) && turn.connectors[name] === 'connected')
     if (rounds === 0 && others.length) fail(`another Atlas connector is connected: ${others.join(', ')}. Disconnect it (claude, then /mcp) so the rerun can only reach "${connector}".`)
     if (turn.failed || !session) {
       problems.push(`The run stopped on turn ${rounds + 1} without publishing a page`)
