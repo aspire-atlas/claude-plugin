@@ -485,7 +485,7 @@ Organization Admin connection itself.
 - Keep every user-facing message short. Use bullets for anything with more than two points.
 - Web research is a proposal, never a write: findings are always shown and confirmed before
   any calibration is recorded from them.
-- The chat reply is the answer: up to three points, the next step, and one link to the page.
+- The chat reply is the answer: up to three points, the next step, and one link to the page (its file path when the session cannot publish).
   Text is the default. Cards, images, charts, and theme previews appear in chat only when the
   user asks to see them ("show me the cards", "show the palettes"), and never as embedded image
   data: see **Visual output**.

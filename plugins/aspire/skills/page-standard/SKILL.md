@@ -160,6 +160,16 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
 4. **Self-check R1 to R12.** Run the script in section 5 for R1, R2, R6, and R11, and judge the
    others against `reader-standard.md`. Fix every fail you can and check again.
 5. **Publish**, even when a check still fails, and report it in the page check (section 7).
+   - **When the session has no Artifact tool, save the page as a file.** Never skip the page, and
+     never return only a summary, because it cannot be published. Write the same page as one
+     full HTML document (doctype, head with the title, body) to `{page name}.html` in the
+     session's scratchpad or temporary folder, with every style, script, and image inline as a
+     published page has them. Send it with `SendUserFile` when the session has that tool.
+   - Put the file's absolute path wherever the link would go: `page` in the result packet and
+     in the page check, and the summary's page line, as "Saved as a file: {path}". Add "Page
+     saved as a file: this session cannot publish pages" to the audit trail's data gaps.
+   - A rerun for the same page writes the same file again. Steps 1 to 4 do not change, and
+     this rule holds over a flow reference that says to publish with the Artifact tool.
 
 Write the headline last. Draft every other part, then write the headline from the decision the
 page supports.
@@ -567,7 +577,7 @@ audit trail block, which stays last. The audit block's `outputs` line names the 
 words ("page check: 9 pass, 2 fixed, 1 n/a").
 
 ```page-check
-{"page": "{link}", "reader": "{primary reader}",
+{"page": "{link, or the file's path}", "reader": "{primary reader}",
  "checks": {"R1": "pass", "R2": "pass", "R3": "fixed", "R4": "pass", "R5": "fixed", "R6": "pass",
             "R7": "pass", "R8": "pass", "R9": "n/a", "R10": "pass", "R11": "pass", "R12": "pass"},
  "draftNext": "pass", "stillFailing": [], "gaps": [], "scripted": "ran"}
