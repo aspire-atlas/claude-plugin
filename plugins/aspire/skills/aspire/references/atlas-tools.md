@@ -52,8 +52,8 @@ creators and posts (`search_ads`, `list_ad_accounts`) and for partnership ads.
 ## Organization admin connector
 
 The bundled **Aspire Atlas Organization Admin** connector (organization members and
-invitations) belongs to the `org-admin` skill. Its tools and rules are in
-`../../org-admin/references/org-admin-tools.md`. No flow in this skill calls it.
+invitations) belongs to the `org-admin` skill, which holds its tools and rules. No flow in
+this skill calls it.
 
 ## Universal argument
 
