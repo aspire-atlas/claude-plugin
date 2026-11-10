@@ -49,7 +49,10 @@ both are passed by default. Detail lives in this file. For one post, use
    is saved, or `supersede_calibration` with the saved record's `ifVersion` to add new accounts.
 3. Relay the page link, the top patterns, the top candidates by name in text per **Visual
    output** (the posts are drawn only when the user asks to see them), and the rights line. Say plainly that usage rights for creator posts are not held
-   in Atlas unless a brief or record says otherwise.
+   in Atlas unless a brief or record says otherwise. When the user asks to see the ads a
+   candidate has already run, read `search_ads` with `groupBy` ad and the candidate's
+   `igMediaIds`, then call `show_ads` with up to 12 of those rows' `ad.adId` and the same dates;
+   it shows the host's ads card (absent on an older server: give the rows as text).
 
 ## Partnership content (creator posts the brand can run as partnership ads)
 
@@ -462,6 +465,9 @@ content**.
 4. **Show it.** One line per post: the creator's `@handle`, the post link, whether it is ad
    ready and permitted in plain words, whether Meta recommends it, whether the brand has run it,
    and organic engagement (never added to paid), with "changed on {asOf}". Never show ids.
+   When the user asks to see the posts, call `show_partnership_content` with up to 12 of their
+   `igMediaId`s and the same `asProfileId`; it shows the host's partnership content card (absent
+   on an older server: the lines above are the answer).
 5. **Ad codes.** Give a code only to the person asking, in this conversation, and only when they
    need it to run the ad. Never put a code on a page, in a delivery, in a saved finding, or in a
    message to a creator, and never repeat a pasted one back.

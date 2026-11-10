@@ -654,6 +654,28 @@
           "instructionText"
         ]
       },
+      "show_ads": {
+        "required": [
+          "adIds"
+        ],
+        "paths": [
+          "adIds",
+          "asOrganizationId",
+          "asProfileId",
+          "dateFrom",
+          "dateTo"
+        ]
+      },
+      "show_partnership_content": {
+        "required": [
+          "igMediaIds"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "igMediaIds"
+        ]
+      },
       "start_business_discovery": {
         "required": [
           "handle"
