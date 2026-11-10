@@ -159,7 +159,7 @@ export function summarizeTurn(events: Event[]): Turn {
 const ARTIFACT_LINK = /https:\/\/claude\.ai\/(?:code\/)?artifact\/[A-Za-z0-9-]+/
 
 /** The page a turn published: its link and the HTML file it was published from. */
-export function findPage(turn: Turn): { link: string | null; file: string | null } {
+export function findPage(turn: Turn): { link: string | null; file: string | null; finished: boolean } {
   let link: string | null = null
   let file: string | null = null
   let written: string | null = null
@@ -174,11 +174,13 @@ export function findPage(turn: Turn): { link: string | null; file: string | null
     }
   }
   // An agent's result packet names the page it published, when the publish call itself was not in the stream.
-  for (const packet of fencedBlocks(turn.text, 'result-packet')) {
+  // A result packet also means an agent finished its run, page or no page: there is nothing left to confirm.
+  const packets = fencedBlocks(turn.text, 'result-packet')
+  for (const packet of packets) {
     const page = parseJsonLoose(packet)?.page
     if (typeof page === 'string' && page.length > 0) link = link ?? page
   }
-  return { link, file: file ?? written }
+  return { link, file: file ?? written, finished: packets.length > 0 }
 }
 
 export function fencedBlocks(text: string, label: string): string[] {

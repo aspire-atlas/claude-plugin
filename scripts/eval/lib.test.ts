@@ -36,12 +36,12 @@ test('a turn is read from the stream: session, sizes, and the page it published'
   expect(turn.billedTokens).toBe(1200)
   expect(turn.compactions).toBe(1)
   expect(turn.text).toContain('Launching.')
-  expect(findPage(turn)).toEqual({ link: 'https://claude.ai/artifact/AbC123', file: '/tmp/s/page.html' })
+  expect(findPage(turn)).toEqual({ link: 'https://claude.ai/artifact/AbC123', file: '/tmp/s/page.html', finished: true })
 })
 
 test('a page link is read from the result packet when the publish call is not in the stream', () => {
   const turn = summarizeTurn(parseStream(stream().split('\n').filter(l => !l.includes('"a1"')).join('\n')))
-  expect(findPage(turn)).toEqual({ link: 'https://claude.ai/artifact/AbC123', file: '/tmp/s/draft.html' })
+  expect(findPage(turn)).toEqual({ link: 'https://claude.ai/artifact/AbC123', file: '/tmp/s/draft.html', finished: true })
 })
 
 test('a failed publish, an asset upload, and a read are not a published page', () => {
@@ -57,7 +57,7 @@ test('a failed publish, an asset upload, and a read are not a published page', (
     ] } },
   ]
   // The main thread saw the read's result text, but only a publish or a result packet names the run's page.
-  expect(findPage(summarizeTurn(events))).toEqual({ link: null, file: null })
+  expect(findPage(summarizeTurn(events))).toEqual({ link: null, file: null, finished: false })
 })
 
 test('a turn with no result event counts as failed', () => {
@@ -189,4 +189,9 @@ test('connector names are read from the list Claude Code prints', () => {
   ].join('\n')
   expect(parseConnectorList(out)).toEqual(['claude.ai Atlas Admin Dev', 'plugin:aspire:Aspire Atlas', 'Aspire_Atlas_Dev', 'local-tool'])
   expect(toolPrefix('claude.ai Atlas Admin Dev')).toBe('mcp__claude_ai_Atlas_Admin_Dev__')
+})
+
+test('a result packet with no page means the flow finished without one', () => {
+  const events = [{ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 't', content: '```result-packet\n{"page": null}\n```' }] } }]
+  expect(findPage(summarizeTurn(events))).toEqual({ link: null, file: null, finished: true })
 })

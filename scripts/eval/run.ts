@@ -287,44 +287,30 @@ async function approvedPage(code: string, local: Local, emptyMcp: string, option
 
 // ---------------------------------------------------------------- one question
 
-function newestHtml(dirs: (string | null)[], since: number): string | null {
-  let best: { path: string; time: number } | null = null
-  const walk = (dir: string, depth: number) => {
-    if (depth > 4 || !existsSync(dir)) return
-    for (const name of readdirSync(dir)) {
-      const path = join(dir, name)
-      const stat = statSync(path, { throwIfNoEntry: false })
-      if (!stat) continue
-      if (stat.isDirectory()) walk(path, depth + 1)
-      else if (/\.html?$/i.test(name) && stat.mtimeMs >= since && (!best || stat.mtimeMs > best.time)) best = { path, time: stat.mtimeMs }
-    }
-  }
-  for (const dir of dirs) if (dir) walk(dir, 0)
-  return (best as { path: string } | null)?.path ?? null
-}
-
 /**
- * Every connector a rerun would start with, by name. `claude mcp list` covers the ones added to Claude Code;
+ * Every connector and tool a rerun would start with, by name. `claude mcp list` covers the ones added to Claude Code;
  * the ones that come with the signed-in account only show when a session starts, so a session is started and
  * stopped at its first line, before it asks the model anything.
  */
-async function startingConnectors(cwd: string): Promise<string[]> {
+async function startingSession(cwd: string): Promise<{ connectors: string[]; tools: string[] }> {
   const names = new Set(parseConnectorList(Bun.spawnSync(['claude', 'mcp', 'list'], { cwd }).stdout.toString()))
   const child = Bun.spawn(['claude', '-p', '--output-format', 'stream-json', '--verbose', '--plugin-dir', PLUGIN], {
     cwd, stdin: new Blob(['ok']), stdout: 'pipe', stderr: 'ignore',
   })
   const timer = setTimeout(() => child.kill(), 60_000)
   let seen = ''
+  let tools: string[] = []
   for await (const chunk of child.stdout) {
     seen += new TextDecoder().decode(chunk)
     const init = parseStream(seen).find(event => event.type === 'system' && event.subtype === 'init')
     if (!init) continue
     for (const server of init.mcp_servers ?? []) names.add(server.name)
+    tools = init.tools ?? []
     break
   }
   clearTimeout(timer)
   child.kill()
-  return [...names]
+  return { connectors: [...names], tools }
 }
 
 type Rerun = {
@@ -343,8 +329,14 @@ async function rerun(question: Question, config: any, local: Local, qDir: string
   // reach the test connector even on a machine that is signed in to them.
   // The same goes for every other connector this machine has (other Atlas servers, mail, chat): a rerun reads
   // the test connector and nothing else.
+  const starting = await startingSession(work)
+  // The plugin builds no page without the Artifact tool, so there would be nothing to grade.
+  if (!starting.tools.includes('Artifact')) {
+    fail('this Claude Code has no Artifact tool, and the plugin builds no page without it. Update Claude Code (claude update), ' +
+      'or run the harness in a Claude Code session on the web, where pages can be published.')
+  }
   const refused = [...new Set(['plugin:aspire:Aspire Atlas', 'plugin:aspire:Aspire Atlas Organization Admin', 'plugin:aspire:Meta Ads',
-    'Aspire Atlas', 'Aspire Atlas Organization Admin', 'claude.ai Aspire Atlas', ...(await startingConnectors(work))])]
+    'Aspire Atlas', 'Aspire Atlas Organization Admin', 'claude.ai Aspire Atlas', ...starting.connectors])]
     .filter(name => name !== connector && name !== 'aspire-mod')
   const args = [
     // With a token the connector comes from the harness's own file and nothing else loads. With a sign-in it is
@@ -357,7 +349,6 @@ async function rerun(question: Question, config: any, local: Local, qDir: string
     ...(options.model ? ['--model', options.model] : []),
   ]
   const problems: string[] = []
-  const started = Date.now()
   let session: string | null = null
   let model: string | null = null
   let prompt = `/aspire:aspire ${fill(question.ask, { brand })}` + (local.organization ? ` Use the ${local.organization} organization.` : '')
@@ -396,16 +387,17 @@ async function rerun(question: Question, config: any, local: Local, qDir: string
       problems.push(`The run stopped on turn ${rounds + 1} without publishing a page`)
       break
     }
+    if (page.finished) {
+      // Answering "go ahead" again would start whatever the flow offers next, which is another question's page.
+      problems.push('The flow finished its run without publishing a page')
+      break
+    }
     if (rounds >= options.maxRounds) {
       problems.push(`No page after ${rounds} replies`)
       break
     }
     rounds += 1
     prompt = question.reply ?? config.defaultReply
-  }
-  if (!existsSync(captured)) {
-    const found = newestHtml([work, last?.scratchpad ?? null], started)
-    if (found) copyFileSync(found, captured)
   }
   if (existsSync(captured) && !link) problems.push('The run wrote a page but returned no link for it')
   if (!existsSync(captured) && link) problems.push('The run published a page but its file was not found, so the new page is not graded')

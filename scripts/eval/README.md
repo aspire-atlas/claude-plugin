@@ -20,6 +20,9 @@ It runs on a developer's machine. CI does not run it.
 ## What it needs
 
 - `bun`, `python3`, and the `claude` CLI signed in (the same account that can open the approved pages).
+  The Claude Code it runs must have the Artifact tool: the plugin builds no page without it, and the
+  approved pages are read with it. The harness checks before it starts and stops when the tool is missing.
+  Without it, the approved pages can still be graded from files (`approvedFile`), with `--page`.
 - A test organization on the dev Atlas server, with a brand profile for each of the four brands behind the
   five questions (one brand has two questions). Each profile needs enough data for its question: either the
   brand's own data held in the organization, or its public handles and its competitors indexed. Write which
@@ -70,7 +73,8 @@ For each question:
    a page built without Atlas is never graded.
 2. **Answers what the flow asks back.** While no page is published, the harness resumes the session with one
    fixed reply (`defaultReply` in `questions.json`: yes to what was proposed, save nothing, send nothing).
-   Each reply is one confirmation round. It stops at `--max-rounds`.
+   Each reply is one confirmation round. It stops at `--max-rounds`. It also stops as soon as an agent
+   returns its result, page or no page: another "go ahead" would start the flow's next offer.
 3. **Keeps the page.** The HTML file the run published and its link.
 4. **Reads the approved page.** From `approvedFile`, or by reading the link once and keeping a copy on this
    machine (`--refresh-approved` reads it again).
