@@ -1,0 +1,9 @@
+{
+  "name": "aspire-atlas-claude-plugin-dev",
+  "private": true,
+  "description": "Developer scripts for this repository. Nothing here ships in a plugin.",
+  "scripts": {
+    "eval:pages": "bun scripts/eval/run.ts",
+    "eval:test": "bun test scripts/eval"
+  }
+}

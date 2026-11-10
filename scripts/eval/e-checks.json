@@ -1,0 +1,65 @@
+{
+  "version": "3 (2026-11-04)",
+  "source": "The Evals tab of the Atlas Skills and Artifacts Map. When that tab changes, change this file in the same pull request and store a new baseline.",
+  "checks": [
+    {
+      "id": "E1",
+      "name": "Answers the real question",
+      "judgedBy": "judge",
+      "passesWhen": "The headline answers the question behind the question that the person confirmed in the first message, for the named reader, with brand, dates and platforms stated, and a VP could act from the first screen. The page is judged on the outcome that reader buys: sign-ups for a performance team, not engagement.",
+      "failsWhen": "\"Q3 overview\", with no reader and no answer."
+    },
+    {
+      "id": "E2",
+      "name": "Expert order",
+      "judgedBy": "judge",
+      "passesWhen": "The page says time-bound or evergreen, and what must happen first sits at the top.",
+      "failsWhen": "A holiday plan that leads with creators and leaves the dates and offer as footnotes."
+    },
+    {
+      "id": "E3",
+      "name": "Real evidence",
+      "judgedBy": "judge",
+      "passesWhen": "Every creator, post and number comes from this run's Atlas data, and every link works. Product facts (plans, names, launches) match the companies' own announcements. Every quoted post says whether it is organic or paid, and by whom. A post said to show a product shows it on screen.",
+      "failsWhen": "A handle or number that is not in the Atlas data; a product fact taken as true without checking the company's own announcement; a video called an ad for one product that shows another.",
+      "judgeNote": "You have the page only, not the run's data. Judge what the page lets you check: every creator, post and number carries a source or a link, every quoted post is labelled organic or paid with the payer, and the page's own figures agree with each other. Say in the reason that the run's data was not read."
+    },
+    {
+      "id": "E4",
+      "name": "Numbers have context",
+      "judgedBy": "judge",
+      "passesWhen": "Every number is compared with something; scores show how they were reached; missing data and platforms are named; views always sit beside engagement and what the comments say, with paid kept apart from organic.",
+      "failsWhen": "\"48K views\" with nothing beside it; 21.6 million paid views shown as a win when engagement was 0.06%."
+    },
+    {
+      "id": "E5",
+      "name": "Doable next steps",
+      "judgedBy": "judge",
+      "passesWhen": "Decisions sit apart; each step says what, who and when, and carries what to act with, shown before it is copied; no button for an app the reader has not connected.",
+      "failsWhen": "\"Consider optimizing content\"; a Copy button that does not show what it copies; a button for an app that is not connected."
+    },
+    {
+      "id": "E6",
+      "name": "Reads like an editor checked it",
+      "judgedBy": "english-read",
+      "waitsFor": "ASP-5300",
+      "passesWhen": "An English-teacher read of the full rendered text finds no tense mismatches, shorthand, jargon or fragments, and nothing carried over from Atlas's report in Atlas's own words (\"picks\", \"reach slot\", \"practitioners\", \"pulse\", \"reads\"); every number in a label matches what it labels; sentences are short with one idea each, and terms such as hook rate are explained the first time they appear.",
+      "failsWhen": "\"Gift and routine framing lifts posts\" next to \"ran at 1.27×\"; a question pasted from Atlas's report in its own shorthand."
+    },
+    {
+      "id": "E7",
+      "name": "Meets the UX standard",
+      "judgedBy": "ux-review",
+      "waitsFor": "ASP-5301",
+      "passesWhen": "A senior UX review, after rendering on desktop, phone, dark mode and with no apps connected, says the page meets its bar.",
+      "failsWhen": "The first task sits 3,300px down on a phone."
+    },
+    {
+      "id": "E8",
+      "name": "Built for this question",
+      "judgedBy": "judge",
+      "passesWhen": "The page has only the panels this reader chose, and shows the evidence the approved example for this question shows. It does one job: a competitive read recommends no creators. A creative or cut-down page leads with what makes a good ad and why, shown with frames, before the scores.",
+      "failsWhen": "A launch timeline on a one-creator profile; storyboards missing from an ad cut-down page; a cut-down page that ranks videos without saying what makes them work."
+    }
+  ]
+}

@@ -59,7 +59,7 @@ agent only through this skill or a shortcut.
    reader, and gives the time estimate. Questions an agent raises come back in its result packet
    and are asked when it arrives. Write the launch's Runs row (**9** there).
 4. **When it finishes.** Its result arrives as a task notification. Treat it as the agent's
-   report and act on its `result-packet` block: relay the summary, page link, and decisions it
+   report and act on its `result-packet` block: relay the summary, page link (or, when `page` is a file path, "Saved as a file: {path}"), and decisions it
    needs, confirm its `proposals` by permission level (**Orchestration contract** **7**: Write
    once per batch, Send one by one, Spend with the cost first), ask its `questions`, log the
    return and every change after it (**9** there). After each `AskUserQuestion` that approves,
