@@ -51,7 +51,7 @@ against competitors goes to **Market signal**.
 6. Present the subagent's executive summary: headline, 3 to 5 insights with numbers, next
    week's three content pushes (mode `own`), 2 to 3 ranked next steps, data gaps. Offer the
    creator brief in one line when a push needs creators. In mode `handle`, lead the data gaps with the freshness the
-   agent reports (indexed through {timestamp}, refreshed or not). Offer to go deeper on any
+   agent reports (last fetched {lastFetchedAt}, newest post {newestPostAt}, refreshed or not). Offer to go deeper on any
    item, and mention the findings are saved in Atlas and searchable later.
 7. The reply in step 6 is the answer, in text, per **Visual output**. Draw nothing unasked:
    no card, no post media, no chart. In mode `handle`, cut the reply to the headline, up to

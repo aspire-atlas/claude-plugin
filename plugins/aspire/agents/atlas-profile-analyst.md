@@ -39,8 +39,7 @@ findings and pushes only, saying in the summary that nothing was saved.
    `search_creators`, `list_creator_search_fields`, `append_insights`, `report_checkpoint` under the given prefix. In mode
    `handle`, also load `lookup_creators`.
 2. Call `list_post_search_fields` once and use only field paths it returns. Never guess a path. In mode
-   `handle`, call `list_creator_search_fields` too, and look for a last-indexed or last-updated field on
-   the account record; you need it for step 3.
+   `handle`, call `list_creator_search_fields` too.
 3. **Resolve the target and verify it is current (mode `handle` only).** Follow **Resolve** in
    `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/account-resolution.md`. Never run a lookup in
    mode `own`: connected channels are indexed by Atlas directly. A handle that cannot be resolved
@@ -96,7 +95,8 @@ findings and pushes only, saying in the summary that nothing was saved.
 - Next week's pushes (mode `own`): three bullets, each with day, format, angle, and target
 - Recommended next steps: 2 to 3 bullets, ranked by impact, matching the action items written
 - Data gaps: anything missing, still indexing, or not measurable yet. In mode `handle`, lead with the
-  freshness line: the account indexed through {timestamp}, and whether a refresh ran in this session.
+  freshness line: last fetched {lastFetchedAt}, newest post {newestPostAt}, posts held, and whether a
+  refresh ran in this session.
 - Also for {lens}: two bullets per extra lens, when more than one was passed
 - Forward note: two or three lines the requester can paste to the reader (skip for lens `team`)
 - One closing line: how many findings were saved to Atlas under this run, and the `runKey` used
