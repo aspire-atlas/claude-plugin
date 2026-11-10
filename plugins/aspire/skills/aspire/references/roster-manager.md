@@ -3,7 +3,7 @@
 Used by the `atlas-roster-manager` agent and the **Roster review** section of SKILL.md. Holds
 who is reviewed, the signals and how each is called, the segment rules, renewals, the drafts,
 lookalike seeds, the decision packet, the records the agent writes, and the roster health page.
-Read `program.md` first. Its state model, page vocabulary, **4** (connected tools), **5**
+Read **Influencer program** first. Its state model, page vocabulary, **4** (connected tools), **5**
 (drafts and sending) and **7** (pages) apply here unchanged.
 
 The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
@@ -81,7 +81,7 @@ deal types), `windowDays` (the review window, default 90), and `dormantDays` (de
 
 ## Who is reviewed
 
-Read the roster per `program.md` **1**: the newest `roster` finding per creator wins.
+Read the roster per **Influencer program** **1**: the newest `roster` finding per creator wins.
 
 A creator is reviewed when their newest row is at Agreed or any later stage on the main line
 (Details requested through Complete), or at Paused, and:
@@ -97,7 +97,7 @@ timezone, else the user's). For an ambassador whose term started inside the wind
 at `termStart`.
 
 **The deal** is the newest `terms` finding with status agreed, else the program's terms for the
-creator's type (`program.md`, **Who owns a deal**).
+creator's type (**Influencer program**, **Who owns a deal**).
 
 ## Reads, per creator
 
@@ -153,7 +153,7 @@ post with hidden likes is left out of every engagement figure.
 | Responsiveness | Median days from our sent draft to their next reply, over the last three exchanges. Auto-replies never count | Within the tier's reply window | Beyond the window twice running, or a sent draft still unanswered past the window | At least one sent draft |
 | Safety | Flags, below | None found | Any flag | Always checked on the posts Atlas holds; with no posts, not judged |
 
-Reply windows by tier follow `program.md` **5**: nano and micro two days, mid and top 14 days.
+Reply windows by tier follow **Influencer program** **5**: nano and micro two days, mid and top 14 days.
 
 **Safety flags** (each one cites the post or the record):
 
@@ -237,10 +237,10 @@ Word it as one question with two or three answers, best first, and the deciding 
 clause: "@marco missed 3 of 4 posts since July and hasn't replied in 40 days. Pause him
 (Recommended), drop him from Summer ambassadors, or keep him on?"
 
-The **Roster review** section writes the answer (`program.md`, **3**): a pause or a drop is a
+The **Roster review** section writes the answer (**Influencer program**, **3**): a pause or a drop is a
 new `roster` finding at Paused or Dropped, copied from the newest row with `yourCall` cleared. The packet carries that row ready
 to write (`rosterChange`). "Keep" writes nothing on the roster. "Decide later" follows
-`program.md`, **3**, Decide later: the section writes the creator's newest `roster` row again
+**Influencer program**, **3**, Decide later: the section writes the creator's newest `roster` row again
 with `yourCall` set to the question and `yourCallDeferredAt`, so the call stays on the status
 screen and the page without leading the next step for 7 days.
 
@@ -286,11 +286,11 @@ negotiation instead.
 
 ## Drafts
 
-Every note to a creator is a `draft` finding (`program.md`, **5**): shown ready to copy in chat
+Every note to a creator is a `draft` finding (**Influencer program**, **5**): shown ready to copy in chat
 and on the page, created in the mailbox only after K4, never sent by the agent. A draft's
 identity is the creator, the template, and the channel.
 
-Voice and channel follow `outreach.md` exactly: **Channels** (routes, word limits, a DM has no
+Voice and channel follow **Creator outreach** exactly: **Channels** (routes, word limits, a DM has no
 subject and no link), **Voice**, and the manager rule. The channel is the creator's last reply
 channel, else the first channel in `outreach.channels` with a route.
 
@@ -325,7 +325,7 @@ We'd love to keep working together. {rebook line}
 {sender}
 ```
 
-- The post line names the post as in `outreach.md`, **Write the post line**.
+- The post line names the post as in **Creator outreach**, **Write the post line**.
 - The thanks line is one sentence on what the post did for the brand in words, never a number:
   "It's one of the posts our team keeps sharing."
 - The rebook line, by type: paid and gifting, "Would you be up for another round in
@@ -372,7 +372,7 @@ while! Still keen on {program}? No worries either way."
 ## Lookalike seeds
 
 Stars become seeds for the program's discovery campaign (`discoveryCampaign` in the program
-object), in the form creator discovery picks its lookalike seeds (`creator-discovery.md`,
+object), in the form creator discovery picks its lookalike seeds (**Creator discovery**,
 **Lookalike seeds**): up to five, the stars with the highest trend first.
 
 A star is a seed when it has two or more program posts, no safety note, and Atlas holds its
@@ -496,7 +496,7 @@ it, and stop.
 
 ## Records written
 
-All on the program's working state (`program.md`, **Working state**): `append_insights`, role
+All on the program's working state (**Influencer program**, **Working state**): `append_insights`, role
 `account_review`, runKey `program-{profile}-{slug}-{YYYY-MM-DD}`, `schema` the network,
 `entityKind` `account`, `entityId` the network's own account id. Each finding carries
 `detail.recordType`, `detail.program`, `detail.recordedAt` (the shell clock, the same on every
@@ -513,7 +513,7 @@ to 25 findings per call.
 
 `{net}` is `ig` or `tt`.
 
-**`roster-health` detail.** `program.md`'s fields (`handle`, `segment`, `seedEligible`,
+**`roster-health` detail.** **Influencer program**'s fields (`handle`, `segment`, `seedEligible`,
 `quotaMet`, `trend`, `costPerEngagement`, `revenue`, `renewalDueAt`, `recommendation`), plus the fields this
 reference adds: `network`, `type`, `window` `{from, to}`, `signals` (each of quota, trend,
 roster, cost, revenue, sentiment, responsiveness, safety as `{value, call, source}`),
@@ -524,7 +524,7 @@ currentVersion}` when one is due, `yourCall` (the open question, when there is o
 (the template names written). `quotaMet` is the posted share (0 to 1) or null; `trend` is the
 ratio or null.
 
-**`draft` detail** follows `program.md` and `outreach.md`: `handle`, `channel`, `template`,
+**`draft` detail** follows **Influencer program** and **Creator outreach**: `handle`, `channel`, `template`,
 `subject`, `body`, `to`, `postUrl`, `blanks`, and `mailDraftId` after K4.
 
 **The `page` finding.** The first `record` write with K1 adds it when no `page` finding with key
@@ -548,8 +548,8 @@ The agent never writes `roster`, `terms`, `deliverable`, `fulfillment`, `affilia
 One page per program, the roster health page, republished to the same link (its `page` finding,
 key `roster`). Title "{Brand} {Program}: Roster Health". Load `artifact-design` and
 `artifact-capabilities` before building and `dataviz` for the charts; apply `theme:brand` per
-`theme.md`; draw creators with the creator card (`creator-card.md`, page mode);
-render for `recipient` (`recipient-lens.md`).
+**Theme**; draw creators with the creator card (**Creator card**, page mode);
+render for `recipient` (**Recipient lens**).
 
 **Who sees what.** The page is for the brand's team, never for creators. Costs in money and the
 budget live in page data under `team`, readable by Editors only. Declare on every publish:
@@ -576,7 +576,7 @@ Sections, in order:
 
 1. **Header**: the program and term, the "Prepared for" chip, the review window, counts per
    segment as chips. The animated Aspire Atlas mark sits at the top right
-   ([`artifact-standard.md`](artifact-standard.md)).
+   (**Artifact standard**).
 2. **Your call needed**: one card per K2 item: the creator, the question, the answers with the
    recommendation first, and the evidence. Done marks per viewer.
 3. **Segment board**: six columns (Star, Steady, Slipping, Dormant, Retire, Not enough data),
@@ -602,7 +602,7 @@ Sections, in order:
     highlighted, and "in your {mailbox}" when a mailbox draft exists.
 11. **Footer**: how each signal is called (one line each), "cost comes from the ledger or the
     agreed deal, never the fee calculator", and "numbers read from Atlas at {timestamp}". Then the
-    footnote with the team audience line ([`artifact-standard.md`](artifact-standard.md)).
+    footnote with the team audience line (**Artifact standard**).
 
 In `propose` every segment and draft shows "Proposed". In `record` the saved ones show "Saved".
 

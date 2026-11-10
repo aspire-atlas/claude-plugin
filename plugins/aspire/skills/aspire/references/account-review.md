@@ -3,6 +3,9 @@
 Used at the end of onboarding, for any account review the user asks for, and for the
 `atlas-profile-analyst` hand-off.
 
+A bold section name with no file beside it (**Creator card**, **Readouts**) is another part of this skill;
+`SKILL.md`'s **Sections** index names its file.
+
 ## Phase 6: First insights
 
 Trigger once at least one channel reports linked, or whenever the user asks for an account
@@ -55,7 +58,7 @@ against competitors goes to **Market signal**.
    three insights, the freshness line, the next step, and one link (the account's top post; the
    review has no page), and offer the rest of the summary in one line. Keep the agent's
    `creator-cards` block and `visual-data` block for later. When the user asks to see them: "show me the card" draws the
-   account's card per `creator-card.md`, **Cards in chat** (the host draws it from
+   account's card per **Creator card**, **Cards in chat** (the host draws it from
    `lookup_creators` on the reviewed handle, which Atlas holds after this review); "show the
    posts" does the same with `lookup_posts` on the top and bottom posts; "chart it" builds a
    page with the engagement pattern the headline rests on. When the reviewed account is a

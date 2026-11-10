@@ -6,7 +6,7 @@ the sales report (store or uploaded export), commission, the post timeline, the
 recommendations, the questions the main thread asks, the records the agent writes, the
 commission lines it hands to the ledger, and the affiliate page.
 
-Read `program.md` first. Its state model, page vocabulary, **4** (connected tools), **5**
+Read **Influencer program** first. Its state model, page vocabulary, **4** (connected tools), **5**
 (drafts and sending) and **7** (pages) apply here unchanged.
 
 The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
@@ -88,7 +88,7 @@ Per creator:
 - The newest `roster` row (stage, type, contact, tier).
 - The newest `terms` finding when one exists: `commissionPct`, `codeDiscountPct`, `code`,
   `codeDiscountAmount` when the deal fixed an amount off instead, `attributionDays`, `type`,
-  `status`, `termStart`, `termEnd`. Otherwise the program's `terms.affiliate` (`program.md`,
+  `status`, `termStart`, `termEnd`. Otherwise the program's `terms.affiliate` (**Influencer program**,
   **Who owns a deal**).
 - Every `affiliate` finding for the creator, newest first.
 - Their `deliverable` findings with a `postUrl`, to mark program posts on the timeline.
@@ -197,8 +197,8 @@ they are in the store, A4 names them and the date, and `record` writes each `liv
 ### Telling the creator
 
 A code that goes live gets a `code-live` draft to the creator, in the brand's voice from
-`program:{slug}-outreach`, following `outreach.md` (**Templates**, voice and channel rules) and
-`program.md`, **5**:
+`program:{slug}-outreach`, following **Creator outreach** (**Templates**, voice and channel rules) and
+**Influencer program**, **5**:
 
 ```
 Subject: Your {Brand} code is live
@@ -390,7 +390,7 @@ questions (main thread)**. Launch `atlas-affiliate-manager` with the tool prefix
 decision-audit line.
 
 **Say what the store can do**, once per session when a step uses it, in one line, per
-`program.md`, **4** (**Creating codes in the store**, **Retiring codes**). Never why. When the
+**Influencer program**, **4** (**Creating codes in the store**, **Retiring codes**). Never why. When the
 store is missing, offer to connect it once and carry on with the sheet or an upload.
 
 **Codes**
@@ -458,7 +458,7 @@ recomputes.
 
 ## Records written
 
-All on the program's working state (`program.md`, **Working state**): `append_insights`, role
+All on the program's working state (**Influencer program**, **Working state**): `append_insights`, role
 `account_review`, runKey `program-{profile}-{slug}-{YYYY-MM-DD}`, `schema` the network,
 `entityKind` `account`, `entityId` the network's own account id from the roster. Each finding
 carries `detail.recordType`, `detail.program`, `detail.recordedAt` (the shell clock, the same on
@@ -467,7 +467,7 @@ Copy the creator's newest `affiliate` detail and change what moved, so each find
 on its own.
 
 **Identity.** The creator + the period. A creator's current code is the `code` on their newest
-`affiliate` finding by `recordedAt`, across periods (`program.md`, **Current code**). `codes` writes on the current month's
+`affiliate` finding by `recordedAt`, across periods (**Influencer program**, **Current code**). `codes` writes on the current month's
 period.
 
 | On | `affiliate` writes | kind |
@@ -482,7 +482,7 @@ Only an A8 report finding carries `source` (store or csv). A code finding copies
 fields, never `source` or a period's figures, and never counts as a report: the Program manager's "Report sales and commission" row and the dashboard's "Sales to
 report" item look for a report finding for the last closed month.
 
-**Fields this agent adds to `affiliate`** (beyond `program.md`'s list): `type` (`affiliate` or
+**Fields this agent adds to `affiliate`** (beyond **Influencer program**'s list): `type` (`affiliate` or
 `hybrid`), `commissionPct`, `discountKind`, `discountValue`, `codeMethod` (`store`, `sheet`),
 `codeCreatedAt`, `retiredAt`, `storeRef`, `eligibleRevenue`, `refunds`, `netOfRefunds`,
 `clicks`, `ordersPerClick`, `platformCommission`, `sourceLabel`, `mapping` (field to column),
@@ -492,7 +492,7 @@ report" item look for a report finding for the last closed month.
 **idempotencyKey**: `aff-{slug}-{net}-{handle}-{period}-{event}`, where event is `planned`,
 `live`, `retired`, or `report-{YYYY-MM-DD}`. `{net}` is `ig` or `tt`.
 
-**`draft`**: template `code-live`, the fields in `program.md`, idempotencyKey
+**`draft`**: template `code-live`, the fields in **Influencer program**, idempotencyKey
 `draft-{slug}-{entityId}-code-live-{code}`.
 
 **The `page` finding.** When no `page` finding with key `affiliate` exists, the first `record`
@@ -509,7 +509,7 @@ The agent never writes `roster`, `terms`, `ledger`, `deliverable`, or a calibrat
 
 `atlas-program-ledger` owns `ledger`. In `record` with A8, for a closed (not partial) period,
 return every creator with commission above 0 in a fenced JSON block labelled `ledger-lines`,
-one line each in the shape `program.md` sets (**Ledger lines hand-off**):
+one line each in the shape **Influencer program** sets (**Ledger lines hand-off**):
 
 ```json
 {"for": "atlas-program-ledger", "program": "{slug}", "period": "2026-09", "lines": [
@@ -530,7 +530,7 @@ one line each in the shape `program.md` sets (**Ledger lines hand-off**):
   different amount (so the same `lineId`); otherwise null. The ledger decides what to do with the
   old line.
 - One line per currency when a creator's sales came in more than one; amounts are never added
-  across currencies or converted (`program.md`, **Currencies**).
+  across currencies or converted (**Influencer program**, **Currencies**).
 - A your-call commission mismatch left open sends no line for that creator until it is decided.
 
 ## The page
@@ -538,7 +538,7 @@ one line each in the shape `program.md` sets (**Ledger lines hand-off**):
 One page per program, the affiliate page, republished to the link in the `page` finding with
 key `affiliate`. Title "{Brand} {Program}: Affiliate". Load `artifact-design` and
 `artifact-capabilities` before building and `dataviz` for the charts; apply `theme:brand` per
-`theme.md`, **Applying the theme**; draw creators with the creator card (`creator-card.md`, page
+**Theme**, **Applying the theme**; draw creators with the creator card (**Creator card**, page
 profile); render for `recipient`.
 
 **Who sees what.** The page is for the brand's team, never a creator. The sales goal, the
@@ -568,7 +568,7 @@ Sections, in order:
 
 1. **Header**: the program, the period ("September 2026" or "October 1 to 7, so far"), the
    "Prepared for" chip, and a source chip: "Sales from {source label}, {currency}". The animated
-   Aspire Atlas mark sits at the top right ([`artifact-standard.md`](artifact-standard.md)).
+   Aspire Atlas mark sits at the top right (**Artifact standard**).
 2. **KPI row**: Revenue, Orders, Commission owed, and Revenue against the sales goal. The goal
    tile renders only for Editors when `team/goal` reads back; others see "Sales goal: team
    view". Each tile carries its source and currency, and the change from last month.
@@ -591,7 +591,7 @@ Sections, in order:
    sales.
 10. **Footer**: "Revenue is {source}'s figure in {currency}, read {timestamp}. Atlas data as of
     {timestamp}. Sales and posts on the same days are a correlation, not proof." Then the footnote
-    with the team audience line ([`artifact-standard.md`](artifact-standard.md)); its source line
+    with the team audience line (**Artifact standard**); its source line
     names the store or affiliate platform as the source of the sales figures.
 
 In `propose`, codes and figures show "Proposed". In `record`, the approved ones show their new
@@ -600,7 +600,7 @@ budget, a maximum, or the sales goal outside the team view.
 
 ## Sample mode
 
-The holiday's sample brand per `sample-artifact.md`, four creators: a top earner with a
+The holiday's sample brand per **Sample artifacts** (the agent brief), four creators: a top earner with a
 raise as your call, a hybrid with a store-created code, an affiliate whose fixed-amount code is
 on the sheet, and an inactive code to retire. A month's timeline with three post markers, three
 commission lines, a code sheet of two rows. Render the goal tile in the page itself, marked

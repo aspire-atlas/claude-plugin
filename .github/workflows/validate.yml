@@ -75,8 +75,9 @@ jobs:
       - name: The skill layout check gives every fixture its result
         run: bash scripts/check-skill-layout.sh --fixtures
 
-      # TODO(2026-11-10, ASP-4093): remove continue-on-error once ASP-4093 lands the router split
-      # and the references no longer cite each other; until then this step reports and never blocks.
+      # TODO(2026-11-10, ASP-5428): the reference chains are gone (ASP-5428); the one finding left is
+      # skills/page-standard/SKILL.md at 583 lines. Remove continue-on-error once it is 500 or under;
+      # until then this step reports and never blocks.
       - name: Skill layout (SKILL.md length, description length, reference chains, tables of contents)
         continue-on-error: true
         run: bash scripts/check-skill-layout.sh --tree

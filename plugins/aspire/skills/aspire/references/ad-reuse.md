@@ -2,7 +2,7 @@
 
 Shared by the `atlas-ad-reuse` agent and by `atlas-content-review`'s
 optional **Ad reuse** check. Serves the `performance` and `creative` lenses
-(`recipient-lens.md`): Performance decides what to license and put spend behind; Creative
+(**Recipient lens**): Performance decides what to license and put spend behind; Creative
 needs exactly which moments to cut, at what length, for which placement.
 
 The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
@@ -61,7 +61,7 @@ Meta recommends, whether a creator gave permission, what is ad ready, or pastes 
 code to find its post ("what can we boost from creators", "which tagged posts can we run as
 ads"). It runs in the main thread with no agent: a read of `search_partnership_content` (and
 `search_posts` with `partnership`) on the brand's profile, plus an optional boost. Before step 1,
-read this file (**Partnership content (main thread)**) and `references/atlas-tools.md`
+read this file (**Partnership content (main thread)**) and **Atlas tools**
 (**Partnership content**) and follow them. Pass `asProfileId` explicitly, never show ids, and
 never put an ad code on a page, delivery, finding, or creator message. The boost question is the
 write confirmation, asked exactly as worded; unattended runs never boost. The boost goes through
@@ -157,7 +157,7 @@ How to read them:
 - **Creator figures** come from the Instagram creator marketplace, so they are held only for
   creators Atlas has seen there. They describe the creator's Reels on average, never this post.
 
-Frames follow `content-review.md`, **Media**: the same extractor order and working folder.
+Frames follow **Content review**, **Media**: the same extractor order and working folder.
 Sample the opening densely (0, 0.5, 1, 1.5, 2, 2.5 and 3 seconds), then every 3 seconds. For each
 recommended cut, also extract a frame at every storyboard beat's timecode (**Page**, item 7),
 measured from the cut's in point.
@@ -282,9 +282,9 @@ end, newest finding per identity:
 - `creator-brief-{profile}`: a deliverable for that creator that requested rights.
 - `program-{profile}-`: the post's `rights` finding (`status` granted, with `usage`, `channels`
   and `expiresAt`), and the creator's agreed `terms` (`usage`, `usageDays`, `usageChannels`,
-  `whitelisting`) for a post matched to their deal (`program.md`, **Working state**).
+  `whitelisting`) for a post matched to their deal (**Influencer program**, **Working state**).
 - `cas-campaign-{profile}-`: the creator's `roster` finding with `rate` agreed, its `usage` and
-  `adPermissions` (`cas-campaign.md`, **Working state**). Usage counts only for the clips made
+  `adPermissions` (**CAS campaign**, **Working state**). Usage counts only for the clips made
   for that campaign; ad permissions "pending" is not cleared.
 
 Show which record the rights came from and the end date when it has one. A grant past its end
@@ -343,7 +343,7 @@ lens (**Output for each lens** sets the order for `creative`):
    duration strip, and edit notes. A 6-second bumper has two beats: the hook 0 to 3s, then
    the brand with the end card 3 to 6s. A 30-second cut lengthens the build to 6 to 24s, with the
    reveal 24 to 27s and the end card 27 to 30s. The duration strip always adds up to the cut length. Timecodes from frames carry "±1.5s" and every timecode
-   stays a draft until a 1-second frame scan confirms it (`quality-review.md`, 4.15).
+   stays a draft until a 1-second frame scan confirms it (**Quality review**, 4.15).
 8. **Cut list** table, one row per cut (**Cut list**).
 9. **Test plan** (3.15): one test per variable (hook pattern, opening line, cut length, or
    placement), each with the ads in it, the metric it is judged on, the hypothesis, and its
@@ -365,13 +365,13 @@ lens (**Output for each lens** sets the order for `creative`):
     artifact-standard footnote.
 
 Labels on the page are plain words only, never a field name. The mark and the footnote follow
-[artifact-standard.md](artifact-standard.md).
+**Artifact standard**.
 
 When `reuse_scope` includes `creators`, what's missing adds one line: "Creator posts rarely
 carry measured watch time, because it comes from the account owner's insights. Most creator
-candidates score retention on the creator average or the proxy." Images follow `creator-card.md`, **Images**, page profile;
-frames follow `content-review.md`, **The page**, page mechanics. Load `artifact-design` and
-`dataviz` first, and apply `theme:brand` per `theme.md`, **Applying the theme**.
+candidates score retention on the creator average or the proxy." Images follow **Creator card**, **Images**, page profile;
+frames follow **Content review**, **The page**, page mechanics. Load `artifact-design` and
+`dataviz` first, and apply `theme:brand` per **Theme**, **Applying the theme**.
 
 ## Findings (ad reuse agent)
 
@@ -449,7 +449,7 @@ published post.
 
 The **Partnership content** section of SKILL.md (creator posts the brand can run as Meta
 partnership ads) has no agent and no reference of its own; these are its steps. Inputs, output,
-the empty reasons, ad code rules, and the boost call are in `atlas-tools.md`, **Partnership
+the empty reasons, ad code rules, and the boost call are in **Atlas tools**, **Partnership
 content**.
 
 1. **Profile.** Use the brand's profile from Phase 2 + 3 and pass `asProfileId` explicitly on
@@ -460,7 +460,7 @@ content**.
    `search_posts` with the `partnership` filter when the ask also needs what Atlas holds about the
    posts (transcripts, analysis, an `esFilter`); its hits then carry `partnershipAds`.
 3. **Nothing back.** Read `empty.reason` and tell the user which link is missing (the table in
-   `atlas-tools.md`). A missing Meta Business or Instagram link offers the `meta` connection
+   **Atlas tools**). A missing Meta Business or Instagram link offers the `meta` connection
    (Phase 4.2), with the business picked under **Meta businesses**.
 4. **Show it.** One line per post: the creator's `@handle`, the post link, whether it is ad
    ready and permitted in plain words, whether Meta recommends it, whether the brand has run it,
@@ -472,7 +472,7 @@ content**.
    need it to run the ad. Never put a code on a page, in a delivery, in a saved finding, or in a
    message to a creator, and never repeat a pasted one back.
 6. **Run it (optional).** When the user wants to run a post, plan it with the Meta Ads
-   connector's `ads_boost_ig_post` on one of the brand's own ad accounts (`meta-ads-tools.md`,
+   connector's `ads_boost_ig_post` on one of the brand's own ad accounts (**Meta Ads**,
    **Brand scope**), `confirmed=false` first, using `igMediaId` and
    `brand.igUserId`, or the code. Show the plan, confirm with `AskUserQuestion` ("Create this ad,
    paused, from **@{creator}**'s post?" Options: Not yet (Recommended) / Create it paused), then

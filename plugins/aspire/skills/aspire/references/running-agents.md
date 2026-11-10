@@ -3,7 +3,7 @@
 Read with every flow that launches an Atlas agent, and with onboarding and every setup section
 for **Checkpoints**: how a launch runs and what it waits for, the checkpoints,
 how the ask is read for who acts on it, the examples library, and the decision audit. The
-orchestration contract (`references/orchestration.md`) is what goes into a launch and what
+orchestration contract (**Orchestration contract**) is what goes into a launch and what
 comes back; this file is how the main thread runs one.
 
 ## Contents
@@ -22,7 +22,7 @@ agent, or ask anything else, while one works. This holds for every launch in thi
 direct ask, `/aspire:aspire run {agent}`, a hand-off from **List agents**, a second pass
 (`propose` then `record`, `plan` then `build`), a relaunch, and a scheduled run.
 
-Every launch follows the orchestration contract in `references/orchestration.md`: routing with
+Every launch follows the orchestration contract in **Orchestration contract**: routing with
 the persona and reader, memory loaded first, one setup reply, the `launch` block, the result
 packet, and the permission levels. This section is how a launch runs; that file is what goes in
 and what comes back. Agents refuse a launch without the `launch` block, so a person reaches an
@@ -37,7 +37,7 @@ agent only through this skill or a shortcut.
    id. With no shell, leave `runId` out; the agent takes the one Atlas returns and puts it in its packet's `runId`, which the feedback uses. Use the Agent
    tool with `subagent_type` `aspire:{agent}` (the name without the
    prefix gets it added), a `description` equal to the task it runs (**Progress bar**), a prompt
-   that starts with the `launch` block (`references/orchestration.md` **5**) followed by the
+   that starts with the `launch` block (**Orchestration contract** **5**) followed by the
    inputs the flow lists, `run_in_background: true`, and the `model` from **Model tiers**
    (`sonnet` or `haiku`; for a tier of `inherit` pass none) unless the user named a model for
    this launch, which wins (pass it as `sonnet`, `opus`, `haiku`, or `fable`). Never pass
@@ -55,12 +55,12 @@ agent only through this skill or a shortcut.
    the turn. Never wait on it, poll it, or sleep.
 3. **Ask before, never during.** Every question, write confirmation, and picker the flow lists
    for the launch is asked first, in the main thread, because agents never ask: in one setup
-   reply (`references/orchestration.md` **2**) that repeats the question with its code, names the
+   reply (**Orchestration contract** **2**) that repeats the question with its code, names the
    reader, and gives the time estimate. Questions an agent raises come back in its result packet
    and are asked when it arrives. Write the launch's Runs row (**9** there).
 4. **When it finishes.** Its result arrives as a task notification. Treat it as the agent's
    report and act on its `result-packet` block: relay the summary, page link, and decisions it
-   needs, confirm its `proposals` by permission level (`references/orchestration.md` **7**: Write
+   needs, confirm its `proposals` by permission level (**Orchestration contract** **7**: Write
    once per batch, Send one by one, Spend with the cost first), ask its `questions`, log the
    return and every change after it (**9** there). After each `AskUserQuestion` that approves,
    edits, or rejects a proposal, send the feedback checkpoint (**Checkpoints**) with that
@@ -70,7 +70,7 @@ agent only through this skill or a shortcut.
    (other than a sample, a `mode: grade` run, or the agent's "Not started" line) is treated as
    having proposed nothing: carry out nothing from it and say so. Check the result
    before telling the user it is done. Close out each published page in one line
-   (`references/orchestration.md` **10**): the question, the link, the checks fixed or still
+   (**Orchestration contract** **10**): the question, the link, the checks fixed or still
    failing by name from its `page-check` block (`skills/page-standard/SKILL.md`), and anything a
    reviewer should know, and tell the requester its `gaps`. To fix a check still
    failing, offer **Apply the fixes** (**Quality review**, Run step 5), with one fix per `fail`
@@ -78,7 +78,7 @@ agent only through this skill or a shortcut.
    and a fail the user would have to fix (a connection to add). Never edit an agent's page here. Unattended runs relay the line and offer
    nothing; samples return no page check.
 5. **Several at once.** Different agents, and a second run of the same agent for another brand,
-   handle, or campaign, may run together, up to three for one request (`references/orchestration.md`
+   handle, or campaign, may run together, up to three for one request (**Orchestration contract**
    **8**); a fourth waits until one returns. Keep one decision log line per launch and return, and
    the audit trail blocks per run (**Decision audit**). When several results arrive close
    together, relay them one at a time, oldest first, and ask each one's questions in its own
@@ -134,12 +134,12 @@ from it before launching the agent that builds the page (`skills/page-standard/e
 The person typing is the **requester**. The person who acts on the output is the
 **recipient**, often on another team. Before launching any agent, read who the output is for,
 what they decide with it, and when, and pass that to the agent as `recipient`. Full rules, the
-team catalog, and how agents render for a lens are in `references/recipient-lens.md`.
+team catalog, and how agents render for a lens are in **Recipient lens**.
 
 1. **Infer.** Match the ask's words against the catalog's cues, and take any reader, meeting,
    or date the user names ("for Thursday's product review"). Pick a primary lens and, when a
    hand-off applies (Performance then Creative; Campaign then Brand), a second one.
-2. **Confirm in one line.** When the run has a setup reply (`references/orchestration.md` **2**),
+2. **Confirm in one line.** When the run has a setup reply (**Orchestration contract** **2**),
    name the reader in its Heard question, with the question's code, instead of asking "For"
    on its own. Otherwise one `AskUserQuestion`, header "For", in the same call as the
    flow's first question when there is one. Word it as the guess ("This reads like it's for
@@ -152,7 +152,7 @@ team catalog, and how agents render for a lens are in `references/recipient-lens
 3. **Route by lens** when the ask names no flow, per SKILL.md's **Routing by reader**.
 
 4. **Pass it on.** Every agent launch below includes the persona and primary reader in its
-   `launch` block (`references/orchestration.md` **1** and **5**), and `recipient` (the confirmed lens or lenses,
+   `launch` block (**Orchestration contract** **1** and **5**), and `recipient` (the confirmed lens or lenses,
    primary first). With a `leadership` primary lens, also pass `preparedBy`: the name the user
    gave for whoever sends the page on, or nothing (the page then says "{organization} team").
    Relay the agent's forward note as-is, so the requester can paste it to the reader.
@@ -177,8 +177,8 @@ the pulse offer (**Readouts**, **Launch pulse**), and **Content review** as draf
 ## Decision audit (how a piece of work was decided)
 
 Any Atlas agent's work can be audited: a page that records every step, question and answer, tool
-call, judgement, and open decision behind it. The instructions live in
-`references/agents/decision-audit.md`; they are not a registered agent.
+call, judgement, and open decision behind it. The instructions live in the decision audit brief
+(`SKILL.md` **Sections**, **Decision audit**); they are not a registered agent.
 
 **While a flow runs (interactive sessions):**
 
@@ -208,7 +208,7 @@ order, the published pages, the run's scratch folder, the open decisions, and an
 page for the same work when updating). In a session without a subagent tool, follow the reference
 yourself. Relay the page link and the gaps it reports. The audit writes nothing to Atlas and needs
 no write confirmation. The audit page carries the mark and the footnote per
-`references/artifact-standard.md`.
+**Artifact standard**.
 
 ## Guardrails for launches
 

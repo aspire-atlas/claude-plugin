@@ -9,7 +9,7 @@
 #   - the page blocks (skills/page-standard/blocks.md) have a snippet per block, take colors only
 #     from the tokens, keep the Starter Guide palette, and a page built from all of them passes the self-check
 #   - the standard's source sentence is written in that one file only, so the wording cannot drift
-#   - the references that define a published page link the standard
+#   - the references that define a published page point to the standard, by its section name
 #   - the standard's print block (section 6) holds the page footer and the print rules, the page
 #     blocks' style carries the same rules, and no page CSS in a skill turns on dark mode in print
 # What an agent actually publishes is not checked here; this keeps the instructions in step.
@@ -65,7 +65,7 @@ for f in ad-reuse affiliate cas-campaign content-library content-review content-
   orchestrator outreach post-analysis ppa-pitch program program-dashboard program-ledger quality-review quarterly-signal \
   readout roster-manager shops first-run agents/decision-audit agents/sample-artifact; do
   [ -f "$R/$f.md" ] || { err "$R/$f.md is missing"; continue; }
-  grep -q 'artifact-standard' "$R/$f.md" || err "$f.md does not link artifact-standard.md"
+  grep -q '\*\*Artifact standard\*\*' "$R/$f.md" || err "$f.md does not point to the artifact standard (cite it as **Artifact standard**, which SKILL.md's Sections index resolves)"
 done
 
 # Print (section 6): the print block holds the footer and the print rules, the page blocks' style

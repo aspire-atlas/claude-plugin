@@ -28,7 +28,8 @@ FX=scripts/fixtures/skill-layout
 # make a new citation pass (move what the file needs into it, or route through SKILL.md), and
 # remove a line once its citation is gone; a line that matches no citation fails the check.
 # One per line: <citing file, from the repository root>|<cited file, from its references/>|<reason>
-ALLOW=''
+ALLOW='plugins/aspire/skills/aspire/references/running-agents.md|agents/decision-audit.md|the launch message gives a general-purpose subagent the path of its brief; a subagent cannot resolve a section name
+plugins/aspire/skills/aspire/references/samples.md|agents/sample-artifact.md|the launch message gives a general-purpose subagent the path of its brief; a subagent cannot resolve a section name'
 
 mode=${1:-all}
 case $mode in all|--fixtures|--tree) ;; *) echo "usage: $0 [--fixtures|--tree]" >&2; exit 2 ;; esac

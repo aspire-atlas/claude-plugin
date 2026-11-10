@@ -10,7 +10,7 @@ updated, and treat the unlisted tool as one that changes data (**Unknown tools**
 
 Meta's tools can see **every** ad account the signed-in Facebook user can reach, not only the
 brand's, and its write tools change live ads that spend real money. Every rule below exists for
-one of those two reasons. Atlas (`atlas-tools.md`) stays the first source for everything it
+one of those two reasons. Atlas (**Atlas tools**) stays the first source for everything it
 holds; Meta Ads is an optional extra and no flow ever waits on it.
 
 The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
@@ -90,7 +90,7 @@ Atlas first: it ties paid results to creators and posts, which Meta's tools do n
 | --- | ------- | ----- |
 | Paid results for creators, posts, campaigns, or days (spend, impressions, clicks, views, purchases, the ratios) | **Atlas** | `list_ad_accounts`, `list_ad_search_fields`, `search_ads` |
 | Which creator posts can run as partnership ads, permission, ad codes, ad readiness | **Atlas** | `search_partnership_content`, `search_posts` with `partnership` |
-| Running a creator's post as a partnership ad | **Atlas** to find it, then **Meta Ads** to create it paused | `search_partnership_content`, then `ads_boost_ig_post` (`atlas-tools.md`, **Next step**) |
+| Running a creator's post as a partnership ad | **Atlas** to find it, then **Meta Ads** to create it paused | `search_partnership_content`, then `ads_boost_ig_post` (**Atlas tools**, **Next step**) |
 | How the brand's ad sets compare with similar advertisers | **Meta Ads** | `ads_insights_industry_benchmark` |
 | Which ads did best in the auction, where bid or quality would help | **Meta Ads** | `ads_insights_auction_ranking_benchmarks` |
 | Unusual swings in ad performance | **Meta Ads** | `ads_insights_anomaly_signal` |
@@ -158,7 +158,7 @@ outside brand scope, and it is read only.
   nothing else. An interactive agent launched without `meta_request` sends the same line.
 - **No Atlas data in Meta inputs** beyond the ids a call needs (an Instagram media id or the
   brand's Instagram user id for `ads_boost_ig_post`, or an ad code under the ad code rules in
-  `atlas-tools.md`). Never build a Meta custom audience from Atlas data: creator lists, audience
+  **Atlas tools**). Never build a Meta custom audience from Atlas data: creator lists, audience
   data, emails, or handles. The plugin never calls `ads_update_custom_audience_users`, which
   uploads hashed personal data; say it is done in Meta Ads Manager.
 - **Activity logs.** `ads_account_get_activity_logs` can return IP addresses and device or browser
@@ -275,7 +275,7 @@ classified correctly.
 | ---- | ---- | --- |
 | `ads_get_ig_accounts` | Read | Instagram accounts linked to an ad account; the `ig_account_id` for a boost |
 | `ads_get_ig_media` | Read | Boost-eligible media on the brand's own Instagram account |
-| **`ads_boost_ig_post`** | Write | Runs a post (the brand's, or a creator's as a partnership ad) as an ad, paused; `confirmed=false` first (`atlas-tools.md`, **Next step**) |
+| **`ads_boost_ig_post`** | Write | Runs a post (the brand's, or a creator's as a partnership ad) as an ad, paused; `confirmed=false` first (**Atlas tools**, **Next step**) |
 
 ### Custom audiences
 

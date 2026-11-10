@@ -11,8 +11,8 @@ stands, works out what should happen next across all of them, and puts it on one
 decide on the page. The next hourly run carries out what an Editor approved, within the limits
 saved at setup, and reports back in Slack.
 
-It conducts; it never does the heavy lifting. The Program manager (`program.md` **3**) and the
-CAS Campaign Manager (`cas-campaign.md` **1c**) keep their dispatch tables, and the orchestrator
+It conducts; it never does the heavy lifting. The Program manager (**Influencer program** **3**) and the
+CAS Campaign Manager (**CAS campaign** **1c**) keep their dispatch tables, and the orchestrator
 reads them rather than keeping its own copy. Each flow's agent does the work with the same
 packets, approvals, and records it uses when a person runs it.
 
@@ -204,13 +204,13 @@ approved it, and what each run did about it.
 
 **Sources:**
 
-1. **Each influencer program in scope.** Every row of `program.md` **3**, Dispatch that matches,
+1. **Each influencer program in scope.** Every row of **Influencer program** **3**, Dispatch that matches,
    not only the first, with the conditions the dashboard's attention list uses
-   (`program-dashboard.md` **(h)**). The "Replies pasted in this session" row never matches. The
+   (**Program dashboard** **(h)**). The "Replies pasted in this session" row never matches. The
    mailbox row ("not yet checked this session") matches when the newest triage packet for the
    program is older than 6 hours.
    A your-call item deferred in the last 7 days shows but never leads.
-2. **Each creator ad campaign in scope.** The one row of `cas-campaign.md` **1c** that holds for
+2. **Each creator ad campaign in scope.** The one row of **CAS campaign** **1c** that holds for
    the campaign, read bottom-up as that table says, plus an "approval overdue" action when a gate
    is open past its due date. Every CAS action is class `session`: gates, replies, rates, and the
    details and brief emails all run through the Campaign Manager with a person.
@@ -308,7 +308,7 @@ the person had picked its safe option.
 | `atlas-program-ledger` `build` | G1, G5 | `payments` and `export` (they need a file or pasted text) |
 
 "Decide later" on a your-call question (S2, T5, K2, G5) writes the creator's `roster` row with
-`yourCallDeferredAt`, exactly as the Program manager does (`program.md` **3**). That is the one
+`yourCallDeferredAt`, exactly as the Program manager does (**Influencer program** **3**). That is the one
 record the cycle writes for another flow. A K3 renewal hand-off becomes a new action on the next
 plan, never a chained launch in the same run, and its negotiation packet follows the
 negotiation row above: a renewal over a max, on a new quota or term length, or over budget is
@@ -345,15 +345,15 @@ direct messages; they are not the only ones who can approve. Setup says so (X4).
 
 One page per brand, titled "<Brand> Next actions", republished to the same link every run.
 Load `artifact-design` and `artifact-capabilities` before building, `dataviz` for the stage
-strip. Apply `theme:brand` per `theme.md`. Creators are drawn with the creator card, page
-profile, from `creator-card.md`.
+strip. Apply `theme:brand` per **Theme**. Creators are drawn with the creator card, page
+profile, from **Creator card**.
 
 Sections, in order:
 
 1. **Header.** The brand, "Updated {local time}", "Next run {local time}", the level in plain
    words ("Approvals run within the hour" or "Approvals wait for a session"), and the "Prepared
-   for" chip from `recipient` (`recipient-lens.md`). The animated Aspire Atlas mark sits at the top
-   right (`artifact-standard.md`).
+   for" chip from `recipient` (**Recipient lens**). The animated Aspire Atlas mark sits at the top
+   right (**Artifact standard**).
 2. **Waiting on you.** Each `page` action with a current packet: the title, the why, the creator
    cards involved, the packet's summary in the agent's own words, each question in `questions`
    as a control with exactly the options the packet offered, the held approvals as "Do this in
@@ -371,7 +371,7 @@ Sections, in order:
 6. **Where everything stands.** One stage strip per program and campaign in scope (**1**), with
    counts per stage and the link to that flow's own page from its `page` finding.
 7. **Footer.** What the run read, the actions counted but not shown, and any source it could not
-   read, then the artifact-standard footnote (`artifact-standard.md`). The setup-needed card
+   read, then the artifact-standard footnote (**Artifact standard**). The setup-needed card
    (**9**) carries the mark and the standard's "No Atlas data on this page" variant of the footnote.
 
 Money: a packet's fees, budgets, and amounts go only in Editor-only page data (`team`), never in
@@ -492,12 +492,12 @@ The same cycle, with a person present:
   and do anything else the section allows.
 - After the flow finishes, run steps 2, 6, 7, and 8 so the page reflects it.
 - Every launch carries the tool prefix, `profile_id`, `profile_slug`, the brand's linked handles
-  and networks, `recipient`, and `connections` (`program.md` **4**) when the flow is a program
+  and networks, `recipient`, and `connections` (**Influencer program** **4**) when the flow is a program
   flow.
 
 ## 8. Slack
 
-Delivery follows `readout.md`, **Delivery**, with these rules:
+Delivery follows **Readouts**, **Delivery**, with these rules:
 
 - **Channel message only on change**, comparing with the newest `plan`: a new action in bucket 1
   to 3, an action that moved up a bucket, or an `execution` written this run. One message: the
@@ -610,7 +610,7 @@ a major version before it ships.
 ## What the orchestrator never does
 
 - Decide anything a person has not decided on the page or in a session.
-- Keep its own copy of a dispatch table. It reads `program.md` **3** and `cas-campaign.md` **1c**.
+- Keep its own copy of a dispatch table. It reads **Influencer program** **3** and **CAS campaign** **1c**.
 - Write another flow's record type, except the "Decide later" `roster` row (**4**), or a setup
   record of any flow.
 - Send, order, upload, look up, start discovery, or run a destructive tool.
