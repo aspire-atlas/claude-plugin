@@ -7,6 +7,10 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
+  # The nightly page eval on develop (the eval job). A schedule fires from the default branch's copy of this file.
+  schedule:
+    - cron: '17 7 * * *'
+  workflow_dispatch:
 
 jobs:
   validate:
@@ -115,3 +119,136 @@ jobs:
             echo "Possible credential found"; exit 1
           fi
           echo "clean"
+
+  # The page eval (scripts/eval/README.md, "In CI"). On a pull request it reruns only the questions the changed
+  # agents and flow files answer, posts the table as one comment edited in place, and fails only on a regression:
+  # a check the approved page passes that the new page fails. Nightly it reruns all five on develop and posts to
+  # Slack. Pages it publishes are titled "CI eval" and deleted at the end of the run.
+  eval:
+    needs: validate
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    # A pull request reruns one or two questions; the nightly run reruns all five, one after another.
+    timeout-minutes: ${{ github.event_name == 'pull_request' && 90 || 240 }}
+    # A new push to a pull request cancels the eval still running for the old one. Only this job: push runs of
+    # validate on main and develop must never cancel one another.
+    concurrency:
+      group: eval-${{ github.event.pull_request.number || github.run_id }}
+      cancel-in-progress: true
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      PR: ${{ github.event.pull_request.number }}
+      BASE: ${{ github.base_ref }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      GH_TOKEN: ${{ github.token }}
+      HAS_SECRETS: ${{ secrets.ANTHROPIC_API_KEY != '' && secrets.EVAL_LOCAL_JSON != '' && secrets.ATLAS_EVAL_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # The nightly run grades develop, whichever branch the schedule fired from.
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'develop' }}
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+
+      - name: Choose the questions
+        id: pick
+        run: |
+          if [ "${{ github.event_name }}" != pull_request ]; then
+            echo "codes=I4,I11,O1,O3,I1" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          # Labels and body are read now, not from the event, so "Re-run jobs" after adding skip-eval sees it.
+          gh api "repos/$GITHUB_REPOSITORY/pulls/$PR" > "$RUNNER_TEMP/pr.json"
+          if jq -e '[.labels[].name] | index("skip-eval")' "$RUNNER_TEMP/pr.json" >/dev/null; then
+            # The reason is the PR body's "skip-eval: <reason>" line.
+            reason=$(jq -r '.body // ""' "$RUNNER_TEMP/pr.json" | sed -n 's/^[[:space:]]*skip-eval:[[:space:]]*//p' | awk 'NR==1' | tr -d '\r')
+            if [ -z "$reason" ]; then
+              echo "::error::The skip-eval label needs a 'skip-eval: <reason>' line in the PR body."; exit 1
+            fi
+            echo "skip=$reason" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          git diff --name-only "origin/$BASE...HEAD" > "$RUNNER_TEMP/changed.txt"
+          echo "codes=$(bun scripts/eval/ci.ts select "$RUNNER_TEMP/changed.txt")" >> "$GITHUB_OUTPUT"
+
+      - name: Post the skip
+        if: steps.pick.outputs.skip != ''
+        env:
+          REASON: ${{ steps.pick.outputs.skip }}
+        run: |
+          bun scripts/eval/ci.ts skipped "$REASON" > "$RUNNER_TEMP/comment.md"
+          # A pull request from a fork has a read-only token: the skip still holds without the comment.
+          bash scripts/eval/post-comment.sh "$PR" "$RUNNER_TEMP/comment.md" || echo "::warning::Could not post the skip comment."
+
+      - name: Nothing to rerun
+        if: github.event_name == 'pull_request' && steps.pick.outputs.skip == '' && steps.pick.outputs.codes == ''
+        run: |
+          echo "No agent or flow file that an eval question answers changed; nothing to rerun."
+          # An earlier table on this PR no longer describes it; say so instead of leaving it up.
+          bun scripts/eval/ci.ts skipped "no file an eval question answers differs from the base branch now" > "$RUNNER_TEMP/comment.md"
+          bash scripts/eval/post-comment.sh --if-exists "$PR" "$RUNNER_TEMP/comment.md" || echo "::warning::Could not update the comment."
+
+      - name: Secrets are missing
+        if: steps.pick.outputs.codes != '' && env.HAS_SECRETS != 'true'
+        run: |
+          # A pull request from a fork gets no secrets. A maintainer reruns it from a branch here.
+          echo "::warning::ANTHROPIC_API_KEY, ATLAS_EVAL_TOKEN or EVAL_LOCAL_JSON is not set: the page eval did not run."
+
+      - uses: actions/setup-node@v4
+        if: steps.pick.outputs.codes != '' && env.HAS_SECRETS == 'true'
+        with:
+          node-version: 22
+
+      - name: Rerun the questions
+        id: run
+        if: steps.pick.outputs.codes != '' && env.HAS_SECRETS == 'true'
+        continue-on-error: true
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ATLAS_EVAL_TOKEN: ${{ secrets.ATLAS_EVAL_TOKEN }}
+          EVAL_LOCAL_JSON: ${{ secrets.EVAL_LOCAL_JSON }}
+          CODES: ${{ steps.pick.outputs.codes }}
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          # Brands and the dev server address are customer details: they come from a secret, never the repository.
+          printf '%s' "$EVAL_LOCAL_JSON" > scripts/eval/local.json
+          bun run eval:pages --only "$CODES" --out "$RUNNER_TEMP/eval-run" --approved-from newest \
+            --title-prefix "CI eval" --cleanup --timeout-min 15
+          # The run holds pages and brand names; this repository is public, so none of it is uploaded.
+
+      - name: Post the table
+        id: report
+        if: steps.pick.outputs.codes != '' && env.HAS_SECRETS == 'true'
+        run: |
+          set +e
+          bun scripts/eval/ci.ts comment "$RUNNER_TEMP/eval-run" "$RUN_URL" > "$RUNNER_TEMP/comment.md"
+          status=$?
+          set -e
+          cat "$RUNNER_TEMP/comment.md" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ github.event_name }}" = pull_request ]; then
+            bash scripts/eval/post-comment.sh "$PR" "$RUNNER_TEMP/comment.md"
+          fi
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+
+      - name: Post to Slack
+        if: github.event_name != 'pull_request' && steps.pick.outputs.codes != '' && env.HAS_SECRETS == 'true' && always()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.EVAL_SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then echo "::warning::EVAL_SLACK_WEBHOOK_URL is not set; skipping Slack"; exit 0; fi
+          bun scripts/eval/ci.ts slack "$RUNNER_TEMP/eval-run" "$RUN_URL" > "$RUNNER_TEMP/slack.json" || true
+          [ -s "$RUNNER_TEMP/slack.json" ] || printf '{"text":"Atlas page eval, nightly on develop: the run stopped before any question finished. %s"}' "$RUN_URL" > "$RUNNER_TEMP/slack.json"
+          curl -fsS -X POST -H 'Content-type: application/json' --data @"$RUNNER_TEMP/slack.json" "$SLACK_WEBHOOK_URL"
+
+      - name: Fail on a regression
+        if: steps.report.outputs.status != '' && steps.report.outputs.status != '0'
+        run: |
+          if [ "${{ steps.report.outputs.status }}" = 1 ]; then
+            echo "::error::A check the approved page passes now fails. The table is in the PR comment and the job summary."
+          else
+            echo "::error::The eval run stopped before any question finished. See the 'Rerun the questions' step."
+          fi
+          exit 1

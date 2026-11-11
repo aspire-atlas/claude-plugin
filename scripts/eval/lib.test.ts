@@ -1,9 +1,9 @@
 import { expect, test } from 'bun:test'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   ATLAS_READS, ATLAS_WRITES, barChecks, compareRuns, extractPageCheckScript, fencedBlocks, fill, findJsonWithKey,
-  findPage, forBaseline, normalizeResult, parsePageCheck, parseStream, renderRun, rIds, rResult, stripDataUris,
+  findPage, forBaseline, normalizeResult, codesForChanges, regressions, renderComment, renderSkipped, renderSlack, COMMENT_MARKER, renderStopped, stripTitlePrefix, checkNames, parsePageCheck, parseStream, renderRun, rIds, rResult, stripDataUris,
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, type PageChecks, type QuestionResult, type RunResults,
 } from './lib'
 
@@ -199,4 +199,65 @@ test('a result packet with no page means the flow finished without one', () => {
 test('a file path in the result packet is the page on a host that cannot publish', () => {
   const events = [{ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 't', content: '```result-packet\n{"page": "/tmp/work/brief.html"}\n```' }] } }]
   expect(findPage(summarizeTurn(events))).toEqual({ link: null, file: '/tmp/work/brief.html', finished: true })
+})
+
+test('a pull request reruns the questions its changed agents and flow files answer', () => {
+  const config = JSON.parse(readFileSync(join(import.meta.dir, 'questions.json'), 'utf8'))
+  const pick = (changed: string[]) => codesForChanges(changed, config.questions, config.sharedPaths).codes
+  expect(pick(['README.md', 'docs/STANDARD.md'])).toEqual([])
+  expect(pick(['plugins/aspire/agents/atlas-market-signal.md'])).toEqual(['O3'])
+  expect(pick(['plugins/aspire/skills/aspire/references/creator-vetting.md', 'plugins/aspire/agents/atlas-creator-brief.md'])).toEqual(['I4', 'I1'])
+  // A watched file no question answers reruns nothing; a file every flow reads reruns all five.
+  expect(pick(['plugins/aspire/agents/atlas-shops.md'])).toEqual([])
+  expect(pick(['plugins/aspire/skills/aspire/references/reader-standard.md'])).toEqual(['I4', 'I11', 'O1', 'O3', 'I1'])
+  // The page standard and the router shape every page, so a change to either reruns all five.
+  expect(pick(['plugins/aspire/skills/page-standard/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O3', 'I1'])
+  expect(pick(['plugins/aspire/skills/aspire/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O3', 'I1'])
+  expect(pick(['plugins/aspire/skills/org-admin/SKILL.md'])).toEqual([])
+  // Every path a question names exists, so a renamed agent cannot silently stop rerunning its question.
+  for (const path of [...config.questions.flatMap((q: any) => q.paths), ...config.sharedPaths]) {
+    expect(existsSync(join(ROOT, path))).toBe(true)
+  }
+})
+
+test('only a check the approved page passes and the new page fails is a regression', () => {
+  expect(regressions(run(), E_CHECKS)).toEqual([{ code: 'I4', id: 'R3', was: 'pass', now: 'fail' }])
+  // The approved page failing too, or not having run, is not a regression.
+  const both = run()
+  both.questions[0].approved!.graded.R3 = 'fail'
+  expect(regressions(both, E_CHECKS)).toEqual([])
+  expect(regressions(run({ approved: null }), E_CHECKS)).toEqual([])
+  // No page at all regresses every check the approved page passes.
+  expect(regressions(run({ new: null }), E_CHECKS).map(r => r.id)).toEqual(['E1', 'R1', 'R3'])
+})
+
+test('the PR comment carries the marker, the regressions, and the table, and a skip says why', () => {
+  const comment = renderComment(run(), E_CHECKS, { R3: 'Answer first' }, 'the baseline of 2026-11-10', 'https://example.test/run/1')
+  expect(comment.startsWith(COMMENT_MARKER)).toBe(true)
+  expect(comment).toContain('**1 regression**')
+  expect(comment).toContain('- I4 R3 Answer first: approved pass, new fail')
+  expect(comment).toContain('| R3 Answer first | fail | pass | yes |')
+  expect(comment).toContain('Confirmation rounds: 2')
+  expect(renderComment(run({ approved: null }), E_CHECKS, {}, null, null)).toContain('No approved results for I4')
+  expect(renderSkipped('docs only')).toBe(`${COMMENT_MARKER}\n## Page eval\n\nskipped: docs only\n`)
+  expect(renderStopped(null)).toContain('stopped before any question finished')
+  expect(renderStopped(null).startsWith(COMMENT_MARKER)).toBe(true)
+})
+
+test('the Slack message names each question and its regressions, and no page link', () => {
+  const text = renderSlack(run(), E_CHECKS, null)
+  expect(text).toContain('1 regression')
+  expect(text).toContain('• I4 Holiday creator plan: 2/3 checks pass; regressed R3')
+  expect(text).not.toContain('claude.ai')
+})
+
+test('the CI title prefix is removed before grading, and nothing else is', () => {
+  const page = '<title>CI eval · Holiday plan</title><h1>CI eval: Holiday plan</h1><p>CI is fine here.</p>'
+  expect(stripTitlePrefix(page, 'CI eval')).toBe('<title>Holiday plan</title><h1>Holiday plan</h1><p>CI is fine here.</p>')
+  expect(stripTitlePrefix(page, null)).toBe(page)
+})
+
+test('check names come from e-checks and the reader standard table', () => {
+  const names = checkNames([{ id: 'E1', name: 'Answers the real question' }], '| R1 | Reader and scope | x |\n| R13 | Required metrics | y |')
+  expect(names).toEqual({ E1: 'Answers the real question', R1: 'Reader and scope', R13: 'Required metrics' })
 })

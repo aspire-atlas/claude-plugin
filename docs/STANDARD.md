@@ -19,6 +19,7 @@ does not apply.
 - [6. Reviews](#6-reviews)
 - [7. Questions](#7-questions)
 - [8. Proof](#8-proof)
+- [The eval on a pull request](#the-eval-on-a-pull-request)
 - [How to write a rule](#how-to-write-a-rule)
 - [The judgment review](#the-judgment-review)
 - [Rules that still apply](#rules-that-still-apply)
@@ -105,8 +106,33 @@ that changes an agent or flow).
 | Id | Item | Ticket | Checked by | Good | Bad |
 | -- | ---- | ------ | ---------- | ---- | --- |
 | P1 | A new agent ships with its spec in `docs/agent-specs/agents/`, its roster rows, and its orchestration block. | ASP-4101, ASP-5381 | script: `check-agent-specs.sh`, `check-agent-roster.sh`, `check-orchestration.sh`; presence of the spec lands with ASP-5382 | A new agent PR with its spec, its hand-off row, and its section 11 block. | An agent file with no spec, so nobody can say which questions it answers or who reads its page. |
-| P2 | Each question code the agent answers has an eval question in `scripts/eval/questions.json`, and once it has an approved page, the spec's **Approved example** names the ticket that holds it. | ASP-5302 | reviewer; eval (lands on PRs with ASP-5385) | The I4 question, with its reader and its approved plan named by ticket. | An agent whose page has never been rerun, so a rule change cannot show it helped. |
-| P3 | A PR that adds or changes a rule carries the before-and-after table from `bun run eval:pages`, and the gap the rule closes. A PR with no new rule says "no new rule". | ASP-5302 | reviewer; the PR template; eval (posted on the PR with ASP-5385) | The table for the question the rule is about, with the check that failed before and passes after. | A new rule with no rerun, so nobody knows whether the page already got it right. |
+| P2 | Each question code the agent answers has an eval question in `scripts/eval/questions.json`, and once it has an approved page, the spec's **Approved example** names the ticket that holds it. | ASP-5302 | reviewer; eval (the `eval` job on the PR) | The I4 question, with its reader and its approved plan named by ticket. | An agent whose page has never been rerun, so a rule change cannot show it helped. |
+| P3 | A PR that adds or changes a rule carries the before-and-after table from `bun run eval:pages`, and the gap the rule closes. A PR with no new rule says "no new rule". | ASP-5302 | reviewer; the PR template; eval (the `eval` job's comment on the PR) | The table for the question the rule is about, with the check that failed before and passes after. | A new rule with no rerun, so nobody knows whether the page already got it right. |
+
+## The eval on a pull request
+
+A pull request that changes an agent or a flow file gets a comment from the `eval` job: the questions those
+files answer, rerun against the dev test organization and graded beside the approved page. How it picks the
+questions, its secrets and the nightly run are in `scripts/eval/README.md` ("In CI").
+
+How to read the comment:
+
+1. **The first line** says whether anything regressed. A regression is a check the approved page passes that
+   the new page fails; it blocks the merge. Fix the change, or, when the check itself is wrong, say so in the
+   PR and fix the check in the same change.
+2. **The table** has one row per check: E1 to E8 (the Evals tab), then R1 onward (the reader standard). New
+   page and Approved page are `pass`, `fail`, `n/a`, or `–` when the check did not run. **Sets the bar** marks
+   the checks this question's approved page is the example for: those are the rows this standard's items
+   above are proven on (E1 and E8 for S1, E4 for M3, E6 and E7 for V1).
+3. **Under the table**: the size of the main conversation in tokens (a flow that loads less shows a smaller
+   number, item L1 to L4), the confirmation rounds (the storyline step, S1, should keep it low), and the page
+   link.
+4. A `fail` that the approved page also fails is not a regression. It is still a finding: the check has
+   drifted or the approved page predates the rule.
+
+The comment is edited in place on every push. `skipped: <reason>` means the PR carries the `skip-eval` label
+(the reason is the PR body's `skip-eval:` line), or that nothing the questions answer differs from the base
+branch any more.
 
 ## How to write a rule
 
