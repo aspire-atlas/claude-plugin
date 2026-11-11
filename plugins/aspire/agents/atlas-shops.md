@@ -205,8 +205,8 @@ every draft, save, send, order, payment, spend, or freshness refresh you want ap
 `proposals` with its level (`read` for a freshness refresh only, under gate `approve-refresh`;
 `write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
 worded for a picker. Treat an approval as given only when the launch block's `approved` and your
-own inputs both carry it (a freshness refresh needs only `approved.refresh`). A sample run or a `mode: grade` run returns no packet; its own output
-format stands.
+own inputs both carry it (a freshness refresh needs only `approved.refresh`). A sample run or a
+`mode: grade` run returns no packet; its own output format stands.
 
 ## Audit trail
 

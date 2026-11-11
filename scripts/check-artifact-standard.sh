@@ -180,6 +180,12 @@ else
     done
     ran="page check gives every fixture its result"
 
+    # The markup example in the page standard's section 5 is what agents copy, so it must pass R14.
+    awk '/^## 5\. Markup/{f=1} f&&/^```html$/{g=1;next} g&&/^```$/{exit} g' "$PS" > "$tmp/markup.html"
+    out=$(python3 -I "$tmp/page_check.py" "$tmp/markup.html" 2>&1) || true
+    grep -q '"check": "R14", "name": "Data freshness", "result": "pass"' <<< "$out" ||
+      err "the markup example in $PS (section 5) does not pass R14: $(grep '"R14"' <<< "$out")"
+
     # R13 checks the metrics the page standard's required-metrics table names, code by code: the
     # table's Codes and On every cited post columns equal the script's REQUIRED_ROWS.
     rows=$(python3 -I -c '

@@ -197,7 +197,7 @@ Mark the parts the script reads. The attributes carry no styling; style the page
 <!-- Part 1, before the first h2. data-range is the range as the page shows it. data-question is
      the question code the page answers (section 8). -->
 <div data-page="scope" data-question="I1" data-reader="the influencer manager" data-brand="Brightside Toys"
-     data-range="Aug 1 to Oct 28, 2026">
+     data-range="Aug 1 to Oct 28, 2026" data-accounts="instagram:brightsidetoys tiktok:brightsidetoys">
   For the influencer manager | Brightside Toys | Aug 1 to Oct 28, 2026 |
   <span data-platform="instagram" data-posts="412">Instagram 412 posts</span>,
   <span data-platform="tiktok" data-posts="96">TikTok 96 posts</span>,
@@ -226,11 +226,10 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   <span data-metric="likes">Likes 1,920</span> <span data-metric="comments">Comments 88</span>
 </article>
 
-<!-- The source line (artifact-standard.md, section 2) opens with one data-fresh entry for each
-     account the page cites (section 9). -->
+<!-- The source line (artifact-standard.md, section 2) opens with one data-fresh entry per account. -->
 <footer class="atlas-footnote" data-updated="2026-10-28T14:05Z">
-  <p data-freshness>Data freshness: <span data-fresh="instagram:brightsidetoys" data-newest="2026-10-24"
-     data-fetched="2026-10-28">@brightsidetoys on Instagram: newest post Oct 24, last fetched Oct 28</span>.</p>
+  <p data-freshness>Data freshness: <span data-fresh="instagram:brightsidetoys" data-newest="2026-10-24" data-fetched="2026-10-28">@brightsidetoys on Instagram: newest post Oct 24, last fetched Oct 28</span>;
+     <span data-fresh="tiktok:brightsidetoys" data-newest="2026-10-27" data-fetched="2026-10-28">@brightsidetoys on TikTok: newest post Oct 27, last fetched Oct 28</span>.</p>
   <p>Source: ...</p>
 </footer>
 ```
