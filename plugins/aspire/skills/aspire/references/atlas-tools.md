@@ -407,6 +407,14 @@ sponsored posts (**Ad reuse**, **Account map record**). Ad reuse reads it; every
 it, as it drops `review:` keys. It is never a brand guideline: brief conflicts, content review
 checks, discovery criteria, and red-line scans leave it out.
 
+**Keys starting `lastrun:` are a flow's saved setup answers** (**Orchestration contract**, **2**,
+Saved answers): its reader, scope and save choice, as `guideline` records with
+`detail.concern` `preference`. The main thread reads them to pre-fill the setup reply and the
+prompt coach's window, reader and save options. They are never a brand guideline: brief
+conflicts, content review checks, discovery criteria, red-line scans, and the coach's source, role,
+competitor and red-line defaults leave them out. Every flow and agent that drops other flows' keys
+from brand memory drops `lastrun:` keys with them, whether or not its own list names them.
+
 **Keys starting `fees:` are pricing only.** `fees:rate-card` is a `guideline` record that
 holds the brand's CPM ladder for creator fees (**Fee calculator**). Flows that show a creator fee apply
 it. No flow treats it as a brand guideline: brief conflicts, content review checks, discovery

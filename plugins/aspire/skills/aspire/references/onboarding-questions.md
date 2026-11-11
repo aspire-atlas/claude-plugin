@@ -54,6 +54,12 @@ team?" Options: 1) Yes, continue; 2) Finish setup now.
 | 10 | What does a good week on social look like, in numbers? | 1) I'll give targets (type them); 2) Research benchmarks on the web; 3) Not defined yet; 4) Skip | yes | `alignment_target` (admin) else `brand_fact` `limits_and_gaps` | `target:weekly-health` | `{horizon: "90d", confidence: "confirmed", cadence: "weekly", observable, notCovered}` (web: industry engagement benchmarks; the user must confirm the numbers, so confidence stays "confirmed" only after they do) |
 | 11 | Who else on the team will use Atlas? | 1) I'll list them (type names and roles); 2) Just me for now; 3) Skip | no | `user_fact` per person | `user:{slug}` | `{role, relationship, firstAsk}` |
 
+Question 2's `user:primary-contact` and question 11's `user:{slug}` records describe people for
+the organization. They never carry `preferences`: a person's own defaults (the reader per question
+code, how to address them, the cards choice) live on their own `user:usr-{id}` record, which only
+their own session writes (**Orchestration contract**, **2**, Saved answers). Outside questions 2
+and 11, flows only read these records and never write another person's key.
+
 ## Web findings before writing
 
 A "Research it on the web" pick never writes directly. Present the findings (3 to 6 bullets,
