@@ -411,6 +411,9 @@ The account map is brand memory, saved by the main thread only after the person 
 (SKILL.md, **Ad reuse**, step 2). The agent never writes it; it returns a proposed map in its
 result packet's `proposals` (level `write`, gate `approve-account-map`).
 
+An interactive run's reader, scope, and save choice go on `lastrun:ad-reuse`, apart from the
+account map (**Orchestration contract**, **2**, Saved answers).
+
 | Field | Value |
 | ----- | ----- |
 | `kind` | `guideline` |

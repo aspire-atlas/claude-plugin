@@ -67,7 +67,7 @@ a chain, add the other end as a second lens by default and say so in the confirm
 
 ## Inferring and confirming (main thread)
 
-1. **A saved answer comes first.** When the ask names no reader, take the person's own default
+1. **A saved answer comes first.** When the ask names no reader, meeting, or venue, take the person's own default
    for the question code, then the flow's saved reader (**Orchestration contract**, **2**, Saved
    answers, for the records and the order). It replaces the guess in step 4: offer it as the
    (Recommended) option and say where it came from ("as saved for the weekly report"); with a

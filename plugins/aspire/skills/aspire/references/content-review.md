@@ -37,7 +37,8 @@ every review**) and follow it.
 
 C1 to C4, one at a time (C3 and C4 may be declined), one batch confirmation. Every question is
 asked exactly as worded in the reference, at most four per call (**Guardrails**). P4, F1, F3 and F4
-confirm writes.
+confirm writes. An interactive run's reader and save choice go on `lastrun:content-review`
+(**Orchestration contract**, **2**, Saved answers).
 
 ### Review
 
