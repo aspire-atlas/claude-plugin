@@ -396,7 +396,7 @@ def dated_problems(key, node, shown):
 def mention_problems(node):
     # The one entry for authors cited only as mention evidence or counted only in totals.
     shown, problems = text(node, gap=" "), []
-    if not re.search(r"(?i)\bother creators?\b", shown):
+    if not re.search(r"(?i)\b\d[\d,]*\s+other creators?\b", shown):
         problems.append("the mentions freshness entry does not say how many other creators it covers")
     if day(node.attrs.get("data-newest")) != "date":
         problems.append("the mentions freshness entry needs data-newest as a date (YYYY-MM-DD)")

@@ -148,8 +148,9 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    returned), so the call starts no discovery. Refresh the way section 9.6 says, then re-run the
    flow's own searches. Compute every post-derived figure over the flow's own window (its days or
    post count), never over only the 10 recent posts a `lookup_creators` re-read carries. Skip any
-   creator already refreshed in this run (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/account-resolution.md`).
-   Scheduled runs make this refresh too, except in a flow that rules out lookups.
+   creator already refreshed in this run
+   (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/account-resolution.md`). Scheduled runs make
+   this refresh too, except in a flow that rules out lookups.
 
    **2a. Count the metrics before building**, after any refresh in step 2, since a refresh can
    fill a gap. Take the posts the page will cite and count how many carry each required metric of
@@ -264,10 +265,10 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   each creator or account card. A post cited only as mention evidence carries `data-mention`
   instead, and the source line then holds one `data-fresh="mentions"` entry. The scope's
   `data-accounts` lists every subject account whose figures the page shows, totals included; a
-  scope that counts posts and names no account fails R14. The source
-  line then holds one `data-fresh` entry per account with the same value (`blocks.md`, 3.19):
-  `data-newest` the newest post's date or `none`, and `data-fetched` the last fetch's date,
-  `none`, or `unknown`, or, with no `freshness` on record, `data-changed`, shown as "last changed".
+  scope that counts posts and names no account fails R14. The source line then holds one
+  `data-fresh` entry per account with the same value (`blocks.md`, 3.19): `data-newest` the newest
+  post's date or `none`, and `data-fetched` the last fetch's date, `none`, or `unknown`, or, with
+  no `freshness` on record, `data-changed`, shown as "last changed".
   The entry shows each date and the platform. A page citing no account or post count gets R14 `n/a`.
 - A page with no `data-page` markup yet (a flow whose reference does not add it) gets `unmarked`
   for R1, R2, R6, R13, and R14. Judge those by reading; R11 still runs.
@@ -489,12 +490,11 @@ starts no discovery.
   limit, or whose refresh `failed`, keeps the data Atlas held and its freshness line says so.
 - Re-run the flow's searches. Search indexing lags the lookup: when a refreshed account's searches
   come back empty, or their newest post is older than the re-read's `newestPostAt`, retry once
-  after about 30 seconds. The page then shows the new newest post.
+  after about 30 seconds. Once they catch up, the page shows the new newest post; an account whose
+  searches still lag is reported like an unrefreshed one, with the refresh's time.
 - A team page names every refresh that was skipped as recently refreshed, and every one that
   failed; a shared page puts them in `gaps` (9.2).
 - Never refresh with `start_business_discovery`: every call starts a new billable job.
 
-**9.7 Examples.** Good: a weekly creative report that names every gap on the account it covers
-("Atlas has no data for Nov 3 to 9 for @{brand} on TikTok; last fetched Nov 2. Refresh it? About 2
-minutes."). Bad: a readout that said "No posts this week" for a week Atlas had not fetched, when the
-account had posted four times.
+**9.7 Examples.** Good: "Atlas has no data for Nov 3 to 9 for @{brand} on TikTok; last fetched
+Nov 2. Refresh it? About 2 minutes." Bad: "No posts this week" for a week Atlas never fetched.
