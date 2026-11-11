@@ -9,3 +9,13 @@ In chat, no image data: never a data URI in a reply, a tool call, or an agent's 
 ```html
 <p>Gift framing drives saves. <q>Our API is the best</q>, in the creator's caption.</p>
 ```
+
+1. Show the creator's own words as they wrote them:
+
+   ```html
+   <blockquote>
+     Our JSON of favourite toys,
+     straight from the API drop
+   </blockquote>
+   <p>Caption: <span data-quoted>my webhook of joy</span>. Atlas compared 12 posts.</p>
+   ```

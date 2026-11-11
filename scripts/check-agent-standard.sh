@@ -49,25 +49,27 @@ WORDS_SRC=plugins/aspire/skills/page-standard/page-check.md
 #   TODO(ASP-5385): scripts/eval/questions.json carries the "agents" map.
 ADVISORY="description freshness eval"
 
-# Deliberate exceptions: <item>|<agent or file>|<reason>. Shrink only.
+# Deliberate exceptions: <item>[:<kind>]|<agent or file>|<reason>. An entry with a kind covers only
+# findings of that kind (metrics:no-code is "publishes a page and answers no question code"). Shrink only.
 ALLOW='
-metrics|atlas-affiliate-manager|Program operations: codes, commission and sales records; answers no question code in orchestration.md section 3
-metrics|atlas-campaign-orchestrator|Next actions list across every program; answers no question code in orchestration.md section 3
-metrics|atlas-content-review|Go or no-go on one draft against a brief; answers no question code in orchestration.md section 3
-metrics|atlas-content-sourcing|Rights and asset requests tracker; answers no question code in orchestration.md section 3
-metrics|atlas-creator-negotiation|Deal terms and drafts; answers no question code in orchestration.md section 3
-metrics|atlas-product-fulfillment|Order form and shipping tracker; answers no question code in orchestration.md section 3
-metrics|atlas-program-ledger|Money owed and paid; answers no question code in orchestration.md section 3
-metrics|atlas-quality-review|Reviews another page; answers no question code in orchestration.md section 3
-metrics|atlas-roster-manager|Roster segments and renewals; answers no question code in orchestration.md section 3
-metrics|atlas-shops|Shop setup plan; answers no question code in orchestration.md section 3
+metrics:no-code|atlas-affiliate-manager|Program operations: codes, commission and sales records; answers no question code in orchestration.md section 3
+metrics:no-code|atlas-campaign-orchestrator|Next actions list across every program; answers no question code in orchestration.md section 3
+metrics:no-code|atlas-content-review|Go or no-go on one draft against a brief; answers no question code in orchestration.md section 3
+metrics:no-code|atlas-content-sourcing|Rights and asset requests tracker; answers no question code in orchestration.md section 3
+metrics:no-code|atlas-creator-negotiation|Deal terms and drafts; answers no question code in orchestration.md section 3
+metrics:no-code|atlas-product-fulfillment|Order form and shipping tracker; answers no question code in orchestration.md section 3
+metrics:no-code|atlas-program-ledger|Money owed and paid; answers no question code in orchestration.md section 3
+metrics:no-code|atlas-quality-review|Reviews another page; answers no question code in orchestration.md section 3
+metrics:no-code|atlas-roster-manager|Roster segments and renewals; answers no question code in orchestration.md section 3
+metrics:no-code|atlas-shops|Shop setup plan; answers no question code in orchestration.md section 3
 '
 
-run_check() { # $1: repository root, $2: items to run (space separated); prints item|message lines
-  ALLOW="$ALLOW" python3 -I - "$1" "$2" "$WORDS_SRC" <<'PY'
+run_check() { # $1: repository root, $2: items (space separated), $3: plugin folders (space separated)
+  # Prints item|kind|message lines; item "error" when a source the check reads is missing.
+  python3 -I - "$1" "$2" "$WORDS_SRC" "$3" <<'PY'
 import glob, json, os, re, sys
 
-root, items, words_src = sys.argv[1], set(sys.argv[2].split()), sys.argv[3]
+root, items, words_src, plugin_dirs = sys.argv[1], set(sys.argv[2].split()), sys.argv[3], sys.argv[4].split()
 P = os.path.join(root, "plugins")
 REFS = os.path.join(P, "aspire/skills/aspire/references")
 ORCH = os.path.join(REFS, "orchestration.md")
@@ -86,9 +88,12 @@ QUESTION_CODES = {f"{l}{i}" for l in "IPO" for i in range(1, 7)} | {"A1"}
 def rel(path):
     return os.path.relpath(path, root)
 
-def out(item, path, line, msg):
+def out(item, path, line, msg, kind=""):
     if item in items:
-        print(f"{item}|{rel(path)}:{line}: {msg} (docs/STANDARD.md {ID[item]})")
+        print(f"{item}|{kind}|{rel(path)}:{line}: {msg} (docs/STANDARD.md {ID[item]})")
+
+def error(msg):
+    print(f"error||{msg}")
 
 def read(path):
     with open(path, encoding="utf-8") as fh:
@@ -104,6 +109,8 @@ def line_of(text, pos):
 # --- shared sources ------------------------------------------------------------------------------
 orch = read(ORCH) if os.path.isfile(ORCH) else ""
 sec3 = re.search(r"^## 3\. .*?(?=^## )", orch, re.M | re.S)
+if not sec3:
+    error(f"{rel(ORCH)} has no section 3 (Question codes) to read the routes from")
 routes = {}
 for row in re.findall(r"^\| ([IPOA][0-9]+) \|(.*)$", sec3.group(0) if sec3 else "", re.M):
     for agent in re.findall(r"`(atlas-[a-z-]+)`", row[1]):
@@ -116,6 +123,8 @@ for row in (table.group(1) if table else "").splitlines()[3:]:
     cells = row.split("|")
     if len(cells) > 2:
         metric_codes |= set(CODE.findall(cells[2]))
+if not metric_codes:
+    error(f"{rel(PS)} has no <!-- required-metrics --> table with codes in its Codes column")
 
 for path in sorted(glob.glob(os.path.join(SPECS, "*.md"))):
     text = read(path)
@@ -131,6 +140,10 @@ if os.path.isfile(QJ):
         questions = json.loads(read(QJ))
     except ValueError as e:
         questions = e
+    if isinstance(questions, dict) and not isinstance(questions.get("agents", {}), dict):
+        questions = ValueError('"agents" is not an object')
+    elif not isinstance(questions, (dict, Exception)):
+        questions = ValueError("the top level is not an object")
 
 # R11 words, taken from the page check itself so the two lists are one.
 words = []
@@ -141,17 +154,19 @@ if src:
     exec(src.group(0), scope)
     words = scope["BANNED"]
 else:
-    print(f"error|could not read the BANNED list from {words_src}")
+    error(f"could not read the BANNED list from {words_src}")
 
 # --- per agent -----------------------------------------------------------------------------------
-agents = sorted(glob.glob(os.path.join(P, "*/agents/*.md")))
+agents = sorted(f for d in plugin_dirs for f in glob.glob(os.path.join(root, d, "agents", "*.md")))
 for path in agents:
     name = os.path.basename(path)[:-3]
     text = read(path)
     fm = re.match(r"---\n(.*?)\n---\n", text, re.S)
     head = fm.group(1) if fm else ""
-    d = re.search(r"^description:[ \t]*\|?[ \t]*\n?(.*?)(?=^[A-Za-z_-]+:|\Z)", head, re.M | re.S)
+    d = re.search(r"^description:[ \t]*(?:[|>][-+]?[ \t]*\n)?(.*?)(?=^[A-Za-z_-]+:|\Z)", head, re.M | re.S)
     desc = " ".join(l.strip() for l in d.group(1).strip().splitlines()) if d else ""
+    if len(desc) > 1 and desc[0] == desc[-1] and desc[0] in "\"'":
+        desc = desc[1:-1]
     dline = line_of(text, text.find("description:")) if d else 1
     if not desc:
         out("description", path, 1, f"{name} has no description in its frontmatter")
@@ -165,7 +180,9 @@ for path in agents:
     flow = flow if os.path.isfile(flow) else None
     body = strip_blocks(text)
     flow_text = read(flow) if flow else ""
-    publishes = re.search(r"\bpublish", body, re.I) or re.search(r"\*\*Artifact standard\*\*", flow_text)
+    # "publishes nothing", "never publish", "published no page" describe a pass that builds no page.
+    positive = re.sub(r"\b(?:never|not|nothing to)\s+publish\w*|\bpublish\w*\s+(?:nothing|no\s+page)", " ", body, flags=re.I)
+    publishes = re.search(r"\bpublish", positive, re.I) or re.search(r"\*\*Artifact standard\*\*", flow_text)
 
     # M1: every code named or answered has a row; a page answers at least one code.
     answered = set(routes.get(name, set()))
@@ -174,14 +191,14 @@ for path in agents:
             continue
         for m in CODE.finditer(t):
             c = m.group(1)
-            if c in QUESTION_CODES and c not in metric_codes:
+            if metric_codes and c in QUESTION_CODES and c not in metric_codes:
                 out("metrics", where, line_of(t, m.start()),
                     f"names question code {c}, which has no row in page-standard's required-metrics table")
-    for c in sorted(answered - metric_codes):
+    for c in sorted(answered - metric_codes if metric_codes else ()):
         out("metrics", path, 1, f"{name} answers {c}, which has no row in page-standard's required-metrics table")
     if publishes and not answered:
         out("metrics", path, 1, f"{name} publishes a page and answers no question code: route it in orchestration.md "
-            "section 3 or list the code under its spec's Questions answered")
+            "section 3 or list the code under its spec's Questions answered", kind="no-code")
 
     # F1: a page flow points at the one freshness rule or the build loop.
     if publishes:
@@ -197,13 +214,16 @@ for path in agents:
     for where, t in ((path, body), (flow, flow_text)):
         if not where:
             continue
-        for fence in re.finditer(r"^```([A-Za-z0-9_-]*)[^\n]*\n(.*?)^```[ \t]*$", t, re.M | re.S):
+        for fence in re.finditer(r"^[ \t]*```([A-Za-z0-9_-]*)[^\n]*\n(.*?)^[ \t]*```[ \t]*$", t, re.M | re.S):
             if fence.group(1) not in ("html", "text", "markdown", "md", ""):
                 continue
             start = line_of(t, fence.start(2))
-            for i, ln in enumerate(fence.group(2).splitlines()):
-                plain = re.sub(r"<(blockquote|q)\b.*?</\1>", " ", ln, flags=re.S)
-                plain = re.sub(r"<[^>]*>", " ", plain)
+            # Someone else's words (as page-check's R11 skips them), blanked across lines so line numbers hold.
+            blank = lambda m: re.sub(r"[^\n]", " ", m.group(0))
+            copy = re.sub(r"<(blockquote|q)\b.*?</\1\s*>", blank, fence.group(2), flags=re.S | re.I)
+            copy = re.sub(r"<([a-z0-9]+)\b[^>]*\bdata-quoted\b[^>]*>.*?</\1\s*>", blank, copy, flags=re.S | re.I)
+            for i, ln in enumerate(copy.splitlines()):
+                plain = re.sub(r"<[^>]*>", " ", ln)
                 plain = re.sub(r"\"[^\"]*\"|“[^”]*”|`[^`]*`|\{[^}]*\}", " ", plain)
                 for rx, kind in words:
                     m = rx.search(plain)
@@ -223,7 +243,10 @@ for path in agents:
                 out("eval", QJ, 1, f"{name} has no entry in the \"agents\" map")
             else:
                 codes = entry.get("codes") or []
-                if not codes:
+                if isinstance(codes, str) or not isinstance(codes, list):
+                    out("eval", QJ, 1, f"{name}'s \"codes\" is not a list of question codes")
+                    codes = []
+                elif not codes:
                     out("eval", QJ, 1, f"{name}'s entry names no question code it answers")
                 for c in codes:
                     if c not in QUESTION_CODES:
@@ -239,7 +262,8 @@ for path in agents:
 if "images" in items:
     chat = re.compile(r"\b(?:chat|reply|replies|conversation|widget|summary|message)\b", re.I)
     data = re.compile(r"data:image|data URIs?|base64", re.I)
-    negated = re.compile(r"\b(?:never|no|not|nor|without)\b", re.I)
+    # The rule itself: a negation within a few words before the image-data term.
+    negated = re.compile(r"\b(?:never|no|not|nor|without)\b(?:\W+[\w']+){0,10}?\W+(?:image data|data:image|data URIs?|base64)", re.I)
     always = re.compile(r"inline the image|lead with an? inline card|show the cards? first", re.I)
     for path in sorted(glob.glob(os.path.join(P, "**/*.md"), recursive=True) + glob.glob(os.path.join(P, "**/*.json"), recursive=True)):
         for i, ln in enumerate(read(path).splitlines(), 1):
@@ -265,7 +289,7 @@ if [ "$mode" = all ] || [ "$mode" = --fixtures ]; then
     [ "$name" != base ] || continue
     cases=$((cases + 1))
     rm -rf "$tmp/r"; cp -R "$FX/base" "$tmp/r"; cp -R "$d/." "$tmp/r/"
-    res=$(run_check "$tmp/r" "$ALL") || { err "could not check fixture $d: $res"; continue; }
+    res=$(run_check "$tmp/r" "$ALL" plugins/aspire) || { err "could not check fixture $d: $res"; continue; }
     got=$(cut -d'|' -f1 <<< "$res" | sed '/^$/d' | sort -u | tr '\n' ' ' | sed 's/ *$//')
     case $name in
       pass*) [ -z "$got" ] || err "fixture $d should pass and fails '$got': $res" ;;
@@ -283,27 +307,30 @@ fi
 if [ "$mode" != --fixtures ]; then
   if [ "$mode" = --advisory ]; then items=$ADVISORY; else items=$blocking; fi
   echo "     Advisory items, reported by --advisory without blocking: $ADVISORY"
-  res=$(run_check . "$items") || { err "could not check the plugins: $res"; exit 1; }
+  dirs=
+  for p in $(plugin_names); do src=$(plugin_src "$p"); [ -d "$src/agents" ] && dirs="$dirs $src"; done
+  res=$(run_check . "$items" "$dirs") || { err "could not check the plugins: $res"; exit 1; }
   used=
-  while IFS='|' read -r item msg; do
+  while IFS='|' read -r item kind msg; do
     [ -n "$item" ] || continue
     [ "$item" != error ] || { err "$msg"; continue; }
     file=${msg%%:*}; agent=${file##*/}; agent=${agent%.md}
     allowed=
     while IFS='|' read -r a who reason; do
       [ -n "$a" ] || continue
-      if [ "$a" = "$item" ] && { [ "$who" = "$agent" ] || [ "$who" = "$file" ]; }; then allowed=1; used="$used|$a|$who|"; fi
+      case $a in *:*) [ -n "$kind" ] && [ "$a" = "$item:$kind" ] || continue ;; *) [ "$a" = "$item" ] || continue ;; esac
+      if [ "$who" = "$agent" ] || [ "$who" = "$file" ]; then allowed=1; used="$used|$a|$who|"; fi
     done <<< "$ALLOW"
     [ -n "$allowed" ] || err "$msg"
   done <<< "$res"
   while IFS='|' read -r a who reason; do
     [ -n "$a" ] || continue
     [ -n "$reason" ] || err "ALLOW line $a|$who has no reason"
-    case " $items " in *" $a "*) ;; *) continue ;; esac
+    case " $items " in *" ${a%%:*} "*) ;; *) continue ;; esac
     case $used in *"|$a|$who|"*) ;; *) err "ALLOW line $a|$who matches no finding; remove it" ;; esac
   done <<< "$ALLOW"
   n=0
-  for p in $(plugin_names); do src=$(plugin_src "$p"); [ -d "$src/agents" ] || continue; n=$((n + $(find "$src/agents" -name "*.md" | wc -l))); done
+  for src in $dirs; do n=$((n + $(find "$src/agents" -name "*.md" | wc -l))); done
   [ "$fail" -eq 0 ] && echo "OK   $n agents meet the standard's countable items ($items)"
 fi
 
