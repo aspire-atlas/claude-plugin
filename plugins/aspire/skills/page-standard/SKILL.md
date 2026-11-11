@@ -252,8 +252,8 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   check skips it, and it skips handles, hashtags, emails, and links. Never change a creator's real
   name or handle to pass a check.
 - A page that draws its sections in script from embedded data (the org dashboard) has nothing the
-  script can read. Judge R1, R2, R6, R11, R13, and R14 from the data and what the page draws, and report
-  `scripted` as `read`.
+  script can read. Judge R1, R2, R6, R11, R13, and R14 from the data and what the page draws, and
+  report `scripted` as `read`.
 - Every post the page cites as evidence (a post card, a storyboard, a row in a post table) carries
   `data-post` with its link, and each required metric of the page's row (section 8) on the element
   that shows its number, as `data-metric="views"`. A metric the post cannot show goes in the
@@ -423,8 +423,8 @@ time. All ages are measured against the shell clock (`date -u`), never an assume
 **9.2 The freshness line.**
 
 - **On a page**, one entry per account and platform, in the source line before the source sentence
-  (`blocks.md`, 3.19): "@brightsidetoys on Instagram: newest post Nov 7, last fetched Nov 8". Add
-  the time when the fetch was within the last day. With more than ten entries, the brand's own and
+  (`blocks.md`, 3.19): "@brightsidetoys on Instagram: newest post Nov 7, last fetched Nov 8", with
+  the year on a date outside the page's year. With more than ten entries, the brand's own and
   any behind their pace stay in view and the rest sit in a `details` element inside the source
   line ("Freshness for the other {n} accounts"). R14 checks it.
 - **In chat**, every reply that cites an account's data carries one line after its points and before

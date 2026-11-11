@@ -1,8 +1,8 @@
 # Page check script
 
 The script `SKILL.md`, section 5, runs on every page before it is published: R1, R2, R6, R11, R13
-and R14 from the reader standard. Extract it with the command there; never retype it. It reads only the
-pages named and writes nothing. It lives in this file so `SKILL.md` stays short; when the reader
+and R14 from the reader standard. Extract it with the command there; never retype it. It reads
+only the pages named and writes nothing. It lives in this file so `SKILL.md` stays short; when the reader
 standard changes, `SKILL.md`'s section 6 table and this script change in the same commit, and when
 the required-metrics table (`SKILL.md`, section 8) changes, `REQUIRED_ROWS` here changes with it.
 
@@ -385,12 +385,26 @@ def after_label(shown, label):
     ends = [rest.find(other) for other in LABELS.values() if other != label and other in rest]
     return shown[at + len(label):at + len(label) + min(ends)] if ends else shown[at + len(label):]
 
+def page_year(node):
+    # The year of the source line's data-updated, the page's as-of time; None when it has none.
+    while node is not None:
+        if "atlas-footnote" in (node.attrs.get("class") or "").split():
+            updated = (node.attrs.get("data-updated") or "").strip()
+            return updated[:4] if re.match(r"\d{4}-", updated) else None
+        node = node.parent
+    return None
+
 def dated_problems(key, node, shown):
-    problems = []
+    problems, year = [], page_year(node)
     for attr, label in LABELS.items():
         value = node.attrs.get(attr)
-        if day(value) == "date" and not shows_date(after_label(shown, label), value):
+        if day(value) != "date":
+            continue
+        near = after_label(shown, label)
+        if not shows_date(near, value):
             problems.append("the freshness entry for %s does not show its %s date (%s) after \"%s\"" % (key, attr[5:], value.strip()[:10], label))
+        elif year and value.strip()[:4] != year and value.strip()[:4] not in near:
+            problems.append("the freshness entry for %s shows its %s date without its year (%s)" % (key, attr[5:], value.strip()[:4]))
     return problems
 
 def mention_problems(node):
@@ -467,10 +481,10 @@ def r14(nodes, regions):
             problems.append("the scope's data-accounts entry \"%s\" is not {network}:{handle}" % raw)
         else:
             cited.setdefault(key, raw)
+    counted = [n for n in walk(scope) if (n.attrs.get("data-posts") or "0").replace(",", "").strip() not in ("", "0")] if scope is not None else []
+    if counted and not (scope.attrs.get("data-accounts") or "").strip():
+        problems.append("the scope counts posts but names no account; list them in the scope's data-accounts")
     if not cited and not mentions and not problems:
-        counted = [n for n in walk(scope) if (n.attrs.get("data-posts") or "0").replace(",", "").strip() not in ("", "0")] if scope is not None else []
-        if counted:
-            return ["the scope counts posts but the page names no account; list them in the scope's data-accounts"]
         return None
     fresh = {}
     for node in nodes:
