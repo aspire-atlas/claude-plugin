@@ -202,15 +202,19 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
      Must: paste its `replace`, or, when `replace` is `null`, check the fact `why` names against the
      draft and the packet and fix the line. Apply each Should and Nice that fits your flow's rules.
      Run step 4 again, then step 5, then your flow's deliveries. Return the draft pass's packet with
-     `page` set to the published link and `selfCheck` brought up to date.
+     `page` set to the published link and `selfCheck` brought up to date. Send this pass's
+     `report_checkpoint` calls with `pass` `publish`, never the draft pass's value, so the two
+     passes count as two.
    - **A Must you cannot apply** (it breaks your flow's own rule, or the fact cannot be checked)
      stays on the page and is reported: in the page check's `englishRead` with `applied: false`
      and the reason, and in `stillFailing` as "English read EN2: {why}". In a scheduled run it also
      goes in `gaps`, and the delivery message names it in one line ("One wording fix was not
      applied: {why}").
-   - **No read**: a sample page, and the quality review's own page. When the session cannot launch
-     a subagent, the read cannot run apart from the builder: publish in one pass and report
-     `{"status": "not-run", "why": "no subagent in this session"}`.
+   - **No read**: a sample page, and the quality review's own page. A builder never decides on its
+     own that the read cannot run: running in a subagent with no Agent tool is the normal draft
+     pass. Publish in one pass only when your launch carries `englishRead` with `"status":
+     "not-run"`, which the main thread sets when it follows your file itself because the session
+     has no subagent tool (**Running agents**, step 1), and report that `englishRead` as given.
 5. **Publish**, in the publish pass (step 4b), even when a check still fails, and report it in the
    page check (section 7).
    - **When the session has no Artifact tool, save the page as a file.** Never skip the page, and

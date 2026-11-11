@@ -58,7 +58,7 @@ BANNED = [
     (re.compile(EDGE % r"atlas-[a-z]+(?:-[a-z]+)*"), "an agent name"),
     (re.compile(EDGE % r"(?:Claude|Anthropic|LLMs?|MCPs?|APIs?|JSON|runKey)"), "a system name"),
     (re.compile(EDGE % r"(?:sub-?agents?|tool calls?|webhooks?|endpoints?|schemas?)", re.I), "a system word"),
-    (re.compile(EDGE % r"(?:picks|pulses?|reads|the\s+run|reach\s+slots?|practitioners?)", re.I), "a report label"),
+    (re.compile(EDGE % r"(?:picks|pulses?|reads|the\s+run(?![-\s]+(?:up|rate)\b)|reach\s+slots?|practitioners?)", re.I), "a report label"),
 ]
 NOTHING = re.compile(r"\b(?:nothing|no decisions?) needs? (?:your )?approval\b", re.I)
 # Required metrics on every cited post, by question code. Kept equal to the required-metrics table in
@@ -401,9 +401,11 @@ def visible(path):
             continue
         pad = "" if item.tag in INLINE else ("\n" if item.tag in BLOCK or item.tag in ("tr", "td", "th", "br") else " ")
         label = item.attrs.get("alt") or (item.attrs.get("aria-label") if item.tag in ("svg", "img") else "")
+        field = (item.attrs.get("placeholder") or item.attrs.get("value") or "") if item.tag in ("input", "textarea") else ""
         stack.append(("]" if quoted(item) else "") + pad)
         stack.extend(reversed(item.kids))
-        stack.append(pad + ("[quoted: " if quoted(item) else "") + ("[image: %s] " % label if label else ""))
+        stack.append(pad + ("[quoted: " if quoted(item) else "") + ("[image: %s] " % label if label else "")
+                     + ("[field: %s] " % field if field else ""))
     lines = (re.sub(r"[ \t\r\f\v]+", " ", line).strip() for line in "".join(out).split("\n"))
     return "\n".join(line for line in lines if line)
 

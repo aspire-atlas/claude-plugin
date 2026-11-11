@@ -45,7 +45,10 @@ agent only through this skill or a shortcut.
    not load, launch a general-purpose subagent told to read and follow `agents/{agent}.md`
    from the plugin, as **Sample artifacts** does, and pass it the same `model`. Never do an agent's work in the main thread, and never
    call the Atlas tools an agent owns to stand in for one. Only a session with no subagent tool
-   at all may follow the agent's file itself, and says so in one line.
+   at all may follow the agent's file itself, and says so in one line. It then has no one to give
+   the English read to, so it builds with `englishRead: {"status": "not-run", "why": "no subagent
+   in this session"}` among the inputs and publishes in one pass (`skills/page-standard/SKILL.md`,
+   section 4, step 4b).
 2. **Say it started.** One line after the launch: which agent, what it is doing, and that the
    user can keep going, and the model when the table gave one, with how to change it
    ("Profile analyst is running in the background on Sonnet to save tokens. Say 'use Opus' to

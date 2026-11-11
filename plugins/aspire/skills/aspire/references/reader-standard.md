@@ -61,7 +61,7 @@ is in **Quality review**, **3**.
   case, plurals included, so "Atlas-indexed" passes), and subagent, tool call, webhook, endpoint,
   and schema (any case). It also fails on the labels Atlas's own reports use for themselves, which
   mean nothing to a reader (any case): picks, pulse, reads, the run, reach slot, and practitioners
-  (with pulses, reach slots, and practitioner). Say what the thing is: "the creators we recommend",
+  (with pulses, reach slots, and practitioner; "the run-up" and "the run rate" pass). Say what the thing is: "the creators we recommend",
   "this week's results", "Atlas compared", "this review", "the spot for reach", "the people who do
   the work". Handles, hashtags, emails, and links are not checked. Other jargon is a judgment.
 - One defect is one finding. A defect that fails an R check and a 4.x check (a headline count that

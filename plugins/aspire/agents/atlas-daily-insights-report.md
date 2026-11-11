@@ -79,7 +79,7 @@ run rules. Follow it exactly.
    block out, name the reason under "What is missing", and finish the report. Never call a Meta
    write tool.
 5. Build the page per **Daily readout** in the reference (KPI strip, 28-day sparkline, post
-   cards with embedded media, flags block, then a launch pulse section per open campaign). Load `artifact-design` and `dataviz` first.
+   cards with embedded media, flags block, then a section per open campaign on how the launch is landing). Load `artifact-design` and `dataviz` first.
    Apply `theme:brand` when saved, per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`, **Applying the theme**.
    Publish with the Artifact tool, title "<Brand> Daily Insights Report", republishing to the same
    path.
