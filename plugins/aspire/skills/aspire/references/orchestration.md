@@ -198,11 +198,11 @@ for anything else). Write once, after the answers and before the launch:
 - `key-exists` or a version conflict: read the record again and retry once with its current
   detail.
 
-Say where it went in one line, naming the record that changed: "Saved for everyone: the daily
-and weekly reports' readers now lead with growth." or "Saved for you: P1 goes to growth." A run that keeps
-the saved answers writes nothing, so a `lastrun:` record holds the answers as last saved, and `at`
-is when they were saved. Never ask "Remember" in an unattended run, and an unattended run writes
-neither record.
+Say where it went in one line, naming the record that changed: "Saved for everyone: the daily and
+weekly reports' readers now lead with growth." or "Saved for you: P1 goes to growth." A run that
+keeps the saved answers writes nothing, so a `lastrun:` record holds the answers as last saved,
+and `at` is when they were saved. Never ask "Remember" in an unattended run, and an unattended run
+writes neither record.
 
 ## 3. Question codes
 

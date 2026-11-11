@@ -138,8 +138,7 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
 1. `search_calibrations` as above. Extract: readout calibrations, `red_line`, `guideline`,
    `competitor`, `partner`, `brand:summary`, `target:weekly-health`, `theme:brand`. Drop every
    `review:` key (content review only; see **Atlas tools**) and every `lastrun:` key (a flow's
-   saved setup answers, never a rule). `theme:brand` styles the page
-   and is never a guideline.
+   saved setup answers, never a rule). `theme:brand` styles the page and is never a guideline.
 2. `list_post_search_fields` once. Use only paths it returns.
 3. `search_posts` per linked handle: `author.username` = handle, `postedAt` gte the window
    start, `exists mediaKind` (drops stories). Sort `postedAt` desc, limit 100, page on the
