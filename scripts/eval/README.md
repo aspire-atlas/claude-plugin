@@ -92,6 +92,7 @@ For each question:
      from the run that built it (every R check);
    - a judge for the E-checks in `e-checks.json`, as another separate session with the same inputs. For E8
      the judge also reads the approved page, only to list the evidence it shows.
+   - the English read for E6, as a third separate session that gets the page, its reader and its question code.
 
 The approved page is never taken as passing. When a check fails on it, the check has drifted or the page
 predates the rule; the table shows that, and `--compare` marks a changed approved result as drift.
@@ -112,8 +113,10 @@ the new page.
 The example pages are tied to the doc's change numbers (3 metrics, 4 data freshness, 5 storyline, 6 reviews).
 `questions.json` maps each change to the checks that show it; change that map when a check is added.
 
-E6 and E7 show `–` until the English read (ASP-5300) and the UX review (ASP-5301) exist. To wire one in,
-set its `judgedBy` in `e-checks.json` and add its call beside `judge` in `run.ts`.
+E6 is the English read every page gets before it publishes (`quality-review.md`, **9.1**), run as its own
+session with the page, its reader and its question code: it passes with no Must fix, and its reason lists each
+Must with its replacement. E7 shows `–` until the UX review (ASP-5301) exists. To wire it in, set its
+`judgedBy` in `e-checks.json` and add its call beside `judge` in `run.ts`.
 
 ## What is committed and what is not
 

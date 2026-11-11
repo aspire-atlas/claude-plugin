@@ -115,17 +115,17 @@ phases instead of one week of three posts.
   repost cooldown still apply to the brand's own account.
 - **Timeline**, worked back from the first post date (T): outreach by T-21, confirmations by
   T-14, brief calls by T-12, drafts due T-7, content review T-6 to T-3, final approvals T-2, go
-  live T, daily pulse T to the campaign end, recap T+7 and T+14. When T is closer than 21 days,
+  live T, a daily check on how the launch is landing from T to the campaign end, recap T+7 and T+14. When T is closer than 21 days,
   compress the steps before it proportionally and flag the risk on the page; never schedule a
   step in the past.
 - **Creators.** First picks from the campaign's discovery pool (accepted first, then the top
   undecided by fit score), each carrying its discovery tier and fit ring on the card. Source
   beyond the pool only when fewer than five fit, and only within the chosen sourcing scope.
-- **Measurement.** Two tables: during (the daily pulse metrics: creator posts live, engagement
+- **Measurement.** Two tables: during (the daily launch check: creator posts live, engagement
   against each creator's own median, mentions, sentiment) and after (the campaign goal from
   `campaign:{slug}-brief` against the recap).
 - **Page.** Section 3 groups deliverables by phase, section 6 is the phase timeline, and a
-  closing "Next steps" box offers content review for drafts and the daily launch pulse.
+  closing "Next steps" box offers content review for drafts and a daily check on how the launch is landing.
   Title "<Brand> Campaign Brief: <Campaign>", republished to the same path for that campaign.
 
 ## Creator-ads mode (the CAS master brief)
@@ -335,7 +335,7 @@ Score each candidate on four checks. Strong = all four. Partial = two or three. 
 Exclude any handle recorded as a `competitor` calibration, and any account that is a brand
 rather than a person unless the deliverable calls for a brand collab.
 
-Tiers by role: **Reach** (500K+, one slot at most, fee heavy), **Practitioner** (100K to
+Tiers by role: **Reach** (500K+, one slot at most, fee heavy), **Expert** (100K to
 500K, the voice of the buyer), **Niche voice** (any size, speaks directly to the buyer's
 community), **IRL** (local to an event, lifestyle read). Rename tiers to match the brand's
 vocabulary; the names above are placeholders, not a fixed taxonomy.
@@ -354,7 +354,7 @@ fetched during the run.
 3. A creator or deliverable the calculator cannot price (too few posts with views, a platform
    outside the brand's rates, on-site event work) shows no cost: say which input is missing,
    and leave it out of the scenario totals with a note.
-4. Scenarios: practitioners only; one reach creator swapped in; mega reach. Sum the first
+4. Scenarios: experts only; one reach creator swapped in; mega reach. Sum the first
    picks at target.
 5. Name the rate label and the view window in the "how the costs were set" box.
 
