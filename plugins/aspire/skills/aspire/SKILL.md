@@ -66,7 +66,7 @@ Text after the command is the argument. Route on it before anything else:
 | `agents` (also `list agents`, `show agents`) | Run **List agents** (`references/agents-menu.md`). Skip the phases unless the user picks an agent to run. |
 | `run {agent}` (an agent name from the list, with or without the `aspire:` prefix; the agents panel drafts this when someone presses an agent) | Skip steps 1 to 4 of **List agents** (`references/agents-menu.md`) and start at step 5 for that agent: the sample question, then its hand-off row. The agent itself always starts in a subagent (**Running agents**). An unknown name: run **List agents** from step 1. |
 | `org` (also `change organization`, `switch org`; the progress bar's title drafts it) | Run Phase 1, then call `get_status`, ask which organization with `AskUserQuestion` (header "Organization", one option per organization, the selected one first; besides a bare run's selector in Phase 2 + 3 step 3, this explicit argument is the only time the question is asked), then call `get_status` again with `asOrganizationId` set to the choice (even when it is the organization already selected: the progress bar and credits follow the named call, not the default), and give the Phase 2 + 3 route summary. Change nothing in Atlas. |
-| `getting started` (also `help`, `get started`, `start`, `guide`, `starter guide`, `what can you do`, `how does this work`) | Show the Atlas Starter Guide: publish the page in `references/first-run.md` (**7**, on request), say its link in one line, then make the **Sample artifacts** offer for Atlas as a whole. It needs no Atlas connection, so skip the phases and Phase 1. When Atlas happens to be connected already, use the `On request` status line; otherwise none. Never answer these with a text summary instead of the page, and never run onboarding unless the user asks to set up. |
+| `getting started` (also `help`, `get started`, `start`, `guide`, `starter guide`, `what can you do`, `how does this work`) | Show the Atlas Starter Guide: publish the page in `references/first-run.md` (**7**, on request), say its link in one line (the page's "Seeing results" section lists "show cards", "always show cards", and "show the palettes"), then make the **Sample artifacts** offer for Atlas as a whole. It needs no Atlas connection, so skip the phases and Phase 1. When Atlas happens to be connected already, use the `On request` status line; otherwise none. Never answer these with a text summary instead of the page, and never run onboarding unless the user asks to set up. |
 | `sample` (also `sample {agent}`, `show me a sample`, `example`) | Run **Sample artifacts** (`references/samples.md`). No Atlas connection is needed, so skip the phases. |
 | `fee calculator` (also `fees`, `pricing`, `rate card`, `creator rates`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Fee calculator**. Skip the other phases. |
 | `program` (also `influencer program`, `creator program`, `ambassador program`, `affiliate program`, `gifting program`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Influencer program**. Skip the other phases. |
@@ -459,7 +459,8 @@ Organization Admin connection itself.
   creating a profile, starting a channel connection, writing a calibration, adding hashtags,
   and writing insights. One confirmation may cover a batch of the same kind (for example the
   Phase 5 answers just given). `report_checkpoint` changes no Atlas data and is never confirmed
-  (**Checkpoints**).
+  (**Checkpoints**). Saving the person's own cards choice takes one save question that also
+  confirms its supersede (**Orchestration contract** **12**).
 - **Destructive actions get their own confirmation, one call per confirmation:**
   `delete_profile`, `unlink_channel`, `supersede_calibration`, `retract_calibration`,
   `remove_hashtags`, `set_brand_instruction`. Use the exact question, object name, and
@@ -485,14 +486,15 @@ Organization Admin connection itself.
   and the handles the user types; creator discovery, whose saved cadence record approves it
   on every run including scheduled ones; and the deliverable tracker, where T0 approves
   `lookup_posts` for the post links the user pasted, in an interactive check only; and
-  **Visual output**, where "show me the cards" approves `lookup_creators` or `lookup_posts` for
-  the chosen creators or posts Atlas already holds, which starts no discovery.
+  **Visual output**, where "show cards", "show me the cards", or a saved `always` approves
+  `lookup_creators` or `lookup_posts` for the chosen creators or posts Atlas already holds, which
+  starts no discovery.
 - Keep every user-facing message short. Use bullets for anything with more than two points.
 - Web research is a proposal, never a write: findings are always shown and confirmed before
   any calibration is recorded from them.
 - The chat reply is the answer: up to three points, the next step, and one link to the page (its file path when the session cannot publish).
   Text is the default. Cards, images, charts, and theme previews appear in chat only when the
   user asks to see them ("show me the cards", "show the palettes"), and never as embedded image
-  data: see **Visual output**.
+  data: see **Visual output**. The one cards offer is **Orchestration contract** **12**.
 - Creator fees come only from the fee calculator (**Fee calculator**). No price is shown when
   the data behind it is missing.

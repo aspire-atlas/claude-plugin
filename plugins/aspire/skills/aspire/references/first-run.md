@@ -135,6 +135,10 @@ After the page, one line with the link, nothing more. Do not restate the page's 
 
 > New to Atlas? This page covers what /aspire can do and the setup ahead: {link}
 
+The link line never mentions cards. The first reply that lists creators, posts, or ads (Phase
+6's first insights, or an earlier search) carries the cards offer (**Orchestration contract**
+**12**).
+
 Then continue straight into the next phase, in the same reply: the first question of the phase
 **3** names (P1, C1 or the profile question, or the existing summary followed by Phase 5's
 first unanswered question), asked with `AskUserQuestion` as that phase says.
@@ -167,7 +171,9 @@ Sections, in order: header (the mark at upper left, what /aspire is, and a sampl
 dashboard), how to get started (the five real phases as a stepper, at most three cards per row,
 each with a small sample screen and what /aspire asks), what you can do (job cards grouped by who
 they are for, each with a thumbnail of the page it makes), what stays safe (a confirm-before-write
-flow, then icon rows, true to `SECURITY.md`), and try these first (five prompts). Every figure is
+flow, then icon rows, true to `SECURITY.md`), seeing results (the three phrases for cards and
+palette previews, one line each, and a link to the cards and pages guide), and try these first
+(five prompts). Every figure is
 drawn from invented data and carries a "Sample" tag; illustrations are CSS and inline SVG, marked
 `aria-hidden`, with no images and no script beyond the copy buttons. The page never names Claude, a
 model, or an assistant: the copy says "/aspire". Copy is fixed: keep it plain and change only the
@@ -439,6 +445,16 @@ footer{border-top:1px solid var(--border);padding-top:20px;color:var(--muted);fo
     <li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg><p>Scheduled runs do only what you approved when you set them up. They never ask questions or delete anything, and deliver only to the Slack channels and email recipients you saved. If you turn on the hourly next-actions run, it carries out only what an Editor approved on its page, and only Atlas records and mailbox drafts. It never sends or orders.</p></li>
     <li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><p>Pages /aspire publishes start private. You decide who to share them with.</p></li>
   </ul>
+</section>
+
+<section aria-labelledby="h-see">
+  <div class="sec-head"><h2 id="h-see">Seeing results</h2><p>Answers come as text. Cards and previews appear when you ask.</p></div>
+  <ul class="prompts">
+    <li class="prompt"><code>show cards</code><button class="copy" type="button" data-print="hide" data-copy="show cards">Copy</button><p class="why">Shows the creators, posts, or ads from the last answer as cards, up to 12 at a time.</p></li>
+    <li class="prompt"><code>always show cards</code><button class="copy" type="button" data-print="hide" data-copy="always show cards">Copy</button><p class="why">Remembers your choice, so every search shows cards without asking. "never show cards" turns the reminder off.</p></li>
+    <li class="prompt"><code>show the palettes</code><button class="copy" type="button" data-print="hide" data-copy="show the palettes">Copy</button><p class="why">Draws the brand color options while you set up your page theme.</p></li>
+  </ul>
+  <p>More on cards, which apps draw them, and pages: <a href="https://atlas.aspire.io/docs/plugin/guides/cards-and-pages/">the cards and pages guide</a>.</p>
 </section>
 
 <section aria-labelledby="h-try">

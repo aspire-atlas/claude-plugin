@@ -29,13 +29,14 @@ gh api -X PUT "repos/$REPO/actions/permissions/workflow" \
 
 protect() {
   local branch="$1"; shift
-  local checks_json="$1"
+  local checks_json="$1"; shift
+  local code_owners="${1:-false}"
   gh api -X PUT "repos/$REPO/branches/$branch/protection" \
     --input - <<EOF
 {
   "required_status_checks": { "strict": true, "contexts": $checks_json },
   "enforce_admins": false,
-  "required_pull_request_reviews": { "required_approving_review_count": 1, "dismiss_stale_reviews": true },
+  "required_pull_request_reviews": { "required_approving_review_count": 1, "dismiss_stale_reviews": true, "require_code_owner_reviews": $code_owners },
   "restrictions": null,
   "allow_force_pushes": false,
   "allow_deletions": false,
@@ -48,7 +49,8 @@ EOF
 
 # Check names are "<workflow job name>" as GitHub reports them.
 protect main    '["validate", "gate"]'
-protect develop '["validate"]'
+# develop: a change to a path in .github/CODEOWNERS needs a review from a code owner.
+protect develop '["validate"]' true
 
 gh label create beta --color FBCA04 --description "Reported against the develop channel" --force
 gh label create release --color 0E8A16 --description "Release PR into main" --force

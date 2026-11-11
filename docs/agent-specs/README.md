@@ -49,7 +49,7 @@ Copy `templates/agent.md`. The header holds the short fields and the sections ho
 | Permission | header | Read, Write, Send, or Spend, as `orchestration.md` section 7 defines them. |
 | Plugin agents | header | The `atlas-*` agents that do this job today, or `none`. |
 | Job to be done | section | "When I…, I want…, so…" in the person's words. |
-| Questions answered | section | One row per question: its code (I1 to I6, P1 to P6, O1 to O6, A1, or None), the primary reader, the kind of page, and the approved example if there is one. |
+| Questions answered | section | One row per question: its code (I1 to I6, P1 to P6, O1 to O6, A1, or None), the primary reader, the eval reader, the kind of page, the approved example if there is one, and whether `scripts/eval/questions.json` has the question. |
 | Skills carried (N) | section | A numbered list, with N in the heading. |
 | Universal skills used | section | The U codes it runs. |
 | Shared skills | section | The fixed line linking `shared/`. |
@@ -64,8 +64,20 @@ page's purpose, not its layout.
 **Primary readers.** Self, creative team, creators, VP or budget owner, and brand and legal. Use
 the wording of the question map where it is more specific ("the leader who asked").
 
+**Eval readers.** The reader as the page eval passes it: a lens name from
+`plugins/aspire/skills/aspire/references/recipient-lens.md` (`team`, `leadership`, `campaign`,
+`growth`, and so on), the same value as the question's `reader` in `scripts/eval/questions.json`.
+
+**Eval questions.** "Yes" once the question has an entry in `scripts/eval/questions.json`, "Not yet"
+until then. A new agent ships with one for each question it answers (`docs/STANDARD.md` P2). Specs
+written before these two columns existed have five columns; copy the template, not an older spec, and
+add the two columns to an older spec when you next change its questions.
+
 **Approved examples.** Name the ticket that holds the example (ASP-4527), not a link. Examples
-carry customer names and this repo holds none.
+carry customer names and this repo holds none. The link to the approved page goes in the eval's
+`scripts/eval/local.json` as the question's `approved`, which git ignores.
+
+Every agent spec and the agent it describes also meet [`docs/STANDARD.md`](../STANDARD.md).
 
 ## The skill spec
 
