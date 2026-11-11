@@ -57,7 +57,10 @@ agent only through this skill or a shortcut.
    for the launch is asked first, in the main thread, because agents never ask: in one setup
    reply (**Orchestration contract** **2**) that repeats the question with its code, names the
    reader, and gives the time estimate. Questions an agent raises come back in its result packet
-   and are asked when it arrives. Write the launch's Runs row (**9** there).
+   and are asked when it arrives. Write the launch's Runs row (**9** there). A run that publishes
+   a new page has one launch before its build: the storyline draft (**Orchestration contract**
+   **2**, **The storyline**). Its packet is not the run's result: say nothing beyond one line
+   that the storyline is ready, ask it, and launch the build only after the person answers.
 4. **When it finishes.** Its result arrives as a task notification. Treat it as the agent's
    report and act on its `result-packet` block: relay the summary, page link (or, when `page` is a file path, "Saved as a file: {path}"), and decisions it
    needs, confirm its `proposals` by permission level (**Orchestration contract** **7**: Write
@@ -141,7 +144,9 @@ team catalog, and how agents render for a lens are in **Recipient lens**.
    hand-off applies (Performance then Creative; Campaign then Brand), a second one.
 2. **Confirm in one line.** When the run has a setup reply (**Orchestration contract** **2**),
    name the reader in its Heard question, with the question's code, instead of asking "For"
-   on its own. Otherwise one `AskUserQuestion`, header "For", in the same call as the
+   on its own. The reader and the storyline (**Orchestration contract** **2**, **The
+   storyline**) are the only two things confirmed before a new page is built, in two messages at
+   most: the setup reply, then the storyline call. Otherwise one `AskUserQuestion`, header "For", in the same call as the
    flow's first question when there is one. Word it as the guess ("This reads like it's for
    the product review. Should I track it weekly and add a messaging view for PMM?"). Options:
    the guess (Recommended), one or two other lenses from the cues, "Just for our team". Skip
@@ -168,9 +173,11 @@ team catalog, and how agents render for a lens are in **Recipient lens**.
    run it.
 
 **Campaign plan.** A launch ask ("we launch on the 14th and need creators") spans four agents.
-Propose the sequence in the confirmation line ("I'll start a shortlist and brief for the
-launch, then check drafts and run a daily pulse through launch week. Sound right?"), then run
-it in order, each step through its own section and its own write confirmations: **Creator
+Propose the sequence in the setup reply's Heard question ("I'll start a shortlist and brief for
+the launch, then check drafts and run a daily pulse through launch week. Sound right?"), not in
+a confirmation of its own, then run it in order, each step through its own section and its own
+write confirmations, and each new page through its own storyline (**Orchestration contract**
+**2**, **The storyline**) before it is built: **Creator
 discovery** (Setup for the campaign if new, then Run), **Creator brief** in campaign mode,
 the pulse offer (**Readouts**, **Launch pulse**), and **Content review** as drafts arrive.
 

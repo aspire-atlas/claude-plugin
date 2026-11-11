@@ -234,6 +234,8 @@ red-line hits.
 Chat summary, under 150 words:
 
 - Headline: one line, lead metric vs 28-day median with the percent delta.
+- Storyline: the three bullets the page opens with, each with the posts, accounts, or views
+  behind it (**Scheduled (unattended) runs**, Storyline).
 - Yesterday: posts published, engagement, the best post with its number.
 - Flags: anomalies and red-line hits, each with a permalink; "none" is a valid line.
 - Since last readout: follower delta, any action item that changed state.
@@ -242,7 +244,7 @@ Chat summary, under 150 words:
   there were none.
 - One closing line: findings saved, page link.
 
-Page: one compact card. Header (brand, date, network, a "Prepared for" chip, and the animated mark at the top right). KPI strip (posts, engagement,
+Page: one compact card. Header (brand, date, network, a "Prepared for" chip, and the animated mark at the top right). The answer block with the storyline's three bullets. KPI strip (posts, engagement,
 engagement rate, followers with delta). One 28-day sparkline of the lead metric with
 yesterday marked. Cards for yesterday's posts (media, metric row, one-line takeaway). Flags
 block. A content reviews block when any review ran yesterday: one row per review with
@@ -297,6 +299,8 @@ first; team: post-level detail first; product, pmm, growth: that lens's block fi
 bullets per other saved lens:
 
 - Headline: the week in one line, lead metric vs prior week and vs 8-week median.
+- Storyline: the three bullets the page opens with, each with the posts, accounts, or views
+  behind it (**Scheduled (unattended) runs**, Storyline).
 - Numbers: posts, engagement, engagement rate, reach or views, followers with delta.
 - What worked: top 3 posts with metric and the pattern they share (format, theme, day, hook).
 - What did not: bottom 2 posts and the likely reason in one clause each.
@@ -332,6 +336,8 @@ section list below. The others:
 Page, sections in order:
 
 1. Header: brand, network, week label, prepared date, a "Prepared for" chip per lens, and the animated mark at the top right.
+1b. The answer block: the headline and the storyline's three bullets with their evidence
+   (**Scheduled (unattended) runs**, Storyline).
 2. KPI strip with week-over-week deltas and the benchmark row from `target:weekly-health`
    when present.
 3. Lead-metric line chart, 9 weeks, last week highlighted.
@@ -373,7 +379,8 @@ a snapshot.
 Read `policy:readout-routing`. The page and chat summary always ship. Then:
 
 - **Slack:** if the routing names a channel and a Slack connection is available in the
-  session, send one message: the headline, the 3 to 5 key bullets, the page link. Plain text
+  session, send one message: the headline, the storyline's three bullets with their evidence,
+  up to two more key bullets, the page link. Plain text
   with Slack formatting, no images. If no Slack connection is present, say so in the chat
   summary and continue.
 - **Per-lens destinations:** a lens in R6 (or a pulse lens) with its own destination gets its own
@@ -381,7 +388,8 @@ Read `policy:readout-routing`. The page and chat summary always ship. Then:
   rules as below.
 - **Email:** if the routing names recipients and an email connection is available, send one
   message with subject "<Brand> {Daily|Weekly} Insights Report, {date}", the chat summary as the body,
-  and the page link. If no email connection is present, say so and continue.
+  and the page link; the summary's storyline bullets are the same three the page and the Slack
+  message carry. If no email connection is present, say so and continue.
 - Interactive run: confirm the send once with `AskUserQuestion` ("Post to {channel} and email
   {recipients}?" Options: Send (Recommended) / Page only this time). Unattended run: the R2
   confirmation is the standing approval; send without asking.
@@ -413,6 +421,16 @@ README). Rules for the agents:
 - If a search returns nothing for the window, report "no posts indexed for {window}" rather
   than inventing numbers, and still deliver the page and summary.
 
+**Storyline.** A readout never stops to confirm its storyline. Every scheduled run, and every
+interactive run of a readout already published, is a `state` pass (**Orchestration contract**,
+**2**, **The storyline**): the agent drafts the three bullets from the window's posts, each with
+the posts, accounts, or views behind it, and the page opens with them in the answer block, under
+the headline. The chat summary, the Slack message, and the email carry the same three bullets, in
+the same order and wording. A window under the row's minimum (10 posts for what landed and why)
+still publishes, and the bullet it weakens says how few posts it rests on. Where the run cannot
+watch a video or check a product fact, the method says so (`skills/page-standard/SKILL.md`,
+section 4, step 0b).
+
 ## Main thread: the run and the launch pulse
 
 What the **Readouts** section of SKILL.md does around the agents.
@@ -422,7 +440,11 @@ week)", "Daily (yesterday)", "Both now", "Change setup". Then launch
 `atlas-weekly-insights-report` and/or `atlas-daily-insights-report` with: tool prefix,
 `profile_id`, `profile_slug`, linked handles and networks, run mode `interactive`, `recipient`
 (the lens SKILL.md **Reading the ask** confirmed, or the saved R6 lenses when it found none), and
-the target window only if the user named one. Never pass "today" or any date the main thread
+the target window only if the user named one, and the launch block's `storyline` pass: `state`
+when Atlas already holds the readout's insights for this profile (`search_insights` with
+a `prefix` filter on `detail.account_review.runKey` = `readout-daily-{profile}` or
+`readout-weekly-{profile}`, per **Data pull**), since the run republishes the
+same page; otherwise the first run's page is new and follows **The storyline** before it builds. Never pass "today" or any date the main thread
 assumed: session headers can be a day stale, and a wrong "today" shifts the whole readout by a
 day (or a week). The agents resolve the date themselves (**Resolving "today"**) and refuse a
 repeat window. Relay each agent's summary and page link, including the resolved window it

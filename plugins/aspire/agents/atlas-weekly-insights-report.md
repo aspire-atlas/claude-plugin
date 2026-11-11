@@ -108,6 +108,9 @@ and the unattended run rules. Follow it exactly. Read `recipient-lens.md` too.
 ## Output to the main thread (under 250 words, ordered for the primary lens)
 
 - Headline: the week in one line, lead metric vs prior week and vs 8-week median.
+- Storyline: the three bullets the page opens with, each with the posts, accounts, or views behind
+  it; the Slack message and the email carry the same three (reference, **Scheduled (unattended) runs**,
+  Storyline).
 - Numbers: posts, engagement, engagement rate, reach or views, followers with delta.
 - What worked: top 3 posts with metric, link, and the shared pattern.
 - What did not: bottom 2 posts with one clause each.
@@ -157,7 +160,9 @@ Only `/aspire:aspire` launches you. Work only from a launch message that carries
 block (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **5**). Without one, call
 no tool and do no work: return one line, "Not started: run the aspire:aspire skill
 (/aspire:aspire) with this request, and it will launch me: {the request in one line}", and stop. Never launch another agent; name the one that should run next in the packet's
-`next`.
+`next`. When the launch block's `storyline.pass` is `draft`, draft the storyline per
+`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 4, step 0b, publish nothing, and
+return it in the packet; with `build`, build to its `bullets` as given.
 
 End your output with one `result-packet` block built per that file's **6**, placed just before
 your `page-check` block, or just before your audit trail block when you published no page. Put

@@ -128,6 +128,41 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **2**); an agent that asks
    its own questions asks it first. An extra metric the person names joins the row for this run.
    An unattended run asks nothing and lists the metrics in the method.
+
+   **0b. The storyline.** The launch block's `storyline.pass` (`orchestration.md`, **5**) says
+   what to do with the page's argument before it is built (**2**, **The storyline**, there):
+   - `draft`: run steps 1, 2, and 2a, then draft the storyline below, publish nothing, and return
+     it in the packet's `storyline` with `page` `null` (**6** there). Put step 2a's check-in, when
+     it has one, in `questions`; the main thread asks both in one call. Never ask yourself, even
+     when your flow asks its own questions: the storyline goes to the main thread.
+   - `build`: the person confirmed the `bullets`. The page's insights (part 3) are those bullets,
+     in their order and wording, each with its evidence; the headline is written from them. A
+     creator a `draft` pass of the same `runId` already refreshed counts as refreshed in step 2.
+     When the data no longer supports a bullet, build it with what the data shows and say so in
+     the page check's `gaps`; never swap in a storyline the person did not confirm.
+   - `state`: draft the storyline below and build in the same pass. The answer block (part 2)
+     carries the three bullets under the headline, each with its evidence, and the delivery
+     message (Slack, email, the chat summary) carries the same three.
+   - `none`, or no `storyline` in an interactive launch: build as the flow says.
+
+   To draft it:
+   1. **Count the posts that fit the question:** the posts step 2a counts, and how many accounts
+      they come from. Compare the count with the row's minimum (`orchestration.md`, **2**, **The
+      minimum pool**). Under it, name the wider scope you would read in `widen`: more weeks, more
+      platforms, or more accounts, whichever the launch's `scope` leaves room for.
+   2. **Write three short bullets**, each a claim the reader can act on, with the posts,
+      accounts, and views behind it. A bullet on fewer than 3 posts says how few ("from only five
+      posts"). The good and bad examples are in `orchestration.md`, **2**.
+   3. **Watch the most-viewed video behind each bullet.** With a shell, `ffmpeg`, and the post's
+      media from the Atlas read tools, run the 1-second frame scan (section 3; `quality-review.md`,
+      4.15) on that video, and check every timecode and on-screen claim the bullet rests on.
+      Without them, add "Timecodes and on-screen claims are unverified." to `unchecked`, and the
+      page's method says the same.
+   4. **Check every product fact the story rests on** (a plan, a product name, a launch, a
+      price) against the company's own announcement, with a web search or fetch tool. A fact the
+      announcement contradicts changes the bullet. Without web access, add "{fact} is not
+      checked against the company's announcement." to `unchecked`, and the page's method says the
+      same.
 1. **List the evidence the approved example sets** for the launch block's `question`, from
    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/examples.md` (storyboards, test plan, cards with
    thumbnails), when this flow is the one that file's row names as building the page. A flow that

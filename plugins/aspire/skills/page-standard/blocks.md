@@ -303,6 +303,10 @@ beneath it. Write it last, from the decision the page supports (`SKILL.md`, sect
 - It is the page's first heading. A `band` header (`theme.md`, **Header**) shows the logo or brand
   name and the kind of page as plain text, never as a second `h1`.
 - The takeaway gives the one number or reason that backs the headline, compared with something.
+- A page built on a `state` storyline pass (`SKILL.md`, section 4, step 0b) puts the storyline's
+  three bullets right after the takeaway, one `<p>` each, each with the posts, accounts, or views
+  behind it: "Gift posts beat creators' usual views this fall: 1.27 times, across 78 posts from
+  15 accounts."
 - A page that sorts items into verdicts (a slate, a ranked list) may add the tally under the
   takeaway: a bar with one span per verdict, `flex` set to its count, and one line per verdict
   that links to its section. Each verdict's color is its status token.
