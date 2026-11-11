@@ -91,8 +91,8 @@ Fresh aggregates, filter path:
   the quarter's readout findings.
 - Freshness (**Page standard**, section 9): each linked handle's `freshness` from the same
   `search_creators` call, with no wildcard `exclude`, read before the brand's posts. An unattended
-  run refreshes the brand's handles without asking, and a relaunch with handles under
-  `approve-refresh` refreshes those, both before the posts are read. An interactive run works out
+  run refreshes the brand's handles without asking, and a relaunch with handles in
+  `approved.refresh` refreshes those, both before the posts are read. An interactive run works out
   each handle's pace (section 9.4) from the quarter's posts and offers the refresh, with its time
   and cost, for a handle behind it. The page's source line carries the
   freshness line, and a part of the quarter after a handle's last fetch reads "Atlas has no data

@@ -358,8 +358,25 @@ def in_footnote(node):
         node = node.parent
     return False
 
+MONTHS = ("january", "february", "march", "april", "may", "june", "july", "august", "september",
+          "october", "november", "december")
+
+def shows_date(shown, value):
+    # The page shows the date as written in the attribute (2026-10-12), or as month and day
+    # ("Oct 12", "October 12", "12 Oct").
+    iso = value.strip()[:10]
+    if iso in shown:
+        return True
+    month, day_of = MONTHS[int(iso[5:7]) - 1], int(iso[8:10])
+    name = r"sep(?:t(?:ember)?)?\.?" if month == "september" else r"%s(?:%s)?\.?" % (month[:3], month[3:])
+    return re.search(r"(?i)\b(?:%s\s+0?%d|0?%d\s+%s)\b" % (name, day_of, day_of, name), shown) is not None
+
 def fresh_problems(key, node):
     shown, problems = text(node, gap=" "), []
+    for attr in ("data-newest", "data-fetched", "data-changed"):
+        value = node.attrs.get(attr)
+        if day(value) == "date" and not shows_date(shown, value):
+            problems.append("the freshness entry for %s does not show its %s date (%s)" % (key, attr[5:], value.strip()[:10]))
     if not has(shown, key.split(":", 1)[1]):
         problems.append("the freshness entry for %s does not show the handle" % key)
     newest = day(node.attrs.get("data-newest"))

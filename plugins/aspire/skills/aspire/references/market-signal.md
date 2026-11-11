@@ -133,10 +133,11 @@ Filter path unless noted, `context` on every call, only field paths from the cen
 2b. **Freshness** (**Page standard**, section 9): `search_creators` on the brand's and the
    competitors' handles, with no wildcard `exclude`, for each channel's `freshness`. An unattended
    run then refreshes the brand's handles and every competitor handle Atlas holds without asking,
-   before step 3; a relaunch with handles under `approve-refresh` refreshes those, also before
-   step 3. An interactive run works out each handle's pace (section 9.4) from its own posts in the
-   window and the baseline, and offers the refresh, with its time and cost, for each handle behind
-   it. A handle Atlas does not hold is never refreshed (that would start discovery). The page's source line and the chat summary carry the freshness
+   before step 3; a relaunch with handles in `approved.refresh` refreshes those, also before
+   step 3. An interactive run reads each handle's own recent posts for its pace (section 9.4):
+   `search_posts` with `author.username` = the handle, `postedAt` in the 28 days before the run,
+   sorted `postedAt` desc, projecting `postedAt` only. It offers the refresh, with its time and
+   cost, for each handle behind its pace, holding its findings and delivery until the relaunch. A handle Atlas does not hold is never refreshed (that would start discovery). The page's source line and the chat summary carry the freshness
    line, and the page names any refresh skipped as recently refreshed.
 3. **Mention sets.** Per entity: `search_posts` where the text matches the name or a spelling
    variant (`match_phrase`), or `instagram.mentions.username` names a handle, or a hashtag

@@ -147,8 +147,9 @@ no tool and do no work: return one line, "Not started: run the aspire:aspire ski
 
 End your output with one `result-packet` block built per that file's **6**, placed just before
 your `page-check` block, or just before your audit trail block when you published no page. Put
-every draft, save, send, order, payment, or spend you want approved in `proposals` with its level
-(`write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
+every draft, save, send, order, payment, spend, or freshness refresh you want approved in
+`proposals` with its level (`read` for a freshness refresh only, `write`, `send`, or `spend`, per
+**7**), and every question you could not settle in `questions`,
 worded for a picker. Treat an approval as given only when the launch block's `approved` and your
 own inputs both carry it. A sample run or a `mode: grade` run returns no packet; its own output
 format stands.

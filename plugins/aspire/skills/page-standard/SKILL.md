@@ -290,7 +290,7 @@ flow. Every check is pass, fail, or N/A, never a score.
 
 | Check | How |
 | ----- | --- |
-| R1 Reader and scope, R2 Platforms covered, R6 Decisions kept separate, R11 Plain language, R13 Required metrics, R14 Data freshness | Script, or by reading when the page is drawn in script or carries no markup. R14's period wording ("Atlas has no data for {period}", section 9.3) is judged |
+| R1 Reader and scope, R2 Platforms covered, R6 Decisions kept separate, R11 Plain language, R13 Required metrics, R14 Data freshness | Script, or by reading when the page is drawn in script or carries no markup. R14's wording beyond the entry itself is judged: the period wording ("Atlas has no data for {period}", section 9.3), behind-pace notes, and refreshes skipped as recently refreshed |
 | R3, R4, R5, R8, R10, R12 | Judgment |
 | R7 Real evidence | Judgment, checking each figure against what the run read |
 | R9 Names what's missing | Judgment on a team page; N/A on a page shared outside the team |
@@ -454,8 +454,11 @@ the run asks its own questions. Otherwise build with what Atlas holds, mark each
 the page, and return the offer as a proposal in the result packet
 (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **6** and **7**): level
 `read`, gate `approve-refresh`, one `items` entry per handle as `{network}:{handle}`, and the offer
-above as `what`. The main thread asks it with these options and, on yes, launches the run again
-with the handles in `approved`; that run refreshes exactly those before reading.
+above as `what`. That run publishes its page but holds its Atlas writes and its delivery. The main
+thread asks the offer with these options and launches the run again with the same `runId` and
+`approved.refresh` set: the approved handles, or `[]` for "Use what Atlas holds". The relaunch
+refreshes exactly those handles before reading, republishes the page, and only then writes and
+delivers, so the first pass never trips a flow's duplicate-window guard.
 
 **9.6 How to refresh.** Call `lookup_creators` with `forceRefresh: true`, `entityKind: "account"`,
 the network as `schema`, the handle as `identifier`, and the run's own `asOrganizationId` and
@@ -466,7 +469,8 @@ starts no discovery.
   without `forceRefresh` about every 15 seconds, up to roughly 3 minutes.
 - An account counts as refreshed when its `refresh` result is `skipped` with reason
   `recently-refreshed` (make no second call), or when a re-read after a `started` result shows a
-  `lastFetchedAt` later than the call. One still `fetching` at the limit, or whose refresh `failed`,
+  `lastFetchedAt` later than the call. With `freshness` absent on the re-read, a `snapshotAt` later
+  than the call, or a newer newest post than before, counts instead. One still `fetching` at the limit, or whose refresh `failed`,
   keeps the data Atlas held and its freshness line says so.
 - Re-run the flow's searches. Search indexing lags the lookup: when a refreshed account's searches
   come back empty, or their newest post is older than the re-read's `newestPostAt`, retry once
