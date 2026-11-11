@@ -507,7 +507,7 @@ creator's name): never fix it. Handles, hashtags, links, and emails stay as writ
 | 4 | One idea per sentence | A sentence that carries two claims, or a claim and its caveat |
 | 5 | Every term explained on first use | A term a reader in this role would not use themselves (hook rate, engagement per 1,000 views, CPM, whitelisting) with no plain explanation where it first appears |
 | 6 | Every number in a label matches what it labels | "Top 5" over four rows, "3 creators to contact" beside two, a percent sign on a count, a total that is not the sum shown under it |
-| 7 | Nothing in Atlas's own report words | The report labels R11 bans (**Reader standard**), and any other wording that only makes sense inside Atlas's own reports: a question pasted in Atlas's shorthand, a section named for the agent that made it |
+| 7 | Nothing in Atlas's own report words | The report labels R11 bans (**Reader standard**), "picks" or "reads" used as a section or list name where R11 lets them pass, and any other wording that only makes sense inside Atlas's own reports: a question pasted in Atlas's shorthand, a section named for the agent that made it |
 
 **Levels.**
 

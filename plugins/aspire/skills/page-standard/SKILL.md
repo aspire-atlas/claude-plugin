@@ -193,18 +193,24 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    - **Draft pass** (your launch carries no `englishRead` input). After step 4, save the page as a
      full HTML file, as step 5 describes for a session with no Artifact tool, named
      `{page name}.draft.html`. Publish nothing, deliver nothing (no Slack, no email), and send no
-     `published` checkpoint. Everything else in the pass runs as your flow says. Return as usual,
-     with the packet's `page` set to the draft file's absolute path and the page check's
-     `englishRead` set to `{"status": "pending", "draft": "{path}"}` (section 7).
+     `published` checkpoint. Hold every Atlas write whose words or numbers come from the page
+     (findings, insights, summaries, snapshots) until the publish pass, so what is saved matches
+     what publishes; a write that records a decision the person already made (a `record` pass) runs
+     as your flow says. Everything else in the pass runs as your flow says. Return as usual, with the
+     packet's `page` set to the draft file's absolute path, the held writes listed in its `summary`,
+     and the page check's `englishRead` set to `{"status": "pending", "draft": "{path}"}`
+     (section 7). The main thread acts on none of the packet until the publish pass returns.
    - **Publish pass** (your launch carries `englishRead`: the reviewer's `english_read` block, the
      `draft` path, and the draft pass's result `packet`). Start from the draft file. Do not rebuild
-     the page, and make no Atlas read, write, or proposal the draft pass already made. Apply every
-     Must: paste its `replace`, or, when `replace` is `null`, check the fact `why` names against the
-     draft and the packet and fix the line. Apply each Should and Nice that fits your flow's rules.
-     Run step 4 again, then step 5, then your flow's deliveries. Return the draft pass's packet with
-     `page` set to the published link and `selfCheck` brought up to date. Send this pass's
-     `report_checkpoint` calls with `pass` `publish`, never the draft pass's value, so the two
-     passes count as two.
+     the page and make no Atlas read the draft pass already made: read only the draft, the fixes,
+     the packet, and the parts of your flow's reference that set its held writes and deliveries.
+     Apply every Must: paste its `replace`, or, when `replace` is `null`, check the fact `why` names
+     against the draft and the packet and fix the line. Apply each Should and Nice that fits your
+     flow's rules. Run step 4 again, then step 5, then the held writes and your flow's deliveries,
+     worded from the published page. Return the draft pass's packet with `page` set to the published
+     link, `selfCheck` brought up to date, and every `findings` and `proposals` line that quotes the
+     page reworded to match it. Send this pass's `report_checkpoint` calls with `pass` `publish`,
+     never the draft pass's value, so the two passes count as two.
    - **A Must you cannot apply** (it breaks your flow's own rule, or the fact cannot be checked)
      stays on the page and is reported: in the page check's `englishRead` with `applied: false`
      and the reason, and in `stillFailing` as "English read EN2: {why}". In a scheduled run it also
@@ -215,6 +221,11 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
      pass. Publish in one pass only when your launch carries `englishRead` with `"status":
      "not-run"`, which the main thread sets when it follows your file itself because the session
      has no subagent tool (**Running agents**, step 1), and report that `englishRead` as given.
+   - **A read that did not run** (`englishRead` is `not-run`, or carries the main thread's `error`
+     because the reviewer returned no fixes) is reported like an unapplied Must: in `stillFailing`
+     as "English read not run: {why}", and in a scheduled run also in `gaps` and in one line of the
+     delivery message ("This report was not proofread: {why}"), so a broken reviewer never turns
+     the read off unseen.
 5. **Publish**, in the publish pass (step 4b), even when a check still fails, and report it in the
    page check (section 7).
    - **When the session has no Artifact tool, save the page as a file.** Never skip the page, and

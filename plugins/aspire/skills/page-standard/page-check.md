@@ -2,7 +2,7 @@
 
 The script `SKILL.md`, section 5, runs on every page before it is published: R1, R2, R6, R11 and
 R13 from the reader standard. Extract it with the command there; never retype it. It reads only the
-pages named and writes nothing. With `--text` before the page names it runs no check and prints the
+pages named and writes nothing. With `--text` anywhere among its arguments it runs no check and prints the
 words a reader sees instead, one block per line, which is all the English read (`SKILL.md`,
 section 4, step 4b) is given. It lives in this file so `SKILL.md` stays short; when the reader
 standard changes, `SKILL.md`'s section 6 table and this script change in the same commit, and when
@@ -58,7 +58,10 @@ BANNED = [
     (re.compile(EDGE % r"atlas-[a-z]+(?:-[a-z]+)*"), "an agent name"),
     (re.compile(EDGE % r"(?:Claude|Anthropic|LLMs?|MCPs?|APIs?|JSON|runKey)"), "a system name"),
     (re.compile(EDGE % r"(?:sub-?agents?|tool calls?|webhooks?|endpoints?|schemas?)", re.I), "a system word"),
-    (re.compile(EDGE % r"(?:picks|pulses?|reads|the\s+run(?![-\s]+(?:up|rate)\b)|reach\s+slots?|practitioners?)", re.I), "a report label"),
+    # "picks" and "reads" are also plain verbs and counts ("Atlas reads public posts", "3 picks"), so
+    # only their label use fails; any other report wording is the English read's to catch.
+    (re.compile(EDGE % r"(?:(?:top|our|first|creator|the|your|weekly|daily|today's|this\s+week's)\s+(?:picks|reads)"
+                r"|pulses?|the\s+run(?![-\s]+(?:up|rate)\b)|reach\s+slots?|practitioners?)", re.I), "a report label"),
 ]
 NOTHING = re.compile(r"\b(?:nothing|no decisions?) needs? (?:your )?approval\b", re.I)
 # Required metrics on every cited post, by question code. Kept equal to the required-metrics table in
@@ -400,11 +403,15 @@ def visible(path):
         if item.tag in SKIP or (exempt(item) and not quoted(item)):
             continue
         pad = "" if item.tag in INLINE else ("\n" if item.tag in BLOCK or item.tag in ("tr", "td", "th", "br") else " ")
-        label = item.attrs.get("alt") or (item.attrs.get("aria-label") if item.tag in ("svg", "img") else "")
+        # Words a screen reader says or a field shows, which R11 checks too: alt text, any aria-label
+        # (an icon button, a role="img" chart), and a field's placeholder or value.
+        image = item.tag in ("svg", "img") or item.attrs.get("role") == "img"
+        label = item.attrs.get("alt") or item.attrs.get("aria-label") or ""
         field = (item.attrs.get("placeholder") or item.attrs.get("value") or "") if item.tag in ("input", "textarea") else ""
         stack.append(("]" if quoted(item) else "") + pad)
         stack.extend(reversed(item.kids))
-        stack.append(pad + ("[quoted: " if quoted(item) else "") + ("[image: %s] " % label if label else "")
+        stack.append(pad + ("[quoted: " if quoted(item) else "")
+                     + (("[image: %s] " if image else "[label: %s] ") % label if label else "")
                      + ("[field: %s] " % field if field else ""))
     lines = (re.sub(r"[ \t\r\f\v]+", " ", line).strip() for line in "".join(out).split("\n"))
     return "\n".join(line for line in lines if line)
@@ -421,9 +428,10 @@ def show(paths):
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    if not args or args == ["--text"]:
+    pages = [arg for arg in args if arg != "--text"]
+    if not pages:
         print("usage: python3 -I page_check.py [--text] page.html [more.html]", file=sys.stderr)
         sys.exit(2)
-    sys.exit(show(args[1:]) if args[0] == "--text" else main(args))
+    sys.exit(show(pages) if "--text" in args else main(pages))
 ```
 <!-- /page-check -->

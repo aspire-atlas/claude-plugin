@@ -74,7 +74,7 @@ test('JSON is found past prose, fences, and braces inside strings', () => {
 test('the page-check script is cut from the skill and is the one the fixtures are tested with', () => {
   const script = extractPageCheckScript(readFileSync(join(ROOT, 'plugins/aspire/skills/page-standard/page-check.md'), 'utf8'))
   expect(script.startsWith('# Page standard self-check')).toBe(true)
-  expect(script.trimEnd().endsWith('sys.exit(show(args[1:]) if args[0] == "--text" else main(args))')).toBe(true)
+  expect(script.trimEnd().endsWith('sys.exit(show(pages) if "--text" in args else main(pages))')).toBe(true)
   expect(script).not.toContain('```')
   expect(() => extractPageCheckScript('no script')).toThrow()
 })

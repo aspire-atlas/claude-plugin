@@ -73,8 +73,9 @@ agent only through this skill or a shortcut.
      block), `draft` (the path), and `packet` (the draft pass's `result-packet`). Act on that
      publish pass's result as below. Say nothing in between unless the person asks; in an
      unattended run, wait for each. A reviewer that returns no `english_read` block counts as no
-     fixes: relaunch with `englishRead` set to `{"error": "{what came back}"}`, and the builder
-     reports `not-run`. A page you build yourself (**Visual output**, a deck you export) gets the
+     fixes: relaunch with `englishRead` set to `{"error": "{what came back}"}`. The builder reports
+     `not-run` as a failing check, and in a scheduled run also in `gaps` and its delivery message;
+     name it in the close-out like any check still failing. A page you build yourself (**Visual output**, a deck you export) gets the
      same read before you publish it, and you apply its Musts yourself.
    - Treat the result as the agent's
    report and act on its `result-packet` block: relay the summary, page link (or, when `page` is a file path, "Saved as a file: {path}"), and decisions it
