@@ -1,12 +1,9 @@
 # A change to these paths needs a review from a plugin owner: they define what every agent and
-# page does, and docs/STANDARD.md is the checklist a reviewer holds them to. The develop branch
-# protection requires a code-owner review (docs/PLUGIN-LIFECYCLE.md section 11).
-# Later lines win, so keep the narrow paths below the broad ones.
+# page does, the checks that hold them to docs/STANDARD.md, and the standard itself. The develop
+# branch protection requires a code-owner review (docs/PLUGIN-LIFECYCLE.md section 11).
 
-/plugins/aspire/agents/                     @aspire-atlas/admin
-/plugins/*/skills/*/SKILL.md                @aspire-atlas/admin
-/plugins/aspire/skills/aspire/references/   @aspire-atlas/admin
-/plugins/aspire/skills/page-standard/       @aspire-atlas/admin
-/scripts/                                   @aspire-atlas/admin
-/docs/STANDARD.md                           @aspire-atlas/admin
-/.github/CODEOWNERS                         @aspire-atlas/admin
+/plugins/*/agents/      @aspire-atlas/admin
+/plugins/*/skills/      @aspire-atlas/admin
+/scripts/               @aspire-atlas/admin
+/docs/STANDARD.md       @aspire-atlas/admin
+/.github/               @aspire-atlas/admin

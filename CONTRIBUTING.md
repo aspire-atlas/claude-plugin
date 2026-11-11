@@ -111,7 +111,7 @@ It sets `main` as default, requires PRs plus the `validate` and `gate` checks on
 
 ## Rules for skills and agents
 
-Every new or changed skill, agent and flow meets the checklist in [docs/STANDARD.md](docs/STANDARD.md): how a chat reply is shaped, what a skill loads, which metrics a question needs, how fresh the data is, the storyline step, the reviews before publishing, how questions are asked, and the proof a new agent or rule ships with. The pull request template repeats it. Changes to agents, skills, flows, page-standard, `scripts/` and the standard need a review from a code owner (`.github/CODEOWNERS`). The rules below still apply:
+Every new or changed skill, agent and flow meets the checklist in [docs/STANDARD.md](docs/STANDARD.md): how a chat reply is shaped, what a skill loads, which metrics a question needs, how fresh the data is, the storyline step, the reviews before publishing, how questions are asked, and the proof a new agent or rule ships with. The pull request template repeats it. Changes to the paths in `.github/CODEOWNERS` (agents, skills and their flows, `scripts/`, CI and the standard) need a review from a code owner. The rules below still apply:
 
 - Every Atlas write is confirmed through `AskUserQuestion` first. Destructive tools each get their own confirmation with the safe option listed first.
 - Unattended runs never ask and never destroy. Only `atlas-creator-discovery` may start discovery work on a schedule, under a saved cadence record.

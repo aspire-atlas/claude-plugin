@@ -69,7 +69,9 @@ the wording of the question map where it is more specific ("the leader who asked
 `growth`, and so on), the same value as the question's `reader` in `scripts/eval/questions.json`.
 
 **Eval questions.** "Yes" once the question has an entry in `scripts/eval/questions.json`, "Not yet"
-until then. A new agent ships with one for each question it answers (`docs/STANDARD.md` P2).
+until then. A new agent ships with one for each question it answers (`docs/STANDARD.md` P2). Specs
+written before these two columns existed have five columns; copy the template, not an older spec, and
+add the two columns to an older spec when you next change its questions.
 
 **Approved examples.** Name the ticket that holds the example (ASP-4527), not a link. Examples
 carry customer names and this repo holds none. The link to the approved page goes in the eval's

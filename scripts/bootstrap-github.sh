@@ -49,8 +49,7 @@ EOF
 
 # Check names are "<workflow job name>" as GitHub reports them.
 protect main    '["validate", "gate"]'
-# develop: a change to agents, skills, flows, page-standard, scripts or docs/STANDARD.md needs a
-# review from a code owner (.github/CODEOWNERS).
+# develop: a change to a path in .github/CODEOWNERS needs a review from a code owner.
 protect develop '["validate"]' true
 
 gh label create beta --color FBCA04 --description "Reported against the develop channel" --force

@@ -244,7 +244,7 @@ These are product and safety commitments. A PR that breaks one is blocked in rev
 
 Branch protection on both branches: PRs required, 1 approval, stale reviews dismissed, conversations resolved, no force pushes, no deletions. Admins are not exempt by policy; they can technically bypass, and should not.
 
-`develop` also requires a code-owner review (`require_code_owner_reviews`). `.github/CODEOWNERS` names the plugin owners for the agents, every skill's `SKILL.md`, the `/aspire` flow references, page-standard, `scripts/` and `docs/STANDARD.md`, so a change there merges only after someone who keeps the standard has read it. Other paths need any one approval. `scripts/bootstrap-github.sh` sets it; on the live repository it is the Settings change below, made by an admin:
+`develop` also requires a code-owner review (`require_code_owner_reviews`). `.github/CODEOWNERS` lists the paths and their owners (the agents, the skills, `scripts/`, `docs/STANDARD.md` and `.github/`), so a change there merges only after someone who keeps the standard has read it. Other paths need any one approval. `scripts/bootstrap-github.sh` sets it; on the live repository it is the Settings change below, made by an admin:
 
 ```bash
 gh api -X PATCH repos/aspire-atlas/claude-plugin/branches/develop/protection/required_pull_request_reviews \
