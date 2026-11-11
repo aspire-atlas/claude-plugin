@@ -60,4 +60,5 @@ gh label create skip-eval --color C5DEF5 --description "Skip the page eval; the 
 echo
 echo "Done. Next:"
 echo "  1. Watch the Release workflow tag each plugin's version on main (v<version> for aspire, <plugin>--v<version> for the others)."
-echo "  2. Submit https://github.com/$REPO at https://claude.ai/admin-settings/directory/submissions/plugins/new"
+echo "  2. Add the ANTHROPIC_API_KEY repository secret for the standard review: gh secret set ANTHROPIC_API_KEY --repo $REPO"
+echo "  3. Submit https://github.com/$REPO at https://claude.ai/admin-settings/directory/submissions/plugins/new"
