@@ -4,7 +4,8 @@
 one publishes, and prints one table per question: every check as pass or fail for the new page, beside the same
 check run on the approved page. It is how a change to a rule is tested (see `CONTRIBUTING.md`).
 
-It runs on a developer's machine. CI does not run it.
+It runs on a developer's machine, and in CI on every pull request that changes an agent or a flow file
+(see [In CI](#in-ci)).
 
 ## Contents
 
@@ -14,6 +15,7 @@ It runs on a developer's machine. CI does not run it.
 - [The table](#the-table)
 - [What is committed and what is not](#what-is-committed-and-what-is-not)
 - [What a rerun may and may not do](#what-a-rerun-may-and-may-not-do)
+- [In CI](#in-ci)
 - [Files](#files)
 - [Limits](#limits)
 
@@ -58,11 +60,16 @@ bun run eval:pages --baseline 2026-11-12 --from latest   # store an earlier run 
 bun run eval:pages --compare 2026-11-10 latest           # what changed between two runs
 bun run eval:pages --only I4 --page page.html            # grade a page file, without a rerun
 bun run eval:pages --dry-run               # print what would run
+bun run eval:pages --only O3 --approved-from newest   # take the approved column from the newest baseline
 bun run eval:test                          # the harness's own tests (no Claude, no Atlas)
 ```
 
 A run is named by its folder under `scripts/eval/.runs/`, a baseline by its date, the newest run by `latest`.
 `--model` sets the model for the reruns and `--judge-model` the model for the grading.
+`--approved-from <date|newest>` takes the approved page's results from a stored baseline instead of reading and
+grading the approved page again; E8 then judges the new page on its own. `--title-prefix <text>` asks the flow to
+start the page's title with that text, `--cleanup` deletes every page the run published once it is graded, and
+`--out <dir>` keeps the run in that folder.
 
 ## What one run does
 
@@ -130,6 +137,53 @@ Paste `.runs/<time>/table.md` into the pull request. Its page links open only fo
 - With `mcp.tokenEnv`, the token is written to a file in the system's temporary folder for the length of
   the run and removed after it. It is never written under the checkout.
 
+## In CI
+
+The `eval` job in `.github/workflows/validate.yml` runs after the static checks pass.
+
+**On a pull request** it works out which questions the change touches and reruns only those:
+
+- A changed file under `plugins/aspire/agents/` or `plugins/aspire/skills/aspire/references/` that a
+  question lists in its `paths` (`questions.json`) reruns that question. A changed file in `sharedPaths`
+  (one every flow reads, such as the reader standard) reruns all five. Anything else reruns nothing, and the
+  job passes without a comment.
+- It runs `bun run eval:pages --only <codes> --approved-from newest --title-prefix "CI eval" --cleanup`.
+- It posts the table as one PR comment, edited in place on later pushes, and in the job summary. The comment
+  opens with the regressions, then the table for each question, with the transcript size, the confirmation
+  rounds and the page link (none when the run saved the page as a file).
+- It fails when a check the approved page passes now fails on the new page (a **regression**), and only
+  then. A question that published no page regresses on every check its approved page passes. A check that
+  did not run, or one the approved page fails too, never fails the job. It also fails when the run stopped
+  before any question finished, since nothing was checked.
+- The `skip-eval` label skips the rerun. The PR body says why on a line `skip-eval: <reason>`; the job posts
+  "skipped: <reason>", and fails when the line is missing. Use it for a docs-only or allowlisted change.
+
+**Nightly** at 07:17 UTC it reruns all five questions on `develop` and posts one line per question to the Atlas
+engineering Slack channel, with any regression named. A schedule runs from `main`'s copy of the workflow, so
+the nightly run starts once this job is released to `main`. `workflow_dispatch` runs the same thing by hand.
+
+**What gates a pull request** is the approved column, and in CI it comes from the newest committed baseline
+(`baselines/<date>/results.json`): a run with the API key has no Artifact tool, so it cannot read the approved
+pages, and the pages are customer data that this public repository never holds. Until a baseline holds a
+question's approved results, that question's table shows `–` in the approved column and nothing about it can
+fail the job. Store a baseline after a developer's run that read the approved pages (see
+[Commands](#commands)).
+
+The run, its transcripts and its pages are never uploaded: this repository is public.
+
+Secrets, set on the repository:
+
+| Secret | What it is |
+| ------ | ---------- |
+| `ANTHROPIC_API_KEY` | The key the `claude` CLI runs the questions and the grading with |
+| `ATLAS_EVAL_TOKEN` | A service-account token for the dev Atlas server, scoped to the test organization, issued with the admin connector's `create_api_token`. The dev server's `/mcp` must take it as a bearer token |
+| `EVAL_LOCAL_JSON` | The whole of `local.json`, with `"tokenEnv": "ATLAS_EVAL_TOKEN"` under `mcp` |
+| `EVAL_SLACK_WEBHOOK_URL` | The Slack incoming webhook for the nightly message. Without it the nightly run skips Slack with a warning |
+
+A pull request from a fork gets no secrets, so the job warns and passes without a rerun; a maintainer
+pushes the branch here to run it. Pages a CI run publishes start their title with "CI eval" and are deleted
+when the run ends, so the comment's link stops opening after the job finishes.
+
 ## Files
 
 | File | What it is |
@@ -138,6 +192,8 @@ Paste `.runs/<time>/table.md` into the pull request. Its page links open only fo
 | `e-checks.json` | The eight E-checks, copied from the Evals tab, with who judges each |
 | `local.example.json` | The shape of `local.json` |
 | `run.ts` | The command |
+| `ci.ts` | CI: which questions a change reruns, the PR comment, the nightly Slack message |
+| `post-comment.sh` | CI: posts the comment, or edits the one already on the PR |
 | `lib.ts`, `lib.test.ts` | Reading a transcript, the table, baselines, compare, and their tests |
 | `baselines/` | One folder per stored run |
 
@@ -149,3 +205,4 @@ Paste `.runs/<time>/table.md` into the pull request. Its page links open only fo
 - The judge's calls are Claude's judgment. They earn trust as they match the reviewers' own calls on the
   same pages; until then a pass here is evidence, not a sign-off.
 - One run of five questions is five full flows and twenty grading sessions. Use `--only` while iterating.
+  CI reruns only the questions a change touches, and with `--approved-from` grades only the new page.
