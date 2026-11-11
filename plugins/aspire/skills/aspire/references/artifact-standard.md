@@ -19,7 +19,7 @@ The two pieces say everything the page needs to say about itself:
 - **When:** the "as of" time in the source line, which changes every time the page is republished or
   its data is refreshed. There is no separate prepared date.
 
-What a page says, part by part, and the R1 to R13 checks (**Reader standard**) it passes before
+What a page says, part by part, and the R1 to R14 checks (**Reader standard**) it passes before
 it is published are set by the shared skill `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`.
 This file sets only the mark, the source line, and how a page prints (section 6).
 
@@ -68,9 +68,14 @@ added, it does not replace them). Markup:
 
 ```html
 <footer class="atlas-footnote" data-updated="{asOfIso}">
+  <p data-freshness>{freshnessLine}</p>
   <p>Source: Aspire Atlas cross-platform indexing ({networks}). Data compiled via proprietary AI brand memory as of {asOfDate}. {audienceLine}</p>
 </footer>
 ```
+
+- **{freshnessLine}**: on a page that cites an account, the newest post Atlas holds and when Atlas
+  last fetched it, one entry per account and platform, with its markup and wording from **Page
+  standard**, section 9. Leave the paragraph out on a page that cites no account.
 
 - **{asOfDate}**: when the numbers were read from Atlas, from the shell clock (`date -u`), never from
   the prompt or a session header, with a time for any page that can refresh within a day. It is the
@@ -124,9 +129,10 @@ check script finds it in this file only.
   Aspire Atlas cross-platform indexing ({networks}), as of {asOfDate}. Internal use only." The full
   sentence is on the page. Creator and post cards in chat are Atlas's own, drawn by the host; the
   plugin builds no widget for them (**Creator card**, **Cards in chat**).
-- **Decks**: the small mark top right of every slide, and the source line on the last slide
-  ("Thank you"), unless a slide's footer band can carry it without crossing the render checks. A deck
-  for a client uses the shared-page audience line.
+- **Decks**: the small mark top right of every slide, and the source line, with its freshness line
+  when the deck cites an account, on the last slide ("Thank you"), unless a slide's footer band can
+  carry it without crossing the render checks. A deck for a client uses the shared-page audience
+  line.
 - **No page** (a flow that ends in chat only): no source line is added.
 
 ## 4. Before publishing
