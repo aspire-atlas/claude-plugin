@@ -6,7 +6,10 @@
 #                                                      contract block and the checkpoint paragraph
 #                                                      copied from the files that own them
 #   - plugins/aspire/skills/aspire/references/<slug>.md  the flow reference, from scripts/templates/flow.md
-#   - docs/agent-specs/agents/NN-<name>.md             the spec, from scripts/templates/spec.md, numbered next
+#   - docs/agent-specs/agents/NN-<name>.md             the spec, from scripts/templates/spec.md, numbered next;
+#                                                      when a spec of that name already exists with no
+#                                                      agent (plugin_agents: none), it names the new agent
+#                                                      there instead
 # and adds the agent's rows where agents are listed by hand:
 #   - SKILL.md: the Sections index (the router entry), the Agent hand-off table, the Model tiers table
 #   - plugins/aspire/README.md's agent table
@@ -25,12 +28,13 @@
 #
 # <slug> is lower-case words joined by hyphens (the agent is atlas-<slug>). --codes are question codes
 # from orchestration.md section 3 that have a row in page-standard's required-metrics table; the
-# default is I1. --name defaults to the slug in sentence case, --permission to read, --model to
+# default is the existing spec's codes, or I1 without one. --name defaults to the slug in sentence case, --permission to read, --model to
 # sonnet. --team, --group and the spec's personas default from the first code's letter (I: creator
 # supply, P: content and ads, O and A: organic and operations). --dry-run prints every new file and a
 # diff of every edit, and changes nothing. --remove undoes a scaffold whose agent and flow files still
-# hold every TODO(new-agent) line; it refuses once they are filled, and when the spec is not the last
-# one (removing it would leave a gap in the numbering).
+# hold every TODO(new-agent) line; it refuses once they are filled, and when the spec it wrote is not
+# the last one (removing it would leave a gap in the numbering). A spec that existed before the
+# scaffold is kept and gets plugin_agents: none back.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 command -v python3 >/dev/null || { echo "new-agent.sh: python3 is needed" >&2; exit 1; }
@@ -162,12 +166,33 @@ def metric_rows():
     return kinds
 
 
+def specs():
+    """{number: path} of every NN-name.md agent spec."""
+    out = {}
+    for path in glob.glob(f"{SPECS}/*.md"):
+        m = re.match(r"(\d+)-", os.path.basename(path))
+        if m:
+            out[int(m.group(1))] = path
+    return out
+
+
+def plugin_agents(text):
+    m = re.search(r"^plugin_agents:(.*)$", text, re.M)
+    return [a.strip() for a in m.group(1).split(",")] if m else []
+
+
 def spec_of(agent):
-    for path in sorted(glob.glob(f"{SPECS}/*.md")):
-        m = re.search(r"^plugin_agents:(.*)$", read(path), re.M)
-        if m and agent in [a.strip() for a in m.group(1).split(",")]:
-            return path
-    return None
+    return next((p for _, p in sorted(specs().items()) if agent in plugin_agents(read(p))), None)
+
+
+def spec_named(name):
+    """The spec whose file name ends in -<the name's slug>.md, which check-agent-specs keys on."""
+    slug_ = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+    return next((p for _, p in sorted(specs().items()) if os.path.basename(p).endswith(f"-{slug_}.md")), None)
+
+
+def set_plugin_agents(text, agents):
+    return re.sub(r"^plugin_agents:.*$", "plugin_agents: " + (", ".join(agents) or "none"), text, count=1, flags=re.M)
 
 
 def costume_block(lines, agent):
@@ -190,7 +215,7 @@ def json_text(data):
 
 # --- arguments -----------------------------------------------------------------------------------
 args = sys.argv[1:]
-opts = {"name": None, "codes": "I1", "permission": "read", "model": "sonnet", "team": None,
+opts = {"name": None, "codes": None, "permission": "read", "model": "sonnet", "team": None,
         "wave": "4", "group": None}
 slug = None
 remove = dry = False
@@ -242,9 +267,11 @@ if remove:
         if gone:
             die(f"{path} has been filled in ({gone[0]!r} is gone); remove it by hand if you mean to")
     spec = spec_of(agent)
-    if spec:
-        numbers = sorted(int(os.path.basename(p)[:2]) for p in glob.glob(f"{SPECS}/*.md"))
-        if int(os.path.basename(spec)[:2]) != numbers[-1]:
+    if spec and MARK not in read(spec):
+        # A spec that existed before the scaffold: give it back its agent list without this agent.
+        changes[spec] = set_plugin_agents(read(spec), [a for a in plugin_agents(read(spec)) if a not in (agent, "none")])
+    elif spec:
+        if spec != specs()[max(specs())]:
             die(f"{spec} is not the last spec; removing it would leave a gap in the numbering")
         changes[spec] = None
     changes[agent_path] = None
@@ -284,9 +311,26 @@ else:
     model = opts["model"]
     if not re.fullmatch(r"[a-z0-9.-]+", model):
         die(f"--model {model!r} is not a model name (sonnet, inherit, opus)")
-    codes = [c.strip().upper() for c in opts["codes"].split(",") if c.strip()]
+    # A spec already written for this agent (one with no plugin agent yet) is kept, not duplicated:
+    # check-agent-specs keys skill files on the spec's name, so a second spec of that name fails it.
+    old_spec = spec_named(name)
+    old_codes = []
+    if old_spec:
+        if [a for a in plugin_agents(read(old_spec)) if a != "none"]:
+            die(f"{old_spec} already has the name {name!r} and names its own agent; pick another --name")
+        q = re.search(r"^## Questions answered\n(.*?)(?=^## |\Z)", read(old_spec), re.M | re.S)
+        old_codes = re.findall(r"^\| ([IPOA][0-9]+) \|", q.group(1), re.M) if q else []
+        if not old_codes:
+            die(f"{old_spec} answers no question code yet. Add the codes this agent answers to its Questions "
+                "answered table (one row per code, in the table shape docs/agent-specs/templates/agent.md "
+                "shows), then run this again")
+    raw = opts["codes"] or (",".join(old_codes) if old_codes else "I1")
+    codes = list(dict.fromkeys(c.strip().upper() for c in raw.split(",") if c.strip()))
     if not codes:
         die("--codes needs at least one question code")
+    if old_spec and old_codes and set(codes) - set(old_codes):
+        die(f"{old_spec} answers {', '.join(old_codes)}; --codes {', '.join(sorted(set(codes) - set(old_codes)))} "
+            "is not among them. Add the code to the spec's Questions answered first, or leave --codes out")
     known, kinds = question_codes(), metric_rows()
     for c in codes:
         if c not in known:
@@ -307,11 +351,12 @@ else:
     for path in (agent_path, flow_path):
         if os.path.exists(path):
             die(f"{path} already exists")
-    if spec_of(agent):
-        die(f"{spec_of(agent)} already names {agent}")
+    named = spec_of(agent)
+    if named:
+        die(f"{named} already names {agent}")
     skill = read(SKILL)
-    if re.search(r"^\| \*\*" + re.escape(name) + r"\*\*", skill, re.M):
-        die(f"SKILL.md's Sections index already has a **{name}** row; pick another --name")
+    if f"**{name}**" in skill:
+        die(f"SKILL.md already cites a section named **{name}**; pick another --name")
 
     personas = sorted({BY_LETTER[c[0]][2] for c in codes})
     short, long_, spec_writes, level_note = WRITES[permission]
@@ -328,17 +373,19 @@ else:
         "ASK_ROWS": "\n".join(["| Code | Question |", "| ---- | -------- |"]
                               + [f"| {c} | {known[c][0]} |" for c in codes]),
         "METRIC_ROWS": "\n".join(f"| {c} | {kinds[c]} | {MARK}: the metrics this flow adds, or \"None\" |" for c in codes),
-        "QUESTION_ROWS": "\n".join(f"| {c} | {known[c][0]} | Self | {known[c][1]} | {MARK}: kind of page | None yet | Yes |"
+        "QUESTION_ROWS": "\n".join(f"| {c} | {known[c][0]} | Self | {known[c][1]} | {MARK}: kind of page | None yet | Not yet |"
                                    for c in codes),
     }
 
     changes[agent_path] = fill(read(f"{TPL}/agent.md"), values)
     changes[flow_path] = fill(read(f"{TPL}/flow.md"), values)
-    numbers = sorted(int(os.path.basename(p)[:2]) for p in glob.glob(f"{SPECS}/*.md"))
-    number = (numbers[-1] if numbers else 0) + 1
-    values["NUMBER"] = f"{number:02d}"
-    spec_slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
-    changes[f"{SPECS}/{number:02d}-{spec_slug}.md"] = fill(read(f"{TPL}/spec.md"), values)
+    if old_spec:
+        changes[old_spec] = set_plugin_agents(read(old_spec), [agent])
+    else:
+        number = max(specs(), default=0) + 1
+        values["NUMBER"] = f"{number:02d}"
+        spec_slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+        changes[f"{SPECS}/{number:02d}-{spec_slug}.md"] = fill(read(f"{TPL}/spec.md"), values)
 
     # SKILL.md: the router entry above **Theme**, then the hand-off and Model tiers rows at the end of
     # their tables.
@@ -361,15 +408,21 @@ else:
     lines = orch.split("\n")
     head = heading_index(lines, r"^\| Agent \| Level \| What reaches it \|", ORCH)
     end = table_end(lines, head)
-    at = next((i for i in range(head + 2, end) if re.match(r"^\| `(atlas-[a-z-]+)`", lines[i])
-               and re.match(r"^\| `(atlas-[a-z-]+)`", lines[i]).group(1) > agent), end)
+    names = [(i, re.match(r"^\| `(atlas-[a-z-]+)`", lines[i])) for i in range(head + 2, end)]
+    at = next((i for i, m in names if m and m.group(1) > agent), end)
     lines.insert(at, f"| `{agent}` | {permission} | {level_note} |")
     changes[ORCH] = "\n".join(lines)
 
     # The agents panel: a roster card in its group and a placeholder costume after the agent costumes.
     lines = read(ROSTER).split("\n")
     in_group = [i for i, l in enumerate(lines) if f"group: '{group}' }}," in l]
-    at = in_group[-1] + 1 if in_group else heading_index(lines, r"^\]$", ROSTER)
+    if in_group:
+        at = in_group[-1] + 1
+    else:  # the group has no card yet: the end of ROSTER, not of GROUPS above it
+        start = heading_index(lines, r"^export const ROSTER\b", ROSTER)
+        at = next((i for i in range(start, len(lines)) if lines[i] == "]"), None)
+        if at is None:
+            die(f"{ROSTER} has no closing ] for ROSTER")
     lines.insert(at, f"  {{ type: 'aspire:{agent}', name: '{name}', blurb: '{MARK}: one line on what it makes', "
                      f"group: '{group}' }},")
     changes[ROSTER] = "\n".join(lines)

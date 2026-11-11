@@ -115,7 +115,7 @@ What it writes:
 
 - `plugins/aspire/agents/atlas-<slug>.md`, with the artifact standard block, the orchestration contract block and the checkpoint paragraph copied from the files that own them
 - `plugins/aspire/skills/aspire/references/<slug>.md`, the flow reference
-- `docs/agent-specs/agents/NN-<name>.md`, the spec, numbered next
+- `docs/agent-specs/agents/NN-<name>.md`, the spec, numbered next. When the agent's spec is already written (its `plugin_agents` is `none`), give the agent that spec's name: the generator names the agent in it instead and takes its question codes when you leave `--codes` out
 - the agent's rows in `SKILL.md` (the **Sections** index, **Agent hand-off**, **Model tiers**), the plugin README's agent table, the agents panel (`plugins/aspire-mod/hooks/roster.ts` and a placeholder costume in `costumes.ts`), the permission level table in `orchestration.md` section 7, and the `agents` map in `scripts/eval/questions.json`
 
 The scaffold passes every check as written. Each line you still have to write says `TODO(new-agent)`, and the standard review flags each one until it is filled. Fill them in this order, since each step reads the one before it:

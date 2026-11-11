@@ -103,7 +103,8 @@ jobs:
           bash scripts/new-agent.sh ci-scaffold --codes I1,O1 --permission write
           claude plugin validate .
           for d in plugins/*/; do claude plugin validate "$d"; done
-          bash scripts/check-channel.sh "${{ steps.channel.outputs.name }}"
+          # check-channel.sh is left out: the scaffold changes no channel line, and on main it would read
+          # the scaffold as plugin content changed since the release tag.
           for s in scripts/check-*.sh; do
             [ "$s" = scripts/check-channel.sh ] && continue
             echo "== $s"; bash "$s"
@@ -117,7 +118,8 @@ jobs:
           if [ -n "$(git status --porcelain)" ]; then
             git status --short; echo "::error::new-agent.sh --remove left the tree changed"; exit 1
           fi
-          git switch -q -
+          # checkout, not switch: a pull request's checkout is a detached HEAD, which switch refuses.
+          git checkout -q -
 
       - name: Changelogs are edited only on release branches
         if: steps.channel.outputs.name == 'develop'
