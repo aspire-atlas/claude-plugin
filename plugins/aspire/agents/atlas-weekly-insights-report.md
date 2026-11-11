@@ -89,12 +89,12 @@ and the unattended run rules. Follow it exactly. Read `recipient-lens.md` too.
    in scope. Missing connector, expired sign in, nothing in scope, or a failed call: leave the
    block out, name the reason under "What is missing", and finish the report. Never call a Meta
    write tool.
-5. Build the page per **Weekly readout** in the reference (KPI strip with benchmark row,
-   9-week line chart, post cards, mix small-multiples, open items table, ranked next steps,
-   then one section per non-`team` lens with its anchor).
-   Load `artifact-design` and `dataviz` first. Apply `theme:brand` when saved, per
-   `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`, **Applying the theme**.
-   Publish with the Artifact tool, title "<Brand> Weekly Insights Report", republishing to the same path.
+5. Build the page per **Weekly readout** in the reference (the answer block with the storyline's
+   three bullets, KPI strip with benchmark row, 9-week line chart, post cards, mix small-multiples,
+   open items table, ranked next steps, then one section per non-`team` lens with its anchor). Load
+   `artifact-design` and `dataviz` first. Apply `theme:brand` when saved, per
+   `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`, **Applying the theme**. Publish with
+   the Artifact tool, title "<Brand> Weekly Insights Report", republishing to the same path.
 6. Deliver per **Delivery**: Slack message and email when routed and available, and one
    message per lens destination. Report any destination that could not be reached.
 7. Write findings with `append_insights`: `runKey` `readout-weekly-{profile}-{ISO week}`,

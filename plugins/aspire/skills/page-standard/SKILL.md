@@ -137,14 +137,14 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
      when your flow asks its own questions: the storyline goes to the main thread. A "Storyline
      change:" line in the launch message is the person's change: draft to it, reading what it
      needs. A "Widen:" line names the wider scope to read, with any accounts or handles it adds.
-   - `build`: the person confirmed the `bullets`. The page's insights (part 3) are those bullets,
-     in their order and wording, each with its evidence; the headline is written from them. A
-     "Unchecked:" line in the launch message lists the checks the draft could not make: put
-     them in the page's method and in the packet's `storyline.unchecked`. A "Metric gaps:" line
-     in the launch message is step 2a's check-in already answered: act on it and do not stop at
-     step 2a again.
-     When the data no longer supports a bullet, build it with what the data shows and say so in
-     the page check's `gaps`; never swap in a storyline the person did not confirm.
+   - `build`: the person confirmed the `bullets`. The page's insights (part 3) are those bullets, in
+     their order and wording, each with its evidence, comparison, and "So:" line; the headline is
+     written from them. An "Unchecked:" line in the launch message lists the checks the draft could
+     not make: put them in the page's method and in the packet's `storyline.unchecked`. A "Metric
+     gaps:" line in the launch message is step 2a's check-in already answered: act on it and do not
+     stop at step 2a again. When the data no longer supports a bullet, build it with what the data
+     shows and say so in the page check's `gaps`; never swap in a storyline the person did not
+     confirm.
    - `state`: draft the storyline below and build in the same pass. The page's insights (part
      3) are those three bullets, in order, each with its comparison and "So:" line; the answer
      block (part 2) states them short under the headline, each with its evidence; and the
@@ -154,9 +154,10 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    To draft it:
    1. **Count the posts that fit the question:** the posts step 2a counts, and how many accounts
       they come from. Compare the count with the row's minimum (`orchestration.md`, **2**, **The
-      minimum pool**). Name the wider scope you would read next in `widen` (more weeks, more
-      platforms, or more accounts, whichever the launch's `scope` leaves room for), or `null`
-      when it has no room left; under the minimum, the main thread recommends it.
+      minimum pool**; none for a question about one named post). Name the wider scope you would read
+      next in `widen` (more weeks, more platforms, or more accounts, whichever the launch's `scope`
+      leaves room for), or `null` when it has no room left; under the minimum, the main thread
+      recommends it.
    2. **Write three short bullets**, each a claim the reader can act on, with the posts,
       accounts, and views behind it. A bullet on fewer than 3 posts says how few ("from only two
       posts"). The good and bad examples are in `orchestration.md`, **2**.

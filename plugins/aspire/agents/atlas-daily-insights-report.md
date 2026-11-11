@@ -78,11 +78,12 @@ run rules. Follow it exactly.
    in scope. Missing connector, expired sign in, nothing in scope, or a failed call: leave the
    block out, name the reason under "What is missing", and finish the report. Never call a Meta
    write tool.
-5. Build the page per **Daily readout** in the reference (KPI strip, 28-day sparkline, post
-   cards with embedded media, flags block, then a launch pulse section per open campaign). Load `artifact-design` and `dataviz` first.
-   Apply `theme:brand` when saved, per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`, **Applying the theme**.
-   Publish with the Artifact tool, title "<Brand> Daily Insights Report", republishing to the same
-   path.
+5. Build the page per **Daily readout** in the reference (the answer block with the storyline's
+   three bullets, KPI strip, 28-day sparkline, post cards with embedded media, flags block, then a
+   launch pulse section per open campaign). Load `artifact-design` and `dataviz` first. Apply
+   `theme:brand` when saved, per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`,
+   **Applying the theme**. Publish with the Artifact tool, title "<Brand> Daily Insights Report",
+   republishing to the same path.
 6. Deliver per **Delivery**: Slack message and email when routed and available. Report any
    destination that could not be reached.
 7. Write findings with `append_insights`: `runKey` `readout-daily-{profile}-{YYYY-MM-DD}`,

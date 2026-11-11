@@ -176,10 +176,12 @@ question: more weeks, more platforms, or more accounts, whichever the run has ro
 | Creator picks or vetting | 5 per creator over the flow's window |
 | Ads and cut-downs | 5 videos |
 | Program tracking | None: the posts owed are the pool, and a thin one is the finding |
+| One named post (O5, P2) | None: the post is the question; its bullets rest on it and the posts it is compared against, and say so |
 
 For a row counted per brand or per creator, the pool is under its minimum when half or more of them
 are, and the packet's `pool.under` names each one under it; a bullet that rests on one of them says
-so. Each bullet rests on at least 3 posts, or says how few it rests on ("from only two posts").
+so. Except on a one-post question, each bullet rests on at least 3 posts, or says how few it rests
+on ("from only two posts").
 
 **Unattended runs and repeat runs** never ask. They launch with `storyline.pass` `state`: the agent
 drafts the storyline and builds in the same pass. The page opens with it in the answer block, the
@@ -349,7 +351,7 @@ acts on.
 | `question`, `reader` | The code it answered and the primary reader it built for, from the launch block. |
 | `coverage` | Each channel in scope with its post count, and any channel missing with why. |
 | `selfCheck` | The page check's results by check code and name (`skills/page-standard/SKILL.md`, **7**): those fixed before publishing and those still failing. Empty lists when no page was published. |
-| `storyline` | The storyline the page says, or would say (**2**, **The storyline**): three `bullets`, each with the posts, accounts, and views behind it (`null` for a size the claim does not rest on); the `pool` of posts that fit the question against the row's `minimum` (`null` for program tracking); an `unchecked` line for each check this host could not make ("Timecodes and on-screen claims are unverified.", "{fact} is not checked against the company's announcement."); and `widen`, the wider scope the agent would read next, or `null` when the scope has no room left. For a row counted per brand or per creator, `posts` is the total, `minimum` the per-entity one, and `under` names each brand or creator under it (`[]` otherwise). On a `draft` pass it is the run's only finding and `page` is `null`; on `build` it repeats the confirmed bullets; on `state` it is what the page states. `null` when the launch's pass was `none`. |
+| `storyline` | The storyline the page says, or would say (**2**, **The storyline**): three `bullets`, each with the posts, accounts, and views behind it (`null` for a size the claim does not rest on); the `pool` of posts that fit the question against the row's `minimum` (`null` for program tracking and a one-post question); an `unchecked` line for each check this host could not make ("Timecodes and on-screen claims are unverified.", "{fact} is not checked against the company's announcement."); and `widen`, the wider scope the agent would read next, or `null` when the scope has no room left. For a row counted per brand or per creator, `posts` is the total, `minimum` the per-entity one, and `under` names each brand or creator under it (`[]` otherwise). On a `draft` pass it is the run's only finding and `page` is `null`; on `build` it repeats the confirmed bullets; on `state` it is what the page states. `null` when the launch's pass was `none`. |
 
 Write the packet as valid JSON on as many lines as it needs. A field with nothing in it is an
 empty list or `null`, never left out.
