@@ -237,9 +237,9 @@ Mark the parts the script reads. The attributes carry no styling; style the page
 
 - On a team page, list Instagram, TikTok, and YouTube in the scope every time; one with 0 posts
   says "not covered" with no linked account, else as section 9.3 says ("no posts", or "Atlas has no
-  data for {period}"). A day with no posts at all is still a team page with three zeros. On a page with the shared audience line, list only the
-  platforms with posts; the script knows the page is shared when its `atlas-footnote` says "Shared
-  with". Show the exact count ("1,412 posts"), never a rounded one ("1.4K").
+  data for {period}"), so a day with no posts still shows three zeros. A shared page (the script
+  knows it by an `atlas-footnote` saying "Shared with") lists only the platforms with posts. Show
+  the exact count ("1,412 posts"), never a rounded one ("1.4K").
 - A check that is N/A for this page (section 1) goes in `data-na` on the scope, for example
   `data-na="R2"` on a ledger or a one-creator profile; the script reports it `n/a`. Only R2 and R6
   can be N/A; R1 and R11 apply to every page, and naming them fails the check. R13 and R14 are

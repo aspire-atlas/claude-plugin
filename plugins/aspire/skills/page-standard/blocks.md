@@ -262,9 +262,10 @@ before the first `h2`, under the page header that carries the mark and the "Prep
 - `data-question` is the question code the page answers, which picks its required metrics
   (`SKILL.md`, section 8). Leave it out on a page that answers no code and cites no post.
 - A check that is N/A for this page goes in `data-na` (`SKILL.md`, section 5).
-- `data-accounts` lists every account whose figures the page shows, as `{network}:{handle}`
-  separated by spaces, including those it shows only in totals, so R14 looks for each one's
-  freshness entry (3.19). A scope that counts posts and names no account fails R14.
+- `data-accounts` lists every subject account (`SKILL.md`, section 9) whose figures the page shows,
+  as `{network}:{handle}` separated by spaces, totals included, so R14 looks for each one's
+  freshness entry (3.19). Authors cited only as mention evidence or counted only in totals share
+  the mentions entry (3.19) instead. A scope that counts posts and names no account fails R14.
 - Leave "Prepared by" out when the reader is not a VP or budget owner.
 
 <!-- block:scope -->
