@@ -139,9 +139,11 @@ team catalog, and how agents render for a lens are in **Recipient lens**.
 1. **Infer.** Match the ask's words against the catalog's cues, and take any reader, meeting,
    or date the user names ("for Thursday's product review"). Pick a primary lens and, when a
    hand-off applies (Performance then Creative; Campaign then Brand), a second one.
-2. **Confirm in one line.** When the run has a setup reply (**Orchestration contract** **2**),
-   name the reader in its Heard question, with the question's code, instead of asking "For"
-   on its own. Otherwise one `AskUserQuestion`, header "For", in the same call as the
+2. **Confirm in one line.** When the ask names no reader, start from a saved one: the person's
+   own default for the question code, then the flow's saved reader (**Orchestration contract**
+   **2**, Saved answers), and say where it came from. When the run has a setup reply
+   (**Orchestration contract** **2**), name the reader in its Heard question, with the
+   question's code, instead of asking "For" on its own. Otherwise one `AskUserQuestion`, header "For", in the same call as the
    flow's first question when there is one. Word it as the guess ("This reads like it's for
    the product review. Should I track it weekly and add a messaging view for PMM?"). Options:
    the guess (Recommended), one or two other lenses from the cues, "Just for our team". Skip

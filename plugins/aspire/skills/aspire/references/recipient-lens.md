@@ -80,8 +80,15 @@ a chain, add the other end as a second lens by default and say so in the confirm
    conversation already confirmed a lens for the same kind of ask, or when the ask is plainly
    the team's own routine ("run the daily"). Then pass the lens with `confirmed: true` if the
    user named it, `false` otherwise.
-5. Unattended runs never ask. They use the lenses saved for that flow (`guideline:readout-audience`,
-   `market-signal:lenses`), or `team`.
+5. **A saved answer comes before the guess.** When the ask names no reader, take the person's
+   own default for the question code, then the flow's saved reader (**Orchestration contract**,
+   **2**, Saved answers, for the records and the order). Offer it as the (Recommended) option and
+   say where it came from ("as the weekly report was last run"); with a setup reply, the Heard
+   question carries it instead. A changed reader is kept only through that section's "Remember"
+   question.
+6. Unattended runs never ask. They use the flow's saved readers (`guideline:readout-audience`,
+   `market-signal:lenses`, or the flow's `{flow}:last-run`), or `team`, and never a person's own
+   default.
 
 Never ask who the output is for in plain text, and never ask more than once per request.
 

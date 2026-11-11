@@ -103,6 +103,9 @@ Rules:
   confirmation may an unattended run send anything.
 - Confirm the batch once before writing (Guardrails: one confirmation may cover a batch of the
   same kind). Then write all six.
+- R6 is the readouts' saved reader for every run, scheduled or not. An interactive run's save
+  choice goes on `daily-insights-report:last-run` or `weekly-insights-report:last-run`
+  (**Orchestration contract**, **2**, Saved answers).
 - R6 lenses are `team`, `leadership`, `product`, `pmm`, and `growth` (**Recipient lens**).
   Option 3 saves both `product` and `pmm`. A destination named on a lens is covered by the R2
   standing approval; say so in the same confirmation. A saved R6 in the older wording maps as:
