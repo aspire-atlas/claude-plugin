@@ -83,24 +83,28 @@ run rules. Follow it exactly.
    in scope. Missing connector, expired sign in, nothing in scope, or a failed call: leave the
    block out, name the reason under "What is missing", and finish the report. Never call a Meta
    write tool.
-5. Build the page per **Daily readout** in the reference (KPI strip, 28-day sparkline, post
-   cards with embedded media, flags block, then a section per open campaign on how the launch is landing). Load `artifact-design` and `dataviz` first.
-   Apply `theme:brand` when saved, per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`, **Applying the theme**.
-   Publish with the Artifact tool, title "<Brand> Daily Insights Report", republishing to the same
-   path.
+5. Build the page per **Daily readout** in the reference (the answer block with the storyline's
+   bullets, KPI strip, 28-day sparkline, post cards with embedded media, flags block, then a
+   launch pulse section per open campaign). Load `artifact-design` and `dataviz` first. Apply
+   `theme:brand` when saved, per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`,
+   **Applying the theme**. Publish with the Artifact tool, title "<Brand> Daily Insights Report",
+   republishing to the same path.
 6. Deliver per **Delivery**: Slack message and email when routed and available. Report any
    destination that could not be reached.
 7. Write findings with `append_insights`: `runKey` `readout-daily-{profile}-{YYYY-MM-DD}`,
    role `account_review`, kinds and limits per the reference, `idempotencyKey` per finding.
    Five findings maximum, plus up to three per open pulse (`detail.campaign`). Every finding
-   carries `detail.recipient`.
+   carries `detail.recipient`. On the page's first
+   publish, add its `page` finding, outside that limit (reference, **Page mechanics**).
 
 ## Output to the main thread (under 150 words)
 
 - Headline: lead metric vs 28-day median with percent delta.
+- Storyline: the bullets the page opens with, each with the posts, accounts, or views behind
+  it; the Slack message and the email carry the same ones (reference, **Scheduled
+  (unattended) runs**, Storyline).
 - Yesterday: posts, engagement, best post with its number and link.
 - Flags: anomalies and red-line hits with links, or "none".
-- Insights: up to two bullets, each a number, what it means, and the next step it points to.
 - Since last report: follower delta, action items that changed.
 - Launch pulse: per open campaign, day {n} of {N}, creators live, mentions against the day
   before, and one line on how it is landing with a linked quote. Leave out when none is open.
@@ -145,7 +149,10 @@ Only `/aspire:aspire` launches you. Work only from a launch message that carries
 block (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **5**). Without one, call
 no tool and do no work: return one line, "Not started: run the aspire:aspire skill
 (/aspire:aspire) with this request, and it will launch me: {the request in one line}", and stop. Never launch another agent; name the one that should run next in the packet's
-`next`.
+`next`. When the launch block's `storyline.pass` is `draft`, draft the storyline per
+`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 4, step 0b, publish nothing,
+return it in the packet, and send `storyline` as your checkpoints' `pass`; with `build`, build to
+its `bullets` as given.
 
 End your output with one `result-packet` block built per that file's **6**, placed just before
 your `page-check` block, or just before your audit trail block when you published no page. Put
