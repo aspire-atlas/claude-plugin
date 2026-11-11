@@ -3,10 +3,10 @@
 # protection requires a code-owner review (docs/PLUGIN-LIFECYCLE.md section 11).
 # Later lines win, so keep the narrow paths below the broad ones.
 
-/plugins/aspire/agents/ @aspire-atlas/admin
+/plugins/aspire/agents/                     @aspire-atlas/admin
 /plugins/*/skills/*/SKILL.md                @aspire-atlas/admin
 /plugins/aspire/skills/aspire/references/   @aspire-atlas/admin
 /plugins/aspire/skills/page-standard/       @aspire-atlas/admin
-/scripts/               @aspire-atlas/admin
-/docs/STANDARD.md       @aspire-atlas/admin
-/.github/CODEOWNERS     @aspire-atlas/admin
+/scripts/                                   @aspire-atlas/admin
+/docs/STANDARD.md                           @aspire-atlas/admin
+/.github/CODEOWNERS                         @aspire-atlas/admin
