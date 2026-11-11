@@ -130,12 +130,13 @@ Filter path unless noted, `context` on every call, only field paths from the cen
    four weeks before. A caller may pass an earlier window of any length.
 2. **Entities.** The brand (its name, its handles, its tracked hashtags) and each M1
    competitor (its name, its handles, its `spellingVariants` from the `competitor` record).
-2b. **Freshness**, before any post is read (**Page standard**, section 9): `search_creators` on the
-   brand's and the competitors' handles, with no wildcard `exclude`, for each channel's
-   `freshness`, then each handle's pace. An unattended run refreshes the brand's handles and every
-   competitor handle Atlas holds without asking; an interactive run offers the refresh, with its
-   time and cost, for each handle behind its pace. A handle Atlas does not hold is never refreshed
-   (that would start discovery). The page's source line and the chat summary carry the freshness
+2b. **Freshness** (**Page standard**, section 9): `search_creators` on the brand's and the
+   competitors' handles, with no wildcard `exclude`, for each channel's `freshness`. An unattended
+   run then refreshes the brand's handles and every competitor handle Atlas holds without asking,
+   before step 3; a relaunch with handles under `approve-refresh` refreshes those, also before
+   step 3. An interactive run works out each handle's pace (section 9.4) from its own posts in the
+   window and the baseline, and offers the refresh, with its time and cost, for each handle behind
+   it. A handle Atlas does not hold is never refreshed (that would start discovery). The page's source line and the chat summary carry the freshness
    line, and the page names any refresh skipped as recently refreshed.
 3. **Mention sets.** Per entity: `search_posts` where the text matches the name or a spelling
    variant (`match_phrase`), or `instagram.mentions.username` names a handle, or a hashtag

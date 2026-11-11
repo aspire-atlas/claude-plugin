@@ -280,6 +280,13 @@ packet after the run.
 | `atlas-shops` | write | Saves the plan |
 | `atlas-weekly-insights-report` | write | Saves the week's insights |
 
+**The freshness refresh is confirmed at Read.** A refresh of accounts Atlas already holds
+(`lookup_creators` with `forceRefresh: true`, **Page standard**, sections 4 and 9) starts no
+discovery and the refresh itself is not charged; its only credit use is the new posts it collects,
+which its offer states. So its `approve-refresh` proposal is level `read`, its offer's own question
+is the confirmation, and step 1 below does not raise it to `spend`. An agent whose file rules out
+lookups never proposes one.
+
 **Meta Ads writes are never an agent's.** No agent proposes or makes a write through the Meta Ads
 connector, whatever its level: those writes are the main thread's, one `AskUserQuestion` each, per
 **Meta Ads** **Writes**. A packet proposal that would write to Meta is not offered and is

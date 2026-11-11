@@ -95,8 +95,7 @@ findings and pushes only, saying in the summary that nothing was saved.
 - Next week's pushes (mode `own`): three bullets, each with day, format, angle, and target
 - Recommended next steps: 2 to 3 bullets, ranked by impact, matching the action items written
 - Data gaps: anything missing, still indexing, or not measurable yet. In mode `handle`, lead with the
-  freshness line: last fetched {lastFetchedAt}, newest post {newestPostAt}, posts held, and whether a
-  refresh ran in this session.
+  freshness line (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 9.2), with the posts held and whether a refresh ran in this session.
 - Also for {lens}: two bullets per extra lens, when more than one was passed
 - Forward note: two or three lines the requester can paste to the reader (skip for lens `team`)
 - One closing line: how many findings were saved to Atlas under this run, and the `runKey` used

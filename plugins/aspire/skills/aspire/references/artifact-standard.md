@@ -129,9 +129,10 @@ check script finds it in this file only.
   Aspire Atlas cross-platform indexing ({networks}), as of {asOfDate}. Internal use only." The full
   sentence is on the page. Creator and post cards in chat are Atlas's own, drawn by the host; the
   plugin builds no widget for them (**Creator card**, **Cards in chat**).
-- **Decks**: the small mark top right of every slide, and the source line on the last slide
-  ("Thank you"), unless a slide's footer band can carry it without crossing the render checks. A deck
-  for a client uses the shared-page audience line.
+- **Decks**: the small mark top right of every slide, and the source line, with its freshness line
+  when the deck cites an account, on the last slide ("Thank you"), unless a slide's footer band can
+  carry it without crossing the render checks. A deck for a client uses the shared-page audience
+  line.
 - **No page** (a flow that ends in chat only): no source line is added.
 
 ## 4. Before publishing

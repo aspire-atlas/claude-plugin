@@ -48,7 +48,7 @@ findings, delivery, and the unattended rules. Follow them exactly.
 
 1. Load tools with `ToolSearch` `select:` under the given prefix: `get_brand_context`, `search_calibrations`,
    `list_post_search_fields`, `search_posts`, `search_creators`, `list_hashtag_posts`,
-   `search_insights`, `append_insights`, `report_checkpoint`. Load the Slack and email send tools only if the
+   `search_insights`, `append_insights`, `report_checkpoint`, `lookup_creators` (for the freshness refresh only). Load the Slack and email send tools only if the
    routing names them and they exist.
 2. **Clock, then window.** Read the timezone from `market-signal:cadence` in the step 3
    calibration read, done first (UTC for "on demand"), then `TZ=<tz> date +%F` via Bash. Resolve the window and the four-week baseline

@@ -500,7 +500,7 @@ cut-downs**).
 
 <!-- block:storyboard -->
 ```html
-<article class="pb-card pb-board" data-block="storyboard" data-scanned="yes">
+<article class="pb-card pb-board" data-account="instagram:makerjune" data-block="storyboard" data-scanned="yes">
   <h3 class="pb-h">Cut 1: 14 seconds from @makerjune's unboxing</h3>
   <ol class="pb-beats">
     <li class="pb-frame"><img src="data:image/jpeg;base64,..." alt="Child gasps as the lid opens" width="132" height="235"><span class="pb-tc">0:00 to 0:03</span><span><b>Hook.</b> The lid opens and the child gasps.</span></li>
@@ -529,7 +529,7 @@ cut-downs**).
 
 <!-- block:rights -->
 ```html
-<div class="pb-rights" data-block="rights" data-expires="2027-01-31">
+<div class="pb-rights" data-account="instagram:makerjune" data-block="rights" data-expires="2027-01-31">
   <a href="https://www.instagram.com/reel/EXAMPLE/">@makerjune unboxing, Oct 12</a>
   <span>Paid usage</span><span>Instagram, Facebook</span><span class="pb-num">Jan 31, 2027</span>
   <span class="pb-chip pb-ok">Cleared</span>
@@ -686,7 +686,7 @@ out.
 
 <!-- block:score-row -->
 ```html
-<div class="pb-score" data-block="score-row" data-score="82">
+<div class="pb-score" data-account="instagram:makerjune" data-block="score-row" data-score="82">
   <img src="data:image/jpeg;base64,..." alt="Unboxing of the holiday playset" width="40" height="71">
   <div><a href="https://www.instagram.com/reel/EXAMPLE/">@makerjune</a> <span class="pb-muted">Creator post, Oct 12, 0:31</span></div>
   <div class="pb-bar" role="img" aria-label="Score 82 of 100"><span style="width:82%"></span></div><span class="pb-num">82</span>
@@ -726,7 +726,7 @@ video. Each quote carries who said it and links to where.
 
 <!-- block:quote -->
 ```html
-<figure class="pb-quote" data-block="quote">
+<figure class="pb-quote" data-account="instagram:makerjune" data-block="quote">
   <blockquote>We waited all week for this one.</blockquote>
   <figcaption><a href="https://www.instagram.com/reel/EXAMPLE/">@makerjune, Instagram, Oct 12</a></figcaption>
 </figure>
@@ -740,12 +740,15 @@ last fetched the account (`SKILL.md`, section 9). It goes inside the source line
 (`artifact-standard.md`, section 2), before the source sentence, on every page that cites an
 account.
 
+- Every block that names an account (creator, post, storyboard, rights row, score row, quote)
+  carries `data-account="{network}:{handle}"`, so R14 looks for that account's entry.
 - One `data-fresh="{network}:{handle}"` entry per account, matching the `data-account` the page
   gives that account. `data-newest` is the newest post's date (`YYYY-MM-DD`), or `none` when Atlas
   holds no posts.
 - `data-fetched` is `lastFetchedAt`'s date, shown as "last fetched", or `none` for "not fetched by
   Atlas yet". With no `freshness` on record, `data-changed` replaces it: the account's `snapshotAt`
-  date, shown as "last changed", never "last fetched".
+  date, shown as "last changed", never "last fetched". With no `snapshotAt` either, `data-fetched`
+  is `unknown`, shown as "freshness unknown".
 - An account behind its pace, or refreshed in this run, says so on the same entry. A refresh skipped
   as recently refreshed says "refreshed recently, skipped".
 - The page check's R14 reads these.

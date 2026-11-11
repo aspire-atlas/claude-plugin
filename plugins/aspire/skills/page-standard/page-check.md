@@ -338,15 +338,18 @@ def account_key(value):
     return "%s:%s" % (network, handle) if sep and network and handle else None
 
 def day(value):
-    # A date (YYYY-MM-DD, optionally with a time after "T"), or "none"; anything else is False.
+    # "date" for YYYY-MM-DD (optionally with a time after "T"), "none" or "unknown" as written;
+    # anything else is False.
     value = (value or "").strip().lower()
-    if value == "none":
-        return "none"
+    if value in ("none", "unknown"):
+        return value
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}(?:t\S*)?", value):
+        return False
     try:
         datetime.date.fromisoformat(value[:10])
     except ValueError:
         return False
-    return "date" if len(value) == 10 or value[10] == "t" else False
+    return "date"
 
 def in_footnote(node):
     while node is not None:
@@ -360,7 +363,7 @@ def fresh_problems(key, node):
     if not has(shown, key.split(":", 1)[1]):
         problems.append("the freshness entry for %s does not show the handle" % key)
     newest = day(node.attrs.get("data-newest"))
-    if not newest:
+    if not newest or newest == "unknown":
         problems.append("the freshness entry for %s needs data-newest as a date (YYYY-MM-DD) or \"none\"" % key)
     elif newest == "none" and not has(shown, "holds no posts"):
         problems.append("the freshness entry for %s has no newest post but does not say Atlas holds no posts" % key)
@@ -372,7 +375,9 @@ def fresh_problems(key, node):
     elif fetched is not None:
         when = day(fetched)
         if not when:
-            problems.append("the freshness entry for %s has data-fetched \"%s\", not a date or \"none\"" % (key, fetched))
+            problems.append("the freshness entry for %s has data-fetched \"%s\", not a date, \"none\" or \"unknown\"" % (key, fetched))
+        elif when == "unknown" and not has(shown, "freshness unknown"):
+            problems.append("the freshness entry for %s has no freshness on record but does not say \"freshness unknown\"" % key)
         elif when == "none" and not has(shown, "not fetched by Atlas yet"):
             problems.append("the freshness entry for %s has no fetch but does not say \"not fetched by Atlas yet\"" % key)
         elif when == "date" and not has(shown, "last fetched"):

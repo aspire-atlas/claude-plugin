@@ -89,10 +89,12 @@ Fresh aggregates, filter path:
   3) in both quarters: posts, distinct creators, engagement, paid vs organic.
 - Current follower counts from `search_creators`, against the first saved follower count in
   the quarter's readout findings.
-- Freshness, before the brand's posts are read (**Page standard**, section 9): each linked
-  handle's `freshness` from the same `search_creators` call, with no wildcard `exclude`. An
-  interactive run offers the refresh, with its time and cost, for a handle behind its pace; an
-  unattended run refreshes the brand's handles without asking. The page's source line carries the
+- Freshness (**Page standard**, section 9): each linked handle's `freshness` from the same
+  `search_creators` call, with no wildcard `exclude`, read before the brand's posts. An unattended
+  run refreshes the brand's handles without asking, and a relaunch with handles under
+  `approve-refresh` refreshes those, both before the posts are read. An interactive run works out
+  each handle's pace (section 9.4) from the quarter's posts and offers the refresh, with its time
+  and cost, for a handle behind it. The page's source line carries the
   freshness line, and a part of the quarter after a handle's last fetch reads "Atlas has no data
   for {period}", never "no posts".
 

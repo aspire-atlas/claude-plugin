@@ -262,7 +262,7 @@ Mark the parts the script reads. The attributes carry no styling; style the page
 - Every account the page cites carries `data-account="{network}:{handle}"`: each cited post, and
   each creator or account card. The source line then holds one `data-fresh` entry per account with
   the same value (`blocks.md`, 3.19): `data-newest` the newest post's date or `none`, and
-  `data-fetched` the last fetch's date or `none`, or, with no `freshness` on record,
+  `data-fetched` the last fetch's date, `none`, or `unknown`, or, with no `freshness` on record,
   `data-changed`, shown as "last changed". A page that cites no account gets R14 `n/a`.
 - A page with no `data-page` markup yet (a flow whose reference does not add it) gets `unmarked`
   for R1, R2, R6, R13, and R14. Judge those by reading; R11 still runs.
@@ -290,7 +290,7 @@ flow. Every check is pass, fail, or N/A, never a score.
 
 | Check | How |
 | ----- | --- |
-| R1 Reader and scope, R2 Platforms covered, R6 Decisions kept separate, R11 Plain language, R13 Required metrics, R14 Data freshness | Script, or by reading when the page is drawn in script or carries no markup |
+| R1 Reader and scope, R2 Platforms covered, R6 Decisions kept separate, R11 Plain language, R13 Required metrics, R14 Data freshness | Script, or by reading when the page is drawn in script or carries no markup. R14's period wording ("Atlas has no data for {period}", section 9.3) is judged |
 | R3, R4, R5, R8, R10, R12 | Judgment |
 | R7 Real evidence | Judgment, checking each figure against what the run read |
 | R9 Names what's missing | Judgment on a team page; N/A on a page shared outside the team |
@@ -402,8 +402,10 @@ freshness rule. A flow's reference points here and never sets an age rule of its
 The newest post is `newestPostAt` and the last fetch is `lastFetchedAt`. When `lastFetchedAt` is
 null, the account is "not fetched by Atlas yet". When `freshness` is absent, the newest post is the
 newest `postedAt` the run's own searches return for the account, and the time is the account's
-`snapshotAt`, labelled "last changed", never "last fetched". An account with no posts at all reads
-"Atlas holds no posts". Never show `indexedAt` as either time.
+`snapshotAt`, labelled "last changed", never "last fetched"; with no `snapshotAt` either, the
+freshness is unknown and the line says "freshness unknown". An account with no posts at all reads
+"Atlas holds no posts". Never show `indexedAt` as either time. All ages are measured against the
+shell clock (`date -u`), never an assumed "today".
 
 **9.2 The freshness line.**
 
@@ -414,6 +416,8 @@ newest `postedAt` the run's own searches return for the account, and the time is
   the next step: "Atlas data: @brightsidetoys on Instagram, newest post Nov 7, last fetched Nov 8."
   With more than three accounts, name the brand's own and any behind its pace, then "freshness for
   the other {n} is on the page".
+- **In a deck**, the line sits with the source line on the last slide (`artifact-standard.md`,
+  section 3).
 - **On a page shared outside the team** the line stays, as the as-of time does. Behind-pace notes,
   skipped refreshes, and periods with no data go in the page check's `gaps` (section 1).
 
@@ -426,8 +430,9 @@ claim about Atlas.
 
 **9.4 Behind pace.** An account's pace is the median gap between its consecutive posts Atlas holds
 from the 28 days before the run, or over its last 10 posts held when the 28 days hold fewer than 3.
-It is **behind** when its newest held post is older than twice that gap, measured against the shell
-clock (`date -u`), and Atlas has not fetched it in the last 24 hours. An account fetched in the last
+It is **behind** when its newest held post is older than twice that gap and Atlas has not fetched
+it in the last 24 hours. Pace needs the posts, so work it out after the flow's first read of the
+account's posts. An account fetched in the last
 24 hours is not behind: it has stopped posting, and the page says so ("@x has not posted since
 Nov 2; it usually posts every 2 days"). An account with fewer than 2 posts held has no pace.
 
@@ -435,20 +440,22 @@ Nov 2; it usually posts every 2 days"). An account with fewer than 2 posts held 
 
 | Run | What is refreshed | Asked first? |
 | --- | ----------------- | ------------ |
-| The user named the handle (handle mode, the creator profile) | That handle when it is not current: Atlas holds nothing, or `lastFetchedAt` (with no fetch on record, `newestPostAt`) is 24 hours old or more. The flow's reference resolves it | No: naming the handle approved it |
+| The user named the handle (handle mode, the creator profile) | That handle when it is not current. It is current only when Atlas holds the account and `lastFetchedAt` is under 24 hours old; with `lastFetchedAt` null or `freshness` absent, when its newest post (`newestPostAt`, or the newest post the searches return) is. No account record, no posts, or an older time is stale, so an account that posts less than daily is refreshed, as intended. The flow's reference resolves it | No: naming the handle approved it |
 | Interactive, any other cited account | Each account behind its pace | Yes |
 | Unattended (a scheduled run) | Before reading, the brand's own handles and the saved competitors (`competitor` records) the page reads, whether or not they are behind. Other accounts get the freshness line only | No, and it never asks |
 | The page's final shortlist | As section 4, step 2 | No |
-| A flow whose reference rules out lookups (the content library) | Nothing; the freshness line and behind-pace notes only | Never |
+| A flow whose reference or agent file rules out lookups (the content library, the organization dashboard, and every agent whose file says to read only what Atlas holds) | Nothing; the freshness line and behind-pace notes only | Never |
 
 The offer names each account, its newest post, and its pace, then the time and the cost: "Atlas's
 newest post for @x is Nov 2, and @x usually posts every 2 days. Refresh it first? About 2 minutes.
 Public data: the refresh is not charged, and the new posts it collects count against your credits."
 Options: "Refresh first (Recommended)" and "Use what Atlas holds". Ask with `AskUserQuestion` when
 the run asks its own questions. Otherwise build with what Atlas holds, mark each behind account on
-the page, and return the offer in the result's `questions`
-(`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **6**); on yes, the main thread
-launches the run again with the approved handles, and that run refreshes them before reading.
+the page, and return the offer as a proposal in the result packet
+(`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **6** and **7**): level
+`read`, gate `approve-refresh`, one `items` entry per handle as `{network}:{handle}`, and the offer
+above as `what`. The main thread asks it with these options and, on yes, launches the run again
+with the handles in `approved`; that run refreshes exactly those before reading.
 
 **9.6 How to refresh.** Call `lookup_creators` with `forceRefresh: true`, `entityKind: "account"`,
 the network as `schema`, the handle as `identifier`, and the run's own `asOrganizationId` and
