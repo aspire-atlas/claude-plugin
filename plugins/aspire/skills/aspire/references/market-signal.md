@@ -79,6 +79,9 @@ Rules:
 - M1: a competitor the user adds by name is also offered as a new `competitor` calibration in
   the same batch confirmation. M1 names the networks too: Instagram and TikTok are the only
   searchable ones.
+- M1 and M3 are the market signal's saved scope and reader; in a person's own interactive run,
+  their own default reader can override M3. An interactive run's save choice goes on
+  `lastrun:market-signal` (**Orchestration contract**, **2**, Saved answers).
 - M3: a lens may carry its own destination (`product>slack:#product-feedback`), typed in the
   free text field. Those destinations are covered by the same standing approval as M4.
 - M4 doubles as the **standing approval to deliver and to save findings**. Say so: "Scheduled

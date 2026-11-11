@@ -37,7 +37,8 @@ every review**) and follow it.
 
 C1 to C4, one at a time (C3 and C4 may be declined), one batch confirmation. Every question is
 asked exactly as worded in the reference, at most four per call (**Guardrails**). P4, F1, F3 and F4
-confirm writes.
+confirm writes. An interactive run's reader and save choice go on `lastrun:content-review`
+(**Orchestration contract**, **2**, Saved answers).
 
 ### Review
 
@@ -97,7 +98,7 @@ Rules:
   a fresh setup item.
 - Write C1's options from the brand's context. If no `red_line` is saved, say so in C1's
   question text ("No red lines are saved yet, so option 2 blocks nothing").
-- C3's option list starts from what exists: when `guideline` records or the
+- C3's option list starts from what exists: when `guideline` records (never `lastrun:` keys) or the
   `voice_and_content_ops` brand fact are saved, summarize them in one line in the question
   text so the user sees what "saved guidelines" means.
 - C4: call `get_brand_instruction` with `agentType: "brand_safety"` first. If an instruction
