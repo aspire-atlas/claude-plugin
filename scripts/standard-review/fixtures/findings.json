@@ -1,0 +1,45 @@
+{
+  "summary": "The change adds a writing rule to the creator brief agent. There is 1 Must finding: the rule names a quality, not a behavior.",
+  "items": [
+    {
+      "id": "C1",
+      "verdict": "fail",
+      "file": "plugins/aspire/agents/atlas-example.md",
+      "quote": "Summarize the page in chat, with a table of every creator.",
+      "fix": "Reply with the answer, up to three points that each name the creator and the number behind it, the next step in one line, and the page link."
+    },
+    {
+      "id": "S1",
+      "verdict": "n/a"
+    }
+  ],
+  "rules": [
+    {
+      "file": "plugins/aspire/agents/atlas-example.md",
+      "quote": "Always write clearly | concisely.",
+      "namesBehavior": false,
+      "goodExample": false,
+      "badExample": false,
+      "examplesLookReal": "no examples",
+      "atItsStep": true
+    }
+  ],
+  "findings": [
+    {
+      "severity": "Must",
+      "item": "Rule",
+      "file": "plugins/aspire/agents/atlas-example.md",
+      "quote": "Always write clearly | concisely.",
+      "why": "It names a quality, so no reader can check whether a page meets it.",
+      "fix": "No arrows, no 'vs', one idea per sentence, sentences of at most 25 words."
+    },
+    {
+      "severity": "Should",
+      "item": "English",
+      "file": "plugins/aspire/agents/atlas-example.md",
+      "quote": "Where possible, try to cite\nthe newest post for @handle.",
+      "why": "A step the agent must do reads as optional.",
+      "fix": "Cite the newest post Atlas holds for each account."
+    }
+  ]
+}

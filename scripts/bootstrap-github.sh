@@ -54,8 +54,10 @@ protect develop '["validate"]' true
 
 gh label create beta --color FBCA04 --description "Reported against the develop channel" --force
 gh label create release --color 0E8A16 --description "Release PR into main" --force
+gh label create skip-standard-review --color C5DEF5 --description "Skip the standard review; give the reason in the PR body" --force
 
 echo
 echo "Done. Next:"
 echo "  1. Watch the Release workflow tag each plugin's version on main (v<version> for aspire, <plugin>--v<version> for the others)."
-echo "  2. Submit https://github.com/$REPO at https://claude.ai/admin-settings/directory/submissions/plugins/new"
+echo "  2. Add the ANTHROPIC_API_KEY repository secret for the standard review: gh secret set ANTHROPIC_API_KEY --repo $REPO"
+echo "  3. Submit https://github.com/$REPO at https://claude.ai/admin-settings/directory/submissions/plugins/new"

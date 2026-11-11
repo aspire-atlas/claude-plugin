@@ -20,6 +20,7 @@ does not apply.
 - [7. Questions](#7-questions)
 - [8. Proof](#8-proof)
 - [How to write a rule](#how-to-write-a-rule)
+- [The judgment review](#the-judgment-review)
 - [Rules that still apply](#rules-that-still-apply)
 - [Changing this standard](#changing-this-standard)
 
@@ -37,17 +38,19 @@ placeholders, because this repository is public and holds no customer names.
 - **eval**: `bun run eval:pages` rerunning the example questions and grading the new page beside
   the approved one (`scripts/eval/README.md`).
 
+"Judgment review" is the `standard-review` job, which reads every item marked **reviewer** on a
+pull request (see [The judgment review](#the-judgment-review)).
+
 "Lands with ASP-NNNN" means the rule or its check is that ticket's work and is not on `develop`
-yet. Until it lands, a reviewer checks the item by hand. Three tickets automate the rest of this
-file: ASP-5382 (`check-agent-standard`, every countable item), ASP-5385 (the eval rerun on a PR
-that changes an agent or flow) and ASP-5386 (a judgment review of changed prose against the items
-a script cannot count).
+yet. Until it lands, a reviewer checks the item by hand. Two tickets automate the rest of this
+file: ASP-5382 (`check-agent-standard`, every countable item) and ASP-5385 (the eval rerun on a PR
+that changes an agent or flow).
 
 ## 1. Chat
 
 | Id | Item | Ticket | Checked by | Good | Bad |
 | -- | ---- | ------ | ---------- | ---- | --- |
-| C1 | The chat reply is the answer: up to three points, each naming the creator or post and the number behind it, then the next step in one line, then one link to the page (its file path when the session cannot publish). | ASP-5290 | reviewer; judgment review (lands with ASP-5386) | "@handle: 4.1% engagement on 38K views, twice her usual. Next: approve her for the gifting wave. Page: {link}" | A reply that repeats the page: twelve bullets, a table of every creator, and the link at the bottom. |
+| C1 | The chat reply is the answer: up to three points, each naming the creator or post and the number behind it, then the next step in one line, then one link to the page (its file path when the session cannot publish). | ASP-5290 | reviewer; judgment review | "@handle: 4.1% engagement on 38K views, twice her usual. Next: approve her for the gifting wave. Page: {link}" | A reply that repeats the page: twelve bullets, a table of every creator, and the link at the bottom. |
 | C2 | No inline images in chat: never a card, chart, or theme preview drawn as embedded image data. | ASP-5290 | script (lands with ASP-5382); reviewer | The reply names three creators in text and offers "Say 'show me the cards' to see them." | A search reply that embeds a base64 card for every creator, which fills the context and gets compacted away. |
 | C3 | Cards appear only when the person asks, through `lookup_creators` or `lookup_posts`, or `show_ads` or `show_partnership_content` for ad grids. The search tools draw no card. | ASP-5291, ASP-5380 | reviewer; script (lands with ASP-5382) | "Show me the cards" after a creator search draws them with `lookup_creators` on the creators Atlas already holds. | A flow that calls a search tool for its cards, so every search draws a widget nobody asked for. |
 
@@ -80,7 +83,7 @@ a script cannot count).
 | Id | Item | Ticket | Checked by | Good | Bad |
 | -- | ---- | ------ | ---------- | ---- | --- |
 | S1 | A new page goes through the storyline step before it is built: three short bullets, each with the size of its evidence, asked as one `AskUserQuestion` with Build, Change, and Widen. A repeat run of the same page skips it. | ASP-5297 | reviewer; eval (E1, E8) | "Gift framing drives saves (14 posts, 6 creators, 410K views). Build?" | A holiday plan built on the first guess at the argument, which took five rounds to reach an approved page. |
-| S2 | A scheduled or unattended run asks nothing and states its storyline at the top of the page and in the delivery message. | ASP-5297 | reviewer; judgment review (lands with ASP-5386) | A daily insights page whose answer block opens with its three storyline bullets and their evidence sizes. | A scheduled run that waits on a question nobody is there to answer. |
+| S2 | A scheduled or unattended run asks nothing and states its storyline at the top of the page and in the delivery message. | ASP-5297 | reviewer; judgment review | A daily insights page whose answer block opens with its three storyline bullets and their evidence sizes. | A scheduled run that waits on a question nobody is there to answer. |
 | S3 | Saved answers go to the right record: a person's own defaults under their `user:usr-<id>` `user_fact` key, a flow's reader, scope, save choice and last run on the flow's organization-wide `applied_config` record. Never another person's key. | ASP-5298, ASP-5299 | reviewer | "Reader: leadership, as the weekly readout was last run. Right?", saved on the readout's own record. | A teammate's reader choice written to the first person's key, so a scheduled run follows one person's preference. |
 
 ## 6. Reviews
@@ -121,6 +124,47 @@ across a long run. A rule earns its place when it closes that gap, and only then
 
 A new item in this file follows the same four steps, and gets a row with its ticket, its check
 and its two examples.
+
+## The judgment review
+
+A pull request that changes a file under `plugins/*/agents/` or `plugins/*/skills/`, or this file,
+gets a review of its changed prose by Claude, posted as one comment on the pull request. The
+comment is edited in place on each later push.
+
+- **What it reads:** this file as it is on the branch, the pull request's body, the diff, and each
+  changed file in full. It has no tools, so it reads only that.
+- **What it checks:**
+  - every item whose **Checked by** says reviewer, as pass, fail or n/a, with the quoted line and
+    the fix;
+  - each new or changed rule against [How to write a rule](#how-to-write-a-rule): whether it names
+    a behavior, whether it has a good and a bad example, whether they look like a real page, and
+    whether it sits at its step;
+  - plain English in the changed lines.
+- **Findings** are Must, Should or Nice, the same words as the page reviews. A Must breaks an item,
+  adds a rule that names a quality ("write clearly"), contradicts another instruction, or can be
+  read two ways that act differently. Every finding quotes the pull request's own text.
+- **Answering a finding:** fix it, or reply on the pull request with why not. A plugin owner
+  decides. The review never approves a change.
+- **Skipping it:** for a change that alters no instruction (a typo, a broken link), add the
+  `skip-standard-review` label and a line `Standard review skipped: <why>` to the body. The comment
+  then says it was skipped, with that reason. Good: "Standard review skipped: fixes a broken link in
+  the creator card reference." Bad: "Standard review skipped: small change."
+- **Advisory, then blocking:** the job never fails a pull request while the repository variable
+  `STANDARD_REVIEW_BLOCKING` is unset. Once the first ten reviews have been compared with the
+  owners' own review comments, and the agreement recorded on ASP-5386, an admin sets it to `true`.
+  From then on a Must finding, or a review that could not run, fails the `standard-review` check.
+  An owner who decides a Must does not apply adds the skip label, with the reason.
+
+The reviewer's instructions are `scripts/standard-review/prompt.md`, and
+`scripts/standard-review/review.sh` builds what it reads and the comment. To run it on a branch
+before pushing, with the `claude` CLI signed in:
+
+```bash
+bash scripts/standard-review/review.sh run origin/develop HEAD
+```
+
+A pull request that adds an item a reviewer checks also adds it to `prompt.md`. The `validate` job
+runs `review.sh --self-test`, which fails when the prompt is missing an item marked reviewer.
 
 ## Rules that still apply
 
