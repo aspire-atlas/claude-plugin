@@ -1,6 +1,6 @@
 # Reader standard
 
-Reader standard v1.2.
+Reader standard v1.3.
 
 The reader checks ask whether the reader can act on the work: does it answer first, give numbers
 context, keep decisions apart, and fit the person who will read it. This file is the one place they
