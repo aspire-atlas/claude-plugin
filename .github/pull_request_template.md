@@ -45,7 +45,7 @@ flow change" here and skip the list.
 - [ ] Q2 A new flow's questions and their options live in its own reference file
 
 **Proof**
-- [ ] P1 A new agent ships with its spec, roster rows and orchestration block
+- [ ] P1 A new agent ships with its spec, roster rows and orchestration block (`scripts/new-agent.sh` writes them; no `TODO(new-agent)` left)
 - [ ] P2 Each question code it answers has an eval question, and its approved page once it has one
 - [ ] P3 A new or changed rule carries the before-and-after table below
 

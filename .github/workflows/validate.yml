@@ -95,6 +95,30 @@ jobs:
         continue-on-error: true
         run: bash scripts/check-agent-standard.sh --advisory
 
+      # A throwaway agent, scaffolded on a temporary branch and checked as generated, so the templates in
+      # scripts/templates/ cannot drift from the checks. The remove at the end must leave the tree as it was.
+      - name: A scaffolded agent passes every check unchanged (scripts/new-agent.sh)
+        run: |
+          git switch -q -c ci/new-agent-scaffold
+          bash scripts/new-agent.sh ci-scaffold --codes I1,O1 --permission write
+          claude plugin validate .
+          for d in plugins/*/; do claude plugin validate "$d"; done
+          bash scripts/check-channel.sh "${{ steps.channel.outputs.name }}"
+          for s in scripts/check-*.sh; do
+            [ "$s" = scripts/check-channel.sh ] && continue
+            echo "== $s"; bash "$s"
+          done
+          # The advisory items still fail on older agents; the scaffold must pass them too.
+          if bash scripts/check-agent-standard.sh --advisory | grep -F ci-scaffold; then
+            echo "::error::The scaffolded agent fails an advisory item of check-agent-standard.sh"; exit 1
+          fi
+          claude plugin test plugins/aspire-mod
+          bash scripts/new-agent.sh --remove ci-scaffold
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --short; echo "::error::new-agent.sh --remove left the tree changed"; exit 1
+          fi
+          git switch -q -
+
       - name: Changelogs are edited only on release branches
         if: steps.channel.outputs.name == 'develop'
         run: |

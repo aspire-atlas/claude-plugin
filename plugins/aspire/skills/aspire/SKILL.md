@@ -19,13 +19,9 @@ metadata:
 
 # /aspire: Atlas onboarding
 
-Guide a new or returning user from zero to first insights on Atlas. Run the phases in order.
-Never skip Phase 1 when running the phases. Stop and resolve any phase that fails before moving on.
+Guide a new or returning user from zero to first insights on Atlas. Run the phases in order. Never skip Phase 1 when running the phases. Stop and resolve any phase that fails before moving on.
 
-Tone for all user-facing messages: brief, plain language, no jargon about tools or servers.
-Refer to the connection as "Aspire Atlas" and the platform as "Atlas". Never expose internal
-tool names. The slash command is `/aspire:aspire` (plugin namespace), so use that form in
-any instruction that tells the user to re-run the skill.
+Tone for all user-facing messages: brief, plain language, no jargon about tools or servers. Refer to the connection as "Aspire Atlas" and the platform as "Atlas". Never expose internal tool names. The slash command is `/aspire:aspire` (plugin namespace), so use that form in any instruction that tells the user to re-run the skill.
 
 ## Contents
 
@@ -145,8 +141,7 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 
 ### Agent hand-off
 
-Where **List agents** step 5 hands each agent off. Each named section owns the connection check,
-the profile, and the confirmations its agent needs.
+Where **List agents** step 5 hands each agent off. Each named section owns the connection check, the profile, and the confirmations its agent needs.
 
 | Chosen agent | Hand off to |
 | ------------ | ----------- |
@@ -179,14 +174,7 @@ the profile, and the confirmations its agent needs.
 
 ## Model tiers (which model each agent runs on)
 
-Basic work (reading what Atlas holds, publishing a page, drafting a message) runs on a smaller
-model to save tokens. Work that decides money, rights, brand safety, or a creator's fate, reads
-video frames to judge them, or synthesizes across many saved records runs on the session's model.
-The same `model:` is in each agent file's frontmatter; this table decides what the main thread
-passes, and `scripts/check-agent-roster.sh` fails when the two disagree. `inherit` means the
-session's model: pass no `model`. No agent runs on Haiku: every one reads many records or
-writes a long page, which Haiku's smaller context window cannot be trusted with. Someone who
-wants it can still say "use Haiku".
+Basic work (reading what Atlas holds, publishing a page, drafting a message) runs on a smaller model to save tokens. Work that decides money, rights, brand safety, or a creator's fate, reads video frames to judge them, or synthesizes across many saved records runs on the session's model. The same `model:` is in each agent file's frontmatter; this table decides what the main thread passes, and `scripts/check-agent-roster.sh` fails when the two disagree. `inherit` means the session's model: pass no `model`. No agent runs on Haiku: every one reads many records or writes a long page, which Haiku's smaller context window cannot be trusted with. Someone who wants it can still say "use Haiku".
 
 | Agent | Model | Why |
 | --- | --- | --- |
