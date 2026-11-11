@@ -47,9 +47,12 @@ bash scripts/check-palette.sh
 bash scripts/check-skill-args.sh
 bash scripts/check-directory.sh
 bash scripts/check-skill-layout.sh
+bash scripts/check-agent-standard.sh
 ```
 
 `check-skill-layout.sh` fails on a `SKILL.md` over 500 lines, a skill description over 1,024 characters, a file under `skills/*/references/` that cites another reference file (`SKILL.md` and `page-standard` are fine), or a Markdown file over 100 lines under `skills/` without a `## Contents` section whose links resolve to its headings; its fixtures are in `scripts/fixtures/skill-layout/`. Until ASP-4093 lands, CI reports its findings on the plugins without blocking.
+
+`check-agent-standard.sh` counts the items of `docs/STANDARD.md` a script can count, on every agent and the flow reference it runs, and names the file, line and item of each miss: a description over 1,024 characters or with no "Trigger on" (L4), a question code with no required-metrics row or a page agent that answers none (M1), no pointer to page-standard's Data freshness rule (F1), image data in chat or a card shown first (C2, C3), an R11 word in page copy (V2), and no entry in `scripts/eval/questions.json`'s `agents` map (P2). Its fixtures are in `scripts/fixtures/agent-standard/` and its exceptions in the script's shrink-only `ALLOW` list; L4, F1 and P2 report without blocking until the tickets named in the script land.
 
 Try the plugin from a checkout in Claude Code:
 

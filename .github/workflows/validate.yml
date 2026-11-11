@@ -78,6 +78,19 @@ jobs:
       - name: Skill layout (SKILL.md length, description length, reference chains, tables of contents)
         run: bash scripts/check-skill-layout.sh --tree
 
+      - name: The agent standard check gives every fixture its result
+        run: bash scripts/check-agent-standard.sh --fixtures
+
+      - name: Agent standard (metrics row, inline images and cards, R11 words in page copy)
+        run: bash scripts/check-agent-standard.sh --tree
+
+      # TODO(ASP-4093, ASP-5295, ASP-5385): advisory until agent descriptions are trimmed, the flows
+      # point at page-standard's Data freshness rule, and scripts/eval/questions.json carries the
+      # "agents" map. Drop continue-on-error once --advisory passes, and move the items into --tree.
+      - name: Agent standard, advisory (description, freshness pointer, eval question)
+        continue-on-error: true
+        run: bash scripts/check-agent-standard.sh --advisory
+
       - name: Changelogs are edited only on release branches
         if: steps.channel.outputs.name == 'develop'
         run: |
