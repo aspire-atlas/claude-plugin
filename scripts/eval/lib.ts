@@ -178,18 +178,22 @@ export function findPage(turn: Turn): { link: string | null; file: string | null
   const packets = fencedBlocks(turn.text, 'result-packet')
   // On a host that cannot publish, the packet's page is the path of the file the page was saved to.
   let saved: string | null = null
-  // A storyline draft returns a packet marked `pass: "draft"` and no page: the run goes on once the person answers.
-  let drafts = 0
+  // A storyline draft returns a packet marked `pass: "draft"` and no page: the run waits on the person's answer
+  // until a later packet builds or publishes. A feeder agent's packet in the same turn does not end that wait.
+  let awaitingStoryline = false
   for (const packet of packets) {
     const parsed = parseJsonLoose(packet)
-    if (parsed?.storyline?.pass === 'draft') drafts++
+    const pass = parsed?.storyline?.pass
+    if (pass === 'draft') awaitingStoryline = true
+    else if (pass === 'build' || pass === 'state') awaitingStoryline = false
     const value = parsed?.page
     const page = Array.isArray(value) ? value[0] : value
     if (typeof page !== 'string' || page.length === 0) continue
+    awaitingStoryline = false
     if (/^https?:\/\//.test(page)) link = link ?? page
     else saved = saved ?? page
   }
-  return { link, file: file ?? saved ?? written, finished: packets.length > drafts }
+  return { link, file: file ?? saved ?? written, finished: packets.length > 0 && !awaitingStoryline }
 }
 
 export function fencedBlocks(text: string, label: string): string[] {

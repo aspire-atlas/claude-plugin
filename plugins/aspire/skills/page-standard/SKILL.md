@@ -145,11 +145,16 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
      gaps:" line in the launch message is step 2a's check-in already answered: act on it and do not
      stop at step 2a again. When the data no longer supports a bullet, build it with what the data
      shows and say so in the page check's `gaps`; never swap in a storyline the person did not
-     confirm.
+     confirm. Fewer than three bullets mean the person dropped some: never add one back. Atlas already holds what
+     the draft refreshed, so step 2 reads it without `forceRefresh` and fetches only what the draft
+     did not, inside the launch's `spend.cap`. The draft's frame scans and fact checks stand for the
+     videos and facts it checked. When the build's data puts a different most-viewed video behind a
+     bullet, or a bullet comes to rest on a fact the draft did not check, run drafting step 3 or 4
+     on it, and the method says what was checked and what was not.
    - `state`: draft the storyline below and build in the same pass. The page's insights (part
-     3) are those three bullets, in order, each with its comparison and "So:" line; the answer
+     3) are those bullets, in order, each with its comparison and "So:" line; the answer
      block (part 2) states them short under the headline, each with its evidence; and the
-     delivery message (Slack, email, the chat summary) carries the same three.
+     delivery message (Slack, email, the chat summary) carries the same bullets.
    - `none`, or no `storyline` in an interactive launch: build as the flow says.
 
    To draft it:
@@ -159,7 +164,8 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
       next in `widen` (more weeks, more platforms, or more accounts, whichever the launch's `scope`
       leaves room for), or `null` when it has no room left; under the minimum, the main thread
       recommends it.
-   2. **Write three short bullets**, each a claim the reader can act on, with the posts, accounts,
+   2. **Write three short bullets** (fewer only per `orchestration.md`, **2**, **Fewer bullets**),
+      each a claim the reader can act on, with the posts, accounts,
       and views behind it. Except on a one-post question, a bullet on fewer than 3 posts says how
       few ("from only two posts"). The good and bad examples are in `orchestration.md`, **2**.
    3. **Watch the most-viewed video behind each bullet.** With a shell, `ffmpeg`, and the post's

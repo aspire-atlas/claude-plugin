@@ -201,6 +201,20 @@ test('a storyline draft packet with no page is not the end of the run', () => {
   expect(findPage(summarizeTurn(events))).toEqual({ link: null, file: null, finished: false })
 })
 
+test('a feeder agent packet beside a storyline draft does not end the run', () => {
+  const feeder = '```result-packet\n{"page": null, "storyline": {"pass": "none", "bullets": []}}\n```'
+  const draft = '```result-packet\n{"page": null, "storyline": {"pass": "draft", "bullets": []}}\n```'
+  const events = [{ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 't', content: `${feeder}\n${draft}` }] } }]
+  expect(findPage(summarizeTurn(events))).toEqual({ link: null, file: null, finished: false })
+})
+
+test('a build packet after a storyline draft ends the run', () => {
+  const draft = '```result-packet\n{"page": null, "storyline": {"pass": "draft", "bullets": []}}\n```'
+  const build = '```result-packet\n{"page": "https://claude.ai/artifact/AbC123", "storyline": {"pass": "build", "bullets": []}}\n```'
+  const events = [{ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 't', content: `${draft}\n${build}` }] } }]
+  expect(findPage(summarizeTurn(events))).toEqual({ link: 'https://claude.ai/artifact/AbC123', file: null, finished: true })
+})
+
 test('a build packet with no page ends the run, storyline or not', () => {
   const events = [{ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 't', content: '```result-packet\n{"page": null, "storyline": {"pass": "build", "bullets": []}}\n```' }] } }]
   expect(findPage(summarizeTurn(events))).toEqual({ link: null, file: null, finished: true })

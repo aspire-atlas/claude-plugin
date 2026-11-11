@@ -90,7 +90,7 @@ and the unattended run rules. Follow it exactly. Read `recipient-lens.md` too.
    block out, name the reason under "What is missing", and finish the report. Never call a Meta
    write tool.
 5. Build the page per **Weekly readout** in the reference (the answer block with the storyline's
-   three bullets, KPI strip with benchmark row, 9-week line chart, post cards, mix small-multiples,
+   bullets, KPI strip with benchmark row, 9-week line chart, post cards, mix small-multiples,
    open items table, ranked next steps, then one section per non-`team` lens with its anchor). Load
    `artifact-design` and `dataviz` first. Apply `theme:brand` when saved, per
    `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`, **Applying the theme**. Publish with
@@ -103,13 +103,14 @@ and the unattended run rules. Follow it exactly. Read `recipient-lens.md` too.
    older readout, creator-brief, or content-push action item now met, referencing its `idempotencyKey` in
    `detail`. Never close a content review edit: only a later review does that. `idempotencyKey`
    per finding. Add the growth lens's creator findings (`seedEligible`, 5 max) and carry
-   `detail.recipient` on every finding.
+   `detail.recipient` on every finding. On the page's first
+   publish, add its `page` finding, outside that limit (reference, **Page mechanics**).
 
 ## Output to the main thread (under 250 words, ordered for the primary lens)
 
 - Headline: the week in one line, lead metric vs prior week and vs 8-week median.
-- Storyline: the three bullets the page opens with, each with the posts, accounts, or views behind
-  it; the Slack message and the email carry the same three (reference, **Scheduled
+- Storyline: the bullets the page opens with, each with the posts, accounts, or views behind
+  it; the Slack message and the email carry the same ones (reference, **Scheduled
   (unattended) runs**, Storyline).
 - Numbers: posts, engagement, engagement rate, reach or views, followers with delta.
 - What worked: top 3 posts with metric, link, and the shared pattern.

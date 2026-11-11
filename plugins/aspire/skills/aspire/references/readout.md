@@ -235,7 +235,7 @@ red-line hits.
 Chat summary, under 150 words:
 
 - Headline: one line, lead metric vs 28-day median with the percent delta.
-- Storyline: the three bullets the page opens with, each with the posts, accounts, or views
+- Storyline: the bullets the page opens with, each with the posts, accounts, or views
   behind it (**Scheduled (unattended) runs**, Storyline).
 - Yesterday: posts published, engagement, the best post with its number.
 - Flags: anomalies and red-line hits, each with a permalink; "none" is a valid line.
@@ -300,7 +300,7 @@ first; team: post-level detail first; product, pmm, growth: that lens's block fi
 bullets per other saved lens:
 
 - Headline: the week in one line, lead metric vs prior week and vs 8-week median.
-- Storyline: the three bullets the page opens with, each with the posts, accounts, or views
+- Storyline: the bullets the page opens with, each with the posts, accounts, or views
   behind it (**Scheduled (unattended) runs**, Storyline).
 - Numbers: posts, engagement, engagement rate, reach or views, followers with delta.
 - What worked: top 3 posts with metric and the pattern they share (format, theme, day, hook).
@@ -374,21 +374,28 @@ title "<Brand> Daily Insights Report" or "<Brand> Weekly Insights Report", and r
 each run so the link in Slack or email stays stable. Note once in the footer that images are
 a snapshot.
 
+**The `page` finding.** On a readout page's first publish, the run's `append_insights` call adds one
+`page` finding, shaped as a program page's (**Influencer program**, **Working state**): `runKey`
+`readout-page-{profile}`, `detail.key` `daily` or `weekly`, `url`, and `title`, outside the
+finding limit. A run answered "Page only" writes none, so its next interactive run asks the
+Heard line instead (**Orchestration contract**, **2**, **The storyline**). It is how the main
+thread tells a published readout from a new one, never the readout's other insights.
+
 ## Delivery (Slack and email)
 
 Read `policy:readout-routing`. The page and chat summary always ship. Then:
 
 - **Slack:** if the routing names a channel and a Slack connection is available in the session, send
-  one message: the headline, the storyline's three bullets with their evidence, up to two more key
+  one message: the headline, the storyline's bullets with their evidence, up to two more key
   bullets, the page link. Plain text with Slack formatting, no images. If no Slack connection is
   present, say so in the chat summary and continue.
 - **Per-lens destinations:** a lens in R6 (or a pulse lens) with its own destination gets its own
-  message: the storyline's three bullets, then that lens's three bullets and the page link with
+  message: the storyline's bullets, then that lens's three bullets and the page link with
   the lens anchor. Same connection
   rules as below.
 - **Email:** if the routing names recipients and an email connection is available, send one
   message with subject "<Brand> {Daily|Weekly} Insights Report, {date}", the chat summary as the body,
-  and the page link; the summary's storyline bullets are the same three the page and the Slack
+  and the page link; the summary's storyline bullets are the same ones the page and the Slack
   message carry. If no email connection is present, say so and continue.
 - Interactive run: confirm the send once with `AskUserQuestion` ("Post to {channel} and email
   {recipients}?" Options: Send (Recommended) / Page only this time). Unattended run: the R2
@@ -423,14 +430,14 @@ README). Rules for the agents:
 
 **Storyline.** A scheduled readout, or a rerun of one already published, never stops to confirm its
 storyline: it is a `state` pass (**Orchestration contract**, **2**, **The storyline**): the agent
-drafts the three bullets from the window's posts, each with the posts, accounts, or views behind it,
+drafts three bullets from the window's posts, each with the posts, accounts, or views behind it,
 and the page opens with them in the answer block, under the headline. The chat summary, the Slack
-message, and the email carry the same three bullets, in the same order and wording. A window under
+message, and the email carry the same bullets, in the same order and wording. A window under
 the row's minimum (10 posts for what landed and why) still publishes, and the bullet it weakens says
 how few posts it rests on. A window with no posts, on a first run's `draft` pass too, gives "No
-posts landed {window}." as the first bullet, then up to two from the flags or the older posts still
+posts indexed for {window}." as the first bullet, then up to two from the flags or the older posts still
 gaining engagement, each with its evidence; with nothing there either, that one bullet is the
-storyline. Where the run cannot watch a video or check a product fact, the method says so
+storyline (**Orchestration contract**, **2**, **Fewer bullets**). Where the run cannot watch a video or check a product fact, the method says so
 (`skills/page-standard/SKILL.md`, section 4, step 0b). A readout's window is fixed, on the first
 interactive run too: its draft names only more platforms or accounts in `widen`, or `null`, a
 readout Widen never carries dates, and a window under the minimum builds with the thin bullet saying
@@ -446,12 +453,14 @@ and/or `atlas-daily-insights-report` with: tool prefix, `profile_id`, `profile_s
 and networks, run mode `interactive`, `recipient` (the lens SKILL.md **Reading the ask** confirmed,
 or the saved R6 lenses when it found none), and the target window only if the user named one, and
 the launch block's `storyline` pass: `state` when the readout's page is already published, since
-the run republishes it. The page is published when the Artifact tool's `list` shows one titled
-"<Brand> Daily Insights Report" (or Weekly), or, on a host that cannot list artifacts, when Atlas
-holds the readout's insights for this profile (`search_insights` with a `prefix` filter on
-`detail.account_review.runKey` = `readout-daily-{profile}` or `readout-weekly-{profile}`, per
-**Data pull**); a first run answered "Page only" saves no insights, so the page check comes first; otherwise the first run's page is new and follows **The storyline**
-before it builds. Never pass "today" or any date the main thread assumed: session headers can be a
+the run republishes it. The page is published when Atlas holds its `page` finding
+(`search_insights` with a `prefix` filter on `detail.account_review.runKey` =
+`readout-page-{profile}`, the newest with `detail.key` `daily` or `weekly`; **Page mechanics**) and
+the Artifact tool's `read` opens its `url`. The readout's other insights never count, nor does a
+title in the Artifact tool's `list`. With no such finding (a first run answered "Page only" writes
+none), the Heard line says whether the run updates a published report or builds a new one, and
+the person's answer settles it (**Orchestration contract**, **2**, **The storyline**, New or
+already published); a new page follows **The storyline** before it builds. Never pass "today" or any date the main thread assumed: session headers can be a
 day stale, and a wrong "today" shifts the whole readout by a day (or a week). The agents resolve the
 date themselves (**Resolving "today"**) and refuse a repeat window. Relay each agent's summary and
 page link, including the resolved window it reports. When an agent asks the main thread to confirm

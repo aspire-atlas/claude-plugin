@@ -79,7 +79,7 @@ run rules. Follow it exactly.
    block out, name the reason under "What is missing", and finish the report. Never call a Meta
    write tool.
 5. Build the page per **Daily readout** in the reference (the answer block with the storyline's
-   three bullets, KPI strip, 28-day sparkline, post cards with embedded media, flags block, then a
+   bullets, KPI strip, 28-day sparkline, post cards with embedded media, flags block, then a
    launch pulse section per open campaign). Load `artifact-design` and `dataviz` first. Apply
    `theme:brand` when saved, per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`,
    **Applying the theme**. Publish with the Artifact tool, title "<Brand> Daily Insights Report",
@@ -89,13 +89,14 @@ run rules. Follow it exactly.
 7. Write findings with `append_insights`: `runKey` `readout-daily-{profile}-{YYYY-MM-DD}`,
    role `account_review`, kinds and limits per the reference, `idempotencyKey` per finding.
    Five findings maximum, plus up to three per open pulse (`detail.campaign`). Every finding
-   carries `detail.recipient`.
+   carries `detail.recipient`. On the page's first
+   publish, add its `page` finding, outside that limit (reference, **Page mechanics**).
 
 ## Output to the main thread (under 150 words)
 
 - Headline: lead metric vs 28-day median with percent delta.
-- Storyline: the three bullets the page opens with, each with the posts, accounts, or views behind
-  it; the Slack message and the email carry the same three (reference, **Scheduled
+- Storyline: the bullets the page opens with, each with the posts, accounts, or views behind
+  it; the Slack message and the email carry the same ones (reference, **Scheduled
   (unattended) runs**, Storyline).
 - Yesterday: posts, engagement, best post with its number and link.
 - Flags: anomalies and red-line hits with links, or "none".
