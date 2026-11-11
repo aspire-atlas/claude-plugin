@@ -145,9 +145,10 @@ comment is edited in place on each later push.
   read two ways that act differently. Every finding quotes the pull request's own text.
 - **Answering a finding:** fix it, or reply on the pull request with why not. A plugin owner
   decides. The review never approves a change.
-- **Skipping it:** for a trivial change (a typo, a link), add the `skip-standard-review` label and a
-  line `Standard review skipped: <why>` to the body. The comment then says it was skipped, with
-  that reason.
+- **Skipping it:** for a change that alters no instruction (a typo, a broken link), add the
+  `skip-standard-review` label and a line `Standard review skipped: <why>` to the body. The comment
+  then says it was skipped, with that reason. Good: "Standard review skipped: fixes a broken link in
+  the creator card reference." Bad: "Standard review skipped: small change."
 - **Advisory, then blocking:** the job never fails a pull request while the repository variable
   `STANDARD_REVIEW_BLOCKING` is unset. Once the first ten reviews have been compared with the
   owners' own review comments, and the agreement recorded on ASP-5386, an admin sets it to `true`.
@@ -162,9 +163,8 @@ before pushing, with the `claude` CLI signed in:
 bash scripts/standard-review/review.sh run origin/develop HEAD
 ```
 
-Adding or changing an item that a reviewer checks means changing `prompt.md` in the same pull
-request: `review.sh --self-test`, run by the `validate` job, fails when an item marked reviewer is
-missing from the prompt.
+A pull request that adds an item a reviewer checks also adds it to `prompt.md`. The `validate` job
+runs `review.sh --self-test`, which fails when the prompt is missing an item marked reviewer.
 
 ## Rules that still apply
 
