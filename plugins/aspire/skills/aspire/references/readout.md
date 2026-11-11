@@ -337,8 +337,8 @@ Page, sections in order:
 
 1. Header: brand, network, week label, prepared date, a "Prepared for" chip per lens, and the animated mark at the top right.
 2. The answer block: the headline and the storyline's three bullets with their evidence
-   (**Scheduled (unattended) runs**, Storyline). Then the KPI strip with week-over-week deltas and the benchmark row from `target:weekly-health`
-   when present.
+   (**Scheduled (unattended) runs**, Storyline). Then the KPI strip with week-over-week
+   deltas and the benchmark row from `target:weekly-health` when present.
 3. Lead-metric line chart, 9 weeks, last week highlighted.
 4. Top 3 and bottom 2 post cards with media, metric row, takeaway.
 5. Format and theme mix: one small-multiple bar pair (this week vs prior).
@@ -443,7 +443,8 @@ the target window only if the user named one, and the launch block's `storyline`
 when Atlas already holds the readout's insights for this profile (`search_insights` with
 a `prefix` filter on `detail.account_review.runKey` = `readout-daily-{profile}` or
 `readout-weekly-{profile}`, per **Data pull**), since the run republishes the
-same page; otherwise the first run's page is new and follows **The storyline** before it builds. Never pass "today" or any date the main thread
+same page; otherwise the first run's page is new and follows **The storyline** before it
+builds. Never pass "today" or any date the main thread
 assumed: session headers can be a day stale, and a wrong "today" shifts the whole readout by a
 day (or a week). The agents resolve the date themselves (**Resolving "today"**) and refuse a
 repeat window. Relay each agent's summary and page link, including the resolved window it

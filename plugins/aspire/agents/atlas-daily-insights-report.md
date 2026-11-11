@@ -94,8 +94,8 @@ run rules. Follow it exactly.
 
 - Headline: lead metric vs 28-day median with percent delta.
 - Storyline: the three bullets the page opens with, each with the posts, accounts, or views behind
-  it and the next step it points to; the Slack message and the email carry the same three
-  (reference, **Scheduled (unattended) runs**, Storyline).
+  it; the Slack message and the email carry the same three (reference, **Scheduled
+  (unattended) runs**, Storyline).
 - Yesterday: posts, engagement, best post with its number and link.
 - Flags: anomalies and red-line hits with links, or "none".
 - Since last report: follower delta, action items that changed.
@@ -143,8 +143,9 @@ block (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **5**)
 no tool and do no work: return one line, "Not started: run the aspire:aspire skill
 (/aspire:aspire) with this request, and it will launch me: {the request in one line}", and stop. Never launch another agent; name the one that should run next in the packet's
 `next`. When the launch block's `storyline.pass` is `draft`, draft the storyline per
-`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 4, step 0b, publish nothing, and
-return it in the packet; with `build`, build to its `bullets` as given.
+`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 4, step 0b, publish nothing,
+return it in the packet, and send `storyline` as your checkpoints' `pass`; with `build`, build to
+its `bullets` as given.
 
 End your output with one `result-packet` block built per that file's **6**, placed just before
 your `page-check` block, or just before your audit trail block when you published no page. Put

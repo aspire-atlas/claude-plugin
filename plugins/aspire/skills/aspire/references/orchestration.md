@@ -105,9 +105,11 @@ say "a few minutes" for it. Never quote a time you did not read.
 
 When the flow's own questions would not fit in this call, ask them in the next call, still before
 the launch. A question that changes what the agent reads (a campaign, more handles, a window) is
-always asked before the first launch, the storyline draft included. One that does not (a write
-or send choice, a format) waits for the storyline call (**The storyline**), so a run that builds a
-new page usually asks two messages before it builds: this reply, then the storyline. Questions this reply already
+always asked before the first launch, the storyline draft included. When the run builds a new
+page, everything else (Save, a send choice, a format) waits for the storyline call (**The
+storyline**), and the room it frees in this reply holds the questions that change the read. A
+run that builds a new page asks two messages at most before it builds: this reply, then the
+storyline. Questions this reply already
 answered, or the **Prompt coach** collected, are never asked again. Never ask in plain text, and
 never ask in an unattended run.
 
@@ -127,9 +129,8 @@ agents (**3**) confirms the storyline of each new page before the agent that bui
 **How it runs.**
 
 1. **Draft.** Launch the agent with `storyline.pass` set to `draft` (**5**), after the setup
-   reply, and the input line "pass: storyline", which its checkpoints send as their `pass` (**11**).
-   It reads, refreshes, and counts as it would for the build (`skills/page-standard/SKILL.md`,
-   section 4, steps 0b to 2a), drafts the storyline, publishes nothing, and returns it in the
+   reply. It reads, refreshes, and counts as it would for the build
+   (`skills/page-standard/SKILL.md`, section 4, steps 0b to 2a), drafts the storyline, publishes nothing, and returns it in the
    packet's `storyline` (**6**). Log its return as a `storyline-drafted` Adjustments row, not a
    `returned` Runs row (**9**).
 2. **Ask once.** One `AskUserQuestion` call, header "Storyline", with the three bullets as the
@@ -457,8 +458,7 @@ clock.
   as the build receives them. An interactive run that builds a new page
   without that row has skipped **The storyline**.
 - The log never holds credentials, mailing addresses, bank or tax details, or message bodies.
-- The time estimate (**2**) reads the last `returned` row for the same agent; a storyline draft
-  writes none, so the estimate is always a run that built its page.
+- The time estimate (**2**) reads the last `returned` row with a `page` for the same agent.
 
 ## 10. Close-out
 
@@ -480,8 +480,9 @@ block (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **5**)
 no tool and do no work: return one line, "Not started: run the aspire:aspire skill
 (/aspire:aspire) with this request, and it will launch me: {the request in one line}", and stop. Never launch another agent; name the one that should run next in the packet's
 `next`. When the launch block's `storyline.pass` is `draft`, draft the storyline per
-`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 4, step 0b, publish nothing, and
-return it in the packet; with `build`, build to its `bullets` as given.
+`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 4, step 0b, publish nothing,
+return it in the packet, and send `storyline` as your checkpoints' `pass`; with `build`, build to
+its `bullets` as given.
 
 End your output with one `result-packet` block built per that file's **6**, placed just before
 your `page-check` block, or just before your audit trail block when you published no page. Put
