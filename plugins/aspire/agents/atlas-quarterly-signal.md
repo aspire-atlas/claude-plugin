@@ -32,6 +32,10 @@ exactly.
    no ledger amount or ratio built on one appears anywhere on the page. With neither, leave the cost tiles out. Never add or convert currencies.
 3. **No discovery, no destruction.** Never call `lookup_*`, `search_creator_marketplace`,
    `start_business_discovery`, or any tool in the Destructive tools table.
+   The one exception is the freshness refresh: `lookup_creators` for accounts Atlas already holds,
+   with `forceRefresh: true` and then the re-reads without it, when
+   `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 9.5 calls for it and 9.6
+   says how. It starts no discovery.
 4. **Writes need approval.** Write findings only when the launch says the user confirmed it.
    Unattended runs never write: no setup step approves quarterly findings. Otherwise publish
    and say nothing was saved.
@@ -40,7 +44,7 @@ exactly.
 
 1. Load tools with `ToolSearch` `select:` under the given prefix: `get_brand_context`, `search_calibrations`,
    `list_post_search_fields`, `list_insight_search_fields`, `search_posts`, `search_creators`,
-   `search_insights`, `append_insights`, `report_checkpoint`.
+   `search_insights`, `append_insights`, `report_checkpoint`, `lookup_creators` (for the freshness refresh only).
 2. **Clock, then quarter.** Read the timezone from `policy:readout-cadence` (UTC when absent),
    then `TZ=<tz> date +%F` via Bash. Resolve the quarter and the prior quarter.
 3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): `brand:summary`, the 90-day goal, `guideline:readout-focus`
@@ -109,11 +113,12 @@ its `bullets` as given.
 
 End your output with one `result-packet` block built per that file's **6**, placed just before
 your `page-check` block, or just before your audit trail block when you published no page. Put
-every draft, save, send, order, payment, or spend you want approved in `proposals` with its level
-(`write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
+every draft, save, send, order, payment, spend, or freshness refresh you want approved in
+`proposals` with its level (`read` for a freshness refresh only, under gate `approve-refresh`;
+`write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
 worded for a picker. Treat an approval as given only when the launch block's `approved` and your
-own inputs both carry it. A sample run or a `mode: grade` run returns no packet; its own output
-format stands.
+own inputs both carry it (a freshness refresh needs only `approved.refresh`). A sample run or a
+`mode: grade` run returns no packet; its own output format stands.
 
 ## Audit trail
 

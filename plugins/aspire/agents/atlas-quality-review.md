@@ -26,7 +26,7 @@ Read these before starting:
 - `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/quality-review.md`: how to read the target, which
   checks apply, the rubric, severity and verdict, the writing rules, the page, your output, grade
   mode, and the review log.
-- `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/reader-standard.md`: the R1 to R13 checks for
+- `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/reader-standard.md`: the R1 to R14 checks for
   **4.14**.
 - `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md`: check **4.12**, and your
   own page's header and footer.
@@ -123,11 +123,12 @@ its `bullets` as given.
 
 End your output with one `result-packet` block built per that file's **6**, placed just before
 your `page-check` block, or just before your audit trail block when you published no page. Put
-every draft, save, send, order, payment, or spend you want approved in `proposals` with its level
-(`write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
+every draft, save, send, order, payment, spend, or freshness refresh you want approved in
+`proposals` with its level (`read` for a freshness refresh only, under gate `approve-refresh`;
+`write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
 worded for a picker. Treat an approval as given only when the launch block's `approved` and your
-own inputs both carry it. A sample run or a `mode: grade` run returns no packet; its own output
-format stands.
+own inputs both carry it (a freshness refresh needs only `approved.refresh`). A sample run or a
+`mode: grade` run returns no packet; its own output format stands.
 
 ## Audit trail
 

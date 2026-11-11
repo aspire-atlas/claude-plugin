@@ -437,8 +437,10 @@ lists them. Agents work only from a message that carries it (**11**).
   the flow's standing approval in an unattended run): from the setup reply, or from the storyline
   call on a run that builds a new page, so `false` on a `draft` pass; `send` names each recipient,
   order, or payment approved one by one; `spend.cap` is the cap in fetches (**2**), `null` for no cap or
-  no spend. The flow's own inputs still name each approval as before (R4, O1 and so on); an agent
-  writes, sends, or spends only when both agree.
+  no spend; `refresh` is `null` until the person answers a freshness refresh offer, then the list
+  of approved handles as `{network}:{handle}` (`[]` when they chose "Use what Atlas holds";
+  **Page standard**, section 9.5). The flow's own inputs still name each approval as before (R4,
+  O1 and so on); an agent writes, sends, or spends only when both agree.
 - `examples` lists up to three approved examples for the page this launch builds, from the brand
   profile's examples library (`skills/page-standard/examples.md`, **The examples library**). It is
   `[]` when no library is saved, the question has no approved example, or the launched agent only
@@ -488,7 +490,7 @@ acts on.
 | ----- | ----- |
 | `page` | The link to the page published or republished this run; the absolute path of its HTML file when the session has no Artifact tool (`skills/page-standard/SKILL.md`, section 4, step 5); `null` when the run built no page. A run that published more than one page or deck gives a list of links, main page first, each with its own `page-check` block. |
 | `findings` | Up to five, the ones the page leads with. `kind` is `observation`, `inference`, or `recommendation`; `confidence` is `high`, `medium`, or `low`. Every finding cites its evidence; one that cannot is left out. |
-| `proposals` | Every draft, save, send, order, payment, or spend the agent wants approved, each with its `level` (**7**), its `items`, and its `gate`: `approve-` plus a short kebab-case name of what is approved (`approve-shortlist`, `approve-offers`, `approve-saves`), 2 to 40 lower-case letters, digits, and hyphens. The main thread sends the person's verdict under the same `gate` (SKILL.md, **Running agents**). Empty when there is nothing to approve. |
+| `proposals` | Every draft, save, send, order, payment, spend, or freshness refresh the agent wants approved, each with its `level` (**7**), its `items`, and its `gate`: `approve-` plus a short kebab-case name of what is approved (`approve-shortlist`, `approve-offers`, `approve-saves`), 2 to 40 lower-case letters, digits, and hyphens. The main thread sends the person's verdict under the same `gate` (SKILL.md, **Running agents**). Empty when there is nothing to approve. |
 | `questions` | Everything the agent could not settle, worded so the main thread can put it in `AskUserQuestion` as is. |
 | `next` | The agent that should run next and why, or `null`. A suggestion only: the main thread decides. |
 | `cost` | Credits the run's tools reported using (`null` when none reported any), `fetches` (the handles or posts it fetched or refreshed, counted against `approved.spend.cap`), and minutes from the audit trail's `started` to `finished`. |
@@ -507,7 +509,7 @@ below, never from what an agent's prompt says it may do.
 
 | Level | What it covers | What `/aspire` confirms |
 | ----- | -------------- | ----------------------- |
-| Read | Searches and analyses what Atlas holds, publishes a page, delivers it to the routing saved at setup | Nothing. Runs on request or on schedule. |
+| Read | Searches and analyses what Atlas holds, publishes a page, delivers it to the routing saved at setup | Nothing, except a freshness refresh proposal, which its offer's own question confirms. Runs on request or on schedule. |
 | Write | Saves records to Atlas (stages, deals, insights, calibrations, drafts, links) or creates drafts in the brand's own mailbox, which send nothing | One confirmation per batch of saves: one `AskUserQuestion` naming what the batch saves. |
 | Send | Reaches someone outside the brand: a message sent to a creator, an order, a discount code in a store, a listing, a payment | Every recipient, order, or payment, one by one: one question per item, never a batch. |
 | Spend | Uses credits beyond the ordinary search (fetching handles or posts Atlas does not hold, starting discovery work) or moves money | The cost in credits or currency, said before the run, with the credit cap (**2**). |
@@ -544,6 +546,13 @@ packet after the run.
 | `atlas-roster-manager` | write | Saves the roster review, and creates note drafts in the mailbox |
 | `atlas-shops` | write | Saves the plan |
 | `atlas-weekly-insights-report` | write | Saves the week's insights |
+
+**The freshness refresh is confirmed at Read.** A refresh of accounts Atlas already holds
+(`lookup_creators` with `forceRefresh: true`, **Page standard**, sections 4 and 9) starts no
+discovery and the refresh itself is not charged; its only credit use is the new posts it collects,
+which its offer states. So its `approve-refresh` proposal is level `read`, its offer's own question
+is the confirmation, and step 1 below does not raise it to `spend`. An agent whose file rules out
+lookups never proposes one.
 
 **Meta Ads writes are never an agent's.** No agent proposes or makes a write through the Meta Ads
 connector, whatever its level: those writes are the main thread's, one `AskUserQuestion` each, per
@@ -641,11 +650,12 @@ its `bullets` as given.
 
 End your output with one `result-packet` block built per that file's **6**, placed just before
 your `page-check` block, or just before your audit trail block when you published no page. Put
-every draft, save, send, order, payment, or spend you want approved in `proposals` with its level
-(`write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
+every draft, save, send, order, payment, spend, or freshness refresh you want approved in
+`proposals` with its level (`read` for a freshness refresh only, under gate `approve-refresh`;
+`write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
 worded for a picker. Treat an approval as given only when the launch block's `approved` and your
-own inputs both carry it. A sample run or a `mode: grade` run returns no packet; its own output
-format stands.
+own inputs both carry it (a freshness refresh needs only `approved.refresh`). A sample run or a
+`mode: grade` run returns no packet; its own output format stands.
 <!-- /packet-block -->
 
 Every agent file also carries the checkpoint paragraph below verbatim, on one line, right after

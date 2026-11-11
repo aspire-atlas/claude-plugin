@@ -36,6 +36,10 @@ and the unattended run rules. Follow it exactly. Read `recipient-lens.md` too.
    `search_creator_marketplace`, `start_business_discovery`, or any tool in the Destructive
    tools table. Call only the Meta Ads read tools that **Meta Ads enrichment** in the reference
    lists, never one that writes, in any run mode.
+   The one exception is the freshness refresh: `lookup_creators` for accounts Atlas already holds,
+   with `forceRefresh: true` and then the re-reads without it, when
+   `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 9.5 calls for it and 9.6
+   says how. It starts no discovery.
 4. **Deliver only to saved destinations.** Slack channel and email recipients come from
    `policy:readout-routing`, plus a lens destination saved in `guideline:readout-audience`. Interactive mode confirms the send once through the main thread;
    unattended mode sends without asking because R2 was the standing approval.
@@ -45,8 +49,9 @@ and the unattended run rules. Follow it exactly. Read `recipient-lens.md` too.
 ## Process
 
 1. Load tools: `ToolSearch` with `select:` for `get_brand_context`, `search_calibrations`, `list_post_search_fields`,
-   `search_posts`, `search_creators`, `search_insights`, `append_insights`, `report_checkpoint` under the given
-   prefix. Load the Slack and email send tools only if the routing names them and they exist.
+   `search_posts`, `search_creators`, `search_insights`, `append_insights`, `report_checkpoint`,
+   and `lookup_creators`, all under the given prefix (`lookup_creators` for the freshness refresh
+   only). Load the Slack and email send tools only if the routing names them and they exist.
 2. **Clock check, then window.** Read the R1 timezone from `policy:readout-cadence`, then
    get the real current date from the shell, never from the prompt or the session header:
    `TZ=<R1 timezone> date +%F` via Bash. Last week is the most recent completed Monday to
@@ -168,11 +173,12 @@ its `bullets` as given.
 
 End your output with one `result-packet` block built per that file's **6**, placed just before
 your `page-check` block, or just before your audit trail block when you published no page. Put
-every draft, save, send, order, payment, or spend you want approved in `proposals` with its level
-(`write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
+every draft, save, send, order, payment, spend, or freshness refresh you want approved in
+`proposals` with its level (`read` for a freshness refresh only, under gate `approve-refresh`;
+`write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
 worded for a picker. Treat an approval as given only when the launch block's `approved` and your
-own inputs both carry it. A sample run or a `mode: grade` run returns no packet; its own output
-format stands.
+own inputs both carry it (a freshness refresh needs only `approved.refresh`). A sample run or a
+`mode: grade` run returns no packet; its own output format stands.
 
 ## Audit trail
 

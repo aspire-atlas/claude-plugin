@@ -72,8 +72,8 @@ a script cannot count).
 
 | Id | Item | Ticket | Checked by | Good | Bad |
 | -- | ---- | ------ | ---------- | ---- | --- |
-| F1 | Every page and every chat reply that cites data points at page-standard's one freshness rule, and states the newest post Atlas holds and when it was fetched or last changed. No flow writes its own age rule. | ASP-5295 | script: page check R14 (lands with ASP-5295); reviewer | "Newest post Atlas holds for @handle: 7 Nov, last changed 8 Nov." | A flow file with its own "older than three days" rule that disagrees with every other flow. |
-| F2 | A period Atlas has not fetched reads "Atlas has no data for {period}", never "no posts". | ASP-5295 | reviewer; eval (E3) | "Atlas has no data for 3 to 9 Nov for @handle. Refresh it? About 2 minutes." | A weekly readout that said "no posts this week" for a week Atlas had not fetched. |
+| F1 | Every page and every chat reply that cites data points at page-standard's one freshness rule, and states the newest post Atlas holds and when it was fetched or last changed. No flow writes its own age rule. | ASP-5295 | script: page check R14; reviewer | "@handle on Instagram: newest post 7 Nov, last changed 8 Nov." | A flow file with its own "older than three days" rule that disagrees with every other flow. |
+| F2 | A period Atlas has not fetched reads "Atlas has no data for {period}", never "no posts". | ASP-5295 | reviewer; eval (E3) | "Atlas has no data for 3 to 9 Nov for @handle on TikTok. Refresh it? About 2 minutes; the refresh is not charged, and the new posts it collects count against your credits." | A weekly readout that said "no posts this week" for a week Atlas had not fetched. |
 
 ## 5. Storyline and saved answers
 
