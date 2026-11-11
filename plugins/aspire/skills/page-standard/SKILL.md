@@ -268,7 +268,7 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   line then holds one `data-fresh` entry per account with the same value (`blocks.md`, 3.19):
   `data-newest` the newest post's date or `none`, and `data-fetched` the last fetch's date,
   `none`, or `unknown`, or, with no `freshness` on record, `data-changed`, shown as "last changed".
-  Each date is shown in the entry. A page that cites no account and counts no posts gets R14 `n/a`.
+  The entry shows each date and the platform. A page citing no account or post count gets R14 `n/a`.
 - A page with no `data-page` markup yet (a flow whose reference does not add it) gets `unmarked`
   for R1, R2, R6, R13, and R14. Judge those by reading; R11 still runs.
 

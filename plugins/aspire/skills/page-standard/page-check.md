@@ -371,6 +371,8 @@ def shows_date(shown, value):
     name = r"sep(?:t(?:ember)?)?\.?" if month == "september" else r"%s(?:%s)?\.?" % (month[:3], month[3:])
     return re.search(r"(?i)\b(?:%s\s+0?%d|0?%d\s+%s)\b" % (name, day_of, day_of, name), shown) is not None
 
+PLATFORM_NAMES = {"instagram": "Instagram", "tiktok": "TikTok", "youtube": "YouTube", "pinterest": "Pinterest",
+                  "facebook": "Facebook"}
 LABELS = {"data-newest": "newest post", "data-fetched": "last fetched", "data-changed": "last changed"}
 
 def after_label(shown, label):
@@ -404,8 +406,11 @@ def mention_problems(node):
 def fresh_problems(key, node):
     shown = text(node, gap=" ")
     problems = dated_problems(key, node, shown)
-    if not re.search(r"(?i)@%s(?!\w|-|\.\w)" % re.escape(key.split(":", 1)[1]), shown):
+    network, handle = key.split(":", 1)
+    if not re.search(r"(?i)@%s(?!\w|-|\.\w)" % re.escape(handle), shown):
         problems.append("the freshness entry for %s does not show the handle" % key)
+    if not re.search(r"(?i)\b%s\b" % re.escape(PLATFORM_NAMES.get(network, network)), shown):
+        problems.append("the freshness entry for %s does not name the platform (%s)" % (key, PLATFORM_NAMES.get(network, network)))
     newest = day(node.attrs.get("data-newest"))
     if not newest or newest == "unknown":
         problems.append("the freshness entry for %s needs data-newest as a date (YYYY-MM-DD) or \"none\"" % key)

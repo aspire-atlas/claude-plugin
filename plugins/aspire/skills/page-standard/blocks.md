@@ -751,7 +751,8 @@ account.
 - With more than ten entries, put all but the brand's own and any behind their pace in a
   `details` element inside the source line.
 - One `data-fresh="{network}:{handle}"` entry per account, matching the `data-account` the page
-  gives that account. `data-newest` is the newest post's date (`YYYY-MM-DD`), or `none` when Atlas
+  gives that account, naming the handle and the platform ("@makerjune on Instagram"). Each
+  attribute's date is the date the entry shows, in the page's own time zone. `data-newest` is the newest post's date (`YYYY-MM-DD`), or `none` when Atlas
   holds no posts.
 - `data-fetched` is `lastFetchedAt`'s date, shown as "last fetched", or `none` for "not fetched by
   Atlas yet". With no `freshness` on record, `data-changed` replaces it: the account's `snapshotAt`
