@@ -458,8 +458,9 @@ def r14(nodes, regions):
     # freshness entry (data-fresh) in the source line: the newest post Atlas holds, and when Atlas
     # last fetched the account or, with no freshness on record, when it last changed. A cited post
     # carries data-account, or data-mention when its author is cited only as mention evidence; those
-    # authors share one data-fresh="mentions" entry. A scope that counts posts must name its
-    # accounts. Returns None (n/a) on a page that cites no account, no post, and counts no posts.
+    # authors share one data-fresh="mentions" entry. A scope that reports posts, or "no posts" or
+    # "no data", must name its accounts. Returns None (n/a) on a page that cites no account and no
+    # post and whose scope reports on no account.
     cited, problems = {}, []
     for index, post in enumerate([n for n in nodes if "data-post" in n.attrs], 1):
         if not (post.attrs.get("data-account") or "").strip() and "data-mention" not in post.attrs:
@@ -481,9 +482,17 @@ def r14(nodes, regions):
             problems.append("the scope's data-accounts entry \"%s\" is not {network}:{handle}" % raw)
         else:
             cited.setdefault(key, raw)
-    counted = [n for n in walk(scope) if (n.attrs.get("data-posts") or "0").replace(",", "").strip() not in ("", "0")] if scope is not None else []
-    if counted and not (scope.attrs.get("data-accounts") or "").strip():
-        problems.append("the scope counts posts but names no account; list them in the scope's data-accounts")
+    def reports(node):
+        # A platform the scope reports on: posts counted, or 0 with "no posts" or "no data". "Not
+        # covered" means no linked account, so it reports on none.
+        posts = (node.attrs.get("data-posts") or "").replace(",", "").strip()
+        if not posts or not node.attrs.get("data-platform"):
+            return False
+        shown = text(node, gap=" ")
+        return posts != "0" or ((has(shown, "no posts") or has(shown, "no data")) and not has(shown, "not covered"))
+    reporting = [n for n in walk(scope) if reports(n)] if scope is not None else []
+    if reporting and not (scope.attrs.get("data-accounts") or "").strip():
+        problems.append("the scope reports posts or their absence but names no account; list them in the scope's data-accounts")
     if not cited and not mentions and not problems:
         return None
     fresh = {}
@@ -520,7 +529,7 @@ def r14(nodes, regions):
 # R14 are n/a on their own terms, never through data-na.
 CAN_BE_NA = {"R2", "R6"}
 NA_REASON = {"R13": "the page names no question code and cites no post",
-             "R14": "the page cites no account and no post, and counts no posts"}
+             "R14": "the page cites no account and no post, and its scope reports on no account"}
 CHECKS = (("R1", "Reader and scope", r1), ("R2", "Platforms covered", r2),
           ("R6", "Decisions kept separate", r6), ("R11", "Plain language", r11),
           ("R13", "Required metrics", r13), ("R14", "Data freshness", r14))
