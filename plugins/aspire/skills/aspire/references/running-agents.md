@@ -55,7 +55,8 @@ agent only through this skill or a shortcut.
    the turn. Never wait on it, poll it, or sleep.
 3. **Ask before, never during.** Every question, write confirmation, and picker the flow lists
    for the launch is asked first, in the main thread, because agents never ask: in one setup
-   reply (**Orchestration contract** **2**) that repeats the question with its code, names the
+   reply (**Orchestration contract** **2**; on a run that builds a new page, what does not change
+   the read waits for the storyline call) that repeats the question with its code, names the
    reader, and gives the time estimate. Questions an agent raises come back in its result packet
    and are asked when it arrives. Write the launch's Runs row (**9** there). A run that publishes
    a new page has one launch before its build: the storyline draft (**Orchestration contract**
@@ -152,7 +153,7 @@ team catalog, and how agents render for a lens are in **Recipient lens**.
    confirmed a lens for the same kind of ask, or when the ask is the team's own routine ("run
    the daily"). Never ask in plain text, never twice for one request, never in an unattended
    run (saved lenses or `team`).
-   A run that builds a new page usually asks two messages before it builds: the setup reply,
+   A run that builds a new page asks two messages at most before it builds: the setup reply,
    with the reader in Heard, then the storyline call (**Orchestration contract** **2**, **The
    storyline**).
 3. **Route by lens** when the ask names no flow, per SKILL.md's **Routing by reader**.

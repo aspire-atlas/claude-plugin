@@ -72,8 +72,9 @@ unattended. Text it cannot route publishes the flow's "setup needed" card and st
 
 ## 2. The setup reply (one picker round)
 
-Everything the run needs is asked in one `AskUserQuestion` call, before the launch. The tool takes
-up to four questions per call, so the reply holds, in this order:
+Everything the run needs is asked in one `AskUserQuestion` call, before the launch; on a run that
+builds a new page, what does not change the read is asked in the storyline call instead (below).
+The tool takes up to four questions per call, so the reply holds, in this order:
 
 1. **Heard**, header "Heard". The question repeated in the map's wording with its code, the
    reader, and the time estimate: "I heard I2: should we work with @handle, and what would it
@@ -98,19 +99,21 @@ up to four questions per call, so the reply holds, in this order:
 4. **Save**, header "Save". Whether to save the findings to Atlas, defaulting to no: "Page only
    (Recommended)", "Save to Atlas". This is the run's one write confirmation (**7**, Write), and
    it replaces the flow's own save question (for example vetting's R4) so it is never asked twice.
+   On a run that builds a new page, Save is asked in the storyline call instead, once.
 
 The time estimate is the agent's Atlas analysis time plus about 10 minutes to build and check the
 page. Take the analysis time from the run log's last run of the same agent (**9**); with none,
 say "a few minutes" for it. Never quote a time you did not read.
 
 When the flow's own questions would not fit in this call, ask them in the next call, still before
-the launch. A question that changes what the agent reads (a campaign, more handles, a window) is
-always asked before the first launch, the storyline draft included. When the run builds a new
-page, everything else (Save, a send choice, a format) waits for the storyline call (**The
-storyline**), and the room it frees in this reply holds the questions that change the read. A
-run that builds a new page asks two messages at most before it builds: this reply, then the
-storyline. Questions this reply already
-answered, or the **Prompt coach** collected, are never asked again. Never ask in plain text, and
+the launch. On a run that builds a new page there is no such next call: a question that changes
+what the agent reads (a campaign, more handles, a window) goes in this reply, before the
+storyline draft, and everything else (Save, a send choice, a format) waits for the storyline call
+(**The storyline**). The read-changing questions take Save's slot first; if they still do not
+fit, Scope folds into Heard's free text ("Instagram and TikTok, last 90 days, unless you say
+otherwise"). So a run that builds a new page asks two messages at most before it builds: this
+reply, then the storyline. Questions this reply already answered, or the **Prompt coach**
+collected, are never asked again. Never ask in plain text, and
 never ask in an unattended run.
 
 ### The storyline (before a new page)
@@ -130,9 +133,9 @@ agents (**3**) confirms the storyline of each new page before the agent that bui
 
 1. **Draft.** Launch the agent with `storyline.pass` set to `draft` (**5**), after the setup
    reply. It reads, refreshes, and counts as it would for the build
-   (`skills/page-standard/SKILL.md`, section 4, steps 0b to 2a), drafts the storyline, publishes nothing, and returns it in the
-   packet's `storyline` (**6**). Log its return as a `storyline-drafted` Adjustments row, not a
-   `returned` Runs row (**9**).
+   (`skills/page-standard/SKILL.md`, section 4, steps 0b to 2a), drafts the storyline, publishes
+   nothing, and returns it in the packet's `storyline` (**6**). Log its return as a
+   `storyline-drafted` Adjustments row, not a `returned` Runs row (**9**).
 2. **Ask once.** One `AskUserQuestion` call, header "Storyline", with the three bullets as the
    question, each with its evidence ("Gift posts beat creators' usual views this fall. 78 posts,
    15 accounts."), then any line the packet's `storyline` carries for what was not checked
@@ -149,7 +152,8 @@ agents (**3**) confirms the storyline of each new page before the agent that bui
    - **Build:** write the `storyline-confirmed` row (**9**), then launch again with
      `storyline.pass` `build` and the confirmed `bullets`, keeping the `runId` (**5**). The
      launch message carries every answer from the same call, step 2a's check-in as "Metric gaps:
-     {the option chosen}", so the build never stops on it again.
+     {the option chosen}", so the build never stops on it again, and the draft's `unchecked`
+     lines as "Unchecked: {lines}".
    - **Change:** apply the person's words to the bullets. When the change only rewords, reorders,
      or drops a bullet, log the row and build with the changed bullets. When it needs evidence the
      draft did not read (a new angle, a new claim), launch `draft` again with the change in the
@@ -455,8 +459,8 @@ clock.
   heard, a storyline draft returned (`storyline-drafted`, with the draft's minutes), a storyline
   changed or widened, and the `storyline-confirmed` row, written once the person answers Build
   (or a Change that needs no new draft) and before the build launches, with the bullets exactly
-  as the build receives them. An interactive run that builds a new page
-  without that row has skipped **The storyline**.
+  as the build receives them. An interactive run that builds a new page without that row has
+  skipped **The storyline**.
 - The log never holds credentials, mailing addresses, bank or tax details, or message bodies.
 - The time estimate (**2**) reads the last `returned` row with a `page` for the same agent.
 

@@ -109,8 +109,8 @@ and the unattended run rules. Follow it exactly. Read `recipient-lens.md` too.
 
 - Headline: the week in one line, lead metric vs prior week and vs 8-week median.
 - Storyline: the three bullets the page opens with, each with the posts, accounts, or views behind
-  it; the Slack message and the email carry the same three (reference, **Scheduled (unattended) runs**,
-  Storyline).
+  it; the Slack message and the email carry the same three (reference, **Scheduled
+  (unattended) runs**, Storyline).
 - Numbers: posts, engagement, engagement rate, reach or views, followers with delta.
 - What worked: top 3 posts with metric, link, and the shared pattern.
 - What did not: bottom 2 posts with one clause each.

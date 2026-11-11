@@ -442,12 +442,11 @@ week)", "Daily (yesterday)", "Both now", "Change setup". Then launch
 the target window only if the user named one, and the launch block's `storyline` pass: `state`
 when Atlas already holds the readout's insights for this profile (`search_insights` with
 a `prefix` filter on `detail.account_review.runKey` = `readout-daily-{profile}` or
-`readout-weekly-{profile}`, per **Data pull**), since the run republishes the
-same page; otherwise the first run's page is new and follows **The storyline** before it
-builds. Never pass "today" or any date the main thread
-assumed: session headers can be a day stale, and a wrong "today" shifts the whole readout by a
-day (or a week). The agents resolve the date themselves (**Resolving "today"**) and refuse a
-repeat window. Relay each agent's summary and page link, including the resolved window it
+`readout-weekly-{profile}`, per **Data pull**), since the run republishes the same page;
+otherwise the first run's page is new and follows **The storyline** before it builds. Never
+pass "today" or any date the main thread assumed: session headers can be a day stale, and a
+wrong "today" shifts the whole readout by a day (or a week). The agents resolve the date
+themselves (**Resolving "today"**) and refuse a repeat window. Relay each agent's summary and page link, including the resolved window it
 reports. When an agent asks the main thread to confirm delivery, ask with `AskUserQuestion`
 ("Post to {channel} and email {recipients}?" Options: Send (Recommended) / Page only this time)
 and relay the answer.
