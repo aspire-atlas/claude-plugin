@@ -204,8 +204,9 @@ so. Except on a one-post question, each bullet rests on at least 3 posts, or say
 on ("from only two posts").
 
 **Fewer bullets.** A storyline has three bullets. It has fewer only when the person's Change
-dropped one, or when a readout's window has no posts and nothing else to report (**Readouts**,
-**Scheduled (unattended) runs**, Storyline). Never make one up to reach three: the packet, the
+dropped one, or when a readout's window has no posts: then it has one to three, the empty-window
+bullet and up to two the window still supports (**Readouts**, **Scheduled (unattended) runs**,
+Storyline). Never make one up to reach three: the packet, the
 answer block, and every delivery message carry the bullets there are.
 
 **Unattended runs and repeat runs** never ask. They launch with `storyline.pass` `state`: the agent

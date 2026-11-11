@@ -245,7 +245,7 @@ Chat summary, under 150 words:
   there were none.
 - One closing line: findings saved, page link.
 
-Page: one compact card. Header (brand, date, network, a "Prepared for" chip, and the animated mark at the top right). The answer block with the storyline's three bullets. KPI strip (posts, engagement,
+Page: one compact card. Header (brand, date, network, a "Prepared for" chip, and the animated mark at the top right). The answer block with the storyline's bullets (three, or fewer in an empty window). KPI strip (posts, engagement,
 engagement rate, followers with delta). One 28-day sparkline of the lead metric with
 yesterday marked. Cards for yesterday's posts (media, metric row, one-line takeaway). Flags
 block. A content reviews block when any review ran yesterday: one row per review with
@@ -337,7 +337,7 @@ section list below. The others:
 Page, sections in order:
 
 1. Header: brand, network, week label, prepared date, a "Prepared for" chip per lens, and the animated mark at the top right.
-2. The answer block: the headline and the storyline's three bullets with their evidence
+2. The answer block: the headline and the storyline's bullets (three, or fewer in an empty window) with their evidence
    (**Scheduled (unattended) runs**, Storyline). Then the KPI strip with week-over-week
    deltas and the benchmark row from `target:weekly-health` when present.
 3. Lead-metric line chart, 9 weeks, last week highlighted.
