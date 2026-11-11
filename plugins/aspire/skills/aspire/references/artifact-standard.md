@@ -19,7 +19,7 @@ The two pieces say everything the page needs to say about itself:
 - **When:** the "as of" time in the source line, which changes every time the page is republished or
   its data is refreshed. There is no separate prepared date.
 
-What a page says, part by part, and the R1 to R13 checks (**Reader standard**) it passes before
+What a page says, part by part, and the R1 to R14 checks (**Reader standard**) it passes before
 it is published are set by the shared skill `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`.
 This file sets only the mark, the source line, and how a page prints (section 6).
 
@@ -68,9 +68,14 @@ added, it does not replace them). Markup:
 
 ```html
 <footer class="atlas-footnote" data-updated="{asOfIso}">
+  <p data-freshness>{freshnessLine}</p>
   <p>Source: Aspire Atlas cross-platform indexing ({networks}). Data compiled via proprietary AI brand memory as of {asOfDate}. {audienceLine}</p>
 </footer>
 ```
+
+- **{freshnessLine}**: on a page that cites an account, the newest post Atlas holds and when Atlas
+  last fetched it, one entry per account and platform, with its markup and wording from **Page
+  standard**, section 9. Leave the paragraph out on a page that cites no account.
 
 - **{asOfDate}**: when the numbers were read from Atlas, from the shell clock (`date -u`), never from
   the prompt or a session header, with a time for any page that can refresh within a day. It is the

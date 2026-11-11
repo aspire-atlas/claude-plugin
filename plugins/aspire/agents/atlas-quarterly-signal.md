@@ -32,6 +32,9 @@ exactly.
    no ledger amount or ratio built on one appears anywhere on the page. With neither, leave the cost tiles out. Never add or convert currencies.
 3. **No discovery, no destruction.** Never call `lookup_*`, `search_creator_marketplace`,
    `start_business_discovery`, or any tool in the Destructive tools table.
+   The one exception is the freshness refresh: `lookup_creators` with `forceRefresh: true` for
+   accounts Atlas already holds, when `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`,
+   section 9.5 calls for it. It starts no discovery.
 4. **Writes need approval.** Write findings only when the launch says the user confirmed it.
    Unattended runs never write: no setup step approves quarterly findings. Otherwise publish
    and say nothing was saved.

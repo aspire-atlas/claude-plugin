@@ -137,6 +137,13 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
    `review:` key (content review only; see **Atlas tools**). `theme:brand` styles the page
    and is never a guideline.
 2. `list_post_search_fields` once. Use only paths it returns.
+2b. Freshness, before any post is read (**Page standard**, section 9): `search_creators` on the
+   linked handles, with no wildcard `exclude`, for each channel's `freshness`, then each handle's
+   pace (section 9.4). An unattended run refreshes every linked handle without asking; an
+   interactive run offers the refresh, with its time and cost, for each handle behind its pace
+   (section 9.5). Steps 3 onward read what Atlas holds after it. The page's source line and the
+   chat summary carry the freshness line, and the page names any refresh skipped as recently
+   refreshed.
 3. `search_posts` per linked handle: `author.username` = handle, `postedAt` gte the window
    start, `exists mediaKind` (drops stories). Sort `postedAt` desc, limit 100, page on the
    cursor. Project the fields of the "What landed and why" row of the required metrics
@@ -227,9 +234,10 @@ clock, not new data (see the duplicate-window guard in each agent).
 ## Daily readout
 
 Window: the previous calendar day in the R1 timezone (00:00 to 23:59), resolved per
-**Resolving "today"** above. If no posts landed,
-say so in one line and still report anomalies on older posts still accruing engagement, plus
-red-line hits.
+**Resolving "today"** above. If Atlas holds no post for the day,
+say so in one line, worded as **Page standard**, section 9.3 sets it ("no posts yesterday" only
+when Atlas fetched the account after the day ended; otherwise "Atlas has no data for {day}"), and
+still report anomalies on older posts still accruing engagement, plus red-line hits.
 
 Chat summary, under 150 words:
 
@@ -240,6 +248,7 @@ Chat summary, under 150 words:
 - Content reviews: reviews run yesterday by verdict, and every Do not post or hard-rule hit
   with the creator's handle and the review page link (`reviewPage`). Leave the line out when
   there were none.
+- Freshness: the freshness line (**Page standard**, section 9.2), with any refresh offer.
 - One closing line: findings saved, page link.
 
 Page: one compact card. Header (brand, date, network, a "Prepared for" chip, and the animated mark at the top right). KPI strip (posts, engagement,
@@ -307,6 +316,7 @@ bullets per other saved lens:
   reviewed more than once. For reviewed published posts, the lead metric against the
   creator's own median when Atlas holds it.
 - Next steps: 3 ranked bullets, each tied to a number above.
+- Freshness: the freshness line (**Page standard**, section 9.2), with any refresh offer.
 - Data gaps and one closing line: findings saved, page link.
 
 **Lenses.** The analysis runs once; each saved R6 lens is a section of the same page, the
@@ -405,13 +415,15 @@ README). Rules for the agents:
   "No Atlas data on this page" variant in **Artifact standard**),
   write nothing to Atlas, and end with "Run /aspire:aspire and ask for readout setup."
 - Never run a destructive tool. Never call `lookup_*`, `search_creator_marketplace`, or
-  `start_business_discovery`.
+  `start_business_discovery`, except the freshness refresh of the brand's own linked handles in
+  **Data pull**, step 2b, which starts no discovery.
 - If Atlas returns an unauthorized error, publish the "setup needed" card with "Aspire Atlas
   needs a fresh sign in" and stop.
 - Meta Ads is optional: a missing connector or an expired Meta sign in leaves its block out
   (**Meta Ads enrichment**) and the run carries on. Never call a Meta write tool.
-- If a search returns nothing for the window, report "no posts indexed for {window}" rather
-  than inventing numbers, and still deliver the page and summary.
+- If a search returns nothing for the window, report it as **Page standard**, section 9.3 sets
+  it ("Atlas has no data for {window}" unless Atlas fetched the account after the window ended)
+  rather than inventing numbers, and still deliver the page and summary.
 
 ## Main thread: the run and the launch pulse
 

@@ -19,13 +19,18 @@ recommends only, and writes nothing: no spend, no members, nothing moved, drafte
    accounts as creator cards and its newest posts). The caller's role and stated relationship set what leads and what starts
    open. Build no page or card beside it and repeat none of its numbers; say one line with the
    next step, then ask step 3 in the same reply.
+   - When that line or the fallback below cites an account's data, it carries the freshness line,
+     and a period Atlas has not fetched reads "Atlas has no data for {period}" (**Page standard**,
+     section 9). The dashboard itself refreshes nothing: an own account behind its pace becomes a step 3
+     option, "Refresh @{handle}" with its time and cost, and choosing it runs section 9.6's refresh.
 2. **Fallback.** When `get_dashboard` is not among the Atlas tools (an older server), or the host
    shows no widget, use the `get_status` result already in hand (its status card draws where
    widgets render) and give a 3 to 5 bullet readout: channels and any lapsed one, credits left,
    setup done of total, programs and campaigns. Posts and creators, when asked for, come from
    `search_posts` and `search_creators` and are answered in text per **Visual output**.
 3. **Next.** One `AskUserQuestion`, header "Next": the widget's next step (Recommended), then one
-   or two more from this order, first that applies: reconnect a lapsed channel, connect a profile
+   or two more from this order, first that applies: reconnect a lapsed channel, refresh an own
+   account behind its pace, connect a profile
    with no channel, answer the brand questions (fewer than 3 answered), the orchestrator's open
    action, first insights (no account review yet), an overdue report, set up reports, a program's
    open action item, the rest of the brand questions, the theme or creator rates, then plan next

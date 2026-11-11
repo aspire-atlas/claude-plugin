@@ -136,7 +136,7 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 | **Fee calculator** (Setup, Applying) | `references/fees.md` |
 | **Theme**, Offers; **Fee calculator**, Offers; **Quality review**, The offer | `references/offers.md` (when: **Offers** below) |
 | **Sample artifacts** | `references/samples.md` (the sample brief every agent reads: `references/agents/sample-artifact.md`) |
-| **Quality review** (Run, Review log); **Reader standard** (R1 to R13) | `references/quality-review.md`; `references/reader-standard.md` |
+| **Quality review** (Run, Review log); **Reader standard** (R1 to R14) | `references/quality-review.md`; `references/reader-standard.md` |
 | **Prompt coach** (and its Carry-over) | `references/prompt-coach.md` |
 | **Creator card** (**Visual output**, **Creator card actions**) | `references/creator-card.md` |
 | **Question format rule**, Phase 5 supersede rule | **Questions and writes** below |
@@ -488,11 +488,11 @@ Organization Admin connection itself.
   `lookup_posts` for the post links the user pasted, in an interactive check only; and
   **Visual output**, where "show cards", "show me the cards", or a saved `always` approves
   `lookup_creators` or `lookup_posts` for the chosen creators or posts Atlas already holds, which
-  starts no discovery.
+  starts no discovery; and the page standard's shortlist and freshness refreshes (sections 4 and 9).
 - Keep every user-facing message short. Use bullets for anything with more than two points.
 - Web research is a proposal, never a write: findings are always shown and confirmed before
   any calibration is recorded from them.
-- The chat reply is the answer: up to three points, the next step, and one link to the page (its file path when the session cannot publish).
+- The chat reply is the answer: up to three points, the freshness line when it cites an account's data (`skills/page-standard/SKILL.md`, section 9), the next step, and one link to the page (its file path when the session cannot publish).
   Text is the default. Cards, images, charts, and theme previews appear in chat only when the
   user asks to see them ("show me the cards", "show the palettes"), and never as embedded image
   data: see **Visual output**. The one cards offer is **Orchestration contract** **12**.

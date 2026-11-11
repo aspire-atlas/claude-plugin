@@ -5,8 +5,9 @@ description: >
   for and what it covers, the answer first, up to three insights, ranked next steps, decisions
   kept apart, real evidence, how it was worked out, what is missing, what Atlas can draft next),
   the reader and evidence rules, the metrics each kind of question requires and where each is
-  missing per network, and the self-check against the reader standard (R1 to R13) every page
-  runs before it is published. Agents load it before they build a page. It is not a command.
+  missing per network, the one data freshness rule for every page and chat reply, and the
+  self-check against the reader standard (R1 to R14) every page runs before it is published.
+  Agents load it before they build a page. It is not a command.
 user-invocable: false
 metadata:
   author: Aspire
@@ -15,7 +16,7 @@ metadata:
 # Page standard: the skeleton and the self-check
 
 Every page an Atlas agent publishes holds the nine parts below, carries the metrics its kind of
-question requires (section 8), and is checked against R1 to R13 before it goes out. The checks are defined once, in
+question requires (section 8), says how fresh its data is (section 9), and is checked against R1 to R14 before it goes out. The checks are defined once, in
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/reader-standard.md`; the quality review runs the
 same ones on a finished page. Read that file with this one. The parts are fixed. The look is not:
 a creator profile, a competitor brief, and a rights log should still look different. Decide what
@@ -37,10 +38,11 @@ may ask Atlas for more metrics than section 8's row, never fewer.
 - [2. Reader rules](#2-reader-rules)
 - [3. Evidence standards](#3-evidence-standards)
 - [4. Build loop](#4-build-loop)
-- [5. Markup and the scripted checks (R1, R2, R6, R11, R13)](#5-markup-and-the-scripted-checks-r1-r2-r6-r11-r13)
+- [5. Markup and the scripted checks (R1, R2, R6, R11, R13, R14)](#5-markup-and-the-scripted-checks-r1-r2-r6-r11-r13-r14)
 - [6. How each check is judged](#6-how-each-check-is-judged)
 - [7. The page check in the result](#7-the-page-check-in-the-result)
 - [8. Required metrics, by kind of question](#8-required-metrics-by-kind-of-question)
+- [9. Data freshness](#9-data-freshness)
 
 ## 1. The skeleton
 
@@ -135,32 +137,18 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    evidence, per `examples.md` steps 1 and 2. Match the evidence, never copy the sections or the
    layout. A code with no example, or a launch with no `question`, skips this
    step.
-2. **Refresh the shortlist** when the page shows creators' posts or figures derived from them
-   (latest posts, median views, engagement), unless the flow's reference rules out lookups (the
-   content library reads only what Atlas holds, in every mode). Call `lookup_creators` with
-   `forceRefresh: true`, `entityKind: "account"`, each creator's network as `schema` and handle as
-   `identifier`, and the run's own `asOrganizationId` and `asProfileId`, up to 100 items per call.
-   Include only the final shortlist the page will show, never a search result or a candidate pool,
-   and only creators the run already confirmed Atlas holds (a `found` item from `lookup_creators`, or
-   an account `search_creators` returned), so the call starts no discovery. A refresh spends vendor
-   budget for every creator in it.
-   - The first response carries what Atlas already held. Re-read the same items with
-     `lookup_creators` without `forceRefresh` about every 15 seconds, up to roughly 3 minutes.
-   - A creator counts as refreshed when its `refresh` result is `skipped` with reason
-     `recently-refreshed`, or when a re-read after a `started` result shows the account indexed after
-     the refresh call. A creator still `fetching` at the limit, or whose refresh `failed`, keeps the
-     data Atlas held: name it with that data's last-indexed time in the page's "what is missing"
-     part, or in the page check's `gaps` on a page shared outside the team (section 1).
-   - Then re-run the flow's own searches for the refreshed creators. Search indexing lags the
-     lookup: if a creator's searches come back empty, or their newest post is older than the newest
-     post the re-read carries, retry once after about 30 seconds. A creator whose searches still lag
-     the re-read is reported like an unrefreshed one, with the time of the refresh, in "what is
-     missing" or the page check's `gaps`. Compute every post-derived figure over the flow's own
-     window (its days or post count), never over only the 10 recent posts
-     a `lookup_creators` re-read carries.
-   - Skip any creator the flow's own reference already refreshed in this run
-     (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/account-resolution.md`). Scheduled runs make
-     this refresh too, except in a flow that rules out lookups.
+2. **Check freshness, then refresh** (section 9). Read the freshness of every account the page
+   will cite, work out which are behind their pace, and refresh as section 9.5 says. When the page
+   shows creators' posts or figures derived from them (latest posts, median views, engagement),
+   also refresh the final shortlist, unless the flow's reference rules out lookups (the content
+   library reads only what Atlas holds, in every mode). Include only the final shortlist the page
+   will show, never a search result or a candidate pool, and only creators the run already
+   confirmed Atlas holds (a `found` item from `lookup_creators`, or an account `search_creators`
+   returned), so the call starts no discovery. Refresh the way section 9.6 says, then re-run the
+   flow's own searches. Compute every post-derived figure over the flow's own window (its days or
+   post count), never over only the 10 recent posts a `lookup_creators` re-read carries. Skip any
+   creator already refreshed in this run (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/account-resolution.md`).
+   Scheduled runs make this refresh too, except in a flow that rules out lookups.
 
    **2a. Count the metrics before building**, after any refresh in step 2, since a refresh can
    fill a gap. Take the posts the page will cite and count how many carry each required metric of
@@ -181,7 +169,7 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    reference and this reader set the layout. Add the print block with the page's title as
    `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md`, section 6, sets, so the page saves to PDF
    in the light theme with a footer on every page.
-4. **Self-check R1 to R13.** Run the script in section 5 for R1, R2, R6, R11, and R13, and judge
+4. **Self-check R1 to R14.** Run the script in section 5 for R1, R2, R6, R11, R13, and R14, and judge
    the others against `reader-standard.md`. Fix every fail you can and check again.
 5. **Publish**, even when a check still fails, and report it in the page check (section 7).
    - **When the session has no Artifact tool, save the page as a file.** Never skip the page, and
@@ -198,7 +186,7 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
 Write the headline last. Draft every other part, then write the headline from the decision the
 page supports.
 
-## 5. Markup and the scripted checks (R1, R2, R6, R11, R13)
+## 5. Markup and the scripted checks (R1, R2, R6, R11, R13, R14)
 
 Mark the parts the script reads. The attributes carry no styling; style the page as the flow and
 `theme.md` say.
@@ -227,13 +215,22 @@ Mark the parts the script reads. The attributes carry no styling; style the page
 <!-- Part 7 repeats every data-platform element from the scope, with the same counts. -->
 <section data-page="method">...</section>
 
-<!-- Part 6: every cited post carries data-post, each required metric of the page's row as a
-     data-metric, and every one it cannot show in data-missing, with the reason shown beside it. -->
-<article data-post="https://www.instagram.com/p/EXAMPLE/"
+<!-- Part 6: every cited post carries data-post, the account it is from as data-account, each
+     required metric of the page's row as a data-metric, and every one it cannot show in
+     data-missing, with the reason shown beside it. -->
+<article data-post="https://www.instagram.com/p/EXAMPLE/" data-account="instagram:brightsidetoys"
          data-missing="views: image posts have no view count; engagement: image posts have no view count">
   <span>Views not available: image posts have no view count</span>
   <span data-metric="likes">Likes 1,920</span> <span data-metric="comments">Comments 88</span>
 </article>
+
+<!-- The source line (artifact-standard.md, section 2) opens with one data-fresh entry for each
+     account the page cites (section 9). -->
+<footer class="atlas-footnote" data-updated="2026-10-28T14:05Z">
+  <p data-freshness>Data freshness: <span data-fresh="instagram:brightsidetoys" data-newest="2026-10-24"
+     data-fetched="2026-10-28">@brightsidetoys on Instagram: newest post Oct 24, last fetched Oct 28</span>.</p>
+  <p>Source: ...</p>
+</footer>
 ```
 
 - On a team page, list Instagram, TikTok, and YouTube in the scope every time, with a count of 0
@@ -243,8 +240,9 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   with". Show the exact count ("1,412 posts"), never a rounded one ("1.4K").
 - A check that is N/A for this page (section 1) goes in `data-na` on the scope, for example
   `data-na="R2"` on a ledger or a one-creator profile; the script reports it `n/a`. Only R2 and R6
-  can be N/A; R1 and R11 apply to every page, and naming them fails the check. R13 is `n/a` on its
-  own terms (no `data-question` and no cited post), never through `data-na`.
+  can be N/A; R1 and R11 apply to every page, and naming them fails the check. R13 and R14 are
+  `n/a` on their own terms (no `data-question` and no cited post; no cited account), never through
+  `data-na`.
 - A decisions section with no decision says "Nothing needs approval" (or "No decision needs
   approval"). A `data-by` date is a real date the page also shows.
 - Mark anything in someone else's words with `blockquote`, `q`, or `data-quoted`: a creator's
@@ -252,7 +250,7 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   check skips it, and it skips handles, hashtags, emails, and links. Never change a creator's real
   name or handle to pass a check.
 - A page that draws its sections in script from embedded data (the org dashboard) has nothing the
-  script can read. Judge R1, R2, R6, R11, and R13 from the data and what the page draws, and report
+  script can read. Judge R1, R2, R6, R11, R13, and R14 from the data and what the page draws, and report
   `scripted` as `read`.
 - Every post the page cites as evidence (a post card, a storyboard, a row in a post table) carries
   `data-post` with its link, and each required metric of the page's row (section 8) on the element
@@ -261,8 +259,13 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   shown on the post beside where the number would sit ("Views not available: image posts have no
   view count"). Never show a missing metric as 0; a 0 Atlas read is a real 0. A page that cites
   no post, or answers no code, has no `data-question` and gets R13 `n/a`.
+- Every account the page cites carries `data-account="{network}:{handle}"`: each cited post, and
+  each creator or account card. The source line then holds one `data-fresh` entry per account with
+  the same value (`blocks.md`, 3.19): `data-newest` the newest post's date or `none`, and
+  `data-fetched` the last fetch's date or `none`, or, with no `freshness` on record,
+  `data-changed`, shown as "last changed". A page that cites no account gets R14 `n/a`.
 - A page with no `data-page` markup yet (a flow whose reference does not add it) gets `unmarked`
-  for R1, R2, R6, and R13. Judge those by reading; R11 still runs.
+  for R1, R2, R6, R13, and R14. Judge those by reading; R11 still runs.
 
 Run the check on every page before you publish it. Copy the page into a new temporary folder,
 extract the script there from `page-check.md` in this folder (never retype it), and run it:
@@ -273,7 +276,7 @@ d=$(mktemp -d) && cp {page.html} "$d/" && awk '/^<!-- page-check -->$/{f=1;next}
 
 It reads only the pages named, writes nothing, and prints one JSON line per check and page:
 `pass`, `fail`, `n/a`, or `unmarked`. It exits 0 when nothing failed, 1 when a check failed, and 2
-when it could not read a page. When Python is not installed, judge the five by reading and report
+when it could not read a page. When Python is not installed, judge the six by reading and report
 `scripted` as `read`.
 
 The script is in `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/page-check.md`, between its
@@ -287,7 +290,7 @@ flow. Every check is pass, fail, or N/A, never a score.
 
 | Check | How |
 | ----- | --- |
-| R1 Reader and scope, R2 Platforms covered, R6 Decisions kept separate, R11 Plain language, R13 Required metrics | Script, or by reading when the page is drawn in script or carries no markup |
+| R1 Reader and scope, R2 Platforms covered, R6 Decisions kept separate, R11 Plain language, R13 Required metrics, R14 Data freshness | Script, or by reading when the page is drawn in script or carries no markup |
 | R3, R4, R5, R8, R10, R12 | Judgment |
 | R7 Real evidence | Judgment, checking each figure against what the run read |
 | R9 Names what's missing | Judgment on a team page; N/A on a page shared outside the team |
@@ -312,7 +315,7 @@ words ("page check: 9 pass, 2 fixed, 1 n/a").
 {"page": "{link, or the file's path}", "reader": "{primary reader}",
  "checks": {"R1": "pass", "R2": "pass", "R3": "fixed", "R4": "pass", "R5": "fixed", "R6": "pass",
             "R7": "pass", "R8": "pass", "R9": "n/a", "R10": "pass", "R11": "pass", "R12": "pass",
-            "R13": "pass"},
+            "R13": "pass", "R14": "pass"},
  "draftNext": "pass", "stillFailing": [], "gaps": [], "scripted": "ran"}
 ```
 
@@ -384,3 +387,87 @@ but the page shows the component as "not available: {reason}" and never as a 0 t
 take for a measured result. Every metric missing on any cited post is listed in the page's "what
 is missing" part with its count and reason ("Saves: missing on 21 of 24 posts, shown only for
 accounts connected to Atlas"), or, on a page shared outside the team, in the page check's `gaps`.
+
+## 9. Data freshness
+
+Atlas answers from what it already holds, so a figure is only as current as Atlas's last fetch of
+the account. Every page, and every chat reply that cites an account's data, says how current that
+data is, and an account that has fallen behind its own pace gets a refresh. This section is the one
+freshness rule. A flow's reference points here and never sets an age rule of its own.
+
+**9.1 What to read.** For each account and platform cited, read the channel's
+`freshness { lastFetchedAt, newestPostAt, postsHeld, postsHeld30d }`
+(`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-tools.md`, **Data freshness**): from
+`lookup_creators`, `search_creators` with no wildcard `exclude`, `get_creator`, or `list_channels`.
+The newest post is `newestPostAt` and the last fetch is `lastFetchedAt`. When `lastFetchedAt` is
+null, the account is "not fetched by Atlas yet". When `freshness` is absent, the newest post is the
+newest `postedAt` the run's own searches return for the account, and the time is the account's
+`snapshotAt`, labelled "last changed", never "last fetched". An account with no posts at all reads
+"Atlas holds no posts". Never show `indexedAt` as either time.
+
+**9.2 The freshness line.**
+
+- **On a page**, one entry per account and platform, in the source line before the source sentence
+  (`blocks.md`, 3.19): "@brightsidetoys on Instagram: newest post Nov 7, last fetched Nov 8". Add
+  the time when the fetch was within the last day. R14 checks it.
+- **In chat**, every reply that cites an account's data carries one line after its points and before
+  the next step: "Atlas data: @brightsidetoys on Instagram, newest post Nov 7, last fetched Nov 8."
+  With more than three accounts, name the brand's own and any behind its pace, then "freshness for
+  the other {n} is on the page".
+- **On a page shared outside the team** the line stays, as the as-of time does. Behind-pace notes,
+  skipped refreshes, and periods with no data go in the page check's `gaps` (section 1).
+
+**9.3 No data is not no posts.** A period reads "no posts in {period}" only when Atlas fetched the
+account after the period ended (`lastFetchedAt` later than its end) and holds no post in it. When
+Atlas holds no post for the period and `lastFetchedAt` is older than the period's end, null, or
+absent, the page and the reply say "Atlas has no data for {period}" and, on a team page, name the
+refresh in the "what is missing" part. "No posts" is a claim about the account; "no data" is a
+claim about Atlas.
+
+**9.4 Behind pace.** An account's pace is the median gap between its consecutive posts Atlas holds
+from the 28 days before the run, or over its last 10 posts held when the 28 days hold fewer than 3.
+It is **behind** when its newest held post is older than twice that gap, measured against the shell
+clock (`date -u`), and Atlas has not fetched it in the last 24 hours. An account fetched in the last
+24 hours is not behind: it has stopped posting, and the page says so ("@x has not posted since
+Nov 2; it usually posts every 2 days"). An account with fewer than 2 posts held has no pace.
+
+**9.5 When to refresh.** One refresh per handle per run, whichever row asks for it:
+
+| Run | What is refreshed | Asked first? |
+| --- | ----------------- | ------------ |
+| The user named the handle (handle mode, the creator profile) | That handle when it is not current: Atlas holds nothing, or `lastFetchedAt` (with no fetch on record, `newestPostAt`) is 24 hours old or more. The flow's reference resolves it | No: naming the handle approved it |
+| Interactive, any other cited account | Each account behind its pace | Yes |
+| Unattended (a scheduled run) | Before reading, the brand's own handles and the saved competitors (`competitor` records) the page reads, whether or not they are behind. Other accounts get the freshness line only | No, and it never asks |
+| The page's final shortlist | As section 4, step 2 | No |
+| A flow whose reference rules out lookups (the content library) | Nothing; the freshness line and behind-pace notes only | Never |
+
+The offer names each account, its newest post, and its pace, then the time and the cost: "Atlas's
+newest post for @x is Nov 2, and @x usually posts every 2 days. Refresh it first? About 2 minutes.
+Public data: the refresh is not charged, and the new posts it collects count against your credits."
+Options: "Refresh first (Recommended)" and "Use what Atlas holds". Ask with `AskUserQuestion` when
+the run asks its own questions. Otherwise build with what Atlas holds, mark each behind account on
+the page, and return the offer in the result's `questions`
+(`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **6**); on yes, the main thread
+launches the run again with the approved handles, and that run refreshes them before reading.
+
+**9.6 How to refresh.** Call `lookup_creators` with `forceRefresh: true`, `entityKind: "account"`,
+the network as `schema`, the handle as `identifier`, and the run's own `asOrganizationId` and
+`asProfileId`, up to 100 handles per call. Refresh only accounts Atlas already holds, so the call
+starts no discovery.
+
+- The first response carries what Atlas already held. Re-read the same items with `lookup_creators`
+  without `forceRefresh` about every 15 seconds, up to roughly 3 minutes.
+- An account counts as refreshed when its `refresh` result is `skipped` with reason
+  `recently-refreshed` (make no second call), or when a re-read after a `started` result shows a
+  `lastFetchedAt` later than the call. One still `fetching` at the limit, or whose refresh `failed`,
+  keeps the data Atlas held and its freshness line says so.
+- Re-run the flow's searches. Search indexing lags the lookup: when a refreshed account's searches
+  come back empty, or their newest post is older than the re-read's `newestPostAt`, retry once
+  after about 30 seconds. The page then shows the new newest post.
+- The page names every refresh that was skipped as recently refreshed, and every one that failed.
+- Never refresh with `start_business_discovery`: every call starts a new billable job.
+
+**9.7 Examples.** Good: a weekly creative report that names every gap on the account it covers
+("Atlas has no data for Nov 3 to 9 for @{brand} on TikTok; last fetched Nov 2. Refresh it? About 2
+minutes."). Bad: a readout that said "No posts this week" for a week Atlas had not fetched, when the
+account had posted four times.

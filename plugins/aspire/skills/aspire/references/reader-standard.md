@@ -1,6 +1,6 @@
 # Reader standard
 
-Reader standard v1.2.
+Reader standard v1.3.
 
 The reader checks ask whether the reader can act on the work: does it answer first, give numbers
 context, keep decisions apart, and fit the person who will read it. This file is the one place they
@@ -29,6 +29,7 @@ is in **Quality review**, **3**.
 | R11 | Plain language | No agent, skill, tool, or system names in the body, and no jargon. The Aspire Atlas mark and the source line **Artifact standard** requires are exempt | "The atlas-market-signal agent found" | Medium when `audience` is `team`; High otherwise |
 | R12 | Built for this question | The page's sections and visuals come from what this question and reader need | A launch timeline on a one-creator profile | High |
 | R13 | Required metrics | Every post the page cites carries each metric its kind of question requires (**Page standard**, section 8), or says beside it why that metric is not available. Nothing missing is shown as 0 | 21.6 million views with no likes, comments, shares, or saves beside them; a save count Atlas does not hold shown as 0 | High |
+| R14 | Data freshness | Every account the page cites has a freshness line in the source line: the newest post Atlas holds and when Atlas last fetched it, or "last changed" when Atlas has no fetch time (**Page standard**, section 9). A period Atlas has not fetched reads "Atlas has no data for {period}" | "No posts this week" for a week Atlas never fetched; a page with no word on how old its figures are | High |
 
 ## How to judge them
 
@@ -43,6 +44,8 @@ is in **Quality review**, **3**.
   (**Quality review**, **3**).
 - **R13** is n/a on a page that cites no post. On a page with no question code, judge it against
   the row for the kind of question the page answers (**Page standard**, section 8).
+- **R14** is n/a on a page that cites no account. A chat reply is judged the same way: one that cites
+  an account's data carries its freshness line (**Page standard**, section 9).
 - **Links.** R7 covers evidence links only; every other broken link is filed as the table in
   **Quality review**, **4.15**, **Broken links**, says.
 - **R2 and R9 outside the team.** When `audience` is `client`, `creator`, or `public` (the page

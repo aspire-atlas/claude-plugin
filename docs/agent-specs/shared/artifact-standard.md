@@ -7,7 +7,7 @@ owner: shared
 
 ## What it does
 
-Builds every page on the nine-part skeleton and runs the self-check (E1 to E12 on the proposal, R1 to R13 in the plugin) before it publishes.
+Builds every page on the nine-part skeleton and runs the self-check (E1 to E12 on the proposal, R1 to R14 in the plugin) before it publishes.
 
 ## Inputs
 
@@ -29,4 +29,4 @@ The reviewer side is `plugins/aspire/agents/atlas-quality-review.md`, which chec
 page or deck against the same standard and gives a verdict of Ready, Ready with fixes, or Not
 ready. It belongs to the shared tier, not to the 31 agents, and runs only through `/aspire` (the
 quality review shortcut or the review offer after a page is published). Its rubric reads the R1 to
-R13 checks from `reader-standard.md` rather than keeping a second copy.
+R14 checks from `reader-standard.md` rather than keeping a second copy.

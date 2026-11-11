@@ -130,6 +130,13 @@ Filter path unless noted, `context` on every call, only field paths from the cen
    four weeks before. A caller may pass an earlier window of any length.
 2. **Entities.** The brand (its name, its handles, its tracked hashtags) and each M1
    competitor (its name, its handles, its `spellingVariants` from the `competitor` record).
+2b. **Freshness**, before any post is read (**Page standard**, section 9): `search_creators` on the
+   brand's and the competitors' handles, with no wildcard `exclude`, for each channel's
+   `freshness`, then each handle's pace. An unattended run refreshes the brand's handles and every
+   competitor handle Atlas holds without asking; an interactive run offers the refresh, with its
+   time and cost, for each handle behind its pace. A handle Atlas does not hold is never refreshed
+   (that would start discovery). The page's source line and the chat summary carry the freshness
+   line, and the page names any refresh skipped as recently refreshed.
 3. **Mention sets.** Per entity: `search_posts` where the text matches the name or a spelling
    variant (`match_phrase`), or `instagram.mentions.username` names a handle, or a hashtag
    matches; `must_not` the entity's own handles and the brand's handles; `exists mediaKind`;
@@ -308,7 +315,8 @@ unattended runs send on the M3 and M4 standing approval. Never send anywhere els
   footnote, with the "No Atlas data on this page" variant in **Artifact standard**) listing what is
   missing, write nothing, and end with "Run /aspire:aspire and ask for market signal setup."
 - No discovery and no destruction: never call `lookup_*`, `search_creator_marketplace`,
-  `start_business_discovery`, `add_hashtags`, or any Destructive tool.
+  `start_business_discovery`, `add_hashtags`, or any Destructive tool, except the freshness
+  refresh in **Data method**, step 2b, which starts no discovery.
 - Date from the shell clock in the M5 timezone.
 - An unauthorized error publishes the "setup needed" card with "Aspire Atlas needs a fresh
   sign in" and stops.

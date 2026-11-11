@@ -37,6 +37,9 @@ run rules. Follow it exactly.
    `search_creator_marketplace`, `start_business_discovery`, or any tool in the Destructive
    tools table. Call only the Meta Ads read tools that **Meta Ads enrichment** in the reference
    lists, never one that writes, in any run mode.
+   The one exception is the freshness refresh: `lookup_creators` with `forceRefresh: true` for
+   accounts Atlas already holds, when `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`,
+   section 9.5 calls for it. It starts no discovery.
 4. **Deliver only to saved destinations.** Slack channel and email recipients come from
    `policy:readout-routing`, plus a destination saved on an open `campaign:{slug}-pulse` record. Interactive mode confirms the send once through the main thread;
    unattended mode sends without asking because R2 was the standing approval.
