@@ -130,64 +130,15 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    1,000 views. Anything else that matters?"). The main thread asks it in the setup reply
    (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **2**); an agent that asks
    its own questions asks it first. An extra metric the person names joins the row for this run.
-   An unattended run asks nothing and lists the metrics in the method.
-
-   **0b. The storyline.** The launch block's `storyline.pass` (`orchestration.md`, **5**) says
-   what to do with the page's argument before it is built (**2**, **The storyline**, there):
-   - `draft`: run steps 1, 2, and 2a, then draft the storyline below, publish nothing, and return it
-     in the packet's `storyline`, with its `pass` `draft` and `page` `null` (**6** there). Put step
-     2a's check-in, when it has one, in `questions`; the main thread asks both in one call. Never
-     ask yourself, even when your flow asks its own questions: the storyline goes to the main
-     thread. A "Storyline change:" line in the launch message is the person's change: draft to it,
-     reading what it needs. A "Widen:" line names the wider scope to read, with any accounts or
-     handles it adds.
-   - `build`: the person confirmed the `bullets`. The page's insights (part 3) are those bullets, in
-     their order and wording, each with its evidence, comparison, and "So:" line; the headline is
-     written from them. An "Unchecked:" line in the launch message lists the checks the draft could
-     not make: put them in the page's method and in the packet's `storyline.unchecked`. A "Metric
-     gaps:" line in the launch message is step 2a's check-in already answered: act on it and do not
-     stop at step 2a again. When the data no longer supports a bullet, build it with what the data
-     shows and say so in the page check's `gaps`; never swap in a storyline the person did not
-     confirm. Fewer than three bullets mean the person dropped some: never add one back. Atlas already holds what
-     the draft refreshed, so step 2 reads it without `forceRefresh` and fetches only what the draft
-     did not, inside the launch's `spend.cap`. The draft's frame scans and fact checks stand for the
-     videos and facts it checked. When the build's data puts a different most-viewed video behind a
-     bullet, or a bullet comes to rest on a fact the draft did not check, run drafting step 3 or 4
-     on it, and the method says what was checked and what was not.
-   - `state`: draft the storyline below and build in the same pass. The page's insights (part
-     3) are those bullets, in order, each with its comparison and "So:" line; the answer
-     block (part 2) states them short under the headline, each with its evidence; and the
-     delivery message (Slack, email, the chat summary) carries the same bullets.
-   - `none`, or no `storyline` in an interactive launch: build as the flow says.
-
-   To draft it:
-   1. **Count the posts that fit the question:** the posts step 2a counts, and how many accounts
-      they come from. Compare the count with the row's minimum (`orchestration.md`, **2**, **The
-      minimum pool**; none for a question about one named post). Name the wider scope you would read
-      next in `widen` (more weeks, more platforms, or more accounts, whichever the launch's `scope`
-      leaves room for), or `null` when it has no room left; under the minimum, the main thread
-      recommends it.
-   2. **Write three short bullets** (fewer only per `orchestration.md`, **2**, **Fewer bullets**),
-      each a claim the reader can act on, with the posts, accounts,
-      and views behind it. Except on a one-post question, a bullet on fewer than 3 posts says how
-      few ("from only two posts"). The good and bad examples are in `orchestration.md`, **2**.
-   3. **Watch the most-viewed video behind each bullet.** With a shell, `ffmpeg`, and the post's
-      media from the Atlas read tools, run the 1-second frame scan (section 3; `quality-review.md`,
-      4.15) on that video, and check every timecode and on-screen claim the bullet rests on.
-      Without them, add "Timecodes and on-screen claims are unverified." to `unchecked`, and the
-      page's method says the same.
-   4. **Check every product fact the story rests on** (a plan, a product name, a launch, a
-      price) against the company's own announcement, with a web search or fetch tool. A fact the
-      announcement contradicts changes the bullet. Without web access, add "{fact} is not
-      checked against the company's announcement." to `unchecked`, and the page's method says the
-      same.
+   An unattended run asks nothing and lists the metrics in the method. **0b. The storyline:** do
+   what the launch block's `storyline.pass` asks (`orchestration.md`, **5**), per `storyline.md` here.
 1. **List the evidence the approved example sets** for the launch block's `question`, from
    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/examples.md` (storyboards, test plan, cards with
    thumbnails), when this flow is the one that file's row names as building the page. A flow that
-   only feeds another (discovery feeding vetting for I1) skips this step. Read every example the launch block's `examples` lists and list the
-   evidence, per `examples.md` steps 1 and 2. Match the evidence, never copy the sections or the
-   layout. A code with no example, or a launch with no `question`, skips this
-   step.
+   only feeds another (discovery feeding vetting for I1) skips this step. Read every example the
+   launch block's `examples` lists and list the evidence, per `examples.md` steps 1 and 2. Match the
+   evidence, never copy the sections or the layout. A code with no example, or a launch with no
+   `question`, skips this step.
 2. **Check freshness, then refresh** (section 9). Read the freshness of every account the page
    will cite, work out which are behind their pace, and refresh as section 9.5 says. When the page
    shows creators' posts or figures derived from them (latest posts, median views, engagement),
@@ -202,16 +153,15 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    for an answer (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/account-resolution.md`). Scheduled
    runs make this refresh too, except in a flow that rules out lookups.
 
-   **2a. Count the metrics before building**, after any refresh in step 2, since a refresh can
-   fill a gap. Take the posts the page will cite and count how many carry each required metric of
-   the row (section 8), leaving out a gap the network table marks
-   as one the network never fills for this kind of post (an Instagram image's views, YouTube
-   saves, shares and saves on a creator's account that is not connected). When under half the
-   cited posts carry a metric, stop before drafting and check in: name the metric, the count, and
-   why it is missing ("Saves: 3 of 24 posts. Instagram shows saves only for accounts connected to
-   Atlas, and @brightsidetoys is not connected."). Ask with `AskUserQuestion` when the run asks its
-   own questions; otherwise return it in the result's `questions`
-   (`orchestration.md`, **6**) and build nothing. Options: "Build with the gaps noted
+   **2a. Count the metrics before building**, after any refresh in step 2, since a refresh can fill
+   a gap. Take the posts the page will cite and count how many carry each required metric of the row
+   (section 8), leaving out a gap the network table marks as one the network never fills for this
+   kind of post (an Instagram image's views, YouTube saves, shares and saves on a creator's account
+   that is not connected). When under half the cited posts carry a metric, stop before drafting and
+   check in: name the metric, the count, and why it is missing ("Saves: 3 of 24 posts. Instagram
+   shows saves only for accounts connected to Atlas, and @brightsidetoys is not connected."). Ask
+   with `AskUserQuestion` when the run asks its own questions; otherwise return it in the result's
+   `questions` (`orchestration.md`, **6**) and build nothing. Options: "Build with the gaps noted
    (Recommended)", the fix when there is one ("Connect the account first", "Refresh the posts
    first"), and "Change the scope". An unattended run builds with the gaps noted and lists the
    metric in the page's "what is missing" part.
