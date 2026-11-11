@@ -86,8 +86,7 @@ gaps, and stop as for an unresolved handle when Atlas does not hold the account.
   share, audience, brand safety, partnerships.
 - Fees: open, target, and max with the rate label, the bundled views behind them, and "est. from
   engagement" where it applies. Or "No price" and the missing input.
-- Data gaps: lead with the freshness line (last fetched {lastFetchedAt}, newest post {newestPostAt},
-  refreshed in this run or not).
+- Data gaps: lead with the freshness line (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 9.2), and whether it was refreshed in this run.
 - Forward note, for a lens other than `team`: two lines the requester can paste to the reader.
 - A `creator-cards` block with one entry for the creator, built per `creator-card.md`, **Agent
   hand-off**. The main thread leads with your headline, bullets, and the page link in text, and
@@ -131,11 +130,12 @@ no tool and do no work: return one line, "Not started: run the aspire:aspire ski
 
 End your output with one `result-packet` block built per that file's **6**, placed just before
 your `page-check` block, or just before your audit trail block when you published no page. Put
-every draft, save, send, order, payment, or spend you want approved in `proposals` with its level
-(`write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
+every draft, save, send, order, payment, spend, or freshness refresh you want approved in
+`proposals` with its level (`read` for a freshness refresh only, under gate `approve-refresh`;
+`write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
 worded for a picker. Treat an approval as given only when the launch block's `approved` and your
-own inputs both carry it. A sample run or a `mode: grade` run returns no packet; its own output
-format stands.
+own inputs both carry it (a freshness refresh needs only `approved.refresh`). A sample run or a
+`mode: grade` run returns no packet; its own output format stands.
 
 ## Audit trail
 

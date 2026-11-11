@@ -45,13 +45,13 @@ against competitors goes to **Market signal**.
    accounts the user named.
 5. The subagent reads with `search_posts` / `search_creators` (calling
    `list_post_search_fields` first for the live field census), resolves and refreshes a named
-   handle with `lookup_creators` when Atlas holds nothing or the record is over 24 hours old,
+   handle with `lookup_creators` when it is not current (**Page standard**, section 9.5),
    then writes findings back with `append_insights` under one `runKey` per run (`own`:
    `onboarding-{profile}-{date}` for the onboarding run, else `account-review-{profile}-own-{date}`; `handle`: `account-review-{profile}-{handle}-{date}`).
 6. Present the subagent's executive summary: headline, 3 to 5 insights with numbers, next
    week's three content pushes (mode `own`), 2 to 3 ranked next steps, data gaps. Offer the
-   creator brief in one line when a push needs creators. In mode `handle`, lead the data gaps with the freshness the
-   agent reports (last fetched {lastFetchedAt}, newest post {newestPostAt}, refreshed or not). Offer to go deeper on any
+   creator brief in one line when a push needs creators. In mode `handle`, lead the data gaps with the freshness line the
+   agent reports (**Page standard**, section 9.2), and whether it refreshed. Offer to go deeper on any
    item, and mention the findings are saved in Atlas and searchable later.
 7. The reply in step 6 is the answer, in text, per **Visual output**. Draw nothing unasked:
    no card, no post media, no chart. It ends with the cards offer, or is followed by cards,

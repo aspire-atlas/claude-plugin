@@ -17,12 +17,8 @@ Do this before any analysis. The user approved the fetch below by naming the han
   `lastFetchedAt` is when Atlas last fetched the account, whether or not anything changed. Never use
   `snapshotAt` (it moves only on a material change) or `indexedAt` (the search index's write time) as
   the last fetch.
-- **Current** means Atlas holds the account *and* `lastFetchedAt` is under 24 hours ago, measured
-  against the real clock (`date -u` in the shell, never an assumed "today"). When `freshness` is absent
-  (unknown, not zero) or `lastFetchedAt` is null (Atlas has no fetch of its own on record), fall back to
-  `newestPostAt`, or the newest indexed post, being under 24 hours old. Anything else is stale: no
-  account record, no posts, or a timestamp 24 hours or older. The fallback will mark an account that
-  posts less than daily as stale and trigger a refresh; that is the intended direction.
+- Whether the account is **current** or **stale** is decided by the one freshness rule, never here:
+  **Page standard**, section 9.5, the row for a handle the user named.
 - Stale → refresh with `lookup_creators`: one item, `schema` = the network, `entityKind` = `account`,
   `identifier` = the handle, and `creatorDeepAnalysis` left at its default `true` so the account's
   recent posts are ingested with it. The user approved this fetch by naming the handle, so do not ask
@@ -36,11 +32,9 @@ Do this before any analysis. The user approved the fetch below by naming the han
   refresh: report the handle as not found or not yet indexed, say what was tried, and stop without
   writing anything. Never analyze a handle you could not resolve, and never substitute a similar one.
 - Keep the resolved freshness (`lastFetchedAt`, `newestPostAt`, `postsHeld`, and whether a refresh
-  ran) and report it in the summary as one line: "last fetched {lastFetchedAt}, newest post
-  {newestPostAt}, {postsHeld} posts held". With `freshness` absent, say the freshness is unknown and
-  give the newest indexed post; with `lastFetchedAt` null, say "not fetched by Atlas yet". Posts
-  published after `newestPostAt` are not held yet: a period after it reads "Atlas has no data for
-  {period}", never "no posts".
+  ran) and report it as the freshness line, on the page and in the summary, worded as **Page
+  standard**, section 9 sets it, including its rule that a period Atlas has not fetched reads
+  "Atlas has no data for {period}", never "no posts".
 
 ## Peer set
 
