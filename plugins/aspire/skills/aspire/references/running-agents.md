@@ -28,24 +28,26 @@ packet, and the permission levels. This section is how a launch runs; that file 
 and what comes back. Agents refuse a launch without the `launch` block, so a person reaches an
 agent only through this skill or a shortcut.
 
-1. **Launch.** Mint the run id first, once per launch, never made up: call `mint_run_id` with
-   the agent's name (`atlas-creator-vetting`). Tool absent: the agent
-   name, the UTC time from `date -u +%Y%m%dt%H%M%S`, and `openssl rand -hex 2`, joined by
-   hyphens (`atlas-creator-vetting-20261029t140312-a3f9`). Put it in the launch block's `runId`. The name is the agent's own, as its file names it (`atlas-creator-vetting`, never
+1. **Launch.** Mint the run id first, once per launch, never made up: call `mint_run_id` with the
+   agent's name (`atlas-creator-vetting`). Tool absent: the agent name, the UTC time from
+   `date -u +%Y%m%dt%H%M%S`, and `openssl rand -hex 2`, joined by hyphens
+   (`atlas-creator-vetting-20261029t140312-a3f9`). Put it in the launch block's `runId`. The name is
+   the agent's own, as its file names it (`atlas-creator-vetting`, never
    `aspire:atlas-creator-vetting` or an older name the agent replaced): Atlas refuses a `runId`
-   whose name part differs from the `agent` the call sends. A relaunch of the same run (its `record` pass, or its next mode) keeps the
-   id. With no shell, leave `runId` out; the agent takes the one Atlas returns and puts it in its packet's `runId`, which the feedback uses. Use the Agent
-   tool with `subagent_type` `aspire:{agent}` (the name without the
-   prefix gets it added), a `description` equal to the task it runs (**Progress bar**), a prompt
-   that starts with the `launch` block (**Orchestration contract** **5**) followed by the
-   inputs the flow lists, `run_in_background: true`, and the `model` from **Model tiers**
-   (`sonnet` or `haiku`; for a tier of `inherit` pass none) unless the user named a model for
-   this launch, which wins (pass it as `sonnet`, `opus`, `haiku`, or `fable`). Never pass
-   `effort` from the table; set it only when the user asks for one. Where plugin agents do
-   not load, launch a general-purpose subagent told to read and follow `agents/{agent}.md`
-   from the plugin, as **Sample artifacts** does, and pass it the same `model`. Never do an agent's work in the main thread, and never
-   call the Atlas tools an agent owns to stand in for one. Only a session with no subagent tool
-   at all may follow the agent's file itself, and says so in one line.
+   whose name part differs from the `agent` the call sends. A relaunch of the same run (its `record`
+   pass, its next mode, a storyline redraft, or the build after it) keeps the id. With no shell,
+   leave `runId` out; the agent takes the one Atlas returns and puts it in its packet's `runId`,
+   which the feedback uses. Use the Agent tool with `subagent_type` `aspire:{agent}` (the name
+   without the prefix gets it added), a `description` equal to the task it runs (**Progress bar**),
+   a prompt that starts with the `launch` block (**Orchestration contract** **5**) followed by the
+   inputs the flow lists, `run_in_background: true`, and the `model` from **Model tiers** (`sonnet`
+   or `haiku`; for a tier of `inherit` pass none) unless the user named a model for this launch,
+   which wins (pass it as `sonnet`, `opus`, `haiku`, or `fable`). Never pass `effort` from the
+   table; set it only when the user asks for one. Where plugin agents do not load, launch a
+   general-purpose subagent told to read and follow `agents/{agent}.md` from the plugin, as **Sample
+   artifacts** does, and pass it the same `model`. Never do an agent's work in the main thread, and
+   never call the Atlas tools an agent owns to stand in for one. Only a session with no subagent
+   tool at all may follow the agent's file itself, and says so in one line.
 2. **Say it started.** One line after the launch: which agent, what it is doing, and that the
    user can keep going, and the model when the table gave one, with how to change it
    ("Profile analyst is running in the background on Sonnet to save tokens. Say 'use Opus' to
@@ -53,15 +55,16 @@ agent only through this skill or a shortcut.
    names no model and offers no override. An override ("use Opus") applies to that launch
    only: launch again with the model named; the next launch goes back to the table. Then end
    the turn. Never wait on it, poll it, or sleep.
-3. **Ask before, never during.** Every question, write confirmation, and picker the flow lists
-   for the launch is asked first, in the main thread, because agents never ask: in one setup
-   reply (**Orchestration contract** **2**; on a run that builds a new page, what does not change
-   the read waits for the storyline call) that repeats the question with its code, names the
-   reader, and gives the time estimate. Questions an agent raises come back in its result packet
-   and are asked when it arrives. Write the launch's Runs row (**9** there). A run that publishes
-   a new page has one launch before its build: the storyline draft (**Orchestration contract**
-   **2**, **The storyline**). Its packet is not the run's result: say nothing beyond one line
-   that the storyline is ready, ask it, and launch the build only after the person answers.
+3. **Ask before, never during.** Every question, write confirmation, and picker the flow lists for
+   the launch is asked first, in the main thread, because agents never ask: in one setup reply
+   (**Orchestration contract** **2**; on a run that builds a new page, what does not change the read
+   waits for the storyline call) that repeats the question with its code, names the reader, and
+   gives the time estimate. Questions an agent raises come back in its result packet and are asked
+   when it arrives. Write the launch's Runs row (**9** there). A run that publishes a new page has a
+   storyline draft launch before its build (another after a Change that needs new evidence, or a
+   Widen) (**Orchestration contract** **2**, **The storyline**). Its packet is not the run's result:
+   say nothing beyond one line that the storyline is ready, ask it, and launch the build only after
+   the person answers.
 4. **When it finishes.** Its result arrives as a task notification. Treat it as the agent's
    report and act on its `result-packet` block: relay the summary, page link (or, when `page` is a file path, "Saved as a file: {path}"), and decisions it
    needs, confirm its `proposals` by permission level (**Orchestration contract** **7**: Write
