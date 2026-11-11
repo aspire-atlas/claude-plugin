@@ -273,7 +273,7 @@ before the first `h2`, under the page header that carries the mark and the "Prep
 
 <!-- block:scope -->
 ```html
-<div class="pb-scope" data-page="scope" data-block="scope" data-question="O3" data-accounts="instagram:brightsidetoys tiktok:brightsidetoys" data-reader="the VP of marketing" data-brand="Brightside Toys" data-range="Aug 1 to Oct 28, 2026">
+<div class="pb-scope" data-page="scope" data-block="scope" data-question="O3" data-accounts="instagram:brightsidetoys tiktok:brightsidetoys instagram:makerjune" data-reader="the VP of marketing" data-brand="Brightside Toys" data-range="Aug 1 to Oct 28, 2026">
   <p class="pb-scope-line"><span>For <b>the VP of marketing</b></span><span><b>Brightside Toys</b></span><span>Aug 1 to Oct 28, 2026</span><span class="pb-muted">Prepared by Jordan Lee, social lead</span></p>
   <!-- the coverage strip (3.2) goes here -->
 </div>
@@ -754,7 +754,11 @@ account.
   post {date}", with `data-newest` and no fetch time. Write {n} in digits, or as a word up to
   twelve ("one other creator"). A mention post's platform comes from its `data-post` link, or
   from `data-mention="{network}"` on a quote with no link. When the scope counts a platform only
-  through other creators' posts, the mentions entry lists it: `data-platforms="tiktok"`.
+  through other creators' posts, the mentions entry lists it: `data-platforms="tiktok"`. Mention
+  evidence never stands in for a subject account: an account whose posts the page shows is in the
+  scope's `data-accounts`, and a scope that reports a platform still names the brand's own handles.
+- The source line gives freshness only for what the page cites: no entry for an account the page
+  does not cite, and no mentions entry without mention evidence.
 - With more than ten entries, put all but the brand's own and any behind their pace in a
   `details` element inside the source line.
 - One `data-fresh="{network}:{handle}"` entry per account, matching the `data-account` the page

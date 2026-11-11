@@ -529,6 +529,13 @@ def r14(nodes, regions):
         for name in sorted({(n.attrs.get("data-platform") or "").strip().lower() for n in reporting}):
             if name not in named and name not in mentioned:
                 problems.append("the scope reports %s but names no %s account in data-accounts, and no mention evidence covers it" % (name, name))
+    if scope is not None:
+        # A post whose figures the page shows is a subject account's, so the scope names it; mention
+        # evidence never stands in for it.
+        in_scope = {k for k in (account_key(r) for r in (scope.attrs.get("data-accounts") or "").split()) if k}
+        for key in sorted({account_key(n.attrs["data-account"]) for n in nodes
+                           if "data-post" in n.attrs and (n.attrs.get("data-account") or "").strip()} - {None} - in_scope):
+            problems.append("the page shows posts from %s but the scope's data-accounts does not name it" % key)
     entries = any("data-fresh" in n.attrs for n in nodes)
     if not cited and not mentions and not problems and not entries:
         return None
@@ -558,6 +565,12 @@ def r14(nodes, regions):
             problems += fresh_problems(key, node)
     for key in sorted(set(cited) - set(fresh)):
         problems.append("the page cites %s but the source line gives no freshness for it" % cited[key])
+    # An entry for an account the page never cites, or a mentions entry with no mention evidence
+    # behind it, is an orphan: the source line gives freshness only for what the page cites.
+    for key in sorted(set(fresh) - set(cited) - {"mentions"}):
+        problems.append("the source line gives freshness for %s, but the page does not cite it" % key)
+    if "mentions" in fresh and not mentions and not (fresh["mentions"].attrs.get("data-platforms") or "").strip():
+        problems.append("the source line has a mentions freshness entry, but the page cites no mention evidence")
     if mentions and "mentions" not in fresh:
         problems.append("the page cites mention posts but the source line has no data-fresh=\"mentions\" entry")
     return problems
