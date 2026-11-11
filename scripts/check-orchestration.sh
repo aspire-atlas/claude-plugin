@@ -8,6 +8,9 @@
 #   - every shortcut in the contract is named in SKILL.md's Arguments table
 #   - the result packet and launch block examples parse as JSON and carry every field
 #   - every agent carries the checkpoint paragraph (section 11) exactly once, verbatim
+#   - every list of keys a flow drops from brand memory (a paragraph, list item, or table row that
+#     drops or ignores `orchestrator:` keys) drops `lastrun:` keys too: they are saved setup answers
+#     (section 2, Saved answers), kind guideline, and would otherwise read as brand guidelines
 # What an agent actually returns at run time is not checked here; this keeps the instructions in step.
 #
 #   scripts/check-orchestration.sh
@@ -106,5 +109,20 @@ for tag, keys in want.items():
 sys.exit(bad)
 PY
 
-[ "$fail" -eq 0 ] && echo "OK   every agent carries the orchestration contract and has a permission level; routes and shortcuts resolve"
+# A drop list that leaves out `lastrun:` hands a flow's saved setup answers to the agent as brand
+# guidelines. Every drop list names `orchestrator:`, so that is the anchor.
+drops=$(for f in plugins/*/agents/*.md $(find plugins -path '*/skills/*' -name '*.md' | sort); do
+  awk -v F="$f" '
+    function flush() {
+      if (blk ~ /`orchestrator:/ && blk ~ /([Dd]rop|[Ii]gnore|[Ss]kipping|[Ll]eave out)/ && blk !~ /`lastrun:/)
+        print "FAIL " F ":" start ": drops `orchestrator:` keys but not `lastrun:` keys (orchestration.md, section 2, Saved answers)"
+      blk = ""
+    }
+    /^$/ || /^ *([0-9]+[a-z]?\.|-|\|) / { flush() }
+    { if (blk == "") start = NR; blk = blk " " $0 }
+    END { flush() }' "$f"
+done)
+if [ -n "$drops" ]; then echo "$drops"; fail=1; fi
+
+[ "$fail" -eq 0 ] && echo "OK   every agent carries the orchestration contract and has a permission level; routes and shortcuts resolve; every drop list drops lastrun: keys"
 exit "$fail"
