@@ -140,6 +140,9 @@ findings, and what people do on the page is page data.
 | `orchestrator:routing` | `policy` | Slack channel and the people it messages (X3, X4) | `{area: "routing", body: "page; slack:#channel; dm:a@x.com,b@x.com"}` |
 | `orchestrator:execution` | `policy` | What an approval on the page lets the hourly run do (X5) | `{area: "execution", body: "<execution object, json.dumps>"}` |
 
+`orchestrator:scope` is the orchestrator's saved scope. An interactive run's reader goes on
+`lastrun:campaign-orchestrator` (**Orchestration contract**, **2**, Saved answers).
+
 The scope object: `{"schema": 1, "programs": "all", "campaigns": "all", "discovery": "all",
 "reports": true}`. Each of `programs`, `campaigns`, and `discovery` is `"all"` or a list of slugs;
 `reports` covers readouts, market signal, the quarterly signal, and brand setup gaps.
@@ -153,7 +156,7 @@ Rules:
 
 - Parse every JSON body with a JSON parser. A body that does not parse counts as missing.
 - **Keys `orchestrator:*` belong to the Orchestrator.** Every other flow drops them, as it drops
-  `program:` and the CAS keys. They are never brand guidelines.
+  `program:`, `lastrun:` and the CAS keys. They are never brand guidelines.
 - A change to any of them goes through the supersede rule with its own confirmation, in an
   interactive session only.
 

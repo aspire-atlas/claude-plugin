@@ -114,6 +114,8 @@ Rules:
 - Confirm the batch once before writing, then write all five records.
 - Derive `{slug}` from the campaign name: lowercase, hyphenated, no dates. Show it once so the
   user can recognize it later; never ask them to invent it.
+- An interactive run's reader and save choice go on `lastrun:creator-discovery-{slug}`
+  (**Orchestration contract**, **2**, Saved answers).
 - A teammate re-running setup sees the saved answers and is offered "Keep as saved
   (Recommended)" / "Change" per item. Changes go through `supersede_calibration` with its own
   confirmation.
@@ -372,7 +374,8 @@ offer "Change setup" as an option on the run question. Several campaigns may be 
 1. Ask S1: what the campaign is, in the user's own words.
 2. **Then write the refinement questions.** Read the S1 answer together with `brand:summary`,
    `brand:business-context`, and the `competitor`, `red_line` and `guideline` records (not
-   `review:` keys, which are content review only, nor `theme:` keys, which style pages), and from
+   `review:` keys, which are content review only, nor `theme:` keys, which style pages, nor
+   `lastrun:` keys, which hold a flow's saved setup answers), and from
    those compose 3 to 5 `AskUserQuestion` questions covering the dimensions above, in their
    order, skipping anything S1 already settled. The options are inferred from the brief and the
    brand context, never generic. Never ask more than five, never ask in plain text.
