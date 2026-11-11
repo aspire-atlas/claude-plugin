@@ -45,7 +45,8 @@ R6 destinations). One batch confirmation writes; changes are supersedes, one con
 
 Ask "Which insights report?", then launch `atlas-weekly-insights-report` and/or
 `atlas-daily-insights-report` (run mode `interactive`, `recipient`, a window only if the user
-named one; never pass "today" or an assumed date). The agents add Meta Ads figures on their own
+named one, and the `storyline` pass per **Main thread: the run and the launch pulse**; never pass
+"today" or an assumed date). The agents add Meta Ads figures on their own
 when the connector is live (`readout.md`, **Meta Ads enrichment**); never hold a run for it.
 Pass the user's ask, verbatim, as `meta_request`, and nothing else in it. Relay each summary,
 page link, and resolved window; confirm delivery ("Post to {channel} and email {recipients}?")
@@ -430,7 +431,9 @@ how few posts it rests on. A window with no posts gives "No posts landed {window
 bullet, then up to two from the flags or the older posts still gaining engagement, each with its
 evidence; with nothing there either, that one bullet is the storyline. Where the run cannot watch a
 video or check a product fact, the method says so (`skills/page-standard/SKILL.md`, section 4, step
-0b).
+0b). A readout's window is fixed, on the first interactive run too: its draft names only more
+platforms or accounts in `widen`, or `null`, a readout Widen never carries dates, and a window under
+the minimum builds with the thin bullet saying so.
 
 ## Main thread: the run and the launch pulse
 

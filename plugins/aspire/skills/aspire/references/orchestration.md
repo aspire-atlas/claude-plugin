@@ -123,11 +123,11 @@ page's argument: the three things the page will say, each with the size of the e
 it. A wrong storyline wastes the build and every review after it, so no new page is built until
 the person has confirmed one.
 
-**When it runs.** Before the build of every page a run publishes for the first time. It does not
-run for a repeat run of a page already published (a readout, a dashboard update, a rerun of the
-same page to the same link), for a pass after the build (a `record` pass), for a sample, a
-`mode: grade` run, a quality review, a decision audit, or a "setup needed" card. A code with two
-agents (**3**) confirms the storyline of each new page before the agent that builds it.
+**When it runs.** Before the build of every page a run publishes for the first time. It does not run
+for a repeat run of a page already published (a readout after its first run, a dashboard update, a
+rerun of the same page to the same link), for a pass after the build (a `record` pass), for a
+sample, a `mode: grade` run, a quality review, a decision audit, or a "setup needed" card. A code
+with two agents (**3**) confirms the storyline of each new page before the agent that builds it.
 
 **How it runs.**
 
