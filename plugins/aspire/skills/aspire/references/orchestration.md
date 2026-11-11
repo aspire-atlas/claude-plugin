@@ -173,11 +173,16 @@ new: one storyline question costs less than a page built on a storyline nobody c
      `storyline.pass` `build` and the confirmed `bullets`, keeping the `runId` (**5**). The
      launch message carries every answer from the same call, step 2a's check-in as "Metric gaps:
      {the option chosen}", so the build never stops on it again, and the draft's `unchecked`
-     lines as "Unchecked: {lines}". Its `approved.spend.cap` is what the draft's `cost.fetches` left
-     of the cap: the build reads what the draft refreshed from Atlas and never fetches it again.
-     When step 2a's answer is "Change the scope", the confirmed
-     bullets no longer hold: launch `draft` again with the new scope, as a Widen does, and ask
-     again before any build.
+     lines as "Unchecked: {lines}". The build reads what the drafts refreshed from Atlas and never
+     fetches it again. Only "Build with the gaps noted" reaches the build this way. When step 2a's
+     answer is "Change the scope", "Refresh the posts first", or "Connect the account first" (once
+     the account is connected), the counts behind the bullets no longer hold: launch `draft` again,
+     with the new scope, or with "Refresh: {the posts step 2a named}" in the launch message so the
+     redraft refreshes them before it counts, and ask again before any build.
+   - **The spend cap across passes:** every redraft and the build get as `approved.spend.cap` what
+     is left of the cap after the `cost.fetches` of every earlier pass of the same `runId`, never the
+     whole cap again. With nothing left, the pass fetches nothing and reads what Atlas holds, and its
+     packet says so in `storyline.unchecked`. With no cap (`null`), nothing is counted.
    - **Change:** apply the person's words to the bullets. When the change only rewords, reorders,
      or drops a bullet, log the row and build with the changed bullets; a dropped bullet is not
      replaced, and the page states the bullets left. When it needs evidence the

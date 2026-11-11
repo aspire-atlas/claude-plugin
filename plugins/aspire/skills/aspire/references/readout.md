@@ -260,12 +260,15 @@ Chat summary, under 150 words:
 - Freshness: the freshness line (**Page standard**, section 9.2), with any refresh offer.
 - One closing line: findings saved, page link.
 
-Page: one compact card. Header (brand, date, network, a "Prepared for" chip, and the animated mark at the top right). The answer block with the storyline's bullets (three, or fewer in an empty window). KPI strip (posts, engagement,
-engagement rate, followers with delta). One 28-day sparkline of the lead metric with
-yesterday marked. Cards for yesterday's posts (media, metric row, one-line takeaway). Flags
-block. A content reviews block when any review ran yesterday: one row per review with
-verdict chip, creator, deliverable, open edits, and the review page link. Footer with the CDN
-expiry note, then the artifact-standard footnote (**Artifact standard**). Republish to the same path each day.
+Page: one compact card. Header (brand, date, network, a "Prepared for" chip, and the animated mark
+at the top right). The answer block with the storyline's bullets (three, or fewer per
+**Orchestration contract** **2**, **Fewer bullets**: an empty window or a bullet the person
+dropped). KPI strip (posts, engagement, engagement rate, followers with delta). One 28-day sparkline
+of the lead metric with yesterday marked. Cards for yesterday's posts (media, metric row, one-line
+takeaway). Flags block. A content reviews block when any review ran yesterday: one row per review
+with verdict chip, creator, deliverable, open edits, and the review page link. Footer with the CDN
+expiry note, then the artifact-standard footnote (**Artifact standard**). Republish to the same path
+each day.
 
 Insights written (`append_insights`): `runKey` `readout-daily-{profile}-{YYYY-MM-DD}`,
 role `account_review`, `schema` = network, `entityKind` account or post, `entityId` the
@@ -355,8 +358,9 @@ section list below. The others:
 Page, sections in order:
 
 1. Header: brand, network, week label, prepared date, a "Prepared for" chip per lens, and the animated mark at the top right.
-2. The answer block: the headline and the storyline's bullets (three, or fewer in an empty window) with their evidence
-   (**Scheduled (unattended) runs**, Storyline). Then the KPI strip with week-over-week
+2. The answer block: the headline and the storyline's bullets (three, or fewer per **Orchestration
+   contract** **2**, **Fewer bullets**: an empty window or a bullet the person dropped) with their
+   evidence (**Scheduled (unattended) runs**, Storyline). Then the KPI strip with week-over-week
    deltas and the benchmark row from `target:weekly-health` when present.
 3. Lead-metric line chart, 9 weeks, last week highlighted.
 4. Top 3 and bottom 2 post cards with media, metric row, takeaway.
