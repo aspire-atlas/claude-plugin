@@ -49,13 +49,16 @@ EOF
 
 # Check names are "<workflow job name>" as GitHub reports them.
 protect main    '["validate", "gate"]'
-# develop: a change to a path in .github/CODEOWNERS needs a review from a code owner.
-protect develop '["validate"]' true
+# develop: a change to a path in .github/CODEOWNERS needs a review from a code owner, and the page eval
+# (the eval job) must not regress. A pull request that changes no agent or flow file passes it without a rerun.
+protect develop '["validate", "eval"]' true
 
 gh label create beta --color FBCA04 --description "Reported against the develop channel" --force
 gh label create release --color 0E8A16 --description "Release PR into main" --force
+gh label create skip-eval --color C5DEF5 --description "Skip the page eval; the PR body says why on a skip-eval: line" --force
 
 echo
 echo "Done. Next:"
 echo "  1. Watch the Release workflow tag each plugin's version on main (v<version> for aspire, <plugin>--v<version> for the others)."
-echo "  2. Submit https://github.com/$REPO at https://claude.ai/admin-settings/directory/submissions/plugins/new"
+echo "  2. Add the ANTHROPIC_API_KEY repository secret for the standard review: gh secret set ANTHROPIC_API_KEY --repo $REPO"
+echo "  3. Submit https://github.com/$REPO at https://claude.ai/admin-settings/directory/submissions/plugins/new"

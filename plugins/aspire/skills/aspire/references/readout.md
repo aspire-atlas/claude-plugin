@@ -298,7 +298,7 @@ target date. A caller may also pass a campaign slug for an on-demand pulse. For 
    friction creators state. For the `product` lens, group the friction by issue.
 4. **Drafts and verdicts.** The campaign creators' content reviews on the target date (step 6b).
 
-The pulse is a page section after the flags block, "Launch pulse: {campaign}, day {n} of {N}",
+The pulse is a page section after the flags block, "How the launch is landing: {campaign}, day {n} of {N}",
 and three bullets in the chat summary. A pulse lens with its own destination gets its own Slack
 or email message with the pulse bullets and the page link. Up to three extra findings per
 campaign (`detail.campaign`, `detail.recipient`), outside the daily cap of five. A pulse reads

@@ -47,9 +47,12 @@ bash scripts/check-palette.sh
 bash scripts/check-skill-args.sh
 bash scripts/check-directory.sh
 bash scripts/check-skill-layout.sh
+bash scripts/check-agent-standard.sh
 ```
 
 `check-skill-layout.sh` fails on a `SKILL.md` over 500 lines, a skill description over 1,024 characters, a file under `skills/*/references/` that cites another reference file (`SKILL.md` and `page-standard` are fine), or a Markdown file over 100 lines under `skills/` without a `## Contents` section whose links resolve to its headings; its fixtures are in `scripts/fixtures/skill-layout/`. Until ASP-4093 lands, CI reports its findings on the plugins without blocking.
+
+`check-agent-standard.sh` counts the items of `docs/STANDARD.md` a script can count, on every agent and the flow reference it runs, and names the file, line and item of each miss: a description over 1,024 characters or with no "Trigger on" (L4), a question code with no required-metrics row or a page agent that answers none (M1), no pointer to page-standard's Data freshness rule (F1), image data in chat or a card shown first (C2, C3), an R11 word in page copy (V2), and no entry in `scripts/eval/questions.json`'s `agents` map (P2). Its fixtures are in `scripts/fixtures/agent-standard/` and its exceptions in the script's shrink-only `ALLOW` list; L4, F1 and P2 report without blocking until the tickets named in the script land.
 
 Try the plugin from a checkout in Claude Code:
 
@@ -67,7 +70,9 @@ bun run eval:pages                 # or: --only <code> for the question the rule
 bun run eval:pages --compare <the newest baseline's date> latest
 ```
 
-Paste the run's table (`scripts/eval/.runs/<time>/table.md`) into the pull request body, with the compare output when a result moved. Run it once without the rule first: if the page already gets it right, the rule is not needed. A check that fails on the approved page is a finding about the check, so say so in the pull request. Setup, what the table means, and what a rerun may do are in [scripts/eval/README.md](scripts/eval/README.md). CI does not run it; `bun run eval:test` covers the harness itself.
+Paste the run's table (`scripts/eval/.runs/<time>/table.md`) into the pull request body, with the compare output when a result moved. Run it once without the rule first: if the page already gets it right, the rule is not needed. A check that fails on the approved page is a finding about the check, so say so in the pull request. Setup, what the table means, and what a rerun may do are in [scripts/eval/README.md](scripts/eval/README.md). `bun run eval:test` covers the harness itself.
+
+CI also reruns it. On a pull request that changes an agent (`plugins/aspire/agents/`), a flow file (`plugins/aspire/skills/aspire/references/`), the router `SKILL.md`, or the page standard (`plugins/aspire/skills/page-standard/`), the `eval` job reruns the questions those files answer and posts the table as one comment, edited on each push. It fails only when a check the approved page passes now fails on the new page. A change that touches neither path skips it. For a docs-only or allowlisted change under those paths, add the `skip-eval` label and a `skip-eval: <reason>` line to the PR body, then push or re-run the eval job. A new agent or flow file reruns nothing until its question lists the file in `paths` in `scripts/eval/questions.json`. A nightly run of all five questions on `develop` posts to the Atlas engineering Slack channel. How the job works and how to read its comment: [scripts/eval/README.md](scripts/eval/README.md#in-ci) and the "The eval on a pull request" section of [docs/STANDARD.md](docs/STANDARD.md).
 
 After the pull request merges and the results hold, store a baseline with `bun run eval:pages --baseline --from latest` and commit `scripts/eval/baselines/<date>/`.
 
@@ -107,7 +112,7 @@ Run once after the repo exists (requires `gh` with admin rights):
 bash scripts/bootstrap-github.sh
 ```
 
-It sets `main` as default, requires PRs plus the `validate` and `gate` checks on `main`, requires PRs plus `validate` on `develop` with a code-owner review for the paths in `.github/CODEOWNERS`, and blocks force pushes.
+It sets `main` as default, requires PRs plus the `validate` and `gate` checks on `main`, requires PRs plus `validate` and `eval` on `develop` with a code-owner review for the paths in `.github/CODEOWNERS`, and blocks force pushes.
 
 ## Rules for skills and agents
 
@@ -119,6 +124,16 @@ Every new or changed skill, agent and flow meets the checklist in [docs/STANDARD
 - Re-verify the tool surface against the live server before each official release and update `skills/aspire/references/atlas-tools.md` and `skills/org-admin/references/org-admin-tools.md`. Run `bash scripts/check-tool-contract.sh --golden <path to the server's tools-list.golden.json>`: it fails when `contract/atlas-mcp-tools.json` has drifted from the server. Refresh it with `--update` and fix what `bash scripts/check-tool-contract.sh` then flags. CI runs the offline check on every push.
 - No secrets, customer names, or internal URLs in any file. CI scans for credential patterns; treat a hit as a blocker.
 - `skills/aspire/SKILL.md` is a router: it connects, settles the organization and profile, and sends each request to one flow. A flow's steps live in its own file under `skills/aspire/references/` (the reference its agent shares, or a new one), never in `SKILL.md`. Add a row to the router's **Sections** index for a new flow, keep `SKILL.md` under 500 lines, and give any skill file over 100 lines a `## Contents` section.
+
+## The standard review on your pull request
+
+A pull request that changes an agent, a skill or flow file, or `docs/STANDARD.md` gets a comment from the `standard-review` job: Claude reads the changed prose against the standard's items that no script can count, and lists Must, Should and Nice findings, each with the quoted line and a fix. Each push edits the same comment.
+
+- Answer each finding: fix it, or reply on the pull request with why not. A plugin owner decides.
+- For a trivial change, add the `skip-standard-review` label and a line `Standard review skipped: <why>` to the body.
+- To see the review before you push: `bash scripts/standard-review/review.sh run origin/develop HEAD` (needs the `claude` CLI signed in).
+- The job is advisory for now. Once the repository variable `STANDARD_REVIEW_BLOCKING` is `true`, a Must finding fails the check. `docs/STANDARD.md`, **The judgment review**, has the details.
+- The job needs the `ANTHROPIC_API_KEY` repository secret. Pull requests from forks get no secrets, so the review does not run on them.
 
 ## Internal mirror (Aspire staff)
 

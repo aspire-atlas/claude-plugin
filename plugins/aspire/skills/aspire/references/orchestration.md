@@ -488,7 +488,7 @@ acts on.
 
 | Field | Holds |
 | ----- | ----- |
-| `page` | The link to the page published or republished this run; the absolute path of its HTML file when the session has no Artifact tool (`skills/page-standard/SKILL.md`, section 4, step 5); `null` when the run built no page. A run that published more than one page or deck gives a list of links, main page first, each with its own `page-check` block. |
+| `page` | The link to the page published or republished this run; the absolute path of its HTML file when the session has no Artifact tool (`skills/page-standard/SKILL.md`, section 4, step 5); the draft file's absolute path in a draft pass (`skills/page-standard/SKILL.md`, section 4, step 4b), which the main thread never relays; `null` when the run built no page. A run that published more than one page or deck gives a list of links, main page first, each with its own `page-check` block. |
 | `findings` | Up to five, the ones the page leads with. `kind` is `observation`, `inference`, or `recommendation`; `confidence` is `high`, `medium`, or `low`. Every finding cites its evidence; one that cannot is left out. |
 | `proposals` | Every draft, save, send, order, payment, spend, or freshness refresh the agent wants approved, each with its `level` (**7**), its `items`, and its `gate`: `approve-` plus a short kebab-case name of what is approved (`approve-shortlist`, `approve-offers`, `approve-saves`), 2 to 40 lower-case letters, digits, and hyphens. The main thread sends the person's verdict under the same `gate` (SKILL.md, **Running agents**). Empty when there is nothing to approve. |
 | `questions` | Everything the agent could not settle, worded so the main thread can put it in `AskUserQuestion` as is. |
@@ -630,7 +630,7 @@ After a run returns, close out in one line per page: the question (code and word
 the checks fixed or still failing by name, and anything a reviewer should know (a level raised, a
 proposal not offered, a gap in coverage). For example: "I2, should we work with @handle: {link}.
 Fixed R3 Answer first; R9 Names what's missing still failing (no TikTok linked). Two saves wait
-for your yes." Then ask for the approvals (**7**) and the packet's questions, and offer the packet's
+for your yes." Name the English read's Must fixes when it had any ("3 wording fixes applied"), and any not applied. Then ask for the approvals (**7**) and the packet's questions, and offer the packet's
 `next` when it names one.
 
 ## 11. The block every agent carries

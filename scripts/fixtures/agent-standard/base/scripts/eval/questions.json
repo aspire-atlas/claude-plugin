@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "questions": [{"code": "O1", "ask": "Why did last week's Reels do so well?"}],
+  "agents": {"atlas-sample": {"codes": ["O1"], "approved": null}}
+}

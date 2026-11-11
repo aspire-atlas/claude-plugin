@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import {
   ATLAS_READS, ATLAS_WRITES, HARNESS_VERSION, barChecks, compareRuns, extractPageCheckScript, fill, findJsonWithKey,
-  findPage, forBaseline, normalizeResult, parsePageCheck, parseStream, renderQuestion, renderRun, rIds, stripDataUris,
+  findPage, forBaseline, normalizeResult, checkNames as namesFrom, stripTitlePrefix, parsePageCheck, parseStream, renderQuestion, renderRun, rIds, stripDataUris,
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength,
   type CheckDef, type PageChecks, type QuestionResult, type Result, type RunResults, type Turn,
 } from './lib'
@@ -33,6 +33,11 @@ const USAGE = `bun run eval:pages [options]
   --refresh-approved       Read the approved pages again instead of using the copies kept on this machine
   --explain <run>          Print what each turn of a run did: its page tool calls and the end of its reply
   --dry-run                Print what would run, and run nothing
+  --approved-from <name>   Take the approved page's results from a stored baseline ("newest" for the latest one)
+                           instead of reading and grading the approved page again
+  --title-prefix <text>    Ask the flow to start the page's title with this text (CI uses "CI eval")
+  --cleanup                Delete every page the run published once it is graded
+  --out <dir>              Keep the run in this folder instead of a new one under scripts/eval/.runs/
 
 A run is named by its folder under scripts/eval/.runs/, a baseline by its date, the newest run by "latest".`
 
@@ -49,6 +54,7 @@ type Options = {
   only: string[] | null; baseline: string | null; from: string | null; compare: [string, string] | null; explain: string | null
   model: string | null; judgeModel: string | null; maxRounds: number; timeoutMin: number
   refreshApproved: boolean; dryRun: boolean; page: string | null
+  approvedFrom: string | null; titlePrefix: string | null; cleanup: boolean; out: string | null
 }
 
 function fail(message: string): never {
@@ -60,6 +66,7 @@ function parseArgs(argv: string[]): Options {
   const options: Options = {
     only: null, baseline: null, from: null, compare: null, explain: null, model: null, judgeModel: null,
     maxRounds: 6, timeoutMin: 45, refreshApproved: false, dryRun: false, page: null,
+    approvedFrom: null, titlePrefix: null, cleanup: false, out: null,
   }
   const value = (i: number, flag: string) => (argv[i] && !argv[i].startsWith('--') ? argv[i] : fail(`${flag} needs a value`))
   for (let i = 0; i < argv.length; i++) {
@@ -79,6 +86,10 @@ function parseArgs(argv: string[]): Options {
     else if (flag === '--page') options.page = resolve(value(++i, flag))
     else if (flag === '--refresh-approved') options.refreshApproved = true
     else if (flag === '--dry-run') options.dryRun = true
+    else if (flag === '--approved-from') options.approvedFrom = value(++i, flag)
+    else if (flag === '--title-prefix') options.titlePrefix = value(++i, flag)
+    else if (flag === '--cleanup') options.cleanup = true
+    else if (flag === '--out') options.out = resolve(value(++i, flag))
     else fail(`unknown option ${flag}\n\n${USAGE}`)
   }
   if (!Number.isInteger(options.maxRounds) || options.maxRounds < 0) fail('--max-rounds takes a whole number')
@@ -169,26 +180,30 @@ async function scripted(page: string, dir: string): Promise<{ results: Record<st
   return { ...parsed, note }
 }
 
-async function grade(page: string, question: Question, dir: string, emptyMcp: string, options: Options): Promise<{ graded: Record<string, Result>; reasons: Record<string, string>; note: string | null }> {
+async function launchQualityReview(question: Question, inputs: string[], dir: string, log: string, emptyMcp: string, options: Options) {
+  // One grade-mode launch of the quality review agent, with no Atlas connection, as the main thread makes it.
   const runId = `atlas-quality-review-${stamp().replace('z', '')}-${Math.floor(Math.random() * 65536).toString(16).padStart(4, '0')}`
   const launch = {
     from: '/aspire:aspire', runId, agent: 'atlas-quality-review', mode: 'grade', run: 'interactive',
     question: question.code, persona: 'unknown', reader: question.reader, shortcut: null,
     approved: { write: false, send: [], spend: { cap: null } }, examples: [],
   }
-  const prompt = [
-    '```launch', JSON.stringify(launch), '```', '',
-    'mode: grade', `target: ${page}`, 'kind: plugin', `brief: ${fill(question.ask, { brand: 'the brand the page names' })}`,
-    `recipient: ${question.reader} (${question.readerInWords})`, 'audience: team', 'checks: reader-standard',
-    'publish: none', 'log: none', 'recheck: false', 'run: interactive', '',
-    'No Atlas connection is available in this session. Grade the page as it stands; you have no builder notes and no earlier result for it.',
-  ].join('\n')
+  const prompt = ['```launch', JSON.stringify(launch), '```', '', 'mode: grade', ...inputs].join('\n')
   const args = [
     '--plugin-dir', PLUGIN, '--agent', 'aspire:atlas-quality-review', '--strict-mcp-config', '--mcp-config', emptyMcp,
     '--permission-mode', 'acceptEdits', '--allowedTools', 'Read', 'Glob', 'Grep', 'Bash',
     ...(options.judgeModel ? ['--model', options.judgeModel] : []),
   ]
-  const turn = await claude(args, prompt, dir, join(dir, 'grade.jsonl'), options.timeoutMin)
+  return claude(args, prompt, dir, join(dir, log), options.timeoutMin)
+}
+
+async function grade(page: string, question: Question, dir: string, emptyMcp: string, options: Options): Promise<{ graded: Record<string, Result>; reasons: Record<string, string>; note: string | null }> {
+  const turn = await launchQualityReview(question, [
+    `target: ${page}`, 'kind: plugin', `brief: ${fill(question.ask, { brand: 'the brand the page names' })}`,
+    `recipient: ${question.reader} (${question.readerInWords})`, 'audience: team', 'checks: reader-standard',
+    'publish: none', 'log: none', 'recheck: false', 'run: interactive', '',
+    'No Atlas connection is available in this session. Grade the page as it stands; you have no builder notes and no earlier result for it.',
+  ], dir, 'grade.jsonl', emptyMcp, options)
   const block = findJsonWithKey(turn.reply || turn.text, 'quality_review_grade')?.quality_review_grade
   const graded: Record<string, Result> = {}
   const reasons: Record<string, string> = {}
@@ -198,6 +213,21 @@ async function grade(page: string, question: Question, dir: string, emptyMcp: st
     if (row.reason) reasons[row.id] = String(row.reason)
   }
   return { graded, reasons, note: Object.keys(graded).length ? null : 'the quality review returned no grade' }
+}
+
+async function englishRead(page: string, question: Question, dir: string, emptyMcp: string, options: Options): Promise<{ e: Record<string, Result>; reasons: Record<string, string>; note: string | null }> {
+  // E6 is the English read every page gets before it publishes (quality-review.md, 9.1): the page's visible
+  // text, its reader and its question code, and nothing from the run that built it. It passes with no Must fix.
+  const turn = await launchQualityReview(question, [
+    'checks: english', `target: ${page}`, `reader: ${question.readerInWords}`, `question: ${question.code}`, 'run: interactive',
+  ], dir, 'english-read.jsonl', emptyMcp, options)
+  const fixes = findJsonWithKey(turn.reply || turn.text, 'english_read')?.english_read?.fixes
+  if (!Array.isArray(fixes)) return { e: {}, reasons: {}, note: 'the English read returned no english_read block' }
+  const musts = fixes.filter((fix: any) => String(fix?.level).toLowerCase() === 'must')
+  const reason = musts.length
+    ? `${musts.length} Must fix(es): ${musts.map(fix => `"${fix.text}"${fix.replace ? ` -> "${fix.replace}"` : ` (${fix.why})`}`).join('; ')}`
+    : `No Must fix (${fixes.length} Should or Nice)`
+  return { e: { E6: musts.length ? 'fail' : 'pass' }, reasons: { E6: reason }, note: null }
 }
 
 async function judge(page: string, question: Question, approvedPage: string | null, eChecks: any[], dir: string, emptyMcp: string, options: Options): Promise<{ e: Record<string, Result>; reasons: Record<string, string>; note: string | null }> {
@@ -242,18 +272,20 @@ async function checkPage(source: string, role: 'new' | 'approved', question: Que
   const dir = join(qDir, role)
   mkdirSync(dir, { recursive: true })
   const page = join(dir, 'page.html')
-  writeFileSync(page, stripDataUris(readFileSync(source, 'utf8')))
+  // The CI title prefix is the harness's, not the flow's: graders see the page as the flow would have titled it.
+  writeFileSync(page, stripTitlePrefix(stripDataUris(readFileSync(source, 'utf8')), role === 'new' ? options.titlePrefix : null))
   const [s, g, j] = await Promise.all([
     scripted(page, dir),
     grade(page, question, dir, emptyMcp, options),
     judge(page, question, approvedPage, eChecks, dir, emptyMcp, options),
+    eChecks.some(check => check.judgedBy === 'english-read') ? englishRead(page, question, dir, emptyMcp, options) : Promise.resolve({ e: {}, reasons: {}, note: null }),
   ])
-  const notes = [s.note, g.note, j.note].filter((note): note is string => !!note)
+  const notes = [s.note, g.note, j.note, en.note].filter((note): note is string => !!note)
   for (const id of Object.keys(s.results)) {
     if (s.results[id] === 'fail' && g.graded[id] === 'pass') notes.push(`${id}: the script fails it and the grade passes it (${s.problems[id] ?? 'no detail'})`)
     if (s.results[id] === 'pass' && g.graded[id] === 'fail') notes.push(`${id}: the script passes it and the grade fails it (${g.reasons[id] ?? 'no detail'})`)
   }
-  return { scripted: s.results, graded: g.graded, e: j.e, reasons: { ...s.problems, ...g.reasons, ...j.reasons }, notes }
+  return { scripted: s.results, graded: g.graded, e: { ...j.e, ...en.e }, reasons: { ...s.problems, ...g.reasons, ...j.reasons, ...en.reasons }, notes }
 }
 
 // ---------------------------------------------------------------- the approved page
@@ -349,7 +381,8 @@ async function rerun(question: Question, config: any, local: Local, qDir: string
   const problems: string[] = []
   let session: string | null = null
   let model: string | null = null
-  let prompt = `/aspire:aspire ${fill(question.ask, { brand })}` + (local.organization ? ` Use the ${local.organization} organization.` : '')
+  let prompt = `/aspire:aspire ${fill(question.ask, { brand })}` + (local.organization ? ` Use the ${local.organization} organization.` : '') +
+    (options.titlePrefix ? ` Start the page's title with "${options.titlePrefix} · ".` : '')
   let rounds = 0
   let link: string | null = null
   let file: string | null = null
@@ -416,11 +449,15 @@ async function runQuestion(question: Question, config: any, local: Local, eCheck
   const { link, problems } = run
   const hasPage = existsSync(captured)
 
-  const approved = await approvedPage(question.code, local, emptyMcp, options)
+  // From a baseline, the approved column is the one stored there and the approved page is neither read nor graded.
+  // E8 then judges the new page on its own, as it does for a page with no approved example.
+  const stored = storedApproved(question.code, options)
+  const approved = stored ? { path: null, problem: null } : await approvedPage(question.code, local, emptyMcp, options)
   if (approved.problem) problems.push(approved.problem)
+  if (options.approvedFrom && !stored) problems.push(`The baseline has no approved results for ${question.code}`)
   const [newChecks, approvedChecks] = await Promise.all([
     hasPage ? checkPage(captured, 'new', question, approved.path, eChecks, qDir, emptyMcp, options) : null,
-    approved.path ? checkPage(approved.path, 'approved', question, null, eChecks, qDir, emptyMcp, options) : null,
+    stored ?? (approved.path ? checkPage(approved.path, 'approved', question, null, eChecks, qDir, emptyMcp, options) : null),
   ])
   return {
     model: run.model,
@@ -433,15 +470,37 @@ async function runQuestion(question: Question, config: any, local: Local, eCheck
   }
 }
 
+// ---------------------------------------------------------------- stored approved results, and cleanup
+
+/** The baseline `--approved-from` names: a date under baselines/, or "newest" for the latest one. */
+function baselineFor(name: string): { name: string; results: RunResults } | null {
+  if (name !== 'newest') return { name, results: resolveRun(name) }
+  const dates = existsSync(BASELINES) ? readdirSync(BASELINES).filter(d => existsSync(join(BASELINES, d, 'results.json'))).sort() : []
+  const date = dates.at(-1)
+  return date ? { name: date, results: readJson(join(BASELINES, date, 'results.json')) } : null
+}
+
+let baselineCache: { name: string; results: RunResults } | null | undefined
+function storedApproved(code: string, options: Options): PageChecks | null {
+  if (!options.approvedFrom) return null
+  if (baselineCache === undefined) baselineCache = baselineFor(options.approvedFrom)
+  return baselineCache?.results.questions.find(question => question.code === code)?.approved ?? null
+}
+
+/** Delete the pages a run published, so the test organization's account does not fill up. */
+async function cleanup(links: string[], runDir: string, emptyMcp: string) {
+  for (const link of links) {
+    const prompt = `Delete the Claude artifact at ${link} with the Artifact tool's delete action. Reply with only DELETED or NOT DELETED.`
+    const args = ['--strict-mcp-config', '--mcp-config', emptyMcp, '--disable-slash-commands', '--tools', 'Artifact', '--allowedTools', 'Artifact']
+    const turn = await claude(args, prompt, runDir, join(runDir, `cleanup-${link.split('/').at(-1)}.jsonl`), 5)
+    console.error(`  cleanup ${link}: ${/NOT DELETED/.test(turn.reply) || !/DELETED/.test(turn.reply) ? 'not deleted' : 'deleted'}`)
+  }
+}
+
 // ---------------------------------------------------------------- main
 
-function checkNames(eChecks: any[]): Record<string, string> {
-  const names: Record<string, string> = Object.fromEntries(eChecks.map(check => [check.id, check.name]))
-  // R names come from the reader standard's own table, so a renamed or new check shows as the plugin has it.
-  const standard = readFileSync(join(PLUGIN, 'skills/aspire/references/reader-standard.md'), 'utf8')
-  for (const match of standard.matchAll(/^\| (R\d+) \| ([^|]+) \|/gm)) names[match[1]] = match[2].trim()
-  return names
-}
+// R names come from the reader standard's own table, so a renamed or new check shows as the plugin has it.
+const checkNames = (eChecks: any[]) => namesFrom(eChecks, readFileSync(join(PLUGIN, 'skills/aspire/references/reader-standard.md'), 'utf8'))
 
 function storeBaseline(results: RunResults, date: string, eChecks: CheckDef[], names: Record<string, string>) {
   const dir = join(BASELINES, date)
@@ -499,8 +558,13 @@ async function main() {
     if (local.mcp.tokenEnv) token = process.env[local.mcp.tokenEnv] ?? fail(`set ${local.mcp.tokenEnv} to a token for the test organization`)
   }
 
-  const runDir = join(RUNS, stamp())
+  const runDir = options.out ?? join(RUNS, stamp())
   mkdirSync(runDir, { recursive: true })
+  // Written before any question runs, so a run that stops part way still says where its approved column came from.
+  if (options.approvedFrom) {
+    baselineCache = baselineFor(options.approvedFrom)
+    writeFileSync(join(runDir, 'approved-from.txt'), `${baselineCache?.name ?? 'none'}\n`)
+  }
   // The connector files sit outside the checkout and are removed when the run ends: one holds the token.
   const secrets = join(tmpdir(), `eval-pages-${process.pid}`)
   mkdirSync(secrets, { recursive: true, mode: 0o700 })
@@ -524,6 +588,10 @@ async function main() {
       console.log(renderQuestion(result, eChecks, rIds(results.questions), names) + '\n')
     }
   } finally {
+    if (options.cleanup) {
+      const links = results.questions.map(question => question.page.link).filter((link): link is string => !!link)
+      await cleanup(links, runDir, emptyMcp).catch(error => console.error(`  cleanup failed: ${error}`))
+    }
     rmSync(secrets, { recursive: true, force: true })
   }
   writeFileSync(join(runDir, 'table.md'), renderRun(results, eChecks, names))

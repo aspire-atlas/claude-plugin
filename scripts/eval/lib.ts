@@ -425,3 +425,115 @@ export function parseConnectorList(output: string): string[] {
 export function fill(template: string, values: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (whole, key) => values[key] ?? whole)
 }
+
+// ---------------------------------------------------------------- CI: which questions a change reruns, and the PR comment
+
+/** The paths CI watches: the agents, the flow files, the router, and the page standard every page is built by. */
+export const EVAL_PATHS = [
+  'plugins/aspire/agents/', 'plugins/aspire/skills/aspire/references/', 'plugins/aspire/skills/aspire/SKILL.md',
+  'plugins/aspire/skills/page-standard/',
+]
+
+/** A `sharedPaths` entry ending in "/" covers every file under it. */
+const coveredBy = (path: string, entry: string) => (entry.endsWith('/') ? path.startsWith(entry) : path === entry)
+
+export type QuestionPaths = { code: string; paths?: string[] }
+
+/**
+ * The question codes a set of changed files reruns: a question whose own `paths` holds a changed file, or every
+ * question when a changed file is one of `sharedPaths` (a file every flow reads). Order follows questions.json.
+ */
+export function codesForChanges(changed: string[], questions: QuestionPaths[], sharedPaths: string[]): { watched: string[]; codes: string[] } {
+  const watched = changed.filter(path => EVAL_PATHS.some(prefix => path.startsWith(prefix)))
+  if (watched.some(path => sharedPaths.some(entry => coveredBy(path, entry)))) return { watched, codes: questions.map(question => question.code) }
+  const codes = questions.filter(question => (question.paths ?? []).some(path => watched.includes(path))).map(question => question.code)
+  return { watched, codes }
+}
+
+export type Regression = { code: string; id: string; was: Result; now: Result | 'no page' }
+
+/**
+ * A regression is a check the approved page passes that the new page fails. A question that published no page
+ * regresses on every check its approved page passes. A check the new page did not run, or one with no approved
+ * result, is never a regression: the job fails on what it saw fail, and only that.
+ */
+export function regressions(results: RunResults, eChecks: CheckDef[]): Regression[] {
+  const rList = rIds(results.questions)
+  const found: Regression[] = []
+  for (const question of results.questions) {
+    for (const row of rows(question, eChecks, rList)) {
+      if (row.approved !== 'pass') continue
+      if (!question.new) found.push({ code: question.code, id: row.id, was: row.approved, now: 'no page' })
+      else if (row.new === 'fail') found.push({ code: question.code, id: row.id, was: row.approved, now: row.new })
+    }
+  }
+  return found
+}
+
+/** Marks the one eval comment on a pull request, so later pushes edit it instead of adding another. */
+export const COMMENT_MARKER = '<!-- eval:pages -->'
+
+// GitHub refuses a comment body over 65,536 characters.
+const COMMENT_LIMIT = 60_000
+
+export function renderComment(results: RunResults, eChecks: CheckDef[], names: Record<string, string>, approvedSource: string | null, runUrl: string | null): string {
+  const found = regressions(results, eChecks)
+  const missingApproved = results.questions.filter(question => !question.approved).map(question => question.code)
+  const lines = [COMMENT_MARKER, `## Page eval · ${results.questions.map(question => question.code).join(', ')}`, '']
+  if (found.length) {
+    lines.push(`**${found.length} regression${found.length === 1 ? '' : 's'}**: checks the approved page passes that the new page does not.`, '')
+    for (const r of found) lines.push(`- ${r.code} ${r.id}${names[r.id] ? ` ${names[r.id]}` : ''}: approved ${r.was}, new ${r.now}`)
+  } else {
+    lines.push('**No regressions**: every check the approved page passes, the new page passes or did not run.')
+  }
+  lines.push('')
+  if (approvedSource) lines.push(`Approved page results: ${approvedSource}.`)
+  if (missingApproved.length) lines.push(`No approved results for ${missingApproved.join(', ')}, so nothing there can count as a regression. Store a baseline (scripts/eval/README.md).`)
+  if (runUrl) lines.push(`Run: ${runUrl}`)
+  lines.push('', 'How to read this: docs/STANDARD.md, "The eval on a pull request". `–` means the check did not run.')
+  const head = lines.join('\n')
+  const body = renderRun(results, eChecks, names)
+  const full = `${head}\n\n${body}`
+  return full.length <= COMMENT_LIMIT ? full : `${full.slice(0, COMMENT_LIMIT)}\n\n…cut to fit a comment. The full table is in the run's log.\n`
+}
+
+export function renderSkipped(reason: string): string {
+  return `${COMMENT_MARKER}\n## Page eval\n\nskipped: ${reason}\n`
+}
+
+/** The comment when the run stopped before any question finished, so nothing was checked. */
+export function renderStopped(runUrl: string | null): string {
+  return `${COMMENT_MARKER}\n## Page eval\n\n**The run stopped before any question finished**, so nothing was checked. ` +
+    `The job fails until a run completes.${runUrl ? ` Run: ${runUrl}` : ''}\n`
+}
+
+/** Check names: the E names from e-checks.json, and the R names from the reader standard's own table. */
+export function checkNames(eChecks: { id: string; name: string }[], readerStandard: string): Record<string, string> {
+  const names: Record<string, string> = Object.fromEntries(eChecks.map(check => [check.id, check.name]))
+  for (const match of readerStandard.matchAll(/^\| (R\d+) \| ([^|]+) \|/gm)) names[match[1]] = match[2].trim()
+  return names
+}
+
+/** Remove a test title prefix ("CI eval · ") from a page, so graders see the title the flow would have written. */
+export function stripTitlePrefix(html: string, prefix: string | null): string {
+  if (!prefix) return html
+  const escaped = prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return html.replace(new RegExp(`${escaped}\\s*[·:|-]?\\s*`, 'g'), '')
+}
+
+/** The nightly run's Slack message: one line per question, regressions named. Plain text, no page links. */
+export function renderSlack(results: RunResults, eChecks: CheckDef[], runUrl: string | null): string {
+  const found = regressions(results, eChecks)
+  const rList = rIds(results.questions)
+  const lines = [`Atlas page eval, nightly on develop (${results.commit.slice(0, 7)}): ${found.length ? `${found.length} regression${found.length === 1 ? '' : 's'}` : 'no regressions'}`]
+  for (const question of results.questions) {
+    const all = rows(question, eChecks, rList)
+    const passed = all.filter(row => row.new === 'pass').length
+    const ran = all.filter(row => row.new !== 'not run').length
+    const mine = found.filter(r => r.code === question.code).map(r => r.id)
+    const state = question.new ? `${passed}/${ran} checks pass` : 'no page'
+    lines.push(`• ${question.code} ${question.example}: ${state}${mine.length ? `; regressed ${mine.join(', ')}` : ''}`)
+  }
+  if (runUrl) lines.push(runUrl)
+  return lines.join('\n')
+}
