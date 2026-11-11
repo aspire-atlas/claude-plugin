@@ -196,6 +196,11 @@ test('a result packet with no page means the flow finished without one', () => {
   expect(findPage(summarizeTurn(events))).toEqual({ link: null, file: null, finished: true })
 })
 
+test('a storyline draft packet with no page is not the end of the run', () => {
+  const events = [{ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 't', content: '```result-packet\n{"page": null, "storyline": {"bullets": []}}\n```' }] } }]
+  expect(findPage(summarizeTurn(events))).toEqual({ link: null, file: null, finished: false })
+})
+
 test('a file path in the result packet is the page on a host that cannot publish', () => {
   const events = [{ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 't', content: '```result-packet\n{"page": "/tmp/work/brief.html"}\n```' }] } }]
   expect(findPage(summarizeTurn(events))).toEqual({ link: null, file: '/tmp/work/brief.html', finished: true })

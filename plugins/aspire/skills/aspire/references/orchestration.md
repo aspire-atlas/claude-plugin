@@ -104,8 +104,10 @@ page. Take the analysis time from the run log's last run of the same agent (**9*
 say "a few minutes" for it. Never quote a time you did not read.
 
 When the flow's own questions would not fit in this call, ask them in the next call, still before
-the launch; when the run confirms a storyline, that next call is the storyline's (**The
-storyline**), so a run asks two messages at most before it builds. Questions this reply already
+the launch. A question that changes what the agent reads (a campaign, more handles, a window) is
+always asked before the first launch, the storyline draft included. One that does not (a write
+or send choice, a format) waits for the storyline call (**The storyline**), so a run that builds a
+new page usually asks two messages before it builds: this reply, then the storyline. Questions this reply already
 answered, or the **Prompt coach** collected, are never asked again. Never ask in plain text, and
 never ask in an unattended run.
 
@@ -125,24 +127,30 @@ agents (**3**) confirms the storyline of each new page before the agent that bui
 **How it runs.**
 
 1. **Draft.** Launch the agent with `storyline.pass` set to `draft` (**5**), after the setup
-   reply. It reads, refreshes, and counts as it would for the build
-   (`skills/page-standard/SKILL.md`, section 4, steps 0b to 2a), drafts the storyline, publishes
-   nothing, and returns it in the packet's `storyline` (**6**).
+   reply, and the input line "pass: storyline", which its checkpoints send as their `pass` (**11**).
+   It reads, refreshes, and counts as it would for the build (`skills/page-standard/SKILL.md`,
+   section 4, steps 0b to 2a), drafts the storyline, publishes nothing, and returns it in the
+   packet's `storyline` (**6**). Log its return as a `storyline-drafted` Adjustments row, not a
+   `returned` Runs row (**9**).
 2. **Ask once.** One `AskUserQuestion` call, header "Storyline", with the three bullets as the
    question, each with its evidence ("Gift posts beat creators' usual views this fall. 78 posts,
    15 accounts."), then any line the packet's `storyline` carries for what was not checked
    ("Timecodes and on-screen claims are unverified.", "The plan names are not checked against
-   the company's announcement."). Options: "Build (Recommended)", "Change", and "Widen", with the
-   packet's `widen` in its words ("Widen to 26 weeks and TikTok"). When the pool is under the
-   row's minimum (below), say so in the question ("Only 6 posts fit; the minimum is 10.") and
-   recommend Widen instead. The free text field takes the person's change. The same call carries
-   the packet's other `questions` (page standard step 2a's metric check-in among them) and any
-   flow question the setup reply had no room for, up to four in all.
+   the company's announcement."). Options: "Build (Recommended)", "Change", and, when the
+   packet's `widen` is not `null`, "Widen", with `widen` in its words ("Widen to 26 weeks and
+   TikTok"). When the pool is under the row's minimum (below), say so in the question ("Only 6
+   posts fit; the minimum is 10.", "3 of 20 creators have fewer than 5 posts.") and recommend
+   Widen when it is offered; with no `widen`, Build stays recommended and the thin bullet says
+   how few posts it rests on. The free text field takes the person's change. The same call
+   carries the packet's other `questions` (page standard step 2a's metric check-in among them)
+   and any flow question left for it (**2**), up to four in all.
 3. **Act on the answer.**
-   - **Build:** launch again with `storyline.pass` `build` and the confirmed `bullets`, keeping
-     the `runId` (**5**). Write the `storyline-confirmed` row (**9**).
+   - **Build:** write the `storyline-confirmed` row (**9**), then launch again with
+     `storyline.pass` `build` and the confirmed `bullets`, keeping the `runId` (**5**). The
+     launch message carries every answer from the same call, step 2a's check-in as "Metric gaps:
+     {the option chosen}", so the build never stops on it again.
    - **Change:** apply the person's words to the bullets. When the change only rewords, reorders,
-     or drops a bullet, build with the changed bullets and log the row. When it needs evidence the
+     or drops a bullet, log the row and build with the changed bullets. When it needs evidence the
      draft did not read (a new angle, a new claim), launch `draft` again with the change in the
      launch message as "Storyline change: {their words}" and ask again.
    - **Widen:** launch `draft` again with the wider scope in the launch block's `scope`, and ask
@@ -161,7 +169,10 @@ question: more weeks, more platforms, or more accounts, whichever the run has ro
 | Ads and cut-downs | 5 videos |
 | Program tracking | None: the posts owed are the pool, and a thin one is the finding |
 
-Each bullet rests on at least 3 posts, or says how few it rests on ("from only five posts").
+For a row counted per brand or per creator, the pool is under its minimum when half or more of
+them are, and the packet's `pool.under` names each one under it; a bullet that rests on one of
+them says so. Each bullet rests on at least 3 posts, or says how few it rests on ("from only five
+posts").
 
 **Unattended runs and repeat runs** never ask. They launch with `storyline.pass` `state`: the agent
 drafts the storyline and builds in the same pass. The page opens with it in the answer block, the
@@ -284,8 +295,9 @@ lists them. Agents work only from a message that carries it (**11**).
   the `bullets` the person confirmed, as they confirmed them; `state` drafts it and builds in the
   same pass, stating it on the page and in every delivery message (unattended runs and repeat
   runs of a page already published); `none` when this launch builds no page. `bullets` is `[]`
-  for every pass but `build`. A launch without the field is `state` when it is unattended and
-  `none` otherwise.
+  for every pass but `build`. A launch without the field is `none`, except an unattended launch
+  that publishes a new or republished page, which is `state`; a `record` pass, a sample, and a
+  "setup needed" card are `none` in every run.
 - The `recipient` lens object (**Recipient lens**) and the decision-audit line follow as today.
 
 ## 6. The result packet
@@ -313,7 +325,7 @@ acts on.
  "selfCheck": {"fixed": ["{check} {name}"], "stillFailing": ["{check} {name}: {why}"]},
  "storyline": {"bullets": [{"text": "{one short claim}", "posts": 78, "accounts": 15,
                             "views": null}],
-               "pool": {"posts": 692, "minimum": 10},
+               "pool": {"posts": 692, "minimum": 10, "under": []},
                "unchecked": ["{line for each check not made}"],
                "widen": "{the wider scope the agent would read, or null}"}}
 ```
@@ -329,7 +341,7 @@ acts on.
 | `question`, `reader` | The code it answered and the primary reader it built for, from the launch block. |
 | `coverage` | Each channel in scope with its post count, and any channel missing with why. |
 | `selfCheck` | The page check's results by check code and name (`skills/page-standard/SKILL.md`, **7**): those fixed before publishing and those still failing. Empty lists when no page was published. |
-| `storyline` | The storyline the page says, or would say (**2**, **The storyline**): three `bullets`, each with the posts, accounts, and views behind it (`null` for a size the claim does not rest on); the `pool` of posts that fit the question against the row's `minimum` (`null` for program tracking); an `unchecked` line for each check this host could not make ("Timecodes and on-screen claims are unverified.", "{fact} is not checked against the company's announcement."); and `widen`, the wider scope the agent would read next. On a `draft` pass it is the whole result and `page` is `null`; on `build` it repeats the confirmed bullets; on `state` it is what the page states. `null` when the launch's pass was `none`. |
+| `storyline` | The storyline the page says, or would say (**2**, **The storyline**): three `bullets`, each with the posts, accounts, and views behind it (`null` for a size the claim does not rest on); the `pool` of posts that fit the question against the row's `minimum` (`null` for program tracking); an `unchecked` line for each check this host could not make ("Timecodes and on-screen claims are unverified.", "{fact} is not checked against the company's announcement."); and `widen`, the wider scope the agent would read next, or `null` when the scope has no room left. For a row counted per brand or per creator, `posts` is the total, `minimum` the per-entity one, and `under` names each brand or creator under it (`[]` otherwise). On a `draft` pass it is the run's only finding and `page` is `null`; on `build` it repeats the confirmed bullets; on `state` it is what the page states. `null` when the launch's pass was `none`. |
 
 Write the packet as valid JSON on as many lines as it needs. A field with nothing in it is an
 empty list or `null`, never left out.
@@ -439,12 +451,14 @@ clock.
   latest row for a `runId` is its state.
 - Adjustments: an approval or refusal of a proposal, a level raised in **7**, a fix applied to the
   page, a republish, a question answered after the run, a correction the person made to what was
-  heard, a storyline changed or widened, and the `storyline-confirmed` row, written once the
-  person answers Build (or a Change that needs no new draft) and before the build launches, with
-  the three bullets exactly as the build receives them. An interactive run that builds a new page
+  heard, a storyline draft returned (`storyline-drafted`, with the draft's minutes), a storyline
+  changed or widened, and the `storyline-confirmed` row, written once the person answers Build
+  (or a Change that needs no new draft) and before the build launches, with the bullets exactly
+  as the build receives them. An interactive run that builds a new page
   without that row has skipped **The storyline**.
 - The log never holds credentials, mailing addresses, bank or tax details, or message bodies.
-- The time estimate (**2**) reads the last `returned` row for the same agent.
+- The time estimate (**2**) reads the last `returned` row for the same agent; a storyline draft
+  writes none, so the estimate is always a run that built its page.
 
 ## 10. Close-out
 

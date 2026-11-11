@@ -336,9 +336,8 @@ section list below. The others:
 Page, sections in order:
 
 1. Header: brand, network, week label, prepared date, a "Prepared for" chip per lens, and the animated mark at the top right.
-1b. The answer block: the headline and the storyline's three bullets with their evidence
-   (**Scheduled (unattended) runs**, Storyline).
-2. KPI strip with week-over-week deltas and the benchmark row from `target:weekly-health`
+2. The answer block: the headline and the storyline's three bullets with their evidence
+   (**Scheduled (unattended) runs**, Storyline). Then the KPI strip with week-over-week deltas and the benchmark row from `target:weekly-health`
    when present.
 3. Lead-metric line chart, 9 weeks, last week highlighted.
 4. Top 3 and bottom 2 post cards with media, metric row, takeaway.
@@ -421,8 +420,8 @@ README). Rules for the agents:
 - If a search returns nothing for the window, report "no posts indexed for {window}" rather
   than inventing numbers, and still deliver the page and summary.
 
-**Storyline.** A readout never stops to confirm its storyline. Every scheduled run, and every
-interactive run of a readout already published, is a `state` pass (**Orchestration contract**,
+**Storyline.** A scheduled readout, or a rerun of one already published, never stops to confirm
+its storyline: it is a `state` pass (**Orchestration contract**,
 **2**, **The storyline**): the agent drafts the three bullets from the window's posts, each with
 the posts, accounts, or views behind it, and the page opens with them in the answer block, under
 the headline. The chat summary, the Slack message, and the email carry the same three bullets, in

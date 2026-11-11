@@ -137,7 +137,9 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
      when your flow asks its own questions: the storyline goes to the main thread.
    - `build`: the person confirmed the `bullets`. The page's insights (part 3) are those bullets,
      in their order and wording, each with its evidence; the headline is written from them. A
-     creator a `draft` pass of the same `runId` already refreshed counts as refreshed in step 2.
+     creator a `draft` pass of the same `runId` already refreshed counts as refreshed in step 2,
+     and a "Metric gaps:" line in the launch message is step 2a's check-in already answered: act
+     on it and do not stop at step 2a again.
      When the data no longer supports a bullet, build it with what the data shows and say so in
      the page check's `gaps`; never swap in a storyline the person did not confirm.
    - `state`: draft the storyline below and build in the same pass. The answer block (part 2)

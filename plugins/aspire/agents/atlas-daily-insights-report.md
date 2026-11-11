@@ -94,11 +94,10 @@ run rules. Follow it exactly.
 
 - Headline: lead metric vs 28-day median with percent delta.
 - Storyline: the three bullets the page opens with, each with the posts, accounts, or views behind
-  it; the Slack message and the email carry the same three (reference, **Scheduled (unattended) runs**,
-  Storyline).
+  it and the next step it points to; the Slack message and the email carry the same three
+  (reference, **Scheduled (unattended) runs**, Storyline).
 - Yesterday: posts, engagement, best post with its number and link.
 - Flags: anomalies and red-line hits with links, or "none".
-- Insights: up to two bullets, each a number, what it means, and the next step it points to.
 - Since last report: follower delta, action items that changed.
 - Launch pulse: per open campaign, day {n} of {N}, creators live, mentions against the day
   before, and one line on how it is landing with a linked quote. Leave out when none is open.

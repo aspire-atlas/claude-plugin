@@ -178,14 +178,18 @@ export function findPage(turn: Turn): { link: string | null; file: string | null
   const packets = fencedBlocks(turn.text, 'result-packet')
   // On a host that cannot publish, the packet's page is the path of the file the page was saved to.
   let saved: string | null = null
+  // A storyline draft returns a packet with no page and its storyline: the run goes on once the person answers.
+  let drafts = 0
   for (const packet of packets) {
-    const value = parseJsonLoose(packet)?.page
+    const parsed = parseJsonLoose(packet)
+    if (parsed && (parsed.page === null || parsed.page === undefined) && parsed.storyline) drafts++
+    const value = parsed?.page
     const page = Array.isArray(value) ? value[0] : value
     if (typeof page !== 'string' || page.length === 0) continue
     if (/^https?:\/\//.test(page)) link = link ?? page
     else saved = saved ?? page
   }
-  return { link, file: file ?? saved ?? written, finished: packets.length > 0 }
+  return { link, file: file ?? saved ?? written, finished: packets.length > drafts }
 }
 
 export function fencedBlocks(text: string, label: string): string[] {

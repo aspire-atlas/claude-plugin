@@ -144,9 +144,7 @@ team catalog, and how agents render for a lens are in **Recipient lens**.
    hand-off applies (Performance then Creative; Campaign then Brand), a second one.
 2. **Confirm in one line.** When the run has a setup reply (**Orchestration contract** **2**),
    name the reader in its Heard question, with the question's code, instead of asking "For"
-   on its own. The reader and the storyline (**Orchestration contract** **2**, **The
-   storyline**) are the only two things confirmed before a new page is built, in two messages at
-   most: the setup reply, then the storyline call. Otherwise one `AskUserQuestion`, header "For", in the same call as the
+   on its own. Otherwise one `AskUserQuestion`, header "For", in the same call as the
    flow's first question when there is one. Word it as the guess ("This reads like it's for
    the product review. Should I track it weekly and add a messaging view for PMM?"). Options:
    the guess (Recommended), one or two other lenses from the cues, "Just for our team". Skip
@@ -154,6 +152,9 @@ team catalog, and how agents render for a lens are in **Recipient lens**.
    confirmed a lens for the same kind of ask, or when the ask is the team's own routine ("run
    the daily"). Never ask in plain text, never twice for one request, never in an unattended
    run (saved lenses or `team`).
+   A run that builds a new page usually asks two messages before it builds: the setup reply,
+   with the reader in Heard, then the storyline call (**Orchestration contract** **2**, **The
+   storyline**).
 3. **Route by lens** when the ask names no flow, per SKILL.md's **Routing by reader**.
 
 4. **Pass it on.** Every agent launch below includes the persona and primary reader in its
