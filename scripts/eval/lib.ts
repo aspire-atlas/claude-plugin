@@ -30,7 +30,7 @@ export type Turn = {
 }
 
 export type PageChecks = {
-  /** R1, R2, R6 and R11 from the page-check script: pass, fail, n/a or unmarked. */
+  /** R1, R2, R6, R11 and R13 from the page-check script: pass, fail, n/a or unmarked. */
   scripted: Record<string, string>
   /** R rows from the quality review's grade mode. */
   graded: Record<string, Result>
@@ -282,14 +282,14 @@ export function eResult(checks: PageChecks | null, id: string): Result {
   return checks?.e[id] ?? 'not run'
 }
 
-const R_FLOOR = 12
+const R_FLOOR = 13
 
-/** R ids to show: R1 to R12 always, and any later ones a grade returned (the reader standard grows). */
+/** R ids to show: R1 to R13 always, and any later ones a grade or the page check returned (the reader standard grows). */
 export function rIds(results: QuestionResult[]): string[] {
   let top = R_FLOOR
   for (const question of results) {
     for (const checks of [question.new, question.approved]) {
-      for (const id of Object.keys(checks?.graded ?? {})) {
+      for (const id of [...Object.keys(checks?.graded ?? {}), ...Object.keys(checks?.scripted ?? {})]) {
         const n = Number(id.slice(1))
         if (/^R\d+$/.test(id) && n > top) top = n
       }

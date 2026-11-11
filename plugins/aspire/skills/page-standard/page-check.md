@@ -301,7 +301,9 @@ def r13(nodes, regions):
         return ["the scope's data-question \"%s\" has no row in the required-metrics table" % code]
     problems = []
     for index, post in enumerate(posts, 1):
-        label, shown = post_label(post, index), text(post, gap=" ")
+        # A post nested in this one (a frame in a storyboard) is checked on its own, never for this one.
+        nested = lambda n: n is not post and "data-post" in n.attrs
+        label, shown = post_label(post, index), text(post, gap=" ", skip=nested)
         missing = {}
         for entry in (post.attrs.get("data-missing") or "").split(";"):
             if not entry.strip():
@@ -312,7 +314,7 @@ def r13(nodes, regions):
                 continue
             missing[name.strip().lower()] = reason.strip()
         found = {}
-        for node in walk(post):
+        for node in walk(post, keep=lambda n: n.tag not in SKIP and not nested(n)):
             name = (node.attrs.get("data-metric") or "").strip().lower()
             if name:
                 found.setdefault(name, []).append(node)

@@ -176,7 +176,9 @@ Metric definitions:
 
 - Engagement = likes + comments + saves + shares.
 - Engagement rate = engagement ÷ follower count at run time.
-- Engagement per 1,000 views, the account's usual, and how a missing metric reads on the page
+- The per-post engagement figure the page shows (`data-metric="engagement"`) is engagement per
+  1,000 views, never the follower-based rate above, which stays an account-level figure.
+  Engagement per 1,000 views, the account's usual, and how a missing metric reads on the page
   follow the required metrics (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8).
 - Anomaly = a day or post whose lead metric (R4) sits outside the R3 threshold against the
   baseline median. Report the metric, the baseline median, and the percent delta.

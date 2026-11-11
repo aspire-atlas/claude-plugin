@@ -132,7 +132,7 @@ test('an approved page that was not read shows no result, never a pass', () => {
 
 test('later R checks appear once a grade returns them', () => {
   const results = run()
-  expect(rIds(results.questions).at(-1)).toBe('R12')
+  expect(rIds(results.questions).at(-1)).toBe('R13')
   results.questions[0].new!.graded.R14 = 'pass'
   expect(rIds(results.questions).at(-1)).toBe('R14')
 })

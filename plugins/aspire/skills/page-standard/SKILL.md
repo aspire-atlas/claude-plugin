@@ -135,20 +135,6 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    evidence, per `examples.md` steps 1 and 2. Match the evidence, never copy the sections or the
    layout. A code with no example, or a launch with no `question`, skips this
    step.
-
-   **1a. Count the metrics before building.** Take the posts the page will cite and count how many
-   carry each required metric of the row (section 8), leaving out a gap the network table marks
-   as one the network never fills for this kind of post (an Instagram image's views, YouTube
-   saves, shares and saves on a creator's account that is not connected). When under half the
-   cited posts carry a metric, stop before drafting and check in: name the metric, the count, and
-   why it is missing ("Saves: 3 of 24 posts. Instagram shows saves only for accounts connected to
-   Atlas, and @brightsidetoys is not connected."). Ask with `AskUserQuestion` when the run asks its
-   own questions; otherwise return it in the result's `questions`
-   (`orchestration.md`, **6**) and build nothing. Options: "Build with the gaps noted
-   (Recommended)", the fix when there is one ("Connect the account first", "Refresh the posts
-   first"), and "Change the scope". An unattended run builds with the gaps noted and lists the
-   metric in the page's "what is missing" part. Do this after step 2 when the page refreshes
-   its shortlist, since a refresh can fill the gap.
 2. **Refresh the shortlist** when the page shows creators' posts or figures derived from them
    (latest posts, median views, engagement), unless the flow's reference rules out lookups (the
    content library reads only what Atlas holds, in every mode). Call `lookup_creators` with
@@ -175,6 +161,20 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    - Skip any creator the flow's own reference already refreshed in this run
      (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/account-resolution.md`). Scheduled runs make
      this refresh too, except in a flow that rules out lookups.
+
+   **2a. Count the metrics before building**, after any refresh in step 2, since a refresh can
+   fill a gap. Take the posts the page will cite and count how many carry each required metric of
+   the row (section 8), leaving out a gap the network table marks
+   as one the network never fills for this kind of post (an Instagram image's views, YouTube
+   saves, shares and saves on a creator's account that is not connected). When under half the
+   cited posts carry a metric, stop before drafting and check in: name the metric, the count, and
+   why it is missing ("Saves: 3 of 24 posts. Instagram shows saves only for accounts connected to
+   Atlas, and @brightsidetoys is not connected."). Ask with `AskUserQuestion` when the run asks its
+   own questions; otherwise return it in the result's `questions`
+   (`orchestration.md`, **6**) and build nothing. Options: "Build with the gaps noted
+   (Recommended)", the fix when there is one ("Connect the account first", "Refresh the posts
+   first"), and "Change the scope". An unattended run builds with the gaps noted and lists the
+   metric in the page's "what is missing" part.
 3. **Draft the page** for this question and this reader, from the blocks in
    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/blocks.md`. They already carry the markup in
    section 5. The blocks set what each part holds and the order of its evidence; the flow's
