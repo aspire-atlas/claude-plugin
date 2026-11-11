@@ -161,13 +161,13 @@ else
     awk '/^<!-- page-check -->$/{f=1;next} /^<!-- \/page-check -->$/{f=0} f' "$PC" | sed '1d;$d' > "$tmp/page_check.py"
     [ -s "$tmp/page_check.py" ] || err "$PC has no <!-- page-check --> script"
     grep -qF 'skills/page-standard/page-check.md' "$PS" || err "$PS does not link skills/page-standard/page-check.md"
-    # Each fixture prints exactly four results and no error: a pass*.html page fails nothing, and a
+    # Each fixture prints exactly five results and no error: a pass*.html page fails nothing, and a
     # fail-rN*.html page fails RN and nothing else. Exit 2 means the script could not read the page.
     for f in "$FX"/*.html; do
       [ -f "$f" ] || continue
       name=${f##*/}
       out=$(python3 -I "$tmp/page_check.py" "$f" 2>&1) && code=0 || code=$?
-      [ "$code" -ne 2 ] && [ "$(grep -c '"check": "R' <<< "$out")" -eq 4 ] && ! grep -q Traceback <<< "$out" ||
+      [ "$code" -ne 2 ] && [ "$(grep -c '"check": "R' <<< "$out")" -eq 5 ] && ! grep -q Traceback <<< "$out" ||
         { err "page check did not run cleanly on $f (exit $code): $out"; continue; }
       failed=$(grep -o '"check": "R[0-9]*", "name": "[^"]*", "result": "fail"' <<< "$out" | sed -E 's/^"check": "(R[0-9]+)".*/\1/' | tr '\n' ' ' || true)
       case $name in
@@ -179,6 +179,24 @@ else
       esac
     done
     ran="page check gives every fixture its result"
+
+    # R13 checks the metrics the page standard's required-metrics table names, code by code: the
+    # table's Codes and On every cited post columns equal the script's REQUIRED_ROWS.
+    rows=$(python3 -I -c '
+import re, sys
+skill, script = (open(p, encoding="utf-8").read() for p in sys.argv[1:3])
+def pairs(lines):
+    return sorted({(c, m) for codes, ms in lines for c in codes for m in ms})
+block = re.search(r"^<!-- required-metrics -->$(.*?)^<!-- /required-metrics -->$", skill, re.S | re.M)
+table = [] if not block else [(re.findall(r"\b[A-Z][0-9]\b", cells[2]), re.findall(r"`([a-z]+)`", cells[3]))
+         for cells in (l.split("|") for l in block.group(1).splitlines() if l.startswith("| ") and "---" not in l)
+         if re.findall(r"\b[A-Z][0-9]\b", cells[2])]
+rows = re.search(r"^REQUIRED_ROWS = \"\"\"(.*?)^\"\"\"", script, re.S | re.M)
+code = [] if not rows else [(l.split(":")[0].split(), l.split(":")[1].split()) for l in rows.group(1).strip().splitlines()]
+a, b = pairs(table), pairs(code)
+print("ok" if a and a == b else "table %s; script %s" % (sorted(set(a) - set(b)), sorted(set(b) - set(a))))
+' "$PS" "$PC" 2>&1 || true)
+    [ "$rows" = ok ] || err "$PC's REQUIRED_ROWS differ from the required-metrics table in $PS (section 8): $rows"
 
     # The page blocks: a page assembled from every block passes the page check, so a block can't
     # drift from the markup the script reads.
@@ -193,7 +211,7 @@ else
         echo '<footer class="atlas-footnote"><p>Internal use only. Not for public publishing.</p></footer></body></html>'
       } > "$tmp/blocks.html"
       out=$(python3 -I "$tmp/page_check.py" "$tmp/blocks.html" 2>&1) && code=0 || code=$?
-      [ "$code" -eq 0 ] && [ "$(grep -c '"result": "pass"' <<< "$out")" -eq 4 ] ||
+      [ "$code" -eq 0 ] && [ "$(grep -c '"result": "pass"' <<< "$out")" -eq 5 ] ||
         err "a page built from every block in $BL does not pass the page check (exit $code): $out"
       ran="$ran, and a page built from every block passes it"
     fi

@@ -139,10 +139,10 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
 2. `list_post_search_fields` once. Use only paths it returns.
 3. `search_posts` per linked handle: `author.username` = handle, `postedAt` gte the window
    start, `exists mediaKind` (drops stories). Sort `postedAt` desc, limit 100, page on the
-   cursor. Project `postedAt`, `text`, `url`, `likeCount`, `commentCount`, `viewCount`,
-   `saveCount`, `shareCount`, `mediaKind`, `media` (container, never leaf URLs),
-   `instagram.mediaProductType`, `instagram.hashtags`, `instagram.account` (container, for the
-   profile picture and follower count), `tiktok.account` where present.
+   cursor. Project the fields of the "What landed and why" row of the required metrics
+   (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8), with `media` as the container, never leaf URLs, plus
+   `text`, `instagram.hashtags`, `instagram.account` (container, for the profile picture and
+   follower count), and `tiktok.account` where present.
 4. Baseline: the same query for the 28 days before the window (daily) or the prior week and
    the prior 8 weeks (weekly). One `aggs` call per window: `date_histogram` on `postedAt`
    (day) with sum of likes, comments, saves, shares, views; `terms` on `mediaKind`.
@@ -176,6 +176,10 @@ Metric definitions:
 
 - Engagement = likes + comments + saves + shares.
 - Engagement rate = engagement ÷ follower count at run time.
+- The per-post engagement figure the page shows (`data-metric="engagement"`) is engagement per
+  1,000 views, never the follower-based rate above, which stays an account-level figure.
+  Engagement per 1,000 views, the account's usual, and how a missing metric reads on the page
+  follow the required metrics (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8).
 - Anomaly = a day or post whose lead metric (R4) sits outside the R3 threshold against the
   baseline median. Report the metric, the baseline median, and the percent delta.
 - Cadence = posts per day (daily) or per week (weekly), against the baseline.

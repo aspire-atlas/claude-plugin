@@ -19,7 +19,7 @@ The two pieces say everything the page needs to say about itself:
 - **When:** the "as of" time in the source line, which changes every time the page is republished or
   its data is refreshed. There is no separate prepared date.
 
-What a page says, part by part, and the R1 to R12 checks (**Reader standard**) it passes before
+What a page says, part by part, and the R1 to R13 checks (**Reader standard**) it passes before
 it is published are set by the shared skill `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`.
 This file sets only the mark, the source line, and how a page prints (section 6).
 

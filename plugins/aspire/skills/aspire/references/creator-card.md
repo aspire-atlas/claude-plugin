@@ -489,9 +489,10 @@ Pull the account with `search_creators` (`terms` on `username`, `fields: ["usern
 ["instagram.audienceDemographics","instagram.followerDemographics"]`). A hit is one person;
 `channels` holds one entry per network Atlas has linked for them. Pull the last 12 posts per
 channel with `search_posts` (`terms` on `author.username`, `exists mediaKind` to drop stories,
-sort `postedAt` desc) projecting `url`, `postedAt`, `mediaKind`, `likeCount`, `commentCount`,
-`viewCount`, `media`, `instagram.mediaProductType`, `instagram.permalink`, `analysis.brandSafety`,
-`analysis.commentSentimentBreakdown`, `analysis.aestheticTags`.
+sort `postedAt` desc) projecting the post fields of the "Creator picks or vetting" row of the
+required metrics (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8), plus `instagram.mediaProductType`,
+`instagram.permalink`, `analysis.brandSafety`, `analysis.commentSentimentBreakdown`, and
+`analysis.aestheticTags`.
 
 **A section with no data behind it is left out.** Never estimate, never show a dash, never
 fill in from web copy. The one exception is the header row, which always shows.

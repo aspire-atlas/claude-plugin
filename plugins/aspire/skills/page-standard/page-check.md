@@ -1,9 +1,10 @@
 # Page check script
 
-The script `SKILL.md`, section 5, runs on every page before it is published: R1, R2, R6 and R11
-from the reader standard. Extract it with the command there; never retype it. It reads only the
+The script `SKILL.md`, section 5, runs on every page before it is published: R1, R2, R6, R11 and
+R13 from the reader standard. Extract it with the command there; never retype it. It reads only the
 pages named and writes nothing. It lives in this file so `SKILL.md` stays short; when the reader
-standard changes, `SKILL.md`'s section 6 table and this script change in the same commit.
+standard changes, `SKILL.md`'s section 6 table and this script change in the same commit, and when
+the required-metrics table (`SKILL.md`, section 8) changes, `REQUIRED_ROWS` here changes with it.
 
 ## Contents
 
@@ -13,7 +14,7 @@ standard changes, `SKILL.md`'s section 6 table and this script change in the sam
 
 <!-- page-check -->
 ```python
-# Page standard self-check: R1, R2, R6 and R11 from reader-standard.md. Reads the HTML files named; writes nothing.
+# Page standard self-check: R1, R2, R6, R11 and R13 from reader-standard.md. Reads the HTML files named; writes nothing.
 import datetime, json, re, sys
 from html.parser import HTMLParser
 
@@ -57,6 +58,17 @@ BANNED = [
     (re.compile(EDGE % r"(?:sub-?agents?|tool calls?|webhooks?|endpoints?|schemas?)", re.I), "a system word"),
 ]
 NOTHING = re.compile(r"\b(?:nothing|no decisions?) needs? (?:your )?approval\b", re.I)
+# Required metrics on every cited post, by question code. Kept equal to the required-metrics table in
+# SKILL.md, section 8, by scripts/check-artifact-standard.sh.
+REQUIRED_ROWS = """
+O1 O4 O5 O6: views likes comments shares saves engagement
+O2 O3: views likes comments engagement
+I1 I2 I3 I4: views likes comments engagement
+P1 P2 P4 P5 P6: views likes comments shares saves engagement
+I5 I6 P3 A1: views likes comments
+"""
+REQUIRED = {code: tuple(metrics.split()) for line in REQUIRED_ROWS.strip().splitlines()
+            for codes, metrics in [line.split(":")] for code in codes.split()}
 
 class Node:
     def __init__(self, tag, attrs, parent):
@@ -270,10 +282,61 @@ def r11(nodes, regions):
             problems.append("names %s: \"%s\"" % (kind, hit))
     return problems
 
-# Only these scripted checks can be N/A (reader-standard.md; quality-review.md, section 3).
+def post_label(post, index):
+    link = next((n.attrs.get("href") for n in walk(post) if n.tag == "a" and n.attrs.get("href")), "")
+    return (post.attrs.get("data-post") or "").strip() or link or "cited post %d" % index
+
+def r13(nodes, regions):
+    # Every cited post (data-post) shows each metric its question's row requires (data-metric), or
+    # names it in data-missing="{metric}: {reason}" with the reason shown on the post. Returns None
+    # (n/a) on a page with no question code and no cited post.
+    scope = (regions.get("scope") or [None])[0]
+    code = ((scope.attrs.get("data-question") or "") if scope is not None else "").strip().upper()
+    posts = [n for n in nodes if "data-post" in n.attrs]
+    if not code:
+        if posts:
+            return ["%d cited post(s), but the scope names no data-question; give the page's question code" % len(posts)]
+        return None
+    if code not in REQUIRED:
+        return ["the scope's data-question \"%s\" has no row in the required-metrics table" % code]
+    problems = []
+    for index, post in enumerate(posts, 1):
+        # A post nested in this one (a frame in a storyboard) is checked on its own, never for this one.
+        nested = lambda n: n is not post and "data-post" in n.attrs
+        label, shown = post_label(post, index), text(post, gap=" ", skip=nested)
+        missing = {}
+        for entry in (post.attrs.get("data-missing") or "").split(";"):
+            if not entry.strip():
+                continue
+            name, sep, reason = entry.partition(":")
+            if not sep or not name.strip() or not reason.strip():
+                problems.append("%s has a data-missing entry \"%s\" that is not \"{metric}: {reason}\"" % (label, entry.strip()))
+                continue
+            missing[name.strip().lower()] = reason.strip()
+        found = {}
+        for node in walk(post, keep=lambda n: n.tag not in SKIP and not nested(n)):
+            name = (node.attrs.get("data-metric") or "").strip().lower()
+            if name:
+                found.setdefault(name, []).append(node)
+        for metric in REQUIRED[code]:
+            if metric in found and metric in missing:
+                problems.append("%s both shows %s and notes it missing; keep one" % (label, metric))
+            elif metric in found:
+                if not any(re.search(r"\d", text(n, gap=" ")) for n in found[metric]):
+                    problems.append("%s marks %s but shows no number; note it in data-missing with the reason instead" % (label, metric))
+            elif metric in missing:
+                if not has(shown, missing[metric]):
+                    problems.append("%s notes %s missing (%s) but does not show that reason beside it" % (label, metric, missing[metric]))
+            else:
+                problems.append("%s shows no %s and has no data-missing note for it" % (label, metric))
+    return problems
+
+# Only these scripted checks can be N/A (reader-standard.md; quality-review.md, section 3). R13 is
+# n/a on its own terms (no question code and no cited post), never through data-na.
 CAN_BE_NA = {"R2", "R6"}
 CHECKS = (("R1", "Reader and scope", r1), ("R2", "Platforms covered", r2),
-          ("R6", "Decisions kept separate", r6), ("R11", "Plain language", r11))
+          ("R6", "Decisions kept separate", r6), ("R11", "Plain language", r11),
+          ("R13", "Required metrics", r13))
 
 def check(path):
     tree = Tree()
@@ -297,7 +360,10 @@ def check(path):
             results.append((code, name, "unmarked", ["the page has no data-page markup; judge this check by reading"]))
         else:
             problems = run(nodes, regions)
-            results.append((code, name, "fail" if problems else "pass", problems))
+            if problems is None:
+                results.append((code, name, "n/a", ["the page names no question code and cites no post"]))
+            else:
+                results.append((code, name, "fail" if problems else "pass", problems))
     return results
 
 def main(paths):

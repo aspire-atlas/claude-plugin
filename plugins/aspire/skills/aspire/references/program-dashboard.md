@@ -183,9 +183,10 @@ return. Filter path, so `aggs` work.
 
 One `search_posts` call for the set: the ids in 1, or the author and brand conditions in 2,
 `postedAt` from the term start, sorted by `postedAt` descending, limit 100, paged on the cursor
-up to 500. Project `postedAt`, `url`, `instagram.permalink`, `text`, `author.username`,
-`mediaKind`, `instagram.mediaProductType`, `likeCount`, `commentCount`, `viewCount`, `media`
-(container, never leaf URLs), the partnership marker, and `instagram.account` (container).
+up to 500. Project the fields of the "Program tracking" row of the required metrics
+(`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8), with `media` as the container, never leaf URLs, plus
+`instagram.permalink`, `text`, `instagram.mediaProductType`, the partnership marker, and
+`instagram.account` (container).
 Stories count only when Atlas holds them. Say when the set is capped.
 
 The same filter with `aggs`: sums of `likeCount`, `commentCount`, `viewCount`; `cardinality` on

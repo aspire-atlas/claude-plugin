@@ -227,7 +227,8 @@ scores the same in both flows:
 | Format match | 10 | `mediaKind` / `instagram.mediaProductType` mix vs. the formats the criteria name |
 | Market fit | 5 | Country and language against the criteria |
 
-A component with no data scores zero and is listed as missing. Also report, unscored: posts
+A component with no data scores zero and is listed as missing; the page shows it as "not
+available: {reason}", never as 0 (**Page standard**, section 8). Also report, unscored: posts
 that mention the brand (a warm lead), the estimated fee per **Fee calculator**, **Applying the rates**,
 and the contact route Atlas holds.
 

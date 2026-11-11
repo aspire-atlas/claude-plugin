@@ -46,7 +46,9 @@ the skeleton and the blocks alone.
 ## What each example sets
 
 Which block holds each element is in `blocks.md`, section 5. Each flow's reference says where
-they go on its page.
+they go on its page. Every element that shows a post (a card, a scored row, a storyboard) also
+carries the metrics the code's row in `SKILL.md`, section 8, requires, or the reason one is not
+available.
 
 ### I1: which creators to contact for this launch, and why
 
