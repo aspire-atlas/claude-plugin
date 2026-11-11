@@ -49,7 +49,6 @@
       "id": "E7",
       "name": "Meets the UX standard",
       "judgedBy": "ux-review",
-      "waitsFor": "ASP-5301",
       "passesWhen": "A senior UX review, after rendering on desktop, phone, dark mode and with no apps connected, says the page meets its bar.",
       "failsWhen": "The first task sits 3,300px down on a phone."
     },

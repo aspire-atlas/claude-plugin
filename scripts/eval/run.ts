@@ -230,6 +230,24 @@ async function englishRead(page: string, question: Question, dir: string, emptyM
   return { e: { E6: musts.length ? 'fail' : 'pass' }, reasons: { E6: reason }, note: null }
 }
 
+async function uxReview(page: string, question: Question, dir: string, emptyMcp: string, options: Options): Promise<{ e: Record<string, Result>; reasons: Record<string, string>; note: string | null }> {
+  // E7 is the UX review every page gets before it publishes (quality-review.md, 9.2): the page rendered on
+  // desktop, on a phone in the dark theme and with no apps connected, its reader and its question code, and
+  // nothing from the run that built it. It passes with no Must fix.
+  const turn = await launchQualityReview(question, [
+    'checks: ux', `target: ${page}`, `reader: ${question.readerInWords}`, `question: ${question.code}`, 'run: interactive',
+  ], dir, 'ux-review.jsonl', emptyMcp, options)
+  const block = findJsonWithKey(turn.reply || turn.text, 'ux_review')?.ux_review
+  if (!Array.isArray(block?.fixes)) return { e: {}, reasons: {}, note: 'the UX review returned no ux_review block' }
+  const musts = block.fixes.filter((fix: any) => String(fix?.level).toLowerCase() === 'must')
+  const depth = block.firstTask?.phone != null ? `; first task ${block.firstTask.phone}px down on the phone` : ''
+  const how = block.rendered ? `rendered (${(block.views ?? []).join(', ')})` : 'not rendered, judged by source order'
+  const reason = musts.length
+    ? `${musts.length} Must fix(es), ${how}${depth}: ${musts.map((fix: any) => `${fix.row}: ${fix.problem}`).join('; ')}`
+    : `No Must fix (${block.fixes.length} Should or Nice), ${how}${depth}`
+  return { e: { E7: musts.length ? 'fail' : 'pass' }, reasons: { E7: reason }, note: null }
+}
+
 async function judge(page: string, question: Question, approvedPage: string | null, eChecks: any[], dir: string, emptyMcp: string, options: Options): Promise<{ e: Record<string, Result>; reasons: Record<string, string>; note: string | null }> {
   const mine = eChecks.filter(check => check.judgedBy === 'judge')
   const system = [
@@ -274,18 +292,20 @@ async function checkPage(source: string, role: 'new' | 'approved', question: Que
   const page = join(dir, 'page.html')
   // The CI title prefix is the harness's, not the flow's: graders see the page as the flow would have titled it.
   writeFileSync(page, stripTitlePrefix(stripDataUris(readFileSync(source, 'utf8')), role === 'new' ? options.titlePrefix : null))
-  const [s, g, j] = await Promise.all([
+  const none = Promise.resolve({ e: {}, reasons: {}, note: null })
+  const [s, g, j, en, ux] = await Promise.all([
     scripted(page, dir),
     grade(page, question, dir, emptyMcp, options),
     judge(page, question, approvedPage, eChecks, dir, emptyMcp, options),
-    eChecks.some(check => check.judgedBy === 'english-read') ? englishRead(page, question, dir, emptyMcp, options) : Promise.resolve({ e: {}, reasons: {}, note: null }),
+    eChecks.some(check => check.judgedBy === 'english-read') ? englishRead(page, question, dir, emptyMcp, options) : none,
+    eChecks.some(check => check.judgedBy === 'ux-review') ? uxReview(page, question, dir, emptyMcp, options) : none,
   ])
-  const notes = [s.note, g.note, j.note, en.note].filter((note): note is string => !!note)
+  const notes = [s.note, g.note, j.note, en.note, ux.note].filter((note): note is string => !!note)
   for (const id of Object.keys(s.results)) {
     if (s.results[id] === 'fail' && g.graded[id] === 'pass') notes.push(`${id}: the script fails it and the grade passes it (${s.problems[id] ?? 'no detail'})`)
     if (s.results[id] === 'pass' && g.graded[id] === 'fail') notes.push(`${id}: the script passes it and the grade fails it (${g.reasons[id] ?? 'no detail'})`)
   }
-  return { scripted: s.results, graded: g.graded, e: { ...j.e, ...en.e }, reasons: { ...s.problems, ...g.reasons, ...j.reasons, ...en.reasons }, notes }
+  return { scripted: s.results, graded: g.graded, e: { ...j.e, ...en.e, ...ux.e }, reasons: { ...s.problems, ...g.reasons, ...j.reasons, ...en.reasons, ...ux.reasons }, notes }
 }
 
 // ---------------------------------------------------------------- the approved page

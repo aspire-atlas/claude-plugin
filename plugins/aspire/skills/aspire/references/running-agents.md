@@ -46,7 +46,7 @@ agent only through this skill or a shortcut.
    from the plugin, as **Sample artifacts** does, and pass it the same `model`. Never do an agent's work in the main thread, and never
    call the Atlas tools an agent owns to stand in for one. Only a session with no subagent tool
    at all may follow the agent's file itself, and says so in one line. It then has no one to give
-   the English read to, so it builds with `englishRead: {"status": "not-run", "why": "no subagent
+   the English read or the UX review to, so it builds with `englishRead: {"status": "not-run", "why": "no subagent
    in this session"}` among the inputs and publishes in one pass (`skills/page-standard/SKILL.md`,
    section 4, step 4b).
 2. **Say it started.** One line after the launch: which agent, what it is doing, and that the
@@ -62,21 +62,29 @@ agent only through this skill or a shortcut.
    reader, and gives the time estimate. Questions an agent raises come back in its result packet
    and are asked when it arrives. Write the launch's Runs row (**9** there).
 4. **When it finishes.** Its result arrives as a task notification.
-   - **First, the English read.** When a `page-check` block says `"englishRead": {"status":
-     "pending"}`, the page is a draft (`skills/page-standard/SKILL.md`, section 4, step 4b). Relay
-     nothing from it, ask nothing, and confirm nothing yet. Launch `atlas-quality-review` (as in
-     step 1, its own run id, `model` from **Model tiers**) with only `mode: grade`, `checks:
-     english`, `target` (the draft path), `reader` (the launch's reader, in words), `question`, and
+   - **First, the English read and the UX review.** When a `page-check` block says
+     `"englishRead": {"status": "pending"}`, the page is a draft (`skills/page-standard/SKILL.md`,
+     section 4, steps 4b and 4c). Relay nothing from it, ask nothing, and confirm nothing yet.
+     Launch `atlas-quality-review` twice, at once (as in step 1, each with its own run id, `model`
+     from **Model tiers**), with only `mode: grade`, `checks: english` for one and `checks: ux` for
+     the other, `target` (the draft path), `reader` (the launch's reader, in words), `question`, and
      `run` as the builder's launch had it: never the brief, the ask, or anything from the builder's
-     result (**Quality review**, the English read). When it returns, relaunch the builder with the same
-     `launch` block, the same inputs, and three more: `englishRead` (the reviewer's `english_read`
-     block), `draft` (the path), and `packet` (the draft pass's `result-packet`). Act on that
-     publish pass's result as below. Say nothing in between unless the person asks; in an
-     unattended run, wait for each. A reviewer that returns no `english_read` block counts as no
-     fixes: relaunch with `englishRead` set to `{"error": "{what came back}"}`. The builder reports
-     `not-run` as a failing check, and in a scheduled run also in `gaps` and its delivery message;
-     name it in the close-out like any check still failing. A page you build yourself (**Visual output**, a deck you export) gets the
-     same read before you publish it, and you apply its Musts yourself.
+     result (**Quality review**, the English read and the UX review). When both return, relaunch the
+     builder with the same `launch` block, the same inputs, and four more: `englishRead` (the
+     `english_read` block), `uxReview` (the `ux_review` block), `draft` (the path), and `packet`
+     (the draft pass's `result-packet`). Act on that publish pass's result as below. Say nothing in
+     between unless the person asks; in an unattended run, wait for each. A reviewer that returns no
+     block counts as no fixes: relaunch with that entry set to `{"error": "{what came back}"}`. The
+     builder reports `not-run` as a failing check, and in a scheduled run also in `gaps` and its
+     delivery message; name it in the close-out like any check still failing.
+   - **A page held by the UX review.** When the publish pass returns `"uxReview": {"status":
+     "blocked"}`, the page was saved as a file, not published, because a Must is still open
+     (`skills/page-standard/ux-review.md`). Name each open Must in one line and ask with
+     `AskUserQuestion`: "Fix it first (Recommended)" or "Publish it as it is". Relaunch the publish
+     pass with the person's words added to `uxReview` as `personFix`, or with `uxReview.publishOpen`
+     set to `true`.
+   - A page you build yourself (**Visual output**, a deck you export) gets the same read and review
+     before you publish it, and you apply their Musts yourself.
    - Treat the result as the agent's
    report and act on its `result-packet` block: relay the summary, page link (or, when `page` is a file path, "Saved as a file: {path}"), and decisions it
    needs, confirm its `proposals` by permission level (**Orchestration contract** **7**: Write

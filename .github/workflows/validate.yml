@@ -61,6 +61,17 @@ jobs:
       - name: Every agent and page reference links the artifact standard
         run: bash scripts/check-artifact-standard.sh
 
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+
+      - name: The UX review's renderer draws the fixture page in all three views
+        run: |
+          # Playwright is the renderer's one dependency. It is installed here rather than in package.json, since no plugin ships it.
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+          bun scripts/render-page.ts
+
       - name: Every agent carries the orchestration contract and has a permission level
         run: bash scripts/check-orchestration.sh
 

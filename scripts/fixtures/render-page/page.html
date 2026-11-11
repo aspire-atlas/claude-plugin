@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Holiday creator plan</title>
+<style>
+:root{--bg:#faf9f5;--surface:#ffffff;--text:#1f1e1d;--muted:#5e5d59;--border:#e5e2d9;--brand:#d97757}
+@media screen and (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#262624;--surface:#30302e;--text:#f5f4ef;--muted:#b7b5a9;--border:#45443f}}
+@media screen{:root[data-theme="dark"]{--bg:#262624;--surface:#30302e;--text:#f5f4ef;--muted:#b7b5a9;--border:#45443f}}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,sans-serif}
+main{max-width:960px;margin:0 auto;padding:24px 16px}
+section{border-top:1px solid var(--border);padding:16px 0}
+button{min-height:44px;font:inherit;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;padding:0 14px}
+[data-app-missing]{display:none;color:var(--muted)}
+:root[data-apps="none"] [data-app]{display:none}
+:root[data-apps="none"] [data-app-missing]{display:block}
+pre{white-space:pre-wrap;background:var(--surface);border:1px solid var(--border);padding:12px}
+</style>
+</head>
+<body>
+<main>
+<div data-page="scope" data-reader="the influencer manager" data-brand="Example Toys" data-range="Nov 1 to Dec 24, 2026" data-na="R2">
+  For the influencer manager | Example Toys | Nov 1 to Dec 24, 2026
+</div>
+<h1>Brief six creators by Friday to post before Black Friday.</h1>
+<section data-page="decisions">
+  <h2>Decisions for you</h2>
+  <p data-decision data-by="2026-11-13">Approve the holiday offer by Nov 13.</p>
+</section>
+<section data-page="next-steps">
+  <h2>Next steps</h2>
+  <ol>
+    <li data-first-task>Send the offer to the six creators by Nov 13.
+      <pre id="offer">Hi, we would love you to post about our holiday gift set before Black Friday.</pre>
+      <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('offer').innerText);this.nextElementSibling.textContent='Copied the offer.'">Copy offer</button>
+      <span role="status"></span>
+      <button type="button" data-app="gmail">Send from Gmail</button>
+      <p data-app-missing="gmail">Connect Gmail to send the offers from this page.</p>
+    </li>
+    <li>Ship product to the creators by Nov 18.</li>
+  </ol>
+</section>
+<section data-page="method">
+  <h2>How this was worked out</h2>
+  <details><summary>Show the method</summary><p>Creators were ranked on their usual views over the last 90 days.</p></details>
+</section>
+<footer class="atlas-footnote"><p>No Atlas data on this page.</p></footer>
+</main>
+</body>
+</html>

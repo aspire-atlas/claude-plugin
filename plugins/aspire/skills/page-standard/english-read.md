@@ -17,13 +17,15 @@ step 5 describes for a session with no Artifact tool, named `{page name}.draft.h
   a decision the person already made (a `record` pass) runs as your flow says.
 - Everything else in the pass runs as your flow says.
 - Return as usual, with the packet's `page` set to the draft file's absolute path, the held writes
-  listed in its `summary`, and the page check's `englishRead` set to `{"status": "pending",
-  "draft": "{path}"}`. The main thread acts on none of the packet until the publish pass returns.
+  listed in its `summary`, the page check's `englishRead` set to `{"status": "pending",
+  "draft": "{path}"}`, and its `uxReview` set the same way (`ux-review.md`). The main thread
+  acts on none of the packet until the publish pass returns.
 
 ## Publish pass
 
-Your launch carries `englishRead` (the reviewer's `english_read` block), the `draft` path, and the
-draft pass's result `packet`. Start from the draft file.
+Your launch carries `englishRead` (the reviewer's `english_read` block), `uxReview` (the UX
+reviewer's `ux_review` block, applied as `ux-review.md` says), the `draft` path, and the draft
+pass's result `packet`. Start from the draft file.
 
 - Do not rebuild the page, and make no Atlas read the draft pass already made. Read only the draft,
   the fixes, the packet, and the parts of your flow's reference that set its held writes and
@@ -48,7 +50,8 @@ draft pass's result `packet`. Start from the draft file.
   that the read cannot run: running in a subagent with no Agent tool is the normal draft pass.
   Publish in one pass only when your launch carries `englishRead` with `"status": "not-run"`, which
   the main thread sets when it follows your file itself because the session has no subagent tool
-  (**Running agents**, step 1), and report that `englishRead` as given.
+  (**Running agents**, step 1), and report that `englishRead` as given, with `uxReview` `not-run`
+  for the same reason.
 - **A read that did not run** (`englishRead` is `not-run`, or carries the main thread's `error`
   because the reviewer returned no fixes) is reported like an unapplied Must: in `stillFailing` as
   "English read not run: {why}", and in a scheduled run also in `gaps` and in one line of the
