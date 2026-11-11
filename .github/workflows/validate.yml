@@ -78,6 +78,9 @@ jobs:
       - name: Skill layout (SKILL.md length, description length, reference chains, tables of contents)
         run: bash scripts/check-skill-layout.sh --tree
 
+      - name: The standard review renders its comment, and its prompt covers every reviewer-checked item
+        run: bash scripts/standard-review/review.sh --self-test
+
       - name: Changelogs are edited only on release branches
         if: steps.channel.outputs.name == 'develop'
         run: |

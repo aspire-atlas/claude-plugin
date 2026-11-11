@@ -1,0 +1,103 @@
+name: Standard review
+
+# A judgment review of a pull request's agent, skill and flow prose against docs/STANDARD.md: the
+# items no script can count. It posts one comment on the pull request and edits it on each push.
+# How it works and how to answer a finding: docs/STANDARD.md, "The judgment review".
+#
+# Advisory until the repository variable STANDARD_REVIEW_BLOCKING is "true"; then a Must finding,
+# or a review that could not run, fails this check. The reviewer gets no tools, so text in a pull
+# request can change what the comment says but cannot run anything.
+on:
+  pull_request:
+    branches: [develop, main]
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+    paths:
+      - 'plugins/*/agents/**'
+      - 'plugins/*/skills/**'
+      - 'docs/STANDARD.md'
+
+concurrency:
+  group: standard-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  standard-review:
+    # A label event re-runs the review only when the label is the skip label. Draft pull requests
+    # wait until they are ready.
+    if: >-
+      !github.event.pull_request.draft &&
+      ((github.event.action != 'labeled' && github.event.action != 'unlabeled') ||
+       github.event.label.name == 'skip-standard-review')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      REPO: ${{ github.repository }}
+      PR: ${{ github.event.pull_request.number }}
+      BASE: ${{ github.event.pull_request.base.sha }}
+      HEAD: ${{ github.event.pull_request.head.sha }}
+      GH_TOKEN: ${{ github.token }}
+      STANDARD_REVIEW_BLOCKING: ${{ vars.STANDARD_REVIEW_BLOCKING || 'false' }}
+      STANDARD_REVIEW_MODEL: ${{ vars.STANDARD_REVIEW_MODEL || 'opus' }}
+      OUT: ${{ runner.temp }}/standard-review
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Write the pull request body to a file
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          mkdir -p "$OUT"
+          printf '%s\n' "$BODY" > "$OUT/body.md"
+
+      - name: Skipped by label
+        id: skip
+        if: contains(github.event.pull_request.labels.*.name, 'skip-standard-review')
+        run: |
+          bash scripts/standard-review/review.sh skipped "$OUT/body.md" > "$OUT/comment.md"
+          bash scripts/standard-review/review.sh post "$OUT/comment.md"
+
+      - uses: actions/setup-node@v4
+        if: steps.skip.outcome == 'skipped'
+        with:
+          node-version: 22
+
+      - name: Install Claude Code CLI
+        if: steps.skip.outcome == 'skipped'
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Review
+        id: review
+        if: steps.skip.outcome == 'skipped'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          # A pull request from a fork gets no secrets and a read-only token: say so and stop.
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::notice::No ANTHROPIC_API_KEY for this run (a fork, or the secret is not set). The standard review did not run."
+            exit 0
+          fi
+          status=0
+          bash scripts/standard-review/review.sh run "$BASE" "$HEAD" "$OUT/body.md" || status=$?
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          if [ -f "$OUT/comment.md" ]; then
+            echo "comment=true" >> "$GITHUB_OUTPUT"
+            cat "$OUT/comment.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit 0
+
+      - name: Post the review on the pull request
+        if: steps.review.outputs.comment == 'true'
+        run: bash scripts/standard-review/review.sh post "$OUT/comment.md"
+
+      - name: Fail on a Must finding (blocking mode only)
+        if: steps.review.outputs.status != '' && steps.review.outputs.status != '0'
+        run: |
+          echo "The standard review found a Must finding, or could not run, and STANDARD_REVIEW_BLOCKING is true. See the comment on this pull request."
+          exit 1
