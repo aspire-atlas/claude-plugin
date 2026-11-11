@@ -96,7 +96,7 @@ never leaf URLs alone. The fields this flow reads, as the live census names them
 
 | Area | Fields |
 | ---- | ------ |
-| Totals | `viewCount`, `likeCount`, `commentCount`, `shareCount`, `saveCount`; Instagram `instagram.total*` |
+| Totals | The fields of the "What landed and why" row of the required metrics (`skills/page-standard/SKILL.md`, section 8); Instagram `instagram.total*` |
 | Organic vs. paid | Instagram `instagram.organicLikeCount`, `organicCommentCount`, `organicRepostCount`, `organicViewCount`, `organicReach`, `organicSaveCount`, `organicShareCount`, `organicIgReelsAvgWatchTime`; TikTok `tiktok.organic*` and `tiktok.paid*` |
 | Content scores | `analysis.productionAnalysis.*`, `analysis.emotionalAnalysis.*`, `analysis.commercialAnalysis.promotionalIntent` |
 | Brands named by Atlas | `analysis.commercialAnalysis.featuredBrands`, `featuredProducts`, `callToActions`, `promoCodes` |

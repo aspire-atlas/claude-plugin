@@ -26,7 +26,7 @@ Read these before starting:
 - `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/quality-review.md`: how to read the target, which
   checks apply, the rubric, severity and verdict, the writing rules, the page, your output, grade
   mode, and the review log.
-- `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/reader-standard.md`: the R1 to R12 checks for
+- `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/reader-standard.md`: the R1 to R13 checks for
   **4.14**.
 - `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md`: check **4.12**, and your
   own page's header and footer.

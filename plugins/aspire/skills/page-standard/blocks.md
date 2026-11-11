@@ -124,6 +124,7 @@ The default tokens name the Atlas fonts. A page that keeps them loads them befor
 .pb-h{font-family:var(--font-display);font-stretch:var(--font-display-stretch,100%);font-weight:600;line-height:1.25;margin:0 0 10px;text-wrap:balance}
 .pb-label{font:500 .72rem/1.3 var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .pb-muted{color:var(--muted)}
+.pb-na{color:var(--muted);font-size:.85rem;font-style:italic}
 .pb-num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 .pb-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr))}
 .pb-chip{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:2px 9px;font:500 .78rem/1.5 var(--font-body);border:1px solid var(--border);background:var(--bg);color:var(--text);white-space:nowrap;max-width:100%}
@@ -257,12 +258,14 @@ before the first `h2`, under the page header that carries the mark and the "Prep
 (`artifact-standard.md`, `recipient-lens.md`).
 
 - `data-reader`, `data-brand`, and `data-range` are the exact words the line shows.
+- `data-question` is the question code the page answers, which picks its required metrics
+  (`SKILL.md`, section 8). Leave it out on a page that answers no code and cites no post.
 - A check that is N/A for this page goes in `data-na` (`SKILL.md`, section 5).
 - Leave "Prepared by" out when the reader is not a VP or budget owner.
 
 <!-- block:scope -->
 ```html
-<div class="pb-scope" data-page="scope" data-block="scope" data-reader="the VP of marketing" data-brand="Brightside Toys" data-range="Aug 1 to Oct 28, 2026">
+<div class="pb-scope" data-page="scope" data-block="scope" data-question="O3" data-reader="the VP of marketing" data-brand="Brightside Toys" data-range="Aug 1 to Oct 28, 2026">
   <p class="pb-scope-line"><span>For <b>the VP of marketing</b></span><span><b>Brightside Toys</b></span><span>Aug 1 to Oct 28, 2026</span><span class="pb-muted">Prepared by Jordan Lee, social lead</span></p>
   <!-- the coverage strip (3.2) goes here -->
 </div>
@@ -439,7 +442,14 @@ below. A creator slate (`SKILL.md`, section 3) fills every field:
 ### 3.8 Post evidence card
 
 **Holds:** one real post from this run: its thumbnail, a link to it, the creator, the date and
-time it went live, and the numbers the argument uses, each next to its comparison.
+time it went live, the metrics the page's question requires (`SKILL.md`, section 8), and the
+numbers the argument uses, each next to its comparison.
+
+- `data-post` carries the post's link. Each required metric sits on its own element as
+  `data-metric="{metric}"` with its number. A metric the post cannot show goes in `data-missing`
+  as `{metric}: {reason}` (entries joined by `;`), with the same reason shown where the number
+  would sit, in the `pb-na` style. Never a 0 for a missing metric. The page check's R13 reads
+  these.
 
 - The link opens the post itself. The thumbnail is a data URI (the creator card's **Images**
   snippet); without one, leave the `img` out and keep the card. The body then takes the full
@@ -450,11 +460,12 @@ time it went live, and the numbers the argument uses, each next to its compariso
 
 <!-- block:post -->
 ```html
-<article class="pb-card pb-post" data-block="post">
+<article class="pb-card pb-post" data-block="post" data-post="https://www.instagram.com/reel/EXAMPLE/" data-missing="saves: shown only for accounts connected to Atlas">
   <img src="data:image/jpeg;base64,..." alt="Unboxing of the holiday playset, child opening the box" width="96" height="171">
   <div class="pb-post-body">
     <p><a href="https://www.instagram.com/reel/EXAMPLE/">@makerjune on Instagram</a> <span class="pb-muted">Oct 12, 2026, 6:40 PM ET</span></p>
-    <p class="pb-stats"><span>Views <b>48,200</b> (3.1x her usual)</span><span>Saves <b>1,940</b></span></p>
+    <p class="pb-stats"><span data-metric="views">Views <b>48,200</b> (3.1x her usual)</span><span data-metric="likes">Likes <b>2,310</b></span><span data-metric="comments">Comments <b>164</b></span><span data-metric="engagement">Engagement <b>51</b> per 1,000 views</span></p>
+    <p class="pb-na">Saves not available: shown only for accounts connected to Atlas</p>
     <p data-quoted>"We waited all week for this one"</p>
   </div>
 </article>

@@ -136,7 +136,7 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 | **Fee calculator** (Setup, Applying) | `references/fees.md` |
 | **Theme**, Offers; **Fee calculator**, Offers; **Quality review**, The offer | `references/offers.md` (when: **Offers** below) |
 | **Sample artifacts** | `references/samples.md` (the sample brief every agent reads: `references/agents/sample-artifact.md`) |
-| **Quality review** (Run, Review log); **Reader standard** (R1 to R12) | `references/quality-review.md`; `references/reader-standard.md` |
+| **Quality review** (Run, Review log); **Reader standard** (R1 to R13) | `references/quality-review.md`; `references/reader-standard.md` |
 | **Prompt coach** (and its Carry-over) | `references/prompt-coach.md` |
 | **Creator card** (**Visual output**, **Creator card actions**) | `references/creator-card.md` |
 | **Question format rule**, Phase 5 supersede rule | **Questions and writes** below |

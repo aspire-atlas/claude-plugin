@@ -231,7 +231,8 @@ Rules:
 
 A fit score out of 100, computed from the saved criteria only. Every component names the
 field or hit it came from; a component with no data scores zero and is listed as missing,
-never guessed.
+never guessed, and the page shows it as "not available: {reason}", never as 0 (**Page
+standard**, section 8).
 
 | Component | Weight | Source |
 | --------- | ------ | ------ |

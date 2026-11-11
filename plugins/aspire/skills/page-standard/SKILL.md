@@ -4,9 +4,9 @@ description: >
   Shared skill for Aspire Atlas agents: the skeleton every published page follows (who it is
   for and what it covers, the answer first, up to three insights, ranked next steps, decisions
   kept apart, real evidence, how it was worked out, what is missing, what Atlas can draft next),
-  the reader and evidence rules, and the self-check against the reader standard (R1 to R12)
-  every page runs before it is published. Agents load it before they build a page. It is not
-  a command.
+  the reader and evidence rules, the metrics each kind of question requires and where each is
+  missing per network, and the self-check against the reader standard (R1 to R13) every page
+  runs before it is published. Agents load it before they build a page. It is not a command.
 user-invocable: false
 metadata:
   author: Aspire
@@ -14,8 +14,8 @@ metadata:
 
 # Page standard: the skeleton and the self-check
 
-Every page an Atlas agent publishes holds the nine parts below and is checked against R1 to R12
-before it goes out. The checks are defined once, in
+Every page an Atlas agent publishes holds the nine parts below, carries the metrics its kind of
+question requires (section 8), and is checked against R1 to R13 before it goes out. The checks are defined once, in
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/reader-standard.md`; the quality review runs the
 same ones on a finished page. Read that file with this one. The parts are fixed. The look is not:
 a creator profile, a competitor brief, and a rights log should still look different. Decide what
@@ -28,7 +28,8 @@ the parts each page is built from, with their markup, `page-check.md` holds the 
 script, and `examples.md` lists the evidence each
 approved example sets, by question code. **The flow's own reference wins**
 wherever it sets a rule: its layout, what its page leaves out, who sees money, and the form its
-evidence takes. This skill fills in what the reference leaves open.
+evidence takes. This skill fills in what the reference leaves open. One exception: a reference
+may ask Atlas for more metrics than section 8's row, never fewer.
 
 ## Contents
 
@@ -36,9 +37,10 @@ evidence takes. This skill fills in what the reference leaves open.
 - [2. Reader rules](#2-reader-rules)
 - [3. Evidence standards](#3-evidence-standards)
 - [4. Build loop](#4-build-loop)
-- [5. Markup and the scripted checks (R1, R2, R6, R11)](#5-markup-and-the-scripted-checks-r1-r2-r6-r11)
+- [5. Markup and the scripted checks (R1, R2, R6, R11, R13)](#5-markup-and-the-scripted-checks-r1-r2-r6-r11-r13)
 - [6. How each check is judged](#6-how-each-check-is-judged)
 - [7. The page check in the result](#7-the-page-check-in-the-result)
+- [8. Required metrics, by kind of question](#8-required-metrics-by-kind-of-question)
 
 ## 1. The skeleton
 
@@ -119,6 +121,13 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
 
 ## 4. Build loop
 
+0. **Name the metrics the page will be judged on.** The run's first message to the person names
+   the required metrics from the question's row in section 8 and asks whether anything else
+   matters ("I'll judge each post on views, likes, comments, shares, saves, and engagement per
+   1,000 views. Anything else that matters?"). The main thread asks it in the setup reply
+   (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **2**); an agent that asks
+   its own questions asks it first. An extra metric the person names joins the row for this run.
+   An unattended run asks nothing and lists the metrics in the method.
 1. **List the evidence the approved example sets** for the launch block's `question`, from
    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/examples.md` (storyboards, test plan, cards with
    thumbnails), when this flow is the one that file's row names as building the page. A flow that
@@ -126,6 +135,20 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    evidence, per `examples.md` steps 1 and 2. Match the evidence, never copy the sections or the
    layout. A code with no example, or a launch with no `question`, skips this
    step.
+
+   **1a. Count the metrics before building.** Take the posts the page will cite and count how many
+   carry each required metric of the row (section 8), leaving out a gap the network table marks
+   as one the network never fills for this kind of post (an Instagram image's views, YouTube
+   saves, shares and saves on a creator's account that is not connected). When under half the
+   cited posts carry a metric, stop before drafting and check in: name the metric, the count, and
+   why it is missing ("Saves: 3 of 24 posts. Instagram shows saves only for accounts connected to
+   Atlas, and @brightsidetoys is not connected."). Ask with `AskUserQuestion` when the run asks its
+   own questions; otherwise return it in the result's `questions`
+   (`orchestration.md`, **6**) and build nothing. Options: "Build with the gaps noted
+   (Recommended)", the fix when there is one ("Connect the account first", "Refresh the posts
+   first"), and "Change the scope". An unattended run builds with the gaps noted and lists the
+   metric in the page's "what is missing" part. Do this after step 2 when the page refreshes
+   its shortlist, since a refresh can fill the gap.
 2. **Refresh the shortlist** when the page shows creators' posts or figures derived from them
    (latest posts, median views, engagement), unless the flow's reference rules out lookups (the
    content library reads only what Atlas holds, in every mode). Call `lookup_creators` with
@@ -158,8 +181,8 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    reference and this reader set the layout. Add the print block with the page's title as
    `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md`, section 6, sets, so the page saves to PDF
    in the light theme with a footer on every page.
-4. **Self-check R1 to R12.** Run the script in section 5 for R1, R2, R6, and R11, and judge the
-   others against `reader-standard.md`. Fix every fail you can and check again.
+4. **Self-check R1 to R13.** Run the script in section 5 for R1, R2, R6, R11, and R13, and judge
+   the others against `reader-standard.md`. Fix every fail you can and check again.
 5. **Publish**, even when a check still fails, and report it in the page check (section 7).
    - **When the session has no Artifact tool, save the page as a file.** Never skip the page, and
      never return only a summary, because it cannot be published. Write the same page as one
@@ -175,14 +198,15 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
 Write the headline last. Draft every other part, then write the headline from the decision the
 page supports.
 
-## 5. Markup and the scripted checks (R1, R2, R6, R11)
+## 5. Markup and the scripted checks (R1, R2, R6, R11, R13)
 
 Mark the parts the script reads. The attributes carry no styling; style the page as the flow and
 `theme.md` say.
 
 ```html
-<!-- Part 1, before the first h2. data-range is the range as the page shows it. -->
-<div data-page="scope" data-reader="the influencer manager" data-brand="Brightside Toys"
+<!-- Part 1, before the first h2. data-range is the range as the page shows it. data-question is
+     the question code the page answers (section 8). -->
+<div data-page="scope" data-question="I1" data-reader="the influencer manager" data-brand="Brightside Toys"
      data-range="Aug 1 to Oct 28, 2026">
   For the influencer manager | Brightside Toys | Aug 1 to Oct 28, 2026 |
   <span data-platform="instagram" data-posts="412">Instagram 412 posts</span>,
@@ -202,6 +226,14 @@ Mark the parts the script reads. The attributes carry no styling; style the page
 
 <!-- Part 7 repeats every data-platform element from the scope, with the same counts. -->
 <section data-page="method">...</section>
+
+<!-- Part 6: every cited post carries data-post, each required metric of the page's row as a
+     data-metric, and every one it cannot show in data-missing, with the reason shown beside it. -->
+<article data-post="https://www.instagram.com/p/EXAMPLE/"
+         data-missing="views: image posts have no view count; engagement: image posts have no view count">
+  <span>Views not available: image posts have no view count</span>
+  <span data-metric="likes">Likes 1,920</span> <span data-metric="comments">Comments 88</span>
+</article>
 ```
 
 - On a team page, list Instagram, TikTok, and YouTube in the scope every time, with a count of 0
@@ -211,7 +243,8 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   with". Show the exact count ("1,412 posts"), never a rounded one ("1.4K").
 - A check that is N/A for this page (section 1) goes in `data-na` on the scope, for example
   `data-na="R2"` on a ledger or a one-creator profile; the script reports it `n/a`. Only R2 and R6
-  can be N/A; R1 and R11 apply to every page, and naming them fails the check.
+  can be N/A; R1 and R11 apply to every page, and naming them fails the check. R13 is `n/a` on its
+  own terms (no `data-question` and no cited post), never through `data-na`.
 - A decisions section with no decision says "Nothing needs approval" (or "No decision needs
   approval"). A `data-by` date is a real date the page also shows.
 - Mark anything in someone else's words with `blockquote`, `q`, or `data-quoted`: a creator's
@@ -219,10 +252,17 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   check skips it, and it skips handles, hashtags, emails, and links. Never change a creator's real
   name or handle to pass a check.
 - A page that draws its sections in script from embedded data (the org dashboard) has nothing the
-  script can read. Judge R1, R2, R6, and R11 from the data and what the page draws, and report
+  script can read. Judge R1, R2, R6, R11, and R13 from the data and what the page draws, and report
   `scripted` as `read`.
+- Every post the page cites as evidence (a post card, a storyboard, a row in a post table) carries
+  `data-post` with its link, and each required metric of the page's row (section 8) on the element
+  that shows its number, as `data-metric="views"`. A metric the post cannot show goes in the
+  post's `data-missing` as `{metric}: {reason}`, entries joined by `;`, and the same reason is
+  shown on the post beside where the number would sit ("Views not available: image posts have no
+  view count"). Never show a missing metric as 0; a 0 Atlas read is a real 0. A page that cites
+  no post, or answers no code, has no `data-question` and gets R13 `n/a`.
 - A page with no `data-page` markup yet (a flow whose reference does not add it) gets `unmarked`
-  for R1, R2, and R6. Judge those three by reading; R11 still runs.
+  for R1, R2, R6, and R13. Judge those by reading; R11 still runs.
 
 Run the check on every page before you publish it. Copy the page into a new temporary folder,
 extract the script there from `page-check.md` in this folder (never retype it), and run it:
@@ -233,7 +273,7 @@ d=$(mktemp -d) && cp {page.html} "$d/" && awk '/^<!-- page-check -->$/{f=1;next}
 
 It reads only the pages named, writes nothing, and prints one JSON line per check and page:
 `pass`, `fail`, `n/a`, or `unmarked`. It exits 0 when nothing failed, 1 when a check failed, and 2
-when it could not read a page. When Python is not installed, judge the four by reading and report
+when it could not read a page. When Python is not installed, judge the five by reading and report
 `scripted` as `read`.
 
 The script is in `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/page-check.md`, between its
@@ -247,7 +287,7 @@ flow. Every check is pass, fail, or N/A, never a score.
 
 | Check | How |
 | ----- | --- |
-| R1 Reader and scope, R2 Platforms covered, R6 Decisions kept separate, R11 Plain language | Script, or by reading when the page is drawn in script or carries no markup |
+| R1 Reader and scope, R2 Platforms covered, R6 Decisions kept separate, R11 Plain language, R13 Required metrics | Script, or by reading when the page is drawn in script or carries no markup |
 | R3, R4, R5, R8, R10, R12 | Judgment |
 | R7 Real evidence | Judgment, checking each figure against what the run read |
 | R9 Names what's missing | Judgment on a team page; N/A on a page shared outside the team |
@@ -271,7 +311,8 @@ words ("page check: 9 pass, 2 fixed, 1 n/a").
 ```page-check
 {"page": "{link, or the file's path}", "reader": "{primary reader}",
  "checks": {"R1": "pass", "R2": "pass", "R3": "fixed", "R4": "pass", "R5": "fixed", "R6": "pass",
-            "R7": "pass", "R8": "pass", "R9": "n/a", "R10": "pass", "R11": "pass", "R12": "pass"},
+            "R7": "pass", "R8": "pass", "R9": "n/a", "R10": "pass", "R11": "pass", "R12": "pass",
+            "R13": "pass"},
  "draftNext": "pass", "stillFailing": [], "gaps": [], "scripted": "ran"}
 ```
 
@@ -283,3 +324,63 @@ words ("page check: 9 pass, 2 fixed, 1 n/a").
 - `gaps`: on a page shared outside the team, what Atlas could not read, for the main thread to
   tell the requester. Empty on a team page, whose gaps are on the page.
 - `scripted`: `ran`, `read` (no Python, or a page drawn in script), or `unmarked`.
+
+## 8. Required metrics, by kind of question
+
+Views alone cannot show what landed: a post with millions of views and almost no likes, comments,
+shares, or saves did not land. So every page carries the metrics its kind of question requires,
+every flow asks Atlas for the same fields for the same kind of question, and a missing metric
+reads the same way on every page. Find the row by the page's question code
+(`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **3**), the same code the
+scope's `data-question` carries. A launch with no `question` takes the code its flow answers for
+this reader in that table. A flow's reference may add metrics to its row, never drop one.
+
+<!-- required-metrics -->
+| Kind of question | Codes | On every cited post (R13) | On the page | Ask Atlas for |
+| ---------------- | ----- | ------------------------- | ----------- | ------------- |
+| What landed and why | O1, O4, O5, O6 | `views` `likes` `comments` `shares` `saves` `engagement` | Each post against the account's own usual; posts per platform in the window | `search_posts` on the account's handles, `fields`: `viewCount`, `likeCount`, `commentCount`, `shareCount`, `saveCount`, `tiktok.totalShareCount`, `mediaKind`, `instagram.mediaProductType`, `postedAt`, `url`, `media`. The same query over the 28 days before the window gives the usual |
+| Competitive read | O2, O3 | `views` `likes` `comments` `engagement` | Share of voice in posts and views per brand; each brand's median engagement per 1,000 views, counting likes and comments only so every side counts the same parts | `search_posts` per brand and competitor handle, and on posts that mention them, `fields`: `viewCount`, `likeCount`, `commentCount`, `author.username`, `author.followersCount`, `mediaKind`, `postedAt`, `url`, `media` |
+| Creator picks or vetting | I1, I2, I3, I4 | `views` `likes` `comments` `engagement` | Per creator: followers, median views, and median engagement per 1,000 views over the flow's window, against creators of the same size; a fee only from the fee calculator | `search_creators`, `fields`: `username`, `network`, `followersCount`, `instagram.medianViews`, `instagram.medianViewsWindowDays`, `instagram.reelsInteractionRate`, `tiktok.medianViews`, `tiktok.engagementRate`. Then `search_posts` on the creators' handles with the competitive read's post fields |
+| Ads and cut-downs | P1, P2, P4, P5, P6 | `views` `likes` `comments` `shares` `saves` `engagement` | Hook and hold where Atlas holds them; paid results only from a connected Meta ad account, by currency and never added to organic | `search_posts` with the first row's post fields plus `instagram.organicIgReelsAvgWatchTime`, `tiktok.twoSecondViewRate`, `tiktok.sixSecondViewRate`, `tiktok.videoCompletionRate`, `tiktok.averageViewTimeSeconds`; `search_creators` with `instagram.reelsHookRate`, `instagram.reelsInteractionRate`; `search_ads` for paid results |
+| Program tracking | I5, I6, P3, A1 | `views` `likes` `comments` | Posts owed against posts made per creator; each creator's program posts against their own usual; amounts only where the flow shows money | `search_posts` on the program's posts, `fields`: `viewCount`, `likeCount`, `commentCount`, `author.username`, `mediaKind`, `postedAt`, `url`, `media`; `search_insights` for the program's saved records |
+<!-- /required-metrics -->
+
+Call `list_post_search_fields` once per run before the first `search_posts`, and
+`list_creator_search_fields` or `list_insight_search_fields` before the first `search_creators` or
+`search_insights`, and request only the paths they return. A field above that the census no longer
+returns is a gap, named on the page like any other missing metric. Add the flow's own fields
+(captions, analysis, partnership markers) to the same call.
+
+**How each figure is worked out:**
+
+- **Engagement per 1,000 views** (`engagement`) is likes, plus comments, plus shares, plus saves,
+  divided by views, times 1,000. When a post has no shares or saves, count the parts it has and
+  say which in the method ("Engagement counts likes and comments where shares and saves are not
+  shown"). With no views there is no engagement figure; it is missing with the views reason. The
+  competitive read and creator picks count likes and comments only, on every post, so brands and
+  creators compare on the same parts.
+- **The account's own usual** is the median of the same metric over the account's posts in the 28
+  days before the window, the baseline the daily insights report uses. For a creator it is
+  `instagram.medianViews` over `instagram.medianViewsWindowDays`, or `tiktok.medianViews`, which
+  Atlas has already worked out. TikTok's `tiktok.engagementRate` is engagement over followers, so
+  label it as that and never call it engagement per 1,000 views.
+
+**Where each metric comes from, and when it is missing, per network.** The last column is the
+reason the page shows. Use these words so a gap reads the same on every page.
+
+| Metric | Instagram | TikTok | YouTube | Reason shown when missing |
+| ------ | --------- | ------ | ------- | ------------------------- |
+| `views` | `viewCount` on Reels and videos. Image and carousel posts carry none, and older videos can lack it | `viewCount` on every post | `viewCount` | "image posts have no view count"; otherwise "Atlas has no view count for this post" |
+| `likes` | `likeCount`; empty when the creator hides likes | `likeCount` | `likeCount` | "the creator hides likes"; otherwise "Atlas has no like count for this post" |
+| `comments` | `commentCount` | `commentCount` | `commentCount` | "Atlas has no comment count for this post" |
+| `shares` | `shareCount` (`instagram.organicShareCount`), only for accounts connected to Atlas | `tiktok.totalShareCount` on every post; the shared `shareCount` is empty for TikTok | `youtube.totalShareCount`, only for channels connected to Atlas | "shown only for accounts connected to Atlas" |
+| `saves` | `saveCount` (`instagram.organicSaveCount`), only for accounts connected to Atlas | `saveCount` on every post | None: YouTube has no saves, Shorts included | "shown only for accounts connected to Atlas"; "YouTube has no saves" |
+| `engagement` | Worked out from the rest | Worked out from the rest | Worked out from the rest | The views reason when views are missing |
+
+**A missing metric is never 0.** On the page it reads "not available: {reason}" beside where the
+number would sit, and the post carries it in `data-missing` (section 5). A 0 that Atlas read is a
+real 0 and shows as 0. A score component with no data still scores zero in the flow's scoring,
+but the page shows the component as "not available: {reason}" and never as a 0 the reader could
+take for a measured result. Every metric missing on any cited post is listed in the page's "what
+is missing" part with its count and reason ("Saves: missing on 21 of 24 posts, shown only for
+accounts connected to Atlas"), or, on a page shared outside the team, in the page check's `gaps`.

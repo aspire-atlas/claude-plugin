@@ -7,7 +7,7 @@ owner: shared
 
 ## What it does
 
-Builds every page on the nine-part skeleton and runs the self-check (E1 to E12 on the proposal, R1 to R12 in the plugin) before it publishes.
+Builds every page on the nine-part skeleton and runs the self-check (E1 to E12 on the proposal, R1 to R13 in the plugin) before it publishes.
 
 ## Inputs
 

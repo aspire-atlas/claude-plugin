@@ -1,6 +1,6 @@
 # Reader standard
 
-Reader standard v1.1.
+Reader standard v1.2.
 
 The reader checks ask whether the reader can act on the work: does it answer first, give numbers
 context, keep decisions apart, and fit the person who will read it. This file is the one place they
@@ -28,6 +28,7 @@ is in **Quality review**, **3**.
 | R10 | Fits the reader | A VP or budget owner sees the answer, decisions, and next steps on one screen, with "Prepared by" at the top and detail below. A client sees the client version: no revision history and no named rejects | A VP brief that opens with the method | High when `recipient` is `leadership` or the page names a VP or budget owner; else Medium |
 | R11 | Plain language | No agent, skill, tool, or system names in the body, and no jargon. The Aspire Atlas mark and the source line **Artifact standard** requires are exempt | "The atlas-market-signal agent found" | Medium when `audience` is `team`; High otherwise |
 | R12 | Built for this question | The page's sections and visuals come from what this question and reader need | A launch timeline on a one-creator profile | High |
+| R13 | Required metrics | Every post the page cites carries each metric its kind of question requires (**Page standard**, section 8), or says beside it why that metric is not available. Nothing missing is shown as 0 | 21.6 million views with no likes, comments, shares, or saves beside them; a save count Atlas does not hold shown as 0 | High |
 
 ## How to judge them
 
@@ -40,6 +41,8 @@ is in **Quality review**, **3**.
   drafts until a 1-second frame scan confirms them.
 - **R2** is n/a on a page that covers one post, one creator, or one account on one network
   (**Quality review**, **3**).
+- **R13** is n/a on a page that cites no post. On a page with no question code, judge it against
+  the row for the kind of question the page answers (**Page standard**, section 8).
 - **Links.** R7 covers evidence links only; every other broken link is filed as the table in
   **Quality review**, **4.15**, **Broken links**, says.
 - **R2 and R9 outside the team.** When `audience` is `client`, `creator`, or `public` (the page

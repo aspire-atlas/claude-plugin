@@ -96,9 +96,10 @@ profile needs these as well:
 
 - The creator record with its demographics: project the `instagram` or `tiktok` container
   **without** excluding the demographics blobs this time.
-- On each post: `likeCount`, `commentCount`, `viewCount`, `media`, the permalink, the product
-  type, `postedAt`, `analysis.brandSafety`, `analysis.commentSentimentBreakdown`, and any
-  paid-partnership or brand-tag field the post field census lists.
+- On each post: the fields of the "Creator picks or vetting" row of the required metrics
+  (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8), the permalink, the product type,
+  `analysis.brandSafety`, `analysis.commentSentimentBreakdown`, and any paid-partnership or
+  brand-tag field the post field census lists.
 
 Use only field paths the live census returns (`list_creator_search_fields`,
 `list_post_search_fields`). A field the census does not list leaves its part out.

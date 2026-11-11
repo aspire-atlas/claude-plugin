@@ -234,7 +234,8 @@ The full hook score needs frames. A library holds hundreds of posts, so:
    proxy from views per follower against the author's own median (or saves plus shares per
    view), the standalone segment from transcript timing, ready for paid from disclosure,
    competitors, red lines, and music. A component with no data scores zero and is listed as
-   missing. Basis `fields`.
+   missing; the page shows it as "not available: {reason}", never as 0 (**Page standard**,
+   section 8). Basis `fields`.
 2. **The top 12 new or changed videos by field score** in each build are then read with frames
    per **Ad reuse**, **What to read per candidate**, and rescored. Basis `frames`. View every
    frame extracted. People on screen come from these frames too.

@@ -174,7 +174,8 @@ these bands as they are here.
 
 Every component names its evidence: a quoted transcript line with its timestamp, a frame with
 its timestamp, or a field and its value. A component with no data scores zero and is listed
-as missing.
+as missing; the page shows it as "not available: {reason}", never as 0 (**Page standard**,
+section 8).
 
 | Component | Weight | Full marks when |
 | --------- | ------ | --------------- |

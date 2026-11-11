@@ -76,8 +76,12 @@ up to four questions per call, so the reply holds, in this order:
    reader, and the time estimate: "I heard I2: should we work with @handle, and what would it
    cost? For you, about 15 minutes. Right?" Options: "Yes, run it (Recommended)", the next
    closest code in its wording, and, when the persona is unknown, "I'm on the paid side" or the
-   other persona that fits the ask. The free text field corrects anything. A run of several codes
-   (**8**) names each code here, one line each.
+   other persona that fits the ask. The free text field corrects anything. It also names the
+   metrics the page will be judged on, from the code's row in **Page standard**, section 8, and
+   asks whether anything else matters ("Each post is judged on views, likes, comments, shares,
+   saves, and engagement per 1,000 views. Anything else?"); a metric typed in the free text field
+   goes in the launch message with the flow's own inputs, as "Also judge on: {metric}". A run of
+   several codes (**8**) names each code here, one line each.
 2. **Scope**, header "Scope". Channels and dates, defaulting to Instagram and TikTok over the last
    90 days ("Instagram and TikTok, last 90 days (Recommended)", "Instagram only", "TikTok only"),
    plus any handle or post link the run needs, which the person types in the free text field.

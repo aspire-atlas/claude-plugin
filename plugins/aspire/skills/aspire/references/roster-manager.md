@@ -119,10 +119,10 @@ paths they return):
 
 - `search_creators` for the account: followers (for the tier and the band), bio.
 - `search_posts` on the creator's author username, the review window plus the 90 days before
-  it, newest first, projecting `postedAt`, `url`, `instagram.permalink`, `text`, `mediaKind`,
-  `instagram.mediaProductType`, `likeCount`, `commentCount`, `viewCount`, the partnership
-  marker, `analysis.brandSafety`, `analysis.commentSentimentBreakdown`, `analysis.transcript`
-  when the census lists them.
+  it, newest first, projecting the fields of the "Program tracking" row of the required metrics
+  (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8), plus `instagram.permalink`, `text`,
+  `instagram.mediaProductType`, the partnership marker, `analysis.brandSafety`,
+  `analysis.commentSentimentBreakdown`, and `analysis.transcript` when the census lists them.
 - Once per `red_line` (not `review:` keys): one semantic `search_posts` with `queryText` the
   red line's wording, filtered to the reviewed creators' usernames and the window.
 
