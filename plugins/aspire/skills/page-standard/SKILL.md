@@ -158,12 +158,15 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    (section 8), leaving out a gap the network table marks as one the network never fills for this
    kind of post (an Instagram image's views, YouTube saves, shares and saves on a creator's account
    that is not connected). When under half the cited posts carry a metric, stop before drafting and
-   check in: name the metric, the count, and why it is missing ("Saves: 3 of 24 posts. Instagram
-   shows saves only for accounts connected to Atlas, and @brightsidetoys is not connected."). Ask
+   check in: name the metric, the count, and why it is missing, with the reason picked as the
+   network table says. For an account that is not connected: "Saves: 3 of 24 posts. Instagram
+   shows saves only for accounts connected to Atlas, and @brightsidetoys is not connected." For a
+   connected one: "Saves: 2 of 9 posts. @brightsidetoys is connected, but Atlas has no save count
+   for the other 7." Ask
    with `AskUserQuestion` when the run asks its own questions; otherwise return it in the result's
    `questions` (`orchestration.md`, **6**) and build nothing. Options: "Build with the gaps noted
-   (Recommended)", the fix when there is one ("Connect the account first", "Refresh the posts
-   first"), and "Change the scope". An unattended run builds with the gaps noted and lists the
+   (Recommended)", the fix when there is one ("Connect the account first" only when it is not
+   connected, "Refresh the posts first"), and "Change the scope". An unattended run builds with the gaps noted and lists the
    metric in the page's "what is missing" part.
 3. **Draft the page** for this question and this reader, from the blocks in
    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/blocks.md`. They already carry the markup in
@@ -382,9 +385,16 @@ reason the page shows. Use these words so a gap reads the same on every page.
 | `views` | `viewCount` on Reels and videos. Image and carousel posts carry none, and older videos can lack it | `viewCount` on every post | `viewCount` | "image posts have no view count"; otherwise "Atlas has no view count for this post" |
 | `likes` | `likeCount`; empty when the creator hides likes | `likeCount` | `likeCount` | "the creator hides likes"; otherwise "Atlas has no like count for this post" |
 | `comments` | `commentCount` | `commentCount` | `commentCount` | "Atlas has no comment count for this post" |
-| `shares` | `shareCount` (`instagram.organicShareCount`), only for accounts connected to Atlas | `tiktok.totalShareCount` on every post; the shared `shareCount` is empty for TikTok | `youtube.totalShareCount`, only for channels connected to Atlas | "shown only for accounts connected to Atlas" |
-| `saves` | `saveCount` (`instagram.organicSaveCount`), only for accounts connected to Atlas | `saveCount` on every post | None: YouTube has no saves, Shorts included | "shown only for accounts connected to Atlas"; "YouTube has no saves" |
+| `shares` | `shareCount` (`instagram.organicShareCount`), only for accounts connected to Atlas | `tiktok.totalShareCount` on every post; the shared `shareCount` is empty for TikTok | `youtube.totalShareCount`, only for channels connected to Atlas | "shown only for accounts connected to Atlas" when the account is not connected; otherwise "Atlas has no share count for this post" |
+| `saves` | `saveCount` (`instagram.organicSaveCount`), only for accounts connected to Atlas | `saveCount` on every post | None: YouTube has no saves, Shorts included | "YouTube has no saves"; "shown only for accounts connected to Atlas" when the account is not connected; otherwise "Atlas has no save count for this post" |
 | `engagement` | Worked out from the rest | Worked out from the rest | Worked out from the rest | The views reason when views are missing |
+
+**Pick the shares and saves reason from the account's connection.** Use "shown only for accounts
+connected to Atlas" only when the post's account has no live channel on the brand's profile in
+`list_channels` (or `get_status`) for that network. A connected account's post that still has no
+count gets "Atlas has no share count for this post" or "Atlas has no save count for this post".
+Telling the reader to connect an account that is already connected sends them to a fix that is
+already done.
 
 **A missing metric is never 0.** On the page it reads "not available: {reason}" beside where the
 number would sit, and the post carries it in `data-missing` (section 5). A 0 that Atlas read is a
