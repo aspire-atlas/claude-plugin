@@ -128,8 +128,8 @@ The reader, scope, and save choice are kept in two places, by whom the answer is
   A key's part after `lastrun:` holds at most 48 lowercase letters, digits, and hyphens. When it
   runs longer, keep its first 43 characters and add `-` and the first 4 hex characters of the
   part's SHA-1 (`printf %s '{part}' | shasum | cut -c1-4`), so two long slugs that share a start
-  still get their own keys. Records are
-  organization-wide, so every teammate and every scheduled run reads the same answer. Detail:
+  still get their own keys. Records are organization-wide, so every teammate and every scheduled
+  run reads the same answer. Detail:
   `{concern: "preference", appliesTo: ["{flow}"], body: "reader: {lens}[, {lens}]; scope:
   {channels}, {window}; save: page|atlas; at: {UTC time from the shell clock}"}`.
 - **A flow's own setup record wins.** When a flow's setup already saves one of these answers
@@ -154,15 +154,17 @@ flow's own question that a saved record answers works the same way: the saved an
 (Recommended) option, its source in the option's description.
 
 **Remembering an answer.** Ask once per request, header "Remember", "Keep these answers for next
-time?", only when the person changed a pre-filled answer (a saved one or a default), or picked a
-persona in Heard while their own record has no role. A run that keeps every pre-filled answer is
-never asked, saved record or not. Ask it in the call after the setup reply, before the launch,
-since a change typed in the setup reply is not known until it returns. Options, with the flow
-named in words, never its key ("the weekly report", "ad reuse"):
+time?", only when the person changed a pre-filled answer (a saved one or a default), when the
+Scope or Save question was asked because no saved record supplied it, or when the person picked a
+persona in Heard while their own record has no role. A run whose answers all came from saved
+records and stayed as they were is never asked. Ask it in the call after the setup reply, before
+the launch, since a change typed in the setup reply is not known until it returns. Options, with
+the flow named in words, never its key ("the weekly report", "ad reuse"):
 
 - "For everyone running {the flow} (Recommended)": writes the flow's saved answers.
-- "Just for me": writes the reader to the person's `defaultReader` for this question code. Offer it
-  only when the run has a question code.
+- "Just for me": writes the reader to the person's `defaultReader` for this question code; the
+  scope and save choice stay unsaved, and its description says so. Offer it only when the run has
+  a question code.
 - "Just this run": writes nothing, not even a role.
 
 When the person's own record has no role, the first two options also save their role, and each
@@ -172,32 +174,32 @@ the Heard question settled; with none, ask it in the same call (header "Role", o
 for anything else). Write once, after the answers and before the launch:
 
 - An answer a flow's own setup record holds: a changed reader supersedes that record
-  (`supersede_calibration`, `ifVersion` set to the version read) in its own body format, with
-  only the primary reader changed and every other lens and destination kept; the "For everyone"
-  option's description names it ("updates the weekly report's saved readers"). A changed scope
-  that a setup record holds is not saved from here: say so in the option's description, and
-  point to the flow's own setup ("Change setup") in the reply.
-- The flow's `lastrun:` record, for every other part: `append_calibration` with kind
-  `guideline`, the key, statement "{flow}:
-  {reader}, {scope}, {save}" (under 280 characters), `provenance: "interview"`, and the detail
-  above. When the key exists, `supersede_calibration` with `ifVersion` set to the version read
-  and a body that keeps every part the person did not change.
+  (`supersede_calibration`, `ifVersion` set to the version read) in its own body format, with only
+  the primary reader changed and every other lens and destination kept; the "For everyone"
+  option's description names it ("updates the weekly report's saved readers"). The readouts share
+  `guideline:readout-audience`, so for either report say "updates the readers of the daily and
+  weekly reports", in the option and in the reply. A changed scope that a setup record holds is
+  not saved from here: say so in the option's description, and point to the flow's own setup
+  ("Change setup") in the reply.
+- The flow's `lastrun:` record, for every other part: `append_calibration` with kind `guideline`,
+  the key, statement "{flow}: {reader}, {scope}, {save}" (under 280 characters), `provenance:
+  "interview"`, and the detail above. When the key exists, `supersede_calibration` with
+  `ifVersion` set to the version read and a body that keeps every part the person did not change.
 - The person's record, for "Just for me", and for a role saved with either of the first two
-  options: when it exists,
-  `supersede_calibration` with kind `user_fact`, their key, `ifVersion` set to the version read,
-  the record's `statement`, `provenance: "interview"`, and a `detail` that carries the record's
-  whole current detail (`role`, `roleOther` when present, and every other preference) with only
-  `preferences.defaultReader.{code}` added or replaced. A detail that sends only the changed
-  preference drops the rest. With no record, `append_calibration` with kind `user_fact`, the
-  person's key, statement "Role: {role label}", `provenance: "interview"`, and `{role,
-  roleOther?, preferences?: {defaultReader: {"{code}": "{lens}"}}}`. Map the role to
+  options: when it exists, `supersede_calibration` with kind `user_fact`, their key, `ifVersion`
+  set to the version read, the record's `statement`, `provenance: "interview"`, and a `detail`
+  that carries the record's whole current detail (`role`, `roleOther` when present, and every
+  other preference) with only `preferences.defaultReader.{code}` added or replaced. A detail that
+  sends only the changed preference drops the rest. With no record, `append_calibration` with kind
+  `user_fact`, the person's key, statement "Role: {role label}", `provenance: "interview"`, and
+  `{role, roleOther?, preferences?: {defaultReader: {"{code}": "{lens}"}}}`. Map the role to
   `influencer_manager`, `paid_social_manager`, `organic_social_manager`, or `other` with the
   person's words as `roleOther` (at most 80 characters).
 - `key-exists` or a version conflict: read the record again and retry once with its current
   detail.
 
-Say where it went in one line, naming the record that changed: "Saved for everyone: the weekly
-report's readers now lead with growth." or "Saved for you: P1 goes to growth." A run that keeps
+Say where it went in one line, naming the record that changed: "Saved for everyone: the daily
+and weekly reports' readers now lead with growth." or "Saved for you: P1 goes to growth." A run that keeps
 the saved answers writes nothing, so a `lastrun:` record holds the answers as last saved, and `at`
 is when they were saved. Never ask "Remember" in an unattended run, and an unattended run writes
 neither record.

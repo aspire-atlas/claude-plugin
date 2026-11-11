@@ -411,9 +411,6 @@ The account map is brand memory, saved by the main thread only after the person 
 (SKILL.md, **Ad reuse**, step 2). The agent never writes it; it returns a proposed map in its
 result packet's `proposals` (level `write`, gate `approve-account-map`).
 
-An interactive run's reader, scope, and save choice go on `lastrun:ad-reuse`, apart from the
-account map (**Orchestration contract**, **2**, Saved answers).
-
 | Field | Value |
 | ----- | ----- |
 | `kind` | `guideline` |
@@ -425,6 +422,9 @@ account map (**Orchestration contract**, **2**, Saved answers).
 `label` is one of `creator`, `brand_owned`, `retailer`, `deal_page`, `team`, or
 `other_brand_sponsored`. `evidence` is one plain line (the caption wording or posting mix behind
 the label).
+
+An interactive run's reader, scope, and save choice go on `lastrun:ad-reuse`, apart from the
+account map (**Orchestration contract**, **2**, Saved answers).
 
 **Reading it back.** The launch digest carries it when saved; without a digest, the agent's own
 `search_calibrations` read keeps the `ad-reuse:account-map` key. Follow its labels as saved and
