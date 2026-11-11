@@ -407,9 +407,11 @@ def fresh_problems(key, node):
     shown = text(node, gap=" ")
     problems = dated_problems(key, node, shown)
     network, handle = key.split(":", 1)
-    if not re.search(r"(?i)@%s(?!\w|-|\.\w)" % re.escape(handle), shown):
+    at_handle = r"(?i)@%s(?!\w|-|\.\w)" % re.escape(handle)
+    if not re.search(at_handle, shown):
         problems.append("the freshness entry for %s does not show the handle" % key)
-    if not re.search(r"(?i)\b%s\b" % re.escape(PLATFORM_NAMES.get(network, network)), shown):
+    # The platform is looked for outside the handle, so @maker.instagram never names Instagram.
+    if not re.search(r"(?i)\b%s\b" % re.escape(PLATFORM_NAMES.get(network, network)), re.sub(at_handle, " ", shown)):
         problems.append("the freshness entry for %s does not name the platform (%s)" % (key, PLATFORM_NAMES.get(network, network)))
     newest = day(node.attrs.get("data-newest"))
     if not newest or newest == "unknown":

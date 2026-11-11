@@ -440,8 +440,8 @@ time. All ages are measured against the shell clock (`date -u`), never an assume
 account after the period ended (`lastFetchedAt` later than its end) and holds no post in it. When
 Atlas holds no post for the period and `lastFetchedAt` is older than the period's end, null, or
 absent, a team page and the reply say "Atlas has no data for {period}" and name the refresh in the
-"what is missing" part; a shared page leaves the period out (9.2). "No posts" is a claim about the account; "no data" is a
-claim about Atlas.
+"what is missing" part; a shared page leaves the period out (9.2). "No posts" is a claim about
+the account; "no data" is a claim about Atlas.
 
 **9.4 Behind pace.** An account's pace is the median gap between the consecutive posts of its
 freshness read (9.1) that fall in the 28 days before the run, or between all of them when fewer

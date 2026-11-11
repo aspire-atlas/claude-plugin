@@ -189,8 +189,8 @@ lists them. Agents work only from a message that carries it (**11**).
   order, or payment approved one by one; `spend.cap` is the cap in fetches (**2**), `null` for no cap or
   no spend; `refresh` is `null` until the person answers a freshness refresh offer, then the list
   of approved handles as `{network}:{handle}` (`[]` when they chose "Use what Atlas holds";
-  **Page standard**, section 9.5). The flow's own inputs still name each approval as before (R4, O1 and so on); an agent
-  writes, sends, or spends only when both agree.
+  **Page standard**, section 9.5). The flow's own inputs still name each approval as before (R4,
+  O1 and so on); an agent writes, sends, or spends only when both agree.
 - `examples` lists up to three approved examples for the page this launch builds, from the brand
   profile's examples library (`skills/page-standard/examples.md`, **The examples library**). It is
   `[]` when no library is saved, the question has no approved example, or the launched agent only

@@ -64,9 +64,9 @@ never re-runs another agent.
 
 ## What it reads
 
-All reads, no discovery, no destruction, apart from the freshness refresh below. `search_insights`
-with a `prefix` filter on `detail.account_review.runKey`, paged, keeping findings whose run date falls in the quarter or
-the prior quarter:
+All reads, no discovery, no destruction, apart from the freshness refresh below.
+`search_insights` with a `prefix` filter on `detail.account_review.runKey`, paged, keeping
+findings whose run date falls in the quarter or the prior quarter:
 
 | Source | Prefix | What it gives |
 | ------ | ------ | ------------- |
