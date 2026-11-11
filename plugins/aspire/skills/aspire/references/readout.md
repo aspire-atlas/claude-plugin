@@ -294,7 +294,9 @@ The pulse is a page section after the flags block, "Launch pulse: {campaign}, da
 and three bullets in the chat summary. A pulse lens with its own destination gets its own Slack
 or email message with the pulse bullets and the page link. Up to three extra findings per
 campaign (`detail.campaign`, `detail.recipient`), outside the daily cap of five. A pulse reads
-only what Atlas holds: no lookups, no marketplace.
+only what Atlas holds: no lookups, no marketplace. In the freshness line (**Page standard**,
+section 9), the campaign's accepted creators are subject accounts with their own entries and no
+refresh; mention posts and verbatims share the one mentions entry, marked `data-mention`.
 
 ## Weekly readout
 

@@ -743,8 +743,13 @@ last fetched the account (`SKILL.md`, section 9). It goes inside the source line
 (`artifact-standard.md`, section 2), before the source sentence, on every page that cites an
 account.
 
-- Every block that names an account (creator, post, storyboard, rights row, score row, quote)
-  carries `data-account="{network}:{handle}"`, so R14 looks for that account's entry.
+- Every block that names a subject account (`SKILL.md`, section 9: creator, post, storyboard,
+  rights row, score row, quote) carries `data-account="{network}:{handle}"`, so R14 looks for that
+  account's entry. A post or quote cited only as mention evidence carries `data-mention` instead,
+  and its authors share one `data-fresh="mentions"` entry: "posts by {n} other creators: newest
+  post {date}", with `data-newest` and no fetch time.
+- With more than ten entries, put all but the brand's own and any behind their pace in a
+  `details` element inside the source line.
 - One `data-fresh="{network}:{handle}"` entry per account, matching the `data-account` the page
   gives that account. `data-newest` is the newest post's date (`YYYY-MM-DD`), or `none` when Atlas
   holds no posts.

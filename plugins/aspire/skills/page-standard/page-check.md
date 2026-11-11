@@ -371,13 +371,43 @@ def shows_date(shown, value):
     name = r"sep(?:t(?:ember)?)?\.?" if month == "september" else r"%s(?:%s)?\.?" % (month[:3], month[3:])
     return re.search(r"(?i)\b(?:%s\s+0?%d|0?%d\s+%s)\b" % (name, day_of, day_of, name), shown) is not None
 
-def fresh_problems(key, node):
-    shown, problems = text(node, gap=" "), []
-    for attr in ("data-newest", "data-fetched", "data-changed"):
+LABELS = {"data-newest": "newest post", "data-fetched": "last fetched", "data-changed": "last changed"}
+
+def after_label(shown, label):
+    # The text from the label to the next label, so each date is read beside its own label.
+    low = shown.lower()
+    at = low.find(label)
+    if at < 0:
+        return ""
+    rest = low[at + len(label):]
+    ends = [rest.find(other) for other in LABELS.values() if other != label and other in rest]
+    return shown[at + len(label):at + len(label) + min(ends)] if ends else shown[at + len(label):]
+
+def dated_problems(key, node, shown):
+    problems = []
+    for attr, label in LABELS.items():
         value = node.attrs.get(attr)
-        if day(value) == "date" and not shows_date(shown, value):
-            problems.append("the freshness entry for %s does not show its %s date (%s)" % (key, attr[5:], value.strip()[:10]))
-    if not has(shown, key.split(":", 1)[1]):
+        if day(value) == "date" and not shows_date(after_label(shown, label), value):
+            problems.append("the freshness entry for %s does not show its %s date (%s) after \"%s\"" % (key, attr[5:], value.strip()[:10], label))
+    newest, fetched = node.attrs.get("data-newest"), node.attrs.get("data-fetched")
+    if day(newest) == "date" and day(fetched) == "date" and newest.strip()[:10] > fetched.strip()[:10]:
+        problems.append("the freshness entry for %s has a newest post (%s) after its last fetch (%s)" % (key, newest.strip()[:10], fetched.strip()[:10]))
+    return problems
+
+def mention_problems(node):
+    # The one entry for authors cited only as mention evidence or counted only in totals.
+    shown, problems = text(node, gap=" "), []
+    if not has(shown, "other creators"):
+        problems.append("the mentions freshness entry does not say how many other creators it covers")
+    if day(node.attrs.get("data-newest")) != "date":
+        problems.append("the mentions freshness entry needs data-newest as a date (YYYY-MM-DD)")
+    problems += dated_problems("mentions", node, shown)
+    return problems
+
+def fresh_problems(key, node):
+    shown = text(node, gap=" ")
+    problems = dated_problems(key, node, shown)
+    if not re.search(r"(?i)@%s(?![\w.])" % re.escape(key.split(":", 1)[1]), shown):
         problems.append("the freshness entry for %s does not show the handle" % key)
     newest = day(node.attrs.get("data-newest"))
     if not newest or newest == "unknown":
@@ -406,15 +436,17 @@ def fresh_problems(key, node):
     return problems
 
 def r14(nodes, regions):
-    # Every account the page cites (data-account, which every cited post carries, and the scope's
-    # data-accounts) has one freshness entry (data-fresh) in the source line: the newest post Atlas
-    # holds, and when Atlas last fetched the account or, with no freshness on record, when it last
-    # changed. A scope that counts posts must name its accounts. Returns None (n/a) on a page that
-    # cites no account, no post, and counts no posts.
+    # Every subject account the page cites (data-account, and the scope's data-accounts) has one
+    # freshness entry (data-fresh) in the source line: the newest post Atlas holds, and when Atlas
+    # last fetched the account or, with no freshness on record, when it last changed. A cited post
+    # carries data-account, or data-mention when its author is cited only as mention evidence; those
+    # authors share one data-fresh="mentions" entry. A scope that counts posts must name its
+    # accounts. Returns None (n/a) on a page that cites no account, no post, and counts no posts.
     cited, problems = {}, []
     for index, post in enumerate([n for n in nodes if "data-post" in n.attrs], 1):
-        if not (post.attrs.get("data-account") or "").strip():
-            problems.append("%s has no data-account; give the account it is from as {network}:{handle}" % post_label(post, index))
+        if not (post.attrs.get("data-account") or "").strip() and "data-mention" not in post.attrs:
+            problems.append("%s has no data-account; give the account it is from as {network}:{handle}, or mark it data-mention" % post_label(post, index))
+    mentions = any("data-mention" in n.attrs for n in nodes)
     for node in nodes:
         raw = (node.attrs.get("data-account") or "").strip()
         if not raw:
@@ -431,7 +463,7 @@ def r14(nodes, regions):
             problems.append("the scope's data-accounts entry \"%s\" is not {network}:{handle}" % raw)
         else:
             cited.setdefault(key, raw)
-    if not cited and not problems:
+    if not cited and not mentions and not problems:
         counted = [n for n in walk(scope) if (n.attrs.get("data-posts") or "0").replace(",", "").strip() not in ("", "0")] if scope is not None else []
         if counted:
             return ["the scope counts posts but the page names no account; list them in the scope's data-accounts"]
@@ -441,6 +473,15 @@ def r14(nodes, regions):
         if "data-fresh" not in node.attrs:
             continue
         raw = node.attrs.get("data-fresh") or ""
+        if raw.strip().lower() == "mentions":
+            if "mentions" in fresh:
+                problems.append("the page has more than one mentions freshness entry")
+                continue
+            fresh["mentions"] = node
+            if not in_footnote(node):
+                problems.append("the mentions freshness entry is outside the source line (atlas-footnote)")
+            problems += mention_problems(node)
+            continue
         key = account_key(raw)
         if key is None:
             problems.append("data-fresh \"%s\" is not {network}:{handle}" % raw.strip())
@@ -453,6 +494,8 @@ def r14(nodes, regions):
             problems += fresh_problems(key, node)
     for key in sorted(set(cited) - set(fresh)):
         problems.append("the page cites %s but the source line gives no freshness for it" % cited[key])
+    if mentions and "mentions" not in fresh:
+        problems.append("the page cites mention posts but the source line has no data-fresh=\"mentions\" entry")
     return problems
 
 # Only these scripted checks can be N/A (reader-standard.md; quality-review.md, section 3). R13 and

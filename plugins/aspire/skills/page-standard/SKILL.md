@@ -261,8 +261,10 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   view count"). Never show a missing metric as 0; a 0 Atlas read is a real 0. A page that cites
   no post, or answers no code, has no `data-question` and gets R13 `n/a`.
 - Every account the page cites carries `data-account="{network}:{handle}"`: each cited post, and
-  each creator or account card. The scope's `data-accounts` lists every account whose figures the
-  page shows, totals included; a scope that counts posts and names no account fails R14. The source
+  each creator or account card. A post cited only as mention evidence carries `data-mention`
+  instead, and the source line then holds one `data-fresh="mentions"` entry. The scope's
+  `data-accounts` lists every subject account whose figures the page shows, totals included; a
+  scope that counts posts and names no account fails R14. The source
   line then holds one `data-fresh` entry per account with the same value (`blocks.md`, 3.19):
   `data-newest` the newest post's date or `none`, and `data-fetched` the last fetch's date,
   `none`, or `unknown`, or, with no `freshness` on record, `data-changed`, shown as "last changed".
@@ -398,7 +400,13 @@ the account. Every page, and every chat reply that cites an account's data, says
 data is, and an account that has fallen behind its own pace gets a refresh. This section is the one
 freshness rule. A flow's reference points here and never sets an age rule of its own.
 
-**9.1 What to read.** For each account and platform cited, read the channel's
+**Which accounts it covers.** Each **subject account** gets its own entry: the brand's own handles,
+saved competitors, a handle the user named, and creators on cards or a shortlist. Authors cited
+only as mention evidence (a mention post, a quote) or counted only in totals share one entry,
+"posts by 42 other creators: newest post Nov 7", with no fetch time and no refresh. The rest of
+this section is about subject accounts.
+
+**9.1 What to read.** For each subject account and platform cited, read the channel's
 `freshness { lastFetchedAt, newestPostAt, postsHeld, postsHeld30d }`
 (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-tools.md`, **Data freshness**): from
 `lookup_creators`, `search_creators` with no wildcard `exclude`, `get_creator`, or `list_channels`.
@@ -415,7 +423,9 @@ time. All ages are measured against the shell clock (`date -u`), never an assume
 
 - **On a page**, one entry per account and platform, in the source line before the source sentence
   (`blocks.md`, 3.19): "@brightsidetoys on Instagram: newest post Nov 7, last fetched Nov 8". Add
-  the time when the fetch was within the last day. R14 checks it.
+  the time when the fetch was within the last day. With more than ten entries, the brand's own and
+  any behind their pace stay in view and the rest sit in a `details` element inside the source
+  line ("Freshness for the other {n} accounts"). R14 checks it.
 - **In chat**, every reply that cites an account's data carries one line after its points and before
   the next step: "Atlas data: @brightsidetoys on Instagram, newest post Nov 7, last fetched Nov 8."
   With more than three accounts, name the brand's own and any behind its pace, then "freshness for
@@ -446,7 +456,7 @@ account whose freshness read returns fewer than 2 posts has no pace.
 | Run | What is refreshed | Asked first? |
 | --- | ----------------- | ------------ |
 | The user named the handle (handle mode, the creator profile) | That handle when it is not current. It is current only when Atlas holds the account and `lastFetchedAt` is under 24 hours old; with `lastFetchedAt` null or `freshness` absent, when its newest post (`newestPostAt`, or the newest post the searches return) is. No account record, no posts, or an older time is stale, so an account that posts less than daily is refreshed, as intended. The flow's reference resolves it | No: naming the handle approved it |
-| Interactive, any other cited account | Each account behind its pace | Yes |
+| Interactive, any other subject account | Each account behind its pace | Yes |
 | Unattended (a scheduled run) | Before reading, the brand's own handles and the saved competitors (`competitor` records) the page reads, whether or not they are behind. Other accounts get the freshness line only | No, and it never asks |
 | The page's final shortlist | As section 4, step 2 | No |
 | A flow whose reference or agent file rules out lookups (the content library, the organization dashboard, and every agent whose file says to read only what Atlas holds) | Nothing; the freshness line and behind-pace notes only | Never |

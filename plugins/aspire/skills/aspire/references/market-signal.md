@@ -138,7 +138,8 @@ Filter path unless noted, `context` on every call, only field paths from the cen
    handle's pace from the freshness read (section 9.4) and offers the refresh, with its time and
    cost, for each handle behind it, holding its findings and delivery until the relaunch. A handle
    Atlas does not hold is never refreshed (that would start discovery). The page's source line and
-   the chat summary carry the freshness line.
+   the chat summary carry the freshness line. Creators cited only as mention evidence (comparison
+   cards, quotes, share-of-voice counts) share the one mentions entry, marked `data-mention`.
 3. **Mention sets.** Per entity: `search_posts` where the text matches the name or a spelling
    variant (`match_phrase`), or `instagram.mentions.username` names a handle, or a hashtag
    matches; `must_not` the entity's own handles and the brand's handles; `exists mediaKind`;
