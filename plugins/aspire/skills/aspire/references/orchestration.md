@@ -387,7 +387,8 @@ never apply it: the main thread does, after it relays what they found. **Creator
 **The saved choice.** `preferences.cards` on the person's own `user_fact` record, keyed
 `user:usr-{id}` (`get_status` names it as `firstRun.role.key`), read in the same
 `search_calibrations` call that loads the role (**1**, step 2). `always`, `ask`, or `never`; no
-record, or a record without `cards`, means `ask`.
+record, or a record without `cards`, means `ask`. Only that key holds the choice: an older
+`user:primary-contact` or `user:{slug}` record names a role but never a cards choice.
 
 **`ask`: one offer line, once per session.** The first such reply in the session ends with:
 
@@ -411,24 +412,32 @@ order, up to 12 per call:
 Creators and posts follow **Creator card**, **Cards in chat** (only what Atlas holds; nothing is
 discovered to draw a card). Then say the readout and stop. No image data enters the
 conversation, and no plugin card is built beside the host's. More than 12: show the first 12
-and say "Say 'show more' for the next 12." On a host that draws no widget, give the
+and say "Say 'show more' for the next 12."; "show more" (or "show cards" again) draws the next 12
+of the same reply. On a host that draws no widget, give the
 **Markdown fallback** instead.
 
 **`always`.** Every such reply is followed by that call for the results it names, unasked, and
-the offer line is dropped. Never in an unattended run. **`never`.** The offer line is dropped;
+the offer line is dropped. Never in an unattended run, and never on a host that draws no widget:
+there it acts as `ask`, with the no-widget line. **`never`.** The offer line is dropped;
 "show cards" still works when the person asks.
 
 **Saving the choice.** "always show cards" saves `always`, "never show cards" saves `never`, and
-"ask me about cards" saves `ask`. The phrase is the request, so it is saved without a question
-(**Guardrails**): it changes only this field of the person's own record.
+"ask me about cards" saves `ask`. Confirm it with one `AskUserQuestion` (header "Cards", "Save
+this for you in {organization}?", options "Save (Recommended)", "Just this chat"), as every Atlas
+write is. "Just this chat" applies the choice for the session and saves nothing.
 
-- A record exists: `supersede_calibration` on the person's key with `ifVersion` set to the
-  version read, and a `detail` that carries the record's whole current detail (`role`,
-  `roleOther` when present, and every other preference) with only `preferences.cards`
-  replaced. A detail that sends only `cards` drops the rest.
-- No record: the record needs a role, so ask it as the setup reply does (**2**), then
-  `append_calibration` with kind `user_fact`, the person's key, and `{role, roleOther?,
-  preferences: {cards}}`.
+- A record exists: `supersede_calibration` with kind `user_fact`, the person's key, `ifVersion`
+  set to the version read, the record's `statement`, `provenance: "interview"`, and a `detail`
+  that carries the record's whole current detail (`role`, `roleOther` when present, and every
+  other preference) with only `preferences.cards` replaced. A detail that sends only `cards`
+  drops the rest. This supersede changes only the person's own choice, so the save question is
+  its confirmation (**Guardrails**).
+- No record: the record needs a role. Ask it in the same `AskUserQuestion` call (header "Role",
+  options "Influencer manager", "Paid social manager", "Organic social manager", and the free
+  text field for anything else), map the answer to `influencer_manager`, `paid_social_manager`,
+  `organic_social_manager`, or `other` with the typed words as `roleOther` (at most 80
+  characters), then `append_calibration` with kind `user_fact`, the person's key, statement
+  "Role: {role label}", `provenance: "interview"`, and `{role, roleOther?, preferences: {cards}}`.
 - `key-exists` or a version conflict: read the record again and retry once with its current
   detail.
 

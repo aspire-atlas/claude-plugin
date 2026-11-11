@@ -135,9 +135,9 @@ After the page, one line with the link, nothing more. Do not restate the page's 
 
 > New to Atlas? This page covers what /aspire can do and the setup ahead: {link}
 
-Nothing else on this page's chat line mentions cards. The first-run flow mentions them once,
-after the first search it runs (Phase 6's first insights, or any earlier reply that lists
-creators, posts, or ads), with the offer line from **Orchestration contract** **12**.
+The link line never mentions cards. The first reply that lists creators, posts, or ads (Phase
+6's first insights, or an earlier search) carries the cards offer (**Orchestration contract**
+**12**).
 
 Then continue straight into the next phase, in the same reply: the first question of the phase
 **3** names (P1, C1 or the profile question, or the existing summary followed by Phase 5's

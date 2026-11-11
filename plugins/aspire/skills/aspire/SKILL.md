@@ -459,8 +459,8 @@ Organization Admin connection itself.
   creating a profile, starting a channel connection, writing a calibration, adding hashtags,
   and writing insights. One confirmation may cover a batch of the same kind (for example the
   Phase 5 answers just given). `report_checkpoint` changes no Atlas data and is never confirmed
-  (**Checkpoints**). Exempt from this and the rule below: saving the person's own cards choice,
-  where the typed phrase is the request (**Orchestration contract** **12**).
+  (**Checkpoints**). Saving the person's own cards choice takes one save question that also
+  confirms its supersede (**Orchestration contract** **12**).
 - **Destructive actions get their own confirmation, one call per confirmation:**
   `delete_profile`, `unlink_channel`, `supersede_calibration`, `retract_calibration`,
   `remove_hashtags`, `set_brand_instruction`. Use the exact question, object name, and

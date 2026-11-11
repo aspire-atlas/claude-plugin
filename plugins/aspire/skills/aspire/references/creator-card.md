@@ -196,7 +196,8 @@ Atlas's tool widgets:
    may not be: check it with `search_creators` on the handle and network (for a post,
    `search_posts` on its link), and leave out any Atlas does not hold.
 3. Call `lookup_creators` with one item per creator (`schema` = the network, `entityKind`
-   `account`, `identifier` = the handle), `asProfileId` set, and `forceRefresh` left off.
+   `account`, `identifier` = the handle), `asProfileId` set, `creatorDeepAnalysis` `false`, and
+   `forceRefresh` left off.
    Posts work the same way, at most twelve: `lookup_posts` with one item per post (`schema` =
    the network, `entityKind` `post`, `identifier` = the post's link), `creatorDeepAnalysis`
    `false`.
