@@ -134,9 +134,10 @@ Filter path unless noted, `context` on every call, only field paths from the cen
    competitors' handles, with no wildcard `exclude`, for each channel's `freshness`, and the
    freshness read (section 9.1) per handle. An unattended run then refreshes the brand's handles
    and every competitor handle Atlas holds without asking, before step 3; a relaunch with handles
-   in `approved.refresh` refreshes those, also before step 3. An interactive run works out each
-   handle's pace from the freshness read (section 9.4) and offers the refresh, with its time and
-   cost, for each handle behind it, holding its findings and delivery until the relaunch. A handle
+   in `approved.refresh` refreshes those, also before step 3, and makes no new offer. An
+   interactive run with `approved.refresh` null works out each handle's pace from the freshness
+   read (section 9.4) and offers the refresh, with its time and cost, for each handle behind it,
+   holding its findings and delivery until the relaunch. A handle
    Atlas does not hold is never refreshed (that would start discovery). The page's source line and
    the chat summary carry the freshness line. Creators cited only as mention evidence (comparison
    cards, quotes, share-of-voice counts) share the one mentions entry, marked `data-mention`.

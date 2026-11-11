@@ -473,7 +473,7 @@ the page, and return the offer as a proposal in the result packet
 above as `what`. That run publishes its page but holds its Atlas writes and its delivery. The main
 thread asks the offer with these options and launches the run again with the same `runId` and
 `approved.refresh` set: the approved handles, or `[]` for "Use what Atlas holds". The relaunch
-refreshes exactly those handles before reading, republishes the page, and only then writes and
+makes no new offer: it refreshes exactly those handles before reading, republishes the page, and only then writes and
 delivers, so the first pass never trips a flow's duplicate-window guard.
 
 **9.6 How to refresh.** Call `lookup_creators` with `forceRefresh: true`, `entityKind: "account"`,

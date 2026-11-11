@@ -92,11 +92,11 @@ Fresh aggregates, filter path:
 - Freshness (**Page standard**, section 9): each linked handle's `freshness` from the same
   `search_creators` call, with no wildcard `exclude`, and the freshness read (section 9.1), both
   before the brand's posts. An unattended run refreshes the brand's handles without asking, and a
-  relaunch with handles in `approved.refresh` refreshes those, both before the posts are read. An
-  interactive run works out each handle's pace from the freshness read (section 9.4) and offers
-  the refresh, with its time and cost, for a handle behind it, holding its findings until the
-  relaunch. The page's source line carries the freshness line, and a period with no posts reads
-  as section 9.3 says.
+  relaunch with handles in `approved.refresh` refreshes those, both before the posts are read, and
+  the relaunch makes no new offer. An interactive run with `approved.refresh` null works out each
+  handle's pace from the freshness read (section 9.4) and offers the refresh, with its time and
+  cost, for a handle behind it, holding its findings until the relaunch. The page's source line
+  carries the freshness line, and a period with no posts reads as section 9.3 says.
 
 A source with no findings in the quarter is named under data gaps, never filled.
 
