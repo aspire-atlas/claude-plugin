@@ -42,6 +42,10 @@ build a page the user did not ask for just to show results.
 or an agent's summary, and never fetch an image to show it in chat. Images are embedded on
 published pages only (**Images**).
 
+**The cards offer and the saved choice.** Whether a reply that lists creators or posts ends with
+the one "show cards" offer, or is followed by cards unasked, and how "always show cards" is
+saved, is **Orchestration contract** **12**. This file says how the cards are drawn.
+
 **When the user asks to see cards or posts:**
 
 - The host draws Atlas's tool widgets: call `lookup_creators` for the chosen creators, or
@@ -181,11 +185,12 @@ does, and only when the user asks.
 
 ### Cards in chat
 
-When the user asks to see cards ("show me the cards", "show me @handle's card") and the host
-draws Atlas's tool widgets:
+When the user asks to see cards ("show cards", "show me the cards", "show me @handle's card"),
+or their saved cards choice is `always` (**Orchestration contract** **12**), and the host draws
+Atlas's tool widgets:
 
 1. Pick the creators: the ones the reply just named, the ones the user names, or the entries
-   of an agent's `creator-cards` block. At most six per call.
+   of an agent's `creator-cards` block. At most twelve per call, in the reply's order.
 2. Confirm Atlas holds each one. A hit from `search_creators` or `search_posts` in this session
    is held. An entry from an agent's block, a marketplace result, or a handle the user typed
    may not be: check it with `search_creators` on the handle and network (for a post,
