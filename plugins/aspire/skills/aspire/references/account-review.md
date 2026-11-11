@@ -54,7 +54,8 @@ against competitors goes to **Market signal**.
    agent reports (last fetched {lastFetchedAt}, newest post {newestPostAt}, refreshed or not). Offer to go deeper on any
    item, and mention the findings are saved in Atlas and searchable later.
 7. The reply in step 6 is the answer, in text, per **Visual output**. Draw nothing unasked:
-   no card, no post media, no chart. In mode `handle`, cut the reply to the headline, up to
+   no card, no post media, no chart. It ends with the cards offer, or is followed by cards,
+   per **Orchestration contract** **12**. In mode `handle`, cut the reply to the headline, up to
    three insights, the freshness line, the next step, and one link (the account's top post; the
    review has no page), and offer the rest of the summary in one line. Keep the agent's
    `creator-cards` block and `visual-data` block for later. When the user asks to see them: "show me the card" draws the

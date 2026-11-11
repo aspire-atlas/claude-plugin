@@ -334,6 +334,11 @@ when the user asks. A line never embeds a swatch, an image, or a logo.
 
 ### Showing the palettes
 
+Previews follow **Visual output**, as cards do: text by default, drawn only on request, never as
+embedded image data. The starter page's "Seeing results" section lists "show the palettes" beside
+"show cards". The cards offer and the saved cards choice (**Orchestration contract** **12**) cover
+cards only, never previews.
+
 Only when the user asks to see them: "show them", "show the palettes", "show it", "let me see
 the preview", typed as a message or in a question's free text field. Draw the options the
 question is about (four at T2, one at T0 and T5) with the **Comparison widget**, then ask the
