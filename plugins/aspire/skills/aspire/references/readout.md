@@ -144,7 +144,8 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
    `approved.refresh` refreshes those, also before step 3, and makes no new offer. An interactive
    run with `approved.refresh` null works out each handle's pace from the freshness read (section
    9.4) and offers the refresh, with its time and cost, for each handle behind it (section 9.5),
-   holding its findings and delivery until the relaunch. The page's source line and the chat summary carry the freshness line.
+   holding its findings and delivery until the relaunch. The page's source line and the chat
+   summary carry the freshness line.
 3. `search_posts` per linked handle: `author.username` = handle, `postedAt` gte the window
    start, `exists mediaKind` (drops stories). Sort `postedAt` desc, limit 100, page on the
    cursor. Project the fields of the "What landed and why" row of the required metrics

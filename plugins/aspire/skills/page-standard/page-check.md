@@ -19,7 +19,7 @@ import datetime, json, re, sys
 from html.parser import HTMLParser
 
 NETWORKS = ("instagram", "tiktok", "youtube")
-NOT_COVERED = ("not covered", "no posts", "not connected", "missing", "none")
+NOT_COVERED = ("not covered", "no posts", "no data", "not connected", "missing", "none")
 SKIP = {"script", "style", "template", "noscript"}
 VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
 INLINE = {"a", "abbr", "b", "bdi", "cite", "code", "data", "em", "i", "kbd", "mark", "q", "s", "small",
@@ -206,7 +206,7 @@ def counts(region, label):
             continue
         posts, shown = int(raw), text(found[0], gap=" ")
         if posts == 0 and not any(has(shown, w) for w in NOT_COVERED):
-            problems.append("%s shows %s with 0 posts but does not say it is not covered" % (label, name))
+            problems.append("%s shows %s with 0 posts but says neither that it is not covered nor that Atlas has no data" % (label, name))
         if posts > 0 and posts not in numbers(shown):
             problems.append("%s does not show %s's exact post count (%d)" % (label, name, posts))
         out[name] = posts

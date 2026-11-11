@@ -137,9 +137,9 @@ Filter path unless noted, `context` on every call, only field paths from the cen
    in `approved.refresh` refreshes those, also before step 3, and makes no new offer. An
    interactive run with `approved.refresh` null works out each handle's pace from the freshness
    read (section 9.4) and offers the refresh, with its time and cost, for each handle behind it,
-   holding its findings and delivery until the relaunch. A handle
-   Atlas does not hold is never refreshed (that would start discovery). The page's source line and
-   the chat summary carry the freshness line. Creators cited only as mention evidence (comparison
+   holding its findings and delivery until the relaunch. A handle Atlas does not hold is never
+   refreshed (that would start discovery). The page's source line and the chat summary carry the
+   freshness line. Creators cited only as mention evidence (comparison
    cards, quotes, share-of-voice counts) share the one mentions entry, marked `data-mention`.
 3. **Mention sets.** Per entity: `search_posts` where the text matches the name or a spelling
    variant (`match_phrase`), or `instagram.mentions.username` names a handle, or a hashtag

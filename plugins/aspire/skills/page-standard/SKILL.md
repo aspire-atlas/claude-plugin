@@ -235,9 +235,9 @@ Mark the parts the script reads. The attributes carry no styling; style the page
 </footer>
 ```
 
-- On a team page, list Instagram, TikTok, and YouTube in the scope every time, with a count of 0
-  and words such as "not covered" or "no posts" for one with no data. A day with no posts at all is
-  still a team page with three zeros. On a page with the shared audience line, list only the
+- On a team page, list Instagram, TikTok, and YouTube in the scope every time; one with 0 posts
+  says "not covered" with no linked account, else as section 9.3 says ("no posts", or "Atlas has no
+  data for {period}"). A day with no posts at all is still a team page with three zeros. On a page with the shared audience line, list only the
   platforms with posts; the script knows the page is shared when its `atlas-footnote` says "Shared
   with". Show the exact count ("1,412 posts"), never a rounded one ("1.4K").
 - A check that is N/A for this page (section 1) goes in `data-na` on the scope, for example
@@ -473,8 +473,8 @@ the page, and return the offer as a proposal in the result packet
 above as `what`. That run publishes its page but holds its Atlas writes and its delivery. The main
 thread asks the offer with these options and launches the run again with the same `runId` and
 `approved.refresh` set: the approved handles, or `[]` for "Use what Atlas holds". The relaunch
-makes no new offer: it refreshes exactly those handles before reading, republishes the page, and only then writes and
-delivers, so the first pass never trips a flow's duplicate-window guard.
+makes no new offer: it refreshes exactly those handles before reading, republishes the page, and
+only then writes and delivers, so the first pass never trips a flow's duplicate-window guard.
 
 **9.6 How to refresh.** Call `lookup_creators` with `forceRefresh: true`, `entityKind: "account"`,
 the network as `schema`, the handle as `identifier`, and the run's own `asOrganizationId` and
@@ -497,4 +497,4 @@ starts no discovery.
 - Never refresh with `start_business_discovery`: every call starts a new billable job.
 
 **9.7 Examples.** Good: "Atlas has no data for Nov 3 to 9 for @{brand} on TikTok; last fetched
-Nov 2. Refresh it? About 2 minutes." Bad: "No posts this week" for a week Atlas never fetched.
+Nov 2." Bad: "No posts this week" for a week Atlas never fetched.
