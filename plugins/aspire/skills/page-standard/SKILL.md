@@ -5,9 +5,9 @@ description: >
   for and what it covers, the answer first, up to three insights, ranked next steps, decisions
   kept apart, real evidence, how it was worked out, what is missing, what Atlas can draft next),
   the reader and evidence rules, the metrics each kind of question requires and where each is
-  missing per network, the one data freshness rule for every page and chat reply, and the
-  self-check against the reader standard (R1 to R14) every page runs before it is published.
-  Agents load it before they build a page. It is not a command.
+  missing per network, the one data freshness rule for every page and chat reply, the self-check
+  against the reader standard (R1 to R14), and the English read every page gets before it is
+  published. Agents load it before they build a page. It is not a command.
 user-invocable: false
 metadata:
   author: Aspire
@@ -172,8 +172,8 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md`, section 6, sets, so the page saves to PDF
    in the light theme with a footer on every page.
 4. **Self-check R1 to R14.** Run the script in section 5 for R1, R2, R6, R11, R13, and R14, and judge
-   the others against `reader-standard.md`. Fix every fail you can and check again.
-5. **Publish**, even when a check still fails, and report it in the page check (section 7).
+   the others against `reader-standard.md`. Fix every fail you can and check again. **4b.** The English read by a separate reviewer: follow `english-read.md` in this folder.
+5. **Publish** in the publish pass (step 4b), even when a check still fails; report it (section 7).
    - **When the session has no Artifact tool, save the page as a file.** Never skip the page, and
      never return only a summary, because it cannot be published. Write the same page as one
      full HTML document (doctype, head with the title, body) to `{page name}.html` in the
@@ -322,7 +322,7 @@ words ("page check: 9 pass, 2 fixed, 1 n/a").
  "checks": {"R1": "pass", "R2": "pass", "R3": "fixed", "R4": "pass", "R5": "fixed", "R6": "pass",
             "R7": "pass", "R8": "pass", "R9": "n/a", "R10": "pass", "R11": "pass", "R12": "pass",
             "R13": "pass", "R14": "pass"},
- "draftNext": "pass", "stillFailing": [], "gaps": [], "scripted": "ran"}
+ "draftNext": "pass", "stillFailing": [], "gaps": [], "scripted": "ran", "englishRead": {"status": "ran", "must": 1, "should": 0, "nice": 0, "musts": [{"id": "EN1", "applied": true}]}}
 ```
 
 - `checks`: `pass` (passed the first time), `fixed` (failed, fixed before publishing), `fail`
@@ -332,7 +332,7 @@ words ("page check: 9 pass, 2 fixed, 1 n/a").
   Every `n/a` has its reason here too, as "R2 n/a: {reason}".
 - `gaps`: on a page shared outside the team, what Atlas could not read, for the main thread to
   tell the requester. Empty on a team page, whose gaps are on the page.
-- `scripted`: `ran`, `read` (no Python, or a page drawn in script), or `unmarked`.
+- `scripted`: `ran`, `read` (no Python, or a page drawn in script), or `unmarked`. `englishRead`: as `english-read.md` sets it.
 
 ## 8. Required metrics, by kind of question
 

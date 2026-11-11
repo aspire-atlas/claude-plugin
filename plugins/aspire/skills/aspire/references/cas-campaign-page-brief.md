@@ -1760,11 +1760,11 @@ font-semibold`, separated by a Separator:
      10 decided, it is the top {n}: "{k} of our top {n} were picked". Each name in the top 10 is a
      link to its row, with a success Badge "Picked" or an error Badge "Passed".
    - **Agreement score.** Over every pair of one pick and one pass in the same round, the share of
-     pairs where the pick had the higher score, a tie counting as half: "{x}% of picks scored
-     above passes". In `text-2xl font-semibold`, with its verdict Badge: success "Holding up" at
+     pairs where the pick had the higher score, a tie counting as half: "{x}% of the creators {brand} picked scored
+     above the ones it passed on". In `text-2xl font-semibold`, with its verdict Badge: success "Holding up" at
      75% and up, warning "Partly matching" at 60% and up, error "Choosing differently" under 60%.
      One plain line under it: "When {brand} picked one creator and passed on another, our score
-     ranked the pick higher {x}% of the time." Unless at least one round in view has 3 or more picks and 3 or more passes, it reads "Too few decisions to judge yet: {p} picks and {q} passes" with a soft Badge, and the
+     ranked the pick higher {x}% of the time." Unless at least one round in view has 3 or more picks and 3 or more passes, it reads "Too few decisions to judge yet: {p} picked and {q} passed" with a soft Badge, and the
      verdict, **Retune** and the patterns wait.
 2. **Surprises.** Every counted pass on a score of 75 or more and every counted pick on a score
    under 60, newest first, as List rows: the Avatar and handle (a link to the row), the round, the call's Badge, "{brand} saw {n}" with its band Badge,
@@ -1777,14 +1777,14 @@ font-semibold`, separated by a Separator:
    numbers behind it, then "From {n} decisions. A few more calls can change these." A line shows
    only when its groups each hold 3 or more decided creators:
    - **Follower size.** The pick rate per tier (**Tiers**) against the overall pick rate, for each
-     tier 15 points or more away from it, up to two: "Picks 70% of Micro creators, against 45%
+     tier 15 points or more away from it, up to two: "Picked 70% of Micro creators, against 45%
      overall".
-   - **Products.** The same per product in scope: "Picks 80% of the creators cast on {product}".
+   - **Products.** The same per product in scope: "Picked 80% of the creators cast on {product}".
    - **Factor gaps.** For each factor, the average value of the picks less the average of the
      passes, out of 100, from the agency's stored factor values (`exact`, read now, so a factor
      re-scored since the call reads as it stands). Up to two with a gap of 10 points or more, the
-     largest first: "Picks average 72 on Brief fit, passes 51" or "Picks score lower on Paid
-     history than passes: 38 against 55". Budget vs target is one of the five, since the panel is
+     largest first: "Picked creators average 72 on Brief fit, passed ones 51" or "Picked creators score lower on Paid
+     history than passed ones: 38 against 55". Budget vs target is one of the five, since the panel is
      agency only.
    - **Reasons.** The most used surprise reason, when it was used 3 or more times: "The most common
      reason to pass on a strong match: Not our look (4)".

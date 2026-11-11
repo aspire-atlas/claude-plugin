@@ -42,7 +42,6 @@
       "id": "E6",
       "name": "Reads like an editor checked it",
       "judgedBy": "english-read",
-      "waitsFor": "ASP-5300",
       "passesWhen": "An English-teacher read of the full rendered text finds no tense mismatches, shorthand, jargon or fragments, and nothing carried over from Atlas's report in Atlas's own words (\"picks\", \"reach slot\", \"practitioners\", \"pulse\", \"reads\"); every number in a label matches what it labels; sentences are short with one idea each, and terms such as hook rate are explained the first time they appear.",
       "failsWhen": "\"Gift and routine framing lifts posts\" next to \"ran at 1.27×\"; a question pasted from Atlas's report in its own shorthand."
     },
