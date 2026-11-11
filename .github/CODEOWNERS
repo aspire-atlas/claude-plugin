@@ -1,0 +1,12 @@
+# A change to these paths needs a review from a plugin owner: they define what every agent and
+# page does, and docs/STANDARD.md is the checklist a reviewer holds them to. The develop branch
+# protection requires a code-owner review (docs/PLUGIN-LIFECYCLE.md section 11).
+# Later lines win, so keep the narrow paths below the broad ones.
+
+/plugins/aspire/agents/                     @payman-salimi @jfurie
+/plugins/*/skills/*/SKILL.md                @payman-salimi @jfurie
+/plugins/aspire/skills/aspire/references/   @payman-salimi @jfurie
+/plugins/aspire/skills/page-standard/       @payman-salimi @jfurie
+/scripts/                                   @payman-salimi @jfurie
+/docs/STANDARD.md                           @payman-salimi @jfurie
+/.github/CODEOWNERS                         @payman-salimi @jfurie

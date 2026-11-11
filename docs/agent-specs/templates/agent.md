@@ -16,9 +16,9 @@ When I {the moment it starts}, I want {what the agent hands me}, so {what that l
 
 ## Questions answered
 
-| Code | Question | Primary reader | Kind of page | Approved example |
-| ---- | -------- | -------------- | ------------ | ---------------- |
-| I1 | The question in the persona's words | Self | Shortlist | Validated (ticket) or None yet |
+| Code | Question | Primary reader | Eval reader | Kind of page | Approved example | Eval question |
+| ---- | -------- | -------------- | ----------- | ------------ | ---------------- | ------------- |
+| I1 | The question in the persona's words | Self | team | Shortlist | Validated (ticket) or None yet | Yes or Not yet |
 
 ## Skills carried (N)
 
