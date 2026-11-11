@@ -302,8 +302,8 @@ and on each Instagram, TikTok, YouTube and Pinterest connection from `list_chann
   only "last fetched" or "last refreshed" time. `snapshotAt` moves only when something material
   changed, and `indexedAt` is when the search index last wrote the record: never show either as the
   last fetch.
-- `newestPostAt` is the newest post Atlas holds. A post published after it is not held yet, so a
-  period after it with no posts reads "Atlas has no data for {period}", never "no posts".
+- `newestPostAt` is the newest post Atlas holds. A post published after it is not held yet; a
+  period with no posts reads as **Page standard**, section 9.3 says.
 - `postsHeld` counts every post Atlas holds for the account and `postsHeld30d` those published in the
   last 30 days. On `get_creator`, `totalPosts` counts the posts in the search index; the two can differ
   while posts are being indexed. Say "posts held" for `postsHeld`.

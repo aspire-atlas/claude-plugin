@@ -131,14 +131,14 @@ Filter path unless noted, `context` on every call, only field paths from the cen
 2. **Entities.** The brand (its name, its handles, its tracked hashtags) and each M1
    competitor (its name, its handles, its `spellingVariants` from the `competitor` record).
 2b. **Freshness** (**Page standard**, section 9): `search_creators` on the brand's and the
-   competitors' handles, with no wildcard `exclude`, for each channel's `freshness`. An unattended
-   run then refreshes the brand's handles and every competitor handle Atlas holds without asking,
-   before step 3; a relaunch with handles in `approved.refresh` refreshes those, also before
-   step 3. An interactive run reads each handle's own recent posts for its pace (section 9.4):
-   `search_posts` with `author.username` = the handle, `postedAt` in the 28 days before the run,
-   sorted `postedAt` desc, projecting `postedAt` only. It offers the refresh, with its time and
-   cost, for each handle behind its pace, holding its findings and delivery until the relaunch. A handle Atlas does not hold is never refreshed (that would start discovery). The page's source line and the chat summary carry the freshness
-   line, and the page names any refresh skipped as recently refreshed.
+   competitors' handles, with no wildcard `exclude`, for each channel's `freshness`, and the
+   freshness read (section 9.1) per handle. An unattended run then refreshes the brand's handles
+   and every competitor handle Atlas holds without asking, before step 3; a relaunch with handles
+   in `approved.refresh` refreshes those, also before step 3. An interactive run works out each
+   handle's pace from the freshness read (section 9.4) and offers the refresh, with its time and
+   cost, for each handle behind it, holding its findings and delivery until the relaunch. A handle
+   Atlas does not hold is never refreshed (that would start discovery). The page's source line and
+   the chat summary carry the freshness line.
 3. **Mention sets.** Per entity: `search_posts` where the text matches the name or a spelling
    variant (`match_phrase`), or `instagram.mentions.username` names a handle, or a hashtag
    matches; `must_not` the entity's own handles and the brand's handles; `exists mediaKind`;

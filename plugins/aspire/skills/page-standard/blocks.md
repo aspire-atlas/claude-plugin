@@ -262,11 +262,14 @@ before the first `h2`, under the page header that carries the mark and the "Prep
 - `data-question` is the question code the page answers, which picks its required metrics
   (`SKILL.md`, section 8). Leave it out on a page that answers no code and cites no post.
 - A check that is N/A for this page goes in `data-na` (`SKILL.md`, section 5).
+- `data-accounts` lists every account whose figures the page shows, as `{network}:{handle}`
+  separated by spaces, including those it shows only in totals, so R14 looks for each one's
+  freshness entry (3.19). A scope that counts posts and names no account fails R14.
 - Leave "Prepared by" out when the reader is not a VP or budget owner.
 
 <!-- block:scope -->
 ```html
-<div class="pb-scope" data-page="scope" data-block="scope" data-question="O3" data-reader="the VP of marketing" data-brand="Brightside Toys" data-range="Aug 1 to Oct 28, 2026">
+<div class="pb-scope" data-page="scope" data-block="scope" data-question="O3" data-accounts="instagram:brightsidetoys tiktok:brightsidetoys" data-reader="the VP of marketing" data-brand="Brightside Toys" data-range="Aug 1 to Oct 28, 2026">
   <p class="pb-scope-line"><span>For <b>the VP of marketing</b></span><span><b>Brightside Toys</b></span><span>Aug 1 to Oct 28, 2026</span><span class="pb-muted">Prepared by Jordan Lee, social lead</span></p>
   <!-- the coverage strip (3.2) goes here -->
 </div>
@@ -749,15 +752,17 @@ account.
   Atlas yet". With no `freshness` on record, `data-changed` replaces it: the account's `snapshotAt`
   date, shown as "last changed", never "last fetched". With no `snapshotAt` either, `data-fetched`
   is `unknown`, shown as "freshness unknown".
-- An account behind its pace, or refreshed in this run, says so on the same entry. A refresh skipped
-  as recently refreshed says "refreshed recently, skipped".
+- On a team page, an account behind its pace, or refreshed in this run, says so on the same entry,
+  and a refresh skipped as recently refreshed says "refreshed recently, skipped". A page shared
+  outside the team leaves those notes out (`SKILL.md`, section 9.2).
 - The page check's R14 reads these.
 
 <!-- block:freshness -->
 ```html
 <p data-block="freshness" data-freshness>Data freshness:
   <span data-fresh="instagram:makerjune" data-newest="2026-10-12" data-fetched="2026-10-28">@makerjune on Instagram: newest post Oct 12, last fetched Oct 28</span>;
-  <span data-fresh="instagram:brightsidetoys" data-newest="2026-10-20" data-changed="2026-10-21">@brightsidetoys on Instagram: newest post Oct 20, last changed Oct 21 (behind its usual pace of a post every 2 days)</span>.</p>
+  <span data-fresh="instagram:brightsidetoys" data-newest="2026-10-20" data-changed="2026-10-21">@brightsidetoys on Instagram: newest post Oct 20, last changed Oct 21 (behind its usual pace of a post every 2 days)</span>;
+  <span data-fresh="tiktok:brightsidetoys" data-newest="2026-10-27" data-fetched="2026-10-28">@brightsidetoys on TikTok: newest post Oct 27, last fetched Oct 28</span>.</p>
 ```
 <!-- /block:freshness -->
 

@@ -138,14 +138,13 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
    and is never a guideline.
 2. `list_post_search_fields` once. Use only paths it returns.
 2b. Freshness (**Page standard**, section 9): `search_creators` on the linked handles, with no
-   wildcard `exclude`, for each channel's `freshness`. An unattended run then refreshes every
-   linked handle without asking, before step 3, so steps 3 onward read what the refresh brought
-   in. A relaunch with handles in `approved.refresh` refreshes those, also before step 3. An
-   interactive run works out each handle's pace (section 9.4) from the step 3 and 4 posts, and
-   offers the refresh, with its time and cost, for each handle behind it (section 9.5), holding
-   its findings and delivery until the relaunch. The
-   page's source line and the chat summary carry the freshness line, and the page names any
-   refresh skipped as recently refreshed.
+   wildcard `exclude`, for each channel's `freshness`, and the freshness read (section 9.1) per
+   handle. An unattended run then refreshes every linked handle without asking, before step 3,
+   so steps 3 onward read what the refresh brought in. A relaunch with handles in
+   `approved.refresh` refreshes those, also before step 3. An interactive run works out each
+   handle's pace from the freshness read (section 9.4) and offers the refresh, with its time and
+   cost, for each handle behind it (section 9.5), holding its findings and delivery until the
+   relaunch. The page's source line and the chat summary carry the freshness line.
 3. `search_posts` per linked handle: `author.username` = handle, `postedAt` gte the window
    start, `exists mediaKind` (drops stories). Sort `postedAt` desc, limit 100, page on the
    cursor. Project the fields of the "What landed and why" row of the required metrics

@@ -406,10 +406,11 @@ def fresh_problems(key, node):
     return problems
 
 def r14(nodes, regions):
-    # Every account the page cites (data-account, which every cited post carries) has one freshness
-    # entry (data-fresh) in the source line: the newest post Atlas holds, and when Atlas last fetched
-    # the account or, with no freshness on record, when it last changed. Returns None (n/a) on a page
-    # that cites no account and no post.
+    # Every account the page cites (data-account, which every cited post carries, and the scope's
+    # data-accounts) has one freshness entry (data-fresh) in the source line: the newest post Atlas
+    # holds, and when Atlas last fetched the account or, with no freshness on record, when it last
+    # changed. A scope that counts posts must name its accounts. Returns None (n/a) on a page that
+    # cites no account, no post, and counts no posts.
     cited, problems = {}, []
     for index, post in enumerate([n for n in nodes if "data-post" in n.attrs], 1):
         if not (post.attrs.get("data-account") or "").strip():
@@ -423,7 +424,17 @@ def r14(nodes, regions):
             problems.append("data-account \"%s\" is not {network}:{handle}" % raw)
         else:
             cited.setdefault(key, raw)
+    scope = (regions.get("scope") or [None])[0]
+    for raw in ((scope.attrs.get("data-accounts") or "") if scope is not None else "").split():
+        key = account_key(raw)
+        if key is None:
+            problems.append("the scope's data-accounts entry \"%s\" is not {network}:{handle}" % raw)
+        else:
+            cited.setdefault(key, raw)
     if not cited and not problems:
+        counted = [n for n in walk(scope) if (n.attrs.get("data-posts") or "0").replace(",", "").strip() not in ("", "0")] if scope is not None else []
+        if counted:
+            return ["the scope counts posts but the page names no account; list them in the scope's data-accounts"]
         return None
     fresh = {}
     for node in nodes:
@@ -448,7 +459,7 @@ def r14(nodes, regions):
 # R14 are n/a on their own terms, never through data-na.
 CAN_BE_NA = {"R2", "R6"}
 NA_REASON = {"R13": "the page names no question code and cites no post",
-             "R14": "the page cites no account and no post"}
+             "R14": "the page cites no account and no post, and counts no posts"}
 CHECKS = (("R1", "Reader and scope", r1), ("R2", "Platforms covered", r2),
           ("R6", "Decisions kept separate", r6), ("R11", "Plain language", r11),
           ("R13", "Required metrics", r13), ("R14", "Data freshness", r14))

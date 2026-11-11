@@ -16,7 +16,8 @@ metadata:
 # Page standard: the skeleton and the self-check
 
 Every page an Atlas agent publishes holds the nine parts below, carries the metrics its kind of
-question requires (section 8), says how fresh its data is (section 9), and is checked against R1 to R14 before it goes out. The checks are defined once, in
+question requires (section 8), says how fresh its data is (section 9), and is checked against R1
+to R14 before it goes out. The checks are defined once, in
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/reader-standard.md`; the quality review runs the
 same ones on a finished page. Read that file with this one. The parts are fixed. The look is not:
 a creator profile, a competitor brief, and a rights log should still look different. Decide what
@@ -260,10 +261,12 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   view count"). Never show a missing metric as 0; a 0 Atlas read is a real 0. A page that cites
   no post, or answers no code, has no `data-question` and gets R13 `n/a`.
 - Every account the page cites carries `data-account="{network}:{handle}"`: each cited post, and
-  each creator or account card. The source line then holds one `data-fresh` entry per account with
-  the same value (`blocks.md`, 3.19): `data-newest` the newest post's date or `none`, and
-  `data-fetched` the last fetch's date, `none`, or `unknown`, or, with no `freshness` on record,
-  `data-changed`, shown as "last changed". A page that cites no account gets R14 `n/a`.
+  each creator or account card. The scope's `data-accounts` lists every account whose figures the
+  page shows, totals included; a scope that counts posts and names no account fails R14. The source
+  line then holds one `data-fresh` entry per account with the same value (`blocks.md`, 3.19):
+  `data-newest` the newest post's date or `none`, and `data-fetched` the last fetch's date,
+  `none`, or `unknown`, or, with no `freshness` on record, `data-changed`, shown as "last changed".
+  Each date is shown in the entry. A page that cites no account and counts no posts gets R14 `n/a`.
 - A page with no `data-page` markup yet (a flow whose reference does not add it) gets `unmarked`
   for R1, R2, R6, R13, and R14. Judge those by reading; R11 still runs.
 
@@ -399,13 +402,14 @@ freshness rule. A flow's reference points here and never sets an age rule of its
 `freshness { lastFetchedAt, newestPostAt, postsHeld, postsHeld30d }`
 (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-tools.md`, **Data freshness**): from
 `lookup_creators`, `search_creators` with no wildcard `exclude`, `get_creator`, or `list_channels`.
-The newest post is `newestPostAt` and the last fetch is `lastFetchedAt`. When `lastFetchedAt` is
+Also make one **freshness read** per account, whatever the flow's own window: `search_posts` with
+`author.username` = the handle, sorted `postedAt` desc, `limit: 10`, projecting `postedAt` only.
+The newest post is `newestPostAt`, and the last fetch is `lastFetchedAt`. When `lastFetchedAt` is
 null, the account is "not fetched by Atlas yet". When `freshness` is absent, the newest post is the
-newest `postedAt` the run's own searches return for the account, and the time is the account's
-`snapshotAt`, labelled "last changed", never "last fetched"; with no `snapshotAt` either, the
-freshness is unknown and the line says "freshness unknown". An account with no posts at all reads
-"Atlas holds no posts". Never show `indexedAt` as either time. All ages are measured against the
-shell clock (`date -u`), never an assumed "today".
+freshness read's first hit, and the time is the account's `snapshotAt`, labelled "last changed",
+never "last fetched"; with no `snapshotAt` either, the line says "freshness unknown". Only a
+freshness read that returns nothing reads "Atlas holds no posts". Never show `indexedAt` as either
+time. All ages are measured against the shell clock (`date -u`), never an assumed "today".
 
 **9.2 The freshness line.**
 
@@ -419,22 +423,23 @@ shell clock (`date -u`), never an assumed "today".
 - **In a deck**, the line sits with the source line on the last slide (`artifact-standard.md`,
   section 3).
 - **On a page shared outside the team** the line stays, as the as-of time does. Behind-pace notes,
-  skipped refreshes, and periods with no data go in the page check's `gaps` (section 1).
+  skipped and failed refreshes, and periods with no data go in the page check's `gaps` instead
+  (section 1), wherever 9.3 to 9.6 put them on a team page.
 
 **9.3 No data is not no posts.** A period reads "no posts in {period}" only when Atlas fetched the
 account after the period ended (`lastFetchedAt` later than its end) and holds no post in it. When
 Atlas holds no post for the period and `lastFetchedAt` is older than the period's end, null, or
-absent, the page and the reply say "Atlas has no data for {period}" and, on a team page, name the
-refresh in the "what is missing" part. "No posts" is a claim about the account; "no data" is a
+absent, a team page and the reply say "Atlas has no data for {period}" and name the refresh in the
+"what is missing" part; a shared page leaves the period out (9.2). "No posts" is a claim about the account; "no data" is a
 claim about Atlas.
 
-**9.4 Behind pace.** An account's pace is the median gap between its consecutive posts Atlas holds
-from the 28 days before the run, or over its last 10 posts held when the 28 days hold fewer than 3.
-It is **behind** when its newest held post is older than twice that gap and Atlas has not fetched
-it in the last 24 hours. Pace needs the posts, so work it out after the flow's first read of the
-account's posts. An account fetched in the last
-24 hours is not behind: it has stopped posting, and the page says so ("@x has not posted since
-Nov 2; it usually posts every 2 days"). An account with fewer than 2 posts held has no pace.
+**9.4 Behind pace.** An account's pace is the median gap between the consecutive posts of its
+freshness read (9.1) that fall in the 28 days before the run, or between all of them when fewer
+than 3 fall there. It is **behind** when its newest held post is older than twice that gap and
+Atlas has not fetched it in the last 24 hours; with `lastFetchedAt` null or `freshness` absent,
+treat it as not fetched. An account fetched in the last 24 hours is not behind: it has stopped
+posting, and the page says so ("@x has not posted since Nov 2; it usually posts every 2 days"). An
+account whose freshness read returns fewer than 2 posts has no pace.
 
 **9.5 When to refresh.** One refresh per handle per run, whichever row asks for it:
 
@@ -470,12 +475,13 @@ starts no discovery.
 - An account counts as refreshed when its `refresh` result is `skipped` with reason
   `recently-refreshed` (make no second call), or when a re-read after a `started` result shows a
   `lastFetchedAt` later than the call. With `freshness` absent on the re-read, a `snapshotAt` later
-  than the call, or a newer newest post than before, counts instead. One still `fetching` at the limit, or whose refresh `failed`,
-  keeps the data Atlas held and its freshness line says so.
+  than the call, or a newer newest post than before, counts instead. One still `fetching` at the
+  limit, or whose refresh `failed`, keeps the data Atlas held and its freshness line says so.
 - Re-run the flow's searches. Search indexing lags the lookup: when a refreshed account's searches
   come back empty, or their newest post is older than the re-read's `newestPostAt`, retry once
   after about 30 seconds. The page then shows the new newest post.
-- The page names every refresh that was skipped as recently refreshed, and every one that failed.
+- A team page names every refresh that was skipped as recently refreshed, and every one that
+  failed; a shared page puts them in `gaps` (9.2).
 - Never refresh with `start_business_discovery`: every call starts a new billable job.
 
 **9.7 Examples.** Good: a weekly creative report that names every gap on the account it covers
