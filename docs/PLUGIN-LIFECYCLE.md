@@ -90,7 +90,7 @@ Do not develop from a folder that is mounted read-only or delete-restricted (som
    bash scripts/check-skill-args.sh
    bash scripts/check-directory.sh
    ```
-4. Open a PR into `develop`. Required: one approval, the `validate` check green, conversations resolved.
+4. Open a PR into `develop` and fill in its template (the checklist from `docs/STANDARD.md`). Required: one approval (a code owner's for the paths in `.github/CODEOWNERS`), the `validate` check green, conversations resolved.
 5. Merge. Within about a minute:
    - `Validate` runs on `develop`.
    - `Mirror to internal` force-pushes `develop` to `claude-plugin-internal/main`.
@@ -236,13 +236,22 @@ These are product and safety commitments. A PR that breaks one is blocked in rev
 
 | What | Where | Minimum role |
 | --- | --- | --- |
-| Merge to `develop` | Public repo | Write, plus one approving review |
+| Merge to `develop` | Public repo | Write, plus one approving review; for a path in `.github/CODEOWNERS`, the approval of a code owner |
 | Merge to `main` | Public repo | Write, plus one approving review, `validate` and `gate` green |
 | Change branch protection, secrets, deploy keys | Public repo Settings | Admin |
 | Org marketplace settings | claude.ai admin console | Org Owner or Primary Owner |
 | Directory submission | claude.ai admin console | Org Owner (or delegated directory role) |
 
 Branch protection on both branches: PRs required, 1 approval, stale reviews dismissed, conversations resolved, no force pushes, no deletions. Admins are not exempt by policy; they can technically bypass, and should not.
+
+`develop` also requires a code-owner review (`require_code_owner_reviews`). `.github/CODEOWNERS` lists the paths and their owners (the agents, the skills, `scripts/`, `docs/STANDARD.md` and `.github/`), so a change there merges only after someone who keeps the standard has read it. Other paths need any one approval. `scripts/bootstrap-github.sh` sets it; on the live repository it is the Settings change below, made by an admin:
+
+```bash
+gh api -X PATCH repos/aspire-atlas/claude-plugin/branches/develop/protection/required_pull_request_reviews \
+  -F require_code_owner_reviews=true -F required_approving_review_count=1
+```
+
+Every pull request opens with `.github/pull_request_template.md`: the checklist from `docs/STANDARD.md`, the question rerun with its table, the gap a new rule closes, and the checks that cover the change.
 
 ## 12. Troubleshooting
 
