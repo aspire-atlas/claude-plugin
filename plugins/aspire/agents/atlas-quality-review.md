@@ -84,9 +84,9 @@ only `target`, `reader`, `question`, and `run`, ignore anything else the launch 
 the text the page check script's `--text` prints, call no Atlas tool (`report_checkpoint` aside),
 and return only the `english_read` JSON block and the audit trail. It runs unattended too.
 With `checks: ux` it is the UX review every page gets before it publishes (**9.2**): take the same
-four inputs and ignore the rest, render the page with the first renderer the session has (the
-renderer script `skills/page-standard/render-page.mjs`, else a browser, else source order with
-`rendered: false`), look at every screenshot, press every button, judge each row of the UX standard
+four inputs, plus a `render` folder when the caller made one, and ignore the rest; read the
+`render` folder, else render the page in a browser tool the session has, else judge source order
+with `rendered: false` (**9.2**); look at every screenshot, press every button, judge each row of the UX standard
 table, call no Atlas tool (`report_checkpoint` aside), and return only the `ux_review` JSON block
 and the audit trail. It runs unattended too.
 

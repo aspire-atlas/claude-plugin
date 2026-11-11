@@ -65,9 +65,10 @@ jobs:
         with:
           bun-version: 1.4.4
 
-      - name: The UX review's renderer draws the fixture page in all three views
+      - name: The UX review's renderer (scripts/render-page.ts) draws the fixture page in all three views
         run: |
-          # Playwright is the renderer's one dependency. It is installed here rather than in package.json, since no plugin ships it.
+          # Playwright is the renderer's one dependency. It is installed here rather than in package.json: the renderer
+          # is a repository script that no plugin ships.
           npm install --no-save --no-package-lock playwright@1.56.1
           npx playwright install --with-deps chromium
           bun scripts/render-page.ts

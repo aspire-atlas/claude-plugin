@@ -12,9 +12,9 @@ body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,san
 main{max-width:960px;margin:0 auto;padding:24px 16px}
 section{border-top:1px solid var(--border);padding:16px 0}
 button{min-height:44px;font:inherit;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;padding:0 14px}
-[data-app-missing]{display:none;color:var(--muted)}
-:root[data-apps="none"] [data-app]{display:none}
-:root[data-apps="none"] [data-app-missing]{display:block}
+[data-app-missing]{color:var(--muted)}
+summary{line-height:24px}
+iframe{width:1px;height:1px;border:0}
 pre{white-space:pre-wrap;background:var(--surface);border:1px solid var(--border);padding:12px}
 </style>
 </head>
@@ -36,15 +36,25 @@ pre{white-space:pre-wrap;background:var(--surface);border:1px solid var(--border
       <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('offer').innerText);this.nextElementSibling.textContent='Copied the offer.'">Copy offer</button>
       <span role="status"></span>
       <button type="button" data-app="gmail">Send from Gmail</button>
-      <p data-app-missing="gmail">Connect Gmail to send the offers from this page.</p>
+      <p data-app-missing="gmail" hidden>Connect Gmail to send the offers from this page.</p>
     </li>
-    <li>Ship product to the creators by Nov 18.</li>
+    <li>Send the terms by Nov 15.
+      <details><summary>Show the terms</summary>
+        <pre id="terms">One Reel and three stories before Nov 28, with the paid partnership label.</pre>
+        <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('terms').innerText)">Copy terms</button>
+      </details>
+    </li>
+    <li>Ship product to the creators by Nov 18.
+      <form><button type="submit">Reload</button></form>
+      <button type="button" onclick="navigator.clipboard.writeText('Tracking numbers go in the order form.')">Copy tracking note</button>
+    </li>
   </ol>
 </section>
 <section data-page="method">
   <h2>How this was worked out</h2>
-  <details><summary>Show the method</summary><p>Creators were ranked on their usual views over the last 90 days.</p></details>
+  <p>Creators were ranked on their usual views over the last 90 days.</p>
 </section>
+<iframe src="../page-standard/fail-r1.html" title="another local file, which the renderer must block"></iframe>
 <footer class="atlas-footnote"><p>No Atlas data on this page.</p></footer>
 </main>
 </body>

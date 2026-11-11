@@ -70,7 +70,7 @@ Every published page's `page-check` block (`SKILL.md`, section 7) carries it:
 - `status` `not-run`, with `why`.
 
 ```json
-"uxReview": {"status": "ran", "rendered": true, "renderer": "playwright",
+"uxReview": {"status": "ran", "rendered": true, "renderer": "browser",
              "views": ["desktop-light", "phone-dark", "no-apps"], "firstTask": {"phone": 1300, "desktop": 610},
              "must": 2, "should": 3, "nice": 1,
              "musts": [{"id": "UX1", "applied": true}, {"id": "UX2", "applied": true}]}

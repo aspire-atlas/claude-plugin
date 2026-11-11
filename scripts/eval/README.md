@@ -118,8 +118,8 @@ session with the page, its reader and its question code: it passes with no Must 
 Must with its replacement. E7 is the UX review (`quality-review.md`, **9.2**), run the same way: the
 reviewer renders the page on desktop, on a phone in the dark theme and with no apps connected, it passes with
 no Must fix, and its reason lists each Must with its row and how deep the first task sits on the phone. The
-renderer needs Playwright with Chromium on the machine; without it the review judges by source order and says
-so in the reason.
+harness renders the page with `scripts/render-page.ts` and passes the reviewer that folder, so it needs
+Playwright with Chromium on the machine; without it the review judges by source order and says so in the reason.
 
 ## What is committed and what is not
 

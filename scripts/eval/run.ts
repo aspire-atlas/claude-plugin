@@ -11,6 +11,7 @@ import {
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength,
   type CheckDef, type PageChecks, type QuestionResult, type Result, type RunResults, type Turn,
 } from './lib'
+import { renderPage } from '../render-page'
 
 const HERE = import.meta.dir
 const ROOT = resolve(HERE, '../..')
@@ -233,15 +234,19 @@ async function englishRead(page: string, question: Question, dir: string, emptyM
 async function uxReview(page: string, question: Question, dir: string, emptyMcp: string, options: Options): Promise<{ e: Record<string, Result>; reasons: Record<string, string>; note: string | null }> {
   // E7 is the UX review every page gets before it publishes (quality-review.md, 9.2): the page rendered on
   // desktop, on a phone in the dark theme and with no apps connected, its reader and its question code, and
-  // nothing from the run that built it. It passes with no Must fix.
+  // nothing from the run that built it. The harness renders the page itself (scripts/render-page.ts) and
+  // hands the reviewer the folder, as CI would. It passes with no Must fix.
+  const rendered = await renderPage(page, join(dir, 'render'))
   const turn = await launchQualityReview(question, [
     'checks: ux', `target: ${page}`, `reader: ${question.readerInWords}`, `question: ${question.code}`, 'run: interactive',
+    ...(rendered.status === 0 ? [`render: ${join(dir, 'render')}`] : []),
   ], dir, 'ux-review.jsonl', emptyMcp, options)
   const block = findJsonWithKey(turn.reply || turn.text, 'ux_review')?.ux_review
   if (!Array.isArray(block?.fixes)) return { e: {}, reasons: {}, note: 'the UX review returned no ux_review block' }
+  const unrendered = rendered.status === 0 ? '' : ` (the page was not rendered: ${rendered.report.why})`
   const musts = block.fixes.filter((fix: any) => String(fix?.level).toLowerCase() === 'must')
   const depth = block.firstTask?.phone != null ? `; first task ${block.firstTask.phone}px down on the phone` : ''
-  const how = block.rendered ? `rendered (${(block.views ?? []).join(', ')})` : 'not rendered, judged by source order'
+  const how = block.rendered ? `rendered (${(block.views ?? []).join(', ')})` : `not rendered, judged by source order${unrendered}`
   const reason = musts.length
     ? `${musts.length} Must fix(es), ${how}${depth}: ${musts.map((fix: any) => `${fix.row}: ${fix.problem}`).join('; ')}`
     : `No Must fix (${block.fixes.length} Should or Nice), ${how}${depth}`

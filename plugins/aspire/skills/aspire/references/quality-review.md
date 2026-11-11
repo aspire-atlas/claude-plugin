@@ -565,34 +565,27 @@ runs on every page any flow builds, after the English read in the build loop
 launches the two together (**Running agents**, step 4).
 
 **Inputs, and nothing more.** `mode: grade`, `checks: ux`, `target` (the path of the draft page
-file), `reader`, `question`, and `run`, as for the English read. Never the brief, the person's ask,
+file), `reader`, `question`, and `run`, as for the English read, and optionally `render`: a folder
+the caller already rendered the page into (CI and the plugin repository's page eval make one). Never the brief, the person's ask,
 the builder's result packet, its page check, or its findings; ignore them when a launch carries
 them. It calls no Atlas tool, asks nothing, builds no page, and writes no log row.
 
-**Render it.** Use the first renderer the session has:
+**Render it.** Use the first of these the session has:
 
-| Host | Renderer |
-| ---- | -------- |
-| Any session that can run commands and has Node with Playwright (CI, a cloud session, a terminal with it installed) | The renderer script, below |
-| Claude Code with its built-in browser, Cowork, or Claude in Chrome | That browser: open the draft file, then take the three views below by hand |
-| None of these (claude.ai with no code execution) | No render. Judge by source order and say so (`rendered: false`) |
+| What the session has | How the page is rendered |
+| -------------------- | ------------------------ |
+| A `render` folder in the launch | Read it: the screenshots `{view}.png` (the whole page) and `{view}-first.png` (the first screen) for each view, and `render.json` |
+| A browser tool: Claude Code's built-in browser, Chrome in Cowork, or Claude in Chrome | Open the draft file in it and take the three views below yourself, a whole-page and a first-screen look at each |
+| Neither (claude.ai with no browser) | No render. Judge by source order and say so (`rendered: false`) |
 
-The renderer script draws the three views, saves a whole-page and a first-screen screenshot of each,
-presses every button, and writes `render.json`. Run it from a new temporary folder, on a copy of the
-draft:
+Look at every screenshot with the Read tool. `render.json` holds what a screenshot cannot show:
+each view's page height, sideways scroll, where the first task sits (`firstTask.top`, in pixels, and
+`screens`, in screen heights), controls under the tap size, which app controls and "Connect {app}"
+lines show, and what each button did when pressed (`changedPage`, what it `copied`, `navigated`,
+any `errors`, and `why` a control was not pressed). In a browser, find the same things by looking:
+scroll to the first task and note how far down it sits, and try to scroll sideways on the phone.
 
-```bash
-d=$(mktemp -d) && cp {target} "$d/page.html" && node "${CLAUDE_PLUGIN_ROOT}/skills/page-standard/render-page.mjs" "$d/page.html" --out "$d/render"
-```
-
-It exits 0 when it rendered, and 3 when the machine has no Playwright or Chromium: then try the
-next renderer in the table. Look at every screenshot with the Read tool, and read `render.json` for
-what a screenshot cannot show: each view's page height, sideways scroll, where the first task sits
-(`firstTask.top`, in pixels, and `screens`, in screen heights), controls under the tap size, which
-app controls and "Connect {app}" lines show, and what each button did when pressed (`changedPage`,
-what it `copied`, and any `errors`).
-
-**The three views.** A browser by hand takes the same ones:
+**The three views.** A `render` folder holds these; a browser takes the same ones:
 
 1. **Desktop light**: 1280 by 800, light theme, apps as built. The first screen is what R10 reads.
 2. **Phone dark**: 390 wide, dark theme, apps as built.
@@ -600,7 +593,8 @@ what it `copied`, and any `errors`).
    `data-app-missing` line ("Connect Gmail to send these from here") shown (`blocks.md`, **Apps
    never assumed**). A page with neither mark has assumed its apps when it shows an app button.
 
-Then run every button in the desktop view: open, edit, copy, create, save a draft, connect. A button
+Then run every button in the desktop view, folded steps included: open, edit, copy, create, save a
+draft, connect (a `render` folder has already pressed them). A button
 that changes nothing, copies text the reader did not see, or throws an error is a finding. With no
 render, read the page in source order and judge what that order would show, on a 390px phone,
 first.
@@ -649,7 +643,7 @@ by the writing rules in **6**.
     "reader": "{reader}",
     "question": "{code or null}",
     "rendered": true,
-    "renderer": "playwright",
+    "renderer": "browser",
     "views": ["desktop-light", "phone-dark", "no-apps"],
     "firstTask": {"phone": 3300, "desktop": 1450},
     "counts": {"must": 2, "should": 1, "nice": 0},
@@ -665,7 +659,7 @@ by the writing rules in **6**.
 }
 ```
 
-`renderer` is `playwright`, `browser`, or `none`. `rendered: false` sets `views` to `[]` and
+`renderer` is `render-folder` (the caller's `render` input), `browser`, or `none`. `rendered: false` sets `views` to `[]` and
 `firstTask` to `null`, and the fixes come from source order alone. A view the renderer could not
 take is left out of `views`, with the reason in that fix list as a Must on the **Mobile** or
 **Dark mode and access** row.
