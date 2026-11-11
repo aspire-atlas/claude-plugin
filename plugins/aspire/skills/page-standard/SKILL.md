@@ -158,9 +158,9 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
       next in `widen` (more weeks, more platforms, or more accounts, whichever the launch's `scope`
       leaves room for), or `null` when it has no room left; under the minimum, the main thread
       recommends it.
-   2. **Write three short bullets**, each a claim the reader can act on, with the posts,
-      accounts, and views behind it. A bullet on fewer than 3 posts says how few ("from only two
-      posts"). The good and bad examples are in `orchestration.md`, **2**.
+   2. **Write three short bullets**, each a claim the reader can act on, with the posts, accounts,
+      and views behind it. Except on a one-post question, a bullet on fewer than 3 posts says how
+      few ("from only two posts"). The good and bad examples are in `orchestration.md`, **2**.
    3. **Watch the most-viewed video behind each bullet.** With a shell, `ffmpeg`, and the post's
       media from the Atlas read tools, run the 1-second frame scan (section 3; `quality-review.md`,
       4.15) on that video, and check every timecode and on-screen claim the bullet rests on.

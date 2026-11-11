@@ -166,8 +166,9 @@ with two agents (**3**) confirms the storyline of each new page before the agent
    Each extra round is an Adjustments row (**9**); it never repeats the setup reply.
 
 **The minimum pool, by kind of question.** The kinds are section 8's rows of
-`skills/page-standard/SKILL.md`. A pool under its minimum is offered a wider scope in the same
-question: more weeks, more platforms, or more accounts, whichever the run has room for.
+`skills/page-standard/SKILL.md`, except that a question about one named post (O5, P2) takes its own
+row. A pool under its minimum is offered a wider scope in the same question: more weeks, more
+platforms, or more accounts, whichever the run has room for.
 
 | Kind of question | Minimum posts that fit the question |
 | ---------------- | ----------------------------------- |
