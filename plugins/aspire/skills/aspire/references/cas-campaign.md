@@ -247,7 +247,8 @@ Two kinds of record, both keyed by the campaign slug, so a teammate or a schedul
 same campaign.
 
 - **Setup records** are calibrations. They change rarely, and a change goes through the
-  supersede rule with its own confirmation.
+  supersede rule with its own confirmation. Each agent's interactive reader and save choice for a
+  campaign go on `lastrun:{flow}-{slug}` (**Orchestration contract**, **2**, Saved answers).
 - **Working state** is findings, written with `append_insights` under one runKey prefix. A
   change is a new finding, never an edit, so gate moves, slate calls and rate changes need no
   destructive tool.
