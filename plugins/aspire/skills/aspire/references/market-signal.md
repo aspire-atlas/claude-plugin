@@ -132,10 +132,10 @@ Filter path unless noted, `context` on every call, only field paths from the cen
    competitor (its name, its handles, its `spellingVariants` from the `competitor` record).
 2b. **Freshness** (**Page standard**, section 9): `search_creators` on the brand's and the
    competitors' handles, with no wildcard `exclude`, for each channel's `freshness`, and the
-   freshness read (section 9.1) per handle. An unattended run then refreshes the brand's handles
-   without asking, before step 3, and gives competitor handles the freshness line and any
-   behind-pace note only (section 9.5, the unattended row); a relaunch with handles
-   in `approved.refresh` refreshes those, also before step 3, and makes no new offer. An
+   freshness read (section 9.1) per handle. An unattended run refreshes nothing: it gives the
+   brand's and the competitors' handles the freshness line and any behind-pace note only
+   (section 9.5, the unattended row); a relaunch with handles
+   in `approved.refresh` refreshes those before step 3, and makes no new offer. An
    interactive run with `approved.refresh` null works out each handle's pace from the freshness
    read (section 9.4) and offers the refresh, with its time and cost, for each handle behind it,
    holding its findings and delivery until the relaunch. A handle Atlas does not hold is never

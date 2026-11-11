@@ -139,9 +139,10 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
 2. `list_post_search_fields` once. Use only paths it returns.
 2b. Freshness (**Page standard**, section 9): `search_creators` on the linked handles, with no
    wildcard `exclude`, for each channel's `freshness`, and the freshness read (section 9.1) per
-   handle. An unattended run then refreshes every linked handle without asking, before step 3,
-   so steps 3 onward read what the refresh brought in. A relaunch with handles in
-   `approved.refresh` refreshes those, also before step 3, and makes no new offer. An interactive
+   handle. An unattended run refreshes nothing: it gives each handle the freshness line and any
+   behind-pace note only (section 9.5, the unattended row). A relaunch with handles in
+   `approved.refresh` refreshes those before step 3, so steps 3 onward read what the refresh
+   brought in, and makes no new offer. An interactive
    run with `approved.refresh` null works out each handle's pace from the freshness read (section
    9.4) and offers the refresh, with its time and cost, for each handle behind it (section 9.5),
    holding its findings and delivery until the relaunch. The page's source line and the chat
