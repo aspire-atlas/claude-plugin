@@ -114,6 +114,8 @@ Rules:
 - Confirm the batch once before writing, then write all five records.
 - Derive `{slug}` from the campaign name: lowercase, hyphenated, no dates. Show it once so the
   user can recognize it later; never ask them to invent it.
+- An interactive run's reader and save choice go on `lastrun:creator-discovery-{slug}`
+  (**Orchestration contract**, **2**, Saved answers).
 - A teammate re-running setup sees the saved answers and is offered "Keep as saved
   (Recommended)" / "Change" per item. Changes go through `supersede_calibration` with its own
   confirmation.

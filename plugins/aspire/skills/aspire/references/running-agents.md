@@ -143,8 +143,8 @@ team catalog, and how agents render for a lens are in **Recipient lens**.
    own default for the question code, then the flow's saved reader (**Orchestration contract**
    **2**, Saved answers), and say where it came from. When the run has a setup reply
    (**Orchestration contract** **2**), name the reader in its Heard question, with the
-   question's code, instead of asking "For" on its own. Otherwise one `AskUserQuestion`, header "For", in the same call as the
-   flow's first question when there is one. Word it as the guess ("This reads like it's for
+   question's code, instead of asking "For" on its own. Otherwise one `AskUserQuestion`,
+   header "For", in the same call as the flow's first question when there is one. Word it as the guess ("This reads like it's for
    the product review. Should I track it weekly and add a messaging view for PMM?"). Options:
    the guess (Recommended), one or two other lenses from the cues, "Just for our team". Skip
    it when the user named the reader and the decision, when this conversation already

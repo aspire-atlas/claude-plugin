@@ -67,27 +67,28 @@ a chain, add the other end as a second lens by default and say so in the confirm
 
 ## Inferring and confirming (main thread)
 
-1. Read the ask for cues from the catalog, plus any reader, meeting, or date the user names
-   ("for the product review Thursday", "our head of product asked"). A named reader or venue beats a cue.
-2. Pick the primary lens and, where the catalog or a hand-off suggests it, one secondary.
-3. Confirm the guess in one line, never a form. One `AskUserQuestion`, header "For", asked in
+1. **A saved answer comes first.** When the ask names no reader, take the person's own default
+   for the question code, then the flow's saved reader (**Orchestration contract**, **2**, Saved
+   answers, for the records and the order). It replaces the guess in step 4: offer it as the
+   (Recommended) option and say where it came from ("as saved for the weekly report"); with a
+   setup reply, the Heard question carries it instead. A changed reader is kept only through that
+   section's "Remember" question.
+2. Otherwise read the ask for cues from the catalog, plus any reader, meeting, or date the user
+   names ("for the product review Thursday", "our head of product asked"). A named reader or venue
+   beats a cue.
+3. Pick the primary lens and, where the catalog or a hand-off suggests it, one secondary.
+4. Confirm the guess in one line, never a form. One `AskUserQuestion`, header "For", asked in
    the same call as the flow's first question when there is one (the tool takes up to four
    questions). Word it as the guess, for example "This reads like it's for the product
    review. Should I track it weekly and add a messaging view for PMM?" Options: the guess
    (Recommended), one or two alternative lenses from the cues, and "Just for our team". The
    free-text field covers anything else.
-4. Skip the question when the user already named the reader and the decision, when the same
+5. Skip the question when the user already named the reader and the decision, when the same
    conversation already confirmed a lens for the same kind of ask, or when the ask is plainly
    the team's own routine ("run the daily"). Then pass the lens with `confirmed: true` if the
    user named it, `false` otherwise.
-5. **A saved answer comes before the guess.** When the ask names no reader, take the person's
-   own default for the question code, then the flow's saved reader (**Orchestration contract**,
-   **2**, Saved answers, for the records and the order). Offer it as the (Recommended) option and
-   say where it came from ("as the weekly report was last run"); with a setup reply, the Heard
-   question carries it instead. A changed reader is kept only through that section's "Remember"
-   question.
 6. Unattended runs never ask. They use the flow's saved readers (`guideline:readout-audience`,
-   `market-signal:lenses`, or the flow's `{flow}:last-run`), or `team`, and never a person's own
+   `market-signal:lenses`, or the flow's `lastrun:` record), or `team`, and never a person's own
    default.
 
 Never ask who the output is for in plain text, and never ask more than once per request.
