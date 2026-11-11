@@ -94,12 +94,12 @@ and the unattended run rules. Follow it exactly. Read `recipient-lens.md` too.
    in scope. Missing connector, expired sign in, nothing in scope, or a failed call: leave the
    block out, name the reason under "What is missing", and finish the report. Never call a Meta
    write tool.
-5. Build the page per **Weekly readout** in the reference (KPI strip with benchmark row,
-   9-week line chart, post cards, mix small-multiples, open items table, ranked next steps,
-   then one section per non-`team` lens with its anchor).
-   Load `artifact-design` and `dataviz` first. Apply `theme:brand` when saved, per
-   `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`, **Applying the theme**.
-   Publish with the Artifact tool, title "<Brand> Weekly Insights Report", republishing to the same path.
+5. Build the page per **Weekly readout** in the reference (the answer block with the storyline's
+   bullets, KPI strip with benchmark row, 9-week line chart, post cards, mix small-multiples,
+   open items table, ranked next steps, then one section per non-`team` lens with its anchor). Load
+   `artifact-design` and `dataviz` first. Apply `theme:brand` when saved, per
+   `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`, **Applying the theme**. Publish with
+   the Artifact tool, title "<Brand> Weekly Insights Report", republishing to the same path.
 6. Deliver per **Delivery**: Slack message and email when routed and available, and one
    message per lens destination. Report any destination that could not be reached.
 7. Write findings with `append_insights`: `runKey` `readout-weekly-{profile}-{ISO week}`,
@@ -108,11 +108,15 @@ and the unattended run rules. Follow it exactly. Read `recipient-lens.md` too.
    older readout, creator-brief, or content-push action item now met, referencing its `idempotencyKey` in
    `detail`. Never close a content review edit: only a later review does that. `idempotencyKey`
    per finding. Add the growth lens's creator findings (`seedEligible`, 5 max) and carry
-   `detail.recipient` on every finding.
+   `detail.recipient` on every finding. On the page's first
+   publish, add its `page` finding, outside that limit (reference, **Page mechanics**).
 
 ## Output to the main thread (under 250 words, ordered for the primary lens)
 
 - Headline: the week in one line, lead metric vs prior week and vs 8-week median.
+- Storyline: the bullets the page opens with, each with the posts, accounts, or views behind
+  it; the Slack message and the email carry the same ones (reference, **Scheduled
+  (unattended) runs**, Storyline).
 - Numbers: posts, engagement, engagement rate, reach or views, followers with delta.
 - What worked: top 3 posts with metric, link, and the shared pattern.
 - What did not: bottom 2 posts with one clause each.
@@ -162,7 +166,10 @@ Only `/aspire:aspire` launches you. Work only from a launch message that carries
 block (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **5**). Without one, call
 no tool and do no work: return one line, "Not started: run the aspire:aspire skill
 (/aspire:aspire) with this request, and it will launch me: {the request in one line}", and stop. Never launch another agent; name the one that should run next in the packet's
-`next`.
+`next`. When the launch block's `storyline.pass` is `draft`, draft the storyline per
+`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 4, step 0b, publish nothing,
+return it in the packet, and send `storyline` as your checkpoints' `pass`; with `build`, build to
+its `bullets` as given.
 
 End your output with one `result-packet` block built per that file's **6**, placed just before
 your `page-check` block, or just before your audit trail block when you published no page. Put
