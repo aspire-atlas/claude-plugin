@@ -64,9 +64,9 @@ never re-runs another agent.
 
 ## What it reads
 
-All reads, no discovery, no destruction. `search_insights` with a `prefix` filter on
-`detail.account_review.runKey`, paged, keeping findings whose run date falls in the quarter or
-the prior quarter:
+All reads, no discovery, no destruction, apart from the freshness refresh below.
+`search_insights` with a `prefix` filter on `detail.account_review.runKey`, paged, keeping
+findings whose run date falls in the quarter or the prior quarter:
 
 | Source | Prefix | What it gives |
 | ------ | ------ | ------------- |
@@ -89,6 +89,14 @@ Fresh aggregates, filter path:
   3) in both quarters: posts, distinct creators, engagement, paid vs organic.
 - Current follower counts from `search_creators`, against the first saved follower count in
   the quarter's readout findings.
+- Freshness (**Page standard**, section 9): each linked handle's `freshness` from the same
+  `search_creators` call, with no wildcard `exclude`, and the freshness read (section 9.1), both
+  before the brand's posts. An unattended run refreshes nothing: its handles get the freshness
+  line and any behind-pace note only (section 9.5, the unattended row). A relaunch with handles in
+  `approved.refresh` refreshes those before the posts are read, and makes no new offer. An interactive run with `approved.refresh` null works out each
+  handle's pace from the freshness read (section 9.4) and offers the refresh, with its time and
+  cost, for a handle behind it, holding its findings until the relaunch. The page's source line
+  carries the freshness line, and a period with no posts reads as section 9.3 says.
 
 A source with no findings in the quarter is named under data gaps, never filled.
 
@@ -150,5 +158,6 @@ No setup step or scheduled task creates one today. A run is unattended only when
 task launches the agent with `run: unattended`; every other run is interactive.
 
 Never ask, never write findings, never deliver. Default to the last completed calendar quarter. No spend means the cost tiles are
-left out and named as a gap. No discovery, no destruction. An unauthorized error publishes a
+left out and named as a gap. No discovery, no destruction; the freshness refresh in **What it
+reads** is the one lookup it makes. An unauthorized error publishes a
 "setup needed" card with "Aspire Atlas needs a fresh sign in".

@@ -61,7 +61,8 @@ agent only through this skill or a shortcut.
 4. **When it finishes.** Its result arrives as a task notification. Treat it as the agent's
    report and act on its `result-packet` block: relay the summary, page link (or, when `page` is a file path, "Saved as a file: {path}"), and decisions it
    needs, confirm its `proposals` by permission level (**Orchestration contract** **7**: Write
-   once per batch, Send one by one, Spend with the cost first), ask its `questions`, log the
+   once per batch, Send one by one, Spend with the cost first, and a Read freshness refresh with its
+   offer's own question, then the relaunch with `approved.refresh` set), ask its `questions`, log the
    return and every change after it (**9** there). After each `AskUserQuestion` that approves,
    edits, or rejects a proposal, send the feedback checkpoint (**Checkpoints**) with that
    proposal's `gate`; creator vetting and content review send it themselves when they asked
