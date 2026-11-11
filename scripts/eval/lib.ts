@@ -420,8 +420,14 @@ export function fill(template: string, values: Record<string, string>): string {
 
 // ---------------------------------------------------------------- CI: which questions a change reruns, and the PR comment
 
-/** The paths CI watches. A change outside them reruns nothing. */
-export const EVAL_PATHS = ['plugins/aspire/agents/', 'plugins/aspire/skills/aspire/references/']
+/** The paths CI watches: the agents, the flow files, the router, and the page standard every page is built by. */
+export const EVAL_PATHS = [
+  'plugins/aspire/agents/', 'plugins/aspire/skills/aspire/references/', 'plugins/aspire/skills/aspire/SKILL.md',
+  'plugins/aspire/skills/page-standard/',
+]
+
+/** A `sharedPaths` entry ending in "/" covers every file under it. */
+const coveredBy = (path: string, entry: string) => (entry.endsWith('/') ? path.startsWith(entry) : path === entry)
 
 export type QuestionPaths = { code: string; paths?: string[] }
 
@@ -431,7 +437,7 @@ export type QuestionPaths = { code: string; paths?: string[] }
  */
 export function codesForChanges(changed: string[], questions: QuestionPaths[], sharedPaths: string[]): { watched: string[]; codes: string[] } {
   const watched = changed.filter(path => EVAL_PATHS.some(prefix => path.startsWith(prefix)))
-  if (watched.some(path => sharedPaths.includes(path))) return { watched, codes: questions.map(question => question.code) }
+  if (watched.some(path => sharedPaths.some(entry => coveredBy(path, entry)))) return { watched, codes: questions.map(question => question.code) }
   const codes = questions.filter(question => (question.paths ?? []).some(path => watched.includes(path))).map(question => question.code)
   return { watched, codes }
 }
@@ -485,6 +491,26 @@ export function renderComment(results: RunResults, eChecks: CheckDef[], names: R
 
 export function renderSkipped(reason: string): string {
   return `${COMMENT_MARKER}\n## Page eval\n\nskipped: ${reason}\n`
+}
+
+/** The comment when the run stopped before any question finished, so nothing was checked. */
+export function renderStopped(runUrl: string | null): string {
+  return `${COMMENT_MARKER}\n## Page eval\n\n**The run stopped before any question finished**, so nothing was checked. ` +
+    `The job fails until a run completes.${runUrl ? ` Run: ${runUrl}` : ''}\n`
+}
+
+/** Check names: the E names from e-checks.json, and the R names from the reader standard's own table. */
+export function checkNames(eChecks: { id: string; name: string }[], readerStandard: string): Record<string, string> {
+  const names: Record<string, string> = Object.fromEntries(eChecks.map(check => [check.id, check.name]))
+  for (const match of readerStandard.matchAll(/^\| (R\d+) \| ([^|]+) \|/gm)) names[match[1]] = match[2].trim()
+  return names
+}
+
+/** Remove a test title prefix ("CI eval · ") from a page, so graders see the title the flow would have written. */
+export function stripTitlePrefix(html: string, prefix: string | null): string {
+  if (!prefix) return html
+  const escaped = prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return html.replace(new RegExp(`${escaped}\\s*[·:|-]?\\s*`, 'g'), '')
 }
 
 /** The nightly run's Slack message: one line per question, regressions named. Plain text, no page links. */

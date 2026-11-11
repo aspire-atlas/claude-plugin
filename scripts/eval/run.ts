@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import {
   ATLAS_READS, ATLAS_WRITES, HARNESS_VERSION, barChecks, compareRuns, extractPageCheckScript, fill, findJsonWithKey,
-  findPage, forBaseline, normalizeResult, parsePageCheck, parseStream, renderQuestion, renderRun, rIds, stripDataUris,
+  findPage, forBaseline, normalizeResult, checkNames as namesFrom, stripTitlePrefix, parsePageCheck, parseStream, renderQuestion, renderRun, rIds, stripDataUris,
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength,
   type CheckDef, type PageChecks, type QuestionResult, type Result, type RunResults, type Turn,
 } from './lib'
@@ -253,7 +253,8 @@ async function checkPage(source: string, role: 'new' | 'approved', question: Que
   const dir = join(qDir, role)
   mkdirSync(dir, { recursive: true })
   const page = join(dir, 'page.html')
-  writeFileSync(page, stripDataUris(readFileSync(source, 'utf8')))
+  // The CI title prefix is the harness's, not the flow's: graders see the page as the flow would have titled it.
+  writeFileSync(page, stripTitlePrefix(stripDataUris(readFileSync(source, 'utf8')), role === 'new' ? options.titlePrefix : null))
   const [s, g, j] = await Promise.all([
     scripted(page, dir),
     grade(page, question, dir, emptyMcp, options),
@@ -478,13 +479,8 @@ async function cleanup(links: string[], runDir: string, emptyMcp: string) {
 
 // ---------------------------------------------------------------- main
 
-function checkNames(eChecks: any[]): Record<string, string> {
-  const names: Record<string, string> = Object.fromEntries(eChecks.map(check => [check.id, check.name]))
-  // R names come from the reader standard's own table, so a renamed or new check shows as the plugin has it.
-  const standard = readFileSync(join(PLUGIN, 'skills/aspire/references/reader-standard.md'), 'utf8')
-  for (const match of standard.matchAll(/^\| (R\d+) \| ([^|]+) \|/gm)) names[match[1]] = match[2].trim()
-  return names
-}
+// R names come from the reader standard's own table, so a renamed or new check shows as the plugin has it.
+const checkNames = (eChecks: any[]) => namesFrom(eChecks, readFileSync(join(PLUGIN, 'skills/aspire/references/reader-standard.md'), 'utf8'))
 
 function storeBaseline(results: RunResults, date: string, eChecks: CheckDef[], names: Record<string, string>) {
   const dir = join(BASELINES, date)
@@ -544,6 +540,11 @@ async function main() {
 
   const runDir = options.out ?? join(RUNS, stamp())
   mkdirSync(runDir, { recursive: true })
+  // Written before any question runs, so a run that stops part way still says where its approved column came from.
+  if (options.approvedFrom) {
+    baselineCache = baselineFor(options.approvedFrom)
+    writeFileSync(join(runDir, 'approved-from.txt'), `${baselineCache?.name ?? 'none'}\n`)
+  }
   // The connector files sit outside the checkout and are removed when the run ends: one holds the token.
   const secrets = join(tmpdir(), `eval-pages-${process.pid}`)
   mkdirSync(secrets, { recursive: true, mode: 0o700 })
@@ -574,7 +575,6 @@ async function main() {
     rmSync(secrets, { recursive: true, force: true })
   }
   writeFileSync(join(runDir, 'table.md'), renderRun(results, eChecks, names))
-  if (options.approvedFrom) writeFileSync(join(runDir, 'approved-from.txt'), `${baselineCache?.name ?? 'none'}\n`)
   console.error(`Run kept in ${runDir} (table.md is the table to paste; the folder is not committed).`)
   if (options.baseline) storeBaseline(results, options.baseline, eChecks, names)
   if (results.questions.some(question => !question.new)) process.exit(1)

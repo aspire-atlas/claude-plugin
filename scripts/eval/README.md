@@ -143,20 +143,25 @@ The `eval` job in `.github/workflows/validate.yml` runs after the static checks 
 
 **On a pull request** it works out which questions the change touches and reruns only those:
 
-- A changed file under `plugins/aspire/agents/` or `plugins/aspire/skills/aspire/references/` that a
+- It watches `plugins/aspire/agents/`, `plugins/aspire/skills/aspire/references/`, the router
+  `plugins/aspire/skills/aspire/SKILL.md` and `plugins/aspire/skills/page-standard/`. A changed file that a
   question lists in its `paths` (`questions.json`) reruns that question. A changed file in `sharedPaths`
-  (one every flow reads, such as the reader standard) reruns all five. Anything else reruns nothing, and the
-  job passes without a comment.
-- It runs `bun run eval:pages --only <codes> --approved-from newest --title-prefix "CI eval" --cleanup`.
+  (one every flow reads, such as the reader standard or anything under the page standard; an entry ending in
+  `/` covers its folder) reruns all five. Anything else reruns nothing, and the job passes; when the PR
+  already has an eval comment, it is edited to say nothing was rerun.
+- It runs `bun run eval:pages --only <codes> --approved-from newest --title-prefix "CI eval" --cleanup`. The
+  title prefix is removed from the new page before it is graded, so it cannot fail a check.
 - It posts the table as one PR comment, edited in place on later pushes, and in the job summary. The comment
   opens with the regressions, then the table for each question, with the transcript size, the confirmation
   rounds and the page link (none when the run saved the page as a file).
 - It fails when a check the approved page passes now fails on the new page (a **regression**), and only
   then. A question that published no page regresses on every check its approved page passes. A check that
   did not run, or one the approved page fails too, never fails the job. It also fails when the run stopped
-  before any question finished, since nothing was checked.
+  before any question finished, since nothing was checked, and the comment says so.
 - The `skip-eval` label skips the rerun. The PR body says why on a line `skip-eval: <reason>`; the job posts
   "skipped: <reason>", and fails when the line is missing. Use it for a docs-only or allowlisted change.
+  Adding the label does not start a run: push again, or use **Re-run jobs** on the eval job, which reads the
+  labels and body as they are then. A push cancels the eval still running for the PR.
 
 **Nightly** at 07:17 UTC it reruns all five questions on `develop` and posts one line per question to the Atlas
 engineering Slack channel, with any regression named. A schedule runs from `main`'s copy of the workflow, so

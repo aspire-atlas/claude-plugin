@@ -40,6 +40,8 @@
   },
   "defaultReply": "Yes, that is right. Go ahead with what you proposed and your recommended options. Save nothing to Atlas and send nothing.",
   "sharedPaths": [
+    "plugins/aspire/skills/aspire/SKILL.md",
+    "plugins/aspire/skills/page-standard/",
     "plugins/aspire/skills/aspire/references/artifact-standard.md",
     "plugins/aspire/skills/aspire/references/reader-standard.md",
     "plugins/aspire/skills/aspire/references/orchestration.md",

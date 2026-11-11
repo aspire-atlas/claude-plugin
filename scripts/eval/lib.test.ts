@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   ATLAS_READS, ATLAS_WRITES, barChecks, compareRuns, extractPageCheckScript, fencedBlocks, fill, findJsonWithKey,
-  findPage, forBaseline, normalizeResult, codesForChanges, regressions, renderComment, renderSkipped, renderSlack, COMMENT_MARKER, parsePageCheck, parseStream, renderRun, rIds, rResult, stripDataUris,
+  findPage, forBaseline, normalizeResult, codesForChanges, regressions, renderComment, renderSkipped, renderSlack, COMMENT_MARKER, renderStopped, stripTitlePrefix, checkNames, parsePageCheck, parseStream, renderRun, rIds, rResult, stripDataUris,
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, type PageChecks, type QuestionResult, type RunResults,
 } from './lib'
 
@@ -210,6 +210,10 @@ test('a pull request reruns the questions its changed agents and flow files answ
   // A watched file no question answers reruns nothing; a file every flow reads reruns all five.
   expect(pick(['plugins/aspire/agents/atlas-shops.md'])).toEqual([])
   expect(pick(['plugins/aspire/skills/aspire/references/reader-standard.md'])).toEqual(['I4', 'I11', 'O1', 'O3', 'I1'])
+  // The page standard and the router shape every page, so a change to either reruns all five.
+  expect(pick(['plugins/aspire/skills/page-standard/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O3', 'I1'])
+  expect(pick(['plugins/aspire/skills/aspire/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O3', 'I1'])
+  expect(pick(['plugins/aspire/skills/org-admin/SKILL.md'])).toEqual([])
   // Every path a question names exists, so a renamed agent cannot silently stop rerunning its question.
   for (const path of [...config.questions.flatMap((q: any) => q.paths), ...config.sharedPaths]) {
     expect(existsSync(join(ROOT, path))).toBe(true)
@@ -236,6 +240,8 @@ test('the PR comment carries the marker, the regressions, and the table, and a s
   expect(comment).toContain('Confirmation rounds: 2')
   expect(renderComment(run({ approved: null }), E_CHECKS, {}, null, null)).toContain('No approved results for I4')
   expect(renderSkipped('docs only')).toBe(`${COMMENT_MARKER}\n## Page eval\n\nskipped: docs only\n`)
+  expect(renderStopped(null)).toContain('stopped before any question finished')
+  expect(renderStopped(null).startsWith(COMMENT_MARKER)).toBe(true)
 })
 
 test('the Slack message names each question and its regressions, and no page link', () => {
@@ -243,4 +249,15 @@ test('the Slack message names each question and its regressions, and no page lin
   expect(text).toContain('1 regression')
   expect(text).toContain('• I4 Holiday creator plan: 2/3 checks pass; regressed R3')
   expect(text).not.toContain('claude.ai')
+})
+
+test('the CI title prefix is removed before grading, and nothing else is', () => {
+  const page = '<title>CI eval · Holiday plan</title><h1>CI eval: Holiday plan</h1><p>CI is fine here.</p>'
+  expect(stripTitlePrefix(page, 'CI eval')).toBe('<title>Holiday plan</title><h1>Holiday plan</h1><p>CI is fine here.</p>')
+  expect(stripTitlePrefix(page, null)).toBe(page)
+})
+
+test('check names come from e-checks and the reader standard table', () => {
+  const names = checkNames([{ id: 'E1', name: 'Answers the real question' }], '| R1 | Reader and scope | x |\n| R13 | Required metrics | y |')
+  expect(names).toEqual({ E1: 'Answers the real question', R1: 'Reader and scope', R13: 'Required metrics' })
 })

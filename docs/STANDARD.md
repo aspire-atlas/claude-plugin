@@ -127,8 +127,9 @@ How to read the comment:
 4. A `fail` that the approved page also fails is not a regression. It is still a finding: the check has
    drifted or the approved page predates the rule.
 
-The comment is edited in place on every push. `skipped: <reason>` means the PR carries the `skip-eval` label;
-the reason is the PR body's `skip-eval:` line.
+The comment is edited in place on every push. `skipped: <reason>` means the PR carries the `skip-eval` label
+(the reason is the PR body's `skip-eval:` line), or that nothing the questions answer differs from the base
+branch any more.
 
 ## How to write a rule
 
