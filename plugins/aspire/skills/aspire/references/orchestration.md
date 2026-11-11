@@ -37,8 +37,9 @@ actions page and its hourly run. That run is one more caller of this contract.
 ## 1. Routing (every request, in this order)
 
 1. **Who asks, and who acts.** The **persona** is who asks; the **reader** is who acts on the
-   answer. Read the persona from the person's own `user:` record (**Onboarding questions**,
-   questions 2 and 11) by its `role`: creators, influencers, partnerships, ambassadors, affiliates,
+   answer. Read the persona by `role` from the person's own `user:usr-{id}` record
+   (`get_status` names it as `firstRun.role`), else from their **Onboarding questions** record
+   (question 2 or 11): creators, influencers, partnerships, ambassadors, affiliates,
    or gifting is `influencer-manager`; paid, performance, ads, media, or growth is
    `paid-social-manager`; social, community, content, or organic is `organic-social-manager`.
    With no record, or a role that fits none, ask it in the setup reply (**2**), and offer to keep
@@ -124,8 +125,10 @@ The reader, scope, and save choice are kept in two places, by whom the answer is
   without `atlas-` (`lastrun:weekly-insights-report`). When `get_status` shows more than one
   Profile in the organization, add `-{profile slug}`; for a flow that runs per campaign or
   program, add `-{campaign or program slug}` last (`lastrun:creator-discovery-acme-spring-drop`).
-  A key's part after `lastrun:` holds at most 48 lowercase letters, digits, and hyphens: cut the
-  campaign or program slug from its end to fit, never the flow or Profile part. Records are
+  A key's part after `lastrun:` holds at most 48 lowercase letters, digits, and hyphens. When it
+  runs longer, keep its first 43 characters and add `-` and the first 4 hex characters of the
+  part's SHA-1 (`printf %s '{part}' | shasum | cut -c1-4`), so two long slugs that share a start
+  still get their own keys. Records are
   organization-wide, so every teammate and every scheduled run reads the same answer. Detail:
   `{concern: "preference", appliesTo: ["{flow}"], body: "reader: {lens}[, {lens}]; scope:
   {channels}, {window}; save: page|atlas; at: {UTC time from the shell clock}"}`.
@@ -137,7 +140,8 @@ The reader, scope, and save choice are kept in two places, by whom the answer is
 **Precedence.** For each answer, the first that holds wins: what this ask says; the person's
 `defaultReader` for the question code (reader only, interactive runs only); the flow's saved
 answer; the code's default reader (**3**) or the defaults above. An unattended run reads only the
-flow's saved answers, then the defaults.
+flow's saved reader and scope, then the defaults, and never takes a `lastrun:` record's save
+choice as approval: it saves only under the standing approval its flow's setup gave (**7**).
 
 **Pre-filled, with the source.** The Heard question states each pre-filled answer and where it
 came from, so the person confirms rather than answers: "Reader: leadership, as saved for the
@@ -159,18 +163,20 @@ Options:
 - "For everyone running {flow} (Recommended)": writes the flow's record.
 - "Just for me": writes the reader to the person's `defaultReader` for this question code. Offer it
   only when the run has a question code.
-- "Just this run": writes nothing.
+- "Just this run": writes nothing, not even a role.
 
-When the person's own record has no role and "Just for me" is offered, or a persona was picked,
-ask the role in the same call (header "Role", options "Influencer manager", "Paid social manager",
-"Organic social manager", and the free text field for anything else), unless the Heard answer
-settled it. Write once, after the answers and before the launch:
+When the person's own record has no role, the first two options also save their role, and each
+says so in its description ("and your role, paid social manager"). Take the role from the persona
+the Heard question settled; with none, ask it in the same call (header "Role", options
+"Influencer manager", "Paid social manager", "Organic social manager", and the free text field
+for anything else). Write once, after the answers and before the launch:
 
 - The flow's record: `append_calibration` with kind `guideline`, the key, statement "{flow}:
   {reader}, {scope}, {save}" (under 280 characters), `provenance: "interview"`, and the detail
   above. When the key exists, `supersede_calibration` with `ifVersion` set to the version read
   and a body that keeps every part the person did not change.
-- The person's record, for "Just for me" and for a role picked here or in Heard: when it exists,
+- The person's record, for "Just for me", and for a role saved with either of the first two
+  options: when it exists,
   `supersede_calibration` with kind `user_fact`, their key, `ifVersion` set to the version read,
   the record's `statement`, `provenance: "interview"`, and a `detail` that carries the record's
   whole current detail (`role`, `roleOther` when present, and every other preference) with only

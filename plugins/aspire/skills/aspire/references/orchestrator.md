@@ -138,10 +138,10 @@ findings, and what people do on the page is page data.
 | `orchestrator:scope` | `policy` | What it watches (X1) | `{area: "scope", body: "<scope object, json.dumps>"}` |
 | `orchestrator:cadence` | `policy` | When it runs (X2) | `{area: "cadence", cadence: "orchestrator", body: "every <n>h <HH>-<HH> <days>, <IANA timezone>"}`, for example `every 1h 08-19 Mon-Fri, America/New_York` |
 | `orchestrator:routing` | `policy` | Slack channel and the people it messages (X3, X4) | `{area: "routing", body: "page; slack:#channel; dm:a@x.com,b@x.com"}` |
-
-`orchestrator:scope` is the orchestrator's saved scope. An interactive run's reader and save
-choice go on `lastrun:campaign-orchestrator` (**Orchestration contract**, **2**, Saved answers).
 | `orchestrator:execution` | `policy` | What an approval on the page lets the hourly run do (X5) | `{area: "execution", body: "<execution object, json.dumps>"}` |
+
+`orchestrator:scope` is the orchestrator's saved scope. An interactive run's reader goes on
+`lastrun:campaign-orchestrator` (**Orchestration contract**, **2**, Saved answers).
 
 The scope object: `{"schema": 1, "programs": "all", "campaigns": "all", "discovery": "all",
 "reports": true}`. Each of `programs`, `campaigns`, and `discovery` is `"all"` or a list of slugs;

@@ -36,10 +36,11 @@ Before anything, read this file (**Setup**, **Getting the list**,
 
 ### Setup
 
-V1 to V4, one at a time, one batch confirmation. A campaign's criteria need no setup. An
+V1 to V4, one at a time, one batch confirmation. A campaign's criteria need no setup. Every
+question is asked exactly as worded in the reference, at most four per call (**Guardrails**). An
 interactive run's reader and save choice go on `lastrun:creator-vetting`, or
-`lastrun:creator-vetting-{slug}` for a campaign (**Orchestration contract**, **2**, Saved answers). Every
-question is asked exactly as worded in the reference, at most four per call (**Guardrails**).
+`lastrun:creator-vetting-{slug}` for a campaign (**Orchestration contract**, **2**, Saved
+answers).
 
 ### Run
 

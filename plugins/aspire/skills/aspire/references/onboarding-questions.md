@@ -57,8 +57,8 @@ team?" Options: 1) Yes, continue; 2) Finish setup now.
 Question 2's `user:primary-contact` and question 11's `user:{slug}` records describe people for
 the organization. They never carry `preferences`: a person's own defaults (the reader per question
 code, how to address them, the cards choice) live on their own `user:usr-{id}` record, which only
-their own session writes (**Orchestration contract**, **2**, Saved answers). Flows read these
-records and never write another person's key.
+their own session writes (**Orchestration contract**, **2**, Saved answers). Outside questions 2
+and 11, flows only read these records and never write another person's key.
 
 ## Web findings before writing
 
