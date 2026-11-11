@@ -751,7 +751,10 @@ account.
   rights row, score row, quote) carries `data-account="{network}:{handle}"`, so R14 looks for that
   account's entry. A post or quote cited only as mention evidence carries `data-mention` instead,
   and its authors share one `data-fresh="mentions"` entry: "posts by {n} other creators: newest
-  post {date}", with `data-newest` and no fetch time.
+  post {date}", with `data-newest` and no fetch time. Write {n} in digits, or as a word up to
+  twelve ("one other creator"). A mention post's platform comes from its `data-post` link, or
+  from `data-mention="{network}"` on a quote with no link. When the scope counts a platform only
+  through other creators' posts, the mentions entry lists it: `data-platforms="tiktok"`.
 - With more than ten entries, put all but the brand's own and any behind their pace in a
   `details` element inside the source line.
 - One `data-fresh="{network}:{handle}"` entry per account, matching the `data-account` the page

@@ -148,9 +148,9 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    returned), so the call starts no discovery. Refresh the way section 9.6 says, then re-run the
    flow's own searches. Compute every post-derived figure over the flow's own window (its days or
    post count), never over only the 10 recent posts a `lookup_creators` re-read carries. Skip any
-   creator already refreshed in this run
-   (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/account-resolution.md`). Scheduled runs make
-   this refresh too, except in a flow that rules out lookups.
+   creator already refreshed in this run, and any whose 9.5 offer was declined or is still waiting
+   for an answer (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/account-resolution.md`). Scheduled
+   runs make this refresh too, except in a flow that rules out lookups.
 
    **2a. Count the metrics before building**, after any refresh in step 2, since a refresh can
    fill a gap. Take the posts the page will cite and count how many carry each required metric of
@@ -265,7 +265,7 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   instead, and the source line then holds one `data-fresh="mentions"` entry. The scope's
   `data-accounts` lists every subject account whose figures the page shows, totals included, and
   at least the brand's own handles when the scope reports a platform (posts, "no posts" or "no
-  data"); a reported platform with no named account fails R14 unless a mentions entry covers it.
+  data"); a reported platform with no named account fails R14 unless mention evidence on that platform covers it (`blocks.md`, 3.19).
   The source line holds one `data-fresh` entry per account, same value (`blocks.md`, 3.19):
   `data-newest` the newest post's date or `none`, and `data-fetched` the last fetch's date, `none`,
   or `unknown`, or, with no `freshness` on record, `data-changed` ("last changed"). The entry shows
@@ -450,15 +450,15 @@ than 3 fall there. It is **behind** when its newest held post is older than twic
 Atlas has not fetched it in the last 24 hours; with `lastFetchedAt` null or `freshness` absent,
 treat it as not fetched. An account fetched in the last 24 hours is not behind: it has stopped
 posting, and the page says so ("@x has not posted since Nov 2; it usually posts every 2 days"). An
-account whose freshness read returns fewer than 2 posts has no pace.
+account with fewer than 2 posts in its freshness read has no pace; it is behind unless fetched in 24 hours.
 
 **9.5 When to refresh.** One refresh per handle per run, whichever row asks for it:
 
 | Run | What is refreshed | Asked first? |
 | --- | ----------------- | ------------ |
-| The user named the handle (handle mode, the creator profile) | That handle when it is not current. It is current only when Atlas holds the account and `lastFetchedAt` is under 24 hours old; with `lastFetchedAt` null or `freshness` absent, when its newest post (`newestPostAt`, or the newest post the searches return) is. No account record, no posts, or an older time is stale, so an account that posts less than daily is refreshed, as intended. The flow's reference resolves it | No: naming the handle approved it |
+| The user named the handle (handle mode, the creator profile) | That handle when it is not current. It is current only when Atlas holds the account and `lastFetchedAt` is under 24 hours old; with `lastFetchedAt` null or `freshness` absent, when its newest post (`newestPostAt`, or the newest post the searches return) is. No account record, no posts, or an older time is stale, so an account that posts less than daily is refreshed, as intended. A handle with no account record is the flow's reference to resolve (account resolution), never a 9.6 refresh | No: naming the handle approved it |
 | Interactive, any other subject account | Each account behind its pace | Yes |
-| Unattended (a scheduled run) | Before reading, the brand's own handles and the saved competitors (`competitor` records) the page reads, whether or not they are behind. Other accounts get the freshness line only | No, and it never asks |
+| Unattended (a scheduled run) | Before reading, the brand's own handles the page reads, whether or not they are behind. Saved competitors and other accounts get the freshness line and behind-pace notes only, since a refresh's new posts count against the customer's credits and nobody approved them | No, and it never asks |
 | The page's final shortlist | As section 4, step 2 | No |
 | A flow whose reference or agent file rules out lookups (the content library, the organization dashboard, and every agent whose file says to read only what Atlas holds) | Nothing; the freshness line and behind-pace notes only | Never |
 
@@ -479,7 +479,7 @@ only then writes and delivers, so the first pass never trips a flow's duplicate-
 **9.6 How to refresh.** Call `lookup_creators` with `forceRefresh: true`, `entityKind: "account"`,
 the network as `schema`, the handle as `identifier`, and the run's own `asOrganizationId` and
 `asProfileId`, up to 100 handles per call. Refresh only accounts Atlas already holds, so the call
-starts no discovery.
+starts no discovery; a named handle Atlas does not hold is the flow's to resolve (9.5, first row).
 
 - The first response carries what Atlas already held. Re-read the same items with `lookup_creators`
   without `forceRefresh` about every 15 seconds, up to roughly 3 minutes.

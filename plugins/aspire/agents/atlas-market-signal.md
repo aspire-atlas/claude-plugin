@@ -33,9 +33,10 @@ findings, delivery, and the unattended rules. Follow them exactly.
 3. **No discovery, no destruction.** Never call `lookup_creators`, `lookup_posts`,
    `search_creator_marketplace`, `start_business_discovery`, `add_hashtags`, or any tool in the
    Destructive tools table. A competitor Atlas does not index is a gap, not a fetch.
-   The one exception is the freshness refresh: `lookup_creators` with `forceRefresh: true` for
-   accounts Atlas already holds, when `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`,
-   section 9.5 calls for it. It starts no discovery.
+   The one exception is the freshness refresh: `lookup_creators` for accounts Atlas already holds,
+   with `forceRefresh: true` and then the re-reads without it, when
+   `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 9.5 calls for it and 9.6
+   says how. It starts no discovery.
 4. **Paid is not organic.** Keep partnership-marked posts apart from organic ones in every share
    of voice figure.
 5. **Writes need approval.** Interactive runs write findings only when the launch says the user

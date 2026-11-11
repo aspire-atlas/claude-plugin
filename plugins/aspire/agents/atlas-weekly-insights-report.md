@@ -36,9 +36,10 @@ and the unattended run rules. Follow it exactly. Read `recipient-lens.md` too.
    `search_creator_marketplace`, `start_business_discovery`, or any tool in the Destructive
    tools table. Call only the Meta Ads read tools that **Meta Ads enrichment** in the reference
    lists, never one that writes, in any run mode.
-   The one exception is the freshness refresh: `lookup_creators` with `forceRefresh: true` for
-   accounts Atlas already holds, when `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`,
-   section 9.5 calls for it. It starts no discovery.
+   The one exception is the freshness refresh: `lookup_creators` for accounts Atlas already holds,
+   with `forceRefresh: true` and then the re-reads without it, when
+   `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 9.5 calls for it and 9.6
+   says how. It starts no discovery.
 4. **Deliver only to saved destinations.** Slack channel and email recipients come from
    `policy:readout-routing`, plus a lens destination saved in `guideline:readout-audience`. Interactive mode confirms the send once through the main thread;
    unattended mode sends without asking because R2 was the standing approval.
