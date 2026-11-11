@@ -427,13 +427,14 @@ drafts the three bullets from the window's posts, each with the posts, accounts,
 and the page opens with them in the answer block, under the headline. The chat summary, the Slack
 message, and the email carry the same three bullets, in the same order and wording. A window under
 the row's minimum (10 posts for what landed and why) still publishes, and the bullet it weakens says
-how few posts it rests on. A window with no posts gives "No posts landed {window}." as the first
-bullet, then up to two from the flags or the older posts still gaining engagement, each with its
-evidence; with nothing there either, that one bullet is the storyline. Where the run cannot watch a
-video or check a product fact, the method says so (`skills/page-standard/SKILL.md`, section 4, step
-0b). A readout's window is fixed, on the first interactive run too: its draft names only more
-platforms or accounts in `widen`, or `null`, a readout Widen never carries dates, and a window under
-the minimum builds with the thin bullet saying so.
+how few posts it rests on. A window with no posts, on a first run's `draft` pass too, gives "No
+posts landed {window}." as the first bullet, then up to two from the flags or the older posts still
+gaining engagement, each with its evidence; with nothing there either, that one bullet is the
+storyline. Where the run cannot watch a video or check a product fact, the method says so
+(`skills/page-standard/SKILL.md`, section 4, step 0b). A readout's window is fixed, on the first
+interactive run too: its draft names only more platforms or accounts in `widen`, or `null`, a
+readout Widen never carries dates, and a window under the minimum builds with the thin bullet saying
+so.
 
 ## Main thread: the run and the launch pulse
 
@@ -444,10 +445,12 @@ week)", "Daily (yesterday)", "Both now", "Change setup". Then launch `atlas-week
 and/or `atlas-daily-insights-report` with: tool prefix, `profile_id`, `profile_slug`, linked handles
 and networks, run mode `interactive`, `recipient` (the lens SKILL.md **Reading the ask** confirmed,
 or the saved R6 lenses when it found none), and the target window only if the user named one, and
-the launch block's `storyline` pass: `state` when Atlas already holds the readout's insights for
-this profile (`search_insights` with a `prefix` filter on `detail.account_review.runKey` =
-`readout-daily-{profile}` or `readout-weekly-{profile}`, per **Data pull**), since the run
-republishes the same page; otherwise the first run's page is new and follows **The storyline**
+the launch block's `storyline` pass: `state` when the readout's page is already published, since
+the run republishes it. The page is published when the Artifact tool's `list` shows one titled
+"<Brand> Daily Insights Report" (or Weekly), or, on a host that cannot list artifacts, when Atlas
+holds the readout's insights for this profile (`search_insights` with a `prefix` filter on
+`detail.account_review.runKey` = `readout-daily-{profile}` or `readout-weekly-{profile}`, per
+**Data pull**); a first run answered "Page only" saves no insights, so the page check comes first; otherwise the first run's page is new and follows **The storyline**
 before it builds. Never pass "today" or any date the main thread assumed: session headers can be a
 day stale, and a wrong "today" shifts the whole readout by a day (or a week). The agents resolve the
 date themselves (**Resolving "today"**) and refuse a repeat window. Relay each agent's summary and

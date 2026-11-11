@@ -155,7 +155,9 @@ with two agents (**3**) confirms the storyline of each new page before the agent
      `storyline.pass` `build` and the confirmed `bullets`, keeping the `runId` (**5**). The
      launch message carries every answer from the same call, step 2a's check-in as "Metric gaps:
      {the option chosen}", so the build never stops on it again, and the draft's `unchecked`
-     lines as "Unchecked: {lines}".
+     lines as "Unchecked: {lines}". When step 2a's answer is "Change the scope", the confirmed
+     bullets no longer hold: launch `draft` again with the new scope, as a Widen does, and ask
+     again before any build.
    - **Change:** apply the person's words to the bullets. When the change only rewords, reorders,
      or drops a bullet, log the row and build with the changed bullets. When it needs evidence the
      draft did not read (a new angle, a new claim), launch `draft` again with the change in the
@@ -334,7 +336,8 @@ acts on.
  "coverage": [{"channel": "instagram", "posts": 48}, {"channel": "tiktok", "posts": 0,
                "missing": "not linked"}],
  "selfCheck": {"fixed": ["{check} {name}"], "stillFailing": ["{check} {name}: {why}"]},
- "storyline": {"bullets": [{"text": "{one short claim}", "posts": 78, "accounts": 15,
+ "storyline": {"pass": "{draft, build, or state}",
+               "bullets": [{"text": "{one short claim}", "posts": 78, "accounts": 15,
                             "views": null}],
                "pool": {"posts": 692, "minimum": 10, "under": []},
                "unchecked": ["{line for each check not made}"],
@@ -352,7 +355,7 @@ acts on.
 | `question`, `reader` | The code it answered and the primary reader it built for, from the launch block. |
 | `coverage` | Each channel in scope with its post count, and any channel missing with why. |
 | `selfCheck` | The page check's results by check code and name (`skills/page-standard/SKILL.md`, **7**): those fixed before publishing and those still failing. Empty lists when no page was published. |
-| `storyline` | The storyline the page says, or would say (**2**, **The storyline**): three `bullets`, each with the posts, accounts, and views behind it (`null` for a size the claim does not rest on); the `pool` of posts that fit the question against the row's `minimum` (`null` for program tracking and a one-post question); an `unchecked` line for each check this host could not make ("Timecodes and on-screen claims are unverified.", "{fact} is not checked against the company's announcement."); and `widen`, the wider scope the agent would read next, or `null` when the scope has no room left. For a row counted per brand or per creator, `posts` is the total, `minimum` the per-entity one, and `under` names each brand or creator under it (`[]` otherwise). On a `draft` pass it is the run's only finding and `page` is `null`; on `build` it repeats the confirmed bullets; on `state` it is what the page states. `null` when the launch's pass was `none`. |
+| `storyline` | The storyline the page says, or would say (**2**, **The storyline**): its `pass`, the launch block's `storyline.pass` as given, so a `draft` packet is told apart from a build that published nothing; three `bullets`, each with the posts, accounts, and views behind it (`null` for a size the claim does not rest on); the `pool` of posts that fit the question against the row's `minimum` (`null` for program tracking and a one-post question); an `unchecked` line for each check this host could not make ("Timecodes and on-screen claims are unverified.", "{fact} is not checked against the company's announcement."); and `widen`, the wider scope the agent would read next, or `null` when the scope has no room left. For a row counted per brand or per creator, `posts` is the total, `minimum` the per-entity one, and `under` names each brand or creator under it (`[]` otherwise). On a `draft` pass it is the run's only finding and `page` is `null`; on `build` it repeats the confirmed bullets; on `state` it is what the page states. `null` when the launch's pass was `none`. |
 
 Write the packet as valid JSON on as many lines as it needs. A field with nothing in it is an
 empty list or `null`, never left out.

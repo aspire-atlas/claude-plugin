@@ -131,12 +131,13 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
 
    **0b. The storyline.** The launch block's `storyline.pass` (`orchestration.md`, **5**) says
    what to do with the page's argument before it is built (**2**, **The storyline**, there):
-   - `draft`: run steps 1, 2, and 2a, then draft the storyline below, publish nothing, and return
-     it in the packet's `storyline` with `page` `null` (**6** there). Put step 2a's check-in, when
-     it has one, in `questions`; the main thread asks both in one call. Never ask yourself, even
-     when your flow asks its own questions: the storyline goes to the main thread. A "Storyline
-     change:" line in the launch message is the person's change: draft to it, reading what it
-     needs. A "Widen:" line names the wider scope to read, with any accounts or handles it adds.
+   - `draft`: run steps 1, 2, and 2a, then draft the storyline below, publish nothing, and return it
+     in the packet's `storyline`, with its `pass` `draft` and `page` `null` (**6** there). Put step
+     2a's check-in, when it has one, in `questions`; the main thread asks both in one call. Never
+     ask yourself, even when your flow asks its own questions: the storyline goes to the main
+     thread. A "Storyline change:" line in the launch message is the person's change: draft to it,
+     reading what it needs. A "Widen:" line names the wider scope to read, with any accounts or
+     handles it adds.
    - `build`: the person confirmed the `bullets`. The page's insights (part 3) are those bullets, in
      their order and wording, each with its evidence, comparison, and "So:" line; the headline is
      written from them. An "Unchecked:" line in the launch message lists the checks the draft could
