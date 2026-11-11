@@ -123,6 +123,16 @@ Every new or changed skill, agent and flow meets the checklist in [docs/STANDARD
 - No secrets, customer names, or internal URLs in any file. CI scans for credential patterns; treat a hit as a blocker.
 - `skills/aspire/SKILL.md` is a router: it connects, settles the organization and profile, and sends each request to one flow. A flow's steps live in its own file under `skills/aspire/references/` (the reference its agent shares, or a new one), never in `SKILL.md`. Add a row to the router's **Sections** index for a new flow, keep `SKILL.md` under 500 lines, and give any skill file over 100 lines a `## Contents` section.
 
+## The standard review on your pull request
+
+A pull request that changes an agent, a skill or flow file, or `docs/STANDARD.md` gets a comment from the `standard-review` job: Claude reads the changed prose against the standard's items that no script can count, and lists Must, Should and Nice findings, each with the quoted line and a fix. Each push edits the same comment.
+
+- Answer each finding: fix it, or reply on the pull request with why not. A plugin owner decides.
+- For a trivial change, add the `skip-standard-review` label and a line `Standard review skipped: <why>` to the body.
+- To see the review before you push: `bash scripts/standard-review/review.sh run origin/develop HEAD` (needs the `claude` CLI signed in).
+- The job is advisory for now. Once the repository variable `STANDARD_REVIEW_BLOCKING` is `true`, a Must finding fails the check. `docs/STANDARD.md`, **The judgment review**, has the details.
+- The job needs the `ANTHROPIC_API_KEY` repository secret. Pull requests from forks get no secrets, so the review does not run on them.
+
 ## Internal mirror (Aspire staff)
 
 Org-managed plugin marketplaces in claude.ai accept private repositories only, and this repo is public for the Anthropic directory. The **Mirror to internal** workflow force-pushes `develop` to the private repo `aspire-atlas/claude-plugin-internal` on every push, and the org marketplace syncs from there. Staff therefore run the beta channel. Never commit to the mirror; it is overwritten on the next push. Auth is a write deploy key on the mirror, stored as the `MIRROR_DEPLOY_KEY` secret here.
