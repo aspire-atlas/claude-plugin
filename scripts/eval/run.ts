@@ -200,6 +200,36 @@ async function grade(page: string, question: Question, dir: string, emptyMcp: st
   return { graded, reasons, note: Object.keys(graded).length ? null : 'the quality review returned no grade' }
 }
 
+async function englishRead(page: string, question: Question, dir: string, emptyMcp: string, options: Options): Promise<{ e: Record<string, Result>; reasons: Record<string, string>; note: string | null }> {
+  // E6 is the English read every page gets before it publishes (quality-review.md, 9.1): the page's visible
+  // text, its reader and its question code, and nothing from the run that built it. It passes with no Must fix.
+  const runId = `atlas-quality-review-${stamp().replace('z', '')}-${Math.floor(Math.random() * 65536).toString(16).padStart(4, '0')}`
+  const launch = {
+    from: '/aspire:aspire', runId, agent: 'atlas-quality-review', mode: 'grade', run: 'interactive',
+    question: question.code, persona: 'unknown', reader: question.reader, shortcut: null,
+    approved: { write: false, send: [], spend: { cap: null } }, examples: [],
+  }
+  const prompt = [
+    '```launch', JSON.stringify(launch), '```', '',
+    'mode: grade', 'checks: english', `target: ${page}`, `reader: ${question.readerInWords}`,
+    `question: ${question.code}`, 'run: interactive',
+  ].join('\n')
+  const args = [
+    '--plugin-dir', PLUGIN, '--agent', 'aspire:atlas-quality-review', '--strict-mcp-config', '--mcp-config', emptyMcp,
+    '--permission-mode', 'acceptEdits', '--allowedTools', 'Read', 'Glob', 'Grep', 'Bash',
+    ...(options.judgeModel ? ['--model', options.judgeModel] : []),
+  ]
+  const turn = await claude(args, prompt, dir, join(dir, 'english-read.jsonl'), options.timeoutMin)
+  const block = findJsonWithKey(turn.reply || turn.text, 'english_read')?.english_read
+  const fixes: any[] = Array.isArray(block?.fixes) ? block.fixes : []
+  if (!block || !Array.isArray(block.fixes)) return { e: {}, reasons: {}, note: 'the English read returned no english_read block' }
+  const musts = fixes.filter(fix => String(fix?.level).toLowerCase() === 'must')
+  const reason = musts.length
+    ? `${musts.length} Must fix(es): ${musts.map(fix => `"${fix.text}"${fix.replace ? ` -> "${fix.replace}"` : ` (${fix.why})`}`).join('; ')}`
+    : `No Must fix (${fixes.length} Should or Nice)`
+  return { e: { E6: musts.length ? 'fail' : 'pass' }, reasons: { E6: reason }, note: null }
+}
+
 async function judge(page: string, question: Question, approvedPage: string | null, eChecks: any[], dir: string, emptyMcp: string, options: Options): Promise<{ e: Record<string, Result>; reasons: Record<string, string>; note: string | null }> {
   const mine = eChecks.filter(check => check.judgedBy === 'judge')
   const system = [
@@ -243,17 +273,18 @@ async function checkPage(source: string, role: 'new' | 'approved', question: Que
   mkdirSync(dir, { recursive: true })
   const page = join(dir, 'page.html')
   writeFileSync(page, stripDataUris(readFileSync(source, 'utf8')))
-  const [s, g, j] = await Promise.all([
+  const [s, g, j, en] = await Promise.all([
     scripted(page, dir),
     grade(page, question, dir, emptyMcp, options),
     judge(page, question, approvedPage, eChecks, dir, emptyMcp, options),
+    eChecks.some(check => check.judgedBy === 'english-read') ? englishRead(page, question, dir, emptyMcp, options) : Promise.resolve({ e: {}, reasons: {}, note: null }),
   ])
-  const notes = [s.note, g.note, j.note].filter((note): note is string => !!note)
+  const notes = [s.note, g.note, j.note, en.note].filter((note): note is string => !!note)
   for (const id of Object.keys(s.results)) {
     if (s.results[id] === 'fail' && g.graded[id] === 'pass') notes.push(`${id}: the script fails it and the grade passes it (${s.problems[id] ?? 'no detail'})`)
     if (s.results[id] === 'pass' && g.graded[id] === 'fail') notes.push(`${id}: the script passes it and the grade fails it (${g.reasons[id] ?? 'no detail'})`)
   }
-  return { scripted: s.results, graded: g.graded, e: j.e, reasons: { ...s.problems, ...g.reasons, ...j.reasons }, notes }
+  return { scripted: s.results, graded: g.graded, e: { ...j.e, ...en.e }, reasons: { ...s.problems, ...g.reasons, ...j.reasons, ...en.reasons }, notes }
 }
 
 // ---------------------------------------------------------------- the approved page

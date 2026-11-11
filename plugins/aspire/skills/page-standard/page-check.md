@@ -2,7 +2,9 @@
 
 The script `SKILL.md`, section 5, runs on every page before it is published: R1, R2, R6, R11 and
 R13 from the reader standard. Extract it with the command there; never retype it. It reads only the
-pages named and writes nothing. It lives in this file so `SKILL.md` stays short; when the reader
+pages named and writes nothing. With `--text` before the page names it runs no check and prints the
+words a reader sees instead, one block per line, which is all the English read (`SKILL.md`,
+section 4, step 4b) is given. It lives in this file so `SKILL.md` stays short; when the reader
 standard changes, `SKILL.md`'s section 6 table and this script change in the same commit, and when
 the required-metrics table (`SKILL.md`, section 8) changes, `REQUIRED_ROWS` here changes with it.
 
@@ -56,6 +58,7 @@ BANNED = [
     (re.compile(EDGE % r"atlas-[a-z]+(?:-[a-z]+)*"), "an agent name"),
     (re.compile(EDGE % r"(?:Claude|Anthropic|LLMs?|MCPs?|APIs?|JSON|runKey)"), "a system name"),
     (re.compile(EDGE % r"(?:sub-?agents?|tool calls?|webhooks?|endpoints?|schemas?)", re.I), "a system word"),
+    (re.compile(EDGE % r"(?:picks|pulses?|reads|the\s+run|reach\s+slots?|practitioners?)", re.I), "a report label"),
 ]
 NOTHING = re.compile(r"\b(?:nothing|no decisions?) needs? (?:your )?approval\b", re.I)
 # Required metrics on every cited post, by question code. Kept equal to the required-metrics table in
@@ -381,10 +384,44 @@ def main(paths):
                 status = 1
     return status
 
+def visible(path):
+    # The words a reader sees, one block per line, for the English read. Someone else's words are
+    # marked [quoted: ...] and image text [image: ...]; the mark and the source line are left out.
+    tree = Tree()
+    with open(path, encoding="utf-8", errors="replace") as f:
+        tree.feed(f.read())
+    tree.close()
+    out, stack = [], [tree.root]
+    while stack:
+        item = stack.pop()
+        if isinstance(item, str):
+            out.append(item)
+            continue
+        if item.tag in SKIP or (exempt(item) and not quoted(item)):
+            continue
+        pad = "" if item.tag in INLINE else ("\n" if item.tag in BLOCK or item.tag in ("tr", "td", "th", "br") else " ")
+        label = item.attrs.get("alt") or (item.attrs.get("aria-label") if item.tag in ("svg", "img") else "")
+        stack.append(("]" if quoted(item) else "") + pad)
+        stack.extend(reversed(item.kids))
+        stack.append(pad + ("[quoted: " if quoted(item) else "") + ("[image: %s] " % label if label else ""))
+    lines = (re.sub(r"[ \t\r\f\v]+", " ", line).strip() for line in "".join(out).split("\n"))
+    return "\n".join(line for line in lines if line)
+
+def show(paths):
+    status = 0
+    for path in paths:
+        try:
+            print(("== %s\n" % path if len(paths) > 1 else "") + visible(path))
+        except Exception as error:
+            print("could not read %s: %r" % (path, error), file=sys.stderr)
+            status = 2
+    return status
+
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("usage: python3 -I page_check.py page.html [more.html]", file=sys.stderr)
+    args = sys.argv[1:]
+    if not args or args == ["--text"]:
+        print("usage: python3 -I page_check.py [--text] page.html [more.html]", file=sys.stderr)
         sys.exit(2)
-    sys.exit(main(sys.argv[1:]))
+    sys.exit(show(args[1:]) if args[0] == "--text" else main(args))
 ```
 <!-- /page-check -->

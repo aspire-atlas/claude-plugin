@@ -30,6 +30,7 @@ in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Se
 - [7. The page](#7-the-page)
 - [8. Output to the main thread](#8-output-to-the-main-thread)
 - [9. Grade mode (for other skills)](#9-grade-mode-for-other-skills)
+  - [9.1 The English read (before every page publishes)](#91-the-english-read-before-every-page-publishes)
 - [10. The review log](#10-the-review-log)
 - [11. The main thread: run, offer, and review log](#11-the-main-thread-run-offer-and-review-log)
 
@@ -41,7 +42,8 @@ feedback about reviewed work (Run step 7). It checks one finished piece of work:
 a pitch, proposal, brief, or report made elsewhere. It reads and reports: it never edits the work,
 never writes to Atlas, never starts discovery work, and needs no write confirmation. Interactive
 only: never schedule it or run it unattended. Another skill may launch it with `mode: grade`
-(`quality-review.md`, **9**). Before anything, read this file (**1**, **8**,
+(`quality-review.md`, **9**), and every page's English read (**9.1**) runs in that mode, in
+scheduled runs too. Before anything, read this file (**1**, **8**,
 **10**, **11**) and follow **11**, asking every question exactly as worded there.
 
 ### Run
@@ -81,8 +83,9 @@ Off unless the organization names a Doc; one "Log" confirmation writes `quality-
 | `earlier_review` | The link, or a local file, of an earlier review of the same work, when this is a re-review. A link is republished in place |
 | `publish` | `artifact` (default): publish with the Artifact tool. `file:{path}`: write the same page as a full HTML document (doctype, head, body) to that path. `none`: build no page |
 | `log` | `file:{path}`, `docs:{Claude Docs link}`, or `none` (default): the organization's own review log (**10**) |
-| `checks` | Grade mode only: `reader-standard` (default) or `all` |
-| `run` | Always `interactive`. The review has no unattended mode |
+| `checks` | Grade mode only: `reader-standard` (default), `all`, or `english` (the English read, **9.1**) |
+| `reader`, `question` | Grade mode with `checks: english` only: the page's primary reader in words, and its question code |
+| `run` | `interactive`. The review has no unattended mode; only the English read (**9.1**) also runs `unattended` |
 
 ## 2. Reading the target
 
@@ -447,6 +450,8 @@ the `launch` block (**Orchestration contract** **5**) like any other; grade mode
 - Inputs: `target` (required), `checks` (`reader-standard`, the default, or `all`), and optionally
   `evidence_dir`, `brief`, `recipient`, and `audience`.
 - It builds no page (`publish` is `none`) and writes no log row.
+- `checks: english` is the English read, with its own inputs and output (**9.1**). Everything below
+  in this list is for the other two.
 - `checks: reader-standard` returns all 12 R rows, each PASS, FAIL, or N/A; `all` adds 4.0 to 4.15.
 - The output is only this JSON block, then the audit trail. No summary lines.
 
@@ -464,6 +469,91 @@ the `launch` block (**Orchestration contract** **5**) like any other; grade mode
   }
 }
 ```
+
+### 9.1 The English read (before every page publishes)
+
+A builder cannot see its own mistakes, so every page any flow builds is read once more by someone
+who did not build it, after the builder's self-check and before the page is published
+(`skills/page-standard/SKILL.md`, section 4, step 4b). The main thread launches it for every page,
+interactive or scheduled (**Running agents**, step 4). It reads the page the
+way an English teacher marks an essay: every word the reader sees, and nothing else.
+
+**Inputs, and nothing more.** `mode: grade`, `checks: english`, `target` (the path of the draft
+page file), `reader` (the page's primary reader, in words), `question` (its code, or `null`), and
+`run` (`interactive` or `unattended`). Never the brief, the person's ask, the builder's result
+packet, its page check, its findings, or its evidence: a reviewer who knows what the page meant to
+say reads what it meant, not what it says. When a launch carries any of those, ignore them. It
+calls no Atlas tool, reads no calibration, asks nothing, builds no page, and writes no log row.
+
+**Read only the visible text.** Extract it with the page check script's `--text` option
+(`skills/page-standard/page-check.md`), from a copy in a new temporary folder:
+
+```bash
+d=$(mktemp -d) && cp {target} "$d/page.html" && awk '/^<!-- page-check -->$/{f=1;next} /^<!-- \/page-check -->$/{f=0} f' "${CLAUDE_PLUGIN_ROOT}/skills/page-standard/page-check.md" | sed '1d;$d' > "$d/page_check.py" && python3 -I "$d/page_check.py" --text "$d/page.html"
+```
+
+Judge only what it prints. Never open the page file with the Read tool or read its markup, its
+comments, or its script. Without Python, read the file and judge only the text between its tags,
+leaving out `script` and `style`, and set `textFrom` to `html`.
+
+**What it checks, on every line.** Text marked `[quoted: ...]` is someone else's words (a caption, a
+creator's name): never fix it. Handles, hashtags, links, and emails stay as written.
+
+| # | Check | Fails on |
+| - | ----- | -------- |
+| 1 | Full sentences | Body text that is not a sentence. A heading or label may be a short phrase, but one a reader can parse, never a stack of nouns ("Gift and routine framing lifts posts") |
+| 2 | One tense per section | A section that moves between past and present for the same events |
+| 3 | No arrows, "vs", or shorthand | →, ->, "vs", "vs.", "w/", "&" for "and", "/" for "or", a bare multiplier ("ran at 1.27×") that does not say what it is compared with, and clipped notes ("Top post: unboxing, 2.4x, Tue") |
+| 4 | One idea per sentence | A sentence that carries two claims, or a claim and its caveat |
+| 5 | Every term explained on first use | A term a reader in this role would not use themselves (hook rate, engagement per 1,000 views, CPM, whitelisting) with no plain explanation where it first appears |
+| 6 | Every number in a label matches what it labels | "Top 5" over four rows, "3 creators to contact" beside two, a percent sign on a count, a total that is not the sum shown under it |
+| 7 | Nothing in Atlas's own report words | The report labels R11 bans (**Reader standard**), and any other wording that only makes sense inside Atlas's own reports: a question pasted in Atlas's shorthand, a section named for the agent that made it |
+
+**Levels.**
+
+- **Must**: the reader would misread the page or stop reading. A number that does not match its
+  label, a heading the reader cannot parse, a report label, an unexplained term in the headline, a
+  decision, or a next step, or an arrow or "vs" standing in for a claim. The builder applies every
+  Must before publishing.
+- **Should**: the meaning holds, but the line reads badly. A tense change, two ideas in one
+  sentence, a term explained later than its first use.
+- **Nice**: polish. A shorter word, a smoother order.
+
+**Every fix quotes and replaces.** `text` is the exact words as `--text` printed them, enough to
+find them once on the page. `replace` is the complete replacement, ready to paste: it keeps every
+number, name, and claim the original carried and adds none. When a fix needs a fact the page does
+not show (which of two numbers is right, what a term means for this brand), `replace` is `null` and
+`why` says what the builder must check; a Must stays a Must. Write each replacement for this reader,
+by the writing rules in **6**.
+
+**Output.** Only this JSON block, then the audit trail. No summary lines, no result packet.
+
+```json
+{
+  "english_read": {
+    "version": "1",
+    "target": "{the target as given}",
+    "reader": "{reader}",
+    "question": "{code or null}",
+    "textFrom": "script",
+    "counts": {"must": 2, "should": 0, "nice": 0},
+    "fixes": [
+      {"id": "EN1", "level": "Must", "check": 3, "where": "Insight 2",
+       "text": "Gift and routine framing lifts posts. Ran at 1.27×.",
+       "replace": "Posts that show the toy as a gift or as part of a daily routine got 1.27 times the views of the account's usual post.",
+       "why": "A stack of nouns and a bare multiplier: the reader cannot tell what was compared with what."},
+      {"id": "EN2", "level": "Must", "check": 6, "where": "Shortlist heading",
+       "text": "Top 5 creators to contact", "replace": null,
+       "why": "The table under it lists four creators. Check whether a fifth was dropped or the heading should say 4."}
+    ]
+  }
+}
+```
+
+**Examples.** Good: the monthly program report in the examples library, after its English read.
+The separate read found four Must fixes on the draft, and the page that published has none. Bad:
+"Gift and routine framing lifts posts" as a heading, with "ran at 1.27×" beside it. Neither line says
+what was measured, or against what.
 
 ## 10. The review log
 

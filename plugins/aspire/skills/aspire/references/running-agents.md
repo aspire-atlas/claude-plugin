@@ -58,7 +58,22 @@ agent only through this skill or a shortcut.
    reply (**Orchestration contract** **2**) that repeats the question with its code, names the
    reader, and gives the time estimate. Questions an agent raises come back in its result packet
    and are asked when it arrives. Write the launch's Runs row (**9** there).
-4. **When it finishes.** Its result arrives as a task notification. Treat it as the agent's
+4. **When it finishes.** Its result arrives as a task notification.
+   - **First, the English read.** When a `page-check` block says `"englishRead": {"status":
+     "pending"}`, the page is a draft (`skills/page-standard/SKILL.md`, section 4, step 4b). Relay
+     nothing from it, ask nothing, and confirm nothing yet. Launch `atlas-quality-review` (as in
+     step 1, its own run id, `model` from **Model tiers**) with only `mode: grade`, `checks:
+     english`, `target` (the draft path), `reader` (the launch's reader, in words), `question`, and
+     `run` as the builder's launch had it: never the brief, the ask, or anything from the builder's
+     result (**Quality review**, the English read). When it returns, relaunch the builder with the same
+     `launch` block, the same inputs, and three more: `englishRead` (the reviewer's `english_read`
+     block), `draft` (the path), and `packet` (the draft pass's `result-packet`). Act on that
+     publish pass's result as below. Say nothing in between unless the person asks; in an
+     unattended run, wait for each. A reviewer that returns no `english_read` block counts as no
+     fixes: relaunch with `englishRead` set to `{"error": "{what came back}"}`, and the builder
+     reports `not-run`. A page you build yourself (**Visual output**, a deck you export) gets the
+     same read before you publish it, and you apply its Musts yourself.
+   - Treat the result as the agent's
    report and act on its `result-packet` block: relay the summary, page link (or, when `page` is a file path, "Saved as a file: {path}"), and decisions it
    needs, confirm its `proposals` by permission level (**Orchestration contract** **7**: Write
    once per batch, Send one by one, Spend with the cost first), ask its `questions`, log the

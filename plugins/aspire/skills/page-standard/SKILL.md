@@ -5,8 +5,9 @@ description: >
   for and what it covers, the answer first, up to three insights, ranked next steps, decisions
   kept apart, real evidence, how it was worked out, what is missing, what Atlas can draft next),
   the reader and evidence rules, the metrics each kind of question requires and where each is
-  missing per network, and the self-check against the reader standard (R1 to R13) every page
-  runs before it is published. Agents load it before they build a page. It is not a command.
+  missing per network, the self-check against the reader standard (R1 to R13), and the English
+  read by a separate reviewer that every page gets before it is published. Agents load it before
+  they build a page. It is not a command.
 user-invocable: false
 metadata:
   author: Aspire
@@ -183,7 +184,35 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    in the light theme with a footer on every page.
 4. **Self-check R1 to R13.** Run the script in section 5 for R1, R2, R6, R11, and R13, and judge
    the others against `reader-standard.md`. Fix every fail you can and check again.
-5. **Publish**, even when a check still fails, and report it in the page check (section 7).
+
+   **4b. The English read.** You cannot see your own mistakes, so before the page publishes
+   someone who did not build it reads every word on it (`quality-review.md`, **9.1**). Agents never
+   launch agents, so the main thread runs the read between two passes of your run, on every page,
+   interactive or scheduled. This step holds over a flow reference that publishes or delivers
+   earlier in its steps.
+   - **Draft pass** (your launch carries no `englishRead` input). After step 4, save the page as a
+     full HTML file, as step 5 describes for a session with no Artifact tool, named
+     `{page name}.draft.html`. Publish nothing, deliver nothing (no Slack, no email), and send no
+     `published` checkpoint. Everything else in the pass runs as your flow says. Return as usual,
+     with the packet's `page` set to the draft file's absolute path and the page check's
+     `englishRead` set to `{"status": "pending", "draft": "{path}"}` (section 7).
+   - **Publish pass** (your launch carries `englishRead`: the reviewer's `english_read` block, the
+     `draft` path, and the draft pass's result `packet`). Start from the draft file. Do not rebuild
+     the page, and make no Atlas read, write, or proposal the draft pass already made. Apply every
+     Must: paste its `replace`, or, when `replace` is `null`, check the fact `why` names against the
+     draft and the packet and fix the line. Apply each Should and Nice that fits your flow's rules.
+     Run step 4 again, then step 5, then your flow's deliveries. Return the draft pass's packet with
+     `page` set to the published link and `selfCheck` brought up to date.
+   - **A Must you cannot apply** (it breaks your flow's own rule, or the fact cannot be checked)
+     stays on the page and is reported: in the page check's `englishRead` with `applied: false`
+     and the reason, and in `stillFailing` as "English read EN2: {why}". In a scheduled run it also
+     goes in `gaps`, and the delivery message names it in one line ("One wording fix was not
+     applied: {why}").
+   - **No read**: a sample page, and the quality review's own page. When the session cannot launch
+     a subagent, the read cannot run apart from the builder: publish in one pass and report
+     `{"status": "not-run", "why": "no subagent in this session"}`.
+5. **Publish**, in the publish pass (step 4b), even when a check still fails, and report it in the
+   page check (section 7).
    - **When the session has no Artifact tool, save the page as a file.** Never skip the page, and
      never return only a summary, because it cannot be published. Write the same page as one
      full HTML document (doctype, head with the title, body) to `{page name}.html` in the
@@ -313,7 +342,9 @@ words ("page check: 9 pass, 2 fixed, 1 n/a").
  "checks": {"R1": "pass", "R2": "pass", "R3": "fixed", "R4": "pass", "R5": "fixed", "R6": "pass",
             "R7": "pass", "R8": "pass", "R9": "n/a", "R10": "pass", "R11": "pass", "R12": "pass",
             "R13": "pass"},
- "draftNext": "pass", "stillFailing": [], "gaps": [], "scripted": "ran"}
+ "draftNext": "pass", "stillFailing": [], "gaps": [], "scripted": "ran",
+ "englishRead": {"status": "ran", "must": 2, "should": 1, "nice": 0,
+                 "musts": [{"id": "EN1", "applied": true}, {"id": "EN2", "applied": true}]}}
 ```
 
 - `checks`: `pass` (passed the first time), `fixed` (failed, fixed before publishing), `fail`
@@ -324,6 +355,10 @@ words ("page check: 9 pass, 2 fixed, 1 n/a").
 - `gaps`: on a page shared outside the team, what Atlas could not read, for the main thread to
   tell the requester. Empty on a team page, whose gaps are on the page.
 - `scripted`: `ran`, `read` (no Python, or a page drawn in script), or `unmarked`.
+- `englishRead`: the English read (section 4, step 4b). `status` is `pending` in the draft pass,
+  with `draft` the file's path; `ran` in the publish pass, with the reviewer's count of Must,
+  Should, and Nice fixes and one `musts` entry per Must saying whether it was applied (`"applied":
+  false` adds `"why"`); or `not-run`, with `why`. Every published page carries it.
 
 ## 8. Required metrics, by kind of question
 
