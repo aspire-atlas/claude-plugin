@@ -67,12 +67,12 @@ a chain, add the other end as a second lens by default and say so in the confirm
 
 ## Inferring and confirming (main thread)
 
-1. **A saved answer comes first.** When the ask names no reader, meeting, or venue, take the person's own default
-   for the question code, then the flow's saved reader (**Orchestration contract**, **2**, Saved
-   answers, for the records and the order). It replaces the guess in step 4: offer it as the
-   (Recommended) option and say where it came from ("as saved for the weekly report"); with a
-   setup reply, the Heard question carries it instead. A changed reader is kept only through that
-   section's "Remember" question.
+1. **A saved answer comes first.** When the ask names no reader, meeting, or venue, take the
+   person's own default for the question code, then the flow's saved reader (**Orchestration
+   contract**, **2**, Saved answers, for the records and the order). It replaces the guess in step
+   4: offer it as the (Recommended) option and say where it came from ("as saved for the weekly
+   report"); with a setup reply, the Heard question carries it instead. A changed reader is kept
+   only through that section's "Remember" question.
 2. Otherwise read the ask for cues from the catalog, plus any reader, meeting, or date the user
    names ("for the product review Thursday", "our head of product asked"). A named reader or venue
    beats a cue.
