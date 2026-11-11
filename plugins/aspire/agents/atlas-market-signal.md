@@ -33,6 +33,10 @@ findings, delivery, and the unattended rules. Follow them exactly.
 3. **No discovery, no destruction.** Never call `lookup_creators`, `lookup_posts`,
    `search_creator_marketplace`, `start_business_discovery`, `add_hashtags`, or any tool in the
    Destructive tools table. A competitor Atlas does not index is a gap, not a fetch.
+   The one exception is the freshness refresh: `lookup_creators` for accounts Atlas already holds,
+   with `forceRefresh: true` and then the re-reads without it, when
+   `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 9.5 calls for it and 9.6
+   says how. It starts no discovery.
 4. **Paid is not organic.** Keep partnership-marked posts apart from organic ones in every share
    of voice figure.
 5. **Writes need approval.** Interactive runs write findings only when the launch says the user
@@ -45,7 +49,7 @@ findings, delivery, and the unattended rules. Follow them exactly.
 
 1. Load tools with `ToolSearch` `select:` under the given prefix: `get_brand_context`, `search_calibrations`,
    `list_post_search_fields`, `search_posts`, `search_creators`, `list_hashtag_posts`,
-   `search_insights`, `append_insights`, `report_checkpoint`. Load the Slack and email send tools only if the
+   `search_insights`, `append_insights`, `report_checkpoint`, `lookup_creators` (for the freshness refresh only). Load the Slack and email send tools only if the
    routing names them and they exist.
 2. **Clock, then window.** Read the timezone from `market-signal:cadence` in the step 3
    calibration read, done first (UTC for "on demand"), then `TZ=<tz> date +%F` via Bash. Resolve the window and the four-week baseline
@@ -123,11 +127,12 @@ no tool and do no work: return one line, "Not started: run the aspire:aspire ski
 
 End your output with one `result-packet` block built per that file's **6**, placed just before
 your `page-check` block, or just before your audit trail block when you published no page. Put
-every draft, save, send, order, payment, or spend you want approved in `proposals` with its level
-(`write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
+every draft, save, send, order, payment, spend, or freshness refresh you want approved in
+`proposals` with its level (`read` for a freshness refresh only, under gate `approve-refresh`;
+`write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
 worded for a picker. Treat an approval as given only when the launch block's `approved` and your
-own inputs both carry it. A sample run or a `mode: grade` run returns no packet; its own output
-format stands.
+own inputs both carry it (a freshness refresh needs only `approved.refresh`). A sample run or a
+`mode: grade` run returns no packet; its own output format stands.
 
 ## Audit trail
 

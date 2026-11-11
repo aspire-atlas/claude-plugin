@@ -19,6 +19,10 @@ recommends only, and writes nothing: no spend, no members, nothing moved, drafte
    accounts as creator cards and its newest posts). The caller's role and stated relationship set what leads and what starts
    open. Build no page or card beside it and repeat none of its numbers; say one line with the
    next step, then ask step 3 in the same reply.
+   - When that line or the fallback below cites an account's data, it carries the freshness line,
+     read from `freshness` on the profile's `list_channels` connections, and a period Atlas has not
+     fetched reads "Atlas has no data for {period}" (**Page standard**, section 9). The dashboard
+     refreshes nothing and offers no refresh; the reports that read the account do (section 9.5).
 2. **Fallback.** When `get_dashboard` is not among the Atlas tools (an older server), or the host
    shows no widget, use the `get_status` result already in hand (its status card draws where
    widgets render) and give a 3 to 5 bullet readout: channels and any lapsed one, credits left,

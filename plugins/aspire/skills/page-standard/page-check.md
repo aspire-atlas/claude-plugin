@@ -16,12 +16,12 @@ the required-metrics table (`SKILL.md`, section 8) changes, `REQUIRED_ROWS` here
 
 <!-- page-check -->
 ```python
-# Page standard self-check: R1, R2, R6, R11 and R13 from reader-standard.md. Reads the HTML files named; writes nothing.
+# Page standard self-check: R1, R2, R6, R11, R13 and R14 from reader-standard.md. Reads the HTML files named; writes nothing.
 import datetime, json, re, sys
 from html.parser import HTMLParser
 
 NETWORKS = ("instagram", "tiktok", "youtube")
-NOT_COVERED = ("not covered", "no posts", "not connected", "missing", "none")
+NOT_COVERED = ("not covered", "no posts", "no data", "not connected", "missing", "none")
 SKIP = {"script", "style", "template", "noscript"}
 VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
 INLINE = {"a", "abbr", "b", "bdi", "cite", "code", "data", "em", "i", "kbd", "mark", "q", "s", "small",
@@ -156,6 +156,11 @@ def text(node, gap="", skip=lambda n: False):
 def has(haystack, needle):
     return re.sub(r"\s+", " ", needle).strip().lower() in haystack.lower()
 
+def has_phrase(haystack, phrase):
+    # The phrase as whole words, so "no data" never matches "no database" or "none" "nonetheless".
+    words = r"\s+".join(re.escape(w) for w in phrase.split())
+    return re.search(r"(?i)(?<!\w)%s(?!\w)" % words, haystack) is not None
+
 def page_name(node):
     return (node.attrs.get("data-page") or "").strip().lower()
 
@@ -211,8 +216,8 @@ def counts(region, label):
             out[name] = None
             continue
         posts, shown = int(raw), text(found[0], gap=" ")
-        if posts == 0 and not any(has(shown, w) for w in NOT_COVERED):
-            problems.append("%s shows %s with 0 posts but does not say it is not covered" % (label, name))
+        if posts == 0 and not any(has_phrase(shown, w) for w in NOT_COVERED):
+            problems.append("%s shows %s with 0 posts but says neither that it is not covered nor that Atlas has no data" % (label, name))
         if posts > 0 and posts not in numbers(shown):
             problems.append("%s does not show %s's exact post count (%d)" % (label, name, posts))
         out[name] = posts
@@ -337,12 +342,252 @@ def r13(nodes, regions):
                 problems.append("%s shows no %s and has no data-missing note for it" % (label, metric))
     return problems
 
-# Only these scripted checks can be N/A (reader-standard.md; quality-review.md, section 3). R13 is
-# n/a on its own terms (no question code and no cited post), never through data-na.
+def account_key(value):
+    # "instagram:@Name" -> "instagram:name"; None when the value is not "{network}:{handle}".
+    network, sep, handle = (value or "").partition(":")
+    network, handle = network.strip().lower(), handle.strip().lstrip("@").lower()
+    return "%s:%s" % (network, handle) if sep and network and handle else None
+
+def day(value):
+    # "date" for YYYY-MM-DD (optionally with a time after "T"), "none" or "unknown" as written;
+    # anything else is False.
+    value = (value or "").strip().lower()
+    if value in ("none", "unknown"):
+        return value
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}(?:t\S*)?", value):
+        return False
+    try:
+        datetime.date.fromisoformat(value[:10])
+    except ValueError:
+        return False
+    return "date"
+
+def in_footnote(node):
+    while node is not None:
+        if "atlas-footnote" in (node.attrs.get("class") or "").split():
+            return True
+        node = node.parent
+    return False
+
+MONTHS = ("january", "february", "march", "april", "may", "june", "july", "august", "september",
+          "october", "november", "december")
+
+def month_day(iso):
+    # A pattern for the date as month and day ("Oct 12", "October 12", "12 Oct").
+    month, day_of = MONTHS[int(iso[5:7]) - 1], int(iso[8:10])
+    name = r"sep(?:t(?:ember)?)?\.?" if month == "september" else r"%s(?:%s)?\.?" % (month[:3], month[3:])
+    return r"(?:%s\s+0?%d|0?%d\s+%s)" % (name, day_of, day_of, name)
+
+def shows_date(shown, value):
+    # The page shows the date as written in the attribute (2026-10-12), or as month and day.
+    iso = value.strip()[:10]
+    return iso in shown or re.search(r"(?i)\b%s\b" % month_day(iso), shown) is not None
+
+def shows_year(shown, value):
+    # The year sits beside the date ("Dec 30, 2025", "30 Dec 2025", or 2025-12-30), not anywhere
+    # in the entry, so a view count such as 12025 never stands in for it.
+    iso = value.strip()[:10]
+    return iso in shown or re.search(r"(?i)\b%s,?\s+%s\b" % (month_day(iso), iso[:4]), shown) is not None
+
+PLATFORM_NAMES = {"instagram": "Instagram", "tiktok": "TikTok", "youtube": "YouTube", "pinterest": "Pinterest",
+                  "facebook": "Facebook"}
+LABELS = {"data-newest": "newest post", "data-fetched": "last fetched", "data-changed": "last changed"}
+
+def after_label(shown, label):
+    # The text from the label to the next label, so each date is read beside its own label.
+    low = shown.lower()
+    at = low.find(label)
+    if at < 0:
+        return ""
+    rest = low[at + len(label):]
+    ends = [rest.find(other) for other in LABELS.values() if other != label and other in rest]
+    return shown[at + len(label):at + len(label) + min(ends)] if ends else shown[at + len(label):]
+
+def page_year(node):
+    # The year of the source line's data-updated, the page's as-of time; None when it has none.
+    while node is not None:
+        if "atlas-footnote" in (node.attrs.get("class") or "").split():
+            updated = (node.attrs.get("data-updated") or "").strip()
+            return updated[:4] if re.match(r"\d{4}-", updated) else None
+        node = node.parent
+    return None
+
+def dated_problems(key, node, shown):
+    problems, year = [], page_year(node)
+    for attr, label in LABELS.items():
+        value = node.attrs.get(attr)
+        if day(value) != "date":
+            continue
+        near = after_label(shown, label)
+        if not shows_date(near, value):
+            problems.append("the freshness entry for %s does not show its %s date (%s) after \"%s\"" % (key, attr[5:], value.strip()[:10], label))
+        elif year and value.strip()[:4] != year and not shows_year(near, value):
+            problems.append("the freshness entry for %s shows its %s date without its year (%s)" % (key, attr[5:], value.strip()[:4]))
+    return problems
+
+NUMBER_WORDS = ("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+                "eleven", "twelve")
+
+def mention_platform(node):
+    # The platform a data-mention post is on: data-mention's own value, or its data-post URL's host.
+    given = (node.attrs.get("data-mention") or "").strip().lower()
+    if given in PLATFORM_NAMES:
+        return given
+    host = re.match(r"(?i)https?://(?:[\w-]+\.)*?([\w-]+)\.com/", (node.attrs.get("data-post") or "").strip())
+    return host.group(1).lower() if host and host.group(1).lower() in PLATFORM_NAMES else None
+
+def mention_problems(node):
+    # The one entry for authors cited only as mention evidence or counted only in totals.
+    shown, problems = text(node, gap=" "), []
+    if not re.search(r"(?i)\b(?:\d[\d,]*|%s)\s+other creators?\b" % "|".join(NUMBER_WORDS), shown):
+        problems.append("the mentions freshness entry does not say how many other creators it covers")
+    if day(node.attrs.get("data-newest")) != "date":
+        problems.append("the mentions freshness entry needs data-newest as a date (YYYY-MM-DD)")
+    problems += dated_problems("mentions", node, shown)
+    return problems
+
+def fresh_problems(key, node):
+    shown = text(node, gap=" ")
+    problems = dated_problems(key, node, shown)
+    network, handle = key.split(":", 1)
+    at_handle = r"(?i)@%s(?!\w|-|\.\w)" % re.escape(handle)
+    if not re.search(at_handle, shown):
+        problems.append("the freshness entry for %s does not show the handle" % key)
+    # The platform is looked for outside the handle, so @maker.instagram never names Instagram.
+    if not re.search(r"(?i)\b%s\b" % re.escape(PLATFORM_NAMES.get(network, network)), re.sub(at_handle, " ", shown)):
+        problems.append("the freshness entry for %s does not name the platform (%s)" % (key, PLATFORM_NAMES.get(network, network)))
+    newest = day(node.attrs.get("data-newest"))
+    if not newest or newest == "unknown":
+        problems.append("the freshness entry for %s needs data-newest as a date (YYYY-MM-DD) or \"none\"" % key)
+    elif newest == "none" and not has_phrase(shown, "holds no posts"):
+        problems.append("the freshness entry for %s has no newest post but does not say Atlas holds no posts" % key)
+    elif newest == "date" and not has_phrase(shown, "newest post"):
+        problems.append("the freshness entry for %s does not show its newest post" % key)
+    fetched, changed = node.attrs.get("data-fetched"), node.attrs.get("data-changed")
+    if (fetched is None) == (changed is None):
+        problems.append("the freshness entry for %s needs one of data-fetched (from freshness) or data-changed (no freshness)" % key)
+    elif fetched is not None:
+        when = day(fetched)
+        if not when:
+            problems.append("the freshness entry for %s has data-fetched \"%s\", not a date, \"none\" or \"unknown\"" % (key, fetched))
+        elif when == "unknown" and not has_phrase(shown, "freshness unknown"):
+            problems.append("the freshness entry for %s has no freshness on record but does not say \"freshness unknown\"" % key)
+        elif when == "none" and not has_phrase(shown, "not fetched by Atlas yet"):
+            problems.append("the freshness entry for %s has no fetch but does not say \"not fetched by Atlas yet\"" % key)
+        elif when == "date" and not has_phrase(shown, "last fetched"):
+            problems.append("the freshness entry for %s does not say when it was last fetched" % key)
+    elif day(changed) != "date":
+        problems.append("the freshness entry for %s has data-changed \"%s\", not a date" % (key, changed))
+    elif not has_phrase(shown, "last changed") or has_phrase(shown, "last fetched"):
+        problems.append("the freshness entry for %s has no fetch time, so it says \"last changed\", never \"last fetched\"" % key)
+    return problems
+
+def r14(nodes, regions):
+    # Every subject account the page cites (data-account, and the scope's data-accounts) has one
+    # freshness entry (data-fresh) in the source line: the newest post Atlas holds, and when Atlas
+    # last fetched the account or, with no freshness on record, when it last changed. A cited post
+    # carries data-account, or data-mention when its author is cited only as mention evidence; those
+    # authors share one data-fresh="mentions" entry. A scope that reports posts, or "no posts" or
+    # "no data", must name its accounts. Returns None (n/a) on a page that cites no account and no
+    # post, whose scope reports on no account, and that has no freshness entry to check.
+    cited, problems = {}, []
+    for index, post in enumerate([n for n in nodes if "data-post" in n.attrs], 1):
+        if not (post.attrs.get("data-account") or "").strip() and "data-mention" not in post.attrs:
+            problems.append("%s has no data-account; give the account it is from as {network}:{handle}, or mark it data-mention" % post_label(post, index))
+    mentions = any("data-mention" in n.attrs for n in nodes)
+    for node in nodes:
+        raw = (node.attrs.get("data-account") or "").strip()
+        if not raw:
+            continue
+        key = account_key(raw)
+        if key is None:
+            problems.append("data-account \"%s\" is not {network}:{handle}" % raw)
+        else:
+            cited.setdefault(key, raw)
+    scope = (regions.get("scope") or [None])[0]
+    for raw in ((scope.attrs.get("data-accounts") or "") if scope is not None else "").split():
+        key = account_key(raw)
+        if key is None:
+            problems.append("the scope's data-accounts entry \"%s\" is not {network}:{handle}" % raw)
+        else:
+            cited.setdefault(key, raw)
+    def reports(node):
+        # A platform the scope reports on: posts counted, or 0 with "no posts" or "no data". "Not
+        # covered" means no linked account, so it reports on none.
+        posts = (node.attrs.get("data-posts") or "").replace(",", "").strip()
+        if not (posts.isascii() and posts.isdigit()) or not node.attrs.get("data-platform"):
+            return False  # a malformed count is R2's to report
+        shown = text(node, gap=" ")
+        return posts != "0" or ((has_phrase(shown, "no posts") or has_phrase(shown, "no data")) and not has_phrase(shown, "not covered"))
+    reporting = [n for n in walk(scope) if reports(n)] if scope is not None else []
+    if reporting and not (scope.attrs.get("data-accounts") or "").strip():
+        problems.append("the scope reports posts or their absence but names no account; list them in the scope's data-accounts")
+    elif reporting:
+        # Each platform the scope reports needs an account on it, unless the page counts it only
+        # through other creators' posts on that platform: a data-mention post there, or the
+        # platform in the mentions entry's data-platforms.
+        named = {k.split(":", 1)[0] for k in (account_key(r) for r in scope.attrs.get("data-accounts", "").split()) if k}
+        mentioned = {mention_platform(n) for n in nodes if "data-mention" in n.attrs}
+        for n in nodes:
+            if (n.attrs.get("data-fresh") or "").strip().lower() == "mentions":
+                mentioned |= set((n.attrs.get("data-platforms") or "").lower().split())
+        for name in sorted({(n.attrs.get("data-platform") or "").strip().lower() for n in reporting}):
+            if name not in named and name not in mentioned:
+                problems.append("the scope reports %s but names no %s account in data-accounts, and no mention evidence covers it" % (name, name))
+    if scope is not None:
+        # A post whose figures the page shows is a subject account's, so the scope names it; mention
+        # evidence never stands in for it.
+        in_scope = {k for k in (account_key(r) for r in (scope.attrs.get("data-accounts") or "").split()) if k}
+        for key in sorted({account_key(n.attrs["data-account"]) for n in nodes
+                           if "data-post" in n.attrs and (n.attrs.get("data-account") or "").strip()} - {None} - in_scope):
+            problems.append("the page shows posts from %s but the scope's data-accounts does not name it" % key)
+    entries = any("data-fresh" in n.attrs for n in nodes)
+    if not cited and not mentions and not problems and not entries:
+        return None
+    fresh = {}
+    for node in nodes:
+        if "data-fresh" not in node.attrs:
+            continue
+        raw = node.attrs.get("data-fresh") or ""
+        if raw.strip().lower() == "mentions":
+            if "mentions" in fresh:
+                problems.append("the page has more than one mentions freshness entry")
+                continue
+            fresh["mentions"] = node
+            if not in_footnote(node):
+                problems.append("the mentions freshness entry is outside the source line (atlas-footnote)")
+            problems += mention_problems(node)
+            continue
+        key = account_key(raw)
+        if key is None:
+            problems.append("data-fresh \"%s\" is not {network}:{handle}" % raw.strip())
+        elif key in fresh:
+            problems.append("%s has more than one freshness entry" % key)
+        else:
+            fresh[key] = node
+            if not in_footnote(node):
+                problems.append("the freshness entry for %s is outside the source line (atlas-footnote)" % key)
+            problems += fresh_problems(key, node)
+    for key in sorted(set(cited) - set(fresh)):
+        problems.append("the page cites %s but the source line gives no freshness for it" % cited[key])
+    # An entry for an account the page never cites, or a mentions entry with no mention evidence
+    # behind it, is an orphan: the source line gives freshness only for what the page cites.
+    for key in sorted(set(fresh) - set(cited) - {"mentions"}):
+        problems.append("the source line gives freshness for %s, but the page does not cite it" % key)
+    if "mentions" in fresh and not mentions and not (fresh["mentions"].attrs.get("data-platforms") or "").strip():
+        problems.append("the source line has a mentions freshness entry, but the page cites no mention evidence")
+    if mentions and "mentions" not in fresh:
+        problems.append("the page cites mention posts but the source line has no data-fresh=\"mentions\" entry")
+    return problems
+
+# Only these scripted checks can be N/A (reader-standard.md; quality-review.md, section 3). R13 and
+# R14 are n/a on their own terms, never through data-na.
 CAN_BE_NA = {"R2", "R6"}
+NA_REASON = {"R13": "the page names no question code and cites no post",
+             "R14": "the page cites no account and no post, its scope reports on no account, and it has no freshness entry"}
 CHECKS = (("R1", "Reader and scope", r1), ("R2", "Platforms covered", r2),
           ("R6", "Decisions kept separate", r6), ("R11", "Plain language", r11),
-          ("R13", "Required metrics", r13))
+          ("R13", "Required metrics", r13), ("R14", "Data freshness", r14))
 
 def check(path):
     tree = Tree()
@@ -367,7 +612,7 @@ def check(path):
         else:
             problems = run(nodes, regions)
             if problems is None:
-                results.append((code, name, "n/a", ["the page names no question code and cites no post"]))
+                results.append((code, name, "n/a", [NA_REASON[code]]))
             else:
                 results.append((code, name, "fail" if problems else "pass", problems))
     return results
