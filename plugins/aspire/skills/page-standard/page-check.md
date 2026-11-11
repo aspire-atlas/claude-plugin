@@ -486,13 +486,21 @@ def r14(nodes, regions):
         # A platform the scope reports on: posts counted, or 0 with "no posts" or "no data". "Not
         # covered" means no linked account, so it reports on none.
         posts = (node.attrs.get("data-posts") or "").replace(",", "").strip()
-        if not posts or not node.attrs.get("data-platform"):
-            return False
+        if not (posts.isascii() and posts.isdigit()) or not node.attrs.get("data-platform"):
+            return False  # a malformed count is R2's to report
         shown = text(node, gap=" ")
         return posts != "0" or ((has(shown, "no posts") or has(shown, "no data")) and not has(shown, "not covered"))
     reporting = [n for n in walk(scope) if reports(n)] if scope is not None else []
     if reporting and not (scope.attrs.get("data-accounts") or "").strip():
         problems.append("the scope reports posts or their absence but names no account; list them in the scope's data-accounts")
+    elif reporting:
+        # Each platform the scope reports needs an account on it, unless the page counts it only
+        # through other creators' posts (a mentions entry).
+        named = {k.split(":", 1)[0] for k in (account_key(r) for r in scope.attrs.get("data-accounts", "").split()) if k}
+        mentioned = mentions or any((n.attrs.get("data-fresh") or "").strip().lower() == "mentions" for n in nodes)
+        for name in sorted({(n.attrs.get("data-platform") or "").strip().lower() for n in reporting}):
+            if name not in named and not mentioned:
+                problems.append("the scope reports %s but names no %s account in data-accounts" % (name, name))
     if not cited and not mentions and not problems:
         return None
     fresh = {}
