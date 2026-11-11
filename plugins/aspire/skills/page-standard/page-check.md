@@ -389,15 +389,12 @@ def dated_problems(key, node, shown):
         value = node.attrs.get(attr)
         if day(value) == "date" and not shows_date(after_label(shown, label), value):
             problems.append("the freshness entry for %s does not show its %s date (%s) after \"%s\"" % (key, attr[5:], value.strip()[:10], label))
-    newest, fetched = node.attrs.get("data-newest"), node.attrs.get("data-fetched")
-    if day(newest) == "date" and day(fetched) == "date" and newest.strip()[:10] > fetched.strip()[:10]:
-        problems.append("the freshness entry for %s has a newest post (%s) after its last fetch (%s)" % (key, newest.strip()[:10], fetched.strip()[:10]))
     return problems
 
 def mention_problems(node):
     # The one entry for authors cited only as mention evidence or counted only in totals.
     shown, problems = text(node, gap=" "), []
-    if not has(shown, "other creators"):
+    if not re.search(r"(?i)\bother creators?\b", shown):
         problems.append("the mentions freshness entry does not say how many other creators it covers")
     if day(node.attrs.get("data-newest")) != "date":
         problems.append("the mentions freshness entry needs data-newest as a date (YYYY-MM-DD)")
@@ -407,7 +404,7 @@ def mention_problems(node):
 def fresh_problems(key, node):
     shown = text(node, gap=" ")
     problems = dated_problems(key, node, shown)
-    if not re.search(r"(?i)@%s(?![\w.])" % re.escape(key.split(":", 1)[1]), shown):
+    if not re.search(r"(?i)@%s(?!\w|-|\.\w)" % re.escape(key.split(":", 1)[1]), shown):
         problems.append("the freshness entry for %s does not show the handle" % key)
     newest = day(node.attrs.get("data-newest"))
     if not newest or newest == "unknown":

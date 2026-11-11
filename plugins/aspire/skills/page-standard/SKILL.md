@@ -410,8 +410,8 @@ this section is about subject accounts.
 `freshness { lastFetchedAt, newestPostAt, postsHeld, postsHeld30d }`
 (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-tools.md`, **Data freshness**): from
 `lookup_creators`, `search_creators` with no wildcard `exclude`, `get_creator`, or `list_channels`.
-Also make one **freshness read** per account, whatever the flow's own window: `search_posts` with
-`author.username` = the handle, sorted `postedAt` desc, `limit: 10`, projecting `postedAt` only.
+Also make one **freshness read** per account and network, whatever the flow's window: `search_posts`
+on `author.username` and the network, `postedAt` desc, `limit: 10`, projecting `postedAt` only.
 The newest post is `newestPostAt`, and the last fetch is `lastFetchedAt`. When `lastFetchedAt` is
 null, the account is "not fetched by Atlas yet". When `freshness` is absent, the newest post is the
 freshness read's first hit, and the time is the account's `snapshotAt`, labelled "last changed",
