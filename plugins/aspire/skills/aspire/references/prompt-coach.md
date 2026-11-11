@@ -126,7 +126,9 @@ Report with the progress tool: title `Prompt coach`, tasks `Read the ask`, `Ask 
 
 1. **Read the ask.** Map it to one flow; if two, say so and coach the first. Score the rubric
    silently against the ask, the saved brand memory, and the conversation so far. Count the
-   flow's critical inputs that are missing and not already held in brand memory. With a profile
+   flow's critical inputs that are missing and not already held in brand memory or in a saved
+   answer: the person's own default reader for the question code, the flow's `lastrun:` record,
+   or the flow's own setup record (**Orchestration contract**, **2**, Saved answers). With a profile
    known, `search_calibrations` (read-only, no filter, paged) may fill #7 and defaults; the coach
    needs no Atlas connection for the generic parts, so skip it when none is live.
 2. **Verdict.** One short line in plain words, no score number: "3 of 6 inputs for Ad reuse:
@@ -164,11 +166,15 @@ reuse, missing window, reader, save."), once per round.
 
 ## Inferring option defaults
 
+- A saved answer comes first, in the order **Orchestration contract**, **2**, Saved answers gives:
+  for window, reader and save, it is the (Recommended) option, its source in the description
+  ("as saved for ad reuse").
 - Window: the flow's own default (its section names it), else the user's last stated period.
 - Reader and decision: the lens the ask's words cue in **Recipient lens**; else
   "Just for our team".
 - Sources, roles, competitors, red lines: what `brand:`, `competitor`, `red_line`, and `guideline`
-  records hold (never `review:` or `theme:` keys); name that source in the option's description.
+  records hold (never `review:`, `theme:` or `lastrun:` keys); name that source in the option's
+  description.
 - Handles and links: only ones the user typed or Atlas already holds for the profile. Never
   guess one; leave `[@handle]`.
 - Save: "Save (Recommended)" when the flow's own first question recommends it, else "Page only".

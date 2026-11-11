@@ -423,6 +423,9 @@ result packet's `proposals` (level `write`, gate `approve-account-map`).
 `other_brand_sponsored`. `evidence` is one plain line (the caption wording or posting mix behind
 the label).
 
+An interactive run's reader, scope, and save choice go on `lastrun:ad-reuse`, apart from the
+account map (**Orchestration contract**, **2**, Saved answers).
+
 **Reading it back.** The launch digest carries it when saved; without a digest, the agent's own
 `search_calibrations` read keeps the `ad-reuse:account-map` key. Follow its labels as saved and
 sort only authors it doesn't list. When those new authors exist, propose only them, as an update

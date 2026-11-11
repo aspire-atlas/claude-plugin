@@ -125,7 +125,8 @@ reads the same program. The pattern is the CAS one (**CAS campaign**, **1a**), u
 keys and prefix.
 
 - **Setup records** are calibrations under `program:{slug}-*`. They change rarely; a change goes
-  through the supersede rule with its own confirmation.
+  through the supersede rule with its own confirmation. A program agent's interactive reader and
+  save choice go on `lastrun:{flow}-{slug}` (**Orchestration contract**, **2**, Saved answers).
 - **Working state** is findings, written with `append_insights` under one runKey prefix. A
   change is a new finding, never an edit, so no destructive tool is ever needed to move a
   creator along.
