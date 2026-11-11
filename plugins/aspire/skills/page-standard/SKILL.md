@@ -155,7 +155,7 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
       minimum pool**). Under it, name the wider scope you would read in `widen`: more weeks, more
       platforms, or more accounts, whichever the launch's `scope` leaves room for.
    2. **Write three short bullets**, each a claim the reader can act on, with the posts,
-      accounts, and views behind it. A bullet on fewer than 3 posts says how few ("from only five
+      accounts, and views behind it. A bullet on fewer than 3 posts says how few ("from only two
       posts"). The good and bad examples are in `orchestration.md`, **2**.
    3. **Watch the most-viewed video behind each bullet.** With a shell, `ffmpeg`, and the post's
       media from the Atlas read tools, run the 1-second frame scan (section 3; `quality-review.md`,

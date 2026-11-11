@@ -175,13 +175,13 @@ team catalog, and how agents render for a lens are in **Recipient lens**.
    run it.
 
 **Campaign plan.** A launch ask ("we launch on the 14th and need creators") spans four agents.
-Propose the sequence in the setup reply's Heard question ("I'll start a shortlist and brief for
-the launch, then check drafts and run a daily pulse through launch week. Sound right?"), not in
-a confirmation of its own, then run it in order, each step through its own section and its own
-write confirmations, and each new page through its own storyline (**Orchestration contract**
-**2**, **The storyline**) before it is built: **Creator
-discovery** (Setup for the campaign if new, then Run), **Creator brief** in campaign mode,
-the pulse offer (**Readouts**, **Launch pulse**), and **Content review** as drafts arrive.
+Propose the sequence in the setup reply's Heard question ("I'll start a shortlist and brief for the
+launch, then check drafts and run a daily pulse through launch week. Sound right?"), not in a
+confirmation of its own, then run it in order, each step through its own section and its own write
+confirmations, and each new page through its own storyline (**Orchestration contract** **2**, **The
+storyline**) before it is built: **Creator discovery** (Setup for the campaign if new, then Run),
+**Creator brief** in campaign mode, the pulse offer (**Readouts**, **Launch pulse**), and **Content
+review** as drafts arrive.
 
 ## Decision audit (how a piece of work was decided)
 

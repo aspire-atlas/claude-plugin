@@ -377,11 +377,10 @@ a snapshot.
 
 Read `policy:readout-routing`. The page and chat summary always ship. Then:
 
-- **Slack:** if the routing names a channel and a Slack connection is available in the
-  session, send one message: the headline, the storyline's three bullets with their evidence,
-  up to two more key bullets, the page link. Plain text
-  with Slack formatting, no images. If no Slack connection is present, say so in the chat
-  summary and continue.
+- **Slack:** if the routing names a channel and a Slack connection is available in the session, send
+  one message: the headline, the storyline's three bullets with their evidence, up to two more key
+  bullets, the page link. Plain text with Slack formatting, no images. If no Slack connection is
+  present, say so in the chat summary and continue.
 - **Per-lens destinations:** a lens in R6 (or a pulse lens) with its own destination gets its own
   message: that lens's three bullets and the page link with the lens anchor. Same connection
   rules as below.
@@ -420,36 +419,37 @@ README). Rules for the agents:
 - If a search returns nothing for the window, report "no posts indexed for {window}" rather
   than inventing numbers, and still deliver the page and summary.
 
-**Storyline.** A scheduled readout, or a rerun of one already published, never stops to confirm
-its storyline: it is a `state` pass (**Orchestration contract**,
-**2**, **The storyline**): the agent drafts the three bullets from the window's posts, each with
-the posts, accounts, or views behind it, and the page opens with them in the answer block, under
-the headline. The chat summary, the Slack message, and the email carry the same three bullets, in
-the same order and wording. A window under the row's minimum (10 posts for what landed and why)
-still publishes, and the bullet it weakens says how few posts it rests on. Where the run cannot
-watch a video or check a product fact, the method says so (`skills/page-standard/SKILL.md`,
-section 4, step 0b).
+**Storyline.** A scheduled readout, or a rerun of one already published, never stops to confirm its
+storyline: it is a `state` pass (**Orchestration contract**, **2**, **The storyline**): the agent
+drafts the three bullets from the window's posts, each with the posts, accounts, or views behind it,
+and the page opens with them in the answer block, under the headline. The chat summary, the Slack
+message, and the email carry the same three bullets, in the same order and wording. A window under
+the row's minimum (10 posts for what landed and why) still publishes, and the bullet it weakens says
+how few posts it rests on. A window with no posts gives "No posts landed {window}." as the first
+bullet, then up to two from the flags or the older posts still gaining engagement, each with its
+evidence; with nothing there either, that one bullet is the storyline. Where the run cannot watch a
+video or check a product fact, the method says so (`skills/page-standard/SKILL.md`, section 4, step
+0b).
 
 ## Main thread: the run and the launch pulse
 
 What the **Readouts** section of SKILL.md does around the agents.
 
 **The run.** Ask once with `AskUserQuestion`: "Which insights report?" Options: "Weekly (last
-week)", "Daily (yesterday)", "Both now", "Change setup". Then launch
-`atlas-weekly-insights-report` and/or `atlas-daily-insights-report` with: tool prefix,
-`profile_id`, `profile_slug`, linked handles and networks, run mode `interactive`, `recipient`
-(the lens SKILL.md **Reading the ask** confirmed, or the saved R6 lenses when it found none), and
-the target window only if the user named one, and the launch block's `storyline` pass: `state`
-when Atlas already holds the readout's insights for this profile (`search_insights` with
-a `prefix` filter on `detail.account_review.runKey` = `readout-daily-{profile}` or
-`readout-weekly-{profile}`, per **Data pull**), since the run republishes the same page;
-otherwise the first run's page is new and follows **The storyline** before it builds. Never
-pass "today" or any date the main thread assumed: session headers can be a day stale, and a
-wrong "today" shifts the whole readout by a day (or a week). The agents resolve the date
-themselves (**Resolving "today"**) and refuse a repeat window. Relay each agent's summary and page link, including the resolved window it
-reports. When an agent asks the main thread to confirm delivery, ask with `AskUserQuestion`
-("Post to {channel} and email {recipients}?" Options: Send (Recommended) / Page only this time)
-and relay the answer.
+week)", "Daily (yesterday)", "Both now", "Change setup". Then launch `atlas-weekly-insights-report`
+and/or `atlas-daily-insights-report` with: tool prefix, `profile_id`, `profile_slug`, linked handles
+and networks, run mode `interactive`, `recipient` (the lens SKILL.md **Reading the ask** confirmed,
+or the saved R6 lenses when it found none), and the target window only if the user named one, and
+the launch block's `storyline` pass: `state` when Atlas already holds the readout's insights for
+this profile (`search_insights` with a `prefix` filter on `detail.account_review.runKey` =
+`readout-daily-{profile}` or `readout-weekly-{profile}`, per **Data pull**), since the run
+republishes the same page; otherwise the first run's page is new and follows **The storyline**
+before it builds. Never pass "today" or any date the main thread assumed: session headers can be a
+day stale, and a wrong "today" shifts the whole readout by a day (or a week). The agents resolve the
+date themselves (**Resolving "today"**) and refuse a repeat window. Relay each agent's summary and
+page link, including the resolved window it reports. When an agent asks the main thread to confirm
+delivery, ask with `AskUserQuestion` ("Post to {channel} and email {recipients}?" Options: Send
+(Recommended) / Page only this time) and relay the answer.
 
 **Setting up a launch pulse** (**Daily launch pulse**). Offer it after a campaign brief, or when
 the user asks how a launch is landing:

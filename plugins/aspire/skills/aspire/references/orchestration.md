@@ -106,15 +106,14 @@ page. Take the analysis time from the run log's last run of the same agent (**9*
 say "a few minutes" for it. Never quote a time you did not read.
 
 When the flow's own questions would not fit in this call, ask them in the next call, still before
-the launch. On a run that builds a new page there is no such next call: a question that changes
-what the agent reads (a campaign, more handles, a window) goes in this reply, before the
-storyline draft, and everything else (Save, a send choice, a format) waits for the storyline call
-(**The storyline**). The read-changing questions take Save's slot first; if they still do not
-fit, Scope folds into Heard's free text ("Instagram and TikTok, last 90 days, unless you say
-otherwise"). So a run that builds a new page asks two messages at most before it builds: this
-reply, then the storyline. Questions this reply already answered, or the **Prompt coach**
-collected, are never asked again. Never ask in plain text, and
-never ask in an unattended run.
+the launch. On a run that builds a new page there is no such next call: a question that changes what
+the agent reads (a campaign, more handles, a window) goes in this reply, before the storyline draft,
+and everything else (Save, a send choice, a format) waits for the storyline call (**The
+storyline**). The read-changing questions take Save's slot first; if they still do not fit, Scope
+folds into Heard's free text ("Instagram and TikTok, last 90 days, unless you say otherwise"). So a
+run that builds a new page asks two messages at most before it builds: this reply, then the
+storyline. Questions this reply already answered, or the **Prompt coach** collected, are never asked
+again. Never ask in plain text, and never ask in an unattended run.
 
 ### The storyline (before a new page)
 
@@ -137,17 +136,19 @@ agents (**3**) confirms the storyline of each new page before the agent that bui
    nothing, and returns it in the packet's `storyline` (**6**). Log its return as a
    `storyline-drafted` Adjustments row, not a `returned` Runs row (**9**).
 2. **Ask once.** One `AskUserQuestion` call, header "Storyline", with the three bullets as the
-   question, each with its evidence ("Gift posts beat creators' usual views this fall. 78 posts,
-   15 accounts."), then any line the packet's `storyline` carries for what was not checked
-   ("Timecodes and on-screen claims are unverified.", "The plan names are not checked against
-   the company's announcement."). Options: "Build (Recommended)", "Change", and, when the
-   packet's `widen` is not `null`, "Widen", with `widen` in its words ("Widen to 26 weeks and
-   TikTok"). When the pool is under the row's minimum (below), say so in the question ("Only 6
-   posts fit; the minimum is 10.", "3 of 20 creators have fewer than 5 posts.") and recommend
-   Widen when it is offered; with no `widen`, Build stays recommended and the thin bullet says
-   how few posts it rests on. The free text field takes the person's change. The same call
-   carries the packet's other `questions` (page standard step 2a's metric check-in among them)
-   and any flow question left for it (**2**), up to four in all.
+   question, each with its evidence ("Gift posts beat creators' usual views this fall. 78 posts, 15
+   accounts."), then any line the packet's `storyline` carries for what was not checked ("Timecodes
+   and on-screen claims are unverified.", "The plan names are not checked against the company's
+   announcement."). Options: "Build (Recommended)", "Change", and, when the packet's `widen` is not
+   `null`, "Widen", with `widen` in its words ("Widen to 26 weeks and TikTok"). When the pool is
+   under the row's minimum (below), say so in the question ("Only 6 posts fit; the minimum is 10.",
+   "3 of 20 creators have fewer than 5 posts.") and recommend Widen when it is offered; with no
+   `widen`, Build stays recommended and the thin bullet says how few posts it rests on. The free
+   text field takes the person's change. The same call carries the packet's other `questions` (page
+   standard step 2a's metric check-in among them) and any flow question left for it (**2**), up to
+   four in all. When they do not fit, a format question takes its default and the Storyline question
+   states it ("Built as a one-page plan; say if you want slides."), and a send choice is asked after
+   the build, with the page, as the readout's delivery confirmation is.
 3. **Act on the answer.**
    - **Build:** write the `storyline-confirmed` row (**9**), then launch again with
      `storyline.pass` `build` and the confirmed `bullets`, keeping the `runId` (**5**). The
@@ -158,8 +159,9 @@ agents (**3**) confirms the storyline of each new page before the agent that bui
      or drops a bullet, log the row and build with the changed bullets. When it needs evidence the
      draft did not read (a new angle, a new claim), launch `draft` again with the change in the
      launch message as "Storyline change: {their words}" and ask again.
-   - **Widen:** launch `draft` again with the wider scope in the launch block's `scope`, and ask
-     again.
+   - **Widen:** launch `draft` again with the wider weeks and platforms in the launch block's
+     `scope`, the packet's `widen` in the launch message as "Widen: {widen}" (more accounts or
+     handles go there and in the flow's own handle inputs), and ask again.
    Each extra round is an Adjustments row (**9**); it never repeats the setup reply.
 
 **The minimum pool, by kind of question.** The kinds are section 8's rows of
@@ -174,10 +176,9 @@ question: more weeks, more platforms, or more accounts, whichever the run has ro
 | Ads and cut-downs | 5 videos |
 | Program tracking | None: the posts owed are the pool, and a thin one is the finding |
 
-For a row counted per brand or per creator, the pool is under its minimum when half or more of
-them are, and the packet's `pool.under` names each one under it; a bullet that rests on one of
-them says so. Each bullet rests on at least 3 posts, or says how few it rests on ("from only five
-posts").
+For a row counted per brand or per creator, the pool is under its minimum when half or more of them
+are, and the packet's `pool.under` names each one under it; a bullet that rests on one of them says
+so. Each bullet rests on at least 3 posts, or says how few it rests on ("from only two posts").
 
 **Unattended runs and repeat runs** never ask. They launch with `storyline.pass` `state`: the agent
 drafts the storyline and builds in the same pass. The page opens with it in the answer block, the
@@ -446,6 +447,8 @@ clock.
  "scope": {…}, "approved": {…}, "page": null, "cost": null, "selfCheck": null, "status": "launched"}
 {"table": "adjustments", "runId": "…", "at": "…", "change": "{what changed}",
  "by": "person|aspire|agent", "why": "{one line}"}
+{"table": "adjustments", "runId": "…", "at": "…", "change": "storyline-drafted",
+ "by": "agent", "why": "{pool posts against the minimum}", "minutes": 4}
 {"table": "adjustments", "runId": "…", "at": "…", "change": "storyline-confirmed",
  "by": "person", "why": "Build|Change", "storyline": ["{bullet with its evidence}", "…", "…"]}
 ```
@@ -456,11 +459,11 @@ clock.
   latest row for a `runId` is its state.
 - Adjustments: an approval or refusal of a proposal, a level raised in **7**, a fix applied to the
   page, a republish, a question answered after the run, a correction the person made to what was
-  heard, a storyline draft returned (`storyline-drafted`, with the draft's minutes), a storyline
-  changed or widened, and the `storyline-confirmed` row, written once the person answers Build
-  (or a Change that needs no new draft) and before the build launches, with the bullets exactly
-  as the build receives them. An interactive run that builds a new page without that row has
-  skipped **The storyline**.
+  heard, a storyline draft returned (`storyline-drafted`, with its `minutes` from the packet's
+  `cost`), a storyline changed or widened, and the `storyline-confirmed` row, written once the
+  person answers Build (or a Change that needs no new draft) and before the build launches, with the
+  bullets exactly as the build receives them. An interactive run that builds a new page without that
+  row has skipped **The storyline**.
 - The log never holds credentials, mailing addresses, bank or tax details, or message bodies.
 - The time estimate (**2**) reads the last `returned` row with a `page` for the same agent.
 
