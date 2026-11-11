@@ -104,6 +104,9 @@ Rules:
   confirmation may an unattended run send anything.
 - Confirm the batch once before writing (Guardrails: one confirmation may cover a batch of the
   same kind). Then write all six.
+- R6 is the readouts' saved reader; in a person's own interactive run, their own default reader
+  can override it. An interactive run's save choice goes on `lastrun:daily-insights-report` or
+  `lastrun:weekly-insights-report` (**Orchestration contract**, **2**, Saved answers).
 - R6 lenses are `team`, `leadership`, `product`, `pmm`, and `growth` (**Recipient lens**).
   Option 3 saves both `product` and `pmm`. A destination named on a lens is covered by the R2
   standing approval; say so in the same confirmation. A saved R6 in the older wording maps as:
@@ -135,8 +138,8 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
 
 1. `search_calibrations` as above. Extract: readout calibrations, `red_line`, `guideline`,
    `competitor`, `partner`, `brand:summary`, `target:weekly-health`, `theme:brand`. Drop every
-   `review:` key (content review only; see **Atlas tools**). `theme:brand` styles the page
-   and is never a guideline.
+   `review:` key (content review only; see **Atlas tools**) and every `lastrun:` key (a flow's
+   saved setup answers, never a rule). `theme:brand` styles the page and is never a guideline.
 2. `list_post_search_fields` once. Use only paths it returns.
 3. `search_posts` per linked handle: `author.username` = handle, `postedAt` gte the window
    start, `exists mediaKind` (drops stories). Sort `postedAt` desc, limit 100, page on the

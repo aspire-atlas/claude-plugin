@@ -73,7 +73,7 @@ the list as approved for fetching.
    record, `red_line`, `competitor`, `partner`, `brand:summary`, `brand:business-context`,
    `user:primary-contact`, `fees:rate-card`, `theme:brand`, and, for a campaign run,
    `campaign:{slug}-brief` and `-criteria` (and `-lane-{lane}`, `-cadence`, `-cas` for the match
-   score's weights and `-terms` for its target rate, for a lane run). Drop every `review:`, `program:`, `library:`, `orchestrator:` and `ad-reuse:` key. Use only active records;
+   score's weights and `-terms` for its target rate, for a lane run). Drop every `review:`, `program:`, `library:`, `orchestrator:`, `ad-reuse:` and `lastrun:` key. Use only active records;
    superseded ones tell you what changed. Then `get_brand_instruction` with
    `agentType: "brand_safety"`.
 4. `list_creator_search_fields`, `list_post_search_fields`, and `list_insight_search_fields`
