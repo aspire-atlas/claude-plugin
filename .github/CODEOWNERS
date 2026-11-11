@@ -1,9 +1,10 @@
 # A change to these paths needs a review from a plugin owner: they define what every agent and
 # page does, the checks that hold them to docs/STANDARD.md, and the standard itself. The develop
-# branch protection requires a code-owner review (docs/PLUGIN-LIFECYCLE.md section 11).
+# branch protection requires a code-owner review (docs/PLUGIN-LIFECYCLE.md section 11). Either
+# owner's approval is enough.
 
-/plugins/*/agents/      @aspire-atlas/admin
-/plugins/*/skills/      @aspire-atlas/admin
-/scripts/               @aspire-atlas/admin
-/docs/STANDARD.md       @aspire-atlas/admin
-/.github/               @aspire-atlas/admin
+/plugins/*/agents/      @iteration @payman-salimi
+/plugins/*/skills/      @iteration @payman-salimi
+/scripts/               @iteration @payman-salimi
+/docs/STANDARD.md       @iteration @payman-salimi
+/.github/               @iteration @payman-salimi
