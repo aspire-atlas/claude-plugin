@@ -283,12 +283,13 @@ lists them. Agents work only from a message that carries it (**11**).
   differs from `agent`). Without that tool, from the shell: the name, the UTC time
   from `date -u +%Y%m%dt%H%M%S`, and the output of `openssl rand -hex 2`, joined by hyphens, in
   lower case (`atlas-creator-vetting-20261029t140312-a3f9`). A relaunch of the same run (its
-  `record` pass, or its next mode) keeps the id. With no shell, leave `runId` out; the agent takes
+  `record` pass, its next mode, a storyline redraft, or the build after it) keeps the id. With no shell, leave `runId` out; the agent takes
   the one `report_checkpoint` returns for `started`.
 - `run` is `interactive` or `unattended`. `scope` is what the setup reply settled, or the flow's
   own window; leave out what the flow does not use.
-- `approved` lists what the person already approved, by level: `write` is the setup reply's
-  Save answer (or the flow's standing approval in an unattended run); `send` names each recipient,
+- `approved` lists what the person already approved, by level: `write` is the Save answer:
+  from the setup reply, or from the storyline call on a run that builds a new page, so `false` on a
+  `draft` pass (or the flow's standing approval in an unattended run); `send` names each recipient,
   order, or payment approved one by one; `spend.cap` is the cap in fetches (**2**), `null` for no cap or
   no spend. The flow's own inputs still name each approval as before (R4, O1 and so on); an agent
   writes, sends, or spends only when both agree.

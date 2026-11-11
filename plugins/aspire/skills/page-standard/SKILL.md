@@ -134,7 +134,9 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    - `draft`: run steps 1, 2, and 2a, then draft the storyline below, publish nothing, and return
      it in the packet's `storyline` with `page` `null` (**6** there). Put step 2a's check-in, when
      it has one, in `questions`; the main thread asks both in one call. Never ask yourself, even
-     when your flow asks its own questions: the storyline goes to the main thread.
+     when your flow asks its own questions: the storyline goes to the main thread. A "Storyline
+     change:" line in the launch message is the person's change: draft to it, reading what it
+     needs. A "Widen:" line names the wider scope to read, with any accounts or handles it adds.
    - `build`: the person confirmed the `bullets`. The page's insights (part 3) are those bullets,
      in their order and wording, each with its evidence; the headline is written from them. A
      "Unchecked:" line in the launch message lists the checks the draft could not make: put
