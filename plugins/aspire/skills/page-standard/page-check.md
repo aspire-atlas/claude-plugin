@@ -2,9 +2,10 @@
 
 The script `SKILL.md`, section 5, runs on every page before it is published: R1, R2, R6, R11, R13
 and R14 from the reader standard. Extract it with the command there; never retype it. It reads
-only the pages named and writes nothing. It lives in this file so `SKILL.md` stays short; when the reader
-standard changes, `SKILL.md`'s section 6 table and this script change in the same commit, and when
-the required-metrics table (`SKILL.md`, section 8) changes, `REQUIRED_ROWS` here changes with it.
+only the pages named and writes nothing. It lives in this file so `SKILL.md` stays short; when the
+reader standard changes, `SKILL.md`'s section 6 table and this script change in the same commit,
+and when the required-metrics table (`SKILL.md`, section 8) changes, `REQUIRED_ROWS` here changes
+with it.
 
 ## Contents
 

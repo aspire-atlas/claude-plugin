@@ -266,7 +266,9 @@ before the first `h2`, under the page header that carries the mark and the "Prep
   as `{network}:{handle}` separated by spaces, totals included, so R14 looks for each one's
   freshness entry (3.19). Authors cited only as mention evidence or counted only in totals share
   the mentions entry (3.19) instead. A scope that reports a platform (posts, "no posts" or "no
-  data") and names no account on it fails R14, unless a mentions entry covers that platform.
+  data") always names at least the brand's own handles, even when the page counts only other
+  creators' posts. A reported platform with no named account on it fails R14 unless a mentions
+  entry covers it.
 - Leave "Prepared by" out when the reader is not a VP or budget owner.
 
 <!-- block:scope -->

@@ -263,13 +263,13 @@ Mark the parts the script reads. The attributes carry no styling; style the page
 - Every account the page cites carries `data-account="{network}:{handle}"`: each cited post, and
   each creator or account card. A post cited only as mention evidence carries `data-mention`
   instead, and the source line then holds one `data-fresh="mentions"` entry. The scope's
-  `data-accounts` lists every subject account whose figures the page shows, totals included; a
-  scope that reports a platform (posts, "no posts" or "no data") with no account on it fails R14,
-  unless a mentions entry covers it. The source line then holds one `data-fresh` entry per account
-  with the same value (`blocks.md`, 3.19): `data-newest` the newest post's date or `none`, and
-  `data-fetched` the last fetch's date, `none`, or `unknown`, or, with no `freshness` on record,
-  `data-changed`, shown as "last changed". The entry shows each date and the platform. A page that
-  cites and reports on no account gets `n/a`.
+  `data-accounts` lists every subject account whose figures the page shows, totals included, and
+  at least the brand's own handles when the scope reports a platform (posts, "no posts" or "no
+  data"); a reported platform with no named account fails R14 unless a mentions entry covers it.
+  The source line holds one `data-fresh` entry per account, same value (`blocks.md`, 3.19):
+  `data-newest` the newest post's date or `none`, and `data-fetched` the last fetch's date, `none`,
+  or `unknown`, or, with no `freshness` on record, `data-changed` ("last changed"). The entry shows
+  each date and the platform. A page that cites and reports on no account gets `n/a`.
 - A page with no `data-page` markup yet (a flow whose reference does not add it) gets `unmarked`
   for R1, R2, R6, R13, and R14. Judge those by reading; R11 still runs.
 

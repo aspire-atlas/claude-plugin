@@ -49,7 +49,8 @@ and the unattended run rules. Follow it exactly. Read `recipient-lens.md` too.
 
 1. Load tools: `ToolSearch` with `select:` for `get_brand_context`, `search_calibrations`, `list_post_search_fields`,
    `search_posts`, `search_creators`, `search_insights`, `append_insights`, `report_checkpoint`,
-   `lookup_creators` (for the freshness refresh only) under the given prefix. Load the Slack and email send tools only if the routing names them and they exist.
+   and `lookup_creators`, all under the given prefix (`lookup_creators` for the freshness refresh
+   only). Load the Slack and email send tools only if the routing names them and they exist.
 2. **Clock check, then window.** Read the R1 timezone from `policy:readout-cadence`, then
    get the real current date from the shell, never from the prompt or the session header:
    `TZ=<R1 timezone> date +%F` via Bash. Last week is the most recent completed Monday to
