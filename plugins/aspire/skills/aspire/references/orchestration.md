@@ -152,7 +152,10 @@ Say "as you prefer for P1" for the person's default and "the default for this qu
 for a saved "page only"; the Heard question carries them, its "Yes, run it" confirms them, and its
 free text field changes them. A saved "save to Atlas" never skips the Save question: it is still
 asked, with "Save to Atlas" as its (Recommended) option, described "as saved for {the flow}", so
-every write is confirmed by its own question (**7**, Write) whoever saved the answer. A
+every write is confirmed by its own question (**7**, Write) whoever saved the answer. When the
+person turns a saved "page only" into saving to Atlas in Heard's free text field, ask the Save
+question in the next call, before the launch, with "Save to Atlas" as its (Recommended) option;
+the run writes only on that answer. A
 flow's own question that a saved record answers works the same way: the saved answer is its
 (Recommended) option, its source in the option's description.
 
@@ -179,8 +182,12 @@ When the person's own record has no role, the first two options also save their 
 says so in its description ("and your role, paid social manager"; in the setup reply's call, "and
 the role you pick in Heard"). Take the role from the persona the Heard question settled; with
 none, ask it in the call after (header "Role", options "Influencer manager", "Paid social
-manager", "Organic social manager", and the free text field for anything else). Write once, after
-the answers and before the launch:
+manager", "Organic social manager", and the free text field for anything else). A `user_fact`
+record also needs the person's `relationship` (`in_house`, `agency`, or `owner`). Take it from
+their own record, else from their **Onboarding questions** record (question 2 or 11) when it is
+theirs; with neither, ask it in that same call, header "Relationship", with question 2's options
+("In-house marketer or social lead", "Agency working on the brand's behalf", "Founder or owner").
+Never guess it. Write once, after the answers and before the launch:
 
 - "For everyone", an answer a flow's own setup record holds: a changed reader supersedes that
   record (`supersede_calibration`, `ifVersion` set to the version read) in its own body format,
@@ -200,10 +207,10 @@ the answers and before the launch:
   set to the version read, the record's `statement`, `provenance: "interview"`, and a `detail`
   that carries the record's whole current detail (`role`, `roleOther` when present, and every preference) with only these
   changed: for "Just for me", `preferences.defaultReader.{code}` added or replaced; for a role
-  saved, `role` set (and `roleOther` for `other`), with the statement "Role: {role label}". A detail
-  that sends only the changed field drops the rest. With no record, `append_calibration` with kind
+  saved, `role` set (and `roleOther` for `other`), with the statement "Role: {role label}". A record
+  without `relationship` gets it too. A detail that sends only the changed field drops the rest. With no record, `append_calibration` with kind
   `user_fact`, the person's key, statement "Role: {role label}", `provenance: "interview"`, and
-  `{role, roleOther?, preferences?: {defaultReader: {"{code}": "{lens}"}}}`, with `preferences`
+  `{role, relationship, roleOther?, preferences?: {defaultReader: {"{code}": "{lens}"}}}`, with `preferences`
   only for "Just for me". Map the role to
   `influencer_manager`, `paid_social_manager`, `organic_social_manager`, or `other` with the
   person's words as `roleOther` (at most 80 characters).
