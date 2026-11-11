@@ -161,13 +161,13 @@ else
     awk '/^<!-- page-check -->$/{f=1;next} /^<!-- \/page-check -->$/{f=0} f' "$PC" | sed '1d;$d' > "$tmp/page_check.py"
     [ -s "$tmp/page_check.py" ] || err "$PC has no <!-- page-check --> script"
     grep -qF 'skills/page-standard/page-check.md' "$PS" || err "$PS does not link skills/page-standard/page-check.md"
-    # Each fixture prints exactly five results and no error: a pass*.html page fails nothing, and a
+    # Each fixture prints exactly six results and no error: a pass*.html page fails nothing, and a
     # fail-rN*.html page fails RN and nothing else. Exit 2 means the script could not read the page.
     for f in "$FX"/*.html; do
       [ -f "$f" ] || continue
       name=${f##*/}
       out=$(python3 -I "$tmp/page_check.py" "$f" 2>&1) && code=0 || code=$?
-      [ "$code" -ne 2 ] && [ "$(grep -c '"check": "R' <<< "$out")" -eq 5 ] && ! grep -q Traceback <<< "$out" ||
+      [ "$code" -ne 2 ] && [ "$(grep -c '"check": "R' <<< "$out")" -eq 6 ] && ! grep -q Traceback <<< "$out" ||
         { err "page check did not run cleanly on $f (exit $code): $out"; continue; }
       failed=$(grep -o '"check": "R[0-9]*", "name": "[^"]*", "result": "fail"' <<< "$out" | sed -E 's/^"check": "(R[0-9]+)".*/\1/' | tr '\n' ' ' || true)
       case $name in
@@ -207,11 +207,13 @@ print("ok" if a and a == b else "table %s; script %s" % (sorted(set(a) - set(b))
         echo "$style"
         echo '</head><body>'
         section block:scope | sed -e "/the coverage strip (3.2) goes here/{r $tmp/coverage.html" -e 'd;}'
-        for b in $blocks; do case $b in scope|coverage) ;; *) section "block:$b" ;; esac; done
-        echo '<footer class="atlas-footnote"><p>Internal use only. Not for public publishing.</p></footer></body></html>'
+        for b in $blocks; do case $b in scope|coverage|freshness) ;; *) section "block:$b" ;; esac; done
+        echo '<footer class="atlas-footnote">'
+        section block:freshness
+        echo '<p>Internal use only. Not for public publishing.</p></footer></body></html>'
       } > "$tmp/blocks.html"
       out=$(python3 -I "$tmp/page_check.py" "$tmp/blocks.html" 2>&1) && code=0 || code=$?
-      [ "$code" -eq 0 ] && [ "$(grep -c '"result": "pass"' <<< "$out")" -eq 5 ] ||
+      [ "$code" -eq 0 ] && [ "$(grep -c '"result": "pass"' <<< "$out")" -eq 6 ] ||
         err "a page built from every block in $BL does not pass the page check (exit $code): $out"
       ran="$ran, and a page built from every block passes it"
     fi

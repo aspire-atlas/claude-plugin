@@ -1,7 +1,7 @@
 # Page check script
 
-The script `SKILL.md`, section 5, runs on every page before it is published: R1, R2, R6, R11 and
-R13 from the reader standard. Extract it with the command there; never retype it. It reads only the
+The script `SKILL.md`, section 5, runs on every page before it is published: R1, R2, R6, R11, R13
+and R14 from the reader standard. Extract it with the command there; never retype it. It reads only the
 pages named and writes nothing. It lives in this file so `SKILL.md` stays short; when the reader
 standard changes, `SKILL.md`'s section 6 table and this script change in the same commit, and when
 the required-metrics table (`SKILL.md`, section 8) changes, `REQUIRED_ROWS` here changes with it.
@@ -14,7 +14,7 @@ the required-metrics table (`SKILL.md`, section 8) changes, `REQUIRED_ROWS` here
 
 <!-- page-check -->
 ```python
-# Page standard self-check: R1, R2, R6, R11 and R13 from reader-standard.md. Reads the HTML files named; writes nothing.
+# Page standard self-check: R1, R2, R6, R11, R13 and R14 from reader-standard.md. Reads the HTML files named; writes nothing.
 import datetime, json, re, sys
 from html.parser import HTMLParser
 
@@ -331,12 +331,105 @@ def r13(nodes, regions):
                 problems.append("%s shows no %s and has no data-missing note for it" % (label, metric))
     return problems
 
-# Only these scripted checks can be N/A (reader-standard.md; quality-review.md, section 3). R13 is
-# n/a on its own terms (no question code and no cited post), never through data-na.
+def account_key(value):
+    # "instagram:@Name" -> "instagram:name"; None when the value is not "{network}:{handle}".
+    network, sep, handle = (value or "").partition(":")
+    network, handle = network.strip().lower(), handle.strip().lstrip("@").lower()
+    return "%s:%s" % (network, handle) if sep and network and handle else None
+
+def day(value):
+    # A date (YYYY-MM-DD, optionally with a time after "T"), or "none"; anything else is False.
+    value = (value or "").strip().lower()
+    if value == "none":
+        return "none"
+    try:
+        datetime.date.fromisoformat(value[:10])
+    except ValueError:
+        return False
+    return "date" if len(value) == 10 or value[10] == "t" else False
+
+def in_footnote(node):
+    while node is not None:
+        if "atlas-footnote" in (node.attrs.get("class") or "").split():
+            return True
+        node = node.parent
+    return False
+
+def fresh_problems(key, node):
+    shown, problems = text(node, gap=" "), []
+    if not has(shown, key.split(":", 1)[1]):
+        problems.append("the freshness entry for %s does not show the handle" % key)
+    newest = day(node.attrs.get("data-newest"))
+    if not newest:
+        problems.append("the freshness entry for %s needs data-newest as a date (YYYY-MM-DD) or \"none\"" % key)
+    elif newest == "none" and not has(shown, "holds no posts"):
+        problems.append("the freshness entry for %s has no newest post but does not say Atlas holds no posts" % key)
+    elif newest == "date" and not has(shown, "newest post"):
+        problems.append("the freshness entry for %s does not show its newest post" % key)
+    fetched, changed = node.attrs.get("data-fetched"), node.attrs.get("data-changed")
+    if (fetched is None) == (changed is None):
+        problems.append("the freshness entry for %s needs one of data-fetched (from freshness) or data-changed (no freshness)" % key)
+    elif fetched is not None:
+        when = day(fetched)
+        if not when:
+            problems.append("the freshness entry for %s has data-fetched \"%s\", not a date or \"none\"" % (key, fetched))
+        elif when == "none" and not has(shown, "not fetched by Atlas yet"):
+            problems.append("the freshness entry for %s has no fetch but does not say \"not fetched by Atlas yet\"" % key)
+        elif when == "date" and not has(shown, "last fetched"):
+            problems.append("the freshness entry for %s does not say when it was last fetched" % key)
+    elif day(changed) != "date":
+        problems.append("the freshness entry for %s has data-changed \"%s\", not a date" % (key, changed))
+    elif not has(shown, "last changed") or has(shown, "last fetched"):
+        problems.append("the freshness entry for %s has no fetch time, so it says \"last changed\", never \"last fetched\"" % key)
+    return problems
+
+def r14(nodes, regions):
+    # Every account the page cites (data-account, which every cited post carries) has one freshness
+    # entry (data-fresh) in the source line: the newest post Atlas holds, and when Atlas last fetched
+    # the account or, with no freshness on record, when it last changed. Returns None (n/a) on a page
+    # that cites no account and no post.
+    cited, problems = {}, []
+    for index, post in enumerate([n for n in nodes if "data-post" in n.attrs], 1):
+        if not (post.attrs.get("data-account") or "").strip():
+            problems.append("%s has no data-account; give the account it is from as {network}:{handle}" % post_label(post, index))
+    for node in nodes:
+        raw = (node.attrs.get("data-account") or "").strip()
+        if not raw:
+            continue
+        key = account_key(raw)
+        if key is None:
+            problems.append("data-account \"%s\" is not {network}:{handle}" % raw)
+        else:
+            cited.setdefault(key, raw)
+    if not cited and not problems:
+        return None
+    fresh = {}
+    for node in nodes:
+        if "data-fresh" not in node.attrs:
+            continue
+        raw = node.attrs.get("data-fresh") or ""
+        key = account_key(raw)
+        if key is None:
+            problems.append("data-fresh \"%s\" is not {network}:{handle}" % raw.strip())
+        elif key in fresh:
+            problems.append("%s has more than one freshness entry" % key)
+        else:
+            fresh[key] = node
+            if not in_footnote(node):
+                problems.append("the freshness entry for %s is outside the source line (atlas-footnote)" % key)
+            problems += fresh_problems(key, node)
+    for key in sorted(set(cited) - set(fresh)):
+        problems.append("the page cites %s but the source line gives no freshness for it" % cited[key])
+    return problems
+
+# Only these scripted checks can be N/A (reader-standard.md; quality-review.md, section 3). R13 and
+# R14 are n/a on their own terms, never through data-na.
 CAN_BE_NA = {"R2", "R6"}
+NA_REASON = {"R13": "the page names no question code and cites no post",
+             "R14": "the page cites no account and no post"}
 CHECKS = (("R1", "Reader and scope", r1), ("R2", "Platforms covered", r2),
           ("R6", "Decisions kept separate", r6), ("R11", "Plain language", r11),
-          ("R13", "Required metrics", r13))
+          ("R13", "Required metrics", r13), ("R14", "Data freshness", r14))
 
 def check(path):
     tree = Tree()
@@ -361,7 +454,7 @@ def check(path):
         else:
             problems = run(nodes, regions)
             if problems is None:
-                results.append((code, name, "n/a", ["the page names no question code and cites no post"]))
+                results.append((code, name, "n/a", [NA_REASON[code]]))
             else:
                 results.append((code, name, "fail" if problems else "pass", problems))
     return results

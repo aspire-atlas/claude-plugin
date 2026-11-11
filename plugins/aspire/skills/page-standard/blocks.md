@@ -79,6 +79,7 @@ build it.
 | Score row | 6 | `score-row` | 3.16 |
 | Timeline | 4 | `timeline` | 3.17 |
 | Quote | 6 | `quote` | 3.18 |
+| Freshness line | Source line | `freshness` | 3.19 |
 
 A page also has sections of its own that no block covers: a comparison table, a 2x2 map, a scatter
 chart, a calculator, a section menu. They belong to this question, so the flow builds them. Use
@@ -426,11 +427,13 @@ below. A creator slate (`SKILL.md`, section 3) fills every field:
   `pb-group` heading: its name as a chip, then its count and subtotals (fees at target, views per
   round) and any open slot ("sixth slot waits on a maybe").
 - The creators left out are score rows (3.16), grouped under one `h3` per reason with its count.
+- `data-account` names the creator's account as `{network}:{handle}`, so the page check's R14 looks
+  for its freshness line (3.19).
 
 <!-- block:creator -->
 ```html
 <!-- A group heading, once per group: <p class="pb-group"><span class="pb-chip">Parents</span>6 creators, USD 7,200 at target, 210,000 views per round</p> -->
-<div class="pb-verdict" data-block="creator" data-verdict="maybe">
+<div class="pb-verdict" data-block="creator" data-verdict="maybe" data-account="instagram:makerjune">
   <p><span class="pb-chip pb-warn">Maybe</span> Strong fit and safe, but 2 of her last 30 posts were paid posts for a competitor.</p>
   <p class="pb-muted">Checks reached: fit, audience, brand safety, competitor deals.</p>
   <p class="pb-stats"><span>Fee <b>USD 1,200</b> (fee calculator)</span><span>Expected return <b>3.4x</b> (this run)</span></p>
@@ -450,6 +453,8 @@ numbers the argument uses, each next to its comparison.
   as `{metric}: {reason}` (entries joined by `;`), with the same reason shown where the number
   would sit, in the `pb-na` style. Never a 0 for a missing metric. The page check's R13 reads
   these.
+- `data-account` names the account the post is from, as `{network}:{handle}`. The page check's R14
+  looks for its freshness line (3.19).
 
 - The link opens the post itself. The thumbnail is a data URI (the creator card's **Images**
   snippet); without one, leave the `img` out and keep the card. The body then takes the full
@@ -460,7 +465,7 @@ numbers the argument uses, each next to its comparison.
 
 <!-- block:post -->
 ```html
-<article class="pb-card pb-post" data-block="post" data-post="https://www.instagram.com/reel/EXAMPLE/" data-missing="saves: shown only for accounts connected to Atlas">
+<article class="pb-card pb-post" data-block="post" data-account="instagram:makerjune" data-post="https://www.instagram.com/reel/EXAMPLE/" data-missing="saves: shown only for accounts connected to Atlas">
   <img src="data:image/jpeg;base64,..." alt="Unboxing of the holiday playset, child opening the box" width="96" height="171">
   <div class="pb-post-body">
     <p><a href="https://www.instagram.com/reel/EXAMPLE/">@makerjune on Instagram</a> <span class="pb-muted">Oct 12, 2026, 6:40 PM ET</span></p>
@@ -728,11 +733,37 @@ video. Each quote carries who said it and links to where.
 ```
 <!-- /block:quote -->
 
+### 3.19 Freshness line
+
+**Holds:** for each account and platform the page cites, the newest post Atlas holds and when Atlas
+last fetched the account (`SKILL.md`, section 9). It goes inside the source line's footer
+(`artifact-standard.md`, section 2), before the source sentence, on every page that cites an
+account.
+
+- One `data-fresh="{network}:{handle}"` entry per account, matching the `data-account` the page
+  gives that account. `data-newest` is the newest post's date (`YYYY-MM-DD`), or `none` when Atlas
+  holds no posts.
+- `data-fetched` is `lastFetchedAt`'s date, shown as "last fetched", or `none` for "not fetched by
+  Atlas yet". With no `freshness` on record, `data-changed` replaces it: the account's `snapshotAt`
+  date, shown as "last changed", never "last fetched".
+- An account behind its pace, or refreshed in this run, says so on the same entry. A refresh skipped
+  as recently refreshed says "refreshed recently, skipped".
+- The page check's R14 reads these.
+
+<!-- block:freshness -->
+```html
+<p data-block="freshness" data-freshness>Data freshness:
+  <span data-fresh="instagram:makerjune" data-newest="2026-10-12" data-fetched="2026-10-28">@makerjune on Instagram: newest post Oct 12, last fetched Oct 28</span>;
+  <span data-fresh="instagram:brightsidetoys" data-newest="2026-10-20" data-changed="2026-10-21">@brightsidetoys on Instagram: newest post Oct 20, last changed Oct 21 (behind its usual pace of a post every 2 days)</span>.</p>
+```
+<!-- /block:freshness -->
+
 ## 4. Building a page from the blocks
 
 1. **Pick the blocks for this question and reader.** Every page has the scope header with its
    coverage strip, the answer, the decisions, the next steps, the method, and the draft-next
-   footer. Add insight cards when the page has insights, the evidence blocks its question needs,
+   footer, and the freshness line in the source line when the page cites an account. Add insight
+   cards when the page has insights, the evidence blocks its question needs,
    the what's missing panel on a team page, the split for a VP or budget owner, and the test plan
    when the page recommends paid spend. A part the flow's reference leaves out stays out
    (`SKILL.md`, section 1).
