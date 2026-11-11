@@ -110,10 +110,11 @@ the launch. On a run that builds a new page there is no such next call: a questi
 the agent reads (a campaign, more handles, a window) goes in this reply, before the storyline draft,
 and everything else (Save, a send choice, a format) waits for the storyline call (**The
 storyline**). The read-changing questions take Save's slot first; if they still do not fit, Scope
-folds into Heard's free text ("Instagram and TikTok, last 90 days, unless you say otherwise"). So a
-run that builds a new page asks two messages at most before it builds: this reply, then the
-storyline. Questions this reply already answered, or the **Prompt coach** collected, are never asked
-again. Never ask in plain text, and never ask in an unattended run.
+folds into Heard's free text ("Instagram and TikTok, last 90 days, unless you say otherwise"). So,
+after the **Prompt coach** when it runs, a run that builds a new page asks two messages at most
+before it builds: this reply, then the storyline. Questions this reply already answered, or the
+**Prompt coach** collected, are never asked again. Never ask in plain text, and never ask in an
+unattended run.
 
 ### The storyline (before a new page)
 
@@ -297,14 +298,14 @@ lists them. Agents work only from a message that carries it (**11**).
   profile's examples library (`skills/page-standard/examples.md`, **The examples library**). It is
   `[]` when no library is saved, the question has no approved example, or the launched agent only
   feeds the agent that builds the page.
-- `storyline` says what the agent does about the page's argument (**2**, **The storyline**):
-  `draft` reads and drafts it, builds nothing, and returns it in the packet; `build` builds to
-  the `bullets` the person confirmed, as they confirmed them; `state` drafts it and builds in the
-  same pass, stating it on the page and in every delivery message (unattended runs and repeat
-  runs of a page already published); `none` when this launch builds no page. `bullets` is `[]`
-  for every pass but `build`. A launch without the field is `none`, except an unattended launch
-  that publishes a new or republished page, which is `state`; a `record` pass, a sample, and a
-  "setup needed" card are `none` in every run.
+- `storyline` says what the agent does about the page's argument (**2**, **The storyline**): `draft`
+  reads and drafts it, builds nothing, and returns it in the packet; `build` builds to the `bullets`
+  the person confirmed, as they confirmed them; `state` drafts it and builds in the same pass,
+  stating it on the page and in every delivery message (unattended runs and repeat runs of a page
+  already published); `none` when this launch builds no page. `bullets` is `[]` for every pass but
+  `build`. A launch without the field is `none`, except an unattended launch that publishes a new or
+  republished page, which is `state`; a `record` pass, a sample, a `mode: grade` run, a quality
+  review, a decision audit, and a "setup needed" card are `none` in every run.
 - The `recipient` lens object (**Recipient lens**) and the decision-audit line follow as today.
 
 ## 6. The result packet

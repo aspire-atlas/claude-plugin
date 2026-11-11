@@ -154,8 +154,9 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    To draft it:
    1. **Count the posts that fit the question:** the posts step 2a counts, and how many accounts
       they come from. Compare the count with the row's minimum (`orchestration.md`, **2**, **The
-      minimum pool**). Under it, name the wider scope you would read in `widen`: more weeks, more
-      platforms, or more accounts, whichever the launch's `scope` leaves room for.
+      minimum pool**). Name the wider scope you would read next in `widen` (more weeks, more
+      platforms, or more accounts, whichever the launch's `scope` leaves room for), or `null`
+      when it has no room left; under the minimum, the main thread recommends it.
    2. **Write three short bullets**, each a claim the reader can act on, with the posts,
       accounts, and views behind it. A bullet on fewer than 3 posts says how few ("from only two
       posts"). The good and bad examples are in `orchestration.md`, **2**.

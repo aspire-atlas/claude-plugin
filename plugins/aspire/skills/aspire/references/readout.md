@@ -382,7 +382,8 @@ Read `policy:readout-routing`. The page and chat summary always ship. Then:
   bullets, the page link. Plain text with Slack formatting, no images. If no Slack connection is
   present, say so in the chat summary and continue.
 - **Per-lens destinations:** a lens in R6 (or a pulse lens) with its own destination gets its own
-  message: that lens's three bullets and the page link with the lens anchor. Same connection
+  message: the storyline's three bullets, then that lens's three bullets and the page link with
+  the lens anchor. Same connection
   rules as below.
 - **Email:** if the routing names recipients and an email connection is available, send one
   message with subject "<Brand> {Daily|Weekly} Insights Report, {date}", the chat summary as the body,
