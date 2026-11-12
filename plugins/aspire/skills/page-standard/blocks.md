@@ -41,6 +41,12 @@ build it.
 - **Phone width.** Every block works at 360px with no sideways page scroll. Grids wrap, tables turn
   into one card per row under 640px (put `data-label` on every cell), and only the storyboard strip
   scrolls sideways, inside its own box.
+- **Apps never assumed.** A button or link that needs a connected app (Gmail, Slack, a store)
+  carries `data-app="{app}"`, and shows only when the run found that app connected. Beside it sits
+  one quiet line carrying `data-app-missing="{app}"` ("Connect Gmail to send the offers from this
+  page."), hidden while the app control shows. The UX review's no-apps view hides every
+  `data-app` control and shows every `data-app-missing` line (`ux-review.md`), so both states must
+  read well. Mark the one step or decision the reader does first with `data-first-task`.
 - **The look is the flow's.** Blocks carry no page frame, no max width, and no section spacing.
   The page sets those. A block's own class names start with `pb-`; restyle a block for one page by
   adding a class of the page's own, never by editing the style block.

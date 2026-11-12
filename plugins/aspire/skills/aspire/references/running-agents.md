@@ -34,20 +34,22 @@ agent only through this skill or a shortcut.
    (`atlas-creator-vetting-20261029t140312-a3f9`). Put it in the launch block's `runId`. The name is
    the agent's own, as its file names it (`atlas-creator-vetting`, never
    `aspire:atlas-creator-vetting` or an older name the agent replaced): Atlas refuses a `runId`
-   whose name part differs from the `agent` the call sends. A relaunch of the same run (its `record`
-   pass, its next mode, a storyline redraft, or the build after it) keeps the id. With no shell,
-   leave `runId` out; the agent takes the one Atlas returns and puts it in its packet's `runId`,
-   which the feedback uses. Use the Agent tool with `subagent_type` `aspire:{agent}` (the name
-   without the prefix gets it added), a `description` equal to the task it runs (**Progress bar**),
-   a prompt that starts with the `launch` block (**Orchestration contract** **5**) followed by the
-   inputs the flow lists, `run_in_background: true`, and the `model` from **Model tiers** (`sonnet`
-   or `haiku`; for a tier of `inherit` pass none) unless the user named a model for this launch,
-   which wins (pass it as `sonnet`, `opus`, `haiku`, or `fable`). Never pass `effort` from the
-   table; set it only when the user asks for one. Where plugin agents do not load, launch a
-   general-purpose subagent told to read and follow `agents/{agent}.md` from the plugin, as **Sample
-   artifacts** does, and pass it the same `model`. Never do an agent's work in the main thread, and
-   never call the Atlas tools an agent owns to stand in for one. Only a session with no subagent
-   tool at all may follow the agent's file itself, and says so in one line.
+   whose name part differs from the `agent` the call sends. A relaunch of the same run (its `record` pass, or its next mode) keeps the
+   id. With no shell, leave `runId` out; the agent takes the one Atlas returns and puts it in its packet's `runId`, which the feedback uses. Use the Agent
+   tool with `subagent_type` `aspire:{agent}` (the name without the
+   prefix gets it added), a `description` equal to the task it runs (**Progress bar**), a prompt
+   that starts with the `launch` block (**Orchestration contract** **5**) followed by the
+   inputs the flow lists, `run_in_background: true`, and the `model` from **Model tiers**
+   (`sonnet` or `haiku`; for a tier of `inherit` pass none) unless the user named a model for
+   this launch, which wins (pass it as `sonnet`, `opus`, `haiku`, or `fable`). Never pass
+   `effort` from the table; set it only when the user asks for one. Where plugin agents do
+   not load, launch a general-purpose subagent told to read and follow `agents/{agent}.md`
+   from the plugin, as **Sample artifacts** does, and pass it the same `model`. Never do an agent's work in the main thread, and never
+   call the Atlas tools an agent owns to stand in for one. Only a session with no subagent tool
+   at all may follow the agent's file itself, and says so in one line. It then has no one to give
+   the English read or the UX review to, so it builds with `englishRead: {"status": "not-run", "why": "no subagent
+   in this session"}` among the inputs and publishes in one pass (`skills/page-standard/SKILL.md`,
+   section 4, step 4b).
 2. **Say it started.** One line after the launch: which agent, what it is doing, and that the
    user can keep going, and the model when the table gave one, with how to change it
    ("Profile analyst is running in the background on Sonnet to save tokens. Say 'use Opus' to
@@ -55,17 +57,36 @@ agent only through this skill or a shortcut.
    names no model and offers no override. An override ("use Opus") applies to that launch
    only: launch again with the model named; the next launch goes back to the table. Then end
    the turn. Never wait on it, poll it, or sleep.
-3. **Ask before, never during.** Every question, write confirmation, and picker the flow lists for
-   the launch is asked first, in the main thread, because agents never ask: in one setup reply
-   (**Orchestration contract** **2**; on a run that builds a new page, what does not change the read
-   waits for the storyline call) that repeats the question with its code, names the reader, and
-   gives the time estimate. Questions an agent raises come back in its result packet and are asked
-   when it arrives. Write the launch's Runs row (**9** there). A run that publishes a new page has a
-   storyline draft launch before its build (another after a Change that needs new evidence, or a
-   Widen) (**Orchestration contract** **2**, **The storyline**). Its packet is not the run's result:
-   say nothing beyond one line that the storyline is ready, ask it, and launch the build only after
-   the person answers.
-4. **When it finishes.** Its result arrives as a task notification. Treat it as the agent's
+3. **Ask before, never during.** Every question, write confirmation, and picker the flow lists
+   for the launch is asked first, in the main thread, because agents never ask: in one setup
+   reply (**Orchestration contract** **2**) that repeats the question with its code, names the
+   reader, and gives the time estimate. Questions an agent raises come back in its result packet
+   and are asked when it arrives. Write the launch's Runs row (**9** there).
+4. **When it finishes.** Its result arrives as a task notification.
+   - **First, the English read and the UX review.** When a `page-check` block says
+     `"englishRead": {"status": "pending"}`, the page is a draft (`skills/page-standard/SKILL.md`,
+     section 4, steps 4b and 4c). Relay nothing from it, ask nothing, and confirm nothing yet.
+     Launch `atlas-quality-review` twice, at once (as in step 1, each with its own run id, `model`
+     from **Model tiers**), with only `mode: grade`, `checks: english` for one and `checks: ux` for
+     the other, `target` (the draft path), `reader` (the launch's reader, in words), `question`, and
+     `run` as the builder's launch had it: never the brief, the ask, or anything from the builder's
+     result (**Quality review**, the English read and the UX review). When both return, relaunch the
+     builder with the same `launch` block, the same inputs, and four more: `englishRead` (the
+     `english_read` block), `uxReview` (the `ux_review` block), `draft` (the path), and `packet`
+     (the draft pass's `result-packet`). Act on that publish pass's result as below. Say nothing in
+     between unless the person asks; in an unattended run, wait for each. A reviewer that returns no
+     block counts as no fixes: relaunch with that entry set to `{"error": "{what came back}"}`. The
+     builder reports `not-run` as a failing check, and in a scheduled run also in `gaps` and its
+     delivery message; name it in the close-out like any check still failing.
+   - **A page held by the UX review.** When the publish pass returns `"uxReview": {"status":
+     "blocked"}`, the page was saved as a file, not published, because a Must is still open
+     (`skills/page-standard/ux-review.md`). Name each open Must in one line and ask with
+     `AskUserQuestion`: "Fix it first (Recommended)" or "Publish it as it is". Relaunch the publish
+     pass with the person's words added to `uxReview` as `personFix`, or with `uxReview.publishOpen`
+     set to `true`.
+   - A page you build yourself (**Visual output**, a deck you export) gets the same read and review
+     before you publish it, and you apply their Musts yourself.
+   - Treat the result as the agent's
    report and act on its `result-packet` block: relay the summary, page link (or, when `page` is a file path, "Saved as a file: {path}"), and decisions it
    needs, confirm its `proposals` by permission level (**Orchestration contract** **7**: Write
    once per batch, Send one by one, Spend with the cost first, and a Read freshness refresh with its

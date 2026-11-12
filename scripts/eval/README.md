@@ -115,8 +115,11 @@ The example pages are tied to the doc's change numbers (3 metrics, 4 data freshn
 
 E6 is the English read every page gets before it publishes (`quality-review.md`, **9.1**), run as its own
 session with the page, its reader and its question code: it passes with no Must fix, and its reason lists each
-Must with its replacement. E7 shows `–` until the UX review (ASP-5301) exists. To wire it in, set its
-`judgedBy` in `e-checks.json` and add its call beside `judge` in `run.ts`.
+Must with its replacement. E7 is the UX review (`quality-review.md`, **9.2**), run the same way: the
+reviewer renders the page on desktop, on a phone in the dark theme and with no apps connected, it passes with
+no Must fix, and its reason lists each Must with its row and how deep the first task sits on the phone. The
+harness renders the page with `scripts/render-page.ts` and passes the reviewer that folder, so it needs
+Playwright with Chromium on the machine; without it the review judges by source order and says so in the reason.
 
 ## What is committed and what is not
 

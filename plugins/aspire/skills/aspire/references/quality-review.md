@@ -31,6 +31,7 @@ in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Se
 - [8. Output to the main thread](#8-output-to-the-main-thread)
 - [9. Grade mode (for other skills)](#9-grade-mode-for-other-skills)
   - [9.1 The English read (before every page publishes)](#91-the-english-read-before-every-page-publishes)
+  - [9.2 The UX review (before every page publishes)](#92-the-ux-review-before-every-page-publishes)
 - [10. The review log](#10-the-review-log)
 - [11. The main thread: run, offer, and review log](#11-the-main-thread-run-offer-and-review-log)
 
@@ -42,8 +43,8 @@ feedback about reviewed work (Run step 7). It checks one finished piece of work:
 a pitch, proposal, brief, or report made elsewhere. It reads and reports: it never edits the work,
 never writes to Atlas, never starts discovery work, and needs no write confirmation. Interactive
 only: never schedule it or run it unattended. Another skill may launch it with `mode: grade`
-(`quality-review.md`, **9**), and every page's English read (**9.1**) runs in that mode, in
-scheduled runs too. Before anything, read this file (**1**, **8**,
+(`quality-review.md`, **9**), and every page's English read (**9.1**) and UX review (**9.2**) run
+in that mode, in scheduled runs too. Before anything, read this file (**1**, **8**,
 **10**, **11**) and follow **11**, asking every question exactly as worded there.
 
 ### Run
@@ -83,9 +84,9 @@ Off unless the organization names a Doc; one "Log" confirmation writes `quality-
 | `earlier_review` | The link, or a local file, of an earlier review of the same work, when this is a re-review. A link is republished in place |
 | `publish` | `artifact` (default): publish with the Artifact tool. `file:{path}`: write the same page as a full HTML document (doctype, head, body) to that path. `none`: build no page |
 | `log` | `file:{path}`, `docs:{Claude Docs link}`, or `none` (default): the organization's own review log (**10**) |
-| `checks` | Grade mode only: `reader-standard` (default), `all`, or `english` (the English read, **9.1**) |
-| `reader`, `question` | Grade mode with `checks: english` only: the page's primary reader in words, and its question code |
-| `run` | `interactive`. The review has no unattended mode; only the English read (**9.1**) also runs `unattended` |
+| `checks` | Grade mode only: `reader-standard` (default), `all`, `english` (the English read, **9.1**), or `ux` (the UX review, **9.2**) |
+| `reader`, `question` | Grade mode with `checks: english` or `ux` only: the page's primary reader in words, and its question code |
+| `run` | `interactive`. The review has no unattended mode; only the English read (**9.1**) and the UX review (**9.2**) also run `unattended` |
 
 ## 2. Reading the target
 
@@ -450,8 +451,8 @@ the `launch` block (**Orchestration contract** **5**) like any other; grade mode
 - Inputs: `target` (required), `checks` (`reader-standard`, the default, or `all`), and optionally
   `evidence_dir`, `brief`, `recipient`, and `audience`.
 - It builds no page (`publish` is `none`) and writes no log row.
-- `checks: english` is the English read, with its own inputs and output (**9.1**). Everything below
-  in this list is for the other two.
+- `checks: english` is the English read (**9.1**) and `checks: ux` the UX review (**9.2**), each with
+  its own inputs and output. Everything below in this list is for the other two.
 - `checks: reader-standard` returns all 12 R rows, each PASS, FAIL, or N/A; `all` adds 4.0 to 4.15.
 - The output is only this JSON block, then the audit trail. No summary lines.
 
@@ -554,6 +555,118 @@ by the writing rules in **6**.
 The separate read found four Must fixes on the draft, and the page that published has none. Bad:
 "Gift and routine framing lifts posts" as a heading, with "ran at 1.27×" beside it. Neither line says
 what was measured, or against what.
+
+### 9.2 The UX review (before every page publishes)
+
+The English read checks the words. The UX review checks whether a reader can understand what is
+happening and act on it, in the right order, without help, on the screen they will open it on. It
+runs on every page any flow builds, after the English read in the build loop
+(`skills/page-standard/SKILL.md`, section 4, step 4c), on the same draft, and the main thread
+launches the two together (**Running agents**, step 4).
+
+**Inputs, and nothing more.** `mode: grade`, `checks: ux`, `target` (the path of the draft page
+file), `reader`, `question`, and `run`, as for the English read, and optionally `render`: a folder
+the caller already rendered the page into (CI and the plugin repository's page eval make one). Never the brief, the person's ask,
+the builder's result packet, its page check, or its findings; ignore them when a launch carries
+them. It calls no Atlas tool, asks nothing, builds no page, and writes no log row.
+
+**Render it.** Use the first of these the session has:
+
+| What the session has | How the page is rendered |
+| -------------------- | ------------------------ |
+| A `render` folder in the launch | Read it: the screenshots `{view}.png` (the whole page) and `{view}-first.png` (the first screen) for each view, and `render.json` |
+| A browser tool: Claude Code's built-in browser, Chrome in Cowork, or Claude in Chrome | Open the draft file in it and take the three views below yourself, a whole-page and a first-screen look at each |
+| Neither (claude.ai with no browser) | No render. Judge by source order and say so (`rendered: false`) |
+
+Look at every screenshot with the Read tool. `render.json` holds what a screenshot cannot show:
+each view's page height, sideways scroll, where the first task sits (`firstTask.top`, in pixels, and
+`screens`, in screen heights), controls under the tap size, which app controls and "Connect {app}"
+lines show, and what each button did when pressed (`changedPage`, what it `copied`, `navigated`,
+any `errors`, and `why` a control was not pressed). In a browser, find the same things by looking:
+scroll to the first task and note how far down it sits, and try to scroll sideways on the phone.
+
+**The three views.** A `render` folder holds these; a browser takes the same ones:
+
+1. **Desktop light**: 1280 by 800, light theme, apps as built. The first screen is what R10 reads.
+2. **Phone dark**: 390 wide, dark theme, apps as built.
+3. **No apps connected**: 390 wide, light theme, every control marked `data-app` hidden and every
+   `data-app-missing` line ("Connect Gmail to send these from here") shown (`blocks.md`, **Apps
+   never assumed**). A page with neither mark has assumed its apps when it shows an app button.
+
+Then run every button in the desktop view, folded steps included: open, edit, copy, create, save a
+draft, connect (a `render` folder has already pressed them). A button
+that changes nothing, copies text the reader did not see, or throws an error is a finding. With no
+render, read the page in source order and judge what that order would show, on a 390px phone,
+first.
+
+**What it checks.** One row per rule of the UX standard. Every fix names its row.
+
+| Row | Passes when | Fails on |
+| --- | ----------- | -------- |
+| Order | The reader's actions come first. A time-bound page opens with the headline, a one-line takeaway, and its dates, then one line per main finding, then the steps. Each step and decision carries a one-line "Why" that points to a finding. The full evidence comes after the plan | The first task more than two phone screens down (a `firstTask.top` over 1,700 on the phone); a step with no reason given |
+| Steps | Each step is one row: number, what, who ("You" for the reader), date, and its status. Only the first step not done is open, and a step can be marked done | A step that is a stack of attachments ("15 drafts, CSV, doc") with no count of what is done |
+| Numbering | Only the steps are numbered. Sections have names, and a cross-link names its target | Two "3"s on one screen; "see section 3" |
+| Colour | One meaning per colour: urgent, done, risk, error. Categories use hues never used for status, links use the text colour, and brand inputs are neutral | One colour meaning several things |
+| One list of people | One roster, with each person's status on their row. Other views link to it | The same creators listed twice, or with different details in two places |
+| Labels | No term means two things, every number carries its label, and sections and buttons use words the reader already says | A section named in Atlas's own words; a bare number in a row |
+| Show before copy | The reader sees the exact text before copying it, can edit a message first, and gets a notice saying what was copied | A Copy button whose text is not on screen, or that copies something other than what is shown |
+| Apps never assumed | A button only for an app marked connected; otherwise one quiet "Connect {app} to ..." line per step. App status sits in one line | An app button in the no-apps view; a "Connect" nudge repeated in several loud boxes |
+| Writes | A write button that cannot run is disabled with the reason beside it. A confirm states every value in one sentence, and a failed item is fixed in its row | A write with no confirm; a failure that leaves no way to fix it |
+| Repeated sends | Many messages use a list and an editor: the subject is its own field, the actions sit above the text, and each person gets a sent mark | Fifteen messages laid out one after another, each with its buttons at the bottom |
+| Buttons | One verb pattern ("Copy offer", "Copy terms"), one main button per step, at least 36px tall on desktop and 44px on a phone, in the body font | Eight wordings of Copy; `smallControls` listing a main action |
+| Mobile | Under 640px tables become stacked cards and wide grids become lists, long groups fold after the first, and nothing scrolls sideways | `sidewaysScroll` on the phone; a table column cut off |
+| Dark mode and access | No block keeps light colours in dark mode, every control shows a focus ring, text meets AA contrast, and a live region announces one line | A white tile on the dark page; a button with no visible focus |
+| Say it once | Nothing is said twice | Two buttons for the same action; a closing list that repeats the steps |
+| Where progress lives | The page says where ticks and edits are kept ("in this browser only") | Steps that can be ticked with no word on who else sees it |
+
+**Levels.**
+
+- **Must**: the reader cannot act, or would act wrongly. The first task more than two phone screens
+  down, a dead or misleading button, an app button in the no-apps view, a sideways scroll on the
+  phone, text that cannot be read in dark mode, a Copy that copies unseen text.
+- **Should**: the reader can act, but it is slower or less sure. Most rows' fails land here.
+- **Nice**: polish.
+
+**Every fix says what to change.** `problem` is what the reader meets, in the view named; `fix` is
+the change the builder makes, concrete enough to make without seeing the screenshot ("Move the
+Next steps section above Why this plan"; "Hide the Send from Gmail button unless Gmail is connected
+and add the line: Connect Gmail to send the offers from this page."). Write both for the builder,
+by the writing rules in **6**.
+
+**Output.** Only this JSON block, then the audit trail. No summary lines, no result packet.
+
+```json
+{
+  "ux_review": {
+    "version": "1",
+    "target": "{the target as given}",
+    "reader": "{reader}",
+    "question": "{code or null}",
+    "rendered": true,
+    "renderer": "browser",
+    "views": ["desktop-light", "phone-dark", "no-apps"],
+    "firstTask": {"phone": 3300, "desktop": 1450},
+    "counts": {"must": 2, "should": 1, "nice": 0},
+    "fixes": [
+      {"id": "UX1", "level": "Must", "row": "Order", "view": "phone-dark", "where": "Next steps",
+       "problem": "The first task sits 3,300px down on a phone, below four sections of findings.",
+       "fix": "Move Next steps above Why this plan, and keep one line per finding above it."},
+      {"id": "UX2", "level": "Must", "row": "Apps never assumed", "view": "no-apps", "where": "Step 2",
+       "problem": "The Send from Gmail button shows with Gmail not connected.",
+       "fix": "Mark the button data-app=\"gmail\" and add a data-app-missing=\"gmail\" line: Connect Gmail to send the offers from this page."}
+    ]
+  }
+}
+```
+
+`renderer` is `render-folder` (the caller's `render` input), `browser`, or `none`. `rendered: false` sets `views` to `[]` and
+`firstTask` to `null`, and the fixes come from source order alone. A view the renderer could not
+take is left out of `views`, with the reason in that fix list as a Must on the **Mobile** or
+**Dark mode and access** row.
+
+**Examples.** Good: the monthly program report in the examples library, after its UX review: the
+answer, then three takeaways with their copy text shown, then the steps, on one phone screen. Bad:
+the first task sits 3,300px down on a phone, found only when a person opened the published page.
 
 ## 10. The review log
 
