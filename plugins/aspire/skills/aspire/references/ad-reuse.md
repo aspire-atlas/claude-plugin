@@ -325,20 +325,26 @@ lens (**Output for each lens** sets the order for `creative`):
    with @handle's launch Reel."), and a one-line takeaway naming the top learning.
 3. **How Atlas got there** (the flow's own strip, `blocks.md` section 6): one row of steps from the
    posts considered to the posts recommended, each a count and a few words, in the order the run
-   took them:
+   took them. In the **Candidate pool** order that is:
    - posts considered, per platform ("1,556 Instagram posts that mention or tag {brand}");
    - the videos among them;
+   - creators' posts with the brand as the subject, after the account map sets aside the
+     brand's own and non-creator accounts and the competitor screen sets aside other brands'
+     videos (name both counts set aside in the method);
    - posts read frame by frame;
-   - posts with the brand as the subject, after the account map and the competitor screen
-     (**Candidate pool**);
    - posts scored;
    - posts recommended, the last step marked with the accent.
+
+   A run that read frames to judge the subject puts "read frame by frame" before the subject
+   step.
 
    Every count is this run's own. A step the run did not take is left out, never estimated: when
    the run framed only the scored posts, "read frame by frame" and "scored" are one step. A count
    taken from a sample says "about" ("about 40"), and the method says how it was estimated. The
    strip is one row at desktop width and wraps on a phone, so the decisions and the next steps
-   still start on the first screen (R10). The method repeats these counts.
+   still start on the first screen (R10). When the rendered page would push the decisions below
+   the first screen, move the strip to just after the next steps instead. The method repeats
+   these counts.
 4. **Decisions** (3.5): what needs approval before any spend, each with its date when the test
    plan sets one: licensing each candidate whose rights are not held, the test budget, and access
    to the ad account or the raw files. With none, "Nothing needs approval."
@@ -361,17 +367,20 @@ lens (**Output for each lens** sets the order for `creative`):
      ("@handle, 0:01") and an alt text saying what the frame shows. Both come from frames already
      extracted and viewed for the candidates (**What to read per candidate**); the pair needs no
      new media read. Never draw a still that wasn't extracted. When no frame read shows one
-     side, that side says "No frame read shows this" and the card keeps the other.
+     side, that side says "No frame read shows this" and the card keeps the other. A learning
+     that frames can't show at all (watch time, a score by group) has no pair: the card says
+     "No frame shows this: it rests on {the measure}" and its chart carries the proof.
    - **"So Atlas recommends"**: the action, as the card's "So:" line (`pb-so`), naming the cut,
      the brief, or the test it changes ("Open every cut on the product. Where the creator didn't,
      lay the logo over the first seconds."). Hedges go here, never in the claim.
 7. **The picks** (3.8, one card per recommended candidate; recommended candidates follow the
    agent's top candidates rule: up to five, at most three from a path unless the other path has
-   fewer than two). Each card holds the opening frame as its thumbnail, with any measured early
-   rate cited beside it; the badge (its rank within its path, F1, F2, B1); the handle; the score
+   fewer than two). Each card holds the opening frame as its thumbnail and the first-3-seconds
+   frame strip (the opening frames from **What to read per candidate**), with any measured early
+   rate cited beside the opening frame; the badge (its rank within its path, F1, F2, B1); the handle; the score
    out of 100 with the retention label as a small chip ("Measured", "Creator average, not this
    post" or "Proxy"); what the post is, its length, and the metric row. Then one line per
-   learning, in the order of section 6:
+   learning, in the order of item 6:
    - **✓** (`pb-chip pb-ok`) and how the post meets it ("{brand} on screen at 0:00");
    - **+** (`pb-chip pb-warn`) and the fix the cut list makes ("Never names {brand} → add the
      logo over the first seconds"). Each fix is a row or an edit note in the cut list. A miss no
@@ -382,7 +391,7 @@ lens (**Output for each lens** sets the order for `creative`):
    names every candidate with a **run** or **cut first** verdict that was not picked, with its
    score and the reason in a few words ("@handle's torn paper tutorial (88): the same format as
    the watercolor pick, held for round two"), and counts the **leave** candidates, which are
-   listed in section 10.
+   listed in item 10.
 8. **The edit plan**: on the `performance` lens, one `details`, closed, titled "The edit plan:
    storyboards, cut list and test plan"; on the `creative` lens, open and placed right after the
    next steps. It holds:
@@ -416,8 +425,8 @@ lens (**Output for each lens** sets the order for `creative`):
       score and the level mix per pattern ("3 measured, 2 proxy").
     - **The six parts of the score**: the components with their weights, what full marks and
       zero mean for each, the retention levels and thresholds, the hook evidence rule, the
-      verdict bands and the override (**Hook score**, **Verdict bands**), the counts from section
-      3 and the platform counts again, then the ratings matrix (every candidate by component).
+      verdict bands and the override (**Hook score**, **Verdict bands**), the counts from item 3
+      and the platform counts again, then the ratings matrix (every candidate by component).
 11. **What's missing** (3.12): paid results ("Paid results need a connected Meta ad account: they
     would show which of these cuts already ran and what they cost"), boosted views where organic
     is not held, and candidates scored on cover frames only.
