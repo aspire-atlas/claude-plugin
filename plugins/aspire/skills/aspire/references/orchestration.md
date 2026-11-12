@@ -61,7 +61,8 @@ actions page and its hourly run. That run is one more caller of this contract.
 5. **State any spend.** When the agent's level is `spend` (**7**) and this run will spend, say
    the cost before launching (**7**, Spend).
 6. **Launch** with the launch block (**5**) in a subagent (**Running agents**). Up to three at
-   once (**8**).
+   once (**8**). A run that publishes a new page launches first to draft its storyline, asks the
+   person to confirm it, and only then launches the build (**2**, **The storyline**).
 7. **Read the packet** (**6**), enforce its levels (**7**), log the run (**9**), and close out (**10**).
 
 A shortcut (**4**) skips only the "what do you need" step: step 3 takes the shortcut's agent.
@@ -75,8 +76,9 @@ unattended. Text it cannot route publishes the flow's "setup needed" card and st
 
 ## 2. The setup reply (one picker round)
 
-Everything the run needs is asked in one `AskUserQuestion` call, before the launch. The tool takes
-up to four questions per call, so the reply holds, in this order:
+Everything the run needs is asked in one `AskUserQuestion` call, before the launch; on a run that
+builds a new page, what does not change the read is asked in the storyline call instead (below).
+The tool takes up to four questions per call, so the reply holds, in this order:
 
 1. **Heard**, header "Heard". The question repeated in the map's wording with its code, the
    reader, and the time estimate: "I heard I2: should we work with @handle, and what would it
@@ -101,14 +103,150 @@ up to four questions per call, so the reply holds, in this order:
 4. **Save**, header "Save". Whether to save the findings to Atlas, defaulting to no: "Page only
    (Recommended)", "Save to Atlas". This is the run's one write confirmation (**7**, Write), and
    it replaces the flow's own save question (for example vetting's R4) so it is never asked twice.
+   On a run that builds a new page, Save is asked in the storyline call instead, once.
 
 The time estimate is the agent's Atlas analysis time plus about 10 minutes to build and check the
 page. Take the analysis time from the run log's last run of the same agent (**9**); with none,
-say "a few minutes" for it. Never quote a time you did not read.
+say "a few minutes" for it. On a run that builds a new page, add the storyline draft's time: the
+`minutes` of that agent's last `storyline-drafted` row, or "a few minutes" with none. Never quote a time you did not read.
 
 When the flow's own questions would not fit in this call, ask them in the next call, still before
-the launch. Questions this reply already answered, or the **Prompt coach** collected, are never
-asked again. Never ask in plain text, and never ask in an unattended run.
+the launch. On a run that builds a new page there is no such next call: a question that changes what
+the agent reads (a campaign, more handles, a window) goes in this reply, before the storyline draft,
+and everything else (Save, a send choice, a format) waits for the storyline call (**The
+storyline**). The read-changing questions take Save's slot first; if they still do not fit, Scope
+folds into Heard's free text ("Instagram and TikTok, last 90 days, unless you say otherwise"). So,
+after the **Prompt coach** when it runs, a run that builds a new page asks two messages at most
+before it builds: this reply, then the storyline. Questions this reply already answered, or the
+**Prompt coach** collected, are never asked again. Never ask in plain text, and never ask in an
+unattended run.
+
+### The storyline (before a new page)
+
+The setup reply confirms the question, the reader, and the scope. The storyline confirms the
+page's argument: the three things the page will say, each with the size of the evidence behind
+it (fewer only as **Fewer bullets** below allows). A wrong storyline wastes the build and every review after it, so no new page is built until
+the person has confirmed one.
+
+**When it runs.** Before the build of every page a run publishes for the first time. It does not run
+for a repeat run of a page already published (a readout after its first run, a dashboard update, a
+rerun of the same page to the same link), for a pass after the build (a `record` pass), for a
+sample, a `mode: grade` run, a quality review, a decision audit, or a "setup needed" card. A code
+with two agents (**3**) confirms the storyline of each new page before the agent that builds it.
+
+**New or already published.** A page is already published when Atlas holds its link for this
+brand and the Artifact tool's `read` opens it: the flow's `page` finding (each program page,
+**Influencer program**, **Working state**; each readout, **Readouts**, **Page mechanics**), or the link the
+flow keeps on its own record (`pageUrl` on `campaign:{slug}-cas`). Nothing else proves it: not
+saved insights, not the run log (it is this machine's), and not a title in the Artifact tool's
+`list`, which shows only the caller's own pages and is misled by a renamed page or a "setup
+needed" card. Where the flow keeps no link in Atlas (a discovery shortlist, Next actions, a
+market signal), or the check cannot be made, the Heard line says which the run takes, from the
+ask and the `list` ("Updates your {Brand} Weekly Insights Report." or "Builds a new page."), and
+the person corrects it there, so it costs no extra message. Left unsettled, the page counts as
+new: one storyline question costs less than a page built on a storyline nobody confirmed.
+
+**How it runs.**
+
+1. **Draft.** Launch the agent with `storyline.pass` set to `draft` (**5**), after the setup
+   reply. It reads, refreshes, and counts as it would for the build
+   (`skills/page-standard/SKILL.md`, section 4, steps 0b to 2a), drafts the storyline, publishes
+   nothing, and returns it in the packet's `storyline` (**6**). Log its return as a
+   `storyline-drafted` Adjustments row, not a `returned` Runs row (**9**). Its fetches count
+   against `approved.spend.cap`, and its packet reports them in `cost.fetches`.
+2. **Ask once.** One `AskUserQuestion` call, header "Storyline", with the bullets as the
+   question, each with its evidence ("Gift posts beat creators' usual views this fall. 78 posts, 15
+   accounts."), then any line the packet's `storyline` carries for what was not checked ("Timecodes
+   and on-screen claims are unverified.", "The plan names are not checked against the company's
+   announcement."). Options: "Build (Recommended)", "Change", and, when the packet's `widen` is not
+   `null`, "Widen", with `widen` in its words ("Widen to 26 weeks and TikTok"). When the pool is
+   under the row's minimum (below), say so in the question ("Only 6 posts fit; the minimum is 10.",
+   "3 of 20 creators have fewer than 5 posts.") and recommend Widen when it is offered; with no
+   `widen`, Build stays recommended and the thin bullet says how few posts it rests on. The free
+   text field takes the person's change. The same call carries the packet's other `questions` (page
+   standard step 2a's metric check-in among them) and any flow question left for it (**2**), up to
+   four in all. When they do not fit, a format question takes its default and the Storyline question
+   states it ("Built as a one-page plan; say if you want slides."), and a send choice is asked after
+   the build, with the page, as the readout's delivery confirmation is.
+3. **Act on the answer.** Step 2a's answer comes first, whatever the Storyline answer was. When it
+   is "Change the scope", "Refresh the posts first", or "Connect the account first" (once the account
+   is connected), the counts behind the bullets no longer hold: no build launches, from Build or
+   Change. Launch `draft` again, with the new scope, or with "Refresh: {the posts step 2a named}" in
+   the launch message so the redraft refreshes them before it counts, carrying a Change's words as
+   "Storyline change: {their words}", and ask again. Only with no check-in, or "Build with the gaps
+   noted", does a Build or Change answer go on to the build:
+   - **Build:** write the `storyline-confirmed` row (**9**), then launch again with
+     `storyline.pass` `build` and the confirmed `bullets`, keeping the `runId` (**5**). The launch
+     message carries every answer from the same call, step 2a's check-in as "Metric gaps: {the
+     option chosen}", so the build never stops on it again, and the draft's `unchecked` lines as
+     "Unchecked: {lines}". The build reads what the drafts refreshed from Atlas and never fetches it
+     again.
+   - **The spend cap across passes:** every redraft and the build get as `approved.spend.cap` what
+     is left of the cap after the `cost.fetches` of every earlier pass of the same `runId`, never the
+     whole cap again. With nothing left, the pass fetches nothing and reads what Atlas holds, and its
+     packet says so in `storyline.unchecked`. With no cap (`null`), nothing is counted.
+   - **Change:** apply the person's words to the bullets. When the change only rewords, reorders, or
+     drops a bullet, log the row and build with the changed bullets as Build does, with the same
+     launch-message lines; a dropped bullet is not replaced, and the page states the bullets left.
+     When it needs evidence the draft did not read (a new angle, a new claim), launch `draft` again
+     with the change in the launch message as "Storyline change: {their words}" and ask again.
+   - **Widen:** launch `draft` again with the wider weeks and platforms in the launch block's
+     `scope`, the packet's `widen` in the launch message as "Widen: {widen}" (more accounts or
+     handles go there and in the flow's own handle inputs), and ask again.
+   Each extra round is an Adjustments row (**9**); it never repeats the setup reply.
+
+**The minimum pool, by kind of question.** The kinds are section 8's rows of
+`skills/page-standard/SKILL.md`, except that a question about one named post (O5, P2) takes its own
+row. A pool under its minimum is offered a wider scope in the same question: more weeks, more
+platforms, or more accounts, whichever the run has room for.
+
+| Kind of question | Minimum posts that fit the question |
+| ---------------- | ----------------------------------- |
+| What landed and why | 10 in the window, across the accounts in scope |
+| Competitive read | 10 per brand compared |
+| Creator picks or vetting | 5 per creator over the flow's window |
+| Ads and cut-downs | 5 videos |
+| Program tracking | None: the posts owed are the pool, and a thin one is the finding |
+| One named post (O5, P2) | None: the post is the question; its bullets rest on it and the posts it is compared against, and say so |
+
+For a row counted per brand or per creator, the pool is under its minimum when half or more of them
+are, and the packet's `pool.under` names each one under it; a bullet that rests on one of them says
+so. Except on a one-post question, each bullet rests on at least 3 posts, or says how few it rests
+on ("from only two posts").
+
+**Fewer bullets.** A storyline has three bullets. It has fewer only when the person's Change
+dropped one, or when a readout's window has no posts: then it has one to three, the empty-window
+bullet and up to two the window still supports (**Readouts**, **Scheduled (unattended) runs**,
+Storyline). Never make one up to reach three: the packet, the
+answer block, and every delivery message carry the bullets there are.
+
+**Unattended runs and repeat runs** never ask. They launch with `storyline.pass` `state`: the agent
+drafts the storyline and builds in the same pass. The page opens with it in the answer block, its
+bullets with their evidence under the headline, and every delivery message (Slack, email,
+the chat summary) carries the same bullets. A pool under its minimum still builds, and the
+page says so in the bullet it weakens.
+
+**A good storyline and a bad one.** Good, from an approved holiday creator plan for a children's
+audio brand, its final "Why this plan":
+
+> - Gift and routine posts beat creators' usual views this fall, and screen-free posts did best:
+>   gift and deal posts 1.27 times the usual across 78 creator posts; screen-free 5.37 times, from
+>   only 5 posts.
+> - Black Friday is crowded; gift guides are still growing: the brand's best holiday posts last
+>   year were a stocking list at 13 times the usual and a gift guide at 4.2 times, from 14 posts.
+> - The main competitor won the head-to-head comparisons, but not with deals: its Black Friday code
+>   post reached 0.67 times its creator's usual views, 1 post.
+
+Each bullet is a claim a reader can act on, with how many posts it rests on, and the thin one says
+it is thin. Bad, a storyline sent with no evidence and no checks:
+
+> - Lean into Black Friday with a big discount push.
+> - Creators love the new player.
+> - The competitor is winning on price.
+
+None says how many posts it rests on; the first is the opposite of what the posts show; the
+second rests on a product name nobody checked against the company's announcement; the third has
+no post behind it.
 
 ### Saved answers
 
@@ -288,21 +426,23 @@ lists them. Agents work only from a message that carries it (**11**).
  "question": "{code from 3, or null}", "persona": "{persona, or unknown}",
  "reader": "{primary lens}", "shortcut": "{shortcut, or null}",
  "scope": {"channels": ["instagram", "tiktok"], "from": "{YYYY-MM-DD}", "to": "{YYYY-MM-DD}"},
- "approved": {"write": false, "send": [], "spend": {"cap": null}, "refresh": null},
- "examples": ["{link of each approved example for this question}"]}
+ "approved": {"write": false, "send": [], "spend": {"cap": null}},
+ "examples": ["{link of each approved example for this question}"],
+ "storyline": {"pass": "{draft, build, state, or none}", "bullets": ["{each confirmed bullet}"]}}
 ```
 
-- `runId` is minted once per launch, never made up, with `mint_run_id` (its `agent` is the
-  agent's own name as its file names it, no `aspire:` prefix; Atlas refuses an id whose name part
-  differs from `agent`). Without that tool, from the shell: the name, the UTC time
-  from `date -u +%Y%m%dt%H%M%S`, and the output of `openssl rand -hex 2`, joined by hyphens, in
-  lower case (`atlas-creator-vetting-20261029t140312-a3f9`). A relaunch of the same run (its
-  `record` pass, or its next mode) keeps the id. With no shell, leave `runId` out; the agent takes
-  the one `report_checkpoint` returns for `started`.
+- `runId` is minted once per launch, never made up, with `mint_run_id` (its `agent` is the agent's
+  own name as its file names it, no `aspire:` prefix; Atlas refuses an id whose name part differs
+  from `agent`). Without that tool, from the shell: the name, the UTC time from
+  `date -u +%Y%m%dt%H%M%S`, and the output of `openssl rand -hex 2`, joined by hyphens, in lower case
+  (`atlas-creator-vetting-20261029t140312-a3f9`). A relaunch of the same run (its `record` pass, its
+  next mode, a storyline redraft, or the build after it) keeps the id. With no shell, leave `runId`
+  out; the agent takes the one `report_checkpoint` returns for `started`.
 - `run` is `interactive` or `unattended`. `scope` is what the setup reply settled, or the flow's
   own window; leave out what the flow does not use.
-- `approved` lists what the person already approved, by level: `write` is the setup reply's
-  Save answer (or the flow's standing approval in an unattended run); `send` names each recipient,
+- `approved` lists what the person already approved, by level: `write` is the Save answer (or
+  the flow's standing approval in an unattended run): from the setup reply, or from the storyline
+  call on a run that builds a new page, so `false` on a `draft` pass; `send` names each recipient,
   order, or payment approved one by one; `spend.cap` is the cap in fetches (**2**), `null` for no cap or
   no spend; `refresh` is `null` until the person answers a freshness refresh offer, then the list
   of approved handles as `{network}:{handle}` (`[]` when they chose "Use what Atlas holds";
@@ -312,6 +452,14 @@ lists them. Agents work only from a message that carries it (**11**).
   profile's examples library (`skills/page-standard/examples.md`, **The examples library**). It is
   `[]` when no library is saved, the question has no approved example, or the launched agent only
   feeds the agent that builds the page.
+- `storyline` says what the agent does about the page's argument (**2**, **The storyline**): `draft`
+  reads and drafts it, builds nothing, and returns it in the packet; `build` builds to the `bullets`
+  the person confirmed, as they confirmed them; `state` drafts it and builds in the same pass,
+  stating it on the page and in every delivery message (unattended runs and repeat runs of a page
+  already published); `none` when this launch builds no page. `bullets` is `[]` for every pass but
+  `build`. A launch without the field is `none`, except an unattended launch that publishes a new or
+  republished page, which is `state`; a `record` pass, a sample, a `mode: grade` run, a quality
+  review, a decision audit, and a "setup needed" card are `none` in every run.
 - The `recipient` lens object (**Recipient lens**) and the decision-audit line follow as today.
 
 ## 6. The result packet
@@ -333,10 +481,16 @@ acts on.
  "questions": [{"header": "{12 characters or fewer}", "question": "{ends with ?}",
                 "options": ["{2 to 4 complete answers, the first recommended}"]}],
  "next": {"agent": "{agent name}", "why": "{one line}"},
- "cost": {"credits": null, "minutes": 12},
+ "cost": {"credits": null, "fetches": 0, "minutes": 12},
  "coverage": [{"channel": "instagram", "posts": 48}, {"channel": "tiktok", "posts": 0,
                "missing": "not linked"}],
- "selfCheck": {"fixed": ["{check} {name}"], "stillFailing": ["{check} {name}: {why}"]}}
+ "selfCheck": {"fixed": ["{check} {name}"], "stillFailing": ["{check} {name}: {why}"]},
+ "storyline": {"pass": "{draft, build, or state}",
+               "bullets": [{"text": "{one short claim}", "posts": 78, "accounts": 15,
+                            "views": null}],
+               "pool": {"posts": 692, "minimum": 10, "under": []},
+               "unchecked": ["{line for each check not made}"],
+               "widen": "{the wider scope the agent would read, or null}"}}
 ```
 
 | Field | Holds |
@@ -346,10 +500,11 @@ acts on.
 | `proposals` | Every draft, save, send, order, payment, spend, or freshness refresh the agent wants approved, each with its `level` (**7**), its `items`, and its `gate`: `approve-` plus a short kebab-case name of what is approved (`approve-shortlist`, `approve-offers`, `approve-saves`), 2 to 40 lower-case letters, digits, and hyphens. The main thread sends the person's verdict under the same `gate` (SKILL.md, **Running agents**). Empty when there is nothing to approve. |
 | `questions` | Everything the agent could not settle, worded so the main thread can put it in `AskUserQuestion` as is. |
 | `next` | The agent that should run next and why, or `null`. A suggestion only: the main thread decides. |
-| `cost` | Credits the run's tools reported using (`null` when none reported any) and minutes from the audit trail's `started` to `finished`. |
+| `cost` | Credits the run's tools reported using (`null` when none reported any), `fetches` (the handles or posts it fetched or refreshed, counted against `approved.spend.cap`), and minutes from the audit trail's `started` to `finished`. |
 | `question`, `reader` | The code it answered and the primary reader it built for, from the launch block. |
 | `coverage` | Each channel in scope with its post count, and any channel missing with why. |
 | `selfCheck` | The page check's results by check code and name (`skills/page-standard/SKILL.md`, **7**): those fixed before publishing and those still failing. Empty lists when no page was published. |
+| `storyline` | The storyline the page says, or would say (**2**, **The storyline**): its `pass`, the launch block's `storyline.pass` as given, so a `draft` packet is told apart from a build that published nothing; its `bullets` (three, or fewer per **2**, **Fewer bullets**), each with the posts, accounts, and views behind it (`null` for a size the claim does not rest on); the `pool` of posts that fit the question against the row's `minimum` (`null` for program tracking and a one-post question); an `unchecked` line for each check this host could not make ("Timecodes and on-screen claims are unverified.", "{fact} is not checked against the company's announcement."); and `widen`, the wider scope the agent would read next, or `null` when the scope has no room left. For a row counted per brand or per creator, `posts` is the total, `minimum` the per-entity one, and `under` names each brand or creator under it (`[]` otherwise). On a `draft` pass it is the run's only finding and `page` is `null`; on `build` it repeats the confirmed bullets; on `state` it is what the page states. `null` when the launch's pass was `none`. |
 
 Write the packet as valid JSON on as many lines as it needs. A field with nothing in it is an
 empty list or `null`, never left out.
@@ -456,6 +611,10 @@ clock.
  "scope": {…}, "approved": {…}, "page": null, "cost": null, "selfCheck": null, "status": "launched"}
 {"table": "adjustments", "runId": "…", "at": "…", "change": "{what changed}",
  "by": "person|aspire|agent", "why": "{one line}"}
+{"table": "adjustments", "runId": "…", "at": "…", "change": "storyline-drafted",
+ "by": "agent", "why": "{pool posts against the minimum}", "minutes": 4}
+{"table": "adjustments", "runId": "…", "at": "…", "change": "storyline-confirmed",
+ "by": "person", "why": "Build|Change", "storyline": ["{bullet with its evidence}", "…", "…"]}
 ```
 
 - `runId` is the launch block's id (**5**), in the same format. On launch: a Runs row with
@@ -464,12 +623,13 @@ clock.
   latest row for a `runId` is its state.
 - Adjustments: an approval or refusal of a proposal, a level raised in **7**, a fix applied to the
   page, a republish, a question answered after the run, a correction the person made to what was
-  heard.
+  heard, a storyline draft returned (`storyline-drafted`, with its `minutes` from the packet's
+  `cost`), a storyline changed or widened, and the `storyline-confirmed` row, written once the
+  person answers Build (or a Change that needs no new draft) and before the build launches, with the
+  bullets exactly as the build receives them. An interactive run that builds a new page without that
+  row has skipped **The storyline**.
 - The log never holds credentials, mailing addresses, bank or tax details, or message bodies.
-- The time estimate (**2**) reads the last `returned` row for the same agent.
-- The log lives only in this session. What a later session or a teammate needs from a run, its
-  reader, scope, and save choice, is kept on the flow's `lastrun:` record (**2**, Saved
-  answers), never read back from the log.
+- The time estimate (**2**) reads the last `returned` row with a `page` for the same agent.
 
 ## 10. Close-out
 
@@ -490,7 +650,10 @@ Only `/aspire:aspire` launches you. Work only from a launch message that carries
 block (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **5**). Without one, call
 no tool and do no work: return one line, "Not started: run the aspire:aspire skill
 (/aspire:aspire) with this request, and it will launch me: {the request in one line}", and stop. Never launch another agent; name the one that should run next in the packet's
-`next`.
+`next`. When the launch block's `storyline.pass` is `draft`, draft the storyline per
+`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 4, step 0b, publish nothing,
+return it in the packet, and send `storyline` as your checkpoints' `pass`; with `build`, build to
+its `bullets` as given.
 
 End your output with one `result-packet` block built per that file's **6**, placed just before
 your `page-check` block, or just before your audit trail block when you published no page. Put

@@ -130,14 +130,15 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    1,000 views. Anything else that matters?"). The main thread asks it in the setup reply
    (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **2**); an agent that asks
    its own questions asks it first. An extra metric the person names joins the row for this run.
-   An unattended run asks nothing and lists the metrics in the method.
+   An unattended run asks nothing and lists the metrics in the method. **0b. The storyline:** do
+   what the launch block's `storyline.pass` asks (`orchestration.md`, **5**), per `storyline.md` here.
 1. **List the evidence the approved example sets** for the launch block's `question`, from
    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/examples.md` (storyboards, test plan, cards with
    thumbnails), when this flow is the one that file's row names as building the page. A flow that
-   only feeds another (discovery feeding vetting for I1) skips this step. Read every example the launch block's `examples` lists and list the
-   evidence, per `examples.md` steps 1 and 2. Match the evidence, never copy the sections or the
-   layout. A code with no example, or a launch with no `question`, skips this
-   step.
+   only feeds another (discovery feeding vetting for I1) skips this step. Read every example the
+   launch block's `examples` lists and list the evidence, per `examples.md` steps 1 and 2. Match the
+   evidence, never copy the sections or the layout. A code with no example, or a launch with no
+   `question`, skips this step.
 2. **Check freshness, then refresh** (section 9). Read the freshness of every account the page
    will cite, work out which are behind their pace, and refresh as section 9.5 says. When the page
    shows creators' posts or figures derived from them (latest posts, median views, engagement),
@@ -152,16 +153,15 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    for an answer (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/account-resolution.md`). Scheduled
    runs make this refresh too, except in a flow that rules out lookups.
 
-   **2a. Count the metrics before building**, after any refresh in step 2, since a refresh can
-   fill a gap. Take the posts the page will cite and count how many carry each required metric of
-   the row (section 8), leaving out a gap the network table marks
-   as one the network never fills for this kind of post (an Instagram image's views, YouTube
-   saves, shares and saves on a creator's account that is not connected). When under half the
-   cited posts carry a metric, stop before drafting and check in: name the metric, the count, and
-   why it is missing ("Saves: 3 of 24 posts. Instagram shows saves only for accounts connected to
-   Atlas, and @brightsidetoys is not connected."). Ask with `AskUserQuestion` when the run asks its
-   own questions; otherwise return it in the result's `questions`
-   (`orchestration.md`, **6**) and build nothing. Options: "Build with the gaps noted
+   **2a. Count the metrics before building**, after any refresh in step 2, since a refresh can fill
+   a gap. Take the posts the page will cite and count how many carry each required metric of the row
+   (section 8), leaving out a gap the network table marks as one the network never fills for this
+   kind of post (an Instagram image's views, YouTube saves, shares and saves on a creator's account
+   that is not connected). When under half the cited posts carry a metric, stop before drafting and
+   check in: name the metric, the count, and why it is missing ("Saves: 3 of 24 posts. Instagram
+   shows saves only for accounts connected to Atlas, and @brightsidetoys is not connected."). Ask
+   with `AskUserQuestion` when the run asks its own questions; otherwise return it in the result's
+   `questions` (`orchestration.md`, **6**) and build nothing. Options: "Build with the gaps noted
    (Recommended)", the fix when there is one ("Connect the account first", "Refresh the posts
    first"), and "Change the scope". An unattended run builds with the gaps noted and lists the
    metric in the page's "what is missing" part.
