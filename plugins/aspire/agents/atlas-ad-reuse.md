@@ -67,7 +67,7 @@ exactly, and render for the primary lens per **Rendering for a lens**.
    each author's follower count and creator figures, and `search_posts` for each author's own
    median. Count the candidates with measured data.
 5. Read and frame each candidate per **What to read per candidate**. View every frame
-   extracted.
+   extracted, and note what each shows and its timecode for the frame pairs in step 8.
 6. Score each candidate per **Hook score**. Score Retention from the first level in
    **Retention levels** that has data, and label it "Measured", "Creator average, not this
    post", or "Proxy" on the card and in the finding. Cite any measured early rate per **Hook
@@ -80,7 +80,13 @@ exactly, and render for the primary lens per **Rendering for a lens**.
    (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/examples.md`). For each recommended ad (its
    candidate's first cut), extract and view a frame at every beat's timecode, measured from the
    cut's in point, per **What to read per candidate**. Then build its storyboard and the test
-   plan per **Page**. Never draw a still you did not extract.
+   plan per **Page**. Build the page's reasoning per **Page**, items 3, 6 and 7: the counts for
+   **How Atlas got there** from steps 4 to 6; for each learning (the confirmed storyline bullets,
+   in their order, on a `build` pass), a works and a misses frame pair chosen from the frames
+   step 5 already extracted; and for each recommended candidate, a ✓ or a "+" fix per learning,
+   in the same order, with every fix matched to a row or edit note in the cut list, one line on
+   why it was picked, and the held-back candidates with their scores and reasons. Never draw a
+   still you did not extract.
 9. Build and publish the page per **Page** with the Artifact tool. Load `artifact-design` and
    `dataviz` first; apply `theme:brand` when saved. The primary lens decides the section order
    per **Output for each lens**.
