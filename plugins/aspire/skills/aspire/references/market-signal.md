@@ -169,25 +169,33 @@ Filter path unless noted, `context` on every call, only field paths from the cen
    leadership page (**Leadership page (O3)**) still writes nothing but carries no banner; note the
    repeat in the audit trail instead.
 8. **Reach by topic**, for **Where {brand} wins** (team page only). Counts come from
-   `totalHits`, so a capped mention set does not cap them.
-   - **Topics.** Each M2 topic, matched inside the brand's mention set with the same
-     `match_phrase` words the analysis uses for it; the brand's own creator program tags as one
-     topic, when it has them (a tracked hashtag such as `#{brand}creator`); and "{brand} with
-     {competitor}" for each competitor's posts in the comparison set.
+   `totalHits` and `aggs` on filter queries, so a capped mention set does not cap them.
+   - **Period.** The window and its four-week baseline together, leaving out posts from the last
+     three days of the window, whose views are still climbing. A one-week window holds too few
+     posts per topic, and its newest posts have not had time to reach the threshold. The chart
+     caption states the period.
+   - **Topics.** Each M2 topic, matched inside the brand's mention-set query (step 3) run over
+     the period, with the words saved for it in `market-signal:topics` (`match_phrase`); the brand's creator program, as one topic,
+     when a tracked hashtag joins the brand's name with "creator", "partner", or "ambassador"
+     (`#{brand}creator`); and "{brand} with {competitor}" for each competitor: the brand's posts
+     that also match that competitor's name, spelling variants, or handles (the filter half of
+     the comparison set; the semantic results are left out because they cannot be counted).
    - **Threshold.** 10,000 views by default. When under 3% or over half of the brand's posts in
-     the window reach it, use the brand's median views over the paged set instead, rounded to two
-     significant figures. Pick it once, before counting, and use it for every topic.
-   - **Counts.** For the brand's whole set and for each topic, on the window: posts, posts with
-     `viewCount` at or above the threshold (a `range` filter), and distinct creators (`aggs`
-     `cardinality` on `author.username`). Posts with no view count are left out of both counts
-     and counted in the method. Paid and organic posts count together; count each topic's
-     paid-marked and program-tagged posts beside them.
-   - **Top creators.** Page each topic's posts at the threshold (up to 100) to see how many of
-     them its top two creators made.
-   - **Gap.** The brand's posts that also name another tool, a saved competitor or not, for the
-     step after the brand's product (the build, the edit, the launch: whatever the posts read in
-     step 6 say comes next), with posts and creators counted as above. Count the posts that name
-     the brand's own product for that step beside them, when M2 tracks one.
+     the period reach it, use the brand's median views instead, rounded to two significant
+     figures, and say in the method when the median comes from a capped set. Pick it once,
+     before counting, and use it for every topic.
+   - **Counts.** Every query adds `exists viewCount`, so posts with no view count are in neither
+     count; count them once over the brand's set for the method. For the brand's whole set and for
+     each topic, two calls: one for posts and creators (`totalHits`, and `aggs` `cardinality` on
+     `author.username`), and one with `viewCount` at or above the threshold (a `range` filter) for
+     posts and creators at the threshold, whose hits (up to 100, paged) show how many of them the
+     topic's top two creators made. Paid and organic posts count together, and the method says so;
+     count each topic's paid-marked and program-tagged posts beside them.
+   - **Gap.** List the other tools the posts read in step 6 name for the step after the brand's
+     product (the build, the edit, the launch: whatever those posts say comes next), saved
+     competitors or not. Count the brand's posts that also name any of them, and their creators,
+     as above. When M2 tracks the brand's own product for that step, count the brand's posts that
+     name it beside them.
 
 ## Analysis rules
 
@@ -216,7 +224,7 @@ Filter path unless noted, `context` on every call, only field paths from the cen
 From **Data method** step 8 and the posts already read in step 6; no other reads.
 
 - **Reach rate.** A topic's rate is its posts at the threshold divided by its posts. The brand's
-  rate is the same over all its posts in the window. Each topic is compared with the brand's
+  rate is the same over all its posts in the period. Each topic is compared with the brand's
   rate as a multiple ("2.8 times as often as the average {brand} post").
 - **Which topics show.** A topic with fewer than 20 posts is left off the chart and named in the
   method as too few. Every other topic is shown, ordered by rate, with the brand's rate as its
@@ -225,8 +233,8 @@ From **Data method** step 8 and the posts already read in step 6; no other reads
   its posts at the threshold, is concentrated. It gets one line under the chart that calls it
   those creators' reach, not the topic's ("all 48 come from two creators, @a and @b, so that is
   their reach rather than a topic"), and never becomes a win card.
-- **Win cards.** Up to three, from topics that are not concentrated, have at least 5 creators,
-  and reach the threshold at least 1.5 times the brand's rate. Each card holds what it is, the
+- **Win cards.** Up to three, from topics that are not concentrated and reach the threshold at
+  least 1.5 times the brand's rate. Each card holds what it is, the
   label "Wins reach", one line on what the posts have in common (from the posts read), the
   evidence (the multiple, both rates, and the number of creators), and one or two sample posts
   as post cards (3.8) with their metrics. A paid-marked post keeps its paid tag. When over a
@@ -236,9 +244,10 @@ From **Data method** step 8 and the posts already read in step 6; no other reads
 - **Below average.** Topics under the brand's rate are named in one line with their rates (often
   price lists and head-to-head comparisons). They feed the moves and get no card.
 - **Gap card.** One card, labelled "Where credit leaks", when at least 3 creators show the
-  brand's product and name another tool for the next step in a quoted line. It counts those posts
-  and creators against the posts that name the brand's own product for that step, shows one of
-  the posts, and ends with a "So:" line. With fewer than 3 creators there is no gap card.
+  brand's product and name another tool for the next step in a quoted line. It gives the count
+  of posts and creators that also name those tools, against the posts that name the brand's own
+  product for that step when that was counted, shows one of the quoted posts, and ends with a
+  "So:" line. With fewer than 3 creators there is no gap card.
 - **How to stand apart.** Up to three positioning moves, each a short bold line and one or two
   sentences. Each move names the win card, gap card, or below-average topics it comes from; a
   move with none behind it is dropped. Then one "So:" line naming the next steps the moves lead
@@ -293,13 +302,14 @@ when the page has no insights), built per **Where the brand wins, and how to sta
    gets one sentence of it, pointing here.
 2. Reach by topic: a bar chart of each topic's share of posts at the threshold, with its posts
    ("32 of 54"), the brand's own rate as a marked bar, and a caption that states the threshold,
-   the network, and the window. The concentrated-topic line goes under it.
+   the network, the period, and that paid and organic posts count together. The concentrated-topic line goes under it.
 3. The win cards, then the gap card.
 4. How to stand apart: the moves, then the "So:" line.
 
 The positioning decision goes in the page's decisions (3.5), and the briefing and gap steps in
-its next steps (3.6). The method states the threshold and why it was picked, the brand's rate,
-the topics with too few posts, and the posts left out for having no view count. The leadership
+its next steps (3.6). The method states the period, the threshold and why it was picked, the
+brand's rate, that paid and organic posts count together, the topics with too few posts, and the
+posts left out for having no view count. The leadership
 page (**Leadership page (O3)**) leaves this section out.
 
 ## Leadership page (O3)
