@@ -299,9 +299,10 @@ date shows as expired.
   paid. The licensing candidates follow in the folded scoring section as two lists, found then
   briefed, each ranked by hook score, with the pattern table. The edit plan (storyboards, cut
   list, and test plan) sits behind its own fold.
-- **Creative** (primary): the edit plan open and first, right after the next steps: the
-  storyboards and the cut list, grouped by post, with frame thumbnails at the in and out points.
-  The learnings and the picks follow; the ranking stays folded.
+- **Creative** (primary): the learnings first, as on the performance lens: each pattern in plain
+  words with its works and misses frame pair, so the team can reuse it in the next edit. The
+  edit plan comes right after them, open: the storyboards and the cut list, grouped by post, with
+  frame thumbnails at the in and out points. The picks follow; the ranking stays folded.
 - Both lenses are one hand-off (Performance picks, Creative cuts), so the page always carries
   every section; the primary lens decides the order and which parts are folded.
 
@@ -393,8 +394,8 @@ lens (**Output for each lens** sets the order for `creative`):
    the watercolor pick, held for round two"), and counts the **leave** candidates, which are
    listed in item 10.
 8. **The edit plan**: on the `performance` lens, one `details`, closed, titled "The edit plan:
-   storyboards, cut list and test plan"; on the `creative` lens, open and placed right after the
-   next steps. It holds:
+   storyboards, cut list and test plan"; on the `creative` lens, open and placed right after
+   **What Atlas learned** (item 6), before the picks. It holds:
    - **Cut structure and storyboards** (3.9): the five beats every cut shares (hook 0 to 3s,
      brand 3 to 6s, build 6 to 9s, reveal 9 to 12s, then the end card, per the page standard) and
      the specs from **Cut list**. On a 15-second cut the end card runs 12 to 15s. Then one
