@@ -6,7 +6,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, wri
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import {
-  ATLAS_READS, ATLAS_WRITES, HARNESS_VERSION, barChecks, compareRuns, extractPageCheckScript, fill, findJsonWithKey,
+  ATLAS_READS, ATLAS_WRITES, HARNESS_VERSION, barChecks, compareRuns, extractPageCheckScript, fill, findJsonWithKey, configuredQuestions,
   findPage, forBaseline, normalizeResult, checkNames as namesFrom, stripTitlePrefix, parsePageCheck, parseStream, renderQuestion, renderRun, rIds, stripDataUris,
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength,
   type CheckDef, type PageChecks, type QuestionResult, type Result, type RunResults, type Turn,
@@ -22,7 +22,7 @@ const BASELINES = join(HERE, 'baselines')
 
 const USAGE = `bun run eval:pages [options]
 
-  --only <code[,code]>     Run only these questions (I4, I11, O1, O3, I1)
+  --only <code[,code]>     Run only these questions (I4, I11, O1, O2, O3, I1)
   --baseline [date]        Store the run's results under scripts/eval/baselines/<date>/ (default: today, UTC)
   --from <run>             With --baseline: store an earlier run without running again
   --compare <a> <b>        Print what changed between two runs, and run nothing
@@ -556,12 +556,17 @@ async function main() {
     return
   }
 
-  const questions: Question[] = config.questions.filter((question: Question) => !options.only || options.only.includes(question.code))
+  const chosen: Question[] = config.questions.filter((question: Question) => !options.only || options.only.includes(question.code))
   const unknown = (options.only ?? []).filter(code => !config.questions.some((question: Question) => question.code === code))
   if (unknown.length) fail(`no question with code ${unknown.join(', ')}`)
 
   const localPath = join(HERE, 'local.json')
   const local: Local = existsSync(localPath) ? readJson(localPath) : {}
+  // A question local.json names no brand for is skipped, not fatal: a question added to questions.json reaches
+  // CI before its brand reaches the EVAL_LOCAL_JSON secret, and every other question still runs.
+  const { run: questions, skipped } = configuredQuestions(chosen, local, !!options.page || !!options.dryRun || !existsSync(localPath))
+  if (skipped.length) console.error(`Skipped ${skipped.join(', ')}: local.json names no brand for ${skipped.length === 1 ? 'it' : 'them'}`)
+  if (!questions.length) fail(`no question to run: local.json names no brand for ${skipped.join(', ')}`)
   if (options.dryRun) {
     for (const question of questions) {
       const entry = local.questions?.[question.code]

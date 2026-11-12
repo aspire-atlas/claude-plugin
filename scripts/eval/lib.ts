@@ -426,6 +426,16 @@ export function fill(template: string, values: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (whole, key) => values[key] ?? whole)
 }
 
+/** Splits the chosen questions into those local.json names a brand for and those it does not. Grading a given
+ * page or a dry run needs no brand, so then nothing is skipped. */
+export function configuredQuestions<Q extends { code: string }>(
+  questions: Q[], local: { questions?: Record<string, { brand?: string }> }, needsNoBrand: boolean,
+): { run: Q[]; skipped: string[] } {
+  if (needsNoBrand) return { run: questions, skipped: [] }
+  const hasBrand = (question: Q) => !!local.questions?.[question.code]?.brand
+  return { run: questions.filter(hasBrand), skipped: questions.filter(question => !hasBrand(question)).map(question => question.code) }
+}
+
 // ---------------------------------------------------------------- CI: which questions a change reruns, and the PR comment
 
 /** The paths CI watches: the agents, the flow files, the router, and the page standard every page is built by. */
