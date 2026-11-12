@@ -64,8 +64,8 @@ test('coach crab: drawn with its class, its props and its motion, outside the ag
 })
 
 test('costumes: every Aspire agent has its own influencer costume, and a second run wears a variant', () => {
-  expect(COSTUMES).toHaveLength(33)
-  expect(AGENT_CHARACTERS).toHaveLength(26)
+  expect(COSTUMES).toHaveLength(ROSTER.length + 7)
+  expect(AGENT_CHARACTERS).toHaveLength(ROSTER.length)
   expect(VARIANT_CHARACTERS).toHaveLength(7)
   for (const entry of ROSTER) expect(characterOf({ type: entry.type, model: '' }).key).toMatch(/^inf-/)
   expect(new Set(ROSTER.map(r => characterOf({ type: r.type, model: '' }).key)).size).toBe(ROSTER.length)

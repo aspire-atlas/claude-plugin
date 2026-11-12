@@ -28,6 +28,7 @@ plugins/<name>/                   One plugin per folder; every folder has a mark
   agents/*.md                     Subagents. Namespaced as <plugin>:<agent>.
 scripts/plugins.sh                The per-plugin conventions (folder, changelog, tag) the checks and workflows share.
 scripts/check-*.sh                Channel contract and content checks; each loops over every plugin. CI runs them on every push and PR.
+scripts/new-agent.sh              Scaffolds a new agent, its flow reference and its spec from scripts/templates/ (see Adding an agent).
 scripts/eval/                     Page eval: reruns the example questions and grades each new page (bun run eval:pages).
 CHANGELOG.md                      Official releases of aspire only.
 ```
@@ -99,6 +100,39 @@ gh pr create --base main --label release --title "Release 1.1.0"
 3. Do not merge `main` back into `develop`. Nothing on `main` is needed there.
 
 Version bumps: **patch** for copy and reference fixes, **minor** for a new agent, skill section, or tool, **major** for a change that alters how existing users invoke or configure the plugin.
+
+## Adding an agent
+
+Start from the generator, not from a copy of the nearest agent. It writes the agent, its flow reference and its spec in the shape every check expects, and adds the agent's rows wherever agents are listed by hand:
+
+```bash
+bash scripts/new-agent.sh <slug> --name "<Name>" --codes I1,P2 --permission read   # or write, send, spend
+```
+
+`<slug>` is lower-case words joined by hyphens; the agent is `atlas-<slug>`. `--codes` are the question codes it answers (`orchestration.md` section 3), each of which needs a row in page-standard's required-metrics table. `--model inherit` puts it on the session's model instead of Sonnet (**Model tiers** in `SKILL.md` says when). `--dry-run` prints every new file and a diff of every edit without writing; `--help` lists the other options. `bash scripts/new-agent.sh --remove <slug>` undoes a scaffold you have not filled in yet.
+
+What it writes:
+
+- `plugins/aspire/agents/atlas-<slug>.md`, with the artifact standard block, the orchestration contract block and the checkpoint paragraph copied from the files that own them
+- `plugins/aspire/skills/aspire/references/<slug>.md`, the flow reference
+- `docs/agent-specs/agents/NN-<name>.md`, the spec, numbered next. When the agent's spec is already written (its `plugin_agents` is `none`), give the agent that spec's name: the generator names the agent in it instead and takes its question codes when you leave `--codes` out
+- the agent's rows in `SKILL.md` (the **Sections** index, **Agent hand-off**, **Model tiers**), the plugin README's agent table, the agents panel (`plugins/aspire-mod/hooks/roster.ts` and a placeholder costume in `costumes.ts`), the permission level table in `orchestration.md` section 7, and the `agents` map in `scripts/eval/questions.json`
+
+The scaffold passes every check as written. Each line you still have to write says `TODO(new-agent)`, and the standard review flags each one until it is filled. Fill them in this order, since each step reads the one before it:
+
+1. **The flow reference.** The ask and the setup questions with their options, the reader, what the flow adds to each required-metrics row, the data it reads, the storyline, the page, the saved answers, and the scheduled path.
+2. **The agent.** The description and its trigger phrases, the role, the inputs, the tools it loads, the brand memory keys it reads and drops, the page title, and what it writes to Atlas.
+3. **The spec.** The job to be done, the kind of page, the skills it carries, the universal skills, the trigger phrases, and the non-goals.
+4. **The roster rows.** The README description, the **Model tiers** reason, the permission level note (for an agent that writes, sends or spends), and the agents panel blurb, costume name and prop.
+5. **The eval question.** Add the agent and flow paths to the question in `scripts/eval/questions.json` that asks its code, or add a question for it, and rerun it with `bun run eval:pages --only <code>`. Set the agent's `approved` to the ticket that holds its approved page once it has one.
+
+Then check that nothing is left, run the checks under [Local testing](#local-testing) and `claude plugin test plugins/aspire-mod`, and open the pull request with the template's **The standard** list ticked:
+
+```bash
+grep -rn 'TODO(new-agent)' plugins docs scripts/eval
+```
+
+CI scaffolds a throwaway agent on every pull request, runs the checks on it as generated, and removes it again, so a change to a check that the templates in `scripts/templates/` no longer meet fails there first. Change the template in the same pull request.
 
 ## Adding a plugin
 
