@@ -294,9 +294,11 @@ the posts and comments already read for the list; it adds no search.
 criteria name: the posts cited as topic evidence, and the posts that mention the brand. The
 comparisons of views use only the product posts whose author has a usual (**What to read per
 creator**) and that have 5,000 or more views, so one small account's swing doesn't lead. The page
-states that floor and how many posts passed it. With fewer than 5 posts that pass, the three
-findings below each say so in one line ("No pattern this run: 3 posts about {product} is too few
-to compare") and every check is tagged "Brief".
+states that floor and how many posts passed it. With fewer than 5 posts that pass, What's working
+and the reach part of item 3 say so in one line ("No pattern this run: 3 posts about {product} is
+too few to compare"), and the checks they would feed are tagged "Brief". Where people get stuck and
+the supply part of item 3 use every product post and need no floor; with no product posts at all,
+all three say so and every check is tagged "Brief".
 
 1. **What's working.** Sort each product post by what it does, one label per post, read from the
    caption, transcript, and overlay text: built something real with the product, a tutorial or
@@ -315,8 +317,8 @@ to compare") and every check is tagged "Brief".
    analyzed comments: the counts line says "Atlas holds no comment analysis for these posts" and
    the challenges come from the posts alone.
 3. **What this means for picking.** Two numbers. **Reach:** how concentrated the views of the
-   product posts are: the total, the top post's share of it, how many are paid partner posts (the
-   partnership marker, `#ad`, or the brand's partner hashtag), and the average of the rest without
+   product posts are: the total, the top post's share of it, how many are paid partner posts (paid as
+   **Disclosure habits** reads it), and the average of the rest without
    the top post ("One TikTok has 8.3M of the 10.8M views; the other 54 average 46K"). **Supply:**
    when the criteria name a market, how many product posts and authors have that market on record
    against the total ("4 of 55 posts come from US accounts"). When the list came up short of the
@@ -329,8 +331,8 @@ not "Topic evidence"). Each names the finding it comes from as a tag: "Doing wel
 {n}", "Reach", "{market} supply", or "Brief" when the saved criteria alone set it, and gives that
 finding's number in one line. Per creator, each check is a pass, a partial pass, or a miss, scored
 1, ½, or 0 from the component's points: a pass at 70% or more of its weight, a partial pass at 35%
-or more, a miss below that. A component with no data shows "not in Atlas", scores 0, and stays
-listed as missing. The bar for Approve is stated in plain words from `vetting:thresholds` and the
+or more, a miss below that. A component with no data carries no mark, shows "not available:
+{reason}" as the fit score does, and stays listed as missing. The bar for Approve is stated in plain words from `vetting:thresholds` and the
 hard stops ("Approve at a fit score of 70 or more with no safety cap").
 
 **The saved criteria still decide.** The fit score, its weights, and the recommendation come from
@@ -339,7 +341,9 @@ explain the criteria; they never change a score. When a finding suggests a crite
 not saved (a lift bar on product posts, fluency in a tool people compare the product with, a
 market the supply numbers point to), it is a **proposed change to the criteria**: it goes in the
 page's Decisions as a question with the finding behind it, and in the result's "Needs the main
-thread". It is never applied in the run, and the agent never writes it.
+thread" under the criteria record the run used (`vetting:criteria`, or the campaign's
+`campaign:{slug}-criteria`), with that record's current wording. It is never applied in the run,
+and the agent never writes it.
 
 ## The recommendation
 
@@ -474,7 +478,8 @@ component breakdown, `safety` (`{category: result}` plus red line, scope, compet
 disclosure, and audience checks), `redLineHits[]`, `hardRejectHits[]`, `riskFlags[]`,
 `calibrationsApplied[]` (the keys that shaped the call), `lessonsApplied[]`, `evidence[]`,
 `estFee` when the calculator gives one, `usualViews` (or the reason it is not available),
-`checks` (`{component: {mark: 1 | 0.5 | 0, finding}}`, a missing component with `mark: null`),
+`checks` (`{component: 1 | 0.5 | 0 | null}`, `null` for a component with no data; the
+finding each check comes from is on the run summary),
 `listName`, `listSource` (`csv`, `pasted`,
 `aspire-app`, or `cas-lane`), `campaign` when R2 named one, `reviewPage`, and `recipient`
 (**Recipient lens**). A `feedback` finding adds `userVerdict`, `agentVerdict`, and the user's
@@ -506,8 +511,9 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
    works and where people get stuck ("Builds ran at 3.6× the creator's usual views, feature
    recaps at 1.2×"). Under it, the verdict tally: a bar of Approve, Maybe, Reject, and Can't vet,
    then a column per verdict with its count and the reasons behind it as chips. When the user
-   asked for a number and the list came up short, the answer says so ("11 of the 20 asked for"),
-   gives the reason from the supply finding in section 5, and the page never pads it.
+   asked for a number and the list came up short, the answer says so ("11 of the 20 asked for")
+   with the reason in a few words (the supply finding in section 5 when it explains it, otherwise
+   what removed the most creators), and the page never pads it.
 3. **What people are doing well with {product}** (3.4, the headline insight), from **The
    findings behind the checks**, item 1: the claim, then a bar chart of the median lift by what
    the post does, one bar per label with "{n} of {m} measured" and a dashed line at 1× (the
@@ -523,8 +529,8 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
 6. **What we look for in a {product} creator**: one row per check, each with the finding tag it
    comes from and that finding's number in one line, the 1, ½, and 0 scoring, and the bar for
    Approve in plain words. Below it, any proposed change to the criteria, marked as proposed and
-   pointing to Decisions. With no product posts to compare, each check is tagged "Brief" and the
-   section says why.
+   pointing to Decisions. A check whose finding had too few posts is tagged "Brief", as **The
+   findings behind the checks** says, and the section says why.
 7. **Decisions** (3.5): approving the creators to contact, with the date outreach should start,
    any brand rule the team must settle before a verdict holds (for example, a red line a creator
    sits on the edge of), and each proposed change to the criteria with the finding behind it.
@@ -643,6 +649,9 @@ factors:
   Budget vs target, with `fitScore` equal to `score`. The page shows the date of the run, and names
   the inputs that can differ from the campaign page's as that section lists them.
 - Brand safety runs exactly as today, and every hard stop still decides first.
+- **The checks in "What we look for"** are the client score's factors, Budget vs target left
+  out, so no check ever shows price. A factor is a pass at 0.7 or more, a partial pass at 0.35 or
+  more, and a miss below that; a factor left out for missing data carries no mark, as above.
 
 **The recommendation is the slate call.** Approve, Maybe, or Reject, by **The recommendation**
 above against `vetting:thresholds`. A creator who would be Can't vet appears on the slate as
