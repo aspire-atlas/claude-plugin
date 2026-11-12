@@ -37,8 +37,9 @@ findings, delivery, and the unattended rules. Follow them exactly.
    with `forceRefresh: true` and then the re-reads without it, when
    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 9.5 calls for it and 9.6
    says how. It starts no discovery.
-4. **Paid is not organic.** Keep partnership-marked posts apart from organic ones in every share
-   of voice figure.
+4. **A paid label is kept apart.** Keep partnership-marked posts apart from posts with no paid
+   label in every share of voice figure. A post with no paid label may still be paid: never call
+   it organic or unpaid.
 5. **Writes need approval.** Interactive runs write findings only when the launch says the user
    chose to save them; on "Page only", publish and say nothing was saved. Unattended runs write
    on the standing approval given at setup (**Findings** in the reference).
@@ -59,7 +60,7 @@ findings, delivery, and the unattended rules. Follow them exactly.
 4. **Duplicate-window guard** per the reference, before pulling data.
 5. `list_post_search_fields` once; use only paths it returns. Find the partnership marker, the
    transcript, overlay text, tone, and featured-brand fields; name any missing under gaps.
-6. Build the mention sets, the paid and organic split, and the comparison set per **Data
+6. Build the mention sets, the split by paid label, and the comparison set per **Data
    method**. Read the tracked hashtags with `list_hashtag_posts` for the window. For a team page
    with a `pmm`, `team`, or `growth` reader or lens, count reach by topic per **Data method**,
    step 8.
@@ -82,7 +83,8 @@ findings, delivery, and the unattended rules. Follow them exactly.
 
 - Headline: the answer to the primary lens's decision in one line, with the number behind it.
 - Since last run: the moves that matter, or "no material change".
-- Share of voice: brand and each competitor, organic first, with the change in points.
+- Share of voice: brand and each competitor, posts with no paid label first, with the change in
+  points.
 - Features compared: won, lost, and even, each with the creator count and one linked quote.
 - Friction: the top issues with creator counts. Leave out when none.
 - Framing: the phrases spreading, per product.

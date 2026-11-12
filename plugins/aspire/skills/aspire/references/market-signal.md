@@ -152,8 +152,10 @@ Filter path unless noted, `context` on every call, only field paths from the cen
    capped. `totalHits` gives the post count; `aggs` `cardinality` on `author.username` gives
    distinct creators. Engagement sums come from the paged hits (the `aggs` allowlist has no
    sums).
-4. **Paid vs organic.** Split each set on the partnership marker the census exposes. Share of
-   voice is reported organic first, paid beside it, never blended without saying so.
+4. **Paid label or none.** Split each set on the partnership marker the census exposes. A post
+   without the marker has no paid label: it may still be paid, so never call it organic or
+   unpaid. Share of voice is reported for posts with no paid label first, the paid-labelled posts
+   beside it, never blended without saying so.
 5. **Comparison set.** Posts in the brand's set that also match at least one competitor, plus
    one semantic `search_posts` per competitor with `queryText` "{brand} vs {competitor}"
    filtered to the window, limit 25. Dedupe on the post id.
@@ -189,7 +191,8 @@ Filter path unless noted, `context` on every call, only field paths from the cen
      each topic, two calls: one for posts and creators (`totalHits`, and `aggs` `cardinality` on
      `author.username`), and one with `viewCount` at or above the threshold (a `range` filter) for
      posts and creators at the threshold, whose hits (up to 100, paged) show how many of them the
-     topic's top two creators made. Paid and organic posts count together, and the method says so;
+     topic's top two creators made. Posts with and without a paid label count together, and the
+     method says so;
      count each topic's paid-marked and program-tagged posts beside them.
    - **Gap.** List the other tools the posts read in step 6 name for the step after the brand's
      product (the build, the edit, the launch: whatever those posts say comes next), saved
@@ -281,7 +284,7 @@ section. Each follows **Recipient lens**, **Rendering for a lens**.
 
 Title "<Brand> Market Signal", republished to the same path each run. Sections: header with the
 window, the "Prepared for" chip, and the animated mark at the top right; since last run; share of voice (a bar chart of posts and
-creators per entity, organic and paid split); the primary lens section; the other lens
+creators per entity, split by paid label or none); the primary lens section; the other lens
 sections; comparison post cards with media and the quoted line; a verbatim wall (at most 12
 quotes, each linked); method and gaps (sets capped, competitors not indexed, fields missing);
 footer with "numbers come from Atlas as of {timestamp}" and a note that images are a snapshot, then the
@@ -302,13 +305,15 @@ when the page has no insights), built per **Where the brand wins, and how to sta
    gets one sentence of it, pointing here.
 2. Reach by topic: a bar chart of each topic's share of posts at the threshold, with its posts
    ("32 of 54"), the brand's own rate as a marked bar, and a caption that states the threshold,
-   the network, the period, and that paid and organic posts count together. The concentrated-topic line goes under it.
+   the network, the period, and that posts with and without a paid label count together. The
+   concentrated-topic line goes under it.
 3. The win cards, then the gap card.
 4. How to stand apart: the moves, then the "So:" line.
 
 The positioning decision goes in the page's decisions (3.5), and the briefing and gap steps in
 its next steps (3.6). The method states the period, the threshold and why it was picked, the
-brand's rate, that paid and organic posts count together, the topics with too few posts, and the
+brand's rate, that posts with and without a paid label count together, the topics with too few
+posts, and the
 posts left out for having no view count. The leadership
 page (**Leadership page (O3)**) leaves this section out.
 
@@ -344,7 +349,7 @@ Below the split, in the order the claims use them:
    never pad to three.
 6. **One section per claim** (3.4): the claim, the evidence with big numbers, the comparison
    (the baseline, or a competitor), a chart for the headline claim (share of voice by period, or
-   share and growth by entity), the organic and paid split, and "What this means for you" as the
+   share and growth by entity), the split by paid label or none, and "What this means for you" as the
    "So:" line.
 7. **Competitor comparison**: a table of each competitor with its share of voice, the features
    it wins and loses on, and the friction creators raise about it, then a message ownership table
