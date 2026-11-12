@@ -60,9 +60,12 @@ findings, delivery, and the unattended rules. Follow them exactly.
 5. `list_post_search_fields` once; use only paths it returns. Find the partnership marker, the
    transcript, overlay text, tone, and featured-brand fields; name any missing under gaps.
 6. Build the mention sets, the paid and organic split, and the comparison set per **Data
-   method**. Read the tracked hashtags with `list_hashtag_posts` for the window.
+   method**. Read the tracked hashtags with `list_hashtag_posts` for the window. For a team page
+   with a `pmm`, `team`, or `growth` reader or lens, count reach by topic per **Data method**,
+   step 8.
 7. Analyze per **Analysis rules**: share of voice, features compared, friction, framing, reuse
-   candidates, and what changed since the last run.
+   candidates, what changed since the last run, and, with step 6's reach counts, where the brand
+   wins and how to stand apart.
 8. Render per **Rendering for each lens**: the primary lens first, one section per other lens.
 9. Build and publish the page per **Page**, republishing to the same path. When the launch block's
    `question` is O3, or it has no `question` and the primary lens is `leadership`, the page has
@@ -83,6 +86,9 @@ findings, delivery, and the unattended rules. Follow them exactly.
 - Features compared: won, lost, and even, each with the creator count and one linked quote.
 - Friction: the top issues with creator counts. Leave out when none.
 - Framing: the phrases spreading, per product.
+- Where {brand} wins: the threshold and the brand's rate, the winning topics as multiples of
+  it, the gap with its creator count, and the positioning line when the page proposes one.
+  Leave out when the page has no such section.
 - Also for {lens}: two bullets per extra lens.
 - Data gaps: capped sets, competitors not indexed, missing fields.
 - Delivered to: page link, destinations, and anything that failed.

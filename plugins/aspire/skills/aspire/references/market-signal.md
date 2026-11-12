@@ -168,6 +168,26 @@ Filter path unless noted, `context` on every call, only field paths from the cen
    re-check the clock once, then publish with a "Repeat window" banner and write nothing. A
    leadership page (**Leadership page (O3)**) still writes nothing but carries no banner; note the
    repeat in the audit trail instead.
+8. **Reach by topic**, for **Where {brand} wins** (team page only). Counts come from
+   `totalHits`, so a capped mention set does not cap them.
+   - **Topics.** Each M2 topic, matched inside the brand's mention set with the same
+     `match_phrase` words the analysis uses for it; the brand's own creator program tags as one
+     topic, when it has them (a tracked hashtag such as `#{brand}creator`); and "{brand} with
+     {competitor}" for each competitor's posts in the comparison set.
+   - **Threshold.** 10,000 views by default. When under 3% or over half of the brand's posts in
+     the window reach it, use the brand's median views over the paged set instead, rounded to two
+     significant figures. Pick it once, before counting, and use it for every topic.
+   - **Counts.** For the brand's whole set and for each topic, on the window: posts, posts with
+     `viewCount` at or above the threshold (a `range` filter), and distinct creators (`aggs`
+     `cardinality` on `author.username`). Posts with no view count are left out of both counts
+     and counted in the method. Paid and organic posts count together; count each topic's
+     paid-marked and program-tagged posts beside them.
+   - **Top creators.** Page each topic's posts at the threshold (up to 100) to see how many of
+     them its top two creators made.
+   - **Gap.** The brand's posts that also name another tool, a saved competitor or not, for the
+     step after the brand's product (the build, the edit, the launch: whatever the posts read in
+     step 6 say comes next), with posts and creators counted as above. Count the posts that name
+     the brand's own product for that step beside them, when M2 tracks one.
 
 ## Analysis rules
 
@@ -190,6 +210,47 @@ Filter path unless noted, `context` on every call, only field paths from the cen
 - Competitors not indexed (no posts in the window and none in the baseline): say so and
   suggest the watch list or an account review of the competitor's handle. Never start
   discovery for them.
+
+### Where the brand wins, and how to stand apart
+
+From **Data method** step 8 and the posts already read in step 6; no other reads.
+
+- **Reach rate.** A topic's rate is its posts at the threshold divided by its posts. The brand's
+  rate is the same over all its posts in the window. Each topic is compared with the brand's
+  rate as a multiple ("2.8 times as often as the average {brand} post").
+- **Which topics show.** A topic with fewer than 20 posts is left off the chart and named in the
+  method as too few. Every other topic is shown, ordered by rate, with the brand's rate as its
+  own bar between the topics above it and those below.
+- **Concentrated.** A topic with fewer than 5 creators, or whose top two creators made over half
+  its posts at the threshold, is concentrated. It gets one line under the chart that calls it
+  those creators' reach, not the topic's ("all 48 come from two creators, @a and @b, so that is
+  their reach rather than a topic"), and never becomes a win card.
+- **Win cards.** Up to three, from topics that are not concentrated, have at least 5 creators,
+  and reach the threshold at least 1.5 times the brand's rate. Each card holds what it is, the
+  label "Wins reach", one line on what the posts have in common (from the posts read), the
+  evidence (the multiple, both rates, and the number of creators), and one or two sample posts
+  as post cards (3.8) with their metrics. A paid-marked post keeps its paid tag. When over a
+  quarter of the topic's posts carry a paid marker or a program tag, the card gives two
+  readings: the content works; or part of the reach was paid for or comes from who was picked,
+  so part of the gap is who posts, not what.
+- **Below average.** Topics under the brand's rate are named in one line with their rates (often
+  price lists and head-to-head comparisons). They feed the moves and get no card.
+- **Gap card.** One card, labelled "Where credit leaks", when at least 3 creators show the
+  brand's product and name another tool for the next step in a quoted line. It counts those posts
+  and creators against the posts that name the brand's own product for that step, shows one of
+  the posts, and ends with a "So:" line. With fewer than 3 creators there is no gap card.
+- **How to stand apart.** Up to three positioning moves, each a short bold line and one or two
+  sentences. Each move names the win card, gap card, or below-average topics it comes from; a
+  move with none behind it is dropped. Then one "So:" line naming the next steps the moves lead
+  to and, when there is one, the positioning decision.
+- **Positioning decision.** When the moves add up to one positioning line, the page's Decisions
+  carries it: the line, why (the cards behind it), who decides (product marketing, as a role,
+  unless the brand's saved team names a person), a real date (the next run, or a launch on the
+  brand's calendar), and the options (adopt it, adopt part of it, or keep the current line).
+- **Next steps.** A step briefs creators on the winning topics, with a target (the next {n}
+  posts show a winning topic) and a measure (the share of those posts at the threshold, against
+  the topic's rate today). The gap card gets a step when someone owns the next step in the
+  product, measured by the posts naming the brand's own product for it, against today's count.
 
 ## Rendering for each lens
 
@@ -223,6 +284,23 @@ Build the page from the page blocks (`skills/page-standard/blocks.md`): the head
 strip (3.1, 3.2) with the brand's and each competitor's posts per platform, the answer (3.3), a
 decisions section (3.5) and next steps (3.6) after it, up to three insights (3.4), post cards
 (3.8), quotes (3.18), the method (3.11), and what's missing (3.12) for the gaps above.
+
+**Where {brand} wins, and how to stand apart.** When the page's reader or a saved lens is
+`pmm`, `team`, or `growth`, add this section after the insights (or after the lens sections,
+when the page has no insights), built per **Where the brand wins, and how to stand apart**:
+
+1. A one-line answer: where the brand wins reach and where it loses it. The page's answer (3.3)
+   gets one sentence of it, pointing here.
+2. Reach by topic: a bar chart of each topic's share of posts at the threshold, with its posts
+   ("32 of 54"), the brand's own rate as a marked bar, and a caption that states the threshold,
+   the network, and the window. The concentrated-topic line goes under it.
+3. The win cards, then the gap card.
+4. How to stand apart: the moves, then the "So:" line.
+
+The positioning decision goes in the page's decisions (3.5), and the briefing and gap steps in
+its next steps (3.6). The method states the threshold and why it was picked, the brand's rate,
+the topics with too few posts, and the posts left out for having no view count. The leadership
+page (**Leadership page (O3)**) leaves this section out.
 
 ## Leadership page (O3)
 
@@ -299,12 +377,13 @@ findings anchor to the post (`entityKind` `post`, the network's own media id). A
 
 | Finding | Kind | `priority` |
 | ------- | ---- | ---------- |
-| A feature the brand won, a positive spreading phrase | `went_well` | n/a |
-| A feature the brand lost, a friction issue | `needs_improvement` | n/a |
-| A recommendation per lens (3 max) | `action_item` | Required |
+| A feature the brand won, a positive spreading phrase, a win card | `went_well` | n/a |
+| A feature the brand lost, a friction issue, the gap card | `needs_improvement` | n/a |
+| A recommendation per lens (3 max), the positioning decision | `action_item` | Required |
 
 `detail` carries `recipient` (primary lens), `lens` (for a secondary-lens finding),
 `window` (`{start, end}`), `competitor`, `topic`, `outcome`, `sov` (`{brand, competitors{}, organic, paid}`),
+`reach` on a win or gap card (`{threshold, posts, atThreshold, creators, brandRate}`),
 `verbatims[]` (quote, permalink, timestamp), `changedSinceLastRun`, and `evidence[]`.
 `idempotencyKey` per finding.
 
