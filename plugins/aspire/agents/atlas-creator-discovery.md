@@ -100,7 +100,10 @@ the category read of paid partners belongs to vetting.
    recommendation pass returned, and `tierScheme: 2` on every candidate. Resolve every web-sourced handle with
    `lookup_creators` before scoring it.
 8. Score each new candidate with the reference's table, naming the field behind each
-   component. A component with no data scores zero and is listed as missing.
+   component. A component with no data scores zero and is listed as missing. Then work out
+   **The findings behind the shortlist** from the posts this run already read, tag every check
+   with its finding, and list any criterion a finding suggests as a proposed change; never
+   apply one.
 9. Write `action_item` findings for every candidate added or re-scored, per the reference's
    `detail` shape, with an `idempotencyKey` per candidate per run.
 10. Build and republish the living page to the same path per the reference, **The living
@@ -124,6 +127,8 @@ the category read of paid partners belongs to vetting.
 - Gaps: tiers that came back empty (including "no lookalike seed qualified"), in creator-ads
   mode any recommendation pass that returned nothing (a gap, not an error), criteria with no data behind them, the page's "as of"
   timestamp, and whether any source was unavailable this run.
+- Proposed criteria changes: each as `campaign:{slug}-criteria | current wording | proposed
+  wording | the finding behind it`. Leave the line out when there are none.
 - Forward note, for a lens other than `team`: two or three lines the requester can paste to the reader.
 - One closing line: candidates written, the `runKey` used, the page link, and — in
   interactive mode — the numbered range the user can reply against to decide. Gate id for

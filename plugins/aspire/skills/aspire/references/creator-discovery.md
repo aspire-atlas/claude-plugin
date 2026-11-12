@@ -15,6 +15,7 @@ in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Se
 - [The pool](#the-pool)
 - [Tiers: where candidates come from, and in what order](#tiers-where-candidates-come-from-and-in-what-order)
 - [Scoring](#scoring)
+- [The findings behind the shortlist](#the-findings-behind-the-shortlist)
 - [State written to Atlas](#state-written-to-atlas)
 - [The living page](#the-living-page)
 - [Decisions](#decisions)
@@ -253,6 +254,34 @@ Risk flags are reported, never scored: competitor mention, a `red_line` match in
 content, no contact route, or a follower-to-engagement pattern that looks bought. A flagged
 candidate still appears, with the flag on its card.
 
+## The findings behind the shortlist
+
+The shortlist opens with the same three findings and the same "What we look for" checks as the
+vetting slate, worked out exactly as **Creator vetting**, **The findings behind the checks** says,
+so the reader sees why the checks matter before the candidates. Three differences:
+
+- **The product posts** are the posts this run read about the brand or the campaign's subject: the
+  tier 2 posts that mention the brand, and the topic evidence posts read per candidate. No search is
+  added for them.
+- **A candidate's usual views** is the `instagram.medianViews` or `tiktok.medianViews` the
+  `search_creators` hit already carries (the census names its window, normally 90 days), so a lift
+  needs no extra read. Without the field, the usual is worked out from the candidate's posts this
+  run read, as vetting does; with fewer than 5, it is not available.
+- **The checks** are the components of the scoring table above, worded in the campaign's terms,
+  each tagged with its finding. The fit score still decides the rank. A criterion a finding
+  suggests is a proposed change to `campaign:{slug}-criteria`: it goes in the page's Decisions
+  and in the result's "Proposed criteria changes", and the run never applies it. An unattended
+  run only puts it on the page.
+
+**Supply explains a short pool.** When the pool is under its target, the supply finding says why
+with its numbers ("4 of 55 posts about {product} come from US accounts, so the pool holds 14 of
+50"), and Next steps says where the next search should look. The pool is never padded with
+candidates below the criteria.
+
+The findings live on the page only. Discovery writes no extra finding for them, so every
+record in the pool stays a candidate; the vetting run on this pool works them out again from
+its own reads.
+
 ## State written to Atlas
 
 `append_insights`, one finding per candidate, `runKey`
@@ -292,25 +321,30 @@ whenever undecided candidates are ready to vet. Build this page from the page bl
    accept or reject, by number, or "Nothing needs approval" when the pool holds no new ones.
    Then **Next steps** (3.6), its own section: which numbers to vet next and by when, and any
    tier that ran dry with what would refill it.
-3. **Since last run**: added, re-scored up or down, went dormant, decided. One line each;
+3. **What people are doing well with {product}**, **Where people are having challenges**, and
+   **What this means for picking creators** (3.4, three insight cards, each with its chart or
+   table as the vetting page has them), then **What we look for in a {product} creator**: the
+   checks with their finding tags, per **The findings behind the shortlist**.
+4. **Since last run**: added, re-scored up or down, went dormant, decided. One line each;
    "no change" is a valid line.
-4. **Active list**: accepted creators as creator cards, so the working set is visible first.
-5. **Shortlist**: the undecided pool, grouped by tier, ranked by fit score inside it.
+5. **Active list**: accepted creators as creator cards, so the working set is visible first.
+6. **Shortlist**: the undecided pool, grouped by tier, ranked by fit score inside it.
    Numbered from 1 across the whole shortlist, stable for the run, because those numbers are
    what the user replies with. Each candidate is a creator card (**Creator card**): the fit
    score in the ring; flow chips `#{number}` and the tier (`Added by team` for `manual`), then
    the card's own badges; safety flags in the brand safety tile and every other risk flag under
    "Notes" in `{DETAILS}`, per the card's **Brand safety** rule; evidence posts first in the
-   thumbnails. `{DETAILS}` also holds the two strongest fit components with their points, the
+   thumbnails. `{DETAILS}` also holds each check's mark with the post or number behind it (a
+   lift as "3.0× usual views"), the two strongest fit components with their points, the
    source, the contact route if known, and the estimated fee from the fee calculator
    (**Fee calculator**, **Applying the rates**) on the campaign's platforms: "Est. fee {open} to {max},
    target {target}" (marked "est. from engagement" when the calculator estimated the views), or nothing when it gives no price. The page footer carries the rate
    label once.
-6. **Rejected this cycle**: collapsed list of handles with the reason recorded, so a
+7. **Rejected this cycle**: collapsed list of handles with the reason recorded, so a
    decision is auditable.
-7. **Criteria and scoring** (3.11): the saved criteria in plain words, the scoring table's
+8. **Criteria and scoring** (3.11): the saved criteria in plain words, the scoring table's
    components and weights, and the platform counts again, so a reader can see what "fit" meant.
-8. **Footer**: sources, a note that images are a snapshot, "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote. The mark and the footnote follow **Artifact standard**.
+9. **Footer**: sources, a note that images are a snapshot, "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote. The mark and the footnote follow **Artifact standard**.
 
 More than 12 candidates means a chart leads the shortlist: fit score by tier, or follower
 count against engagement rate with the pool plotted. Embed every image with the snippet in
