@@ -17,6 +17,7 @@ in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Se
 - [Per-run questions](#per-run-questions)
 - [Main thread: the run](#main-thread-the-run)
 - [The checks](#the-checks)
+- [The findings behind the checks](#the-findings-behind-the-checks)
 - [The recommendation](#the-recommendation)
 - [The feedback loop](#the-feedback-loop)
 - [State written to Atlas](#state-written-to-atlas)
@@ -215,6 +216,13 @@ network's `account` container, and `analysis.brandSafety`,
 `analysis.commentSentimentBreakdown`, `analysis.transcript`, `analysis.overlayText` when the
 census lists them. Fewer than 5 indexed posts in 90 days: widen to 180 days once.
 
+**The creator's usual views.** The median `viewCount` of the 90-day posts read above that carry
+one. It needs at least 5 such posts; with fewer, the usual is "not available: {n} posts with a view
+count in 90 days" and the creator's lifts are not measured. A post's **lift** is its views divided
+by its author's usual ("3.6× usual views"). Work both out from the posts already read, never from a
+new search, and keep the usual even when the 180-day widening ran, so every lift on the page
+compares against the same 90-day window.
+
 ### 1. Brand fit (the fit score, out of 100)
 
 Scored against `vetting:criteria`, or the chosen campaign's `campaign:{slug}-brief` and
@@ -274,6 +282,64 @@ and the contact route Atlas holds.
 - The creator's newest earlier vetting (`creator-vetting-{profile}` prefix, newest record per
   `entityId`), with the team's call when a `feedback` finding holds one, and the creator's
   newest state in any discovery campaign (`creator-discovery-{profile}` prefix).
+
+## The findings behind the checks
+
+The reader needs to see why the checks matter for this product before the list. So the run works
+out what people are doing well with the brand's product, where they get stuck, and what that
+means for picking creators, then ties every check to one of those findings. All of it comes from
+the posts and comments already read for the list; it adds no search.
+
+**The product posts.** The posts read for the list that are about the brand or the product the
+criteria name: the posts cited as topic evidence, and the posts that mention the brand. The
+comparisons of views use only the product posts whose author has a usual (**What to read per
+creator**) and that have 5,000 or more views, so one small account's swing doesn't lead. The page
+states that floor and how many posts passed it. With fewer than 5 posts that pass, the three
+findings below each say so in one line ("No pattern this run: 3 posts about {product} is too few
+to compare") and every check is tagged "Brief".
+
+1. **What's working.** Sort each product post by what it does, one label per post, read from the
+   caption, transcript, and overlay text: built something real with the product, a tutorial or
+   tips, a prototype to sell or test an idea, a head-to-head comparison, career or workflow
+   advice, feature news or an event recap. The labels come from the posts, so a run may name
+   others. For each label: the median lift, "{n} of {m} measured", and up to three example posts,
+   named and linked. A label with fewer than 2 measured posts is listed but not charted. Add any
+   comment pattern that recurs across the measured posts with the posts it comes from, for example
+   most comments asking for the link to try what was built.
+2. **Where people get stuck.** The comment sentiment counts across the product posts that carry
+   `analysis.commentSentimentBreakdown` ("28 positive, 7 neutral, 6 mixed and 2 negative across 43
+   posts"). Then up to four challenges, numbered Challenge 1 to 4, each read from the mixed and
+   negative threads and from creators' own captions and transcripts: what goes wrong, quoted and
+   linked to the post it comes from. Count the other brands each product post names (the brand
+   itself left out) and mark the saved `competitor` handles apart from the other tools named. No
+   analyzed comments: the counts line says "Atlas holds no comment analysis for these posts" and
+   the challenges come from the posts alone.
+3. **What this means for picking.** Two numbers. **Reach:** how concentrated the views of the
+   product posts are: the total, the top post's share of it, how many are paid partner posts (the
+   partnership marker, `#ad`, or the brand's partner hashtag), and the average of the rest without
+   the top post ("One TikTok has 8.3M of the 10.8M views; the other 54 average 46K"). **Supply:**
+   when the criteria name a market, how many product posts and authors have that market on record
+   against the total ("4 of 55 posts come from US accounts"). When the list came up short of the
+   number asked or the campaign's target, this finding says why with these numbers; the page
+   never pads the list.
+
+**The checks tied to the findings ("What we look for").** One check per component of the fit
+score, worded in the brand's terms from the saved criteria ("Builds with {product} on camera",
+not "Topic evidence"). Each names the finding it comes from as a tag: "Doing well", "Challenge
+{n}", "Reach", "{market} supply", or "Brief" when the saved criteria alone set it, and gives that
+finding's number in one line. Per creator, each check is a pass, a partial pass, or a miss, scored
+1, ½, or 0 from the component's points: a pass at 70% or more of its weight, a partial pass at 35%
+or more, a miss below that. A component with no data shows "not in Atlas", scores 0, and stays
+listed as missing. The bar for Approve is stated in plain words from `vetting:thresholds` and the
+hard stops ("Approve at a fit score of 70 or more with no safety cap").
+
+**The saved criteria still decide.** The fit score, its weights, and the recommendation come from
+the saved criteria only, exactly as **The checks** and **The recommendation** say. The findings
+explain the criteria; they never change a score. When a finding suggests a criterion the brand has
+not saved (a lift bar on product posts, fluency in a tool people compare the product with, a
+market the supply numbers point to), it is a **proposed change to the criteria**: it goes in the
+page's Decisions as a question with the finding behind it, and in the result's "Needs the main
+thread". It is never applied in the run, and the agent never writes it.
 
 ## The recommendation
 
@@ -395,7 +461,11 @@ F1 feedback findings, which F1 confirms. Instagram and TikTok only.
 The run summary is anchored to the brand's own account on the first linked network and
 carries the list name and source, the counts per recommendation, the handles that could not
 be resolved or were not vetted, and the page link, so a run with unresolvable handles is
-still on record.
+still on record. It also carries `detail.findings` (**The findings behind the checks**):
+`{viewFloor, measured, working: [{label, medianLift, measured, total, examples[]}], sentiment:
+{positive, neutral, mixed, negative, posts}, challenges: [{n, title, evidence[]}], brandsNamed:
+[{brand, posts, competitor}], reach: {totalViews, topPostShare, paidPosts, restAverage}, supply:
+{market, posts, authors, total}, checks: [{component, label, finding}], proposedCriteria[]}`.
 
 `detail` carries `findingType`, `vettedAt` (full UTC timestamp from the shell clock, the same
 on every finding of one run), `handle`, `network`, `name` (from the list, when given),
@@ -403,7 +473,9 @@ on every finding of one run), `handle`, `network`, `name` (from the list, when g
 component breakdown, `safety` (`{category: result}` plus red line, scope, competitor,
 disclosure, and audience checks), `redLineHits[]`, `hardRejectHits[]`, `riskFlags[]`,
 `calibrationsApplied[]` (the keys that shaped the call), `lessonsApplied[]`, `evidence[]`,
-`estFee` when the calculator gives one, `listName`, `listSource` (`csv`, `pasted`,
+`estFee` when the calculator gives one, `usualViews` (or the reason it is not available),
+`checks` (`{component: {mark: 1 | 0.5 | 0, finding}}`, a missing component with `mark: null`),
+`listName`, `listSource` (`csv`, `pasted`,
 `aspire-app`, or `cas-lane`), `campaign` when R2 named one, `reviewPage`, and `recipient`
 (**Recipient lens**). A `feedback` finding adds `userVerdict`, `agentVerdict`, and the user's
 words verbatim. Supply an `idempotencyKey` per finding (`vet-{list-slug}-{entityId}-{findingType}`).
@@ -430,18 +502,40 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
    and its goal when the criteria name them, and the creators and posts read per platform.
 2. **Answer** (3.3), written last: how many were reviewed and how many to contact, and by when
    ("49 creators reviewed. Contact 11 this week."), and the one thing that decided the most
-   rejects. Under it, the verdict tally: a bar of Approve, Maybe, Reject, and Can't vet, then a
-   column per verdict with its count and the reasons behind it as chips. When the user asked for
-   a number and the list came up short, the answer says so ("11 of the 20 asked for") and the
-   page never pads it.
-3. **Decisions** (3.5): approving the creators to contact, with the date outreach should start,
-   and any brand rule the team must settle before a verdict holds (for example, a red line a
-   creator sits on the edge of). Questions that settle one creator stay on that creator's card.
-4. **Next steps** (3.6): in order, each with its week, the creators it covers by number, and
-   what it should change: contact the approvals, settle the Maybes, line up the backups.
-5. **Up to three insights** (3.4): what shaped the verdicts across the list, each with its
-   comparison and a "So:" line.
-6. **Approve**, **Maybe**, **Reject**, **Can't vet**, in that order, each a grid of creator
+   rejects. Its takeaway gives the strongest finding behind the checks in one sentence each: what
+   works and where people get stuck ("Builds ran at 3.6× the creator's usual views, feature
+   recaps at 1.2×"). Under it, the verdict tally: a bar of Approve, Maybe, Reject, and Can't vet,
+   then a column per verdict with its count and the reasons behind it as chips. When the user
+   asked for a number and the list came up short, the answer says so ("11 of the 20 asked for"),
+   gives the reason from the supply finding in section 5, and the page never pads it.
+3. **What people are doing well with {product}** (3.4, the headline insight), from **The
+   findings behind the checks**, item 1: the claim, then a bar chart of the median lift by what
+   the post does, one bar per label with "{n} of {m} measured" and a dashed line at 1× (the
+   creator's usual), then each pattern with its named example posts, linked. The "So:" line says
+   which check it feeds.
+4. **Where people are having challenges** (3.4), item 2: the comment sentiment counts, then each
+   challenge as "Challenge {n}" with its quoted, linked posts (3.18 for a quote), then a bar chart
+   of the other brands named in the product posts, saved competitors marked apart.
+5. **What this means for picking creators** (3.4), item 3: the reach finding with a table of the
+   top product posts (post, what it does, views, against the creator's usual, paid partner or
+   not) and the supply finding. When the list is short of what was asked, this section is the
+   explanation, with the numbers.
+6. **What we look for in a {product} creator**: one row per check, each with the finding tag it
+   comes from and that finding's number in one line, the 1, ½, and 0 scoring, and the bar for
+   Approve in plain words. Below it, any proposed change to the criteria, marked as proposed and
+   pointing to Decisions. With no product posts to compare, each check is tagged "Brief" and the
+   section says why.
+7. **Decisions** (3.5): approving the creators to contact, with the date outreach should start,
+   any brand rule the team must settle before a verdict holds (for example, a red line a creator
+   sits on the edge of), and each proposed change to the criteria with the finding behind it.
+   Questions that settle one creator stay on that creator's card.
+8. **Next steps** (3.6): in order, each with its week, the creators it covers by number, and
+   what it should change: contact the approvals, settle the Maybes, line up the backups, and,
+   when the list came up short, where a second search should look given the findings.
+9. **Approve**, **Maybe**, **Reject**, **Can't vet**, in that order. First a table of every
+   vetted creator against the checks (a pass, partial, miss, or not-in-Atlas mark per check, the
+   fit score, and the recommendation), numbered as the cards, with a key under it saying the
+   usual is the creator's 90-day median views. Then each verdict is a grid of creator
    cards (3.7; **Creator card**, page mode) ranked by fit score, numbered from 1
    across the whole page in the order shown, because those numbers are what the user replies
    with. When the
@@ -449,7 +543,8 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
    when they also set how many creators each audience needs, a group short of it names the open
    slot. On each card: the fit score in the ring; flow chips `#{number}` and
    the recommendation; safety results in the brand safety tile per the card's **Brand safety**
-   rule; three proof posts in the thumbnails; `{DETAILS}` with the two reasons, a watch line
+   rule; three proof posts in the thumbnails; `{DETAILS}` with the two reasons, each check's mark
+   with the post or number behind it (a lift as "3.0× usual views"), a watch line
    (the one thing to keep an eye on), what would settle a Maybe (a Maybe that only fills a gap
    says "Backup: take if {creator} declines" instead; it stays a Maybe in the findings), the calibrations and lessons applied, an earlier vetting or discovery state, the
    contact route, "Est. fee {open} to {max}, target {target}" when the calculator gives one
@@ -460,21 +555,28 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
    and why not, rather than full cards. A Reject row carries its score; a Can't vet row carries
    no score, only what would make it checkable. In a creator-ads lane each row
    also carries the four ad figures.
-7. **Safety summary**: a table of creators by category, only the rows with a Flag or Fail.
-8. **Launch clock** (3.17), when the criteria name a launch date: the weeks from today to that
+10. **Safety summary**: a table of creators by category, only the rows with a Flag or Fail.
+11. **Launch clock** (3.17), when the criteria name a launch date: the weeks from today to that
    date, with each next step placed in its week and the launch marked. No stage gets a date the
    next steps did not set.
-9. **How the verdict was made** (3.11): the fit score's components and weights, the safety
+12. **How the verdict was made** (3.11): the fit score's components and weights, the safety
    results, the recommendation order and the thresholds, the hard rejects, every saved call or
-   lesson that changed a verdict, and the platform counts again.
-10. **What's missing** (3.12): creators Atlas could not read, networks not covered, and data a
-    verdict would firm up with (for example, audience demographics).
-11. **Not vetted**: handles on other networks and the brand's own handles, with the reason for
+   lesson that changed a verdict, which posts the findings used, how a lift is worked out (the
+   post's views divided by the creator's 90-day median) and the view floor, and the platform counts
+   again.
+13. **What's missing** (3.12): creators Atlas could not read, networks not covered, data a
+    verdict would firm up with (for example, audience demographics), creators with no usual
+    views, and how small each finding's groups are ("lifts rest on 2 to 9 posts each").
+14. **Not vetted**: handles on other networks and the brand's own handles, with the reason for
     each. A handle that could not be resolved is listed once, under Can't vet.
-12. **Atlas can draft next** (3.13): first messages to the approvals, offers at the fee
+15. **Atlas can draft next** (3.13): first messages to the approvals, offers at the fee
     calculator's open rate, and the questions to the Maybes.
-13. **Footer**: sources, the fee rate label once, a note that images are a snapshot, and
+16. **Footer**: sources, the fee rate label once, a note that images are a snapshot, and
     "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote. The mark and the footnote follow **Artifact standard**.
+
+Sections 3 and 4 each carry their own chart; this reference sets that, so the page standard's
+one chart for the headline insight does not cap it. {product} is the product the criteria name,
+or the brand when they name none.
 
 More than 12 creators: a chart sits under the verdict tally (fit score against the recommendation lines, in a
 creator-ads lane the score without Budget vs target, which is what the lines decide,

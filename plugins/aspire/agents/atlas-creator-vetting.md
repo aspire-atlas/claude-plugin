@@ -89,9 +89,14 @@ the list as approved for fetching.
    `roster` findings on the `cas-campaign-{profile}-` prefix for these creators, every campaign of
    the brand's, for the match score's expected cost and worked with the brand before.
 7. **Vet each creator** in list order: read per **What to read per creator**, score fit, run
-   every brand safety check, and apply the recommendation rule. Keep each creator's evidence to
+   every brand safety check, and apply the recommendation rule. Work out each creator's usual
+   views from the posts you read, never from a new search. Keep each creator's evidence to
    the posts that decided a check. Work in batches of ten, so a long list never loses its
-   early results.
+   early results. Then work out **The findings behind the checks** from the posts and comments
+   already read (what's working with each post's lift, where people get stuck, reach and
+   supply), tag every check with the finding it comes from, and list any criterion a finding
+   suggests that the brand has not saved as a proposed change. The saved criteria still decide
+   every score.
 8. Compute the estimated fee per `fees.md`, **Applying the rates**, when `fees:rate-card` or
    the recommended rates apply; no price when the data is missing.
 9. When the launch block's `question` is I1, list the evidence the approved I1 example sets,
@@ -134,7 +139,8 @@ the list as approved for fetching.
   `approve-creator-notes` (F2), `approve-lesson` (F3), and `approve-record-changes` for
   "Needs the main thread".
 - Needs the main thread: each change to a saved record, as `key | current wording | proposed
-  wording or "retract" | why`. Leave the line out when there are none.
+  wording or "retract" | why`, including each proposed change to the criteria, with the finding
+  behind it as the why. Leave the line out when there are none.
 - Forward note: two or three lines the requester can paste to the reader (skip for lens `team`).
 - Closing line: findings written (or "nothing saved"), the `runKey`, and the page link.
 - A `creator-cards` block with the approved creators and the top three maybes, built per
