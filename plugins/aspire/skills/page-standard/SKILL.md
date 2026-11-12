@@ -155,16 +155,19 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
 
    **2a. Count the metrics before building**, after any refresh in step 2, since a refresh can fill
    a gap. Take the posts the page will cite and count how many carry each required metric of the row
-   (section 8), leaving out a gap the network table marks as one the network never fills for this
-   kind of post (an Instagram image's views, YouTube saves, shares and saves on a creator's account
-   that is not connected). When under half the cited posts carry a metric, stop before drafting and
-   check in: name the metric, the count, and why it is missing ("Saves: 3 of 24 posts. Instagram
-   shows saves only for accounts connected to Atlas, and @brightsidetoys is not connected."). Ask
-   with `AskUserQuestion` when the run asks its own questions; otherwise return it in the result's
-   `questions` (`orchestration.md`, **6**) and build nothing. Options: "Build with the gaps noted
-   (Recommended)", the fix when there is one ("Connect the account first", "Refresh the posts
-   first"), and "Change the scope". An unattended run builds with the gaps noted and lists the
-   metric in the page's "what is missing" part.
+   (section 8), leaving out a gap the network table (`network-metrics.md`) marks as one the network
+   never fills for this kind of post (an Instagram image's views, YouTube saves, shares and saves on
+   a creator's account that is not connected). When under half the cited posts carry a metric, stop
+   before drafting and check in: name the metric, the count, and why it is missing, with the reason
+   picked as the network table says. For an account that is not connected: "Saves: 3 of 24 posts. Instagram
+   shows saves only for accounts connected to Atlas, and @brightsidetoys is not connected." For a
+   connected one: "Saves: 2 of 9 posts. @brightsidetoys is connected, but Atlas has no save count
+   for the other 7." Ask with `AskUserQuestion` when the run asks its own questions; otherwise
+   return it in the result's `questions` (`orchestration.md`, **6**) and build nothing. Options:
+   "Build with the gaps noted (Recommended)", the fix when there is one ("Connect the account
+   first" only when it is not connected, "Refresh the posts first"), and "Change the scope". An
+   unattended run builds with the gaps noted and lists the metric in the page's "what is missing"
+   part.
 3. **Draft the page** for this question and this reader, from the blocks in
    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/blocks.md`. They already carry the markup in
    section 5. The blocks set what each part holds and the order of its evidence; the flow's
@@ -374,17 +377,9 @@ returns is a gap, named on the page like any other missing metric. Add the flow'
   Atlas has already worked out. TikTok's `tiktok.engagementRate` is engagement over followers, so
   label it as that and never call it engagement per 1,000 views.
 
-**Where each metric comes from, and when it is missing, per network.** The last column is the
-reason the page shows. Use these words so a gap reads the same on every page.
-
-| Metric | Instagram | TikTok | YouTube | Reason shown when missing |
-| ------ | --------- | ------ | ------- | ------------------------- |
-| `views` | `viewCount` on Reels and videos. Image and carousel posts carry none, and older videos can lack it | `viewCount` on every post | `viewCount` | "image posts have no view count"; otherwise "Atlas has no view count for this post" |
-| `likes` | `likeCount`; empty when the creator hides likes | `likeCount` | `likeCount` | "the creator hides likes"; otherwise "Atlas has no like count for this post" |
-| `comments` | `commentCount` | `commentCount` | `commentCount` | "Atlas has no comment count for this post" |
-| `shares` | `shareCount` (`instagram.organicShareCount`), only for accounts connected to Atlas | `tiktok.totalShareCount` on every post; the shared `shareCount` is empty for TikTok | `youtube.totalShareCount`, only for channels connected to Atlas | "shown only for accounts connected to Atlas" |
-| `saves` | `saveCount` (`instagram.organicSaveCount`), only for accounts connected to Atlas | `saveCount` on every post | None: YouTube has no saves, Shorts included | "shown only for accounts connected to Atlas"; "YouTube has no saves" |
-| `engagement` | Worked out from the rest | Worked out from the rest | Worked out from the rest | The views reason when views are missing |
+**Where each metric comes from, and the reason a page shows when one is missing, per network,**
+are in `network-metrics.md` in this folder. Read it before step 2a counts and before the page
+names a gap.
 
 **A missing metric is never 0.** On the page it reads "not available: {reason}" beside where the
 number would sit, and the post carries it in `data-missing` (section 5). A 0 that Atlas read is a
