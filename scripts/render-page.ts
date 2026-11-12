@@ -16,7 +16,7 @@
 //
 // Exit 0 when it rendered (and, for the fixture, every check held), 1 when a fixture check failed or the
 // render broke, 2 on bad arguments or a missing page, and 3 when Playwright or Chromium is not installed
-// (npm install --no-save playwright, then npx playwright install chromium).
+// (npm install --no-save playwright, then npx playwright install chromium, or set CHROME_PATH to a Chrome).
 // The page runs in Chromium with no network except the hosts a published page may load from, and it can
 // load no file on this machine except itself.
 import { execFileSync } from 'node:child_process'
@@ -60,14 +60,16 @@ function loadPlaywright(): any {
   return null
 }
 
+// CHROME_PATH names a Chrome or Chromium to use instead of Playwright's own, for a machine where Playwright
+// cannot install one (CI sets it to the runner image's Chrome).
 async function launch(playwright: any) {
+  const chrome = process.env.CHROME_PATH
+  if (chrome) return playwright.chromium.launch({ executablePath: chrome, args: ['--no-sandbox'] })
   try {
     return await playwright.chromium.launch()
   } catch (first) {
     // A machine with Chromium installed outside Playwright's own folder.
-    for (const path of ['/opt/pw-browsers/chromium', process.env.CHROME_PATH].filter(Boolean)) {
-      try { return await playwright.chromium.launch({ executablePath: path, args: ['--no-sandbox'] }) } catch {}
-    }
+    try { return await playwright.chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ['--no-sandbox'] }) } catch {}
     throw first
   }
 }

@@ -69,9 +69,13 @@ jobs:
         run: |
           # Playwright is the renderer's one dependency. It is installed here rather than in package.json: the renderer
           # is a repository script that no plugin ships.
+          # The renderer drives the runner image's own Chrome: Playwright cannot install its Chromium on every
+          # runner OS (ubuntu-latest moved to a release it does not support yet).
           npm install --no-save --no-package-lock playwright@1.56.1
-          npx playwright install --with-deps chromium
-          bun scripts/render-page.ts
+          CHROME_PATH=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)
+          if [ -z "$CHROME_PATH" ]; then echo "::error::No Chrome on the runner for the renderer"; exit 1; fi
+          echo "Rendering with $CHROME_PATH"
+          CHROME_PATH="$CHROME_PATH" bun scripts/render-page.ts
 
       - name: Every agent carries the orchestration contract and has a permission level
         run: bash scripts/check-orchestration.sh
