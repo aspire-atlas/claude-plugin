@@ -45,7 +45,8 @@ R6 destinations). One batch confirmation writes; changes are supersedes, one con
 
 Ask "Which insights report?", then launch `atlas-weekly-insights-report` and/or
 `atlas-daily-insights-report` (run mode `interactive`, `recipient`, a window only if the user
-named one; never pass "today" or an assumed date). The agents add Meta Ads figures on their own
+named one, and the `storyline` pass per **Main thread: the run and the launch pulse**; never pass
+"today" or an assumed date). The agents add Meta Ads figures on their own
 when the connector is live (`readout.md`, **Meta Ads enrichment**); never hold a run for it.
 Pass the user's ask, verbatim, as `meta_request`, and nothing else in it. Relay each summary,
 page link, and resolved window; confirm delivery ("Post to {channel} and email {recipients}?")
@@ -248,6 +249,8 @@ still report anomalies on older posts still accruing engagement, plus red-line h
 Chat summary, under 150 words:
 
 - Headline: one line, lead metric vs 28-day median with the percent delta.
+- Storyline: the bullets the page opens with, each with the posts, accounts, or views
+  behind it (**Scheduled (unattended) runs**, Storyline).
 - Yesterday: posts published, engagement, the best post with its number.
 - Flags: anomalies and red-line hits, each with a permalink; "none" is a valid line.
 - Since last readout: follower delta, any action item that changed state.
@@ -257,12 +260,15 @@ Chat summary, under 150 words:
 - Freshness: the freshness line (**Page standard**, section 9.2), with any refresh offer.
 - One closing line: findings saved, page link.
 
-Page: one compact card. Header (brand, date, network, a "Prepared for" chip, and the animated mark at the top right). KPI strip (posts, engagement,
-engagement rate, followers with delta). One 28-day sparkline of the lead metric with
-yesterday marked. Cards for yesterday's posts (media, metric row, one-line takeaway). Flags
-block. A content reviews block when any review ran yesterday: one row per review with
-verdict chip, creator, deliverable, open edits, and the review page link. Footer with the CDN
-expiry note, then the artifact-standard footnote (**Artifact standard**). Republish to the same path each day.
+Page: one compact card. Header (brand, date, network, a "Prepared for" chip, and the animated mark
+at the top right). The answer block with the storyline's bullets (three, or fewer per
+**Orchestration contract** **2**, **Fewer bullets**: an empty window or a bullet the person
+dropped). KPI strip (posts, engagement, engagement rate, followers with delta). One 28-day sparkline
+of the lead metric with yesterday marked. Cards for yesterday's posts (media, metric row, one-line
+takeaway). Flags block. A content reviews block when any review ran yesterday: one row per review
+with verdict chip, creator, deliverable, open edits, and the review page link. Footer with the CDN
+expiry note, then the artifact-standard footnote (**Artifact standard**). Republish to the same path
+each day.
 
 Insights written (`append_insights`): `runKey` `readout-daily-{profile}-{YYYY-MM-DD}`,
 role `account_review`, `schema` = network, `entityKind` account or post, `entityId` the
@@ -314,6 +320,8 @@ first; team: post-level detail first; product, pmm, growth: that lens's block fi
 bullets per other saved lens:
 
 - Headline: the week in one line, lead metric vs prior week and vs 8-week median.
+- Storyline: the bullets the page opens with, each with the posts, accounts, or views
+  behind it (**Scheduled (unattended) runs**, Storyline).
 - Numbers: posts, engagement, engagement rate, reach or views, followers with delta.
 - What worked: top 3 posts with metric and the pattern they share (format, theme, day, hook).
 - What did not: bottom 2 posts and the likely reason in one clause each.
@@ -350,8 +358,10 @@ section list below. The others:
 Page, sections in order:
 
 1. Header: brand, network, week label, prepared date, a "Prepared for" chip per lens, and the animated mark at the top right.
-2. KPI strip with week-over-week deltas and the benchmark row from `target:weekly-health`
-   when present.
+2. The answer block: the headline and the storyline's bullets (three, or fewer per **Orchestration
+   contract** **2**, **Fewer bullets**: an empty window or a bullet the person dropped) with their
+   evidence (**Scheduled (unattended) runs**, Storyline). Then the KPI strip with week-over-week
+   deltas and the benchmark row from `target:weekly-health` when present.
 3. Lead-metric line chart, 9 weeks, last week highlighted.
 4. Top 3 and bottom 2 post cards with media, metric row, takeaway.
 5. Format and theme mix: one small-multiple bar pair (this week vs prior).
@@ -386,20 +396,29 @@ title "<Brand> Daily Insights Report" or "<Brand> Weekly Insights Report", and r
 each run so the link in Slack or email stays stable. Note once in the footer that images are
 a snapshot.
 
+**The `page` finding.** On a readout page's first publish, the run's `append_insights` call adds one
+`page` finding, shaped as a program page's (**Influencer program**, **Working state**): `runKey`
+`readout-page-{profile}`, `detail.key` `daily` or `weekly`, `url`, and `title`, outside the
+finding limit. A run answered "Page only" writes none, so its next interactive run asks the
+Heard line instead (**Orchestration contract**, **2**, **The storyline**). It is how the main
+thread tells a published readout from a new one, never the readout's other insights.
+
 ## Delivery (Slack and email)
 
 Read `policy:readout-routing`. The page and chat summary always ship. Then:
 
-- **Slack:** if the routing names a channel and a Slack connection is available in the
-  session, send one message: the headline, the 3 to 5 key bullets, the page link. Plain text
-  with Slack formatting, no images. If no Slack connection is present, say so in the chat
-  summary and continue.
+- **Slack:** if the routing names a channel and a Slack connection is available in the session, send
+  one message: the headline, the storyline's bullets with their evidence, up to two more key
+  bullets, the page link. Plain text with Slack formatting, no images. If no Slack connection is
+  present, say so in the chat summary and continue.
 - **Per-lens destinations:** a lens in R6 (or a pulse lens) with its own destination gets its own
-  message: that lens's three bullets and the page link with the lens anchor. Same connection
+  message: the storyline's bullets, then that lens's three bullets and the page link with
+  the lens anchor. Same connection
   rules as below.
 - **Email:** if the routing names recipients and an email connection is available, send one
   message with subject "<Brand> {Daily|Weekly} Insights Report, {date}", the chat summary as the body,
-  and the page link. If no email connection is present, say so and continue.
+  and the page link; the summary's storyline bullets are the same ones the page and the Slack
+  message carry. If no email connection is present, say so and continue.
 - Interactive run: confirm the send once with `AskUserQuestion` ("Post to {channel} and email
   {recipients}?" Options: Send (Recommended) / Page only this time). Unattended run: the R2
   confirmation is the standing approval; send without asking.
@@ -433,22 +452,44 @@ README). Rules for the agents:
   it ("Atlas has no data for {window}" unless Atlas fetched the account after the window ended)
   rather than inventing numbers, and still deliver the page and summary.
 
+**Storyline.** A scheduled readout, or a rerun of one already published, never stops to confirm its
+storyline: it is a `state` pass (**Orchestration contract**, **2**, **The storyline**): the agent
+drafts three bullets from the window's posts, each with the posts, accounts, or views behind it,
+and the page opens with them in the answer block, under the headline. The chat summary, the Slack
+message, and the email carry the same bullets, in the same order and wording. A window under
+the row's minimum (10 posts for what landed and why) still publishes, and the bullet it weakens says
+how few posts it rests on. A window with no posts, on a first run's `draft` pass too, gives "No
+posts indexed for {window}." as the first bullet, then up to two from the flags or the older posts still
+gaining engagement, each with its evidence; with nothing there either, that one bullet is the
+storyline (**Orchestration contract**, **2**, **Fewer bullets**). Where the run cannot watch a video or check a product fact, the method says so
+(`skills/page-standard/SKILL.md`, section 4, step 0b). A readout's window is fixed, on the first
+interactive run too: its draft names only more platforms or accounts in `widen`, or `null`, a
+readout Widen never carries dates, and a window under the minimum builds with the thin bullet saying
+so.
+
 ## Main thread: the run and the launch pulse
 
 What the **Readouts** section of SKILL.md does around the agents.
 
 **The run.** Ask once with `AskUserQuestion`: "Which insights report?" Options: "Weekly (last
-week)", "Daily (yesterday)", "Both now", "Change setup". Then launch
-`atlas-weekly-insights-report` and/or `atlas-daily-insights-report` with: tool prefix,
-`profile_id`, `profile_slug`, linked handles and networks, run mode `interactive`, `recipient`
-(the lens SKILL.md **Reading the ask** confirmed, or the saved R6 lenses when it found none), and
-the target window only if the user named one. Never pass "today" or any date the main thread
-assumed: session headers can be a day stale, and a wrong "today" shifts the whole readout by a
-day (or a week). The agents resolve the date themselves (**Resolving "today"**) and refuse a
-repeat window. Relay each agent's summary and page link, including the resolved window it
-reports. When an agent asks the main thread to confirm delivery, ask with `AskUserQuestion`
-("Post to {channel} and email {recipients}?" Options: Send (Recommended) / Page only this time)
-and relay the answer.
+week)", "Daily (yesterday)", "Both now", "Change setup". Then launch `atlas-weekly-insights-report`
+and/or `atlas-daily-insights-report` with: tool prefix, `profile_id`, `profile_slug`, linked handles
+and networks, run mode `interactive`, `recipient` (the lens SKILL.md **Reading the ask** confirmed,
+or the saved R6 lenses when it found none), and the target window only if the user named one, and
+the launch block's `storyline` pass: `state` when the readout's page is already published, since
+the run republishes it. The page is published when Atlas holds its `page` finding
+(`search_insights` with a `prefix` filter on `detail.account_review.runKey` =
+`readout-page-{profile}`, the newest with `detail.key` `daily` or `weekly`; **Page mechanics**) and
+the Artifact tool's `read` opens its `url`. The readout's other insights never count, nor does a
+title in the Artifact tool's `list`. With no such finding (a first run answered "Page only" writes
+none), the Heard line says whether the run updates a published report or builds a new one, and
+the person's answer settles it (**Orchestration contract**, **2**, **The storyline**, New or
+already published); a new page follows **The storyline** before it builds. Never pass "today" or any date the main thread assumed: session headers can be a
+day stale, and a wrong "today" shifts the whole readout by a day (or a week). The agents resolve the
+date themselves (**Resolving "today"**) and refuse a repeat window. Relay each agent's summary and
+page link, including the resolved window it reports. When an agent asks the main thread to confirm
+delivery, ask with `AskUserQuestion` ("Post to {channel} and email {recipients}?" Options: Send
+(Recommended) / Page only this time) and relay the answer.
 
 **Setting up a launch pulse** (**Daily launch pulse**). Offer it after a campaign brief, or when
 the user asks how a launch is landing:

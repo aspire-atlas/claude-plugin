@@ -28,10 +28,11 @@ packet, and the permission levels. This section is how a launch runs; that file 
 and what comes back. Agents refuse a launch without the `launch` block, so a person reaches an
 agent only through this skill or a shortcut.
 
-1. **Launch.** Mint the run id first, once per launch, never made up: call `mint_run_id` with
-   the agent's name (`atlas-creator-vetting`). Tool absent: the agent
-   name, the UTC time from `date -u +%Y%m%dt%H%M%S`, and `openssl rand -hex 2`, joined by
-   hyphens (`atlas-creator-vetting-20261029t140312-a3f9`). Put it in the launch block's `runId`. The name is the agent's own, as its file names it (`atlas-creator-vetting`, never
+1. **Launch.** Mint the run id first, once per launch, never made up: call `mint_run_id` with the
+   agent's name (`atlas-creator-vetting`). Tool absent: the agent name, the UTC time from
+   `date -u +%Y%m%dt%H%M%S`, and `openssl rand -hex 2`, joined by hyphens
+   (`atlas-creator-vetting-20261029t140312-a3f9`). Put it in the launch block's `runId`. The name is
+   the agent's own, as its file names it (`atlas-creator-vetting`, never
    `aspire:atlas-creator-vetting` or an older name the agent replaced): Atlas refuses a `runId`
    whose name part differs from the `agent` the call sends. A relaunch of the same run (its `record` pass, or its next mode) keeps the
    id. With no shell, leave `runId` out; the agent takes the one Atlas returns and puts it in its packet's `runId`, which the feedback uses. Use the Agent
@@ -167,18 +168,18 @@ team catalog, and how agents render for a lens are in **Recipient lens**.
 1. **Infer.** Match the ask's words against the catalog's cues, and take any reader, meeting,
    or date the user names ("for Thursday's product review"). Pick a primary lens and, when a
    hand-off applies (Performance then Creative; Campaign then Brand), a second one.
-2. **Confirm in one line.** When the ask names no reader, meeting, or venue, start from a saved
-   one: the person's own default for the question code, then the flow's saved reader
-   (**Orchestration contract** **2**, Saved answers), and say where it came from. When the run has
-   a setup reply (**Orchestration contract** **2**), name the reader in its Heard question, with
-   the question's code, instead of asking "For" on its own. Otherwise one `AskUserQuestion`,
-   header "For", in the same call as the flow's first question when there is one. Word it as the
-   guess ("This reads like it's for the product review. Should I track it weekly and add a
-   messaging view for PMM?"). Options: the guess (Recommended), one or two other lenses from the
-   cues, "Just for our team". Skip it when the user named the reader and the decision, when this
-   conversation already confirmed a lens for the same kind of ask, or when the ask is the team's
-   own routine ("run the daily"). Never ask in plain text, never twice for one request, never in
-   an unattended run (saved lenses or `team`).
+2. **Confirm in one line.** When the run has a setup reply (**Orchestration contract** **2**), name
+   the reader in its Heard question, with the question's code, instead of asking "For" on its own.
+   Otherwise one `AskUserQuestion`, header "For", in the same call as the flow's first question when
+   there is one. Word it as the guess ("This reads like it's for the product review. Should I track
+   it weekly and add a messaging view for PMM?"). Options: the guess (Recommended), one or two other
+   lenses from the cues, "Just for our team". Skip it when the user named the reader and the
+   decision, when this conversation already confirmed a lens for the same kind of ask, or when the
+   ask is the team's own routine ("run the daily"). Never ask in plain text, never twice for one
+   request, never in an unattended run (saved lenses or `team`). After the coach (step 6) when it
+   runs, a run that builds a new page asks two messages at most before it builds: the setup reply,
+   with the reader in Heard, then the storyline call (**Orchestration contract** **2**, **The
+   storyline**).
 3. **Route by lens** when the ask names no flow, per SKILL.md's **Routing by reader**.
 
 4. **Pass it on.** Every agent launch below includes the persona and primary reader in its
@@ -198,11 +199,13 @@ team catalog, and how agents render for a lens are in **Recipient lens**.
    run it.
 
 **Campaign plan.** A launch ask ("we launch on the 14th and need creators") spans four agents.
-Propose the sequence in the confirmation line ("I'll start a shortlist and brief for the
-launch, then check drafts and run a daily pulse through launch week. Sound right?"), then run
-it in order, each step through its own section and its own write confirmations: **Creator
-discovery** (Setup for the campaign if new, then Run), **Creator brief** in campaign mode,
-the pulse offer (**Readouts**, **Launch pulse**), and **Content review** as drafts arrive.
+Propose the sequence in the setup reply's Heard question ("I'll start a shortlist and brief for the
+launch, then check drafts and run a daily pulse through launch week. Sound right?"), not in a
+confirmation of its own, then run it in order, each step through its own section and its own write
+confirmations, and each new page through its own storyline (**Orchestration contract** **2**, **The
+storyline**) before it is built: **Creator discovery** (Setup for the campaign if new, then Run),
+**Creator brief** in campaign mode, the pulse offer (**Readouts**, **Launch pulse**), and **Content
+review** as drafts arrive.
 
 ## Decision audit (how a piece of work was decided)
 
