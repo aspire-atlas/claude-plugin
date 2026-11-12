@@ -91,7 +91,7 @@ that changes an agent or flow).
 
 | Id | Item | Ticket | Checked by | Good | Bad |
 | -- | ---- | ------ | ---------- | ---- | --- |
-| V1 | A page publishes only through the page-standard build loop: the self-check, then the English read and the UX review by separate reviewers that see the rendered page, not the builder's notes. | ASP-5300, ASP-5301 | script: the `page-check` block's `englishRead` and `uxReview` entries (land with ASP-5300 and ASP-5301); eval (E6, E7) | A monthly program report whose separate review found and fixed four blocking problems before it published. | A plan whose first task sat 3,300px down on a phone, found only when a person opened it. |
+| V1 | A page publishes only through the page-standard build loop: the self-check, then the English read and the UX review by separate reviewers that see the rendered page, not the builder's notes. | ASP-5300, ASP-5301 | script: the `page-check` block's `englishRead` and `uxReview` entries; CI: `scripts/render-page.ts` renders the fixture page in the three views; eval (E6, E7) | A monthly program report whose separate review found and fixed four blocking problems before it published. | A plan whose first task sat 3,300px down on a phone, found only when a person opened it. |
 | V2 | No agent labels or system words in page copy: R11's list, plus the agents' own labels ("picks", "pulse", "reads", "the run", "reach slot", "practitioners"). | ASP-5300 | script: page check R11 (the label words land with ASP-5300) | "Creators we recommend" | "Gift and routine framing lifts posts" beside "ran at 1.27×", in the agent's own shorthand. |
 
 ## 7. Questions
