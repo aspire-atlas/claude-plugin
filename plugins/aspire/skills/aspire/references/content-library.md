@@ -223,7 +223,7 @@ empty and counted under gaps, never guessed.
 | Ad readiness score | The **Ad reuse** **Hook score**, out of 100, with its six components and their evidence. Video only; images and carousels show "Not scored: no hook timing". See **Scoring at library scale**. |
 | People on screen | Per **Post analysis**, section 11: how many people, their roles (the creator, others, possible minors), and names only when the caption, on-screen text, transcript, or the account names them. Never identify a person from a face alone. From frames when read; otherwise from the caption and transcript, marked "not checked on screen". |
 | Reuse needs | What a reuse cut would need cleared: others' likeness, trademarks on screen, and the audio (`instagram.mediaAudioType` original or licensed, or "unconfirmed"; "music rights unknown" when music is present). A checklist for the brand's legal team, not legal advice. |
-| Brand safety | Atlas's `analysis.brandSafety` categories at medium or higher, one semantic `search_posts` per `red_line` (its body as `queryText`, filtered to the catalog's post ids, skipping `review:` keys), and any saved competitor named or in frame. `clear`, `flag` (named flags), or `block` (a `block` red line hit or a competitor). |
+| Brand safety | Atlas's `analysis.brandSafety` categories at medium or higher, one semantic `search_posts` per `red_line` (its body as `queryText`, filtered to the catalog's post ids, skipping `review:` and `applicant-review:` keys), and any saved competitor named or in frame. `clear`, `flag` (named flags), or `block` (a `block` red line hit or a competitor). |
 | Source | Per **Collecting assets**. |
 
 ### Scoring at library scale

@@ -457,6 +457,15 @@ normal key (`redline:*`, `guideline:*`) instead.
 (`vetting:lesson-*`), and named visual checks (`vetting:visual-*`). Every other flow drops them, as
 it drops `review:` keys.
 
+**Keys starting `applicant-review:` belong to the applicant review** (**Applicant review**): one
+campaign's screening setup under `applicant-review:{slug}-*` (its campaign and brand profile,
+criteria, checks, red lines, thresholds, form answer rules, visual checks, client view, and review
+Sheet). The applicant review reads them, and creator vetting reads one review's records when it
+screens for that review. Every other flow drops them, as it drops `review:` and `vetting:` keys,
+whether or not its own drop list names them. They are never brand guidelines: a review's
+`-red-lines` record is a `red_line` for that campaign's screening only, never for briefs, content
+review, discovery, or red-line scans.
+
 **Keys starting `creator:` are the team's call on one creator** (`creator:ig-{handle}`,
 `creator:tt-{handle}`), saved from creator vetting feedback (**Creator vetting**, **Creator
 calibrations**). Vetting and creator discovery read them; a `reject` stance keeps the creator

@@ -110,12 +110,22 @@ sys.exit(bad)
 PY
 
 # A drop list that leaves out `lastrun:` hands a flow's saved setup answers to the agent as brand
-# guidelines. Every drop list names `orchestrator:`, so that is the anchor.
+# guidelines, and one that leaves out `applicant-review:` hands it one campaign's screening red
+# lines and criteria as brand-wide rules. Every drop list names `orchestrator:`, so that is the anchor.
 drops=$(for f in plugins/*/agents/*.md $(find plugins -path '*/skills/*' -name '*.md' | sort); do
   awk -v F="$f" '
+    BEGIN {
+      nreq = split("lastrun applicant-review", req, " ")
+      why[1] = "orchestration.md, section 2, Saved answers"
+      why[2] = "atlas-tools.md, Calibration kinds"
+    }
     function flush() {
-      if (blk ~ /`orchestrator:/ && blk ~ /([Dd]rop|[Ii]gnore|[Ss]kipping|[Ll]eave out)/ && blk !~ /`lastrun:/)
-        print "FAIL " F ":" start ": drops `orchestrator:` keys but not `lastrun:` keys (orchestration.md, section 2, Saved answers)"
+      if (blk ~ /`orchestrator:/ && blk ~ /([Dd]rop|[Ii]gnore|[Ss]kipping|[Ll]eave out)/)
+        for (i = 1; i <= nreq; i++)
+          if (index(blk, "`" req[i] ":") == 0)
+            print "FAIL " F ":" start ": drops `orchestrator:` keys but not `" req[i] ":` keys (" why[i] ")"
+      lb = tolower(blk); if (lb ~ /(`red_line`|red line)/ && lb ~ /(not|ignore|except|skipping|never|drop)[^`]{0,40}`review:`/ && lb !~ /`applicant-review:/)
+        print "FAIL " F ":" start ": reads `red_line` records without `review:` keys but keeps `applicant-review:` keys (atlas-tools.md, Calibration kinds)"
       blk = ""
     }
     /^$/ || /^ *([0-9]+[a-z]?\.|-|\|) / { flush() }
@@ -124,5 +134,5 @@ drops=$(for f in plugins/*/agents/*.md $(find plugins -path '*/skills/*' -name '
 done)
 if [ -n "$drops" ]; then echo "$drops"; fail=1; fi
 
-[ "$fail" -eq 0 ] && echo "OK   every agent carries the orchestration contract and has a permission level; routes and shortcuts resolve; every drop list drops lastrun: keys"
+[ "$fail" -eq 0 ] && echo "OK   every agent carries the orchestration contract and has a permission level; routes and shortcuts resolve; every drop list drops lastrun: and applicant-review: keys"
 exit "$fail"

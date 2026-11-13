@@ -73,7 +73,7 @@ Text after the command is the argument. Route on it before anything else:
 | `quality review` (also `review this deck`, `audit this deck`, `review this page`, `is this ready to send`, `check this before I share it`) | Run **Quality review**. It needs no Atlas connection unless the user wants the work's Atlas figures re-checked, so skip the phases until then. |
 | `feedback {link}` (also `feedback on {link}`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Quality review**, Run step 7 (Feedback later). Skip the other phases. |
 | `polish` (also `improve my prompt`, `coach`, `tighten this prompt`) | Run **Prompt coach**. It needs no Atlas connection, so skip the phases until "Run it now" hands the rewritten ask to a flow. |
-| A shortcut: `vet`, `list review`, `campaign`, `content review`, `payments`, `reports`, `account` (and the aliases in `references/orchestration.md` **4**) | A routing hint only. Run Phase 1 and Phase 2 + 3 to confirm the connection and pick the brand profile, then run that shortcut's section per `references/orchestration.md` **4**, skipping only the "what do you need" step: memory, the setup reply, and every approval still run. Text after the shortcut is context. |
+| A shortcut: `vet`, `list review`, `applicant review`, `campaign`, `content review`, `payments`, `reports`, `account` (and the aliases in `references/orchestration.md` **4**) | A routing hint only. Run Phase 1 and Phase 2 + 3 to confirm the connection and pick the brand profile, then run that shortcut's section per `references/orchestration.md` **4**, skipping only the "what do you need" step: memory, the setup reply, and every approval still run. Text after the shortcut is context. |
 | empty, or anything else | In an unattended run (a scheduled task, whose prompt says not to ask questions), run Phase 1 and Phase 2 + 3, then the flow the text names, per `references/orchestration.md` **1**, Unattended runs. Otherwise run the phases in order, starting at Phase 1. Treat the text as context. On an unconfigured organization, Phase 2 + 3 publishes the first-run guide before the next phase (**First-run guide** there). With nothing after the command, a configured organization ends Phase 2 + 3 at **Organization dashboard**. |
 
 ## Sections (where each part of this skill lives)
@@ -100,7 +100,7 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 | **PPA pitch**, **Aspire users** | `references/ppa-pitch.md` |
 | **Meta Ads** | `references/meta-ads-tools.md` |
 | **Creator discovery** | `references/creator-discovery.md` |
-| **Creator vetting** | `references/creator-vetting.md` |
+| **Creator vetting**; **Applicant review** (a campaign's applicant screening setup) | `references/creator-vetting.md`; `references/applicant-review.md` |
 | **Creator CSV** | `references/creator-csv.md` |
 | **Orchestrator** | `references/orchestrator.md` |
 | **Influencer program** (Program setup, Program manager, Drafts) | `references/program.md` |
@@ -150,7 +150,7 @@ Where **List agents** step 5 hands each agent off. Each named section owns the c
 | `atlas-creator-profile` | Phase 1, then Phase 2 + 3, then **Creator profile** (it asks for the handle and network first) |
 | `atlas-creator-brief` | Phase 1, then Phase 2 + 3, then **Creator brief** (its three questions first) |
 | `atlas-creator-discovery` | Phase 1, then Phase 2 + 3, then **Creator discovery**, Setup if the campaign is new, then Run |
-| `atlas-creator-vetting` | Phase 1, then Phase 2 + 3, then **Creator vetting**, Setup if it has never run, then Run (it asks for the list first) |
+| `atlas-creator-vetting` | Phase 1, then Phase 2 + 3, then **Creator vetting**, Setup if it has never run (for a campaign's applicants, **Applicant review** instead), then Run (it asks for the list first) |
 | `atlas-content-review` | Phase 1, then Phase 2 + 3, then **Content review**, Setup if it has never run, then Review |
 | `atlas-post-analysis` | Phase 1, then Phase 2 + 3, then **Post analysis** (it asks for the post first) |
 | `atlas-daily-insights-report` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the daily cadence |
@@ -223,7 +223,7 @@ When the ask names no flow, route by the primary lens **Reading the ask** reads
 | `campaign` | A launch or dated campaign that needs creators | **Campaign plan** (**Reading the ask**) |
 | `brand` | Is this post safe or on brand | **Content review** |
 | `brand`, `performance` | What is in someone's post, how it did, and whether to sponsor, partner with, or reuse it (no brief) | **Post analysis** |
-| `brand`, `campaign` | Which creators on a list to approve | **Creator vetting** |
+| `brand`, `campaign` | Which creators on a list to approve, or how a campaign's applicants are screened | **Creator vetting** (a campaign's applicants: **Applicant review** first, then vetting with the review) |
 | `performance`, `creative` | Hooks, ads, licensing, a cut list | **Ad reuse**; for one post, **Content review** with the ad reuse check |
 | `leadership`, `performance` | A pitch or casting deck for partnership ads, whitelisting, creators to license | **PPA pitch** |
 | `performance` | Which creator posts the brand can run as partnership ads now, permissions, an ad code | **Partnership content** |

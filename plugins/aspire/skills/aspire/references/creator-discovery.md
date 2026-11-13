@@ -100,7 +100,8 @@ skip any the S1 answer already settles. Never ask more than five.
 4. **Geography and language** — market fit, when the brief implies a market at all.
 5. **Content and hard exclusions** — formats the campaign needs, and who is disqualified.
    Always fold in the brand's existing `competitor` and `red_line` records (except `review:`
-   keys, which are content review only) as a stated default ("competitors already recorded are excluded"), so the user only has to add to it.
+   keys, which are content review only, and `applicant-review:` keys, which are one campaign's
+   applicant screening only) as a stated default ("competitors already recorded are excluded"), so the user only has to add to it.
 
 Rules:
 
@@ -415,7 +416,8 @@ offer "Change setup" as an option on the run question. Several campaigns may be 
 1. Ask S1: what the campaign is, in the user's own words.
 2. **Then write the refinement questions.** Read the S1 answer together with `brand:summary`,
    `brand:business-context`, and the `competitor`, `red_line` and `guideline` records (not
-   `review:` keys, which are content review only, nor `theme:` keys, which style pages, nor
+   `review:` keys, which are content review only, nor `applicant-review:` keys, which are
+   one campaign's applicant screening only, nor `theme:` keys, which style pages, nor
    `lastrun:` keys, which hold a flow's saved setup answers), and from
    those compose 3 to 5 `AskUserQuestion` questions covering the dimensions above, in their
    order, skipping anything S1 already settled. The options are inferred from the brief and the

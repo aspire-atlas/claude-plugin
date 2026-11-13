@@ -40,7 +40,7 @@ the agent, skipping any the user already answered. In campaign mode it also sett
 unless the user declines) and the first post date.
 
 1. **Scope.** If a `red_line` calibration blocks AI generated content (ignore `review:` keys,
-   which are content review only), offer "Strategy brief only (Recommended)" vs "Include draft
+   which are content review only, and `applicant-review:` keys), offer "Strategy brief only (Recommended)" vs "Include draft
    copy (overrides the red line; record the exception first)". Never produce copy without the
    override.
 2. **Creator sourcing.** "Already in Atlas", "Atlas creator marketplace (searches beyond your
@@ -162,7 +162,7 @@ from**, and leave them out of the data block, since they aren't parts of the bri
   round, never per lane.
 - **Disclosure treatment**: the paid partnership label, plus anything `review:disclosure` says
   when it exists (read it for disclosure only).
-- **Do's and don'ts**, one line each: from saved `red_line` and `guideline` records (never `review:`, `vetting:`, `program:`, `orchestrator:`, `ad-reuse:` or `lastrun:` keys,
+- **Do's and don'ts**, one line each: from saved `red_line` and `guideline` records (never `review:`, `vetting:`, `program:`, `orchestrator:`, `ad-reuse:`, `applicant-review:` or `lastrun:` keys,
   and never the campaign's own `-cas`, `-lane-*`, `-terms` or `-decision-defaults` records).
   When the client's own creator brief guardrails are saved (a `guideline` whose body names
   them), mirror them line for line.
@@ -312,7 +312,7 @@ calibrations (never from Aspire's own positioning; this plugin serves any brand)
   `brand:business-context`. Write one line each, for example buyer "home cooks who buy
   premium cookware", category "consumer kitchen brands".
 - **Off-audience signals**: the content types that would not reach that buyer. Infer from the
-  buyer line and any `guideline` or `red_line` records (never `review:`, `vetting:`, `program:`, `orchestrator:`, `ad-reuse:` or `lastrun:`
+  buyer line and any `guideline` or `red_line` records (never `review:`, `vetting:`, `program:`, `orchestrator:`, `ad-reuse:`, `applicant-review:` or `lastrun:`
   keys, and never a creator ad campaign's `campaign:{slug}-cas`, `-lane-*`, `-terms` or
   `-decision-defaults`).
 - **Search vocabulary**: 3 to 6 bio keywords a creator serving that buyer would use. Derive

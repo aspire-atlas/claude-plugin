@@ -872,7 +872,7 @@ Rules:
 - **The shared criteria** come from the lanes and the brand's records, not a new question:
   networks are Instagram and TikTok unless a casting filter names one, market comes from
   `brand:business-context`, and exclusions fold in every `competitor` and `red_line` record
-  (not `review:` keys). Show them in the C7 summary so the user can correct them.
+  (not `review:` or `applicant-review:` keys). Show them in the C7 summary so the user can correct them.
 - **C5 is the standing approval to deliver.** Say so plainly: "Step updates, reminders and the
   weekly call agenda will post to {channel} and email {recipients} without asking each time."
   The page and chat summary always ship.

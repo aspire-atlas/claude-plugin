@@ -140,7 +140,8 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
 
 1. `search_calibrations` as above. Extract: readout calibrations, `red_line`, `guideline`,
    `competitor`, `partner`, `brand:summary`, `target:weekly-health`, `theme:brand`. Drop every
-   `review:` key (content review only; see **Atlas tools**) and every `lastrun:` key (a flow's
+   `review:` key (content review only; see **Atlas tools**), every `applicant-review:` key (one
+   campaign's applicant screening only), and every `lastrun:` key (a flow's
    saved setup answers, never a rule). `theme:brand` styles the page and is never a guideline.
 2. `list_post_search_fields` once. Use only paths it returns.
 2b. Freshness (**Page standard**, section 9): `search_creators` on the linked handles, with no
@@ -185,8 +186,8 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
    readout: the readout's own resolving `went_well` applies to readout and brief items only.
 7. Red-line scan: for each `red_line` with `action: block|flag|escalate`, one semantic
    `search_posts` with `queryText` = the red-line body, filtered to the window and the brand's
-   handles, limit 10. Report hits by permalink. Never invent a hit. `review:` keys were
-   dropped in step 1; hits on content review hard rules come from step 6b (`hardRuleHits`).
+   handles, limit 10. Report hits by permalink. Never invent a hit. `review:` and
+   `applicant-review:` keys were dropped in step 1; hits on content review hard rules come from step 6b (`hardRuleHits`).
 
 Metric definitions:
 

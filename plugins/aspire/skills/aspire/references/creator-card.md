@@ -107,7 +107,7 @@ it, say so and stop.
 **"Draft outreach to @handle on {network}"**
 
 1. Read `brand:summary`, `brand:business-context`, `guideline:voice`, any `competitor` and
-   `red_line` records (not `review:` keys), and any campaign the creator is in
+   `red_line` records (not `review:` or `applicant-review:` keys), and any campaign the creator is in
    (`search_insights` on the `creator-discovery-{profile}` prefix, newest record for the
    creator's `entityId`).
 2. Draft one message in chat: a subject line and a body under 120 words, in the brand's voice,

@@ -123,7 +123,7 @@ paths they return):
   (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8), plus `instagram.permalink`, `text`,
   `instagram.mediaProductType`, the partnership marker, `analysis.brandSafety`,
   `analysis.commentSentimentBreakdown`, and `analysis.transcript` when the census lists them.
-- Once per `red_line` (not `review:` keys): one semantic `search_posts` with `queryText` the
+- Once per `red_line` (not `review:` or `applicant-review:` keys): one semantic `search_posts` with `queryText` the
   red line's wording, filtered to the reviewed creators' usernames and the window.
 
 Work in batches of ten creators.

@@ -98,7 +98,7 @@ Rules:
   a fresh setup item.
 - Write C1's options from the brand's context. If no `red_line` is saved, say so in C1's
   question text ("No red lines are saved yet, so option 2 blocks nothing").
-- C3's option list starts from what exists: when `guideline` records (never `lastrun:` keys) or the
+- C3's option list starts from what exists: when `guideline` records (never `applicant-review:` or `lastrun:` keys) or the
   `voice_and_content_ops` brand fact are saved, summarize them in one line in the question
   text so the user sees what "saved guidelines" means.
 - C4: call `get_brand_instruction` with `agentType: "brand_safety"` first. If an instruction
@@ -216,7 +216,7 @@ One check per brief field that is specified:
 
 ### 3. Brand safety
 
-- Every `red_line` calibration, with its `action`: `block` fails the post, `flag` flags it,
+- Every `red_line` calibration except `applicant-review:` keys, with its `action`: `block` fails the post, `flag` flags it,
   `escalate` flags it and names the primary contact (`user:primary-contact`) in the verdict.
   This includes the review hard rules (`review:rule-*`, see **Hard rules for every review**).
   Each one is its own check, and the page names the rule.

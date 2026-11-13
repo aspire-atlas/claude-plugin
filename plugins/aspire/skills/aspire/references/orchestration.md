@@ -405,6 +405,7 @@ needs.
 | -------- | ---- | ----- | ------- |
 | `vet` | `vetting` | `atlas-creator-vetting` | **Creator vetting** |
 | `list review` | `review this list`, `review list` | `atlas-creator-vetting`, with the list as given | **Creator vetting** (it asks for the list first) |
+| `applicant review` | `set up applicant review`, `applicant review setup`, `screening setup` | `atlas-creator-vetting`, after setup | **Applicant review** (setup, never an agent), then **Creator vetting** with the review when a list is given |
 | `campaign` | `campaign status` | `atlas-deliverable-tracker` for an influencer program; the **CAS campaign** status for a creator ad campaign | **Deliverable tracker**, or **CAS campaign**, Status. With both saved, ask which in the Heard question |
 | `content review` | `review a post` | `atlas-content-review` | **Content review** |
 | `payments` | `payment`, `ledger` | `atlas-program-ledger` | **Program ledger** |

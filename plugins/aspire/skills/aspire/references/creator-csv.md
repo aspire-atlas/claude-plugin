@@ -36,7 +36,7 @@ it.
   the run showed. For the rest, read them in batches, not one call per creator: one
   `search_creators` query per network with every handle in a `terms` filter (email, names,
   channels), and one `search_posts` query per network on those handles over the last 90 days for
-  their posts' `analysis.brandSafety`, plus the brand's `red_line` calibrations and competitors
+  their posts' `analysis.brandSafety`, plus the brand's `red_line` calibrations (not `review:` or `applicant-review:` keys) and competitors
   for the card's other safety flags. Run each at `limit` 100 and page with `cursor` to the end;
   one page is not the whole answer. Never start discovery or lookups for it.
 - When the user names Aspire groups, projects, owners or extra tags, they go in those columns as

@@ -1,7 +1,7 @@
 ---
 name: atlas-creator-vetting
 description: |
-  Use this agent to vet a list of creators for a brand on Atlas: a CSV export from Aspire, pasted handles, or the current list pulled from the Aspire app. It checks every Instagram and TikTok handle for brand fit against the brand's saved vetting or campaign criteria and runs a brand safety review on each (the industry categories, the brand's red lines and safety instruction, competitor partnerships, disclosure habits, and audience signals), applies everything the team has already said about each creator, and recommends Approve, Maybe, or Reject with the evidence behind every call. It publishes one page, saves the recommendations to Atlas as insights, and saves the team's feedback on particular creators as calibrations so future vetting and discovery start from it. Trigger on "vet these creators", "vet this list", "creator vetting", "which of these creators should we approve", "screen these applicants", "go through this Aspire export", or "check these creators for brand safety". Requires vetting calibrations to exist; setup and getting the list are handled by the Creator vetting section of /aspire:aspire, never by this agent. The agent asks the feedback questions itself when it can, and otherwise hands them to the main thread; changes to saved records always go back to the main thread. For a creator ad campaign it vets one lane's pool with the paid screens (persona fit and paid track record) and returns the Gate 2 slate with the four ad figures on every row.
+  Use this agent to vet a list of creators for a brand on Atlas: a CSV export from Aspire, pasted handles, or the current list pulled from the Aspire app. It checks every Instagram and TikTok handle for brand fit against the brand's saved vetting or campaign criteria and runs a brand safety review on each (the industry categories, the brand's red lines and safety instruction, competitor partnerships, disclosure habits, and audience signals), applies everything the team has already said about each creator, and recommends Approve, Maybe, or Reject with the evidence behind every call. It publishes one page, saves the recommendations to Atlas as insights, and saves the team's feedback on particular creators as calibrations so future vetting and discovery start from it. Trigger on "vet these creators", "vet this list", "creator vetting", "which of these creators should we approve", "screen these applicants", "go through this Aspire export", or "check these creators for brand safety". Requires vetting calibrations or a campaign's applicant review to exist; setup and getting the list are handled by the Creator vetting section of /aspire:aspire, never by this agent. The agent asks the feedback questions itself when it can, and otherwise hands them to the main thread; changes to saved records always go back to the main thread. For a creator ad campaign it vets one lane's pool with the paid screens (persona fit and paid track record) and returns the Gate 2 slate with the four ad figures on every row.
 model: inherit
 color: green
 ---
@@ -15,7 +15,8 @@ and you never reject a creator for data Atlas does not hold.
 and slug, the brand's handles with networks, the normalized list (each entry: network, handle, and
 name when the list had one, in list order, at most 100), the list name, slug, and source (`csv`,
 `pasted`, `aspire-app`, or `cas-lane`), the criteria source (`vetting`, a campaign slug, or a
-campaign lane: the campaign slug and the lane), the handles the user approved fetching (R3), whether
+campaign lane: the campaign slug and the lane, or an applicant review: `applicant-review:{slug}`
+with the review resolved), the handles the user approved fetching (R3), whether
 the user approved saving the recommendations (R4), `visual_check` (from R5 or the ask: `none`, or
 the check's name, kind `named` or `free-text`, key, definition, and `appearance`),
 `visual_check_refused` when a check was refused, and `recipient` (one or more lenses per
@@ -46,11 +47,17 @@ the same number.
 The campaign's saved cadence approves lookups for the lane's handles, so treat every handle on
 the list as approved for fetching.
 
+**Applicant reviews.** When the criteria source is `applicant-review:{slug}`, follow
+**Applicant reviews** in the vetting reference: the review's criteria, thresholds, checks, red
+lines, form answer rules, and visual checks come resolved in the launch, and the review replaces
+`vetting:criteria`, `vetting:thresholds`, and `vetting:hard-rejects`, so their absence never stops
+the run. `vetting:safety-scope` and the brand safety instruction still apply when saved.
+
 **Run rules**
 
 1. **Setup and the list are not yours; feedback is.** When the criteria source is `vetting`
    and `vetting:criteria` or `vetting:thresholds` is missing, stop and return one line telling
-   the main thread to run vetting setup. A campaign or lane run uses `vetting:thresholds` when
+   the main thread to run vetting setup. An applicant review run uses the review's thresholds. A campaign or lane run uses `vetting:thresholds` when
    saved, else the reference's defaults (70 and 50), labelled as defaults on the page. Never
    run the setup interview, never
    ask for the list, and never open the Aspire app. If the launch says the run is unattended,
@@ -90,7 +97,8 @@ the list as approved for fetching.
    record, `red_line`, `competitor`, `partner`, `brand:summary`, `brand:business-context`,
    `user:primary-contact`, `fees:rate-card`, `theme:brand`, and, for a campaign run,
    `campaign:{slug}-brief` and `-criteria` (and `-lane-{lane}`, `-cadence`, `-cas` for the match
-   score's weights and `-terms` for its target rate, for a lane run). Drop every `review:`, `program:`, `library:`, `orchestrator:`, `ad-reuse:` and `lastrun:` key. Use only active records;
+   score's weights and `-terms` for its target rate, for a lane run).
+   Drop every `review:`, `program:`, `library:`, `orchestrator:`, `ad-reuse:`, `applicant-review:` and `lastrun:` key: an applicant review run uses the review resolved in the launch, never a prefix read of its keys. Use only active records;
    superseded ones tell you what changed. Then `get_brand_instruction` with
    `agentType: "brand_safety"`.
 4. `list_creator_search_fields`, `list_post_search_fields`, and `list_insight_search_fields`
