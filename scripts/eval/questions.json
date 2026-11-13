@@ -103,7 +103,7 @@
       "code": "O2",
       "example": "Creator trends",
       "kind": "Readout",
-      "reader": "team",
+      "reader": "pmm",
       "readerInWords": "the brand's product marketing team",
       "ask": "For {brand}: what are creators saying about us vs. our biggest competitors, where do we win, and how should we stand apart? It is for our product marketing team.",
       "setsBarFor": [

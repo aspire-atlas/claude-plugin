@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
-  ATLAS_READS, ATLAS_WRITES, barChecks, compareRuns, extractPageCheckScript, fencedBlocks, fill, findJsonWithKey, configuredQuestions,
+  ATLAS_READS, ATLAS_WRITES, barChecks, compareRuns, extractPageCheckScript, fencedBlocks, fill, findJsonWithKey, configuredQuestions, skippedLine,
   findPage, forBaseline, normalizeResult, codesForChanges, regressions, renderComment, renderSkipped, renderSlack, COMMENT_MARKER, renderStopped, stripTitlePrefix, checkNames, parsePageCheck, parseStream, renderRun, rIds, rResult, stripDataUris,
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, type PageChecks, type QuestionResult, type RunResults,
 } from './lib'
@@ -286,10 +286,26 @@ test('check names come from e-checks and the reader standard table', () => {
   expect(names).toEqual({ E1: 'Answers the real question', R1: 'Reader and scope', R13: 'Required metrics' })
 })
 
-test('a question local.json names no brand for is skipped, unless no brand is needed', () => {
+test('a question local.json names no brand for is skipped while no baseline grades it, and stops the run once one does', () => {
   const questions = [{ code: 'O2' }, { code: 'O3' }]
   const local = { questions: { O3: { brand: 'Acme' }, O2: { brand: '' } } }
-  expect(configuredQuestions(questions, local, false)).toEqual({ run: [{ code: 'O3' }], skipped: ['O2'] })
-  expect(configuredQuestions(questions, {}, false)).toEqual({ run: [], skipped: ['O2', 'O3'] })
-  expect(configuredQuestions(questions, {}, true)).toEqual({ run: questions, skipped: [] })
+  const none = () => false
+  expect(configuredQuestions(questions, local, false, none)).toEqual({ run: [{ code: 'O3' }], skipped: ['O2'], missing: [] })
+  expect(configuredQuestions(questions, {}, false, none)).toEqual({ run: [], skipped: ['O2', 'O3'], missing: [] })
+  expect(configuredQuestions(questions, {}, false, code => code === 'O3')).toEqual({ run: [], skipped: ['O2'], missing: ['O3'] })
+  expect(configuredQuestions(questions, {}, true, () => true)).toEqual({ run: questions, skipped: [], missing: [] })
+})
+
+test('every report names the skipped questions, and a run with none left posts a skip that passes', () => {
+  expect(skippedLine([])).toBeNull()
+  expect(skippedLine(['O2'])).toBe('Skipped: O2 (no brand in local.json), so it was not graded and cannot regress.')
+  const withSkip = { ...run(), skipped: ['O2'] }
+  expect(renderComment(withSkip, E_CHECKS, {}, null, null)).toContain('Skipped: O2')
+  expect(renderSlack(withSkip, E_CHECKS, null)).toContain('Skipped: O2')
+  expect(renderRun(withSkip, E_CHECKS, {})).toContain('Skipped: O2')
+  const nothing = { ...run(), questions: [], skipped: ['O2'] }
+  const comment = renderComment(nothing, E_CHECKS, {}, null, 'https://example.test/run/2')
+  expect(comment).toContain('skipped: no question ran. Skipped: O2')
+  expect(comment).toContain('Run: https://example.test/run/2')
+  expect(regressions(nothing, E_CHECKS)).toEqual([])
 })

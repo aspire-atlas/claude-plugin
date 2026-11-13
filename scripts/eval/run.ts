@@ -562,11 +562,15 @@ async function main() {
 
   const localPath = join(HERE, 'local.json')
   const local: Local = existsSync(localPath) ? readJson(localPath) : {}
-  // A question local.json names no brand for is skipped, not fatal: a question added to questions.json reaches
-  // CI before its brand reaches the EVAL_LOCAL_JSON secret, and every other question still runs.
-  const { run: questions, skipped } = configuredQuestions(chosen, local, !!options.page || !!options.dryRun || !existsSync(localPath))
+  // A question local.json names no brand for is skipped while no baseline holds its approved results: a new
+  // question reaches CI before its brand reaches the EVAL_LOCAL_JSON secret. One that has them stops the run,
+  // so a lost or mistyped entry cannot drop a gated question. Every report names what was skipped.
+  const newest = baselineFor('newest')
+  const hasApproved = (code: string) => !!newest?.results.questions.find(question => question.code === code)?.approved
+  const { run: questions, skipped, missing } =
+    configuredQuestions(chosen, local, !!options.page || !!options.dryRun || !existsSync(localPath), hasApproved)
+  if (missing.length) fail(`local.json names no brand for ${missing.join(', ')}, which the baseline of ${newest?.name} grades`)
   if (skipped.length) console.error(`Skipped ${skipped.join(', ')}: local.json names no brand for ${skipped.length === 1 ? 'it' : 'them'}`)
-  if (!questions.length) fail(`no question to run: local.json names no brand for ${skipped.join(', ')}`)
   if (options.dryRun) {
     for (const question of questions) {
       const entry = local.questions?.[question.code]
@@ -590,6 +594,17 @@ async function main() {
 
   const runDir = options.out ?? join(RUNS, stamp())
   mkdirSync(runDir, { recursive: true })
+  if (!questions.length) {
+    // Nothing to run is not a stopped run: write results with no questions, so CI posts the skip and passes.
+    const none: RunResults = {
+      harness: HARNESS_VERSION, date: today(), commit: commit(), model: options.model ?? 'default',
+      judgeModel: options.judgeModel ?? options.model ?? 'default', eChecksVersion: eFile.version, questions: [], skipped,
+    }
+    writeFileSync(join(runDir, 'results.json'), JSON.stringify(none, null, 2) + '\n')
+    writeFileSync(join(runDir, 'table.md'), renderRun(none, eChecks, names))
+    console.error(`No question to run. Run kept in ${runDir}.`)
+    return
+  }
   // Written before any question runs, so a run that stops part way still says where its approved column came from.
   if (options.approvedFrom) {
     baselineCache = baselineFor(options.approvedFrom)
@@ -606,6 +621,7 @@ async function main() {
   const results: RunResults = {
     harness: HARNESS_VERSION, date: today(), commit: commit(), model: options.model ?? 'default',
     judgeModel: options.judgeModel ?? options.model ?? 'default', eChecksVersion: eFile.version, questions: [],
+    ...(skipped.length ? { skipped } : {}),
   }
   try {
     for (const question of questions) {

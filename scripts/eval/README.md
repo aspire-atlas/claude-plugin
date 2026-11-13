@@ -49,9 +49,12 @@ It runs on a developer's machine, and in CI on every pull request that changes a
   organization's name (added to each ask, since a person can belong to several), each question's brand
   name, and the link to its approved page. It is ignored by git: brand names and page links
   are customer details and this repository is public. Take the brands and links from the examples library.
-  A question with no brand in `local.json` is skipped with a warning, so a newly added question reruns
-  nowhere, CI included, until its brand and approved page are added to `local.json` and the
-  `EVAL_LOCAL_JSON` secret.
+  A question with no brand in `local.json` is skipped while no baseline holds its approved results, so
+  a newly added question runs nowhere, CI included, until its brand and approved page are added to
+  `local.json` and the `EVAL_LOCAL_JSON` secret. The run's `results.json`, the table, the PR comment
+  and the nightly Slack post all name it as skipped, and a run with nothing left to run posts a skip
+  and passes. Once a baseline holds a question's approved results, a missing brand stops the run
+  instead, so a lost or mistyped entry cannot quietly drop a question that gates pull requests.
 
 ## Commands
 
