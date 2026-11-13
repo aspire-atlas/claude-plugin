@@ -182,22 +182,23 @@ Filter path unless noted, `context` on every call, only field paths from the cen
      (`#{brand}creator`); and "{brand} with {competitor}" for each competitor: the brand's posts
      that also match that competitor's name, spelling variants, or handles (the filter half of
      the comparison set; the semantic results are left out because they cannot be counted).
-   - **Threshold.** 10,000 views by default. When under 3% or over half of the brand's posts in
-     the period reach it, use the brand's median views instead, rounded to two significant
-     figures, and say in the method when the median comes from a capped set. Pick it once,
-     before counting, and use it for every topic.
+   - **Threshold.** A fixed rung from the ladder 1,000, 5,000, 10,000, 25,000, 100,000 views,
+     counted exactly with `totalHits` and a `range` filter on the brand's posts in the period.
+     Start at 10,000. When under 3% of the brand's posts reach a rung, step down; when over half
+     do, step up; stop at the first rung between the two, or at the ladder's end. Pick it once,
+     before counting, use it for every topic, and say in the method which rung and why.
    - **Counts.** Every query adds `exists viewCount`, so posts with no view count are in neither
      count; count them once over the brand's set for the method. For the brand's whole set and for
      each topic, two calls: one for posts and creators (`totalHits`, and `aggs` `cardinality` on
      `author.username`), and one with `viewCount` at or above the threshold (a `range` filter) for
-     posts and creators at the threshold, whose hits (up to 100, paged) show how many of them the
-     topic's top two creators made. Posts with and without a paid label count together, and the
+     posts and creators at the threshold, plus `aggs` `terms` on `author.username` (size 2) for
+     how many of them the topic's top two creators made. Posts with and without a paid label count together, and the
      method says so;
      count each topic's paid-marked and program-tagged posts beside them.
    - **Gap.** List the other tools the posts read in step 6 name for the step after the brand's
      product (the build, the edit, the launch: whatever those posts say comes next), saved
-     competitors or not. Count the brand's posts that also name any of them, and their creators,
-     as above. When M2 tracks the brand's own product for that step, count the brand's posts that
+     competitors or not. Those posts cover the window only. Count the brand's posts that also
+     name any of them, and their creators, as above, over the period. When M2 tracks the brand's own product for that step, count the brand's posts that
      name it beside them.
 
 ## Analysis rules
@@ -249,8 +250,9 @@ From **Data method** step 8 and the posts already read in step 6; no other reads
 - **Gap card.** One card, labelled "Where credit leaks", when at least 3 creators show the
   brand's product and name another tool for the next step in a quoted line. It gives the count
   of posts and creators that also name those tools, against the posts that name the brand's own
-  product for that step when that was counted, shows one of the quoted posts, and ends with a
-  "So:" line. With fewer than 3 creators there is no gap card.
+  product for that step when that was counted, shows one of the quoted posts, says which period
+  each half covers (the tools named from the window's posts, the counts over the period), and
+  ends with a "So:" line. With fewer than 3 creators there is no gap card.
 - **How to stand apart.** Up to three positioning moves, each a short bold line and one or two
   sentences. Each move names the win card, gap card, or below-average topics it comes from; a
   move with none behind it is dropped. Then one "So:" line naming the next steps the moves lead
@@ -401,6 +403,8 @@ findings anchor to the post (`entityKind` `post`, the network's own media id). A
 `reach` on a win or gap card (`{threshold, posts, atThreshold, creators, brandRate}`),
 `verbatims[]` (quote, permalink, timestamp), `changedSinceLastRun`, and `evidence[]`.
 `idempotencyKey` per finding.
+`sov.organic` holds the posts with no paid label; the key keeps its name so older findings still
+read. A flow that shows it labels it "no paid label", never "organic".
 
 ## Delivery
 
