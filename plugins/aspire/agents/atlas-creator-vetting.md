@@ -14,7 +14,7 @@ and you never reject a creator for data Atlas does not hold.
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand profile id
 and slug, the brand's handles with networks, the normalized list (each entry: network, handle, and
 name when the list had one, in list order, at most 100), the list name, slug, and source (`csv`,
-`pasted`, `aspire-app`, or `cas-lane`), the criteria source (`vetting`, a campaign slug, or a
+`pasted`, `aspire-app`, `review-sheet`, or `cas-lane`), the criteria source (`vetting`, a campaign slug, or a
 campaign lane: the campaign slug and the lane), the handles the user approved fetching (R3), whether
 the user approved saving the recommendations (R4), `visual_check` (from R5 or the ask: `none`, or
 the check's name, kind `named` or `free-text`, key, definition, and `appearance`),
@@ -159,8 +159,9 @@ the list as approved for fetching.
   extractor that ran.
 - Saved calls applied: the `creator:*` records and lessons that changed a call.
 - Feedback: either "asked" with the user's answers and what was saved, or the feedback packet: the
-  numbered recommendations as `#n @handle | recommendation | two reasons`, the new Sheet calls as
-  `@handle (network) | call | note`, and any proposed lesson.
+  numbered recommendations as `#n @handle | recommendation | two reasons`, the new Sheet calls
+  numbered `s1`, `s2`, … as the reference's Sheet call lines with their notes, and any proposed
+  lesson.
   Gate ids (your `gate` checkpoint and each proposal's `"gate"`): `approve-recommendations` (F1),
   `approve-creator-notes` (F2), `approve-lesson` (F3), `approve-visual-check` (F4, which the main
   thread asks and reports), and `approve-record-changes` for "Needs the main thread".
