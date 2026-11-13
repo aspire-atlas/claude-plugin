@@ -22,9 +22,8 @@ A bold section name with no file beside it (**Artifact standard**, **Theme**) is
 
 `connect_channel` ships its own connect widget for hosts that render MCP Apps. When the tool
 result shows that widget (the host displays the connect panel with the sign-in button), build
-no card: say one line, "Use the button above to sign in to {network}. I'll keep watching for it
-to finish.", and keep polling per Phase 4.2 (the same `elicitationId` calls, the same
-**Expired links** rule). The widget needs a click (**Atlas tools**, **After a widget**): the
+no card: say its line from **Atlas tools**, **After a widget**, and keep polling per Phase 4.2 (the same `elicitationId` calls, the same
+**Expired links** rule). The widget needs a click: the
 polling is the wait, and nothing else starts until it reports a terminal status. Do the same for the awaiting-selection `resultUrl`, with
 that step's own line from the same table. When the host
 shows no widget (Claude Code's terminal, or any host that returns plain text only), or you

@@ -316,11 +316,13 @@ carry on.
    they get no line of their own.
 
 **For reference.** The widget shows what the run read or changed. Nothing in it has to be pressed;
-a button in it is a shortcut for something the person can also ask for in chat.
+a button in it is a shortcut for something the person can also ask for in chat, or a control
+the run does not use.
 
 1. Say one line: "The {widget} above is for reference. I'm carrying on with {next step}." When
    the next step is a question, the line names it instead: "The {widget} above is for reference.
-   Next, one question about {topic}."
+   Next, one question about {topic}." The dashboard's row is the one exception: its line also
+   names the suggested next step.
 2. Carry on in the same reply, and repeat none of the widget's numbers.
 3. The last row of the table (a plain card of what was read or changed) is said once per reply:
    "The cards in this reply are for reference. I'm carrying on with {next step}." after the
@@ -336,8 +338,9 @@ a button in it is a shortcut for something the person can also ask for in chat.
 | The plugin's own connection card, on a host with no connect panel | The card with the Connect button | Yes | The card's own line (**Connection card**), then only the resume calls. |
 | `get_cas_setup_form` | The campaign setup form | Yes | "Fill in the campaign setup above and press Save." |
 | `get_dashboard` | The organization dashboard | No | "The dashboard above is for reference. I suggest {next step}: one question next." |
-| `get_onboarding_form` | The brand questions form | No: the questions are asked in chat, never saved through the form | "The form above is for reference: it shows which brand questions are answered. I'm carrying on with the open ones here." |
-| `get_cas_campaign`, `get_cas_selection`, `get_cas_rates`, `get_cas_briefs`, `get_cas_results` | The campaign step's screen | No: its buttons post a chat message and are optional | "The {step} screen above is for reference. Next, one question about {the step's next move}." |
+| `get_onboarding_form` | The brand questions form | No: the questions are asked in chat, never saved through the form | "The form above is for reference: it shows which brand questions are answered. I'm asking the open ones here, so there's no need to save the form." |
+| `get_cas_campaign` | The campaign dashboard | No: its buttons post a chat message and are optional | "The campaign dashboard above is for reference. Next, one question about {the campaign's next move}." |
+| `get_cas_selection`, `get_cas_rates`, `get_cas_briefs`, `get_cas_results` | The campaign step's screen | No: its buttons post a chat message and are optional | "The {step} screen above is for reference. Next, one question about {the step's next move}." |
 | `lookup_creators`, `lookup_posts`, `show_ads`, `show_partnership_content`, `get_creator`, when the person asked to see cards | The cards they asked for | No | "The cards above are for reference." Then the readout. |
 | `get_onboarding_report` | The brand report | No | "The report above is for reference. I'm carrying on with {next step}." |
 | Any other call whose result shows a widget: a tool above called for another reason (`lookup_creators` for a refresh or a vetting list), `list_channels`, `list_ad_accounts`, `list_hashtags`, `add_hashtags`, `remove_hashtags`, `unlink_channel`, `switch_billing_account`, `search_calibrations`, `get_brand_context`, `search_insights`, `get_job_status`, `start_business_discovery`, or a tool not listed here | A card of what was read or changed | No | "The card above is for reference. I'm carrying on with {next step}.", once per reply (step 3 above) |
