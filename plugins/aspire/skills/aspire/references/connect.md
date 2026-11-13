@@ -196,6 +196,9 @@ connector, and add these lines to the block for each connector the schedule rout
   always stays on Needs approval.
 - **Meta Ads:** Always allow its read tools only. Anything that creates, changes, pauses, or
   spends on ads stays on Needs approval.
+- **Store (Shopify or another store connection):** Always allow its read tools only (orders,
+  products, stock, sales). Creating or changing discount codes, orders, products, or stock stays
+  on Needs approval; those writes happen only in a session, after their own confirmation.
 
 **In Claude Code**, replace the steps with: run `/permissions`, then add an Allow rule for the
 Atlas server under the prefix recorded in 1.5 without its trailing `__` (most installs show
