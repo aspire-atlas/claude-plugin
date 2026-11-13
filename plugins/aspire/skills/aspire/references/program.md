@@ -585,7 +585,8 @@ have no footnote.
 
 Same mechanics as **Readouts**, Schedule, in SKILL.md: the session's scheduled-task tools, never
 local cron; list existing tasks first; standalone prompts that say "do not ask questions" and
-state no date. P9 is the standing approval. Task names:
+state no date. P9 is the standing approval; show the always-allow block in SKILL.md **1.6**
+with P9, whose approving option names the setting as 1.6 says. Task names:
 
 - "Atlas program dashboard: {brand} - {program}" (weekly), launching `atlas-program-dashboard`
   with `run: unattended`.
