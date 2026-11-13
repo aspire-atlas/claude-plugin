@@ -53,7 +53,7 @@ check). Relay the page and counts in text (cards only on request); offer the sho
 
 ### Feedback: save the team's call on each creator
 
-Every run ends with F1 to F4 (the agent's or yours, before anything else). F1 confirms its own
+Every run ends with F1 to F3, and F4 after a free-text visual check's last batch (the agent's or yours, before anything else). F1 confirms its own
 write; notes are shown worded before saving. Supersedes and retractions are the main thread's,
 one Destructive tools confirmation each. Feedback outside a run: "Save this about @handle for
 future vetting and discovery?"
@@ -148,8 +148,9 @@ Normalizing, for every source:
   channels, vetted on each and recommended once (the weaker channel's safety counts).
 - Drop the brand's own handles and say so. A saved `competitor` handle is recommended Reject
   without further checks.
-- At most 100 creators per run, the Atlas lookup cap. A longer list is split into runs of
-  100 in file order; say how many runs it will take, and run one at a time.
+- At most 100 creators per run, the Atlas lookup cap, and 25 when a visual check runs. A longer
+  list is split into runs of that size in file order, each with its own page; say how many runs
+  it will take, and run one at a time.
 - Give the list a short name for the run and the page (the file name, the Aspire list name,
   or "pasted list"), and a slug from it, lowercase and hyphenated.
 
@@ -164,7 +165,7 @@ takes up to four questions), skipping any the user already answered.
 | R2 | Vet them against what? | 1) {brand}'s vetting criteria (Recommended); 2) The {campaign} campaign's criteria (one option per saved `campaign:*-criteria`, up to two) |
 | R3 | {n} of these creators aren't in Atlas yet. Fetch them? | 1) Fetch them (Recommended) (description: "Atlas looks up each account and its recent posts. A TikTok account Atlas doesn't hold costs one paid lookup; {t} are TikTok."); 2) Only vet the creators Atlas already holds |
 | R4 | Save the recommendations to {brand}'s Atlas insights? | 1) Save (Recommended); 2) Page only |
-| R5 | Run a visual check on each creator's videos? Type what to look for, or pick a saved check. | 1) No visual check (Recommended); 2) Product on screen: {product}; 3) and 4) the two newest active `vetting:visual-*` checks, each labelled with its name and described with its "look for" line |
+| R5 | Run a visual check on each creator's videos? Type what to look for, or pick a saved check. (Over 25 creators, the question adds: "A visual check splits this list into {k} runs of 25, each with its own page.") | 1) No visual check (Recommended); 2) Product on screen: {product}; 3) and 4) the two newest active `vetting:visual-*` checks, each labelled with its name and described with its "look for" line |
 
 R3 is asked only after the main thread has checked which handles Atlas holds
 (`search_creators` filtered on the username field, one call per network with a `terms`
@@ -175,7 +176,8 @@ confirmation for the recommendation findings; the feedback answers carry their o
 R5 picks the visual check (**4. Visual check**). An option picked is a **named** check; words typed
 in the tool's free text field are a **free-text** check, unless they match a saved check's name,
 which then runs as that named check. When the user's ask already names something to look for
-("which of these have an overweight dog"), skip R5 and use that, matched the same way. R5 is never
+("which of these have an overweight dog"), skip R5 and use that, matched the same way and held to
+the same limits as a typed check (**What a visual check may look for**). R5 is never
 asked for a creator-ads lane run, which runs no visual check.
 
 **What a visual check may look for.** Things on screen (a product, a pet, a setting, a prop), and a
@@ -183,8 +185,10 @@ person's appearance only when the brief's casting needs it (grey hair for a camp
 older adults). Never a person's race or ethnicity, religion, health or disability, pregnancy,
 sexuality, or body size or weight. When the typed check asks for one of these, say in one line that
 vetting doesn't screen people on it, and run no visual check unless the user picks another. A check
-about a person's appearance is shown on the page and never written to Atlas: its findings leave
-out `visualCheck`.
+about a person's appearance has its per-creator results shown on the page and never written to
+Atlas: its findings leave out `visualCheck`, and the run summary names the check but leaves out its
+counts. Its definition may still be saved as a named check (F4), since that describes what to look
+for, not anyone's result.
 
 ## Main thread: the run
 
@@ -196,8 +200,9 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    one call per network.
 3. Ask R2 to R5 in `AskUserQuestion` calls of at most four questions, with the **Reading the ask**
    confirmation (SKILL.md) in the first. R2, R3, and R5 change what the agent reads, so they go
-   with that confirmation, before the storyline draft; R4 joins them when the call has room and
-   otherwise waits for the storyline call (**Orchestration contract**, **2**). The confirmation applies (`team` by default; `brand` for "are these safe"; `campaign` when the list is
+   with that confirmation, before the storyline draft. On a new page, R4 is answered by the storyline call's
+   Save (**Orchestration contract**, **2**); on a rerun to a page already published, it joins this
+   call when there is room. The confirmation applies (`team` by default; `brand` for "are these safe"; `campaign` when the list is
    a launch lineup). Skip R3 when Atlas holds every creator.
 4. Launch `atlas-creator-vetting` with: tool prefix, `profile_id`, `profile_slug`, brand handles
    and networks, the normalized list, the list name, slug and source, the criteria source, the
@@ -208,8 +213,9 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    words once from the user's words before the first launch: what to look for, what counts, what
    does not), and `recipient`. A list over 100 creators runs in batches of 100, and a run with a
    visual check in batches of 25, since each creator's frames take room in the agent's context;
-   say how many and launch them one at a time, every batch with the same `visual_check`. Add
-   about a minute per creator for the visual check to the time estimate.
+   say how many and launch them one at a time, every batch with the same `visual_check`. When the
+   run log's last run of the agent had no visual check, the time estimate adds "a few minutes" for
+   it, or the visual check's time from the last run that had one.
 5. Answer in text: the counts, up to three points naming the approved creators and top maybes
    with their page numbers, the next step, and the page link. Keep the agent's `creator-cards`
    block; the cards appear only when the user asks to see them (**Creator card**, **Cards in
@@ -312,17 +318,20 @@ and the contact route Atlas holds.
 ### 4. Visual check (when R5 names one)
 
 A look at each creator's videos for one thing the brief cares about that captions and transcripts
-don't show reliably: a product on screen, an overweight dog, grey hair. The run has one check, and
-every creator with videos gets a result. These reads are approximate, and the page says so.
+don't show reliably: a product on screen, an overweight dog, grey hair. The run has one check. It
+runs on every creator the run vets (the Approve, Maybe, and Reject cards and rows), and not on a
+creator rejected as a saved competitor without further checks or one that is Can't vet; those show
+"Not checked" on the page. A creator it runs on is **screened** once at least one video, or a cover
+when no frame extractor is installed, was read; every screened creator gets a result, a confidence
+word, and an evidence frame. These reads are approximate, and the page says so.
 
 **Named and free-text checks.**
 
 - A **named** check has a written definition, so two runs judge it the same way: what to look for,
-  what counts as seen, and what does not. **Product on screen** is built in: the product the
-  criteria name (else the brand's products from `brand:summary`) visible in frame, as packaging,
-  its logo, or in use. A competitor's product, or the product only named in on-screen text, does
-  not count. {product} is as the page uses it (**The page**): the product the criteria name, or
-  the brand's own products when they name none. Every other named check is a saved `vetting:visual-{slug}` record (**Visual check
+  what counts as seen, and what does not. **Product on screen** is built in: {product} visible
+  in frame, as packaging, its logo, or in use, where {product} is the product the criteria name,
+  or, when they name none, any product carrying the brand's name or logo. A competitor's product,
+  or the product only named in on-screen text, does not count. Every other named check is a saved `vetting:visual-{slug}` record (**Visual check
   records**).
 - A **free-text** check is what the user typed at R5, with no saved definition. The main thread
   words one from the words before the first launch (what to look for, what counts, what does not)
@@ -362,7 +371,8 @@ word, an evidence frame, and what was read ("3 videos, 28 frames").
 | Not seen | Three videos read, frames across each whole clip, no match, and the frames where the subject would most likely be viewed full size | Fewer than three videos, a clip longer than 30 seconds sampled at a widened step, or a miss read from contact sheets alone | Covers only, or every frame dark or blurred |
 
 A free-text check takes one step down from High to Medium. **Can't check** names its reason (no
-videos, no video would download) and carries no confidence word.
+videos, no video would download) and carries no confidence word or frame: the creator was not
+screened, and the page and the run summary count them apart from the screened creators.
 
 **The evidence frame.** For Seen, the clearest full-size frame that shows it. For Not seen, the
 frame that shows the most of the scene the subject would be in (for a dog, the room or walk where
@@ -505,7 +515,7 @@ Rules:
   If the correction targets a red line, a competitor, or a hard reject, write no lesson: say
   the rule itself would have to change, and list it under "Needs the main thread".
 - Skip F2 and F3 when F1 is "Agree" with no reasons given, or "Decide later".
-- **F4** is asked once after a free-text check, after the last batch, whatever F1 was, and is its
+- **F4** is asked once after a free-text check, by the main thread after the last batch (never by the agent), whatever F1 was, and is its
   own write confirmation.
   The definition saved is the one the run used, worded per **Visual check records**, with any
   correction the user typed. A saved check of the same name goes under "Needs the main thread" as
@@ -702,7 +712,8 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
    saved definition, so the agent worked one out from the words typed). Then a tally by result and
    confidence, and a grid of every creator vetted, numbered as the cards: the evidence frame (the
    still, per **4. Visual check**), the result, the confidence word, the post and timestamp linked, and what
-   was read ("3 videos, 28 frames"). Can't check rows sit at the end with their reason. Seen,
+   was read ("3 videos, 28 frames"). Can't check rows sit at the end with their reason, then the
+   "Not checked" creators. Seen,
    Not seen, and Can't check use the page's neutral colors, never the Approve, Maybe, and Reject
    status colors, so a visual read never looks like a verdict.
 11. **Safety summary**: a table of creators by category, only the rows with a Flag or Fail.

@@ -64,8 +64,8 @@ the list as approved for fetching.
    it, on video files and frames you download and view yourself in the run's working folder,
    with tools already installed (never install one). A free-text check's confidence is never
    above Medium, and its definition is the one the launch passes, unchanged. The result never
-   changes a fit score or a recommendation. A check about a person's appearance is never written
-   to Atlas, and one about a trait the reference rules out is never run.
+   changes a fit score or a recommendation. A person-appearance check's per-creator results are
+   never written to Atlas, and a check on a trait the reference rules out is never run.
 
 **Process**
 
@@ -120,11 +120,11 @@ the list as approved for fetching.
     finding, and the same `vettedAt` on each. On "Page only", write nothing yet and say so.
 11. **Ask for feedback** per **The feedback loop**.
     - If `AskUserQuestion` is in your tool list, ask F1, then F2 for the creator notes, then
-      F3 when a lesson generalizes, then F4 after a free-text visual check on the run's last
+      F3 when a lesson generalizes. Never ask F4 yourself: after a free-text visual check, return
+      the worded definition in the packet, and the main thread asks F4 once, after the last
       batch. Write the answers
       per the reference: F1 as `feedback` findings, each note as a `creator:*` guideline, a
-      lesson as a `vetting:lesson-*` guideline, a saved check as a `vetting:visual-*`
-      guideline. A creator who already has a `creator:*` record goes under "Needs the main
+      lesson as a `vetting:lesson-*` guideline. A creator who already has a `creator:*` record goes under "Needs the main
       thread" instead of a new record. After each answer that approves, edits, or rejects,
       call `report_checkpoint` yourself with `kind: "feedback"`, the run's `runId`, `agent`,
       `pass`, that question's gate id as `gate`, `feedback: {"verdict": "approved"}` (or
@@ -133,7 +133,7 @@ the list as approved for fetching.
       questions to the main thread instead, the main thread sends it (SKILL.md, **Running
       agents**).
     - If it is not available (usual for a subagent), write nothing more and return the feedback
-      packet (below); the main thread asks F1 to F4.
+      packet (below); the main thread asks F1 to F3, and F4 when the packet carries it.
 
 **Output format (summary for the main thread, under 300 words)**
 
