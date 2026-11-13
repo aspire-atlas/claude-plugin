@@ -53,7 +53,7 @@ never build the same key.
 
 `{slug}` comes from the brand and the campaign name: lowercase, hyphenated, no dates (for example
 `acme-holiday-seeding`). Never show the slug or ask the user to invent it; refer to the review by its campaign name
-and brand. When `applicant-review:{slug}-campaign` already exists for a different campaign, add `-2`,
+and brand. When `applicant-review:{slug}-campaign` already exists for a different campaign or a different brand profile, add `-2`,
 `-3`, and so on.
 
 | Key | kind | detail | Holds |

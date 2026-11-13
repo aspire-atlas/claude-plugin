@@ -225,16 +225,30 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    attached a file or pasted handles). Show what was found and the list name.
 2. **Check what Atlas holds**: `search_creators` with a `terms` filter on the username field,
    one call per network.
-3. Ask R2 to R4 in one `AskUserQuestion` call with the **Reading the ask** confirmation (SKILL.md)
-   when it applies (`team` by default; `brand` for "are these safe"; `campaign` when the list is
-   a launch lineup). Skip R3 when Atlas holds every creator.
+3. Ask R2 to R5 in `AskUserQuestion` calls of at most four questions, with the **Reading the ask**
+   confirmation (SKILL.md) in the first. R2, R3, and R5 change what the agent reads, so they go with
+   that confirmation, before the storyline draft. On a new page, R4 is answered by the storyline
+   call's Save (**Orchestration contract**, **2**); on a rerun to a page already published, it joins
+   this call when there is room. The confirmation sets the recipient (`team` by default; `brand` for
+   "are these safe"; `campaign` when the list is a launch lineup). Skip R3 when Atlas holds every
+   creator. When the first call would need five questions (the confirmation, a credit cap, R2, R3,
+   and R5), R2 folds into the confirmation's own text the way Scope does ("Vetting against {brand}'s
+   vetting criteria unless you say otherwise"), and a typed answer naming a campaign switches it.
 3b. **An applicant review named in R2** is read back per **Applicant review**, **Reading the setup
    back (screening)**, before the launch: its nine keys exactly, any missing setup question asked
-   first, and its pointers resolved.
-4. Launch `atlas-creator-vetting` with: tool prefix, `profile_id`, `profile_slug`, brand handles
-   and networks, the normalized list, the list name, slug and source, the criteria source, the
-   approved fetches, the R4 answer, and `recipient`. A list over 100 creators runs in batches of
-   100; say how many and launch them one at a time.
+   first, and its pointers resolved. Its saved visual checks are R5's options (**Applicant reviews**).
+4. Launch `atlas-creator-vetting` with: tool prefix, `profile_id`, `profile_slug`, brand handles and
+   networks, the normalized list, the list name, slug and source, the criteria source, the approved
+   fetches, the R4 answer, `visual_check` (from R5 or the ask: `none`, or `{name, kind: "named" |
+   "free-text", key, definition, appearance}`, `appearance` true for a check about a person's
+   appearance and false otherwise, with `key` and `definition` from the saved record (`key` null for
+   Product on screen and for a free-text check), the built-in definition for Product on screen, or,
+   for a free-text check, the definition the main thread words once from the user's words before the
+   first launch: what to look for, what counts, what does not), `visual_check_refused` (the one-line
+   reason, when a check was refused), and `recipient`. A list over 100 creators runs in batches of
+   100, and a run with a visual check in batches of 25, since each creator's frames take room in the
+   agent's context; say how many and launch them one at a time, every batch with the same
+   `visual_check`.
 5. Answer in text: the counts, up to three points naming the approved creators and top maybes
    with their page numbers, the next step, and the page link. Keep the agent's `creator-cards`
    block; the cards appear only when the user asks to see them (**Creator card**, **Cards in
@@ -642,17 +656,20 @@ still on record. It also carries `detail.findings` (**The findings behind the ch
 `detail` carries `findingType`, `vettedAt` (full UTC timestamp from the shell clock, the same on
 every finding of one run), `handle`, `network`, `name` (from the list, when given),
 `recommendation`, `rule` (which rule of **The recommendation** decided it), `fitScore`, the
-component breakdown, `safety` (`{category: result}` plus red line, scope, competitor,
-disclosure, and audience checks), `redLineHits[]`, `hardRejectHits[]`, `riskFlags[]`,
-`calibrationsApplied[]` (the keys that shaped the call), `lessonsApplied[]`, `evidence[]`,
-`estFee` when the calculator gives one, `usualViews` (or the reason it is not available),
-`checks` (`{component: 1 | 0.5 | 0 | null}`, `null` for a component with no data; the
-finding each check comes from is on the run summary),
-`listName`, `listSource` (`csv`, `pasted`,
-`aspire-app`, or `cas-lane`), `campaign` when R2 named one, `applicantReview` when R2 named an
-applicant review (**Applicant reviews**), `reviewPage`, and `recipient`
-(**Recipient lens**). A `feedback` finding adds `userVerdict`, `agentVerdict`, and the user's
-words verbatim. Supply an `idempotencyKey` per finding (`vet-{list-slug}-{entityId}-{findingType}`).
+component breakdown, `safety` (`{category: result}` plus red line, scope, competitor, disclosure,
+and audience checks), `redLineHits[]`, `hardRejectHits[]`, `riskFlags[]`, `calibrationsApplied[]`
+(the keys that shaped the call), `lessonsApplied[]`, `evidence[]`, `estFee` when the calculator
+gives one, `visualCheck` when the run had a visual check and it ran on the creator (left out for a
+"Not checked" creator and for a check on a person's appearance) (`{name, kind: "named" |
+"free-text", key, result: "seen" | "not-seen" | "cant-check", confidence: "high" | "medium" | "low"
+| null, frame: {postUrl, at}, videosRead, framesViewed, coversOnly, reason}`, `frame` and
+`confidence` null for Can't check), `usualViews` (or the reason it is not available), `checks`
+(`{component: 1 | 0.5 | 0 | null}`, `null` for a component with no data; the finding each check
+comes from is on the run summary), `listName`, `listSource` (`csv`, `pasted`, `aspire-app`, or
+`cas-lane`), `campaign` when R2 named one, `applicantReview` when R2 named an applicant review
+(**Applicant reviews**), `reviewPage`, and `recipient` (**Recipient lens**). A
+`feedback` finding adds `userVerdict`, `agentVerdict`, and the user's words verbatim. Supply an
+`idempotencyKey` per finding (`vet-{list-slug}-{entityId}-{findingType}`).
 
 **Reading it back.** `search_insights` with a `prefix` filter on
 `detail.account_review.runKey` = `creator-vetting-{profile}`, newest first, paged; the newest
