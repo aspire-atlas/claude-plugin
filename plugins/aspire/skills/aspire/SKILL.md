@@ -101,8 +101,7 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 | **PPA pitch**, **Aspire users** | `references/ppa-pitch.md` |
 | **Meta Ads** | `references/meta-ads-tools.md` |
 | **Creator discovery** | `references/creator-discovery.md` |
-| **Creator vetting** | `references/creator-vetting.md` |
-| **Applicant review** (set up a campaign's applicant screening) | `references/applicant-review.md` |
+| **Creator vetting**; **Applicant review** (a campaign's applicant screening setup) | `references/creator-vetting.md`; `references/applicant-review.md` |
 | **Creator CSV** | `references/creator-csv.md` |
 | **Orchestrator** | `references/orchestrator.md` |
 | **Influencer program** (Program setup, Program manager, Drafts) | `references/program.md` |
@@ -225,8 +224,7 @@ When the ask names no flow, route by the primary lens **Reading the ask** reads
 | `campaign` | A launch or dated campaign that needs creators | **Campaign plan** (**Reading the ask**) |
 | `brand` | Is this post safe or on brand | **Content review** |
 | `brand`, `performance` | What is in someone's post, how it did, and whether to sponsor, partner with, or reuse it (no brief) | **Post analysis** |
-| `brand`, `campaign` | Which creators on a list to approve | **Creator vetting** |
-| `campaign` | Setting up how a campaign's applicants are screened | **Applicant review**, then **Creator vetting** with the review |
+| `brand`, `campaign` | Which creators on a list to approve, or how a campaign's applicants are screened | **Creator vetting** (a campaign's applicants: **Applicant review** first, then vetting with the review) |
 | `performance`, `creative` | Hooks, ads, licensing, a cut list | **Ad reuse**; for one post, **Content review** with the ad reuse check |
 | `leadership`, `performance` | A pitch or casting deck for partnership ads, whitelisting, creators to license | **PPA pitch** |
 | `performance` | Which creator posts the brand can run as partnership ads now, permissions, an ad code | **Partnership content** |
