@@ -306,6 +306,12 @@ actually observed (used to resolve tool names in `references/atlas-tools.md`). T
 bundles **Aspire Atlas Organization Admin** for the organization's members. Phase 1 never checks
 it; the `org-admin` skill does (see **Organization admin**).
 
+### 1.6 Always allow Atlas tools
+
+Scheduled runs stall on the first Atlas permission prompt unless the user sets Aspire Atlas's
+tools to Always allow. `references/connect.md` **1.6** holds the block, when to show it (the
+first-run guide and every question that approves a schedule) and how to word that question.
+
 ## Phase 2 + 3: Status, organization, and routing
 
 Tool prefix: the one observed in 1.5 (for the org-installed connector it is `mcp__Aspire_Atlas__`).
@@ -354,7 +360,8 @@ Write a fresh `context` per call.
    context, never a named flow) and the organization is unconfigured (new org, profile only,
    or existing with no brand context on any linked profile, from the Phase 5 calibration
    read), publish the starter page in `references/first-run.md` once per organization per
-   session, say one line with the link, and continue at the route's phase in the same reply.
+   session, say one line with the link, add the always-allow block (**1.6**), and continue at
+   the route's phase in the same reply.
    On a bare run it waits for the organization pick in step 3, like everything else.
    It runs only after `get_status` answered (Phase 1 finding Atlas not connected gets the guided
    add alone), never blocks or replaces a phase, and never runs unattended. The reference holds

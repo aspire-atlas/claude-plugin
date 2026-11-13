@@ -102,7 +102,7 @@ run.
 | 4.3 | `list_hashtag_posts` | Posts carrying one tracked hashtag on one network, newest first | Read only. `hashtag` + `network` (`instagram`, `tiktok`), optional `since` / `until` (default last 90 days), `sort` (`postedAt` or a metric, descending). Page with `nextCursor` → `cursor`, keeping hashtag, network and sort unchanged. `hashtag-not-tracked` and `no-linked-channel` are normal states, not failures. With a metric sort, dedupe on `externalId`. |
 | 5 | `search_calibrations` | Read brand memory | `q`, `kinds`, `keyPrefix`, `includeSuperseded`, `includeProposed`. If `unavailable`: stop, do not guess. |
 | 5 | `get_brand_context` | Every applied calibration in one call | `kinds`, `keyPrefix`, `includeSuperseded`; capped at 500 records (`truncated`), then page with `search_calibrations`. Prefer it for a whole read. If `unavailable`: stop, do not guess. |
-| 5 | `get_onboarding_form` | Which of the seven core brand questions are answered, declined, or open | Read only here: use `open`, ask each with `AskUserQuestion`, write with `append_calibration`. Never save through its form widget. Where the form draws, say its for-reference line (**After a widget**). |
+| 5 | `get_onboarding_form` | Atlas's own form for the seven core brand questions | **Never call it.** See **Onboarding questions**, Which questions are open. |
 | 0 | `mint_run_id` | A run id for `runId` | `agent` (`aspire` or an `atlas-…` name); no side effects |
 | fees, theme | `get_fee_rate_card`, `calculate_creator_fee`, `get_brand_theme` | The rate card and its label; a fee from the card and the creator's median views; the validated brand look | Read only; preferred over reading `fees:rate-card` and `theme:brand` yourself. See **Fee calculator**, **Theme**. |
 | 5 | `append_calibration` | Write one fact | One active record per (kind, key). `key-exists` → supersede. `proposed` = recorded, not applied. |
@@ -338,7 +338,6 @@ the run does not use.
 | The plugin's own connection card, on a host with no connect panel | The card with the Connect button | Yes | The card's own line (**Connection card**), then only the resume calls. |
 | `get_cas_setup_form` | The campaign setup form | Yes | "Fill in the campaign setup above and press Save." |
 | `get_dashboard` | The organization dashboard | No | "The dashboard above is for reference. I suggest {next step}: one question next." |
-| `get_onboarding_form` | The brand questions form | No: the questions are asked in chat, never saved through the form | "The form above is for reference: it shows which brand questions are answered. I'm asking the open ones here, so there's no need to save the form." |
 | `get_cas_campaign` | The campaign dashboard | No: its buttons post a chat message and are optional | "The campaign dashboard above is for reference. Next, one question about {the campaign's next move}." |
 | `get_cas_selection`, `get_cas_rates`, `get_cas_briefs`, `get_cas_results` | The campaign step's screen | No: its buttons post a chat message and are optional | "The {step} screen above is for reference. Next, one question about {the step's next move}." |
 | `lookup_creators`, `lookup_posts`, `show_ads`, `show_partnership_content`, `get_creator`, when the person asked to see cards | The cards they asked for | No | "The cards above are for reference." Then the readout. |
