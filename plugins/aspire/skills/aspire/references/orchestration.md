@@ -78,18 +78,22 @@ unattended. Text it cannot route publishes the flow's "setup needed" card and st
 
 Everything the run needs is asked in one `AskUserQuestion` call, before the launch; on a run that
 builds a new page, what does not change the read is asked in the storyline call instead (below).
-The tool takes up to four questions per call, so the reply holds, in this order:
+Before sending it, check every question, option label, and description against **English rules**
+(**In chat**): chat is the first thing the person reads. The tool takes up to four questions per
+call, so the reply holds, in this order:
 
-1. **Heard**, header "Heard". The question repeated in the map's wording with its code, the
-   reader, and the time estimate: "I heard I2: should we work with @handle, and what would it
-   cost? For you, about 15 minutes. Right?" Options: "Yes, run it (Recommended)", the next
-   closest code in its wording, and, when the persona is unknown, "I'm on the paid side" or the
+1. **Heard**, header "Heard". The question repeated in the map's wording, the reader, and the
+   time estimate, in full sentences and without the question's code (the code goes in the launch
+   block and the run log, never in what the person reads): "You asked whether to work with
+   @handle and what it would cost. I will write the answer for you, and it should take about 15
+   minutes. Is that right?" Options: "Yes, run it (Recommended)", the next
+   closest question in its wording, and, when the persona is unknown, "I'm on the paid side" or the
    other persona that fits the ask. The free text field corrects anything. It also names the
    metrics the page will be judged on, from the code's row in **Page standard**, section 8, and
    asks whether anything else matters ("Each post is judged on views, likes, comments, shares,
    saves, and engagement per 1,000 views. Anything else?"); a metric typed in the free text field
    goes in the launch message with the flow's own inputs, as "Also judge on: {metric}". A run of
-   several codes (**8**) names each code here, one line each.
+   several codes (**8**) states each question here in its wording, one line each.
 2. **Scope**, header "Scope". Channels and dates, defaulting to Instagram and TikTok over the last
    90 days ("Instagram and TikTok, last 90 days (Recommended)", "Instagram only", "TikTok only"),
    plus any handle or post link the run needs, which the person types in the free text field.
@@ -155,15 +159,17 @@ new: one storyline question costs less than a page built on a storyline nobody c
    `storyline-drafted` Adjustments row, not a `returned` Runs row (**9**). Its fetches count
    against `approved.spend.cap`, and its packet reports them in `cost.fetches`.
 2. **Ask once.** One `AskUserQuestion` call, header "Storyline", with the bullets as the
-   question, each with its evidence ("Gift posts beat creators' usual views this fall. 78 posts, 15
-   accounts."), then any line the packet's `storyline` carries for what was not checked ("Timecodes
+   question, each with its evidence inside its sentence ("Gift posts beat creators' usual views
+   this fall, across 78 posts from 15 accounts."), then any line the packet's `storyline` carries for what was not checked ("Timecodes
    and on-screen claims are unverified.", "The plan names are not checked against the company's
    announcement."). Options: "Build (Recommended)", "Change", and, when the packet's `widen` is not
    `null`, "Widen", with `widen` in its words ("Widen to 26 weeks and TikTok"). When the pool is
    under the row's minimum (below), say so in the question ("Only 6 posts fit; the minimum is 10.",
    "3 of 20 creators have fewer than 5 posts.") and recommend Widen when it is offered; with no
    `widen`, Build stays recommended and the thin bullet says how few posts it rests on. The free
-   text field takes the person's change. The same call carries the packet's other `questions` (page
+   text field takes the person's change. Before sending, check the question, every bullet, and
+   the option labels against **English rules** (**In chat**), and reword a bullet that fails,
+   keeping its numbers and its claim; the build receives the bullets as the person saw them. The same call carries the packet's other `questions` (page
    standard step 2a's metric check-in among them) and any flow question left for it (**2**), up to
    four in all. When they do not fit, a format question takes its default and the Storyline question
    states it ("Built as a one-page plan; say if you want slides."), and a send choice is asked after
@@ -381,7 +387,7 @@ person asks something close, use the nearest code and its wording in the setup r
 | P5 | What would 50K, 100K or 200K buy on YouTube? | `leadership` | None | Waiting on a connected Meta ad account |
 | P6 | The campaign softened. Is it the creative or the setup? | `growth` | None | Waiting on a connected Meta ad account |
 | O1 | Why did last week's Reels do so well? | `team` | `atlas-profile-analyst` | Ready |
-| O2 | What are creators saying about us vs. our biggest competitors? | `team` | `atlas-market-signal` | Ready |
+| O2 | What are creators saying about us compared with our biggest competitors? | `team` | `atlas-market-signal` | Ready |
 | O3 | Leadership wants to know where we stand against competitors, and what to do. | `leadership` | `atlas-market-signal` | Ready |
 | O4 | Could we make a version of this report for leadership? | `leadership` | `atlas-weekly-insights-report` | Ready |
 | O5 | Break down this one post. | `team` | `atlas-post-analysis` | Ready |
@@ -389,8 +395,9 @@ person asks something close, use the nearest code and its wording in the setup r
 | A1 | Can I show leadership how much Atlas is saving us? | `leadership` | None | Waiting on a record of each completed job (**9**) |
 
 These codes name questions, not flow steps. Flow question ids that share a letter (program
-setup's P1 to P9, outreach's O1 to O4) are a different series; when both appear in one message,
-write the question code with its wording ("I2: should we work with…").
+setup's P1 to P9, outreach's O1 to O4) are a different series. Both series are for this skill, the
+launch block, the result packet, and the run log. Neither is ever written in a message to the
+person: say the question in its wording (**English rules**, rule 7).
 
 A code with two agents runs them one after the other, each through its own section and its own
 setup reply questions, never in parallel: the second needs the first one's result.
@@ -592,8 +599,8 @@ the next interactive session.
 ## 8. Several questions at once
 
 When a person asks several questions in one message, map each to a code and run up to three
-agents in parallel. One setup reply covers all of them (the Heard question lists each code on its
-own line), then each launches with its own launch block. A fourth waits until one returns. Two
+agents in parallel. One setup reply covers all of them (the Heard question states each question
+in its wording on its own line), then each launches with its own launch block. A fourth waits until one returns. Two
 codes that share an agent, or where one needs the other's result (**3**), run one after the other.
 **Running agents**, step 5, still holds: two runs never write the same record.
 
@@ -633,12 +640,16 @@ clock.
 
 ## 10. Close-out
 
-After a run returns, close out in one line per page: the question (code and wording), the link,
-the checks fixed or still failing by name, and anything a reviewer should know (a level raised, a
-proposal not offered, a gap in coverage). For example: "I2, should we work with @handle: {link}.
-Fixed R3 Answer first; R9 Names what's missing still failing (no TikTok linked). Two saves wait
-for your yes." Name the English read's Must fixes when it had any ("3 wording fixes applied"), and any not applied. Then ask for the approvals (**7**) and the packet's questions, and offer the packet's
-`next` when it names one.
+After a run returns, close out in one short paragraph per page, in full sentences: the question in
+its wording, the link, the checks fixed or still failing, and anything a reviewer should know (a
+level raised, a proposal not offered, a gap in coverage). Name each check by what it means for the
+reader, never by its id or the question's code. For example: "You asked whether to work with
+@handle and what it would cost. The page is here: {link}. Before it published, I moved the answer
+to the top. One check still fails: the page cannot say how she does on TikTok, because no TikTok
+account is linked. Two saves are waiting for your yes." Say how many wording fixes the English read
+needed when it had any Must fixes ("Three wording fixes were applied."), and name any not applied.
+Check the close-out against **English rules** (**In chat**) before sending it. Then ask for the
+approvals (**7**) and the packet's questions, and offer the packet's `next` when it names one.
 
 ## 11. The block every agent carries
 

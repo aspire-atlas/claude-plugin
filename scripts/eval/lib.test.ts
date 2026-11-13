@@ -4,7 +4,8 @@ import { join } from 'node:path'
 import {
   ATLAS_READS, ATLAS_WRITES, barChecks, compareRuns, extractPageCheckScript, fencedBlocks, fill, findJsonWithKey, configuredQuestions, skippedLine,
   findPage, forBaseline, normalizeResult, codesForChanges, regressions, renderComment, renderSkipped, renderSlack, COMMENT_MARKER, renderStopped, stripTitlePrefix, checkNames, parsePageCheck, parseStream, renderRun, rIds, rResult, stripDataUris,
-  parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, type PageChecks, type QuestionResult, type RunResults,
+  parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, askText, chatLine, chatMessages, checkChat, countChat, CHAT_CHECK,
+  type PageChecks, type QuestionResult, type RunResults,
 } from './lib'
 
 const ROOT = join(import.meta.dir, '../..')
@@ -283,7 +284,7 @@ test('the CI title prefix is removed before grading, and nothing else is', () =>
 
 test('check names come from e-checks and the reader standard table', () => {
   const names = checkNames([{ id: 'E1', name: 'Answers the real question' }], '| R1 | Reader and scope | x |\n| R13 | Required metrics | y |')
-  expect(names).toEqual({ E1: 'Answers the real question', R1: 'Reader and scope', R13: 'Required metrics' })
+  expect(names).toEqual({ E1: 'Answers the real question', R1: 'Reader and scope', R13: 'Required metrics', C5: 'Chat wording' })
 })
 
 test('a question local.json names no brand for is skipped while no baseline grades it, and stops the run once one does', () => {
@@ -308,4 +309,69 @@ test('every report names the skipped questions, and a run with none left posts a
   expect(comment).toContain('skipped: no question ran. Skipped: O2')
   expect(comment).toContain('Run: https://example.test/run/2')
   expect(regressions(nothing, E_CHECKS)).toEqual([])
+})
+
+// One turn of a run: what the main thread asked with AskUserQuestion, and the reply the turn ended on.
+function chatTurn(reply: string, asks: { header: string; question: string; options?: string[] }[] = [], extra: unknown[] = []): ReturnType<typeof summarizeTurn> {
+  return summarizeTurn(parseStream([
+    ...asks.map((ask, i) => line({ type: 'assistant', message: { content: [{ type: 'tool_use', id: `q${i}`, name: 'AskUserQuestion', input: { questions: [{ header: ask.header, question: ask.question, options: (ask.options ?? ['Yes, run it (Recommended)']).map(label => ({ label, description: '' })) }] } }] } })),
+    ...extra.map(line),
+    line({ type: 'result', session_id: 's1', result: reply, is_error: false }),
+  ].join('\n')))
+}
+
+test('the three chat messages are read from the questions asked and the replies the turns ended on', () => {
+  const turns = [
+    chatTurn('Is that right?', [{ header: 'Heard', question: 'You asked whether to work with @handle. Is that right?' }]),
+    chatTurn('Which should I build?', [{ header: 'Storyline', question: 'Gift posts beat the usual views, across 78 posts from 15 accounts.', options: ['Build (Recommended)', 'Change'] }]),
+    chatTurn('The page is here: https://claude.ai/artifact/AbC123. Two saves are waiting for your yes.'),
+  ]
+  const messages = chatMessages(turns)
+  expect(messages.setup).toBe('You asked whether to work with @handle. Is that right?\nYes, run it (Recommended)\nIs that right?')
+  expect(messages.storyline).toContain('across 78 posts from 15 accounts.\nBuild (Recommended)\nChange\nWhich should I build?')
+  expect(messages.closeOut).toContain('Two saves are waiting')
+  expect(checkChat(turns)).toEqual({
+    result: 'pass', hits: [],
+    messages: { setup: { arrows: 0, vs: 0, codes: 0 }, storyline: { arrows: 0, vs: 0, codes: 0 }, closeOut: { arrows: 0, vs: 0, codes: 0 } },
+  })
+  // A subagent's own question, and a run of one turn with no question, hold no setup reply.
+  expect(chatMessages([chatTurn('Here is the page.')])).toEqual({ closeOut: 'Here is the page.' })
+  expect(askText({ questions: [{ question: 'Q?', header: 'Heard', options: [{ label: 'A', description: 'why' }] }] })).toBe('Q?\nA\nwhy')
+  // A host that refuses the question tool asks in text: a storyline draft packet marks that turn.
+  const refused = [
+    chatTurn('I heard I2. Right?'),
+    chatTurn('Storyline: gifts vs deals. Build?', [], [{ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 't1', content: '```result-packet\n{"page": null, "storyline": {"pass": "draft"}}\n```' }] } }]),
+    chatTurn('Done.'),
+  ]
+  expect(chatMessages(refused)).toEqual({ setup: 'I heard I2. Right?', storyline: 'Storyline: gifts vs deals. Build?', closeOut: 'Done.' })
+  expect(checkChat([])).toEqual({ result: 'not run', messages: {}, hits: [] })
+})
+
+test('arrows, "vs" and codes are counted in chat, and links and ordinary words are not', () => {
+  expect(countChat('I heard I2: @handle fit vs cost -> profile page. Fixed R3 Answer first; EN2 open.').count).toEqual({ arrows: 1, vs: 1, codes: 3 })
+  expect(countChat('Gifts → deals, Instagram vs. TikTok, and O2 => P4').count).toEqual({ arrows: 2, vs: 1, codes: 2 })
+  expect(countChat('The page is here: https://example.test/a->b/I2/vs. Canvas saves and P10 pacing are fine, and so is R15.').count).toEqual({ arrows: 0, vs: 0, codes: 0 })
+  expect(countChat('I heard I2.').hits).toEqual(['codes: …I heard I2.…'])
+})
+
+test('a countable rule broken in chat fails the run, with no approved result to compare', () => {
+  const chat = checkChat([chatTurn('I heard I2: fit vs cost. Right?', [{ header: 'Heard', question: 'I heard I2. Right?' }]), chatTurn('Done -> page.')])
+  expect(chat.result).toBe('fail')
+  expect(chat.messages).toEqual({ setup: { arrows: 0, vs: 1, codes: 2 }, closeOut: { arrows: 1, vs: 0, codes: 0 } })
+  const failing = run()
+  failing.questions[0].approved!.graded.R3 = 'fail'
+  failing.questions[0].chat = chat
+  expect(regressions(failing, E_CHECKS)).toEqual([{ code: 'I4', id: CHAT_CHECK, was: 'n/a', now: 'fail' }])
+  const table = renderRun(failing, E_CHECKS, { [CHAT_CHECK]: 'Chat wording' })
+  expect(table).toContain('| C5 Chat wording | fail | n/a |  |')
+  expect(table).toContain('- Chat wording (C5): setup reply has 0 arrows, 1 "vs" and 2 codes; storyline check-in not found; close-out has 1 arrow, 0 "vs" and 0 codes.')
+  expect(table).not.toContain('I heard')
+  expect(renderComment(failing, E_CHECKS, { [CHAT_CHECK]: 'Chat wording' }, null, null)).toContain('- I4 C5 Chat wording: approved n/a, new fail')
+  // A baseline keeps the counts and drops the matched words; a clean chat or a stored run without one never fails.
+  expect(forBaseline(failing).questions[0].chat).toEqual({ ...chat, hits: [] })
+  failing.questions[0].chat = { result: 'pass', messages: { closeOut: { arrows: 0, vs: 0, codes: 0 } }, hits: [] }
+  expect(regressions(failing, E_CHECKS)).toEqual([])
+  expect(chatLine(failing.questions[0].chat)).toBe('Chat wording (C5): setup reply not found; storyline check-in not found; close-out clean.')
+  expect(regressions(run(), E_CHECKS).map(r => r.id)).toEqual(['R3'])
+  expect(chatLine(undefined)).toBeNull()
 })

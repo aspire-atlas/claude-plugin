@@ -107,14 +107,23 @@ predates the rule; the table shows that, and `--compare` marks a changed approve
 
 | Column | What it holds |
 | ------ | ------------- |
-| Check | E1 to E8 from the Evals tab, then every R check the reader standard has |
-| New page, Approved page | `pass`, `fail`, `n/a`, or `–` when the check did not run |
+| Check | E1 to E8 from the Evals tab, then every R check the reader standard has, then C5, the chat wording |
+| New page, Approved page | `pass`, `fail`, `n/a`, or `–` when the check did not run. C5 has no approved result: it is always `n/a` there |
 | Sets the bar | `yes` when the approved page was named as the example for a change this check covers |
 
 An R check that the script covers passes only when the script and the grade both pass it; a note under the
 table names any check where the two disagree. Under each table: the size of the main conversation in tokens
 at its last message (and how many times it compacted), the number of confirmation rounds, and the link to
 the new page.
+
+C5 is the run's chat, read from its transcript: the setup reply (the first turn's questions, their option
+labels and descriptions, and the reply the turn ended on), the storyline check-in (the question headed
+"Storyline", or the turn a storyline draft came back in), and the close-out (the last turn's reply). Each is
+counted for arrows, "vs", and codes: question codes such as I2, and check ids such as R3 or EN2. Links are left
+out of the count. It passes with every count at zero, and the line under the table gives the counts per
+message. The messages and the words each count matched are kept in the run's `chat.json`, never in a baseline
+or a comment. The other English rules (full sentences, one idea per sentence, terms explained) need judgment
+and are not counted here.
 
 The example pages are tied to the doc's change numbers (3 metrics, 4 data freshness, 5 storyline, 6 reviews).
 `questions.json` maps each change to the checks that show it; change that map when a check is added.
@@ -131,8 +140,8 @@ Playwright with Chromium on the machine; without it the review judges by source 
 
 | Path | Committed | Holds |
 | ---- | --------- | ----- |
-| `baselines/<date>/results.json`, `table.md` | Yes | Results, token counts, rounds, the plugin commit, the models. No page, link, brand, or reason text |
-| `.runs/<time>/` | No | Each turn's transcript, both pages, each check's reasons, `results.json`, `table.md` |
+| `baselines/<date>/results.json`, `table.md` | Yes | Results, the chat counts, token counts, rounds, the plugin commit, the models. No page, link, brand, reason text, or chat text |
+| `.runs/<time>/` | No | Each turn's transcript, both pages, each check's reasons, the chat messages (`chat.json`), `results.json`, `table.md` |
 | `.cache/approved/` | No | The copy of each approved page |
 | `local.json` | No | Brands, links, the dev server address |
 
@@ -166,7 +175,8 @@ The `eval` job in `.github/workflows/validate.yml` runs after the static checks 
 - It posts the table as one PR comment, edited in place on later pushes, and in the job summary. The comment
   opens with the regressions, then the table for each question, with the transcript size, the confirmation
   rounds and the page link (none when the run saved the page as a file).
-- It fails when a check the approved page passes now fails on the new page (a **regression**), and only
+- It fails when a check the approved page passes now fails on the new page (a **regression**), or when C5
+  fails (the setup reply, the storyline check-in or the close-out has an arrow, a "vs" or a code), and only
   then. A question that published no page regresses on every check its approved page passes. A check that
   did not run, or one the approved page fails too, never fails the job. It also fails when the run stopped
   before any question finished, since nothing was checked, and the comment says so.

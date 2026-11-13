@@ -45,7 +45,10 @@ To draft it:
    recommends it.
 2. **Write three short bullets** (fewer only per `orchestration.md`, **2**, **Fewer bullets**),
    each a claim the reader can act on, with the posts, accounts,
-   and views behind it. Except on a one-post question, a bullet on fewer than 3 posts says how
+   and views behind it. The person reads each bullet in chat before any page exists, so write it
+   as one full sentence with its evidence inside it ("across 78 posts from 15 accounts"), with no
+   arrow, no "vs", no shorthand, no question code, and no term this reader would need explained
+   (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/english-rules.md`). Except on a one-post question, a bullet on fewer than 3 posts says how
    few ("from only two posts"). The good and bad examples are in `orchestration.md`, **2**.
 3. **Watch the most-viewed video behind each bullet.** With a shell, `ffmpeg`, and the post's
    media from the Atlas read tools, run the 1-second frame scan (`SKILL.md`, section 3; `quality-review.md`,

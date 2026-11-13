@@ -8,8 +8,8 @@ import { dirname, join, resolve } from 'node:path'
 import {
   ATLAS_READS, ATLAS_WRITES, HARNESS_VERSION, barChecks, compareRuns, extractPageCheckScript, fill, findJsonWithKey, configuredQuestions,
   findPage, forBaseline, normalizeResult, checkNames as namesFrom, stripTitlePrefix, parsePageCheck, parseStream, renderQuestion, renderRun, rIds, stripDataUris,
-  parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength,
-  type CheckDef, type PageChecks, type QuestionResult, type Result, type RunResults, type Turn,
+  parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, checkChat, chatMessages,
+  type ChatChecks, type CheckDef, type PageChecks, type QuestionResult, type Result, type RunResults, type Turn,
 } from './lib'
 import { renderPage } from '../render-page'
 
@@ -372,7 +372,7 @@ async function startingSession(cwd: string): Promise<{ connectors: string[]; too
 
 type Rerun = {
   link: string | null; rounds: number; transcriptTokens: number; billedTokens: number; compactions: number
-  costUsd: number; problems: string[]; model: string | null
+  costUsd: number; problems: string[]; model: string | null; chat: ChatChecks | null
 }
 
 /** Ask the question the way a person would, answer what the flow asks back, and keep the page it publishes. */
@@ -412,6 +412,7 @@ async function rerun(question: Question, config: any, local: Local, qDir: string
   let link: string | null = null
   let file: string | null = null
   let last: Turn | null = null
+  const turns: Turn[] = []
   let billed = 0
   let cost = 0
   let compactions = 0
@@ -419,6 +420,7 @@ async function rerun(question: Question, config: any, local: Local, qDir: string
     console.error(`  ${question.code}: turn ${rounds + 1}`)
     const turn = await claude(session ? [...args, '--resume', session] : args, prompt, work, join(qDir, `turn-${rounds + 1}.jsonl`), options.timeoutMin)
     last = turn
+    turns.push(turn)
     session = turn.sessionId ?? session
     model = turn.model ?? model
     billed += turn.billedTokens
@@ -457,7 +459,11 @@ async function rerun(question: Question, config: any, local: Local, qDir: string
   }
   if (existsSync(captured) && !link) problems.push(publishes ? 'The run wrote a page but returned no link for it' : 'The page was saved as a file: this Claude Code cannot publish pages')
   if (!existsSync(captured) && link) problems.push('The run published a page but its file was not found, so the new page is not graded')
-  return { link, rounds, transcriptTokens: last?.contextTokens ?? 0, billedTokens: billed, compactions, costUsd: cost, problems, model }
+  // The setup reply, the storyline check-in and the close-out, counted for arrows, "vs" and codes (docs/STANDARD.md, C5).
+  // The messages and the words each count matched stay in the run folder, which is never committed or uploaded.
+  const chat = checkChat(turns)
+  writeFileSync(join(qDir, 'chat.json'), JSON.stringify({ ...chat, messages: chatMessages(turns), counts: chat.messages }, null, 2) + '\n')
+  return { link, rounds, transcriptTokens: last?.contextTokens ?? 0, billedTokens: billed, compactions, costUsd: cost, problems, model, chat }
 }
 
 async function runQuestion(question: Question, config: any, local: Local, eChecks: any[], runDir: string, atlasMcp: string, emptyMcp: string, options: Options): Promise<{ result: QuestionResult; model: string | null }> {
@@ -467,7 +473,7 @@ async function runQuestion(question: Question, config: any, local: Local, eCheck
   let run: Rerun
   if (options.page) {
     copyFileSync(options.page, captured)
-    run = { link: null, rounds: 0, transcriptTokens: 0, billedTokens: 0, compactions: 0, costUsd: 0, problems: ['Graded from a file: the question was not rerun'], model: null }
+    run = { link: null, rounds: 0, transcriptTokens: 0, billedTokens: 0, compactions: 0, costUsd: 0, problems: ['Graded from a file: the question was not rerun'], model: null, chat: null }
   } else {
     run = await rerun(question, config, local, qDir, captured, atlasMcp, options)
   }
@@ -490,7 +496,7 @@ async function runQuestion(question: Question, config: any, local: Local, eCheck
       code: question.code, example: question.example, setsBarFor: question.setsBarFor,
       barChecks: barChecks(question.setsBarFor, config.changes),
       page: { link, captured: hasPage }, rounds: run.rounds, transcriptTokens: run.transcriptTokens,
-      billedTokens: run.billedTokens, compactions: run.compactions, costUsd: run.costUsd, new: newChecks, approved: approvedChecks, problems,
+      billedTokens: run.billedTokens, compactions: run.compactions, costUsd: run.costUsd, new: newChecks, approved: approvedChecks, chat: run.chat, problems,
     },
   }
 }
@@ -643,7 +649,8 @@ async function main() {
   writeFileSync(join(runDir, 'table.md'), renderRun(results, eChecks, names))
   console.error(`Run kept in ${runDir} (table.md is the table to paste; the folder is not committed).`)
   if (options.baseline) storeBaseline(results, options.baseline, eChecks, names)
-  if (results.questions.some(question => !question.new)) process.exit(1)
+  // A run fails when a question published no page, or its chat broke a countable English rule.
+  if (results.questions.some(question => !question.new || question.chat?.result === 'fail')) process.exit(1)
 }
 
 await main()
