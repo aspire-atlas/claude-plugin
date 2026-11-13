@@ -194,9 +194,9 @@ skill, script = (open(p, encoding="utf-8").read() for p in sys.argv[1:3])
 def pairs(lines):
     return sorted({(c, m) for codes, ms in lines for c in codes for m in ms})
 block = re.search(r"^<!-- required-metrics -->$(.*?)^<!-- /required-metrics -->$", skill, re.S | re.M)
-table = [] if not block else [(re.findall(r"\b[A-Z][0-9]\b", cells[2]), re.findall(r"`([a-z]+)`", cells[3]))
+table = [] if not block else [(re.findall(r"\b[A-Z][0-9]+\b", cells[2]), re.findall(r"`([a-z]+)`", cells[3]))
          for cells in (l.split("|") for l in block.group(1).splitlines() if l.startswith("| ") and "---" not in l)
-         if re.findall(r"\b[A-Z][0-9]\b", cells[2])]
+         if re.findall(r"\b[A-Z][0-9]+\b", cells[2])]
 rows = re.search(r"^REQUIRED_ROWS = \"\"\"(.*?)^\"\"\"", script, re.S | re.M)
 code = [] if not rows else [(l.split(":")[0].split(), l.split(":")[1].split()) for l in rows.group(1).strip().splitlines()]
 a, b = pairs(table), pairs(code)
