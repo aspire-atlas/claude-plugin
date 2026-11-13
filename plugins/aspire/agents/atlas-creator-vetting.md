@@ -135,7 +135,8 @@ the list as approved for fetching.
       text; skip it silently when the tool is absent or refused. When you hand the questions to the
       main thread instead, the main thread sends it (SKILL.md, **Running agents**).
     - If it is not available (usual for a subagent), write nothing more and return the feedback
-      packet (below); the main thread asks F1 to F3, and, after the last batch of a free-text check, F4 itself.
+      packet (below); the main thread asks F1 to F3, and, after the last batch of a free-text
+      check, F4 itself.
 
 **Output format (summary for the main thread, under 300 words)**
 

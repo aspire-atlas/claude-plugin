@@ -181,18 +181,22 @@ the same limits as a typed check (**What a visual check may look for**). R5 is n
 asked for a creator-ads lane run, which runs no visual check.
 
 **What a visual check may look for.** Things on screen (a product, a pet, a setting, a prop), and a
-person's appearance only when the brief's casting needs it (grey hair for a campaign cast for older
-adults). Never a protected or sensitive trait: race or ethnicity, national origin, religion, sex or
-gender, sexuality, health or disability, pregnancy, body size or weight, or any other trait the law
-protects. Age itself is never judged, only a visible feature the casting names, such as grey hair.
-When the typed check asks for one of these, say in one line that vetting doesn't screen people on
-it, and run no visual check unless the user picks another. A check about a person's appearance has
-its per-creator results shown on the page and never written to Atlas: its findings leave out
-`visualCheck`, and the run summary names the check but leaves out its counts. Its definition may
-still be saved as a named check (F4), since that describes what to look for, not anyone's result.
-The main thread decides once, before the first launch, whether a check is about a person's
-appearance, and passes it as `appearance` in `visual_check`; a saved check carries it in its body,
-so every batch and every later run treats the check the same way.
+person's appearance only when the look is one the casting needs, named in the criteria the run uses
+(`vetting:criteria`, or the campaign's `-criteria` or `-brief`) or in the user's own ask (grey hair
+for a campaign cast for older adults). Never a protected or sensitive trait: race or ethnicity,
+national origin, religion, sex or gender, sexuality, health or disability, pregnancy, body size or
+weight, or any other trait the law protects. Age itself is never judged, only a visible feature the
+casting names, such as grey hair. When a check asks for one of these, say in one line that vetting
+doesn't screen people on it. When it asks for a person's look that neither the criteria nor the ask
+names as needed for the casting, say in one line that vetting looks at a person's appearance only
+for a look the casting needs. Either way, run no visual check, and offer an on-screen check instead
+(Product on screen, or a saved check that looks at things on screen). A check about a person's
+appearance has its per-creator results shown on the page and never written to Atlas: its findings
+leave out `visualCheck`, and the run summary names the check but leaves out its counts. Its
+definition may still be saved as a named check (F4), since that describes what to look for, not
+anyone's result. The main thread decides once, before the first launch, whether a check is about a
+person's appearance, and passes it as `appearance` in `visual_check`; a saved check carries it in
+its body, so every batch and every later run treats the check the same way.
 
 ## Main thread: the run
 
@@ -206,8 +210,9 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    confirmation (SKILL.md) in the first. R2, R3, and R5 change what the agent reads, so they go with
    that confirmation, before the storyline draft. On a new page, R4 is answered by the storyline
    call's Save (**Orchestration contract**, **2**); on a rerun to a page already published, it joins
-   this call when there is room. The confirmation applies (`team` by default; `brand` for "are these
-   safe"; `campaign` when the list is a launch lineup). Skip R3 when Atlas holds every creator.
+   this call when there is room. The confirmation sets the recipient (`team` by default; `brand` for
+   "are these safe"; `campaign` when the list is a launch lineup). Skip R3 when Atlas holds every
+   creator.
 4. Launch `atlas-creator-vetting` with: tool prefix, `profile_id`, `profile_slug`, brand handles and
    networks, the normalized list, the list name, slug and source, the criteria source, the approved
    fetches, the R4 answer, `visual_check` (from R5: `none`, or `{name, kind: "named" | "free-text",
