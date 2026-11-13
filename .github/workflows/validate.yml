@@ -164,14 +164,15 @@ jobs:
 
   # The page eval (scripts/eval/README.md, "In CI"). On a pull request it reruns only the questions the changed
   # agents and flow files answer, posts the table as one comment edited in place, and fails only on a regression:
-  # a check the approved page passes that the new page fails. Nightly it reruns all five on develop and posts to
+  # a check the approved page passes that the new page fails. Nightly it reruns all six on develop and posts to
   # Slack. Pages it publishes are titled "CI eval" and deleted at the end of the run.
   eval:
     needs: validate
     if: github.event_name != 'push'
     runs-on: ubuntu-latest
-    # A pull request reruns one or two questions; the nightly run reruns all five, one after another.
-    timeout-minutes: ${{ github.event_name == 'pull_request' && 90 || 240 }}
+    # A pull request reruns the questions its files answer, and all six when it touches a shared path such as the
+    # page standard, the same work as the nightly run, so both get its limit. Questions run one after another.
+    timeout-minutes: 240
     # A new push to a pull request cancels the eval still running for the old one. Only this job: push runs of
     # validate on main and develop must never cancel one another.
     concurrency:
@@ -201,7 +202,7 @@ jobs:
         id: pick
         run: |
           if [ "${{ github.event_name }}" != pull_request ]; then
-            echo "codes=I4,I11,O1,O3,I1" >> "$GITHUB_OUTPUT"; exit 0
+            echo "codes=$(jq -r '[.questions[].code] | join(",")' scripts/eval/questions.json)" >> "$GITHUB_OUTPUT"; exit 0
           fi
           # Labels and body are read now, not from the event, so "Re-run jobs" after adding skip-eval sees it.
           gh api "repos/$GITHUB_REPOSITORY/pulls/$PR" > "$RUNNER_TEMP/pr.json"

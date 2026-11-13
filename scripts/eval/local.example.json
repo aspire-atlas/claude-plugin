@@ -8,6 +8,7 @@
     "I4":  {"brand": "{brand}", "approved": "https://claude.ai/artifact/{id}", "approvedFile": null, "data": "held | public handles indexed"},
     "I11": {"brand": "{brand}", "approved": "https://claude.ai/artifact/{id}", "approvedFile": null, "data": "held | public handles indexed"},
     "O1":  {"brand": "{brand}", "approved": "https://claude.ai/artifact/{id}", "approvedFile": null, "data": "held | public handles indexed"},
+    "O2":  {"brand": "{brand}", "approved": "https://claude.ai/artifact/{id}", "approvedFile": null, "data": "held | public handles indexed"},
     "O3":  {"brand": "{brand}", "approved": "https://claude.ai/artifact/{id}", "approvedFile": null, "data": "held | public handles indexed"},
     "I1":  {"brand": "{brand}", "approved": "https://claude.ai/artifact/{id}", "approvedFile": null, "data": "held | public handles indexed"}
   }

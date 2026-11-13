@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
-  ATLAS_READS, ATLAS_WRITES, barChecks, compareRuns, extractPageCheckScript, fencedBlocks, fill, findJsonWithKey,
+  ATLAS_READS, ATLAS_WRITES, barChecks, compareRuns, extractPageCheckScript, fencedBlocks, fill, findJsonWithKey, configuredQuestions, skippedLine,
   findPage, forBaseline, normalizeResult, codesForChanges, regressions, renderComment, renderSkipped, renderSlack, COMMENT_MARKER, renderStopped, stripTitlePrefix, checkNames, parsePageCheck, parseStream, renderRun, rIds, rResult, stripDataUris,
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, type PageChecks, type QuestionResult, type RunResults,
 } from './lib'
@@ -163,7 +163,7 @@ test('compare lists only what changed and marks a changed approved result as dri
 test('the question set, the checks, and the Atlas tool lists hold together', () => {
   const config = JSON.parse(readFileSync(join(import.meta.dir, 'questions.json'), 'utf8'))
   const eChecks = JSON.parse(readFileSync(join(import.meta.dir, 'e-checks.json'), 'utf8')).checks
-  expect(config.questions.map((q: any) => q.code)).toEqual(['I4', 'I11', 'O1', 'O3', 'I1'])
+  expect(config.questions.map((q: any) => q.code)).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1'])
   expect(eChecks.map((c: any) => c.id)).toEqual(['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'E8'])
   for (const question of config.questions) {
     expect(question.ask).toContain('{brand}')
@@ -229,14 +229,14 @@ test('a pull request reruns the questions its changed agents and flow files answ
   const config = JSON.parse(readFileSync(join(import.meta.dir, 'questions.json'), 'utf8'))
   const pick = (changed: string[]) => codesForChanges(changed, config.questions, config.sharedPaths).codes
   expect(pick(['README.md', 'docs/STANDARD.md'])).toEqual([])
-  expect(pick(['plugins/aspire/agents/atlas-market-signal.md'])).toEqual(['O3'])
+  expect(pick(['plugins/aspire/agents/atlas-market-signal.md'])).toEqual(['O2', 'O3'])
   expect(pick(['plugins/aspire/skills/aspire/references/creator-vetting.md', 'plugins/aspire/agents/atlas-creator-brief.md'])).toEqual(['I4', 'I1'])
-  // A watched file no question answers reruns nothing; a file every flow reads reruns all five.
+  // A watched file no question answers reruns nothing; a file every flow reads reruns all six.
   expect(pick(['plugins/aspire/agents/atlas-shops.md'])).toEqual([])
-  expect(pick(['plugins/aspire/skills/aspire/references/reader-standard.md'])).toEqual(['I4', 'I11', 'O1', 'O3', 'I1'])
-  // The page standard and the router shape every page, so a change to either reruns all five.
-  expect(pick(['plugins/aspire/skills/page-standard/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O3', 'I1'])
-  expect(pick(['plugins/aspire/skills/aspire/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O3', 'I1'])
+  expect(pick(['plugins/aspire/skills/aspire/references/reader-standard.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1'])
+  // The page standard and the router shape every page, so a change to either reruns all six.
+  expect(pick(['plugins/aspire/skills/page-standard/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1'])
+  expect(pick(['plugins/aspire/skills/aspire/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1'])
   expect(pick(['plugins/aspire/skills/org-admin/SKILL.md'])).toEqual([])
   // Every path a question names exists, so a renamed agent cannot silently stop rerunning its question.
   for (const path of [...config.questions.flatMap((q: any) => q.paths), ...config.sharedPaths]) {
@@ -284,4 +284,28 @@ test('the CI title prefix is removed before grading, and nothing else is', () =>
 test('check names come from e-checks and the reader standard table', () => {
   const names = checkNames([{ id: 'E1', name: 'Answers the real question' }], '| R1 | Reader and scope | x |\n| R13 | Required metrics | y |')
   expect(names).toEqual({ E1: 'Answers the real question', R1: 'Reader and scope', R13: 'Required metrics' })
+})
+
+test('a question local.json names no brand for is skipped while no baseline grades it, and stops the run once one does', () => {
+  const questions = [{ code: 'O2' }, { code: 'O3' }]
+  const local = { questions: { O3: { brand: 'Acme' }, O2: { brand: '' } } }
+  const none = () => false
+  expect(configuredQuestions(questions, local, false, none)).toEqual({ run: [{ code: 'O3' }], skipped: ['O2'], missing: [] })
+  expect(configuredQuestions(questions, {}, false, none)).toEqual({ run: [], skipped: ['O2', 'O3'], missing: [] })
+  expect(configuredQuestions(questions, {}, false, code => code === 'O3')).toEqual({ run: [], skipped: ['O2'], missing: ['O3'] })
+  expect(configuredQuestions(questions, {}, true, () => true)).toEqual({ run: questions, skipped: [], missing: [] })
+})
+
+test('every report names the skipped questions, and a run with none left posts a skip that passes', () => {
+  expect(skippedLine([])).toBeNull()
+  expect(skippedLine(['O2'])).toBe('Skipped: O2 (no brand in local.json), so it was not graded and cannot regress.')
+  const withSkip = { ...run(), skipped: ['O2'] }
+  expect(renderComment(withSkip, E_CHECKS, {}, null, null)).toContain('Skipped: O2')
+  expect(renderSlack(withSkip, E_CHECKS, null)).toContain('Skipped: O2')
+  expect(renderRun(withSkip, E_CHECKS, {})).toContain('Skipped: O2')
+  const nothing = { ...run(), questions: [], skipped: ['O2'] }
+  const comment = renderComment(nothing, E_CHECKS, {}, null, 'https://example.test/run/2')
+  expect(comment).toContain('skipped: no question ran. Skipped: O2')
+  expect(comment).toContain('Run: https://example.test/run/2')
+  expect(regressions(nothing, E_CHECKS)).toEqual([])
 })
