@@ -497,7 +497,7 @@ Prompt:
 > create no mailbox drafts, and send nothing to creators.
 
 The task needs Aspire Atlas and the user's mail connection (plus Slack or email, when routed)
-enabled for scheduled tasks, with their tools set to Always allow (`connect.md` **1.6**).
+enabled for scheduled tasks, with their tools set to Always allow (SKILL.md **1.6**).
 
 ## State written to Atlas
 

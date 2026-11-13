@@ -1,8 +1,8 @@
 # Connecting Aspire Atlas (Phase 1 connection and tool permissions)
 
 Used by SKILL.md's Phase 1 when steps 1 to 3 of 1.1 find no Atlas tools, by Phase 2 + 3's
-auth check for the connector card, and by 1.2 and every schedule setup for 1.6. Section numbers
-are Phase 1's.
+auth check for the connector card, and by the first-run guide and every schedule setup for 1.6.
+Section numbers are Phase 1's.
 
 ## Contents
 
@@ -130,16 +130,19 @@ so a list build, a screening run, or a report never finishes. The task's own "Au
 approve" setting does not cover this: the connector's tool permissions are a separate setting.
 The plugin can't read or change that setting, so the user sets it once.
 
-**When to show it.**
+**When to show it.** The plugin can't tell whether the user has already set it, so show it only
+where it matters, never as a standing reminder:
 
-- **Onboarding.** Once per session, in 1.2, right after the line that Atlas is connected, when
-  someone is present. Show the block below and carry on; it is not a question and never blocks a
-  phase.
-- **Before any scheduled task is created.** Every flow that offers a schedule (readouts, market
-  signal, creator discovery, the program checks, the program dashboard, the content library, the
-  orchestrator, CAS campaigns) shows the block again with its confirmation, and the confirming
-  `AskUserQuestion` names it: the confirming option reads "Create them (Atlas tools are set to
-  Always allow)", and a second option, "Show me how first", repeats the steps and asks again.
+- **First run.** With the starter page, when Phase 2 + 3 step 5 publishes it (an unconfigured
+  organization, someone present). Show the block below after the page's link and carry on; it is
+  not a question and never blocks a phase.
+- **Before a scheduled task is created.** With the question that approves it: a flow's own
+  schedule confirmation (readouts, market signal, creator discovery, the orchestrator's hourly
+  task), or the setup answer that is the standing approval for the tasks a flow creates later
+  (the program's P9, the content library's P9, a CAS campaign's C6, the orchestrator's X6). The
+  approving option names the setting, for example "Create it (Atlas tools are set to Always
+  allow)" or "Create them (…)" for more than one task. Add "Show me how first", which repeats the
+  steps and asks the same question once more. Keep the flow's own decline option ("Not now").
 - Never in an unattended or scheduled run. An unattended run never asks.
 
 **What to say** (the Claude app and Cowork):
@@ -147,21 +150,27 @@ The plugin can't read or change that setting, so the user sets it once.
 ```
 One setting so scheduled runs finish on their own: set Aspire Atlas's tools to Always allow.
 
-1. Open Settings, then Connectors, then Aspire Atlas. On a Team or Enterprise plan, if it
-   isn't listed there: Customize, then Plugins, then Aspire Atlas, then the Connectors tab.
-2. Under tool permissions, choose Always allow for all tools.
+1. Open Settings, then Connectors, then Aspire Atlas.
+2. Under tool permissions, choose Always allow. You can leave the tools that delete a brand
+   profile, unlink an account, remove hashtags, or switch billing on Needs approval: scheduled
+   runs never use them.
 
-Without it, a scheduled run stops at its first Atlas step and waits for an approval nobody
-is there to give. Every save to Atlas is still confirmed with you in chat first.
+If you can't change it (on a Team or Enterprise plan your workspace admin may set connector
+permissions), ask your Claude workspace admin. Without it, a scheduled run stops at its first
+Atlas step and waits for an approval nobody is there to give. Saves to Atlas still follow the
+plugin's rules: you confirm them in chat, or in the setup you approved for a scheduled run.
 ```
 
 In Claude Code, replace the steps with: run `/permissions`, add an Allow rule for the Atlas
 server (the tool prefix from 1.5 without its trailing `__`, for example `mcp__Aspire_Atlas` or
-`mcp__plugin_aspire_Aspire_Atlas`), and save it to user settings so every project gets it.
+`mcp__plugin_aspire_Aspire_Atlas`), and Ask rules for its destructive tools
+(`delete_profile`, `unlink_channel`, `remove_hashtags`, `switch_billing_account`, each with the
+full prefix). Ask rules win over the Allow rule. Save them to user settings so every project
+gets them.
 
 When Slack, email, or Meta Ads is routed into a scheduled run, the same setting applies to that
 connector; name it in step 1 alongside Aspire Atlas.
 
-Allowing the tools doesn't skip this plugin's confirmations. The skill and every agent still
-confirm each Atlas write with `AskUserQuestion` when someone is present; unattended runs write
-only what their setup already approved.
+Allowing the tools doesn't change what this plugin may write. The skill and every agent still
+confirm each Atlas write with `AskUserQuestion` when someone is present, and unattended runs
+write only what their setup or an Editor already approved.

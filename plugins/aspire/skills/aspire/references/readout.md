@@ -63,7 +63,7 @@ for `campaign:{slug}-pulse`. It rides on the daily schedule; readout setup must 
 After the first successful run, or on request, offer "Set up the recurring schedules now?" and
 follow `readout.md`, **Scheduling (main thread)**: UTC cron from `policy:readout-cadence`, the
 session's scheduled-task tools (never local cron), replace old-named tasks, one confirmation for
-both. Show the always-allow block in `connect.md` **1.6** with that confirmation, which names it
+both. Show the always-allow block in SKILL.md **1.6** with that confirmation, which names it
 as 1.6 says. Tell the user three things: the tasks run in fresh sessions, so Aspire Atlas (and
 Slack or email, if routed, and Meta Ads for its optional block) must be enabled for scheduled
 tasks with their tools set to Always allow; approval must be "Automatically approve"; the task
@@ -532,7 +532,7 @@ the recurring schedules now?" Options: "Yes, daily and weekly (Recommended)", "W
      questions" and "use the saved readout calibrations", and must not state a date; the
      templates tell the run to read the date from the shell clock.
    - Notifications: push on.
-3. Show the always-allow block in `connect.md` **1.6**, then confirm both tasks in one
+3. Show the always-allow block in SKILL.md **1.6**, then confirm both tasks in one
    `AskUserQuestion` before creating them, listing name, local time, and destinations. Its
    confirming option names the setting as 1.6 says. Create only on the confirming option.
 4. Tell the user: the tasks run in fresh sessions, so Aspire Atlas (and Slack or email, if
