@@ -297,7 +297,9 @@ Check whether Atlas tools are available in this session before doing anything el
 
 - Load the core Atlas tools in one `ToolSearch` call (see `references/atlas-tools.md`
   for the tool list and load order), with `report_checkpoint` in the `select:` list.
-- Tell the user in one line that Atlas is connected, then proceed to Phase 2.
+- Tell the user in one line that Atlas is connected. When someone is present, add the
+  always-allow block from `references/connect.md` **1.6** once per session, then proceed to
+  Phase 2 in the same reply.
 
 ### 1.5 Record outcome
 

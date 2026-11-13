@@ -594,7 +594,8 @@ Post only to the Slack channel and people saved in the orchestrator routing.
 ```
 
 Tell the user the same three things **Readouts**, Schedule says about scheduled tasks: Aspire
-Atlas and Slack must be enabled for scheduled tasks (plus the mail connection when a program
+Atlas and Slack must be enabled for scheduled tasks with their tools set to Always allow
+(`connect.md` **1.6**, shown with the confirmation) (plus the mail connection when a program
 drafts into a mailbox or reads replies, and the store connection when sales are read from it), the approval setting must be "Automatically
 approve", and the task can be paused from the scheduled tasks list.
 

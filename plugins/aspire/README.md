@@ -58,6 +58,7 @@ The repository [README](https://github.com/aspire-atlas/claude-plugin#readme) co
 
 1. Install the plugin. The Aspire Atlas, Aspire Atlas Organization Admin, and Meta Ads connectors are bundled; do not add any of them again as a custom connector.
 2. Start a new chat with Aspire Atlas enabled, sign in when prompted, and type `/aspire:aspire`.
+3. Set Aspire Atlas's tools to **Always allow**: Settings, then Connectors, then Aspire Atlas (on a Team or Enterprise plan, if it isn't listed there: Customize, then Plugins, then Aspire Atlas, then the Connectors tab), and choose Always allow under tool permissions. In Claude Code, run `/permissions` and add an Allow rule for the Atlas server (`mcp__plugin_aspire_Aspire_Atlas`, or `mcp__Aspire_Atlas` for an org-installed connector). Scheduled runs (list builds, screening, readouts) have nobody there to approve a tool call, so without this they stop at their first Atlas step. `/aspire:aspire` shows this step during onboarding and again before it creates a schedule. Every save to Atlas is still confirmed with you in chat first.
 
 No environment variables are required. Authentication is handled by each connector's OAuth flow. Aspire Atlas Organization Admin only needs a sign in when someone lists or invites members; onboarding and every other flow use Aspire Atlas alone. Meta Ads is optional and only needs a Facebook sign in if you want Meta's ads tools; it shows as needing authentication until then.
 
@@ -109,7 +110,7 @@ Readouts are designed to run on a schedule. The skill offers to create both sche
 **Prerequisites**
 
 - Readout setup completed once for the brand (the skill will not schedule before it).
-- Aspire Atlas enabled for scheduled tasks in the Claude app settings. Add Slack and Gmail too if readouts are routed there.
+- Aspire Atlas enabled for scheduled tasks in the Claude app settings, with its tools set to Always allow (Setup, step 3). Add Slack and Gmail too if readouts are routed there, with the same setting.
 - The scheduled task's approval setting set to "Automatically approve". A scheduled run has nobody present to approve a prompt and will stall otherwise.
 
 **Create the two scheduled tasks (Cowork)**

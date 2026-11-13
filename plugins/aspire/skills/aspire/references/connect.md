@@ -1,7 +1,8 @@
-# Connecting Aspire Atlas (Phase 1 when no Atlas tools are found)
+# Connecting Aspire Atlas (Phase 1 connection and tool permissions)
 
-Used by SKILL.md's Phase 1 when steps 1 to 3 of 1.1 find no Atlas tools, and by Phase 2 + 3's
-auth check for the connector card. Section numbers are Phase 1's.
+Used by SKILL.md's Phase 1 when steps 1 to 3 of 1.1 find no Atlas tools, by Phase 2 + 3's
+auth check for the connector card, and by 1.2 and every schedule setup for 1.6. Section numbers
+are Phase 1's.
 
 ## Contents
 
@@ -10,6 +11,7 @@ auth check for the connector card. Section numbers are Phase 1's.
 - [1.3b If installed but not enabled in this chat](#13b-if-installed-but-not-enabled-in-this-chat)
 - [1.3c If installed but needs sign in](#13c-if-installed-but-needs-sign-in)
 - [1.4 Re-check](#14-re-check)
+- [1.6 Always allow Atlas tools](#16-always-allow-atlas-tools)
 
 ## 1.1 Detect (continued)
 
@@ -119,3 +121,47 @@ When the user replies, or on the next `/aspire:aspire`, repeat 1.1.
   green or "Connected" state in Settings, and to start a new chat if it was added mid session
   (some clients only load new connectors on a fresh conversation). Do not loop more than twice;
   after that, point them to Atlas support and stop.
+
+## 1.6 Always allow Atlas tools
+
+A scheduled task runs in a fresh session with nobody there to approve a tool call. When an Aspire
+Atlas tool is still set to ask for permission, the run stops at its first Atlas call and waits,
+so a list build, a screening run, or a report never finishes. The task's own "Automatically
+approve" setting does not cover this: the connector's tool permissions are a separate setting.
+The plugin can't read or change that setting, so the user sets it once.
+
+**When to show it.**
+
+- **Onboarding.** Once per session, in 1.2, right after the line that Atlas is connected, when
+  someone is present. Show the block below and carry on; it is not a question and never blocks a
+  phase.
+- **Before any scheduled task is created.** Every flow that offers a schedule (readouts, market
+  signal, creator discovery, the program checks, the program dashboard, the content library, the
+  orchestrator, CAS campaigns) shows the block again with its confirmation, and the confirming
+  `AskUserQuestion` names it: the confirming option reads "Create them (Atlas tools are set to
+  Always allow)", and a second option, "Show me how first", repeats the steps and asks again.
+- Never in an unattended or scheduled run. An unattended run never asks.
+
+**What to say** (the Claude app and Cowork):
+
+```
+One setting so scheduled runs finish on their own: set Aspire Atlas's tools to Always allow.
+
+1. Open Settings, then Connectors, then Aspire Atlas. On a Team or Enterprise plan, if it
+   isn't listed there: Customize, then Plugins, then Aspire Atlas, then the Connectors tab.
+2. Under tool permissions, choose Always allow for all tools.
+
+Without it, a scheduled run stops at its first Atlas step and waits for an approval nobody
+is there to give. Every save to Atlas is still confirmed with you in chat first.
+```
+
+In Claude Code, replace the steps with: run `/permissions`, add an Allow rule for the Atlas
+server (the tool prefix from 1.5 without its trailing `__`, for example `mcp__Aspire_Atlas` or
+`mcp__plugin_aspire_Aspire_Atlas`), and save it to user settings so every project gets it.
+
+When Slack, email, or Meta Ads is routed into a scheduled run, the same setting applies to that
+connector; name it in step 1 alongside Aspire Atlas.
+
+Allowing the tools doesn't skip this plugin's confirmations. The skill and every agent still
+confirm each Atlas write with `AskUserQuestion` when someone is present; unattended runs write
+only what their setup already approved.
