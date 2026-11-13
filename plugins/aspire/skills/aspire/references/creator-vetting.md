@@ -43,7 +43,9 @@ campaign's applicants are screened against its applicant review, set up once in 
 review**, which replaces V1 to V4 for that campaign (**Applicant reviews** below): a run against
 an applicant review skips V1 to V4 even when vetting setup has never run. When vetting setup is
 missing and the profile has an applicant review, ask R2 first and run V1 to V4 only if R2 picks
-{brand}'s vetting criteria. Every
+{brand}'s vetting criteria. When the list is a campaign's applicants and that campaign has no
+applicant review, R2 offers "Set up an applicant review for {campaign} first (Recommended)":
+it runs **Applicant review**, then continues this run with the new review as the criteria source. Every
 question is asked exactly as worded in the reference, at most four per call (**Guardrails**). An
 interactive run's reader and save choice go on `lastrun:creator-vetting`, or
 `lastrun:creator-vetting-{slug}` for a campaign (**Orchestration contract**, **2**, Saved
@@ -167,7 +169,7 @@ takes up to four questions), skipping any the user already answered.
 | # | Question | Options |
 | - | -------- | ------- |
 | R1 | Where's the list of creators? | 1) Upload a CSV export from Aspire (Recommended); 2) Paste the handles; 3) Pull it from the Aspire app (you'll sign in yourself) (only when a browser tool is available) |
-| R2 | Vet them against what? | 1) {brand}'s vetting criteria (Recommended); 2) The {campaign} campaign's criteria (one option per saved `campaign:*-criteria`, up to two); 3) The {campaign} applicant review (one option per applicant review saved for this profile). Four options at most: when the list is a campaign's applicants, the applicant reviews come first, the first marked (Recommended), and option 1 is left out; when the reviews still do not fit, the last option is "An applicant review (pick which next)" and **Applicant review**, Reading the setup back, step 1 pages them |
+| R2 | Vet them against what? | 1) {brand}'s vetting criteria (Recommended); 2) The {campaign} campaign's criteria (one option per saved `campaign:*-criteria`, up to two); 3) The {campaign} applicant review (one option per applicant review saved for this profile). Four options at most: when the list is a campaign's applicants, the applicant reviews come first, the first marked (Recommended), and option 1 is left out (with no review for the campaign yet, "Set up an applicant review for {campaign} first (Recommended)" takes that first place); when the reviews still do not fit, the last option is "An applicant review (pick which next)" and **Applicant review**, Reading the setup back, step 1 pages them |
 | R3 | {n} of these creators aren't in Atlas yet. Fetch them? | 1) Fetch them (Recommended) (description: "Atlas looks up each account and its recent posts. A TikTok account Atlas doesn't hold costs one paid lookup; {t} are TikTok."); 2) Only vet the creators Atlas already holds |
 | R4 | Save the recommendations to {brand}'s Atlas insights? | 1) Save (Recommended); 2) Page only |
 

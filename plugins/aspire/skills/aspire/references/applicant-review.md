@@ -45,6 +45,11 @@ screens for that review; every other flow drops them (**Atlas tools**, Calibrati
 (`acme-holiday` and `acme-holiday-seeding`, or `acme-holiday-seeding` and
 `acme-holiday-seeding-2`), so an `applicant-review:{slug}-` prefix read can pick up another review's
 records. Keep only the nine keys of the review in hand and drop every other `applicant-review:` key.
+No part name ends with another part name (that is why visual checks are `-visuals`), so two slugs
+never build the same key.
+
+**Read active records only.** A changed review supersedes its records, so a read with
+`includeSuperseded: true` returns old versions too: those are history, never the review.
 
 `{slug}` comes from the brand and the campaign name: lowercase, hyphenated, no dates (for example
 `acme-holiday-seeding`). Never show the slug or ask the user to invent it; refer to the review by its campaign name
@@ -53,17 +58,17 @@ and brand. When `applicant-review:{slug}-campaign` already exists for a differen
 
 | Key | kind | detail | Holds |
 | --- | ---- | ------ | ----- |
-| `-campaign` | `brand_fact` | `{section: "business_context", body}`; body lines `campaign: <name>`, `campaign key: <the slug of the saved campaign:{campaign-slug}-brief this review is for, or none>`, `profile: <brand profile id>`, `brand: <brand name>`, `aspire campaign: <Aspire campaign id, or none>`, `window: <dates, or none>` | Which campaign, for which brand profile |
+| `-campaign` | `brand_fact` | `{section: "business_context", body}`; body lines `campaign: <name>`, `campaign key: <the slug of the saved campaign:{campaign-slug}-brief this review is for, or none>`, `profile: <brand profile id>`, `brand: <brand name>`, `aspire campaign: <Aspire campaign id, or none>`, `window: <the saved campaign brief's window, or none>` | Which campaign, for which brand profile |
 | `-criteria` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body is `source: campaign:{campaign-slug}` (that campaign's `-brief` and `-criteria`), `source: vetting:criteria`, or one line per dimension (archetype and audience, networks, size band, market, content) | What makes an applicant a fit |
 | `-checks` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body two lines: `run: brand-safety, fit, competitor-deals, disclosure, language-on-camera` (always all five) and `reject: <the checks that reject on their own, from competitor-deals, disclosure, language-on-camera; or none>` | The checks screening runs, and which reject on their own |
 | `-red-lines` | `red_line` | `{action: "block", appliesTo: ["applicant-review", "{slug}"], body}`; body one red line per line | Red lines for this campaign only, on top of the brand's saved `red_line` records |
 | `-thresholds` | `guideline` | `{concern: "ceiling", appliesTo: ["applicant-review", "{slug}"], body}`; body is `source: vetting:thresholds` or `approve >= <n>; maybe >= <m>` | Where Approve, Maybe, and Reject sit |
 | `-form-rules` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body one rule per line: `required: <form question>`, `stop: <form question> = <answer>`, `boost: <form question> = <answer>`, or `prompt: <instruction for the screening agent>` | How form answers change a call |
-| `-visual-checks` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body one check per line: `named: <name> = <what counts as a pass>`, or `free: <what to look for>` | What to look for in each applicant's videos |
+| `-visuals` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body one check per line: `named: <name> = <what counts as a pass>`, or `free: <what to look for>` | What to look for in each applicant's videos |
 | `-client-view` | `guideline` | `{concern: "ceiling", appliesTo: ["applicant-review", "{slug}"], body}`; body `client sees: <final-list, content \| final-list \| none>` and `hidden: scores, notes, maybes, team calls` | What the client contributor role sees |
 | `-sheet` | `policy` | `{area: "routing", body}`; body `sheet: <link>` or `sheet: none (<reason>)` | The campaign's review Sheet |
 
-`-red-lines`, `-form-rules`, and `-visual-checks` may be declined: a declined question is written
+`-red-lines`, `-form-rules`, and `-visuals` may be declined: a declined question is written
 as kind `decline` with the same key (`{topic: "<the question>"}`), so it is never asked again and
 screening reads it as "none for this campaign".
 
@@ -88,7 +93,7 @@ text (**Question format rule**). The tool adds its own free text field; never ad
 | AR4 | {brand}'s saved red lines and competitors apply to every applicant: {red lines and competitors}{, and the brand safety instruction: "<its first line>"}. Any red lines for {campaign} only? With none saved: {brand} has no saved red lines yet. Any red lines for {campaign}? | 1) Only the saved red lines (Recommended) (with none saved: "No red lines for this campaign"); 2) Add red lines for this campaign (type them, one per line) | `-red-lines` |
 | AR5 | Where should the lines sit between Approve, Maybe, and Reject? | 1) {brand}'s vetting thresholds: Approve at {n}, Maybe from {m} (Recommended) (only when `vetting:thresholds` exists); 2) Approve at 70 and up, Maybe from 50 to 69 (Recommended when there are no vetting thresholds); options 2 to 4 each left out when the vetting thresholds already match it; 3) Stricter: Approve at 80, Maybe from 60; 4) Looser: Approve at 60, Maybe from 40 | `-thresholds` |
 | AR6 | Should any application form answer change a call? Type one rule per line: required (a missing answer makes a Maybe), hard stop (an answer that rejects), priority boost (an answer that moves an applicant up), or a note for the screening agent. | 1) No form rules for {campaign} (Recommended when the form asks only for handles); 2) Required: every form question is answered; then up to two rules drafted from the form's questions when the form is known (for example "Required: How many pounds overweight is your dog?") | `-form-rules` |
-| AR7 | Should screening look for something in each applicant's videos? Name each check and what counts as a pass. | 1) No visual checks (Recommended when the criteria name nothing visual); 2) Face on camera: the creator appears and speaks to camera; then up to two named checks drafted from the criteria (for example "Product on screen: the {product} is visible and in use") | `-visual-checks` |
+| AR7 | Should screening look for something in each applicant's videos? Name each check and what counts as a pass. | 1) No visual checks (Recommended when the criteria name nothing visual); 2) Face on camera: the creator appears and speaks to camera; then up to two named checks drafted from the criteria (for example "Product on screen: the {product} is visible and in use") | `-visuals` |
 | AR8 | What should the client see once the review is shared with them? | 1) The final list and the content behind it, with no scores or notes (Recommended); 2) The final list only; 3) Nothing: no client access for {campaign} | `-client-view` |
 
 Rules:
@@ -96,7 +101,8 @@ Rules:
 - **AR1** derives `{slug}` and writes `-campaign` with the selected profile's id. A saved campaign
   picked here sets `campaign key:` to its `{campaign-slug}`; a new one sets it to `none` and gets
   no `campaign:` records, which belong to **Creator discovery**. When the request already named the
-  campaign, skip AR1 and show the name in the batch confirmation instead.
+  campaign, skip AR1, match the name against the saved `campaign:*-brief` records the same way,
+  and show the name in the batch confirmation instead.
 - **AR2** writes `source: campaign:{campaign-slug}` or `source: vetting:criteria` for options 1
   and 2, never a copy of the criteria, so a later change to the campaign or vetting criteria
   reaches the review. A starter or typed answer is written as criteria lines. AR2 carries the web
@@ -119,6 +125,10 @@ Rules:
   it." Options: 1) Save and create the Sheet (Recommended); 2) Save without a Sheet; 3) Not now.
   Calibrations are organization-wide; say so in the question when the organization has more than
   one profile. A `key-exists` follows the Phase 5 supersede rule with its own confirmation.
+- **Saved answers are shown in words**, here and in a supersede's two versions: a pointer reads
+  "{brand}'s vetting criteria" or "the saved {campaign} brief and criteria", a review reads as its
+  campaign and brand, and a record's raw body (its `source:`, `campaign key:` and `profile:` lines)
+  is never shown.
 - **Changing a saved review.** A teammate re-running setup sees each saved answer and is offered
   "Keep as saved (Recommended)" or "Change" per item. Each change goes through
   `supersede_calibration`, one Destructive tools confirmation each.
@@ -138,7 +148,7 @@ link; filling and updating its rows belongs to the flows that bring applicants i
 2. **Write the header row only**, in this order: Handle, Network, Recommendation, Maybe question,
    Team call, Fit score, Evidence, Card link, then one column per form question when the form is
    known, then Status, Source, Applied, Aspire applicant id. Team call is a dropdown of Approve,
-   Maybe, and Reject, left blank. Write no applicant rows: the import fills them.
+   Maybe, and Reject, left blank. Write no applicant rows: the flow that brings applicants in fills them.
 3. **Save the link** as `-sheet` with `sheet: <link>`.
 4. **When it can't be created** (the connector is not connected, has no Sheets, or refuses), or
    the user picked "Save without a Sheet": write `sheet: none (<reason in a few words>)` and say in
@@ -152,7 +162,7 @@ Share the Sheet only with the people the user names, and never with a client con
 ## When setup is done
 
 A review is set up when `-campaign`, `-criteria`, `-checks`, `-thresholds`, `-client-view`, and
-`-sheet` exist for its slug, and `-red-lines`, `-form-rules`, and `-visual-checks` are each saved
+`-sheet` exist for its slug, and `-red-lines`, `-form-rules`, and `-visuals` are each saved
 or recorded as a `decline`. Until then, setup asks only the missing questions, in order, then
 confirms the batch once.
 
@@ -161,11 +171,12 @@ confirms the batch once.
 How **Creator vetting** reads a review when its criteria source is `applicant-review:{slug}`.
 Screening asks none of AR1 to AR8 and none of vetting's V1 to V4.
 
-1. **Find the review.** List the `applicant-review:*-campaign` records whose body names this
-   profile. R2 offers them (**Creator vetting**, Per-run questions); with more than R2 has room
+1. **Find the review.** List the active `applicant-review:*-campaign` records whose body names
+   this profile. R2 offers them (**Creator vetting**, Per-run questions); with more than R2 has room
    for, R2 offers "An applicant review (pick which next)" and a second `AskUserQuestion` lists three
-   reviews plus "More reviews", which shows the next three the same way.
-2. **Read its nine keys** exactly (**The records**), never by prefix.
+   reviews plus "More reviews", which shows the next three the same way. A single review left is
+   stated and used, never asked as a one-option question.
+2. **Read its nine keys** exactly (**The records**), never by prefix, active records only.
 3. **Check it is complete** per **When setup is done**. A gap runs setup for the missing questions
    first, then goes on.
 4. **Resolve pointers.** `source: campaign:{campaign-slug}` reads `campaign:{campaign-slug}-brief`

@@ -52,7 +52,8 @@ findings and pushes only, saying in the summary that nothing was saved.
      posts, to size the sample.
 5. Assess per account: posting cadence over the window, engagement per post relative to follower count,
    top 3 posts by engagement and what they share, format mix, and any content that touches a stated red
-   line (never a `review:` key; those are content review only).
+   line (never a `review:` or `applicant-review:` key; those are content review and one campaign's
+   applicant screening only).
 6. Mode `own` only: cross reference the brand's 90-day goal and competitors. Name gaps and quick wins.
    **Benchmark against competitors Atlas already indexes.** For each `competitor` handle that
    `search_creators` returns, read its last 90 days with the same `search_posts` filter and compare
