@@ -85,20 +85,30 @@ plan with owners.
 
 ### P1: which creator posts to run as ads, and how to cut them
 
-What makes it work: the scoring shown in full and shot-by-shot edit plans with timestamps. Paid
-results are still to come: until a Meta ad account is connected, the page names that gap.
+What makes it work: the reasoning is the story. The reader sees how much Atlas read to get to
+the recommended posts, what it learned from the posts, and why each pick won, with the scoring in full below
+and shot-by-shot edit plans with timestamps. Paid results are still to come: until a Meta ad
+account is connected, the page names that gap.
 
 1. The answer and the takeaway first, then up to four recommendations as ranked next steps.
-2. The scoring method in full: each criterion with its weight, what a high and a low score mean,
+2. How Atlas got there: one strip of counts from the posts considered per platform to the posts
+   recommended (about the brand, videos, read frame by frame, scored), each the run's own count.
+3. What Atlas learned, up to three learnings, each with a headline stat, the claim, a short
+   paragraph, a chart of the data behind it, a frame pair (one that works, one that misses, each
+   with its timecode), and a "So Atlas recommends" line.
+4. The posts Atlas recommends, found then briefed as two groups, each checked against every
+   learning in the learnings' order: a ✓ where it meets one, a "+" with the fix the cut list makes
+   where it misses, and one line on why it was picked. The candidates held back are named with
+   their scores and the reason (counts only on a page for a client).
+5. The scoring method in full: each criterion with its weight, what a high and a low score mean,
    the score bands, and any override.
-3. Every post scored, with thumbnail, handle, source, date, length, score, verdict, and a note.
-4. What the scores show, each with a "So:" line and a visual that proves it.
-5. One cut structure and the specs every cut shares.
-6. A storyboard per recommended ad: a still for every beat, timecodes, a one-line description, a
+6. Every post scored, with thumbnail, handle, source, date, length, score, verdict, and a note.
+7. One cut structure and the specs every cut shares.
+8. A storyboard per recommended ad: a still for every beat, timecodes, a one-line description, a
    duration strip, and edit notes.
-7. A test plan: one variable per test, a hypothesis, and the Scale, Fix, or Stop rule for each.
-8. Approvals and access needed, with when; rights for each candidate, with its expiry.
-9. A brief for the next creator round, offered as a draft.
+9. A test plan: one variable per test, a hypothesis, and the Scale, Fix, or Stop rule for each.
+10. Approvals and access needed, with when; rights for each candidate, with its expiry.
+11. A brief for the next creator round, offered as a draft.
 
 ## The examples library
 

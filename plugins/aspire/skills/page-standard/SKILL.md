@@ -51,7 +51,7 @@ may ask Atlas for more metrics than section 8's row, never fewer.
 | - | ---- | ------------- | ----- |
 | 1 | Who it is for and what it covers | The reader, the brand, the date range, and each platform with its post count. On a team page, a platform with no data is named as not covered. The method section repeats the platform counts. | R1, R2 |
 | 2 | Lead with the answer | The headline is the conclusion, written last, from the decision. Never a topic title ("Creator performance overview" fails; "49 creators reviewed. Contact 11 this week." passes). | R3 |
-| 3 | Up to three insights | Each is a claim, the evidence, the comparison (last period, peers, a goal, the account's own baseline), then a "So:" line with the action. Hedges go in the "So:" line, never in the claim. The headline insight gets one chart. | R4 |
+| 3 | Up to three insights | Each is a claim, the evidence, the comparison (last period, peers, a goal, the account's own baseline), then a "So:" line with the action. Hedges go in the "So:" line, never in the claim. The headline insight gets one chart; a flow's reference may give each insight its own. | R4 |
 | 4 | Ranked next steps | Each says what to do, who does it, by when, and what it should change. | R5 |
 | 5 | Decisions kept apart | What the reader must approve, in its own section, each with its deadline when it has one. When nothing does, the section says "Nothing needs approval." | R6 |
 | 6 | Real evidence | Real posts and creators from this run, linked, with thumbnails or timestamps, below the argument. | R7 |
