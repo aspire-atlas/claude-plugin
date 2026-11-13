@@ -297,18 +297,23 @@ with its own confirmation, or the brand's step in Meta Ads Manager (**Meta Ads**
 Many Atlas tools draw a widget where the host renders MCP Apps (Claude desktop and claude.ai).
 The person cannot tell from a widget whether it needs them, so the next thing said after a call
 that drew one is one of two lines: stop and name what to press, or say it is for reference and
-carry on. The line comes right after the call, before any other tool call.
+carry on.
 
-It applies in the main thread of an interactive run, and only where the host drew the widget (the
-result shows it). Where it drew none, the flow's own fallback applies and neither line is said.
-Agents and unattended runs have nobody looking at a widget: neither line is said there either.
+- **When.** Say the line right after the call that first drew the widget, before any other tool
+  call. A later call that redraws the same widget (a poll, a re-read, the next page) gets no
+  second line, unless what the person has to do changed.
+- **Where.** In the main thread of an interactive run, and only where the host drew the widget
+  (the result shows it). Where it drew none, or you cannot tell, the flow's own fallback applies
+  and neither line is said.
+- **Never** in an agent or an unattended run: nobody is looking at a widget there.
 
 **Needs a click.** The run cannot go on until the person uses a control in the widget.
 
 1. Say one line that names the control: "Press Save on the form above."
 2. Start no other work in that reply: no other tool call, question, page, card or summary.
 3. End the turn there. The one exception is a tool whose own next call waits for the click:
-   `connect_channel`'s resume call (Phase 4.2). That call is the wait, not other work.
+   `connect_channel`'s resume calls (Phase 4.2). Those calls are the wait, not other work, and
+   they get no line of their own.
 
 **For reference.** The widget shows what the run read or changed. Nothing in it has to be pressed;
 a button in it is a shortcut for something the person can also ask for in chat.
@@ -317,23 +322,27 @@ a button in it is a shortcut for something the person can also ask for in chat.
    the next step is a question, the line names it instead: "The {widget} above is for reference.
    Next, one question about {topic}."
 2. Carry on in the same reply, and repeat none of the widget's numbers.
-3. Several reference widgets drawn in one reply share one line ("The cards above are for
-   reference. ...").
+3. The last row of the table (a plain card of what was read or changed) is said once per reply:
+   "The cards in this reply are for reference. I'm carrying on with {next step}." after the
+   first one covers the rest. Every other row's widget gets its own line.
 
 | Tool | What it draws | Needs a click | The line |
 | ---- | ------------- | ------------- | -------- |
-| `get_status`, on a bare interactive run where the caller has more than one organization | The organization picker | Yes | "Pick the organization above, then say continue." |
-| `get_status`, every other call | The status card | No | "The status card above is for reference. I'm carrying on with {next step}." |
-| `connect_channel` | The connect panel with the sign-in button | Yes | "Use the button above to sign in to {network}. I'll keep watching for it to finish." Then only the resume calls. |
+| `get_status`, the first call of a bare interactive run where the caller has more than one organization, before one is picked | The organization picker | Yes | "Pick the organization above, then say continue." |
+| `get_status`, every other call, including the one that follows the pick | The status card | No | "The status card above is for reference. I'm carrying on with {next step}." |
+| `connect_channel`, the call that starts a connection | The connect panel with the sign-in button | Yes | "Use the button above to sign in to {network}. I'll keep watching for it to finish." Then only the resume calls, with no line after each. |
+| `connect_channel`, a resume call that returns awaiting-selection | The connect panel with the account picker | Yes | "Use the button above to pick the accounts to link. I'll keep watching for it to finish." Then only the resume calls. |
+| `connect_channel`, a resume call that returns a terminal status | The connect panel with the result | No | The outcome line Phase 4.2 gives for that status, then the next step. |
+| The plugin's own connection card, on a host with no connect panel | The card with the Connect button | Yes | The card's own line (**Connection card**), then only the resume calls. |
 | `get_cas_setup_form` | The campaign setup form | Yes | "Fill in the campaign setup above and press Save." |
-| `get_dashboard` | The organization dashboard | No | "The dashboard above is for reference. Next, one question about what to do first." |
+| `get_dashboard` | The organization dashboard | No | "The dashboard above is for reference. I suggest {next step}: one question next." |
 | `get_onboarding_form` | The brand questions form | No: the questions are asked in chat, never saved through the form | "The form above is for reference: it shows which brand questions are answered. I'm carrying on with the open ones here." |
 | `get_cas_campaign`, `get_cas_selection`, `get_cas_rates`, `get_cas_briefs`, `get_cas_results` | The campaign step's screen | No: its buttons post a chat message and are optional | "The {step} screen above is for reference. Next, one question about {the step's next move}." |
 | `lookup_creators`, `lookup_posts`, `show_ads`, `show_partnership_content`, `get_creator`, when the person asked to see cards | The cards they asked for | No | "The cards above are for reference." Then the readout. |
 | `get_onboarding_report` | The brand report | No | "The report above is for reference. I'm carrying on with {next step}." |
-| Any other Atlas tool whose result shows a widget (`list_channels`, `list_ad_accounts`, `list_hashtags`, `add_hashtags`, `remove_hashtags`, `unlink_channel`, `switch_billing_account`, `search_calibrations`, `get_brand_context`, `search_insights`, `get_job_status`, `start_business_discovery`, or one not listed here) | A card of what was read or changed | No | "The card above is for reference. I'm carrying on with {next step}." |
+| Any other call whose result shows a widget: a tool above called for another reason (`lookup_creators` for a refresh or a vetting list), `list_channels`, `list_ad_accounts`, `list_hashtags`, `add_hashtags`, `remove_hashtags`, `unlink_channel`, `switch_billing_account`, `search_calibrations`, `get_brand_context`, `search_insights`, `get_job_status`, `start_business_discovery`, or a tool not listed here | A card of what was read or changed | No | "The card above is for reference. I'm carrying on with {next step}.", once per reply (step 3 above) |
 
-A widget is never in both groups. A new tool whose widget must be pressed before the run can go
+A call is never in both groups. A new tool whose widget must be pressed before the run can go
 on gets its own "Yes" row here, with its line, in the same change that starts using it.
 
 - Good: after `get_cas_setup_form` draws the form, the reply is "Fill in the campaign setup above
@@ -344,6 +353,8 @@ on gets its own "Yes" row here, with its line, in the same change that starts us
   "The status card above is for reference. I'm carrying on with your creator list."
 - Bad: the status card is drawn and the reply says nothing about it, so the person waits for it
   to do something while the vetting questions sit unanswered below.
+- Bad: "Use the button above to sign in to Instagram." after each of four resume calls while
+  the person is still signing in.
 
 ## Data freshness
 
