@@ -145,7 +145,10 @@ Rules:
 
 One Sheet per review, where the team filters the applicants and records its calls. Atlas holds the
 record; the Sheet is the team's working view of it. Setup only creates the Sheet and saves its
-link; filling and updating its rows belongs to the flows that bring applicants in and screen them.
+link. No flow in this plugin writes applicant rows yet: until one does, the Sheet holds its header
+row only, the team works the list from the vetting page, and a run that has the Sheet link says in
+one line that the Sheet is not filled yet. Screening never writes to the Sheet, and never reads it
+as the record.
 
 1. **Create it** after the confirmation's option 1, through the Claude Docs connector as a Sheet
    (load the connector's guide first and follow it). Name it "{brand} · {campaign} applicant
@@ -153,7 +156,7 @@ link; filling and updating its rows belongs to the flows that bring applicants i
 2. **Write the header row only**, in this order: Handle, Network, Recommendation, Maybe question,
    Team call, Fit score, Evidence, Card link, then one column per form question when the form is
    known, then Status, Source, Applied, Aspire applicant id. Team call is a dropdown of Approve,
-   Maybe, and Reject, left blank. Write no applicant rows: the flow that brings applicants in fills them.
+   Maybe, and Reject, left blank. Write no applicant rows (see above).
 3. **Save the link** as `-sheet` with `sheet: <link>`.
 4. **When it can't be created** (the connector is not connected, has no Sheets, or refuses), or
    the user picked "Save without a Sheet": write `sheet: none (<reason in a few words>)` and say in

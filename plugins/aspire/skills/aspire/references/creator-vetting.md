@@ -636,7 +636,7 @@ What changes against a `vetting` run:
 | Hard stops | The checks the review's `reject:` line lists, in place of `vetting:hard-rejects` (**The recommendation**, rule 2) |
 | `vetting:criteria`, `vetting:thresholds`, `vetting:hard-rejects` | Not read; the review replaces them. Bought engagement and no recent posts are Flags, never rejects on their own |
 | `vetting:safety-scope`, the `brand_safety` instruction | Read as in every vetting run: they set the brand's safety strictness, not a campaign's criteria |
-| Form answer rules, visual checks | Passed through as saved. A rule or check this reference gives no step for is listed on the page under what is missing, named, never silently dropped |
+| Form answer rules, visual checks | Not applied: a vetting list carries handles and names, not form answers, and this reference has no frame-reading step for applicants. Each saved rule and check is listed by name on the page under what is missing, and the run summary names them, so a team never reads a recommendation as having passed them. A form hard stop or required answer therefore never changes the call yet; the team applies it by hand |
 | The page | Shows the campaign's name, the review's checks in words, and the Sheet link when the review holds one |
 
 Everything else (the creator calibrations, lessons, the recommendation rule, the feedback loop,
