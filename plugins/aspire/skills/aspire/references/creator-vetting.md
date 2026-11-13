@@ -53,11 +53,10 @@ check). Relay the page and counts in text (cards only on request); offer the sho
 
 ### Feedback: save the team's call on each creator
 
-Every run ends with F1 to F3 (the agent's or yours, before anything else), and F4 after a
-free-text visual check's last batch. F1 confirms its own
-write; notes are shown worded before saving. Supersedes and retractions are the main thread's,
-one Destructive tools confirmation each. Feedback outside a run: "Save this about @handle for
-future vetting and discovery?"
+Every run ends with F1 to F3 (the agent's or yours, before anything else), and F4 after a free-text
+visual check's last batch. F1 confirms its own write; notes are shown worded before saving.
+Supersedes and retractions are the main thread's, one Destructive tools confirmation each. Feedback
+outside a run: "Save this about @handle for future vetting and discovery?"
 
 ## Why the vetting agent exists
 
@@ -182,16 +181,16 @@ the same limits as a typed check (**What a visual check may look for**). R5 is n
 asked for a creator-ads lane run, which runs no visual check.
 
 **What a visual check may look for.** Things on screen (a product, a pet, a setting, a prop), and a
-person's appearance only when the brief's casting needs it (grey hair for a campaign cast for
-older adults). Never a protected or sensitive trait: race or ethnicity, national origin, religion,
-sex or gender, sexuality, health or disability, pregnancy, body size or weight, or any other trait
-the law protects. Age itself is never judged, only a visible feature the casting names, such as
-grey hair. When the typed check asks for one of these, say in one line that
-vetting doesn't screen people on it, and run no visual check unless the user picks another. A check
-about a person's appearance has its per-creator results shown on the page and never written to
-Atlas: its findings leave out `visualCheck`, and the run summary names the check but leaves out its
-counts. Its definition may still be saved as a named check (F4), since that describes what to look
-for, not anyone's result. The main thread decides once, at R5, whether a check is about a person's
+person's appearance only when the brief's casting needs it (grey hair for a campaign cast for older
+adults). Never a protected or sensitive trait: race or ethnicity, national origin, religion, sex or
+gender, sexuality, health or disability, pregnancy, body size or weight, or any other trait the law
+protects. Age itself is never judged, only a visible feature the casting names, such as grey hair.
+When the typed check asks for one of these, say in one line that vetting doesn't screen people on
+it, and run no visual check unless the user picks another. A check about a person's appearance has
+its per-creator results shown on the page and never written to Atlas: its findings leave out
+`visualCheck`, and the run summary names the check but leaves out its counts. Its definition may
+still be saved as a named check (F4), since that describes what to look for, not anyone's result.
+The main thread decides once, before the first launch, whether a check is about a person's
 appearance, and passes it as `appearance` in `visual_check`; a saved check carries it in its body,
 so every batch and every later run treats the check the same way.
 
@@ -209,17 +208,17 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    call's Save (**Orchestration contract**, **2**); on a rerun to a page already published, it joins
    this call when there is room. The confirmation applies (`team` by default; `brand` for "are these
    safe"; `campaign` when the list is a launch lineup). Skip R3 when Atlas holds every creator.
-4. Launch `atlas-creator-vetting` with: tool prefix, `profile_id`, `profile_slug`, brand handles
-   and networks, the normalized list, the list name, slug and source, the criteria source, the
-   approved fetches, the R4 answer, `visual_check` (from R5: `none`, or `{name, kind: "named" |
-   "free-text", key, definition, appearance}`, `appearance` true for a check about a person's
-   appearance and false otherwise, with `key` and `definition` from the saved record (`key` null for
-   Product on screen and for a free-text check), the built-in
-   definition for Product on screen, or, for a free-text check, the definition the main thread
-   words once from the user's words before the first launch: what to look for, what counts, what
-   does not), and `recipient`. A list over 100 creators runs in batches of 100, and a run with a
-   visual check in batches of 25, since each creator's frames take room in the agent's context;
-   say how many and launch them one at a time, every batch with the same `visual_check`.
+4. Launch `atlas-creator-vetting` with: tool prefix, `profile_id`, `profile_slug`, brand handles and
+   networks, the normalized list, the list name, slug and source, the criteria source, the approved
+   fetches, the R4 answer, `visual_check` (from R5: `none`, or `{name, kind: "named" | "free-text",
+   key, definition, appearance}`, `appearance` true for a check about a person's appearance and
+   false otherwise, with `key` and `definition` from the saved record (`key` null for Product on
+   screen and for a free-text check), the built-in definition for Product on screen, or, for a
+   free-text check, the definition the main thread words once from the user's words before the first
+   launch: what to look for, what counts, what does not), and `recipient`. A list over 100 creators
+   runs in batches of 100, and a run with a visual check in batches of 25, since each creator's
+   frames take room in the agent's context; say how many and launch them one at a time, every batch
+   with the same `visual_check`.
 5. Answer in text: the counts, up to three points naming the approved creators and top maybes
    with their page numbers, the next step, and the page link. Keep the agent's `creator-cards`
    block; the cards appear only when the user asks to see them (**Creator card**, **Cards in
@@ -344,8 +343,9 @@ word, and an evidence frame. These reads are approximate, and the page says so.
   confidence is never above Medium, and the page marks it "Free-text check: less reliable". F4
   offers to save it as a named check.
 
-**Which pass.** The check runs in the agent's `build` pass (and a run with no storyline), never
-in a storyline `draft`: it never changes a call, so no storyline bullet rests on it.
+**Which pass.** The check runs in the pass that builds the page (`build` or `state`, or a run with
+no storyline), never in a storyline `draft`: it never changes a call, so no storyline bullet rests
+on it.
 
 **Which videos.** Up to three video posts per creator, from the posts already read (**What to read
 per creator**): a `mediaKind` of video, or an Instagram Reel. Rank them by how likely each is to
@@ -393,11 +393,11 @@ images); the card and the table link to it. Atlas keeps only the link and the ti
 image.
 
 **It never decides the call.** The visual check adds no points to the fit score and changes no
-recommendation. It shows in the checks table, on each card, and in its own section of the page,
-and a Seen or Not seen at Low confidence is listed in Decisions for a person to confirm. When no
-frame extractor ran, Decisions carries one line instead ("No video frames were read, only covers;
-install ffmpeg to read them") rather than one entry per creator. When the
-brief makes the subject a must, say so in the Maybe's "what would settle it", never as a Reject.
+recommendation. It shows in the checks table, on each card, and in its own section of the page, and
+a Seen or Not seen at Low confidence is listed in Decisions for a person to confirm. When no frame
+extractor ran, Decisions carries one line instead ("No video frames were read, only covers; install
+ffmpeg to read them") rather than one entry per creator. When the brief makes the subject a must,
+say so in the Maybe's "what would settle it", never as a Reject.
 
 ## The findings behind the checks
 
@@ -540,10 +540,9 @@ Rules:
 **In the main thread.** When the agent reports "asked", relay what the user decided and what was
 saved. When it returns a feedback packet, run F1 to F3 yourself, before anything else in the
 conversation. Either way, after the last batch of a free-text check, ask F4 with the definition you
-worded at R5. Either way, offer each "Needs the main thread" change, the
-proposed changes to the criteria among them, through its own Destructive tools confirmation
-(`supersede_calibration` or `retract_calibration`), one per call. A proposal the user declines stays
-unsaved.
+worded before the first launch, and offer each "Needs the main thread" change, the proposed changes
+to the criteria among them, through its own Destructive tools confirmation (`supersede_calibration`
+or `retract_calibration`), one per call. A proposal the user declines stays unsaved.
 
 **Feedback outside a run.** Feedback about a creator outside a run ("never use @handle again",
 "@handle was great to work with") is saved the same way: word the note, confirm it with
