@@ -40,7 +40,7 @@ group's `tasks` in order when it starts, then call again as each task finishes w
 | ----- | ------- | ------- | ---- |
 | 1 | `Connecting` | `Verify Aspire Atlas` (Phase 1), `Get organizations`, `Pick the organization`, `Get status` (Phase 2 + 3) | Every run. Mark `Pick the organization` done at once when no question is asked; on a bare run it stays in progress while the selector waits. |
 | 2 | `Onboarding` | `Create the brand profile` (4.1), `Connect a social account` (4.2), `Confirm the account` (4.2 terminal status) | Only when Phase 3 routed to Phase 4. Drop `Create the brand profile` when the profile exists. Skip the group for an existing org with a connected channel. |
-| 3 | `Brand questions` | One task per Phase 5 question still to ask (skip keys already saved), then `Theme and rates offers` and `First insights` (Phase 6) | Optional. Start it only when Phase 5 runs. A declined question is marked done, not left open. |
+| 3 | `Brand questions` | One task per Phase 5 question still open (leave out the ones already handled), then `Theme and rates offers` and `First insights` (Phase 6) | Optional. Start it only when Phase 5 runs. A declined question is marked done, not left open. |
 
 Finish each group with `finished: true` before starting the next. A group that does not run is
 never reported, so the bar never shows steps the run skips. Call it once more with
