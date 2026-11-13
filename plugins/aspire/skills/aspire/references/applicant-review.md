@@ -78,7 +78,8 @@ Before asking anything, call `search_calibrations` (no filter, limit 100 per pag
 end, `includeSuperseded: true`) and `get_brand_instruction` with `agentType: "brand_safety"`.
 Find the review: a `-campaign` record whose body names this profile and the campaign the user
 named. Skip every question whose key is already occupied for that slug by an active record (not
-superseded, not retracted). Write answers with
+superseded, not retracted), unless the user asked to change the review: then every active saved
+answer is shown with "Keep as saved" or "Change" (**Changing a saved review** below). Write answers with
 `append_calibration`, `provenance: "interview"`, `statement` under 280 characters, prose in
 `detail`.
 
