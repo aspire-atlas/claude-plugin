@@ -573,7 +573,8 @@ Rules:
 
 Same mechanics as **Readouts**, Schedule, in SKILL.md: the session's scheduled-task tools,
 never local cron; list existing tasks first; a standalone prompt that says "do not ask questions"
-and states no date. X6 is the standing approval for this task. Schedule only after the page has
+and states no date. X6 is the standing approval for this task; show the always-allow block in
+SKILL.md **1.6** with X6, as 1.6 says. Schedule only after the page has
 been published once and its `page` finding exists. If the scheduled-task tools are missing, say so and
 stop; never fake a schedule.
 
@@ -593,10 +594,11 @@ If setup is incomplete or Atlas needs a fresh sign in, publish the "setup needed
 Post only to the Slack channel and people saved in the orchestrator routing.
 ```
 
-Tell the user the same three things **Readouts**, Schedule says about scheduled tasks: Aspire
-Atlas and Slack must be enabled for scheduled tasks (plus the mail connection when a program
-drafts into a mailbox or reads replies, and the store connection when sales are read from it), the approval setting must be "Automatically
-approve", and the task can be paused from the scheduled tasks list.
+Tell the user the same three things **Readouts**, Schedule says about scheduled tasks. Aspire
+Atlas, Slack, the mail connection when a program drafts into a mailbox or reads replies, and the
+store connection when sales are read from it must be enabled for scheduled tasks, each with only
+the tools SKILL.md **1.6** lists on Always allow; show that block with X6. The approval setting
+must be "Automatically approve", and the task can be paused from the scheduled tasks list.
 
 ## 12. Autonomy levels (design note)
 

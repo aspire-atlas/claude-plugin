@@ -153,7 +153,8 @@ Moved here from the **Content library** section of SKILL.md, which points at it.
 Follow **Readouts**, Schedule, for the mechanics, and **Influencer program**, **8**, for the task name
 "Atlas program library refresh: {brand} - {program}" (weekly), launching
 `atlas-content-library` with `mode: build`, `run: unattended`. The P9 "Weekly content library
-refresh" answer is the standing approval; it lets scheduled runs save `asset` findings.
+refresh" answer is the standing approval; it lets scheduled runs save `asset` findings. Show the
+always-allow block in SKILL.md **1.6** with that answer, as 1.6 says.
 Unattended runs never ask, never write rights, and post only to the saved routing. Schedule it
 only after the library has been built once interactively and its `page` finding exists.
 

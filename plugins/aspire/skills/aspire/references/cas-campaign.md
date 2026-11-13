@@ -114,7 +114,7 @@ republish the page, run the role and edit checks, and post the step line when a 
 
 Per **The main thread's steps**, **Schedule**, with **Readouts**, Schedule, for the mechanics:
 offer the weekly call once after setup; C6 already approved the approval reminders and the daily
-results refresh. If the scheduled-task tools are missing, say so and stop; never fake a schedule.
+results refresh, so show the always-allow block in SKILL.md **1.6** with C6, as 1.6 says. If the scheduled-task tools are missing, say so and stop; never fake a schedule.
 
 Unattended runs never ask, never decide, never pull the page data, and never launch an agent.
 They publish and post only, and publish a "setup needed" card when the records are missing.
