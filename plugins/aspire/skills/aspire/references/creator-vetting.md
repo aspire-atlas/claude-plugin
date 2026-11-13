@@ -190,13 +190,16 @@ casting names, such as grey hair. When a check asks for one of these, say in one
 doesn't screen people on it. When it asks for a person's look that neither the criteria nor the ask
 names as needed for the casting, say in one line that vetting looks at a person's appearance only
 for a look the casting needs. Either way, run no visual check, and offer an on-screen check instead
-(Product on screen, or a saved check that looks at things on screen). A check about a person's
-appearance has its per-creator results shown on the page and never written to Atlas: its findings
-leave out `visualCheck`, and the run summary names the check but leaves out its counts. Its
-definition may still be saved as a named check (F4), since that describes what to look for, not
-anyone's result. The main thread decides once, before the first launch, whether a check is about a
-person's appearance, and passes it as `appearance` in `visual_check`; a saved check carries it in
-its body, so every batch and every later run treats the check the same way.
+(Product on screen, or a saved check that looks at things on screen). The limit is checked in every
+run: picking a saved appearance check at R5 does not count as the ask, so it runs only when that
+run's criteria or ask name its look; otherwise the main thread gives the one-line answer after the
+questions and offers an on-screen check. A check about a person's appearance has its per-creator
+results shown on the page and never written to Atlas: its findings leave out `visualCheck`, and the
+run summary names the check but leaves out its counts. Its definition may still be saved as a named
+check (F4), since that describes what to look for, not anyone's result. The main thread decides
+once, before the first launch, whether a check is about a person's appearance, and passes it as
+`appearance` in `visual_check`; a saved check carries it in its body, so every batch and every later
+run treats the check the same way.
 
 ## Main thread: the run
 
@@ -324,7 +327,7 @@ and the contact route Atlas holds.
   `entityId`), with the team's call when a `feedback` finding holds one, and the creator's
   newest state in any discovery campaign (`creator-discovery-{profile}` prefix).
 
-### 4. Visual check (when R5 names one)
+### 4. Visual check (when the run has one)
 
 A look at each creator's videos for one thing the brief cares about that captions and transcripts
 don't show reliably: a product on screen, an overweight dog, grey hair. The run has one check. It
@@ -534,7 +537,8 @@ Rules:
   the agent), whatever F1 was, and is its own write confirmation. The definition saved is the one
   the run used, worded per **Visual check records**, with any correction the user typed. When a
   saved check has the same name, the main thread offers a supersede instead, with its own
-  Destructive tools confirmation.
+  Destructive tools confirmation. Its gate id is `approve-visual-check`; the main thread sends its
+  `feedback` checkpoint (SKILL.md, **Running agents**).
 - **Changes to saved records belong to the main thread.** A note for a creator who already has
   a `creator:*` record, a lesson that contradicts a saved `vetting:lesson-*`, and any change to
   a red line, competitor, or setup answer go through `supersede_calibration` or
@@ -586,11 +590,12 @@ One record per named visual check, organization-wide, read only by creator vetti
   false>; runKey: <originating runKey>; saved: <YYYY-MM-DD>"}`.
 - `provenance: "interview"`.
 
-Saved through F4, or outside a run when the user asks ("add a visual check for grey hair"), held
-to **What a visual check may look for**: a check those limits rule out is not saved. Word the
-definition, confirm it with `AskUserQuestion` ("Save this visual check for {brand}'s vetting?"
-with the definition in the description), then write the record. Changing or removing one is a
-supersede or retraction with its own Destructive tools confirmation.
+Saved through F4, or outside a run when the user asks ("add a grey hair check for our older-adults
+casting"), held to **What a visual check may look for**: a check those limits rule out is not saved,
+and an appearance check is saved only when the criteria or the ask name its look as a casting need.
+Word the definition, confirm it with `AskUserQuestion` ("Save this visual check for {brand}'s
+vetting?" with the definition in the description), then write the record. Changing or removing one
+is a supersede or retraction with its own Destructive tools confirmation.
 
 Lessons: kind `guideline`, key `vetting:lesson-{slug}`, `concern: "preference"` when it
 relaxes a check and `"requirement"` when it tightens one, `appliesTo: ["creator-vetting"]`,
@@ -629,16 +634,16 @@ every finding of one run), `handle`, `network`, `name` (from the list, when give
 component breakdown, `safety` (`{category: result}` plus red line, scope, competitor, disclosure,
 and audience checks), `redLineHits[]`, `hardRejectHits[]`, `riskFlags[]`, `calibrationsApplied[]`
 (the keys that shaped the call), `lessonsApplied[]`, `evidence[]`, `estFee` when the calculator
-gives one, `visualCheck` when R5 named one and the check ran on the creator (left out for a "Not
-checked" creator and for a check on a person's appearance) (`{name, kind: "named" | "free-text",
-key, result: "seen" | "not-seen" | "cant-check", confidence: "high" | "medium" | "low" | null,
-frame: {postUrl, at}, videosRead, framesViewed, coversOnly, reason}`, `frame` and `confidence` null
-for Can't check), `usualViews` (or the reason it is not available), `checks` (`{component: 1 | 0.5 |
-0 | null}`, `null` for a component with no data; the finding each check comes from is on the run
-summary), `listName`, `listSource` (`csv`, `pasted`, `aspire-app`, or `cas-lane`), `campaign` when
-R2 named one, `reviewPage`, and `recipient` (**Recipient lens**). A `feedback` finding adds
-`userVerdict`, `agentVerdict`, and the user's words verbatim. Supply an `idempotencyKey` per finding
-(`vet-{list-slug}-{entityId}-{findingType}`).
+gives one, `visualCheck` when the run had a visual check and it ran on the creator (left out for a
+"Not checked" creator and for a check on a person's appearance) (`{name, kind: "named" |
+"free-text", key, result: "seen" | "not-seen" | "cant-check", confidence: "high" | "medium" | "low"
+| null, frame: {postUrl, at}, videosRead, framesViewed, coversOnly, reason}`, `frame` and
+`confidence` null for Can't check), `usualViews` (or the reason it is not available), `checks`
+(`{component: 1 | 0.5 | 0 | null}`, `null` for a component with no data; the finding each check
+comes from is on the run summary), `listName`, `listSource` (`csv`, `pasted`, `aspire-app`, or
+`cas-lane`), `campaign` when R2 named one, `reviewPage`, and `recipient` (**Recipient lens**). A
+`feedback` finding adds `userVerdict`, `agentVerdict`, and the user's words verbatim. Supply an
+`idempotencyKey` per finding (`vet-{list-slug}-{entityId}-{findingType}`).
 
 **Reading it back.** `search_insights` with a `prefix` filter on
 `detail.account_review.runKey` = `creator-vetting-{profile}`, newest first, paged; the newest
@@ -721,11 +726,11 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
    its `#{number}` and why not, rather than full cards. A Reject row carries its score; a Can't vet
    row carries no score, only what would make it checkable. In a creator-ads lane each row also
    carries the four ad figures.
-10. **Visual check: {name}**, when R5 named one. It opens with one line, in the section's own text
-    and not a footnote: "These reads are approximate: the agent looked at frames from up to three
-    videos per creator. Confirm by eye before you rely on one." Then the definition used, and for a
-    free-text check the chip "Free-text check: less reliable" with one line saying why (no saved
-    definition, so the agent worked one out from the words typed). Then a tally by result and
+10. **Visual check: {name}**, when a visual check ran. It opens with one line, in the section's own
+    text and not a footnote: "These reads are approximate: the agent looked at frames from up to
+    three videos per creator. Confirm by eye before you rely on one." Then the definition used, and
+    for a free-text check the chip "Free-text check: less reliable" with one line saying why (no
+    saved definition, so the agent worked one out from the words typed). Then a tally by result and
     confidence, and a grid of every creator vetted, numbered as the cards: the evidence frame (the
     still, per **4. Visual check**), the result, the confidence word, the post and timestamp linked,
     and what was read ("3 videos, 28 frames"). Can't check rows sit at the end with their reason,

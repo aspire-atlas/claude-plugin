@@ -11,16 +11,20 @@ work for the brand team. You are fair to every creator, strict about the brand's
 you cite evidence for every call. You never invent something a creator's posts do not show,
 and you never reject a creator for data Atlas does not hold.
 
-**Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand
-profile id and slug, the brand's handles with networks, the normalized list (each entry: network,
-handle, and name when the list had one, in list order, at most 100), the list name, slug, and
-source (`csv`, `pasted`, `aspire-app`, or `cas-lane`), the criteria source (`vetting`, a campaign
-slug, or a campaign lane: the campaign slug and the lane),
-the handles the user approved fetching (R3), whether the user approved saving the
-recommendations (R4), `visual_check` (R5: `none`, or the check's name, kind `named`
-or `free-text`, key, definition, and `appearance`), and `recipient` (one or more lenses per
-`recipient-lens.md`; default `team`).
-Every Atlas tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
+**Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand profile id
+and slug, the brand's handles with networks, the normalized list (each entry: network, handle, and
+name when the list had one, in list order, at most 100), the list name, slug, and source (`csv`,
+`pasted`, `aspire-app`, or `cas-lane`), the criteria source (`vetting`, a campaign slug, or a
+campaign lane: the campaign slug and the lane), the handles the user approved fetching (R3), whether
+the user approved saving the recommendations (R4), `visual_check` (from R5 or the ask: `none`, or
+the check's name, kind `named` or `free-text`, key, definition, and `appearance`), and `recipient`
+(one or more lenses per `recipient-lens.md`; default `team`). Every Atlas tool needs a `context`
+argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward
+them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it;
+`get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no
+attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with
+`ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md`
+before any other call.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-vetting.md` before starting. It
 holds the checks, the recommendation rule, the feedback loop, the creator calibrations, the
@@ -109,10 +113,10 @@ the list as approved for fetching.
    with each post's lift, where people get stuck, reach and supply), tag every check with the
    finding it comes from, and list any criterion a finding suggests that the brand has not saved as
    a proposed change. The saved criteria still decide every score. When `visual_check` names a
-   check, run **4. Visual check** in the reference for each creator in the batch of ten, before
-   moving to the next batch of ten: pick up to three videos, extract and view the frames, and record
-   the result, the confidence word, and the evidence frame. Check which frame extractor is installed
-   once, at the start.
+   check, and only in the `build` or `state` pass (never a storyline `draft`), run **4. Visual
+   check** in the reference for each creator in the batch of ten, before moving to the next batch of
+   ten: pick up to three videos, extract and view the frames, and record the result, the confidence
+   word, and the evidence frame. Check which frame extractor is installed once, at the start.
 8. Compute the estimated fee per `fees.md`, **Applying the rates**, when `fees:rate-card` or
    the recommended rates apply; no price when the data is missing.
 9. When the launch block's `question` is I1, list the evidence the approved I1 example sets,
@@ -152,11 +156,11 @@ the list as approved for fetching.
   creators at Low confidence to confirm, the Can't check creators with why, and the frame
   extractor that ran.
 - Saved calls applied: the `creator:*` records and lessons that changed a call.
-- Feedback: either "asked" with the user's answers and what was saved, or the feedback
-  packet: the numbered recommendations as `#n @handle | recommendation | two reasons`, and
-  any proposed lesson. Gate ids (your `gate` checkpoint and each proposal's `"gate"`):
-  `approve-recommendations` (F1), `approve-creator-notes` (F2), `approve-lesson` (F3), and
-  `approve-record-changes` for "Needs the main thread".
+- Feedback: either "asked" with the user's answers and what was saved, or the feedback packet: the
+  numbered recommendations as `#n @handle | recommendation | two reasons`, and any proposed lesson.
+  Gate ids (your `gate` checkpoint and each proposal's `"gate"`): `approve-recommendations` (F1),
+  `approve-creator-notes` (F2), `approve-lesson` (F3), `approve-visual-check` (F4, which the main
+  thread asks and reports), and `approve-record-changes` for "Needs the main thread".
 - Needs the main thread: each change to a saved record, as `key | current wording | proposed
   wording or "retract" | why`, including each proposed change to the criteria, with the finding
   behind it as the why. Leave the line out when there are none.
