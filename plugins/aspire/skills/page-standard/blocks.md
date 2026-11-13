@@ -838,6 +838,11 @@ the example lacked, so the rebuilt page passes a check the example did not.
 | What the 11 should return: the sign-ups calculator | The flow's own calculator (section 6); its default result shows in 3.7's expected return |
 | From offers to the first read: the launch clock | 3.17 |
 | "You keep" and "Atlas can draft next" | 3.5 and 3.13 |
+| What people are doing well: lift by what the post does, with example posts | 3.4, the headline insight, with its lift chart |
+| Where people get stuck: sentiment counts, numbered challenges, brands named | 3.4 with 3.18 for each quote; the brands-named chart is the flow's own (section 6) |
+| What this means for picking: reach concentration and market supply | 3.4 with a `pb-table` of the top posts |
+| What we look for: each check with its finding tag, the marks, and the bar | The flow's own section (section 6) |
+| Every creator against the checks, with score and call | The flow's own table (section 6), above the 3.7 grids |
 | How the verdict was made: the two scores, verdicts, weights, reach penalty, fees, brand post detection, corrections | 3.11 |
 | What's missing (not in the example) | 3.12, adds |
 | Source line | `artifact-standard.md` |

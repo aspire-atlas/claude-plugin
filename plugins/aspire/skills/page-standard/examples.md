@@ -53,7 +53,9 @@ available.
 ### I1: which creators to contact for this launch, and why
 
 What makes it work: the headline is the decision ("49 creators reviewed. Contact 11 this week."),
-with a reason for every yes, maybe, and no, plus fees and expected return.
+with a reason for every yes, maybe, and no, plus fees and expected return. Before the list, the
+page shows what works with the product, where people get stuck, and what that means for picking,
+and every check names the finding it comes from.
 
 1. A headline with how many were reviewed and how many to contact, and by when.
 2. A verdict tally: yes, maybe, and no with counts and the reasons behind each column.
@@ -65,6 +67,16 @@ with a reason for every yes, maybe, and no, plus fees and expected return.
 6. Next steps in order, each with its week and the creators it covers.
 7. A clock from offers to the first read of results.
 8. How the verdict was made: both scores, the verdict lines, the weights, and every correction.
+9. What people are doing well with the product: a chart of views against each creator's usual
+   (the post's views divided by the creator's 90-day median) by what the post does, with how many
+   posts were measured and named example posts for each pattern.
+10. Where people get stuck: the comment sentiment counts, each challenge numbered with quoted and
+    linked posts, and a chart of the other brands the posts name.
+11. What this means for picking: how concentrated reach is (the top post's share, the paid partner
+    posts) and how scarce the target market is, which explains a list shorter than asked.
+12. What we look for: each check names the finding it comes from ("Doing well", "Challenge 3",
+    "Reach", "US supply"), with a 1, ½, or 0 mark per creator and the bar for a yes in plain
+    words; a check a finding suggests but the brand hasn't saved is a proposed change in Decisions.
 
 ### O3: where we stand against competitors, and what to do
 
