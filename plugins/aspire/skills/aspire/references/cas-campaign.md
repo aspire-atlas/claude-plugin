@@ -820,7 +820,8 @@ or the SOW per **Carrying the pitch forward**), `criteria` (the shared criteria,
 - **Where the host draws the widget** (the result shows the form), the form asks C1 and C3 to C7
   itself, with the same choices, and saves the records with `append_calibration` once the person
   presses Save after its review. Ask none of those questions in chat and build no summary beside
-  it; say one line ("Fill in the campaign setup above and press Save.") and wait. Save sends a
+  it; say one line ("Fill in the campaign setup above and press Save.") and end the turn: the
+  form needs a click (**Atlas tools**, **After a widget**), so start no other work. Save sends a
   message back to the chat, and the form's hand-off (in the model's context) lists each record
   with what `append_calibration` did, the approver and date, the planned send dates and the
   concepts' source. Then:
@@ -977,8 +978,10 @@ what**), so never add an agency only value beside a widget.
 The rule for every one:
 
 - **Where the host draws the widget** (the result shows it), it is the step's screen. Build no
-  page, card or table beside it and repeat none of its numbers; say one line with the next step,
-  then ask the step's own `AskUserQuestion` as this reference words it.
+  page, card or table beside it and repeat none of its numbers. Every one but the setup form is
+  for reference (**Atlas tools**, **After a widget**): say "The {step} screen above is for
+  reference. Next, one question about {the step's next move}.", then ask the step's own
+  `AskUserQuestion` as this reference words it.
 - **Where it draws none** (Claude Code's terminal, a plain-text host, or you cannot tell), show
   the step in chat as this reference says, from the same result: its text is the fallback.
 - **When the tool is not among the Atlas tools** (an older server), or fails with
@@ -1003,7 +1006,7 @@ dispatch row (**1c**) with its status line and one next step, the gates and the 
 row from it rather than working it out again. The server reads Atlas only, so when the page
 holds what Atlas doesn't yet (a send for sign off on the page not yet recorded, step edits not yet
 pulled, **Pulling decisions**), offer the pull as the next step instead of the server's. Where the host draws the widget, it is the status
-screen: say one line with the next step and go to the `AskUserQuestion` below. When **Widgets**
+screen: say its for-reference line (**Widgets**) and go to the `AskUserQuestion` below. When **Widgets**
 says to read the records yourself, read the setup records and the working state
 (`search_insights` on the campaign's prefix, paged), find each round that is not done (**Rounds**,
 **Which round**) and its row in the dispatch table (**1c**), reading from the bottom up. Without

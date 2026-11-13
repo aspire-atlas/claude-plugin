@@ -201,7 +201,8 @@ Atlas's tool widgets:
    Posts work the same way, at most twelve: `lookup_posts` with one item per post (`schema` =
    the network, `entityKind` `post`, `identifier` = the post's link), `creatorDeepAnalysis`
    `false`.
-4. The host draws Atlas's card from the result. Say the readout and stop: at most three points
+4. The host draws Atlas's card from the result. Say "The cards above are for reference."
+   (**Atlas tools**, **After a widget**), then the readout, and stop: at most three points
    the card cannot show (why this creator, what is missing, the next step). Never repeat the
    card's numbers, never build a plugin card beside it, and never fetch or embed an image.
 

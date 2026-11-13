@@ -81,7 +81,9 @@ never reported, so the bar never shows steps the run skips. Call it once more wi
    the same profile (**Atlas tools**, **Partnership content**).
 2. For each chosen channel, call `connect_channel` with `channel` and `asProfileId`.
    When the host renders the tool's own connect widget (the result shows it), do not build a
-   second card: say one line ("Use the button above to sign in to {network}.") and go to step 3.
+   second card: say one line ("Use the button above to sign in to {network}. I'll keep watching
+   for it to finish.") and go to step 3. The widget needs a click (**Atlas tools**, **After a
+   widget**): start nothing else until step 3 reports a terminal status.
    Otherwise show the returned `connectUrl` as the **account connection card**, built and
    rendered exactly per **Connection card**; never paste the raw link when the card
    rendered. If the widget tool is unavailable or fails, use its **Fallback** (plain text, never
@@ -173,7 +175,8 @@ Rules:
   whose key is already occupied; `includeSuperseded` keeps moved facts from being re-asked as
   new. `get_onboarding_form` is an optional read of which of the seven core questions are
   answered, declined, or open; never use its form to save: ask each open question with
-  `AskUserQuestion` and write with `append_calibration` as below.
+  `AskUserQuestion` and write with `append_calibration` as below. Where the host draws the form,
+  say its for-reference line first (**Atlas tools**, **After a widget**).
 - Write each answer with `append_calibration` right after it is given, `provenance:
   "interview"` (or `"web"` per the web research option above), `statement` under 280
   characters, supporting prose in `detail`.

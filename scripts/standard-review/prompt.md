@@ -43,6 +43,11 @@ that breaks it, and write the fix as a replacement line the author can paste.
 - **C3** Cards are drawn only when the person asks, and only with `lookup_creators`,
   `lookup_posts`, `show_ads` or `show_partnership_content`. Fail an instruction that calls a search
   tool to get cards, or shows cards nobody asked for.
+- **C4** Every instruction that calls a tool whose result draws a widget says what the next line
+  is, by pointing at the **After a widget** table in `references/atlas-tools.md` or quoting its
+  line. Fail an instruction that draws a widget the person must press and then goes on working
+  (another tool call, a question, a page) in the same reply, one that draws a reference widget
+  and waits on it, and a new widget-drawing tool with no row in that table.
 - **L1** A new flow is one row in `SKILL.md`'s **Sections** index and one `references/<flow>.md`
   file. Fail a flow's steps written into a `SKILL.md`.
 - **M2** An agent asks for the fields named in page-standard's required-metrics row for its
