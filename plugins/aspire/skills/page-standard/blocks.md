@@ -342,7 +342,7 @@ beneath it. Write it last, from the decision the page supports (`SKILL.md`, sect
 
 **Holds:** one insight, in this order: the claim, the evidence, the comparison, and the "So:" line
 with the action. A page has up to three. Only the headline insight carries a chart, and at most
-one.
+one, unless the flow's reference gives each insight its own chart.
 
 - The claim is a full sentence with no hedge. Hedges go in the "So:" line.
 - The comparison names what the number is compared with: last period, peers, a goal, or the
@@ -879,9 +879,11 @@ it)
 | Caveat on organic data and boosted views | 3.12 |
 | Scoring method: six criteria with weights, what 5 and 1 mean, score bands, the override | 3.11 |
 | How the 12 posts scored: thumbnail, handle, source, date, length, score bar, verdict, note | 3.16 |
-| What the scores show, each with a "So:" line and a proof visual | 3.4 |
-| Seconds to first product appearance chart; hook variant bars | 3.4, the headline insight's chart; the second chart is the flow's own (section 6) |
-| What the frames show | 3.4, evidence lines, or the flow's own grid |
+| How Atlas got there: posts considered, about the brand, videos, read frame by frame, scored, recommended | The flow's own strip (section 6) |
+| What Atlas learned: headline stat, claim, paragraph, chart, works and misses frame pair, "So Atlas recommends" | 3.4, a `pb-stat` line and one chart per learning; the frame pair is two `figure`s with a `pb-chip` each |
+| The posts Atlas recommends, found then briefed, each checked against every learning with a check mark or a "+" fix, and why it was picked; the held back with their scores | 3.8 per post; the checks are the flow's own list (section 6); held back in prose, counts only for a client |
+| Seconds to first product appearance chart | 3.4, the chart of whichever learning it proves |
+| Hook variant bars | The hook pattern table, the flow's own (section 6), in 3.11 |
 | The five beat structure and the specs every cut shares | 3.9, structure strip and specs grid |
 | Six storyboards: badge, hook, handle, date, pattern, length, tests, stills or insert tiles, timecodes, duration bar, edit notes | 3.9 |
 | Test table: question, ads, judged on, hypothesis; Scale, Fix, and Stop cards; metric definitions | 3.15 |
