@@ -40,7 +40,7 @@ group's `tasks` in order when it starts, then call again as each task finishes w
 | ----- | ------- | ------- | ---- |
 | 1 | `Connecting` | `Verify Aspire Atlas` (Phase 1), `Get organizations`, `Pick the organization`, `Get status` (Phase 2 + 3) | Every run. Mark `Pick the organization` done at once when no question is asked; on a bare run it stays in progress while the selector waits. |
 | 2 | `Onboarding` | `Create the brand profile` (4.1), `Connect a social account` (4.2), `Confirm the account` (4.2 terminal status) | Only when Phase 3 routed to Phase 4. Drop `Create the brand profile` when the profile exists. Skip the group for an existing org with a connected channel. |
-| 3 | `Brand questions` | One task per Phase 5 question still to ask (skip keys already saved), then `Theme and rates offers` and `First insights` (Phase 6) | Optional. Start it only when Phase 5 runs. A declined question is marked done, not left open. |
+| 3 | `Brand questions` | One task per Phase 5 question still open (leave out the ones already handled), then `Theme and rates offers` and `First insights` (Phase 6) | Optional. Start it only when Phase 5 runs. A declined question is marked done, not left open. |
 
 Finish each group with `finished: true` before starting the next. A group that does not run is
 never reported, so the bar never shows steps the run skips. Call it once more with
@@ -169,11 +169,12 @@ Rules:
 - Before asking anything, call `get_brand_context` with `asProfileId` = `profile_id` and
   `includeSuperseded: true` (all applied records in one call; `truncated` true means page the
   rest with `search_calibrations`). When the tool is absent, call `search_calibrations` (no
-  filter, limit 100 per page, paged to the end) with the same arguments. Skip any question
-  whose key is already occupied; `includeSuperseded` keeps moved facts from being re-asked as
-  new. That read is the only source of which questions are open. Never call
-  `get_onboarding_form`: on a host that draws widgets it puts Atlas's form on screen beside
-  these questions, so the user sees each one twice. Ask each open question once, with
+  filter, limit 100 per page, paged to the end) with the same arguments. Skip every question
+  that read shows as handled: an answer on its key, a decline, or a "nothing yet" record
+  (**Onboarding questions**, Which questions are open). `includeSuperseded` keeps moved facts
+  from being re-asked as new. That read is the only source of which questions are open. Never
+  call `get_onboarding_form`: on a host that draws widgets it puts Atlas's form on screen
+  beside these questions, so the user sees each one twice. Ask each open question once, with
   `AskUserQuestion`, and write with `append_calibration` as below.
 - Write each answer with `append_calibration` right after it is given, `provenance:
   "interview"` (or `"web"` per the web research option above), `statement` under 280

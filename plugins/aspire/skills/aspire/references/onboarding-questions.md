@@ -3,7 +3,8 @@
 Every question is asked with `AskUserQuestion`, one per call, in this order. Each row gives the
 option set (2 to 4 options). The tool always adds its own free text field, so never add
 "Other". "Skip" appears only where listed. Before Phase 5's first question, read existing
-calibrations for the profile and skip any whose key is already occupied. Write each answer
+calibrations for the profile and skip every question already handled (**Which questions are
+open** below). Write each answer
 immediately with `append_calibration`, `provenance: "interview"`. Keep `statement` under 280
 characters; put supporting prose in `detail`.
 
@@ -68,11 +69,27 @@ each with its source), then ask: record as stated / edit / discard. Record with
 `provenance: "interview"`. A discard is not a decline: re-ask the original question with the
 web option removed.
 
+## Which questions are open
+
+Each question has a slug: 1 `brand-summary`, 2 `relationship`, 3 `competitors`, 4 `goal`,
+5 `hard-nos`, 6 `partners`, 7 `tracking`, 8 `cadence`, 9 `voice`, 10 `weekly-health`, 11 `team`.
+A question is handled, and never asked, when the calibration read holds any of these:
+
+- A record on the question's key. For questions 3, 5 and 6 that is any key starting
+  `competitor:`, `redline:` or `partner:`; for question 11, a teammate's `user:{slug}` record
+  (`user:primary-contact` is question 2's).
+- `decline:{slug}`: the brand skipped the question.
+- `gap:{slug}`: the brand said nothing exists yet.
+
+Every other question is open. Atlas's own onboarding saves under the same keys and slugs, so a
+question answered or skipped there is not asked again here.
+
 ## Skips and declines
 
-A "Skip" answer writes kind `decline`, key `decline:{question-slug}`, detail
-`{topic, askedAt}` so no future session asks again. "Not sure yet" and "None yet" answers are
-recorded as `brand_fact` in `limits_and_gaps` with `provenance: "known-absent"`.
+A "Skip" answer writes kind `decline`, key `decline:{slug}`, detail `{topic, askedAt}`. "Not
+sure yet" and "None yet" answers write kind `brand_fact`, key `gap:{slug}`, detail
+`{section: "limits_and_gaps", body}`, `provenance: "known-absent"`. Both use the slug from
+**Which questions are open**, so no future session asks again.
 
 ## Handles
 
