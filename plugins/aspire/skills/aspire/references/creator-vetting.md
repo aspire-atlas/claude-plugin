@@ -148,9 +148,11 @@ Normalizing, for every source:
   channels, vetted on each and recommended once (the weaker channel's safety counts).
 - Drop the brand's own handles and say so. A saved `competitor` handle is recommended Reject
   without further checks.
-- At most 100 creators per run, the Atlas lookup cap, and 25 when a visual check runs. A longer
-  list is split into runs of that size in file order, each with its own page; say how many runs
-  it will take, and run one at a time.
+- At most 100 creators per run, the Atlas lookup cap, and 25 when a visual check runs. A longer list
+  is split into runs of that size in file order, each with its own page; say how many runs it will
+  take, and run one at a time. Each part of a split list gets its own name and slug, "{list name}
+  (part {n} of {k})" and `{slug}-part-{n}`, so each run has its own `runKey`, idempotency keys, page
+  title, and `listName`.
 - Give the list a short name for the run and the page (the file name, the Aspire list name,
   or "pasted list"), and a slug from it, lowercase and hyphenated.
 
@@ -192,8 +194,11 @@ names as needed for the casting, say in one line that vetting looks at a person'
 for a look the casting needs. Either way, run no visual check, and offer an on-screen check instead
 (Product on screen, or a saved check that looks at things on screen). The limit is checked in every
 run: picking a saved appearance check at R5 does not count as the ask, so it runs only when that
-run's criteria or ask name its look; otherwise the main thread gives the one-line answer after the
-questions and offers an on-screen check. A check about a person's appearance has its per-creator
+run's criteria or ask name its look; otherwise the main thread gives the one-line answer and offers
+an on-screen check. That answer and offer (Product on screen, a saved on-screen check, or No visual
+check) go in the storyline call as a flow question, since the check runs only when the page is
+built; on a run with no storyline call, they go in the next call before the launch. The same
+placement holds for every refusal above. A check about a person's appearance has its per-creator
 results shown on the page and never written to Atlas: its findings leave out `visualCheck`, and the
 run summary names the check but leaves out its counts. Its definition may still be saved as a named
 check (F4), since that describes what to look for, not anyone's result. The main thread decides
@@ -218,15 +223,15 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    creator.
 4. Launch `atlas-creator-vetting` with: tool prefix, `profile_id`, `profile_slug`, brand handles and
    networks, the normalized list, the list name, slug and source, the criteria source, the approved
-   fetches, the R4 answer, `visual_check` (from R5: `none`, or `{name, kind: "named" | "free-text",
-   key, definition, appearance}`, `appearance` true for a check about a person's appearance and
-   false otherwise, with `key` and `definition` from the saved record (`key` null for Product on
-   screen and for a free-text check), the built-in definition for Product on screen, or, for a
-   free-text check, the definition the main thread words once from the user's words before the first
-   launch: what to look for, what counts, what does not), and `recipient`. A list over 100 creators
-   runs in batches of 100, and a run with a visual check in batches of 25, since each creator's
-   frames take room in the agent's context; say how many and launch them one at a time, every batch
-   with the same `visual_check`.
+   fetches, the R4 answer, `visual_check` (from R5 or the ask: `none`, or `{name, kind: "named" |
+   "free-text", key, definition, appearance}`, `appearance` true for a check about a person's
+   appearance and false otherwise, with `key` and `definition` from the saved record (`key` null for
+   Product on screen and for a free-text check), the built-in definition for Product on screen, or,
+   for a free-text check, the definition the main thread words once from the user's words before the
+   first launch: what to look for, what counts, what does not), and `recipient`. A list over 100
+   creators runs in batches of 100, and a run with a visual check in batches of 25, since each
+   creator's frames take room in the agent's context; say how many and launch them one at a time,
+   every batch with the same `visual_check`.
 5. Answer in text: the counts, up to three points naming the approved creators and top maybes
    with their page numbers, the next step, and the page link. Keep the agent's `creator-cards`
    block; the cards appear only when the user asks to see them (**Creator card**, **Cards in
