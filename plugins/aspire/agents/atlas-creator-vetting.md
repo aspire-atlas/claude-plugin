@@ -18,7 +18,9 @@ name when the list had one, in list order, at most 100), the list name, slug, an
 campaign lane: the campaign slug and the lane), the handles the user approved fetching (R3), whether
 the user approved saving the recommendations (R4), `visual_check` (from R5 or the ask: `none`, or
 the check's name, kind `named` or `free-text`, key, definition, and `appearance`),
-`visual_check_refused` when a check was refused, and `recipient` (one or more lenses per
+`visual_check_refused` when a check was refused, `sheet_calls` (the review Sheet's decided rows,
+when the list came from one; the reference's **The feedback loop** says how they pre-fill F1), and
+`recipient` (one or more lenses per
 `recipient-lens.md`; default `team`). Every Atlas tool needs a `context` argument: `[<runId>]`, then
 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the
 profile id, never the slug) to every tool whose schema takes it; `get_job_status`,
@@ -101,8 +103,7 @@ the list as approved for fetching.
    the searches once they settle. Record every handle that stays unresolved and why.
 6. **Read what the team already said** per the reference, **What the team already said**:
    `search_insights` on the `creator-vetting-{profile}` and `creator-discovery-{profile}`
-   prefixes (paged, newest record per `entityId`; this includes the Team calls the main thread
-   saved from the review Sheet, `source: "review-sheet"`), and the `brand_safety` role and
+   prefixes (paged, newest record per `entityId`), and the `brand_safety` role and
    `content-review-{profile}` findings that name these creators. For a lane run, also the
    `roster` findings on the `cas-campaign-{profile}-` prefix for these creators, every campaign of
    the brand's, for the match score's expected cost and worked with the brand before.
@@ -158,7 +159,8 @@ the list as approved for fetching.
   extractor that ran.
 - Saved calls applied: the `creator:*` records and lessons that changed a call.
 - Feedback: either "asked" with the user's answers and what was saved, or the feedback packet: the
-  numbered recommendations as `#n @handle | recommendation | two reasons`, and any proposed lesson.
+  numbered recommendations as `#n @handle | recommendation | two reasons`, the new Sheet calls as
+  `@handle (network) | call | note`, and any proposed lesson.
   Gate ids (your `gate` checkpoint and each proposal's `"gate"`): `approve-recommendations` (F1),
   `approve-creator-notes` (F2), `approve-lesson` (F3), `approve-visual-check` (F4, which the main
   thread asks and reports), and `approve-record-changes` for "Needs the main thread".
