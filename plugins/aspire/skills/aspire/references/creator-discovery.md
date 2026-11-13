@@ -260,15 +260,20 @@ The shortlist opens with the same three findings and the same "What we look for"
 vetting slate, worked out exactly as **Creator vetting**, **The findings behind the checks** says,
 so the reader sees why the checks matter before the candidates. Three differences:
 
-- **The product posts** are the posts this run read about the brand or the campaign's subject: the
-  tier 2 posts that mention the brand, and the topic evidence posts read per candidate. No search is
-  added for them.
-- **A candidate's usual views** is the `instagram.medianViews` or `tiktok.medianViews` the
-  `search_creators` hit already carries (the census names its window, normally 90 days), so a lift
-  needs no extra read. Without the field, the usual is worked out from the candidate's posts this
-  run read, as vetting does; with fewer than 5, it is not available.
+- **The product posts** are the posts this run read that mention the brand or the product: the
+  tier 1 partnership posts and the tier 2 posts that mention the brand, and the topic evidence
+  posts read per candidate that mention the brand or product (one about the campaign's broader
+  subject alone does not count). No search is added for them.
+- **A candidate's usual views** is the `instagram.medianViews` the `search_creators` hit already
+  carries when `instagram.medianViewsWindowDays` is 90, so it matches the vetting slate's 90-day
+  usual. Otherwise (another window, TikTok, which names none, or no field) the usual is worked out
+  from the candidate's posts this run read, as vetting does; with fewer than 5, it is not
+  available. The page's key names the window.
 - **The checks** are the components of the scoring table above, worded in the campaign's terms,
-  each tagged with its finding. The fit score still decides the rank. A criterion a finding
+  each tagged with its finding. The fit score still decides the rank. In creator-ads mode the
+  checks are the match score's client factors with Budget vs target left out, marked as vetting's
+  creator-ads lanes say, and the score shown beside them is the client score, so no check or score
+  on the page shows price. A criterion a finding
   suggests is a proposed change to `campaign:{slug}-criteria`: it goes in the page's Decisions
   and in the result's "Proposed criteria changes", and the run never applies it. An unattended
   run only puts it on the page.
@@ -318,7 +323,9 @@ whenever undecided candidates are ready to vet. Build this page from the page bl
    top right.
 2. **Answer** (3.3), written last: where the pool stands and what to do with it ("50 in the
    pool, 12 new this run. Vet the top 20 next."), then **Decisions** (3.5): the candidates to
-   accept or reject, by number, or "Nothing needs approval" when the pool holds no new ones.
+   accept or reject, by number, and each proposed change to the criteria with the finding behind
+   it, or "Nothing needs approval" when the pool holds no new candidates and there is no
+   proposal.
    Then **Next steps** (3.6), its own section: which numbers to vet next and by when, and any
    tier that ran dry with what would refill it.
 3. **What people are doing well with {product}**, **Where people are having challenges**, and
@@ -428,6 +435,10 @@ shortlist", "Change setup". Then launch `atlas-creator-discovery` with: tool pre
 (SKILL.md, **Reading the ask**; `growth` when the ask is for more creators like the ones
 working). Relay its summary, the page link, and the numbered range the user can decide against.
 Name the top candidates added this run in text, with their shortlist numbers and fit scores.
+Then offer each item on the agent's "Proposed criteria changes" line through its own Destructive
+tools confirmation (`supersede_calibration` on `campaign:{slug}-criteria`, gate
+`approve-record-changes`), one per call; a declined proposal stays unsaved. A scheduled run's
+proposals wait on the page until someone runs discovery and is offered them.
 Keep the agent's `creator-cards` block (top six by fit score); the cards appear only when the
 user asks to see them (**Creator card**, **Cards in chat**).
 

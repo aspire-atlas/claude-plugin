@@ -220,8 +220,9 @@ census lists them. Fewer than 5 indexed posts in 90 days: widen to 180 days once
 one. It needs at least 5 such posts; with fewer, the usual is "not available: {n} posts with a view
 count in 90 days" and the creator's lifts are not measured. A post's **lift** is its views divided
 by its author's usual ("3.6× usual views"). Work both out from the posts already read, never from a
-new search, and keep the usual even when the 180-day widening ran, so every lift on the page
-compares against the same 90-day window.
+new search. A creator whose read was widened to 180 days had too few posts for a usual, so has none.
+The read stops at 50 posts, so for a creator who posts more than that in 90 days the usual covers
+their newest 50; the page's key says so.
 
 ### 1. Brand fit (the fit score, out of 100)
 
@@ -290,8 +291,10 @@ out what people are doing well with the brand's product, where they get stuck, a
 means for picking creators, then ties every check to one of those findings. All of it comes from
 the posts and comments already read for the list; it adds no search.
 
-**The product posts.** The posts read for the list that are about the brand or the product the
-criteria name: the posts cited as topic evidence, and the posts that mention the brand. The
+**The product posts.** The posts read for the list that mention the brand or the product the
+criteria name, in the caption, hashtags, transcript, or overlay text. A topic evidence post counts
+only when it does: a post about the campaign's broader subject ("home cooking" for a cookware
+brand) is not about the product. The
 comparisons of views use only the product posts whose author has a usual (**What to read per
 creator**) and that have 5,000 or more views, so one small account's swing doesn't lead. The page
 states that floor and how many posts passed it. With fewer than 5 posts that pass, What's working
@@ -414,8 +417,9 @@ Rules:
 
 **In the main thread.** When the agent reports "asked", relay what the user decided and what
 was saved. When it returns a feedback packet, run F1 to F3 yourself, before anything else in the
-conversation, and offer each "Needs the main thread" change through its own Destructive tools
-confirmation (`supersede_calibration` or `retract_calibration`), one per call.
+conversation. Either way, offer each "Needs the main thread" change, the proposed changes to the
+criteria among them, through its own Destructive tools confirmation (`supersede_calibration` or
+`retract_calibration`), one per call. A proposal the user declines stays unsaved.
 
 **Feedback outside a run.** Feedback about a creator outside a run ("never use @handle again",
 "@handle was great to work with") is saved the same way: word the note, confirm it with
@@ -539,9 +543,11 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
    what it should change: contact the approvals, settle the Maybes, line up the backups, and,
    when the list came up short, where a second search should look given the findings.
 9. **Approve**, **Maybe**, **Reject**, **Can't vet**, in that order. First a table of every
-   vetted creator against the checks (a pass, partial, miss, or not-in-Atlas mark per check, the
-   fit score, and the recommendation), numbered as the cards, with a key under it saying the
-   usual is the creator's 90-day median views. Then each verdict is a grid of creator
+   vetted creator against the checks (a pass, partial, or miss mark per check, or "not
+   available" with no mark for a check without data, the fit score, and the recommendation),
+   numbered as the cards, with a key under it saying the usual is the creator's median views over
+   their newest posts in 90 days, at most 50. In a creator-ads lane the score column is the score
+   without Budget vs target (**Creator-ads lanes**). Then each verdict is a grid of creator
    cards (3.7; **Creator card**, page mode) ranked by fit score, numbered from 1
    across the whole page in the order shown, because those numbers are what the user replies
    with. When the
@@ -650,7 +656,8 @@ factors:
   the inputs that can differ from the campaign page's as that section lists them.
 - Brand safety runs exactly as today, and every hard stop still decides first.
 - **The checks in "What we look for"** are the client score's factors, Budget vs target left
-  out, so no check ever shows price. A factor is a pass at 0.7 or more, a partial pass at 0.35 or
+  out, so no check ever shows price. The score shown beside them, in the checks table and on the
+  cards, is `client`, the score without Budget vs target, never `score`. A factor is a pass at 0.7 or more, a partial pass at 0.35 or
   more, and a miss below that; a factor left out for missing data carries no mark, as above.
 
 **The recommendation is the slate call.** Approve, Maybe, or Reject, by **The recommendation**

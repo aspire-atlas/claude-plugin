@@ -128,7 +128,8 @@ the category read of paid partners belongs to vetting.
   mode any recommendation pass that returned nothing (a gap, not an error), criteria with no data behind them, the page's "as of"
   timestamp, and whether any source was unavailable this run.
 - Proposed criteria changes: each as `campaign:{slug}-criteria | current wording | proposed
-  wording | the finding behind it`. Leave the line out when there are none.
+  wording | the finding behind it`, gate id `approve-record-changes`; the main thread offers each
+  through its own confirmation. Leave the line out when there are none.
 - Forward note, for a lens other than `team`: two or three lines the requester can paste to the reader.
 - One closing line: candidates written, the `runKey` used, the page link, and — in
   interactive mode — the numbered range the user can reply against to decide. Gate id for
