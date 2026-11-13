@@ -23,7 +23,7 @@ review yet ("set up the applicant review for {campaign}", "we have applicants co
 {campaign}", "set up screening"), or asks to change one ("change the {campaign} review"). An
 applicant review is the setup for screening one campaign's applicants: what fit means, the red
 lines and checks, the rules for form answers, the visual checks, what the client sees, and the
-review Sheet where the team works the list. It is saved once, so every screening run reads it and
+review Sheet set aside for the list (created empty: see **The review Sheet**). It is saved once, so every screening run reads it and
 never asks again.
 
 Requires a brand profile. Interactive only: setup asks questions and creates the Sheet, so a
@@ -147,7 +147,7 @@ Rules:
 
 ## The review Sheet
 
-One Sheet per review, where the team filters the applicants and records its calls. Atlas holds the
+One Sheet per review, set aside for the team to filter applicants and record calls once a flow fills it. Atlas holds the
 record; the Sheet is the team's working view of it. Setup only creates the Sheet and saves its
 link. No flow in this plugin writes applicant rows yet: until one does, the Sheet holds its header
 row only, the team works the list from the vetting page, and a run that has the Sheet link says in
