@@ -191,20 +191,19 @@ weight, or any other trait the law protects. Age itself is never judged, only a 
 casting names, such as grey hair. When a check asks for one of these, say in one line that vetting
 doesn't screen people on it. When it asks for a person's look that neither the criteria nor the ask
 names as needed for the casting, say in one line that vetting looks at a person's appearance only
-for a look the casting needs. Either way, run no visual check, and offer an on-screen check instead
-(Product on screen, or a saved check that looks at things on screen). The limit is checked in every
-run: picking a saved appearance check at R5 does not count as the ask, so it runs only when that
-run's criteria or ask name its look; otherwise the main thread gives the one-line answer and offers
-an on-screen check. That answer and offer (Product on screen, a saved on-screen check, or No visual
-check) go in the storyline call as a flow question, since the check runs only when the page is
-built; on a run with no storyline call, they go in the next call before the launch. The same
-placement holds for every refusal above. A check about a person's appearance has its per-creator
-results shown on the page and never written to Atlas: its findings leave out `visualCheck`, and the
-run summary names the check but leaves out its counts. Its definition may still be saved as a named
-check (F4), since that describes what to look for, not anyone's result. The main thread decides
-once, before the first launch, whether a check is about a person's appearance, and passes it as
-`appearance` in `visual_check`; a saved check carries it in its body, so every batch and every later
-run treats the check the same way.
+for a look the casting needs. The limit is checked in every run: picking a saved appearance check at
+R5 does not count as the ask, so it runs only when that run's criteria or ask name its look. Either
+way, the run goes ahead with no visual check, as if R5 were "No visual check": its size, its reads
+and its storyline stay as they are. The main thread gives the one-line answer in its next message
+(the storyline call, or the launch message on a run with no storyline), and the page's **Next
+steps** offers an on-screen check (Product on screen, or a saved check that looks at things on
+screen) as a follow-up vetting run on the same list. A check about a person's appearance has its
+per-creator results shown on the page and never written to Atlas: its findings leave out
+`visualCheck`, and the run summary names the check but leaves out its counts. Its definition may
+still be saved as a named check (F4), since that describes what to look for, not anyone's result.
+The main thread decides once, before the first launch, whether a check is about a person's
+appearance, and passes it as `appearance` in `visual_check`; a saved check carries it in its body,
+so every batch and every later run treats the check the same way.
 
 ## Main thread: the run
 
@@ -228,10 +227,11 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    appearance and false otherwise, with `key` and `definition` from the saved record (`key` null for
    Product on screen and for a free-text check), the built-in definition for Product on screen, or,
    for a free-text check, the definition the main thread words once from the user's words before the
-   first launch: what to look for, what counts, what does not), and `recipient`. A list over 100
-   creators runs in batches of 100, and a run with a visual check in batches of 25, since each
-   creator's frames take room in the agent's context; say how many and launch them one at a time,
-   every batch with the same `visual_check`.
+   first launch: what to look for, what counts, what does not), `visual_check_refused` (the one-line
+   reason, when a check was refused), and `recipient`. A list over 100 creators runs in batches of
+   100, and a run with a visual check in batches of 25, since each creator's frames take room in the
+   agent's context; say how many and launch them one at a time, every batch with the same
+   `visual_check`.
 5. Answer in text: the counts, up to three points naming the approved creators and top maybes
    with their page numbers, the next step, and the page link. Keep the agent's `creator-cards`
    block; the cards appear only when the user asks to see them (**Creator card**, **Cards in
@@ -703,7 +703,9 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
    Questions that settle one creator stay on that creator's card.
 8. **Next steps** (3.6): in order, each with its week, the creators it covers by number, and
    what it should change: contact the approvals, settle the Maybes, line up the backups, and,
-   when the list came up short, where a second search should look given the findings.
+   when the list came up short, where a second search should look given the findings, and,
+   when `visual_check_refused` is set, its reason and an on-screen check (Product on screen, or a
+   saved check that looks at things on screen) as a follow-up vetting run on the same list.
 9. **Approve**, **Maybe**, **Reject**, **Can't vet**, in that order. First a table of every vetted
    creator against the checks (a pass, partial, or miss mark per check, or "not available" with no
    mark for a check without data, the fit score, and the recommendation, plus a column for the

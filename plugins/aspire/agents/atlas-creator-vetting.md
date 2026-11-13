@@ -17,14 +17,14 @@ name when the list had one, in list order, at most 100), the list name, slug, an
 `pasted`, `aspire-app`, or `cas-lane`), the criteria source (`vetting`, a campaign slug, or a
 campaign lane: the campaign slug and the lane), the handles the user approved fetching (R3), whether
 the user approved saving the recommendations (R4), `visual_check` (from R5 or the ask: `none`, or
-the check's name, kind `named` or `free-text`, key, definition, and `appearance`), and `recipient`
-(one or more lenses per `recipient-lens.md`; default `team`). Every Atlas tool needs a `context`
-argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward
-them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it;
-`get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no
-attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with
-`ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md`
-before any other call.
+the check's name, kind `named` or `free-text`, key, definition, and `appearance`),
+`visual_check_refused` when a check was refused, and `recipient` (one or more lenses per
+`recipient-lens.md`; default `team`). Every Atlas tool needs a `context` argument: `[<runId>]`, then
+15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the
+profile id, never the slug) to every tool whose schema takes it; `get_job_status`,
+`list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no
+profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it
+per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-vetting.md` before starting. It
 holds the checks, the recommendation rule, the feedback loop, the creator calibrations, the
