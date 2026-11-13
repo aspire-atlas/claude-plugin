@@ -61,6 +61,25 @@ to be fast and complete, and end in a next step.
 | `performance` | "reuse as ads", "whitelist", "spark ads", "license", "paid", "best hooks", "what will convert" | Which hooks and openings will work as paid media? | What to license and put spend behind | Paid creative planning | Hook patterns, first-three-second breakdowns, ad practice applied to organic posts, ranked licensing candidates | `atlas-ad-reuse`, `atlas-content-review` (ad reuse check), `atlas-post-analysis` (reuse order), `atlas-ppa-pitch` |
 | `team` | No other reader named; "for us", "our", day-to-day asks | Fast, complete, a next step | The team's own next move | Chat, the team's page | The flow's default shape | Every agent |
 
+**The result each reader is judged on.** The setup reply's opening sentence names it
+(**Orchestration contract**, **2**, **Before the questions**). For `team`, take it from the
+persona of the person asking.
+
+| Reader | The result they are judged on |
+| ------ | ----------------------------- |
+| `product` | A product that keeps up with competitors, with fewer problems users hit |
+| `pmm` | Messaging that buyers repeat, and share of voice |
+| `leadership` | A budget decision they can defend |
+| `growth` | Sign-ups and sales for each dollar spent |
+| `campaign` | A launch that goes live on time and reaches its goals |
+| `brand` | Nothing unsafe or off-brand going live under the brand's name |
+| `creative` | Cuts the paid team can run |
+| `performance` | Sign-ups and sales from paid |
+| `team`, influencer manager | Creators signed, and the posts they owe delivered |
+| `team`, paid social manager | Sign-ups and sales from paid |
+| `team`, organic social manager | Reach and engagement |
+| `team`, persona unknown | The team's own next move, until Heard settles the persona |
+
 **Hand-offs.** Two chains recur: Performance picks the candidates, then Creative cuts them;
 Campaign runs the launch, then Brand approves the drafts. When the primary lens is one end of
 a chain, add the other end as a second lens by default and say so in the confirmation.
