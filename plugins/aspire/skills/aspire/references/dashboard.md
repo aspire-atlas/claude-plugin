@@ -17,9 +17,10 @@ recommends only, and writes nothing: no spend, no members, nothing moved, drafte
    campaigns, the newest saved work) and a tab per brand profile (its setup, posts per week against
    the 28 days before, things of interest, its tracked hashtags, and, once the tab is opened, its own
    accounts as creator cards and its newest posts). The caller's role and stated relationship set what leads and what starts
-   open. Build no page or card beside it and repeat none of its numbers; say one line with the
-   next step, then ask step 3 in the same reply.
-   - When that line or the fallback below cites an account's data, it carries the freshness line,
+   open. Build no page or card beside it and repeat none of its numbers. The dashboard is for
+   reference: say its line from **Atlas tools**, **After a widget**, which names the next
+   step, then ask step 3 in the same reply.
+   - When the fallback below cites an account's data, it carries the freshness line,
      read from `freshness` on the profile's `list_channels` connections, and a period Atlas has not
      fetched reads "Atlas has no data for {period}" (**Page standard**, section 9). The dashboard
      refreshes nothing and offers no refresh; the reports that read the account do (section 9.5).

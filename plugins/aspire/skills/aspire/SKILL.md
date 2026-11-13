@@ -90,7 +90,7 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 | **Recipient lens** (who the reader is: the lens catalog and cues) | `references/recipient-lens.md` |
 | **List agents** | `references/agents-menu.md` (the hand-off table is **Agent hand-off** below) |
 | **Running agents**, **Checkpoints**, **Reading the ask**, **Campaign plan**, **Examples library**, **Decision audit** | `references/running-agents.md` (the decision audit brief a subagent is handed: `references/agents/decision-audit.md`) |
-| **Atlas tools** (the tool list and load order, Phase map, **Partnership content**, Destructive tools, Calibration kinds) | `references/atlas-tools.md` |
+| **Atlas tools** (the tool list and load order, Phase map, **Partnership content**, **After a widget**, Destructive tools, Calibration kinds) | `references/atlas-tools.md` |
 | Phase 1 guided add (1.1 steps 4 and 5, the one card rule, 1.3 to 1.4); **Connection card** | `references/connect.md`; `references/connection-card.md` |
 | **Phase overview**, Phase 4, Phase 5; **Onboarding questions** | `references/onboarding.md`; `references/onboarding-questions.md` |
 | Phase 6 (first insights, account review); **Account resolution** | `references/account-review.md`; `references/account-resolution.md` |
@@ -330,7 +330,7 @@ Write a fresh `context` per call.
    selector comes first and comes alone. The `get_status` call in step 1 draws it where the host
    renders the tool's widget. End the turn there: no bullets, no summary, no first-run guide, no
    dashboard, and no other tool call or question in that reply; one line only, "Pick the
-   organization above, then say continue." A pick in the widget does not post a message: it
+   organization above, then say continue." (**After a widget**: needs a click.) A pick in the widget does not post a message: it
    records `selectedOrganizationId` in the model context, so the user's next message is what
    resumes the run. On that message use the `selectedOrganizationId` the widget recorded; with
    none, match a typed name to the organizations in that result, ignoring case; with no match
@@ -451,6 +451,8 @@ Organization Admin connection itself.
   a time, before relaunching the agent. Never drop a question to fit, and never merge two
   decisions into one question to save a call.
 - Never fabricate org, account, or metric data. If a tool call fails, say so and stop.
+- **After a widget**, say its line from the table in **Atlas tools**, **After a widget**, right after the call
+  that drew it. Needs a click: name the control, end the turn, no other work (a connection's polling goes on). For reference: carry on.
 - **Every state change is confirmed through `AskUserQuestion`, never plain text.** This covers
   creating a profile, starting a channel connection, writing a calibration, adding hashtags,
   and writing insights. One confirmation may cover a batch of the same kind (for example the
