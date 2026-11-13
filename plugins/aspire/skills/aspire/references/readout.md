@@ -66,7 +66,7 @@ session's scheduled-task tools (never local cron), replace old-named tasks, one 
 both. Show the always-allow block in SKILL.md **1.6** with that confirmation, which names it
 as 1.6 says. Tell the user three things: the tasks run in fresh sessions, so Aspire Atlas (and
 Slack or email, if routed, and Meta Ads for its optional block) must be enabled for scheduled
-tasks with their tools set to Always allow; approval must be "Automatically approve"; the task
+tasks, each with only the tools 1.6 lists on Always allow; approval must be "Automatically approve"; the task
 can be paused or edited from the scheduled tasks list. Readouts deliver only to
 destinations saved in setup. Unattended runs never ask questions;
 with setup incomplete they publish a "setup needed" card and stop.
@@ -536,9 +536,11 @@ the recurring schedules now?" Options: "Yes, daily and weekly (Recommended)", "W
    `AskUserQuestion` before creating them, listing name, local time, and destinations. Its
    confirming option names the setting as 1.6 says. Create only on the confirming option.
 4. Tell the user: the tasks run in fresh sessions, so Aspire Atlas (and Slack or email, if
-   routed) must be enabled for scheduled tasks in their Claude settings with their tools set to
-   Always allow, and the task's approval setting should be "Automatically approve". Either one
-   missing stalls the run on its first permission prompt. Mention the task can be paused or edited from the scheduled tasks list.
+   routed) must be enabled for scheduled tasks in their Claude settings, each with only the tools
+   1.6 lists on Always allow (for email routing, the sending exception 1.6 describes), and the
+   task's approval setting should be "Automatically approve". Either one missing stalls the run
+   on its first permission prompt. Mention the task can be paused or edited from the scheduled
+   tasks list.
 5. If the scheduled-task tools are not present in the session, do not fake it: point the user
    to the manual steps in the README and stop.
 

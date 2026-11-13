@@ -123,8 +123,8 @@ the program's cadence), launching `atlas-program-dashboard` with `run: unattende
 
 Create the task only after the dashboard has been published once interactively and its link is
 saved (B3). Scheduled runs never ask, decide, draft, or send, and show missing records as "not
-tracked yet". Aspire Atlas, and Slack or email when routed, must be enabled for scheduled tasks with their tools
-set to Always allow (SKILL.md **1.6**).
+tracked yet". Aspire Atlas, and Slack or email when routed, must be enabled for scheduled tasks,
+each with only the tools SKILL.md **1.6** lists on Always allow.
 
 ## What it reads
 

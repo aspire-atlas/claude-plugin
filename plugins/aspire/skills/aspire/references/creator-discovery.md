@@ -456,7 +456,8 @@ now". On yes, follow the same mechanics as SKILL.md **Readouts**, Schedule
 convert to UTC cron, create one task per job with the session's scheduled-task tools, named as in
 **Jobs and task names**, show the always-allow block in SKILL.md **1.6** and confirm both in
 one `AskUserQuestion` before creating them, and tell the user the tasks run in fresh sessions so
-Aspire Atlas must be enabled for scheduled tasks with its tools set to Always allow. Prompts
+Aspire Atlas must be enabled for scheduled tasks with its tools on Always allow, except the ones
+1.6 holds back. Prompts
 must say "do not ask questions", name the brand by its exact Atlas profile `name` and the
 campaign slug, and state no date.
 

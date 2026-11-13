@@ -594,11 +594,11 @@ If setup is incomplete or Atlas needs a fresh sign in, publish the "setup needed
 Post only to the Slack channel and people saved in the orchestrator routing.
 ```
 
-Tell the user the same three things **Readouts**, Schedule says about scheduled tasks: Aspire
-Atlas and Slack must be enabled for scheduled tasks with their tools set to Always allow
-(SKILL.md **1.6**, shown with X6) (plus the mail connection when a program
-drafts into a mailbox or reads replies, and the store connection when sales are read from it), the approval setting must be "Automatically
-approve", and the task can be paused from the scheduled tasks list.
+Tell the user the same three things **Readouts**, Schedule says about scheduled tasks. Aspire
+Atlas, Slack, the mail connection when a program drafts into a mailbox or reads replies, and the
+store connection when sales are read from it must be enabled for scheduled tasks, each with only
+the tools SKILL.md **1.6** lists on Always allow; show that block with X6. The approval setting
+must be "Automatically approve", and the task can be paused from the scheduled tasks list.
 
 ## 12. Autonomy levels (design note)
 
