@@ -46,13 +46,13 @@ answers).
 ### Run
 
 Get the list (R1; the Aspire app only with a browser tool, the user signs in, read only), check
-what Atlas holds, ask R2 to R4 in one call (R3 approves the fetches, R4 the write), then launch
-`atlas-creator-vetting` with the list, criteria source, approved fetches, R4 answer, and
-`recipient`, in batches of 100. Relay the page and counts in text (cards only on request); offer the shortlist add.
+what Atlas holds, ask R2 to R5 in one call (R3 approves the fetches, R4 the write, R5 picks the
+visual check), then launch `atlas-creator-vetting` with the list, criteria source, approved
+fetches, R4 answer, visual check, and `recipient`, in batches of 100. Relay the page and counts in text (cards only on request); offer the shortlist add.
 
 ### Feedback: save the team's call on each creator
 
-Every run ends with F1 to F3 (the agent's or yours, before anything else). F1 confirms its own
+Every run ends with F1 to F4 (the agent's or yours, before anything else). F1 confirms its own
 write; notes are shown worded before saving. Supersedes and retractions are the main thread's,
 one Destructive tools confirmation each. Feedback outside a run: "Save this about @handle for
 future vetting and discovery?"
@@ -163,12 +163,19 @@ takes up to four questions), skipping any the user already answered.
 | R2 | Vet them against what? | 1) {brand}'s vetting criteria (Recommended); 2) The {campaign} campaign's criteria (one option per saved `campaign:*-criteria`, up to two) |
 | R3 | {n} of these creators aren't in Atlas yet. Fetch them? | 1) Fetch them (Recommended) (description: "Atlas looks up each account and its recent posts. A TikTok account Atlas doesn't hold costs one paid lookup; {t} are TikTok."); 2) Only vet the creators Atlas already holds |
 | R4 | Save the recommendations to {brand}'s Atlas insights? | 1) Save (Recommended); 2) Page only |
+| R5 | Run a visual check on each creator's videos? Type what to look for, or pick a saved check. | 1) No visual check (Recommended); 2) Product on screen: {product}; 3) and 4) the two newest saved `vetting:visual-*` checks, each labelled with its name and described with its "look for" line |
 
 R3 is asked only after the main thread has checked which handles Atlas holds
 (`search_creators` filtered on the username field, one call per network with a `terms`
 filter on the whole list), and only when some are missing. R3 option 1 is the approval for
 `lookup_creators` on exactly those handles, and the agent does not ask again. R4 is the write
 confirmation for the recommendation findings; the feedback answers carry their own.
+
+R5 picks the visual check (**4. Visual check**). An option picked is a **named** check; words typed
+in the tool's free text field are a **free-text** check, unless they match a saved check's name,
+which then runs as that named check. When the user's ask already names something to look for
+("which of these have an overweight dog"), skip R5 and use that, matched the same way. R5 is never
+asked for a creator-ads lane run, which runs no visual check.
 
 ## Main thread: the run
 
@@ -178,12 +185,15 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    attached a file or pasted handles). Show what was found and the list name.
 2. **Check what Atlas holds**: `search_creators` with a `terms` filter on the username field,
    one call per network.
-3. Ask R2 to R4 in one `AskUserQuestion` call with the **Reading the ask** confirmation (SKILL.md)
+3. Ask R2 to R5 in one `AskUserQuestion` call with the **Reading the ask** confirmation (SKILL.md)
    when it applies (`team` by default; `brand` for "are these safe"; `campaign` when the list is
    a launch lineup). Skip R3 when Atlas holds every creator.
 4. Launch `atlas-creator-vetting` with: tool prefix, `profile_id`, `profile_slug`, brand handles
    and networks, the normalized list, the list name, slug and source, the criteria source, the
-   approved fetches, the R4 answer, and `recipient`. A list over 100 creators runs in batches of
+   approved fetches, the R4 answer, `visual_check` (from R5: `none`, or `{name, kind: "named" |
+   "free-text", key, definition}`, with `key` and `definition` from the saved record, the built-in
+   definition for Product on screen, or the user's words for a free-text check), and `recipient`. A
+   list over 100 creators runs in batches of
    100; say how many and launch them one at a time.
 5. Answer in text: the counts, up to three points naming the approved creators and top maybes
    with their page numbers, the next step, and the page link. Keep the agent's `creator-cards`
@@ -284,6 +294,71 @@ and the contact route Atlas holds.
   `entityId`), with the team's call when a `feedback` finding holds one, and the creator's
   newest state in any discovery campaign (`creator-discovery-{profile}` prefix).
 
+### 4. Visual check (when R5 names one)
+
+A look at each creator's videos for one thing the brief cares about that captions and transcripts
+don't show reliably: a product on screen, an overweight dog, grey hair. The run has one check, and
+every creator with videos gets a result. These reads are approximate, and the page says so.
+
+**Named and free-text checks.**
+
+- A **named** check has a written definition, so two runs judge it the same way: what to look for,
+  what counts as seen, and what does not. **Product on screen** is built in: the product the
+  criteria name (else the brand's products from `brand:summary`) visible in frame, as packaging,
+  its logo, or in use. A competitor's product, or the product only named in on-screen text, does
+  not count. Every other named check is a saved `vetting:visual-{slug}` record (**Visual check
+  records**).
+- A **free-text** check is what the user typed at R5, with no definition. The agent works one
+  out from the words before reading any frame (what to look for, what counts) and keeps it the
+  same for every creator. It is the fallback: its confidence is never above Medium, and the page
+  marks it "Free-text check: less reliable". F4 offers to save it as a named check.
+
+**Which videos.** Up to three video posts per creator, from the posts already read (**What to read
+per creator**): a `mediaKind` of video, or an Instagram Reel. Rank them by how likely each is to
+show the subject: a caption, transcript, overlay text, or `analysis.narration` that mentions it
+first (narration only picks videos here; it never decides the result), then the most viewed, then
+the newest. A creator with no video posts is **Can't check (no videos in the posts read)**.
+
+**Frames.** Follow **Content review**, **Media: what the agent can and cannot see**, for getting
+each video, the frame extractor (ffmpeg, then AVFoundation, then OpenCV; never install one), and
+resizing, with these changes:
+
+- **Sampling.** Per video, start at 0.5 seconds and take one frame every 3 seconds, at most 10
+  frames (a longer clip widens the step to duration ÷ 10).
+- **Contact sheet.** Tile one creator's frames into one sheet with their post number and
+  timestamps, as **Post analysis**, **Video: frames, shots, and audio**, does, and view it. With no
+  tiling tool, view the frames one by one.
+- **Confirming.** Where the sheet shows a possible match, take full-size frames at ±1 second and
+  view them. A Seen rests only on a full-size frame the agent viewed.
+- **No extractor.** Read the three cover images only. The result's confidence is Low at most, it
+  says "covers only", and the run's summary names the tool that would fix it.
+- A video that won't download is skipped and named; the next ranked video takes its place.
+
+Keep every file in the run's working folder, in a subfolder per creator, so batches never share
+files.
+
+**The result.** One per creator: **Seen**, **Not seen**, or **Can't check**, with a confidence
+word, an evidence frame, and what was read ("3 videos, 28 frames").
+
+| Result | High | Medium | Low |
+| ------ | ---- | ------ | --- |
+| Seen | Clearly in frame, matching the definition, in 2 or more of the videos | Clearly in one video only, or in 2 or more but small, partly covered, or at a distance | Possibly: blurred, mostly covered, or matches only part of the definition |
+| Not seen | Three videos read, frames across each whole clip, no match | Fewer than three videos, or a clip longer than 30 seconds sampled at a widened step | Covers only, or every frame dark or blurred |
+
+A free-text check takes one step down from High to Medium. **Can't check** names its reason (no
+videos, no video would download) and carries no confidence word.
+
+**The evidence frame.** For Seen, the clearest full-size frame that shows it. For Not seen, the
+frame that shows the most of the scene the subject would be in (for a dog, the room or walk where
+pets appear), so the reader can judge the miss. Each carries the post's permalink and the timestamp
+("Reel of 14 Oct, 0:07"). The page shows it as a still, resized to 320 px wide and embedded in the
+page; Atlas keeps only the link and the time, never the image.
+
+**It never decides the call.** The visual check adds no points to the fit score and changes no
+recommendation. It shows in the checks table, on each card, and in its own section of the page,
+and a Seen or Not seen at Low confidence is listed in Decisions for a person to confirm. When the
+brief makes the subject a must, say so in the Maybe's "what would settle it", never as a Reject.
+
 ## The findings behind the checks
 
 The reader needs to see why the checks matter for this product before the list. So the run works
@@ -365,7 +440,8 @@ In this order; the first rule that applies decides, and the page names it:
    the approve line, **Maybe** at or above the maybe line, **Reject** under it. In a creator-ads
    lane this is the score without Budget vs target (**Creator-ads lanes**).
 
-A `vetting:lesson-*` record can change how a check is judged; mark every call a lesson
+A visual check (**4. Visual check**) is not one of these rules: it never changes a
+recommendation. A `vetting:lesson-*` record can change how a check is judged; mark every call a lesson
 changed ("Passed under saved lesson: …"). A lesson never relaxes a red line, a competitor, a
 hard reject, or a saved team call on another creator. Every recommendation carries its top
 two reasons in plain words, and every Maybe says what would settle it ("check their last 3
@@ -391,6 +467,7 @@ thread asks, before anything else happens in the conversation.
 | F1 | What's your call on these {n} recommendations? Your answers are saved to Atlas. | 1) Agree with all of them (Recommended); 2) Change some (type them, for example "approve 4, reject 9: too much alcohol, maybe 12"); 3) Decide later (nothing is saved as the team's call) |
 | F2 | Save these notes about creators for future vetting and discovery? (multiSelect; up to four per call, repeated until every note is covered) | One option per note, labelled "@handle: {stance}", the description giving the full note as it will be saved. |
 | F3 | Save this for every future vetting: *"{lesson}"*? (only when a change generalizes) | 1) Save as a vetting lesson (Recommended); 2) Just these creators |
+| F4 | Save "{check}" as a named visual check for future runs? (only after a free-text check) | 1) Save it as worded (Recommended) (description: the definition as it will be saved); 2) Not now |
 
 Rules:
 
@@ -408,6 +485,10 @@ Rules:
   If the correction targets a red line, a competitor, or a hard reject, write no lesson: say
   the rule itself would have to change, and list it under "Needs the main thread".
 - Skip F2 and F3 when F1 is "Agree" with no reasons given, or "Decide later".
+- **F4** is asked after every free-text check, whatever F1 was, and is its own write confirmation.
+  The definition saved is the one the run used, worded per **Visual check records**, with any
+  correction the user typed. A saved check of the same name goes under "Needs the main thread" as
+  a supersede instead.
 - **Changes to saved records belong to the main thread.** A note for a creator who already has
   a `creator:*` record, a lesson that contradicts a saved `vetting:lesson-*`, and any change to
   a red line, competitor, or setup answer go through `supersede_calibration` or
@@ -446,6 +527,23 @@ Creator discovery reads these: a creator with stance `reject` is never surfaced,
 campaign had rejected them, and any other stance is shown on the creator's card under
 "Notes".
 
+### Visual check records
+
+One record per named visual check, organization-wide, read only by creator vetting.
+
+- kind `guideline`, key `vetting:visual-{slug}`, the slug from the check's name (lowercase,
+  hyphenated, 40 characters at most).
+- `statement`: "Visual check: {name}. Look for {what}", under 280 characters.
+- `detail`: `{concern: "preference", appliesTo: ["creator-vetting"], body: "name: {name}; look for:
+  <what>; counts as seen: <what counts>; not seen when: <what does not count>; runKey: <originating
+  runKey>; saved: <YYYY-MM-DD>"}`.
+- `provenance: "interview"`.
+
+Saved through F4, or outside a run when the user asks ("add a visual check for grey hair"): word
+the definition, confirm it with `AskUserQuestion` ("Save this visual check for {brand}'s vetting?"
+with the definition in the description), then write the record. Changing or removing one is a
+supersede or retraction with its own Destructive tools confirmation.
+
 Lessons: kind `guideline`, key `vetting:lesson-{slug}`, `concern: "preference"` when it
 relaxes a check and `"requirement"` when it tightens one, `appliesTo: ["creator-vetting"]`,
 `body` = the lesson plus the originating `runKey` and one evidence line.
@@ -468,7 +566,8 @@ F1 feedback findings, which F1 confirms. Instagram and TikTok only.
 
 The run summary is anchored to the brand's own account on the first linked network and
 carries the list name and source, the counts per recommendation, the handles that could not
-be resolved or were not vetted, and the page link, so a run with unresolvable handles is
+be resolved or were not vetted, the visual check run (name, kind, and the count per result and
+confidence) when there was one, and the page link, so a run with unresolvable handles is
 still on record. It also carries `detail.findings` (**The findings behind the checks**):
 `{viewFloor, measured, working: [{label, medianLift, measured, total, examples[]}], sentiment:
 {positive, neutral, mixed, negative, posts}, challenges: [{n, title, evidence[]}], brandsNamed:
@@ -481,7 +580,10 @@ on every finding of one run), `handle`, `network`, `name` (from the list, when g
 component breakdown, `safety` (`{category: result}` plus red line, scope, competitor,
 disclosure, and audience checks), `redLineHits[]`, `hardRejectHits[]`, `riskFlags[]`,
 `calibrationsApplied[]` (the keys that shaped the call), `lessonsApplied[]`, `evidence[]`,
-`estFee` when the calculator gives one, `usualViews` (or the reason it is not available),
+`estFee` when the calculator gives one, `visualCheck` when R5 named one (`{name, kind: "named" |
+"free-text", key, result: "seen" | "not-seen" | "cant-check", confidence: "high" | "medium" |
+"low" | null, frame: {postUrl, at}, videosRead, framesViewed, coversOnly, reason}`, `frame` and
+`confidence` null for Can't check), `usualViews` (or the reason it is not available),
 `checks` (`{component: 1 | 0.5 | 0 | null}`, `null` for a component with no data; the
 finding each check comes from is on the run summary),
 `listName`, `listSource` (`csv`, `pasted`,
@@ -537,14 +639,17 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
    findings behind the checks** says, and the section says why.
 7. **Decisions** (3.5): approving the creators to contact, with the date outreach should start,
    any brand rule the team must settle before a verdict holds (for example, a red line a creator
-   sits on the edge of), and each proposed change to the criteria with the finding behind it.
+   sits on the edge of), each proposed change to the criteria with the finding behind it, and,
+   after a visual check, the creators whose read is Low confidence, to confirm by eye.
    Questions that settle one creator stay on that creator's card.
 8. **Next steps** (3.6): in order, each with its week, the creators it covers by number, and
    what it should change: contact the approvals, settle the Maybes, line up the backups, and,
    when the list came up short, where a second search should look given the findings.
 9. **Approve**, **Maybe**, **Reject**, **Can't vet**, in that order. First a table of every
    vetted creator against the checks (a pass, partial, or miss mark per check, or "not
-   available" with no mark for a check without data, the fit score, and the recommendation),
+   available" with no mark for a check without data, the fit score, and the recommendation, plus
+   a column for the visual check when one ran: the result and its confidence word, which is never
+   a mark and never counts toward the score),
    numbered as the cards, with a key under it saying the usual is the creator's median views over
    their newest posts in 90 days, at most 50. In a creator-ads lane the score column is the score
    without Budget vs target (**Creator-ads lanes**). Then each verdict is a grid of creator
@@ -555,7 +660,9 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
    when they also set how many creators each audience needs, a group short of it names the open
    slot. On each card: the fit score in the ring; flow chips `#{number}` and
    the recommendation; safety results in the brand safety tile per the card's **Brand safety**
-   rule; three proof posts in the thumbnails; `{DETAILS}` with the two reasons, each check's mark
+   rule; three proof posts in the thumbnails; when a visual check ran, a line under the
+   thumbnails with the check's name, the result, the confidence word, and the evidence frame as a
+   small still linked to its post and timestamp; `{DETAILS}` with the two reasons, each check's mark
    with the post or number behind it (a lift as "3.0× usual views"), a watch line
    (the one thing to keep an eye on), what would settle a Maybe (a Maybe that only fills a gap
    says "Backup: take if {creator} declines" instead; it stays a Maybe in the findings), the calibrations and lessons applied, an earlier vetting or discovery state, the
@@ -567,23 +674,36 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
    and why not, rather than full cards. A Reject row carries its score; a Can't vet row carries
    no score, only what would make it checkable. In a creator-ads lane each row
    also carries the four ad figures.
-10. **Safety summary**: a table of creators by category, only the rows with a Flag or Fail.
-11. **Launch clock** (3.17), when the criteria name a launch date: the weeks from today to that
+10. **Visual check: {name}**, when R5 named one. It opens with one line, in the section's own
+   text and not a footnote: "These reads are approximate: the agent looked at frames from up to
+   three videos per creator. Confirm by eye before you rely on one." Then the definition used, and
+   for a free-text check the chip "Free-text check: less reliable" with one line saying why (no
+   saved definition, so the agent worked one out from the words typed). Then a tally by result and
+   confidence, and a grid of every creator vetted, numbered as the cards: the evidence frame (the
+   still, 320 px wide), the result, the confidence word, the post and timestamp linked, and what
+   was read ("3 videos, 28 frames"). Can't check rows sit at the end with their reason. Seen,
+   Not seen, and Can't check use the page's neutral colors, never the Approve, Maybe, and Reject
+   status colors, so a visual read never looks like a verdict.
+11. **Safety summary**: a table of creators by category, only the rows with a Flag or Fail.
+12. **Launch clock** (3.17), when the criteria name a launch date: the weeks from today to that
    date, with each next step placed in its week and the launch marked. No stage gets a date the
    next steps did not set.
-12. **How the verdict was made** (3.11): the fit score's components and weights, the safety
+13. **How the verdict was made** (3.11): the fit score's components and weights, the safety
    results, the recommendation order and the thresholds, the hard rejects, every saved call or
    lesson that changed a verdict, which posts the findings used, how a lift is worked out (the
-   post's views divided by the creator's 90-day median) and the view floor, and the platform counts
-   again.
-13. **What's missing** (3.12): creators Atlas could not read, networks not covered, data a
+   post's views divided by the creator's 90-day median) and the view floor, the platform counts
+   again, and, when a visual check ran, how the videos were picked, the frames per video, the
+   frame extractor that ran, and the confidence rule.
+14. **What's missing** (3.12): creators Atlas could not read, networks not covered, data a
     verdict would firm up with (for example, audience demographics), creators with no usual
-    views, and how small each finding's groups are ("lifts rest on 2 to 9 posts each").
-14. **Not vetted**: handles on other networks and the brand's own handles, with the reason for
+    views, how small each finding's groups are ("lifts rest on 2 to 9 posts each"), and, after a
+    visual check, the creators it couldn't check and why, and "covers only" when no frame
+    extractor was installed, with the tool that would fix it.
+15. **Not vetted**: handles on other networks and the brand's own handles, with the reason for
     each. A handle that could not be resolved is listed once, under Can't vet.
-15. **Atlas can draft next** (3.13): first messages to the approvals, offers at the fee
+16. **Atlas can draft next** (3.13): first messages to the approvals, offers at the fee
     calculator's open rate, and the questions to the Maybes.
-16. **Footer**: sources, the fee rate label once, a note that images are a snapshot, and
+17. **Footer**: sources, the fee rate label once, a note that images are a snapshot, and
     "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote. The mark and the footnote follow **Artifact standard**.
 
 Sections 3 and 4 each carry their own chart; this reference sets that, so the page standard's
@@ -608,7 +728,8 @@ persona fit, and paid track record. Everything above applies, with these changes
 is the lane's undecided candidates from discovery (`creator-discovery-{profile}-{slug}` prefix,
 `detail.lane`); the list name is "{campaign}: {lane}" and its slug `{slug}-{lane}`. R1 and R2
 are answered by the launch. R3 is skipped: the campaign's saved cadence approves lookups for its
-lanes (SKILL.md, **Guardrails**). R4 is answered by the CAS Run picker.
+lanes (SKILL.md, **Guardrails**). R4 is answered by the CAS Run picker. R5 is skipped, and no
+visual check runs.
 
 **Fit score for a creator-ads lane** is the campaign's match score, out of 100: the one procedure
 in **CAS campaign**, **Creator Selection**, **The match score**, with the lane's concept,
