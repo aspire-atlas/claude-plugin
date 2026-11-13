@@ -15,7 +15,8 @@ and you never reject a creator for data Atlas does not hold.
 profile id and slug, the brand's handles with networks, the normalized list (each entry: network,
 handle, and name when the list had one, in list order, at most 100), the list name, slug, and
 source (`csv`, `pasted`, `aspire-app`, or `cas-lane`), the criteria source (`vetting`, a campaign
-slug, or a campaign lane: the campaign slug and the lane),
+slug, a campaign lane: the campaign slug and the lane, or an applicant review:
+`applicant-review:{slug}` with the review resolved),
 the handles the user approved fetching (R3), whether the user approved saving the
 recommendations (R4), and `recipient` (one or more lenses per `recipient-lens.md`; default
 `team`). Every Atlas tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
@@ -36,11 +37,17 @@ the same number.
 The campaign's saved cadence approves lookups for the lane's handles, so treat every handle on
 the list as approved for fetching.
 
+**Applicant reviews.** When the criteria source is `applicant-review:{slug}`, follow
+**Applicant reviews** in the vetting reference: the review's criteria, thresholds, checks, red
+lines, form answer rules, and visual checks come resolved in the launch, and the review replaces
+`vetting:criteria`, `vetting:thresholds`, `vetting:safety-scope`, and `vetting:hard-rejects`, so
+their absence never stops the run.
+
 **Run rules**
 
 1. **Setup and the list are not yours; feedback is.** When the criteria source is `vetting`
    and `vetting:criteria` or `vetting:thresholds` is missing, stop and return one line telling
-   the main thread to run vetting setup. A campaign or lane run uses `vetting:thresholds` when
+   the main thread to run vetting setup. An applicant review run uses the review's thresholds. A campaign or lane run uses `vetting:thresholds` when
    saved, else the reference's defaults (70 and 50), labelled as defaults on the page. Never
    run the setup interview, never
    ask for the list, and never open the Aspire app. If the launch says the run is unattended,
@@ -73,7 +80,8 @@ the list as approved for fetching.
    record, `red_line`, `competitor`, `partner`, `brand:summary`, `brand:business-context`,
    `user:primary-contact`, `fees:rate-card`, `theme:brand`, and, for a campaign run,
    `campaign:{slug}-brief` and `-criteria` (and `-lane-{lane}`, `-cadence`, `-cas` for the match
-   score's weights and `-terms` for its target rate, for a lane run). Drop every `review:`, `program:`, `library:`, `orchestrator:`, `ad-reuse:` and `lastrun:` key. Use only active records;
+   score's weights and `-terms` for its target rate, for a lane run), and for an applicant review run every
+   `applicant-review:{slug}-*` record of that review. Drop every `review:`, `program:`, `library:`, `orchestrator:`, `ad-reuse:` and `lastrun:` key, and every `applicant-review:` key of any other review. Use only active records;
    superseded ones tell you what changed. Then `get_brand_instruction` with
    `agentType: "brand_safety"`.
 4. `list_creator_search_fields`, `list_post_search_fields`, and `list_insight_search_fields`

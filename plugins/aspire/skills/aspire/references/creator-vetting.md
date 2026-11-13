@@ -22,6 +22,7 @@ in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Se
 - [The feedback loop](#the-feedback-loop)
 - [State written to Atlas](#state-written-to-atlas)
 - [The page](#the-page)
+- [Applicant reviews](#applicant-reviews)
 - [Creator-ads lanes (CAS campaigns)](#creator-ads-lanes-cas-campaigns)
 - [Atlas quirks that apply here](#atlas-quirks-that-apply-here)
 
@@ -37,7 +38,9 @@ Before anything, read this file (**Setup**, **Getting the list**,
 
 ### Setup
 
-V1 to V4, one at a time, one batch confirmation. A campaign's criteria need no setup. Every
+V1 to V4, one at a time, one batch confirmation. A campaign's criteria need no setup. A
+campaign's applicants are screened against its applicant review, set up once in **Applicant
+review**, which replaces V1 to V4 for that campaign (**Applicant reviews** below). Every
 question is asked exactly as worded in the reference, at most four per call (**Guardrails**). An
 interactive run's reader and save choice go on `lastrun:creator-vetting`, or
 `lastrun:creator-vetting-{slug}` for a campaign (**Orchestration contract**, **2**, Saved
@@ -112,7 +115,8 @@ main thread may offer V2 alone; it is not required. Otherwise it asks the missin
 to V4, one `AskUserQuestion` each, in order, then confirms the batch once and writes the records.
 
 **Keys starting `vetting:` belong to creator vetting only**, like `review:` keys belong to
-content review. Every other flow drops them.
+content review. Every other flow drops them. Keys starting `applicant-review:` belong to the
+applicant review; vetting reads them only for the review R2 named (**Applicant reviews**).
 
 ## Getting the list
 
@@ -160,7 +164,7 @@ takes up to four questions), skipping any the user already answered.
 | # | Question | Options |
 | - | -------- | ------- |
 | R1 | Where's the list of creators? | 1) Upload a CSV export from Aspire (Recommended); 2) Paste the handles; 3) Pull it from the Aspire app (you'll sign in yourself) (only when a browser tool is available) |
-| R2 | Vet them against what? | 1) {brand}'s vetting criteria (Recommended); 2) The {campaign} campaign's criteria (one option per saved `campaign:*-criteria`, up to two) |
+| R2 | Vet them against what? | 1) {brand}'s vetting criteria (Recommended); 2) The {campaign} campaign's criteria (one option per saved `campaign:*-criteria`, up to two); 3) The {campaign} applicant review (one option per applicant review saved for this profile, up to two; Recommended in place of option 1 when the list is a campaign's applicants) |
 | R3 | {n} of these creators aren't in Atlas yet. Fetch them? | 1) Fetch them (Recommended) (description: "Atlas looks up each account and its recent posts. A TikTok account Atlas doesn't hold costs one paid lookup; {t} are TikTok."); 2) Only vet the creators Atlas already holds |
 | R4 | Save the recommendations to {brand}'s Atlas insights? | 1) Save (Recommended); 2) Page only |
 
@@ -226,8 +230,8 @@ their newest 50; the page's key says so.
 
 ### 1. Brand fit (the fit score, out of 100)
 
-Scored against `vetting:criteria`, or the chosen campaign's `campaign:{slug}-brief` and
-`-criteria` when R2 named one. Weights follow creator discovery's **Scoring** so a creator
+Scored against `vetting:criteria`, the chosen campaign's `campaign:{slug}-brief` and
+`-criteria` when R2 named one, or the applicant review's resolved criteria when R2 named a review. Weights follow creator discovery's **Scoring** so a creator
 scores the same in both flows:
 
 | Component | Weight | Source |
@@ -254,7 +258,8 @@ and the contact route Atlas holds.
   on one post is a Flag, on three or more posts a Fail. Add your own read of captions and
   transcripts; cite the post. Fewer than 3 analyzed posts: the category screen is "Can't
   check" and says so.
-- **Red lines.** Every `red_line` calibration, except `review:` keys, with its `action`:
+- **Red lines.** Every `red_line` calibration, except `review:` keys and other applicant
+  reviews' `applicant-review:` keys, with its `action`:
   `block` fails the creator, `flag` flags it, `escalate` flags it and names the primary
   contact (`user:primary-contact`). One `search_posts` over the 90 days with `queryText` set
   to each `block` or `escalate` red line's body, limit 5, filtered to the creator. Each red
@@ -597,6 +602,33 @@ or follower count against engagement rate, colored by recommendation). Images fo
 large list. Load `artifact-design`, and `dataviz` for any chart, and apply `theme:brand` per
 **Theme**, **Applying the theme**. Approve, Maybe, and Reject keep their status colors under
 any theme.
+
+## Applicant reviews
+
+A campaign's applicants are screened against its applicant review: the setup saved once under
+`applicant-review:{slug}-*` (**Applicant review**, **The records**). The criteria source is
+`applicant-review:{slug}`. The main thread reads the review back per **Applicant review**,
+**Reading the setup back (screening)**, and passes it resolved in the launch, so neither the main
+thread nor the agent asks V1 to V4 or any setup question.
+
+What changes against a `vetting` run:
+
+| Part of the run | Applicant review |
+| --------------- | ---------------- |
+| Fit criteria | The review's `-criteria`, resolved: the campaign's or vetting's criteria it points at, or its own lines |
+| Approve, Maybe, Reject lines | The review's `-thresholds`, resolved |
+| Brand safety and fit | Always run, as in every vetting run |
+| Competitor deals | Run when `-checks` lists `competitor-deals`; a paid partnership with a saved competitor in the last 90 days is a hard reject |
+| Disclosure | Run when `-checks` lists `disclosure`; a paid post without a disclosure is a hard reject |
+| Language on camera | Run when `-checks` lists `language-on-camera`: swearing or a word the brand won't run in `analysis.transcript` or `analysis.overlayText` is a Flag, citing the line; a `block` red line it hits is a Fail |
+| Red lines | The brand's saved `red_line` records plus the review's `-red-lines`, each its own check |
+| `vetting:safety-scope`, `vetting:hard-rejects` | Not read; the review's checks replace them |
+| Form answer rules, visual checks | Passed through as saved. A rule or check this reference gives no step for is listed on the page under what is missing, named, never silently dropped |
+| The page | Shows the campaign's name, the review's checks, and the Sheet link from `-sheet` when it holds one |
+
+Everything else (the creator calibrations, lessons, the recommendation rule, the feedback loop,
+and the state written to Atlas) runs as in a `vetting` run, with `detail.campaign` set to the
+review's slug and `calibrationsApplied[]` naming the `applicant-review:` keys that shaped the call.
 
 ## Creator-ads lanes (CAS campaigns)
 

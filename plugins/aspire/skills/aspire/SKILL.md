@@ -65,6 +65,7 @@ Text after the command is the argument. Route on it before anything else:
 | `getting started` (also `help`, `get started`, `start`, `guide`, `starter guide`, `what can you do`, `how does this work`) | Show the Atlas Starter Guide: publish the page in `references/first-run.md` (**7**, on request), say its link in one line (the page's "Seeing results" section lists "show cards", "always show cards", and "show the palettes"), then make the **Sample artifacts** offer for Atlas as a whole. It needs no Atlas connection, so skip the phases and Phase 1. When Atlas happens to be connected already, use the `On request` status line; otherwise none. Never answer these with a text summary instead of the page, and never run onboarding unless the user asks to set up. |
 | `sample` (also `sample {agent}`, `show me a sample`, `example`) | Run **Sample artifacts** (`references/samples.md`). No Atlas connection is needed, so skip the phases. |
 | `fee calculator` (also `fees`, `pricing`, `rate card`, `creator rates`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Fee calculator**. Skip the other phases. |
+| `applicant review` (also `set up applicant review`, `review setup`, `screening setup`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Applicant review**. Skip the other phases. |
 | `program` (also `influencer program`, `creator program`, `ambassador program`, `affiliate program`, `gifting program`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Influencer program**. Skip the other phases. |
 | `next` (also `what's next`, `next actions`, `orchestrator`, and the hourly "Atlas next actions" task) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Orchestrator**. Skip the other phases. |
 | `cas campaign` (also `creator ad campaign`, `campaign manager`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **CAS campaign**. Skip the other phases. |
@@ -101,6 +102,7 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 | **Meta Ads** | `references/meta-ads-tools.md` |
 | **Creator discovery** | `references/creator-discovery.md` |
 | **Creator vetting** | `references/creator-vetting.md` |
+| **Applicant review** (set up a campaign's applicant screening) | `references/applicant-review.md` |
 | **Creator CSV** | `references/creator-csv.md` |
 | **Orchestrator** | `references/orchestrator.md` |
 | **Influencer program** (Program setup, Program manager, Drafts) | `references/program.md` |
@@ -150,7 +152,7 @@ Where **List agents** step 5 hands each agent off. Each named section owns the c
 | `atlas-creator-profile` | Phase 1, then Phase 2 + 3, then **Creator profile** (it asks for the handle and network first) |
 | `atlas-creator-brief` | Phase 1, then Phase 2 + 3, then **Creator brief** (its three questions first) |
 | `atlas-creator-discovery` | Phase 1, then Phase 2 + 3, then **Creator discovery**, Setup if the campaign is new, then Run |
-| `atlas-creator-vetting` | Phase 1, then Phase 2 + 3, then **Creator vetting**, Setup if it has never run, then Run (it asks for the list first) |
+| `atlas-creator-vetting` | Phase 1, then Phase 2 + 3, then **Creator vetting**, Setup if it has never run (for a campaign's applicants, **Applicant review** instead), then Run (it asks for the list first) |
 | `atlas-content-review` | Phase 1, then Phase 2 + 3, then **Content review**, Setup if it has never run, then Review |
 | `atlas-post-analysis` | Phase 1, then Phase 2 + 3, then **Post analysis** (it asks for the post first) |
 | `atlas-daily-insights-report` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the daily cadence |
@@ -224,6 +226,7 @@ When the ask names no flow, route by the primary lens **Reading the ask** reads
 | `brand` | Is this post safe or on brand | **Content review** |
 | `brand`, `performance` | What is in someone's post, how it did, and whether to sponsor, partner with, or reuse it (no brief) | **Post analysis** |
 | `brand`, `campaign` | Which creators on a list to approve | **Creator vetting** |
+| `campaign` | Setting up how a campaign's applicants are screened | **Applicant review**, then **Creator vetting** with the review |
 | `performance`, `creative` | Hooks, ads, licensing, a cut list | **Ad reuse**; for one post, **Content review** with the ad reuse check |
 | `leadership`, `performance` | A pitch or casting deck for partnership ads, whitelisting, creators to license | **PPA pitch** |
 | `performance` | Which creator posts the brand can run as partnership ads now, permissions, an ad code | **Partnership content** |
