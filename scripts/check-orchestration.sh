@@ -110,12 +110,15 @@ sys.exit(bad)
 PY
 
 # A drop list that leaves out `lastrun:` hands a flow's saved setup answers to the agent as brand
-# guidelines. Every drop list names `orchestrator:`, so that is the anchor.
+# guidelines, and one that leaves out `applicant-review:` hands it one campaign's screening red
+# lines and criteria as brand-wide rules. Every drop list names `orchestrator:`, so that is the anchor.
 drops=$(for f in plugins/*/agents/*.md $(find plugins -path '*/skills/*' -name '*.md' | sort); do
   awk -v F="$f" '
     function flush() {
       if (blk ~ /`orchestrator:/ && blk ~ /([Dd]rop|[Ii]gnore|[Ss]kipping|[Ll]eave out)/ && blk !~ /`lastrun:/)
         print "FAIL " F ":" start ": drops `orchestrator:` keys but not `lastrun:` keys (orchestration.md, section 2, Saved answers)"
+      if (blk ~ /`orchestrator:/ && blk ~ /([Dd]rop|[Ii]gnore|[Ss]kipping|[Ll]eave out)/ && blk !~ /`applicant-review:/)
+        print "FAIL " F ":" start ": drops `orchestrator:` keys but not `applicant-review:` keys (atlas-tools.md, Calibration kinds)"
       blk = ""
     }
     /^$/ || /^ *([0-9]+[a-z]?\.|-|\|) / { flush() }
@@ -124,5 +127,5 @@ drops=$(for f in plugins/*/agents/*.md $(find plugins -path '*/skills/*' -name '
 done)
 if [ -n "$drops" ]; then echo "$drops"; fail=1; fi
 
-[ "$fail" -eq 0 ] && echo "OK   every agent carries the orchestration contract and has a permission level; routes and shortcuts resolve; every drop list drops lastrun: keys"
+[ "$fail" -eq 0 ] && echo "OK   every agent carries the orchestration contract and has a permission level; routes and shortcuts resolve; every drop list drops lastrun: and applicant-review: keys"
 exit "$fail"

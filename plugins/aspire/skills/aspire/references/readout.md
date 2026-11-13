@@ -138,7 +138,8 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
 
 1. `search_calibrations` as above. Extract: readout calibrations, `red_line`, `guideline`,
    `competitor`, `partner`, `brand:summary`, `target:weekly-health`, `theme:brand`. Drop every
-   `review:` key (content review only; see **Atlas tools**) and every `lastrun:` key (a flow's
+   `review:` key (content review only; see **Atlas tools**), every `applicant-review:` key (one
+   campaign's applicant screening only), and every `lastrun:` key (a flow's
    saved setup answers, never a rule). `theme:brand` styles the page and is never a guideline.
 2. `list_post_search_fields` once. Use only paths it returns.
 2b. Freshness (**Page standard**, section 9): `search_creators` on the linked handles, with no

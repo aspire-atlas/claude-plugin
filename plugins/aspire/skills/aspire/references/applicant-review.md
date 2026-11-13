@@ -23,8 +23,8 @@ review yet ("set up the applicant review for {campaign}", "we have applicants co
 {campaign}", "set up screening"), or asks to change one ("change the {campaign} review"). An
 applicant review is the setup for screening one campaign's applicants: what fit means, the red
 lines and checks, the rules for form answers, the visual checks, what the client sees, and the
-review Sheet where the team works the list. It is saved once, so every screening run, attended or
-scheduled, reads it and never asks again.
+review Sheet where the team works the list. It is saved once, so every screening run reads it and
+never asks again.
 
 Requires a brand profile. Interactive only: setup asks questions and creates the Sheet, so a
 scheduled run never runs it. Without `AskUserQuestion`, say in one line that the applicant review
@@ -37,9 +37,14 @@ organization-wide. Every review is keyed by its own slug and names its brand pro
 
 ## The records
 
-Every record of a review sits under `applicant-review:{slug}-*`. Keys starting `applicant-review:`
-belong to the applicant review and to **Creator vetting** when it screens for that review; every
-other flow drops them (**Atlas tools**, Calibration kinds).
+A review is exactly the nine keys in the table below, each `applicant-review:{slug}-{part}`. Keys
+starting `applicant-review:` belong to the applicant review and to **Creator vetting** when it
+screens for that review; every other flow drops them (**Atlas tools**, Calibration kinds).
+
+**Read a review by its nine exact keys, never by prefix.** One slug can start another
+(`acme-holiday` and `acme-holiday-seeding`, or `acme-holiday-seeding` and
+`acme-holiday-seeding-2`), so an `applicant-review:{slug}-` prefix read can pick up another review's
+records. Keep only the nine keys of the review in hand and drop every other `applicant-review:` key.
 
 `{slug}` comes from the brand and the campaign name: lowercase, hyphenated, no dates (for example
 `acme-holiday-seeding`). Show it once so the user can recognize it later; never ask them to invent
@@ -48,9 +53,9 @@ it. When `applicant-review:{slug}-campaign` already exists for a different campa
 
 | Key | kind | detail | Holds |
 | --- | ---- | ------ | ----- |
-| `-campaign` | `brand_fact` | `{section: "business_context", body}`; body lines `campaign: <name>`, `profile: <brand profile id>`, `brand: <brand name>`, `aspire campaign: <Aspire campaign id, or none>`, `window: <dates, or none>` | Which campaign, for which brand profile |
-| `-criteria` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body is `source: campaign:{campaign}-criteria`, `source: vetting:criteria`, or one line per dimension (archetype and audience, networks, size band, market, content) | What makes an applicant a fit |
-| `-checks` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body one check per line from `brand-safety`, `fit`, `competitor-deals`, `disclosure`, `language-on-camera` | The checks screening runs |
+| `-campaign` | `brand_fact` | `{section: "business_context", body}`; body lines `campaign: <name>`, `campaign key: <the slug of the saved campaign:{campaign-slug}-brief this review is for, or none>`, `profile: <brand profile id>`, `brand: <brand name>`, `aspire campaign: <Aspire campaign id, or none>`, `window: <dates, or none>` | Which campaign, for which brand profile |
+| `-criteria` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body is `source: campaign:{campaign-slug}` (that campaign's `-brief` and `-criteria`), `source: vetting:criteria`, or one line per dimension (archetype and audience, networks, size band, market, content) | What makes an applicant a fit |
+| `-checks` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body two lines: `run: brand-safety, fit, competitor-deals, disclosure, language-on-camera` (always all five) and `reject: <the checks that reject on their own, from competitor-deals, disclosure, language-on-camera; or none>` | The checks screening runs, and which reject on their own |
 | `-red-lines` | `red_line` | `{action: "block", appliesTo: ["applicant-review", "{slug}"], body}`; body one red line per line | Red lines for this campaign only, on top of the brand's saved `red_line` records |
 | `-thresholds` | `guideline` | `{concern: "ceiling", appliesTo: ["applicant-review", "{slug}"], body}`; body is `source: vetting:thresholds` or `approve >= <n>; maybe >= <m>` | Where Approve, Maybe, and Reject sit |
 | `-form-rules` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body one rule per line: `required: <form question>`, `stop: <form question> = <answer>`, `boost: <form question> = <answer>`, or `prompt: <instruction for the screening agent>` | How form answers change a call |
@@ -77,28 +82,31 @@ text (**Question format rule**). The tool adds its own free text field; never ad
 
 | # | Question | Options | Key |
 | - | -------- | ------- | --- |
-| AR1 | Which campaign is this applicant review for? Type its name, and its Aspire campaign id if you have it. | Up to two campaigns already saved for this profile (`campaign:*-brief`), by name; "A new campaign (type its name)" | `-campaign` |
-| AR2 | What makes an applicant a fit for {campaign}? | 1) Use the saved {campaign} campaign criteria (Recommended) (only when `campaign:{campaign}-criteria` exists); 2) Use {brand}'s vetting criteria (only when `vetting:criteria` exists); then starters drawn from `brand:summary` and `brand:business-context` (for example "Dog owners who post daily walks, 10K to 250K followers, US") until there are two to four options | `-criteria` |
-| AR3 | Brand safety and fit run on every applicant. Which other checks should screening run? (multiSelect) | 1) Competitor deals: a paid partnership with a saved competitor in the last 90 days; 2) Disclosure: paid posts without a disclosure label; 3) Language on camera: swearing or words {brand} won't run; 4) None of these | `-checks` |
-| AR4 | {brand}'s saved red lines apply to every applicant: {red lines}. Any red lines for {campaign} only? | 1) Only the saved red lines (Recommended); 2) Add red lines for this campaign (type them, one per line) | `-red-lines` |
-| AR5 | Where should the lines sit between Approve, Maybe, and Reject? | 1) {brand}'s vetting thresholds: Approve at {n}, Maybe from {m} (Recommended) (only when `vetting:thresholds` exists); 2) Approve at 70 and up, Maybe from 50 to 69 (Recommended when there are no vetting thresholds); 3) Stricter: Approve at 80, Maybe from 60; 4) Looser: Approve at 60, Maybe from 40 | `-thresholds` |
-| AR6 | Should any application form answer change a call? Type one rule per line: required (a missing answer makes a Maybe), hard stop (an answer that rejects), priority boost (an answer that moves an applicant up), or a note for the screening agent. | 1) No form rules for {campaign} (Recommended when the form has no questions beyond handles); then up to three rules drafted from the form's questions when a list or export is at hand (for example "Required: How many pounds overweight is your dog?") | `-form-rules` |
-| AR7 | Should screening look for something in each applicant's videos? Name each check and what counts as a pass. | 1) No visual checks (Recommended when the criteria name nothing visual); then up to three named checks drafted from the criteria (for example "Product on screen: the {product} is visible and in use") | `-visual-checks` |
+| AR1 | Which campaign is this applicant review for? Type its name, and its Aspire campaign id if you have it. | Up to two campaigns already saved for this profile (`campaign:*-brief`), by name; then campaign names drawn from `brand:summary` and `brand:business-context` (for example "{product} seeding") until there are two to four options | `-campaign` |
+| AR2 | What makes an applicant a fit for {campaign}? | 1) Use the saved {campaign} campaign brief and criteria (Recommended) (only when AR1 picked a saved campaign); 2) Use {brand}'s vetting criteria (only when `vetting:criteria` exists); then starters drawn from `brand:summary` and `brand:business-context` (for example "Dog owners who post daily walks, 10K to 250K followers, US") until there are two to four options | `-criteria` |
+| AR3 | Screening checks every applicant for brand safety, fit, competitor deals, disclosure, and language on camera, and flags what it finds. Which of these should reject an applicant on their own? (multiSelect) | 1) A paid partnership with a saved competitor in the last 90 days; 2) Paid posts without a disclosure; 3) Swearing or words {brand} won't run, said on camera or shown on screen; 4) None: flag them for the team to decide | `-checks` |
+| AR4 | {brand}'s saved red lines and competitors apply to every applicant: {red lines and competitors}. Any red lines for {campaign} only? With none saved: {brand} has no saved red lines yet. Any red lines for {campaign}? | 1) Only the saved red lines (Recommended) (with none saved: "No red lines for this campaign"); 2) Add red lines for this campaign (type them, one per line) | `-red-lines` |
+| AR5 | Where should the lines sit between Approve, Maybe, and Reject? | 1) {brand}'s vetting thresholds: Approve at {n}, Maybe from {m} (Recommended) (only when `vetting:thresholds` exists); 2) Approve at 70 and up, Maybe from 50 to 69 (Recommended when there are no vetting thresholds; left out when they are 70 and 50); 3) Stricter: Approve at 80, Maybe from 60; 4) Looser: Approve at 60, Maybe from 40 | `-thresholds` |
+| AR6 | Should any application form answer change a call? Type one rule per line: required (a missing answer makes a Maybe), hard stop (an answer that rejects), priority boost (an answer that moves an applicant up), or a note for the screening agent. | 1) No form rules for {campaign} (Recommended when the form asks only for handles); 2) Required: every form question is answered; then up to two rules drafted from the form's questions when the form is known (for example "Required: How many pounds overweight is your dog?") | `-form-rules` |
+| AR7 | Should screening look for something in each applicant's videos? Name each check and what counts as a pass. | 1) No visual checks (Recommended when the criteria name nothing visual); 2) Face on camera: the creator appears and speaks to camera; then up to two named checks drafted from the criteria (for example "Product on screen: the {product} is visible and in use") | `-visual-checks` |
 | AR8 | What should the client see once the review is shared with them? | 1) The final list and the content behind it, with no scores or notes (Recommended); 2) The final list only; 3) Nothing: no client access for {campaign} | `-client-view` |
 
 Rules:
 
-- **AR1** derives `{slug}` and writes `-campaign` with the selected profile's id. A new campaign
-  named here gets no `campaign:` records: those belong to **Creator discovery**.
-- **AR2** writes `source: campaign:{campaign}-criteria` or `source: vetting:criteria` for options 1
+- **AR1** derives `{slug}` and writes `-campaign` with the selected profile's id. A saved campaign
+  picked here sets `campaign key:` to its `{campaign-slug}`; a new one sets it to `none` and gets
+  no `campaign:` records, which belong to **Creator discovery**. When the request already named the
+  campaign, skip AR1 and show the name in the batch confirmation instead.
+- **AR2** writes `source: campaign:{campaign-slug}` or `source: vetting:criteria` for options 1
   and 2, never a copy of the criteria, so a later change to the campaign or vetting criteria
   reaches the review. A starter or typed answer is written as criteria lines. AR2 carries the web
   research option (Phase 5 rules) when the brand has no `brand:summary`. AR2 cannot be declined.
-- **AR3** writes `brand-safety` and `fit` on every review, plus each check picked. "None of these"
-  writes only those two.
+- **AR3** writes the `run:` line with all five checks, and a `reject:` line with the checks picked
+  (`none` for option 4). Every check runs and flags whatever its answer; AR3 only decides which
+  ones reject on their own, the way vetting's hard rejects do.
 - **AR4** names every saved `red_line` and `competitor` in the question text, leaving out records
   whose keys belong to another flow (**Atlas tools**, Calibration kinds), so the user only adds to
-  them. Option 1 writes a `decline` record.
+  them; with none saved it asks the second wording. Option 1 writes a `decline` record.
 - **AR5** option 1 writes `source: vetting:thresholds`. AR5 cannot be declined.
 - **AR6** and **AR7**: option 1 writes a `decline` record. A rule or check typed without one of
   the forms in **The records** is asked back once with it reworded into that form; never guess
@@ -121,7 +129,8 @@ Rules:
 ## The review Sheet
 
 One Sheet per review, where the team filters the applicants and records its calls. Atlas holds the
-record; the Sheet is a working view of it that screening keeps in sync.
+record; the Sheet is the team's working view of it. Setup only creates the Sheet and saves its
+link; filling and updating its rows belongs to the flows that bring applicants in and screen them.
 
 1. **Create it** after the confirmation's option 1, through the Claude Docs connector as a Sheet
    (load the connector's guide first and follow it). Name it "{brand} · {campaign} applicant
@@ -152,15 +161,17 @@ How **Creator vetting** reads a review when its criteria source is `applicant-re
 Screening asks none of AR1 to AR8 and none of vetting's V1 to V4.
 
 1. **Find the review.** List the `applicant-review:*-campaign` records whose body names this
-   profile. With one, use it; with several, the main thread asks which in R2 (**Creator vetting**,
-   Per-run questions). A scheduled run uses the slug its task names.
-2. **Check it is complete** per **When setup is done**. An interactive run with a gap runs setup
-   for the missing questions first. An unattended run with a gap stops with "setup needed: the
-   {campaign} applicant review", writing nothing.
-3. **Resolve pointers.** `source: campaign:{campaign}-criteria` and `source: vetting:criteria`
-   read that record's body; `source: vetting:thresholds` reads that record's body. A pointer to a
-   record that no longer exists stops the run with "setup needed", naming the missing record.
-4. **Hand it over.** The resolved review goes in the vetting launch as the criteria source:
-   criteria, thresholds, checks, the review's red lines (with the brand's saved ones), form rules,
-   visual checks, the client view, and the Sheet link. **Creator vetting**, Applicant reviews,
-   says how screening applies each.
+   profile. R2 offers them (**Creator vetting**, Per-run questions); with more than R2 has room
+   for, R2 offers "An applicant review (pick which next)" and a second `AskUserQuestion` lists the
+   reviews, four at a time.
+2. **Read its nine keys** exactly (**The records**), never by prefix.
+3. **Check it is complete** per **When setup is done**. A gap runs setup for the missing questions
+   first, then goes on.
+4. **Resolve pointers.** `source: campaign:{campaign-slug}` reads `campaign:{campaign-slug}-brief`
+   and `-criteria`; `source: vetting:criteria` and `source: vetting:thresholds` read that record's
+   body. A pointer to a record that no longer exists stops the run with "setup needed", naming the
+   missing record.
+5. **Hand it over.** The resolved review goes in the vetting launch as the criteria source: the
+   slug, the campaign's name and `campaign key`, criteria, thresholds, the `run:` and `reject:`
+   checks, the review's red lines, form rules, visual checks, the client view, and the Sheet link.
+   **Creator vetting**, Applicant reviews, says how screening applies each.

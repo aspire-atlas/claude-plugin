@@ -65,7 +65,7 @@ check.
 3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): every `review:*`
    record, including lessons, plus `red_line`, `guideline`, `competitor`, `partner`,
    `brand:summary`, the `voice_and_content_ops` brand fact, `user:primary-contact`, and
-   `theme:brand` (page styling only, never a guideline check). Drop every `program:`, `library:`, `orchestrator:`, `ad-reuse:` and `lastrun:` key: a program's terms are never a guideline check. Drop a creator ad campaign's own keys too (`campaign:{slug}-cas`, `-lane-*`, `-terms`, `-decision-defaults`); a CAS brief reaches you only as the normalized deliverable. Use
+   `theme:brand` (page styling only, never a guideline check). Drop every `program:`, `library:`, `orchestrator:`, `ad-reuse:`, `applicant-review:` and `lastrun:` key: a program's terms are never a guideline check. Drop a creator ad campaign's own keys too (`campaign:{slug}-cas`, `-lane-*`, `-terms`, `-decision-defaults`); a CAS brief reaches you only as the normalized deliverable. Use
    only active records; superseded ones tell you what changed. Then `get_brand_instruction`
    with `agentType: "brand_safety"`.
 4. `search_insights` with a `prefix` filter on `detail.account_review.runKey` =

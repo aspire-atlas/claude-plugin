@@ -132,7 +132,7 @@ tracked yet". Aspire Atlas, and Slack or email when routed, must be enabled for 
 `search_calibrations` (no filter, limit 100 per page, paged to the end,
 `includeSuperseded: true`). Keep `program:{slug}-program`, `-terms`, `-catalog`, `-outreach`,
 `-routing`, `-cadence`, `brand:summary`, `competitor`, `red_line` (not `review:` keys), and
-`theme:brand`. Drop `vetting:`, `review:`, `library:`, `orchestrator:`, `ad-reuse:`, `lastrun:`, `campaign:` keys and other programs' keys. Parse every
+`theme:brand`. Drop `vetting:`, `review:`, `library:`, `orchestrator:`, `ad-reuse:`, `applicant-review:`, `lastrun:`, `campaign:` keys and other programs' keys. Parse every
 `program:` body with a JSON parser. A missing or unparseable `-program` or `-terms` record means
 setup needs fixing (**Run rules** in the agent).
 

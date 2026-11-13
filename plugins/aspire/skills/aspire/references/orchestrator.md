@@ -156,7 +156,7 @@ Rules:
 
 - Parse every JSON body with a JSON parser. A body that does not parse counts as missing.
 - **Keys `orchestrator:*` belong to the Orchestrator.** Every other flow drops them, as it drops
-  `program:`, `lastrun:` and the CAS keys. They are never brand guidelines.
+  `program:`, `applicant-review:`, `lastrun:` and the CAS keys. They are never brand guidelines.
 - A change to any of them goes through the supersede rule with its own confirmation, in an
   interactive session only.
 

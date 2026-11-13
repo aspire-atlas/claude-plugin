@@ -73,7 +73,7 @@ findings and pushes only, saying in the summary that nothing was saved.
    - The brand's calibrations are still for two things only: saying whether the handle matches a saved
      `competitor` or `partner` record, which is a classification, not a benchmark, and framing why the
      account is or is not relevant to the brand's stated goal. Apply `red_line` checks only to the
-     brand's own accounts, and ignore every key starting `review:` (content review only), `program:` (influencer program only), `library:` (content library only), `orchestrator:` (the orchestrator only), `ad-reuse:` (ad reuse only), or `lastrun:` (a flow's saved setup answers, never a rule).
+     brand's own accounts, and ignore every key starting `review:` (content review only), `program:` (influencer program only), `library:` (content library only), `orchestrator:` (the orchestrator only), `ad-reuse:` (ad reuse only), `applicant-review:` (one campaign's applicant screening only), or `lastrun:` (a flow's saved setup answers, never a rule).
 8. Interactive runs only: write findings back with `append_insights`: one `runKey` for this run — mode `own`:
    `onboarding-{profile}-{date}` when `onboarding: true`, else `account-review-{profile}-own-{date}`;
    mode `handle`: `account-review-{profile}-{handle}-{date}` — role
