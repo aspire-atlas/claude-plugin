@@ -60,7 +60,7 @@ and brand. When `applicant-review:{slug}-campaign` already exists for a differen
 | --- | ---- | ------ | ----- |
 | `-campaign` | `brand_fact` | `{section: "business_context", body}`; body lines `campaign: <name>`, `campaign key: <the slug of the saved campaign:{campaign-slug}-brief this review is for, or none>`, `profile: <brand profile id>`, `brand: <brand name>`, `aspire campaign: <Aspire campaign id, or none>`, `window: <the saved campaign brief's window, or none>` | Which campaign, for which brand profile |
 | `-criteria` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body is `source: campaign:{campaign-slug}` (that campaign's `-brief` and `-criteria`), `source: vetting:criteria`, or one line per dimension (archetype and audience, networks, size band, market, content) | What makes an applicant a fit |
-| `-checks` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body two lines: `run: brand-safety, fit, competitor-deals, disclosure, language-on-camera` (always all five) and `reject: <the checks that reject on their own, from competitor-deals, disclosure, language-on-camera; or none>` | The checks screening runs, and which reject on their own |
+| `-checks` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body `reject: <the checks that reject on their own, from competitor-deals, disclosure, language-on-camera; or none>` | Which checks reject on their own (all of them always run: **Creator vetting**, Applicant reviews) |
 | `-red-lines` | `red_line` | `{action: "block", appliesTo: ["applicant-review", "{slug}"], body}`; body one red line per line | Red lines for this campaign only, on top of the brand's saved `red_line` records |
 | `-thresholds` | `guideline` | `{concern: "ceiling", appliesTo: ["applicant-review", "{slug}"], body}`; body is `source: vetting:thresholds` or `approve >= <n>; maybe >= <m>` | Where Approve, Maybe, and Reject sit |
 | `-form-rules` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body one rule per line: `required: <form question>`, `stop: <form question> = <answer>`, `boost: <form question> = <answer>`, or `prompt: <instruction for the screening agent>` | How form answers change a call |
@@ -109,9 +109,7 @@ Rules:
   and 2, never a copy of the criteria, so a later change to the campaign or vetting criteria
   reaches the review. A starter or typed answer is written as criteria lines. AR2 carries the web
   research option (Phase 5 rules) when the brand has no `brand:summary`. AR2 cannot be declined.
-- **AR3** writes the `run:` line with all five checks, and a `reject:` line with the checks picked
-  (`none` for option 4). Every check runs and flags whatever its answer; AR3 only decides which
-  ones reject on their own, the way vetting's hard rejects do.
+- **AR3** writes a `reject:` line with the checks picked (`none` for option 4).
 - **AR4** names every saved `red_line` and `competitor` in the question text, leaving out records
   whose keys belong to another flow (**Atlas tools**, Calibration kinds) and every
   `applicant-review:` key (another campaign's review red lines never apply here), so the user only
@@ -191,7 +189,7 @@ Screening asks none of AR1 to AR8 and none of vetting's V1 to V4.
    for, R2 offers "An applicant review (pick which next)" and a second `AskUserQuestion` lists three
    reviews plus "More reviews", which shows the next three the same way. A single review left is
    stated and used, never asked as a one-option question.
-2. **Read its nine keys** exactly (**The records**), never by prefix, active records only. When a
+2. **Read it** per **The records**. When a
    `decline` and an answer are both active for one key, the answer wins, and an interactive run
    offers to retract the `decline`.
 3. **Check it is complete** per **When setup is done**. In an interactive run a gap runs setup for
@@ -203,6 +201,6 @@ Screening asks none of AR1 to AR8 and none of vetting's V1 to V4.
    "{brand}'s vetting criteria"): an interactive run asks AR2 or AR5 again and replaces the pointer
    through the Phase 5 supersede rule; an unattended run stops with "setup needed".
 5. **Hand it over.** The resolved review goes in the vetting launch as the criteria source: the
-   slug, the campaign's name and `campaign key`, criteria, thresholds, the `run:` and `reject:`
+   slug, the campaign's name and `campaign key`, criteria, thresholds, the `reject:`
    checks, the review's red lines, form rules, visual checks, the client view, and the Sheet link.
    **Creator vetting**, Applicant reviews, says how screening applies each.
