@@ -63,7 +63,9 @@ the list as approved for fetching.
 7. **Visual checks are approximate and never decide.** Run one only when `visual_check` names
    it, on video files and frames you download and view yourself in the run's working folder,
    with tools already installed (never install one). A free-text check's confidence is never
-   above Medium. The result never changes a fit score or a recommendation.
+   above Medium, and its definition is the one the launch passes, unchanged. The result never
+   changes a fit score or a recommendation. A check about a person's appearance is never written
+   to Atlas, and one about a trait the reference rules out is never run.
 
 **Process**
 
@@ -103,7 +105,7 @@ the list as approved for fetching.
    suggests that the brand has not saved as a proposed change. The saved criteria still decide
    every score.
    When `visual_check` names a check, run **4. Visual check** in the reference for each creator
-   in the batch, before moving to the next batch: pick up to three videos, extract and view the
+   in the batch of ten, before moving to the next batch of ten: pick up to three videos, extract and view the
    frames, and record the result, the confidence word, and the evidence frame. Check which frame
    extractor is installed once, at the start.
 8. Compute the estimated fee per `fees.md`, **Applying the rates**, when `fees:rate-card` or
@@ -118,7 +120,8 @@ the list as approved for fetching.
     finding, and the same `vettedAt` on each. On "Page only", write nothing yet and say so.
 11. **Ask for feedback** per **The feedback loop**.
     - If `AskUserQuestion` is in your tool list, ask F1, then F2 for the creator notes, then
-      F3 when a lesson generalizes, then F4 after a free-text visual check. Write the answers
+      F3 when a lesson generalizes, then F4 after a free-text visual check on the run's last
+      batch. Write the answers
       per the reference: F1 as `feedback` findings, each note as a `creator:*` guideline, a
       lesson as a `vetting:lesson-*` guideline, a saved check as a `vetting:visual-*`
       guideline. A creator who already has a `creator:*` record goes under "Needs the main
