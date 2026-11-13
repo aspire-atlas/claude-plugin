@@ -79,7 +79,7 @@ and the unattended run rules. Follow it exactly. Read `recipient-lens.md` too.
    (`action_item` findings with `detail.push: true` under the `onboarding-{profile}` and
    `account-review-{profile}-own-` prefixes), last week's content reviews
    (`content-review-{profile}`, step 6b of the data pull), and one semantic red-line scan per
-   `red_line` (skipping `review:` keys, per the data pull). For the `product` and `pmm`
+   `red_line` (skipping `review:` and `applicant-review:` keys, per the data pull). For the `product` and `pmm`
    lenses, the market signal findings covering the week (`market-signal-{profile}` prefix).
    For the `growth` lens, creator posts about the brand in the week, per **Lenses**.
 4. Compute: weekly totals and week-over-week deltas, engagement rate, top 3 and bottom 2 posts

@@ -70,7 +70,7 @@ run rules. Follow it exactly.
    baseline aggregation, current follower count, the last daily readout's insights (`runKey`
    prefix `readout-daily-{profile}`), yesterday's content reviews (`content-review-{profile}`,
    step 6b of the data pull), and one semantic red-line scan per `red_line`
-   (skipping `review:` keys, per the data pull).
+   (skipping `review:` and `applicant-review:` keys, per the data pull).
 3b. **Launch pulse.** Keep every `campaign:*-pulse` record from the calibration read whose
    window covers the target date, plus the campaign the caller passed. For each, run the four
    pulse reads in **Daily launch pulse** in the reference. None open: skip.
