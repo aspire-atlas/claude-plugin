@@ -56,7 +56,9 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 Each asset request as a `rights` finding with its shot list, specs, due date, pay and usage in
 `assetSpec`, and each brief as a `draft` finding, on one batch question. It is the one writer of
 `rights` for its own asset requests: requested, countered, granted or declined, with the delivery
-date and files in `assetSpec`. Grants on posts that already exist stay with Content Library and
+date and files in `assetSpec`. For partnership ads, `assetSpec` records whether the ad code arrived
+(`adCode` received or missing), never the code itself, and the request is delivered only when the
+post is live and the code arrived. Grants on posts that already exist stay with Content Library and
 Rights (26). Sending a brief is a Send, one question per creator naming the pay and the due date,
 and covers only an email draft already in the brand's mailbox, unchanged, with no blank left. Direct
 messages and Aspire messages are never sent; the person sends them. When an asset request is agreed,
@@ -71,7 +73,8 @@ running `atlas-content-sourcing` agent drafts briefs and never sends; sending wa
 
 - Asking for rights to posts that already exist. 26 Content Library and Rights does that, and
   24 Organic to Ads drafts licence requests for its ad candidates.
-- Finding creators outside the program. 05 Creator Search and 09 Ads Creator Finder do that.
+- Finding creators outside the program. 05 Creator Search and 09 Ads Creator Finder do that. The
+  exception is a found creator 24 Organic to Ads hands over, which UGC creator pick may invite.
 - Changing a creator's deal. 14 Negotiator does that. A counter on an asset request's pay comes
   back here as a your-call question.
 - Paying the creator. 18 Creator Payments does that.
