@@ -101,26 +101,28 @@ Never ask who the output is for in plain text, and never ask more than once per 
 - **Lead with the decision.** The first line of the chat summary and the page headline answer
   the primary lens's `decision` in the reader's terms. The page header carries a "Prepared for"
   chip: the reader (or team), the decision, and `when` when known.
-- **Headline and rank by the reader's result.** The headline's figure and the order of every
-  ranked list (top posts, creators, candidates, topics) use the primary lens's **Result judged
-  on** from the catalog. The same data gives a paid-social page and a social-team page different
-  headlines and a different top item. A flow's own score keeps its parts and weights; the lens
-  picks which figure leads and sorts.
-  - **Where the result comes from.** Sales, sign-ups, and cost per result come only from a
-    connected Meta ad account (`search_ads`) or a connected store, by currency, never added to
-    organic figures, and never inferred.
-  - **When Atlas does not hold it** (sales with no store or ad account connected, for example),
-    rank by the nearest metric Atlas does hold: engagement per 1,000 views ahead of views, and
-    for a video headed for paid, the flow's hook score. Say so in one line beside the headline or
-    the list, naming the metric, the reason, and the connection that would fix it: "Ranked by
-    engagement per 1,000 views, because Atlas holds no sales for these posts. Connect the store
-    or the Meta ad account to rank by sales." On a page shared outside the team (**Artifact
-    standard**, section 2, **No platform disclosures**) the page names only the metric it ranked
-    by; the reason and the connection go to the requester in chat.
-  - **Views alone never top a list.** When the result is reach, a post ranks on its views only
-    when its engagement per 1,000 views is at or above the account's own usual (**Page
-    standard**, section 8). A post below it keeps its place in the evidence, labelled "high
-    reach, low engagement", and is never the top item.
+- **Headline and rank by the reader's result.** The headline's figure and the order of the
+  page's ranked posts and topics use the primary lens's **Result judged on** from the catalog.
+  The same data gives a paid-social page and a social-team page different headlines and a
+  different top item.
+  - **A list a flow ranks by its own score keeps that order** (a fit score on a shortlist, a
+    hook score on ad candidates, a creator's own top posts). The headline still answers in the
+    reader's result, and one line says what the list is ranked by.
+  - **Where the result comes from.** A flow reads sales, sign-ups, and cost per result only with
+    the tools its row in **Atlas tools** lists, by currency, never added to organic figures, and
+    never inferred. A flow with no ad or store read does not hold them, whatever is connected.
+  - **When the page does not hold it**, rank by the stand-in the flow's reference names, or
+    else by engagement per 1,000 views ahead of views. Say so in one line beside the headline or
+    the list, naming the metric and the reason: "Ranked by engagement per 1,000 views, because
+    this page holds no sales for these posts." Name a connection only when connecting it would
+    let this flow read the result ("Connect the Meta ad account to rank by sales"). On a page
+    shared outside the team (**Artifact standard**, section 2, **No platform disclosures**) the
+    page names only the metric it ranked by; the rest goes to the requester in chat.
+  - **Views alone never top a list of posts.** When the result is reach, a post tops the list on
+    its views only when its engagement per 1,000 views is at or above the median of the posts in
+    that list (for an account's own posts, the account's own usual, **Page standard**, section
+    8). A post below it stays in the evidence, labelled "high reach, low engagement". A rate a
+    flow works out over many posts (the market signal's reach rate) keeps its definition.
 - **Select and order for the reader.** Use the catalog's shape. Leadership gets one screen and
   outcomes first. Product gets receipts and no gloss. Creative gets timestamps and specs.
   Evidence the reader will not use moves to an appendix or is left out; it is never altered.

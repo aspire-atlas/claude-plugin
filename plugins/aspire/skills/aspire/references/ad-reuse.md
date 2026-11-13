@@ -297,9 +297,8 @@ date shows as expired.
 Ranking follows the reader (**Recipient lens**, Headline and rank by the reader's result). The
 performance reader is judged on sign-ups, sales, and cost per result, which no post has before it
 runs as an ad, so the hook score is the nearest metric Atlas holds and both lists rank by it. The
-answer says so in one line and names the Meta ad account as the connection that adds paid
-results. A candidate that already ran shows its paid results from `search_ads` beside its score,
-by currency; they never change its rank (**Counts that include paid delivery**).
+answer says so in one line. A candidate that already ran keeps its "already run as an ad" label,
+and that never changes its rank (**Counts that include paid delivery**).
 
 - **Performance** (primary): the reasoning first: how Atlas narrowed the posts, what it learned,
   and the recommended posts checked against each learning, each with its one line on why it was
