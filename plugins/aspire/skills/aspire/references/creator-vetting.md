@@ -811,6 +811,12 @@ A campaign's applicants are screened against its applicant review: the setup sav
 **Reading the setup back (screening)**, and passes it resolved in the launch, so neither the main
 thread nor the agent asks V1 to V4 or any setup question.
 
+**A campaign's applicants.** A list counts as a campaign's applicants when the user's ask says so
+(applicants, applications, or screening for a named campaign), or when the export carries an Aspire
+campaign id or applicant columns (form answers, an applied date). Nothing else does: without one of
+these, R2 keeps {brand}'s vetting criteria as option 1. The campaign is the one the ask names, or the
+one whose `-campaign` record carries the export's Aspire campaign id.
+
 What changes against a `vetting` run:
 
 | Part of the run | Applicant review |
@@ -820,7 +826,7 @@ What changes against a `vetting` run:
 | Brand safety and fit | Always run, as in every vetting run |
 | Competitor deals | Always run, as in every vetting run: a paid partnership with a saved competitor in the last 90 days is a Flag, a Fail when the review's `reject:` line lists `competitor-deals` |
 | Disclosure | Always run, as in every vetting run: a paid post without a disclosure is a Flag, a Fail when `reject:` lists `disclosure` |
-| Language on camera | Always run: swearing, or a word the brand's or the review's red lines rule out, in `analysis.transcript` or `analysis.overlayText` is a Flag citing the line, a Fail when `reject:` lists `language-on-camera`; a `block` red line it hits is a Fail |
+| Language on camera | Always run: swearing in `analysis.transcript` or `analysis.overlayText` is a Flag citing the line, a Fail when `reject:` lists `language-on-camera`. A word a red line rules out is that red line's own check, not this one: a review red line is `block`, so it always fails |
 | Red lines | The brand's saved `red_line` records plus the review's red lines, each its own check |
 | Hard stops | The checks the review's `reject:` line lists, in place of `vetting:hard-rejects` (**The recommendation**, rule 2) |
 | `vetting:criteria`, `vetting:thresholds`, `vetting:hard-rejects` | Not read; the review replaces them. Bought engagement and no recent posts are Flags, never rejects on their own |

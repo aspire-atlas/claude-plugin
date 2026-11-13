@@ -186,8 +186,8 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
    readout: the readout's own resolving `went_well` applies to readout and brief items only.
 7. Red-line scan: for each `red_line` with `action: block|flag|escalate`, one semantic
    `search_posts` with `queryText` = the red-line body, filtered to the window and the brand's
-   handles, limit 10. Report hits by permalink. Never invent a hit. `review:` keys were
-   dropped in step 1; hits on content review hard rules come from step 6b (`hardRuleHits`).
+   handles, limit 10. Report hits by permalink. Never invent a hit. `review:` and
+   `applicant-review:` keys were dropped in step 1; hits on content review hard rules come from step 6b (`hardRuleHits`).
 
 Metric definitions:
 

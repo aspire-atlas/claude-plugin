@@ -216,7 +216,7 @@ One check per brief field that is specified:
 
 ### 3. Brand safety
 
-- Every `red_line` calibration, with its `action`: `block` fails the post, `flag` flags it,
+- Every `red_line` calibration except `applicant-review:` keys, with its `action`: `block` fails the post, `flag` flags it,
   `escalate` flags it and names the primary contact (`user:primary-contact`) in the verdict.
   This includes the review hard rules (`review:rule-*`, see **Hard rules for every review**).
   Each one is its own check, and the page names the rule.

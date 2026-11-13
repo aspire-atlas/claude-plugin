@@ -119,7 +119,7 @@ drops=$(for f in plugins/*/agents/*.md $(find plugins -path '*/skills/*' -name '
         print "FAIL " F ":" start ": drops `orchestrator:` keys but not `lastrun:` keys (orchestration.md, section 2, Saved answers)"
       if (blk ~ /`orchestrator:/ && blk ~ /([Dd]rop|[Ii]gnore|[Ss]kipping|[Ll]eave out)/ && blk !~ /`applicant-review:/)
         print "FAIL " F ":" start ": drops `orchestrator:` keys but not `applicant-review:` keys (atlas-tools.md, Calibration kinds)"
-      if (blk ~ /(`red_line`|red line)/ && blk ~ /(not|ignore|except|skipping|never)( an?)?[[:space:]]+`review:`/ && blk !~ /`applicant-review:/)
+      lb = tolower(blk); if (lb ~ /(`red_line`|red line)/ && lb ~ /(not|ignore|except|skipping|never|drop)[^`]{0,40}`review:`/ && lb !~ /`applicant-review:/)
         print "FAIL " F ":" start ": reads `red_line` records without `review:` keys but keeps `applicant-review:` keys (atlas-tools.md, Calibration kinds)"
       blk = ""
     }
