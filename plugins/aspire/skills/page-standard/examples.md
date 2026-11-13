@@ -86,19 +86,20 @@ plan with owners.
 ### P1: which creator posts to run as ads, and how to cut them
 
 What makes it work: the reasoning is the story. The reader sees how much Atlas read to get to
-the picks, what it learned from the posts, and why each pick won, with the scoring in full below
+the recommended posts, what it learned from the posts, and why each pick won, with the scoring in full below
 and shot-by-shot edit plans with timestamps. Paid results are still to come: until a Meta ad
 account is connected, the page names that gap.
 
 1. The answer and the takeaway first, then up to four recommendations as ranked next steps.
 2. How Atlas got there: one strip of counts from the posts considered per platform to the posts
-   recommended (videos, read frame by frame, about the brand, scored), each the run's own count.
+   recommended (about the brand, videos, read frame by frame, scored), each the run's own count.
 3. What Atlas learned, up to three learnings, each with a headline stat, the claim, a short
    paragraph, a chart of the data behind it, a frame pair (one that works, one that misses, each
    with its timecode), and a "So Atlas recommends" line.
-4. The picks, each checked against every learning in the learnings' order: a ✓ where it meets
-   one, a "+" with the fix the cut list makes where it misses, and one line on why it was picked.
-   The candidates held back are named with their scores and the reason.
+4. The posts Atlas recommends, found then briefed as two groups, each checked against every
+   learning in the learnings' order: a ✓ where it meets one, a "+" with the fix the cut list makes
+   where it misses, and one line on why it was picked. The candidates held back are named with
+   their scores and the reason (counts only on a page for a client).
 5. The scoring method in full: each criterion with its weight, what a high and a low score mean,
    the score bands, and any override.
 6. Every post scored, with thumbnail, handle, source, date, length, score, verdict, and a note.

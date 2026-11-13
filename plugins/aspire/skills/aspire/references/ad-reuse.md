@@ -295,14 +295,16 @@ date shows as expired.
 ## Output for each lens
 
 - **Performance** (primary): the reasoning first: how Atlas narrowed the posts, what it learned,
-  and the picks checked against each learning, each with one line on why it should convert as
-  paid. The licensing candidates follow in the folded scoring section as two lists, found then
+  and the recommended posts checked against each learning, each with its one line on why it was
+  picked (**Page**, item 7). The licensing candidates follow in the folded scoring section as two lists, found then
   briefed, each ranked by hook score, with the pattern table. The edit plan (storyboards, cut
   list, and test plan) sits behind its own fold.
-- **Creative** (primary): the learnings first, as on the performance lens: each pattern in plain
-  words with its works and misses frame pair, so the team can reuse it in the next edit. The
-  edit plan comes right after them, open: the storyboards and the cut list, grouped by post, with
-  frame thumbnails at the in and out points. The picks follow; the ranking stays folded.
+- **Creative** (primary): items 1 to 5 of **Page** stay where they are (header, answer, the
+  strip, decisions, next steps). Then the learnings, as on the performance lens: each pattern in
+  plain words with its works and misses frame pair, so the team can reuse it in the next edit.
+  The edit plan comes right after them, open: the storyboards and the cut list, grouped by post,
+  with frame thumbnails at the in and out points. The recommended posts follow; the ranking stays
+  folded. The order is items 1 to 6, then 8, 7, 9 and on.
 - Both lenses are one hand-off (Performance picks, Creative cuts), so the page always carries
   every section; the primary lens decides the order and which parts are folded.
 
@@ -326,18 +328,17 @@ lens (**Output for each lens** sets the order for `creative`):
    with @handle's launch Reel."), and a one-line takeaway naming the top learning.
 3. **How Atlas got there** (the flow's own strip, `blocks.md` section 6): one row of steps from the
    posts considered to the posts recommended, each a count and a few words, in the order the run
-   took them. In the **Candidate pool** order that is:
+   took them, which is the **Candidate pool** order:
    - posts considered, per platform ("1,556 Instagram posts that mention or tag {brand}");
-   - the videos among them;
    - creators' posts with the brand as the subject, after the account map sets aside the
      brand's own and non-creator accounts and the competitor screen sets aside other brands'
-     videos (name both counts set aside in the method);
-   - posts read frame by frame;
+     posts (name both counts set aside in the method);
+   - the videos among them;
+   - posts read frame by frame (the prefilter's top 12);
    - posts scored;
    - posts recommended, the last step marked with the accent.
 
-   A run that read frames to judge the subject puts "read frame by frame" before the subject
-   step.
+   Each count is taken from the step before it, so the strip narrows from left to right.
 
    Every count is this run's own. A step the run did not take is left out, never estimated: when
    the run framed only the scored posts, "read frame by frame" and "scored" are one step. A count
@@ -351,8 +352,8 @@ lens (**Output for each lens** sets the order for `creative`):
    to the ad account or the raw files. With none, "Nothing needs approval."
 5. **Next steps** (3.6): up to four recommendations, ranked, each with who does it (performance or
    creative), by when, and what it should change.
-6. **What Atlas learned** (3.4, one card per learning): up to three learnings. On a `build`
-   storyline pass they are the confirmed bullets, in their confirmed order and wording
+6. **What Atlas learned** (3.4, one card per learning): up to three learnings. On a `build` or
+   `state` storyline pass they are the storyline's bullets, in their order and wording
    (`skills/page-standard/storyline.md`). Each card holds, in this order:
    - **The headline stat** (`pb-stat`): one figure and what it counts ("9 of 12", "put {brand}
      on screen in the first second").
@@ -374,9 +375,11 @@ lens (**Output for each lens** sets the order for `creative`):
    - **"So Atlas recommends"**: the action, as the card's "So:" line (`pb-so`), naming the cut,
      the brief, or the test it changes ("Open every cut on the product. Where the creator didn't,
      lay the logo over the first seconds."). Hedges go here, never in the claim.
-7. **The picks** (3.8, one card per recommended candidate; recommended candidates follow the
-   agent's top candidates rule: up to five, at most three from a path unless the other path has
-   fewer than two). Each card holds the opening frame as its thumbnail and the first-3-seconds
+7. **The posts Atlas recommends** (3.8, one card per recommended candidate; recommended
+   candidates follow the agent's top candidates rule: up to five, at most three from a path unless
+   the other path has fewer than two). Never title the section "The picks" or "Top picks" (R11).
+   Show the cards as two groups, **Found** then **Briefed**, never mixed, and never compare organic
+   traction across them (**Candidate pool**, **Two paths**). Each card holds the opening frame as its thumbnail and the first-3-seconds
    frame strip (the opening frames from **What to read per candidate**), with any measured early
    rate cited beside the opening frame; the badge (its rank within its path, F1, F2, B1); the handle; the score
    out of 100 with the retention label as a small chip ("Measured", "Creator average, not this
@@ -387,19 +390,21 @@ lens (**Output for each lens** sets the order for `creative`):
      logo over the first seconds"). Each fix is a row or an edit note in the cut list. A miss no
      cut can fix says so in place of a fix.
 
-   The symbol stays in the text so the line reads without color. Then one line on why the post
-   made the cut, naming what it adds that the other picks don't. Under the cards, **Held back**
-   names every candidate with a **run** or **cut first** verdict that was not picked, with its
-   score and the reason in a few words ("@handle's torn paper tutorial (88): the same format as
-   the watercolor pick, held for round two"), and counts the **leave** candidates, which are
-   listed in item 10.
+   The symbol stays in the text so the line reads without color. Then one line on why it was
+   picked: what it adds as a paid ad that the other recommended posts don't. Under the cards,
+   **Held back** names every candidate with a **run** or **cut first** verdict that was not
+   picked, with its score and the reason in a few words ("@handle's torn paper tutorial (88): the
+   same format as the watercolor post, held for round two"), and counts the **leave** candidates,
+   which are listed in item 10. On a page for a client, **Held back** gives only the counts by
+   verdict, with no handles or reasons, and item 10's tables list only the recommended posts
+   (R10: no named rejects).
 8. **The edit plan**: on the `performance` lens, one `details`, closed, titled "The edit plan:
    storyboards, cut list and test plan"; on the `creative` lens, open and placed right after
-   **What Atlas learned** (item 6), before the picks. It holds:
+   **What Atlas learned** (item 6), before item 7. It holds:
    - **Cut structure and storyboards** (3.9): the five beats every cut shares (hook 0 to 3s,
      brand 3 to 6s, build 6 to 9s, reveal 9 to 12s, then the end card, per the page standard) and
      the specs from **Cut list**. On a 15-second cut the end card runs 12 to 15s. Then one
-     storyboard per recommended ad, in the picks' order: the badge, the hook line, handle, date,
+     storyboard per recommended ad, in item 7's order: the badge, the hook line, handle, date,
      pattern, cut length, and the tests it runs in; a still for every beat, taken from the frames
      read at that beat's timecode, or an insert tile naming what to add when the post has no
      usable frame there; the timecodes, a one-line description per beat, the duration strip, and

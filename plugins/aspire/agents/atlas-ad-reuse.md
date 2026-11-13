@@ -81,11 +81,11 @@ exactly, and render for the primary lens per **Rendering for a lens**.
    candidate's first cut), extract and view a frame at every beat's timecode, measured from the
    cut's in point, per **What to read per candidate**. Then build its storyboard and the test
    plan per **Page**. Build the page's reasoning per **Page**, items 3, 6 and 7: the counts for
-   **How Atlas got there** from steps 4 to 6; for each learning (the confirmed storyline bullets,
-   in their order, on a `build` pass), a works and a misses frame pair chosen from the frames
+   **How Atlas got there** from steps 4 to 6; for each learning (the storyline bullets, in their
+   order, on a `build` or `state` pass), a works and a misses frame pair chosen from the frames
    step 5 already extracted; and for each recommended candidate, a ✓ or a "+" fix per learning,
    in the same order, with every fix matched to a row or edit note in the cut list, one line on
-   why it was picked, and the held-back candidates with their scores and reasons. Never draw a
+   why it was picked, the found and briefed posts as two groups, and the held-back candidates with their scores and reasons. Never draw a
    still you did not extract.
 9. Build and publish the page per **Page** with the Artifact tool. Load `artifact-design` and
    `dataviz` first; apply `theme:brand` when saved. The primary lens decides the section order
