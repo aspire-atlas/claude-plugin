@@ -3,7 +3,7 @@
 Shared by the `atlas-creator-vetting` agent and the **Creator vetting** section of SKILL.md.
 Holds the setup interview, getting the list, the per-run questions, the checks, the
 recommendation rule, the feedback loop that saves what the team says about each creator, the
-state written to Atlas, and the page.
+team's calls read back from an applicant review's Sheet, the state written to Atlas, and the page.
 
 The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
 in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
@@ -20,6 +20,7 @@ in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Se
 - [The findings behind the checks](#the-findings-behind-the-checks)
 - [The recommendation](#the-recommendation)
 - [The feedback loop](#the-feedback-loop)
+- [Team calls from the review Sheet](#team-calls-from-the-review-sheet)
 - [State written to Atlas](#state-written-to-atlas)
 - [The page](#the-page)
 - [Creator-ads lanes (CAS campaigns)](#creator-ads-lanes-cas-campaigns)
@@ -33,7 +34,8 @@ approve", "screen these applicants"). Requires a brand profile. Interactive only
 it; without `AskUserQuestion`, say vetting needs a person to supply the list and make the call,
 and stop. One creator in depth is **Creator profile**; new creators, **Creator discovery**.
 Before anything, read this file (**Setup**, **Getting the list**,
-**Per-run questions**, **Main thread: the run**, **The feedback loop**) and follow it.
+**Per-run questions**, **Main thread: the run**, **The feedback loop**, **Team calls from the
+review Sheet**) and follow it.
 
 ### Setup
 
@@ -45,6 +47,8 @@ answers).
 
 ### Run
 
+When the list belongs to an applicant review with a review Sheet, first save the Team calls
+from it (one confirmation; conflicts are reported, never saved) and give them as copyable text.
 Get the list (R1; the Aspire app only with a browser tool, the user signs in, read only), check
 what Atlas holds, ask R2 to R4 in one call (R3 approves the fetches, R4 the write), then launch
 `atlas-creator-vetting` with the list, criteria source, approved fetches, R4 answer, and
@@ -174,6 +178,9 @@ confirmation for the recommendation findings; the feedback answers carry their o
 
 What the **Creator vetting** section of SKILL.md does around the agent.
 
+0. **Save the team's calls from the review Sheet first**, when the list belongs to an applicant
+   review that has one, per **Team calls from the review Sheet**. The agent then reads them as
+   saved calls, so they shape this batch.
 1. **Get the list** per **Getting the list**, from the R1 answer (skip R1 when the user already
    attached a file or pasted handles). Show what was found and the list name.
 2. **Check what Atlas holds**: `search_creators` with a `terms` filter on the username field,
@@ -426,6 +433,70 @@ criteria among them, through its own Destructive tools confirmation (`supersede_
 `AskUserQuestion` ("Save this about @handle for future vetting and discovery?"), then write the
 `creator:*` record, or offer the supersede when one exists.
 
+## Team calls from the review Sheet
+
+An applicant review keeps one review Sheet per campaign review, and the team records its calls
+in the Sheet's **Team call** column (Approve, Maybe, or Reject, blank until the team decides).
+The main thread reads that column at the start of every vetting run for the review and saves
+the new calls to Atlas, so a call made in the Sheet is in Atlas after the next run and on the
+page it republishes. The Sheet is a working view; Atlas is the record.
+
+**Finding the Sheet.** Use the review Sheet link saved with the campaign's applicant review
+setup, or a Sheet link the user gives for this list. No Sheet: skip this section.
+
+**Reading it.** Read the Sheet through the Claude Docs connector: the Aspire applicant id,
+Handle, Recommendation, and Team call columns, found by header, every row. Match each row on the
+Aspire applicant id, never on row position, because people sort and filter the Sheet. Then:
+
+- A blank Team call is undecided: skip the row.
+- A value other than Approve, Maybe, or Reject (any case) is not saved; list it as unreadable
+  with its handle and value.
+- A row with no applicant id or no handle is not saved; list it.
+- Normalize the handle per **Getting the list**, and resolve its network account id with the
+  same `search_creators` check the run already makes.
+
+**What is already saved.** For each call, read the creator's newest `feedback` finding
+(**Reading it back**) and the creator's `creator:*` record (**Creator calibrations**).
+
+- The same call is already saved: skip it, nothing to write.
+- A different call is already saved, in either: a **conflict**. It is not saved; list it as
+  "@handle: the Sheet says {call}, Atlas has {saved call} from {date}". Changing the saved call
+  is a supersede, which the main thread offers through its own Destructive tools confirmation,
+  one per creator, only when the user asks for it.
+- Otherwise the call is **new**.
+
+**Confirming.** One `AskUserQuestion` for the new calls: "Save {n} Team calls from the review
+Sheet to {brand}'s Atlas as the team's calls?", with 1) Save them (Recommended); 2) Show them
+first (list `@handle (network): {call}`, one per line, then ask again with options 1 and 3);
+3) Not now (nothing is saved; the Sheet keeps them for the next run). Name the conflicts and
+unreadable rows in the question text when there are any. An unattended run asks nothing and
+writes nothing here; the calls wait in the Sheet for the next run a person confirms.
+
+**Writing it.** For each new call, on "Save them":
+
+- A `feedback` finding per **State written to Atlas**, under this run's `runKey`
+  (`creator-vetting-{profile}-{YYYY-MM-DD}-{list-slug}`), with `userVerdict` = the call,
+  `agentVerdict` = the Sheet's Recommendation for the row (blank when it has none),
+  `source: "review-sheet"`, `applicantId`, and `idempotencyKey`
+  `vet-sheet-{applicantId}-{call}`. A creator Atlas could not resolve gets no finding (it has no
+  account id to anchor to); say so, and the calibration below still carries the call.
+- A `creator:*` guideline per **Creator calibrations**, stance = the call, reason "Team call in
+  the review Sheet" (the Sheet holds no reason of its own; when the team added a note column,
+  add its text to the reason).
+<!-- TODO(ASP-5362): once Atlas has the applicant record, also append an applicant_screening row
+with the decided status for each saved call (rows are appended, never edited). -->
+
+**Lessons.** When the saved calls overturn the Recommendation column for two or more creators
+for the same reason the Sheet's note column gives, word one lesson and ask F3, under the same
+rules as **The feedback loop**. Without a reason in the Sheet, word no lesson.
+
+**Copy decisions.** After saving, give the team's calls for this review as text in the chat, a
+block the user can copy: one line per creator, `@handle (network): Approve`, grouped Approve,
+Maybe, Reject, with the conflicts and unreadable rows under them. The page carries the same
+text (**The page**, Decisions).
+
+**Never write to the Sheet here.** Reading the Team call column changes nothing in the Sheet.
+
 ### Creator calibrations
 
 One record per creator per network, organization-wide, read by vetting and creator discovery.
@@ -487,7 +558,8 @@ finding each check comes from is on the run summary),
 `listName`, `listSource` (`csv`, `pasted`,
 `aspire-app`, or `cas-lane`), `campaign` when R2 named one, `reviewPage`, and `recipient`
 (**Recipient lens**). A `feedback` finding adds `userVerdict`, `agentVerdict`, and the user's
-words verbatim. Supply an `idempotencyKey` per finding (`vet-{list-slug}-{entityId}-{findingType}`).
+words verbatim; one saved from the review Sheet also adds `source: "review-sheet"` and
+`applicantId` (**Team calls from the review Sheet**). Supply an `idempotencyKey` per finding (`vet-{list-slug}-{entityId}-{findingType}`).
 
 **Reading it back.** `search_insights` with a `prefix` filter on
 `detail.account_review.runKey` = `creator-vetting-{profile}`, newest first, paged; the newest
@@ -538,7 +610,10 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
 7. **Decisions** (3.5): approving the creators to contact, with the date outreach should start,
    any brand rule the team must settle before a verdict holds (for example, a red line a creator
    sits on the edge of), and each proposed change to the criteria with the finding behind it.
-   Questions that settle one creator stay on that creator's card.
+   Questions that settle one creator stay on that creator's card. Below them, a **Copy
+   decisions** button that copies the team's saved calls for this list as plain text, one line
+   per creator (`@handle (network): Approve`), grouped Approve, Maybe, Reject. With no saved
+   calls yet it copies the recommendations, headed "Recommendations, not yet the team's calls".
 8. **Next steps** (3.6): in order, each with its week, the creators it covers by number, and
    what it should change: contact the approvals, settle the Maybes, line up the backups, and,
    when the list came up short, where a second search should look given the findings.
@@ -554,7 +629,8 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
    criteria name audiences, the Approve grid is grouped by audience with a subtotal per group;
    when they also set how many creators each audience needs, a group short of it names the open
    slot. On each card: the fit score in the ring; flow chips `#{number}` and
-   the recommendation; safety results in the brand safety tile per the card's **Brand safety**
+   the recommendation, and "Team: {call}" when the team's call is saved; safety results in the
+   brand safety tile per the card's **Brand safety**
    rule; three proof posts in the thumbnails; `{DETAILS}` with the two reasons, each check's mark
    with the post or number behind it (a lift as "3.0× usual views"), a watch line
    (the one thing to keep an eye on), what would settle a Maybe (a Maybe that only fills a gap

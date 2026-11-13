@@ -84,7 +84,8 @@ the list as approved for fetching.
    the searches once they settle. Record every handle that stays unresolved and why.
 6. **Read what the team already said** per the reference, **What the team already said**:
    `search_insights` on the `creator-vetting-{profile}` and `creator-discovery-{profile}`
-   prefixes (paged, newest record per `entityId`), and the `brand_safety` role and
+   prefixes (paged, newest record per `entityId`; this includes the Team calls the main thread
+   saved from the review Sheet, `source: "review-sheet"`), and the `brand_safety` role and
    `content-review-{profile}` findings that name these creators. For a lane run, also the
    `roster` findings on the `cas-campaign-{profile}-` prefix for these creators, every campaign of
    the brand's, for the match score's expected cost and worked with the brand before.
