@@ -166,7 +166,7 @@ takes up to four questions), skipping any the user already answered.
 | R2 | Vet them against what? | 1) {brand}'s vetting criteria (Recommended); 2) The {campaign} campaign's criteria (one option per saved `campaign:*-criteria`, up to two) |
 | R3 | {n} of these creators aren't in Atlas yet. Fetch them? | 1) Fetch them (Recommended) (description: "Atlas looks up each account and its recent posts. A TikTok account Atlas doesn't hold costs one paid lookup; {t} are TikTok."); 2) Only vet the creators Atlas already holds |
 | R4 | Save the recommendations to {brand}'s Atlas insights? | 1) Save (Recommended); 2) Page only |
-| R5 | Run a visual check on each creator's videos? Type what to look for, or pick a saved check. (Over 25 creators, the question adds: "A visual check splits this list into {k} runs of 25, each with its own page.") | 1) No visual check (Recommended); 2) Product on screen: {product}; 3) and 4) the two newest active `vetting:visual-*` checks, each labelled with its name and described with its "look for" line. Every check option's description ends "Adds a few minutes to each run of 25." |
+| R5 | Run a visual check on each creator's videos? Type what to look for, or pick a saved check. (Over 25 creators, the question adds: "A visual check splits this list into {k} runs of 25, each with its own page.") | 1) No visual check (Recommended); 2) Product on screen (description: "{product} from the criteria you pick, visible in frame"); 3) and 4) the two newest active `vetting:visual-*` checks, each labelled with its name and described with its "look for" line. Every check option's description ends "Adds a few minutes to each run of 25." |
 
 R3 is asked only after the main thread has checked which handles Atlas holds
 (`search_creators` filtered on the username field, one call per network with a `terms`
@@ -183,13 +183,17 @@ asked for a creator-ads lane run, which runs no visual check.
 
 **What a visual check may look for.** Things on screen (a product, a pet, a setting, a prop), and a
 person's appearance only when the brief's casting needs it (grey hair for a campaign cast for
-older adults). Never a person's race or ethnicity, religion, health or disability, pregnancy,
-sexuality, or body size or weight. When the typed check asks for one of these, say in one line that
+older adults). Never a protected or sensitive trait: race or ethnicity, national origin, religion,
+sex or gender, sexuality, health or disability, pregnancy, body size or weight, or any other trait
+the law protects. Age itself is never judged, only a visible feature the casting names, such as
+grey hair. When the typed check asks for one of these, say in one line that
 vetting doesn't screen people on it, and run no visual check unless the user picks another. A check
 about a person's appearance has its per-creator results shown on the page and never written to
 Atlas: its findings leave out `visualCheck`, and the run summary names the check but leaves out its
 counts. Its definition may still be saved as a named check (F4), since that describes what to look
-for, not anyone's result.
+for, not anyone's result. The main thread decides once, at R5, whether a check is about a person's
+appearance, and passes it as `appearance` in `visual_check`; a saved check carries it in its body,
+so every batch and every later run treats the check the same way.
 
 ## Main thread: the run
 
@@ -208,7 +212,8 @@ What the **Creator vetting** section of SKILL.md does around the agent.
 4. Launch `atlas-creator-vetting` with: tool prefix, `profile_id`, `profile_slug`, brand handles
    and networks, the normalized list, the list name, slug and source, the criteria source, the
    approved fetches, the R4 answer, `visual_check` (from R5: `none`, or `{name, kind: "named" |
-   "free-text", key, definition}`, with `key` and `definition` from the saved record (`key` null for
+   "free-text", key, definition, appearance}`, `appearance` true for a check about a person's
+   appearance and false otherwise, with `key` and `definition` from the saved record (`key` null for
    Product on screen and for a free-text check), the built-in
    definition for Product on screen, or, for a free-text check, the definition the main thread
    words once from the user's words before the first launch: what to look for, what counts, what
@@ -225,7 +230,8 @@ What the **Creator vetting** section of SKILL.md does around the agent.
 
 ## The checks
 
-Every check returns **Pass**, **Flag**, **Fail**, or **Can't check**, with the evidence it
+Checks 1 to 3 return **Pass**, **Flag**, **Fail**, or **Can't check** (the visual check has its
+own results, **4. Visual check**), with the evidence it
 rests on: a permalink with a quoted caption line, a transcript line, or a field and its
 value. "Can't check" says what would make it checkable. Never guess from a bio alone what a
 creator's posts show.
@@ -532,8 +538,9 @@ Rules:
   wording or "retract" | why`).
 
 **In the main thread.** When the agent reports "asked", relay what the user decided and what was
-saved. When it returns a feedback packet, run F1 to F3 yourself, and F4 after the last batch, before
-anything else in the conversation. Either way, offer each "Needs the main thread" change, the
+saved. When it returns a feedback packet, run F1 to F3 yourself, before anything else in the
+conversation. Either way, after the last batch of a free-text check, ask F4 with the definition you
+worded at R5. Either way, offer each "Needs the main thread" change, the
 proposed changes to the criteria among them, through its own Destructive tools confirmation
 (`supersede_calibration` or `retract_calibration`), one per call. A proposal the user declines stays
 unsaved.
@@ -571,8 +578,8 @@ One record per named visual check, organization-wide, read only by creator vetti
   hyphenated, 40 characters at most).
 - `statement`: "Visual check: {name}. Look for {what}", under 280 characters.
 - `detail`: `{concern: "preference", appliesTo: ["creator-vetting"], body: "name: {name}; look for:
-  <what>; counts as seen: <what counts>; not seen when: <what does not count>; runKey: <originating
-  runKey>; saved: <YYYY-MM-DD>"}`.
+  <what>; counts as seen: <what counts>; not seen when: <what does not count>; appearance: <true |
+  false>; runKey: <originating runKey>; saved: <YYYY-MM-DD>"}`.
 - `provenance: "interview"`.
 
 Saved through F4, or outside a run when the user asks ("add a visual check for grey hair"), held
