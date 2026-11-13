@@ -4,9 +4,8 @@ Every question is asked with `AskUserQuestion`, one per call, in this order. Eac
 option set (2 to 4 options). The tool always adds its own free text field, so never add
 "Other". "Skip" appears only where listed. Before Phase 5's first question, read existing
 calibrations for the profile and skip every question already handled (**Which questions are
-open** below). Write each answer
-immediately with `append_calibration`, `provenance: "interview"`. Keep `statement` under 280
-characters; put supporting prose in `detail`.
+open** below). Write each answer immediately with `append_calibration`, `provenance:
+"interview"`. Keep `statement` under 280 characters; put supporting prose in `detail`.
 
 The `web` column marks brand-facing questions that also carry a **"Research it on the web"**
 option (appended to the listed options; the 4-option cap still applies, so drop "Skip" from the
@@ -33,27 +32,27 @@ Substitute `{brand}` with the profile display name, `{org}` with the organizatio
 
 ## Phase 5 core set (only after a channel is `complete`)
 
-| # | Question | Options | web | kind | key | detail |
-| - | -------- | ------- | --- | ---- | --- | ------ |
-| 1 | What best describes what {brand} sells, and to whom? | 1) Consumer product or DTC brand; 2) B2B software or service; 3) Research it on the web; 4) Skip | yes | `brand_fact` | `brand:summary` | `{section: "brand_summary", body}` (use free text when given, else the chosen label; web: summary of the brand's own site) |
-| 2 | What is your relationship to {brand}? | 1) In-house marketer or social lead; 2) Agency working on the brand's behalf; 3) Founder or owner | no | `user_fact` | `user:primary-contact` | `{role, relationship: in_house|agency|owner}` |
-| 3 | Which competitors should Atlas watch most closely? | 1) I'll list handles (type them); 2) Research it on the web; 3) Not sure yet, suggest some later; 4) Skip | yes | `competitor`, one per handle | `competitor:{handle}` | `{handle, tier: "a"}` (web: review-site alternatives lists; confirm handles before writing) |
-| 4 | Main goal for social listening over the next 90 days? | 1) Brand awareness and reach; 2) Creator discovery and partnerships; 3) Campaign measurement; 4) Competitive tracking or sentiment | no | `brand_fact` | `brand:business-context` | `{section: "business_context", body}` |
-| 5 | Any hard no's Atlas should enforce: topics, creators, or content types to block or escalate? | 1) Yes, I'll describe them (type them); 2) Standard brand safety only; 3) Skip | no | `red_line`, one per rule | `redline:{slug}` | `{action, appliesTo[], body}` |
-| 6 | Which creators or partners already work with {brand}? | 1) I'll list handles (type them); 2) Scan {handles} and the web for partners; 3) None yet; 4) Skip | yes | `partner`, one per handle | `partner:{handle}` | `{handle, platform, themes?}` (scan: tagged handles and collab language in the brand's own posts via `search_posts`, plus the web; present the list, let the user pick) |
-| 7 | Which hashtags or product lines should always be tracked? | 1) I'll list them (type them); 2) Use the brand name and handle only; 3) Research it on the web; 4) Skip | yes | `add_hashtags` (4.3) plus `brand_fact` | `brand:tracking-scope` | `{section: "brand_context", body}` (web: hashtags the brand and its site use; also aggregate `instagram.hashtags` on the brand's own posts) |
+| # | slug | Question | Options | web | kind | key | detail |
+| - | ---- | -------- | ------- | --- | ---- | --- | ------ |
+| 1 | `brand-summary` | What best describes what {brand} sells, and to whom? | 1) Consumer product or DTC brand; 2) B2B software or service; 3) Research it on the web; 4) Skip | yes | `brand_fact` | `brand:summary` | `{section: "brand_summary", body}` (use free text when given, else the chosen label; web: summary of the brand's own site) |
+| 2 | `relationship` | What is your relationship to {brand}? | 1) In-house marketer or social lead; 2) Agency working on the brand's behalf; 3) Founder or owner | no | `user_fact` | `user:primary-contact` | `{role, relationship: in_house|agency|owner}` |
+| 3 | `competitors` | Which competitors should Atlas watch most closely? | 1) I'll list handles (type them); 2) Research it on the web; 3) Not sure yet, suggest some later; 4) Skip | yes | `competitor`, one per handle | `competitor:{handle}` | `{handle, tier: "a"}` (web: review-site alternatives lists; confirm handles before writing) |
+| 4 | `goal` | Main goal for social listening over the next 90 days? | 1) Brand awareness and reach; 2) Creator discovery and partnerships; 3) Campaign measurement; 4) Competitive tracking or sentiment | no | `brand_fact` | `brand:business-context` | `{section: "business_context", body}` |
+| 5 | `hard-nos` | Any hard no's Atlas should enforce: topics, creators, or content types to block or escalate? | 1) Yes, I'll describe them (type them); 2) Standard brand safety only; 3) Skip | no | `red_line`, one per rule | `redline:{slug}` | `{action, appliesTo[], body}` |
+| 6 | `partners` | Which creators or partners already work with {brand}? | 1) I'll list handles (type them); 2) Scan {handles} and the web for partners; 3) None yet; 4) Skip | yes | `partner`, one per handle | `partner:{handle}` | `{handle, platform, themes?}` (scan: tagged handles and collab language in the brand's own posts via `search_posts`, plus the web; present the list, let the user pick) |
+| 7 | `tracking` | Which hashtags or product lines should always be tracked? | 1) I'll list them (type them); 2) Use the brand name and handle only; 3) Research it on the web; 4) Skip | yes | `add_hashtags` (4.3) plus `brand_fact` | `brand:tracking-scope` | `{section: "brand_context", body}` (web: hashtags the brand and its site use; also aggregate `instagram.hashtags` on the brand's own posts) |
 
 After question 7, ask once: "Continue with 4 optional questions on cadence, voice, KPIs, and
 team?" Options: 1) Yes, continue; 2) Finish setup now.
 
 ## Extended set
 
-| # | Question | Options | web | kind | key | detail |
-| - | -------- | ------- | --- | ---- | --- | ------ |
-| 8 | How should findings reach you? | 1) Interrupt me for anything urgent; 2) Daily digest; 3) Weekly digest; 4) On demand only | no | `policy` | `policy:cadence` | `{area: "cadence", cadence}` |
-| 9 | Tone and content rules the brand follows? | 1) I'll describe them (type them); 2) Research it on the web; 3) No formal rules yet; 4) Skip | yes | `guideline` | `guideline:voice` | `{concern: "preference", appliesTo: ["content"], body}` (web: published brand or style guidelines, observed voice on the brand's site and posts) |
-| 10 | What does a good week on social look like, in numbers? | 1) I'll give targets (type them); 2) Research benchmarks on the web; 3) Not defined yet; 4) Skip | yes | `alignment_target` (admin) else `brand_fact` `limits_and_gaps` | `target:weekly-health` | `{horizon: "90d", confidence: "confirmed", cadence: "weekly", observable, notCovered}` (web: industry engagement benchmarks; the user must confirm the numbers, so confidence stays "confirmed" only after they do) |
-| 11 | Who else on the team will use Atlas? | 1) I'll list them (type names and roles); 2) Just me for now; 3) Skip | no | `user_fact` per person | `user:{slug}` | `{role, relationship, firstAsk}` |
+| # | slug | Question | Options | web | kind | key | detail |
+| - | ---- | -------- | ------- | --- | ---- | --- | ------ |
+| 8 | `cadence` | How should findings reach you? | 1) Interrupt me for anything urgent; 2) Daily digest; 3) Weekly digest; 4) On demand only | no | `policy` | `policy:cadence` | `{area: "cadence", cadence}` |
+| 9 | `voice` | Tone and content rules the brand follows? | 1) I'll describe them (type them); 2) Research it on the web; 3) No formal rules yet; 4) Skip | yes | `guideline` | `guideline:voice` | `{concern: "preference", appliesTo: ["content"], body}` (web: published brand or style guidelines, observed voice on the brand's site and posts) |
+| 10 | `weekly-health` | What does a good week on social look like, in numbers? | 1) I'll give targets (type them); 2) Research benchmarks on the web; 3) Not defined yet; 4) Skip | yes | targets only: `alignment_target` (admin) else `brand_fact` `limits_and_gaps` | `target:weekly-health` | `{horizon: "90d", confidence: "confirmed", cadence: "weekly", observable, notCovered}` (web: industry engagement benchmarks; the user must confirm the numbers, so confidence stays "confirmed" only after they do) |
+| 11 | `team` | Who else on the team will use Atlas? | 1) I'll list them (type names and roles); 2) Just me for now; 3) Skip | no | `user_fact` per person | `user:{slug}` | `{role, relationship, firstAsk}` |
 
 Question 2's `user:primary-contact` and question 11's `user:{slug}` records describe people for
 the organization. They never carry `preferences`: a person's own defaults (the reader per question
@@ -71,25 +70,29 @@ web option removed.
 
 ## Which questions are open
 
-Each question has a slug: 1 `brand-summary`, 2 `relationship`, 3 `competitors`, 4 `goal`,
-5 `hard-nos`, 6 `partners`, 7 `tracking`, 8 `cadence`, 9 `voice`, 10 `weekly-health`, 11 `team`.
-A question is handled, and never asked, when the calibration read holds any of these:
+Only the calibration read says which questions are open. Never call `get_onboarding_form`: on
+a host that draws widgets it puts Atlas's form beside these questions, so the user sees each one
+twice. A question is handled, and never asked, when the read holds any of these (`{slug}` is the
+question's `slug` column):
 
 - A record on the question's key. For questions 3, 5 and 6 that is any key starting
-  `competitor:`, `redline:` or `partner:`; for question 11, a teammate's `user:{slug}` record
-  (`user:primary-contact` is question 2's).
-- `decline:{slug}`: the brand skipped the question.
-- `gap:{slug}`: the brand said nothing exists yet.
+  `competitor:`, `redline:` or `partner:`. For question 11 it is a teammate's `user:{slug}`
+  record: never `user:primary-contact` (question 2's) and never a `user:usr-{id}` record, which
+  is a person's own and exists for everyone who has run a flow.
+- `decline:{slug}` (the brand skipped it) or `gap:{slug}` (the brand said nothing exists yet).
+- A `known-absent` `brand_fact` in `limits_and_gaps` on any other key, whose text is about the
+  question's topic: how earlier versions recorded "nothing yet", with no fixed key.
 
-Every other question is open. Atlas's own onboarding saves under the same keys and slugs, so a
-question answered or skipped there is not asked again here.
+Every other question is open. Atlas's own onboarding uses the same keys, slugs and `decline:` /
+`gap:` records, so a question answered or skipped there is not asked again here.
 
 ## Skips and declines
 
-A "Skip" answer writes kind `decline`, key `decline:{slug}`, detail `{topic, askedAt}`. "Not
-sure yet" and "None yet" answers write kind `brand_fact`, key `gap:{slug}`, detail
-`{section: "limits_and_gaps", body}`, `provenance: "known-absent"`. Both use the slug from
-**Which questions are open**, so no future session asks again.
+A "Skip" answer writes kind `decline`, key `decline:{slug}`, detail `{topic, askedAt}`. An
+option that says nothing exists yet writes nothing on the question's key. It writes kind
+`brand_fact`, key `gap:{slug}`, detail `{section: "limits_and_gaps", body}`, `provenance:
+"known-absent"`. Those options are: 3 "Not sure yet", 5 "Standard brand safety only", 6 "None
+yet", 9 "No formal rules yet", 10 "Not defined yet", 11 "Just me for now".
 
 ## Handles
 

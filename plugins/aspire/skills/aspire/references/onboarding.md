@@ -169,13 +169,10 @@ Rules:
 - Before asking anything, call `get_brand_context` with `asProfileId` = `profile_id` and
   `includeSuperseded: true` (all applied records in one call; `truncated` true means page the
   rest with `search_calibrations`). When the tool is absent, call `search_calibrations` (no
-  filter, limit 100 per page, paged to the end) with the same arguments. Skip every question
-  that read shows as handled: an answer on its key, a decline, or a "nothing yet" record
-  (**Onboarding questions**, Which questions are open). `includeSuperseded` keeps moved facts
-  from being re-asked as new. That read is the only source of which questions are open. Never
-  call `get_onboarding_form`: on a host that draws widgets it puts Atlas's form on screen
-  beside these questions, so the user sees each one twice. Ask each open question once, with
-  `AskUserQuestion`, and write with `append_calibration` as below.
+  filter, limit 100 per page, paged to the end) with the same arguments. `includeSuperseded`
+  keeps moved facts from being re-asked as new. Skip every question that read shows as handled
+  and never call `get_onboarding_form` (**Onboarding questions**, Which questions are open). Ask
+  each open question once, with `AskUserQuestion`, and write with `append_calibration` as below.
 - Write each answer with `append_calibration` right after it is given, `provenance:
   "interview"` (or `"web"` per the web research option above), `statement` under 280
   characters, supporting prose in `detail`.
