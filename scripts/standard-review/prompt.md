@@ -73,6 +73,15 @@ that breaks it, and write the fix as a replacement line the author can paste.
   option.
 - **Q2** A new flow's questions, with their options and which one is recommended, are written in
   its own reference file. Fail a question whose options the agent is told to make up at run time.
+- **Q3** An instruction that shapes the first message of an interactive run, the one that carries
+  the setup picker, keeps the opening lines of `references/orchestration.md`, section 2, **Before
+  the questions**: one sentence with the need, the decision and the result the reader is judged
+  on; a line for each missing connection with what it adds; and one "This run will ask you to
+  approve: …" line. Fail an instruction that opens a run with questions only, that shows a question
+  code (I2, P1) to the person in the setup reply, that promises a metric a connection does not
+  add, or that adds an approval to a run without naming it in that line. Mark it `n/a` for
+  unattended runs and for changes that touch neither the first message nor what a run asks the
+  person to approve.
 - **P2** A new question code an agent answers has an eval question in `scripts/eval/questions.json`.
   Fail it when the diff adds a question code to an agent spec and adds no eval question for it.
 - **P3** A pull request that adds or changes a rule fills in **Question rerun** and **The gap it

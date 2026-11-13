@@ -44,6 +44,7 @@ flow change" here and skip the list.
 **Questions**
 - [ ] Q1 Every question is an `AskUserQuestion` picker with a (Recommended) option and the free text field; none in chat text
 - [ ] Q2 A new flow's questions and their options live in its own reference file
+- [ ] Q3 The setup reply opens with the need, the decision and the result, then the missing connections and the approvals to come; no question code
 
 **Proof**
 - [ ] P1 A new agent ships with its spec, roster rows and orchestration block (`scripts/new-agent.sh` writes them; no `TODO(new-agent)` left)
