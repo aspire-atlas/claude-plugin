@@ -234,8 +234,8 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    creator. When the first call would need five questions (the confirmation, a credit cap, R2, R3,
    and R5), R2 folds into the confirmation's own text the way Scope does ("Vetting against {brand}'s
    vetting criteria unless you say otherwise"), and a typed answer naming a campaign switches it.
-   When R2 offers an applicant review, R5 waits: ask it in its own call after step 3b, once the
-   review R2 picked is read back, so that review's saved visual checks can be R5's options.
+   When R2 offers an applicant review, R5 waits: ask it in its own call once R2 is answered, after
+   step 3b when R2 picked a review, so that review's saved visual checks can be R5's options.
 3b. **An applicant review named in R2** is read back per **Applicant review**, **Reading the setup
    back (screening)**, before the launch: its nine keys exactly, any missing setup question asked
    first, and its pointers resolved. Then ask R5, with the review's saved visual checks as its

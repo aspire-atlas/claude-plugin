@@ -176,7 +176,10 @@ Share the Sheet only with the people the user names, and never with a client con
 A review is set up when `-campaign`, `-criteria`, `-checks`, `-thresholds`, `-client-view`, and
 `-sheet` exist for its slug, and `-red-lines`, `-form-rules`, and `-visuals` are each saved
 or recorded as a `decline`. Until then, setup asks only the missing questions, in order, then
-confirms the batch once.
+confirms the batch once. A missing `-sheet` has no question of its own: setup treats it like
+`sheet: none` and asks "Create the review Sheet for {campaign} now?" (**The review Sheet**, step 4),
+writing the link or `sheet: none (not created)`. An unattended read treats a missing `-sheet` as
+`sheet: none` and does not stop for it.
 
 ## Reading the setup back (screening)
 
