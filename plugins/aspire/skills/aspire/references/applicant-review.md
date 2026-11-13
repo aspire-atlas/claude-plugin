@@ -111,8 +111,9 @@ Rules:
   (`none` for option 4). Every check runs and flags whatever its answer; AR3 only decides which
   ones reject on their own, the way vetting's hard rejects do.
 - **AR4** names every saved `red_line` and `competitor` in the question text, leaving out records
-  whose keys belong to another flow (**Atlas tools**, Calibration kinds), so the user only adds to
-  them; with none saved it asks the second wording. Option 1 writes a `decline` record.
+  whose keys belong to another flow (**Atlas tools**, Calibration kinds) and every
+  `applicant-review:` key (another campaign's review red lines never apply here), so the user only
+  adds to them; with none saved it asks the second wording. Option 1 writes a `decline` record.
 - **AR5** option 1 writes `source: vetting:thresholds`. AR5 cannot be declined.
 - **AR6** and **AR7**: option 1 writes a `decline` record. A rule or check typed without one of
   the forms in **The records** is asked back once with it reworded into that form; never guess
@@ -130,8 +131,10 @@ Rules:
   campaign and brand, and a record's raw body (its `source:`, `campaign key:` and `profile:` lines)
   is never shown.
 - **Changing a saved review.** A teammate re-running setup sees each saved answer and is offered
-  "Keep as saved (Recommended)" or "Change" per item. Each change goes through
-  `supersede_calibration`, one Destructive tools confirmation each.
+  "Keep as saved (Recommended)" or "Change" per item. A change within one kind goes through
+  `supersede_calibration`; a change between a `decline` and an answer retracts the old record with
+  `retract_calibration`, then appends the new kind. Each supersede or retraction gets its own
+  Destructive tools confirmation.
 - After the records are written, create the Sheet (**The review Sheet**) and write `-sheet`.
   Then answer in text: the review's name, what screening will check, the Sheet link, and the next
   step (bring the applicants in with **Creator vetting**).
@@ -176,13 +179,17 @@ Screening asks none of AR1 to AR8 and none of vetting's V1 to V4.
    for, R2 offers "An applicant review (pick which next)" and a second `AskUserQuestion` lists three
    reviews plus "More reviews", which shows the next three the same way. A single review left is
    stated and used, never asked as a one-option question.
-2. **Read its nine keys** exactly (**The records**), never by prefix, active records only.
-3. **Check it is complete** per **When setup is done**. A gap runs setup for the missing questions
-   first, then goes on.
+2. **Read its nine keys** exactly (**The records**), never by prefix, active records only. When a
+   `decline` and an answer are both active for one key, the answer wins, and an interactive run
+   offers to retract the `decline`.
+3. **Check it is complete** per **When setup is done**. In an interactive run a gap runs setup for
+   the missing questions first, then goes on; an unattended run stops with "setup needed: the
+   {campaign} applicant review" and writes nothing.
 4. **Resolve pointers.** `source: campaign:{campaign-slug}` reads `campaign:{campaign-slug}-brief`
    and `-criteria`; `source: vetting:criteria` and `source: vetting:thresholds` read that record's
-   body. A pointer to a record that no longer exists stops the run with "setup needed", naming the
-   missing record.
+   body. A pointer to a record that no longer exists names it in words ("the saved {campaign} brief",
+   "{brand}'s vetting criteria"): an interactive run asks AR2 or AR5 again and replaces the pointer
+   through the Phase 5 supersede rule; an unattended run stops with "setup needed".
 5. **Hand it over.** The resolved review goes in the vetting launch as the criteria source: the
    slug, the campaign's name and `campaign key`, criteria, thresholds, the `run:` and `reject:`
    checks, the review's red lines, form rules, visual checks, the client view, and the Sheet link.

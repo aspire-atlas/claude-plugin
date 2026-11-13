@@ -42,7 +42,7 @@ V1 to V4, one at a time, one batch confirmation. A campaign's criteria need no s
 campaign's applicants are screened against its applicant review, set up once in **Applicant
 review**, which replaces V1 to V4 for that campaign (**Applicant reviews** below): a run against
 an applicant review skips V1 to V4 even when vetting setup has never run. When vetting setup is
-missing and the profile has an applicant review, ask R2 first and run V1 to V4 only if R2 picks
+missing and the profile has an applicant review, or the list is a campaign's applicants, ask R2 first and run V1 to V4 only if R2 picks
 {brand}'s vetting criteria. When the list is a campaign's applicants and that campaign has no
 applicant review, R2 offers "Set up an applicant review for {campaign} first (Recommended)":
 it runs **Applicant review**, then continues this run with the new review as the criteria source. Every
@@ -369,8 +369,9 @@ In this order; the first rule that applies decides, and the page names it:
 1. **Saved team call.** A `creator:*` record with stance `reject` → **Reject** ("Rejected
    under the team's saved call: …"). Stance `approve` → **Approve**, unless a check below
    fails that the saved call predates: then **Maybe**, naming what is new since.
-2. **Hard stops.** A saved `competitor` handle, a `block` red line that fails, or a
-   `vetting:hard-rejects` rule that fails → **Reject**.
+2. **Hard stops.** A saved `competitor` handle, a `block` red line that fails, a
+   `vetting:hard-rejects` rule that fails, or, in an applicant review run, a check the review's
+   `reject:` line lists that fails → **Reject**.
 3. **Not enough to go on.** The handle could not be resolved, or fewer than 5 posts in 180
    days → **Can't vet**, with the reason. Never reject a creator for missing data.
 4. **Safety caps.** Any other Fail, a `flag` or `escalate` red line, or two or more Flags →
@@ -632,10 +633,11 @@ What changes against a `vetting` run:
 | Disclosure | Always run, as in every vetting run: a paid post without a disclosure is a Flag, a Fail when `reject:` lists `disclosure` |
 | Language on camera | Always run: swearing, or a word the brand's or the review's red lines rule out, in `analysis.transcript` or `analysis.overlayText` is a Flag citing the line, a Fail when `reject:` lists `language-on-camera`; a `block` red line it hits is a Fail |
 | Red lines | The brand's saved `red_line` records plus the review's red lines, each its own check |
+| Hard stops | The checks the review's `reject:` line lists, in place of `vetting:hard-rejects` (**The recommendation**, rule 2) |
 | `vetting:criteria`, `vetting:thresholds`, `vetting:hard-rejects` | Not read; the review replaces them. Bought engagement and no recent posts are Flags, never rejects on their own |
 | `vetting:safety-scope`, the `brand_safety` instruction | Read as in every vetting run: they set the brand's safety strictness, not a campaign's criteria |
 | Form answer rules, visual checks | Passed through as saved. A rule or check this reference gives no step for is listed on the page under what is missing, named, never silently dropped |
-| The page | Shows the campaign's name, the review's checks, and the Sheet link when the review holds one |
+| The page | Shows the campaign's name, the review's checks in words, and the Sheet link when the review holds one |
 
 Everything else (the creator calibrations, lessons, the recommendation rule, the feedback loop,
 and the state written to Atlas) runs as in a `vetting` run. Every finding carries
