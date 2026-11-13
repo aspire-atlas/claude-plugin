@@ -41,7 +41,9 @@ Before anything, read this file (**Setup**, **Getting the list**,
 V1 to V4, one at a time, one batch confirmation. A campaign's criteria need no setup. A
 campaign's applicants are screened against its applicant review, set up once in **Applicant
 review**, which replaces V1 to V4 for that campaign (**Applicant reviews** below): a run against
-an applicant review skips V1 to V4 even when vetting setup has never run. Every
+an applicant review skips V1 to V4 even when vetting setup has never run. When vetting setup is
+missing and the profile has an applicant review, ask R2 first and run V1 to V4 only if R2 picks
+{brand}'s vetting criteria. Every
 question is asked exactly as worded in the reference, at most four per call (**Guardrails**). An
 interactive run's reader and save choice go on `lastrun:creator-vetting`, or
 `lastrun:creator-vetting-{slug}` for a campaign (**Orchestration contract**, **2**, Saved
@@ -165,7 +167,7 @@ takes up to four questions), skipping any the user already answered.
 | # | Question | Options |
 | - | -------- | ------- |
 | R1 | Where's the list of creators? | 1) Upload a CSV export from Aspire (Recommended); 2) Paste the handles; 3) Pull it from the Aspire app (you'll sign in yourself) (only when a browser tool is available) |
-| R2 | Vet them against what? | 1) {brand}'s vetting criteria (Recommended); 2) The {campaign} campaign's criteria (one option per saved `campaign:*-criteria`); 3) The {campaign} applicant review (one option per applicant review saved for this profile). Four options at most: when the list is a campaign's applicants, the applicant reviews come first and option 1 is left out; when there are still more than fit, the last option is "An applicant review (pick which next)" and a second `AskUserQuestion` lists the reviews, four at a time |
+| R2 | Vet them against what? | 1) {brand}'s vetting criteria (Recommended); 2) The {campaign} campaign's criteria (one option per saved `campaign:*-criteria`, up to two); 3) The {campaign} applicant review (one option per applicant review saved for this profile). Four options at most: when the list is a campaign's applicants, the applicant reviews come first, the first marked (Recommended), and option 1 is left out; when the reviews still do not fit, the last option is "An applicant review (pick which next)" and **Applicant review**, Reading the setup back, step 1 pages them |
 | R3 | {n} of these creators aren't in Atlas yet. Fetch them? | 1) Fetch them (Recommended) (description: "Atlas looks up each account and its recent posts. A TikTok account Atlas doesn't hold costs one paid lookup; {t} are TikTok."); 2) Only vet the creators Atlas already holds |
 | R4 | Save the recommendations to {brand}'s Atlas insights? | 1) Save (Recommended); 2) Page only |
 
@@ -626,9 +628,10 @@ What changes against a `vetting` run:
 | Brand safety and fit | Always run, as in every vetting run |
 | Competitor deals | Always run, as in every vetting run: a paid partnership with a saved competitor in the last 90 days is a Flag, a Fail when the review's `reject:` line lists `competitor-deals` |
 | Disclosure | Always run, as in every vetting run: a paid post without a disclosure is a Flag, a Fail when `reject:` lists `disclosure` |
-| Language on camera | Always run: swearing or a word the brand won't run in `analysis.transcript` or `analysis.overlayText` is a Flag citing the line, a Fail when `reject:` lists `language-on-camera`; a `block` red line it hits is a Fail |
+| Language on camera | Always run: swearing, or a word the brand's or the review's red lines rule out, in `analysis.transcript` or `analysis.overlayText` is a Flag citing the line, a Fail when `reject:` lists `language-on-camera`; a `block` red line it hits is a Fail |
 | Red lines | The brand's saved `red_line` records plus the review's red lines, each its own check |
-| `vetting:criteria`, `vetting:thresholds`, `vetting:safety-scope`, `vetting:hard-rejects` | Not read; the review replaces them. Bought engagement and no recent posts are Flags, never rejects on their own |
+| `vetting:criteria`, `vetting:thresholds`, `vetting:hard-rejects` | Not read; the review replaces them. Bought engagement and no recent posts are Flags, never rejects on their own |
+| `vetting:safety-scope`, the `brand_safety` instruction | Read as in every vetting run: they set the brand's safety strictness, not a campaign's criteria |
 | Form answer rules, visual checks | Passed through as saved. A rule or check this reference gives no step for is listed on the page under what is missing, named, never silently dropped |
 | The page | Shows the campaign's name, the review's checks, and the Sheet link when the review holds one |
 

@@ -40,8 +40,8 @@ the list as approved for fetching.
 **Applicant reviews.** When the criteria source is `applicant-review:{slug}`, follow
 **Applicant reviews** in the vetting reference: the review's criteria, thresholds, checks, red
 lines, form answer rules, and visual checks come resolved in the launch, and the review replaces
-`vetting:criteria`, `vetting:thresholds`, `vetting:safety-scope`, and `vetting:hard-rejects`, so
-their absence never stops the run.
+`vetting:criteria`, `vetting:thresholds`, and `vetting:hard-rejects`, so their absence never stops
+the run. `vetting:safety-scope` and the brand safety instruction still apply when saved.
 
 **Run rules**
 

@@ -47,8 +47,8 @@ screens for that review; every other flow drops them (**Atlas tools**, Calibrati
 records. Keep only the nine keys of the review in hand and drop every other `applicant-review:` key.
 
 `{slug}` comes from the brand and the campaign name: lowercase, hyphenated, no dates (for example
-`acme-holiday-seeding`). Show it once so the user can recognize it later; never ask them to invent
-it. When `applicant-review:{slug}-campaign` already exists for a different campaign, add `-2`,
+`acme-holiday-seeding`). Never show the slug or ask the user to invent it; refer to the review by its campaign name
+and brand. When `applicant-review:{slug}-campaign` already exists for a different campaign, add `-2`,
 `-3`, and so on.
 
 | Key | kind | detail | Holds |
@@ -82,11 +82,11 @@ text (**Question format rule**). The tool adds its own free text field; never ad
 
 | # | Question | Options | Key |
 | - | -------- | ------- | --- |
-| AR1 | Which campaign is this applicant review for? Type its name, and its Aspire campaign id if you have it. | Up to two campaigns already saved for this profile (`campaign:*-brief`), by name; then campaign names drawn from `brand:summary` and `brand:business-context` (for example "{product} seeding") until there are two to four options | `-campaign` |
+| AR1 | Which campaign is this applicant review for? Type its name, and its Aspire campaign id if you have it. | Up to two campaigns already saved (`campaign:*-brief`) whose brief names this profile's brand, by name; then campaign names drawn from `brand:summary` and `brand:business-context` (for example "{product} seeding") until there are two to four options | `-campaign` |
 | AR2 | What makes an applicant a fit for {campaign}? | 1) Use the saved {campaign} campaign brief and criteria (Recommended) (only when AR1 picked a saved campaign); 2) Use {brand}'s vetting criteria (only when `vetting:criteria` exists); then starters drawn from `brand:summary` and `brand:business-context` (for example "Dog owners who post daily walks, 10K to 250K followers, US") until there are two to four options | `-criteria` |
-| AR3 | Screening checks every applicant for brand safety, fit, competitor deals, disclosure, and language on camera, and flags what it finds. Which of these should reject an applicant on their own? (multiSelect) | 1) A paid partnership with a saved competitor in the last 90 days; 2) Paid posts without a disclosure; 3) Swearing or words {brand} won't run, said on camera or shown on screen; 4) None: flag them for the team to decide | `-checks` |
-| AR4 | {brand}'s saved red lines and competitors apply to every applicant: {red lines and competitors}. Any red lines for {campaign} only? With none saved: {brand} has no saved red lines yet. Any red lines for {campaign}? | 1) Only the saved red lines (Recommended) (with none saved: "No red lines for this campaign"); 2) Add red lines for this campaign (type them, one per line) | `-red-lines` |
-| AR5 | Where should the lines sit between Approve, Maybe, and Reject? | 1) {brand}'s vetting thresholds: Approve at {n}, Maybe from {m} (Recommended) (only when `vetting:thresholds` exists); 2) Approve at 70 and up, Maybe from 50 to 69 (Recommended when there are no vetting thresholds; left out when they are 70 and 50); 3) Stricter: Approve at 80, Maybe from 60; 4) Looser: Approve at 60, Maybe from 40 | `-thresholds` |
+| AR3 | Screening checks every applicant for brand safety, fit, competitor deals, disclosure, and language on camera, and flags what it finds. Which of these should reject an applicant on their own? (multiSelect) | 1) A paid partnership with a saved competitor in the last 90 days; 2) Paid posts without a disclosure; 3) Swearing, or words {brand}'s red lines rule out, said on camera or shown on screen; 4) None: flag them for the team to decide (picked with others, the others count) | `-checks` |
+| AR4 | {brand}'s saved red lines and competitors apply to every applicant: {red lines and competitors}{, and the brand safety instruction: "<its first line>"}. Any red lines for {campaign} only? With none saved: {brand} has no saved red lines yet. Any red lines for {campaign}? | 1) Only the saved red lines (Recommended) (with none saved: "No red lines for this campaign"); 2) Add red lines for this campaign (type them, one per line) | `-red-lines` |
+| AR5 | Where should the lines sit between Approve, Maybe, and Reject? | 1) {brand}'s vetting thresholds: Approve at {n}, Maybe from {m} (Recommended) (only when `vetting:thresholds` exists); 2) Approve at 70 and up, Maybe from 50 to 69 (Recommended when there are no vetting thresholds); options 2 to 4 each left out when the vetting thresholds already match it; 3) Stricter: Approve at 80, Maybe from 60; 4) Looser: Approve at 60, Maybe from 40 | `-thresholds` |
 | AR6 | Should any application form answer change a call? Type one rule per line: required (a missing answer makes a Maybe), hard stop (an answer that rejects), priority boost (an answer that moves an applicant up), or a note for the screening agent. | 1) No form rules for {campaign} (Recommended when the form asks only for handles); 2) Required: every form question is answered; then up to two rules drafted from the form's questions when the form is known (for example "Required: How many pounds overweight is your dog?") | `-form-rules` |
 | AR7 | Should screening look for something in each applicant's videos? Name each check and what counts as a pass. | 1) No visual checks (Recommended when the criteria name nothing visual); 2) Face on camera: the creator appears and speaks to camera; then up to two named checks drafted from the criteria (for example "Product on screen: the {product} is visible and in use") | `-visual-checks` |
 | AR8 | What should the client see once the review is shared with them? | 1) The final list and the content behind it, with no scores or notes (Recommended); 2) The final list only; 3) Nothing: no client access for {campaign} | `-client-view` |
@@ -143,7 +143,8 @@ link; filling and updating its rows belongs to the flows that bring applicants i
 4. **When it can't be created** (the connector is not connected, has no Sheets, or refuses), or
    the user picked "Save without a Sheet": write `sheet: none (<reason in a few words>)` and say in
    one line that screening will work from the review page instead. A later setup run on a review
-   whose `-sheet` says `none` offers "Create the review Sheet now" and supersedes the record with
+   whose `-sheet` says `none` asks "Create the review Sheet for {campaign} now?" with "Create it
+   (Recommended)" and "Keep working without a Sheet", and on the first supersedes the record with
    the link, through the Phase 5 supersede rule.
 
 Share the Sheet only with the people the user names, and never with a client contributor.
@@ -162,8 +163,8 @@ Screening asks none of AR1 to AR8 and none of vetting's V1 to V4.
 
 1. **Find the review.** List the `applicant-review:*-campaign` records whose body names this
    profile. R2 offers them (**Creator vetting**, Per-run questions); with more than R2 has room
-   for, R2 offers "An applicant review (pick which next)" and a second `AskUserQuestion` lists the
-   reviews, four at a time.
+   for, R2 offers "An applicant review (pick which next)" and a second `AskUserQuestion` lists three
+   reviews plus "More reviews", which shows the next three the same way.
 2. **Read its nine keys** exactly (**The records**), never by prefix.
 3. **Check it is complete** per **When setup is done**. A gap runs setup for the missing questions
    first, then goes on.

@@ -40,7 +40,7 @@ the agent, skipping any the user already answered. In campaign mode it also sett
 unless the user declines) and the first post date.
 
 1. **Scope.** If a `red_line` calibration blocks AI generated content (ignore `review:` keys,
-   which are content review only), offer "Strategy brief only (Recommended)" vs "Include draft
+   which are content review only, and `applicant-review:` keys), offer "Strategy brief only (Recommended)" vs "Include draft
    copy (overrides the red line; record the exception first)". Never produce copy without the
    override.
 2. **Creator sourcing.** "Already in Atlas", "Atlas creator marketplace (searches beyond your

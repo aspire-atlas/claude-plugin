@@ -119,6 +119,8 @@ drops=$(for f in plugins/*/agents/*.md $(find plugins -path '*/skills/*' -name '
         print "FAIL " F ":" start ": drops `orchestrator:` keys but not `lastrun:` keys (orchestration.md, section 2, Saved answers)"
       if (blk ~ /`orchestrator:/ && blk ~ /([Dd]rop|[Ii]gnore|[Ss]kipping|[Ll]eave out)/ && blk !~ /`applicant-review:/)
         print "FAIL " F ":" start ": drops `orchestrator:` keys but not `applicant-review:` keys (atlas-tools.md, Calibration kinds)"
+      if (blk ~ /`red_line`/ && blk ~ /(not|ignore|except|skipping|never) `review:`/ && blk !~ /`applicant-review:/)
+        print "FAIL " F ":" start ": reads `red_line` records without `review:` keys but keeps `applicant-review:` keys (atlas-tools.md, Calibration kinds)"
       blk = ""
     }
     /^$/ || /^ *([0-9]+[a-z]?\.|-|\|) / { flush() }
