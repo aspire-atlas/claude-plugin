@@ -171,9 +171,10 @@ Rules:
   rest with `search_calibrations`). When the tool is absent, call `search_calibrations` (no
   filter, limit 100 per page, paged to the end) with the same arguments. Skip any question
   whose key is already occupied; `includeSuperseded` keeps moved facts from being re-asked as
-  new. `get_onboarding_form` is an optional read of which of the seven core questions are
-  answered, declined, or open; never use its form to save: ask each open question with
-  `AskUserQuestion` and write with `append_calibration` as below.
+  new. That read is the only source of which questions are open. Never call
+  `get_onboarding_form`: on a host that draws widgets it puts Atlas's form on screen beside
+  these questions, so the user sees each one twice. Ask each open question once, with
+  `AskUserQuestion`, and write with `append_calibration` as below.
 - Write each answer with `append_calibration` right after it is given, `provenance:
   "interview"` (or `"web"` per the web research option above), `statement` under 280
   characters, supporting prose in `detail`.
