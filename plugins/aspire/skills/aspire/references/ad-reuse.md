@@ -294,6 +294,13 @@ date shows as expired.
 
 ## Output for each lens
 
+Ranking follows the reader (**Recipient lens**, Headline and rank by the reader's result). The
+performance reader is judged on sign-ups, sales, and cost per result, which no post has before it
+runs as an ad, so the hook score is the nearest metric Atlas holds and both lists rank by it. The
+answer says so in one line and names the Meta ad account as the connection that adds paid
+results. A candidate that already ran shows its paid results from `search_ads` beside its score,
+by currency; they never change its rank (**Counts that include paid delivery**).
+
 - **Performance** (primary): the reasoning first: how Atlas narrowed the posts, what it learned,
   and the recommended posts checked against each learning, each with its one line on why it was
   picked (**Page**, item 7). The licensing candidates follow in the folded scoring section as two lists, found then

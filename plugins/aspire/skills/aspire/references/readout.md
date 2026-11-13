@@ -199,6 +199,11 @@ Metric definitions:
 - Anomaly = a day or post whose lead metric (R4) sits outside the R3 threshold against the
   baseline median. Report the metric, the baseline median, and the percent delta.
 - Cadence = posts per day (daily) or per week (weekly), against the baseline.
+- Ranking follows the reader: the headline's figure, the best post, and the order of the top and
+  bottom posts use the primary lens's result (**Recipient lens**, **Rendering for a lens**,
+  Headline and rank by the reader's result), with its fallback line when Atlas does not hold that
+  result. The lead metric (R4) is the `team` lens's choice within reach and engagement; under
+  another primary lens it stays in the KPI strip and the chart, and no longer sets the order.
 
 ## Meta Ads enrichment (optional, both agents)
 

@@ -271,6 +271,12 @@ From **Data method** step 8 and the posts already read in step 6; no other reads
 The primary M3 lens (or the lens passed in the launch) leads. Every other saved lens gets a
 section. Each follows **Recipient lens**, **Rendering for a lens**.
 
+Ranking follows the reader: the page's answer, the order of the claims, win cards, and post lists
+use the primary lens's result (**Recipient lens**, Headline and rank by the reader's result), with
+its fallback line when Atlas does not hold that result. The reach-rate order and the "Wins reach"
+label are the `team` lens's result; under another primary lens the section keeps every figure, and
+only the one-line answer and the order of the win cards change.
+
 - **Product:** what changed on top, then features compared (won, lost, even, with the clips as
   evidence), then friction with quotes. No marketing gloss.
 - **PMM:** framing by product with verbatim phrases grouped by theme and competitor, share of
