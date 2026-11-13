@@ -32,7 +32,7 @@ Read these before starting:
    TODO(new-agent): add the other tools the flow reads.
 2. **Read the brand's calibrations.** `get_brand_context` with `includeSuperseded: true`
    (`truncated` true: page the rest with `search_calibrations`). Take `theme:brand` for page styling
-   only. Drop every `orchestrator:` and `lastrun:` key. TODO(new-agent): name the keys this flow
+   only. Drop every `orchestrator:`, `applicant-review:` and `lastrun:` key. TODO(new-agent): name the keys this flow
    reads and the ones it drops.
 3. **Name the metrics.** Take the required-metrics row for the launch block's `question` from
    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8, and request the fields that row
