@@ -193,7 +193,7 @@ asked for a creator-ads lane run, which runs no visual check.
 
 **What a visual check may look for.** Things on screen (a product, a pet, a setting, a prop), and a
 person's appearance only when the look is one the casting needs, named in the criteria the run uses
-(`vetting:criteria`, or the campaign's `-criteria` or `-brief`) or in the user's own ask (grey hair
+(`vetting:criteria`, the campaign's `-criteria` or `-brief`, or an applicant review's criteria) or in the user's own ask (grey hair
 for a campaign cast for older adults). Never a protected or sensitive trait: race or ethnicity,
 national origin, religion, sex or gender, sexuality, health or disability, pregnancy, body size or
 weight, or any other trait the law protects. Age itself is never judged, only a visible feature the
@@ -805,7 +805,8 @@ What changes against a `vetting` run:
 | Hard stops | The checks the review's `reject:` line lists, in place of `vetting:hard-rejects` (**The recommendation**, rule 2) |
 | `vetting:criteria`, `vetting:thresholds`, `vetting:hard-rejects` | Not read; the review replaces them. Bought engagement and no recent posts are Flags, never rejects on their own |
 | `vetting:safety-scope`, the `brand_safety` instruction | Read as in every vetting run: they set the brand's safety strictness, not a campaign's criteria |
-| Form answer rules, visual checks | Not applied: a vetting list carries handles and names, not form answers, and this reference has no frame-reading step for applicants. Each saved rule and check is listed by name on the page under what is missing, and the run summary names them, so a team never reads a recommendation as having passed them. A form hard stop or required answer therefore never changes the call yet; the team applies it by hand |
+| Form answer rules | Not applied: a vetting list carries handles and names, not form answers. Each saved rule is listed by name on the page under what is missing, and the run summary names them, so a team never reads a recommendation as having passed them. A form hard stop or required answer therefore never changes the call yet; the team applies it by hand |
+| Visual checks | The review's saved checks feed R5 (**4. Visual check**): R5 is still asked, with up to two of the review's `-visuals` checks as its options after "No visual check", the first marked (Recommended). A `named:` check runs as a named check with its saved definition; a `free:` check runs as a free-text check. One check per run, held to **What a visual check may look for**; it never changes a call. A saved check not run this time is listed under what is missing |
 | The page | Shows the campaign's name, the review's checks in words, and the Sheet link when the review holds one |
 
 Everything else (the creator calibrations, lessons, the recommendation rule, the feedback loop,
