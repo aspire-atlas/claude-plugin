@@ -195,7 +195,8 @@ for a look the casting needs. The limit is checked in every run: picking a saved
 R5 does not count as the ask, so it runs only when that run's criteria or ask name its look. Either
 way, the run goes ahead with no visual check, as if R5 were "No visual check": its size, its reads
 and its storyline stay as they are. The main thread gives the one-line answer in its next message
-(the storyline call, or the launch message on a run with no storyline), and the page's **Next
+(the storyline call, or, on a run with no storyline, the line that tells the user the run started),
+adding, when R5 had announced a split, that the list now runs without one, and the page's **Next
 steps** offers an on-screen check (Product on screen, or a saved check that looks at things on
 screen) as a follow-up vetting run on the same list. A check about a person's appearance has its
 per-creator results shown on the page and never written to Atlas: its findings leave out
