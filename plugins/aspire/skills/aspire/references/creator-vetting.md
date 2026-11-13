@@ -200,7 +200,9 @@ adding, when R5 had announced a split, that the split into runs of 25 no longer 
 page's **Next steps** offers an on-screen check (Product on screen, or a saved check that looks at
 things on screen) as a follow-up vetting run on the same list. A check about a person's appearance
 has its per-creator results shown on the page and never written to Atlas: its findings leave out
-`visualCheck`, and the run summary names the check but leaves out its counts. Its definition may
+`visualCheck`, and the run summary names the check but leaves out its counts. F1's `feedback`
+findings and F2's creator notes leave out anything about an appearance check's result too, including
+the user's own words about it; the rest of what the user says is saved as usual. Its definition may
 still be saved as a named check (F4), since that describes what to look for, not anyone's result.
 The main thread decides once, before the first launch, whether a check is about a person's
 appearance, and passes it as `appearance` in `visual_check`; a saved check carries it in its body,
@@ -776,10 +778,11 @@ More than 12 creators: a chart sits under the verdict tally (fit score against t
 lines, in a creator-ads lane the score without Budget vs target, which is what the lines decide, or
 follower count against engagement rate, colored by recommendation). Images follow **Creator card**,
 **Images**, page profile, cutting thumbnails per card before quality on a large list. Visual check
-stills count toward the same image budget: past it, drop the Not seen stills first (keeping their
-links and timestamps), then the card thumbnails as that section says; a Seen still is never dropped.
-Load `artifact-design`, and `dataviz` for any chart, and apply `theme:brand` per **Theme**,
-**Applying the theme**. Approve, Maybe, and Reject keep their status colors under any theme.
+stills count toward the same image budget: past it, drop the Not seen stills first, then the card
+thumbnails as that section says; a Seen still is never dropped. A card or table link to a dropped
+still points to its post permalink, with the timestamp, instead. Load `artifact-design`, and
+`dataviz` for any chart, and apply `theme:brand` per **Theme**, **Applying the theme**. Approve,
+Maybe, and Reject keep their status colors under any theme.
 
 ## Creator-ads lanes (CAS campaigns)
 
