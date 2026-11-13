@@ -707,7 +707,8 @@ order, up to 12 per call:
 | Posts from `search_partnership_content` | `show_partnership_content` with their `igMediaId`s |
 
 Creators and posts follow **Creator card**, **Cards in chat** (only what Atlas holds; nothing is
-discovered to draw a card). Then say the readout and stop. No image data enters the
+discovered to draw a card). Then say their line from **Atlas tools**, **After a widget**, and the
+readout, and stop. No image data enters the
 conversation, and no plugin card is built beside the host's. More than 12: show the first 12
 and say "Say 'show more' for the next 12."; "show more" (or "show cards" again) draws the next 12
 of the same reply. On a host that draws no widget, give the
