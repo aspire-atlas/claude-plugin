@@ -15,6 +15,7 @@ flow change" here and skip the list.
 - [ ] C1 The chat reply is the answer: up to three points, the next step, one link
 - [ ] C2 No inline images in chat
 - [ ] C3 Cards only on request, through the lookup or show tools
+- [ ] C4 After a widget: name the control and stop, or say it is for reference and carry on
 
 **Load**
 - [ ] L1 One router entry: one **Sections** row and one `references/<flow>.md`; no flow steps in `SKILL.md`
