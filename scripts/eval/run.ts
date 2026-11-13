@@ -6,7 +6,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, wri
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import {
-  ATLAS_READS, ATLAS_WRITES, HARNESS_VERSION, barChecks, compareRuns, extractPageCheckScript, fill, findJsonWithKey,
+  ATLAS_READS, ATLAS_WRITES, HARNESS_VERSION, barChecks, compareRuns, extractPageCheckScript, fill, findJsonWithKey, configuredQuestions,
   findPage, forBaseline, normalizeResult, checkNames as namesFrom, stripTitlePrefix, parsePageCheck, parseStream, renderQuestion, renderRun, rIds, stripDataUris,
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength,
   type CheckDef, type PageChecks, type QuestionResult, type Result, type RunResults, type Turn,
@@ -22,7 +22,7 @@ const BASELINES = join(HERE, 'baselines')
 
 const USAGE = `bun run eval:pages [options]
 
-  --only <code[,code]>     Run only these questions (I4, I11, O1, O3, I1)
+  --only <code[,code]>     Run only these questions (I4, I11, O1, O2, O3, I1)
   --baseline [date]        Store the run's results under scripts/eval/baselines/<date>/ (default: today, UTC)
   --from <run>             With --baseline: store an earlier run without running again
   --compare <a> <b>        Print what changed between two runs, and run nothing
@@ -556,12 +556,21 @@ async function main() {
     return
   }
 
-  const questions: Question[] = config.questions.filter((question: Question) => !options.only || options.only.includes(question.code))
+  const chosen: Question[] = config.questions.filter((question: Question) => !options.only || options.only.includes(question.code))
   const unknown = (options.only ?? []).filter(code => !config.questions.some((question: Question) => question.code === code))
   if (unknown.length) fail(`no question with code ${unknown.join(', ')}`)
 
   const localPath = join(HERE, 'local.json')
   const local: Local = existsSync(localPath) ? readJson(localPath) : {}
+  // A question local.json names no brand for is skipped while no baseline holds its approved results: a new
+  // question reaches CI before its brand reaches the EVAL_LOCAL_JSON secret. One that has them stops the run,
+  // so a lost or mistyped entry cannot drop a gated question. Every report names what was skipped.
+  const newest = baselineFor('newest')
+  const hasApproved = (code: string) => !!newest?.results.questions.find(question => question.code === code)?.approved
+  const { run: questions, skipped, missing } =
+    configuredQuestions(chosen, local, !!options.page || !!options.dryRun || !existsSync(localPath), hasApproved)
+  if (missing.length) fail(`local.json names no brand for ${missing.join(', ')}, which the baseline of ${newest?.name} grades`)
+  if (skipped.length) console.error(`Skipped ${skipped.join(', ')}: local.json names no brand for ${skipped.length === 1 ? 'it' : 'them'}`)
   if (options.dryRun) {
     for (const question of questions) {
       const entry = local.questions?.[question.code]
@@ -585,6 +594,17 @@ async function main() {
 
   const runDir = options.out ?? join(RUNS, stamp())
   mkdirSync(runDir, { recursive: true })
+  if (!questions.length) {
+    // Nothing to run is not a stopped run: write results with no questions, so CI posts the skip and passes.
+    const none: RunResults = {
+      harness: HARNESS_VERSION, date: today(), commit: commit(), model: options.model ?? 'default',
+      judgeModel: options.judgeModel ?? options.model ?? 'default', eChecksVersion: eFile.version, questions: [], skipped,
+    }
+    writeFileSync(join(runDir, 'results.json'), JSON.stringify(none, null, 2) + '\n')
+    writeFileSync(join(runDir, 'table.md'), renderRun(none, eChecks, names))
+    console.error(`No question to run. Run kept in ${runDir}.`)
+    return
+  }
   // Written before any question runs, so a run that stops part way still says where its approved column came from.
   if (options.approvedFrom) {
     baselineCache = baselineFor(options.approvedFrom)
@@ -601,6 +621,7 @@ async function main() {
   const results: RunResults = {
     harness: HARNESS_VERSION, date: today(), commit: commit(), model: options.model ?? 'default',
     judgeModel: options.judgeModel ?? options.model ?? 'default', eChecksVersion: eFile.version, questions: [],
+    ...(skipped.length ? { skipped } : {}),
   }
   try {
     for (const question of questions) {

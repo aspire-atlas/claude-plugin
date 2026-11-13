@@ -64,6 +64,8 @@ export type RunResults = {
   judgeModel: string
   eChecksVersion: string
   questions: QuestionResult[]
+  /** Questions chosen for the run that local.json names no brand for, so they were not run or graded. */
+  skipped?: string[]
 }
 
 export const HARNESS_VERSION = 1
@@ -344,7 +346,8 @@ export function renderRun(results: RunResults, eChecks: CheckDef[], names: Recor
   const rList = rIds(results.questions)
   const head = `## Page eval · ${results.date} · plugin ${results.commit.slice(0, 7)} · ${results.model}` +
     (results.judgeModel === results.model ? '' : ` (judged by ${results.judgeModel})`)
-  return [head, ...results.questions.map(question => renderQuestion(question, eChecks, rList, names))].join('\n\n') + '\n'
+  const skipped = skippedLine(results.skipped)
+  return [head, ...(skipped ? [skipped] : []), ...results.questions.map(question => renderQuestion(question, eChecks, rList, names))].join('\n\n') + '\n'
 }
 
 /** What a stored baseline keeps: results and sizes. No page, link, brand, or quoted text. */
@@ -426,6 +429,31 @@ export function fill(template: string, values: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (whole, key) => values[key] ?? whole)
 }
 
+/**
+ * Splits the chosen questions by whether local.json names a brand for them. A question with no brand is skipped
+ * only while no baseline holds approved results for it (a question not yet set up); one that has them is
+ * `missing`, and the run must stop, since a lost or mistyped entry would otherwise drop a gated question. Grading
+ * a given page or a dry run needs no brand, so then nothing is skipped.
+ */
+export function configuredQuestions<Q extends { code: string }>(
+  questions: Q[], local: { questions?: Record<string, { brand?: string }> }, needsNoBrand: boolean,
+  hasApproved: (code: string) => boolean,
+): { run: Q[]; skipped: string[]; missing: string[] } {
+  if (needsNoBrand) return { run: questions, skipped: [], missing: [] }
+  const unset = questions.filter(question => !local.questions?.[question.code]?.brand).map(question => question.code)
+  return {
+    run: questions.filter(question => !unset.includes(question.code)),
+    skipped: unset.filter(code => !hasApproved(code)),
+    missing: unset.filter(code => hasApproved(code)),
+  }
+}
+
+/** The line every report carries for skipped questions, so a question that did not run is never silent. */
+export function skippedLine(skipped: string[] | undefined): string | null {
+  if (!skipped?.length) return null
+  return `Skipped: ${skipped.join(', ')} (no brand in local.json), so ${skipped.length === 1 ? 'it was' : 'they were'} not graded and cannot regress.`
+}
+
 // ---------------------------------------------------------------- CI: which questions a change reruns, and the PR comment
 
 /** The paths CI watches: the agents, the flow files, the router, and the page standard every page is built by. */
@@ -477,6 +505,9 @@ export const COMMENT_MARKER = '<!-- eval:pages -->'
 const COMMENT_LIMIT = 60_000
 
 export function renderComment(results: RunResults, eChecks: CheckDef[], names: Record<string, string>, approvedSource: string | null, runUrl: string | null): string {
+  if (!results.questions.length) {
+    return renderSkipped(`no question ran. ${skippedLine(results.skipped) ?? 'None was chosen.'}${runUrl ? ` Run: ${runUrl}` : ''}`)
+  }
   const found = regressions(results, eChecks)
   const missingApproved = results.questions.filter(question => !question.approved).map(question => question.code)
   const lines = [COMMENT_MARKER, `## Page eval · ${results.questions.map(question => question.code).join(', ')}`, '']
@@ -489,6 +520,8 @@ export function renderComment(results: RunResults, eChecks: CheckDef[], names: R
   lines.push('')
   if (approvedSource) lines.push(`Approved page results: ${approvedSource}.`)
   if (missingApproved.length) lines.push(`No approved results for ${missingApproved.join(', ')}, so nothing there can count as a regression. Store a baseline (scripts/eval/README.md).`)
+  const skipped = skippedLine(results.skipped)
+  if (skipped) lines.push(skipped)
   if (runUrl) lines.push(`Run: ${runUrl}`)
   lines.push('', 'How to read this: docs/STANDARD.md, "The eval on a pull request". `–` means the check did not run.')
   const head = lines.join('\n')
@@ -534,6 +567,8 @@ export function renderSlack(results: RunResults, eChecks: CheckDef[], runUrl: st
     const state = question.new ? `${passed}/${ran} checks pass` : 'no page'
     lines.push(`• ${question.code} ${question.example}: ${state}${mine.length ? `; regressed ${mine.join(', ')}` : ''}`)
   }
+  const skipped = skippedLine(results.skipped)
+  if (skipped) lines.push(`• ${skipped}`)
   if (runUrl) lines.push(runUrl)
   return lines.join('\n')
 }

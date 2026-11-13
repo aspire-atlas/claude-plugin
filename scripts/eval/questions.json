@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "source": "The five approved examples in the plugin update doc, section \"Examples to follow\" (2026-11-05), with question codes from the examples library. Brand names, organizations and page links are customer details: they live in scripts/eval/local.json, never here.",
+  "source": "The five approved examples in the plugin update doc, section \"Examples to follow\" (2026-11-05), and O2, the Creator Trends page its reviewer edited for ASP-5813, with question codes from the examples library. Brand names, organizations and page links are customer details: they live in scripts/eval/local.json, never here.",
   "changes": {
     "3": {
       "name": "Pull the right metrics for each question",
@@ -97,6 +97,21 @@
         "plugins/aspire/agents/atlas-profile-analyst.md",
         "plugins/aspire/skills/aspire/references/readout.md",
         "plugins/aspire/skills/aspire/references/account-review.md"
+      ]
+    },
+    {
+      "code": "O2",
+      "example": "Creator trends",
+      "kind": "Readout",
+      "reader": "pmm",
+      "readerInWords": "the brand's product marketing team",
+      "ask": "For {brand}: what are creators saying about us vs. our biggest competitors, where do we win, and how should we stand apart? It is for our product marketing team.",
+      "setsBarFor": [
+        3
+      ],
+      "paths": [
+        "plugins/aspire/agents/atlas-market-signal.md",
+        "plugins/aspire/skills/aspire/references/market-signal.md"
       ]
     },
     {
