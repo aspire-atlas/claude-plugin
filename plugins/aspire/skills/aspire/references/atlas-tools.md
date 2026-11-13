@@ -386,8 +386,9 @@ brief, creator discovery, the account analyst) drops them when it reads `red_lin
 `guideline`, or any other calibration. A rule the brand wants everywhere is saved under its
 normal key (`redline:*`, `guideline:*`) instead.
 
-**Keys starting `vetting:` belong to creator vetting only**: its setup answers and lessons
-(`vetting:lesson-*`). Every other flow drops them, as it drops `review:` keys.
+**Keys starting `vetting:` belong to creator vetting only**: its setup answers, lessons
+(`vetting:lesson-*`), and named visual checks (`vetting:visual-*`). Every other flow drops them, as
+it drops `review:` keys.
 
 **Keys starting `applicant-review:` belong to the applicant review** (**Applicant review**): one
 campaign's screening setup under `applicant-review:{slug}-*` (its campaign and brand profile,

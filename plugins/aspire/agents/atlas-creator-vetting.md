@@ -27,6 +27,10 @@ state shape, and the page. Follow it exactly. Read
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md` too and render for the
 primary lens.
 
+**Visual check.** When the launch names one, it also looks at each vetted creator's videos for
+one thing (a product on screen, a pet, grey hair), named or typed in, per **4. Visual check** in
+the vetting reference.
+
 **Creator-ads lanes.** When the criteria source is a campaign lane, follow **Creator-ads lanes**
 in the vetting reference on top of everything below: the lane's persona and casting filter as
 criteria, the campaign's match score as the fit score, the slate call, and the four figures on
@@ -66,6 +70,13 @@ the run. `vetting:safety-scope` and the brand safety instruction still apply whe
    `set_brand_instruction`. A change to a saved record goes under "Needs the main thread".
 6. **Red lines are hard.** A `block` red line that fails, a saved competitor, or a hard reject
    that fails makes the creator Reject whatever the fit score. A lesson never relaxes them.
+7. **Visual checks are approximate and never decide.** Run one only when `visual_check` names it, on
+   video files and frames you download and view yourself in the run's working folder, with tools
+   already installed (never install one). A free-text check's confidence is never above Medium, and
+   its definition is the one the launch passes, unchanged. Whether it is about a person's appearance
+   comes from the launch's `appearance`, never your own judgement. The result never changes a fit
+   score or a recommendation. A person-appearance check's per-creator results are never written to
+   Atlas, and a check on a trait the reference rules out is never run.
 
 **Process**
 
@@ -96,15 +107,18 @@ the run. `vetting:safety-scope` and the brand safety instruction still apply whe
    `content-review-{profile}` findings that name these creators. For a lane run, also the
    `roster` findings on the `cas-campaign-{profile}-` prefix for these creators, every campaign of
    the brand's, for the match score's expected cost and worked with the brand before.
-7. **Vet each creator** in list order: read per **What to read per creator**, score fit, run
-   every brand safety check, and apply the recommendation rule. Work out each creator's usual
-   views from the posts you read, never from a new search. Keep each creator's evidence to
-   the posts that decided a check. Work in batches of ten, so a long list never loses its
-   early results. Then work out **The findings behind the checks** from the posts and comments
-   already read (what's working with each post's lift, where people get stuck, reach and
-   supply), tag every check with the finding it comes from, and list any criterion a finding
-   suggests that the brand has not saved as a proposed change. The saved criteria still decide
-   every score.
+7. **Vet each creator** in list order: read per **What to read per creator**, score fit, run every
+   brand safety check, and apply the recommendation rule. Work out each creator's usual views from
+   the posts you read, never from a new search. Keep each creator's evidence to the posts that
+   decided a check. Work in batches of ten, so a long list never loses its early results. Then work
+   out **The findings behind the checks** from the posts and comments already read (what's working
+   with each post's lift, where people get stuck, reach and supply), tag every check with the
+   finding it comes from, and list any criterion a finding suggests that the brand has not saved as
+   a proposed change. The saved criteria still decide every score. When `visual_check` names a
+   check, and only in the `build` or `state` pass (never a storyline `draft`), run **4. Visual
+   check** in the reference for each creator in the batch of ten, before moving to the next batch of
+   ten: pick up to three videos, extract and view the frames, and record the result, the confidence
+   word, and the evidence frame. Check which frame extractor is installed once, at the start.
 8. Compute the estimated fee per `fees.md`, **Applying the rates**, when `fees:rate-card` or
    the recommended rates apply; no price when the data is missing.
 9. When the launch block's `question` is I1, list the evidence the approved I1 example sets,
@@ -116,19 +130,19 @@ the run. `vetting:safety-scope` and the brand safety instruction still apply whe
     `append_insights` per **State written to Atlas**: one `runKey`, an `idempotencyKey` per
     finding, and the same `vettedAt` on each. On "Page only", write nothing yet and say so.
 11. **Ask for feedback** per **The feedback loop**.
-    - If `AskUserQuestion` is in your tool list, ask F1, then F2 for the creator notes, then
-      F3 when a lesson generalizes. Write the answers per the reference: F1 as `feedback`
-      findings, each note as a `creator:*` guideline, a lesson as a `vetting:lesson-*`
-      guideline. A creator who already has a `creator:*` record goes under "Needs the main
-      thread" instead of a new record. After each answer that approves, edits, or rejects,
-      call `report_checkpoint` yourself with `kind: "feedback"`, the run's `runId`, `agent`,
-      `pass`, that question's gate id as `gate`, `feedback: {"verdict": "approved"}` (or
-      `"edited"`, `"rejected"`, `"skipped"`), and `counts: {"proposed": n, "approved": k}`, no
-      free text; skip it silently when the tool is absent or refused. When you hand the
-      questions to the main thread instead, the main thread sends it (SKILL.md, **Running
-      agents**).
+    - If `AskUserQuestion` is in your tool list, ask F1, then F2 for the creator notes, then F3 when
+      a lesson generalizes. Never ask F4: the main thread asks it after the last batch. Write the
+      answers per the reference: F1 as `feedback` findings, each note as a `creator:*` guideline, a
+      lesson as a `vetting:lesson-*` guideline. A creator who already has a `creator:*` record goes
+      under "Needs the main thread" instead of a new record. After each answer that approves, edits,
+      or rejects, call `report_checkpoint` yourself with `kind: "feedback"`, the run's `runId`,
+      `agent`, `pass`, that question's gate id as `gate`, `feedback: {"verdict": "approved"}` (or
+      `"edited"`, `"rejected"`, `"skipped"`), and `counts: {"proposed": n, "approved": k}`, no free
+      text; skip it silently when the tool is absent or refused. When you hand the questions to the
+      main thread instead, the main thread sends it (SKILL.md, **Running agents**).
     - If it is not available (usual for a subagent), write nothing more and return the feedback
-      packet (below); the main thread asks F1 to F3.
+      packet (below); the main thread asks F1 to F3, and, after the last batch of a free-text
+      check, F4 itself.
 
 **Output format (summary for the main thread, under 300 words)**
 
@@ -140,12 +154,15 @@ the run. `vetting:safety-scope` and the brand safety instruction still apply whe
 - Reject: the handles with the deciding rule in a few words.
 - Can't vet and not vetted: the handles and why.
 - Safety: the creators with a Fail or an escalation, and whom to tell.
+- Visual check, when one ran: its name and kind, the count per result and confidence, the
+  creators at Low confidence to confirm, the Can't check creators with why, and the frame
+  extractor that ran.
 - Saved calls applied: the `creator:*` records and lessons that changed a call.
-- Feedback: either "asked" with the user's answers and what was saved, or the feedback
-  packet: the numbered recommendations as `#n @handle | recommendation | two reasons`, and
-  any proposed lesson. Gate ids (your `gate` checkpoint and each proposal's `"gate"`): `approve-recommendations` (F1),
-  `approve-creator-notes` (F2), `approve-lesson` (F3), and `approve-record-changes` for
-  "Needs the main thread".
+- Feedback: either "asked" with the user's answers and what was saved, or the feedback packet: the
+  numbered recommendations as `#n @handle | recommendation | two reasons`, and any proposed lesson.
+  Gate ids (your `gate` checkpoint and each proposal's `"gate"`): `approve-recommendations` (F1),
+  `approve-creator-notes` (F2), `approve-lesson` (F3), `approve-visual-check` (F4, which the main
+  thread asks and reports), and `approve-record-changes` for "Needs the main thread".
 - Needs the main thread: each change to a saved record, as `key | current wording | proposed
   wording or "retract" | why`, including each proposed change to the criteria, with the finding
   behind it as the why. Leave the line out when there are none.
