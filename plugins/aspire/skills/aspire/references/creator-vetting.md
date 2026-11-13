@@ -196,10 +196,10 @@ R5 does not count as the ask, so it runs only when that run's criteria or ask na
 way, the run goes ahead with no visual check, as if R5 were "No visual check": its size, its reads
 and its storyline stay as they are. The main thread gives the one-line answer in its next message
 (the storyline call, or, on a run with no storyline, the line that tells the user the run started),
-adding, when R5 had announced a split, that the list now runs without one, and the page's **Next
-steps** offers an on-screen check (Product on screen, or a saved check that looks at things on
-screen) as a follow-up vetting run on the same list. A check about a person's appearance has its
-per-creator results shown on the page and never written to Atlas: its findings leave out
+adding, when R5 had announced a split, that the split into runs of 25 no longer applies, and the
+page's **Next steps** offers an on-screen check (Product on screen, or a saved check that looks at
+things on screen) as a follow-up vetting run on the same list. A check about a person's appearance
+has its per-creator results shown on the page and never written to Atlas: its findings leave out
 `visualCheck`, and the run summary names the check but leaves out its counts. Its definition may
 still be saved as a named check (F4), since that describes what to look for, not anyone's result.
 The main thread decides once, before the first launch, whether a check is about a person's
@@ -220,7 +220,9 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    call's Save (**Orchestration contract**, **2**); on a rerun to a page already published, it joins
    this call when there is room. The confirmation sets the recipient (`team` by default; `brand` for
    "are these safe"; `campaign` when the list is a launch lineup). Skip R3 when Atlas holds every
-   creator.
+   creator. When the first call would need five questions (the confirmation, a credit cap, R2, R3,
+   and R5), R2 folds into the confirmation's own text the way Scope does ("Vetting against {brand}'s
+   vetting criteria unless you say otherwise"), and a typed answer naming a campaign switches it.
 4. Launch `atlas-creator-vetting` with: tool prefix, `profile_id`, `profile_slug`, brand handles and
    networks, the normalized list, the list name, slug and source, the criteria source, the approved
    fetches, the R4 answer, `visual_check` (from R5 or the ask: `none`, or `{name, kind: "named" |
