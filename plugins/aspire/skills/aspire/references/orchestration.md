@@ -374,6 +374,7 @@ person asks something close, use the nearest code and its wording in the setup r
 | I4 | Send the holiday brief to our top 20 creators. | `campaign` (the creators read the messages) | `atlas-creator-brief`, then `atlas-creator-outreach` | Ready |
 | I5 | Which of the creators we seeded actually posted? | `team` | `atlas-deliverable-tracker` | Ready |
 | I6 | How did the program do this quarter? Keep, grow, or cut? | `leadership` | `atlas-quarterly-signal` | Ready |
+| I11 | How is the program doing this month, and what should I change? | `team` | `atlas-program-dashboard` | Ready |
 | P1 | Which creator posts should we run as ads, and how do we cut them? | `performance`, then `creative` | `atlas-ad-reuse` | Ready |
 | P2 | There's profanity in this video. Can it run on paid? | `performance` | `atlas-post-analysis` | Ready |
 | P3 | Which posts do we still have rights to, and when do they expire? | `performance` | `atlas-content-library` | Ready |

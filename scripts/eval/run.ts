@@ -22,7 +22,7 @@ const BASELINES = join(HERE, 'baselines')
 
 const USAGE = `bun run eval:pages [options]
 
-  --only <code[,code]>     Run only these questions (I4, I11, O1, O2, O3, I1)
+  --only <code[,code]>     Run only these questions (I4, I11, O1, O2, O3, I1, P1)
   --baseline [date]        Store the run's results under scripts/eval/baselines/<date>/ (default: today, UTC)
   --from <run>             With --baseline: store an earlier run without running again
   --compare <a> <b>        Print what changed between two runs, and run nothing
