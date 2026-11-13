@@ -197,7 +197,7 @@ What the **Creator vetting** section of SKILL.md does around the agent.
 3. Ask R2 to R5 in `AskUserQuestion` calls of at most four questions, with the **Reading the ask**
    confirmation (SKILL.md) in the first. R2, R3, and R5 change what the agent reads, so they go
    with that confirmation, before the storyline draft; R4 joins them when the call has room and
-   otherwise waits for the storyline call (`orchestration.md`, section 2). The confirmation applies (`team` by default; `brand` for "are these safe"; `campaign` when the list is
+   otherwise waits for the storyline call (**Orchestration contract**, **2**). The confirmation applies (`team` by default; `brand` for "are these safe"; `campaign` when the list is
    a launch lineup). Skip R3 when Atlas holds every creator.
 4. Launch `atlas-creator-vetting` with: tool prefix, `profile_id`, `profile_slug`, brand handles
    and networks, the normalized list, the list name, slug and source, the criteria source, the
