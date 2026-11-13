@@ -81,9 +81,8 @@ never reported, so the bar never shows steps the run skips. Call it once more wi
    the same profile (**Atlas tools**, **Partnership content**).
 2. For each chosen channel, call `connect_channel` with `channel` and `asProfileId`.
    When the host renders the tool's own connect widget (the result shows it), do not build a
-   second card: say one line ("Use the button above to sign in to {network}. I'll keep watching
-   for it to finish.") and go to step 3. The widget needs a click (**Atlas tools**, **After a
-   widget**): start nothing else until step 3 reports a terminal status.
+   second card: say its line from **Atlas tools**, **After a widget**, and go to step 3. The
+   widget needs a click: start nothing else until step 3 reports a terminal status.
    Otherwise show the returned `connectUrl` as the **account connection card**, built and
    rendered exactly per **Connection card**; never paste the raw link when the card
    rendered. If the widget tool is unavailable or fails, use its **Fallback** (plain text, never
