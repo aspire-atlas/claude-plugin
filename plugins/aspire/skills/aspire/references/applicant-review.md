@@ -94,8 +94,8 @@ text (**Question format rule**). The tool adds its own free text field; never ad
 | AR3 | Screening checks every applicant for brand safety, fit, competitor deals, disclosure, and language on camera, and flags what it finds. Which of these should reject an applicant on their own? (multiSelect) | 1) A paid partnership with a saved competitor in the last 90 days (Recommended); 2) Paid posts without a disclosure; 3) Swearing, or words {brand}'s red lines rule out, said on camera or shown on screen; 4) None: flag them for the team to decide (picked with others, the others count) | `-checks` |
 | AR4 | {brand}'s saved red lines and competitors apply to every applicant: {red lines and competitors}{, and the brand safety instruction: "<its first line>"}. Any red lines for {campaign} only? With none saved: {brand} has no saved red lines yet. Any red lines for {campaign}? | 1) Only the saved red lines (Recommended) (with none saved: "No red lines for this campaign"); 2) Add red lines for this campaign (type them, one per line) | `-red-lines` |
 | AR5 | Where should the lines sit between Approve, Maybe, and Reject? | 1) {brand}'s vetting thresholds: Approve at {n}, Maybe from {m} (Recommended) (only when `vetting:thresholds` exists); 2) Approve at 70 and up, Maybe from 50 to 69 (Recommended when there are no vetting thresholds); options 2 to 4 each left out when the vetting thresholds already match it; 3) Stricter: Approve at 80, Maybe from 60; 4) Looser: Approve at 60, Maybe from 40 | `-thresholds` |
-| AR6 | Should any application form answer change a call? Type one rule per line: required (a missing answer makes a Maybe), hard stop (an answer that rejects), priority boost (an answer that moves an applicant up), or a note for the screening agent. | 1) No form rules for {campaign} (Recommended when the form asks only for handles); 2) Required: every form question is answered (Recommended when the form asks more than handles); then up to two rules drafted from the form's questions when the form is known (for example "Required: How many pounds overweight is your dog?") | `-form-rules` |
-| AR7 | Should screening look for something in each applicant's videos? Name each check and what counts as a pass. | 1) No visual checks (Recommended when the criteria name nothing visual); 2) Face on camera: the creator appears and speaks to camera (Recommended when the criteria name something visual and no check is drafted; otherwise the first drafted check is Recommended); then up to two named checks drafted from the criteria (for example "Product on screen: the {product} is visible and in use") | `-visuals` |
+| AR6 | Should any application form answer change a call? Type one rule per line: required (a missing answer makes a Maybe), hard stop (an answer that rejects), priority boost (an answer that moves an applicant up), or a note for the screening agent. Screening does not apply these yet: they are saved, named on the screening page as not checked, and the team applies them by hand. | 1) No form rules for {campaign} (Recommended when the form asks only for handles); 2) Required: every form question is answered (Recommended when the form asks more than handles); then up to two rules drafted from the form's questions when the form is known (for example "Required: How many pounds overweight is your dog?") | `-form-rules` |
+| AR7 | Should screening look for something in each applicant's videos? Name each check and what counts as a pass. Screening does not run these yet: they are saved, named on the screening page as not checked, and the team checks them by hand. | 1) No visual checks (Recommended when the criteria name nothing visual); 2) Face on camera: the creator appears and speaks to camera (Recommended when the criteria name something visual and no check is drafted; otherwise the first drafted check is Recommended); then up to two named checks drafted from the criteria (for example "Product on screen: the {product} is visible and in use") | `-visuals` |
 | AR8 | What should the client see once the review is shared with them? | 1) The final list and the content behind it, with no scores or notes (Recommended); 2) The final list only; 3) Nothing: no client access for {campaign} | `-client-view` |
 
 Rules:
@@ -126,6 +126,8 @@ Rules:
 - **Confirm once, then write.** After AR8, show the setup in one short list and ask: "Save this
   applicant review for {campaign} and create its review Sheet? Every teammate's screening will use
   it." Options: 1) Save and create the Sheet (Recommended); 2) Save without a Sheet; 3) Not now.
+  When the review's `-sheet` already holds a link, the question drops "and create its review
+  Sheet", the options are "Save (Recommended)" and "Not now", and the saved link is kept as it is.
   Calibrations are organization-wide; say so in the question when the organization has more than
   one profile. A `key-exists` follows the Phase 5 supersede rule with its own confirmation.
 - **Saved answers are shown in words**, here and in a supersede's two versions: a pointer reads
@@ -137,7 +139,9 @@ Rules:
   `supersede_calibration`; a change between a `decline` and an answer retracts the old record with
   `retract_calibration`, then appends the new kind. Each supersede or retraction gets its own
   Destructive tools confirmation.
-- After the records are written, create the Sheet (**The review Sheet**) and write `-sheet`.
+- After the records are written, create the Sheet (**The review Sheet**) and write `-sheet`, only
+  when `-sheet` holds no link; an existing link is never replaced, not even by "Save without a
+  Sheet".
   Then answer in text: the review's name, what screening will check, the Sheet link, and the next
   step (bring the applicants in with **Creator vetting**).
 
