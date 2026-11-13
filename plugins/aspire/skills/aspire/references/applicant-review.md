@@ -77,7 +77,8 @@ screening reads it as "none for this campaign".
 Before asking anything, call `search_calibrations` (no filter, limit 100 per page, paged to the
 end, `includeSuperseded: true`) and `get_brand_instruction` with `agentType: "brand_safety"`.
 Find the review: a `-campaign` record whose body names this profile and the campaign the user
-named. Skip every question whose key is already occupied for that slug. Write answers with
+named. Skip every question whose key is already occupied for that slug by an active record (not
+superseded, not retracted). Write answers with
 `append_calibration`, `provenance: "interview"`, `statement` under 280 characters, prose in
 `detail`.
 
@@ -88,7 +89,7 @@ text (**Question format rule**). The tool adds its own free text field; never ad
 | # | Question | Options | Key |
 | - | -------- | ------- | --- |
 | AR1 | Which campaign is this applicant review for? Type its name, and its Aspire campaign id if you have it. | Up to two campaigns already saved (`campaign:*-brief`) whose brief names this profile's brand, by name; then campaign names drawn from `brand:summary` and `brand:business-context` (for example "{product} seeding") until there are two to four options | `-campaign` |
-| AR2 | What makes an applicant a fit for {campaign}? | 1) Use the saved {campaign} campaign brief and criteria (Recommended) (only when AR1 picked a saved campaign); 2) Use {brand}'s vetting criteria (only when `vetting:criteria` exists); then starters drawn from `brand:summary` and `brand:business-context` (for example "Dog owners who post daily walks, 10K to 250K followers, US") until there are two to four options | `-criteria` |
+| AR2 | What makes an applicant a fit for {campaign}? | 1) Use the saved {campaign} campaign brief and criteria (Recommended) (only when AR1 picked a saved campaign whose `-brief` and `-criteria` are still active); 2) Use {brand}'s vetting criteria (only when `vetting:criteria` exists); then starters drawn from `brand:summary` and `brand:business-context` (for example "Dog owners who post daily walks, 10K to 250K followers, US") until there are two to four options | `-criteria` |
 | AR3 | Screening checks every applicant for brand safety, fit, competitor deals, disclosure, and language on camera, and flags what it finds. Which of these should reject an applicant on their own? (multiSelect) | 1) A paid partnership with a saved competitor in the last 90 days; 2) Paid posts without a disclosure; 3) Swearing, or words {brand}'s red lines rule out, said on camera or shown on screen; 4) None: flag them for the team to decide (picked with others, the others count) | `-checks` |
 | AR4 | {brand}'s saved red lines and competitors apply to every applicant: {red lines and competitors}{, and the brand safety instruction: "<its first line>"}. Any red lines for {campaign} only? With none saved: {brand} has no saved red lines yet. Any red lines for {campaign}? | 1) Only the saved red lines (Recommended) (with none saved: "No red lines for this campaign"); 2) Add red lines for this campaign (type them, one per line) | `-red-lines` |
 | AR5 | Where should the lines sit between Approve, Maybe, and Reject? | 1) {brand}'s vetting thresholds: Approve at {n}, Maybe from {m} (Recommended) (only when `vetting:thresholds` exists); 2) Approve at 70 and up, Maybe from 50 to 69 (Recommended when there are no vetting thresholds); options 2 to 4 each left out when the vetting thresholds already match it; 3) Stricter: Approve at 80, Maybe from 60; 4) Looser: Approve at 60, Maybe from 40 | `-thresholds` |
