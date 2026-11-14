@@ -91,7 +91,7 @@ text (**Question format rule**). The tool adds its own free text field; never ad
 | - | -------- | ------- | --- |
 | AR1 | Which campaign is this applicant review for? Type its name, and its Aspire campaign id if you have it. | Up to two campaigns already saved (`campaign:*-brief`) whose brief names this profile's brand, by name; then campaign names drawn from `brand:summary` and `brand:business-context` (for example "{product} seeding") until there are two to four options | `-campaign` |
 | AR2 | What makes an applicant a fit for {campaign}? | 1) Use the saved {campaign} campaign brief and criteria (Recommended) (only when AR1 picked a saved campaign whose `-brief` and `-criteria` are still active); 2) Use {brand}'s vetting criteria (only when `vetting:criteria` exists); then starters drawn from `brand:summary` and `brand:business-context` (for example "Dog owners who post daily walks, 10K to 250K followers, US") until there are two to four options | `-criteria` |
-| AR3 | Screening checks every applicant for brand safety, fit, competitor deals, disclosure, and language on camera, and flags what it finds. Which of these should reject an applicant on their own? (multiSelect) | 1) A paid partnership with a saved competitor in the last 90 days (Recommended); 2) Paid posts without a disclosure; 3) Swearing said on camera or shown on screen (a red line's words always reject, through AR4); 4) None: flag them for the team to decide (picked with others, the others count) | `-checks` |
+| AR3 | Screening checks every applicant for brand safety, fit, competitor deals, disclosure, and language on camera, and flags what it finds. Which of these should reject an applicant on their own? (multiSelect) | 1) A paid partnership with a saved competitor in the last 90 days (Recommended); 2) Paid posts without a disclosure; 3) Swearing, or a red line's words, said on camera or shown on screen (the review's own red lines always reject; {brand}'s saved red lines keep their own action); 4) None: flag them for the team to decide (picked with others, the others count) | `-checks` |
 | AR4 | {brand}'s saved red lines and competitors apply to every applicant: {red lines and competitors}{, and the brand safety instruction: "<its first line>"}. Any red lines for {campaign} only? With none saved: {brand} has no saved red lines yet. Any red lines for {campaign}? | 1) Only the saved red lines (Recommended) (with none saved: "No red lines for this campaign"); 2) Add red lines for this campaign (type them, one per line) | `-red-lines` |
 | AR5 | Where should the lines sit between Approve, Maybe, and Reject? | 1) {brand}'s vetting thresholds: Approve at {n}, Maybe from {m} (Recommended) (only when `vetting:thresholds` exists); 2) Approve at 70 and up, Maybe from 50 to 69 (Recommended when there are no vetting thresholds); options 2 to 4 each left out when the vetting thresholds already match it; 3) Stricter: Approve at 80, Maybe from 60; 4) Looser: Approve at 60, Maybe from 40 | `-thresholds` |
 | AR6 | Should any application form answer change a call? Type one rule per line: required (a missing answer makes a Maybe), hard stop (an answer that rejects), priority boost (an answer that moves an applicant up), or a note for the screening agent. Screening does not apply these yet: they are saved, named on the screening page as not checked, and the team applies them by hand. | 1) No form rules for {campaign} (Recommended when the form asks only for handles); 2) Required: every form question is answered (Recommended when the form asks more than handles); then up to two rules drafted from the form's questions when the form is known (for example "Required: How many pounds overweight is your dog?") | `-form-rules` |
@@ -164,20 +164,24 @@ as the record.
    the user picked "Save without a Sheet": write `sheet: none (<reason in a few words>)` and say in
    one line that screening will work from the review page instead. A later setup run on a review
    whose `-sheet` says `none` asks "Create the review Sheet for {campaign} now?" with "Create it
-   (Recommended)" and "Keep working without a Sheet", and on the first supersedes the record with
-   the link, through the Phase 5 supersede rule.
+   (Recommended)" and "Keep working without a Sheet". On the first it supersedes the `sheet: none`
+   record with the link, through the Phase 5 supersede rule. When `-sheet` is missing altogether,
+   the same question appends the record instead (`append_calibration`): the link, or
+   `sheet: none (not created)` on the second option.
 
 Share the Sheet only with the people the user names, and never with a client contributor.
 
 ## When setup is done
 
-A review is set up when `-campaign`, `-criteria`, `-checks`, `-thresholds`, `-client-view`, and
-`-sheet` exist for its slug, and `-red-lines`, `-form-rules`, and `-visuals` are each saved
-or recorded as a `decline`. Until then, setup asks only the missing questions, in order, then
-confirms the batch once. A missing `-sheet` has no question of its own: setup treats it like
-`sheet: none` and asks "Create the review Sheet for {campaign} now?" (**The review Sheet**, step 4),
-writing the link or `sheet: none (not created)`. An unattended read treats a missing `-sheet` as
-`sheet: none` and does not stop for it.
+A review is set up when `-campaign`, `-criteria`, `-checks`, and `-thresholds` exist for its slug,
+and `-red-lines`, `-form-rules`, and `-visuals` are each saved or recorded as a `decline`. Until
+then, setup asks only the missing questions, in order, then confirms the batch once.
+
+`-client-view` and `-sheet` are optional: their readers (the client contributor role, Sheet sync)
+come later, so a review without them still counts as set up and screening never stops for them. An
+interactive setup run still offers a missing one: AR8 for `-client-view`, and for `-sheet` the
+"Create the review Sheet for {campaign} now?" question (**The review Sheet**, step 4), which appends
+the record when none exists. Screening reads a missing `-sheet` as `sheet: none`.
 
 ## Reading the setup back (screening)
 

@@ -247,7 +247,9 @@ What the **Creator vetting** section of SKILL.md does around the agent.
 3b. **An applicant review named in R2** is read back per **Applicant review**, **Reading the setup
    back (screening)**, before the launch: read per **Applicant review**, **The records**, any missing setup question asked
    first, and its pointers resolved. Then ask R5, with the review's saved visual checks as its
-   options (**Applicant reviews**).
+   options (**Applicant reviews**). When R5 was already asked because R2 was folded into the
+   confirmation and a typed answer switched the run to a review, ask R5 again here only when the
+   review has saved visual checks; otherwise keep the first answer.
 4. Launch `atlas-creator-vetting` with: tool prefix, `profile_id`, `profile_slug`, brand handles and
    networks, the normalized list, the list name, slug and source, the criteria source, the approved
    fetches, the R4 answer, `visual_check` (from R5 or the ask: `none`, or `{name, kind: "named" |
@@ -823,7 +825,9 @@ thread nor the agent asks V1 to V4 or any setup question.
 (applicants, applications, or screening for a named campaign), or when the export carries an Aspire
 campaign id or applicant columns (form answers, an applied date). Nothing else does: without one of
 these, R2 keeps {brand}'s vetting criteria as option 1. The campaign is the one the ask names, or the
-one whose `-campaign` record carries the export's Aspire campaign id.
+one whose `-campaign` record carries the export's Aspire campaign id. When neither names one (an
+export with applicant columns and no campaign id), ask which campaign with **Applicant review**'s
+AR1 before R2; picking none of them means the list is not counted as a campaign's applicants.
 
 What changes against a `vetting` run:
 
@@ -831,7 +835,7 @@ What changes against a `vetting` run:
 | --------------- | ---------------- |
 | Fit criteria | The review's criteria, resolved: the campaign's `-brief` and `-criteria` or vetting's criteria it points at, or its own lines |
 | Approve, Maybe, Reject lines | The review's thresholds, resolved |
-| Language on camera | Always run: swearing in `analysis.transcript` or `analysis.overlayText` is a Flag citing the line, a Fail when `reject:` lists `language-on-camera`. A word a red line rules out is that red line's own check, not this one: a review red line is `block`, so it always fails |
+| Language on camera | Always run: swearing, or a word any red line rules out (the brand's or the review's, whatever its `action`), in `analysis.transcript` or `analysis.overlayText` is a Flag citing the line, a Fail when `reject:` lists `language-on-camera`. A `block` red line it hits is a Fail on its own: the review's own red lines are `block`, so they always reject, while the brand's saved red lines keep their own action |
 | Red lines | The brand's saved `red_line` records plus the review's red lines, each its own check |
 | Hard stops | The checks the review's `reject:` line lists (`competitor-deals`, `disclosure`, `language-on-camera`), in place of `vetting:hard-rejects` (**The recommendation**, rule 2). Every check runs whatever `reject:` says; one it doesn't list stays a Flag |
 | `vetting:criteria`, `vetting:thresholds`, `vetting:hard-rejects` | Not read; the review replaces them. Bought engagement and no recent posts are Flags, never rejects on their own |
