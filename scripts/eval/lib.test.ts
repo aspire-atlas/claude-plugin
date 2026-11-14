@@ -352,6 +352,11 @@ test('arrows, "vs" and codes are counted in chat, and links and ordinary words a
   expect(countChat('Gifts → deals, Instagram vs. TikTok, and O2 => P4').count).toEqual({ arrows: 2, vs: 1, codes: 2 })
   expect(countChat('The page is here: https://example.test/a->b/I2/vs. Canvas saves and P10 pacing are fine, and so is R15.').count).toEqual({ arrows: 0, vs: 0, codes: 0 })
   expect(countChat('I heard I2.').hits).toEqual(['codes: …I heard I2.…'])
+  // A file path (the run's folder is named for its code), a backticked span, quoted words, a product's name
+  // and an HTML comment are not chat wording.
+  expect(countChat('The page was saved here: /tmp/eval-run/I4/work/page.html. See `a -> b` and <!-- note -->.').count).toEqual({ arrows: 0, vs: 0, codes: 0 })
+  expect(countChat('Her "iPhone vs Pixel" video led the week, shot on a Canon R5 and a Sony A1.').count).toEqual({ arrows: 0, vs: 0, codes: 0 })
+  expect(countChat('Fixed R3 before publishing. Then: R9 still fails, and O2 is next ➡ soon.').count).toEqual({ arrows: 1, vs: 0, codes: 3 })
 })
 
 test('a countable rule broken in chat fails the run, with no approved result to compare', () => {

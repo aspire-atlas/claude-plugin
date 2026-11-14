@@ -289,10 +289,11 @@ flow's saved reader and scope, then the defaults, and never takes a `lastrun:` r
 choice as approval: it saves only under the standing approval its flow's setup gave (**7**).
 
 **Pre-filled, with the source.** The Heard question states each pre-filled answer and where it
-came from, so the person confirms rather than answers: "Reader: performance, as saved for ad
-reuse. Scope: Instagram and TikTok, last 30 days, as saved. Findings: page only, as saved. Right?"
-Say "as you prefer for P1" for the person's default and "the default for this question" for
-**3**. The Scope question is skipped for a scope a saved record supplies, and the Save question
+came from, in full sentences, so the person confirms rather than answers: "I will write this for
+the performance team, as saved for ad reuse. It covers Instagram and TikTok over the last 30 days,
+and the findings stay on the page, both as saved. Is that right?"
+Say "as you prefer for this question" for the person's default and "the default for this question" for
+**3**, never the question's code. The Scope question is skipped for a scope a saved record supplies, and the Save question
 for a saved "page only"; the Heard question carries them, its "Yes, run it" confirms them, and its
 free text field changes them. A saved "save to Atlas" never skips the Save question: it is still
 asked, with "Save to Atlas" as its (Recommended) option, described "as saved for {the flow}", so
@@ -362,7 +363,7 @@ Never guess it. Write once, after the answers and before the launch:
   detail.
 
 Say where it went in one line, naming the record that changed: "Saved for everyone: the daily and
-weekly reports' readers now lead with growth." or "Saved for you: P1 goes to growth." A run that
+weekly reports' readers now lead with growth." or "Saved for you: ad reuse questions go to growth." A run that
 keeps the saved answers writes nothing, so a `lastrun:` record holds the answers as last saved,
 and `at` is when they were saved. Never ask "Remember" in an unattended run, and an unattended run
 writes neither record.
@@ -370,7 +371,7 @@ writes neither record.
 ## 3. Question codes
 
 The question in the persona's words, the default reader, and the agent that answers it. When a
-person asks something close, use the nearest code and its wording in the setup reply.
+person asks something close, use the nearest code, and its wording (never the code) in the setup reply.
 
 | Code | Question | Default reader | Agent | Status |
 | ---- | -------- | -------------- | ----- | ------ |

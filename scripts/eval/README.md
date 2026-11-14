@@ -119,8 +119,10 @@ the new page.
 C5 is the run's chat, read from its transcript: the setup reply (the first turn's questions, their option
 labels and descriptions, and the reply the turn ended on), the storyline check-in (the question headed
 "Storyline", or the turn a storyline draft came back in), and the close-out (the last turn's reply). Each is
-counted for arrows, "vs", and codes: question codes such as I2, and check ids such as R3 or EN2. Links are left
-out of the count. It passes with every count at zero, and the line under the table gives the counts per
+counted for arrows, "vs", and codes: question codes such as I2, and check ids such as R3 or EN2. Links, file
+paths, backticked spans and words inside quotation marks are left out of the count, and so is a code right
+after a capitalised word inside a sentence ("Canon R5"). A product name that opens a sentence ("O2 customers")
+still counts: reword the line. It passes with every count at zero, and the line under the table gives the counts per
 message. The messages and the words each count matched are kept in the run's `chat.json`, never in a baseline
 or a comment. The other English rules (full sentences, one idea per sentence, terms explained) need judgment
 and are not counted here.

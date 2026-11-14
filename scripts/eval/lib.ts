@@ -252,21 +252,38 @@ export function chatMessages(turns: Turn[]): Partial<Record<ChatMessage, string>
 }
 
 const CHAT_RULES: { key: keyof ChatCount; pattern: RegExp }[] = [
-  { key: 'arrows', pattern: /→|⇒|➜|➔|->|=>/g },
+  { key: 'arrows', pattern: /[→⇒➜➔➡⟶⟹]|(?<![-<!])->|(?<![<=>!])=>/g },
   { key: 'vs', pattern: /\bvs\b\.?/gi },
   // Question codes (orchestration.md, 3), and the check ids of the reader standard, the Evals tab and the two reads.
   { key: 'codes', pattern: /\b(?:[IPO][1-9]|A1|R(?:1[0-4]|[1-9])|E[1-8]|EN[1-9]\d*|UX[1-9]\d*)\b/g },
 ]
 
+/** "Canon R5", "Sony A1": a code right after a capitalised word inside a sentence is a product's name, not a code. */
+function namesAProduct(text: string, at: number): boolean {
+  const before = text.slice(0, at).match(/(^|[\s\S])([A-Z][A-Za-z]+) $/)
+  if (!before) return false
+  const lead = text.slice(0, at - before[2].length - 1).trimEnd()
+  return lead !== '' && !/[.!?:;,(]$/.test(lead)
+}
+
 const CHAT_NAMES: Record<ChatMessage, string> = { setup: 'setup reply', storyline: 'storyline check-in', closeOut: 'close-out' }
 
-/** Counts the countable English rules in one message. Links are left out: a path may hold "->" or a code by chance. */
+/**
+ * Counts the countable English rules in one message. Left out of the count: links, file paths and backticked
+ * spans, which may hold "->" or a code by chance (a run's own folder is named for its question code), and
+ * words inside quotation marks, which are someone else's and never fixed (english-rules.md).
+ */
 export function countChat(text: string): { count: ChatCount; hits: string[] } {
-  const clean = text.replace(/https?:\/\/\S+/g, ' ')
+  const clean = text
+    .replace(/`[^`\n]*`/g, ' ')
+    .replace(/https?:\/\/\S+/g, ' ')
+    .replace(/\S*\/\S*\/\S*/g, ' ')
+    .replace(/"[^"\n]*"|“[^”\n]*”/g, ' ')
   const count: ChatCount = { arrows: 0, vs: 0, codes: 0 }
   const hits: string[] = []
   for (const rule of CHAT_RULES) {
     for (const match of clean.matchAll(rule.pattern)) {
+      if (rule.key === 'codes' && namesAProduct(clean, match.index ?? 0)) continue
       count[rule.key] += 1
       const from = Math.max(0, (match.index ?? 0) - 30)
       hits.push(`${rule.key}: …${clean.slice(from, (match.index ?? 0) + match[0].length + 30).replace(/\s+/g, ' ').trim()}…`)

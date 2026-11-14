@@ -16,6 +16,7 @@ flow change" here and skip the list.
 - [ ] C2 No inline images in chat
 - [ ] C3 Cards only on request, through the lookup or show tools
 - [ ] C4 After a widget: name the control and stop, or say it is for reference and carry on
+- [ ] C5 The setup reply, the storyline check-in and the close-out follow the English rules: no arrows, "vs", fragments, or codes
 
 **Load**
 - [ ] L1 One router entry: one **Sections** row and one `references/<flow>.md`; no flow steps in `SKILL.md`
