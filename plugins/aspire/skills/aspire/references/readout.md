@@ -201,9 +201,13 @@ Metric definitions:
 - Cadence = posts per day (daily) or per week (weekly), against the baseline.
 - Ranking follows the reader: the headline's figure, the best post, and the order of the top and
   bottom posts use the primary lens's result (**Recipient lens**, **Rendering for a lens**,
-  Headline and rank by the reader's result), with its fallback line when Atlas does not hold that
-  result. The lead metric (R4) is the `team` lens's choice within reach and engagement; under
-  another primary lens it stays in the KPI strip and the chart, and no longer sets the order.
+  Headline and rank by the reader's result). The lead metric (R4) is the `team` lens's choice
+  within reach and engagement; under another primary lens it stays in the KPI strip and the
+  chart, and no longer sets the order. These reports read no sales, sign-ups, or spend per post,
+  so under a leadership or growth lens the posts rank by engagement per 1,000 views with the
+  fallback line, naming the metric and the reason and no connection; the growth section's
+  stand-in is its own estimated fee per 1,000 engagements (**Lenses**). A leadership headline may
+  cite a figure from the **Meta Ads** block when the run has one, labelled "Meta Ads".
 
 ## Meta Ads enrichment (optional, both agents)
 

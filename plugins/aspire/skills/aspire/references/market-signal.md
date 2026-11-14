@@ -272,10 +272,12 @@ The primary M3 lens (or the lens passed in the launch) leads. Every other saved 
 section. Each follows **Recipient lens**, **Rendering for a lens**.
 
 Ranking follows the reader: the page's answer, the order of the claims, win cards, and post lists
-use the primary lens's result (**Recipient lens**, Headline and rank by the reader's result), with
-its fallback line when Atlas does not hold that result. The reach-rate order and the "Wins reach"
-label are the `team` lens's result; under another primary lens the section keeps every figure, and
-only the one-line answer and the order of the win cards change.
+use the primary lens's result (**Recipient lens**, Headline and rank by the reader's result). This
+flow reads no ad or store data, so a leadership, growth, or performance reader gets the fallback
+line, naming the metric and the reason; the page's "what's missing" keeps its paid-results line.
+The reach rate is a rate over a topic's posts and keeps its definition and its order under every
+lens; "Wins reach" answers the `team` reader, and under another primary lens the one-line answer
+is written in that reader's result first.
 
 - **Product:** what changed on top, then features compared (won, lost, even, with the clips as
   evidence), then friction with quotes. No marketing gloss.

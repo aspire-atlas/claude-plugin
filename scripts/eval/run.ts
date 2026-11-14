@@ -253,7 +253,7 @@ async function uxReview(page: string, question: Question, dir: string, emptyMcp:
   return { e: { E7: musts.length ? 'fail' : 'pass' }, reasons: { E7: reason }, note: null }
 }
 
-async function judge(page: string, question: Question, approvedPage: string | null, eChecks: any[], dir: string, emptyMcp: string, options: Options): Promise<{ e: Record<string, Result>; reasons: Record<string, string>; note: string | null }> {
+async function judge(page: string, role: 'new' | 'approved', question: Question, approvedPage: string | null, eChecks: any[], dir: string, emptyMcp: string, options: Options): Promise<{ e: Record<string, Result>; reasons: Record<string, string>; note: string | null }> {
   const mine = eChecks.filter(check => check.judgedBy === 'judge')
   const system = [
     'You grade one published page against the checks below, as a careful reviewer who was not there when it was built.',
@@ -271,7 +271,9 @@ async function judge(page: string, question: Question, approvedPage: string | nu
     `The page to grade: ${page}`,
     approvedPage
       ? `The approved example for this question: ${approvedPage}. Read it only to list the evidence it shows, for E8. Never grade it, and never ask the new page to copy its sections or wording.`
-      : 'This page is itself the approved example for the question, so judge E8 on the page alone: does it do one job, with only what this reader needs.',
+      : role === 'approved'
+        ? 'This page is itself the approved example for the question, so judge E8 on the page alone: does it do one job, with only what this reader needs.'
+        : 'No approved example was read for this question, so judge E8 on the page alone: does it do one job, with only what this reader needs.',
     'Read the whole page with the Read tool (in parts when it is long), then reply.',
   ].join('\n')
   const args = [
@@ -301,7 +303,7 @@ async function checkPage(source: string, role: 'new' | 'approved', question: Que
   const [s, g, j, en, ux] = await Promise.all([
     scripted(page, dir),
     grade(page, question, dir, emptyMcp, options),
-    judge(page, question, approvedPage, eChecks, dir, emptyMcp, options),
+    judge(page, role, question, approvedPage, eChecks, dir, emptyMcp, options),
     eChecks.some(check => check.judgedBy === 'english-read') ? englishRead(page, question, dir, emptyMcp, options) : none,
     eChecks.some(check => check.judgedBy === 'ux-review') ? uxReview(page, question, dir, emptyMcp, options) : none,
   ])
