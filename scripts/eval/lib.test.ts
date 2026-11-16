@@ -240,12 +240,13 @@ test('a pull request reruns the questions its changed agents and flow files answ
   const pick = (changed: string[]) => codesForChanges(changed, config.questions, config.sharedPaths).codes
   expect(pick(['README.md', 'docs/STANDARD.md'])).toEqual([])
   expect(pick(['plugins/aspire/agents/atlas-market-signal.md'])).toEqual(['O2', 'O3'])
-  expect(pick(['plugins/aspire/skills/aspire/references/creator-vetting.md', 'plugins/aspire/agents/atlas-creator-brief.md'])).toEqual(['I4', 'I1'])
+  expect(pick(['plugins/aspire/agents/atlas-ad-reuse.md'])).toEqual(['P1'])
   expect(pick(['plugins/aspire/skills/aspire/references/ad-reuse.md'])).toEqual(['P1'])
-  // A watched file no question answers reruns nothing; a file every flow reads reruns every question.
+  expect(pick(['plugins/aspire/skills/aspire/references/creator-vetting.md', 'plugins/aspire/agents/atlas-creator-brief.md'])).toEqual(['I4', 'I1'])
+  // A watched file no question answers reruns nothing; a file every flow reads reruns all seven.
   expect(pick(['plugins/aspire/agents/atlas-shops.md'])).toEqual([])
   expect(pick(['plugins/aspire/skills/aspire/references/reader-standard.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1'])
-  // The page standard and the router shape every page, so a change to either reruns every question.
+  // The page standard and the router shape every page, so a change to either reruns all seven.
   expect(pick(['plugins/aspire/skills/page-standard/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1'])
   expect(pick(['plugins/aspire/skills/aspire/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1'])
   expect(pick(['plugins/aspire/skills/org-admin/SKILL.md'])).toEqual([])
