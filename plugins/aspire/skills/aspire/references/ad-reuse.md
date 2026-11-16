@@ -294,6 +294,12 @@ date shows as expired.
 
 ## Output for each lens
 
+Ranking (**Recipient lens**, Headline and rank by the reader's result), as it applies here: no
+post has sign-ups, sales, or cost per result before it runs as an ad, so the hook score is this
+flow's stand-in and both lists rank by it. The answer says so in one line. A candidate that
+already ran keeps its "already run as an ad" label and is ranked as **Counts that include paid
+delivery** says, never higher because an ad inflated its counts.
+
 - **Performance** (primary): the reasoning first: how Atlas narrowed the posts, what it learned,
   and the recommended posts checked against each learning, each with its one line on why it was
   picked (**Page**, item 7). The licensing candidates follow in the folded scoring section as two lists, found then

@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import {
   ATLAS_READS, ATLAS_WRITES, HARNESS_VERSION, barChecks, compareRuns, extractPageCheckScript, fill, findJsonWithKey, configuredQuestions,
-  findPage, forBaseline, normalizeResult, checkNames as namesFrom, stripTitlePrefix, parsePageCheck, parseStream, renderQuestion, renderRun, rIds, stripDataUris,
+  findPage, forBaseline, normalizeResult, readerResult, checkNames as namesFrom, stripTitlePrefix, parsePageCheck, parseStream, renderQuestion, renderRun, rIds, stripDataUris,
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength,
   type CheckDef, type PageChecks, type QuestionResult, type Result, type RunResults, type Turn,
 } from './lib'
@@ -255,6 +255,7 @@ async function uxReview(page: string, question: Question, dir: string, emptyMcp:
 
 async function judge(page: string, question: Question, approvedPage: string | null, eChecks: any[], dir: string, emptyMcp: string, options: Options): Promise<{ e: Record<string, Result>; reasons: Record<string, string>; note: string | null }> {
   const mine = eChecks.filter(check => check.judgedBy === 'judge')
+  const judged = readerResult(readFileSync(join(PLUGIN, 'skills/aspire/references/recipient-lens.md'), 'utf8'), question.reader)
   const system = [
     'You grade one published page against the checks below, as a careful reviewer who was not there when it was built.',
     'You see the page and the question it was asked to answer. You have no notes from whoever built it.',
@@ -268,10 +269,11 @@ async function judge(page: string, question: Question, approvedPage: string | nu
   const prompt = [
     `The question: ${fill(question.ask, { brand: 'the brand the page names' })}`,
     `The reader: ${question.readerInWords}. Kind of page: ${question.kind}.`,
+    ...(judged ? [`This reader is judged on: ${judged.result}. When the page holds no such figure for a post, posts rank by: ${judged.standIn}.`] : []),
     `The page to grade: ${page}`,
     approvedPage
       ? `The approved example for this question: ${approvedPage}. Read it only to list the evidence it shows, for E8. Never grade it, and never ask the new page to copy its sections or wording.`
-      : 'This page is itself the approved example for the question, so judge E8 on the page alone: does it do one job, with only what this reader needs.',
+      : 'No approved example is given for this question, so judge E8 on the page alone: does it do one job, with only what this reader needs.',
     'Read the whole page with the Read tool (in parts when it is long), then reply.',
   ].join('\n')
   const args = [

@@ -134,11 +134,10 @@ No heading, no table, no bold, no question code (**3**), and no tool, record, or
 
 1. **One sentence: the need, the decision, the result.** What the person probably needs (the
    question in the map's wording, **3**, with the handle, brand, or launch from the ask), the
-   decision the page will help its reader make, and the result that reader is judged on (the
-   primary lens's "Decision it feeds" and "Result they are judged on" in **Recipient lens**,
-   **Team catalog**). For the `team` reader the result follows the persona (**1**, step 1); with
-   the persona unknown, the sentence stops at the decision. Name the reader only when it is not
-   the person asking. "You need to know which creator posts to run as ads and how to cut them.
+   decision the page will help its reader make (the primary lens's "Decision it feeds" in
+   **Recipient lens**, **Team catalog**), and the result that reader is judged on (the lens's
+   row in **Recipient lens**, **Result judged on**), said in plain words. Name the reader only
+   when it is not the person asking. "You need to know which creator posts to run as ads and how to cut them.
    The page will help your paid team decide what to license and put spend behind, to bring in
    sign-ups and sales."
 2. **The connections that would improve this answer, one line each, three at most.** Build them
