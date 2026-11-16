@@ -189,15 +189,19 @@ CSV's handle column and normalize it per **Getting the list**.
   the page under What's missing).
 
 **One row per creator.** When several rows share a network and handle (one creator who applied
-twice), keep one: a decided row over an undecided one, and between rows of the same kind the one
-applied most recently. List the others as duplicate rows with the unreadable rows.
+twice), fold them into one row that keeps all their applicant ids, so the checks below match any
+of them. Its Team call comes from one of the rows: a decided row over an undecided one; then the
+row whose applicant id the creator's newest `feedback` finding carries; then the latest date in the
+Applied column **The review Sheet** writes. Decided rows with different calls and nothing to choose
+between them are a conflict: offer neither call, and name the rows in F1. List the other rows as
+duplicates with the unreadable rows.
 
 Decided rows go through **Check what Atlas holds** with the list, so each Sheet call has its
 account id. They are never fetched and never counted in R3. Every list entry from the Sheet
 carries its applicant id.
 
 **Which Sheet calls are new.** Compare each decided row's Sheet call with the newest `feedback`
-finding carrying its `applicantId` for the same creator (`entityId`). Every `feedback` finding
+finding carrying one of its applicant ids for the same creator (`entityId`). Every `feedback` finding
 written for a creator whose list came from a review Sheet carries its row's `applicantId`, so
 this is the last call saved for the row, from the Sheet or from F1:
 
@@ -207,7 +211,7 @@ this is the last call saved for the row, from the Sheet or from F1:
   the creator.
 
 **Reopened rows.** An undecided row (blank or unreadable) is **reopened** when the creator's newest
-`feedback` finding of any kind carries the row's `applicantId` and `sheetCall: true`: the team
+`feedback` finding of any kind carries one of the row's applicant ids and `sheetCall: true`: the team
 took back in the Sheet a call saved from there, and made none since in F1 or chat. It is vetted
 like any undecided row, and the team's F1 answer on it replaces the old call.
 
