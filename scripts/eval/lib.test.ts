@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   ATLAS_READS, ATLAS_WRITES, barChecks, compareRuns, extractPageCheckScript, fencedBlocks, fill, findJsonWithKey, configuredQuestions, skippedLine,
-  findPage, forBaseline, normalizeResult, codesForChanges, regressions, renderComment, renderSkipped, renderSlack, COMMENT_MARKER, renderStopped, stripTitlePrefix, checkNames, parsePageCheck, parseStream, renderRun, rIds, rResult, stripDataUris,
+  findPage, forBaseline, normalizeResult, codesForChanges, readerResult, regressions, renderComment, renderSkipped, renderSlack, COMMENT_MARKER, renderStopped, stripTitlePrefix, checkNames, parsePageCheck, parseStream, renderRun, rIds, rResult, stripDataUris,
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, type PageChecks, type QuestionResult, type RunResults,
 } from './lib'
 
@@ -158,6 +158,15 @@ test('compare lists only what changed and marks a changed approved result as dri
   expect(diff).toContain('Transcript tokens: 123,456 → 100,000 · Confirmation rounds: 2 → 1')
   expect(diff).toContain('2 check results changed.')
   expect(compareRuns(run(), run(), E_CHECKS)).toContain('No check changed.')
+})
+
+test('every question\'s reader has a row in the result table the judge is handed', () => {
+  const config = JSON.parse(readFileSync(join(import.meta.dir, 'questions.json'), 'utf8'))
+  const lens = readFileSync(join(ROOT, 'plugins/aspire/skills/aspire/references/recipient-lens.md'), 'utf8')
+  for (const question of config.questions) expect(readerResult(lens, question.reader)?.result).toBeTruthy()
+  expect(readerResult(lens, 'performance')).toEqual({ result: 'Sign-ups, sales, and cost per result', standIn: 'Engagement per 1,000 views' })
+  expect(readerResult(lens, 'nobody')).toBeNull()
+  expect(readerResult('no table here', 'team')).toBeNull()
 })
 
 test('the question set, the checks, and the Atlas tool lists hold together', () => {

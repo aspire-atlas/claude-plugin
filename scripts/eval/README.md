@@ -119,6 +119,13 @@ the new page.
 The example pages are tied to the doc's change numbers (3 metrics, 4 data freshness, 5 storyline, 6 reviews).
 `questions.json` maps each change to the checks that show it; change that map when a check is added.
 
+E1 also judges the reader's result: the headline's figure and the top item of each ranked list use what that
+reader is judged on (`recipient-lens.md`, **Rendering for a lens**), or one line says which metric the page
+used and why. The harness hands the judge that reader's row of the result table in `recipient-lens.md`, and
+E1's `judgeNote` in `e-checks.json` says how to apply it. O3 shows it for a leadership reader and P1 for
+a paid-social reader. P1 has no approved page yet, so it runs once `local.json` names a brand for it, and its
+results cannot count as a regression until a baseline holds an approved page.
+
 E6 is the English read every page gets before it publishes (`quality-review.md`, **9.1**), run as its own
 session with the page, its reader and its question code: it passes with no Must fix, and its reason lists each
 Must with its replacement. E7 is the UX review (`quality-review.md`, **9.2**), run the same way: the
