@@ -3,8 +3,48 @@
 Used by the `atlas-program-dashboard` agent and the **Program dashboard** section of SKILL.md.
 Holds the modes, the approvals, what the dashboard reads, how each number is worked out, the
 attention list, the snapshot it saves, the page, delivery, and the unattended rules. Read
-`program.md` first. Its state model, page vocabulary, **3** (the dispatch), **4** (connected
+**Influencer program** first. Its state model, page vocabulary, **3** (the dispatch), **4** (connected
 tools), **7** (pages), **8** (schedules) and **9** (unattended runs) apply here as written.
+
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Program dashboard (how the whole program is doing)](#program-dashboard-how-the-whole-program-is-doing)
+- [Why the dashboard exists](#why-the-dashboard-exists)
+- [Modes](#modes)
+- [Approvals (asked by the main thread)](#approvals-asked-by-the-main-thread)
+- [What it reads](#what-it-reads)
+- [The numbers](#the-numbers)
+- [The snapshot](#the-snapshot)
+- [The page](#the-page)
+- [Delivery](#delivery)
+- [Unattended runs](#unattended-runs)
+- [Sample mode](#sample-mode)
+- [What the dashboard never does](#what-the-dashboard-never-does)
+
+## Program dashboard (how the whole program is doing)
+
+Trigger: "program dashboard", "how is {program} doing", "show the dashboard", "update the
+dashboard", "are we on track for our goals", "program overview"; also the **Program manager**
+dispatch's "Update the dashboard" and "Show the dashboard" in its Next picker. Requires a saved
+program (**Influencer program**, Program setup). The quarter's story stays in **Quarterly
+signal**. It reads and shows; it never acts.
+
+Before step 1, read this file (**Approvals** and **Running the dashboard
+(main thread)**) and follow it. Ask B1 (write) and B2 (delivery) before launching
+`atlas-program-dashboard` with `run: interactive` (inputs: tool prefix, `profile_id`,
+`profile_slug`, handles and networks, program slug, `connections`, `recipient`), exactly as
+worded there (**Guardrails**, Pickers); B3 creates the weekly task. Spend and goals are for
+Editors only.
+
+### Schedule
+
+The task "Atlas program dashboard: {brand} - {program}" (weekly) launches
+`atlas-program-dashboard` with `run: unattended`, created only after one interactive publish
+(B3); its prompt is in the reference. P9's "Weekly dashboard" is the standing approval for the
+snapshot, and P8 for the post. Scheduled runs never ask, decide, draft, or send.
 
 ## Why the dashboard exists
 
@@ -26,7 +66,7 @@ it stands.
 | `run: unattended` | The scheduled "Atlas program dashboard: {brand} - {program}" (P9 "Weekly dashboard") | The `snapshot` finding, only when `program:{slug}-cadence` names `dashboard weekly` | The dashboard page and its `team` page data; a three-line post to the saved routing |
 | `mode: sample` | Anyone, before running it for real | Nothing | A sample page (**Sample mode**) |
 
-Older launch wording means `run: unattended` (see `readout.md`, **Run flag**).
+Older launch wording means `run: unattended` (see **Readouts**, **Run flag**).
 
 One pass. The dashboard asks no question of its own, so it needs no `propose` and `record`
 passes: the main thread asks B1 and B2 before the launch, and the agent does what they allow.
@@ -41,7 +81,7 @@ in.
 | - | ---- | -------- | ------- | -------- |
 | B1 | Every interactive run | "Update the {program} dashboard and save today's numbers to Atlas? The Program manager and the quarterly signal read them." | Save (Recommended); Page only | One `snapshot` finding, and the `page` finding with key `dashboard` on first publish |
 | B2 | Only when `program:{slug}-routing` names a Slack channel or email recipients | "Post the dashboard summary to {channel} and email {recipients}?" | Post (Recommended); Page only this time | One post to each saved destination: three lines and the link, never an amount |
-| B3 | After the first interactive publish, only when P9 named "Weekly dashboard" and no task named "Atlas program dashboard: {brand} - {program}" exists | "Create the weekly dashboard task for {program}: {day} {time} {timezone}? It republishes this page, saves the numbers, and posts to {destinations}." | Create the task (Recommended); Not now | The scheduled task, per **Readouts**, Schedule, and `program.md` **8** |
+| B3 | After the first interactive publish, only when P9 named "Weekly dashboard" and no task named "Atlas program dashboard: {brand} - {program}" exists | "Create the weekly dashboard task for {program}: {day} {time} {timezone}? It republishes this page, saves the numbers, and posts to {destinations}." | Create the task (Recommended); Not now | The scheduled task, per **Readouts**, Schedule, and **Influencer program** **8** |
 
 - B1 "Page only" writes nothing. The page still publishes; its link is saved on the next run
   that saves. Say so in the summary.
@@ -72,7 +112,7 @@ Moved here from the **Program dashboard** section of SKILL.md, which points at i
    dashboard", the page now has a saved link, and no task named "Atlas program dashboard:
    {brand} - {program}" exists).
 
-**Schedule.** Follow **Readouts**, Schedule, for the mechanics, and `program.md` **8** for the
+**Schedule.** Follow **Readouts**, Schedule, for the mechanics, and **Influencer program** **8** for the
 task name "Atlas program dashboard: {brand} - {program}" (weekly, at the day and time saved in
 the program's cadence), launching `atlas-program-dashboard` with `run: unattended`. Prompt:
 
@@ -83,7 +123,8 @@ the program's cadence), launching `atlas-program-dashboard` with `run: unattende
 
 Create the task only after the dashboard has been published once interactively and its link is
 saved (B3). Scheduled runs never ask, decide, draft, or send, and show missing records as "not
-tracked yet". Aspire Atlas, and Slack or email when routed, must be enabled for scheduled tasks.
+tracked yet". Aspire Atlas, and Slack or email when routed, must be enabled for scheduled tasks,
+each with only the tools SKILL.md **1.6** lists on Always allow.
 
 ## What it reads
 
@@ -92,7 +133,7 @@ tracked yet". Aspire Atlas, and Slack or email when routed, must be enabled for 
 `search_calibrations` (no filter, limit 100 per page, paged to the end,
 `includeSuperseded: true`). Keep `program:{slug}-program`, `-terms`, `-catalog`, `-outreach`,
 `-routing`, `-cadence`, `brand:summary`, `competitor`, `red_line` (not `review:` keys), and
-`theme:brand`. Drop `vetting:`, `review:`, `library:`, `orchestrator:`, `campaign:` keys and other programs' keys. Parse every
+`theme:brand`. Drop `vetting:`, `review:`, `library:`, `orchestrator:`, `ad-reuse:`, `lastrun:`, `campaign:` keys and other programs' keys. Parse every
 `program:` body with a JSON parser. A missing or unparseable `-program` or `-terms` record means
 setup needs fixing (**Run rules** in the agent).
 
@@ -117,7 +158,7 @@ setup needs fixing (**Run rules** in the agent).
 | `page` | The newest per key | The dashboard link, and links to every other program page |
 | `snapshot` | The newest, and every snapshot in the term | Changes since the last run, the trend |
 
-Then the brand-wide library (`program.md`, **Brand-wide library**): `search_insights` on the
+Then the brand-wide library (**Influencer program**, **Brand-wide library**): `search_insights` on the
 prefix `content-library-{profile}`, newest first, paged to the end, keeping the newest `asset`
 per post and the newest `page` with key `library`. A post on both prefixes counts once, from the
 newer finding.
@@ -143,9 +184,10 @@ return. Filter path, so `aggs` work.
 
 One `search_posts` call for the set: the ids in 1, or the author and brand conditions in 2,
 `postedAt` from the term start, sorted by `postedAt` descending, limit 100, paged on the cursor
-up to 500. Project `postedAt`, `url`, `instagram.permalink`, `text`, `author.username`,
-`mediaKind`, `instagram.mediaProductType`, `likeCount`, `commentCount`, `viewCount`, `media`
-(container, never leaf URLs), the partnership marker, and `instagram.account` (container).
+up to 500. Project the fields of the "Program tracking" row of the required metrics
+(`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8), with `media` as the container, never leaf URLs, plus
+`instagram.permalink`, `text`, `instagram.mediaProductType`, the partnership marker, and
+`instagram.account` (container).
 Stories count only when Atlas holds them. Say when the set is capped.
 
 The same filter with `aggs`: sums of `likeCount`, `commentCount`, `viewCount`; `cardinality` on
@@ -165,7 +207,7 @@ Read only what Atlas holds. Never call `lookup_creators`, `lookup_posts`,
 cadence is saved. **The term** is the program object's `term`. Elapsed share is days from the
 term start to today over the term's days, between 0 and 1.
 
-**Engagement** is likes plus comments on one post, the program flows' definition (`program.md`),
+**Engagement** is likes plus comments on one post, the program flows' definition (**Influencer program**),
 labelled "likes plus comments" wherever it shows. Views show beside it, never added. A post with hidden likes is left out of engagement figures and counted
 as "likes hidden".
 
@@ -219,7 +261,7 @@ and Ordered count as Agreed. Posting due counts as Delivered, or as Agreed when 
 product.
 
 - **Reached** is the furthest main-line stage across all of a creator's `roster` findings, read
-  as history (`program.md`, **Working state**), not only the newest, so a creator who declined after replying counts at Replied.
+  as history (**Influencer program**, **Working state**), not only the newest, so a creator who declined after replying counts at Replied.
 - **Shipped and Delivered apply only to creators owed product**: a `fulfillment` finding, or a
   deal with product. Creators with no product skip both steps, and Delivered to Posted counts
   them from Agreed.
@@ -242,7 +284,7 @@ waived rows left out:
 
 - **Owed so far**: rows due on or before today.
 - **On time**: `posted` with `onTime` true. **Posted late**: `posted` with `onTime` false.
-- **Late**, **Missing**, **Needs a fix**: by status, per `deliverable-tracker.md`, **Status**.
+- **Late**, **Missing**, **Needs a fix**: by status, per **Deliverable tracker**, **Status**.
 - **Due in the next 7 days**: `due` rows dated inside the week.
 - **On-time rate**: on time ÷ (on time + posted late + late + missing). Under 5: counts only.
 - **Disclosure rate**: matched posts with `disclosure` found ÷ matched posts checked, missing
@@ -257,7 +299,7 @@ marks a row late or missing.
 ### (d) Content
 
 From the newest `asset` per post and the rights joined at read time, by the content library's
-rules (`content-library.md`, **Rights**, first match per usage, "from the deal" included):
+rules (**Content library**, **Rights**, first match per usage, "from the deal" included):
 
 - **Assets**: program creators' assets (the `asset` findings on the program's prefix, and on
   the brand-wide library's whose `sources` include `program` and whose author is on this
@@ -265,7 +307,7 @@ rules (`content-library.md`, **Rights**, first match per usage, "from the deal" 
 - **Cleared for ads**: a current Paid usage or Whitelisting, from a grant or the deal.
 - **Cleared for organic**: Organic repost only.
 - **Expiring in 30 days**: grants and deal usage ending within 30 days of today, per
-  `content-library.md`, **Expiring rights**.
+  **Content library**, **Expiring rights**.
 - **Requested** and **Wanted**: open `rights` findings.
 
 Rights are never assumed: a program type alone clears nothing.
@@ -289,12 +331,12 @@ Over the program posts:
 ### (f) Spend and sales
 
 Every amount carries its source and currency. Amounts in different currencies are never added
-together or converted (`program.md`, **Currencies**). The fee calculator is never spend.
+together or converted (**Influencer program**, **Currencies**). The fee calculator is never spend.
 
 | Figure | How | Source label |
 | ------ | --- | ------------ |
-| Paid, Owed, Committed, Product cost, Spent and committed, Remaining, Offers out | Per `program-ledger.md`, **Budget**, worked out the same way from the `ledger` findings and the records it names. Committed is the ledger's figure: owed lines plus agreed cash not yet a line, commission owed included | "from the ledger" |
-| Overdue | Cash lines not `paid` or `void` with `dueAt` before today, per `program-ledger.md`, **Statuses** | "from the ledger" |
+| Paid, Owed, Committed, Product cost, Spent and committed, Remaining, Offers out | Per **Program ledger**, **Budget**, worked out the same way from the `ledger` findings and the records it names. Committed is the ledger's figure: owed lines plus agreed cash not yet a line, commission owed included | "from the ledger" |
+| Overdue | Cash lines not `paid` or `void` with `dueAt` before today, per **Program ledger**, **Statuses** | "from the ledger" |
 | Sales | `revenue` on `affiliate` findings in the term, with orders | The affiliate finding's `sourceLabel` |
 | Budget used | Spent and committed ÷ the budget, in the budget's currency only; other currencies show beside it as "not counted toward your budget" | "against your budget" |
 
@@ -321,7 +363,7 @@ Agreed or later with no `roster-health` finding are counted as "not reviewed yet
 
 ### (h) The attention list
 
-What needs a person, in the order of `program.md` **3**, Dispatch, with the same conditions.
+What needs a person, in the order of **Influencer program** **3**, Dispatch, with the same conditions.
 Each item says what it is, who it is about (handles, never more than five, then "and {n} more"),
 the next step, and the flow that handles it. The dashboard never acts on an item.
 
@@ -339,7 +381,7 @@ the next step, and the flow that handles it. The dashboard never acts on an item
 | 10 | Drafts waiting to send | `draft` findings with no `sentAt` | Send them, or mark them sent | **Influencer program**, Drafts |
 | 11 | Follow-ups due | `nextFollowUpAt` on or before today, waiting on the creator | Write follow-ups | `atlas-creator-outreach` (follow-up) |
 | 12 | Rights follow-ups due | `rights` at requested or renewal requested for 14 days or more with no answer | Follow up on rights requests | `atlas-content-sourcing` (rights, or renewal for renewals) |
-| 13 | Product to order | Agreed creators whose deal includes product (per `program.md` **3**) and whose product is not ordered | Collect details and order product | `atlas-product-fulfillment` |
+| 13 | Product to order | Agreed creators whose deal includes product (per **Influencer program** **3**) and whose product is not ordered | Collect details and order product | `atlas-product-fulfillment` |
 | 14 | Codes to set up | Affiliate or hybrid creators at Agreed with no code planned or live | Set up codes | `atlas-affiliate-manager` (codes) |
 | 15 | Sheet codes to mark live | Codes on the sheet still `planned` for creators at Agreed | Mark the sheet codes live | `atlas-affiliate-manager` (codes, A4) |
 | 16 | Posts late, missing, or needing a fix | Posts due within 3 days, late, missing, or needing a fix | Check posts | `atlas-deliverable-tracker` |
@@ -367,7 +409,7 @@ so the dashboard and the status screen agree.
 One finding per run that saves, so the Program manager's status screen, later dashboards, and
 the quarterly signal read the headline numbers without re-running the dashboard.
 
-`append_insights` per `program.md`, **Working state**: role `account_review`, runKey
+`append_insights` per **Influencer program**, **Working state**: role `account_review`, runKey
 `program-{profile}-{slug}-{YYYY-MM-DD}`, kind `went_well` `low`, anchored to the brand's own
 account on its first linked network (`schema` the network, `entityKind` `account`, `entityId`
 the network's own account id, from `search_creators` on the brand's handle). `idempotencyKey`
@@ -428,16 +470,16 @@ One page per program, title "{Brand} {Program}: Dashboard", republished to the l
 `page` finding with key `dashboard` (read that artifact with the Artifact tool first). Program
 pages are for the brand's team, never for creators. Load `artifact-design` and
 `artifact-capabilities` before building and `dataviz` before the first chart; apply
-`theme:brand` per `theme.md`, **Applying the theme**; draw creators with the creator card
-(`creator-card.md`, page profile, no actions); embed post images per `creator-card.md`,
+`theme:brand` per **Theme**, **Applying the theme**; draw creators with the creator card
+(**Creator card**, page profile); embed post images per **Creator card**,
 **Images** (`post@240` for top posts, `avatar` for creators); render for `recipient`
-(`recipient-lens.md`). Status colors (on time, late, missing, needs a fix, ahead, behind) keep
+(**Recipient lens**). Status colors (on time, late, missing, needs a fix, ahead, behind) keep
 their meaning under any theme, with an icon and a label.
 
 ### Who sees what
 
 Budget, targets, pace, and every amount live only in page data under `team`, readable by
-Editors (`program.md`, **7**). Declare on every publish (the whole object; restating replaces
+Editors (**Influencer program**, **7**). Declare on every publish (the whole object; restating replaces
 the set):
 
 ```json
@@ -458,7 +500,7 @@ the set):
 | `data/users/{id}/done` | Each person's done marks on the attention list |
 
 Write `team` in one page data batch right after each publish, in every mode but `sample`;
-unattended runs write it as part of publishing (`program.md` **9**). The
+unattended runs write it as part of publishing (**Influencer program** **9**). The
 page renders the team parts only when the viewer is an Editor and those reads return; everyone
 else sees "Goal: team view" on a goal tile and "Spend and sales: team view" in section (f). On
 first publish say once: "Share this dashboard with your team as Editor to see goals and spend.
@@ -472,7 +514,7 @@ In this order for lens `team`:
    "ended {date}"), the "Prepared for" chip, and links to every other program page from the
    `page` findings (Outreach, Negotiation, Order form, Posts, Affiliate, Content library,
    Content sourcing, Roster health, Ledger). The animated Aspire Atlas mark sits at the top right
-   ([`artifact-standard.md`](artifact-standard.md)).
+   (**Artifact standard**).
 2. **Attention list** (h): one row per item with the count, the handles, the next step, and the
    flow, the first marked "Next". Done marks per viewer. Nothing open: "Nothing needs you right
    now."
@@ -505,9 +547,9 @@ In this order for lens `team`:
     engagement definition (likes plus comments), "spend comes from the ledger's figures, never
     the fee calculator", "sales come from code reports in
     their own currency; currencies are never combined", and that images are a snapshot. Then the
-    footnote with the team audience line ([`artifact-standard.md`](artifact-standard.md)).
+    footnote with the team audience line (**Artifact standard**).
 
-**Lens order** (`recipient-lens.md`, **Rendering for a lens**):
+**Lens order** (**Recipient lens**, **Rendering for a lens**):
 
 - `leadership`: one screen, outcome first. A one-sentence outcome under the header ("{posts}
   program posts from {creators} creators, {engagement} engagement; on pace for {goal} of {n}
@@ -549,8 +591,8 @@ not be reached.
 
 ## Unattended runs
 
-The scheduled task "Atlas program dashboard: {brand} - {program}" (`program.md` **8**) launches
-`run: unattended`. It follows `program.md` **9** and `readout.md`, **Scheduled (unattended)
+The scheduled task "Atlas program dashboard: {brand} - {program}" (**Influencer program** **8**) launches
+`run: unattended`. It follows **Influencer program** **9** and **Readouts**, **Scheduled (unattended)
 runs**:
 
 - Never ask a question, never decide, never act on an attention item, never send to a creator,
@@ -559,24 +601,24 @@ runs**:
 - Read, compute, republish the page to the link in the `page` finding with key `dashboard`,
   write `team` page data, and post the three lines to the saved routing. The republish is silent,
   so each run refreshes the source line's as-of time
-  (`artifact-standard.md`).
+  (**Artifact standard**).
 - Write the `snapshot` finding only when `program:{slug}-cadence` names `dashboard weekly`.
   Without it: republish and post, write nothing, and say "The weekly dashboard is not in the
   saved schedule: nothing saved."
 - No `page` finding with key `dashboard`: publish nothing new, write nothing, and end with "Run
   the program dashboard once from /aspire:aspire to create the page." The task is scheduled only
-  after the page exists (`program.md` **8**).
+  after the page exists (**Influencer program** **8**).
 - Program records missing or unparseable: publish a one-card page titled "<Brand> {Program}:
   setup needed" listing what is missing, write nothing, and end with "Run /aspire:aspire program
   to finish setup." Atlas unauthorized: the same card with "Aspire Atlas needs a fresh sign in",
   and stop. Both one-card pages carry the animated mark and the "No Atlas data on this page"
-  footnote variant (`artifact-standard.md`).
+  footnote variant (**Artifact standard**).
 - Missing working records are not a setup problem: the page shows "Not tracked yet" for them as
   in an interactive run.
 
 ## Sample mode
 
-Per `agents/sample-artifact.md`: the holiday's sample brand and one sample program ("{holiday}
+Per **Sample artifacts** (the agent brief): the holiday's sample brand and one sample program ("{holiday}
 creators", a 90-day term, day 40), types gifting, paid, ambassador, and affiliate, goals for
 posts, sales, and assets. Eight creators across the funnel: two at Complete, one Posted, one
 Delivered, one Agreed waiting on product, one Contacted, one Declined after replying, one No

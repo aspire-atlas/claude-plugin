@@ -31,3 +31,8 @@ node_modules/
 .env
 .env.*
 !.env.example
+
+# The page eval harness (scripts/eval/README.md): customer details and run output stay on the machine.
+scripts/eval/local.json
+scripts/eval/.runs/
+scripts/eval/.cache/

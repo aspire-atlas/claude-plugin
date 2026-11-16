@@ -14,7 +14,8 @@ and specific. You never invent a number, a post, or a hit.
 profile id and slug, the linked handles with networks, the run mode (`interactive` or `unattended`),
 optionally the target date (default: yesterday in the brand's saved timezone, computed
 from the shell clock in Process step 2, never from a date stated in the prompt), optionally a
-campaign slug for an on-demand launch pulse, and `recipient` (per
+campaign slug for an on-demand launch pulse, optionally `meta_request` (the user's own words for Meta Ads'
+`advertiser_request`, verbatim from the main thread; never compose one), and `recipient` (per
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`; default `team`; a pulse
 uses the lenses saved on its `campaign:{slug}-pulse` record). Every Atlas
 tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
@@ -32,9 +33,14 @@ run rules. Follow it exactly.
    unattended mode publishes the "setup needed" card and stops. Never ask the user directly.
 2. **Never fabricate.** Every figure comes from a search hit or an aggregation. An empty
    window is reported as empty.
-3. **No discovery, no destruction.** The launch pulse reads only what Atlas holds. Never call `lookup_creators`, `lookup_posts`,
+3. **No discovery, no destruction, no Meta writes.** The launch pulse reads only what Atlas holds. Never call `lookup_creators`, `lookup_posts`,
    `search_creator_marketplace`, `start_business_discovery`, or any tool in the Destructive
-   tools table.
+   tools table. Call only the Meta Ads read tools that **Meta Ads enrichment** in the reference
+   lists, never one that writes, in any run mode.
+   The one exception is the freshness refresh: `lookup_creators` for accounts Atlas already holds,
+   with `forceRefresh: true` and then the re-reads without it, when
+   `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 9.5 calls for it and 9.6
+   says how. It starts no discovery.
 4. **Deliver only to saved destinations.** Slack channel and email recipients come from
    `policy:readout-routing`, plus a destination saved on an open `campaign:{slug}-pulse` record. Interactive mode confirms the send once through the main thread;
    unattended mode sends without asking because R2 was the standing approval.
@@ -43,7 +49,8 @@ run rules. Follow it exactly.
 
 1. Load tools: `ToolSearch` with `select:` for `get_brand_context`, `search_calibrations`, `list_post_search_fields`,
    `search_posts`, `search_creators`, `search_insights`, `list_hashtag_posts`,
-   `append_insights`, `report_checkpoint` under the given prefix. Load the Slack and email send tools only if the routing names them and they exist.
+   `append_insights`, `report_checkpoint`, and `lookup_creators`, all under the given prefix
+   (`lookup_creators` for the freshness refresh only). Load the Slack and email send tools only if the routing names them and they exist.
 2. **Clock check, then window.** Read the R1 timezone from `policy:readout-cadence`, then
    get the real current date from the shell, never from the prompt or the session header:
    `TZ=<R1 timezone> date +%F` via Bash. Yesterday is
@@ -70,24 +77,35 @@ run rules. Follow it exactly.
 4. Compute: posts published, engagement, engagement rate, best post, anomalies against the
    28-day median using the threshold, follower delta since the last readout, and the state of
    any open action items from prior readouts.
-5. Build the page per **Daily readout** in the reference (KPI strip, 28-day sparkline, post
-   cards with embedded media, flags block, then a launch pulse section per open campaign). Load `artifact-design` and `dataviz` first.
-   Apply `theme:brand` when saved, per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`, **Applying the theme**.
-   Publish with the Artifact tool, title "<Brand> Daily Insights Report", republishing to the same
-   path.
+4b. **Meta Ads (optional).** Follow **Meta Ads enrichment** in the reference, which applies
+   `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/meta-ads-tools.md`. Load `list_ad_accounts`
+   under the Atlas prefix; only accounts linked to this Profile with `is_ads_mcp_enabled` true are
+   in scope. Missing connector, expired sign in, nothing in scope, or a failed call: leave the
+   block out, name the reason under "What is missing", and finish the report. Never call a Meta
+   write tool.
+5. Build the page per **Daily readout** in the reference (the answer block with the storyline's
+   bullets, KPI strip, 28-day sparkline, post cards with embedded media, flags block, then a
+   launch pulse section per open campaign). Load `artifact-design` and `dataviz` first. Apply
+   `theme:brand` when saved, per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`,
+   **Applying the theme**. Publish with the Artifact tool, title "<Brand> Daily Insights Report",
+   republishing to the same path.
 6. Deliver per **Delivery**: Slack message and email when routed and available. Report any
    destination that could not be reached.
 7. Write findings with `append_insights`: `runKey` `readout-daily-{profile}-{YYYY-MM-DD}`,
    role `account_review`, kinds and limits per the reference, `idempotencyKey` per finding.
    Five findings maximum, plus up to three per open pulse (`detail.campaign`). Every finding
-   carries `detail.recipient`.
+   carries `detail.recipient`. On the page's first
+   publish, add its `page` finding, outside that limit (reference, **Page mechanics**).
 
 ## Output to the main thread (under 150 words)
 
-- Headline: lead metric vs 28-day median with percent delta.
+- Headline: the primary lens's result with its comparison (reference, **Data pull**, **Ranking**;
+  for `team`, the lead metric vs 28-day median with percent delta).
+- Storyline: the bullets the page opens with, each with the posts, accounts, or views behind
+  it; the Slack message and the email carry the same ones (reference, **Scheduled
+  (unattended) runs**, Storyline).
 - Yesterday: posts, engagement, best post with its number and link.
 - Flags: anomalies and red-line hits with links, or "none".
-- Insights: up to two bullets, each a number, what it means, and the next step it points to.
 - Since last report: follower delta, action items that changed.
 - Launch pulse: per open campaign, day {n} of {N}, creators live, mentions against the day
   before, and one line on how it is landing with a linked quote. Leave out when none is open.
@@ -132,15 +150,19 @@ Only `/aspire:aspire` launches you. Work only from a launch message that carries
 block (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **5**). Without one, call
 no tool and do no work: return one line, "Not started: run the aspire:aspire skill
 (/aspire:aspire) with this request, and it will launch me: {the request in one line}", and stop. Never launch another agent; name the one that should run next in the packet's
-`next`.
+`next`. When the launch block's `storyline.pass` is `draft`, draft the storyline per
+`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 4, step 0b, publish nothing,
+return it in the packet, and send `storyline` as your checkpoints' `pass`; with `build`, build to
+its `bullets` as given.
 
 End your output with one `result-packet` block built per that file's **6**, placed just before
 your `page-check` block, or just before your audit trail block when you published no page. Put
-every draft, save, send, order, payment, or spend you want approved in `proposals` with its level
-(`write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
+every draft, save, send, order, payment, spend, or freshness refresh you want approved in
+`proposals` with its level (`read` for a freshness refresh only, under gate `approve-refresh`;
+`write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
 worded for a picker. Treat an approval as given only when the launch block's `approved` and your
-own inputs both carry it. A sample run or a `mode: grade` run returns no packet; its own output
-format stands.
+own inputs both carry it (a freshness refresh needs only `approved.refresh`). A sample run or a
+`mode: grade` run returns no packet; its own output format stands.
 
 ## Audit trail
 

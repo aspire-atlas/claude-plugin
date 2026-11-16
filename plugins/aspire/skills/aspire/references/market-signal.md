@@ -4,11 +4,49 @@ Shared by the `atlas-market-signal` agent and the **Market signal** section of S
 the setup questions, the calibrations, the data method, the analysis rules, the page, the
 findings, delivery, and the unattended rules.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Market signal (what creators say about the brand vs. competitors)](#market-signal-what-creators-say-about-the-brand-vs-competitors)
+- [Why the market signal agent exists](#why-the-market-signal-agent-exists)
+- [Setup: define the tracking once, for everyone](#setup-define-the-tracking-once-for-everyone)
+- [Run and schedule (main thread)](#run-and-schedule-main-thread)
+- [Data method](#data-method)
+- [Analysis rules](#analysis-rules)
+- [Rendering for each lens](#rendering-for-each-lens)
+- [Page](#page)
+- [Leadership page (O3)](#leadership-page-o3)
+- [Findings](#findings)
+- [Delivery](#delivery)
+- [Scheduled (unattended) runs](#scheduled-unattended-runs)
+
+## Market signal (what creators say about the brand vs. competitors)
+
+Trigger when the user asks what creators are saying about the brand compared with competitors,
+how the brand is talked about, share of voice, whether the brand is behind on a feature, or to
+track any of that. Requires a brand profile; linked channels are not required. It is not an
+account review: Phase 6 looks at accounts, the market signal at the conversation. Read
+this file (**Setup**, **Run and schedule (main thread)**, **Scheduled
+(unattended) runs**) and follow it.
+
+### Setup
+
+Ask M1 to M5 exactly as worded, one per call; M3 and M4 are the standing approval to deliver and
+save findings. Confirm the batch once, then write. `add_hashtags` gets its own confirmation.
+
+### Run
+
+Launch `atlas-market-signal` (run mode `interactive`) with the save question in the lens call.
+Offer the weekly schedule ("Atlas market signal: {brand}") after the first run. Unattended runs
+never ask, never start discovery, and publish a "setup needed" card when setup is incomplete.
+
 ## Why the market signal agent exists
 
 The account analyst and the readouts look at accounts. The market signal looks at the
 conversation: posts by creators about the brand and the competitors it names. The
-same run feeds several readers (`recipient-lens.md`):
+same run feeds several readers (**Recipient lens**):
 
 - **Product** gets a parity read: which capability was compared, where the brand won or lost,
   and what users complained about.
@@ -41,6 +79,9 @@ Rules:
 - M1: a competitor the user adds by name is also offered as a new `competitor` calibration in
   the same batch confirmation. M1 names the networks too: Instagram and TikTok are the only
   searchable ones.
+- M1 and M3 are the market signal's saved scope and reader; in a person's own interactive run,
+  their own default reader can override M3. An interactive run's save choice goes on
+  `lastrun:market-signal` (**Orchestration contract**, **2**, Saved answers).
 - M3: a lens may carry its own destination (`product>slack:#product-feedback`), typed in the
   free text field. Those destinations are covered by the same standing approval as M4.
 - M4 doubles as the **standing approval to deliver and to save findings**. Say so: "Scheduled
@@ -87,11 +128,23 @@ setup is incomplete (**Scheduled (unattended) runs**).
 Filter path unless noted, `context` on every call, only field paths from the census.
 
 1. **Window.** Default the most recent completed Monday to Sunday in the M5 timezone, from
-   the shell clock (`readout.md`, **Resolving "today"**), whatever day the run starts on. That
+   the shell clock (**Readouts**, **Resolving "today"**), whatever day the run starts on. That
    keeps scheduled, on-demand, and weekly-readout windows on the same ISO weeks. Baseline: the
    four weeks before. A caller may pass an earlier window of any length.
 2. **Entities.** The brand (its name, its handles, its tracked hashtags) and each M1
    competitor (its name, its handles, its `spellingVariants` from the `competitor` record).
+2b. **Freshness** (**Page standard**, section 9): `search_creators` on the brand's and the
+   competitors' handles, with no wildcard `exclude`, for each channel's `freshness`, and the
+   freshness read (section 9.1) per handle. An unattended run refreshes nothing: it gives the
+   brand's and the competitors' handles the freshness line and any behind-pace note only
+   (section 9.5, the unattended row); a relaunch with handles
+   in `approved.refresh` refreshes those before step 3, and makes no new offer. An
+   interactive run with `approved.refresh` null works out each handle's pace from the freshness
+   read (section 9.4) and offers the refresh, with its time and cost, for each handle behind it,
+   holding its findings and delivery until the relaunch. A handle Atlas does not hold is never
+   refreshed (that would start discovery). The page's source line and the chat summary carry the
+   freshness line. Creators cited only as mention evidence (comparison
+   cards, quotes, share-of-voice counts) share the one mentions entry, marked `data-mention`.
 3. **Mention sets.** Per entity: `search_posts` where the text matches the name or a spelling
    variant (`match_phrase`), or `instagram.mentions.username` names a handle, or a hashtag
    matches; `must_not` the entity's own handles and the brand's handles; `exists mediaKind`;
@@ -99,8 +152,10 @@ Filter path unless noted, `context` on every call, only field paths from the cen
    capped. `totalHits` gives the post count; `aggs` `cardinality` on `author.username` gives
    distinct creators. Engagement sums come from the paged hits (the `aggs` allowlist has no
    sums).
-4. **Paid vs organic.** Split each set on the partnership marker the census exposes. Share of
-   voice is reported organic first, paid beside it, never blended without saying so.
+4. **Paid label or none.** Split each set on the partnership marker the census exposes. A post
+   without the marker has no paid label: it may still be paid, so never call it organic or
+   unpaid. Share of voice is reported for posts with no paid label first, the paid-labelled posts
+   beside it, never blended without saying so.
 5. **Comparison set.** Posts in the brand's set that also match at least one competitor, plus
    one semantic `search_posts` per competitor with `queryText` "{brand} vs {competitor}"
    filtered to the window, limit 25. Dedupe on the post id.
@@ -115,6 +170,36 @@ Filter path unless noted, `context` on every call, only field paths from the cen
    re-check the clock once, then publish with a "Repeat window" banner and write nothing. A
    leadership page (**Leadership page (O3)**) still writes nothing but carries no banner; note the
    repeat in the audit trail instead.
+8. **Reach by topic**, for **Where {brand} wins** (team page only). Counts come from
+   `totalHits` and `aggs` on filter queries, so a capped mention set does not cap them.
+   - **Period.** The window and its four-week baseline together, leaving out posts from the last
+     three days of the window, whose views are still climbing. A one-week window holds too few
+     posts per topic, and its newest posts have not had time to reach the threshold. The chart
+     caption states the period.
+   - **Topics.** Each M2 topic, matched inside the brand's mention-set query (step 3) run over
+     the period, with the words saved for it in `market-signal:topics` (`match_phrase`); the brand's creator program, as one topic,
+     when a tracked hashtag joins the brand's name with "creator", "partner", or "ambassador"
+     (`#{brand}creator`); and "{brand} with {competitor}" for each competitor: the brand's posts
+     that also match that competitor's name, spelling variants, or handles (the filter half of
+     the comparison set; the semantic results are left out because they cannot be counted).
+   - **Threshold.** A fixed rung from the ladder 1,000, 5,000, 10,000, 25,000, 100,000 views,
+     counted exactly with `totalHits` and a `range` filter on the brand's posts in the period.
+     Start at 10,000. When under 3% of the brand's posts reach a rung, step down; when over half
+     do, step up; stop at the first rung between the two, or at the ladder's end. Pick it once,
+     before counting, use it for every topic, and say in the method which rung and why.
+   - **Counts.** Every query adds `exists viewCount`, so posts with no view count are in neither
+     count; count them once over the brand's set for the method. For the brand's whole set and for
+     each topic, two calls: one for posts and creators (`totalHits`, and `aggs` `cardinality` on
+     `author.username`), and one with `viewCount` at or above the threshold (a `range` filter) for
+     posts and creators at the threshold, plus `aggs` `terms` on `author.username` (size 2) for
+     how many of them the topic's top two creators made. Posts with and without a paid label count together, and the
+     method says so;
+     count each topic's paid-marked and program-tagged posts beside them.
+   - **Gap.** List the other tools the posts read in step 6 name for the step after the brand's
+     product (the build, the edit, the launch: whatever those posts say comes next), saved
+     competitors or not. Those posts cover the window only. Count the brand's posts that also
+     name any of them, and their creators, as above, over the period. When M2 tracks the brand's own product for that step, count the brand's posts that
+     name it beside them.
 
 ## Analysis rules
 
@@ -131,17 +216,71 @@ Filter path unless noted, `context` on every call, only field paths from the cen
   least 3 creators). A phrase is **spreading** when its creator count is at least double its
   baseline and at least 3.
 - **Reuse candidates.** The comparison videos with the strongest openings, ranked by the
-  retention proxy in `ad-reuse.md`. List them; the cut list is the `atlas-ad-reuse` agent's job.
+  retention proxy in **Ad reuse**. List them; the cut list is the `atlas-ad-reuse` agent's job.
 - **What changed.** Against the last run: share-of-voice moves of 3 points or more, new or
   flipped feature outcomes, new friction issues, new spreading phrases.
 - Competitors not indexed (no posts in the window and none in the baseline): say so and
   suggest the watch list or an account review of the competitor's handle. Never start
   discovery for them.
 
+### Where the brand wins, and how to stand apart
+
+From **Data method** step 8 and the posts already read in step 6; no other reads.
+
+- **Reach rate.** A topic's rate is its posts at the threshold divided by its posts. The brand's
+  rate is the same over all its posts in the period. Each topic is compared with the brand's
+  rate as a multiple ("2.8 times as often as the average {brand} post").
+- **Which topics show.** A topic with fewer than 20 posts is left off the chart and named in the
+  method as too few. Every other topic is shown, ordered by rate, with the brand's rate as its
+  own bar between the topics above it and those below.
+- **Concentrated.** A topic with fewer than 5 creators, or whose top two creators made over half
+  its posts at the threshold, is concentrated. It gets one line under the chart that calls it
+  those creators' reach, not the topic's ("all 48 come from two creators, @a and @b, so that is
+  their reach rather than a topic"), and never becomes a win card.
+- **Win cards.** Up to three, from topics that are not concentrated and reach the threshold at
+  least 1.5 times the brand's rate. Each card holds what it is, the
+  label "Wins reach", one line on what the posts have in common (from the posts read), the
+  evidence (the multiple, both rates, and the number of creators), and one or two sample posts
+  as post cards (3.8) with their metrics. A paid-marked post keeps its paid tag. When over a
+  quarter of the topic's posts carry a paid marker or a program tag, the card gives two
+  readings: the content works; or part of the reach was paid for or comes from who was picked,
+  so part of the gap is who posts, not what.
+- **Below average.** Topics under the brand's rate are named in one line with their rates (often
+  price lists and head-to-head comparisons). They feed the moves and get no card.
+- **Gap card.** One card, labelled "Where credit leaks", when at least 3 creators show the
+  brand's product and name another tool for the next step in a quoted line. It gives the count
+  of posts and creators that also name those tools, against the posts that name the brand's own
+  product for that step when that was counted, shows one of the quoted posts, says which period
+  each half covers (the tools named from the window's posts, the counts over the period), and
+  ends with a "So:" line. With fewer than 3 creators there is no gap card.
+- **How to stand apart.** Up to three positioning moves, each a short bold line and one or two
+  sentences. Each move names the win card, gap card, or below-average topics it comes from; a
+  move with none behind it is dropped. Then one "So:" line naming the next steps the moves lead
+  to and, when there is one, the positioning decision.
+- **Positioning decision.** When the moves add up to one positioning line, the page's Decisions
+  carries it: the line, why (the cards behind it), who decides (product marketing, as a role,
+  unless the brand's saved team names a person), a real date (the next run, or a launch on the
+  brand's calendar), and the options (adopt it, adopt part of it, or keep the current line).
+- **Next steps.** A step briefs creators on the winning topics, with a target (the next {n}
+  posts show a winning topic) and a measure (the share of those posts at the threshold, against
+  the topic's rate today). The gap card gets a step when someone owns the next step in the
+  product, measured by the posts naming the brand's own product for it, against today's count.
+
 ## Rendering for each lens
 
 The primary M3 lens (or the lens passed in the launch) leads. Every other saved lens gets a
-section. Each follows `recipient-lens.md`, **Rendering for a lens**.
+section. Each follows **Recipient lens**, **Rendering for a lens**.
+
+Ranking (**Recipient lens**, Headline and rank by the reader's result), as it applies here:
+
+- The page's one-line answer, the order of the claims, and the post lists follow the primary
+  lens's result.
+- The "Where {brand} wins" cards keep the reach-rate order under every lens. The reach rate is a
+  rate over a topic's posts and keeps its definition. "Wins reach" answers the `team` reader;
+  under another primary lens the one-line answer is written in that reader's result first.
+- This flow reads no ad or store data, so a leadership, growth, or performance reader gets the
+  fallback line, naming the metric and the reason and no connection. The page's "what's missing"
+  keeps its paid-results line.
 
 - **Product:** what changed on top, then features compared (won, lost, even, with the clips as
   evidence), then friction with quotes. No marketing gloss.
@@ -158,18 +297,38 @@ section. Each follows `recipient-lens.md`, **Rendering for a lens**.
 
 Title "<Brand> Market Signal", republished to the same path each run. Sections: header with the
 window, the "Prepared for" chip, and the animated mark at the top right; since last run; share of voice (a bar chart of posts and
-creators per entity, organic and paid split); the primary lens section; the other lens
+creators per entity, split by paid label or none); the primary lens section; the other lens
 sections; comparison post cards with media and the quoted line; a verbatim wall (at most 12
 quotes, each linked); method and gaps (sets capped, competitors not indexed, fields missing);
 footer with "numbers come from Atlas as of {timestamp}" and a note that images are a snapshot, then the
-artifact-standard footnote. The mark and the footnote follow [artifact-standard.md](artifact-standard.md).
-Images follow `creator-card.md`, **Images**, page profile. Load `artifact-design` and
-`dataviz` first; apply `theme:brand` per `theme.md`, **Applying the theme**.
+artifact-standard footnote. The mark and the footnote follow **Artifact standard**.
+Images follow **Creator card**, **Images**, page profile. Load `artifact-design` and
+`dataviz` first; apply `theme:brand` per **Theme**, **Applying the theme**.
 
 Build the page from the page blocks (`skills/page-standard/blocks.md`): the header and coverage
 strip (3.1, 3.2) with the brand's and each competitor's posts per platform, the answer (3.3), a
 decisions section (3.5) and next steps (3.6) after it, up to three insights (3.4), post cards
 (3.8), quotes (3.18), the method (3.11), and what's missing (3.12) for the gaps above.
+
+**Where {brand} wins, and how to stand apart.** When the page's reader or a saved lens is
+`pmm`, `team`, or `growth`, add this section after the insights (or after the lens sections,
+when the page has no insights), built per **Where the brand wins, and how to stand apart**:
+
+1. A one-line answer: where the brand wins reach and where it loses it. The page's answer (3.3)
+   gets one sentence of it, pointing here.
+2. Reach by topic: a bar chart of each topic's share of posts at the threshold, with its posts
+   ("32 of 54"), the brand's own rate as a marked bar, and a caption that states the threshold,
+   the network, the period, and that posts with and without a paid label count together. The
+   concentrated-topic line goes under it.
+3. The win cards, then the gap card.
+4. How to stand apart: the moves, then the "So:" line.
+
+The positioning decision goes in the page's decisions (3.5), and the briefing and gap steps in
+its next steps (3.6). The method states the period, the threshold and why it was picked, the
+brand's rate, that posts with and without a paid label count together, the topics with too few
+posts, and the
+posts left out for having no view count. The leadership
+page (**Leadership page (O3)**) leaves this section out.
 
 ## Leadership page (O3)
 
@@ -203,7 +362,7 @@ Below the split, in the order the claims use them:
    never pad to three.
 6. **One section per claim** (3.4): the claim, the evidence with big numbers, the comparison
    (the baseline, or a competitor), a chart for the headline claim (share of voice by period, or
-   share and growth by entity), the organic and paid split, and "What this means for you" as the
+   share and growth by entity), the split by paid label or none, and "What this means for you" as the
    "So:" line.
 7. **Competitor comparison**: a table of each competitor with its share of voice, the features
    it wins and loses on, and the friction creators raise about it, then a message ownership table
@@ -246,19 +405,22 @@ findings anchor to the post (`entityKind` `post`, the network's own media id). A
 
 | Finding | Kind | `priority` |
 | ------- | ---- | ---------- |
-| A feature the brand won, a positive spreading phrase | `went_well` | n/a |
-| A feature the brand lost, a friction issue | `needs_improvement` | n/a |
-| A recommendation per lens (3 max) | `action_item` | Required |
+| A feature the brand won, a positive spreading phrase, a win card | `went_well` | n/a |
+| A feature the brand lost, a friction issue, the gap card | `needs_improvement` | n/a |
+| A recommendation per lens (3 max), the positioning decision | `action_item` | Required |
 
 `detail` carries `recipient` (primary lens), `lens` (for a secondary-lens finding),
 `window` (`{start, end}`), `competitor`, `topic`, `outcome`, `sov` (`{brand, competitors{}, organic, paid}`),
+`reach` on a win or gap card (`{threshold, posts, atThreshold, creators, brandRate}`),
 `verbatims[]` (quote, permalink, timestamp), `changedSinceLastRun`, and `evidence[]`.
 `idempotencyKey` per finding.
+`sov.organic` holds the posts with no paid label; the key keeps its name so older findings still
+read. A flow that shows it labels it "no paid label", never "organic".
 
 ## Delivery
 
 Read `market-signal:routing` and the per-lens destinations in `market-signal:lenses`. The page
-and chat summary always ship. Slack and email follow `readout.md`, **Delivery**. A lens with
+and chat summary always ship. Slack and email follow **Readouts**, **Delivery**. A lens with
 its own destination gets its own message: that lens's three bullets and the page link with
 the lens section's anchor (`#lens-product`). Interactive runs confirm the sends once;
 unattended runs send on the M3 and M4 standing approval. Never send anywhere else.
@@ -267,10 +429,11 @@ unattended runs send on the M3 and M4 standing approval. Never send anywhere els
 
 - Never ask a question. If `market-signal:scope`, `-topics`, `-lenses`, `-routing`, or
   `-cadence` is missing, publish a one-card page "<Brand> Market Signal: setup needed" (it still carries the mark and the
-  footnote, with the "No Atlas data on this page" variant in [artifact-standard.md](artifact-standard.md)) listing what is
+  footnote, with the "No Atlas data on this page" variant in **Artifact standard**) listing what is
   missing, write nothing, and end with "Run /aspire:aspire and ask for market signal setup."
 - No discovery and no destruction: never call `lookup_*`, `search_creator_marketplace`,
-  `start_business_discovery`, `add_hashtags`, or any Destructive tool.
+  `start_business_discovery`, `add_hashtags`, or any Destructive tool, except the freshness
+  refresh in **Data method**, step 2b, which starts no discovery.
 - Date from the shell clock in the M5 timezone.
 - An unauthorized error publishes the "setup needed" card with "Aspire Atlas needs a fresh
   sign in" and stops.

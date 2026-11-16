@@ -7,7 +7,7 @@ owner: 08-creator-profile
 
 ## What it does
 
-Finds the creator's account in Atlas, checks that its data is under 24 hours old, and refreshes it once when it is stale.
+Finds the creator's account in Atlas, checks that Atlas last fetched it under 24 hours ago, and refreshes it once when it is stale.
 
 ## Inputs
 
@@ -16,7 +16,7 @@ Finds the creator's account in Atlas, checks that its data is under 24 hours old
 
 ## Output
 
-The resolved account and its recent posts, and a freshness line: the newest indexed post, the account's last indexed time when Atlas has one, and whether a refresh ran. A handle that cannot be resolved stops the run with what was tried. A brand, shop or publisher account also stops it, with a pointer to an account review.
+The resolved account and its recent posts, and a freshness line from the account's `freshness` field: when Atlas last fetched it (`lastFetchedAt`), the newest post it holds (`newestPostAt`), how many posts it holds, and whether a refresh ran. A handle that cannot be resolved stops the run with what was tried. A brand, shop or publisher account also stops it, with a pointer to an account review.
 
 ## Callable
 

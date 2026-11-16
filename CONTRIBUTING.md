@@ -28,6 +28,8 @@ plugins/<name>/                   One plugin per folder; every folder has a mark
   agents/*.md                     Subagents. Namespaced as <plugin>:<agent>.
 scripts/plugins.sh                The per-plugin conventions (folder, changelog, tag) the checks and workflows share.
 scripts/check-*.sh                Channel contract and content checks; each loops over every plugin. CI runs them on every push and PR.
+scripts/new-agent.sh              Scaffolds a new agent, its flow reference and its spec from scripts/templates/ (see Adding an agent).
+scripts/eval/                     Page eval: reruns the example questions and grades each new page (bun run eval:pages).
 CHANGELOG.md                      Official releases of aspire only.
 ```
 
@@ -45,7 +47,13 @@ bash scripts/check-agent-specs.sh
 bash scripts/check-palette.sh
 bash scripts/check-skill-args.sh
 bash scripts/check-directory.sh
+bash scripts/check-skill-layout.sh
+bash scripts/check-agent-standard.sh
 ```
+
+`check-skill-layout.sh` fails on a `SKILL.md` over 500 lines, a skill description over 1,024 characters, a file under `skills/*/references/` that cites another reference file (`SKILL.md` and `page-standard` are fine), or a Markdown file over 100 lines under `skills/` without a `## Contents` section whose links resolve to its headings; its fixtures are in `scripts/fixtures/skill-layout/`. Until ASP-4093 lands, CI reports its findings on the plugins without blocking.
+
+`check-agent-standard.sh` counts the items of `docs/STANDARD.md` a script can count, on every agent and the flow reference it runs, and names the file, line and item of each miss: a description over 1,024 characters or with no "Trigger on" (L4), a question code with no required-metrics row or a page agent that answers none (M1), no pointer to page-standard's Data freshness rule (F1), image data in chat or a card shown first (C2, C3), an R11 word in page copy (V2), and no entry in `scripts/eval/questions.json`'s `agents` map (P2). Its fixtures are in `scripts/fixtures/agent-standard/` and its exceptions in the script's shrink-only `ALLOW` list; L4, F1 and P2 report without blocking until the tickets named in the script land.
 
 Try the plugin from a checkout in Claude Code:
 
@@ -53,6 +61,21 @@ Try the plugin from a checkout in Claude Code:
 /plugin marketplace add ./path/to/claude-plugin
 /plugin install aspire@aspire-atlas-beta
 ```
+
+## Testing a change to a rule
+
+A pull request that adds or changes a rule (a check, a page-standard step, an agent's or a flow's instructions for what goes on a page) reruns the example questions before it is opened:
+
+```bash
+bun run eval:pages                 # or: --only <code> for the question the rule is about
+bun run eval:pages --compare <the newest baseline's date> latest
+```
+
+Paste the run's table (`scripts/eval/.runs/<time>/table.md`) into the pull request body, with the compare output when a result moved. Run it once without the rule first: if the page already gets it right, the rule is not needed. A check that fails on the approved page is a finding about the check, so say so in the pull request. Setup, what the table means, and what a rerun may do are in [scripts/eval/README.md](scripts/eval/README.md). `bun run eval:test` covers the harness itself.
+
+CI also reruns it. On a pull request that changes an agent (`plugins/aspire/agents/`), a flow file (`plugins/aspire/skills/aspire/references/`), the router `SKILL.md`, or the page standard (`plugins/aspire/skills/page-standard/`), the `eval` job reruns the questions those files answer and posts the table as one comment, edited on each push. It fails only when a check the approved page passes now fails on the new page. A change that touches neither path skips it. For a docs-only or allowlisted change under those paths, add the `skip-eval` label and a `skip-eval: <reason>` line to the PR body, then push or re-run the eval job. A new agent or flow file reruns nothing until its question lists the file in `paths` in `scripts/eval/questions.json`. A nightly run of all seven questions on `develop` posts to the Atlas engineering Slack channel. How the job works and how to read its comment: [scripts/eval/README.md](scripts/eval/README.md#in-ci) and the "The eval on a pull request" section of [docs/STANDARD.md](docs/STANDARD.md).
+
+After the pull request merges and the results hold, store a baseline with `bun run eval:pages --baseline --from latest` and commit `scripts/eval/baselines/<date>/`.
 
 ## Shipping to beta
 
@@ -78,6 +101,39 @@ gh pr create --base main --label release --title "Release 1.1.0"
 
 Version bumps: **patch** for copy and reference fixes, **minor** for a new agent, skill section, or tool, **major** for a change that alters how existing users invoke or configure the plugin.
 
+## Adding an agent
+
+Start from the generator, not from a copy of the nearest agent. It writes the agent, its flow reference and its spec in the shape every check expects, and adds the agent's rows wherever agents are listed by hand:
+
+```bash
+bash scripts/new-agent.sh <slug> --name "<Name>" --codes I1,P2 --permission read   # or write, send, spend
+```
+
+`<slug>` is lower-case words joined by hyphens; the agent is `atlas-<slug>`. `--codes` are the question codes it answers (`orchestration.md` section 3), each of which needs a row in page-standard's required-metrics table. `--model inherit` puts it on the session's model instead of Sonnet (**Model tiers** in `SKILL.md` says when). `--dry-run` prints every new file and a diff of every edit without writing; `--help` lists the other options. `bash scripts/new-agent.sh --remove <slug>` undoes a scaffold you have not filled in yet.
+
+What it writes:
+
+- `plugins/aspire/agents/atlas-<slug>.md`, with the artifact standard block, the orchestration contract block and the checkpoint paragraph copied from the files that own them
+- `plugins/aspire/skills/aspire/references/<slug>.md`, the flow reference
+- `docs/agent-specs/agents/NN-<name>.md`, the spec, numbered next. When the agent's spec is already written (its `plugin_agents` is `none`), give the agent that spec's name: the generator names the agent in it instead and takes its question codes when you leave `--codes` out
+- the agent's rows in `SKILL.md` (the **Sections** index, **Agent hand-off**, **Model tiers**), the plugin README's agent table, the agents panel (`plugins/aspire-mod/hooks/roster.ts` and a placeholder costume in `costumes.ts`), the permission level table in `orchestration.md` section 7, and the `agents` map in `scripts/eval/questions.json`
+
+The scaffold passes every check as written. Each line you still have to write says `TODO(new-agent)`, and the standard review flags each one until it is filled. Fill them in this order, since each step reads the one before it:
+
+1. **The flow reference.** The ask and the setup questions with their options, the reader, what the flow adds to each required-metrics row, the data it reads, the storyline, the page, the saved answers, and the scheduled path.
+2. **The agent.** The description and its trigger phrases, the role, the inputs, the tools it loads, the brand memory keys it reads and drops, the page title, and what it writes to Atlas.
+3. **The spec.** The job to be done, the kind of page, the skills it carries, the universal skills, the trigger phrases, and the non-goals.
+4. **The roster rows.** The README description, the **Model tiers** reason, the permission level note (for an agent that writes, sends or spends), and the agents panel blurb, costume name and prop.
+5. **The eval question.** Add the agent and flow paths to the question in `scripts/eval/questions.json` that asks its code, or add a question for it, and rerun it with `bun run eval:pages --only <code>`. Set the agent's `approved` to the ticket that holds its approved page once it has one.
+
+Then check that nothing is left, run the checks under [Local testing](#local-testing) and `claude plugin test plugins/aspire-mod`, and open the pull request with the template's **The standard** list ticked:
+
+```bash
+grep -rn 'TODO(new-agent)' plugins docs scripts/eval
+```
+
+CI scaffolds a throwaway agent on every pull request, runs the checks on it as generated, and removes it again, so a change to a check that the templates in `scripts/templates/` no longer meet fails there first. Change the template in the same pull request.
+
 ## Adding a plugin
 
 Follow section 14 of [docs/PLUGIN-LIFECYCLE.md](docs/PLUGIN-LIFECYCLE.md). Only plugins for customers go in this repository; a plugin meant only for Aspire's own team gets its own private repository. A plugin not ready for the official channel is held back on release branches by removing its marketplace entry there (section 5 of the runbook).
@@ -90,15 +146,28 @@ Run once after the repo exists (requires `gh` with admin rights):
 bash scripts/bootstrap-github.sh
 ```
 
-It sets `main` as default, requires PRs plus the `validate` and `gate` checks on `main`, requires PRs plus `validate` on `develop`, and blocks force pushes.
+It sets `main` as default, requires PRs plus the `validate` and `gate` checks on `main`, requires PRs plus `validate` and `eval` on `develop` with a code-owner review for the paths in `.github/CODEOWNERS`, and blocks force pushes.
 
 ## Rules for skills and agents
+
+Every new or changed skill, agent and flow meets the checklist in [docs/STANDARD.md](docs/STANDARD.md): how a chat reply is shaped, what a skill loads, which metrics a question needs, how fresh the data is, the storyline step, the reviews before publishing, how questions are asked, and the proof a new agent or rule ships with. The pull request template repeats it. Changes to the paths in `.github/CODEOWNERS` (agents, skills and their flows, `scripts/`, CI and the standard) need a review from a code owner. The rules below still apply:
 
 - Every Atlas write is confirmed through `AskUserQuestion` first. Destructive tools each get their own confirmation with the safe option listed first.
 - Unattended runs never ask and never destroy. Only `atlas-creator-discovery` may start discovery work on a schedule, under a saved cadence record.
 - Never show internal ids, slugs, or tool names to the user. Handles (`@name`) are the anchor.
 - Re-verify the tool surface against the live server before each official release and update `skills/aspire/references/atlas-tools.md` and `skills/org-admin/references/org-admin-tools.md`. Run `bash scripts/check-tool-contract.sh --golden <path to the server's tools-list.golden.json>`: it fails when `contract/atlas-mcp-tools.json` has drifted from the server. Refresh it with `--update` and fix what `bash scripts/check-tool-contract.sh` then flags. CI runs the offline check on every push.
 - No secrets, customer names, or internal URLs in any file. CI scans for credential patterns; treat a hit as a blocker.
+- `skills/aspire/SKILL.md` is a router: it connects, settles the organization and profile, and sends each request to one flow. A flow's steps live in its own file under `skills/aspire/references/` (the reference its agent shares, or a new one), never in `SKILL.md`. Add a row to the router's **Sections** index for a new flow, keep `SKILL.md` under 500 lines, and give any skill file over 100 lines a `## Contents` section.
+
+## The standard review on your pull request
+
+A pull request that changes an agent, a skill or flow file, or `docs/STANDARD.md` gets a comment from the `standard-review` job: Claude reads the changed prose against the standard's items that no script can count, and lists Must, Should and Nice findings, each with the quoted line and a fix. Each push edits the same comment.
+
+- Answer each finding: fix it, or reply on the pull request with why not. A plugin owner decides.
+- For a trivial change, add the `skip-standard-review` label and a line `Standard review skipped: <why>` to the body.
+- To see the review before you push: `bash scripts/standard-review/review.sh run origin/develop HEAD` (needs the `claude` CLI signed in).
+- The job is advisory for now. Once the repository variable `STANDARD_REVIEW_BLOCKING` is `true`, a Must finding fails the check. `docs/STANDARD.md`, **The judgment review**, has the details.
+- The job needs the `ANTHROPIC_API_KEY` repository secret. Pull requests from forks get no secrets, so the review does not run on them.
 
 ## Internal mirror (Aspire staff)
 

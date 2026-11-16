@@ -5,6 +5,55 @@ publishes a page or renders a creator card, which applies the saved theme. The t
 color, chart series, header style, fonts, and the logo. It is one Atlas calibration, so every
 teammate, every agent, and every scheduled run draws the same brand.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Theme (brand colors, fonts, and logo on every page)](#theme-brand-colors-fonts-and-logo-on-every-page)
+- [What the theme changes, and what it never touches](#what-the-theme-changes-and-what-it-never-touches)
+- [The record](#the-record)
+- [The interview](#the-interview)
+- [Applying the theme (every flow)](#applying-the-theme-every-flow)
+- [Snippets](#snippets)
+
+## Theme (brand colors, fonts, and logo on every page)
+
+Trigger when the user asks to brand Atlas's pages, set up or change the theme, use the brand's
+colors, fonts, or logo, or says the pages don't look like their brand. Requires a brand
+profile. Full detail lives in this file: the interview, web discovery, the four
+palettes, the preview shown on request, the record, and how every flow applies it.
+
+The theme is brand memory, not session state. It is one `theme:brand` calibration, and every
+page, creator card, and chart uses it, for every teammate and every scheduled run. Without
+one, pages keep the Aspire default.
+
+### Setup
+
+1. Ask T0 to T4 from the reference, one `AskUserQuestion` each, in order, skipping any the user
+   already answered (a named domain answers T1; typed hex codes skip discovery). T1's research
+   option follows the Phase 5 web research rule. The findings go to the user as bullets with
+   sources before any palette is shown, and nothing is written from them directly. Sources rank
+   in this order: a design-token file the user pastes, then the site's own design tokens (the
+   palette the site shows, or the one named after the brand), then colors ranked by how often
+   the site uses them. The ranking is a last resort, because it blends every theme a site ships.
+2. T2 compares the brand's own palette, as found, with three variations on it: Brand-forward,
+   Quiet, and Complement. Each is described in one line, and drawn in light and dark only when
+   the user asks to see the palettes ("show them"): with the comparison widget, or on a
+   published page when the widget tool is missing. Presets replace the four when there is no
+   website. Never offer a palette that fails its contrast checks.
+3. T5 is the write confirmation. Save with `append_calibration`, per the reference. A
+   `key-exists` response follows the Phase 5 supersede rule with its own confirmation. Going
+   back to the Aspire default is `retract_calibration`, with its own confirmation.
+
+### Applying
+
+Agents read `theme:brand` with their own calibration read and apply it. The main thread passes
+nothing extra. The main thread applies it too, to every page it builds
+itself, per **Applying the theme** in the reference. Semantic colors (verdicts, pass and fail,
+ok and warn, above and below the baseline) never take brand colors. The animated Aspire Atlas
+mark keeps its own colors (**Artifact standard**).
+
 ## What the theme changes, and what it never touches
 
 The theme changes:
@@ -26,7 +75,7 @@ The theme never changes:
 - Slack and email messages, which are plain text.
 - The account connection card, which follows the host app.
 - Anything about content. `theme:` keys describe how Atlas's own pages look. They are never a
-  brand guideline for a post, a brief, or a review (see `atlas-tools.md`, Calibration kinds).
+  brand guideline for a post, a brief, or a review (see **Atlas tools**, Calibration kinds).
 
 ## The record
 
@@ -92,8 +141,9 @@ goes through `AskUserQuestion`, per the question format rule in SKILL.md Phase 5
 
 **T0. Read first.** `get_brand_theme` (its `source` says saved or default; tool absent:
 `search_calibrations`, no filter, limit 100 per page, paged to the end,
-`includeSuperseded: true`). If `theme:brand` exists, render it with the comparison widget
-(one option) and ask "Keep {brand}'s current theme?" Options: "Keep it (Recommended)", "Change
+`includeSuperseded: true`). If `theme:brand` exists, describe it in one line (**Describing a
+palette**), offer "show it", and ask "Keep {brand}'s current theme?" Draw no preview unless the
+user asks (**Showing the palettes**). Options: "Keep it (Recommended)", "Change
 it", "Go back to the Aspire default". "Change it" continues at T1. "Go back to the Aspire
 default" is `retract_calibration` behind its own Destructive tools confirmation.
 
@@ -175,9 +225,10 @@ two-word name and a one-line reason tied to the brand's category and voice (neve
 competitor's color when a `competitor` record names one you know). Build each with the
 `forward` variant. The four presets are the T2 options, `variant: "preset"`.
 
-**T2. Pick the palette.** Build the four options (**Building the options**), render them side
-by side (**Comparison widget**), then ask "Which palette should {brand}'s pages use?" Options,
-in this order:
+**T2. Pick the palette.** Build the four options (**Building the options**), describe each in
+one line (**Describing a palette**), and end with "Say 'show them' to see the four side by
+side." Draw no preview unless the user asks (**Showing the palettes**). Then ask "Which palette
+should {brand}'s pages use?" Options, in this order:
 
 1. "{Brand} as found": description names brand and accent hex and the header style.
 2. "Brand-forward": the brand color leads, with a band header and an analogous accent.
@@ -187,7 +238,9 @@ in this order:
 Put each option's six key hex values in its `preview` (bg, surface, text, brand, accent, the
 first chart color, light and dark) so the user can compare them in the question itself.
 Presets replace these four with the four preset names. The free text field takes changes
-("darker blue", "use #ff6600 as the accent", "no band"). Rebuild, re-render, and re-ask.
+("darker blue", "use #ff6600 as the accent", "no band"), and "show them". Rebuild, describe the
+changed option in one line, and re-ask; redraw only when a preview is already on screen or the
+user asks again.
 After two rounds of changes, go on with the closest option and say what was not possible.
 
 **T3. Fonts.** Skip this question when the site had no usable font and there are no presets.
@@ -211,8 +264,8 @@ site's mono token when it has one (add it to `href`), else IBM Plex Mono.
 
 **T4. Logo.** "Show {brand}'s logo in page headers?"
 
-- Found: "Use the logo from {domain} (Recommended)", described as "shown in the preview
-  above", and "No logo, brand name only".
+- Found: "Use the logo from {domain} (Recommended)", described as "found on {domain}"
+  ("shown in the preview above" when a preview is on screen), and "No logo, brand name only".
 - Not found: "No logo, brand name only (Recommended)" and "I'll paste a logo URL".
 
 The free text field takes a public `https` URL to an SVG or PNG. A local file cannot be used,
@@ -220,8 +273,9 @@ because teammates and scheduled runs cannot reach it; say so if one is offered. 
 embed** on the choice. A failure (`ok: false`, or an SVG over 12KB) falls back to the brand
 name, and the reply says why.
 
-**T5. Preview and save.** Render the chosen theme once more with the comparison widget, as one
-option, with the fonts and logo applied. List any `notes` from the build, such as a brand color
+**T5. Confirm and save.** Describe the chosen theme in one line (**Describing a palette**),
+with the fonts and whether the logo is used, and offer "show it". Draw no preview unless the
+user asks (**Showing the palettes**). List any `notes` from the build, such as a brand color
 darkened slightly so white text reads on it. Then ask: "Save this theme for {brand}? Every page,
 creator card, and chart that the team and scheduled runs publish will use it." Options: "Save
 the theme (Recommended)", "Change something". "Change something" returns to the question the
@@ -267,14 +321,41 @@ whose `checks` is not `["all pass"]`: rebuild with an adjusted input, or drop th
 say why. When two variants come out identical (a black and white brand without an accent),
 show one and say why.
 
+### Describing a palette
+
+The default at T0, T2, and T5. One line per palette, from the build output, with nothing drawn:
+
+`{N}. {Option name}: brand {brand}, accent {accent}, {header style} header, {surfaces in three
+or four words}, {fonts or "default fonts"}.`
+
+For example: "2. Brand-forward: brand #1e4945, accent #2f6b3c, band header, lightly tinted
+surfaces, default fonts." Hex values are the light mode's; add the dark brand and accent only
+when the user asks. A line never embeds a swatch, an image, or a logo.
+
+### Showing the palettes
+
+Previews follow **Visual output**, as cards do: text by default, drawn only on request, never as
+embedded image data. The starter page's "Seeing results" section lists "show the palettes" beside
+"show cards". The cards offer and the saved cards choice (**Orchestration contract** **12**) cover
+cards only, never previews.
+
+Only when the user asks to see them: "show them", "show the palettes", "show it", "let me see
+the preview", typed as a message or in a question's free text field. Draw the options the
+question is about (four at T2, one at T0 and T5) with the **Comparison widget**, then ask the
+same question again. Once the user has asked, keep the preview current for the rest of this
+theme run: redraw it when an option changes. In a later run, start from the one-line
+descriptions again.
+
 ### Comparison widget
 
-Rendered in chat with the widget tool, loaded the way `connection-card.md` loads it
+Drawn only under **Showing the palettes**. It carries the small animated Aspire Atlas mark
+(28px) in its free top corner, per **Artifact standard**, **Variants**. Rendered in chat with the widget tool, loaded the way **Connection card** loads it
 (`read_me` with `modules: ["mockup"]` once, silently). `show_widget` title
 `atlas_theme_options` (or `atlas_theme_preview` for T0 and T5), one loading message such as
 `["Building theme previews"]`. Every color is written literally from the build output, so the
 panes show exactly what a page will look like in each mode whatever the host's own theme is.
-Embed the logo from **Logo embed**. Load the fonts with the chosen `href` when the widget
+Show the logo from **Logo embed** only when it came back as inline SVG markup (`markup`); any other logo
+is the brand name in text, because a widget never carries image data. Load the fonts with the chosen `href` when the widget
 allows Google Fonts; the fallback stack is fine when it does not.
 
 ```html
@@ -329,10 +410,12 @@ text color. Put any other logo on a chip (`class="tc-chip-logo"`,
 `background:{surface}` of the other mode) when its `tone` matches what is behind it: a dark
 logo on a dark pane or dark band, a light logo on a light pane or light band.
 
-**Artifact.** In Claude Code, or whenever the widget tool is missing or its call fails,
-publish the same markup as a page with the Artifact tool (load `artifact-design` first),
-titled "<Brand> Theme Options". Open it for the user with the Artifact tool's `open` action,
-and link it in the reply, before asking T2. For T0 and T5, republish to the same file path so
+**Artifact.** Only under **Showing the palettes**, like the widget. When the user has asked
+and the widget cannot be used (the session is Claude Code, the widget tool is missing, or its
+call fails), publish the same markup as a page with the Artifact
+tool (load `artifact-design` first), titled "<Brand> Theme Options"; a page may embed the logo.
+Open it for the user with the Artifact tool's `open` action, and link it in the reply, before
+asking T2 again. For T0 and T5, republish to the same file path so
 the link stays the same. No Artifact tool either: list each option as a short Markdown table of its hex
 values, and say that the preview could not be drawn.
 
@@ -347,7 +430,7 @@ absent, take `theme:brand` from the calibrations read the flow already made. If 
 the Aspire default, and nothing below applies. Agents never ask about the theme and never
 offer to set one up. Unattended runs apply a saved theme the same way. The theme never touches the
 animated Aspire Atlas mark: it stays at the top right, is never recolored or replaced by the
-theme, and keeps its own dark tile (`artifact-standard.md`).
+theme, and keeps its own dark tile (**Artifact standard**).
 
 ### Page tokens
 
@@ -368,7 +451,7 @@ Put the theme block in the page `<head>`, after the page's own tokens, so its va
 ```
 
 The dark values apply on screen only, so a printed page or PDF takes the light ones
-(`artifact-standard.md`, section 6). Leave the font variables out when `fonts` is `null`, `--font-mono` out when `fonts.mono` is
+(**Artifact standard**, section 6). Leave the font variables out when `fonts` is `null`, `--font-mono` out when `fonts.mono` is
 `null`, `--font-display-stretch` out when `fonts.displayStretch` is `null`, and `--radius` out
 when `radius` is `null`. The page's layout and structure stay
 exactly as its own reference describes. Map the roles onto the page's own tokens:
@@ -392,7 +475,7 @@ brand name and the page title. `rule`: a 4px `brand` top rule on the page's norm
 `plain`: the page's normal header. The logo sits at the start of the header, 28px high,
 `width:auto`, with `alt` from `logo.alt`. The Aspire Atlas mark stays at the top right of every
 header style, never recolored or replaced; a `band` header leaves room for it at the far right and
-does not draw behind it (`artifact-standard.md`). Use the chip rule from **Comparison widget** when its
+does not draw behind it (**Artifact standard**). Use the chip rule from **Comparison widget** when its
 `tone` matches what is behind it.
 
 ### Logo
@@ -413,7 +496,7 @@ color from outside the theme.
 
 ### Creator card
 
-The card carries Aspire's tokens (`creator-card.md`, **Style block**), which fall back to the
+The card carries Aspire's tokens (**Creator card**, **Style block**), which fall back to the
 host's `--surface-2`, `--text-primary`, `--text-secondary`, and `--secondary`. A themed page
 defines none of those, so without an override the card keeps Aspire's white and zinc in light
 mode and navy in dark mode. With a theme saved, add the override below right after the card's
@@ -436,28 +519,14 @@ rather than `brand`, because the card draws its fit ring as text on the card sur
 </style>
 ```
 
-**In an inline widget**, there are no page tokens, so write the theme's values in literally,
-from `light` and `dark` in the saved theme. `{radius}` is the theme's `radius`, or `12px` when
-it is `null`. With `fonts` set, load `fonts.href` as the widget allows; with `fonts` `null`,
-leave out the `font-family` and `font-stretch` declarations. Leave out `font-stretch` when
-`fonts.displayStretch` is `null`.
-
-```html
-<style>
-.ac-card,:root[data-theme="light"] .ac-card{--ac-card:{light.surface};--ac-fg:{light.text};--ac-muted:{light.muted};--ac-border:{light.border};--ac-soft:{light.bg};--ac-tile:{light.bg};--ac-brand:{light.brandInk};--ac-on-brand:{light.surface};--ac-neutral-bg:{light.bg};--ac-neutral-fg:{light.muted}}
-@media screen and (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ac-card{--ac-card:{dark.surface};--ac-fg:{dark.text};--ac-muted:{dark.muted};--ac-border:{dark.border};--ac-soft:{dark.bg};--ac-tile:{dark.bg};--ac-brand:{dark.brandInk};--ac-on-brand:{dark.surface};--ac-neutral-bg:{dark.bg};--ac-neutral-fg:{dark.muted}}}
-@media screen{:root[data-theme="dark"] .ac-card,.dark .ac-card{--ac-card:{dark.surface};--ac-fg:{dark.text};--ac-muted:{dark.muted};--ac-border:{dark.border};--ac-soft:{dark.bg};--ac-tile:{dark.bg};--ac-brand:{dark.brandInk};--ac-on-brand:{dark.surface};--ac-neutral-bg:{dark.bg};--ac-neutral-fg:{dark.muted}}}
-.ac-card{font-family:"{fonts.body}",ui-sans-serif,system-ui,sans-serif;border-radius:{radius};box-shadow:none}
-.ac-card .ac-handle,.ac-card .ac-stat b{font-family:"{fonts.display}",ui-sans-serif,system-ui,sans-serif;font-stretch:{fonts.displayStretch}}
-.ac-card .ac-tile,.ac-card .ac-thumb{border-radius:calc({radius} - 4px)}
-</style>
-```
+The plugin draws no creator card as an inline widget (**Creator card**, **Where it
+renders**), so the override has no widget form.
 
 The card's ok and warn tiles keep their semantic colors; the neutral tile follows the theme.
 
 ### Creator profile
 
-The full-page creator profile (`creator-profile.md`) is page only, so it has no widget
+The full-page creator profile (**Creator profile**) is page only, so it has no widget
 variant. Add this block after the creator card override. It maps the profile's surfaces, text,
 borders, brand color, and chart series to the theme, in each mode. The sentiment and brand
 safety colors (`--ac-neg`, `--ac-neu`, the ok and warn dots and tiles) keep their semantic values.
@@ -475,7 +544,7 @@ safety colors (`--ac-neg`, `--ac-neu`, the ok and warn dots and tiles) keep thei
 
 ### The CAS campaign page
 
-The CAS campaign page is built on the Atlas design system tokens (`cas-campaign-page-results.md`, **Design
+The CAS campaign page is built on the Atlas design system tokens (**CAS campaign**, **Design
 standards**), not on the page tokens above. On that page the theme sets only the tokens below, in
 each mode from that mode's values, and the block goes right after the page's **Tokens** block.
 Surfaces, text, borders and the font stay Atlas's, and `fonts` and `radius` are not used there.
@@ -1194,8 +1263,14 @@ if __name__ == "__main__":
 ### Logo embed
 
 ```bash
-python3 logo_embed.py https://example.com/logo.svg     # or a logo-inline-N.svg from the scan
+python3 logo_embed.py https://example.com/logo.svg > logo.json   # or a logo-inline-N.svg from the scan
 ```
+
+Redirect the output to a file in the scratch folder, as above, and read only the small fields
+(`ok`, `format`, `tone`, `opaqueBg`, `bytes`, `width`, `height`, `error`). Put `dataUri` into a page from
+that file; never print or read it into the conversation. `markup` is SVG text, not image data:
+read it only to save `logo.svg` in the record (under 12KB) or to place it in a page or a
+preview the user asked for.
 
 Prints `{ok, format, tone, opaqueBg, bytes, dataUri}` (SVG adds `markup`, raster adds `width`
 and `height`), or `{"ok": false, "error"}`. It strips scripts, event handlers, and external

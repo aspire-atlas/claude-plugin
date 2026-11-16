@@ -6,19 +6,64 @@ allowed to do with each piece. The agent catalogs posts Atlas already holds, tag
 the rights the brand has on record, answers questions about them, and publishes one library
 page.
 
-It reads the program contract in `program.md` (state model, pages, unattended runs) and reuses
+It reads the program contract in **Influencer program** (state model, pages, unattended runs) and reuses
 the tagging and scoring of other flows rather than defining its own:
 
 | What | Defined in |
 | ---- | ---------- |
-| Ad readiness score and its six components | `ad-reuse.md`, **Hook score** |
-| Hook patterns | `ad-reuse.md`, **Hook patterns** (the list `hooks-and-ctas.md` also uses) |
-| Retention proxy and the author's own median | `ad-reuse.md`, **Hook score** and **Candidate pool** |
-| Frames, when the agent reads them | `content-review.md`, **Media: what the agent can and cannot see**, with the ad reuse sampling in `ad-reuse.md`, **What to read per candidate** |
-| People on screen and what reuse would need cleared | `post-analysis.md`, **The page**, section 11, and its **Rules** |
-| Brand safety categories | `post-analysis.md`, **The page**, section 8 (the 12 categories) |
-| Topics creators talk about | `market-signal.md`, the `market-signal:topics` record, when saved |
-| Rights records | `program.md`, the `rights` record type, written by `atlas-content-sourcing` |
+| Ad readiness score and its six components | **Ad reuse**, **Hook score** |
+| Hook patterns | **Ad reuse**, **Hook patterns** (the list **Hooks and CTAs** also uses) |
+| Retention proxy and the author's own median | **Ad reuse**, **Hook score** and **Candidate pool** |
+| Frames, when the agent reads them | **Content review**, **Media: what the agent can and cannot see**, with the ad reuse sampling in **Ad reuse**, **What to read per candidate** |
+| People on screen and what reuse would need cleared | **Post analysis**, **The page**, section 11, and its **Rules** |
+| Brand safety categories | **Post analysis**, **The page**, section 8 (the 12 categories) |
+| Topics creators talk about | **Market signal**, the `market-signal:topics` record, when saved |
+| Rights records | **Influencer program**, the `rights` record type, written by `atlas-content-sourcing` |
+
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Content library (creator content about the brand, and the rights to use it)](#content-library-creator-content-about-the-brand-and-the-rights-to-use-it)
+- [Scope: one program, or the whole brand](#scope-one-program-or-the-whole-brand)
+- [Modes](#modes)
+- [Approvals (main thread)](#approvals-main-thread)
+- [Running the library (main thread)](#running-the-library-main-thread)
+- [Collecting assets](#collecting-assets)
+- [Tagging each asset](#tagging-each-asset)
+- [Rights](#rights)
+- [Expiring rights](#expiring-rights)
+- [Worth requesting](#worth-requesting)
+- [Query mode](#query-mode)
+- [The library page](#the-library-page)
+- [Asset findings](#asset-findings)
+- [Delivery](#delivery)
+- [Unattended runs](#unattended-runs)
+- [What the library never does](#what-the-library-never-does)
+
+## Content library (creator content about the brand, and the rights to use it)
+
+Trigger: "content library", "what creator content do we have", "find unboxing videos of
+{product}", "what's cleared for ads", "what can we use in ads", "which rights expire soon",
+"update the content library". Requires a brand profile with a linked Instagram or TikTok
+channel; a program is optional (without one, it covers the whole brand).
+
+Before step 1, read this file (**Approvals (main thread)** and **Running
+the library (main thread)**) and follow it. Launch `atlas-content-library` with `mode` `build`,
+`query`, or `expiring` (inputs: tool prefix, `profile_id`, `profile_slug`, handles and networks,
+program slug or `all`, `connections`, `recipient`, L1 to L3, the question for `query`). L1 picks
+the content, L2 confirms the write, L3 the alert; ask them exactly as worded there
+(**Guardrails**, Pickers). Worth-requesting rows and rights to renew hand off to **Content
+sourcing**; the library never drafts a request.
+
+### Schedule
+
+Steps: the reference's Schedule. "Atlas program library refresh: {brand} - {program}" (weekly;
+P9 "Weekly content library refresh" is the standing approval) and, for the whole brand, "Atlas
+content library refresh: {brand}" (`library:cadence` is the standing approval), both `mode:
+build`, `run: unattended`, scheduled only after one interactive build. Unattended runs never
+ask, never write rights, and post only to the saved routing.
 
 ## Scope: one program, or the whole brand
 
@@ -41,9 +86,9 @@ content library, all programs".
 | `query` | Answers one question from the catalog with ranked result cards | Nothing | Nothing; returns cards and a filtered page link |
 | `expiring` | Lists rights expiring within 30, 60, or 90 days and those expired in the last 30 | Nothing | Nothing; posts the alert when L3 says so |
 | `build` with `run: unattended` | A scheduled refresh: build, republish, and the expiring-rights alert to saved routing | `asset` findings only when the program's cadence, or `library:cadence` for the whole brand, names the library (**Unattended runs**) | The library page |
-| `sample` | The page from invented data (`agents/sample-artifact.md`) | Nothing | A sample page |
+| `sample` | The page from invented data (**Sample artifacts**, the agent brief) | Nothing | A sample page |
 
-`run` is `interactive` (the default) or `unattended`. Older launch wording (`readout.md`, **Run
+`run` is `interactive` (the default) or `unattended`. Older launch wording (**Readouts**, **Run
 flag**) means `mode: build`, `run: unattended`.
 
 `query` and `expiring` read the saved catalog. When no `asset` finding exists for the scope, or
@@ -61,7 +106,7 @@ The agent asks nothing. The main thread asks these in one `AskUserQuestion` call
 | L2 | Save the catalog to Atlas, so the team and scheduled runs can search it? | "Save (Recommended)", "Page only" | `build` |
 | L3 | Post the expiring-rights alert to {channel} and email {recipients}? Only when routing is saved. | "Post (Recommended)", "Page only this time" | `build`, `expiring` |
 
-The library's link is a `page` finding (key `library`, `program.md`, **Working state**). The
+The library's link is a `page` finding (key `library`, **Influencer program**, **Working state**). The
 agent writes it itself on first publish under the same L2 approval as the catalog. On "Page
 only" it writes nothing, so the next run publishes a new page; say so in the summary.
 
@@ -91,8 +136,9 @@ Moved here from the **Content library** section of SKILL.md, which points at it.
 3. Launch `atlas-content-library` with the tool prefix, `profile_id`, `profile_slug`, the
    linked handles and networks, `mode`, the program slug or `all`, L1 to L3, the user's question
    for `query`, `connections`, and `recipient`, ending with the decision-audit line.
-4. Relay the page link, the headline, and the cards from the agent's `visual-data` block per
-   **Visual output**. Say once that rights shown come from the brand's records and agreed deals,
+4. Relay the page link and the headline, and name the top results from the agent's
+   `visual-data` block in text per **Visual output** (the posts are drawn only when the user
+   asks to see them). Say once that rights shown come from the brand's records and agreed deals,
    and that the signed agreement decides paid use.
 5. **Needs the main thread.** Relay any proposal for content sourcing as a line, never as a
    write. The library saves its own page link as a `page` finding under L2.
@@ -104,10 +150,11 @@ Moved here from the **Content library** section of SKILL.md, which points at it.
 
 ### Schedule
 
-Follow **Readouts**, Schedule, for the mechanics, and `program.md`, **8**, for the task name
+Follow **Readouts**, Schedule, for the mechanics, and **Influencer program**, **8**, for the task name
 "Atlas program library refresh: {brand} - {program}" (weekly), launching
 `atlas-content-library` with `mode: build`, `run: unattended`. The P9 "Weekly content library
-refresh" answer is the standing approval; it lets scheduled runs save `asset` findings.
+refresh" answer is the standing approval; it lets scheduled runs save `asset` findings. Show the
+always-allow block in SKILL.md **1.6** with that answer, as 1.6 says.
 Unattended runs never ask, never write rights, and post only to the saved routing. Schedule it
 only after the library has been built once interactively and its `page` finding exists.
 
@@ -172,9 +219,9 @@ empty and counted under gaps, never guessed.
 | Format | Reel, TikTok video, feed video, image, or carousel, from `instagram.mediaProductType` and `mediaKind`. |
 | Products | Match each product name from every `program:{slug}-catalog` in scope, and the products named in `brand:summary` and `brand:business-context`, against the caption, `analysis.transcript`, `analysis.overlayText`, and `featuredProducts`. Keep which field matched. A product seen only in frames counts when the agent viewed the frame, with its time. |
 | Themes | One or two from: unboxing, review, tutorial or how-to, get ready with me, day in the life, haul, comparison, in use (recipe, workout, routine), before and after, lifestyle, testimonial. Add the brand's `market-signal:topics` names when saved. From the caption, transcript, and overlay text. |
-| Hook pattern | One pattern from `ad-reuse.md`, **Hook patterns**, read from the first three seconds of the transcript and overlay text, or from frames when read. Video only. No transcript, overlay text, or frames: untagged. |
-| Ad readiness score | The `ad-reuse.md` **Hook score**, out of 100, with its six components and their evidence. Video only; images and carousels show "Not scored: no hook timing". See **Scoring at library scale**. |
-| People on screen | Per `post-analysis.md`, section 11: how many people, their roles (the creator, others, possible minors), and names only when the caption, on-screen text, transcript, or the account names them. Never identify a person from a face alone. From frames when read; otherwise from the caption and transcript, marked "not checked on screen". |
+| Hook pattern | One pattern from **Ad reuse**, **Hook patterns**, read from the first three seconds of the transcript and overlay text, or from frames when read. Video only. No transcript, overlay text, or frames: untagged. |
+| Ad readiness score | The **Ad reuse** **Hook score**, out of 100, with its six components and their evidence. Video only; images and carousels show "Not scored: no hook timing". See **Scoring at library scale**. |
+| People on screen | Per **Post analysis**, section 11: how many people, their roles (the creator, others, possible minors), and names only when the caption, on-screen text, transcript, or the account names them. Never identify a person from a face alone. From frames when read; otherwise from the caption and transcript, marked "not checked on screen". |
 | Reuse needs | What a reuse cut would need cleared: others' likeness, trademarks on screen, and the audio (`instagram.mediaAudioType` original or licensed, or "unconfirmed"; "music rights unknown" when music is present). A checklist for the brand's legal team, not legal advice. |
 | Brand safety | Atlas's `analysis.brandSafety` categories at medium or higher, one semantic `search_posts` per `red_line` (its body as `queryText`, filtered to the catalog's post ids, skipping `review:` keys), and any saved competitor named or in frame. `clear`, `flag` (named flags), or `block` (a `block` red line hit or a competitor). |
 | Source | Per **Collecting assets**. |
@@ -188,9 +235,10 @@ The full hook score needs frames. A library holds hundreds of posts, so:
    proxy from views per follower against the author's own median (or saves plus shares per
    view), the standalone segment from transcript timing, ready for paid from disclosure,
    competitors, red lines, and music. A component with no data scores zero and is listed as
-   missing. Basis `fields`.
+   missing; the page shows it as "not available: {reason}", never as 0 (**Page standard**,
+   section 8). Basis `fields`.
 2. **The top 12 new or changed videos by field score** in each build are then read with frames
-   per `ad-reuse.md`, **What to read per candidate**, and rescored. Basis `frames`. View every
+   per **Ad reuse**, **What to read per candidate**, and rescored. Basis `frames`. View every
    frame extracted. People on screen come from these frames too.
 3. **Older posts keep their score.** A post more than 30 days old whose saved `asset` finding
    has a score keeps it, unless its tags changed. Metrics settle after about a month.
@@ -200,7 +248,7 @@ The page shows the basis next to each score ("from frames" or "from transcript a
 ## Rights
 
 The library reads rights. It never writes them: `rights` findings belong to
-`atlas-content-sourcing` (`program.md`, **Working state**).
+`atlas-content-sourcing` (**Influencer program**, **Working state**).
 
 **Read**, with `search_insights` on the prefix `program-{profile}-{slug}` (or `program-{profile}-`
 for the whole brand), paged to the end, newest first, filtered on `detail.recordType`:
@@ -211,14 +259,14 @@ for the whole brand), paged to the end, newest first, filtered on `detail.record
 - `roster`: who is on each program and at what stage.
 
 Also read `search_insights` on the prefix `creator-brief-{profile}` for deliverables that asked
-for rights, as `ad-reuse.md` does.
+for rights, as **Ad reuse** does.
 
 **The rights status per asset**, first match wins per usage:
 
 | Status | When | Badge |
 | ------ | ---- | ----- |
 | Paid usage, Whitelisting, Organic repost | A `rights` finding with `status` granted for that usage and `expiresAt` in the future (or none set) | The usage, the channels, and "until {date}"; "Get this in writing" when `inWriting` is false |
-| From the deal | No grant for that usage, but the creator's deal includes it and the post is one of their matched deliverables. The deal is the newest agreed `terms` finding, or the program's terms for the creator's type when none exists (`program.md`, **Who owns a deal**). `usage` with `usageDays` and `usageChannels`; whitelisting when `whitelisting` is true, with `whitelistingDays` | The usage, the channels, "from the deal", and the end date: the post date plus `usageDays` (or `whitelistingDays`), or "no end date in the deal" |
+| From the deal | No grant for that usage, but the creator's deal includes it and the post is one of their matched deliverables. The deal is the newest agreed `terms` finding, or the program's terms for the creator's type when none exists (**Influencer program**, **Who owns a deal**). `usage` with `usageDays` and `usageChannels`; whitelisting when `whitelisting` is true, with `whitelistingDays` | The usage, the channels, "from the deal", and the end date: the post date plus `usageDays` (or `whitelistingDays`), or "no end date in the deal" |
 | May be covered by the deal | A roster creator's post in the deal's term that the tracker has not matched to a deliverable | "Check the deal": never shown as cleared |
 | Requested | A `rights` finding with `status` requested or renewal requested, or a creator brief deliverable that asked for rights | "Requested {date}" |
 | Countered | `status` countered: the creator answered with different terms or a fee | "Creator countered {date}" |
@@ -243,7 +291,7 @@ Rules:
 - **Channels** come from the grant, or from the deal's `usageChannels`. A deal without them
   shows "channels not stated in the deal".
 - Show usage, channels, and end dates only. Never show a fee, the budget, or a maximum
-  (`program.md`, **7**).
+  (**Influencer program**, **7**).
 - Instagram's paid partnership label and signed contracts are not held in Atlas: list them under
   gaps, never as absent.
 
@@ -300,13 +348,13 @@ Title "<Brand> {Program} Content Library", or "<Brand> Content Library" for the 
 Republish to the same link: the newest `page` finding with key `library` on the program's
 prefix, or on `content-library-{profile}` for the whole brand. None yet: publish a new page and
 write its `page` finding (**Asset findings**). Load `artifact-design`, and `dataviz`
-for the charts; apply `theme:brand` per `theme.md`, **Applying the theme**; render for
-`recipient` per `recipient-lens.md`. Rights badges keep their semantic colors under any theme.
+for the charts; apply `theme:brand` per **Theme**, **Applying the theme**; render for
+`recipient` per **Recipient lens**. Rights badges keep their semantic colors under any theme.
 
 Sections, in order:
 
 1. **Header.** The scope, the window, "Prepared for" chip, when the catalog was read. The animated
-   Aspire Atlas mark sits at the top right ([`artifact-standard.md`](artifact-standard.md)).
+   Aspire Atlas mark sits at the top right (**Artifact standard**).
 2. **Counts.** Assets, cleared for ads, cleared for organic, requested, expiring in 30 days, no
    rights. Then small bar charts: assets by product, by format, by rights status.
 3. **Cleared for ads.** Cards for current Paid usage and Whitelisting, by ad readiness, with
@@ -326,13 +374,13 @@ Sections, in order:
    and where rights come from.
 8. **Footer.** "Read from Atlas as of {timestamp}"; images are a snapshot; "Rights shown are
    what your records and agreed deals say. Check the signed agreement before paid use." Then the
-   footnote with the team audience line ([`artifact-standard.md`](artifact-standard.md)).
+   footnote with the team audience line (**Artifact standard**).
 
 **Lens order.** `team` keeps the order above. `performance` and `creative` lead with Cleared
 for ads and Worth requesting. `brand` adds a safety filter preset to "flag" and "block" and
 moves people on screen and reuse needs up on each card.
 
-**Images.** Embed with `creator-card.md`, **Images**, page profile: `post@240` for the three
+**Images.** Embed with **Creator card**, **Images**, page profile: `post@240` for the three
 shelves and `thumb@120x150` in the grid, `avatar` for creators. Keep images under 8MB and the
 page under 10MB. When the grid would pass that, embed the shelves and the 150 highest-scored
 grid cards, draw the rest as a flat tile with the format chip and the link, and say so under
@@ -343,11 +391,11 @@ gaps.
 Written only in `build` with L2 "Save", or in an unattended run when the cadence names the library. Never in
 `query`, `expiring`, or `sample`.
 
-`append_insights` per `program.md`, **Working state**: role `account_review`, runKey
+`append_insights` per **Influencer program**, **Working state**: role `account_review`, runKey
 `program-{profile}-{slug}-{YYYY-MM-DD}`, kind `went_well` `low`, anchored to the creator's
 account (`entityKind` `account`, `entityId` the network's own account id, `schema` the network),
 in batches of 50. Without a program the runKey is `content-library-{profile}-{YYYY-MM-DD}`
-(`program.md`, **Brand-wide library**) and `detail.program` is left out. The Program manager's
+(**Influencer program**, **Brand-wide library**) and `detail.program` is left out. The Program manager's
 dispatch and the program dashboard read these too, so a brand-wide build keeps every program's
 library current.
 
@@ -355,7 +403,7 @@ Write a finding only for an asset that is new, or whose tags changed since its n
 products, themes, format, hook pattern, people on screen, safety, or source changed, or the ad
 readiness score moved 5 points or more. Unchanged assets are not written again.
 
-`detail` carries the `program.md` fields (`recordType` `asset`, `program`, `recordedAt`, `by`
+`detail` carries the **Influencer program** fields (`recordType` `asset`, `program`, `recordedAt`, `by`
 `atlas-content-library`, `postUrl`, `postId`, `handle`, `network`, `format`, `products`,
 `themes`, `hookPattern`, `adScore`, `peopleOnScreen`, `safety`, `sources`) and adds:
 
@@ -382,7 +430,7 @@ next run without rewriting the catalog. `idempotencyKey`:
 
 Read `program:{slug}-routing`. For the whole brand, read only the `routing` saved in
 `library:cadence`; with none, or only `page`, the run is page only.
-The page and chat summary always ship. Slack and email follow `readout.md`, **Delivery**: one
+The page and chat summary always ship. Slack and email follow **Readouts**, **Delivery**: one
 message with the counts expiring within 30 days, the five soonest (creator, usage, end date),
 anything newly cleared for ads since the last run, and the page link. Interactive runs post only
 on L3 "Post"; unattended runs post on the P8 standing approval (for the whole brand, the
@@ -392,14 +440,14 @@ the message.
 
 ## Unattended runs
 
-Follow `program.md`, **9**, and `readout.md`, **Scheduled (unattended) runs**:
+Follow **Influencer program**, **9**, and **Readouts**, **Scheduled (unattended) runs**:
 
 - Never ask, never decide, never write a `rights` finding, never draft or send a message to a
   creator.
 - Resolve the date from the shell clock in the cadence timezone.
 - Collect, tag, join, republish to the link in the library's `page` finding, and post the
   alert to the saved routing. The republish is silent, so each run refreshes the source line's as-of
-  time (`artifact-standard.md`).
+  time (**Artifact standard**).
 - Write `asset` findings only when `program:{slug}-cadence` names the library (`library
   weekly`, the P9 "Weekly content library refresh" answer), or, for the whole brand, when the
   `library:cadence` calibration is saved (**Content library**, Schedule, in SKILL.md). Without
@@ -407,9 +455,9 @@ Follow `program.md`, **9**, and `readout.md`, **Scheduled (unattended) runs**:
   schedule: nothing saved" in the summary.
 - No library `page` finding yet: publish nothing new, write nothing, and end with "Run the
   content library once from /aspire:aspire to create the page." Tasks are scheduled only after
-  the page exists (`program.md`, **8**).
+  the page exists (**Influencer program**, **8**).
 - Program records missing (a program run only; the whole brand needs none), or Atlas
-  unauthorized: the "setup needed" card from `program.md`, **9**.
+  unauthorized: the "setup needed" card from **Influencer program**, **9**.
 
 ## What the library never does
 

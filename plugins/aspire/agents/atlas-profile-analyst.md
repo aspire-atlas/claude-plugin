@@ -39,8 +39,7 @@ findings and pushes only, saying in the summary that nothing was saved.
    `search_creators`, `list_creator_search_fields`, `append_insights`, `report_checkpoint` under the given prefix. In mode
    `handle`, also load `lookup_creators`.
 2. Call `list_post_search_fields` once and use only field paths it returns. Never guess a path. In mode
-   `handle`, call `list_creator_search_fields` too, and look for a last-indexed or last-updated field on
-   the account record; you need it for step 3.
+   `handle`, call `list_creator_search_fields` too.
 3. **Resolve the target and verify it is current (mode `handle` only).** Follow **Resolve** in
    `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/account-resolution.md`. Never run a lookup in
    mode `own`: connected channels are indexed by Atlas directly. A handle that cannot be resolved
@@ -74,7 +73,7 @@ findings and pushes only, saying in the summary that nothing was saved.
    - The brand's calibrations are still for two things only: saying whether the handle matches a saved
      `competitor` or `partner` record, which is a classification, not a benchmark, and framing why the
      account is or is not relevant to the brand's stated goal. Apply `red_line` checks only to the
-     brand's own accounts, and ignore every key starting `review:` (content review only), `program:` (influencer program only), `library:` (content library only), or `orchestrator:` (the orchestrator only).
+     brand's own accounts, and ignore every key starting `review:` (content review only), `program:` (influencer program only), `library:` (content library only), `orchestrator:` (the orchestrator only), `ad-reuse:` (ad reuse only), or `lastrun:` (a flow's saved setup answers, never a rule).
 8. Interactive runs only: write findings back with `append_insights`: one `runKey` for this run — mode `own`:
    `onboarding-{profile}-{date}` when `onboarding: true`, else `account-review-{profile}-own-{date}`;
    mode `handle`: `account-review-{profile}-{handle}-{date}` — role
@@ -96,7 +95,7 @@ findings and pushes only, saying in the summary that nothing was saved.
 - Next week's pushes (mode `own`): three bullets, each with day, format, angle, and target
 - Recommended next steps: 2 to 3 bullets, ranked by impact, matching the action items written
 - Data gaps: anything missing, still indexing, or not measurable yet. In mode `handle`, lead with the
-  freshness line: the account indexed through {timestamp}, and whether a refresh ran in this session.
+  freshness line (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 9.2), with the posts held and whether a refresh ran in this session.
 - Also for {lens}: two bullets per extra lens, when more than one was passed
 - Forward note: two or three lines the requester can paste to the reader (skip for lens `team`)
 - One closing line: how many findings were saved to Atlas under this run, and the `runKey` used
@@ -105,10 +104,11 @@ findings and pushes only, saying in the summary that nothing was saved.
   `profilePictureUrl`, `postedAt`, `mediaProductType`, caption excerpt (120 chars), and the
   metric values used; plus the per-period series behind the headline (date, posts, likes,
   comments). Project `media.mediaUrl`, `media.thumbnailUrl` and
-  `instagram.account.profilePictureUrl` in `search_posts` to fill it. The main thread renders
-  this as cards and a chart; keep it under 60 rows.
+  `instagram.account.profilePictureUrl` in `search_posts` to fill it. The main thread answers
+  in text and keeps this for when the user asks to see the posts or a chart; the URLs stay
+  remote URLs, never image data. Keep it under 60 rows.
 - Mode `handle` only: a `creator-cards` block with one entry for the reviewed account, built
-  per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-card.md` (**Agent hand-off**). The main thread shows it before the summary.
+  per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-card.md` (**Agent hand-off**). The main thread leads with your text summary and draws the card only when the user asks to see it.
 
 ## Sample mode
 
@@ -144,15 +144,19 @@ Only `/aspire:aspire` launches you. Work only from a launch message that carries
 block (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **5**). Without one, call
 no tool and do no work: return one line, "Not started: run the aspire:aspire skill
 (/aspire:aspire) with this request, and it will launch me: {the request in one line}", and stop. Never launch another agent; name the one that should run next in the packet's
-`next`.
+`next`. When the launch block's `storyline.pass` is `draft`, draft the storyline per
+`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 4, step 0b, publish nothing,
+return it in the packet, and send `storyline` as your checkpoints' `pass`; with `build`, build to
+its `bullets` as given.
 
 End your output with one `result-packet` block built per that file's **6**, placed just before
 your `page-check` block, or just before your audit trail block when you published no page. Put
-every draft, save, send, order, payment, or spend you want approved in `proposals` with its level
-(`write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
+every draft, save, send, order, payment, spend, or freshness refresh you want approved in
+`proposals` with its level (`read` for a freshness refresh only, under gate `approve-refresh`;
+`write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
 worded for a picker. Treat an approval as given only when the launch block's `approved` and your
-own inputs both carry it. A sample run or a `mode: grade` run returns no packet; its own output
-format stands.
+own inputs both carry it (a freshness refresh needs only `approved.refresh`). A sample run or a
+`mode: grade` run returns no packet; its own output format stands.
 
 ## Audit trail
 

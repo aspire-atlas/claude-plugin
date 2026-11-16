@@ -6,6 +6,36 @@ partner with, or reuse it: how it performed, everything a viewer sees and hears 
 people, language), how brand-safe it is, how the sponsorship is disclosed, and what it means
 for the brand asking.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Post analysis (one published post, in depth)](#post-analysis-one-published-post-in-depth)
+- [Why the post analysis agent exists](#why-the-post-analysis-agent-exists)
+- [Inputs](#inputs)
+- [Questions (main thread)](#questions-main-thread)
+- [Fetching the post](#fetching-the-post)
+- [Video: frames, shots, and audio](#video-frames-shots-and-audio)
+- [The page](#the-page)
+- [State written to Atlas](#state-written-to-atlas)
+- [Rules](#rules)
+
+## Post analysis (one published post, in depth)
+
+Trigger when the user asks to analyze, break down, or explain one published post, asks what
+brands or people are in a video, or asks whether a post or the account behind it is safe to
+sponsor, partner with, or reuse ("analyze this post", "what brands are in this Reel", "should we
+sponsor this show"). Requires a brand profile and the post's link; no brief (a brief goes to
+**Content review**). Before step 1, read this file (**Inputs**, **Questions
+(main thread)**) and follow it. Interactive only: never schedule it.
+
+Ask Q1 to Q3 exactly as worded, with the **Reading the ask** confirmation. Q3 is the write
+confirmation; the pasted link and Q2's "Refresh the account first" approve the fetches. Launch
+`atlas-post-analysis` with the tool prefix, `profile_id`, `profile_slug`, the link, `recipient`,
+`baseline`, the save answer, any earlier analysis, and the brand digest. Relay as the reference
+says; offer **Content review** or **Ad reuse**.
+
 ## Why the post analysis agent exists
 
 Content review checks a post against a brief the brand wrote. Post analysis needs no brief: the
@@ -25,7 +55,7 @@ transcript, or the audio, and the page says which.
 | `recipient` | **Reading the ask**. Default `brand`; `performance` and `creative` when the ask is about reuse as an ad. |
 | `baseline` | Q2 below: `held`, `refresh`, or `skip` |
 | `save` | Q3 below: whether to save the findings |
-| Brand digest | The requesting brand's `brand:summary`, `brand:business-context`, competitors, partners, red lines, and any `campaign:*-brief` records. Drop `review:`, `vetting:`, `program:`, `library:`, `orchestrator:`, `creator:`, `theme:` and `fees:` keys, and a creator ad campaign's `campaign:{slug}-cas`, `-lane-*`, `-terms` and `-decision-defaults` (the theme still styles the page). |
+| Brand digest | The requesting brand's `brand:summary`, `brand:business-context`, competitors, partners, red lines, and any `campaign:*-brief` records. Drop `review:`, `vetting:`, `program:`, `library:`, `orchestrator:`, `ad-reuse:`, `lastrun:`, `creator:`, `theme:` and `fees:` keys, and a creator ad campaign's `campaign:{slug}-cas`, `-lane-*`, `-terms` and `-decision-defaults` (the theme still styles the page). |
 
 ## Questions (main thread)
 
@@ -66,7 +96,7 @@ never leaf URLs alone. The fields this flow reads, as the live census names them
 
 | Area | Fields |
 | ---- | ------ |
-| Totals | `viewCount`, `likeCount`, `commentCount`, `shareCount`, `saveCount`; Instagram `instagram.total*` |
+| Totals | The fields of the "What landed and why" row of the required metrics (`skills/page-standard/SKILL.md`, section 8); Instagram `instagram.total*` |
 | Organic vs. paid | Instagram `instagram.organicLikeCount`, `organicCommentCount`, `organicRepostCount`, `organicViewCount`, `organicReach`, `organicSaveCount`, `organicShareCount`, `organicIgReelsAvgWatchTime`; TikTok `tiktok.organic*` and `tiktok.paid*` |
 | Content scores | `analysis.productionAnalysis.*`, `analysis.emotionalAnalysis.*`, `analysis.commercialAnalysis.promotionalIntent` |
 | Brands named by Atlas | `analysis.commercialAnalysis.featuredBrands`, `featuredProducts`, `callToActions`, `promoCodes` |
@@ -80,7 +110,7 @@ A field with no value is a data gap, never a zero.
 
 ## Video: frames, shots, and audio
 
-Follow `content-review.md`, **Media: what the agent can and cannot see**, for getting the video
+Follow **Content review**, **Media: what the agent can and cannot see**, for getting the video
 and the frame extractor (ffmpeg, then AVFoundation, then OpenCV; never install one), with these
 changes for a full pass:
 
@@ -107,7 +137,7 @@ have; never drop them when the data exists.
 1. **Header.** Eyebrow: "Post analysis · {network} {format} · Indexed by Atlas {date}". Title: a
    short name for the post. One paragraph: who is in it, what happens, when it was posted (day
    of week checked against the calendar, in the account's time zone when known). A "Prepared for"
-   chip names the reader from the lens (`recipient-lens.md`), and the animated mark sits at the top right.
+   chip names the reader from the lens (**Recipient lens**), and the animated mark sits at the top right.
 2. **Post card.** The cover or a frame, the author with avatar, followers and posts, format
    and topic chips (including a sponsor lockup chip when one is on screen), the caption, the
    published time, the people on screen, the language, and a link to the post.
@@ -180,16 +210,16 @@ have; never drop them when the data exists.
 16. **Footer.** The snapshot time, which fields came from Atlas, how rates were computed, how
     brand and profanity timestamps were derived (frames, transcript, audio), and that images
     are a snapshot. The artifact-standard footnote follows them. The mark and the footnote follow
-    [artifact-standard.md](artifact-standard.md).
+    **Artifact standard**.
 
 Order for a lens: `brand` keeps the order above. `performance` and `creative` move sections 6,
-11, and 13 up after the executive summary and add the ad reuse check from `ad-reuse.md`,
+11, and 13 up after the executive summary and add the ad reuse check from **Ad reuse**,
 **Ad reuse check (content review)**: the hook score, the hook pattern, and the cut list. It is
 advice only and never changes the safety verdict.
 
 Load `artifact-design`, and `dataviz` for the charts, before building. Embed every image with
-the snippet in `creator-card.md`, **Images**, page profile; frames the agent extracted are
-encoded the same way from the local files. Apply `theme:brand` per `theme.md`. Keep the page
+the snippet in **Creator card**, **Images**, page profile; frames the agent extracted are
+encoded the same way from the local files. Apply `theme:brand` per **Theme**. Keep the page
 under 10MB: cut frame stills for background marks before lowering quality. Title:
 "Post Analysis: {short name}".
 

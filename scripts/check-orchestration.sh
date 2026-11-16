@@ -5,9 +5,13 @@
 #   - every agent has exactly one row in the permission level table, with a level of
 #     read, write, send, or spend, and the table names no agent without a file
 #   - every agent the question codes and shortcuts route to has a file
+#   - every section 8 row the setup reply's connections table cites exists in the page standard
 #   - every shortcut in the contract is named in SKILL.md's Arguments table
 #   - the result packet and launch block examples parse as JSON and carry every field
 #   - every agent carries the checkpoint paragraph (section 11) exactly once, verbatim
+#   - every list of keys a flow drops from brand memory (a paragraph, list item, or table row that
+#     drops or ignores `orchestrator:` keys) drops `lastrun:` keys too: they are saved setup answers
+#     (section 2, Saved answers), kind guideline, and would otherwise read as brand guidelines
 # What an agent actually returns at run time is not checked here; this keeps the instructions in step.
 #
 #   scripts/check-orchestration.sh
@@ -65,6 +69,17 @@ while read -r a lvl; do
   grep -qxF "$a" <<<"$all_agents" || err "the level table names $a, which has no agent file"
 done <<<"$levels"
 
+# Every row of the page standard's section 8 that the setup reply's connections table (section 2)
+# cites exists there under that name.
+PAGE=$P/skills/page-standard/SKILL.md
+cited=$(section 2 | awk -F'|' '/\| Connection \| What it adds \|/{f=1;next} f&&/^ *\| -/{next} f&&!/^ *\|/{f=0} f{print $4}' | tr ';' '\n' | sed -E 's/^ +//; s/ +$//' | sort -u)
+[ -n "$cited" ] || err "the contract's section 2 has no connections table (Before the questions)"
+sec8=$(awk '/^## 8\. /{f=1;next} f&&/^## /{f=0} f' "$PAGE")
+while IFS= read -r row; do
+  [ -n "$row" ] || continue
+  grep -qF "| $row | " <<<"$sec8" || err "orchestration.md section 2 cites the section 8 row '$row', which section 8 of $PAGE does not have"
+done <<<"$cited"
+
 # Agents the question codes (3) and shortcuts (4) route to.
 for s in 3 4; do
   for a in $(section "$s" | grep -oE '`atlas-[a-z-]+`' | tr -d '`' | sort -u); do
@@ -87,9 +102,9 @@ import json, re, sys
 text = open(sys.argv[1]).read()
 want = {
     "result-packet": ["runId", "agent", "question", "reader", "page", "findings", "proposals",
-                      "questions", "next", "cost", "coverage", "selfCheck"],
+                      "questions", "next", "cost", "coverage", "selfCheck", "storyline"],
     "launch": ["from", "runId", "agent", "mode", "run", "question", "persona", "reader",
-               "shortcut", "scope", "approved", "examples"],
+               "shortcut", "scope", "approved", "examples", "storyline"],
 }
 bad = 0
 for tag, keys in want.items():
@@ -106,5 +121,20 @@ for tag, keys in want.items():
 sys.exit(bad)
 PY
 
-[ "$fail" -eq 0 ] && echo "OK   every agent carries the orchestration contract and has a permission level; routes and shortcuts resolve"
+# A drop list that leaves out `lastrun:` hands a flow's saved setup answers to the agent as brand
+# guidelines. Every drop list names `orchestrator:`, so that is the anchor.
+drops=$(for f in plugins/*/agents/*.md $(find plugins -path '*/skills/*' -name '*.md' | sort); do
+  awk -v F="$f" '
+    function flush() {
+      if (blk ~ /`orchestrator:/ && blk ~ /([Dd]rop|[Ii]gnore|[Ss]kipping|[Ll]eave out)/ && blk !~ /`lastrun:/)
+        print "FAIL " F ":" start ": drops `orchestrator:` keys but not `lastrun:` keys (orchestration.md, section 2, Saved answers)"
+      blk = ""
+    }
+    /^$/ || /^ *([0-9]+[a-z]?\.|-|\|) / { flush() }
+    { if (blk == "") start = NR; blk = blk " " $0 }
+    END { flush() }' "$f"
+done)
+if [ -n "$drops" ]; then echo "$drops"; fail=1; fi
+
+[ "$fail" -eq 0 ] && echo "OK   every agent carries the orchestration contract and has a permission level; routes and shortcuts resolve; every drop list drops lastrun: keys"
 exit "$fail"

@@ -1,0 +1,168 @@
+{
+  "version": 1,
+  "source": "The five approved examples in the plugin update doc, section \"Examples to follow\" (2026-11-05), O2, the Creator Trends page its reviewer edited for ASP-5813, and P1, the creator ad cut-downs page its reviewer edited for ASP-5812, with question codes from the examples library. Brand names, organizations and page links are customer details: they live in scripts/eval/local.json, never here.",
+  "changes": {
+    "3": {
+      "name": "Pull the right metrics for each question",
+      "checks": [
+        "E4",
+        "R4",
+        "R9"
+      ]
+    },
+    "4": {
+      "name": "Say how fresh the data is",
+      "checks": [
+        "E4",
+        "R2",
+        "R9"
+      ]
+    },
+    "5": {
+      "name": "Check the story before building",
+      "checks": [
+        "E1",
+        "E3",
+        "E8",
+        "R3",
+        "R7",
+        "R12"
+      ]
+    },
+    "6": {
+      "name": "Separate English and UX review before publishing",
+      "checks": [
+        "E6",
+        "E7",
+        "R11"
+      ]
+    }
+  },
+  "defaultReply": "Yes, that is right. Go ahead with what you proposed and your recommended options. Save nothing to Atlas and send nothing.",
+  "sharedPaths": [
+    "plugins/aspire/skills/aspire/SKILL.md",
+    "plugins/aspire/skills/page-standard/",
+    "plugins/aspire/skills/aspire/references/artifact-standard.md",
+    "plugins/aspire/skills/aspire/references/reader-standard.md",
+    "plugins/aspire/skills/aspire/references/english-rules.md",
+    "plugins/aspire/skills/aspire/references/orchestration.md",
+    "plugins/aspire/skills/aspire/references/recipient-lens.md",
+    "plugins/aspire/skills/aspire/references/running-agents.md"
+  ],
+  "questions": [
+    {
+      "code": "I4",
+      "example": "Holiday creator plan",
+      "kind": "Plan",
+      "reader": "campaign",
+      "readerInWords": "the influencer manager",
+      "ask": "For {brand}: can we still hit the holiday dates, and what should our creators make for them? I am the influencer manager and I will act on this myself.",
+      "setsBarFor": [
+        5,
+        6
+      ],
+      "paths": [
+        "plugins/aspire/agents/atlas-creator-brief.md",
+        "plugins/aspire/skills/aspire/references/creator-brief.md"
+      ]
+    },
+    {
+      "code": "I11",
+      "example": "Monthly program report",
+      "kind": "Readout",
+      "reader": "team",
+      "readerInWords": "the influencer manager, with a section for leadership",
+      "ask": "For {brand}: how is the program doing this month, and what should I change? I run the influencer program; leadership will read it too.",
+      "setsBarFor": [
+        3,
+        6
+      ],
+      "paths": [
+        "plugins/aspire/agents/atlas-program-dashboard.md",
+        "plugins/aspire/skills/aspire/references/program-dashboard.md"
+      ]
+    },
+    {
+      "code": "O1",
+      "example": "Weekly creative report",
+      "kind": "Readout",
+      "reader": "team",
+      "readerInWords": "the social team",
+      "ask": "For {brand}, as this week's report: what in our creative is driving reach and follower growth, and is it a pattern we can build on? It is for the social team.",
+      "setsBarFor": [
+        3,
+        4
+      ],
+      "paths": [
+        "plugins/aspire/agents/atlas-weekly-insights-report.md",
+        "plugins/aspire/agents/atlas-profile-analyst.md",
+        "plugins/aspire/skills/aspire/references/readout.md",
+        "plugins/aspire/skills/aspire/references/account-review.md"
+      ]
+    },
+    {
+      "code": "O2",
+      "example": "Creator trends",
+      "kind": "Readout",
+      "reader": "pmm",
+      "readerInWords": "the brand's product marketing team",
+      "ask": "For {brand}: what are creators saying about us vs. our biggest competitors, where do we win, and how should we stand apart? It is for our product marketing team.",
+      "setsBarFor": [
+        3
+      ],
+      "paths": [
+        "plugins/aspire/agents/atlas-market-signal.md",
+        "plugins/aspire/skills/aspire/references/market-signal.md"
+      ]
+    },
+    {
+      "code": "O3",
+      "example": "Competitive brief",
+      "kind": "Readout",
+      "reader": "leadership",
+      "readerInWords": "marketing leadership",
+      "ask": "For {brand}: leadership wants to know where we stand against competitors, and what to do.",
+      "setsBarFor": [
+        5
+      ],
+      "paths": [
+        "plugins/aspire/agents/atlas-market-signal.md",
+        "plugins/aspire/skills/aspire/references/market-signal.md"
+      ]
+    },
+    {
+      "code": "I1",
+      "example": "Launch slate",
+      "kind": "Shortlist",
+      "reader": "team",
+      "readerInWords": "the influencer manager",
+      "ask": "For {brand}: which creators should we contact for this launch, and why? I am the influencer manager.",
+      "setsBarFor": [
+        3,
+        5
+      ],
+      "paths": [
+        "plugins/aspire/agents/atlas-creator-discovery.md",
+        "plugins/aspire/agents/atlas-creator-vetting.md",
+        "plugins/aspire/skills/aspire/references/creator-discovery.md",
+        "plugins/aspire/skills/aspire/references/creator-vetting.md"
+      ]
+    },
+    {
+      "code": "P1",
+      "example": "Creator ad cut-downs",
+      "kind": "Plan",
+      "reader": "performance",
+      "readerInWords": "the paid social team, who hand the cuts to creative",
+      "ask": "For {brand}: which creator posts should we run as ads, and how do we cut them? I run paid social, and creative will make the cuts.",
+      "setsBarFor": [
+        3,
+        5
+      ],
+      "paths": [
+        "plugins/aspire/agents/atlas-ad-reuse.md",
+        "plugins/aspire/skills/aspire/references/ad-reuse.md"
+      ]
+    }
+  ]
+}

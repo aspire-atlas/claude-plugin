@@ -11,8 +11,8 @@ stands, works out what should happen next across all of them, and puts it on one
 decide on the page. The next hourly run carries out what an Editor approved, within the limits
 saved at setup, and reports back in Slack.
 
-It conducts; it never does the heavy lifting. The Program manager (`program.md` **3**) and the
-CAS Campaign Manager (`cas-campaign.md` **1c**) keep their dispatch tables, and the orchestrator
+It conducts; it never does the heavy lifting. The Program manager (**Influencer program** **3**) and the
+CAS Campaign Manager (**CAS campaign** **1c**) keep their dispatch tables, and the orchestrator
 reads them rather than keeping its own copy. Each flow's agent does the work with the same
 packets, approvals, and records it uses when a person runs it.
 
@@ -21,6 +21,69 @@ ask. So the work is split: the `atlas-campaign-orchestrator` agent reads everyth
 actions (`mode: plan`), then builds the page (`mode: publish`). The **Orchestrator** section of
 SKILL.md runs the setup interview, reads approvals off the page, launches each flow's agent,
 saves the packets and outcomes, and posts to Slack.
+
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Orchestrator (what to do next across the brand)](#orchestrator-what-to-do-next-across-the-brand)
+- [Page vocabulary](#page-vocabulary)
+- [1. The lifecycle](#1-the-lifecycle)
+- [2. State model](#2-state-model)
+- [3. The action catalog](#3-the-action-catalog)
+- [4. Execution policy](#4-execution-policy)
+- [5. The Next actions page](#5-the-next-actions-page)
+- [6. The cycle](#6-the-cycle)
+- [7. Interactive: `/aspire:aspire next`](#7-interactive-aspireaspire-next)
+- [8. Slack](#8-slack)
+- [9. Unattended runs](#9-unattended-runs)
+- [10. Setup interview](#10-setup-interview)
+- [11. Schedule](#11-schedule)
+- [12. Autonomy levels (design note)](#12-autonomy-levels-design-note)
+- [What the orchestrator never does](#what-the-orchestrator-never-does)
+
+## Orchestrator (what to do next across the brand)
+
+Trigger when the user asks what to do next across their creator marketing ("what's next", "what
+should we do next", "what needs me", "next actions", "where does everything stand"), or when the
+hourly task "Atlas next actions: {brand}" fires. Requires a brand profile with a linked Instagram
+or TikTok channel. Read this file (**4**, **6**, **7**, **9**, **10**, **11**)
+and follow it. It reads the Program manager's and the CAS Campaign Manager's dispatch tables and
+never replaces them; each flow keeps its own section and confirmations.
+
+### Setup
+
+Ask X1 to X5 (one each), then X6, exactly as worded in the reference's **10**. X6 confirms the
+batch and is the standing approval for the orchestrator's own bookkeeping findings (`run`, `plan`,
+`packet`, `execution`, `page` on the `orchestrator-` prefix); say so at X6.
+
+### Run
+
+The reference's **6** with **7**: the status screen, waiting approvals, then the "Next" question.
+The pick runs through that flow's own section with every confirmation it asks.
+
+### Monitor (the hourly run)
+
+Never asks. On the Next actions page, an Editor's approval covers Atlas records and mailbox
+drafts only, within `orchestrator:execution` and **4** (`page-approved`; nothing under
+`suggest`). Launches carry `run: unattended`, `via: orchestrator`.
+
+### Schedule
+
+**Readouts**, Schedule, plus the reference's **11**. X6 is the standing approval.
+
+**From the guardrails:**
+
+- **Approvals on the Next actions page.** In the hourly orchestrator run, an Editor's approval on
+  the Next actions page stands in for `AskUserQuestion`, under the saved
+  `orchestrator:execution` level and only for the approvals this file's **4**
+  allows: Atlas records and mailbox drafts. Sending, orders, store changes, files, lookups,
+  discovery, setup records, and destructive tools always need a person in a session, and so do
+  deals over a maximum, over budget, outside the standard terms, or changing the deal type. The
+  run's own bookkeeping findings on the `orchestrator-` prefix (`run`, `plan`, `packet`,
+  `execution`, `page`) are written without asking: X6 at setup is their standing approval, as a
+  cadence record is for its flow.
 
 ## Page vocabulary
 
@@ -77,6 +140,9 @@ findings, and what people do on the page is page data.
 | `orchestrator:routing` | `policy` | Slack channel and the people it messages (X3, X4) | `{area: "routing", body: "page; slack:#channel; dm:a@x.com,b@x.com"}` |
 | `orchestrator:execution` | `policy` | What an approval on the page lets the hourly run do (X5) | `{area: "execution", body: "<execution object, json.dumps>"}` |
 
+`orchestrator:scope` is the orchestrator's saved scope. An interactive run's reader goes on
+`lastrun:campaign-orchestrator` (**Orchestration contract**, **2**, Saved answers).
+
 The scope object: `{"schema": 1, "programs": "all", "campaigns": "all", "discovery": "all",
 "reports": true}`. Each of `programs`, `campaigns`, and `discovery` is `"all"` or a list of slugs;
 `reports` covers readouts, market signal, the quarterly signal, and brand setup gaps.
@@ -90,7 +156,7 @@ Rules:
 
 - Parse every JSON body with a JSON parser. A body that does not parse counts as missing.
 - **Keys `orchestrator:*` belong to the Orchestrator.** Every other flow drops them, as it drops
-  `program:` and the CAS keys. They are never brand guidelines.
+  `program:`, `lastrun:` and the CAS keys. They are never brand guidelines.
 - A change to any of them goes through the supersede rule with its own confirmation, in an
   interactive session only.
 
@@ -141,13 +207,13 @@ approved it, and what each run did about it.
 
 **Sources:**
 
-1. **Each influencer program in scope.** Every row of `program.md` **3**, Dispatch that matches,
+1. **Each influencer program in scope.** Every row of **Influencer program** **3**, Dispatch that matches,
    not only the first, with the conditions the dashboard's attention list uses
-   (`program-dashboard.md` **(h)**). The "Replies pasted in this session" row never matches. The
+   (**Program dashboard** **(h)**). The "Replies pasted in this session" row never matches. The
    mailbox row ("not yet checked this session") matches when the newest triage packet for the
    program is older than 6 hours.
    A your-call item deferred in the last 7 days shows but never leads.
-2. **Each creator ad campaign in scope.** The one row of `cas-campaign.md` **1c** that holds for
+2. **Each creator ad campaign in scope.** The one row of **CAS campaign** **1c** that holds for
    the campaign, read bottom-up as that table says, plus an "approval overdue" action when a gate
    is open past its due date. Every CAS action is class `session`: gates, replies, rates, and the
    details and brief emails all run through the Campaign Manager with a person.
@@ -245,7 +311,7 @@ the person had picked its safe option.
 | `atlas-program-ledger` `build` | G1, G5 | `payments` and `export` (they need a file or pasted text) |
 
 "Decide later" on a your-call question (S2, T5, K2, G5) writes the creator's `roster` row with
-`yourCallDeferredAt`, exactly as the Program manager does (`program.md` **3**). That is the one
+`yourCallDeferredAt`, exactly as the Program manager does (**Influencer program** **3**). That is the one
 record the cycle writes for another flow. A K3 renewal hand-off becomes a new action on the next
 plan, never a chained launch in the same run, and its negotiation packet follows the
 negotiation row above: a renewal over a max, on a new quota or term length, or over budget is
@@ -282,15 +348,15 @@ direct messages; they are not the only ones who can approve. Setup says so (X4).
 
 One page per brand, titled "<Brand> Next actions", republished to the same link every run.
 Load `artifact-design` and `artifact-capabilities` before building, `dataviz` for the stage
-strip. Apply `theme:brand` per `theme.md`. Creators are drawn with the creator card, page
-profile, from `creator-card.md`.
+strip. Apply `theme:brand` per **Theme**. Creators are drawn with the creator card, page
+profile, from **Creator card**.
 
 Sections, in order:
 
 1. **Header.** The brand, "Updated {local time}", "Next run {local time}", the level in plain
    words ("Approvals run within the hour" or "Approvals wait for a session"), and the "Prepared
-   for" chip from `recipient` (`recipient-lens.md`). The animated Aspire Atlas mark sits at the top
-   right (`artifact-standard.md`).
+   for" chip from `recipient` (**Recipient lens**). The animated Aspire Atlas mark sits at the top
+   right (**Artifact standard**).
 2. **Waiting on you.** Each `page` action with a current packet: the title, the why, the creator
    cards involved, the packet's summary in the agent's own words, each question in `questions`
    as a control with exactly the options the packet offered, the held approvals as "Do this in
@@ -308,7 +374,7 @@ Sections, in order:
 6. **Where everything stands.** One stage strip per program and campaign in scope (**1**), with
    counts per stage and the link to that flow's own page from its `page` finding.
 7. **Footer.** What the run read, the actions counted but not shown, and any source it could not
-   read, then the artifact-standard footnote (`artifact-standard.md`). The setup-needed card
+   read, then the artifact-standard footnote (**Artifact standard**). The setup-needed card
    (**9**) carries the mark and the standard's "No Atlas data on this page" variant of the footnote.
 
 Money: a packet's fees, budgets, and amounts go only in Editor-only page data (`team`), never in
@@ -429,12 +495,12 @@ The same cycle, with a person present:
   and do anything else the section allows.
 - After the flow finishes, run steps 2, 6, 7, and 8 so the page reflects it.
 - Every launch carries the tool prefix, `profile_id`, `profile_slug`, the brand's linked handles
-  and networks, `recipient`, and `connections` (`program.md` **4**) when the flow is a program
+  and networks, `recipient`, and `connections` (**Influencer program** **4**) when the flow is a program
   flow.
 
 ## 8. Slack
 
-Delivery follows `readout.md`, **Delivery**, with these rules:
+Delivery follows **Readouts**, **Delivery**, with these rules:
 
 - **Channel message only on change**, comparing with the newest `plan`: a new action in bucket 1
   to 3, an action that moved up a bucket, or an `execution` written this run. One message: the
@@ -507,7 +573,8 @@ Rules:
 
 Same mechanics as **Readouts**, Schedule, in SKILL.md: the session's scheduled-task tools,
 never local cron; list existing tasks first; a standalone prompt that says "do not ask questions"
-and states no date. X6 is the standing approval for this task. Schedule only after the page has
+and states no date. X6 is the standing approval for this task; show the always-allow block in
+SKILL.md **1.6** with X6, as 1.6 says. Schedule only after the page has
 been published once and its `page` finding exists. If the scheduled-task tools are missing, say so and
 stop; never fake a schedule.
 
@@ -527,10 +594,11 @@ If setup is incomplete or Atlas needs a fresh sign in, publish the "setup needed
 Post only to the Slack channel and people saved in the orchestrator routing.
 ```
 
-Tell the user the same three things **Readouts**, Schedule says about scheduled tasks: Aspire
-Atlas and Slack must be enabled for scheduled tasks (plus the mail connection when a program
-drafts into a mailbox or reads replies, and the store connection when sales are read from it), the approval setting must be "Automatically
-approve", and the task can be paused from the scheduled tasks list.
+Tell the user the same three things **Readouts**, Schedule says about scheduled tasks. Aspire
+Atlas, Slack, the mail connection when a program drafts into a mailbox or reads replies, and the
+store connection when sales are read from it must be enabled for scheduled tasks, each with only
+the tools SKILL.md **1.6** lists on Always allow; show that block with X6. The approval setting
+must be "Automatically approve", and the task can be paused from the scheduled tasks list.
 
 ## 12. Autonomy levels (design note)
 
@@ -547,7 +615,7 @@ a major version before it ships.
 ## What the orchestrator never does
 
 - Decide anything a person has not decided on the page or in a session.
-- Keep its own copy of a dispatch table. It reads `program.md` **3** and `cas-campaign.md` **1c**.
+- Keep its own copy of a dispatch table. It reads **Influencer program** **3** and **CAS campaign** **1c**.
 - Write another flow's record type, except the "Decide later" `roster` row (**4**), or a setup
   record of any flow.
 - Send, order, upload, look up, start discovery, or run a destructive tool.

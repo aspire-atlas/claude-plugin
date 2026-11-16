@@ -6,6 +6,71 @@ new one) and by the **Readouts**
 section of SKILL.md. Holds the calibration set, metric definitions, page structures, delivery
 mechanics, and the rules for scheduled (unattended) runs.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Readouts (daily and weekly performance digests)](#readouts-daily-and-weekly-performance-digests)
+- [Why readouts exist](#why-readouts-exist)
+- [Readout calibrations (shared brand memory)](#readout-calibrations-shared-brand-memory)
+- [Data pull (both agents)](#data-pull-both-agents)
+- [Meta Ads enrichment (optional, both agents)](#meta-ads-enrichment-optional-both-agents)
+- [Resolving "today" (both readouts)](#resolving-today-both-readouts)
+- [Daily readout](#daily-readout)
+- [Daily launch pulse (campaign window)](#daily-launch-pulse-campaign-window)
+- [Weekly readout](#weekly-readout)
+- [Page mechanics](#page-mechanics)
+- [Delivery (Slack and email)](#delivery-slack-and-email)
+- [Scheduled (unattended) runs](#scheduled-unattended-runs)
+- [Main thread: the run and the launch pulse](#main-thread-the-run-and-the-launch-pulse)
+- [Scheduling (main thread)](#scheduling-main-thread)
+- [Atlas quirks that apply here](#atlas-quirks-that-apply-here)
+
+## Readouts (daily and weekly performance digests)
+
+Trigger when the user asks for a daily or weekly readout, "what happened yesterday", "how did last
+week go", a weekly social report, a recurring digest, or to schedule any of these. Requires at
+least one linked channel with indexed posts. Before anything, read this file
+(**Readout calibrations**, **Main thread: the run and the launch pulse**, **Scheduling (main
+thread)**, **Delivery**) and follow it.
+
+### Setup
+
+The six readout keys are shared brand memory. Ask the missing R1 to R6 one at a time, never in
+plain text, exactly as worded in the reference; R2 is the standing approval to deliver (it covers
+R6 destinations). One batch confirmation writes; changes are supersedes, one confirmation per key.
+
+### Run
+
+Ask "Which insights report?", then launch `atlas-weekly-insights-report` and/or
+`atlas-daily-insights-report` (run mode `interactive`, `recipient`, a window only if the user
+named one, and the `storyline` pass per **Main thread: the run and the launch pulse**; never pass
+"today" or an assumed date). The agents add Meta Ads figures on their own
+when the connector is live (`readout.md`, **Meta Ads enrichment**); never hold a run for it.
+Pass the user's ask, verbatim, as `meta_request`, and nothing else in it. Relay each summary,
+page link, and resolved window; confirm delivery ("Post to {channel} and email {recipients}?")
+when an agent asks.
+
+### Launch pulse
+
+While a campaign window is open, the daily readout adds a launch pulse. Offer it after a campaign
+brief or when the user asks how a launch is landing: one question call, one write confirmation
+for `campaign:{slug}-pulse`. It rides on the daily schedule; readout setup must exist first.
+
+### Schedule (two schedules, one pass)
+
+After the first successful run, or on request, offer "Set up the recurring schedules now?" and
+follow `readout.md`, **Scheduling (main thread)**: UTC cron from `policy:readout-cadence`, the
+session's scheduled-task tools (never local cron), replace old-named tasks, one confirmation for
+both. Show the always-allow block in SKILL.md **1.6** with that confirmation, which names it
+as 1.6 says. Tell the user three things: the tasks run in fresh sessions, so Aspire Atlas (and
+Slack or email, if routed, and Meta Ads for its optional block) must be enabled for scheduled
+tasks, each with only the tools 1.6 lists on Always allow; approval must be "Automatically approve"; the task
+can be paused or edited from the scheduled tasks list. Readouts deliver only to
+destinations saved in setup. Unattended runs never ask questions;
+with setup incomplete they publish a "setup needed" card and stop.
+
 ## Why readouts exist
 
 Onboarding asks every brand how findings should reach them (`policy:cadence`) and what a good
@@ -41,7 +106,10 @@ Rules:
   confirmation may an unattended run send anything.
 - Confirm the batch once before writing (Guardrails: one confirmation may cover a batch of the
   same kind). Then write all six.
-- R6 lenses are `team`, `leadership`, `product`, `pmm`, and `growth` (`recipient-lens.md`).
+- R6 is the readouts' saved reader; in a person's own interactive run, their own default reader
+  can override it. An interactive run's save choice goes on `lastrun:daily-insights-report` or
+  `lastrun:weekly-insights-report` (**Orchestration contract**, **2**, Saved answers).
+- R6 lenses are `team`, `leadership`, `product`, `pmm`, and `growth` (**Recipient lens**).
   Option 3 saves both `product` and `pmm`. A destination named on a lens is covered by the R2
   standing approval; say so in the same confirmation. A saved R6 in the older wording maps as:
   "The social team" is `team`, "Marketing leadership" is `leadership`, "Both" is `team` then
@@ -72,15 +140,25 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
 
 1. `search_calibrations` as above. Extract: readout calibrations, `red_line`, `guideline`,
    `competitor`, `partner`, `brand:summary`, `target:weekly-health`, `theme:brand`. Drop every
-   `review:` key (content review only; see `atlas-tools.md`). `theme:brand` styles the page
-   and is never a guideline.
+   `review:` key (content review only; see **Atlas tools**) and every `lastrun:` key (a flow's
+   saved setup answers, never a rule). `theme:brand` styles the page and is never a guideline.
 2. `list_post_search_fields` once. Use only paths it returns.
+2b. Freshness (**Page standard**, section 9): `search_creators` on the linked handles, with no
+   wildcard `exclude`, for each channel's `freshness`, and the freshness read (section 9.1) per
+   handle. An unattended run refreshes nothing: it gives each handle the freshness line and any
+   behind-pace note only (section 9.5, the unattended row). A relaunch with handles in
+   `approved.refresh` refreshes those before step 3, so steps 3 onward read what the refresh
+   brought in, and makes no new offer. An interactive
+   run with `approved.refresh` null works out each handle's pace from the freshness read (section
+   9.4) and offers the refresh, with its time and cost, for each handle behind it (section 9.5),
+   holding its findings and delivery until the relaunch. The page's source line and the chat
+   summary carry the freshness line.
 3. `search_posts` per linked handle: `author.username` = handle, `postedAt` gte the window
    start, `exists mediaKind` (drops stories). Sort `postedAt` desc, limit 100, page on the
-   cursor. Project `postedAt`, `text`, `url`, `likeCount`, `commentCount`, `viewCount`,
-   `saveCount`, `shareCount`, `mediaKind`, `media` (container, never leaf URLs),
-   `instagram.mediaProductType`, `instagram.hashtags`, `instagram.account` (container, for the
-   profile picture and follower count), `tiktok.account` where present.
+   cursor. Project the fields of the "What landed and why" row of the required metrics
+   (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8), with `media` as the container, never leaf URLs, plus
+   `text`, `instagram.hashtags`, `instagram.account` (container, for the profile picture and
+   follower count), and `tiktok.account` where present.
 4. Baseline: the same query for the 28 days before the window (daily) or the prior week and
    the prior 8 weeks (weekly). One `aggs` call per window: `date_histogram` on `postedAt`
    (day) with sum of likes, comments, saves, shares, views; `terms` on `mediaKind`.
@@ -102,7 +180,7 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
    `userVerdict`; `check` with `result: "Fail"` feeds the most failed check; `edit` is a
    required edit. Open edits span every review, not just the window: an `edit` stays open
    until a `close` finding names its `idempotencyKey` in `detail.closes`. See
-   `content-review.md`, **Feeding the readouts**. Read only; never write a review finding.
+   **Content review**, **Feeding the readouts**. Read only; never write a review finding.
    A content review edit is closed only by a later review's `close` finding, never by a
    readout: the readout's own resolving `went_well` applies to readout and brief items only.
 7. Red-line scan: for each `red_line` with `action: block|flag|escalate`, one semantic
@@ -114,9 +192,63 @@ Metric definitions:
 
 - Engagement = likes + comments + saves + shares.
 - Engagement rate = engagement ÷ follower count at run time.
+- The per-post engagement figure the page shows (`data-metric="engagement"`) is engagement per
+  1,000 views, never the follower-based rate above, which stays an account-level figure.
+  Engagement per 1,000 views, the account's usual, and how a missing metric reads on the page
+  follow the required metrics (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8).
 - Anomaly = a day or post whose lead metric (R4) sits outside the R3 threshold against the
   baseline median. Report the metric, the baseline median, and the percent delta.
 - Cadence = posts per day (daily) or per week (weekly), against the baseline.
+
+### Ranking
+
+The headline's figure, the best post, and the order of the top and bottom posts follow **Recipient
+lens**, **Rendering for a lens**, Headline and rank by the reader's result. What is local to these
+reports:
+
+- **`team` primary lens.** Posts rank by the lead metric (R4). Follower growth is an account
+  figure and no post carries it, so when R4 is follower growth it leads the headline and the KPI
+  strip, the posts rank by engagement per 1,000 views, and one line says so.
+- **Every other primary lens** (leadership, growth, product, and pmm on the weekly; `campaign` or
+  product on a launch pulse). These reports read no sales, sign-ups, spend, or campaign target for
+  a post, and a capability or a message is not a figure a post carries. The posts rank by
+  engagement per 1,000 views, with the fallback line naming the metric and the reason and no
+  connection. The lead metric stays in the KPI strip and the chart and does not set the order.
+  The growth section keeps its own stand-in, estimated fee per 1,000 engagements (**Lenses**).
+- **The headline's comparison** is the one its figure has. A figure from this data pull compares
+  with the 28-day median (daily) or the prior week and the 8-week median (weekly). A leadership
+  headline may cite a figure from the **Meta Ads** block when the run has one, labelled "Meta
+  Ads", with the comparison that block gives or none. A launch pulse saves no goal or target, so
+  a `campaign` headline is the campaign creators' engagement per post against their own medians
+  (**Daily launch pulse**, step 1).
+
+## Meta Ads enrichment (optional, both agents)
+
+When the Meta Ads connector is live, the daily and weekly reports add one **Meta Ads** block from
+Meta's read tools. The report never depends on it. Follow **Meta Ads** (**Detection**,
+**Brand scope**, **Privacy**, **Reports**); in short:
+
+1. After the Atlas data pull, detect the connector with one `ToolSearch` (`+Meta_Ads
+   ads_get_ad_accounts`). Not found, or only `authenticate` tools: skip to step 4. Found: load
+   the reads step 3 uses with one `ToolSearch` `select:` call under the resolved prefix.
+2. Scope: `list_ad_accounts` with `asProfileId`, keeping only the rows marked as linked to this
+   Profile (an account it lists that is merely reachable is out of scope), then
+   `ads_get_ad_accounts`; keep only those linked accounts, dropping any whose
+   `is_ads_mcp_enabled` is false. None left: skip to step 4.
+3. Read, for the report window and the kept accounts only: `ads_insights_anomaly_signal` and
+   `ads_get_errors` (daily and weekly); the weekly adds `ads_insights_performance_trend`,
+   `ads_insights_industry_benchmark`, `ads_insights_auction_ranking_benchmarks`, and
+   `ads_get_opportunity_score`. `advertiser_request` is the `meta_request` input (the user's own
+   words) when the launch carries one, and otherwise the fixed line in **Meta Ads**
+   **Privacy**, always in an unattended run. Each figure is labelled "Meta Ads", kept apart from
+   Atlas's figures and from organic, and turned into an insight with a next step (a swing to
+   check, a delivery error to fix, a recommendation to try).
+4. Whenever the block is left out (connector missing, sign in expired, no linked or enabled
+   account, a call failed), add "Meta Ads data not included: {reason}" to the page's "What is
+   missing" and finish the report as normal. Never fail, stop, or retry more than once.
+
+Never a Meta write tool, in any run mode. Findings drawn from the block may join the run's
+`append_insights` under the same limits, with `detail.source: "meta_ads"`.
 
 ## Resolving "today" (both readouts)
 
@@ -133,27 +265,34 @@ clock, not new data (see the duplicate-window guard in each agent).
 ## Daily readout
 
 Window: the previous calendar day in the R1 timezone (00:00 to 23:59), resolved per
-**Resolving "today"** above. If no posts landed,
-say so in one line and still report anomalies on older posts still accruing engagement, plus
-red-line hits.
+**Resolving "today"** above. If Atlas holds no post for the day,
+say so in one line, worded as **Page standard**, section 9.3 sets it ("no posts yesterday" only
+when Atlas fetched the account after the day ended; otherwise "Atlas has no data for {day}"), and
+still report anomalies on older posts still accruing engagement, plus red-line hits.
 
 Chat summary, under 150 words:
 
 - Headline: one line, lead metric vs 28-day median with the percent delta.
+- Storyline: the bullets the page opens with, each with the posts, accounts, or views
+  behind it (**Scheduled (unattended) runs**, Storyline).
 - Yesterday: posts published, engagement, the best post with its number.
 - Flags: anomalies and red-line hits, each with a permalink; "none" is a valid line.
 - Since last readout: follower delta, any action item that changed state.
 - Content reviews: reviews run yesterday by verdict, and every Do not post or hard-rule hit
   with the creator's handle and the review page link (`reviewPage`). Leave the line out when
   there were none.
+- Freshness: the freshness line (**Page standard**, section 9.2), with any refresh offer.
 - One closing line: findings saved, page link.
 
-Page: one compact card. Header (brand, date, network, a "Prepared for" chip, and the animated mark at the top right). KPI strip (posts, engagement,
-engagement rate, followers with delta). One 28-day sparkline of the lead metric with
-yesterday marked. Cards for yesterday's posts (media, metric row, one-line takeaway). Flags
-block. A content reviews block when any review ran yesterday: one row per review with
-verdict chip, creator, deliverable, open edits, and the review page link. Footer with the CDN
-expiry note, then the artifact-standard footnote ([artifact-standard.md](artifact-standard.md)). Republish to the same path each day.
+Page: one compact card. Header (brand, date, network, a "Prepared for" chip, and the animated mark
+at the top right). The answer block with the storyline's bullets (three, or fewer per
+**Orchestration contract** **2**, **Fewer bullets**: an empty window or a bullet the person
+dropped). KPI strip (posts, engagement, engagement rate, followers with delta). One 28-day sparkline
+of the lead metric with yesterday marked. Cards for yesterday's posts (media, metric row, one-line
+takeaway). Flags block. A content reviews block when any review ran yesterday: one row per review
+with verdict chip, creator, deliverable, open edits, and the review page link. Footer with the CDN
+expiry note, then the artifact-standard footnote (**Artifact standard**). Republish to the same path
+each day.
 
 Insights written (`append_insights`): `runKey` `readout-daily-{profile}-{YYYY-MM-DD}`,
 role `account_review`, `schema` = network, `entityKind` account or post, `entityId` the
@@ -175,7 +314,7 @@ named there is covered by the R2 standing approval, and the confirmation says so
 On every daily run, read every `campaign:*-pulse` record and keep those whose window covers the
 target date. A caller may also pass a campaign slug for an on-demand pulse. For each one:
 
-1. **Campaign creators live.** The campaign's accepted creators (`creator-discovery.md`, **State
+1. **Campaign creators live.** The campaign's accepted creators (**Creator discovery**, **State
    written to Atlas**): their posts on the target date that mention the brand. Engagement per
    post against each creator's own median.
 2. **Mentions.** A semantic `search_posts` with `queryText` = the pulse topics, filtered to the
@@ -186,11 +325,13 @@ target date. A caller may also pass a campaign slug for an on-demand pulse. For 
    friction creators state. For the `product` lens, group the friction by issue.
 4. **Drafts and verdicts.** The campaign creators' content reviews on the target date (step 6b).
 
-The pulse is a page section after the flags block, "Launch pulse: {campaign}, day {n} of {N}",
+The pulse is a page section after the flags block, "How the launch is landing: {campaign}, day {n} of {N}",
 and three bullets in the chat summary. A pulse lens with its own destination gets its own Slack
 or email message with the pulse bullets and the page link. Up to three extra findings per
 campaign (`detail.campaign`, `detail.recipient`), outside the daily cap of five. A pulse reads
-only what Atlas holds: no lookups, no marketplace.
+only what Atlas holds: no lookups, no marketplace. In the freshness line (**Page standard**,
+section 9), the campaign's accepted creators are subject accounts with their own entries and no
+refresh; mention posts and verbatims share the one mentions entry, marked `data-mention`.
 
 ## Weekly readout
 
@@ -203,6 +344,8 @@ first; team: post-level detail first; product, pmm, growth: that lens's block fi
 bullets per other saved lens:
 
 - Headline: the week in one line, lead metric vs prior week and vs 8-week median.
+- Storyline: the bullets the page opens with, each with the posts, accounts, or views
+  behind it (**Scheduled (unattended) runs**, Storyline).
 - Numbers: posts, engagement, engagement rate, reach or views, followers with delta.
 - What worked: top 3 posts with metric and the pattern they share (format, theme, day, hook).
 - What did not: bottom 2 posts and the likely reason in one clause each.
@@ -213,6 +356,7 @@ bullets per other saved lens:
   reviewed more than once. For reviewed published posts, the lead metric against the
   creator's own median when Atlas holds it.
 - Next steps: 3 ranked bullets, each tied to a number above.
+- Freshness: the freshness line (**Page standard**, section 9.2), with any refresh offer.
 - Data gaps and one closing line: findings saved, page link.
 
 **Lenses.** The analysis runs once; each saved R6 lens is a section of the same page, the
@@ -230,7 +374,7 @@ section list below. The others:
 - **Growth:** creator posts about the brand in the week (collab posts on the brand's account,
   partnership-marked posts, and mentions by accounts other than the brand), per creator and per
   format: engagement per post against the creator's own median and the brand's median, and the
-  estimated fee from the fee calculator (`fees.md`) per 1,000 engagements, labelled as estimated
+  estimated fee from the fee calculator (**Fee calculator**) per 1,000 engagements, labelled as estimated
   because Atlas holds no spend. End with one recommendation: where the next dollar goes. Each
   creator that beat both medians gets a `went_well` finding with `detail.creator`,
   `detail.lens: "growth"`, and `detail.seedEligible: true`, which feeds discovery's lookalike tier.
@@ -238,8 +382,10 @@ section list below. The others:
 Page, sections in order:
 
 1. Header: brand, network, week label, prepared date, a "Prepared for" chip per lens, and the animated mark at the top right.
-2. KPI strip with week-over-week deltas and the benchmark row from `target:weekly-health`
-   when present.
+2. The answer block: the headline and the storyline's bullets (three, or fewer per **Orchestration
+   contract** **2**, **Fewer bullets**: an empty window or a bullet the person dropped) with their
+   evidence (**Scheduled (unattended) runs**, Storyline). Then the KPI strip with week-over-week
+   deltas and the benchmark row from `target:weekly-health` when present.
 3. Lead-metric line chart, 9 weeks, last week highlighted.
 4. Top 3 and bottom 2 post cards with media, metric row, takeaway.
 5. Format and theme mix: one small-multiple bar pair (this week vs prior).
@@ -249,7 +395,7 @@ Page, sections in order:
    per review with creator, verdict chip, open edits, and the review page link.
 7. Next steps, ranked.
 7b. One section per non-`team` lens, per **Lenses** above, in R6 order.
-8. Footer: sources, a note that images are a snapshot, "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote ([artifact-standard.md](artifact-standard.md)).
+8. Footer: sources, a note that images are a snapshot, "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote (**Artifact standard**).
 
 Insights written: `runKey` `readout-weekly-{profile}-{ISO week, e.g. 2026-W38}`, role
 `account_review`. Kinds: `went_well` per top post pattern, `needs_improvement` per bottom
@@ -261,33 +407,42 @@ findings carry `detail.lens`. Growth creator findings are outside the 3 next-ste
 
 ## Page mechanics
 
-Embed every image as a data URI with the snippet in `creator-card.md`, **Images**, page
+Embed every image as a data URI with the snippet in **Creator card**, **Images**, page
 profile, which also sets how the `<img>` is sized: `post@{card media width}` for post cards
 (the CSS width of the card's media, 360 by default), `detail@{W}x{H}` for a larger media panel
 (for example `detail@480x1000` for a tall carousel panel), `+text` on posts that are mostly text
 or graphics, and `avatar` for profile pictures. Pass `media.mediaUrl` first and
 `media.thumbnailUrl` after it, so each post comes from the full-size image or poster. Keep the
 images under 8MB and the page under 10MB, cutting images before quality per **Images**. Load the
-`artifact-design` and `dataviz` skills before building. Apply the saved brand theme (`theme:brand`) per `theme.md`, **Applying the theme**; without one, the design here stands. Flags, deltas, and verdict
+`artifact-design` and `dataviz` skills before building. Apply the saved brand theme (`theme:brand`) per **Theme**, **Applying the theme**; without one, the design here stands. Flags, deltas, and verdict
 chips keep their semantic colors. Publish with the Artifact tool,
 title "<Brand> Daily Insights Report" or "<Brand> Weekly Insights Report", and republish to the same path
 each run so the link in Slack or email stays stable. Note once in the footer that images are
 a snapshot.
 
+**The `page` finding.** On a readout page's first publish, the run's `append_insights` call adds one
+`page` finding, shaped as a program page's (**Influencer program**, **Working state**): `runKey`
+`readout-page-{profile}`, `detail.key` `daily` or `weekly`, `url`, and `title`, outside the
+finding limit. A run answered "Page only" writes none, so its next interactive run asks the
+Heard line instead (**Orchestration contract**, **2**, **The storyline**). It is how the main
+thread tells a published readout from a new one, never the readout's other insights.
+
 ## Delivery (Slack and email)
 
 Read `policy:readout-routing`. The page and chat summary always ship. Then:
 
-- **Slack:** if the routing names a channel and a Slack connection is available in the
-  session, send one message: the headline, the 3 to 5 key bullets, the page link. Plain text
-  with Slack formatting, no images. If no Slack connection is present, say so in the chat
-  summary and continue.
+- **Slack:** if the routing names a channel and a Slack connection is available in the session, send
+  one message: the headline, the storyline's bullets with their evidence, up to two more key
+  bullets, the page link. Plain text with Slack formatting, no images. If no Slack connection is
+  present, say so in the chat summary and continue.
 - **Per-lens destinations:** a lens in R6 (or a pulse lens) with its own destination gets its own
-  message: that lens's three bullets and the page link with the lens anchor. Same connection
+  message: the storyline's bullets, then that lens's three bullets and the page link with
+  the lens anchor. Same connection
   rules as below.
 - **Email:** if the routing names recipients and an email connection is available, send one
   message with subject "<Brand> {Daily|Weekly} Insights Report, {date}", the chat summary as the body,
-  and the page link. If no email connection is present, say so and continue.
+  and the page link; the summary's storyline bullets are the same ones the page and the Slack
+  message carry. If no email connection is present, say so and continue.
 - Interactive run: confirm the send once with `AskUserQuestion` ("Post to {channel} and email
   {recipients}?" Options: Send (Recommended) / Page only this time). Unattended run: the R2
   confirmation is the standing approval; send without asking.
@@ -308,31 +463,57 @@ README). Rules for the agents:
 
 - Never ask a question. If any of the six readout calibrations or `brand:summary` is missing,
   publish a one-card page titled "<Brand> Insights Report: setup needed" listing the missing items (it still carries the mark and the footnote, with the
-  "No Atlas data on this page" variant in [artifact-standard.md](artifact-standard.md)),
+  "No Atlas data on this page" variant in **Artifact standard**),
   write nothing to Atlas, and end with "Run /aspire:aspire and ask for readout setup."
 - Never run a destructive tool. Never call `lookup_*`, `search_creator_marketplace`, or
-  `start_business_discovery`.
+  `start_business_discovery`, except the freshness refresh of the brand's own linked handles in
+  **Data pull**, step 2b, which starts no discovery.
 - If Atlas returns an unauthorized error, publish the "setup needed" card with "Aspire Atlas
   needs a fresh sign in" and stop.
-- If a search returns nothing for the window, report "no posts indexed for {window}" rather
-  than inventing numbers, and still deliver the page and summary.
+- Meta Ads is optional: a missing connector or an expired Meta sign in leaves its block out
+  (**Meta Ads enrichment**) and the run carries on. Never call a Meta write tool.
+- If a search returns nothing for the window, report it as **Page standard**, section 9.3 sets
+  it ("Atlas has no data for {window}" unless Atlas fetched the account after the window ended)
+  rather than inventing numbers, and still deliver the page and summary.
+
+**Storyline.** A scheduled readout, or a rerun of one already published, never stops to confirm its
+storyline: it is a `state` pass (**Orchestration contract**, **2**, **The storyline**): the agent
+drafts three bullets from the window's posts, each with the posts, accounts, or views behind it,
+and the page opens with them in the answer block, under the headline. The chat summary, the Slack
+message, and the email carry the same bullets, in the same order and wording. A window under
+the row's minimum (10 posts for what landed and why) still publishes, and the bullet it weakens says
+how few posts it rests on. A window with no posts, on a first run's `draft` pass too, gives "No
+posts indexed for {window}." as the first bullet, then up to two from the flags or the older posts still
+gaining engagement, each with its evidence; with nothing there either, that one bullet is the
+storyline (**Orchestration contract**, **2**, **Fewer bullets**). Where the run cannot watch a video or check a product fact, the method says so
+(`skills/page-standard/SKILL.md`, section 4, step 0b). A readout's window is fixed, on the first
+interactive run too: its draft names only more platforms or accounts in `widen`, or `null`, a
+readout Widen never carries dates, and a window under the minimum builds with the thin bullet saying
+so.
 
 ## Main thread: the run and the launch pulse
 
 What the **Readouts** section of SKILL.md does around the agents.
 
 **The run.** Ask once with `AskUserQuestion`: "Which insights report?" Options: "Weekly (last
-week)", "Daily (yesterday)", "Both now", "Change setup". Then launch
-`atlas-weekly-insights-report` and/or `atlas-daily-insights-report` with: tool prefix,
-`profile_id`, `profile_slug`, linked handles and networks, run mode `interactive`, `recipient`
-(the lens SKILL.md **Reading the ask** confirmed, or the saved R6 lenses when it found none), and
-the target window only if the user named one. Never pass "today" or any date the main thread
-assumed: session headers can be a day stale, and a wrong "today" shifts the whole readout by a
-day (or a week). The agents resolve the date themselves (**Resolving "today"**) and refuse a
-repeat window. Relay each agent's summary and page link, including the resolved window it
-reports. When an agent asks the main thread to confirm delivery, ask with `AskUserQuestion`
-("Post to {channel} and email {recipients}?" Options: Send (Recommended) / Page only this time)
-and relay the answer.
+week)", "Daily (yesterday)", "Both now", "Change setup". Then launch `atlas-weekly-insights-report`
+and/or `atlas-daily-insights-report` with: tool prefix, `profile_id`, `profile_slug`, linked handles
+and networks, run mode `interactive`, `recipient` (the lens SKILL.md **Reading the ask** confirmed,
+or the saved R6 lenses when it found none), and the target window only if the user named one, and
+the launch block's `storyline` pass: `state` when the readout's page is already published, since
+the run republishes it. The page is published when Atlas holds its `page` finding
+(`search_insights` with a `prefix` filter on `detail.account_review.runKey` =
+`readout-page-{profile}`, the newest with `detail.key` `daily` or `weekly`; **Page mechanics**) and
+the Artifact tool's `read` opens its `url`. The readout's other insights never count, nor does a
+title in the Artifact tool's `list`. With no such finding (a first run answered "Page only" writes
+none), the Heard line says whether the run updates a published report or builds a new one, and
+the person's answer settles it (**Orchestration contract**, **2**, **The storyline**, New or
+already published); a new page follows **The storyline** before it builds. Never pass "today" or any date the main thread assumed: session headers can be a
+day stale, and a wrong "today" shifts the whole readout by a day (or a week). The agents resolve the
+date themselves (**Resolving "today"**) and refuse a repeat window. Relay each agent's summary and
+page link, including the resolved window it reports. When an agent asks the main thread to confirm
+delivery, ask with `AskUserQuestion` ("Post to {channel} and email {recipients}?" Options: Send
+(Recommended) / Page only this time) and relay the answer.
 
 **Setting up a launch pulse** (**Daily launch pulse**). Offer it after a campaign brief, or when
 the user asks how a launch is landing:
@@ -373,18 +554,21 @@ the recurring schedules now?" Options: "Yes, daily and weekly (Recommended)", "W
      questions" and "use the saved readout calibrations", and must not state a date; the
      templates tell the run to read the date from the shell clock.
    - Notifications: push on.
-3. Confirm both tasks in one `AskUserQuestion` before creating them, listing name, local time,
-   and destinations. Create only on the confirming option.
+3. Show the always-allow block in SKILL.md **1.6**, then confirm both tasks in one
+   `AskUserQuestion` before creating them, listing name, local time, and destinations. Its
+   confirming option names the setting as 1.6 says. Create only on the confirming option.
 4. Tell the user: the tasks run in fresh sessions, so Aspire Atlas (and Slack or email, if
-   routed) must be enabled for scheduled tasks in their Claude settings, and the task's
-   approval setting should be "Automatically approve" or the run will stall on the first
-   permission prompt. Mention the task can be paused or edited from the scheduled tasks list.
+   routed) must be enabled for scheduled tasks in their Claude settings, each with only the tools
+   1.6 lists on Always allow (for email routing, the sending exception 1.6 describes), and the
+   task's approval setting should be "Automatically approve". Either one missing stalls the run
+   on its first permission prompt. Mention the task can be paused or edited from the scheduled
+   tasks list.
 5. If the scheduled-task tools are not present in the session, do not fake it: point the user
    to the manual steps in the README and stop.
 
 ## Atlas quirks that apply here
 
-Inherited from `creator-brief.md`: project the `media` and `instagram.account` containers, not
+Inherited from **Creator brief**: project the `media` and `instagram.account` containers, not
 leaf URLs; exclude stories with `exists mediaKind`; `/thumbnail` routes 404 on image posts; published
 pages cannot load `cdn.aspire.io` images. New for readouts: `search_insights` returns findings
 tenant-wide, so always filter on the `detail.account_review.runKey` prefix; and `aggs` only work on the filter path,

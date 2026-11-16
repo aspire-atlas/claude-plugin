@@ -10,6 +10,15 @@ goes between them.
 Read this file with `SKILL.md`. That file says what each part must say. This file says how to
 build it.
 
+## Contents
+
+- [1. Rules for every block](#1-rules-for-every-block)
+- [2. Default tokens and the style block](#2-default-tokens-and-the-style-block)
+- [3. The blocks](#3-the-blocks)
+- [4. Building a page from the blocks](#4-building-a-page-from-the-blocks)
+- [5. The validated examples, block by block](#5-the-validated-examples-block-by-block)
+- [6. Sections the flow builds itself](#6-sections-the-flow-builds-itself)
+
 ## 1. Rules for every block
 
 - **Tokens only.** A block takes its colors, type, and corners from the page tokens in
@@ -32,6 +41,12 @@ build it.
 - **Phone width.** Every block works at 360px with no sideways page scroll. Grids wrap, tables turn
   into one card per row under 640px (put `data-label` on every cell), and only the storyboard strip
   scrolls sideways, inside its own box.
+- **Apps never assumed.** A button or link that needs a connected app (Gmail, Slack, a store)
+  carries `data-app="{app}"`, and shows only when the run found that app connected. Beside it sits
+  one quiet line carrying `data-app-missing="{app}"` ("Connect Gmail to send the offers from this
+  page."), hidden while the app control shows. The UX review's no-apps view hides every
+  `data-app` control and shows every `data-app-missing` line (`ux-review.md`), so both states must
+  read well. Mark the one step or decision the reader does first with `data-first-task`.
 - **The look is the flow's.** Blocks carry no page frame, no max width, and no section spacing.
   The page sets those. A block's own class names start with `pb-`; restyle a block for one page by
   adding a class of the page's own, never by editing the style block.
@@ -70,6 +85,7 @@ build it.
 | Score row | 6 | `score-row` | 3.16 |
 | Timeline | 4 | `timeline` | 3.17 |
 | Quote | 6 | `quote` | 3.18 |
+| Freshness line | Source line | `freshness` | 3.19 |
 
 A page also has sections of its own that no block covers: a comparison table, a 2x2 map, a scatter
 chart, a calculator, a section menu. They belong to this question, so the flow builds them. Use
@@ -115,6 +131,7 @@ The default tokens name the Atlas fonts. A page that keeps them loads them befor
 .pb-h{font-family:var(--font-display);font-stretch:var(--font-display-stretch,100%);font-weight:600;line-height:1.25;margin:0 0 10px;text-wrap:balance}
 .pb-label{font:500 .72rem/1.3 var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .pb-muted{color:var(--muted)}
+.pb-na{color:var(--muted);font-size:.85rem;font-style:italic}
 .pb-num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 .pb-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr))}
 .pb-chip{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:2px 9px;font:500 .78rem/1.5 var(--font-body);border:1px solid var(--border);background:var(--bg);color:var(--text);white-space:nowrap;max-width:100%}
@@ -248,12 +265,21 @@ before the first `h2`, under the page header that carries the mark and the "Prep
 (`artifact-standard.md`, `recipient-lens.md`).
 
 - `data-reader`, `data-brand`, and `data-range` are the exact words the line shows.
+- `data-question` is the question code the page answers, which picks its required metrics
+  (`SKILL.md`, section 8). Leave it out on a page that answers no code and cites no post.
 - A check that is N/A for this page goes in `data-na` (`SKILL.md`, section 5).
+- `data-accounts` lists every subject account (`SKILL.md`, section 9) whose figures the page shows,
+  as `{network}:{handle}` separated by spaces, totals included, so R14 looks for each one's
+  freshness entry (3.19). Authors cited only as mention evidence or counted only in totals share
+  the mentions entry (3.19) instead. A scope that reports a platform (posts, "no posts" or "no
+  data") always names at least the brand's own handles, even when the page counts only other
+  creators' posts. A reported platform with no named account on it fails R14 unless a mentions
+  entry covers it.
 - Leave "Prepared by" out when the reader is not a VP or budget owner.
 
 <!-- block:scope -->
 ```html
-<div class="pb-scope" data-page="scope" data-block="scope" data-reader="the VP of marketing" data-brand="Brightside Toys" data-range="Aug 1 to Oct 28, 2026">
+<div class="pb-scope" data-page="scope" data-block="scope" data-question="O3" data-accounts="instagram:brightsidetoys tiktok:brightsidetoys instagram:makerjune" data-reader="the VP of marketing" data-brand="Brightside Toys" data-range="Aug 1 to Oct 28, 2026">
   <p class="pb-scope-line"><span>For <b>the VP of marketing</b></span><span><b>Brightside Toys</b></span><span>Aug 1 to Oct 28, 2026</span><span class="pb-muted">Prepared by Jordan Lee, social lead</span></p>
   <!-- the coverage strip (3.2) goes here -->
 </div>
@@ -291,6 +317,10 @@ beneath it. Write it last, from the decision the page supports (`SKILL.md`, sect
 - It is the page's first heading. A `band` header (`theme.md`, **Header**) shows the logo or brand
   name and the kind of page as plain text, never as a second `h1`.
 - The takeaway gives the one number or reason that backs the headline, compared with something.
+- A page built on a `state` storyline pass (`SKILL.md`, section 4, step 0b) puts the storyline's
+  bullets (three, or fewer when it has fewer) right after the takeaway, one `<p>` each, each with the posts, accounts, or views
+  behind it: "Gift posts beat creators' usual views this fall: 1.27 times, across 78 posts from
+  15 accounts."
 - A page that sorts items into verdicts (a slate, a ranked list) may add the tally under the
   takeaway: a bar with one span per verdict, `flex` set to its count, and one line per verdict
   that links to its section. Each verdict's color is its status token.
@@ -312,7 +342,7 @@ beneath it. Write it last, from the decision the page supports (`SKILL.md`, sect
 
 **Holds:** one insight, in this order: the claim, the evidence, the comparison, and the "So:" line
 with the action. A page has up to three. Only the headline insight carries a chart, and at most
-one.
+one, unless the flow's reference gives each insight its own chart.
 
 - The claim is a full sentence with no hedge. Hedges go in the "So:" line.
 - The comparison names what the number is compared with: last period, peers, a goal, or the
@@ -414,11 +444,13 @@ below. A creator slate (`SKILL.md`, section 3) fills every field:
   `pb-group` heading: its name as a chip, then its count and subtotals (fees at target, views per
   round) and any open slot ("sixth slot waits on a maybe").
 - The creators left out are score rows (3.16), grouped under one `h3` per reason with its count.
+- `data-account` names the creator's account as `{network}:{handle}`, so the page check's R14 looks
+  for its freshness line (3.19).
 
 <!-- block:creator -->
 ```html
 <!-- A group heading, once per group: <p class="pb-group"><span class="pb-chip">Parents</span>6 creators, USD 7,200 at target, 210,000 views per round</p> -->
-<div class="pb-verdict" data-block="creator" data-verdict="maybe">
+<div class="pb-verdict" data-block="creator" data-verdict="maybe" data-account="instagram:makerjune">
   <p><span class="pb-chip pb-warn">Maybe</span> Strong fit and safe, but 2 of her last 30 posts were paid posts for a competitor.</p>
   <p class="pb-muted">Checks reached: fit, audience, brand safety, competitor deals.</p>
   <p class="pb-stats"><span>Fee <b>USD 1,200</b> (fee calculator)</span><span>Expected return <b>3.4x</b> (this run)</span></p>
@@ -430,7 +462,16 @@ below. A creator slate (`SKILL.md`, section 3) fills every field:
 ### 3.8 Post evidence card
 
 **Holds:** one real post from this run: its thumbnail, a link to it, the creator, the date and
-time it went live, and the numbers the argument uses, each next to its comparison.
+time it went live, the metrics the page's question requires (`SKILL.md`, section 8), and the
+numbers the argument uses, each next to its comparison.
+
+- `data-post` carries the post's link. Each required metric sits on its own element as
+  `data-metric="{metric}"` with its number. A metric the post cannot show goes in `data-missing`
+  as `{metric}: {reason}` (entries joined by `;`), with the same reason shown where the number
+  would sit, in the `pb-na` style. Never a 0 for a missing metric. The page check's R13 reads
+  these.
+- `data-account` names the account the post is from, as `{network}:{handle}`. The page check's R14
+  looks for its freshness line (3.19).
 
 - The link opens the post itself. The thumbnail is a data URI (the creator card's **Images**
   snippet); without one, leave the `img` out and keep the card. The body then takes the full
@@ -441,11 +482,12 @@ time it went live, and the numbers the argument uses, each next to its compariso
 
 <!-- block:post -->
 ```html
-<article class="pb-card pb-post" data-block="post">
+<article class="pb-card pb-post" data-block="post" data-account="instagram:makerjune" data-post="https://www.instagram.com/reel/EXAMPLE/" data-missing="saves: shown only for accounts connected to Atlas">
   <img src="data:image/jpeg;base64,..." alt="Unboxing of the holiday playset, child opening the box" width="96" height="171">
   <div class="pb-post-body">
     <p><a href="https://www.instagram.com/reel/EXAMPLE/">@makerjune on Instagram</a> <span class="pb-muted">Oct 12, 2026, 6:40 PM ET</span></p>
-    <p class="pb-stats"><span>Views <b>48,200</b> (3.1x her usual)</span><span>Saves <b>1,940</b></span></p>
+    <p class="pb-stats"><span data-metric="views">Views <b>48,200</b> (3.1x her usual)</span><span data-metric="likes">Likes <b>2,310</b></span><span data-metric="comments">Comments <b>164</b></span><span data-metric="engagement">Engagement <b>51</b> per 1,000 views</span></p>
+    <p class="pb-na">Saves not available: shown only for accounts connected to Atlas</p>
     <p data-quoted>"We waited all week for this one"</p>
   </div>
 </article>
@@ -475,7 +517,7 @@ cut-downs**).
 
 <!-- block:storyboard -->
 ```html
-<article class="pb-card pb-board" data-block="storyboard" data-scanned="yes">
+<article class="pb-card pb-board" data-account="instagram:makerjune" data-block="storyboard" data-scanned="yes">
   <h3 class="pb-h">Cut 1: 14 seconds from @makerjune's unboxing</h3>
   <ol class="pb-beats">
     <li class="pb-frame"><img src="data:image/jpeg;base64,..." alt="Child gasps as the lid opens" width="132" height="235"><span class="pb-tc">0:00 to 0:03</span><span><b>Hook.</b> The lid opens and the child gasps.</span></li>
@@ -504,7 +546,7 @@ cut-downs**).
 
 <!-- block:rights -->
 ```html
-<div class="pb-rights" data-block="rights" data-expires="2027-01-31">
+<div class="pb-rights" data-account="instagram:makerjune" data-block="rights" data-expires="2027-01-31">
   <a href="https://www.instagram.com/reel/EXAMPLE/">@makerjune unboxing, Oct 12</a>
   <span>Paid usage</span><span>Instagram, Facebook</span><span class="pb-num">Jan 31, 2027</span>
   <span class="pb-chip pb-ok">Cleared</span>
@@ -661,7 +703,7 @@ out.
 
 <!-- block:score-row -->
 ```html
-<div class="pb-score" data-block="score-row" data-score="82">
+<div class="pb-score" data-account="instagram:makerjune" data-block="score-row" data-score="82">
   <img src="data:image/jpeg;base64,..." alt="Unboxing of the holiday playset" width="40" height="71">
   <div><a href="https://www.instagram.com/reel/EXAMPLE/">@makerjune</a> <span class="pb-muted">Creator post, Oct 12, 0:31</span></div>
   <div class="pb-bar" role="img" aria-label="Score 82 of 100"><span style="width:82%"></span></div><span class="pb-num">82</span>
@@ -701,18 +743,63 @@ video. Each quote carries who said it and links to where.
 
 <!-- block:quote -->
 ```html
-<figure class="pb-quote" data-block="quote">
+<figure class="pb-quote" data-account="instagram:makerjune" data-block="quote">
   <blockquote>We waited all week for this one.</blockquote>
   <figcaption><a href="https://www.instagram.com/reel/EXAMPLE/">@makerjune, Instagram, Oct 12</a></figcaption>
 </figure>
 ```
 <!-- /block:quote -->
 
+### 3.19 Freshness line
+
+**Holds:** for each account and platform the page cites, the newest post Atlas holds and when Atlas
+last fetched the account (`SKILL.md`, section 9). It goes inside the source line's footer
+(`artifact-standard.md`, section 2), before the source sentence, on every page that cites an
+account.
+
+- Every block that names a subject account (`SKILL.md`, section 9: creator, post, storyboard,
+  rights row, score row, quote) carries `data-account="{network}:{handle}"`, so R14 looks for that
+  account's entry. A post or quote cited only as mention evidence carries `data-mention` instead,
+  and its authors share one `data-fresh="mentions"` entry: "posts by {n} other creators: newest
+  post {date}", with `data-newest` and no fetch time. Write {n} in digits, or as a word up to
+  twelve ("one other creator"). A mention post's platform comes from its `data-post` link, or
+  from `data-mention="{network}"` on a quote with no link. When the scope counts a platform only
+  through other creators' posts, the mentions entry lists it: `data-platforms="tiktok"`. Mention
+  evidence never stands in for a subject account: an account whose posts the page shows is in the
+  scope's `data-accounts`, and a scope that reports a platform still names the brand's own handles.
+- The source line gives freshness only for what the page cites: no entry for an account the page
+  does not cite, and no mentions entry without mention evidence.
+- With more than ten entries, put all but the brand's own and any behind their pace in a
+  `details` element inside the source line.
+- One `data-fresh="{network}:{handle}"` entry per account, matching the `data-account` the page
+  gives that account, naming the handle and the platform ("@makerjune on Instagram"). Each
+  attribute's date is the date the entry shows, in the page's own time zone, and a date outside the
+  year of the footer's `data-updated` shows its year ("Oct 22, 2024"). `data-newest` is the newest
+  post's date (`YYYY-MM-DD`), or `none` when Atlas holds no posts.
+- `data-fetched` is `lastFetchedAt`'s date, shown as "last fetched", or `none` for "not fetched by
+  Atlas yet". With no `freshness` on record, `data-changed` replaces it: the account's `snapshotAt`
+  date, shown as "last changed", never "last fetched". With no `snapshotAt` either, `data-fetched`
+  is `unknown`, shown as "freshness unknown".
+- On a team page, an account behind its pace, or refreshed in this run, says so on the same entry,
+  and a refresh skipped as recently refreshed says "refreshed recently, skipped". A page shared
+  outside the team leaves those notes out (`SKILL.md`, section 9.2).
+- The page check's R14 reads these.
+
+<!-- block:freshness -->
+```html
+<p data-block="freshness" data-freshness>Data freshness:
+  <span data-fresh="instagram:makerjune" data-newest="2026-10-12" data-fetched="2026-10-28">@makerjune on Instagram: newest post Oct 12, last fetched Oct 28</span>;
+  <span data-fresh="instagram:brightsidetoys" data-newest="2026-10-20" data-changed="2026-10-21">@brightsidetoys on Instagram: newest post Oct 20, last changed Oct 21 (behind its usual pace of a post every 2 days)</span>;
+  <span data-fresh="tiktok:brightsidetoys" data-newest="2026-10-27" data-fetched="2026-10-28">@brightsidetoys on TikTok: newest post Oct 27, last fetched Oct 28</span>.</p>
+```
+<!-- /block:freshness -->
+
 ## 4. Building a page from the blocks
 
 1. **Pick the blocks for this question and reader.** Every page has the scope header with its
    coverage strip, the answer, the decisions, the next steps, the method, and the draft-next
-   footer. Add insight cards when the page has insights, the evidence blocks its question needs,
+   footer, and the freshness line in the source line when the page cites an account. Add insight
+   cards when the page has insights, the evidence blocks its question needs,
    the what's missing panel on a team page, the split for a VP or budget owner, and the test plan
    when the page recommends paid spend. A part the flow's reference leaves out stays out
    (`SKILL.md`, section 1).
@@ -751,6 +838,11 @@ the example lacked, so the rebuilt page passes a check the example did not.
 | What the 11 should return: the sign-ups calculator | The flow's own calculator (section 6); its default result shows in 3.7's expected return |
 | From offers to the first read: the launch clock | 3.17 |
 | "You keep" and "Atlas can draft next" | 3.5 and 3.13 |
+| What people are doing well: lift by what the post does, with example posts | 3.4, the headline insight, with its lift chart |
+| Where people get stuck: sentiment counts, numbered challenges, brands named | 3.4 with 3.18 for each quote; the brands-named chart is the flow's own (section 6) |
+| What this means for picking: reach concentration and market supply | 3.4 with a `pb-table` of the top posts |
+| What we look for: each check with its finding tag, the marks, and the bar | The flow's own section (section 6) |
+| Every creator against the checks, with score and call | The flow's own table (section 6), above the 3.7 grids |
 | How the verdict was made: the two scores, verdicts, weights, reach penalty, fees, brand post detection, corrections | 3.11 |
 | What's missing (not in the example) | 3.12, adds |
 | Source line | `artifact-standard.md` |
@@ -792,9 +884,11 @@ it)
 | Caveat on organic data and boosted views | 3.12 |
 | Scoring method: six criteria with weights, what 5 and 1 mean, score bands, the override | 3.11 |
 | How the 12 posts scored: thumbnail, handle, source, date, length, score bar, verdict, note | 3.16 |
-| What the scores show, each with a "So:" line and a proof visual | 3.4 |
-| Seconds to first product appearance chart; hook variant bars | 3.4, the headline insight's chart; the second chart is the flow's own (section 6) |
-| What the frames show | 3.4, evidence lines, or the flow's own grid |
+| How Atlas got there: posts considered, about the brand, videos, read frame by frame, scored, recommended | The flow's own strip (section 6) |
+| What Atlas learned: headline stat, claim, paragraph, chart, works and misses frame pair, "So Atlas recommends" | 3.4, a `pb-stat` line and one chart per learning; the frame pair is two `figure`s with a `pb-chip` each |
+| The posts Atlas recommends, found then briefed, each checked against every learning with a check mark or a "+" fix, and why it was picked; the held back with their scores | 3.8 per post; the checks are the flow's own list (section 6); held back in prose, counts only for a client |
+| Seconds to first product appearance chart | 3.4, the chart of whichever learning it proves |
+| Hook variant bars | The hook pattern table, the flow's own (section 6), in 3.11 |
 | The five beat structure and the specs every cut shares | 3.9, structure strip and specs grid |
 | Six storyboards: badge, hook, handle, date, pattern, length, tests, stills or insert tiles, timecodes, duration bar, edit notes | 3.9 |
 | Test table: question, ads, judged on, hypothesis; Scale, Fix, and Stop cards; metric definitions | 3.15 |

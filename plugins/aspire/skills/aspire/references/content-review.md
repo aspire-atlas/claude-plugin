@@ -4,6 +4,55 @@ Shared by the `atlas-content-review` agent and the **Content review** section of
 Holds the setup interview, the per-review questions, the checks, the verdict rule, the
 feedback loop that teaches future reviews, the state written to Atlas, and the page.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Content review (one post against its brief)](#content-review-one-post-against-its-brief)
+- [Why the content review agent exists](#why-the-content-review-agent-exists)
+- [Setup: calibrate the reviewer once, for everyone](#setup-calibrate-the-reviewer-once-for-everyone)
+- [Per-review questions](#per-review-questions)
+- [Main thread: the review](#main-thread-the-review)
+- [The checks](#the-checks)
+- [Verdict](#verdict)
+- [The feedback loop](#the-feedback-loop)
+- [Hard rules for every review](#hard-rules-for-every-review)
+- [State written to Atlas](#state-written-to-atlas)
+- [Feeding the readouts](#feeding-the-readouts)
+- [The page](#the-page)
+- [Atlas quirks that apply here](#atlas-quirks-that-apply-here)
+
+## Content review (one post against its brief)
+
+Trigger when the user asks to review a post or a creator's draft, check content against a brief,
+check whether a post is on brief, run a brand safety check on a post, or approve a draft. Requires
+a brand profile. Interactive only: never schedule it and never run it unattended; without
+`AskUserQuestion`, say content review needs a person to supply the post, and stop. Saved reviews
+still reach the readouts. Before anything, read this file (**Setup**,
+**Per-review questions**, **Main thread: the review**, **The feedback loop**, **Hard rules for
+every review**) and follow it.
+
+### Setup
+
+C1 to C4, one at a time (C3 and C4 may be declined), one batch confirmation. Every question is
+asked exactly as worded in the reference, at most four per call (**Guardrails**). P4, F1, F3 and F4
+confirm writes. An interactive run's reader and save choice go on `lastrun:content-review`
+(**Orchestration contract**, **2**, Saved answers).
+
+### Review
+
+P1 to P3, then P4 (the write confirmation; run only on "Run the review"). Launch
+`atlas-content-review` with `stage`, the normalized deliverable, brief source, post inputs, and
+`recipient` (`performance` or `creative` adds the ad reuse check). Relay the verdict, edits, page
+link, and gaps; offer to draft the edit notes for the creator.
+
+### Feedback: teach the next review
+
+Every review ends with F1 to F4 (the agent's or yours, before anything else). F4 saves hard rules
+as `review:rule-*` red lines. Changes to saved rules are the main thread's, one Destructive tools
+confirmation each. Never save a lesson or rule the user has not seen worded.
+
 ## Why the content review agent exists
 
 The creator brief says what a piece of content must do. Content review checks one post
@@ -49,7 +98,7 @@ Rules:
   a fresh setup item.
 - Write C1's options from the brand's context. If no `red_line` is saved, say so in C1's
   question text ("No red lines are saved yet, so option 2 blocks nothing").
-- C3's option list starts from what exists: when `guideline` records or the
+- C3's option list starts from what exists: when `guideline` records (never `lastrun:` keys) or the
   `voice_and_content_ops` brand fact are saved, summarize them in one line in the question
   text so the user sees what "saved guidelines" means.
 - C4: call `get_brand_instruction` with `agentType: "brand_safety"` first. If an instruction
@@ -92,11 +141,13 @@ text, whatever the source:
   finding. If the user has the brief's page link, read it with the Artifact tool's `read`
   action for the full spec grid.
 - **Campaign brief:** `campaign:{slug}-brief` plus `campaign:{slug}-criteria`.
-- **Creator ad campaign brief:** on the `cas-campaign-{profile}-{slug}` prefix (`cas-campaign.md`,
+- **Creator ad campaign brief:** on the `cas-campaign-{profile}-{slug}` prefix (**CAS campaign**,
   **Working state**), the creator's concept from their newest `roster` finding, then the newest
   `brief` finding for that concept with `locked: true`. When the creator's newest
   `brief-revision` is approved and `locked`, it replaces the concept's brief for that creator.
-  Read the brief page (`briefPage`) with the Artifact tool's `read` action for the full brief.
+  The finding's `content` is the full brief (**CAS campaign**, **Working state**, **The brief's
+  content**); only a finding with no `content` sends you to the brief page (`briefPage`), read
+  with the Artifact tool's `read` action.
   Never treat `campaign:{slug}-cas`, `-lane-*`, `-terms` or `-decision-defaults` as guidelines.
 - **Pasted or attached:** read it as given.
 
@@ -349,7 +400,7 @@ block a post. Hard rules are `red_line` calibrations scoped to content review.
 
 **Only content review applies them.** A `red_line` whose key starts with `review:` is a hard
 rule for reviews. The readouts' red-line scan, creator discovery, the creator brief, and the
-account analyst skip it (see `atlas-tools.md`, calibration kinds). A rule the brand wants
+account analyst skip it (see **Atlas tools**, calibration kinds). A rule the brand wants
 everywhere is saved as an ordinary `redline:*` record instead, through onboarding.
 
 **Where proposals come from.** After each review the agent proposes up to four candidate hard
@@ -431,9 +482,9 @@ summarizes them.
 these keys, stored verbatim: `findingType` (from the table), `reviewedAt` (full UTC timestamp
 from the shell clock, `date -u +%FT%TZ`, the same value on every finding of one review), `verdict`, `dimension`,
 `check`, `result`, `severity`, `stage` (`draft` or `published`), `creator` (the handle),
-`deliverable`, `lessonsApplied[]`, and `recipient` (`recipient-lens.md`). An Ad reuse result is
+`deliverable`, `lessonsApplied[]`, and `recipient` (**Recipient lens**). An Ad reuse result is
 one `went_well` or `needs_improvement` finding with `findingType: "check"`, `dimension:
-"ad-reuse"`, and the hook score, pattern, cuts, and the retention keys from `ad-reuse.md`, **Findings**, in `detail`; it is never an edit. Supply an `idempotencyKey` per finding.
+"ad-reuse"`, and the hook score, pattern, cuts, and the retention keys from **Ad reuse**, **Findings**, in `detail`; it is never an edit. Supply an `idempotencyKey` per finding.
 
 The verdict finding also carries what the readouts need, so they never have to re-derive a
 review: `postedAt` and `permalink` (the post's own URL) for a published post, `reviewPage`
@@ -486,9 +537,9 @@ One page per review, with a new path each time so earlier reviews stay linkable.
 
 1. **Verdict banner.** Verdict with its go or no-go, one-line reason, the highest severity,
    counts of Pass / Flag / Fail / Can't check per dimension, stage chip (draft or published),
-   brief and deliverable name, and the "Prepared for" chip (`recipient-lens.md`). For the
+   brief and deliverable name, and the "Prepared for" chip (**Recipient lens**). For the
    `brand` lens the go or no-go is the largest element on the banner. The banner is the page's top
-   element, so the animated Aspire Atlas mark (`artifact-standard.md`) sits at the far right of the
+   element, so the animated Aspire Atlas mark (**Artifact standard**) sits at the far right of the
    banner row and never shrinks the go or no-go.
 2. **The brief.** The brief's title, brand, creator and deliverable, then a two-column table
    with every field of the normalized deliverable in the brief's own words. Number the
@@ -504,7 +555,7 @@ One page per review, with a new path each time so earlier reviews stay linkable.
 5. **Brief adherence**, **Brand guidelines**, **Brand safety.** One row per check: result
    chip, severity, check name, evidence, fix. Fails first, then Flags, then Can't check, then
    Passes collapsed.
-5b. **Ad reuse**, only when the check ran (`ad-reuse.md`): the hook score, the pattern, the
+5b. **Ad reuse**, only when the check ran: the hook score, the pattern, the
    first-three-seconds frame strip, and the cut list rows with rights. Labelled as advice that
    does not affect the verdict. For the `performance` or `creative` lens it moves up to follow
    the verdict banner.
@@ -512,9 +563,9 @@ One page per review, with a new path each time so earlier reviews stay linkable.
    repeated overturns.
 7. **Footer.** The brief source, "numbers come from Atlas as of {timestamp}", what was not
    checkable and why, and a note that images are a snapshot. After these, the page ends with the
-   artifact-standard footnote (`artifact-standard.md`).
+   artifact-standard footnote (**Artifact standard**).
 
-Page mechanics: every image follows `creator-card.md`, **Images**: sized to its rendered box
+Page mechanics: every image follows **Creator card**, **Images**: sized to its rendered box
 at 2x, never upscaled, LANCZOS, WebP or JPEG at quality 85 or more, and placed with `width` and
 `height` at half its pixels. The post under review is the page's main image: for a published
 post, embed it with the snippet, page profile, as `detail@{W}x{H}` for its panel
@@ -524,12 +575,12 @@ post, embed it with the snippet, page profile, as `detail@{W}x{H}` for its panel
 (a 160px frame is 320px wide, a 480px draft panel 960px), never past the file's own size, and
 encode them at the same settings. The creator card's images use the snippet's `avatar` and
 `thumb` kinds. Keep the images under 8MB and the page under 10MB; past that, embed every other
-frame of a long strip before lowering quality. Load `artifact-design` before building. Apply the saved brand theme (`theme:brand`) per `theme.md`, **Applying the theme**; without one, the design here stands. The
+frame of a long strip before lowering quality. Load `artifact-design` before building. Apply the saved brand theme (`theme:brand`) per **Theme**, **Applying the theme**; without one, the design here stands. The
 verdict banner and the result chips keep their semantic colors.
 
 ## Atlas quirks that apply here
 
-Inherited from `creator-brief.md`: project the `media` and `instagram.account` containers,
+Inherited from **Creator brief**: project the `media` and `instagram.account` containers,
 not leaf URLs. Published pages cannot load `cdn.aspire.io` images, so embed them. New for content
 review:
 

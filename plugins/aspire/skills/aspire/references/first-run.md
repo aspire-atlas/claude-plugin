@@ -9,6 +9,20 @@ the page leads the phases, it never replaces or skips one.
 The page is about Atlas, not the brand, so it holds no Atlas data beyond the organization and
 profile names, writes nothing, and needs no confirmation.
 
+A bold section name with no file beside it (**Artifact standard**, **Theme**) is another part of this skill;
+`SKILL.md`'s **Sections** index names its file.
+
+## Contents
+
+- [1. When to show it](#1-when-to-show-it)
+- [2. Order with Phase 1 and Phase 2 + 3](#2-order-with-phase-1-and-phase-2--3)
+- [3. Unconfigured: the existing route, plus the Phase 5 read](#3-unconfigured-the-existing-route-plus-the-phase-5-read)
+- [4. What the page may use from `get_status`](#4-what-the-page-may-use-from-get_status)
+- [5. Building and publishing](#5-building-and-publishing)
+- [6. What to say in chat](#6-what-to-say-in-chat)
+- [7. Showing it again](#7-showing-it-again)
+- [8. The page](#8-the-page)
+
 ## 1. When to show it
 
 Show the page when all of these hold:
@@ -39,11 +53,11 @@ set up gets the status summary, as today, and sees the page when they ask what /
    it would delay the one thing the user has to do.
 2. Phase 1 live: the one line that Atlas is connected, then `get_status` (Phase 2 + 3 step 1).
    An auth error renders the connector card per step 2, and no page.
-3. Settle the organization (step 3). With several, the org picker comes first, so the page
-   names the right one.
+3. Settle the organization (step 3). With several, the org selector comes first and alone:
+   the reply ends there, and the page waits for the pick, so it names the right one.
 4. Route (step 4), and run the check in **3**. Unconfigured: publish the page (**5**), say the
-   one line (**6**), then continue at the phase the route names. Configured: no page; the
-   status summary as today.
+   one line (**6**), then continue at the phase the route names. Configured: no page; a bare
+   run goes straight to the organization dashboard, any other the status summary as today.
 5. A "connected" reply that resumes Phase 1 follows the same order from the top.
 
 ## 3. Unconfigured: the existing route, plus the Phase 5 read
@@ -99,7 +113,7 @@ without a connection (**7**), use none of them.
    into the template, 40px, with its `role` and `aria-label`, a 1px `var(--border)` outline, never
    recolored). **Deliberate variant:** on this page the mark sits at the upper left, at the start of
    the header, because the page has no brand logo to take that corner and was asked for this
-   placement; [`artifact-standard.md`](artifact-standard.md) puts it at the top right on every other
+   placement; **Artifact standard** puts it at the top right on every other
    page, and nothing else should copy this. The footer keeps its two existing lines and adds the
    "No Atlas data on this page." source line for pages with no Atlas data (section 3 there). When
    the logo asset is regenerated, paste the new file into the template in the same change.
@@ -117,9 +131,14 @@ No snippet runs for this page: it embeds no images and fetches nothing.
 
 ## 6. What to say in chat
 
-After the page, one line with the link, nothing more. Do not restate the page's content.
+After the page, one line with the link, then the always-allow block from SKILL.md **1.6**,
+nothing more. Do not restate the page's content.
 
 > New to Atlas? This page covers what /aspire can do and the setup ahead: {link}
+
+The link line never mentions cards. The first reply that lists creators, posts, or ads (Phase
+6's first insights, or an earlier search) carries the cards offer (**Orchestration contract**
+**12**).
 
 Then continue straight into the next phase, in the same reply: the first question of the phase
 **3** names (P1, C1 or the profile question, or the existing summary followed by Phase 5's
@@ -128,7 +147,9 @@ first unanswered question), asked with `AskUserQuestion` as that phase says.
 Text fallback, when there is no page:
 
 > /aspire sets up Aspire Atlas for your brand in five steps: connect, brand profile, social
-> accounts, brand context, first insights. Ask "what can /aspire do" any time for the full list.
+> accounts, brand context, first insights. Set Aspire Atlas's tools to Always allow in your
+> connector settings so scheduled runs finish on their own. Ask "what can /aspire do" any time
+> for the full list.
 
 ## 7. Showing it again
 
@@ -144,7 +165,7 @@ Text fallback, when there is no page:
 - Never blocks onboarding: whatever happens to the page, the next phase still starts.
 
 **The dashboard.** On a configured organization a bare `/aspire:aspire` opens the organization
-dashboard instead (`org-dashboard.md`), and this page is not shown. An unconfigured one gets this
+dashboard instead (**Organization dashboard** in `SKILL.md`), and this page is not shown. An unconfigured one gets this
 page first, and the dashboard is offered once brand context is saved.
 
 ## 8. The page
@@ -153,7 +174,9 @@ Sections, in order: header (the mark at upper left, what /aspire is, and a sampl
 dashboard), how to get started (the five real phases as a stepper, at most three cards per row,
 each with a small sample screen and what /aspire asks), what you can do (job cards grouped by who
 they are for, each with a thumbnail of the page it makes), what stays safe (a confirm-before-write
-flow, then icon rows, true to `SECURITY.md`), and try these first (five prompts). Every figure is
+flow, then icon rows, true to `SECURITY.md`), seeing results (the three phrases for cards and
+palette previews, one line each, and a link to the cards and pages guide), and try these first
+(five prompts). Every figure is
 drawn from invented data and carries a "Sample" tag; illustrations are CSS and inline SVG, marked
 `aria-hidden`, with no images and no script beyond the copy buttons. The page never names Claude, a
 model, or an assistant: the copy says "/aspire". Copy is fixed: keep it plain and change only the
@@ -163,7 +186,7 @@ the same change.
 Never add a support-only connector or skill, prices, customer names, or internal tools to this
 page.
 
-Paste the print block from `artifact-standard.md`, section 6, as the last style in the `<head>`, with
+Paste the print block from **Artifact standard**, section 6, as the last style in the `<head>`, with
 the title `Atlas Starter Guide`, so the guide saves to PDF cleanly. The copy buttons carry
 `data-print="hide"`.
 
@@ -198,7 +221,7 @@ p{margin:0}
 code{font-family:var(--font-mono)}
 svg{display:block}
 .eyebrow{font-family:var(--font-mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--brand-ink)}
-/* The mark: upper left on this page (a deliberate variant of artifact-standard.md), 40px, never recolored. */
+/* The mark: upper left on this page (a deliberate variant of the artifact standard), 40px, never recolored. */
 .hero{display:grid;gap:24px}
 .top{display:flex;align-items:center;gap:14px}
 .mark{flex:none;width:40px;height:40px;border:1px solid var(--border);border-radius:9px}
@@ -349,11 +372,11 @@ footer{border-top:1px solid var(--border);padding-top:20px;color:var(--muted);fo
     <p>Type /aspire (or /aspire:aspire). It walks through these steps in order and picks up where you left off. Every question comes with options to pick from. Each small screen below is a sample of what you will see.</p>
   </div>
   <ol class="steps">
-    <li class="step" id="step-connect"><div class="step-head"><span class="num">1</span><h3>Connect Aspire Atlas<span class="next" hidden>Next up</span></h3></div><figure class="screen" aria-hidden="true"><span class="sample">Sample</span><small>Aspire Atlas</small><b>Not connected yet</b><span class="btn">Connect</span></figure><p>/aspire checks the connection. If it isn't on, you get a Connect button.</p><p class="asked"><strong>You'll be asked:</strong> to sign in with your Atlas account, and which organization to use if you belong to more than one.</p></li>
+    <li class="step" id="step-connect"><div class="step-head"><span class="num">1</span><h3>Connect Aspire Atlas<span class="next" hidden>Next up</span></h3></div><figure class="screen" aria-hidden="true"><span class="sample">Sample</span><small>Aspire Atlas</small><b>Not connected yet</b><span class="btn">Connect</span></figure><p>/aspire checks the connection. If it isn't on, you get a Connect button.</p><p class="asked"><strong>You'll be asked:</strong> to sign in with your Atlas account, and which organization to use if you belong to more than one.</p><p>Then set Aspire Atlas's tools to Always allow in your connector settings, so scheduled runs finish without waiting on you. Saves to Atlas still need your approval, in chat or in a schedule's setup.</p></li>
     <li class="step" id="step-profile"><div class="step-head"><span class="num">2</span><h3>Set up your brand profile<span class="next" hidden>Next up</span></h3></div><figure class="screen" aria-hidden="true"><span class="sample">Sample</span><small>Brand name</small><span class="field">Northwind Coffee<span class="caret"></span></span><span class="btn">Create profile</span></figure><p>The profile holds your accounts and everything Atlas learns about the brand, for your whole team.</p><p class="asked"><strong>You'll be asked:</strong> the brand name as customers know it, then to confirm creating the profile.</p></li>
     <li class="step" id="step-accounts"><div class="step-head"><span class="num">3</span><h3>Link Instagram, TikTok, or YouTube<span class="next" hidden>Next up</span></h3></div><figure class="screen" aria-hidden="true"><span class="sample">Sample</span><small>Accounts to link</small><span class="pick on"><i></i>Instagram</span><span class="pick on"><i></i>TikTok</span><span class="pick"><i></i>YouTube</span></figure><p>You sign in to each network in your browser, and Atlas starts reading your posts. Instagram and TikTok feed search and hashtag tracking.</p><p class="asked"><strong>You'll be asked:</strong> which accounts to connect.</p></li>
     <li class="step" id="step-context"><div class="step-head"><span class="num">4</span><h3>Tell Atlas about the brand<span class="next" hidden>Next up</span></h3></div><figure class="screen" aria-hidden="true"><span class="sample">Sample</span><small>Your goal for the next 90 days</small><span class="chips"><span>Grow reach</span><span>Drive sales</span><span>Skip</span></span></figure><p>About seven short questions, saved to the brand's Atlas memory so teammates and later runs never ask again. Some offer to research the answer on the web; you see what it found before anything is saved. Then two optional offers: your brand's colors on Atlas pages, and your creator rates.</p><p class="asked"><strong>You'll be asked:</strong> what you sell and to whom, your role, competitors to watch, your goal for the next 90 days, any hard no's, creators you already work with, and hashtags to track. Most have a Skip option.</p></li>
-    <li class="step" id="step-insights"><div class="step-head"><span class="num">5</span><h3>Get first insights<span class="next" hidden>Next up</span></h3></div><figure class="screen" aria-hidden="true"><span class="sample">Sample</span><small>Three pushes for next week</small><ol class="pushes"><li>Reel: behind the scenes</li><li>Carousel: top five picks</li><li>Story: a poll</li></ol></figure><p>/aspire reviews your linked accounts and shows what's working, with three content pushes for next week. The findings are saved in Atlas for your team.</p><p class="asked"><strong>You'll be asked:</strong> which account to review: your own, or another handle you name.</p></li>
+    <li class="step" id="step-insights"><div class="step-head"><span class="num">5</span><h3>Get first insights<span class="next" hidden>Next up</span></h3></div><figure class="screen" aria-hidden="true"><span class="sample">Sample</span><small>Three pushes for next week</small><ol class="pushes"><li>Reel: behind the scenes</li><li>Carousel: top five favorites</li><li>Story: a poll</li></ol></figure><p>/aspire reviews your linked accounts and shows what's working, with three content pushes for next week. The findings are saved in Atlas for your team.</p><p class="asked"><strong>You'll be asked:</strong> which account to review: your own, or another handle you name.</p></li>
   </ol>
 </section>
 
@@ -425,6 +448,16 @@ footer{border-top:1px solid var(--border);padding-top:20px;color:var(--muted);fo
     <li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg><p>Scheduled runs do only what you approved when you set them up. They never ask questions or delete anything, and deliver only to the Slack channels and email recipients you saved. If you turn on the hourly next-actions run, it carries out only what an Editor approved on its page, and only Atlas records and mailbox drafts. It never sends or orders.</p></li>
     <li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><p>Pages /aspire publishes start private. You decide who to share them with.</p></li>
   </ul>
+</section>
+
+<section aria-labelledby="h-see">
+  <div class="sec-head"><h2 id="h-see">Seeing results</h2><p>Answers come as text. Cards and previews appear when you ask.</p></div>
+  <ul class="prompts">
+    <li class="prompt"><code>show cards</code><button class="copy" type="button" data-print="hide" data-copy="show cards">Copy</button><p class="why">Shows the creators, posts, or ads from the last answer as cards, up to 12 at a time.</p></li>
+    <li class="prompt"><code>always show cards</code><button class="copy" type="button" data-print="hide" data-copy="always show cards">Copy</button><p class="why">Remembers your choice, so every search shows cards without asking. "never show cards" turns the reminder off.</p></li>
+    <li class="prompt"><code>show the palettes</code><button class="copy" type="button" data-print="hide" data-copy="show the palettes">Copy</button><p class="why">Draws the brand color options while you set up your page theme.</p></li>
+  </ul>
+  <p>More on cards, which apps draw them, and pages: <a href="https://atlas.aspire.io/docs/plugin/guides/cards-and-pages/">the cards and pages guide</a>.</p>
 </section>
 
 <section aria-labelledby="h-try">
