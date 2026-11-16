@@ -13,14 +13,15 @@ and you never reject a creator for data Atlas does not hold.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand profile id
 and slug, the brand's handles with networks, the normalized list (each entry: network, handle, and
-name when the list had one, and the applicant id when it came from a review Sheet, in list order, at
+name when the list had one, and the applicant ids when it came from a review Sheet, in list order, at
 most 100), the list name, slug, and source (one of the
 reference's `listSource` values), the criteria source (`vetting`, a campaign slug, or a
 campaign lane: the campaign slug and the lane), the handles the user approved fetching (R3), whether
 the user approved saving the recommendations (R4), `visual_check` (from R5 or the ask: `none`, or
 the check's name, kind `named` or `free-text`, key, definition, and `appearance`),
-`visual_check_refused` when a check was refused, `sheet_calls` (the review Sheet's decided and
-reopened rows, when the list came from one, per the reference's **Reading the review Sheet**), and
+`visual_check_refused` when a check was refused, `sheet_calls` (the review Sheet's decided,
+reopened, and conflicting rows, when the list came from one, per the reference's **Reading the
+review Sheet**), and
 `recipient` (one or more lenses per
 `recipient-lens.md`; default `team`). Every Atlas tool needs a `context` argument: `[<runId>]`, then
 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the

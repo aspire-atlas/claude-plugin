@@ -190,17 +190,22 @@ CSV's handle column and normalize it per **Getting the list**.
 
 **One row per creator.** When several rows share a network and handle (one creator who applied
 twice), fold them into one row that keeps all their applicant ids, so the checks below match any
-of them. Its Team call comes from one of the rows: a decided row over an undecided one; then the
-row whose applicant id the creator's newest `feedback` finding carries; then the latest date in the
-Applied column **The review Sheet** writes. Decided rows with different calls and nothing to choose
-between them are a conflict: offer neither call, and name the rows in F1. List the other rows as
-duplicates with the unreadable rows.
+of them. The folded row is decided when any of its rows is, with this Sheet call:
 
-Decided rows go through **Check what Atlas holds** with the list, so each Sheet call has its
-account id. They are never fetched and never counted in R3.
+- The decided rows agree: that call.
+- They disagree, and exactly one of their calls differs from the creator's newest `feedback`
+  finding: that call, because the difference is the team's edit.
+- Otherwise the row is a **conflict**: neither call is offered or saved, and the creator is not
+  vetted. It goes in `sheet_calls` marked conflict with both calls, is left out of Copy
+  decisions, and is listed with the unreadable rows, naming both rows, in F1 or in the one-line
+  stop message.
+
+Every list entry and `sheet_calls` entry from the Sheet carries its row's applicant ids (all of
+them, for a folded row). Decided rows go through **Check what Atlas holds** with the list, so each
+Sheet call has its account id. They are never fetched and never counted in R3.
 
 **Which Sheet calls are new.** Compare each decided row's Sheet call with the newest `feedback`
-finding carrying one of its applicant ids for the same creator (`entityId`): the last call saved
+finding sharing one of its applicant ids for the same creator (`entityId`): the last call saved
 for the row, from the Sheet or from F1 (**State written to Atlas**):
 
 - The same call: unchanged and not offered, so a newer call the team made in chat stands.
@@ -209,13 +214,14 @@ for the row, from the Sheet or from F1 (**State written to Atlas**):
   the creator.
 
 **Reopened rows.** An undecided row (blank or unreadable) is **reopened** when the creator's newest
-`feedback` finding of any kind carries one of the row's applicant ids and `sheetCall: true`: the team
-took back in the Sheet a call saved from there, and made none since in F1 or chat. It is vetted
-like any undecided row, and the team's F1 answer on it replaces the old call.
+`feedback` finding of any kind shares one of the row's applicant ids and has `sheetCall: true`:
+the team took back in the Sheet a call saved from there, and made none since in F1 or chat. It is
+vetted like any undecided row, and the team's F1 answer on it replaces the old call.
 
 **`sheet_calls`** go to the agent: for each decided row, the handle, network, account id,
-applicant id, Sheet call, Note, Recommendation, and whether it is new; and for each reopened row,
-the handle, network, account id, and applicant id, marked reopened. Every batch of a split list
+applicant ids, Sheet call, Note, Recommendation, and whether it is new; for each reopened row, the
+handle, network, account id, and applicant ids, marked reopened; and for each conflict, the same
+plus both calls, marked conflict. Every batch of a split list
 gets them, for its page; only the first batch offers the new ones in F1.
 
 **F1 with Sheet calls.** F1's question adds "and save the {k} new calls from the review Sheet" and
@@ -226,7 +232,7 @@ s3"). Each Note is the user's reason for its call, for F2 and F3.
 
 **When every row is decided**, the list is empty. After **Check what Atlas holds** (**Main
 thread: the run**, step 2), skip R2 to R5, the launch, and the page. With no new Sheet calls, say
-so in one line and stop. Otherwise ask a Sheet-only F1: "Save the {k}
+so in one line, naming any conflicts, and stop. Otherwise ask a Sheet-only F1: "Save the {k}
 new calls from the review Sheet to {brand}'s Atlas?" with 1) Save them (Recommended); 2) Change
 some (type them, for example "reject s2, drop s3"); 3) Decide later (nothing is saved). Read
 `vettedAt` from the shell clock once, write what it saves under this run's `runKey` with no
@@ -250,7 +256,8 @@ takes up to four questions), skipping any the user already answered.
 
 R3 is asked only after the main thread has checked which handles Atlas holds
 (**Main thread: the run**, step 2), and only when some on the list are missing. R3 option 1 is
-the approval for `lookup_creators` on exactly those handles, and the agent does not ask again. R4 is the write
+the approval for `lookup_creators` on exactly those handles, and the agent does not ask again.
+R4 is the write
 confirmation for the recommendation findings; the feedback answers carry their own.
 
 R5 picks the visual check (**4. Visual check**). An option picked is a **named** check; words typed
@@ -648,8 +655,8 @@ or `retract_calibration`), one per call. A proposal the user declines stays unsa
 
 **Copy decisions.** The team's calls for this list as text the user can copy: one **call line**
 (**Reading the review Sheet**) per creator, without notes, grouped Approve, Maybe, Reject. It
-includes every Sheet call, and leaves out a reopened creator (**Reading the review Sheet**) until
-F1 saves a new call for them. With no team calls yet it is the recommendations, headed
+includes every Sheet call, and leaves out a conflict and a reopened creator (**Reading the review
+Sheet**) until F1 saves a new call for them. With no team calls yet it is the recommendations, headed
 "Recommendations, not yet the team's calls". The main thread gives it in chat after the last
 batch's F1, covering the whole list, with "(Sheet only)" after a Sheet call that is not saved to
 Atlas and the unreadable Sheet rows under it. The page carries it as a button (**The page**,
@@ -746,10 +753,12 @@ comes from is on the run summary), `listName`, `listSource` (`csv`, `pasted`,
 `aspire-app`, `review-sheet`, or `cas-lane`), `campaign` when R2 named one, `reviewPage`, and
 `recipient` (**Recipient lens**). A
 `feedback` finding adds `userVerdict` (`approve`, `maybe`, or `reject`), `agentVerdict`, and the
-user's words verbatim; one for a creator whose
-list came from a review Sheet also adds the row's `applicantId`. One saved from a Sheet call also adds
-`sheetCall: true`, and takes the Sheet's Recommendation as `agentVerdict` when the creator was not
-vetted in this run, and its Note as the user's words. Supply an `idempotencyKey` per finding
+user's words verbatim; one for a creator whose list came from a review Sheet also adds
+`applicantIds`, all of the row's applicant ids. One that saves a Sheet call as it stands in the
+Sheet also adds `sheetCall: true`; a Sheet call the user changed in F1 option 2 is saved without
+it, as an F1 answer. One saved from a Sheet call takes the Sheet's Recommendation as `agentVerdict`
+when the creator was not vetted in this run, and its Note as the user's words. Supply an
+`idempotencyKey` per finding
 (`vet-{list-slug}-{entityId}-{findingType}`, and for a `feedback` finding
 `vet-{list-slug}-{entityId}-feedback-{vettedAt}`, so a call changed back to an earlier one in a
 later run is still written). Whoever writes the F1 findings uses the run's `vettedAt`: the agent's
@@ -806,7 +815,8 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
    sits on the edge of), each proposed change to the criteria with the finding behind it, and,
    after a visual check, the creators whose read is Low confidence, to confirm by eye.
    Questions that settle one creator stay on that creator's card. Below them, a **Copy
-   decisions** button with the page's text from **Copy decisions** (**The feedback loop**). The button and the cards' Team chips show the
+   decisions** button with the page's text from **Copy decisions** (**The feedback loop**). The
+   button and the cards' Team chips show the
    calls as they stood when the page was published; calls F1 saves afterwards show on the list's
    next republish.
 8. **Next steps** (3.6): in order, each with its week, the creators it covers by number, and
