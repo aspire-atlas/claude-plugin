@@ -59,8 +59,9 @@ actions page and its hourly run. That run is one more caller of this contract.
    the run. A code marked "waiting" has no agent: say in one line what it waits on and offer the
    nearest code that can run.
 4. **Ask once.** The setup reply (**2**).
-5. **State any spend.** When the agent's level is `spend` (**7**) and this run will spend, the setup
-   reply's Credits question says the cost before launching (**2**; **7**, Spend). Say it once.
+5. **State any spend.** When the agent's level is `spend` (**7**) and this run will spend, say
+   the cost before launching (**7**, Spend), once: for fetches the setup reply's Credits question
+   says it (**2**); for discovery work or money, one line before the launch.
 6. **Launch** with the launch block (**5**) in a subagent (**Running agents**). Up to three at
    once (**8**). A run that publishes a new page launches first to draft its storyline, asks the
    person to confirm it, and only then launches the build (**2**, **The storyline**).
@@ -166,16 +167,18 @@ No heading, no table, no bold, and no tool, record, or agent name.
    | The run | The line names |
    | ------- | -------------- |
    | Builds a new page, interactive (**The storyline**) | "the page's three main points, before I build it" |
-   | Asks the Credits question (the agent's level is `spend` and this run will spend) | "fetches on your Atlas credits, capped in the question below" |
+   | Asks the Credits question (the agent's level is `spend` and this run will fetch) | "fetches on your Atlas credits, capped in the question below" |
+   | The agent's level is `spend` and this run will spend on something other than fetches (discovery work, money) | "the cost of {the discovery work, the payment}, which I state before I start" |
    | Reads an account this session already holds as behind its pace, in a run **Page standard**, section 9.5, says asks first | "a refresh of {@handle}, which is out of date (the refresh is free and the new posts it collects use credits)" |
    | Asks the Save question, in this reply or in the storyline call | "saving {what the Save question names: the findings, the ranked posts} to Atlas" |
    | The agent's row in **7** names mailbox drafts | "drafts in your mailbox, which send nothing" |
    | The flow sends its page to Slack or email and no routing is saved | "sending the page to {Slack or email}" |
    | The agent's level is `send` | "each {what the agent's row in **7** sends: message, order, or discount code}, one at a time, after the run" |
-   | The flow's section has a confirmation of its own that this run will reach (**7**, step 3: outreach's O1, a Meta Ads write, and the like) | What that question approves, in a few plain words: "writing the messages and saving them as drafts"; "each change to your Meta ads, one at a time" |
-   | The person has no `user:usr-{id}` record yet (**1**, step 1), so this is their first run; last. The plugin cannot read the host's Always allow setting (SKILL.md, **1.6 Always allow Atlas tools**), so later runs leave this out | As a closing sentence: "Claude itself may also ask to let Atlas's tools run" |
+   | The flow's section has a confirmation of its own that this run will reach and no row above already names (**7**, step 3). Where the flow's question is the confirmation for a save or a send, the line names it once, by the row above | What that question approves, in a few plain words |
+   | Last: the session's first setup reply (the run log holds no Runs row yet, **9**). The plugin cannot read the host's Always allow setting (SKILL.md, **1.6 Always allow Atlas tools**), so it says this once a session and not again | As a closing sentence: "Claude itself may also ask to let Atlas's tools run" |
 
-   A run that reaches no row says "This run asks you to approve nothing." The line only
+   A run that reaches no row above the last says "This run asks you to approve nothing.", then
+   the last row's sentence when it applies. The line only
    announces: each approval is still asked by its own question when it comes due (**7**).
 
 **An approval the line did not name.** When a packet brings a proposal the line did not name (a
@@ -368,9 +371,8 @@ choice as approval: it saves only under the standing approval its flow's setup g
 **Pre-filled, with the source.** The Heard question states each pre-filled answer and where it
 came from, so the person confirms rather than answers: "Reader: performance, as saved for ad
 reuse. Scope: Instagram and TikTok, last 30 days, as saved. Findings: page only, as saved. Right?"
-Say "as you prefer for this question" for the person's default and "the default for this question" for
-**3**. When one setup reply covers several questions (**8**), name the question in a few of its
-own words instead: "as you prefer for the ads question". The Scope question is skipped for a scope a saved record supplies, and the Save question
+Say "as you prefer for this question" for the person's default and "the default for this
+question" for **3**. The Scope question is skipped for a scope a saved record supplies, and the Save question
 for a saved "page only"; the Heard question carries them, its "Yes, run it" confirms them, and its
 free text field changes them. A saved "save to Atlas" never skips the Save question: it is still
 asked, with "Save to Atlas" as its (Recommended) option, described "as saved for {the flow}", so
@@ -440,8 +442,7 @@ Never guess it. Write once, after the answers and before the launch:
   detail.
 
 Say where it went in one line, naming the record that changed: "Saved for everyone: the daily and
-weekly reports' readers now lead with growth." or "Saved for you: this question goes to growth." (with
-several questions in the run, "Saved for you: the ads question goes to growth.") A run that
+weekly reports' readers now lead with growth." or "Saved for you: this question goes to growth." A run that
 keeps the saved answers writes nothing, so a `lastrun:` record holds the answers as last saved,
 and `at` is when they were saved. Never ask "Remember" in an unattended run, and an unattended run
 writes neither record.
@@ -681,7 +682,9 @@ the next interactive session.
 
 When a person asks several questions in one message, map each to a code and run up to three
 agents in parallel. One setup reply covers all of them (the Heard question lists each question in its
-wording on its own line), then each launches with its own launch block. A fourth waits until one returns. Two
+wording on its own line), then each launches with its own launch block. Wherever a line of that
+reply or of what follows it would say "this question", name the question in a few of its own
+words ("as you prefer for the ads question"). A fourth waits until one returns. Two
 codes that share an agent, or where one needs the other's result (**3**), run one after the other.
 **Running agents**, step 5, still holds: two runs never write the same record.
 

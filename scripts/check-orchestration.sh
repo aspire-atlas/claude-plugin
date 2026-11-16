@@ -74,9 +74,10 @@ done <<<"$levels"
 PAGE=$P/skills/page-standard/SKILL.md
 cited=$(section 2 | awk -F'|' '/\| Connection \| What it adds \|/{f=1;next} f&&/^ *\| -/{next} f&&!/^ *\|/{f=0} f{print $4}' | tr ';' '\n' | sed -E 's/^ +//; s/ +$//' | sort -u)
 [ -n "$cited" ] || err "the contract's section 2 has no connections table (Before the questions)"
+sec8=$(awk '/^## 8\. /{f=1;next} f&&/^## /{f=0} f' "$PAGE")
 while IFS= read -r row; do
   [ -n "$row" ] || continue
-  awk '/^## 8\. /{f=1;next} f&&/^## /{f=0} f' "$PAGE" | grep -qF "| $row | " || err "orchestration.md section 2 cites the section 8 row '$row', which section 8 of $PAGE does not have"
+  grep -qF "| $row | " <<<"$sec8" || err "orchestration.md section 2 cites the section 8 row '$row', which section 8 of $PAGE does not have"
 done <<<"$cited"
 
 # Agents the question codes (3) and shortcuts (4) route to.
