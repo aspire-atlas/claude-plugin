@@ -166,5 +166,5 @@ PY
 )
 if [ -n "$redlines" ]; then echo "$redlines"; fail=1; fi
 
-[ "$fail" -eq 0 ] && echo "OK   every agent carries the orchestration contract and has a permission level; routes and shortcuts resolve; every drop list drops lastrun: and applicant-review: keys, and every `red_line` reader drops applicant-review: keys"
+[ "$fail" -eq 0 ] && echo "OK   every agent carries the orchestration contract and has a permission level; routes and shortcuts resolve; every drop list drops lastrun: and applicant-review: keys, and every red_line reader drops applicant-review: keys"
 exit "$fail"
