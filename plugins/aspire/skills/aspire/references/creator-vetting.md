@@ -101,7 +101,7 @@ Rules:
 - V3: call `get_brand_instruction` with `agentType: "brand_safety"` first. If an instruction
   exists, quote its first line in the question text and make option 1 "Use the saved brand
   safety instruction (Recommended)". Never call `set_brand_instruction` from this flow.
-- Name the saved `red_line` and `competitor` records in V3's and V4's question text, so the
+- Name the brand red lines and saved `competitor` records in V3's and V4's question text, so the
   user sees they already apply and only adds to them.
 - Confirm the batch once with `AskUserQuestion` ("Save this vetting setup for {brand}? Every
   teammate's vetting will use it."), then write the records. A `key-exists` follows the
@@ -175,9 +175,10 @@ takes up to four questions), skipping any the user already answered.
 
 **R2 options.** Four at most, two at least:
 
-1. When vetting setup is missing and the profile has an applicant review, or the list read at R1
-   is a campaign's applicants (**Applicant reviews**), ask R2 before V1 to V4, and run V1 to V4 only
-   if R2 picks {brand}'s vetting criteria.
+1. When vetting setup is missing and R2 has anything besides {brand}'s vetting criteria to offer
+   (a saved `campaign:*-criteria`, an applicant review, or a list read at R1 that is a campaign's
+   applicants, **Applicant reviews**), ask R2 before V1 to V4, and run V1 to V4 only if R2 picks
+   {brand}'s vetting criteria.
 2. When the list is a campaign's applicants, that campaign's review comes first, marked
    (Recommended), the other reviews follow, and option 1 is left out.
 3. When that campaign has no review yet, "Set up an applicant review for {campaign} first
@@ -234,9 +235,10 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    attached a file or pasted handles). Show what was found and the list name.
 2. **Check what Atlas holds**: `search_creators` with a `terms` filter on the username field,
    one call per network.
-2b. **Vetting setup missing:** ask V1 to V4 now (**Setup**), unless rule 1 of **R2 options**
-   applies; then ask them once R2 picks {brand}'s vetting criteria, before 3c, and skip them when R2
-   picks a campaign or a review.
+2b. **Vetting setup missing:** when R2 has nothing but {brand}'s vetting criteria to offer, ask V1
+   to V4 now (**Setup**). Otherwise (rule 1 of **R2 options**) ask them only once R2 picks
+   {brand}'s vetting criteria, before 3c; a campaign or a review picked at R2 needs no vetting
+   setup.
 3. Ask R2 to R4 in one `AskUserQuestion` call with the **Reading the ask** confirmation (SKILL.md).
    R2 and R3 change what the agent reads, so they go with that confirmation, before the storyline
    draft. On a new page, R4 is answered by the storyline call's Save (**Orchestration contract**,
@@ -331,9 +333,8 @@ and the contact route Atlas holds.
   on one post is a Flag, on three or more posts a Fail. Add your own read of captions and
   transcripts; cite the post. Fewer than 3 analyzed posts: the category screen is "Can't
   check" and says so.
-- **Red lines.** Every `red_line` calibration, except `review:` keys and every
-  `applicant-review:` key (an applicant review run adds its own review's red lines from the
-  launch), with its `action`:
+- **Red lines.** Every brand red line (an applicant review run adds its own review's red lines
+  from the launch), with its `action`:
   `block` fails the creator, `flag` flags it, `escalate` flags it and names the primary
   contact (`user:primary-contact`). One `search_posts` over the 90 days with `queryText` set
   to each `block` or `escalate` red line's body, limit 5, filtered to the creator. Each red

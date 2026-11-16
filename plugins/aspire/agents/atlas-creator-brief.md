@@ -37,7 +37,7 @@ When `brief_mode` is `creator-ads`, follow **Creator-ads mode** in the reference
 ### 1. Load tools and context
 
 - `ToolSearch` with `select:` for `get_brand_context`, `search_calibrations`, `list_post_search_fields`, `search_posts`, `list_creator_search_fields`, `search_creators`, `search_creator_marketplace`, `get_job_status`, `list_creator_marketplace_labels`, `search_insights`, `append_insights`, `report_checkpoint` under the given prefix.
-- `search_calibrations` as above. Extract: brand summary, 90 day goal, primary contact, competitors (exclusion list), red lines, guidelines (none of the keys dropped above), partners, tracking scope (hashtags).
+- `search_calibrations` as above. Extract: brand summary, 90 day goal, primary contact, competitors (exclusion list), brand red lines, guidelines (none of the keys dropped above), partners, tracking scope (hashtags).
 - Derive the **brand targeting** (buyer, category, off-audience signals, 3 to 6 search keywords) from those calibrations per the Fit rubric in the reference file. If `brand:summary` is missing, return one question to the main thread and wait. Never substitute Aspire's own audience or any default audience.
 - `list_post_search_fields` once. Use only paths it returns.
 - **Read what the team already learned.** `search_insights` with a `prefix` filter on `detail.account_review.runKey`, newest first, limit 20 each: `market-signal-{profile}` (features the brand won on, the language to borrow, friction to avoid), `readout-weekly-{profile}` (top and bottom patterns), and `ad-reuse-{profile}` (hook patterns that lead). Lead the deliverables with what the brand won on and what worked; cite each finding's run on the page. None saved: say so in one line and plan from the posts alone.

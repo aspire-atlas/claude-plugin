@@ -39,8 +39,7 @@ the agent, skipping any the user already answered. In campaign mode it also sett
 (a saved `campaign:*-brief`, or "a new campaign", which runs **Creator discovery** Setup first
 unless the user declines) and the first post date.
 
-1. **Scope.** If a `red_line` calibration blocks AI generated content (ignore `review:` keys,
-   which are content review only, and `applicant-review:` keys), offer "Strategy brief only (Recommended)" vs "Include draft
+1. **Scope.** If a brand red line blocks AI generated content, offer "Strategy brief only (Recommended)" vs "Include draft
    copy (overrides the red line; record the exception first)". Never produce copy without the
    override.
 2. **Creator sourcing.** "Already in Atlas", "Atlas creator marketplace (searches beyond your
@@ -207,7 +206,7 @@ from**, and leave them out of the data block, since they aren't parts of the bri
 - **Creators**: the lane's approved creators from the roster, as creator cards, each with the
   agreed fee and ship date.
 
-A `red_line` (never a `review:` or `applicant-review:` key) that blocks AI-written copy still applies: hooks, CTAs and the body become
+A brand red line that blocks AI-written copy still applies: hooks, CTAs and the body become
 directions, per **Hooks and CTAs**, **Limits**. Say so in the standing-rule banner.
 
 **Editing coverage check**, before the page ships. Every brief must pass all three; fix the

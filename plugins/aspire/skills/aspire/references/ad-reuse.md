@@ -168,7 +168,7 @@ components "Can't check" and say so; never infer the opening from a cover.
 ## Hook score (out of 100)
 
 **Verdict bands.** 70 and up: **run**. 50 to 69: **cut first** (it works only as a cut of its
-strongest segment). Under 50: **leave**. One override: a `red_line` hit (never a `review:` or `applicant-review:` key), or a competitor in
+strongest segment). Under 50: **leave**. One override: a brand red line hit, or a competitor in
 frame on a post that isn't brand-led (**Candidate pool**, **Competitors on screen**), makes it
 **leave** at any score, with the reason. A brand-led post keeps its band. The page's method shows
 these bands as they are here.
@@ -185,7 +185,7 @@ section 8).
 | Works without sound | 15 | On-screen text or captions carry the point; `analysis.overlayText` or frames show it |
 | Retention | 20 | Scored from the first level in **Retention levels** that has data |
 | Standalone segment | 10 | A self-contained 6 to 15 second stretch that makes sense without the rest |
-| Ready for paid | 10 | Disclosure present where paid, no competitor in frame (a brand-led post's co-featured competitor doesn't count against it), no `red_line` hit (never a `review:` or `applicant-review:` key), no third-party music flagged in the caption. The brand's own partnership disclosure (its partner hashtag, a paid partnership label naming the brand) is what a partnership ad needs, so it never costs points; only another brand's disclosure does |
+| Ready for paid | 10 | Disclosure present where paid, no competitor in frame (a brand-led post's co-featured competitor doesn't count against it), no brand red line hit, no third-party music flagged in the caption. The brand's own partnership disclosure (its partner hashtag, a paid partnership label naming the brand) is what a partnership ad needs, so it never costs points; only another brand's disclosure does |
 
 ### Retention levels
 
@@ -269,7 +269,7 @@ One row per recommended cut, at most three cuts per candidate:
 | Post | Permalink, author handle, posted date |
 | Pattern | From the list above |
 | In and out | Timestamps from transcript timing when present; from frames otherwise, marked "±1.5s" |
-| Moment | One line naming what happens, in plain words; never write new ad copy when a `red_line` (never a `review:` or `applicant-review:` key) blocks AI-written copy |
+| Moment | One line naming what happens, in plain words; never write new ad copy when a brand red line blocks AI-written copy |
 | Lengths | The cut lengths the segment supports: 6s bumper, 15s, 30s |
 | Placements and specs | 9:16 at 1080x1920 for Reels, Stories and TikTok; 4:5 at 1080x1350 for feed; 1:1 at 1080x1080 where the framing allows. Note when key text sits outside the safe zone |
 | Sound | Original audio, voiceover, or music; "music rights unknown" when music is present |

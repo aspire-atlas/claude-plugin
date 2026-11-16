@@ -64,7 +64,7 @@ and brand. When `applicant-review:{slug}-campaign` already exists for a differen
 | `-campaign` | `brand_fact` | `{section: "business_context", body}`; body lines `campaign: <name>`, `campaign key: <the slug of the saved campaign:{campaign-slug}-brief this review is for, or none>`, `profile: <brand profile id>`, `aspire campaign: <Aspire campaign id, or none>` | Which campaign, for which brand profile |
 | `-criteria` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body is `source: campaign:{campaign-slug}` (that campaign's `-brief` and `-criteria`), `source: vetting:criteria`, or one line per dimension (archetype and audience, networks, size band, market, content) | What makes an applicant a fit |
 | `-checks` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body `reject: <the checks that reject on their own, from competitor-deals, disclosure, language-on-camera; or none>` | Which checks reject on their own (all of them always run: **How screening applies a review**) |
-| `-red-lines` | `red_line` | `{action: "block", appliesTo: ["applicant-review", "{slug}"], body}`; body one red line per line | Red lines for this campaign only, on top of the brand's saved `red_line` records |
+| `-red-lines` | `red_line` | `{action: "block", appliesTo: ["applicant-review", "{slug}"], body}`; body one red line per line | Red lines for this campaign only, on top of the brand red lines <!-- red-line-check: defines the review's own red-line record --> |
 | `-thresholds` | `guideline` | `{concern: "ceiling", appliesTo: ["applicant-review", "{slug}"], body}`; body is `source: vetting:thresholds` or `approve >= <n>; maybe >= <m>` | Where Approve, Maybe, and Reject sit |
 | `-form-rules` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body one rule per line: `required: <form question>`, `stop: <form question> = <answer>`, `boost: <form question> = <answer>`, or `prompt: <instruction for the screening agent>` | How form answers change a call |
 | `-visuals` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body one check per line: `named: <name> = <what counts as a pass>`, or `free: <what to look for>` | What to look for in each applicant's videos |
@@ -113,10 +113,8 @@ Rules:
   reaches the review. A starter or typed answer is written as criteria lines. AR2 carries the web
   research option (Phase 5 rules) when the brand has no `brand:summary`. AR2 cannot be declined.
 - **AR3** writes a `reject:` line with the checks picked (`none` for option 4).
-- **AR4** names every saved `red_line` and `competitor` in the question text, leaving out records
-  whose keys belong to another flow (**Atlas tools**, Calibration kinds) and every
-  `applicant-review:` key (another campaign's review red lines never apply here), so the user only
-  adds to them; with none saved it asks the second wording. Option 1 writes a `decline` record.
+- **AR4** names every brand red line and saved `competitor` in the question text (another
+  campaign's review red lines never apply here), so the user only adds to them; with none saved it asks the second wording. Option 1 writes a `decline` record.
 - **AR5** option 1 writes `source: vetting:thresholds`. AR5 cannot be declined.
 - **AR6** and **AR7**: option 1 writes a `decline` record. A rule or check typed without one of
   the forms in **The records** is asked back once with it reworded into that form; never guess
@@ -224,7 +222,7 @@ What changes against a `vetting` run in **Creator vetting**:
 | Fit criteria | The review's criteria, resolved: the campaign's `-brief` and `-criteria` or vetting's criteria it points at, or its own lines |
 | Approve, Maybe, Reject lines | The review's thresholds, resolved |
 | Language on camera | Always run: swearing, or a word any red line rules out (the brand's or the review's, whatever its `action`), in `analysis.transcript` or `analysis.overlayText` is a Flag citing the line. Swearing is a Fail when `reject:` lists `language-on-camera`. A hit on a `block` red line counts as a failing `block` red line under **Creator vetting**'s **The recommendation**, rule 2, so it rejects whatever `reject:` says; every one of the review's own red lines is `block`. A hit on a brand red line with `flag` or `escalate` keeps that action and stays a Flag, even when `reject:` lists `language-on-camera` (AR3 option 3) |
-| Red lines | The brand's saved `red_line` records plus the review's red lines, each its own check |
+| Red lines | The brand red lines plus the review's red lines, each its own check |
 | Hard stops | The checks the review's `reject:` line lists (`competitor-deals`, `disclosure`, `language-on-camera`), in place of `vetting:hard-rejects` (**Creator vetting**, **The recommendation**, rule 2). Every check runs whatever `reject:` says; one it doesn't list stays a Flag |
 | `vetting:criteria`, `vetting:thresholds`, `vetting:hard-rejects` | Not read; the review replaces them. Bought engagement and no recent posts are Flags, never rejects on their own |
 | Form answer rules | Not applied: a vetting list carries handles and names, not form answers. Each saved rule is listed by name on the page under what is missing, and the run summary names them, so a team never reads a recommendation as having passed them. A form hard stop or required answer therefore never changes the call yet; the team applies it by hand |

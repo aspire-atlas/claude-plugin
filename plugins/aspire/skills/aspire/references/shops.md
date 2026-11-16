@@ -334,7 +334,7 @@ plan says the platform's review time is not in its control.
 - **Formats to make shoppable** (TikTok, and Reels on Instagram): the formats and hook patterns
   that lead among the brand's own posts (and in `ad-reuse` findings when saved), with two or
   three video ideas per lead product, each named after a real post that worked. When a
-  `red_line` (never a `review:` or `applicant-review:` key) blocks AI-written copy, give the angle and the post it comes from, never a script.
+  brand red line blocks AI-written copy, give the angle and the post it comes from, never a script.
 - **LIVE**: only when TikTok is in scope; one pilot idea with the product, a host from the
   creator plan or the brand's team, and "check LIVE eligibility first".
 

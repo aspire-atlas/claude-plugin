@@ -138,7 +138,7 @@ confirmation, one confirmation per key.
 Filter-only path, no `queryText`, unless noted. Every call carries a `context` argument
 (`[<runId>]`, then 15 to 25 words, third person; the run id prefix does not count toward them).
 
-1. `search_calibrations` as above. Extract: readout calibrations, `red_line`, `guideline`,
+1. `search_calibrations` as above. Extract: readout calibrations, brand red lines, `guideline`,
    `competitor`, `partner`, `brand:summary`, `target:weekly-health`, `theme:brand`. Drop every
    `review:` key (content review only; see **Atlas tools**), every `applicant-review:` key (one
    campaign's applicant screening only), and every `lastrun:` key (a flow's

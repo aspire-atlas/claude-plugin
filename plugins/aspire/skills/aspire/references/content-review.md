@@ -96,7 +96,7 @@ Rules:
   the agent needs both to reach a verdict. To answer a declined question later, retract the
   `decline` record through its Destructive tools confirmation, then ask the question again as
   a fresh setup item.
-- Write C1's options from the brand's context. If no `red_line` is saved, say so in C1's
+- Write C1's options from the brand's context. If no brand red line is saved, say so in C1's
   question text ("No red lines are saved yet, so option 2 blocks nothing").
 - C3's option list starts from what exists: when `guideline` records (never `applicant-review:` or `lastrun:` keys) or the
   `voice_and_content_ops` brand fact are saved, summarize them in one line in the question
@@ -396,12 +396,12 @@ seen worded.
 
 A lesson is a soft rule: it changes how a check is judged. A hard rule is a check that runs on
 every future review for every brand in the organization, whatever the brief says, and it can
-block a post. Hard rules are `red_line` calibrations scoped to content review.
+block a post. Hard rules are `red_line` calibrations scoped to content review. <!-- red-line-check: defines content review's own hard rules -->
 
 **Only content review applies them.** A `red_line` whose key starts with `review:` is a hard
 rule for reviews. The readouts' red-line scan, creator discovery, the creator brief, and the
 account analyst skip it (see **Atlas tools**, calibration kinds). A rule the brand wants
-everywhere is saved as an ordinary `redline:*` record instead, through onboarding.
+everywhere is saved as an ordinary `redline:*` record instead, through onboarding. <!-- red-line-check: defines which flow owns review: keys -->
 
 **Where proposals come from.** After each review the agent proposes up to four candidate hard
 rules, from these sources only:
@@ -417,8 +417,8 @@ rules, from these sources only:
 4. **F3 option 3.** A lesson the user chose to propose as a hard rule. It goes through the
    same duplicate check as the others.
 
-Never propose a rule already saved: compare against every active `review:rule-*` and
-`red_line` record. Never propose a rule that only restates a setup answer (C1 to C4). Word
+Never propose a rule already saved: compare against every active `review:rule-*` record and
+brand red line. Never propose a rule that only restates a setup answer (C1 to C4). Word
 each rule so it can be checked from a post: what must or must not appear, and where.
 
 **Asking.** F4, one multiSelect, after F1 to F3. The question text says: "Hard rules apply to
@@ -429,7 +429,7 @@ a legal requirement, and `flag` otherwise. The free text field lets the user cha
 **Writing.** One `append_calibration` per selected rule. The F4 answer is the confirmation for
 that batch, because its question text says the rules will be saved.
 
-- kind `red_line`, key `review:rule-{slug}` (from the rule, lowercase, hyphenated, 48
+- kind `red_line`, key `review:rule-{slug}` (from the rule, lowercase, hyphenated, 48 <!-- red-line-check: writes content review's own record -->
   characters at most)
 - `statement`: the rule in one line, under 280 characters
 - `detail`: `{action: "block" | "flag", severity: "hard", appliesTo: ["content-review"], body:
@@ -490,7 +490,7 @@ The verdict finding also carries what the readouts need, so they never have to r
 review: `postedAt` and `permalink` (the post's own URL) for a published post, `reviewPage`
 (the review page's link from step 9), `briefRef` (the brief and deliverable), `counts`
 (`{pass, flag, fail, cantCheck}` per dimension), `openEdits` (the number of required edits),
-and `hardRuleHits[]` (the `review:rule-*` and `red_line` keys that failed). The user's own
+and `hardRuleHits[]` (the `review:rule-*` and brand red line keys that failed). The user's own
 call is not on it: it is on the `feedback` finding of the same `runKey`.
 
 **Closing edits.** When a resubmitted draft or a corrected post passes a check that an earlier
@@ -550,7 +550,7 @@ One page per review, with a new path each time so earlier reviews stay linkable.
    targeted frames marked. Then one line naming the extraction tool, the sampling step, and
    the frame count.
 4. **Required edits.** Numbered, in priority order. Written as notes the team can forward to
-   the creator: plain, specific, polite, one fix each. If a `red_line` blocks AI-generated
+   the creator: plain, specific, polite, one fix each. If a brand red line blocks AI-generated
    copy, describe what to change and never write replacement caption text.
 5. **Brief adherence**, **Brand guidelines**, **Brand safety.** One row per check: result
    chip, severity, check name, evidence, fix. Fails first, then Flags, then Can't check, then

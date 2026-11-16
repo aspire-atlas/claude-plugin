@@ -413,7 +413,7 @@ often a contrast. Numbers are exact and sourced.
   shows ("new to partnership ads; two creator collabs ran in August and September").
 - Product claims are quoted as the brand words them on its own site, never paraphrased into a
   stronger claim.
-- A `red_line` (never a `review:` or `applicant-review:` key) that blocks AI-written copy makes the deck strategy only: lane names, screens, and
+- A brand red line that blocks AI-written copy makes the deck strategy only: lane names, screens, and
   structure stay; tension lines, variant names, and rationales are bracketed blanks for the team
   to write, and a banner on the cover says so.
 
@@ -811,7 +811,7 @@ recommended rates, and use the `neutral` look unless the presenter picked `aspir
 | ------ | ------ |
 | `brand:summary`, `brand:business-context` | Buyer, category, products, market (B3, B4, D3) |
 | `guideline:voice`, `brand_fact` voice section | Tension lines, rationales, headline tone |
-| `red_line` (never a `review:` or `applicant-review:` key), `guideline` | Claim cautions, off-limits lanes, the strategy-only rule |
+| Brand red lines, `guideline` | Claim cautions, off-limits lanes, the strategy-only rule |
 | `competitor` | Never cast; marked among a creator's partners |
 | `partner`, and any creator whose `pastBrandPartnershipPartners` names the brand | Offered first in F, labelled "worked with {brand}" |
 | `creator:*` | `reject` never cast; `approve` ranked first |

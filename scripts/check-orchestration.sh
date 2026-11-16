@@ -109,62 +109,87 @@ for tag, keys in want.items():
 sys.exit(bad)
 PY
 
-# A drop list that leaves out `lastrun:` hands a flow's saved setup answers to the agent as brand
-# guidelines, and one that leaves out `applicant-review:` hands it one campaign's screening red
-# lines and criteria as brand-wide rules. Every drop list names `orchestrator:`, so that is the anchor.
-drops=$(for f in plugins/*/agents/*.md $(find plugins -path '*/skills/*' -name '*.md' | sort); do
-  awk -v F="$f" '
-    BEGIN {
-      nreq = split("lastrun applicant-review", req, " ")
-      why[1] = "orchestration.md, section 2, Saved answers"
-      why[2] = "atlas-tools.md, Calibration kinds"
-    }
-    function flush() {
-      if (blk ~ /`orchestrator:/ && blk ~ /([Dd]rop|[Ii]gnore|[Ss]kipping|[Ll]eave out)/)
-        for (i = 1; i <= nreq; i++)
-          if (index(blk, "`" req[i] ":") == 0)
-            print "FAIL " F ":" start ": drops `orchestrator:` keys but not `" req[i] ":` keys (" why[i] ")"
-      blk = ""
-    }
-    /^$/ || /^ *([0-9]+[a-z]?\.|-|\|) / { flush() }
-    { if (blk == "") start = NR; blk = blk " " $0 }
-    END { flush() }' "$f"
-done)
-if [ -n "$drops" ]; then echo "$drops"; fail=1; fi
+# Two checks over every agent and skill file, split into blocks once (a block is a paragraph, a list
+# item, or a table row).
+# 1. A drop list that leaves out `lastrun:` hands a flow's saved setup answers to the agent as brand
+#    guidelines, and one that leaves out `applicant-review:` hands it one campaign's screening red
+#    lines and criteria as brand-wide rules. Every drop list names `orchestrator:`, so that is the
+#    anchor.
+# 2. A block that names the `red_line` kind, or that reads calibrations and names red lines in prose,
+#    must say "brand red line" (atlas-tools.md, Calibration kinds) or drop `applicant-review:` keys
+#    in a negated list of keys. A block that writes or defines red-line records rather than reading
+#    the brand's opts out with `<!-- red-line-check: <reason> -->` on the block itself.
+# The red-line matcher runs on scripts/fixtures/red-line/ first: every block in pass.md must pass and
+# every block in a fail-*.md file must fail, so a change to it shows what it breaks.
+python3 -I - <<'PY' || fail=1
+import glob, re, sys
 
-# A `red_line` read that keeps `applicant-review:` keys turns one campaign's screening red lines into
-# brand-wide rules. Every block that names the `red_line` kind must drop them, whatever it says about
-# how it reads its data. Only the files that own or write those records are exempt: the applicant
-# review and vetting (which apply them), content review (which writes its own `review:` red lines),
-# the onboarding questions (which write the brand's), and atlas-tools.md (which defines the rule).
-redlines=$(python3 - <<'PY'
-import glob, re, subprocess
-files = sorted(glob.glob("plugins/*/agents/*.md")) + sorted(
-    subprocess.check_output(["find", "plugins", "-path", "*/skills/*", "-name", "*.md"]).decode().split())
-exempt = ("atlas-tools.md", "applicant-review.md", "creator-vetting.md", "content-review.md",
-          "onboarding-questions.md")
-neg = r"(?:never|not|nor|drop|dropping|dropped|except|excluding|without|leave out|leaving out|ignore|ignoring|skip|skipping|other than)"
-# The negation must govern the key: no contrast word ("keep", "but", "include", "use", "apply") between them.
-before = re.compile(r"\b" + neg + r"\b(?:(?!keep|\bbut\b|includ|\buse|\bapply)[^.]){0,160}?`applicant-review:")
-after = re.compile(r"`applicant-review:`[^.`]{0,40}(?:dropped|n.t count|never count)")
-for f in files:
-    if f.endswith(exempt):
-        continue
+BLOCK_START = re.compile(r"^ *([0-9]+[a-z]?\.|-|\|) ")
+KEY = r"`[a-z][a-z-]*:[^`]*`"
+ITEM = KEY + r"(?:\s+keys?)?(?:\s+\([^()]*\))?"
+SEP = r"(?:\s*,\s*(?:(?:or|nor|and)\s+)?|\s+(?:or|nor|and)\s+)"
+# A negation that heads a list of keys; a negated verb ("never drop") is not a drop.
+NEG = (r"(?<!never )(?<!not )(?<!n't )\b(?:never|not|nor|except|excluding|without|drop|dropping|"
+       r"ignore|ignoring|skip|skipping|leave out|leaving out|other than)\b")
+DROP_LIST = re.compile(NEG + r"(?:\s+(?:a|an|any|the|every|keys?|starting))*\s+((?:" + ITEM + SEP + r")*" + ITEM + ")")
+DROPPED_AFTER = re.compile(r"`applicant-review:`(?:\s+keys?)?\s+(?:(?:were|are)\s+dropped|(?:don't|do not|never)\s+count)")
+READS = re.compile(r"search_calibrations|get_brand_context")
+PROSE = re.compile(r"\bred lines?\b")
+OPT_OUT = "<!-- red-line-check:"
+
+def blocks(path):
     blk, start = [], 0
-    def flush():
-        b = " ".join(blk).lower()
-        if blk and "`red_line`" in b and not before.search(b) and not after.search(b):
-            print(f"FAIL {f}:{start}: names `red_line` but does not drop `applicant-review:` keys (atlas-tools.md, Calibration kinds)")
-    for i, line in enumerate(open(f).read().split("\n"), 1):
-        if not line.strip() or re.match(r"^ *([0-9]+[a-z]?\.|-|\|) ", line):
-            flush(); blk = []
+    for i, line in enumerate(open(path).read().split("\n"), 1):
+        if not line.strip() or BLOCK_START.match(line):
+            if blk:
+                yield start, " ".join(blk)
+            blk = []
+            if not line.strip():
+                continue
         if not blk:
             start = i
         blk.append(line)
-    flush()
-PY
-)
-if [ -n "$redlines" ]; then echo "$redlines"; fail=1; fi
+    if blk:
+        yield start, " ".join(blk)
 
-[ "$fail" -eq 0 ] && echo "OK   every agent carries the orchestration contract and has a permission level; routes and shortcuts resolve; every drop list drops lastrun: and applicant-review: keys, and every red_line reader drops applicant-review: keys"
+def drops_applicant_review(b):
+    if DROPPED_AFTER.search(b):
+        return True
+    return any("`applicant-review:" in m.group(1) for m in DROP_LIST.finditer(b))
+
+def red_line_ok(text):
+    b = text.lower()
+    names_kind = "`red_line`" in b
+    prose_read = bool(PROSE.search(b.replace("brand red line", ""))) and bool(READS.search(b))
+    if not (names_kind or prose_read):
+        return True
+    return "brand red line" in b or OPT_OUT in b or drops_applicant_review(b)
+
+bad = 0
+for f in sorted(glob.glob("scripts/fixtures/red-line/*.md")):
+    want = not f.split("/")[-1].startswith("fail-")
+    for start, b in blocks(f):
+        if b.startswith("#"):
+            continue
+        if red_line_ok(b) != want:
+            print(f"FAIL {f}:{start}: the red-line matcher gives {'fail' if want else 'pass'}, the fixture expects {'pass' if want else 'fail'}")
+            bad = 1
+
+files = sorted(glob.glob("plugins/*/agents/*.md")) + sorted(glob.glob("plugins/**/skills/**/*.md", recursive=True))
+required = [("lastrun", "orchestration.md, section 2, Saved answers"),
+            ("applicant-review", "atlas-tools.md, Calibration kinds")]
+for f in files:
+    for start, b in blocks(f):
+        if "`orchestrator:" in b and re.search(r"[Dd]rop|[Ii]gnore|[Ss]kipping|[Ll]eave out", b):
+            for key, why in required:
+                if f"`{key}:" not in b:
+                    print(f"FAIL {f}:{start}: drops `orchestrator:` keys but not `{key}:` keys ({why})")
+                    bad = 1
+        if not red_line_ok(b):
+            print(f"FAIL {f}:{start}: names red lines but neither says brand red line nor drops `applicant-review:` keys (atlas-tools.md, Calibration kinds)")
+            bad = 1
+sys.exit(bad)
+PY
+
+[ "$fail" -eq 0 ] && echo "OK   every agent carries the orchestration contract and has a permission level; routes and shortcuts resolve; every drop list drops lastrun: and applicant-review: keys, and every red-line reader reads brand red lines only"
 exit "$fail"

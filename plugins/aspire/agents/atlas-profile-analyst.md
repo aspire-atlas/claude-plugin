@@ -66,14 +66,14 @@ findings and pushes only, saying in the summary that nothing was saved.
    evidence post, and a numeric target from the account's own medians (for example 1.5x median Reel
    views). Lead with the strongest pattern; give the weakest at most a test slot. Respect the cadence
    the account already sustains. Describe the idea, never write captions, scripts, or hooks when a
-   `red_line` (never a `review:` or `applicant-review:` key) blocks AI-written copy. Pushes that need creators or a budget belong in the creator
+   brand red line blocks AI-written copy. Pushes that need creators or a budget belong in the creator
    brief: say so in one line and offer it.
 7. Mode `handle` only: **compare it against its own peers, never against the brand.** Build the peer
    set and compare per **Peer set** in
    `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/account-resolution.md`.
    - The brand's calibrations are still for two things only: saying whether the handle matches a saved
      `competitor` or `partner` record, which is a classification, not a benchmark, and framing why the
-     account is or is not relevant to the brand's stated goal. Apply `red_line` checks (never `review:` or `applicant-review:` keys) only to the
+     account is or is not relevant to the brand's stated goal. Apply brand red line checks only to the
      brand's own accounts, and ignore every key starting `review:` (content review only), `program:` (influencer program only), `library:` (content library only), `orchestrator:` (the orchestrator only), `ad-reuse:` (ad reuse only), `applicant-review:` (one campaign's applicant screening only), or `lastrun:` (a flow's saved setup answers, never a rule).
 8. Interactive runs only: write findings back with `append_insights`: one `runKey` for this run — mode `own`:
    `onboarding-{profile}-{date}` when `onboarding: true`, else `account-review-{profile}-own-{date}`;

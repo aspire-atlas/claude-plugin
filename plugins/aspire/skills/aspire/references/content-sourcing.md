@@ -154,7 +154,7 @@ Never share it with creators."
 Read with the agent's own calls, every pass:
 
 - **Setup**: `program:{slug}-program`, `-terms`, `-catalog`, `-outreach`, `-routing`;
-  `brand:summary`, `brand:business-context`, `competitor`, `red_line` (never a `review:` or `applicant-review:` key), `theme:brand`,
+  `brand:summary`, `brand:business-context`, `competitor`, brand red lines, `theme:brand`,
   `fees:rate-card` (only for a USD reference on the team data), and `creator:*` notes. Drop every other flow's keys.
 - **Working state** on the prefix `program-{profile}-{slug}`, newest per identity: `roster`,
   `terms`, `deliverable`, `asset`, `rights`, `draft`, `reply`, and the `page` findings with keys
@@ -176,7 +176,7 @@ A post or creator is skipped, and listed with the reason, when:
 
 - the author is the brand, or a saved `competitor`;
 - a `creator:*` calibration has stance `reject`;
-- the asset's safety is `block`, or a `red_line` (never a `review:` or `applicant-review:` key) names the creator;
+- the asset's safety is `block`, or a brand red line names the creator;
 - a `rights` finding for the same post and usage is requested and under 14 days old (show it
   again, never draft a second request), or was declined in the last 90 days. From 14 days with
   no answer, the new draft is a follow-up: the same template and terms, opening "Following up
@@ -333,7 +333,7 @@ as an S2 your call: ask inside the deal, or as a paid extra.
 
 Shot lists and hooks draw on the library's best posts in the gap (their hook patterns and
 openings), never on a competitor's post. Never ask for a claim the brand has not made
-(`brand:summary`), a before-and-after a `red_line` (never a `review:` or `applicant-review:` key) rules out, or a minor on screen.
+(`brand:summary`), a before-and-after a brand red line rules out, or a minor on screen.
 
 ## Recording replies
 

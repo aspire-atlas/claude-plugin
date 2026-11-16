@@ -182,7 +182,7 @@ have; never drop them when the data exists.
    - **Fit by advertiser risk tolerance:** three tiers (conservative, standard, permissive),
      each with the verticals it suits and whether to use the post as posted or trimmed. Label
      it "Aspire read based on the scores and evidence above. Not an Atlas score."
-   - Apply the brand's own `red_line` records (never `review:` or `applicant-review:` keys) as their own rows when they bear on the post.
+   - Apply the brand red lines as their own rows when they bear on the post.
 9. **Sponsor disclosure.** Whether the sponsor is named in the caption, hashtags, or
    mentions; whether a disclosure word (#ad, "sponsored", "paid partnership") appears; how
    often the account names sponsors in its other held posts. Instagram's "Paid partnership"
