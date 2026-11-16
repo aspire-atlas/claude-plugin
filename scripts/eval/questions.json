@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "source": "The five approved examples in the plugin update doc, section \"Examples to follow\" (2026-11-05), and O2, the Creator Trends page its reviewer edited for ASP-5813, with question codes from the examples library. Brand names, organizations and page links are customer details: they live in scripts/eval/local.json, never here.",
+  "source": "The five approved examples in the plugin update doc, section \"Examples to follow\" (2026-11-05), and O2, the Creator Trends page its reviewer edited for ASP-5813, with question codes from the examples library. P1 has no approved example yet: it is here so the reader check (E1) covers a paid-social reader. Brand names, organizations and page links are customer details: they live in scripts/eval/local.json, never here.",
   "changes": {
     "3": {
       "name": "Pull the right metrics for each question",
@@ -146,6 +146,21 @@
         "plugins/aspire/agents/atlas-creator-vetting.md",
         "plugins/aspire/skills/aspire/references/creator-discovery.md",
         "plugins/aspire/skills/aspire/references/creator-vetting.md"
+      ]
+    },
+    {
+      "code": "P1",
+      "example": "Ad reuse cut list",
+      "kind": "Cut list",
+      "reader": "performance",
+      "readerInWords": "the paid social team",
+      "ask": "For {brand}: which creator posts should we run as ads, and how do we cut them? It is for our paid social team, who answer for sign-ups and sales.",
+      "setsBarFor": [
+        5
+      ],
+      "paths": [
+        "plugins/aspire/agents/atlas-ad-reuse.md",
+        "plugins/aspire/skills/aspire/references/ad-reuse.md"
       ]
     }
   ]

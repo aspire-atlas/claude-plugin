@@ -583,6 +583,16 @@ export function compareRuns(before: RunResults, after: RunResults, eChecks: Chec
 }
 
 /** The checks a question sets the bar for, from the doc's change numbers. */
+/** One reader's row of the result table in recipient-lens.md: what the reader is judged on, and what ranks posts without it. */
+export function readerResult(lensMarkdown: string, team: string): { result: string; standIn: string } | null {
+  const table = lensMarkdown.match(/<!-- result-judged-on -->([\s\S]*?)<!-- \/result-judged-on -->/)?.[1] ?? ''
+  for (const line of table.split('\n')) {
+    const cells = line.split('|').map(cell => cell.trim())
+    if (cells[1] === `\`${team}\`` && cells[2] && cells[3]) return { result: cells[2], standIn: cells[3] }
+  }
+  return null
+}
+
 export function barChecks(setsBarFor: number[], changes: Record<string, { checks: string[] }>): string[] {
   const ids = new Set<string>()
   for (const change of setsBarFor) for (const id of changes[String(change)]?.checks ?? []) ids.add(id)
