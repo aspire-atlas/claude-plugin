@@ -380,7 +380,7 @@ type Rerun = {
 }
 
 /** Ask the question the way a person would, answer what the flow asks back, and keep the page it publishes. */
-async function rerun(question: Question, config: any, local: Local, qDir: string, captured: string, atlasMcp: string, options: Options): Promise<Rerun> {
+async function rerun(question: Question, config: any, local: Local, chatRules: ChatRules, qDir: string, captured: string, atlasMcp: string, options: Options): Promise<Rerun> {
   const work = join(qDir, 'work')
   mkdirSync(work, { recursive: true })
   const brand = local.questions?.[question.code]?.brand ?? fail(`local.json names no brand for ${question.code}`)
@@ -467,12 +467,12 @@ async function rerun(question: Question, config: any, local: Local, qDir: string
   // The last reply is a close-out only when the run published or its agent finished. The messages and the words
   // each count matched stay in the run folder, which is never committed or uploaded.
   const closed = Boolean(link) || Boolean(last && !last.failed && findPage(last).finished)
-  const chat = checkChat(turns, closed, chatRules(config, local))
+  const chat = checkChat(turns, closed, chatRules)
   writeFileSync(join(qDir, 'chat.json'), JSON.stringify({ ...chat.checks, text: chat.messages, hits: chat.hits }, null, 2) + '\n')
   return { link, rounds, transcriptTokens: last?.contextTokens ?? 0, billedTokens: billed, compactions, costUsd: cost, problems, model, chat: chat.checks }
 }
 
-async function runQuestion(question: Question, config: any, local: Local, eChecks: any[], runDir: string, atlasMcp: string, emptyMcp: string, options: Options): Promise<{ result: QuestionResult; model: string | null }> {
+async function runQuestion(question: Question, config: any, local: Local, eChecks: any[], chatRules: ChatRules, runDir: string, atlasMcp: string, emptyMcp: string, options: Options): Promise<{ result: QuestionResult; model: string | null }> {
   const qDir = join(runDir, question.code)
   mkdirSync(qDir, { recursive: true })
   const captured = join(qDir, 'page.html')
@@ -481,7 +481,7 @@ async function runQuestion(question: Question, config: any, local: Local, eCheck
     copyFileSync(options.page, captured)
     run = { link: null, rounds: 0, transcriptTokens: 0, billedTokens: 0, compactions: 0, costUsd: 0, problems: ['Graded from a file: the question was not rerun'], model: null, chat: noChat() }
   } else {
-    run = await rerun(question, config, local, qDir, captured, atlasMcp, options)
+    run = await rerun(question, config, local, chatRules, qDir, captured, atlasMcp, options)
   }
   const { link, problems } = run
   const hasPage = existsSync(captured)
@@ -514,7 +514,7 @@ function baselineFor(name: string): { name: string; results: RunResults } | null
   if (name !== 'newest') return { name, results: resolveRun(name) }
   const dates = existsSync(BASELINES) ? readdirSync(BASELINES).filter(d => existsSync(join(BASELINES, d, 'results.json'))).sort() : []
   const date = dates.at(-1)
-  return date ? { name: date, results: normalizeRun(readJson(join(BASELINES, date, 'results.json'))) } : null
+  return date ? { name: date, results: resolveRun(date) } : null
 }
 
 let baselineCache: { name: string; results: RunResults } | null | undefined
@@ -536,24 +536,17 @@ async function cleanup(links: string[], runDir: string, emptyMcp: string) {
 
 // ---------------------------------------------------------------- main
 
+/**
+ * The ids and allowed names the chat count runs with, built once per run. The ids come from the question-code
+ * map (orchestration.md) and the reader standard, the E checks and this eval's own question codes.
+ */
+function chatRulesFor(config: any, local: Local, eChecks: CheckDef[]): ChatRules {
+  const sources = ['orchestration.md', 'reader-standard.md'].map(name => readFileSync(join(PLUGIN, 'skills/aspire/references', name), 'utf8'))
+  const codes = chatCodes(sources, [...eChecks.map(check => check.id), ...config.questions.map((question: Question) => question.code)])
+  return { codes, allow: local.chatAllow ?? [] }
+}
+
 // R names come from the reader standard's own table, so a renamed or new check shows as the plugin has it.
-/** Every file under the two skills that defines an id the person must never see (lib.ts, chatCodes). */
-function referenceFiles(): string[] {
-  const dirs = [join(PLUGIN, 'skills/aspire/references'), join(PLUGIN, 'skills/page-standard')]
-  return dirs.flatMap(dir => readdirSync(dir).filter(name => name.endsWith('.md')).map(name => readFileSync(join(dir, name), 'utf8')))
-}
-
-let codes: string[] | null = null
-
-/** The ids and allowed names the chat count runs with. `chatAllow` in local.json holds the brand's own product names. */
-function chatRules(config: any, local: Local): ChatRules {
-  codes = codes ?? chatCodes(referenceFiles(), [
-    ...readJson(join(HERE, 'e-checks.json')).checks.map((check: CheckDef) => check.id),
-    ...config.questions.map((question: Question) => question.code),
-  ])
-  return { codes, allow: [...(config.chatAllow ?? []), ...(local.chatAllow ?? [])] }
-}
-
 const checkNames = (eChecks: any[]) => namesFrom(eChecks, readFileSync(join(PLUGIN, 'skills/aspire/references/reader-standard.md'), 'utf8'))
 
 function storeBaseline(results: RunResults, date: string, eChecks: CheckDef[], names: Record<string, string>) {
@@ -591,6 +584,7 @@ async function main() {
 
   const localPath = join(HERE, 'local.json')
   const local: Local = existsSync(localPath) ? readJson(localPath) : {}
+  const chatRules = chatRulesFor(config, local, eChecks)
   // A question local.json names no brand for is skipped while no baseline holds its approved results: a new
   // question reaches CI before its brand reaches the EVAL_LOCAL_JSON secret. One that has them stops the run,
   // so a lost or mistyped entry cannot drop a gated question. Every report names what was skipped.
@@ -655,7 +649,7 @@ async function main() {
   try {
     for (const question of questions) {
       console.error(`${question.code} · ${question.example}`)
-      const { result, model } = await runQuestion(question, config, local, eChecks, runDir, atlasMcp, emptyMcp, options)
+      const { result, model } = await runQuestion(question, config, local, eChecks, chatRules, runDir, atlasMcp, emptyMcp, options)
       if (!options.model && model) results.model = model
       if (!options.judgeModel && !options.model && model) results.judgeModel = model
       results.questions.push(result)

@@ -256,7 +256,7 @@ test('a pull request reruns the questions its changed agents and flow files answ
 })
 
 test('only a check the approved page passes and the new page fails is a regression', () => {
-  expect(regressions(run(), E_CHECKS)).toEqual([{ code: 'I4', id: 'R3', was: 'pass', now: 'fail' }])
+  expect(regressions(run(), E_CHECKS)).toEqual([{ kind: 'page', code: 'I4', id: 'R3', was: 'pass', now: 'fail' }])
   // The approved page failing too, or not having run, is not a regression.
   const both = run()
   both.questions[0].approved!.graded.R3 = 'fail'
@@ -333,6 +333,8 @@ function chatTurn(reply: string, asks: { header: string; question: string; optio
 // The ids the count runs with in these tests, and one allowed product name.
 const RULES = { codes: ['I2', 'I4', 'O2', 'P4', 'R3', 'R9', 'A1', 'D4'], allow: ['Canon R5'] }
 const CLEAN = { arrows: 0, vs: 0, codes: 0 }
+// The tool result a storyline draft comes back in: it marks the turn as a storyline check-in.
+const DRAFT = [{ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 't1', content: '```result-packet\n{"page": null, "storyline": {"pass": "draft"}}\n```' }] } }]
 
 test('the three chat messages are read from the questions asked and the replies the turns ended on', () => {
   const turns = [
@@ -352,8 +354,7 @@ test('the three chat messages are read from the questions asked and the replies 
   expect(chatMessages([chatTurn('Here is the page.')], true)).toEqual({ closeOut: 'Here is the page.' })
   expect(askText({ questions: [{ question: 'Q?', header: 'Heard', options: [{ label: 'A', description: 'why' }] }] })).toBe('Q?\nA\nwhy')
   // A host that refuses the question tool asks in text: a storyline draft packet marks that turn.
-  const draft = [{ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 't1', content: '```result-packet\n{"page": null, "storyline": {"pass": "draft"}}\n```' }] } }]
-  const refused = [chatTurn('I heard I2. Right?'), chatTurn('Storyline: gifts vs deals. Build?', [], draft), chatTurn('Done.')]
+  const refused = [chatTurn('I heard I2. Right?'), chatTurn('Storyline: gifts vs deals. Build?', [], DRAFT), chatTurn('Done.')]
   expect(chatMessages(refused, true)).toEqual({ setup: 'I heard I2. Right?', storyline: 'Storyline: gifts vs deals. Build?', closeOut: 'Done.' })
   expect(checkChat([], false, RULES).checks).toEqual({ result: 'not run', messages: {} })
 })
@@ -362,12 +363,19 @@ test('a run that stopped without publishing has no close-out, and its last reply
   // Stopped on the setup question: the reply is the setup reply, and no close-out was sent.
   expect(chatMessages([chatTurn('I heard I2. Right?')], false)).toEqual({ setup: 'I heard I2. Right?' })
   // Stopped on the storyline after the reply limit: the last reply is a check-in, never a close-out.
-  const draft = [{ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 't1', content: '```result-packet\n{"page": null, "storyline": {"pass": "draft"}}\n```' }] } }]
-  const stopped = [chatTurn('Is that right?'), chatTurn('Storyline: gifts vs deals. Build?', [], draft)]
+  const stopped = [chatTurn('Is that right?'), chatTurn('Storyline: gifts vs deals. Build?', [], DRAFT)]
   expect(chatMessages(stopped, false)).toEqual({ setup: 'Is that right?', storyline: 'Storyline: gifts vs deals. Build?' })
   const { checks } = checkChat(stopped, false, RULES)
   expect(checks.messages).toEqual({ setup: CLEAN, storyline: { arrows: 0, vs: 1, codes: 0 } })
   expect(chatLine(checks)).toBe('Chat wording (C5): fail. setup reply clean; storyline check-in has 0 arrows, 1 "vs" and 0 codes; close-out not sent.')
+  // Stopped on a later question that is not the storyline: that reply is counted too, in its own part.
+  const later = [...stopped, chatTurn('Send it -> Slack?', [{ header: 'Send', question: 'Where should I send the I2 page?' }])]
+  expect(chatMessages(later, false).stoppedOn).toBe('Where should I send the I2 page?\nYes, run it (Recommended)\nSend it -> Slack?')
+  const stoppedLater = checkChat(later, false, RULES).checks
+  expect(stoppedLater.messages.stoppedOn).toEqual({ arrows: 1, vs: 0, codes: 1 })
+  expect(chatLine(stoppedLater)).toContain('close-out not sent; question the run stopped on has 1 arrow, 0 "vs" and 1 code.')
+  // The same turns, published: the last reply is the close-out and nothing is counted twice.
+  expect(chatMessages(later, true).stoppedOn).toBeUndefined()
 })
 
 test('every storyline check-in is graded, so a redraft after Change is counted', () => {
@@ -398,9 +406,13 @@ test('arrows, "vs" and codes are counted in chat, and links and ordinary words a
   // A code after a capitalised word is still a code: only a name on the allow list is left out.
   expect(count('Your Heard I2 question is ready.')).toEqual({ arrows: 0, vs: 0, codes: 1 })
   expect(count('She shot it on a Canon R5, and the Sony A1 came second.')).toEqual({ arrows: 0, vs: 0, codes: 1 })
-  // Handles and hashtags stay as written, and "VS" in capitals is a name.
+  // Handles and hashtags stay as written, and "VS Code" is a product. "vs" counts in any case.
   expect(count('She posts as @O2 on TikTok under #A1 and #ad. We use VS Code.')).toEqual(CLEAN)
-  expect(count('Vs last week, views are up.')).toEqual({ arrows: 0, vs: 1, codes: 0 })
+  expect(count('Vs last week, views are up. TIKTOK VS INSTAGRAM.')).toEqual({ arrows: 0, vs: 2, codes: 0 })
+  // A finding id counts at any length.
+  expect(count('UX104 and EN100 are open.')).toEqual({ arrows: 0, vs: 0, codes: 2 })
+  // An empty name on the allow list is skipped: it would hide every count.
+  expect(countChat('Fixed R3 and I2 -> done', { ...RULES, allow: ['', ' '] }).count).toEqual({ arrows: 1, vs: 0, codes: 2 })
 })
 
 test('quoted words are left out of the chat count only when the quotes balance', () => {
@@ -415,11 +427,18 @@ test('quoted words are left out of the chat count only when the quotes balance',
 })
 
 test('the codes the chat count knows come from the files that define them', () => {
-  const reference = '| Code | Question |\n| ---- | -------- |\n| I2 | Should we work with @handle? |\n| **D4** | Save the shortlist? |\n| R15 | A new check |\n| Q3 | Which quarter? |\n| H1 | Which half? |\n'
-  expect(chatCodes([reference], ['E9', 'I11'])).toEqual(['D4', 'E9', 'I11', 'I2', 'R15'])
-  // An id added to a reference file is counted from the next run on, and one that no file defines is not.
+  const reference = '| Code | Question |\n| ---- | -------- |\n| I2 | Should we work with @handle? |\n| **O4** | What are people saying? |\n| R15 | A new check |\n'
+  expect(chatCodes([reference], ['E9', 'I11'])).toEqual(['E9', 'I11', 'I2', 'O4', 'R15'])
+  // An id added to one of those files is counted from the next run on, and one that no file defines is not:
+  // a flow's own question ids read as product names ("F1 sponsorship", "BMW X5", "an A4 flyer").
   const rules = { codes: chatCodes([reference], ['E9', 'I11']), allow: [] }
-  expect(countChat('R15 and I11 failed, D4 is saved, E9 is open, and Z9 is a room.', rules).count).toEqual({ arrows: 0, vs: 0, codes: 4 })
+  expect(countChat('R15 and I11 failed, O4 is saved, and E9 is open.', rules).count).toEqual({ arrows: 0, vs: 0, codes: 4 })
+  expect(countChat('Your F1 sponsorship, the M1 laptops, a BMW X5, an A4 flyer and the Q3 plan.', rules).count).toEqual(CLEAN)
+  // The real files: the question-code map and the reader standard give question codes and R checks only.
+  const real = chatCodes(['orchestration.md', 'reader-standard.md'].map(name => readFileSync(join(ROOT, 'plugins/aspire/skills/aspire/references', name), 'utf8')))
+  expect(real).toContain('I2')
+  expect(real).toContain('R3')
+  expect(real.filter(id => !/^(?:[IOP]\d+|A1|R\d+)$/.test(id))).toEqual([])
 })
 
 test('a countable rule broken in chat fails the run, with no approved result to compare', () => {
@@ -431,7 +450,7 @@ test('a countable rule broken in chat fails the run, with no approved result to 
   failing.questions[0].approved!.graded.R3 = 'fail'
   failing.questions[0].chat = chat
   const names = { [CHAT_CHECK.id]: CHAT_CHECK.name }
-  expect(chatFailures(failing)).toEqual([{ code: 'I4', id: 'C5', was: 'n/a', now: 'fail' }])
+  expect(chatFailures(failing)).toEqual([{ kind: 'chat', code: 'I4', id: 'C5' }])
   expect(regressions(failing, E_CHECKS)).toEqual(chatFailures(failing))
   // The chat is a line under the table, not a row of it: it is not a page comparison.
   const table = renderRun(failing, E_CHECKS, names)
@@ -461,4 +480,5 @@ test('a run stored before the chat check reads as chat not run, and adds no chan
   const compared = compareRuns(after, failed, E_CHECKS)
   expect(compared).toContain('Chat wording (C5): pass → fail')
   expect(compared).toContain('1 check result changed.')
+  expect(compared).not.toContain('No check changed.')
 })

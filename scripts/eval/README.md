@@ -123,12 +123,15 @@ page to compare with. It is read from the transcript:
 | ------- | ------------ |
 | Setup reply | The first turn's questions, their option labels and descriptions, and the reply the turn ended on |
 | Storyline check-in | Every question headed "Storyline" and every turn a storyline draft came back in, so a redraft after Change or Widen is counted too |
-| Close-out | The last turn's reply, only when the run published a page or its agent finished. A run that stopped earlier shows "close-out not sent", and its last reply is counted as the question it stopped on |
+| Close-out | The last turn's reply, only when the run published a page or its agent finished. A run that stopped earlier shows "close-out not sent" |
+| Question the run stopped on | Only for a run that stopped without closing out, on a question after the setup reply that is not a storyline check-in: that turn's questions and its reply. A run that stopped on the setup reply or on a storyline check-in has its last reply counted there |
 
-Each is counted for arrows, "vs", and codes. The codes are read from the files that define them, so a new one
-is counted without a change here: every id that opens a table row in a reference file (question codes such as
-I2, flow question ids such as D4, the reader standard's R checks), the E checks, the questions in
-`questions.json`, and any finding id shaped like EN2 or UX1.
+Each is counted for arrows, "vs" in any case, and codes. The codes are read from the files that define them,
+so a new one is counted without a change here: the question codes in the question-code map
+(`orchestration.md`, such as I2), the reader standard's R checks, the E checks, the questions in
+`questions.json`, and any finding id shaped like EN2 or UX104. A flow's own question ids (F1, M1, S3, X5 and
+about eighty more) are not counted: they read as product names, and a false count would block a merge. The
+reviewer and the judgment review hold those to rule 7.
 
 Left out of the count:
 
@@ -136,9 +139,9 @@ Left out of the count:
 - handles and hashtags, which the rules leave as written;
 - words inside quotation marks, when the line's quotes balance. An odd quote is read as an inch mark after a
   number, and otherwise nothing on that line is left out;
-- "VS" in capitals ("VS Code"), and Q1 to Q4 and H1, H2, which read as a quarter or a half-year;
-- the names in `chatAllow`, in `questions.json` for every brand or in `local.json` for the test brand's own
-  products. A product name that is also a code ("Canon R5") counts until it is listed there.
+- "VS Code", which is a product;
+- the names in `chatAllow` in `local.json`, for the test brand's own products. A product name that is also a
+  counted code ("Canon R5", "O2") counts until it is listed there. An empty entry is skipped.
 
 C5 passes with every count at zero. The messages and the words each count matched are kept in the run's
 `chat.json`, never in a baseline or a comment. The other English rules (full sentences, one idea per

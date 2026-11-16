@@ -40,13 +40,13 @@ export type PageChecks = {
   notes: string[]
 }
 
-export type ChatMessage = 'setup' | 'storyline' | 'closeOut'
+export type ChatMessage = 'setup' | 'storyline' | 'closeOut' | 'stoppedOn'
 
 export type ChatCount = { arrows: number; vs: number; codes: number }
 
-/** The countable English rules, counted in the three chat messages a run sends (docs/STANDARD.md, C5). */
+/** The countable English rules, counted in the chat messages a run sends (docs/STANDARD.md, C5). */
 export type ChatChecks = {
-  /** `fail` when any message breaks a countable rule, `not run` when the transcript held none of the three. */
+  /** `fail` when any message breaks a countable rule, `not run` when the transcript held none of them. */
   result: Result
   /** One entry per kind of message the run sent. Every storyline check-in adds to the one storyline count. */
   messages: Partial<Record<ChatMessage, ChatCount>>
@@ -226,12 +226,13 @@ const isStorylineAsk = (use: ToolUse) =>
   (Array.isArray(use.input?.questions) ? use.input.questions : []).some((q: any) => /storyline/i.test(String(q?.header ?? '')))
 
 /**
- * The three chat messages a run sends, as the person reads them: the setup reply, every storyline check-in (a
+ * The chat messages a run sends, as the person reads them: the setup reply, every storyline check-in (a
  * Change or Widen answer brings a redraft, and each one is read) and the close-out. A question is read from
  * the AskUserQuestion call and, when the turn ended on it, from the turn's reply as well, since a host that
  * refuses the tool asks in text. The last turn's reply is the close-out only when the run `closed`: it
  * published a page or its agent finished. A run that stopped earlier sent no close-out, and its last reply is
- * the question it stopped on.
+ * the question it stopped on: part of the setup reply or of a storyline check-in when it stopped there, and
+ * `stoppedOn` when it stopped on any later question, so no reply the person read goes uncounted.
  */
 export function chatMessages(turns: Turn[], closed: boolean): Partial<Record<ChatMessage, string>> {
   const found: Partial<Record<ChatMessage, string>> = {}
@@ -248,38 +249,41 @@ export function chatMessages(turns: Turn[], closed: boolean): Partial<Record<Cha
   const storyline = turns.flatMap((turn, i) => (isStoryline(turn) ? [...asks(turn, true), ...asked(i)] : [])).filter(Boolean)
   if (storyline.length) found.storyline = storyline.join('\n')
   if (closed && !turns[last].failed && turns[last].reply) found.closeOut = turns[last].reply
+  if (!closed && last > 0 && !isStoryline(turns[last])) {
+    const stoppedOn = [...asks(turns[last], false), turns[last].reply].filter(Boolean)
+    if (stoppedOn.length) found.stoppedOn = stoppedOn.join('\n')
+  }
   return found
 }
 
 /** What the count needs from outside this file: the ids that count as codes, and the names that hold one by chance. */
 export type ChatRules = { codes: string[]; allow: string[] }
 
-// Q1 to Q4 and H1, H2 read as a quarter or a half-year in chat, so they are never counted, although some flows
-// use them as question ids.
-const CALENDAR = /^(?:Q[1-4]|H[12])$/
-
 /**
- * The ids that must not reach the person, read from the files that own them: every id that opens a table row
- * in a reference file (question codes, flow question ids, the reader standard's checks), and the ids given in
- * `extra` (the E checks and the eval's own question codes). A new id added to any of those files is counted
- * from the next run on. The English read's and the UX review's finding ids are numbered per run, so countChat
- * knows them by their shape instead.
+ * The ids the count knows as codes, read from the files that own them: every id that opens a table row in
+ * `sources`, and the ids given in `extra`. The caller passes only the two files whose ids are not ordinary
+ * words in brand chat, the question-code map and the reader standard, with the E checks and the eval's own
+ * question codes as `extra`. A new id added to one of those is counted from the next run on. Each flow's own
+ * question ids (F1, M1, S3, X5, about eighty of them) are left out on purpose: they read as product names, and
+ * a false count blocks a merge. The English read's and the UX review's finding ids are numbered per run, so
+ * countChat knows them by their shape instead.
  */
 export function chatCodes(sources: string[], extra: string[] = []): string[] {
   const ids = new Set(extra)
   for (const source of sources) {
     for (const match of source.matchAll(/^\| \*{0,2}([A-Z]{1,2}\d{1,2})\*{0,2} \|/gm)) ids.add(match[1])
   }
-  return [...ids].filter(id => !CALENDAR.test(id)).sort()
+  return [...ids].sort()
 }
 
 const ARROWS = /[→⇒➜➔➡⟶⟹]|(?<![-<!])->|(?<![<=>!])=>/g
-// "VS" in capitals is a name ("VS Code"), not "versus".
-const VS = /\b[Vv]s\b\.?/g
-const CODE_SHAPE = /\b[A-Z]{1,2}\d{1,2}\b/g
+const VS = /\bvs\b\.?/gi
+const CODE_SHAPE = /\b[A-Z]{1,2}\d{1,3}\b/g
+// Names left out of every count, whatever the brand: "VS Code" is a product, not "versus".
+const ALWAYS_ALLOWED = ['VS Code']
 const FINDING_ID = /^(?:EN|UX)\d+$/
 
-const CHAT_NAMES: Record<ChatMessage, string> = { setup: 'setup reply', storyline: 'storyline check-in', closeOut: 'close-out' }
+const CHAT_NAMES: Record<ChatMessage, string> = { setup: 'setup reply', storyline: 'storyline check-in', closeOut: 'close-out', stoppedOn: 'question the run stopped on' }
 
 /**
  * Drops the words inside quotation marks from one line: they are someone else's and never fixed
@@ -307,7 +311,8 @@ export function countChat(text: string, rules: ChatRules): { count: ChatCount; h
     .replace(/https?:\/\/\S+/g, ' ')
     .replace(/\S*\/\S*\/\S*/g, ' ')
     .replace(/(^|[^\w])[@#][\w.]+/g, '$1 ')
-  for (const name of rules.allow) clean = clean.split(name).join(' ')
+  // An empty name would split the text into single letters and hide every count.
+  for (const name of [...ALWAYS_ALLOWED, ...rules.allow]) if (name.trim()) clean = clean.split(name).join(' ')
   clean = clean.split('\n').map(dropQuoted).join('\n')
   const codes = new Set(rules.codes)
   const count: ChatCount = { arrows: 0, vs: 0, codes: 0 }
@@ -351,7 +356,7 @@ export function checkChat(turns: Turn[], closed: boolean, rules: ChatRules): { c
 export const CHAT_CHECK = { id: 'C5', name: 'Chat wording' }
 
 /**
- * One line under a question's table: what each of the three messages held, or that it was not sent. No quoted
+ * One line under a question's table: what each message held, or that it was not sent. No quoted
  * text, so it can go in a PR comment. Null when the chat was not graded.
  */
 export function chatLine(chat: ChatChecks): string | null {
@@ -359,11 +364,11 @@ export function chatLine(chat: ChatChecks): string | null {
   const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
   const parts = (Object.keys(CHAT_NAMES) as ChatMessage[]).map(kind => {
     const count = chat.messages[kind]
-    if (!count) return `${CHAT_NAMES[kind]} not sent`
+    if (!count) return kind === 'stoppedOn' ? null : `${CHAT_NAMES[kind]} not sent`
     if (count.arrows + count.vs + count.codes === 0) return `${CHAT_NAMES[kind]} clean`
     return `${CHAT_NAMES[kind]} has ${plural(count.arrows, 'arrow')}, ${count.vs} "vs" and ${plural(count.codes, 'code')}`
   })
-  return `${CHAT_CHECK.name} (${CHAT_CHECK.id}): ${chat.result}. ${parts.join('; ')}.`
+  return `${CHAT_CHECK.name} (${CHAT_CHECK.id}): ${chat.result}. ${parts.filter(Boolean).join('; ')}.`
 }
 
 /** Stored results as this version reads them: a run stored before the chat check has no chat on its questions. */
@@ -564,11 +569,11 @@ export function compareRuns(before: RunResults, after: RunResults, eChecks: Chec
       }
       lines.push('')
       changes += changed.length
-    } else {
-      lines.push('No check changed.', '')
     }
     // A run stored before the chat check has no chat result, so there is nothing to compare it with.
-    if (prev.chat.result !== 'not run' && next.chat.result !== 'not run' && prev.chat.result !== next.chat.result) {
+    const chatChanged = prev.chat.result !== 'not run' && next.chat.result !== 'not run' && prev.chat.result !== next.chat.result
+    if (!changed.length && !chatChanged) lines.push('No check changed.', '')
+    if (chatChanged) {
       lines.push(`${CHAT_CHECK.name} (${CHAT_CHECK.id}): ${prev.chat.result} → ${next.chat.result}`, '')
       changes += 1
     }
@@ -667,7 +672,10 @@ export function codesForChanges(changed: string[], questions: QuestionPaths[], s
   return { watched, codes }
 }
 
-export type Regression = { code: string; id: string; was: Result; now: Result | 'no page' }
+/** A page check that got worse, or a run whose chat broke a countable rule, which has no approved result to name. */
+export type Regression =
+  | { kind: 'page'; code: string; id: string; was: Result; now: Result | 'no page' }
+  | { kind: 'chat'; code: string; id: string }
 
 /**
  * The questions whose chat broke a countable English rule. The chat has no approved result to compare with:
@@ -676,7 +684,7 @@ export type Regression = { code: string; id: string; was: Result; now: Result | 
 export function chatFailures(results: RunResults): Regression[] {
   return results.questions
     .filter(question => question.chat.result === 'fail')
-    .map(question => ({ code: question.code, id: CHAT_CHECK.id, was: 'n/a' as Result, now: 'fail' as Result }))
+    .map(question => ({ kind: 'chat', code: question.code, id: CHAT_CHECK.id }))
 }
 
 /**
@@ -691,8 +699,8 @@ export function regressions(results: RunResults, eChecks: CheckDef[]): Regressio
   for (const question of results.questions) {
     for (const row of rows(question, eChecks, rList)) {
       if (row.approved !== 'pass') continue
-      if (!question.new) found.push({ code: question.code, id: row.id, was: row.approved, now: 'no page' })
-      else if (row.new === 'fail') found.push({ code: question.code, id: row.id, was: row.approved, now: row.new })
+      if (!question.new) found.push({ kind: 'page', code: question.code, id: row.id, was: row.approved, now: 'no page' })
+      else if (row.new === 'fail') found.push({ kind: 'page', code: question.code, id: row.id, was: row.approved, now: row.new })
     }
   }
   return [...found, ...chatFailures(results)]
@@ -715,7 +723,7 @@ export function renderComment(results: RunResults, eChecks: CheckDef[], names: R
     lines.push(`**${found.length} regression${found.length === 1 ? '' : 's'}**: checks the approved page passes that the new page does not, and chat wording that breaks a countable rule.`, '')
     for (const r of found) {
       const name = `${r.code} ${r.id}${names[r.id] ? ` ${names[r.id]}` : ''}`
-      lines.push(r.id === CHAT_CHECK.id ? `- ${name}: the run's chat broke a countable rule` : `- ${name}: approved ${r.was}, new ${r.now}`)
+      lines.push(r.kind === 'chat' ? `- ${name}: the run's chat broke a countable rule` : `- ${name}: approved ${r.was}, new ${r.now}`)
     }
   } else {
     lines.push('**No regressions**: every check the approved page passes, the new page passes or did not run.')
