@@ -49,6 +49,11 @@ that breaks it, and write the fix as a replacement line the author can paste.
   person must press and then goes on working (another tool call, a question, a page) in the same
   reply, and one that draws a reference widget and then waits on it. Mark it `n/a` for agent
   files, unattended runs, and calls the changed text does not say draw a widget.
+- **C5** Wording an instruction gives the main thread to say in a setup reply, a storyline
+  check-in, or a close-out follows `references/english-rules.md`. Fail an example or template of
+  one of those messages that breaks a rule in that file's table; read the table, do not go from
+  memory. Mark it `n/a`
+  when the change gives the main thread no chat wording.
 - **L1** A new flow is one row in `SKILL.md`'s **Sections** index and one `references/<flow>.md`
   file. Fail a flow's steps written into a `SKILL.md`.
 - **M2** An agent asks for the fields named in page-standard's required-metrics row for its
@@ -73,6 +78,14 @@ that breaks it, and write the fix as a replacement line the author can paste.
   option.
 - **Q2** A new flow's questions, with their options and which one is recommended, are written in
   its own reference file. Fail a question whose options the agent is told to make up at run time.
+- **Q3** An instruction that shapes the first message of an interactive run, the one that carries
+  the setup picker, keeps the opening lines of `references/orchestration.md`, section 2, **Before
+  the questions**. Fail an instruction that opens a run with questions only, that shows a question
+  code (I2, P1) to the person in the setup reply, that promises a metric a
+  connection does not add, or that adds an approval to a run without naming it in the "This run
+  will ask you to approve" line. Mark it `n/a` for
+  unattended runs and for changes that touch neither the first message nor what a run asks the
+  person to approve.
 - **P2** A new question code an agent answers has an eval question in `scripts/eval/questions.json`.
   Fail it when the diff adds a question code to an agent spec and adds no eval question for it.
 - **P3** A pull request that adds or changes a rule fills in **Question rerun** and **The gap it

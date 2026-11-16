@@ -8,8 +8,8 @@ import { dirname, join, resolve } from 'node:path'
 import {
   ATLAS_READS, ATLAS_WRITES, HARNESS_VERSION, barChecks, compareRuns, extractPageCheckScript, fill, findJsonWithKey, configuredQuestions,
   findPage, forBaseline, normalizeResult, readerResult, checkNames as namesFrom, stripTitlePrefix, parsePageCheck, parseStream, renderQuestion, renderRun, rIds, stripDataUris,
-  parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength,
-  type CheckDef, type PageChecks, type QuestionResult, type Result, type RunResults, type Turn,
+  parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, checkChat, chatCodes, chatFailures, noChat, normalizeRun,
+  type ChatChecks, type ChatRules, type CheckDef, type PageChecks, type QuestionResult, type Result, type RunResults, type Turn,
 } from './lib'
 import { renderPage } from '../render-page'
 
@@ -49,6 +49,8 @@ type Question = {
 type Local = {
   mcp?: { url: string; name?: string; tokenEnv?: string }
   organization?: string
+  /** Names that hold a code by chance (a product such as "Canon R5"), left out of the chat count. */
+  chatAllow?: string[]
   questions?: Record<string, { brand?: string; approved?: string | null; approvedFile?: string | null }>
 }
 type Options = {
@@ -164,7 +166,7 @@ function resolveRun(name: string): RunResults {
     join(BASELINES, name, 'results.json'), join(RUNS, name, 'results.json'), join(name, 'results.json'), name,
   ]
   const path = candidates.find(candidate => candidate && existsSync(candidate) && statSync(candidate).isFile())
-  return path ? readJson(path) : fail(`no run or baseline named "${name}"`)
+  return path ? normalizeRun(readJson(path)) : fail(`no run or baseline named "${name}"`)
 }
 
 // ---------------------------------------------------------------- the checks, the same for both pages
@@ -374,11 +376,11 @@ async function startingSession(cwd: string): Promise<{ connectors: string[]; too
 
 type Rerun = {
   link: string | null; rounds: number; transcriptTokens: number; billedTokens: number; compactions: number
-  costUsd: number; problems: string[]; model: string | null
+  costUsd: number; problems: string[]; model: string | null; chat: ChatChecks
 }
 
 /** Ask the question the way a person would, answer what the flow asks back, and keep the page it publishes. */
-async function rerun(question: Question, config: any, local: Local, qDir: string, captured: string, atlasMcp: string, options: Options): Promise<Rerun> {
+async function rerun(question: Question, config: any, local: Local, chatRules: ChatRules, qDir: string, captured: string, atlasMcp: string, options: Options): Promise<Rerun> {
   const work = join(qDir, 'work')
   mkdirSync(work, { recursive: true })
   const brand = local.questions?.[question.code]?.brand ?? fail(`local.json names no brand for ${question.code}`)
@@ -414,6 +416,7 @@ async function rerun(question: Question, config: any, local: Local, qDir: string
   let link: string | null = null
   let file: string | null = null
   let last: Turn | null = null
+  const turns: Turn[] = []
   let billed = 0
   let cost = 0
   let compactions = 0
@@ -421,6 +424,7 @@ async function rerun(question: Question, config: any, local: Local, qDir: string
     console.error(`  ${question.code}: turn ${rounds + 1}`)
     const turn = await claude(session ? [...args, '--resume', session] : args, prompt, work, join(qDir, `turn-${rounds + 1}.jsonl`), options.timeoutMin)
     last = turn
+    turns.push(turn)
     session = turn.sessionId ?? session
     model = turn.model ?? model
     billed += turn.billedTokens
@@ -459,19 +463,25 @@ async function rerun(question: Question, config: any, local: Local, qDir: string
   }
   if (existsSync(captured) && !link) problems.push(publishes ? 'The run wrote a page but returned no link for it' : 'The page was saved as a file: this Claude Code cannot publish pages')
   if (!existsSync(captured) && link) problems.push('The run published a page but its file was not found, so the new page is not graded')
-  return { link, rounds, transcriptTokens: last?.contextTokens ?? 0, billedTokens: billed, compactions, costUsd: cost, problems, model }
+  // The setup reply, the storyline check-ins and the close-out, counted for arrows, "vs" and codes (docs/STANDARD.md, C5).
+  // The last reply is a close-out only when the run published or its agent finished. The messages and the words
+  // each count matched stay in the run folder, which is never committed or uploaded.
+  const closed = Boolean(link) || Boolean(last && !last.failed && findPage(last).finished)
+  const chat = checkChat(turns, closed, chatRules)
+  writeFileSync(join(qDir, 'chat.json'), JSON.stringify({ ...chat.checks, text: chat.messages, hits: chat.hits }, null, 2) + '\n')
+  return { link, rounds, transcriptTokens: last?.contextTokens ?? 0, billedTokens: billed, compactions, costUsd: cost, problems, model, chat: chat.checks }
 }
 
-async function runQuestion(question: Question, config: any, local: Local, eChecks: any[], runDir: string, atlasMcp: string, emptyMcp: string, options: Options): Promise<{ result: QuestionResult; model: string | null }> {
+async function runQuestion(question: Question, config: any, local: Local, eChecks: any[], chatRules: ChatRules, runDir: string, atlasMcp: string, emptyMcp: string, options: Options): Promise<{ result: QuestionResult; model: string | null }> {
   const qDir = join(runDir, question.code)
   mkdirSync(qDir, { recursive: true })
   const captured = join(qDir, 'page.html')
   let run: Rerun
   if (options.page) {
     copyFileSync(options.page, captured)
-    run = { link: null, rounds: 0, transcriptTokens: 0, billedTokens: 0, compactions: 0, costUsd: 0, problems: ['Graded from a file: the question was not rerun'], model: null }
+    run = { link: null, rounds: 0, transcriptTokens: 0, billedTokens: 0, compactions: 0, costUsd: 0, problems: ['Graded from a file: the question was not rerun'], model: null, chat: noChat() }
   } else {
-    run = await rerun(question, config, local, qDir, captured, atlasMcp, options)
+    run = await rerun(question, config, local, chatRules, qDir, captured, atlasMcp, options)
   }
   const { link, problems } = run
   const hasPage = existsSync(captured)
@@ -492,7 +502,7 @@ async function runQuestion(question: Question, config: any, local: Local, eCheck
       code: question.code, example: question.example, setsBarFor: question.setsBarFor,
       barChecks: barChecks(question.setsBarFor, config.changes),
       page: { link, captured: hasPage }, rounds: run.rounds, transcriptTokens: run.transcriptTokens,
-      billedTokens: run.billedTokens, compactions: run.compactions, costUsd: run.costUsd, new: newChecks, approved: approvedChecks, problems,
+      billedTokens: run.billedTokens, compactions: run.compactions, costUsd: run.costUsd, new: newChecks, approved: approvedChecks, chat: run.chat, problems,
     },
   }
 }
@@ -504,7 +514,7 @@ function baselineFor(name: string): { name: string; results: RunResults } | null
   if (name !== 'newest') return { name, results: resolveRun(name) }
   const dates = existsSync(BASELINES) ? readdirSync(BASELINES).filter(d => existsSync(join(BASELINES, d, 'results.json'))).sort() : []
   const date = dates.at(-1)
-  return date ? { name: date, results: readJson(join(BASELINES, date, 'results.json')) } : null
+  return date ? { name: date, results: resolveRun(date) } : null
 }
 
 let baselineCache: { name: string; results: RunResults } | null | undefined
@@ -525,6 +535,16 @@ async function cleanup(links: string[], runDir: string, emptyMcp: string) {
 }
 
 // ---------------------------------------------------------------- main
+
+/**
+ * The ids and allowed names the chat count runs with, built once per run. The ids come from the question-code
+ * map (orchestration.md) and the reader standard, the E checks and this eval's own question codes.
+ */
+function chatRulesFor(config: any, local: Local, eChecks: CheckDef[]): ChatRules {
+  const sources = ['orchestration.md', 'reader-standard.md'].map(name => readFileSync(join(PLUGIN, 'skills/aspire/references', name), 'utf8'))
+  const codes = chatCodes(sources, [...eChecks.map(check => check.id), ...config.questions.map((question: Question) => question.code)])
+  return { codes, allow: local.chatAllow ?? [] }
+}
 
 // R names come from the reader standard's own table, so a renamed or new check shows as the plugin has it.
 const checkNames = (eChecks: any[]) => namesFrom(eChecks, readFileSync(join(PLUGIN, 'skills/aspire/references/reader-standard.md'), 'utf8'))
@@ -564,6 +584,7 @@ async function main() {
 
   const localPath = join(HERE, 'local.json')
   const local: Local = existsSync(localPath) ? readJson(localPath) : {}
+  const chatRules = chatRulesFor(config, local, eChecks)
   // A question local.json names no brand for is skipped while no baseline holds its approved results: a new
   // question reaches CI before its brand reaches the EVAL_LOCAL_JSON secret. One that has them stops the run,
   // so a lost or mistyped entry cannot drop a gated question. Every report names what was skipped.
@@ -628,7 +649,7 @@ async function main() {
   try {
     for (const question of questions) {
       console.error(`${question.code} · ${question.example}`)
-      const { result, model } = await runQuestion(question, config, local, eChecks, runDir, atlasMcp, emptyMcp, options)
+      const { result, model } = await runQuestion(question, config, local, eChecks, chatRules, runDir, atlasMcp, emptyMcp, options)
       if (!options.model && model) results.model = model
       if (!options.judgeModel && !options.model && model) results.judgeModel = model
       results.questions.push(result)
@@ -645,7 +666,8 @@ async function main() {
   writeFileSync(join(runDir, 'table.md'), renderRun(results, eChecks, names))
   console.error(`Run kept in ${runDir} (table.md is the table to paste; the folder is not committed).`)
   if (options.baseline) storeBaseline(results, options.baseline, eChecks, names)
-  if (results.questions.some(question => !question.new)) process.exit(1)
+  // A run fails when a question published no page, or its chat broke a countable English rule.
+  if (results.questions.some(question => !question.new) || chatFailures(results).length) process.exit(1)
 }
 
 await main()

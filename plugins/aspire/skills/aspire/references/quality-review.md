@@ -497,18 +497,11 @@ Judge only what it prints. Never open the page file with the Read tool or read i
 comments, or its script. Without Python, read the file and judge only the text between its tags,
 leaving out `script` and `style`, and set `textFrom` to `html`.
 
-**What it checks, on every line.** Text marked `[quoted: ...]` is someone else's words (a caption, a
-creator's name): never fix it. Handles, hashtags, links, and emails stay as written.
-
-| # | Check | Fails on |
-| - | ----- | -------- |
-| 1 | Full sentences | Body text that is not a sentence. A heading or label may be a short phrase, but one a reader can parse, never a stack of nouns ("Gift and routine framing lifts posts") |
-| 2 | One tense per section | A section that moves between past and present for the same events |
-| 3 | No arrows, "vs", or shorthand | →, ->, "vs", "vs.", "w/", "&" for "and", "/" for "or", a bare multiplier ("ran at 1.27×") that does not say what it is compared with, and clipped notes ("Top post: unboxing, 2.4x, Tue") |
-| 4 | One idea per sentence | A sentence that carries two claims, or a claim and its caveat |
-| 5 | Every term explained on first use | A term a reader in this role would not use themselves (hook rate, engagement per 1,000 views, CPM, whitelisting) with no plain explanation where it first appears |
-| 6 | Every number in a label matches what it labels | "Top 5" over four rows, "3 creators to contact" beside two, a percent sign on a count, a total that is not the sum shown under it |
-| 7 | Nothing in Atlas's own report words | The report labels R11 bans (**Reader standard**), "picks" or "reads" used as a section or list name where R11 lets them pass, and any other wording that only makes sense inside Atlas's own reports: a question pasted in Atlas's shorthand, a section named for the agent that made it |
+**What it checks, on every line.** The seven checks in **English rules**, **The rules**, which the
+main thread also holds its own chat messages to. Read that table before judging, cite each fix by
+its row number there, and add no check of your own. Text marked `[quoted: ...]` is someone else's
+words (a caption, a creator's name): never fix it. Handles, hashtags, links, and emails stay as
+written.
 
 **Levels.**
 

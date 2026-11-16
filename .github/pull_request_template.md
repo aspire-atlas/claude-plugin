@@ -16,6 +16,7 @@ flow change" here and skip the list.
 - [ ] C2 No inline images in chat
 - [ ] C3 Cards only on request, through the lookup or show tools
 - [ ] C4 After a widget: name the control and stop, or say it is for reference and carry on
+- [ ] C5 The setup reply, the storyline check-in and the close-out follow the English rules (`references/english-rules.md`, **In chat**)
 
 **Load**
 - [ ] L1 One router entry: one **Sections** row and one `references/<flow>.md`; no flow steps in `SKILL.md`
@@ -44,6 +45,7 @@ flow change" here and skip the list.
 **Questions**
 - [ ] Q1 Every question is an `AskUserQuestion` picker with a (Recommended) option and the free text field; none in chat text
 - [ ] Q2 A new flow's questions and their options live in its own reference file
+- [ ] Q3 The setup reply opens with the need, the decision and the result, then the missing connections and the approvals to come; no question code
 
 **Proof**
 - [ ] P1 A new agent ships with its spec, roster rows and orchestration block (`scripts/new-agent.sh` writes them; no `TODO(new-agent)` left)

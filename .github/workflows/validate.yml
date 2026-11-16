@@ -290,7 +290,7 @@ jobs:
         if: steps.report.outputs.status != '' && steps.report.outputs.status != '0'
         run: |
           if [ "${{ steps.report.outputs.status }}" = 1 ]; then
-            echo "::error::A check the approved page passes now fails. The table is in the PR comment and the job summary."
+            echo "::error::A check the approved page passes now fails, or the run's chat broke a countable English rule (C5). The table is in the PR comment and the job summary."
           else
             echo "::error::The eval run stopped before any question finished. See the 'Rerun the questions' step."
           fi
