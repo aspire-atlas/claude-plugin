@@ -99,7 +99,8 @@ run rules. Follow it exactly.
 
 ## Output to the main thread (under 150 words)
 
-- Headline: lead metric vs 28-day median with percent delta.
+- Headline: the primary lens's result with its comparison (reference, **Data pull**, **Ranking**;
+  for `team`, the lead metric vs 28-day median with percent delta).
 - Storyline: the bullets the page opens with, each with the posts, accounts, or views behind
   it; the Slack message and the email carry the same ones (reference, **Scheduled
   (unattended) runs**, Storyline).

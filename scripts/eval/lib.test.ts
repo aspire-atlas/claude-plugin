@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   ATLAS_READS, ATLAS_WRITES, barChecks, compareRuns, extractPageCheckScript, fencedBlocks, fill, findJsonWithKey, configuredQuestions, skippedLine,
-  findPage, forBaseline, normalizeResult, codesForChanges, regressions, renderComment, renderSkipped, renderSlack, COMMENT_MARKER, renderStopped, stripTitlePrefix, checkNames, parsePageCheck, parseStream, renderRun, rIds, rResult, stripDataUris,
+  findPage, forBaseline, normalizeResult, codesForChanges, readerResult, regressions, renderComment, renderSkipped, renderSlack, COMMENT_MARKER, renderStopped, stripTitlePrefix, checkNames, parsePageCheck, parseStream, renderRun, rIds, rResult, stripDataUris,
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, type PageChecks, type QuestionResult, type RunResults,
 } from './lib'
 
@@ -160,10 +160,19 @@ test('compare lists only what changed and marks a changed approved result as dri
   expect(compareRuns(run(), run(), E_CHECKS)).toContain('No check changed.')
 })
 
+test('every question\'s reader has a row in the result table the judge is handed', () => {
+  const config = JSON.parse(readFileSync(join(import.meta.dir, 'questions.json'), 'utf8'))
+  const lens = readFileSync(join(ROOT, 'plugins/aspire/skills/aspire/references/recipient-lens.md'), 'utf8')
+  for (const question of config.questions) expect(readerResult(lens, question.reader)?.result).toBeTruthy()
+  expect(readerResult(lens, 'performance')).toEqual({ result: 'Sign-ups, sales, and cost per result', standIn: 'Engagement per 1,000 views' })
+  expect(readerResult(lens, 'nobody')).toBeNull()
+  expect(readerResult('no table here', 'team')).toBeNull()
+})
+
 test('the question set, the checks, and the Atlas tool lists hold together', () => {
   const config = JSON.parse(readFileSync(join(import.meta.dir, 'questions.json'), 'utf8'))
   const eChecks = JSON.parse(readFileSync(join(import.meta.dir, 'e-checks.json'), 'utf8')).checks
-  expect(config.questions.map((q: any) => q.code)).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1'])
+  expect(config.questions.map((q: any) => q.code)).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1'])
   expect(eChecks.map((c: any) => c.id)).toEqual(['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'E8'])
   for (const question of config.questions) {
     expect(question.ask).toContain('{brand}')
@@ -230,13 +239,15 @@ test('a pull request reruns the questions its changed agents and flow files answ
   const pick = (changed: string[]) => codesForChanges(changed, config.questions, config.sharedPaths).codes
   expect(pick(['README.md', 'docs/STANDARD.md'])).toEqual([])
   expect(pick(['plugins/aspire/agents/atlas-market-signal.md'])).toEqual(['O2', 'O3'])
+  expect(pick(['plugins/aspire/agents/atlas-ad-reuse.md'])).toEqual(['P1'])
+  expect(pick(['plugins/aspire/skills/aspire/references/ad-reuse.md'])).toEqual(['P1'])
   expect(pick(['plugins/aspire/skills/aspire/references/creator-vetting.md', 'plugins/aspire/agents/atlas-creator-brief.md'])).toEqual(['I4', 'I1'])
-  // A watched file no question answers reruns nothing; a file every flow reads reruns all six.
+  // A watched file no question answers reruns nothing; a file every flow reads reruns all seven.
   expect(pick(['plugins/aspire/agents/atlas-shops.md'])).toEqual([])
-  expect(pick(['plugins/aspire/skills/aspire/references/reader-standard.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1'])
-  // The page standard and the router shape every page, so a change to either reruns all six.
-  expect(pick(['plugins/aspire/skills/page-standard/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1'])
-  expect(pick(['plugins/aspire/skills/aspire/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1'])
+  expect(pick(['plugins/aspire/skills/aspire/references/reader-standard.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1'])
+  // The page standard and the router shape every page, so a change to either reruns all seven.
+  expect(pick(['plugins/aspire/skills/page-standard/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1'])
+  expect(pick(['plugins/aspire/skills/aspire/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1'])
   expect(pick(['plugins/aspire/skills/org-admin/SKILL.md'])).toEqual([])
   // Every path a question names exists, so a renamed agent cannot silently stop rerunning its question.
   for (const path of [...config.questions.flatMap((q: any) => q.paths), ...config.sharedPaths]) {

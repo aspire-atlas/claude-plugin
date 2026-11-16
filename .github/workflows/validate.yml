@@ -164,13 +164,13 @@ jobs:
 
   # The page eval (scripts/eval/README.md, "In CI"). On a pull request it reruns only the questions the changed
   # agents and flow files answer, posts the table as one comment edited in place, and fails only on a regression:
-  # a check the approved page passes that the new page fails. Nightly it reruns all six on develop and posts to
+  # a check the approved page passes that the new page fails. Nightly it reruns all seven on develop and posts to
   # Slack. Pages it publishes are titled "CI eval" and deleted at the end of the run.
   eval:
     needs: validate
     if: github.event_name != 'push'
     runs-on: ubuntu-latest
-    # A pull request reruns the questions its files answer, and all six when it touches a shared path such as the
+    # A pull request reruns the questions its files answer, and all seven when it touches a shared path such as the
     # page standard, the same work as the nightly run, so both get its limit. Questions run one after another.
     timeout-minutes: 240
     # A new push to a pull request cancels the eval still running for the old one. Only this job: push runs of
