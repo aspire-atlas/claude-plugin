@@ -59,7 +59,7 @@ agent only through this skill or a shortcut.
    the turn. Never wait on it, poll it, or sleep.
 3. **Ask before, never during.** Every question, write confirmation, and picker the flow lists
    for the launch is asked first, in the main thread, because agents never ask: in one setup
-   reply (**Orchestration contract** **2**) that repeats the question with its code, names the
+   reply (**Orchestration contract** **2**) that repeats the question in its wording, names the
    reader, and gives the time estimate. Questions an agent raises come back in its result packet
    and are asked when it arrives. Write the launch's Runs row (**9** there).
 4. **When it finishes.** Its result arrives as a task notification.
@@ -169,8 +169,8 @@ team catalog, and how agents render for a lens are in **Recipient lens**.
    or date the user names ("for Thursday's product review"). Pick a primary lens and, when a
    hand-off applies (Performance then Creative; Campaign then Brand), a second one.
 2. **Confirm in one line.** When the run has a setup reply (**Orchestration contract** **2**), name
-   the reader in its Heard question, in the question's wording and never its code, instead of
-   asking "For" on its own.
+   the reader in its Heard question, in the question's wording (no code, **Orchestration
+   contract** **3**), instead of asking "For" on its own.
    Otherwise one `AskUserQuestion`, header "For", in the same call as the flow's first question when
    there is one. Word it as the guess ("This reads like it's for the product review. Should I track
    it weekly and add a messaging view for PMM?"). Options: the guess (Recommended), one or two other

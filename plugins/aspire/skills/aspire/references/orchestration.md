@@ -87,8 +87,7 @@ questions per call, so the call holds, in this order:
 
 1. **Heard**, header "Heard". The question repeated in the map's wording, the reader, and the
    time estimate: "I heard: should we work with @handle, and what would it cost? For you, about
-   15 minutes. Right?" The code never appears in the wording of this or any other question in
-   the reply (**3**). Options: "Yes, run it (Recommended)", the next
+   15 minutes. Right?" No code in it (**3**). Options: "Yes, run it (Recommended)", the next
    closest code in its wording, and, when the persona is unknown, "I'm on the paid side" or the
    other persona that fits the ask. The free text field corrects anything. It also names the
    metrics the page will be judged on, from the code's row in **Page standard**, section 8, and
@@ -129,74 +128,78 @@ unattended run.
 
 ### Before the questions
 
-People answered the picker without knowing what they would get, did not learn why connecting an
-account helps, and met approval prompts mid-run with no warning. So the message that carries the
-picker opens with up to five plain lines, written before the `AskUserQuestion` call. They are
-statements, never questions: every question stays in the picker. No heading, no table, no bold,
-no question code, and no tool, record, or agent name.
+The message that carries the picker opens with up to five plain lines, written before the
+`AskUserQuestion` call. They are statements, never questions: every question stays in the picker.
+No heading, no table, no bold, no question code (**3**), and no tool, record, or agent name.
 
 1. **One sentence: the need, the decision, the result.** What the person probably needs (the
    question in the map's wording, **3**, with the handle, brand, or launch from the ask), the
-   decision the page will help its reader make (the primary lens's "Decision it feeds" in
-   **Recipient lens**, **Team catalog**), and the result that reader is judged on (**Recipient
-   lens**, **The result each reader is judged on**). Name the reader only when it is not the
-   person asking. "You need to know which creator posts to run as ads and how to cut them. The
-   page will help your paid team decide what to license and put spend behind, to bring in
+   decision the page will help its reader make, and the result that reader is judged on (the
+   primary lens's "Decision it feeds" and "Result they are judged on" in **Recipient lens**,
+   **Team catalog**). For the `team` reader the result follows the persona (**1**, step 1); with
+   the persona unknown, the sentence stops at the decision. Name the reader only when it is not
+   the person asking. "You need to know which creator posts to run as ads and how to cut them.
+   The page will help your paid team decide what to license and put spend behind, to bring in
    sign-ups and sales."
 2. **The connections that would improve this answer, one line each, three at most.** Build them
-   from the `get_status` already in hand (Phase 2 + 3) and the table below; make no extra call.
-   List a connection only when it is missing or its authorization has expired on the Profile the
-   run reads, and only when the question's row in **Page standard**, section 8, uses what it
-   adds. Each line names the connection and what it adds for this question: "Connect Instagram:
-   adds saves and shares for your own posts." Say "Reconnect" for an expired one. When nothing
-   is missing, write no line and do not say so. The lines inform; they never hold the run, and
-   "Connect the account first" stays the storyline step's own option.
+   from what Phase 2 + 3 already read (`get_status`, and the ad accounts when the session holds
+   them) and the table below; make no extra call, and write no line for a connection whose state
+   the session does not hold. List a connection only when none of the organization's profiles
+   has a live one, the any-profile rule of `skills/page-standard/network-metrics.md`, so nobody
+   is sent to connect an account that is already connected. List it only when the question's
+   row in **Page standard**, section 8, is one the table names for it. Each line names the
+   connection and what it adds for this question: "Connect Instagram: adds saves and shares for
+   your own posts." Say "Reconnect" when the connection exists and its authorization has
+   expired. When nothing is missing, write no line and do not say so. The lines inform; they
+   never hold the run, and "Connect the account first" stays the storyline step's own option.
 
    | Connection | What it adds | For questions on these rows of section 8 |
    | ---------- | ------------ | ---------------------------------------- |
-   | The brand's own Instagram account | Saves and shares for your own posts | What landed and why; Ads and cut-downs |
-   | The brand's own YouTube channel | Shares for your own videos | What landed and why; Ads and cut-downs |
-   | A Meta ad account | Paid results for your ads, kept apart from organic | Ads and cut-downs |
+   | The brand's own Instagram account | Saves and shares for the brand's own posts | What landed and why |
+   | The brand's own YouTube channel | Shares for the brand's own videos | What landed and why |
+   | A Meta ad account | Paid results for the brand's ads, kept apart from organic | Ads and cut-downs |
 
-   A flow's section may add a row for a connection only it uses (a store, a mailbox). Never
-   promise a metric the table or that section does not name.
-3. **One line: "This run will ask you to approve: …".** Every approval and confirmation the run
-   can reach, in the order the person will meet them, separated by semicolons, with the
-   host's own prompt as a closing sentence. Build it from
-   the agent's row in **7** (both agents' rows for a code with two) and the table below, and
-   leave out what this run cannot reach. Give a cost wherever one is known, from the same
-   sources the Credits question uses.
+   Saves and shares show only for the account that posted, so connecting the brand's account
+   adds nothing for creators' posts: never list it on a run that ranks creators' posts. A flow's
+   section may add a row for a connection only it uses (a store, a mailbox). Never promise a
+   metric the table or that section does not name.
+3. **One line: "This run will ask you to approve: …".** Every approval and confirmation the
+   main thread already knows the run will reach, in the order the person will meet them,
+   separated by semicolons, with the host's own prompt as a closing sentence. Build it from the
+   questions this run asks and the table below, and leave out what this run cannot reach. Give
+   a cost wherever one is known, from the same sources the Credits question uses.
 
    | The run | The line names |
    | ------- | -------------- |
    | Builds a new page, interactive (**The storyline**) | "the page's three main points, before I build it" |
-   | The agent's level is `spend` and this run will spend | "up to {n} fetches on your Atlas credits ({balance} left)" |
-   | The agent's file allows lookups, so it may offer a freshness refresh (**7**) | "a refresh of any account that is out of date (the refresh is free and the new posts it collects use credits)" |
-   | The agent's level is `write` or higher | "saving {what the agent's row in **7** says it saves} to Atlas" |
+   | Asks the Credits question (the agent's level is `spend` and this run will spend) | "up to {n} fetches on your Atlas credits ({balance} left)" |
+   | Reads an account this session already holds as behind its pace, in a run **Page standard**, section 9.5, says asks first | "a refresh of {@handle}, which is out of date (the refresh is free and the new posts it collects use credits)" |
+   | Asks the Save question, in this reply or in the storyline call | "saving {what the Save question names: the findings, the ranked posts} to Atlas" |
    | The agent's row in **7** names mailbox drafts | "drafts in your mailbox, which send nothing" |
    | The flow sends its page to Slack or email and no routing is saved | "sending the page to {Slack or email}" |
-   | The agent's level is `send` | "each {message, order, discount code, or payment}, one at a time, after the run" |
+   | The agent's level is `send` | "each {what the agent's row in **7** sends: message, order, or discount code}, one at a time, after the run" |
    | Always, last: the host can prompt for any Atlas tool not set to Always allow (SKILL.md, **1.6 Always allow Atlas tools**) | "Claude itself may also ask to let Atlas's tools run" |
 
-   A run that reaches none of the rows above the last says "This run asks you to approve
-   nothing.", then the last row's sentence. The line only
-   announces. Each approval is still asked by its own question when it comes due (**7**), and
-   naming it here approves nothing.
+   The main thread does not know before the launch whether an account is out of date unless the
+   session already read it, so a refresh found later is not in the line; it is called out as
+   below. A run that reaches none of the rows above the last says "This run asks you to approve
+   nothing.", then the last row's sentence. The line only announces. Each approval is still
+   asked by its own question when it comes due (**7**), and naming it here approves nothing.
 
 **An approval the line did not name.** When a packet brings a proposal the line did not name (a
-level raised in **7**, step 1, or a refresh the agent could not foresee), say so in one line
-before its question ("One more approval than I listed: …"), and log it (**9**, Adjustments).
+level raised in **7**, step 1, or a refresh nobody could foresee), say so in one line before its
+question ("One more approval than I listed: …"), and log it (**9**, Adjustments).
 
 **When the lines are not written.** An unattended run writes nothing and asks nothing. A second
 setup call for the same request (the flow's own questions that did not fit, a Save asked after
 Heard's free text) does not repeat them. A storyline redraft never repeats the setup reply.
 
-**A good opening and a bad one.** Good, for an ad-reuse ask on a brand with no Instagram
+**A good opening and a bad one.** Good, for an ad-reuse ask on a brand with no Meta ad account
 connected:
 
 > You need to know which creator posts to run as ads and how to cut them. The page will help
 > your paid team decide what to license and put spend behind, to bring in sign-ups and sales.
-> Connect Instagram: adds saves and shares for your own posts.
+> Connect a Meta ad account: adds paid results for your ads, kept apart from organic.
 > This run will ask you to approve: the page's three main points, before I build it; saving
 > the ranked posts to Atlas. Claude itself may also ask to let Atlas's tools run.
 
@@ -205,8 +208,9 @@ Then the picker. Bad:
 > I heard P1. Before I start, please answer the questions below.
 
 It names a code the person never chose, says nothing about what the page will help decide, hides
-that connecting Instagram would add saves and shares, and leaves the storyline question and
-the save to arrive mid-run as surprises.
+that connecting a Meta ad account would add paid results, and leaves the storyline question and
+the save to arrive mid-run as surprises. People then answer the picker without knowing what they
+will get, and meet approval prompts with no warning.
 
 ### The storyline (before a new page)
 
@@ -681,8 +685,8 @@ the next interactive session.
 ## 8. Several questions at once
 
 When a person asks several questions in one message, map each to a code and run up to three
-agents in parallel. One setup reply covers all of them (the Heard question lists each code on its
-own line), then each launches with its own launch block. A fourth waits until one returns. Two
+agents in parallel. One setup reply covers all of them (the Heard question lists each question in its
+wording on its own line), then each launches with its own launch block. A fourth waits until one returns. Two
 codes that share an agent, or where one needs the other's result (**3**), run one after the other.
 **Running agents**, step 5, still holds: two runs never write the same record.
 
