@@ -40,6 +40,18 @@ export type PageChecks = {
   notes: string[]
 }
 
+export type ChatMessage = 'setup' | 'storyline' | 'closeOut' | 'stoppedOn'
+
+export type ChatCount = { arrows: number; vs: number; codes: number }
+
+/** The countable English rules, counted in the chat messages a run sends (docs/STANDARD.md, C5). */
+export type ChatChecks = {
+  /** `fail` when any message breaks a countable rule, `not run` when the transcript held none of them. */
+  result: Result
+  /** One entry per kind of message the run sent. Every storyline check-in adds to the one storyline count. */
+  messages: Partial<Record<ChatMessage, ChatCount>>
+}
+
 export type QuestionResult = {
   code: string
   example: string
@@ -53,6 +65,8 @@ export type QuestionResult = {
   costUsd: number
   new: PageChecks | null
   approved: PageChecks | null
+  /** `not run` for a question graded from a file, and for results stored before the chat check (normalizeRun). */
+  chat: ChatChecks
   problems: string[]
 }
 
@@ -198,6 +212,170 @@ export function findPage(turn: Turn): { link: string | null; file: string | null
   return { link, file: file ?? saved ?? written, finished: packets.length > 0 && !awaitingStoryline }
 }
 
+/** Every word of an AskUserQuestion call that the person reads: each question, its option labels and their descriptions. */
+export function askText(input: Record<string, any>): string {
+  const parts: unknown[] = []
+  for (const question of Array.isArray(input?.questions) ? input.questions : []) {
+    parts.push(question?.question)
+    for (const option of Array.isArray(question?.options) ? question.options : []) parts.push(option?.label, option?.description)
+  }
+  return parts.filter(part => typeof part === 'string' && part.trim()).join('\n')
+}
+
+const isStorylineAsk = (use: ToolUse) =>
+  (Array.isArray(use.input?.questions) ? use.input.questions : []).some((q: any) => /storyline/i.test(String(q?.header ?? '')))
+
+/**
+ * The chat messages a run sends, as the person reads them: the setup reply, every storyline check-in (a
+ * Change or Widen answer brings a redraft, and each one is read) and the close-out. A question is read from
+ * the AskUserQuestion call and, when the turn ended on it, from the turn's reply as well, since a host that
+ * refuses the tool asks in text. The last turn's reply is the close-out only when the run `closed`: it
+ * published a page or its agent finished. A run that stopped earlier sent no close-out, and its last reply is
+ * the question it stopped on: part of the setup reply or of a storyline check-in when it stopped there, and
+ * `stoppedOn` when it stopped on any later question, so no reply the person read goes uncounted.
+ */
+export function chatMessages(turns: Turn[], closed: boolean): Partial<Record<ChatMessage, string>> {
+  const found: Partial<Record<ChatMessage, string>> = {}
+  if (!turns.length) return found
+  const asks = (turn: Turn, storyline: boolean) =>
+    turn.toolUses.filter(use => use.main && use.name === 'AskUserQuestion' && isStorylineAsk(use) === storyline).map(use => askText(use.input))
+  const isStoryline = (turn: Turn) =>
+    asks(turn, true).length > 0 || fencedBlocks(turn.text, 'result-packet').some(packet => parseJsonLoose(packet)?.storyline?.pass === 'draft')
+  const last = turns.length - 1
+  // A turn's reply is a question the person read, unless it is the close-out.
+  const asked = (i: number) => (i < last || !closed ? [turns[i].reply] : [])
+  const setup = [...asks(turns[0], false), ...(isStoryline(turns[0]) ? [] : asked(0))].filter(Boolean)
+  if (setup.length) found.setup = setup.join('\n')
+  const storyline = turns.flatMap((turn, i) => (isStoryline(turn) ? [...asks(turn, true), ...asked(i)] : [])).filter(Boolean)
+  if (storyline.length) found.storyline = storyline.join('\n')
+  if (closed && !turns[last].failed && turns[last].reply) found.closeOut = turns[last].reply
+  if (!closed && last > 0 && !isStoryline(turns[last])) {
+    const stoppedOn = [...asks(turns[last], false), turns[last].reply].filter(Boolean)
+    if (stoppedOn.length) found.stoppedOn = stoppedOn.join('\n')
+  }
+  return found
+}
+
+/** What the count needs from outside this file: the ids that count as codes, and the names that hold one by chance. */
+export type ChatRules = { codes: string[]; allow: string[] }
+
+/**
+ * The ids the count knows as codes, read from the files that own them: every id that opens a table row in
+ * `sources`, and the ids given in `extra`. The caller passes only the two files whose ids are not ordinary
+ * words in brand chat, the question-code map and the reader standard, with the E checks and the eval's own
+ * question codes as `extra`. A new id added to one of those is counted from the next run on. Each flow's own
+ * question ids (F1, M1, S3, X5, about eighty of them) are left out on purpose: they read as product names, and
+ * a false count blocks a merge. The English read's and the UX review's finding ids are numbered per run, so
+ * countChat knows them by their shape instead.
+ */
+export function chatCodes(sources: string[], extra: string[] = []): string[] {
+  const ids = new Set(extra)
+  for (const source of sources) {
+    for (const match of source.matchAll(/^\| \*{0,2}([A-Z]{1,2}\d{1,2})\*{0,2} \|/gm)) ids.add(match[1])
+  }
+  return [...ids].sort()
+}
+
+const ARROWS = /[→⇒➜➔➡⟶⟹]|(?<![-<!])->|(?<![<=>!])=>/g
+const VS = /\bvs\b\.?/gi
+const CODE_SHAPE = /\b[A-Z]{1,2}\d{1,3}\b/g
+// Names left out of every count, whatever the brand: "VS Code" is a product, not "versus".
+const ALWAYS_ALLOWED = ['VS Code']
+const FINDING_ID = /^(?:EN|UX)\d+$/
+
+const CHAT_NAMES: Record<ChatMessage, string> = { setup: 'setup reply', storyline: 'storyline check-in', closeOut: 'close-out', stoppedOn: 'question the run stopped on' }
+
+/**
+ * Drops the words inside quotation marks from one line: they are someone else's and never fixed
+ * (english-rules.md). Straight quotes are dropped in pairs only when the line's quotes balance. An odd count
+ * is first read as an inch mark after a number (12"), and if it still does not balance nothing is dropped, so
+ * a stray quote never hides the text after it from the count.
+ */
+function dropQuoted(line: string): string {
+  const straight = (text: string) => (text.match(/"/g) ?? []).length
+  let text = line
+  if (straight(text) % 2) text = text.replace(/(?<=(?:^|[\s(])\d+(?:\.\d+)?)"/g, ' in')
+  if (straight(text) % 2 === 0) text = text.replace(/"[^"]*"/g, ' ')
+  return text.replace(/“[^”]*”/g, ' ')
+}
+
+/**
+ * Counts the countable English rules in one message. Left out of the count, because the rules leave them as
+ * written or they hold "->" or a code by chance: backticked spans, links, file paths (a run's own folder is
+ * named for its question code), handles and hashtags, quoted words, and the names in `rules.allow` (a product
+ * such as "Canon R5").
+ */
+export function countChat(text: string, rules: ChatRules): { count: ChatCount; hits: string[] } {
+  let clean = text
+    .replace(/`[^`\n]*`/g, ' ')
+    .replace(/https?:\/\/\S+/g, ' ')
+    .replace(/\S*\/\S*\/\S*/g, ' ')
+    .replace(/(^|[^\w])[@#][\w.]+/g, '$1 ')
+  // An empty name would split the text into single letters and hide every count.
+  for (const name of [...ALWAYS_ALLOWED, ...rules.allow]) if (name.trim()) clean = clean.split(name).join(' ')
+  clean = clean.split('\n').map(dropQuoted).join('\n')
+  const codes = new Set(rules.codes)
+  const count: ChatCount = { arrows: 0, vs: 0, codes: 0 }
+  const hits: string[] = []
+  const patterns: [keyof ChatCount, RegExp][] = [['arrows', ARROWS], ['vs', VS], ['codes', CODE_SHAPE]]
+  for (const [key, pattern] of patterns) {
+    for (const match of clean.matchAll(pattern)) {
+      if (key === 'codes' && !codes.has(match[0]) && !FINDING_ID.test(match[0])) continue
+      count[key] += 1
+      const from = Math.max(0, (match.index ?? 0) - 30)
+      hits.push(`${key}: …${clean.slice(from, (match.index ?? 0) + match[0].length + 30).replace(/\s+/g, ' ').trim()}…`)
+    }
+  }
+  return { count, hits }
+}
+
+/** A question with no chat to grade: one graded from a file, or a result stored before the chat check. */
+export const noChat = (): ChatChecks => ({ result: 'not run', messages: {} })
+
+/**
+ * The chat check of one rerun. `messages` and `hits` are the text that was read and the words each count
+ * matched: they are for the run folder only and are never part of a result.
+ */
+export function checkChat(turns: Turn[], closed: boolean, rules: ChatRules): { checks: ChatChecks; messages: Partial<Record<ChatMessage, string>>; hits: string[] } {
+  const checks = noChat()
+  const messages = chatMessages(turns, closed)
+  const hits: string[] = []
+  for (const kind of Object.keys(CHAT_NAMES) as ChatMessage[]) {
+    const text = messages[kind]
+    if (text === undefined) continue
+    const counted = countChat(text, rules)
+    checks.messages[kind] = counted.count
+    hits.push(...counted.hits.map(hit => `${CHAT_NAMES[kind]}, ${hit}`))
+  }
+  const counts = Object.values(checks.messages)
+  if (counts.length) checks.result = counts.some(count => count.arrows + count.vs + count.codes > 0) ? 'fail' : 'pass'
+  return { checks, messages, hits }
+}
+
+/** The chat item of docs/STANDARD.md that the counts prove. */
+export const CHAT_CHECK = { id: 'C5', name: 'Chat wording' }
+
+/**
+ * One line under a question's table: what each message held, or that it was not sent. No quoted
+ * text, so it can go in a PR comment. Null when the chat was not graded.
+ */
+export function chatLine(chat: ChatChecks): string | null {
+  if (chat.result === 'not run') return null
+  const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
+  const parts = (Object.keys(CHAT_NAMES) as ChatMessage[]).map(kind => {
+    const count = chat.messages[kind]
+    if (!count) return kind === 'stoppedOn' ? null : `${CHAT_NAMES[kind]} not sent`
+    if (count.arrows + count.vs + count.codes === 0) return `${CHAT_NAMES[kind]} clean`
+    return `${CHAT_NAMES[kind]} has ${plural(count.arrows, 'arrow')}, ${count.vs} "vs" and ${plural(count.codes, 'code')}`
+  })
+  return `${CHAT_CHECK.name} (${CHAT_CHECK.id}): ${chat.result}. ${parts.filter(Boolean).join('; ')}.`
+}
+
+/** Stored results as this version reads them: a run stored before the chat check has no chat on its questions. */
+export function normalizeRun(results: RunResults): RunResults {
+  return { ...results, questions: results.questions.map(question => ({ ...question, chat: question.chat ?? noChat() })) }
+}
+
 export function fencedBlocks(text: string, label: string): string[] {
   const blocks: string[] = []
   const pattern = new RegExp('```' + label + '[^\\n]*\\n([\\s\\S]*?)```', 'g')
@@ -335,7 +513,8 @@ export function renderQuestion(question: QuestionResult, eChecks: CheckDef[], rL
   const compactions = question.compactions ? `, compacted ${question.compactions} time${question.compactions === 1 ? '' : 's'}` : ''
   lines.push(`Transcript: ${question.transcriptTokens.toLocaleString('en-US')} tokens${compactions} · ` +
     `Confirmation rounds: ${question.rounds} · New page: ${question.page.link ?? (question.page.captured ? 'captured, no link' : 'none published')}`)
-  const notes = [...question.problems, ...(question.new?.notes ?? []).map(n => `New page: ${n}`), ...(question.approved?.notes ?? []).map(n => `Approved page: ${n}`)]
+  const chat = chatLine(question.chat)
+  const notes = [...question.problems, ...(chat ? [chat] : []), ...(question.new?.notes ?? []).map(n => `New page: ${n}`), ...(question.approved?.notes ?? []).map(n => `Approved page: ${n}`)]
   for (const note of notes) lines.push(`- ${note}`)
   const waiting = eChecks.filter(check => check.waitsFor && eResult(question.new, check.id) === 'not run')
   if (waiting.length) lines.push(`- Not run yet: ${waiting.map(check => `${check.id} (${check.waitsFor})`).join(', ')}.`)
@@ -390,8 +569,13 @@ export function compareRuns(before: RunResults, after: RunResults, eChecks: Chec
       }
       lines.push('')
       changes += changed.length
-    } else {
-      lines.push('No check changed.', '')
+    }
+    // A run stored before the chat check has no chat result, so there is nothing to compare it with.
+    const chatChanged = prev.chat.result !== 'not run' && next.chat.result !== 'not run' && prev.chat.result !== next.chat.result
+    if (!changed.length && !chatChanged) lines.push('No check changed.', '')
+    if (chatChanged) {
+      lines.push(`${CHAT_CHECK.name} (${CHAT_CHECK.id}): ${prev.chat.result} → ${next.chat.result}`, '')
+      changes += 1
     }
     const delta = (a: number, b: number) => `${a.toLocaleString('en-US')} → ${b.toLocaleString('en-US')}`
     lines.push(`Transcript tokens: ${delta(prev.transcriptTokens, next.transcriptTokens)} · Confirmation rounds: ${delta(prev.rounds, next.rounds)}`)
@@ -488,12 +672,26 @@ export function codesForChanges(changed: string[], questions: QuestionPaths[], s
   return { watched, codes }
 }
 
-export type Regression = { code: string; id: string; was: Result; now: Result | 'no page' }
+/** A page check that got worse, or a run whose chat broke a countable rule, which has no approved result to name. */
+export type Regression =
+  | { kind: 'page'; code: string; id: string; was: Result; now: Result | 'no page' }
+  | { kind: 'chat'; code: string; id: string }
+
+/**
+ * The questions whose chat broke a countable English rule. The chat has no approved result to compare with:
+ * a broken rule in the run's own chat always counts, and this is the one place that decides it.
+ */
+export function chatFailures(results: RunResults): Regression[] {
+  return results.questions
+    .filter(question => question.chat.result === 'fail')
+    .map(question => ({ kind: 'chat', code: question.code, id: CHAT_CHECK.id }))
+}
 
 /**
  * A regression is a check the approved page passes that the new page fails. A question that published no page
  * regresses on every check its approved page passes. A check the new page did not run, or one with no approved
- * result, is never a regression: the job fails on what it saw fail, and only that.
+ * result, is never a regression: the job fails on what it saw fail, and only that. The chat failures are added
+ * after the page checks (chatFailures).
  */
 export function regressions(results: RunResults, eChecks: CheckDef[]): Regression[] {
   const rList = rIds(results.questions)
@@ -501,11 +699,11 @@ export function regressions(results: RunResults, eChecks: CheckDef[]): Regressio
   for (const question of results.questions) {
     for (const row of rows(question, eChecks, rList)) {
       if (row.approved !== 'pass') continue
-      if (!question.new) found.push({ code: question.code, id: row.id, was: row.approved, now: 'no page' })
-      else if (row.new === 'fail') found.push({ code: question.code, id: row.id, was: row.approved, now: row.new })
+      if (!question.new) found.push({ kind: 'page', code: question.code, id: row.id, was: row.approved, now: 'no page' })
+      else if (row.new === 'fail') found.push({ kind: 'page', code: question.code, id: row.id, was: row.approved, now: row.new })
     }
   }
-  return found
+  return [...found, ...chatFailures(results)]
 }
 
 /** Marks the one eval comment on a pull request, so later pushes edit it instead of adding another. */
@@ -522,8 +720,11 @@ export function renderComment(results: RunResults, eChecks: CheckDef[], names: R
   const missingApproved = results.questions.filter(question => !question.approved).map(question => question.code)
   const lines = [COMMENT_MARKER, `## Page eval · ${results.questions.map(question => question.code).join(', ')}`, '']
   if (found.length) {
-    lines.push(`**${found.length} regression${found.length === 1 ? '' : 's'}**: checks the approved page passes that the new page does not.`, '')
-    for (const r of found) lines.push(`- ${r.code} ${r.id}${names[r.id] ? ` ${names[r.id]}` : ''}: approved ${r.was}, new ${r.now}`)
+    lines.push(`**${found.length} regression${found.length === 1 ? '' : 's'}**: checks the approved page passes that the new page does not, and chat wording that breaks a countable rule.`, '')
+    for (const r of found) {
+      const name = `${r.code} ${r.id}${names[r.id] ? ` ${names[r.id]}` : ''}`
+      lines.push(r.kind === 'chat' ? `- ${name}: the run's chat broke a countable rule` : `- ${name}: approved ${r.was}, new ${r.now}`)
+    }
   } else {
     lines.push('**No regressions**: every check the approved page passes, the new page passes or did not run.')
   }
@@ -554,6 +755,7 @@ export function renderStopped(runUrl: string | null): string {
 export function checkNames(eChecks: { id: string; name: string }[], readerStandard: string): Record<string, string> {
   const names: Record<string, string> = Object.fromEntries(eChecks.map(check => [check.id, check.name]))
   for (const match of readerStandard.matchAll(/^\| (R\d+) \| ([^|]+) \|/gm)) names[match[1]] = match[2].trim()
+  names[CHAT_CHECK.id] = CHAT_CHECK.name
   return names
 }
 

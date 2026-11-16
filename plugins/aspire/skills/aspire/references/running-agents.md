@@ -98,9 +98,10 @@ agent only through this skill or a shortcut.
    launch after a `propose` pass, which is another subagent). A result without a packet
    (other than a sample, a `mode: grade` run, or the agent's "Not started" line) is treated as
    having proposed nothing: carry out nothing from it and say so. Check the result
-   before telling the user it is done. Close out each published page in one line
-   (**Orchestration contract** **10**): the question, the link, the checks fixed or still
-   failing by name from its `page-check` block (`skills/page-standard/SKILL.md`), and anything a
+   before telling the user it is done. Close out each published page in one short paragraph
+   (**Orchestration contract** **10**): the question in its wording, the link, the checks fixed or still
+   failing from its `page-check` block (`skills/page-standard/SKILL.md`), each said as what it means
+   for the reader and never by its id, and anything a
    reviewer should know, and tell the requester its `gaps`. To fix a check still
    failing, offer **Apply the fixes** (**Quality review**, Run step 5), with one fix per `fail`
    in `stillFailing` written as `{check}, page: make it pass ({reason})`; leave out `n/a` lines
@@ -169,8 +170,7 @@ team catalog, and how agents render for a lens are in **Recipient lens**.
    or date the user names ("for Thursday's product review"). Pick a primary lens and, when a
    hand-off applies (Performance then Creative; Campaign then Brand), a second one.
 2. **Confirm in one line.** When the run has a setup reply (**Orchestration contract** **2**), name
-   the reader in its Heard question, in the question's wording, instead of
-   asking "For" on its own.
+   the reader in its Heard question, beside the question in its wording, instead of asking "For" on its own.
    Otherwise one `AskUserQuestion`, header "For", in the same call as the flow's first question when
    there is one. Word it as the guess ("This reads like it's for the product review. Should I track
    it weekly and add a messaging view for PMM?"). Options: the guess (Recommended), one or two other
