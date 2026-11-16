@@ -207,7 +207,7 @@ for the row, from the Sheet or from F1 (**State written to Atlas**):
 
 **Reopened rows.** An undecided row (blank or unreadable) is **reopened** when the creator's newest
 `feedback` finding of any kind carries the row's `applicantId` and has `sheetCall: true`:
-the team took back in the Sheet a call saved from there, and made none since in F1 or chat. It is
+the team took back in the Sheet a call saved from there, and made none since in F1. It is
 vetted like any undecided row, and the team's F1 answer on it replaces the old call.
 
 **`sheet_calls`** go to the agent: for each decided row, the handle, network, account id,
