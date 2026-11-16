@@ -197,13 +197,11 @@ between them are a conflict: offer neither call, and name the rows in F1. List t
 duplicates with the unreadable rows.
 
 Decided rows go through **Check what Atlas holds** with the list, so each Sheet call has its
-account id. They are never fetched and never counted in R3. Every list entry from the Sheet
-carries its applicant id.
+account id. They are never fetched and never counted in R3.
 
 **Which Sheet calls are new.** Compare each decided row's Sheet call with the newest `feedback`
-finding carrying one of its applicant ids for the same creator (`entityId`). Every `feedback` finding
-written for a creator whose list came from a review Sheet carries its row's `applicantId`, so
-this is the last call saved for the row, from the Sheet or from F1:
+finding carrying one of its applicant ids for the same creator (`entityId`): the last call saved
+for the row, from the Sheet or from F1 (**State written to Atlas**):
 
 - The same call: unchanged and not offered, so a newer call the team made in chat stands.
 - A different call, or no such finding: **new**.
@@ -655,7 +653,7 @@ F1 saves a new call for them. With no team calls yet it is the recommendations, 
 "Recommendations, not yet the team's calls". The main thread gives it in chat after the last
 batch's F1, covering the whole list, with "(Sheet only)" after a Sheet call that is not saved to
 Atlas and the unreadable Sheet rows under it. The page carries it as a button (**The page**,
-Decisions).
+Decisions) with neither.
 
 **Feedback outside a run.** Feedback about a creator outside a run ("never use @handle again",
 "@handle was great to work with") is saved the same way: word the note, confirm it with
@@ -808,8 +806,7 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
    sits on the edge of), each proposed change to the criteria with the finding behind it, and,
    after a visual check, the creators whose read is Low confidence, to confirm by eye.
    Questions that settle one creator stay on that creator's card. Below them, a **Copy
-   decisions** button with the text from **Copy decisions** (**The feedback loop**), with no
-   "(Sheet only)" marking and no unreadable rows. The button and the cards' Team chips show the
+   decisions** button with the page's text from **Copy decisions** (**The feedback loop**). The button and the cards' Team chips show the
    calls as they stood when the page was published; calls F1 saves afterwards show on the list's
    next republish.
 8. **Next steps** (3.6): in order, each with its week, the creators it covers by number, and
