@@ -9,7 +9,7 @@
 
 import { existsSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { checkNames, codesForChanges, regressions, renderComment, renderSkipped, renderSlack, renderStopped, type RunResults } from './lib'
+import { checkNames, codesForChanges, normalizeRun, regressions, renderComment, renderSkipped, renderSlack, renderStopped, type RunResults } from './lib'
 
 const HERE = import.meta.dir
 const PLUGIN = resolve(HERE, '../../plugins/aspire')
@@ -21,7 +21,7 @@ const names = (eChecks: { id: string; name: string }[]) =>
 /** The run's results, or null when the run stopped before its first question finished. */
 function results(runDir: string): RunResults | null {
   const path = join(runDir, 'results.json')
-  if (existsSync(path)) return readJson(path)
+  if (existsSync(path)) return normalizeRun(readJson(path))
   console.error(`ci: ${path} does not exist; the run stopped before its first question finished`)
   return null
 }

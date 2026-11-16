@@ -486,8 +486,7 @@ Organization Admin connection itself.
   **Visual output**, where "show cards", "show me the cards", or a saved `always` approves
   `lookup_creators` or `lookup_posts` for the chosen creators or posts Atlas already holds, which
   starts no discovery; and the page standard's shortlist and freshness refreshes (sections 4 and 9).
-- Keep every user-facing message short. Use bullets for anything with more than two points.
-- **Chat follows the English rules.** Before sending the setup reply, the storyline check-in, or the close-out, check it against **English rules**: full sentences, no arrows, no "vs", no shorthand, every term explained, and no question code or check id.
+- Keep every user-facing message short. Use bullets for anything with more than two points. Before sending the setup reply, the storyline check-in, or the close-out, check it against **English rules** (**In chat**).
 - Web research is a proposal, never a write: findings are always shown and confirmed before
   any calibration is recorded from them.
 - The chat reply is the answer: up to three points, the freshness line when it cites an account's data (`skills/page-standard/SKILL.md`, section 9), the next step, and one link to the page (its file path when the session cannot publish).

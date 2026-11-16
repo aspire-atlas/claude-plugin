@@ -107,8 +107,8 @@ predates the rule; the table shows that, and `--compare` marks a changed approve
 
 | Column | What it holds |
 | ------ | ------------- |
-| Check | E1 to E8 from the Evals tab, then every R check the reader standard has, then C5, the chat wording |
-| New page, Approved page | `pass`, `fail`, `n/a`, or `–` when the check did not run. C5 has no approved result: it is always `n/a` there |
+| Check | E1 to E8 from the Evals tab, then every R check the reader standard has |
+| New page, Approved page | `pass`, `fail`, `n/a`, or `–` when the check did not run |
 | Sets the bar | `yes` when the approved page was named as the example for a change this check covers |
 
 An R check that the script covers passes only when the script and the grade both pass it; a note under the
@@ -116,16 +116,34 @@ table names any check where the two disagree. Under each table: the size of the 
 at its last message (and how many times it compacted), the number of confirmation rounds, and the link to
 the new page.
 
-C5 is the run's chat, read from its transcript: the setup reply (the first turn's questions, their option
-labels and descriptions, and the reply the turn ended on), the storyline check-in (the question headed
-"Storyline", or the turn a storyline draft came back in), and the close-out (the last turn's reply). Each is
-counted for arrows, "vs", and codes: question codes such as I2, and check ids such as R3 or EN2. Links, file
-paths, backticked spans and words inside quotation marks are left out of the count, and so is a code right
-after a capitalised word inside a sentence ("Canon R5"). A product name that opens a sentence ("O2 customers")
-still counts: reword the line. It passes with every count at zero, and the line under the table gives the counts per
-message. The messages and the words each count matched are kept in the run's `chat.json`, never in a baseline
-or a comment. The other English rules (full sentences, one idea per sentence, terms explained) need judgment
-and are not counted here.
+C5, the chat wording, is a line under the table and not a row, because it is the run's chat and has no approved
+page to compare with. It is read from the transcript:
+
+| Message | What is read |
+| ------- | ------------ |
+| Setup reply | The first turn's questions, their option labels and descriptions, and the reply the turn ended on |
+| Storyline check-in | Every question headed "Storyline" and every turn a storyline draft came back in, so a redraft after Change or Widen is counted too |
+| Close-out | The last turn's reply, only when the run published a page or its agent finished. A run that stopped earlier shows "close-out not sent", and its last reply is counted as the question it stopped on |
+
+Each is counted for arrows, "vs", and codes. The codes are read from the files that define them, so a new one
+is counted without a change here: every id that opens a table row in a reference file (question codes such as
+I2, flow question ids such as D4, the reader standard's R checks), the E checks, the questions in
+`questions.json`, and any finding id shaped like EN2 or UX1.
+
+Left out of the count:
+
+- links, file paths and backticked spans;
+- handles and hashtags, which the rules leave as written;
+- words inside quotation marks, when the line's quotes balance. An odd quote is read as an inch mark after a
+  number, and otherwise nothing on that line is left out;
+- "VS" in capitals ("VS Code"), and Q1 to Q4 and H1, H2, which read as a quarter or a half-year;
+- the names in `chatAllow`, in `questions.json` for every brand or in `local.json` for the test brand's own
+  products. A product name that is also a code ("Canon R5") counts until it is listed there.
+
+C5 passes with every count at zero. The messages and the words each count matched are kept in the run's
+`chat.json`, never in a baseline or a comment. The other English rules (full sentences, one idea per
+sentence, terms explained) need judgment and are not counted here. `--compare` shows a chat change only when
+both runs graded the chat, so a baseline stored before C5 adds nothing to the count of changes.
 
 The example pages are tied to the doc's change numbers (3 metrics, 4 data freshness, 5 storyline, 6 reviews).
 `questions.json` maps each change to the checks that show it; change that map when a check is added.

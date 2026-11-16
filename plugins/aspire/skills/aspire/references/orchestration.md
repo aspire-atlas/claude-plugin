@@ -78,15 +78,14 @@ unattended. Text it cannot route publishes the flow's "setup needed" card and st
 
 Everything the run needs is asked in one `AskUserQuestion` call, before the launch; on a run that
 builds a new page, what does not change the read is asked in the storyline call instead (below).
-Before sending it, check every question, option label, and description against **English rules**
-(**In chat**): chat is the first thing the person reads. The tool takes up to four questions per
-call, so the reply holds, in this order:
+Chat is the first thing the person reads: before sending this reply, the storyline check-in
+(below), or the close-out (**10**), check it against **English rules** (**In chat**), which also
+holds the worked examples. The tool takes up to four questions per call, so the reply holds, in
+this order:
 
 1. **Heard**, header "Heard". The question repeated in the map's wording, the reader, and the
    time estimate, in full sentences and without the question's code (the code goes in the launch
-   block and the run log, never in what the person reads): "You asked whether to work with
-   @handle and what it would cost. I will write the answer for you, and it should take about 15
-   minutes. Is that right?" Options: "Yes, run it (Recommended)", the next
+   block and the run log, never in what the person reads). Options: "Yes, run it (Recommended)", the next
    closest question in its wording, and, when the persona is unknown, "I'm on the paid side" or the
    other persona that fits the ask. The free text field corrects anything. It also names the
    metrics the page will be judged on, from the code's row in **Page standard**, section 8, and
@@ -159,17 +158,14 @@ new: one storyline question costs less than a page built on a storyline nobody c
    `storyline-drafted` Adjustments row, not a `returned` Runs row (**9**). Its fetches count
    against `approved.spend.cap`, and its packet reports them in `cost.fetches`.
 2. **Ask once.** One `AskUserQuestion` call, header "Storyline", with the bullets as the
-   question, each with its evidence inside its sentence ("Gift posts beat creators' usual views
-   this fall, across 78 posts from 15 accounts."), then any line the packet's `storyline` carries for what was not checked ("Timecodes
+   question, each with its evidence inside its sentence, then any line the packet's `storyline` carries for what was not checked ("Timecodes
    and on-screen claims are unverified.", "The plan names are not checked against the company's
    announcement."). Options: "Build (Recommended)", "Change", and, when the packet's `widen` is not
    `null`, "Widen", with `widen` in its words ("Widen to 26 weeks and TikTok"). When the pool is
    under the row's minimum (below), say so in the question ("Only 6 posts fit; the minimum is 10.",
    "3 of 20 creators have fewer than 5 posts.") and recommend Widen when it is offered; with no
    `widen`, Build stays recommended and the thin bullet says how few posts it rests on. The free
-   text field takes the person's change. Before sending, check the question, every bullet, and
-   the option labels against **English rules** (**In chat**), and reword a bullet that fails,
-   keeping its numbers and its claim; the build receives the bullets as the person saw them. The same call carries the packet's other `questions` (page
+   text field takes the person's change. The same call carries the packet's other `questions` (page
    standard step 2a's metric check-in among them) and any flow question left for it (**2**), up to
    four in all. When they do not fit, a format question takes its default and the Storyline question
    states it ("Built as a one-page plan; say if you want slides."), and a send choice is asked after
@@ -649,7 +645,7 @@ reader, never by its id or the question's code. For example: "You asked whether 
 to the top. One check still fails: the page cannot say how she does on TikTok, because no TikTok
 account is linked. Two saves are waiting for your yes." Say how many wording fixes the English read
 needed when it had any Must fixes ("Three wording fixes were applied."), and name any not applied.
-Check the close-out against **English rules** (**In chat**) before sending it. Then ask for the
+Then ask for the
 approvals (**7**) and the packet's questions, and offer the packet's `next` when it names one.
 
 ## 11. The block every agent carries

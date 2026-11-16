@@ -8,8 +8,8 @@ import { dirname, join, resolve } from 'node:path'
 import {
   ATLAS_READS, ATLAS_WRITES, HARNESS_VERSION, barChecks, compareRuns, extractPageCheckScript, fill, findJsonWithKey, configuredQuestions,
   findPage, forBaseline, normalizeResult, checkNames as namesFrom, stripTitlePrefix, parsePageCheck, parseStream, renderQuestion, renderRun, rIds, stripDataUris,
-  parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, checkChat, chatMessages,
-  type ChatChecks, type CheckDef, type PageChecks, type QuestionResult, type Result, type RunResults, type Turn,
+  parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, checkChat, chatCodes, chatFailures, noChat, normalizeRun,
+  type ChatChecks, type ChatRules, type CheckDef, type PageChecks, type QuestionResult, type Result, type RunResults, type Turn,
 } from './lib'
 import { renderPage } from '../render-page'
 
@@ -49,6 +49,8 @@ type Question = {
 type Local = {
   mcp?: { url: string; name?: string; tokenEnv?: string }
   organization?: string
+  /** Names that hold a code by chance (a product such as "Canon R5"), left out of the chat count. */
+  chatAllow?: string[]
   questions?: Record<string, { brand?: string; approved?: string | null; approvedFile?: string | null }>
 }
 type Options = {
@@ -164,7 +166,7 @@ function resolveRun(name: string): RunResults {
     join(BASELINES, name, 'results.json'), join(RUNS, name, 'results.json'), join(name, 'results.json'), name,
   ]
   const path = candidates.find(candidate => candidate && existsSync(candidate) && statSync(candidate).isFile())
-  return path ? readJson(path) : fail(`no run or baseline named "${name}"`)
+  return path ? normalizeRun(readJson(path)) : fail(`no run or baseline named "${name}"`)
 }
 
 // ---------------------------------------------------------------- the checks, the same for both pages
@@ -372,7 +374,7 @@ async function startingSession(cwd: string): Promise<{ connectors: string[]; too
 
 type Rerun = {
   link: string | null; rounds: number; transcriptTokens: number; billedTokens: number; compactions: number
-  costUsd: number; problems: string[]; model: string | null; chat: ChatChecks | null
+  costUsd: number; problems: string[]; model: string | null; chat: ChatChecks
 }
 
 /** Ask the question the way a person would, answer what the flow asks back, and keep the page it publishes. */
@@ -459,11 +461,13 @@ async function rerun(question: Question, config: any, local: Local, qDir: string
   }
   if (existsSync(captured) && !link) problems.push(publishes ? 'The run wrote a page but returned no link for it' : 'The page was saved as a file: this Claude Code cannot publish pages')
   if (!existsSync(captured) && link) problems.push('The run published a page but its file was not found, so the new page is not graded')
-  // The setup reply, the storyline check-in and the close-out, counted for arrows, "vs" and codes (docs/STANDARD.md, C5).
-  // The messages and the words each count matched stay in the run folder, which is never committed or uploaded.
-  const chat = checkChat(turns)
-  writeFileSync(join(qDir, 'chat.json'), JSON.stringify({ ...chat, messages: chatMessages(turns), counts: chat.messages }, null, 2) + '\n')
-  return { link, rounds, transcriptTokens: last?.contextTokens ?? 0, billedTokens: billed, compactions, costUsd: cost, problems, model, chat }
+  // The setup reply, the storyline check-ins and the close-out, counted for arrows, "vs" and codes (docs/STANDARD.md, C5).
+  // The last reply is a close-out only when the run published or its agent finished. The messages and the words
+  // each count matched stay in the run folder, which is never committed or uploaded.
+  const closed = Boolean(link) || Boolean(last && !last.failed && findPage(last).finished)
+  const chat = checkChat(turns, closed, chatRules(config, local))
+  writeFileSync(join(qDir, 'chat.json'), JSON.stringify({ ...chat.checks, text: chat.messages, hits: chat.hits }, null, 2) + '\n')
+  return { link, rounds, transcriptTokens: last?.contextTokens ?? 0, billedTokens: billed, compactions, costUsd: cost, problems, model, chat: chat.checks }
 }
 
 async function runQuestion(question: Question, config: any, local: Local, eChecks: any[], runDir: string, atlasMcp: string, emptyMcp: string, options: Options): Promise<{ result: QuestionResult; model: string | null }> {
@@ -473,7 +477,7 @@ async function runQuestion(question: Question, config: any, local: Local, eCheck
   let run: Rerun
   if (options.page) {
     copyFileSync(options.page, captured)
-    run = { link: null, rounds: 0, transcriptTokens: 0, billedTokens: 0, compactions: 0, costUsd: 0, problems: ['Graded from a file: the question was not rerun'], model: null, chat: null }
+    run = { link: null, rounds: 0, transcriptTokens: 0, billedTokens: 0, compactions: 0, costUsd: 0, problems: ['Graded from a file: the question was not rerun'], model: null, chat: noChat() }
   } else {
     run = await rerun(question, config, local, qDir, captured, atlasMcp, options)
   }
@@ -508,7 +512,7 @@ function baselineFor(name: string): { name: string; results: RunResults } | null
   if (name !== 'newest') return { name, results: resolveRun(name) }
   const dates = existsSync(BASELINES) ? readdirSync(BASELINES).filter(d => existsSync(join(BASELINES, d, 'results.json'))).sort() : []
   const date = dates.at(-1)
-  return date ? { name: date, results: readJson(join(BASELINES, date, 'results.json')) } : null
+  return date ? { name: date, results: normalizeRun(readJson(join(BASELINES, date, 'results.json'))) } : null
 }
 
 let baselineCache: { name: string; results: RunResults } | null | undefined
@@ -531,6 +535,23 @@ async function cleanup(links: string[], runDir: string, emptyMcp: string) {
 // ---------------------------------------------------------------- main
 
 // R names come from the reader standard's own table, so a renamed or new check shows as the plugin has it.
+/** Every file under the two skills that defines an id the person must never see (lib.ts, chatCodes). */
+function referenceFiles(): string[] {
+  const dirs = [join(PLUGIN, 'skills/aspire/references'), join(PLUGIN, 'skills/page-standard')]
+  return dirs.flatMap(dir => readdirSync(dir).filter(name => name.endsWith('.md')).map(name => readFileSync(join(dir, name), 'utf8')))
+}
+
+let codes: string[] | null = null
+
+/** The ids and allowed names the chat count runs with. `chatAllow` in local.json holds the brand's own product names. */
+function chatRules(config: any, local: Local): ChatRules {
+  codes = codes ?? chatCodes(referenceFiles(), [
+    ...readJson(join(HERE, 'e-checks.json')).checks.map((check: CheckDef) => check.id),
+    ...config.questions.map((question: Question) => question.code),
+  ])
+  return { codes, allow: [...(config.chatAllow ?? []), ...(local.chatAllow ?? [])] }
+}
+
 const checkNames = (eChecks: any[]) => namesFrom(eChecks, readFileSync(join(PLUGIN, 'skills/aspire/references/reader-standard.md'), 'utf8'))
 
 function storeBaseline(results: RunResults, date: string, eChecks: CheckDef[], names: Record<string, string>) {
@@ -650,7 +671,7 @@ async function main() {
   console.error(`Run kept in ${runDir} (table.md is the table to paste; the folder is not committed).`)
   if (options.baseline) storeBaseline(results, options.baseline, eChecks, names)
   // A run fails when a question published no page, or its chat broke a countable English rule.
-  if (results.questions.some(question => !question.new || question.chat?.result === 'fail')) process.exit(1)
+  if (results.questions.some(question => !question.new) || chatFailures(results).length) process.exit(1)
 }
 
 await main()

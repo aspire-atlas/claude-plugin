@@ -42,8 +42,10 @@ What the table means in chat:
   the close-out. The evidence behind a bullet goes inside its sentence ("across 78 posts from 15
   accounts"), not after it as a note ("78 posts, 15 accounts."). An option label and a header are
   short phrases.
-- **Rule 3.** Write "compared with" or "against", never "vs", including when the person's own
-  question used it.
+- **Rule 3.** In Atlas's own sentences, write "compared with" or "against", never "vs". When the
+  person's question used "vs", either say it again in Atlas's words ("how you compare with your
+  biggest competitors") or quote their words exactly, inside quotation marks, which the table
+  leaves as written. An echo without quotation marks is Atlas's sentence, and the rule applies.
 - **Rule 5.** The first message a person reads is the setup reply, so a term explained later on
   the page is still unexplained here.
 - **Rule 7.** Say the question in its own words. Its code, a check's id, and a flow's question id
@@ -54,6 +56,8 @@ What the table means in chat:
 A storyline bullet arrives from the agent's packet and a close-out names what the packet reports.
 Reword either to pass the table, keeping every number, name, and claim, and adding none. The
 confirmed bullets go to the build exactly as the person saw them.
+
+These two examples are the only copy; other files point here.
 
 Good, a setup question: "You asked whether to work with @handle and what it would cost. I will
 write the answer for you, and it should take about 15 minutes. Is that right?"
