@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "source": "The five approved examples in the plugin update doc, section \"Examples to follow\" (2026-11-05), and O2, the Creator Trends page its reviewer edited for ASP-5813, with question codes from the examples library. P1 has no approved example yet: it is here so the reader check (E1) covers a paid-social reader. Brand names, organizations and page links are customer details: they live in scripts/eval/local.json, never here.",
+  "source": "The five approved examples in the plugin update doc, section \"Examples to follow\" (2026-11-05), O2, the Creator Trends page its reviewer edited for ASP-5813, and P1, the creator ad cut-downs page its reviewer edited for ASP-5812, with question codes from the examples library. Brand names, organizations and page links are customer details: they live in scripts/eval/local.json, never here.",
   "changes": {
     "3": {
       "name": "Pull the right metrics for each question",
@@ -149,12 +149,13 @@
     },
     {
       "code": "P1",
-      "example": "Ad reuse cut list",
-      "kind": "Cut list",
+      "example": "Creator ad cut-downs",
+      "kind": "Plan",
       "reader": "performance",
-      "readerInWords": "the paid social team",
-      "ask": "For {brand}: which creator posts should we run as ads, and how do we cut them? It is for our paid social team, who answer for sign-ups and sales.",
+      "readerInWords": "the paid social team, who hand the cuts to creative",
+      "ask": "For {brand}: which creator posts should we run as ads, and how do we cut them? I run paid social, and creative will make the cuts.",
       "setsBarFor": [
+        3,
         5
       ],
       "paths": [
