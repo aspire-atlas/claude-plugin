@@ -188,24 +188,16 @@ CSV's handle column and normalize it per **Getting the list**.
 - **No applicant id or no handle**: skipped, and listed with the unreadable rows (in chat, and on
   the page under What's missing).
 
-**One row per creator.** When several rows share a network and handle (one creator who applied
-twice), fold them into one row that keeps all their applicant ids, so the checks below match any
-of them. The folded row is decided when any of its rows is, with this Sheet call:
+**Duplicate rows.** A creator (network and handle) with two or more rows is left for the team to
+settle in the Sheet: not vetted, no call offered or saved, and listed with the unreadable rows as
+"duplicate rows: decide in the Sheet", naming the rows, until only one row remains.
 
-- The decided rows agree: that call.
-- They disagree, and exactly one of their calls differs from the creator's newest `feedback`
-  finding: that call, because the difference is the team's edit.
-- Otherwise the row is a **conflict**: neither call is offered or saved, and the creator is not
-  vetted. It goes in `sheet_calls` marked conflict with both calls, is left out of Copy
-  decisions, and is listed with the unreadable rows, naming both rows, in F1 or in the one-line
-  stop message.
-
-Every list entry and `sheet_calls` entry from the Sheet carries its row's applicant ids (all of
-them, for a folded row). Decided rows go through **Check what Atlas holds** with the list, so each
-Sheet call has its account id. They are never fetched and never counted in R3.
+Every list entry and `sheet_calls` entry from the Sheet carries its row's applicant id. Decided
+rows go through **Check what Atlas holds** with the list, so each Sheet call has its account id.
+They are never fetched and never counted in R3.
 
 **Which Sheet calls are new.** Compare each decided row's Sheet call with the newest `feedback`
-finding sharing one of its applicant ids for the same creator (`entityId`): the last call saved
+finding carrying its `applicantId` for the same creator (`entityId`): the last call saved
 for the row, from the Sheet or from F1 (**State written to Atlas**):
 
 - The same call: unchanged and not offered, so a newer call the team made in chat stands.
@@ -214,14 +206,13 @@ for the row, from the Sheet or from F1 (**State written to Atlas**):
   the creator.
 
 **Reopened rows.** An undecided row (blank or unreadable) is **reopened** when the creator's newest
-`feedback` finding of any kind shares one of the row's applicant ids and has `sheetCall: true`:
+`feedback` finding of any kind carries the row's `applicantId` and has `sheetCall: true`:
 the team took back in the Sheet a call saved from there, and made none since in F1 or chat. It is
 vetted like any undecided row, and the team's F1 answer on it replaces the old call.
 
 **`sheet_calls`** go to the agent: for each decided row, the handle, network, account id,
-applicant ids, Sheet call, Note, Recommendation, and whether it is new; for each reopened row, the
-handle, network, account id, and applicant ids, marked reopened; and for each conflict, the same
-plus both calls, marked conflict. Every batch of a split list
+applicant id, Sheet call, Note, Recommendation, and whether it is new; and for each reopened row,
+the handle, network, account id, and applicant id, marked reopened. Every batch of a split list
 gets them, for its page; only the first batch offers the new ones in F1.
 
 **F1 with Sheet calls.** F1's question adds "and save the {k} new calls from the review Sheet" and
@@ -232,7 +223,7 @@ s3"). Each Note is the user's reason for its call, for F2 and F3.
 
 **When every row is decided**, the list is empty. After **Check what Atlas holds** (**Main
 thread: the run**, step 2), skip R2 to R5, the launch, and the page. With no new Sheet calls, say
-so in one line, naming any conflicts, and stop. Otherwise ask a Sheet-only F1: "Save the {k}
+so in one line, naming any duplicate rows, and stop. Otherwise ask a Sheet-only F1: "Save the {k}
 new calls from the review Sheet to {brand}'s Atlas?" with 1) Save them (Recommended); 2) Change
 some (type them, for example "reject s2, drop s3"); 3) Decide later (nothing is saved). Read
 `vettedAt` from the shell clock once, write what it saves under this run's `runKey` with no
@@ -655,8 +646,9 @@ or `retract_calibration`), one per call. A proposal the user declines stays unsa
 
 **Copy decisions.** The team's calls for this list as text the user can copy: one **call line**
 (**Reading the review Sheet**) per creator, without notes, grouped Approve, Maybe, Reject. It
-includes every Sheet call, and leaves out a conflict and a reopened creator (**Reading the review
-Sheet**) until F1 saves a new call for them. With no team calls yet it is the recommendations, headed
+includes every Sheet call, and leaves out duplicate rows and a reopened creator (**Reading the
+review Sheet**) until F1 saves a new call for them. With no team calls yet it is the
+recommendations, headed
 "Recommendations, not yet the team's calls". The main thread gives it in chat after the last
 batch's F1, covering the whole list, with "(Sheet only)" after a Sheet call that is not saved to
 Atlas and the unreadable Sheet rows under it. The page carries it as a button (**The page**,
@@ -754,7 +746,7 @@ comes from is on the run summary), `listName`, `listSource` (`csv`, `pasted`,
 `recipient` (**Recipient lens**). A
 `feedback` finding adds `userVerdict` (`approve`, `maybe`, or `reject`), `agentVerdict`, and the
 user's words verbatim; one for a creator whose list came from a review Sheet also adds
-`applicantIds`, all of the row's applicant ids. One that saves a Sheet call as it stands in the
+the row's `applicantId`. One that saves a Sheet call as it stands in the
 Sheet also adds `sheetCall: true`; a Sheet call the user changed in F1 option 2 is saved without
 it, as an F1 answer. One saved from a Sheet call takes the Sheet's Recommendation as `agentVerdict`
 when the creator was not vetted in this run, and its Note as the user's words. Supply an
