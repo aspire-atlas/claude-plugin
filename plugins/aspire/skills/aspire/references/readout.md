@@ -199,15 +199,28 @@ Metric definitions:
 - Anomaly = a day or post whose lead metric (R4) sits outside the R3 threshold against the
   baseline median. Report the metric, the baseline median, and the percent delta.
 - Cadence = posts per day (daily) or per week (weekly), against the baseline.
-- Ranking follows the reader: the headline's figure, the best post, and the order of the top and
-  bottom posts use the primary lens's result (**Recipient lens**, **Rendering for a lens**,
-  Headline and rank by the reader's result). The lead metric (R4) is the `team` lens's choice
-  within reach and engagement; under another primary lens it stays in the KPI strip and the
-  chart, and no longer sets the order. These reports read no sales, sign-ups, or spend per post,
-  so under a leadership or growth lens the posts rank by engagement per 1,000 views with the
-  fallback line, naming the metric and the reason and no connection; the growth section's
-  stand-in is its own estimated fee per 1,000 engagements (**Lenses**). A leadership headline may
-  cite a figure from the **Meta Ads** block when the run has one, labelled "Meta Ads".
+
+### Ranking
+
+The headline's figure, the best post, and the order of the top and bottom posts follow **Recipient
+lens**, **Rendering for a lens**, Headline and rank by the reader's result. What is local to these
+reports:
+
+- **`team` primary lens.** Posts rank by the lead metric (R4). Follower growth is an account
+  figure and no post carries it, so when R4 is follower growth it leads the headline and the KPI
+  strip, the posts rank by engagement per 1,000 views, and one line says so.
+- **Every other primary lens** (leadership, growth, product, and pmm on the weekly; `campaign` or
+  product on a launch pulse). These reports read no sales, sign-ups, spend, or campaign target for
+  a post, and a capability or a message is not a figure a post carries. The posts rank by
+  engagement per 1,000 views, with the fallback line naming the metric and the reason and no
+  connection. The lead metric stays in the KPI strip and the chart and does not set the order.
+  The growth section keeps its own stand-in, estimated fee per 1,000 engagements (**Lenses**).
+- **The headline's comparison** is the one its figure has. A figure from this data pull compares
+  with the 28-day median (daily) or the prior week and the 8-week median (weekly). A leadership
+  headline may cite a figure from the **Meta Ads** block when the run has one, labelled "Meta
+  Ads", with the comparison that block gives or none. A launch pulse saves no goal or target, so
+  a `campaign` headline is the campaign creators' engagement per post against their own medians
+  (**Daily launch pulse**, step 1).
 
 ## Meta Ads enrichment (optional, both agents)
 

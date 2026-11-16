@@ -49,20 +49,38 @@ to be fast and complete, and end in a next step.
 
 ## Team catalog
 
-| Team | Cues in the ask | What they usually mean | Decision it feeds | Result judged on | Lands | Output shape | Agents |
-| ---- | --------------- | ---------------------- | ----------------- | ---------------- | ----- | ------------ | ------ |
-| `product` | "vs. {competitor}", "compared with", "parity", "feature", "what are people saying about us", "friction", "bugs" | Are we behind on a capability, and is there friction users hit that we haven't seen? | Roadmap priorities, where to defend parity | Capabilities won or lost against competitors, and friction, by how many creators raise each | Cross-functional product review, the team's feedback channel | Dense signal with receipts: features compared, clips as evidence, what changed since the last review. No marketing gloss. | `atlas-market-signal`, `atlas-weekly-insights-report` (product lens) |
-| `pmm` | "how are we being talked about", "messaging", "positioning", "framing", "narrative", "share of voice", "launch messaging" | Whose framing is winning, and which words do buyers actually use? | Launch narrative, positioning, message testing | Whose message carries: share of voice by message, by creators and posts | Launch planning, messaging reviews | Creators' own language, recurring themes, share of voice by message, gaps in the brand's positioning | `atlas-market-signal`, `atlas-weekly-insights-report` (pmm lens) |
-| `leadership` | "how is influencer doing", "this quarter", "QBR", "ROI", "worth it", "for the exec update" | Is this worth the investment, and what is the story for the quarter? | Budget, headcount, channel mix | The decision: the business result behind it (sales, sign-ups, return on spend), then the trend against the last period | Quarterly business review, exec updates | One page: business outcome, trend, two or three headline insights | `atlas-quarterly-signal`, `atlas-weekly-insights-report` (leadership lens), `atlas-ppa-pitch` |
-| `growth` | "which creators drive results", "where should we spend", "budget", "best performing creators", "efficiency" | Where should the next dollar go? | Creator and channel budget allocation | Return on the next dollar: cost per result by creator and format | Growth metrics reviews | Performance by creator and format, efficiency against benchmarks, one clear recommendation | `atlas-weekly-insights-report` (growth lens), `atlas-creator-discovery` (lookalikes) |
-| `campaign` | "we launch on {date}", "need creators for {event}", "campaign", "launch plan", "recap" | Who do we activate, what does the brief say, and how will we know it worked? | Creator lineup, the brief, the post-launch read | The campaign's own saved goal, against its target | The launch plan, then the recap | Time-bound in three phases: brief and shortlist before, a live pulse during, a recap against goals after | `atlas-creator-discovery`, `atlas-creator-vetting`, `atlas-creator-brief` (campaign mode), `atlas-content-review`, `atlas-daily-insights-report` (launch pulse) |
-| `brand` | "is this safe", "OK to post", "approve", "put our name next to", "on brand" | Does this match how the brand shows up, and what is the risk if it doesn't? | Approve, revise, or pass | Risk: the severity of what would go live under the brand's name | Brand review before anything goes live | Safety checks with severity, tone notes, a clear go or no-go with the reason | `atlas-content-review`, `atlas-creator-vetting`, `atlas-post-analysis` |
-| `creative` | "send us the good stuff", "clips", "cut down", "edit", "moments", "b-roll" | Exactly which moments, at what length, for which placement? | The cut list | Ads that hold attention: hook and hold in the first three seconds | The edit brief | Edit-ready: timestamps, hook moments, suggested cut lengths, platform specs, rights status | `atlas-ad-reuse` |
-| `performance` | "reuse as ads", "whitelist", "spark ads", "license", "paid", "best hooks", "what will convert" | Which hooks and openings will work as paid media? | What to license and put spend behind | Sign-ups, sales, and cost per result | Paid creative planning | Hook patterns, first-three-second breakdowns, ad practice applied to organic posts, ranked licensing candidates | `atlas-ad-reuse`, `atlas-content-review` (ad reuse check), `atlas-post-analysis` (reuse order), `atlas-ppa-pitch` |
-| `team` | No other reader named; "for us", "our", day-to-day asks | Fast, complete, a next step | The team's own next move | Reach and engagement, against the account's own usual | Chat, the team's page | The flow's default shape | Every agent |
+| Team | Cues in the ask | What they usually mean | Decision it feeds | Lands | Output shape | Agents |
+| ---- | --------------- | ---------------------- | ----------------- | ----- | ------------ | ------ |
+| `product` | "vs. {competitor}", "compared with", "parity", "feature", "what are people saying about us", "friction", "bugs" | Are we behind on a capability, and is there friction users hit that we haven't seen? | Roadmap priorities, where to defend parity | Cross-functional product review, the team's feedback channel | Dense signal with receipts: features compared, clips as evidence, what changed since the last review. No marketing gloss. | `atlas-market-signal`, `atlas-weekly-insights-report` (product lens) |
+| `pmm` | "how are we being talked about", "messaging", "positioning", "framing", "narrative", "share of voice", "launch messaging" | Whose framing is winning, and which words do buyers actually use? | Launch narrative, positioning, message testing | Launch planning, messaging reviews | Creators' own language, recurring themes, share of voice by message, gaps in the brand's positioning | `atlas-market-signal`, `atlas-weekly-insights-report` (pmm lens) |
+| `leadership` | "how is influencer doing", "this quarter", "QBR", "ROI", "worth it", "for the exec update" | Is this worth the investment, and what is the story for the quarter? | Budget, headcount, channel mix | Quarterly business review, exec updates | One page: business outcome, trend, two or three headline insights | `atlas-quarterly-signal`, `atlas-weekly-insights-report` (leadership lens), `atlas-ppa-pitch` |
+| `growth` | "which creators drive results", "where should we spend", "budget", "best performing creators", "efficiency" | Where should the next dollar go? | Creator and channel budget allocation | Growth metrics reviews | Performance by creator and format, efficiency against benchmarks, one clear recommendation | `atlas-weekly-insights-report` (growth lens), `atlas-creator-discovery` (lookalikes) |
+| `campaign` | "we launch on {date}", "need creators for {event}", "campaign", "launch plan", "recap" | Who do we activate, what does the brief say, and how will we know it worked? | Creator lineup, the brief, the post-launch read | The launch plan, then the recap | Time-bound in three phases: brief and shortlist before, a live pulse during, a recap against goals after | `atlas-creator-discovery`, `atlas-creator-vetting`, `atlas-creator-brief` (campaign mode), `atlas-content-review`, `atlas-daily-insights-report` (launch pulse) |
+| `brand` | "is this safe", "OK to post", "approve", "put our name next to", "on brand" | Does this match how the brand shows up, and what is the risk if it doesn't? | Approve, revise, or pass | Brand review before anything goes live | Safety checks with severity, tone notes, a clear go or no-go with the reason | `atlas-content-review`, `atlas-creator-vetting`, `atlas-post-analysis` |
+| `creative` | "send us the good stuff", "clips", "cut down", "edit", "moments", "b-roll" | Exactly which moments, at what length, for which placement? | The cut list | The edit brief | Edit-ready: timestamps, hook moments, suggested cut lengths, platform specs, rights status | `atlas-ad-reuse` |
+| `performance` | "reuse as ads", "whitelist", "spark ads", "license", "paid", "best hooks", "what will convert" | Which hooks and openings will work as paid media? | What to license and put spend behind | Paid creative planning | Hook patterns, first-three-second breakdowns, ad practice applied to organic posts, ranked licensing candidates | `atlas-ad-reuse`, `atlas-content-review` (ad reuse check), `atlas-post-analysis` (reuse order), `atlas-ppa-pitch` |
+| `team` | No other reader named; "for us", "our", day-to-day asks | Fast, complete, a next step | The team's own next move | Chat, the team's page | The flow's default shape | Every agent |
 
-**Result judged on** is what the reader answers for. It sets the headline's figure and the order
-of every ranked list (**Rendering for a lens**, Headline and rank by the reader's result).
+### Result judged on
+
+What each reader answers for. It sets the headline's figure and the order of the page's ranked
+posts and topics (**Rendering for a lens**, Headline and rank by the reader's result). The last
+column ranks a list of posts when the page holds no such figure for each post. A flow's reference
+may name a closer stand-in (a hook score for videos headed for paid), and that one wins.
+
+<!-- result-judged-on -->
+| Team | Result judged on | Posts rank by, when the page holds no such figure per post |
+| ---- | ---------------- | ---------------------------------------------------------- |
+| `product` | Capabilities won or lost against competitors, and friction, by how many creators raise each | Engagement per 1,000 views |
+| `pmm` | Whose message carries: share of voice by message, by creators and posts | Engagement per 1,000 views |
+| `leadership` | The decision: the business result behind it (sales, sign-ups, return on spend), then the trend against the last period | Engagement per 1,000 views |
+| `growth` | Return on the next dollar: cost per result by creator and format | Engagement per 1,000 views |
+| `campaign` | The campaign's own saved goal, against its target | The goal's own metric when a post carries it (views, engagement); otherwise engagement per 1,000 views |
+| `brand` | Risk: the severity of what would go live under the brand's name | Severity, highest first |
+| `creative` | Ads that hold attention: hook and hold in the first three seconds | Engagement per 1,000 views |
+| `performance` | Sign-ups, sales, and cost per result | Engagement per 1,000 views |
+| `team` | Reach and engagement, against the account's own usual | Engagement per 1,000 views |
+<!-- /result-judged-on -->
 
 **Hand-offs.** Two chains recur: Performance picks the candidates, then Creative cuts them;
 Campaign runs the launch, then Brand approves the drafts. When the primary lens is one end of
@@ -102,7 +120,7 @@ Never ask who the output is for in plain text, and never ask more than once per 
   the primary lens's `decision` in the reader's terms. The page header carries a "Prepared for"
   chip: the reader (or team), the decision, and `when` when known.
 - **Headline and rank by the reader's result.** The headline's figure and the order of the
-  page's ranked posts and topics use the primary lens's **Result judged on** from the catalog.
+  page's ranked posts and topics use the primary lens's row in **Team catalog**, Result judged on.
   The same data gives a paid-social page and a social-team page different headlines and a
   different top item.
   - **A list a flow ranks by its own score keeps that order** (a fit score on a shortlist, a
@@ -112,7 +130,7 @@ Never ask who the output is for in plain text, and never ask more than once per 
     the tools its row in **Atlas tools** lists, by currency, never added to organic figures, and
     never inferred. A flow with no ad or store read does not hold them, whatever is connected.
   - **When the page does not hold it**, rank by the stand-in the flow's reference names, or
-    else by engagement per 1,000 views ahead of views. Say so in one line beside the headline or
+    else by the last column of the lens's row, never by views alone. Say so in one line beside the headline or
     the list, naming the metric and the reason: "Ranked by engagement per 1,000 views, because
     this page holds no sales for these posts." Name a connection only when connecting it would
     let this flow read the result ("Connect the Meta ad account to rank by sales"). On a page

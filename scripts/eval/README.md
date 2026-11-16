@@ -1,6 +1,6 @@
 # Page eval: rerun the example questions and grade each new page
 
-`bun run eval:pages` asks the seven example questions through the plugin in this checkout, keeps the page each
+`bun run eval:pages` asks every example question through the plugin in this checkout, keeps the page each
 one publishes, and prints one table per question: every check as pass or fail for the new page, beside the same
 check run on the approved page. It is how a change to a rule is tested (see `CONTRIBUTING.md`).
 
@@ -26,7 +26,7 @@ It runs on a developer's machine, and in CI on every pull request that changes a
   pages from their links. One without it (a local terminal) still works: the flow saves its page as a
   file, the table shows no link, and each approved page must be given as a file, either `approvedFile`
   in `local.json` or a copy at `scripts/eval/.cache/approved/<code>.html`.
-- A test organization on the dev Atlas server, with a brand profile for each brand behind the seven
+- A test organization on the dev Atlas server, with a brand profile for each brand behind the
   questions (a brand may answer more than one). Each profile needs enough data for its question: either the
   brand's own data held in the organization, or its public handles and its competitors indexed. Write which
   one each brand has in the `data` field of `local.json`, so a thin page can be told from a thin data set.
@@ -59,8 +59,8 @@ It runs on a developer's machine, and in CI on every pull request that changes a
 ## Commands
 
 ```bash
-bun run eval:pages                         # all seven questions
-bun run eval:pages --only O3               # one question (I4, I11, O1, O2, O3, I1)
+bun run eval:pages                         # every question
+bun run eval:pages --only O3               # one question (I4, I11, O1, O2, O3, I1, P1)
 bun run eval:pages --baseline              # run, then store the results under baselines/<today>/
 bun run eval:pages --baseline 2026-11-12 --from latest   # store an earlier run without running again
 bun run eval:pages --compare 2026-11-10 latest           # what changed between two runs
@@ -121,7 +121,8 @@ The example pages are tied to the doc's change numbers (3 metrics, 4 data freshn
 
 E1 also judges the reader's result: the headline's figure and the top item of each ranked list use what that
 reader is judged on (`recipient-lens.md`, **Rendering for a lens**), or one line says which metric the page
-used and why. Its `judgeNote` in `e-checks.json` carries that. O3 shows it for a leadership reader and P1 for
+used and why. The harness hands the judge that reader's row of the result table in `recipient-lens.md`, and
+E1's `judgeNote` in `e-checks.json` says how to apply it. O3 shows it for a leadership reader and P1 for
 a paid-social reader. P1 has no approved page yet, so it runs once `local.json` names a brand for it, and its
 results cannot count as a regression until a baseline holds an approved page.
 
@@ -165,7 +166,7 @@ The `eval` job in `.github/workflows/validate.yml` runs after the static checks 
   `plugins/aspire/skills/aspire/SKILL.md` and `plugins/aspire/skills/page-standard/`. A changed file that a
   question lists in its `paths` (`questions.json`) reruns that question. A changed file in `sharedPaths`
   (one every flow reads, such as the reader standard or anything under the page standard; an entry ending in
-  `/` covers its folder) reruns all seven. Anything else reruns nothing, and the job passes; when the PR
+  `/` covers its folder) reruns every question. Anything else reruns nothing, and the job passes; when the PR
   already has an eval comment, it is edited to say nothing was rerun.
 - It runs `bun run eval:pages --only <codes> --approved-from newest --title-prefix "CI eval" --cleanup`. The
   title prefix is removed from the new page before it is graded, so it cannot fail a check.
@@ -181,7 +182,7 @@ The `eval` job in `.github/workflows/validate.yml` runs after the static checks 
   Adding the label does not start a run: push again, or use **Re-run jobs** on the eval job, which reads the
   labels and body as they are then. A push cancels the eval still running for the PR.
 
-**Nightly** at 07:17 UTC it reruns all seven questions on `develop` and posts one line per question to the Atlas
+**Nightly** at 07:17 UTC it reruns every question on `develop` and posts one line per question to the Atlas
 engineering Slack channel, with any regression named. A schedule runs from `main`'s copy of the workflow, so
 the nightly run starts once this job is released to `main`. `workflow_dispatch` runs the same thing by hand.
 
@@ -211,7 +212,7 @@ when the run ends, so the comment's link stops opening after the job finishes.
 
 | File | What it is |
 | ---- | ---------- |
-| `questions.json` | The seven questions: code, reader, the ask, and the changes each example sets the bar for. P1 has no approved page yet, so its results are read, not gated |
+| `questions.json` | The questions: code, reader, the ask, and the changes each example sets the bar for. P1 has no approved page yet, so its results are read, not gated |
 | `e-checks.json` | The eight E-checks, copied from the Evals tab, with who judges each |
 | `local.example.json` | The shape of `local.json` |
 | `run.ts` | The command |
@@ -227,5 +228,5 @@ when the run ends, so the comment's link stops opening after the job finishes.
 - E3 and R7 are judged on the page alone: the harness does not hand the run's raw data to the graders.
 - The judge's calls are Claude's judgment. They earn trust as they match the reviewers' own calls on the
   same pages; until then a pass here is evidence, not a sign-off.
-- One run of seven questions is seven full flows and twenty-eight grading sessions. Use `--only` while iterating.
+- Each question is one full flow and four grading sessions. Use `--only` while iterating.
   CI reruns only the questions a change touches, and with `--approved-from` grades only the new page.
