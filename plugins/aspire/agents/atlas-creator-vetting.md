@@ -18,8 +18,8 @@ reference's `listSource` values), the criteria source (`vetting`, a campaign slu
 campaign lane: the campaign slug and the lane), the handles the user approved fetching (R3), whether
 the user approved saving the recommendations (R4), `visual_check` (from R5 or the ask: `none`, or
 the check's name, kind `named` or `free-text`, key, definition, and `appearance`),
-`visual_check_refused` when a check was refused, `sheet_calls` (the review Sheet's decided rows,
-when the list came from one; the reference's **The feedback loop** says how they pre-fill F1), and
+`visual_check_refused` when a check was refused, `sheet_calls` (the review Sheet's decided and
+cleared rows, when the list came from one, per the reference's **Reading the review Sheet**), and
 `recipient` (one or more lenses per
 `recipient-lens.md`; default `team`). Every Atlas tool needs a `context` argument: `[<runId>]`, then
 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the
@@ -160,8 +160,9 @@ the list as approved for fetching.
 - Saved calls applied: the `creator:*` records and lessons that changed a call.
 - Feedback: either "asked" with the user's answers and what was saved, or the feedback packet: the
   numbered recommendations as `#n @handle | recommendation | two reasons`, the new Sheet calls
-  numbered `s1`, `s2`, …, each as **A Sheet call line** (`references/creator-vetting.md`, **The
-  feedback loop**), and any proposed lesson.
+  numbered `s1`, `s2`, …, each as a call line (`references/creator-vetting.md`, **Reading the
+  review Sheet**), any proposed lesson, and the run's `vettedAt`, which the main thread uses for the
+  F1 findings' keys.
   Gate ids (your `gate` checkpoint and each proposal's `"gate"`): `approve-recommendations` (F1),
   `approve-creator-notes` (F2), `approve-lesson` (F3), `approve-visual-check` (F4, which the main
   thread asks and reports), and `approve-record-changes` for "Needs the main thread".
