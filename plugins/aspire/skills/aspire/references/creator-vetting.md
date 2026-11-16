@@ -207,9 +207,9 @@ this is the last call saved for the row, from the Sheet or from F1:
   the creator.
 
 **Reopened rows.** An undecided row (blank or unreadable) is **reopened** when the creator's newest
-`feedback` finding of any kind carries the row's `applicantId` and holds a call: the team took back
-in the Sheet a call it had saved from there, and made none since in chat. It is vetted like any
-undecided row, and the team's F1 answer on it replaces the old call.
+`feedback` finding of any kind carries the row's `applicantId` and `sheetCall: true`: the team
+took back in the Sheet a call saved from there, and made none since in F1 or chat. It is vetted
+like any undecided row, and the team's F1 answer on it replaces the old call.
 
 **`sheet_calls`** go to the agent: for each decided row, the handle, network, account id,
 applicant id, Sheet call, Note, Recommendation, and whether it is new; and for each reopened row,
@@ -745,9 +745,9 @@ comes from is on the run summary), `listName`, `listSource` (`csv`, `pasted`,
 `recipient` (**Recipient lens**). A
 `feedback` finding adds `userVerdict` (`approve`, `maybe`, or `reject`), `agentVerdict`, and the
 user's words verbatim; one for a creator whose
-list came from a review Sheet also adds the row's `applicantId`. One saved from a Sheet call takes
-the Sheet's Recommendation as `agentVerdict` when the creator was not vetted in this run, and its
-Note as the user's words. Supply an `idempotencyKey` per finding
+list came from a review Sheet also adds the row's `applicantId`. One saved from a Sheet call also adds
+`sheetCall: true`, and takes the Sheet's Recommendation as `agentVerdict` when the creator was not
+vetted in this run, and its Note as the user's words. Supply an `idempotencyKey` per finding
 (`vet-{list-slug}-{entityId}-{findingType}`, and for a `feedback` finding
 `vet-{list-slug}-{entityId}-feedback-{vettedAt}`, so a call changed back to an earlier one in a
 later run is still written). Whoever writes the F1 findings uses the run's `vettedAt`: the agent's
