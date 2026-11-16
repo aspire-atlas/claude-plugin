@@ -49,6 +49,11 @@ that breaks it, and write the fix as a replacement line the author can paste.
   person must press and then goes on working (another tool call, a question, a page) in the same
   reply, and one that draws a reference widget and then waits on it. Mark it `n/a` for agent
   files, unattended runs, and calls the changed text does not say draw a widget.
+- **C5** Wording an instruction gives the main thread to say in a setup reply, a storyline
+  check-in, or a close-out follows `references/english-rules.md`. Fail an example or template of
+  one of those messages that breaks a rule in that file's table; read the table, do not go from
+  memory. Mark it `n/a`
+  when the change gives the main thread no chat wording.
 - **L1** A new flow is one row in `SKILL.md`'s **Sections** index and one `references/<flow>.md`
   file. Fail a flow's steps written into a `SKILL.md`.
 - **M2** An agent asks for the fields named in page-standard's required-metrics row for its

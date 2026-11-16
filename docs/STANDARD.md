@@ -55,6 +55,7 @@ that changes an agent or flow).
 | C2 | No inline images in chat: never a card, chart, or theme preview drawn as embedded image data. | ASP-5290 | script (lands with ASP-5382); reviewer | The reply names three creators in text and offers "Say 'show me the cards' to see them." | A search reply that embeds a base64 card for every creator, which fills the context and gets compacted away. |
 | C3 | Cards appear only when the person asks, through `lookup_creators` or `lookup_posts`, or `show_ads` or `show_partnership_content` for ad grids. The search tools draw no card. | ASP-5291, ASP-5380 | reviewer; script (lands with ASP-5382) | "Show me the cards" after a creator search draws them with `lookup_creators` on the creators Atlas already holds. | A flow that calls a search tool for its cards, so every search draws a widget nobody asked for. |
 | C4 | After a call that draws a widget, the next line says which kind it is, from the **After a widget** table in `references/atlas-tools.md`. Needs a click: name the control and end the turn with no other work. For reference: one line saying so and what comes next, then carry on. | ASP-5832 | reviewer; judgment review | The setup form is drawn and the reply is "Fill in the campaign setup above and press Save.", nothing else. The status card is drawn and the reply opens "The status card above is for reference. I'm carrying on with your creator list." | The setup form is drawn and the same reply asks its questions again in chat and starts creator discovery. The status card is drawn and the reply never mentions it, so the person waits on it. |
+| C5 | The setup reply, the storyline check-in, and the close-out follow the same English rules as a page (`references/english-rules.md`, **In chat**, which also holds the setup question's good and bad example). The main thread checks each one itself before sending it. | ASP-5834 | eval (C5 counts arrows, "vs" and codes in the three messages); reviewer; judgment review | A close-out: "The page now opens with the answer. One check still fails: it does not name the posts it left out." | The same close-out as "Fixed R3 Answer first; R9 Names what's missing still failing": two check ids and two fragments. |
 
 ## 2. Load
 
@@ -130,6 +131,11 @@ How to read the comment:
    link.
 4. A `fail` that the approved page also fails is not a regression. It is still a finding: the check has
    drifted or the approved page predates the rule.
+5. **The C5 line** under the table is the run's chat, not its page, so it is not a row: the setup reply,
+   every storyline check-in and the close-out, counted for arrows, "vs", and codes (question codes, flow
+   question ids and check ids). It has no approved result to compare with, so any count above zero is a
+   regression and blocks the merge. The line says which message broke which rule, or that a message was
+   not sent; the words themselves stay in the run's folder.
 
 The comment is edited in place on every push. `skipped: <reason>` means the PR carries the `skip-eval` label
 (the reason is the PR body's `skip-eval:` line), or that nothing the questions answer differs from the base

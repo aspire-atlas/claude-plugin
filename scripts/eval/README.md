@@ -116,6 +116,38 @@ table names any check where the two disagree. Under each table: the size of the 
 at its last message (and how many times it compacted), the number of confirmation rounds, and the link to
 the new page.
 
+C5, the chat wording, is a line under the table and not a row, because it is the run's chat and has no approved
+page to compare with. It is read from the transcript:
+
+| Message | What is read |
+| ------- | ------------ |
+| Setup reply | The first turn's questions, their option labels and descriptions, and the reply the turn ended on |
+| Storyline check-in | Every question headed "Storyline" and every turn a storyline draft came back in, so a redraft after Change or Widen is counted too |
+| Close-out | The last turn's reply, only when the run published a page or its agent finished. A run that stopped earlier shows "close-out not sent" |
+| Question the run stopped on | Only for a run that stopped without closing out, on a question after the setup reply that is not a storyline check-in: that turn's questions and its reply. A run that stopped on the setup reply or on a storyline check-in has its last reply counted there |
+
+Each is counted for arrows, "vs" in any case, and codes. The codes are read from the files that define them,
+so a new one is counted without a change here: the question codes in the question-code map
+(`orchestration.md`, such as I2), the reader standard's R checks, the E checks, the questions in
+`questions.json`, and any finding id shaped like EN2 or UX104. A flow's own question ids (F1, M1, S3, X5 and
+about eighty more) are not counted: they read as product names, and a false count would block a merge. The
+reviewer and the judgment review hold those to rule 7.
+
+Left out of the count:
+
+- links, file paths and backticked spans;
+- handles and hashtags, which the rules leave as written;
+- words inside quotation marks, when the line's quotes balance. An odd quote is read as an inch mark after a
+  number, and otherwise nothing on that line is left out;
+- "VS Code", which is a product;
+- the names in `chatAllow` in `local.json`, for the test brand's own products. A product name that is also a
+  counted code ("Canon R5", "O2") counts until it is listed there. An empty entry is skipped.
+
+C5 passes with every count at zero. The messages and the words each count matched are kept in the run's
+`chat.json`, never in a baseline or a comment. The other English rules (full sentences, one idea per
+sentence, terms explained) need judgment and are not counted here. `--compare` shows a chat change only when
+both runs graded the chat, so a baseline stored before C5 adds nothing to the count of changes.
+
 The example pages are tied to the doc's change numbers (3 metrics, 4 data freshness, 5 storyline, 6 reviews).
 `questions.json` maps each change to the checks that show it; change that map when a check is added.
 
@@ -138,8 +170,8 @@ Playwright with Chromium on the machine; without it the review judges by source 
 
 | Path | Committed | Holds |
 | ---- | --------- | ----- |
-| `baselines/<date>/results.json`, `table.md` | Yes | Results, token counts, rounds, the plugin commit, the models. No page, link, brand, or reason text |
-| `.runs/<time>/` | No | Each turn's transcript, both pages, each check's reasons, `results.json`, `table.md` |
+| `baselines/<date>/results.json`, `table.md` | Yes | Results, the chat counts, token counts, rounds, the plugin commit, the models. No page, link, brand, reason text, or chat text |
+| `.runs/<time>/` | No | Each turn's transcript, both pages, each check's reasons, the chat messages (`chat.json`), `results.json`, `table.md` |
 | `.cache/approved/` | No | The copy of each approved page |
 | `local.json` | No | Brands, links, the dev server address |
 
@@ -173,7 +205,8 @@ The `eval` job in `.github/workflows/validate.yml` runs after the static checks 
 - It posts the table as one PR comment, edited in place on later pushes, and in the job summary. The comment
   opens with the regressions, then the table for each question, with the transcript size, the confirmation
   rounds and the page link (none when the run saved the page as a file).
-- It fails when a check the approved page passes now fails on the new page (a **regression**), and only
+- It fails when a check the approved page passes now fails on the new page (a **regression**), or when C5
+  fails (the setup reply, the storyline check-in or the close-out has an arrow, a "vs" or a code), and only
   then. A question that published no page regresses on every check its approved page passes. A check that
   did not run, or one the approved page fails too, never fails the job. It also fails when the run stopped
   before any question finished, since nothing was checked, and the comment says so.
