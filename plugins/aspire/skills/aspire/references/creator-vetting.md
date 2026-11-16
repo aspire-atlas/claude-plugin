@@ -39,7 +39,8 @@ Before anything, read this file (**Setup**, **Getting the list**,
 ### Setup
 
 V1 to V4, one at a time, one batch confirmation. A campaign's criteria need no setup, and nor does
-an applicant review, which replaces V1 to V4 (**R2 options** below). Every
+an applicant review, which replaces V1 to V4 (**R2 options** below). When vetting setup is missing,
+get the list (R1) first, so a campaign's applicants are known before V1 to V4 are offered. Every
 question is asked exactly as worded in the reference, at most four per call (**Guardrails**). An
 interactive run's reader and save choice go on `lastrun:creator-vetting`, or
 `lastrun:creator-vetting-{slug}` for a campaign (**Orchestration contract**, **2**, Saved
@@ -48,8 +49,8 @@ answers).
 ### Run
 
 Get the list (R1; the Aspire app only with a browser tool, the user signs in, read only), check
-what Atlas holds, ask R2 to R5 at most four per call (R3 approves the fetches, R4 the write, R5
-picks the visual check), then launch `atlas-creator-vetting` with the list, criteria source,
+what Atlas holds, ask R2 to R4 in one call (R3 approves the fetches, R4 the write), then R5 on its
+own once the criteria source is settled (it picks the visual check), then launch `atlas-creator-vetting` with the list, criteria source,
 approved fetches, R4 answer, visual check, and `recipient`, in batches of 100 (25 with a visual
 check). Relay the page and counts in text (cards only on request); offer the shortlist add.
 
@@ -174,9 +175,9 @@ takes up to four questions), skipping any the user already answered.
 
 **R2 options.** Four at most, two at least:
 
-1. When vetting setup is missing and the profile has an applicant review, or the list is a
-   campaign's applicants (**Applicant reviews**), ask R2 before V1 to V4, and run V1 to V4 only if
-   R2 picks {brand}'s vetting criteria.
+1. When vetting setup is missing and the profile has an applicant review, or the list read at R1
+   is a campaign's applicants (**Applicant reviews**), ask R2 before V1 to V4, and run V1 to V4 only
+   if R2 picks {brand}'s vetting criteria.
 2. When the list is a campaign's applicants, that campaign's review comes first, marked
    (Recommended), the other reviews follow, and option 1 is left out.
 3. When that campaign has no review yet, "Set up an applicant review for {campaign} first
@@ -233,23 +234,18 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    attached a file or pasted handles). Show what was found and the list name.
 2. **Check what Atlas holds**: `search_creators` with a `terms` filter on the username field,
    one call per network.
-3. Ask R2 to R5 in `AskUserQuestion` calls of at most four questions, with the **Reading the ask**
-   confirmation (SKILL.md) in the first. R2, R3, and R5 change what the agent reads, so they go with
-   that confirmation, before the storyline draft. On a new page, R4 is answered by the storyline
-   call's Save (**Orchestration contract**, **2**); on a rerun to a page already published, it joins
-   this call when there is room. The confirmation sets the recipient (`team` by default; `brand` for
-   "are these safe"; `campaign` when the list is a launch lineup). Skip R3 when Atlas holds every
-   creator. When the first call would need five questions (the confirmation, a credit cap, R2, R3,
-   and R5), R2 folds into the confirmation's own text the way Scope does ("Vetting against {brand}'s
-   vetting criteria unless you say otherwise"), and a typed answer naming a campaign switches it.
-   When R2 offers an applicant review, R5 waits: ask it in its own call once R2 is answered, after
-   step 3b when R2 picked a review, so that review's saved visual checks can be R5's options.
+3. Ask R2 to R4 in one `AskUserQuestion` call with the **Reading the ask** confirmation (SKILL.md).
+   R2 and R3 change what the agent reads, so they go with that confirmation, before the storyline
+   draft. On a new page, R4 is answered by the storyline call's Save (**Orchestration contract**,
+   **2**); on a rerun to a page already published, it joins this call when there is room. The
+   confirmation sets the recipient (`team` by default; `brand` for "are these safe"; `campaign` when
+   the list is a launch lineup). Skip R3 when Atlas holds every creator.
 3b. **An applicant review named in R2** is read back per **Applicant review**, **Reading the setup
-   back (screening)**, before the launch: read per **Applicant review**, **The records**, any missing setup question asked
-   first, and its pointers resolved. Then ask R5, with the review's saved visual checks as its
-   options (**Applicant reviews**). When R5 was already asked because R2 was folded into the
-   confirmation and a typed answer switched the run to a review, ask R5 again here only when the
-   review has saved visual checks; otherwise keep the first answer.
+   back (screening)**, before the launch: any missing setup question asked first, and its pointers
+   resolved.
+3c. **Ask R5 once, in its own call, after the criteria source is settled** (after R2, and after 3b
+   for a review), still before the storyline draft, so its options come from the source the run
+   uses: a review's saved visual checks (**Applicant review**, **How screening applies a review**), otherwise R5's own options.
 4. Launch `atlas-creator-vetting` with: tool prefix, `profile_id`, `profile_slug`, brand handles and
    networks, the normalized list, the list name, slug and source, the criteria source, the approved
    fetches, the R4 answer, `visual_check` (from R5 or the ask: `none`, or `{name, kind: "named" |
@@ -343,10 +339,12 @@ and the contact route Atlas holds.
   present, each line its own check.
 - **Competitors.** Every `competitor` handle and its `spellingVariants` in captions and
   mentions. A paid partnership with a competitor in the last 90 days is a Fail when
-  `vetting:hard-rejects` lists it, a Flag otherwise; an organic mention is a note.
+  `vetting:hard-rejects` lists it, or, in an applicant review run, the review's `reject:` line
+  does; a Flag otherwise. An organic mention is a note.
 - **Disclosure habits.** Posts with the partnership marker, or that tag a brand with
   `#ad`, `#sponsored`, or "paid partnership", against posts that read as paid without one. A
-  paid post without disclosure is a Flag (a Fail when `vetting:hard-rejects` lists it).
+  paid post without disclosure is a Flag (a Fail when `vetting:hard-rejects` lists it, or, in an
+  applicant review run, the review's `reject:` line does).
 - **Audience signals.** A negative comment share over 30% across analyzed posts is a Flag.
   A follower-to-engagement pattern that looks bought (a large account with engagement far
   under its size band, or sudden follower jumps the census shows) is a Flag, a Fail when
@@ -827,28 +825,14 @@ campaign id or applicant columns (form answers, an applied date). Nothing else d
 these, R2 keeps {brand}'s vetting criteria as option 1. The campaign is the one the ask names, or the
 one whose `-campaign` record carries the export's Aspire campaign id. When neither names one (an
 export with applicant columns and no campaign id), ask which campaign with **Applicant review**'s
-AR1 before R2; picking none of them means the list is not counted as a campaign's applicants.
+AR1 before R2, its campaign options cut to three and a last option added: "Not for a campaign: use
+{brand}'s vetting criteria". Picking that one means the list is not counted as a campaign's
+applicants.
 
-What changes against a `vetting` run:
-
-| Part of the run | Applicant review |
-| --------------- | ---------------- |
-| Fit criteria | The review's criteria, resolved: the campaign's `-brief` and `-criteria` or vetting's criteria it points at, or its own lines |
-| Approve, Maybe, Reject lines | The review's thresholds, resolved |
-| Language on camera | Always run: swearing, or a word any red line rules out (the brand's or the review's, whatever its `action`), in `analysis.transcript` or `analysis.overlayText` is a Flag citing the line, a Fail when `reject:` lists `language-on-camera`. A `block` red line it hits is a Fail on its own: the review's own red lines are `block`, so they always reject, while the brand's saved red lines keep their own action |
-| Red lines | The brand's saved `red_line` records plus the review's red lines, each its own check |
-| Hard stops | The checks the review's `reject:` line lists (`competitor-deals`, `disclosure`, `language-on-camera`), in place of `vetting:hard-rejects` (**The recommendation**, rule 2). Every check runs whatever `reject:` says; one it doesn't list stays a Flag |
-| `vetting:criteria`, `vetting:thresholds`, `vetting:hard-rejects` | Not read; the review replaces them. Bought engagement and no recent posts are Flags, never rejects on their own |
-| Form answer rules | Not applied: a vetting list carries handles and names, not form answers. Each saved rule is listed by name on the page under what is missing, and the run summary names them, so a team never reads a recommendation as having passed them. A form hard stop or required answer therefore never changes the call yet; the team applies it by hand |
-| Visual checks | The review's saved checks feed R5 (**4. Visual check**): R5 is still asked, with up to two of the review's `-visuals` checks as its options after "No visual check", the first marked (Recommended). A `named:` check runs as a named check with its saved definition; a `free:` check runs as a free-text check. One check per run, held to **What a visual check may look for**; it never changes a call. A saved check not run this time is listed under what is missing |
-| The page | Shows the campaign's name, the review's checks in words, and the Sheet link when the review holds one |
-
-Everything else (brand safety and fit, competitor deals and disclosure, `vetting:safety-scope` and
-the `brand_safety` instruction, the creator calibrations, lessons, the recommendation rule, the feedback loop,
-and the state written to Atlas) runs as in a `vetting` run. Every finding carries
-`detail.applicantReview` set to the review's slug; `detail.campaign` is set only when the review's
-`campaign key` names a saved campaign, to that campaign's slug. `calibrationsApplied[]` names the
-`applicant-review:` keys that shaped the call.
+How the run changes for a review (criteria, thresholds, hard stops, red lines, language on camera,
+form rules, visual checks, the page, and what each finding records) is set out once, in
+**Applicant review**, **How screening applies a review**. Read it for every run whose criteria
+source is `applicant-review:{slug}`.
 
 ## Creator-ads lanes (CAS campaigns)
 

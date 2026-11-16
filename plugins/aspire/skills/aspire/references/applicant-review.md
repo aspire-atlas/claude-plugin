@@ -15,6 +15,7 @@ The main thread's part of this flow. A bold section name in it (**Creator vettin
 - [The review Sheet](#the-review-sheet)
 - [When setup is done](#when-setup-is-done)
 - [Reading the setup back (screening)](#reading-the-setup-back-screening)
+- [How screening applies a review](#how-screening-applies-a-review)
 
 ## Applicant review (set up once per campaign)
 
@@ -46,7 +47,8 @@ screens for that review; every other flow drops them (**Atlas tools**, Calibrati
 `acme-holiday-seeding-2`), so an `applicant-review:{slug}-` prefix read can pick up another review's
 records. Keep only the nine keys of the review in hand and drop every other `applicant-review:` key.
 No part name ends with another part name (that is why visual checks are `-visuals`), so two slugs
-never build the same key.
+never build the same key. The separator stays `-` because keys follow **Atlas tools**' `<namespace>:<slug>` form, one
+colon and a lowercase hyphenated slug, so no other character can mark where the part starts.
 
 **Read active records only.** A changed review supersedes its records, so a read with
 `includeSuperseded: true` returns old versions too: those are history, never the review.
@@ -58,9 +60,9 @@ and brand. When `applicant-review:{slug}-campaign` already exists for a differen
 
 | Key | kind | detail | Holds |
 | --- | ---- | ------ | ----- |
-| `-campaign` | `brand_fact` | `{section: "business_context", body}`; body lines `campaign: <name>`, `campaign key: <the slug of the saved campaign:{campaign-slug}-brief this review is for, or none>`, `profile: <brand profile id>`, `brand: <brand name>`, `aspire campaign: <Aspire campaign id, or none>`, `window: <the saved campaign brief's window, or none>` | Which campaign, for which brand profile |
+| `-campaign` | `brand_fact` | `{section: "business_context", body}`; body lines `campaign: <name>`, `campaign key: <the slug of the saved campaign:{campaign-slug}-brief this review is for, or none>`, `profile: <brand profile id>`, `aspire campaign: <Aspire campaign id, or none>` | Which campaign, for which brand profile |
 | `-criteria` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body is `source: campaign:{campaign-slug}` (that campaign's `-brief` and `-criteria`), `source: vetting:criteria`, or one line per dimension (archetype and audience, networks, size band, market, content) | What makes an applicant a fit |
-| `-checks` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body `reject: <the checks that reject on their own, from competitor-deals, disclosure, language-on-camera; or none>` | Which checks reject on their own (all of them always run: **Creator vetting**, Applicant reviews) |
+| `-checks` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body `reject: <the checks that reject on their own, from competitor-deals, disclosure, language-on-camera; or none>` | Which checks reject on their own (all of them always run: **How screening applies a review**) |
 | `-red-lines` | `red_line` | `{action: "block", appliesTo: ["applicant-review", "{slug}"], body}`; body one red line per line | Red lines for this campaign only, on top of the brand's saved `red_line` records |
 | `-thresholds` | `guideline` | `{concern: "ceiling", appliesTo: ["applicant-review", "{slug}"], body}`; body is `source: vetting:thresholds` or `approve >= <n>; maybe >= <m>` | Where Approve, Maybe, and Reject sit |
 | `-form-rules` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body one rule per line: `required: <form question>`, `stop: <form question> = <answer>`, `boost: <form question> = <answer>`, or `prompt: <instruction for the screening agent>` | How form answers change a call |
@@ -191,20 +193,46 @@ Screening asks none of AR1 to AR8 and none of vetting's V1 to V4.
 1. **Find the review.** List the active `applicant-review:*-campaign` records whose body names
    this profile. R2 offers them (**Creator vetting**, Per-run questions); with more than R2 has room
    for, R2 offers "An applicant review (pick which next)" and a second `AskUserQuestion` lists three
-   reviews plus "More reviews", which shows the next three the same way. A single review left is
-   stated and used, never asked as a one-option question.
-2. **Read it** per **The records**. When a
-   `decline` and an answer are both active for one key, the answer wins, and an interactive run
-   offers to retract the `decline`.
-3. **Check it is complete** per **When setup is done**. In an interactive run a gap runs setup for
-   the missing questions first, then goes on; an unattended run stops with "setup needed: the
-   {campaign} applicant review" and writes nothing.
+   reviews plus "More reviews", which shows the next three the same way. A page with fewer than
+   three reviews left fills the free places with "Back to the first reviews" and, when there is
+   room, "Use {brand}'s vetting criteria instead" (when saved). A review is used without asking only when the
+   profile has exactly one.
+2. **Read it** per **The records**.
+3. **Check it is complete** per **When setup is done**. A gap runs setup for the missing questions
+   first, then goes on.
 4. **Resolve pointers.** `source: campaign:{campaign-slug}` reads `campaign:{campaign-slug}-brief`
    and `-criteria`; `source: vetting:criteria` and `source: vetting:thresholds` read that record's
    body. A pointer to a record that no longer exists names it in words ("the saved {campaign} brief",
-   "{brand}'s vetting criteria"): an interactive run asks AR2 or AR5 again and replaces the pointer
-   through the Phase 5 supersede rule; an unattended run stops with "setup needed".
+   "{brand}'s vetting criteria"), asks AR2 or AR5 again, and replaces the pointer through the
+   Phase 5 supersede rule.
 5. **Hand it over.** The resolved review goes in the vetting launch as the criteria source: the
    slug, the campaign's name and `campaign key`, criteria, thresholds, the `reject:`
    checks, the review's red lines, form rules, visual checks, the client view, and the Sheet link.
-   **Creator vetting**, Applicant reviews, says how screening applies each.
+   **How screening applies a review** says how screening applies each.
+
+## How screening applies a review
+
+The one place that says how a **Creator vetting** run changes when its criteria source is
+`applicant-review:{slug}`. The vetting main thread and the `atlas-creator-vetting` agent both read
+it; **Creator vetting**'s own sections point here rather than repeat it.
+
+What changes against a `vetting` run in **Creator vetting**:
+
+| Part of the run | Applicant review |
+| --------------- | ---------------- |
+| Fit criteria | The review's criteria, resolved: the campaign's `-brief` and `-criteria` or vetting's criteria it points at, or its own lines |
+| Approve, Maybe, Reject lines | The review's thresholds, resolved |
+| Language on camera | Always run: swearing, or a word any red line rules out (the brand's or the review's, whatever its `action`), in `analysis.transcript` or `analysis.overlayText` is a Flag citing the line, a Fail when `reject:` lists `language-on-camera`. A hit on a `block` red line counts as a failing `block` red line under **Creator vetting**'s **The recommendation**, rule 2, so it rejects whatever `reject:` says. Every one of the review's own red lines is `block`; the brand's saved red lines keep their own action |
+| Red lines | The brand's saved `red_line` records plus the review's red lines, each its own check |
+| Hard stops | The checks the review's `reject:` line lists (`competitor-deals`, `disclosure`, `language-on-camera`), in place of `vetting:hard-rejects` (**Creator vetting**, **The recommendation**, rule 2). Every check runs whatever `reject:` says; one it doesn't list stays a Flag |
+| `vetting:criteria`, `vetting:thresholds`, `vetting:hard-rejects` | Not read; the review replaces them. Bought engagement and no recent posts are Flags, never rejects on their own |
+| Form answer rules | Not applied: a vetting list carries handles and names, not form answers. Each saved rule is listed by name on the page under what is missing, and the run summary names them, so a team never reads a recommendation as having passed them. A form hard stop or required answer therefore never changes the call yet; the team applies it by hand |
+| Visual checks | The review's saved checks feed R5 (**Creator vetting**, **4. Visual check**): R5 is still asked, with up to two of the review's `-visuals` checks as its options after "No visual check", the first marked (Recommended). A `named:` check runs as a named check with its saved definition; a `free:` check runs as a free-text check. One check per run, held to **Creator vetting**'s **What a visual check may look for**; it never changes a call. A saved check not run this time is listed under what is missing |
+| The page | Shows the campaign's name, the review's checks in words, and the Sheet link when the review holds one |
+
+Everything else (brand safety and fit, competitor deals and disclosure, `vetting:safety-scope` and
+the `brand_safety` instruction, the creator calibrations, lessons, the recommendation rule, the feedback loop,
+and the state written to Atlas) runs as in a `vetting` run. Every finding carries
+`detail.applicantReview` set to the review's slug; `detail.campaign` is set only when the review's
+`campaign key` names a saved campaign, to that campaign's slug. `calibrationsApplied[]` names the
+`applicant-review:` keys that shaped the call.

@@ -47,11 +47,10 @@ the same number.
 The campaign's saved cadence approves lookups for the lane's handles, so treat every handle on
 the list as approved for fetching.
 
-**Applicant reviews.** When the criteria source is `applicant-review:{slug}`, follow
-**Applicant reviews** in the vetting reference: the review's criteria, thresholds, checks, red
-lines, form answer rules, and visual checks come resolved in the launch, and the review replaces
-`vetting:criteria`, `vetting:thresholds`, and `vetting:hard-rejects`, so their absence never stops
-the run. `vetting:safety-scope` and the brand safety instruction still apply when saved.
+**Applicant reviews.** When the criteria source is `applicant-review:{slug}`, read
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/applicant-review.md`, **How screening applies a
+review**, and follow it. The review comes resolved in the launch, and its missing `vetting:*`
+records never stop the run.
 
 **Run rules**
 

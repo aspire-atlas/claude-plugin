@@ -104,7 +104,7 @@ person.
    and this pass uses.
 3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the `program:{slug}-*` records, `brand:summary`, `theme:brand`,
    `red_line`, and `competitor`. Parse every `program:` body with a JSON parser. Drop every other
-   flow's keys.
+   flow's keys, `review:` and `applicant-review:` among them.
 4. `search_insights` on the prefix `program-{profile}-{slug}`, newest first, paged to the end.
    Keep the newest `roster`, `terms`, and `draft` per creator, every `affiliate` finding, the
    `deliverable` findings with a `postUrl`, and the `page` finding with key `affiliate`. For

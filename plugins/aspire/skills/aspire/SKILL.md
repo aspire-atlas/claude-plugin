@@ -150,7 +150,7 @@ Where **List agents** step 5 hands each agent off. Each named section owns the c
 | `atlas-creator-profile` | Phase 1, then Phase 2 + 3, then **Creator profile** (it asks for the handle and network first) |
 | `atlas-creator-brief` | Phase 1, then Phase 2 + 3, then **Creator brief** (its three questions first) |
 | `atlas-creator-discovery` | Phase 1, then Phase 2 + 3, then **Creator discovery**, Setup if the campaign is new, then Run |
-| `atlas-creator-vetting` | Phase 1, then Phase 2 + 3, then **Creator vetting**, Setup if it has never run (for a campaign's applicants, **Applicant review** instead), then Run (it asks for the list first) |
+| `atlas-creator-vetting` | Phase 1, then Phase 2 + 3, then **Creator vetting**: the list first (R1), then Setup if it has never run (for a campaign's applicants, **Applicant review** instead), then Run |
 | `atlas-content-review` | Phase 1, then Phase 2 + 3, then **Content review**, Setup if it has never run, then Review |
 | `atlas-post-analysis` | Phase 1, then Phase 2 + 3, then **Post analysis** (it asks for the post first) |
 | `atlas-daily-insights-report` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the daily cadence |

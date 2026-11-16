@@ -124,8 +124,13 @@ drops=$(for f in plugins/*/agents/*.md $(find plugins -path '*/skills/*' -name '
         for (i = 1; i <= nreq; i++)
           if (index(blk, "`" req[i] ":") == 0)
             print "FAIL " F ":" start ": drops `orchestrator:` keys but not `" req[i] ":` keys (" why[i] ")"
-      lb = tolower(blk); if (lb ~ /(`red_line`|red line)/ && lb ~ /(not|ignore|except|skipping|never|drop)[^`]{0,40}`review:`/ && lb !~ /`applicant-review:/)
-        print "FAIL " F ":" start ": reads `red_line` records without `review:` keys but keeps `applicant-review:` keys (atlas-tools.md, Calibration kinds)"
+      lb = tolower(blk)
+      if (F !~ /atlas-tools\.md$/ && lb ~ /(`red_line`|red line)/ &&
+          (lb ~ /(search_calibrations|get_brand_context|once per run)/ ||
+           lb ~ /(not|ignore|except|skipping|never|drop)[^`]{0,40}`review:`/) &&
+          lb !~ /(not|ignore|except|skipping|never|drop|dropping|leave out|leaving out|without|other than)[^.]*`applicant-review:/ &&
+          lb !~ /`applicant-review:`[^.]*(dropped|n.t count|never count)/ && lb !~ /keys dropped above/)
+        print "FAIL " F ":" start ": reads `red_line` records but does not drop `applicant-review:` keys (atlas-tools.md, Calibration kinds)"
       blk = ""
     }
     /^$/ || /^ *([0-9]+[a-z]?\.|-|\|) / { flush() }

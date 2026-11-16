@@ -76,8 +76,8 @@ for each profile with a connected channel, in `get_status` order, and stop at th
 profile with brand context. A profile has brand context when the read holds any record of kind
 `brand_fact`, `user_fact`, `competitor`, `red_line`, `partner`, or `decline`: those are the kinds
 the Phase 5 core set writes, including its skips and "not sure yet" answers. Records whose keys
-belong to another flow (`applicant-review:`, `review:`, `vetting:`, `program:`, **Atlas tools**,
-Calibration kinds), and a person's own `user:usr-{id}` record, don't count: an applicant review set up first leaves a profile unonboarded. Keep the result,
+start `applicant-review:` don't count, so an applicant review set up first leaves a profile
+unonboarded. Keep the result,
 so the Phase 5 gap check reuses it and never reads twice.
 
 ## 4. What the page may use from `get_status`

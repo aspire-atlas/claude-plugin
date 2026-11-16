@@ -101,7 +101,8 @@ When the type's `firstTouch` is `open-fee`, the first message already stated the
 
 And once per run: `program:{slug}-program`, `-terms`, `-catalog` and `-outreach`,
 `fees:rate-card`, `theme:brand`, `brand:summary`, the `voice_and_content_ops` brand fact, every
-`creator:*` record for these creators, `red_line`, and `competitor`.
+`creator:*` record for these creators, `red_line`, and `competitor`, dropping `review:`,
+`applicant-review:`, and every other key another flow owns (**Atlas tools**, Calibration kinds).
 
 ## The price ladder
 
