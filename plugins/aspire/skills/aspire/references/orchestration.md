@@ -60,7 +60,7 @@ actions page and its hourly run. That run is one more caller of this contract.
    nearest code that can run.
 4. **Ask once.** The setup reply (**2**).
 5. **State any spend.** When the agent's level is `spend` (**7**) and this run will spend, say
-   the cost before launching, once (**7**, Spend).
+   the cost before launching (**7**, Spend).
 6. **Launch** with the launch block (**5**) in a subagent (**Running agents**). Up to three at
    once (**8**). A run that publishes a new page launches first to draft its storyline, asks the
    person to confirm it, and only then launches the build (**2**, **The storyline**).
@@ -102,14 +102,10 @@ this order:
    Skip it when the flow sets its own window (a daily or weekly report, a program's term) or the
    ask already gave one.
 3. **Credit cap**, header "Credits", only when the agent's level is `spend` and this run will
-   spend. It is the run's one statement of the cost and its confirmation (**7**, Spend). For
-   fetches: "This fetches {n} handles or posts Atlas does not hold, and each uses Atlas credits
+   spend: "This fetches {n} handles or posts Atlas does not hold, and each uses Atlas credits
    ({balance} left). Cap it at {n}?" Options: "Cap at {n} fetches (Recommended)", "Fetch none,
-   use what Atlas holds", "No cap". For discovery work: "This starts discovery work for new
-   candidates, which uses Atlas credits ({balance} left). Cap it at {n} candidates?" Options:
-   "Cap at {n} candidates (Recommended)", "Start none, use what Atlas holds", "No cap". The cap
-   counts fetches or candidates. Never state a credit price unless `get_status` reports one;
-   the balance comes from `get_status`.
+   use what Atlas holds", "No cap". The cap counts fetches. Never state a credit price per fetch
+   unless `get_status` reports one; the balance comes from `get_status`.
 4. **Save**, header "Save". Whether to save the findings to Atlas, defaulting to no: "Page only
    (Recommended)", "Save to Atlas". This is the run's one write confirmation (**7**, Write), and
    it replaces the flow's own save question (for example vetting's R4) so it is never asked twice.
@@ -173,7 +169,7 @@ No heading, no table, no bold, and no tool, record, or agent name.
    | The run | The line names |
    | ------- | -------------- |
    | Builds a new page, interactive (**The storyline**) | "the page's three main points, before I build it" |
-   | Asks the Credits question | "{fetches, discovery work} on your Atlas credits, capped in the question below" |
+   | Asks the Credits question | "the Atlas credits this run uses, capped in the question below" |
    | Reads an account this session already holds as behind its pace, in a run **Page standard**, section 9.5, says asks first | "a refresh of {@handle}, which is out of date (the refresh is free and the new posts it collects use credits)" |
    | Asks the Save question, in this reply or in the storyline call | "saving {what the Save question names: the findings, the ranked posts} to Atlas" |
    | The agent's row in **7** names mailbox drafts | "drafts in your mailbox, which send nothing" |
@@ -185,8 +181,7 @@ No heading, no table, no bold, and no tool, record, or agent name.
    announces: each approval is still asked by its own question when it comes due (**7**). The
    first time in a session that these lines are written, close them with "Claude itself may also
    ask to let Atlas's tools run": the plugin cannot read the host's Always allow setting
-   (SKILL.md, **1.6 Always allow Atlas tools**). Once this session's chat has said it, do not
-   say it again.
+   (SKILL.md, **1.6 Always allow Atlas tools**).
 
 **An approval the line did not name.** When a packet brings a proposal the line did not name (a
 level raised in **7**, step 1, or a refresh nobody could foresee), say so in one line before its
