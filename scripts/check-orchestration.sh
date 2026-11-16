@@ -76,7 +76,7 @@ cited=$(section 2 | awk -F'|' '/\| Connection \| What it adds \|/{f=1;next} f&&/
 [ -n "$cited" ] || err "the contract's section 2 has no connections table (Before the questions)"
 while IFS= read -r row; do
   [ -n "$row" ] || continue
-  grep -qF "| $row | " "$PAGE" || err "orchestration.md section 2 cites the section 8 row '$row', which $PAGE does not have"
+  awk '/^## 8\. /{f=1;next} f&&/^## /{f=0} f' "$PAGE" | grep -qF "| $row | " || err "orchestration.md section 2 cites the section 8 row '$row', which section 8 of $PAGE does not have"
 done <<<"$cited"
 
 # Agents the question codes (3) and shortcuts (4) route to.

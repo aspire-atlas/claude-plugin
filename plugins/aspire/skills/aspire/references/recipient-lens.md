@@ -64,9 +64,7 @@ to be fast and complete, and end in a next step.
 ### Result judged on
 
 What each reader answers for. It sets the headline's figure and the order of the page's ranked
-posts and topics (**Rendering for a lens**, Headline and rank by the reader's result), and the
-setup reply's opening sentence names it in plain words, with the catalog's "Decision it feeds"
-(**Orchestration contract**, **2**, **Before the questions**). The last
+posts and topics (**Rendering for a lens**, Headline and rank by the reader's result). The last
 column ranks a list of posts when the page holds no such figure for each post. A flow's reference
 may name a closer stand-in (a hook score for videos headed for paid), and that one wins.
 
