@@ -271,6 +271,17 @@ From **Data method** step 8 and the posts already read in step 6; no other reads
 The primary M3 lens (or the lens passed in the launch) leads. Every other saved lens gets a
 section. Each follows **Recipient lens**, **Rendering for a lens**.
 
+Ranking (**Recipient lens**, Headline and rank by the reader's result), as it applies here:
+
+- The page's one-line answer, the order of the claims, and the post lists follow the primary
+  lens's result.
+- The "Where {brand} wins" cards keep the reach-rate order under every lens. The reach rate is a
+  rate over a topic's posts and keeps its definition. "Wins reach" answers the `team` reader;
+  under another primary lens the one-line answer is written in that reader's result first.
+- This flow reads no ad or store data, so a leadership, growth, or performance reader gets the
+  fallback line, naming the metric and the reason and no connection. The page's "what's missing"
+  keeps its paid-results line.
+
 - **Product:** what changed on top, then features compared (won, lost, even, with the clips as
   evidence), then friction with quotes. No marketing gloss.
 - **PMM:** framing by product with verbatim phrases grouped by theme and competitor, share of

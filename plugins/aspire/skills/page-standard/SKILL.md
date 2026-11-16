@@ -347,6 +347,10 @@ reads the same way on every page. Find the row by the page's question code
 scope's `data-question` carries. A launch with no `question` takes the code its flow answers for
 this reader in that table. A flow's reference may add metrics to its row, never drop one.
 
+The rows set what every cited post carries. Which figure headlines and ranks the page is the
+reader's result (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`, **Rendering
+for a lens**); a page that cannot rank by it says in one line which metric it used and why.
+
 <!-- required-metrics -->
 | Kind of question | Codes | On every cited post (R13) | On the page | Ask Atlas for |
 | ---------------- | ----- | ------------------------- | ----------- | ------------- |

@@ -113,12 +113,14 @@ and the unattended run rules. Follow it exactly. Read `recipient-lens.md` too.
 
 ## Output to the main thread (under 250 words, ordered for the primary lens)
 
-- Headline: the week in one line, lead metric vs prior week and vs 8-week median.
+- Headline: the week in one line, in the primary lens's result with its comparison (reference,
+  **Data pull**, **Ranking**; for `team`, the lead metric vs prior week and vs 8-week median).
 - Storyline: the bullets the page opens with, each with the posts, accounts, or views behind
   it; the Slack message and the email carry the same ones (reference, **Scheduled
   (unattended) runs**, Storyline).
 - Numbers: posts, engagement, engagement rate, reach or views, followers with delta.
-- What worked: top 3 posts with metric, link, and the shared pattern.
+- What worked: top 3 posts, in the order **Ranking** gives, with metric, link, and the shared
+  pattern.
 - What did not: bottom 2 posts with one clause each.
 - Mix: format split and cadence vs prior week.
 - Open items: action items still open, with age, including open edits from content reviews.
