@@ -251,7 +251,7 @@ Infer a trait from what the posts show, never from a number or label the creator
 A niche fandom or subculture the criteria name is a theme, not a keyword: count the posts that
 are about it, whatever words they use.
 
-Risk flags are reported, never scored: competitor mention, a `red_line` match in recent
+Risk flags are reported, never scored: competitor mention, a `red_line` match (never a `review:` or `applicant-review:` key) in recent
 content, no contact route, or a follower-to-engagement pattern that looks bought. A flagged
 candidate still appears, with the flag on its card.
 

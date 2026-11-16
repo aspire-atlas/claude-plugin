@@ -4,7 +4,8 @@ Used by the **Applicant review** section of SKILL.md, and read by **Creator vett
 screens a campaign's applicants. Holds the setup interview for one campaign's applicant review,
 the records it saves, the review Sheet it creates, and how a screening run reads it all back.
 
-The main thread's part of this flow. A bold section name in it (**Creator vetting**,
+The main thread's part of this flow, except **How screening applies a review**, which the
+`atlas-creator-vetting` agent reads too. A bold section name in it (**Creator vetting**,
 **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
 
 ## Contents
@@ -188,15 +189,15 @@ the record when none exists. Screening reads a missing `-sheet` as `sheet: none`
 ## Reading the setup back (screening)
 
 How **Creator vetting** reads a review when its criteria source is `applicant-review:{slug}`.
-Screening asks none of AR1 to AR8 and none of vetting's V1 to V4.
+Screening asks no setup question of a complete review, and none of vetting's V1 to V4; a gap or
+a missing pointer is asked per steps 3 and 4.
 
 1. **Find the review.** List the active `applicant-review:*-campaign` records whose body names
    this profile. R2 offers them (**Creator vetting**, Per-run questions); with more than R2 has room
-   for, R2 offers "An applicant review (pick which next)" and a second `AskUserQuestion` lists three
-   reviews plus "More reviews", which shows the next three the same way. A page with fewer than
-   three reviews left fills the free places with "Back to the first reviews" and, when there is
-   room, "Use {brand}'s vetting criteria instead" (when saved). A review is used without asking only when the
-   profile has exactly one.
+   for, R2 offers "An applicant review (pick which next)" and a second `AskUserQuestion` lists the
+   three newest reviews by campaign name plus "Another review (type its campaign name)". When R2's
+   reviews option covers exactly one review, picking it uses that review without a second question.
+   R2 is always asked: a saved review is never used without being picked.
 2. **Read it** per **The records**.
 3. **Check it is complete** per **When setup is done**. A gap runs setup for the missing questions
    first, then goes on.
@@ -222,7 +223,7 @@ What changes against a `vetting` run in **Creator vetting**:
 | --------------- | ---------------- |
 | Fit criteria | The review's criteria, resolved: the campaign's `-brief` and `-criteria` or vetting's criteria it points at, or its own lines |
 | Approve, Maybe, Reject lines | The review's thresholds, resolved |
-| Language on camera | Always run: swearing, or a word any red line rules out (the brand's or the review's, whatever its `action`), in `analysis.transcript` or `analysis.overlayText` is a Flag citing the line, a Fail when `reject:` lists `language-on-camera`. A hit on a `block` red line counts as a failing `block` red line under **Creator vetting**'s **The recommendation**, rule 2, so it rejects whatever `reject:` says. Every one of the review's own red lines is `block`; the brand's saved red lines keep their own action |
+| Language on camera | Always run: swearing, or a word any red line rules out (the brand's or the review's, whatever its `action`), in `analysis.transcript` or `analysis.overlayText` is a Flag citing the line. Swearing is a Fail when `reject:` lists `language-on-camera`. A hit on a `block` red line counts as a failing `block` red line under **Creator vetting**'s **The recommendation**, rule 2, so it rejects whatever `reject:` says; every one of the review's own red lines is `block`. A hit on a brand red line with `flag` or `escalate` keeps that action and stays a Flag, even when `reject:` lists `language-on-camera` (AR3 option 3) |
 | Red lines | The brand's saved `red_line` records plus the review's red lines, each its own check |
 | Hard stops | The checks the review's `reject:` line lists (`competitor-deals`, `disclosure`, `language-on-camera`), in place of `vetting:hard-rejects` (**Creator vetting**, **The recommendation**, rule 2). Every check runs whatever `reject:` says; one it doesn't list stays a Flag |
 | `vetting:criteria`, `vetting:thresholds`, `vetting:hard-rejects` | Not read; the review replaces them. Bought engagement and no recent posts are Flags, never rejects on their own |

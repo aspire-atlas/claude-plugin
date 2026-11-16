@@ -56,8 +56,8 @@ the category read of paid partners belongs to vetting.
    (`search_creators`, `search_creator_marketplace`, `lookup_creators`, web research) are
    yours to run in both modes: the saved cadence record is the standing approval.
 6. **Competitors and red lines are hard filters.** Never shortlist a handle recorded as a
-   `competitor`, and flag any candidate whose recent content matches a `red_line`. `review:`
-   keys never count (step 3 drops them).
+   `competitor`, and flag any candidate whose recent content matches a `red_line` (never a `review:` or `applicant-review:` key: step 3
+   drops them).
 
 **Process**
 
@@ -69,7 +69,7 @@ the category read of paid partners belongs to vetting.
 2. Resolve the date from the shell clock in the cadence record's timezone (`TZ=<tz> date +%F`),
    never from the prompt or the session header.
 3. Read `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the five
-   campaign records, plus `brand:summary`, every `competitor`, `partner`, `red_line`, and
+   campaign records, plus `brand:summary`, every `competitor`, `partner`, `red_line` (never a `review:` or `applicant-review:` key), and
    `guideline`. Drop every key starting `review:` (content review only), `vetting:` (creator
    vetting only), `program:` (influencer program only), `library:` (content library only), `orchestrator:` (the orchestrator only), `ad-reuse:` (ad reuse only), `applicant-review:` (one campaign's applicant screening only), or `lastrun:` (a flow's saved setup answers), and the CAS keys (`-cas`, `-lane-*`, `-decision-defaults`, `-terms`) of any
    campaign other than this one. Keep `theme:brand` for the page in step 10; it is never a guideline. Keep

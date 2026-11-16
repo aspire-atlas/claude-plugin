@@ -98,7 +98,7 @@ step needs one of those, skip that step and name it in your output as needing a 
    the window.
 2. **Read each creator** per **Reads, per creator** (`list_creator_search_fields` and
    `list_post_search_fields` once each; use only paths they return): the account, the posts in
-   the window and the 90 days before it, and one red-line search per `red_line`. Work in batches
+   the window and the 90 days before it, and one red-line search per `red_line` (never a `review:` or `applicant-review:` key). Work in batches
    of ten.
 3. **Compute the signals** per **The signals** and **Cost**, then the roster medians per tier.
 4. **Segment** each creator per **Segments**, with two reasons and the evidence lines, and mark
@@ -107,7 +107,7 @@ step needs one of those, skip that step and name it in your output as needing a 
    per **Renewals**, and the `lookalike-seeds` block per **Lookalike seeds**.
 6. **Draft** per **Drafts**: a thank-you and rebook invite per star without a renewal due, a
    check-in per slipping creator, a re-engagement note per dormant creator. Skip a creator with
-   an open `yourCall` from another flow, a saved reject, or a `red_line` that blocks AI-written
+   an open `yourCall` from another flow, a saved reject, or a `red_line` (never a `review:` or `applicant-review:` key) that blocks AI-written
    outreach, and list them.
 7. **Build the page** per **The page**, every call marked proposed, and publish it with the
    Artifact tool. When a `page` finding with key `roster` exists, read that artifact first and

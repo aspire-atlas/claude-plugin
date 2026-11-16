@@ -184,7 +184,7 @@ takes up to four questions), skipping any the user already answered.
    (Recommended)" takes the first place; picking it runs **Applicant review**, then this run goes
    on with the new review as the criteria source.
 4. When nothing else is left to offer, option 1 stays as the second option.
-5. When the reviews do not fit, the last option is "An applicant review (pick which next)", paged
+5. When the reviews do not fit, the last option is "An applicant review (pick which next)", listed
    per **Applicant review**, Reading the setup back, step 1.
 
 R3 is asked only after the main thread has checked which handles Atlas holds
@@ -234,6 +234,9 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    attached a file or pasted handles). Show what was found and the list name.
 2. **Check what Atlas holds**: `search_creators` with a `terms` filter on the username field,
    one call per network.
+2b. **Vetting setup missing:** ask V1 to V4 now (**Setup**), unless rule 1 of **R2 options**
+   applies; then ask them once R2 picks {brand}'s vetting criteria, before 3c, and skip them when R2
+   picks a campaign or a review.
 3. Ask R2 to R4 in one `AskUserQuestion` call with the **Reading the ask** confirmation (SKILL.md).
    R2 and R3 change what the agent reads, so they go with that confirmation, before the storyline
    draft. On a new page, R4 is answered by the storyline call's Save (**Orchestration contract**,
@@ -816,8 +819,9 @@ Maybe, and Reject keep their status colors under any theme.
 A campaign's applicants are screened against its applicant review: the setup saved once under
 `applicant-review:{slug}-*` (**Applicant review**, **The records**). The criteria source is
 `applicant-review:{slug}`. The main thread reads the review back per **Applicant review**,
-**Reading the setup back (screening)**, and passes it resolved in the launch, so neither the main
-thread nor the agent asks V1 to V4 or any setup question.
+**Reading the setup back (screening)**, and passes it resolved in the launch. Neither asks V1 to
+V4, and the main thread asks no setup question of a complete review: a gap or a missing pointer is
+asked there, before the launch, and the agent asks none.
 
 **A campaign's applicants.** A list counts as a campaign's applicants when the user's ask says so
 (applicants, applications, or screening for a named campaign), or when the export carries an Aspire
@@ -825,9 +829,11 @@ campaign id or applicant columns (form answers, an applied date). Nothing else d
 these, R2 keeps {brand}'s vetting criteria as option 1. The campaign is the one the ask names, or the
 one whose `-campaign` record carries the export's Aspire campaign id. When neither names one (an
 export with applicant columns and no campaign id), ask which campaign with **Applicant review**'s
-AR1 before R2, its campaign options cut to three and a last option added: "Not for a campaign: use
-{brand}'s vetting criteria". Picking that one means the list is not counted as a campaign's
-applicants.
+AR1 before R2. In this use its options are the profile's active reviews by campaign name (up to
+three, newest first; with none saved, AR1's own campaign options, up to three), then "Not for a
+campaign: use {brand}'s vetting criteria". The answer writes nothing: it only picks the campaign.
+Picking a review's campaign makes that review R2's first option; picking "Not for a campaign"
+means the list is not counted as a campaign's applicants.
 
 How the run changes for a review (criteria, thresholds, hard stops, red lines, language on camera,
 form rules, visual checks, the page, and what each finding records) is set out once, in

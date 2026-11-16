@@ -319,7 +319,8 @@ records. Program flows that read `asset` findings or the library `page` finding 
 the dashboard) also read the newest of each on the prefix `content-library-{profile}`, so a
 brand-wide refresh counts for every program. Its scheduled refresh is approved by the
 `library:cadence` calibration (**8**), not by a program's P9. `library:cadence` is a
-`policy` record: flows that read only `guideline` and `red_line` records never see it, and
+`policy` record: flows that read only `guideline` and `red_line` records (never `review:` or
+`applicant-review:` keys) never see it, and
 every flow that reads calibrations more broadly names `library:` in its drop list. Only the
 library and the **Content library** section read it.
 

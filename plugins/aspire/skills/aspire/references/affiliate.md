@@ -136,7 +136,7 @@ that code: the run offers to create it, never re-plans it.
      has no name, use `{HANDLE}`.
    - `{PCT}`: the code's discount percent as a whole number.
 3. **Clean it.** Capitals A to Z and digits only, 4 to 20 characters. Never a word from
-   `red_line` or a competitor's name.
+   `red_line` (never a `review:` or `applicant-review:` key) or a competitor's name.
 4. **Check for collisions**, case-insensitively, against:
    - every `code` in every `affiliate` finding on the profile, all programs (`search_insights`
      on the prefix `program-{profile}-`, `recordType` `affiliate`);

@@ -207,7 +207,7 @@ from**, and leave them out of the data block, since they aren't parts of the bri
 - **Creators**: the lane's approved creators from the roster, as creator cards, each with the
   agreed fee and ship date.
 
-A `red_line` that blocks AI-written copy still applies: hooks, CTAs and the body become
+A `red_line` (never a `review:` or `applicant-review:` key) that blocks AI-written copy still applies: hooks, CTAs and the body become
 directions, per **Hooks and CTAs**, **Limits**. Say so in the standing-rule banner.
 
 **Editing coverage check**, before the page ships. Every brief must pass all three; fix the

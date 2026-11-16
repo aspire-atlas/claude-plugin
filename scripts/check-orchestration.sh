@@ -124,13 +124,6 @@ drops=$(for f in plugins/*/agents/*.md $(find plugins -path '*/skills/*' -name '
         for (i = 1; i <= nreq; i++)
           if (index(blk, "`" req[i] ":") == 0)
             print "FAIL " F ":" start ": drops `orchestrator:` keys but not `" req[i] ":` keys (" why[i] ")"
-      lb = tolower(blk)
-      if (F !~ /atlas-tools\.md$/ && lb ~ /(`red_line`|red line)/ &&
-          (lb ~ /(search_calibrations|get_brand_context|once per run)/ ||
-           lb ~ /(not|ignore|except|skipping|never|drop)[^`]{0,40}`review:`/) &&
-          lb !~ /(not|ignore|except|skipping|never|drop|dropping|leave out|leaving out|without|other than)[^.]*`applicant-review:/ &&
-          lb !~ /`applicant-review:`[^.]*(dropped|n.t count|never count)/ && lb !~ /keys dropped above/)
-        print "FAIL " F ":" start ": reads `red_line` records but does not drop `applicant-review:` keys (atlas-tools.md, Calibration kinds)"
       blk = ""
     }
     /^$/ || /^ *([0-9]+[a-z]?\.|-|\|) / { flush() }
@@ -139,5 +132,39 @@ drops=$(for f in plugins/*/agents/*.md $(find plugins -path '*/skills/*' -name '
 done)
 if [ -n "$drops" ]; then echo "$drops"; fail=1; fi
 
-[ "$fail" -eq 0 ] && echo "OK   every agent carries the orchestration contract and has a permission level; routes and shortcuts resolve; every drop list drops lastrun: and applicant-review: keys"
+# A `red_line` read that keeps `applicant-review:` keys turns one campaign's screening red lines into
+# brand-wide rules. Every block that names the `red_line` kind must drop them, whatever it says about
+# how it reads its data. Only the files that own or write those records are exempt: the applicant
+# review and vetting (which apply them), content review (which writes its own `review:` red lines),
+# the onboarding questions (which write the brand's), and atlas-tools.md (which defines the rule).
+redlines=$(python3 - <<'PY'
+import glob, re, subprocess
+files = sorted(glob.glob("plugins/*/agents/*.md")) + sorted(
+    subprocess.check_output(["find", "plugins", "-path", "*/skills/*", "-name", "*.md"]).decode().split())
+exempt = ("atlas-tools.md", "applicant-review.md", "creator-vetting.md", "content-review.md",
+          "onboarding-questions.md")
+neg = r"(?:never|not|nor|drop|dropping|dropped|except|excluding|without|leave out|leaving out|ignore|ignoring|skip|skipping|other than)"
+# The negation must govern the key: no contrast word ("keep", "but", "include", "use", "apply") between them.
+before = re.compile(r"\b" + neg + r"\b(?:(?!keep|\bbut\b|includ|\buse|\bapply)[^.]){0,160}?`applicant-review:")
+after = re.compile(r"`applicant-review:`[^.`]{0,40}(?:dropped|n.t count|never count)")
+for f in files:
+    if f.endswith(exempt):
+        continue
+    blk, start = [], 0
+    def flush():
+        b = " ".join(blk).lower()
+        if blk and "`red_line`" in b and not before.search(b) and not after.search(b):
+            print(f"FAIL {f}:{start}: names `red_line` but does not drop `applicant-review:` keys (atlas-tools.md, Calibration kinds)")
+    for i, line in enumerate(open(f).read().split("\n"), 1):
+        if not line.strip() or re.match(r"^ *([0-9]+[a-z]?\.|-|\|) ", line):
+            flush(); blk = []
+        if not blk:
+            start = i
+        blk.append(line)
+    flush()
+PY
+)
+if [ -n "$redlines" ]; then echo "$redlines"; fail=1; fi
+
+[ "$fail" -eq 0 ] && echo "OK   every agent carries the orchestration contract and has a permission level; routes and shortcuts resolve; every drop list drops lastrun: and applicant-review: keys, and every `red_line` reader drops applicant-review: keys"
 exit "$fail"
