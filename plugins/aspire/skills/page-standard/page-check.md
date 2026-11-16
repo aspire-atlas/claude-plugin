@@ -71,7 +71,7 @@ O1 O4 O5 O6: views likes comments shares saves engagement
 O2 O3: views likes comments engagement
 I1 I2 I3 I4: views likes comments engagement
 P1 P2 P4 P5 P6: views likes comments shares saves engagement
-I5 I6 P3 A1: views likes comments
+I5 I6 I11 P3 A1: views likes comments
 """
 REQUIRED = {code: tuple(metrics.split()) for line in REQUIRED_ROWS.strip().splitlines()
             for codes, metrics in [line.split(":")] for code in codes.split()}
