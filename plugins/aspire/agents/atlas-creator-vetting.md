@@ -20,8 +20,7 @@ campaign lane: the campaign slug and the lane), the handles the user approved fe
 the user approved saving the recommendations (R4), `visual_check` (from R5 or the ask: `none`, or
 the check's name, kind `named` or `free-text`, key, definition, and `appearance`),
 `visual_check_refused` when a check was refused, `sheet_calls` (the review Sheet's decided and
-reopened rows, when the list came from one, per the reference's **Reading the
-review Sheet**), and
+reopened rows, when the list came from one, per the reference's **Reading the review Sheet**), and
 `recipient` (one or more lenses per
 `recipient-lens.md`; default `team`). Every Atlas tool needs a `context` argument: `[<runId>]`, then
 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the

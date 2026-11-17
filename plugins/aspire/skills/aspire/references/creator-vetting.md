@@ -275,9 +275,8 @@ takes up to four questions), skipping any the user already answered.
    per **Applicant review**, Reading the setup back, step 1.
 
 R3 is asked only after the main thread has checked which handles Atlas holds
-(**Main thread: the run**, step 2), and only when some on the list are missing. R3 option 1 is
-the approval for `lookup_creators` on exactly those handles, and the agent does not ask again.
-R4 is the write
+(**Main thread: the run**, step 2), and only when some on the list are missing. R3 option 1 is the approval for
+`lookup_creators` on exactly those handles, and the agent does not ask again. R4 is the write
 confirmation for the recommendation findings; the feedback answers carry their own.
 
 R5 picks the visual check (**4. Visual check**). An option picked is a **named** check; words typed
@@ -681,11 +680,10 @@ or `retract_calibration`), one per call. A proposal the user declines stays unsa
 (**Reading the review Sheet**) per creator, without notes, grouped Approve, Maybe, Reject. It
 includes every Sheet call, and leaves out duplicate rows and a reopened creator (**Reading the
 review Sheet**) until F1 saves a new call for them. With no team calls yet it is the
-recommendations, headed
-"Recommendations, not yet the team's calls". The main thread gives it in chat after the last
-batch's F1, covering the whole list, with "(Sheet only)" after a Sheet call that is not saved to
-Atlas and the unreadable Sheet rows under it. The page carries it as a button (**The page**,
-Decisions) with neither.
+recommendations, headed "Recommendations, not yet the team's calls". The main thread gives it in
+chat after the last batch's F1, covering the whole list, with "(Sheet only)" after a Sheet call that
+is not saved to Atlas and the unreadable Sheet rows under it. The page carries it as a button (**The
+page**, Decisions) with neither.
 
 **Feedback outside a run.** Feedback about a creator outside a run ("never use @handle again",
 "@handle was great to work with") is saved the same way: word the note, confirm it with
@@ -841,9 +839,8 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
    after a visual check, the creators whose read is Low confidence, to confirm by eye.
    Questions that settle one creator stay on that creator's card. Below them, a **Copy
    decisions** button with the page's text from **Copy decisions** (**The feedback loop**). The
-   button and the cards' Team chips show the
-   calls as they stood when the page was published; calls F1 saves afterwards show on the list's
-   next republish.
+   button and the cards' Team chips show the calls as they stood when the page was published;
+   calls F1 saves afterwards show on the list's next republish.
 8. **Next steps** (3.6): in order, each with its week, the creators it covers by number, and
    what it should change: contact the approvals, settle the Maybes, line up the backups, and,
    when the list came up short, where a second search should look given the findings, and,
