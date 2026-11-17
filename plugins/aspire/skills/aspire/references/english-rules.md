@@ -20,6 +20,7 @@ written.
 | 5 | Every term explained on first use | A term a reader in this role would not use themselves (hook rate, engagement per 1,000 views, CPM, whitelisting) with no plain explanation where it first appears |
 | 6 | Every number in a label matches what it labels | "Top 5" over four rows, "3 creators to contact" beside two, a percent sign on a count, a total that is not the sum shown under it |
 | 7 | Nothing in Atlas's own report words | The report labels R11 bans (**Reader standard**), "picks" or "reads" used as a section or list name where R11 lets them pass, and any other wording that only makes sense inside Atlas's own reports: a question pasted in Atlas's shorthand, a section named for the agent that made it, a question code ("I2"), a check id ("R3", "EN2"), or a flow's question id ("R4", "D4") |
+| 8 | Every comparison is like for like | A comparison or a share that does not pass the four checks in **Page standard**, `comparisons.md`, as far as the words show: two sides with no word on what kind of posts each holds (paid label, TikTok Shop selling, or no paid label); a figure that rests on 20 posts or fewer with no "directional" and post count beside it; a share ("87% of revenue") with no size of its group beside it ("from 88% of affiliates"); a share within 5 points of its group's size written up as a finding. Good: "TikTok Shop posts drew 3.6 engagements per 1,000 views (18 posts, directional), against 14.7 across the 212 posts with no paid label." Bad: "{brand} drew 6.1 engagements per 1,000 views, behind {competitor} at 9.8." |
 
 ## In chat
 
@@ -48,6 +49,8 @@ What the table means in chat:
   leaves as written. An echo without quotation marks is Atlas's sentence, and the rule applies.
 - **Rule 5.** The first message a person reads is the setup reply, so a term explained later on
   the page is still unexplained here.
+- **Rule 8.** A storyline bullet or a close-out point that compares names the kind of posts and
+  the post count on each side, and a share comes with its group's size, in the same sentence.
 - **Rule 7.** Say the question in its own words. Its code, a check's id, and a flow's question id
   belong in the launch block, the result packet, and the run log (**Orchestration contract**, **5**,
   **6**, **9**), and never reach the person. Name a check by what it means for the reader ("the

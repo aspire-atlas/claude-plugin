@@ -1,12 +1,13 @@
 # Page check script
 
-The script `SKILL.md`, section 5, runs on every page before it is published: R1, R2, R6, R11 and
-R13 from the reader standard. Extract it with the command there; never retype it. It reads only the
+The script `SKILL.md`, section 5, runs on every page before it is published: R1, R2, R6, R11, R13,
+R14 and R15 from the reader standard. Extract it with the command there; never retype it. It reads only the
 pages named and writes nothing. With `--text` anywhere among its arguments it runs no check and prints the
 words a reader sees instead, one block per line, which is all the English read (`SKILL.md`,
 section 4, step 4b) is given. It lives in this file so `SKILL.md` stays short; when the reader
 standard changes, `SKILL.md`'s section 6 table and this script change in the same commit, and when
 the required-metrics table (`SKILL.md`, section 8) changes, `REQUIRED_ROWS` here changes with it.
+`DIRECTIONAL_MAX` and `IN_LINE_POINTS` are the two numbers `comparisons.md` sets.
 
 ## Contents
 
@@ -16,7 +17,7 @@ the required-metrics table (`SKILL.md`, section 8) changes, `REQUIRED_ROWS` here
 
 <!-- page-check -->
 ```python
-# Page standard self-check: R1, R2, R6, R11, R13 and R14 from reader-standard.md. Reads the HTML files named; writes nothing.
+# Page standard self-check: R1, R2, R6, R11, R13, R14 and R15 from reader-standard.md. Reads the HTML files named; writes nothing.
 import datetime, json, re, sys
 from html.parser import HTMLParser
 
@@ -580,14 +581,148 @@ def r14(nodes, regions):
         problems.append("the page cites mention posts but the source line has no data-fresh=\"mentions\" entry")
     return problems
 
-# Only these scripted checks can be N/A (reader-standard.md; quality-review.md, section 3). R13 and
-# R14 are n/a on their own terms, never through data-na.
+# The like-for-like check (comparisons.md). A side with this many posts or fewer is marked
+# "directional"; a share within this many points of its group's share of the whole is "in line with"
+# the group's size. Kept equal to comparisons.md by scripts/check-artifact-standard.sh.
+DIRECTIONAL_MAX = 20
+IN_LINE_POINTS = 5
+COMPARES = ("groups", "periods", "brands", "kinds", "share")
+KINDS = ("paid-label", "shop", "no-paid-label")
+KIND_NAMES = {"paid-label": "posts with a paid label", "shop": "TikTok Shop selling posts",
+              "no-paid-label": "posts with no paid label", "mixed": "a mix of kinds"}
+# The checks a comparison may fail and stay on the page, saying so. "Enough posts" is not one: its
+# line is the "directional" mark itself.
+MAY_FAIL = ("same-kind", "mentions", "share-size")
+
+def whole(value):
+    value = (value or "").replace(",", "").strip()
+    return int(value) if value.isascii() and value.isdigit() else None
+
+def percent(value):
+    value = (value or "").strip().rstrip("%").strip()
+    return value if re.fullmatch(r"\d+(?:\.\d+)?", value) else None
+
+def shows_percent(shown, value):
+    return re.search(r"(?<![\d.,])%s\s*(?:%%|percent\b)" % re.escape(value), shown) is not None
+
+def sides_of(comparison):
+    # The data-side elements of this comparison, not those of a comparison nested in it.
+    inner = lambda n: n is not comparison and "data-compare" in n.attrs
+    return [n for n in walk(comparison, keep=lambda n: not inner(n)) if "data-side" in n.attrs]
+
+def comparisons(nodes):
+    # What the page check block's "comparisons" lists: each marked comparison with its sides' post
+    # counts and kinds, or a share with its group's share of the whole.
+    listed = []
+    for node in nodes:
+        if "data-compare" not in node.attrs:
+            continue
+        entry = {"compare": (node.attrs.get("data-compare") or "").strip().lower(),
+                 "sides": [{"label": (s.attrs.get("data-side") or "").strip() or text(s, gap=" ")[:60],
+                            "kind": (s.attrs.get("data-kind") or "").strip().lower() or None,
+                            "posts": whole(s.attrs.get("data-posts")),
+                            "mentions": "data-mentions" in s.attrs} for s in sides_of(node)],
+                 "fails": sorted(name.strip().lower() for name, sep, _ in
+                                 (e.partition(":") for e in (node.attrs.get("data-fails") or "").split(";")) if sep)}
+        if entry["compare"] == "share":
+            entry["share"], entry["groupShare"] = percent(node.attrs.get("data-share")), percent(node.attrs.get("data-group-share"))
+            entry["posts"] = whole(node.attrs.get("data-posts"))
+        listed.append(entry)
+    return listed
+
+def r15(nodes, regions):
+    # Every marked comparison (data-compare) passes the four like-for-like checks of comparisons.md,
+    # or names the one it fails in data-fails="{check}: {line}" with that line shown in it. A side of
+    # DIRECTIONAL_MAX posts or fewer always shows "directional" and its post count. Returns None
+    # (n/a) on a page that marks no comparison.
+    marked = [n for n in nodes if "data-compare" in n.attrs]
+    if not marked:
+        return None
+    method = " ".join(text(m, gap=" ") for m in regions.get("method", []))
+    problems = []
+    for index, node in enumerate(marked, 1):
+        shown = text(node, gap=" ")
+        label = "comparison %d (\"%s\")" % (index, shown[:50])
+        kind_of = (node.attrs.get("data-compare") or "").strip().lower()
+        if kind_of not in COMPARES:
+            problems.append("%s has data-compare \"%s\"; use one of %s" % (label, kind_of, ", ".join(COMPARES)))
+            continue
+        fails = {}
+        for entry in (node.attrs.get("data-fails") or "").split(";"):
+            if not entry.strip():
+                continue
+            name, sep, line = entry.partition(":")
+            name = name.strip().lower()
+            if not sep or name not in MAY_FAIL or not line.strip():
+                problems.append("%s has a data-fails entry \"%s\" that is not \"{check}: {line}\" with check one of %s"
+                                % (label, entry.strip(), ", ".join(MAY_FAIL)))
+            elif not has(shown, line):
+                problems.append("%s notes that it fails %s but does not show that line (%s)" % (label, name, line.strip()))
+            else:
+                fails[name] = line.strip()
+        def small(owner, what):
+            posts = whole(owner.attrs.get("data-posts"))
+            if posts is None or posts > DIRECTIONAL_MAX:
+                return
+            said = text(owner, gap=" ")
+            if not has_phrase(said, "directional"):
+                problems.append("%s: %s has %d posts, %d or fewer, but is not marked \"directional\" beside its number"
+                                % (label, what, posts, DIRECTIONAL_MAX))
+            elif posts not in numbers(said):
+                problems.append("%s: %s is marked directional but does not show its post count (%d)" % (label, what, posts))
+        if kind_of == "share":
+            share, group = percent(node.attrs.get("data-share")), percent(node.attrs.get("data-group-share"))
+            if share is None:
+                problems.append("%s states a share but has no data-share as a number" % label)
+            elif not shows_percent(shown, share):
+                problems.append("%s does not show its share (%s%%)" % (label, share))
+            if "share-size" not in fails:
+                if group is None:
+                    problems.append("%s states a share with no data-group-share: show the group's share of the whole beside it" % label)
+                elif not shows_percent(shown, group):
+                    problems.append("%s does not show the group's share of the whole (%s%%) beside the share" % (label, group))
+                elif share is not None and abs(float(share) - float(group)) <= IN_LINE_POINTS and not has_phrase(shown, "in line with"):
+                    problems.append("%s: the share (%s%%) is within %d points of the group's size (%s%%) but the page does not say it is \"in line with\" it"
+                                    % (label, share, IN_LINE_POINTS, group))
+            if "data-posts" in node.attrs:
+                small(node, "the group")
+            continue
+        sides = sides_of(node)
+        if len(sides) < 2:
+            problems.append("%s marks %d data-side; a comparison has at least two" % (label, len(sides)))
+        kinds = []
+        for number, side in enumerate(sides, 1):
+            what = "side %d (\"%s\")" % (number, (side.attrs.get("data-side") or "").strip() or text(side, gap=" ")[:40])
+            if whole(side.attrs.get("data-posts")) is None:
+                problems.append("%s: %s has no whole-number data-posts" % (label, what))
+            small(side, what)
+            kind = (side.attrs.get("data-kind") or "").strip().lower()
+            kinds.append(kind)
+            if kind not in KINDS and kind != "mixed":
+                problems.append("%s: %s has data-kind \"%s\"; use one of %s, or mixed" % (label, what, kind, ", ".join(KINDS)))
+            elif kind == "mixed" and "same-kind" not in fails:
+                problems.append("%s: %s mixes kinds of post; split it, drop the comparison, or note same-kind in data-fails with the line shown" % (label, what))
+            if "data-mentions" in side.attrs and "mentions" not in fails:
+                how = (side.attrs.get("data-mentions") or "").strip()
+                if not how:
+                    problems.append("%s: %s counts mentions but data-mentions does not say how they were found" % (label, what))
+                elif not has(method, how):
+                    problems.append("%s: %s counts mentions, but the method section does not show how they were found (%s)" % (label, what, how))
+        named = sorted({k for k in kinds if k in KINDS})
+        if len(named) > 1 and "mixed" not in kinds and kind_of != "kinds" and "same-kind" not in fails:
+            problems.append("%s sets %s side by side; compare one kind, mark it data-compare=\"kinds\" when the kinds are what it compares, or note same-kind in data-fails"
+                            % (label, " and ".join(KIND_NAMES[k] for k in named)))
+    return problems
+
+# Only these scripted checks can be N/A (reader-standard.md; quality-review.md, section 3). R13, R14
+# and R15 are n/a on their own terms, never through data-na.
 CAN_BE_NA = {"R2", "R6"}
 NA_REASON = {"R13": "the page names no question code and cites no post",
-             "R14": "the page cites no account and no post, its scope reports on no account, and it has no freshness entry"}
+             "R14": "the page cites no account and no post, its scope reports on no account, and it has no freshness entry",
+             "R15": "the page marks no comparison; judge by reading whether it makes one"}
 CHECKS = (("R1", "Reader and scope", r1), ("R2", "Platforms covered", r2),
           ("R6", "Decisions kept separate", r6), ("R11", "Plain language", r11),
-          ("R13", "Required metrics", r13), ("R14", "Data freshness", r14))
+          ("R13", "Required metrics", r13), ("R14", "Data freshness", r14), ("R15", "Like for like", r15))
 
 def check(path):
     tree = Tree()
@@ -615,19 +750,22 @@ def check(path):
                 results.append((code, name, "n/a", [NA_REASON[code]]))
             else:
                 results.append((code, name, "fail" if problems else "pass", problems))
-    return results
+    return results, comparisons(nodes)
 
 def main(paths):
     status = 0
     for path in paths:
         try:
-            results = check(path)
+            results, listed = check(path)
         except Exception as error:
             print(json.dumps({"page": path, "check": "error", "result": "error", "problems": [repr(error)]}))
             status = 2
             continue
         for code, name, result, problems in results:
-            print(json.dumps({"page": path, "check": code, "name": name, "result": result, "problems": problems}))
+            line = {"page": path, "check": code, "name": name, "result": result, "problems": problems}
+            if code == "R15" and listed:
+                line["comparisons"] = listed
+            print(json.dumps(line))
             if result == "fail" and status == 0:
                 status = 1
     return status

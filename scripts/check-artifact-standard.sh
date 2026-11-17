@@ -161,13 +161,13 @@ else
     awk '/^<!-- page-check -->$/{f=1;next} /^<!-- \/page-check -->$/{f=0} f' "$PC" | sed '1d;$d' > "$tmp/page_check.py"
     [ -s "$tmp/page_check.py" ] || err "$PC has no <!-- page-check --> script"
     grep -qF 'skills/page-standard/page-check.md' "$PS" || err "$PS does not link skills/page-standard/page-check.md"
-    # Each fixture prints exactly six results and no error: a pass*.html page fails nothing, and a
+    # Each fixture prints exactly seven results and no error: a pass*.html page fails nothing, and a
     # fail-rN*.html page fails RN and nothing else. Exit 2 means the script could not read the page.
     for f in "$FX"/*.html; do
       [ -f "$f" ] || continue
       name=${f##*/}
       out=$(python3 -I "$tmp/page_check.py" "$f" 2>&1) && code=0 || code=$?
-      [ "$code" -ne 2 ] && [ "$(grep -c '"check": "R' <<< "$out")" -eq 6 ] && ! grep -q Traceback <<< "$out" ||
+      [ "$code" -ne 2 ] && [ "$(grep -c '"check": "R' <<< "$out")" -eq 7 ] && ! grep -q Traceback <<< "$out" ||
         { err "page check did not run cleanly on $f (exit $code): $out"; continue; }
       failed=$(grep -o '"check": "R[0-9]*", "name": "[^"]*", "result": "fail"' <<< "$out" | sed -E 's/^"check": "(R[0-9]+)".*/\1/' | tr '\n' ' ' || true)
       case $name in
@@ -185,6 +185,23 @@ else
     out=$(python3 -I "$tmp/page_check.py" "$tmp/markup.html" 2>&1) || true
     grep -q '"check": "R14", "name": "Data freshness", "result": "pass"' <<< "$out" ||
       err "the markup example in $PS (section 5) does not pass R14: $(grep '"R14"' <<< "$out")"
+
+    # The like-for-like check's two numbers are set once, in comparisons.md, and the script holds the same.
+    CM=$P/skills/page-standard/comparisons.md
+    if [ ! -f "$CM" ]; then
+      err "$CM is missing"
+    else
+      grep -qF 'comparisons.md' "$PS" || err "$PS does not link comparisons.md"
+      line=$(sed -nE 's/^<!-- directional-max: ([0-9]+); in-line-points: ([0-9]+) -->$/\1 \2/p' "$CM")
+      have="$(sed -nE 's/^DIRECTIONAL_MAX = ([0-9]+)$/\1/p' "$tmp/page_check.py") $(sed -nE 's/^IN_LINE_POINTS = ([0-9]+)$/\1/p' "$tmp/page_check.py")"
+      [ -n "$line" ] && [ "$line" = "$have" ] ||
+        err "$PC's DIRECTIONAL_MAX and IN_LINE_POINTS ($have) differ from $CM's directional-max line (${line:-none})"
+      # The markup example in comparisons.md is what agents copy, so it must pass R15.
+      awk '/^```html$/{g=1;next} g&&/^```$/{exit} g' "$CM" > "$tmp/compare.html"
+      out=$(python3 -I "$tmp/page_check.py" "$tmp/compare.html" 2>&1) || true
+      grep -q '"check": "R15", "name": "Like for like", "result": "pass"' <<< "$out" ||
+        err "the markup example in $CM does not pass R15: $(grep '"R15"' <<< "$out")"
+    fi
 
     # R13 checks the metrics the page standard's required-metrics table names, code by code: the
     # table's Codes and On every cited post columns equal the script's REQUIRED_ROWS.
@@ -219,7 +236,7 @@ print("ok" if a and a == b else "table %s; script %s" % (sorted(set(a) - set(b))
         echo '<p>Internal use only. Not for public publishing.</p></footer></body></html>'
       } > "$tmp/blocks.html"
       out=$(python3 -I "$tmp/page_check.py" "$tmp/blocks.html" 2>&1) && code=0 || code=$?
-      [ "$code" -eq 0 ] && [ "$(grep -c '"result": "pass"' <<< "$out")" -eq 6 ] ||
+      [ "$code" -eq 0 ] && [ "$(grep -c '"result": "pass"' <<< "$out")" -eq 7 ] ||
         err "a page built from every block in $BL does not pass the page check (exit $code): $out"
       ran="$ran, and a page built from every block passes it"
     fi

@@ -5,9 +5,9 @@ description: >
   for and what it covers, the answer first, up to three insights, ranked next steps, decisions
   kept apart, real evidence, how it was worked out, what is missing, what Atlas can draft next),
   the reader and evidence rules, the metrics each kind of question requires and where each is
-  missing per network, the one data freshness rule for every page and chat reply, the self-check
-  against the reader standard (R1 to R14), and the English read and the rendered UX review every
-  page gets before it is published. Agents load it before they build a page. It is not a command.
+  missing per network, the one data freshness rule for every page and chat reply, the four
+  like-for-like checks on every comparison, the self-check against the reader standard (R1 to
+  R15), and the English read and the rendered UX review every page gets before it is published. Agents load it before they build a page. It is not a command.
 user-invocable: false
 metadata:
   author: Aspire
@@ -17,7 +17,7 @@ metadata:
 
 Every page an Atlas agent publishes holds the nine parts below, carries the metrics its kind of
 question requires (section 8), says how fresh its data is (section 9), and is checked against R1
-to R14 before it goes out. The checks are defined once, in
+to R15 before it goes out. The checks are defined once, in
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/reader-standard.md`; the quality review runs the
 same ones on a finished page. Read that file with this one. The parts are fixed. The look is not:
 a creator profile, a competitor brief, and a rights log should still look different. Decide what
@@ -27,7 +27,7 @@ This skill sets what a page says. `skills/aspire/references/artifact-standard.md
 and the source line, `skills/aspire/references/recipient-lens.md` sets the reader, and
 `skills/aspire/references/theme.md` sets the colors and type, `blocks.md` in this folder holds
 the parts each page is built from, with their markup, `page-check.md` holds the self-check
-script, `english-read.md` and `ux-review.md` the two reviews before publishing, and `examples.md` lists the evidence each
+script, `comparisons.md` the four checks on every comparison, `english-read.md` and `ux-review.md` the two reviews before publishing, and `examples.md` lists the evidence each
 approved example sets, by question code. **The flow's own reference wins**
 wherever it sets a rule: its layout, what its page leaves out, who sees money, and the form its
 evidence takes. This skill fills in what the reference leaves open. One exception: a reference
@@ -39,7 +39,7 @@ may ask Atlas for more metrics than section 8's row, never fewer.
 - [2. Reader rules](#2-reader-rules)
 - [3. Evidence standards](#3-evidence-standards)
 - [4. Build loop](#4-build-loop)
-- [5. Markup and the scripted checks (R1, R2, R6, R11, R13, R14)](#5-markup-and-the-scripted-checks-r1-r2-r6-r11-r13-r14)
+- [5. Markup and the scripted checks (R1, R2, R6, R11, R13, R14, R15)](#5-markup-and-the-scripted-checks-r1-r2-r6-r11-r13-r14-r15)
 - [6. How each check is judged](#6-how-each-check-is-judged)
 - [7. The page check in the result](#7-the-page-check-in-the-result)
 - [8. Required metrics, by kind of question](#8-required-metrics-by-kind-of-question)
@@ -51,7 +51,7 @@ may ask Atlas for more metrics than section 8's row, never fewer.
 | - | ---- | ------------- | ----- |
 | 1 | Who it is for and what it covers | The reader, the brand, the date range, and each platform with its post count. On a team page, a platform with no data is named as not covered. The method section repeats the platform counts. | R1, R2 |
 | 2 | Lead with the answer | The headline is the conclusion, written last, from the decision. Never a topic title ("Creator performance overview" fails; "49 creators reviewed. Contact 11 this week." passes). | R3 |
-| 3 | Up to three insights | Each is a claim, the evidence, the comparison (last period, peers, a goal, the account's own baseline), then a "So:" line with the action. Hedges go in the "So:" line, never in the claim. The headline insight gets one chart; a flow's reference may give each insight its own. | R4 |
+| 3 | Up to three insights | Each is a claim, the evidence, the comparison (last period, peers, a goal, the account's own baseline), then a "So:" line with the action. Hedges go in the "So:" line, never in the claim. The headline insight gets one chart; a flow's reference may give each insight its own. Every comparison passes the four like-for-like checks (`comparisons.md`). | R4, R15 |
 | 4 | Ranked next steps | Each says what to do, who does it, by when, and what it should change. | R5 |
 | 5 | Decisions kept apart | What the reader must approve, in its own section, each with its deadline when it has one. When nothing does, the section says "Nothing needs approval." | R6 |
 | 6 | Real evidence | Real posts and creators from this run, linked, with thumbnails or timestamps, below the argument. | R7 |
@@ -174,7 +174,8 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    reference and this reader set the layout. Add the print block with the page's title as
    `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md`, section 6, sets, so the page saves to PDF
    in the light theme with a footer on every page.
-4. **Self-check R1 to R14.** Run the script in section 5 for R1, R2, R6, R11, R13, and R14, and judge
+   **3a. Like for like.** As you write each comparison (two groups, two periods, or two brands side by side, or a share), run the four checks in `comparisons.md` in this folder: same kind of post on both sides, every mention counted, "directional" with the post count on a side of 20 posts or fewer, and a share beside its group's share of the whole. One that fails a check and stays says which, in one line.
+4. **Self-check R1 to R15.** Run the script in section 5 for R1, R2, R6, R11, R13, R14, and R15, and judge
    the others against `reader-standard.md`. Fix every fail you can and check again. **4b.** The English read by a separate reviewer: follow `english-read.md` in this folder. **4c.** The rendered UX review, on the same draft: follow `ux-review.md`.
 5. **Publish** in the publish pass (steps 4b and 4c), even when a check still fails; report it (section 7). An open UX Must holds an interactive publish (`ux-review.md`).
    - **When the session has no Artifact tool, save the page as a file.** Never skip the page, and
@@ -191,7 +192,7 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
 Write the headline last. Draft every other part, then write the headline from the decision the
 page supports.
 
-## 5. Markup and the scripted checks (R1, R2, R6, R11, R13, R14)
+## 5. Markup and the scripted checks (R1, R2, R6, R11, R13, R14, R15)
 
 Mark the parts the script reads. The attributes carry no styling; style the page as the flow and
 `theme.md` say.
@@ -244,9 +245,9 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   the exact count ("1,412 posts"), never a rounded one ("1.4K").
 - A check that is N/A for this page (section 1) goes in `data-na` on the scope, for example
   `data-na="R2"` on a ledger or a one-creator profile; the script reports it `n/a`. Only R2 and R6
-  can be N/A; R1 and R11 apply to every page, and naming them fails the check. R13 and R14 are
-  `n/a` on their own terms (no `data-question` and no cited post; no cited account), never through
-  `data-na`.
+  can be N/A; R1 and R11 apply to every page, and naming them fails the check. R13, R14, and R15 are
+  `n/a` on their own terms (no `data-question` and no cited post; no cited account; no marked
+  comparison), never through `data-na`. Comparisons carry the markup in `comparisons.md`.
 - A decisions section with no decision says "Nothing needs approval" (or "No decision needs
   approval"). A `data-by` date is a real date the page also shows.
 - Mark anything in someone else's words with `blockquote`, `q`, or `data-quoted`: a creator's
@@ -254,7 +255,7 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   check skips it, and it skips handles, hashtags, emails, and links. Never change a creator's real
   name or handle to pass a check.
 - A page that draws its sections in script from embedded data (the org dashboard) has nothing the
-  script can read. Judge R1, R2, R6, R11, R13, and R14 from the data and what the page draws, and
+  script can read. Judge R1, R2, R6, R11, R13, R14, and R15 from the data and what the page draws, and
   report `scripted` as `read`.
 - Every post the page cites as evidence (a post card, a storyboard, a row in a post table) carries
   `data-post` with its link, and each required metric of the page's row (section 8) on the element
@@ -274,7 +275,7 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   or `unknown`, or, with no `freshness` on record, `data-changed` ("last changed"). The entry shows
   each date and the platform. A page that cites and reports on no account gets `n/a`.
 - A page with no `data-page` markup yet (a flow whose reference does not add it) gets `unmarked`
-  for R1, R2, R6, R13, and R14. Judge those by reading; R11 still runs.
+  for R1, R2, R6, R13, R14, and R15. Judge those by reading; R11 still runs.
 
 Run the check on every page before you publish it. Copy the page into a new temporary folder,
 extract the script there from `page-check.md` in this folder (never retype it), and run it:
@@ -285,7 +286,7 @@ d=$(mktemp -d) && cp {page.html} "$d/" && awk '/^<!-- page-check -->$/{f=1;next}
 
 It reads only the pages named, writes nothing, and prints one JSON line per check and page:
 `pass`, `fail`, `n/a`, or `unmarked`. It exits 0 when nothing failed, 1 when a check failed, and 2
-when it could not read a page. When Python is not installed, judge the six by reading and report
+when it could not read a page. When Python is not installed, judge the seven by reading and report
 `scripted` as `read`.
 
 The script is in `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/page-check.md`, between its
@@ -299,7 +300,7 @@ flow. Every check is pass, fail, or N/A, never a score.
 
 | Check | How |
 | ----- | --- |
-| R1 Reader and scope, R2 Platforms covered, R6 Decisions kept separate, R11 Plain language, R13 Required metrics, R14 Data freshness | Script, or by reading when the page is drawn in script or carries no markup. R14's wording beyond the entry itself is judged: the period wording ("Atlas has no data for {period}", section 9.3), behind-pace notes, and refreshes skipped as recently refreshed |
+| R1 Reader and scope, R2 Platforms covered, R6 Decisions kept separate, R11 Plain language, R13 Required metrics, R14 Data freshness, R15 Like for like | Script, or by reading when the page is drawn in script or carries no markup. R14's wording beyond the entry itself is judged: the period wording ("Atlas has no data for {period}", section 9.3), behind-pace notes, and refreshes skipped as recently refreshed. R15 is also judged: a comparison the markup missed, and whether a share's group size is the right whole (`comparisons.md`, **What is judged**) |
 | R3, R4, R5, R8, R10, R12 | Judgment |
 | R7 Real evidence | Judgment, checking each figure against what the run read |
 | R9 Names what's missing | Judgment on a team page; N/A on a page shared outside the team |
@@ -324,8 +325,8 @@ words ("page check: 9 pass, 2 fixed, 1 n/a").
 {"page": "{link, or the file's path}", "reader": "{primary reader}",
  "checks": {"R1": "pass", "R2": "pass", "R3": "fixed", "R4": "pass", "R5": "fixed", "R6": "pass",
             "R7": "pass", "R8": "pass", "R9": "n/a", "R10": "pass", "R11": "pass", "R12": "pass",
-            "R13": "pass", "R14": "pass"},
- "draftNext": "pass", "stillFailing": [], "gaps": [], "scripted": "ran", "englishRead": {"status": "ran", "must": 1, "should": 0, "nice": 0, "musts": [{"id": "EN1", "applied": true}]}, "uxReview": {"status": "ran", "rendered": true, "...": "as ux-review.md sets it"}}
+            "R13": "pass", "R14": "pass", "R15": "pass"},
+ "comparisons": [{"compare": "kinds", "sides": [{"label": "TikTok Shop posts", "kind": "shop", "posts": 18, "mentions": false}, {"label": "Posts with no paid label", "kind": "no-paid-label", "posts": 212, "mentions": false}], "fails": []}], "draftNext": "pass", "stillFailing": [], "gaps": [], "scripted": "ran", "englishRead": {"status": "ran", "must": 1, "should": 0, "nice": 0, "musts": [{"id": "EN1", "applied": true}]}, "uxReview": {"status": "ran", "rendered": true, "...": "as ux-review.md sets it"}}
 ```
 
 - `checks`: `pass` (passed the first time), `fixed` (failed, fixed before publishing), `fail`
@@ -335,7 +336,7 @@ words ("page check: 9 pass, 2 fixed, 1 n/a").
   Every `n/a` has its reason here too, as "R2 n/a: {reason}".
 - `gaps`: on a page shared outside the team, what Atlas could not read, for the main thread to
   tell the requester. Empty on a team page, whose gaps are on the page.
-- `scripted`: `ran`, `read` (no Python, or a page drawn in script), or `unmarked`. `englishRead`: as `english-read.md` sets it. `uxReview`: as `ux-review.md` sets it.
+- `comparisons`: every comparison on the page, as the script's R15 line lists them (`comparisons.md`); written by hand in the same shape when the script did not run; `[]` when the page compares nothing. `scripted`: `ran`, `read` (no Python, or a page drawn in script), or `unmarked`. `englishRead`: as `english-read.md` sets it. `uxReview`: as `ux-review.md` sets it.
 
 ## 8. Required metrics, by kind of question
 

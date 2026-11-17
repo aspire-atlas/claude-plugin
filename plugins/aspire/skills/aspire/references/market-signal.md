@@ -230,9 +230,10 @@ From **Data method** step 8 and the posts already read in step 6; no other reads
 - **Reach rate.** A topic's rate is its posts at the threshold divided by its posts. The brand's
   rate is the same over all its posts in the period. Each topic is compared with the brand's
   rate as a multiple ("2.8 times as often as the average {brand} post").
-- **Which topics show.** A topic with fewer than 20 posts is left off the chart and named in the
-  method as too few. Every other topic is shown, ordered by rate, with the brand's rate as its
-  own bar between the topics above it and those below.
+- **Which topics show.** A topic at or under the directional line (**Page standard**,
+  `comparisons.md`: 20 posts or fewer) is left off the chart and named in the method as too few.
+  Every other topic is shown, ordered by rate, with the brand's rate as its own bar between the
+  topics above it and those below.
 - **Concentrated.** A topic with fewer than 5 creators, or whose top two creators made over half
   its posts at the threshold, is concentrated. It gets one line under the chart that calls it
   those creators' reach, not the topic's ("all 48 come from two creators, @a and @b, so that is
