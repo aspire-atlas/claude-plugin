@@ -117,7 +117,7 @@ main thread may offer V2 alone; it is not required. Otherwise it asks the missin
 to V4, one `AskUserQuestion` each, in order, then confirms the batch once and writes the records.
 
 **Keys starting `vetting:` belong to creator vetting only**, like `review:` keys belong to
-content review. Every other flow drops them. Keys starting `applicant-review:` belong to the
+content review. Every other flow drops them. Keys starting `applicantreview:` belong to the
 applicant review; vetting reads them only for the review R2 named (**Applicant reviews**).
 
 ## Getting the list
@@ -700,7 +700,8 @@ page**, Decisions) with neither.
 One record per creator per network, organization-wide, read by vetting and creator discovery.
 
 - kind `guideline`, key `creator:{ig|tt}-{handle}`: the handle lowercase with every
-  character outside `a-z0-9` turned into `-`, the whole slug 48 characters at most. The exact
+  character outside `a-z0-9` turned into `-`, the whole slug (`ig-` or `tt-` and the handle) 45
+  characters at most before any `-2` suffix, so a suffix up to `-99` still fits in 48. The exact
   handle is always in `statement` and `body`, because two handles can share a slug; on a
   `key-exists` whose body names a different handle, add `-2`.
 - `statement`: "@{handle} ({network}): {stance}. {reason}", under 280 characters.
@@ -930,8 +931,8 @@ Maybe, and Reject keep their status colors under any theme.
 ## Applicant reviews
 
 A campaign's applicants are screened against its applicant review: the setup saved once under
-`applicant-review:{slug}-*` (**Applicant review**, **The records**). The criteria source is
-`applicant-review:{slug}`. The main thread reads the review back per **Applicant review**,
+`applicantreview:{slug}-*` (**Applicant review**, **The records**). The criteria source is
+`applicantreview:{slug}`. The main thread reads the review back per **Applicant review**,
 **Reading the setup back (screening)**, and passes it resolved in the launch. Neither asks V1 to
 V4, and the main thread asks no setup question of a complete review: a gap or a missing pointer is
 asked there, before the launch, and the agent asks none.
@@ -951,7 +952,7 @@ means the list is not counted as a campaign's applicants.
 How the run changes for a review (criteria, thresholds, hard stops, red lines, language on camera,
 form rules, visual checks, the page, and what each finding records) is set out once, in
 **Applicant review**, **How screening applies a review**. Read it for every run whose criteria
-source is `applicant-review:{slug}`.
+source is `applicantreview:{slug}`.
 
 ## Creator-ads lanes (CAS campaigns)
 

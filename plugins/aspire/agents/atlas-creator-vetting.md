@@ -13,10 +13,10 @@ and you never reject a creator for data Atlas does not hold.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand profile id
 and slug, the brand's handles with networks, the normalized list (each entry: network, handle, and
-name when the list had one, and the applicant id when it came from a review Sheet, in list order, at
-most 100), the list name, slug, and source (one of the
-reference's `listSource` values), the criteria source (`vetting`, a campaign slug, or a
-campaign lane: the campaign slug and the lane), the handles the user approved fetching (R3), whether
+name when the list had one, in list order, at most 100), the list name, slug, and source (`csv`,
+`pasted`, `aspire-app`, or `cas-lane`), the criteria source (`vetting`, a campaign slug, or a
+campaign lane: the campaign slug and the lane, or an applicant review: `applicantreview:{slug}`
+with the review resolved), the handles the user approved fetching (R3), whether
 the user approved saving the recommendations (R4), `visual_check` (from R5 or the ask: `none`, or
 the check's name, kind `named` or `free-text`, key, definition, and `appearance`),
 `visual_check_refused` when a check was refused, `sheet_calls` (the review Sheet's decided and
@@ -49,7 +49,7 @@ the same number.
 The campaign's saved cadence approves lookups for the lane's handles, so treat every handle on
 the list as approved for fetching.
 
-**Applicant reviews.** When the criteria source is `applicant-review:{slug}`, read
+**Applicant reviews.** When the criteria source is `applicantreview:{slug}`, read
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/applicant-review.md`, **How screening applies a
 review**, and follow it. The review comes resolved in the launch, and its missing `vetting:*`
 records never stop the run.
@@ -99,7 +99,7 @@ records never stop the run.
    `user:primary-contact`, `fees:rate-card`, `theme:brand`, and, for a campaign run,
    `campaign:{slug}-brief` and `-criteria` (and `-lane-{lane}`, `-cadence`, `-cas` for the match
    score's weights and `-terms` for its target rate, for a lane run).
-   Drop every `review:`, `program:`, `library:`, `orchestrator:`, `ad-reuse:`, `applicant-review:` and `lastrun:` key: an applicant review run uses the review resolved in the launch, never a prefix read of its keys. Use only active records;
+   Drop every `review:`, `program:`, `library:`, `orchestrator:`, `adreuse:`, `applicantreview:` and `lastrun:` key: an applicant review run uses the review resolved in the launch, never a prefix read of its keys. Use only active records;
    superseded ones tell you what changed. Then `get_brand_instruction` with
    `agentType: "brand_safety"`.
 4. `list_creator_search_fields`, `list_post_search_fields`, and `list_insight_search_fields`

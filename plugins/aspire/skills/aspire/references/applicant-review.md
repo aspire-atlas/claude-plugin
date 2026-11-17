@@ -39,25 +39,31 @@ organization-wide. Every review is keyed by its own slug and names its brand pro
 
 ## The records
 
-A review is exactly the nine keys in the table below, each `applicant-review:{slug}-{part}`. Keys
-starting `applicant-review:` belong to the applicant review and to **Creator vetting** when it
+A review is exactly the nine keys in the table below, each `applicantreview:{slug}-{part}`. Keys
+starting `applicantreview:` belong to the applicant review and to **Creator vetting** when it
 screens for that review; every other flow drops them (**Atlas tools**, Calibration kinds).
 
 **Read a review by its nine exact keys, never by prefix.** One slug can start another
 (`acme-holiday` and `acme-holiday-seeding`, or `acme-holiday-seeding` and
-`acme-holiday-seeding-2`), so an `applicant-review:{slug}-` prefix read can pick up another review's
-records. Keep only the nine keys of the review in hand and drop every other `applicant-review:` key.
+`acme-holiday-seeding-2`), so an `applicantreview:{slug}-` prefix read can pick up another review's
+records. Keep only the nine keys of the review in hand and drop every other `applicantreview:` key.
 No part name ends with another part name (that is why visual checks are `-visuals`), so two slugs
 never build the same key. The separator stays `-` because keys follow **Atlas tools**' `<namespace>:<slug>` form, one
-colon and a lowercase hyphenated slug, so no other character can mark where the part starts.
+colon and a lowercase hyphenated slug, so no other character can mark where the part starts. The
+namespace takes no hyphen at all, which is why it is `applicantreview`: Atlas refuses a key whose
+namespace has one.
 
 **Read active records only.** A changed review supersedes its records, so a read with
 `includeSuperseded: true` returns old versions too: those are history, never the review.
 
 `{slug}` comes from the brand and the campaign name: lowercase, hyphenated, no dates (for example
 `acme-holiday-seeding`). Never show the slug or ask the user to invent it; refer to the review by its campaign name
-and brand. When `applicant-review:{slug}-campaign` already exists for a different campaign or a different brand profile, add `-2`,
+and brand. When `applicantreview:{slug}-campaign` already exists for a different campaign or a different brand profile, add `-2`,
 `-3`, and so on.
+
+**The slug keeps to Atlas tools' slug cap, any `-2` suffix included** (**Atlas tools**, Calibration
+kinds), which also says how to shorten a long brand and campaign name. Then even the longest
+part, `-client-view`, stays within the length Atlas allows after the colon.
 
 | Key | kind | detail | Holds |
 | --- | ---- | ------ | ----- |
@@ -188,11 +194,11 @@ the record when none exists. Screening reads a missing `-sheet` as `sheet: none`
 
 ## Reading the setup back (screening)
 
-How **Creator vetting** reads a review when its criteria source is `applicant-review:{slug}`.
+How **Creator vetting** reads a review when its criteria source is `applicantreview:{slug}`.
 Screening asks no setup question of a complete review, and none of vetting's V1 to V4; a gap or
 a missing pointer is asked per steps 3 and 4.
 
-1. **Find the review.** List the active `applicant-review:*-campaign` records whose body names
+1. **Find the review.** List the active `applicantreview:*-campaign` records whose body names
    this profile. R2 offers them (**Creator vetting**, Per-run questions); with more than R2 has room
    for, R2 offers "An applicant review (pick which next)" and a second `AskUserQuestion` lists the
    three newest reviews by campaign name plus "Another review (type its campaign name)". When R2's
@@ -214,7 +220,7 @@ a missing pointer is asked per steps 3 and 4.
 ## How screening applies a review
 
 The one place that says how a **Creator vetting** run changes when its criteria source is
-`applicant-review:{slug}`. The vetting main thread and the `atlas-creator-vetting` agent both read
+`applicantreview:{slug}`. The vetting main thread and the `atlas-creator-vetting` agent both read
 it; **Creator vetting**'s own sections point here rather than repeat it.
 
 What changes against a `vetting` run in **Creator vetting**:
@@ -236,4 +242,4 @@ the `brand_safety` instruction, the creator calibrations, lessons, the recommend
 and the state written to Atlas) runs as in a `vetting` run. Every finding carries
 `detail.applicantReview` set to the review's slug; `detail.campaign` is set only when the review's
 `campaign key` names a saved campaign, to that campaign's slug. `calibrationsApplied[]` names the
-`applicant-review:` keys that shaped the call.
+`applicantreview:` keys that shaped the call.
