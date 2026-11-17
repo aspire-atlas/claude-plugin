@@ -65,14 +65,18 @@ BANNED = [
 ]
 # A post by someone other than the brand has a "paid label" or "no paid label" (post-kinds.md).
 # Only the word said of posts fails, so "organic cotton" beside a handle stays a plain word.
-PAID_CODES = {"O1", "O2", "O3"}
+PAID_CODES = {"O1", "O2", "O3", "I6"}
+LINKS = re.compile(r"https?://\S+|\S+@\S+\.\w+")
 HANDLE = re.compile(r"(?<!\w)@[\w.]+")
+NAMES = re.compile(r"(?<!\w)[@#][\w.]+")
+# A sentence ends at . ! ? or ; but never after "vs.".
+SENTENCE = re.compile(r"(?<![Vv][Ss]\.)(?<=[.!?;])\s+")
 VERSUS = r"(?:vs\.?|versus|and|or|against|to|from)"
 UNLABELLED = re.compile(EDGE % (
     r"(?:organically|unpaid|paid\s+%s\s+organic"
     r"|organic(?=\s+%s\s+paid(?![A-Za-z0-9])"
     r"|\s+(?:posts?|mentions?|content|buzz|reach|views|engagement|conversations?|coverage|videos?|reels?|creators?|share|traction)(?![A-Za-z0-9])"
-    r"|\s*(?:[.,;:)!?]|$)))" % (VERSUS, VERSUS)), re.I)
+    r"|\s*(?:[.,;:)!?|]|$)))" % (VERSUS, VERSUS)), re.I)
 NOTHING = re.compile(r"\b(?:nothing|no decisions?) needs? (?:your )?approval\b", re.I)
 # Required metrics on every cited post, by question code. Kept equal to the required-metrics table in
 # SKILL.md, section 8, by scripts/check-artifact-standard.sh.
@@ -299,18 +303,32 @@ def own(node):
     return "data-own" in node.attrs
 
 def rows(node, skip):
-    # The words a reader sees, one block per line; a table row stays one line.
-    out, stack = [], [node]
+    # The words a reader sees or hears, one block or label per line; a table row stays one line,
+    # its cells set apart by "|".
+    out, labels, stack = [], [], [node]
     while stack:
         item = stack.pop()
         if isinstance(item, str):
             out.append(item)
         elif item.tag not in SKIP and not skip(item):
-            pad = " " if item.tag in INLINE or item.tag in ("td", "th") else "\n"
+            labels += [item.attrs[a] for a in ATTRS if item.attrs.get(a)]
+            pad = " " if item.tag in INLINE else " | " if item.tag in ("td", "th") else "\n"
             stack.append(pad)
             stack.extend(reversed(item.kids))
             stack.append(pad)
-    return [line for line in (re.sub(r"[^\S\n]+", " ", l).strip() for l in "".join(out).split("\n")) if line]
+    lines = "".join(out).split("\n") + labels
+    return [line for line in (re.sub(r"\s+", " ", l).strip() for l in lines) if line.strip(" |")]
+
+def unlabelled(line, beside=None):
+    # "organic" or "unpaid" said of posts, per sentence: beside the handle given, or else beside
+    # one in the same sentence. Links, handles, and hashtags are never read as the word itself.
+    hits = []
+    for sentence in SENTENCE.split(LINKS.sub(" ", line)):
+        handle = HANDLE.search(sentence)
+        where = beside or (handle and "beside %s" % handle.group(0))
+        if where:
+            hits += [(m.group(0).lower(), where) for m in UNLABELLED.finditer(NAMES.sub(" ", sentence))]
+    return hits
 
 def paid_label(nodes, regions):
     scope = (regions.get("scope") or [None])[0]
@@ -319,18 +337,18 @@ def paid_label(nodes, regions):
     if code not in PAID_CODES and not mentions:
         return []
     skip = lambda n: exempt(n) or own(n)
-    hits = []
-    for line in rows(nodes[0], skip):
-        for sentence in re.split(r"(?<=[.!?;])\s+", line):
-            handle = HANDLE.search(sentence)
-            if handle:
-                hits += [(m.group(0), "beside %s" % handle.group(0)) for m in UNLABELLED.finditer(sentence)]
-    for node in mentions:
-        if not any(skip(n) for n in [node] + ancestors(node)):
-            hits += [(m.group(0), "on another account's post") for line in rows(node, skip) for m in UNLABELLED.finditer(line)]
-    seen = sorted({(word.lower(), where) for word, where in hits})[:5]
+    shown = lambda n: not any(n.tag in SKIP or skip(a) for a in [n] + ancestors(n))
+    hits = [hit for line in rows(nodes[0], skip) for hit in unlabelled(line)]
+    # A table that names a handle in any row is read whole, so a column heading counts.
+    for table in (n for n in nodes if n.tag == "table" and shown(n)):
+        lines = rows(table, skip)
+        handle = next((m.group(0) for m in map(HANDLE.search, (LINKS.sub(" ", l) for l in lines)) if m), None)
+        if handle:
+            hits += [hit for line in lines for hit in unlabelled(line, "in a table with %s" % handle)]
+    for node in (n for n in mentions if shown(n)):
+        hits += [hit for line in rows(node, skip) for hit in unlabelled(line, "on another account's post")]
     return ["says \"%s\" %s: say \"paid label\" or \"no paid label\", or mark the brand's own posts or records with data-own"
-            % hit for hit in seen]
+            % hit for hit in sorted(set(hits))[:5]]
 
 def r11(nodes, regions):
     kept = list(walk(nodes[0], keep=lambda n: n.tag not in SKIP and not exempt(n)))

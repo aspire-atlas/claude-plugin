@@ -72,12 +72,13 @@ is in **Quality review**, **3**.
   "this review", "the spot for reach", "the people who do the work". Handles, hashtags, emails, and links are not checked. Other jargon is a judgment.
 - **R11, paid label or none.** A post by someone other than the brand has a "paid label" or "no
   paid label"; the page never calls it organic or unpaid unless the brand's own records say the
-  creator was not paid (**Page standard**, section 8, the one place this is defined). On a page
-  that answers O1, O2, or O3, and on any page with mention evidence, the script fails "organic",
-  "organically", or "unpaid" said of posts ("40 organic posts", "paid vs organic", "the buzz is
-  organic") in the same sentence or table row as a handle, and anywhere inside a mention block,
-  unless the block is marked as the brand's own posts or records. "Organic" as a plain word beside
-  a handle ("organic cotton") passes. On every other page, and wherever no handle sits beside the
+  creator was not paid (**Page standard**, section 8, which points to the one definition). On a
+  page that answers O1, O2, O3, or I6, and on any page with mention evidence, the script fails
+  "organic", "organically", or "unpaid" said of posts ("40 organic posts", "paid vs organic", "the
+  buzz is organic") in the same sentence as a handle, anywhere in a table that names a handle, and
+  anywhere inside a mention block, unless the block is marked as the brand's own posts or records.
+  "Organic" as a plain word beside a handle ("organic cotton") and inside a handle or hashtag
+  passes. On every other page, and wherever no handle sits beside the
   word, it is a judgment.
 - One defect is one finding. A defect that fails an R check and a 4.x check (a headline count that
   disagrees with the table fails R7 and 4.4) is filed under the more specific check, here 4.4, and

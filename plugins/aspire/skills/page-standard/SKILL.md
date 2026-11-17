@@ -310,7 +310,7 @@ When the reader standard changes, this table and the script change in the same c
   no self-check and no page check.
 - **A review page** (a quality review) runs the check with the words of the work under review
   marked as quoted.
-- The scripted checks look only at the markup in section 5. A page can pass the script and still
+- The scripted checks look only at the markup in section 5 and the `data-own` mark (section 8). A page can pass the script and still
   fail the check in substance (a scope that names "the team" as the reader, an approval worded as
   a next step); judge that too.
 
