@@ -179,7 +179,11 @@
       ],
       "fixtures": {
         "wrong": "scripts/fixtures/eval-cases/cr1-wrong.html",
-        "corrected": "scripts/fixtures/eval-cases/cr1-corrected.html"
+        "corrected": "scripts/fixtures/eval-cases/cr1-corrected.html",
+        "values": {
+          "competitor": "Lumen Kids",
+          "competitorPosts": "20"
+        }
       },
       "assertions": [
         {

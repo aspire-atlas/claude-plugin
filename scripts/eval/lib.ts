@@ -540,10 +540,12 @@ export function assertionNotes(question: QuestionResult): string[] {
   if (!question.new) return []
   const open = (question.assertions ?? []).filter(assertion => !assertion.landed)
   const label = (assertion: AssertionRef) => `${assertion.id} (${assertion.ticket})`
-  const waiting = open.filter(assertion => aResult(question.new, assertion.id) !== 'pass')
-  const early = open.filter(assertion => aResult(question.new, assertion.id) === 'pass')
+  const got = (result: Result) => open.filter(assertion => aResult(question.new, assertion.id) === result)
+  const [waiting, early, unjudged, notApplied] = [got('fail'), got('pass'), got('not run'), got('n/a')]
   return [
     ...(waiting.length ? [`Waiting on a ticket, so not a regression: ${waiting.map(label).join(', ')}.`] : []),
+    ...(unjudged.length ? [`Not judged, so nothing is known about: ${unjudged.map(label).join(', ')}.`] : []),
+    ...(notApplied.length ? [`Does not apply to this page's data, so it shows nothing yet: ${notApplied.map(label).join(', ')}.`] : []),
     ...(early.length ? [`Passes before its ticket is marked as landed: ${early.map(label).join(', ')}. Set "landed" in scripts/eval/questions.json in the ticket's pull request.`] : []),
   ]
 }
@@ -676,20 +678,21 @@ export function fill(template: string, values: Record<string, string>): string {
 
 /**
  * Splits the chosen questions by whether local.json names a brand for them. A question with no brand is skipped
- * only while no baseline holds approved results for it (a question not yet set up); one that has them is
- * `missing`, and the run must stop, since a lost or mistyped entry would otherwise drop a gated question. Grading
- * a given page or a dry run needs no brand, so then nothing is skipped.
+ * only while nothing about it gates a pull request (a question not yet set up). `gates` says when one does: a
+ * baseline holds approved results for it, or one of its assertions has landed. Such a question is `missing`,
+ * and the run must stop, since a lost or mistyped entry would otherwise drop a gated question. Grading a given
+ * page or a dry run needs no brand, so then nothing is skipped.
  */
 export function configuredQuestions<Q extends { code: string }>(
   questions: Q[], local: { questions?: Record<string, { brand?: string }> }, needsNoBrand: boolean,
-  hasApproved: (code: string) => boolean,
+  gates: (code: string) => boolean,
 ): { run: Q[]; skipped: string[]; missing: string[] } {
   if (needsNoBrand) return { run: questions, skipped: [], missing: [] }
   const unset = questions.filter(question => !local.questions?.[question.code]?.brand).map(question => question.code)
   return {
     run: questions.filter(question => !unset.includes(question.code)),
-    skipped: unset.filter(code => !hasApproved(code)),
-    missing: unset.filter(code => hasApproved(code)),
+    skipped: unset.filter(code => !gates(code)),
+    missing: unset.filter(code => gates(code)),
   }
 }
 
@@ -711,6 +714,13 @@ export const EVAL_PATHS = [
 const coveredBy = (path: string, entry: string) => (entry.endsWith('/') ? path.startsWith(entry) : path === entry)
 
 export type QuestionPaths = { code: string; paths?: string[] }
+
+/** True when a failure of this question can already block a merge with no approved page: one of its assertions has landed. */
+export const hasLandedAssertion = (question: { assertions?: { landed: boolean }[] }): boolean =>
+  (question.assertions ?? []).some(assertion => assertion.landed)
+
+/** A file name from local.json as the run's folder holds it: no path parts, nothing a shell or a prompt could misread. */
+export const safeFileName = (name: string): string => name.replace(/[^A-Za-z0-9._-]/g, '_').replace(/^\.+/, '_')
 
 /** The plugin's own question code for an eval question: `question` when the entry names one (null for a flow with no code), else its `code`. */
 export const questionCode = (question: { code: string; question?: string | null }): string | null =>
@@ -798,7 +808,8 @@ export function renderComment(results: RunResults, eChecks: CheckDef[], names: R
   if (found.length) {
     lines.push(`**${found.length} regression${found.length === 1 ? '' : 's'}**: checks the approved page passes that the new page does not, assertions that fail after their ticket landed, and chat wording that breaks a countable rule.`, '')
     for (const r of found) {
-      const own = r.kind === 'assertion' ? results.questions.find(question => question.code === r.code)?.assertions?.find(assertion => assertion.id === r.id)?.name : names[r.id]
+      // An assertion row can regress either way: after its ticket landed, or against an approved page before it.
+      const own = results.questions.find(question => question.code === r.code)?.assertions?.find(assertion => assertion.id === r.id)?.name ?? names[r.id]
       const name = `${r.code} ${r.id}${own ? ` ${own}` : ''}`
       lines.push(r.kind === 'chat' ? `- ${name}: the run's chat broke a countable rule`
         : r.kind === 'assertion' ? `- ${name}: ${r.ticket} landed, new ${r.now}`

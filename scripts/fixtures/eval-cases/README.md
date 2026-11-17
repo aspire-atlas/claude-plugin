@@ -12,7 +12,8 @@ that way. It shows that an assertion's wording tells the two readings apart, whi
 cannot show.
 
 The pages are written from the findings as their tickets record them. They are not copies of a customer's
-page: the figures behind each finding are kept, and every brand, competitor, handle and link is invented.
+page: the figures behind each finding are kept, every brand and competitor is invented, every handle is a
+placeholder (`@creator_a`), and every link points at `example.com`.
 This repository is public and holds no customer names.
 
 A new client example for a case adds its wrong reading to `<code>-wrong.html` and its corrected reading to

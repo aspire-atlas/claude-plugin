@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import {
   ATLAS_READS, ATLAS_WRITES, barChecks, compareRuns, extractPageCheckScript, fencedBlocks, fill, findJsonWithKey, configuredQuestions, skippedLine,
   findPage, forBaseline, normalizeResult, codesForChanges, readerResult, regressions, renderComment, renderSkipped, renderSlack, COMMENT_MARKER, renderStopped, stripTitlePrefix, checkNames, parsePageCheck, parseStream, renderRun, rIds, rResult, stripDataUris,
-  aResult, assertionNotes, assertionRefs, fixtureProblems, passesWhen, questionCode, rows,
+  aResult, assertionNotes, assertionRefs, fixtureProblems, hasLandedAssertion, passesWhen, questionCode, rows, safeFileName,
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, askText, chatCodes, chatFailures, chatLine, chatMessages, checkChat, countChat, noChat, normalizeRun, CHAT_CHECK,
   type Assertion, type AssertionRef, type PageChecks, type QuestionResult, type RunResults,
 } from './lib'
@@ -500,7 +500,7 @@ function caseRun(assertions: AssertionRef[] = [SHOP, MENTIONS], asserted: Record
   return results
 }
 
-test('every client case names a ticket per assertion, has both fixture pages, and holds no customer detail', () => {
+test('every client case names a ticket per assertion and has both fixture pages, with placeholder handles and links', () => {
   const config = JSON.parse(readFileSync(join(import.meta.dir, 'questions.json'), 'utf8'))
   const cases = config.questions.filter((q: any) => q.assertions)
   expect(cases.map((q: any) => q.code)).toEqual(['CR1', 'AR1'])
@@ -515,7 +515,14 @@ test('every client case names a ticket per assertion, has both fixture pages, an
       // The first row of "what it covers": the client example the assertion came from.
       expect(a.examples.length).toBeGreaterThan(0)
     }
-    for (const role of ['wrong', 'corrected']) expect(existsSync(join(ROOT, question.fixtures[role]))).toBe(true)
+    for (const role of ['wrong', 'corrected']) {
+      const page = readFileSync(join(ROOT, question.fixtures[role]), 'utf8')
+      // A handle that could be a real person's, or a link to a real post, never sits beside invented figures.
+      expect((page.match(/@\w+/g) ?? []).every(handle => /^@(creator_[a-z]|handle)$/.test(handle))).toBe(true)
+      expect((page.match(/https?:\/\/[^"\s<]+/g) ?? []).every(link => link.startsWith('https://example.com/'))).toBe(true)
+    }
+    // A figure a case expects on the fixture pages names only what the pages invent.
+    for (const a of question.assertions as Assertion[]) if (a.whenNamed) expect(passesWhen(a, question.fixtures.values ?? {})).toContain(' at least ')
   }
   // The competitive read is the plugin's own question; the affiliate report has no question code.
   expect(config.questions.map(questionCode)).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'O3', null])
@@ -537,6 +544,11 @@ test('a case shows its assertions first, each with its ticket, and says which st
   expect(table).toContain('- Waiting on a ticket, so not a regression: A1 (ASP-5976).')
   expect(table).toContain('- Passes before its ticket is marked as landed: A2 (ASP-5977).')
   expect(assertionNotes(caseRun([{ ...SHOP, landed: true }], { A1: 'pass' }).questions[0])).toEqual([])
+  // An assertion the judge did not return, or one the page's data cannot show, is never listed as a failure.
+  expect(assertionNotes(caseRun([SHOP, MENTIONS], { A2: 'n/a' }).questions[0])).toEqual([
+    'Not judged, so nothing is known about: A1 (ASP-5976).',
+    "Does not apply to this page's data, so it shows nothing yet: A2 (ASP-5977).",
+  ])
   expect(aResult(null, 'A1')).toBe('not run')
   expect(assertionRefs(undefined)).toEqual([])
 })
@@ -559,6 +571,7 @@ test('an assertion blocks nothing until its ticket lands, and from then on a fai
   const approved = caseRun()
   approved.questions[0].approved = { ...approved.questions[0].new!, asserted: { A1: 'pass', A2: 'pass' } }
   expect(regressions(approved, E_CHECKS)).toEqual([{ kind: 'page', code: 'CR1', id: 'A1', was: 'pass', now: 'fail' }])
+  expect(renderComment(approved, E_CHECKS, {}, null, null)).toContain('- CR1 A1 Shop posts are their own group: approved pass, new fail')
 })
 
 test('a baseline keeps assertion results, and a compare matches them by id when a case gains one', () => {
@@ -581,4 +594,13 @@ test('the fixture pages must split every assertion: fail on the wrong reading, p
     'A1: the page with the wrong reading got pass, not fail',
     'A2: the corrected page got not run, not pass',
   ])
+})
+
+test('a case with a landed assertion stops the run when its brand is lost, and its input file names are made safe', () => {
+  const questions = [{ code: 'CR1', assertions: [{ landed: true }] }, { code: 'AR1', assertions: [{ landed: false }] }, { code: 'I4' }]
+  const gates = (code: string) => questions.some(question => question.code === code && hasLandedAssertion(question))
+  expect(configuredQuestions(questions, { questions: {} }, false, gates)).toEqual({ run: [], skipped: ['AR1', 'I4'], missing: ['CR1'] })
+  expect(safeFileName('affiliate sales (Oct).csv')).toBe('affiliate_sales__Oct_.csv')
+  expect(safeFileName('../../.env')).toBe('__.._.env')
+  expect(safeFileName('..')).toBe('_')
 })

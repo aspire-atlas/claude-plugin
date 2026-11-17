@@ -54,8 +54,8 @@ It runs on a developer's machine, and in CI on every pull request that changes a
   a newly added question runs nowhere, CI included, until its brand and approved page are added to
   `local.json` and the `EVAL_LOCAL_JSON` secret. The run's `results.json`, the table, the PR comment
   and the nightly Slack post all name it as skipped, and a run with nothing left to run posts a skip
-  and passes. Once a baseline holds a question's approved results, a missing brand stops the run
-  instead, so a lost or mistyped entry cannot quietly drop a question that gates pull requests.
+  and passes. Once a baseline holds a question's approved results, or one of its assertions has landed,
+  a missing brand stops the run instead, so a lost or mistyped entry cannot quietly drop a question that gates pull requests.
 
 ## Commands
 
@@ -201,6 +201,9 @@ profile with no shop posts cannot show a shop-post finding. So each case also ha
 `scripts/fixtures/eval-cases/`: one with the wrong reading and one with the corrected one, with invented
 brands. `bun run eval:pages --fixtures` judges the assertions on both and fails unless every assertion fails
 on the first and passes on the second. Run it after changing an assertion's wording or adding an example.
+CI runs it on every pull request that changes `questions.json`, a fixture page, `run.ts` or `lib.ts`, and
+nightly; the `skip-eval` label does not skip it. A case's `fixtures.values` stands in for `local.json`'s
+`values` there, with invented names, so a `whenNamed` figure is judged on the fixture pages too.
 
 **What a case needs to rerun.** A brand in `local.json` whose profile holds the kind of data the case is
 about: for CR1, competitors with creator posts that sell through TikTok Shop and posts that name a brand
@@ -208,7 +211,8 @@ without tagging it; for AR1, a saved influencer program with affiliate terms. AR
 because the dev server has no store connected. Name it under the question's `files` in `local.json`, by
 `path` on a developer's machine or as `text` inside the `EVAL_LOCAL_JSON` secret. The harness writes it into
 the run's own folder and tells the flow it is there. Until `local.json` names a brand, a case is skipped like
-any new question.
+any new question. Once one of its assertions has landed, a missing brand stops the run instead, as it does for
+a question with approved results: the case gates pull requests from then on.
 
 ## What is committed and what is not
 

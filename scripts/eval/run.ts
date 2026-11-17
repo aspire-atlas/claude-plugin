@@ -9,7 +9,7 @@ import {
   ATLAS_READS, ATLAS_WRITES, HARNESS_VERSION, barChecks, compareRuns, extractPageCheckScript, fill, findJsonWithKey, configuredQuestions,
   findPage, forBaseline, normalizeResult, readerResult, checkNames as namesFrom, stripTitlePrefix, parsePageCheck, parseStream, renderQuestion, renderRun, rIds, stripDataUris,
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, checkChat, chatCodes, chatFailures, noChat, normalizeRun,
-  assertionRefs, fixtureProblems, passesWhen, questionCode, regressions,
+  assertionRefs, fixtureProblems, hasLandedAssertion, passesWhen, questionCode, regressions, safeFileName,
   type Assertion, type ChatChecks, type ChatRules, type CheckDef, type PageChecks, type QuestionResult, type Result, type RunResults, type Turn,
 } from './lib'
 import { renderPage } from '../render-page'
@@ -52,7 +52,8 @@ type Question = {
   question?: string | null
   /** A client case's own assertions, and its two fixture pages, as paths from the repository root. */
   assertions?: Assertion[]
-  fixtures?: { wrong: string; corrected: string }
+  /** `values` stands in for local.json's on the fixture pages, so a `whenNamed` clause is judged there too. */
+  fixtures?: { wrong: string; corrected: string; values?: Record<string, string> }
 }
 type LocalQuestion = {
   brand?: string; approved?: string | null; approvedFile?: string | null
@@ -477,13 +478,13 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
   // A case's input files (a sales export) are customer data: they come from local.json and are written into the
   // run's own folder, which is never committed or uploaded.
   const files = local.questions?.[question.code]?.files ?? []
-  for (const file of files) {
-    const name = file.name.replace(/[^A-Za-z0-9._-]/g, '_')
-    if (file.text !== undefined) writeFileSync(join(work, name), file.text)
-    else if (file.path && existsSync(resolve(HERE, file.path))) copyFileSync(resolve(HERE, file.path), join(work, name))
+  const names = files.map(file => safeFileName(String(file.name)))
+  files.forEach((file, i) => {
+    if (typeof file.text === 'string') writeFileSync(join(work, names[i]), file.text)
+    else if (typeof file.path === 'string' && existsSync(resolve(HERE, file.path))) copyFileSync(resolve(HERE, file.path), join(work, names[i]))
     else fail(`local.json names the file ${file.name} for ${question.code}, with no text and no path that exists`)
-  }
-  const attached = files.length ? ` The file${files.length === 1 ? '' : 's'} for this ${files.length === 1 ? 'is' : 'are'} in the current folder: ${files.map(file => file.name.replace(/[^A-Za-z0-9._-]/g, '_')).join(', ')}.` : ''
+  })
+  const attached = names.length ? ` The file${names.length === 1 ? '' : 's'} for this ${names.length === 1 ? 'is' : 'are'} in the current folder: ${names.join(', ')}.` : ''
   let prompt = `/aspire:aspire ${fill(question.ask, { ...local.questions?.[question.code]?.values, brand })}` + attached + (local.organization ? ` Use the ${local.organization} organization.` : '') +
     (options.titlePrefix ? ` Start the page's title with "${options.titlePrefix} · ".` : '')
   let rounds = 0
@@ -672,9 +673,11 @@ async function main() {
   // so a lost or mistyped entry cannot drop a gated question. Every report names what was skipped.
   const newest = baselineFor('newest')
   const hasApproved = (code: string) => !!newest?.results.questions.find(question => question.code === code)?.approved
+  // A case gates through its landed assertions with no approved page, so a lost brand must stop the run for it too.
+  const gates = (code: string) => hasApproved(code) || chosen.some(question => question.code === code && hasLandedAssertion(question))
   const { run: questions, skipped, missing } =
-    configuredQuestions(chosen, local, !!options.page || !!options.dryRun || !existsSync(localPath), hasApproved)
-  if (missing.length) fail(`local.json names no brand for ${missing.join(', ')}, which the baseline of ${newest?.name} grades`)
+    configuredQuestions(chosen, local, !!options.page || !!options.dryRun || !existsSync(localPath), gates)
+  if (missing.length) fail(`local.json names no brand for ${missing.join(', ')}, which can block a merge: the newest baseline holds approved results for it, or one of its assertions has landed`)
   if (skipped.length) console.error(`Skipped ${skipped.join(', ')}: local.json names no brand for ${skipped.length === 1 ? 'it' : 'them'}`)
   if (options.dryRun) {
     for (const question of questions) {
@@ -776,7 +779,7 @@ async function checkFixtures(chosen: Question[], options: Options) {
       mkdirSync(dir, { recursive: true })
       const page = join(dir, 'page.html')
       copyFileSync(join(ROOT, question.fixtures![role]), page)
-      return assert(page, question, {}, dir, emptyMcp, options)
+      return assert(page, question, question.fixtures!.values ?? {}, dir, emptyMcp, options)
     }))
     const [wrong, corrected] = judged
     writeFileSync(join(runDir, question.code, 'reasons.json'), JSON.stringify({ wrong: wrong.reasons, corrected: corrected.reasons }, null, 2) + '\n')
