@@ -52,7 +52,6 @@ ADVISORY="description freshness eval"
 # Deliberate exceptions: <item>[:<kind>]|<agent or file>|<reason>. An entry with a kind covers only
 # findings of that kind (metrics:no-code is "publishes a page and answers no question code"). Shrink only.
 ALLOW='
-metrics:no-code|atlas-affiliate-manager|Program operations: codes, commission and sales records; answers no question code in orchestration.md section 3
 metrics:no-code|atlas-campaign-orchestrator|Next actions list across every program; answers no question code in orchestration.md section 3
 metrics:no-code|atlas-content-review|Go or no-go on one draft against a brief; answers no question code in orchestration.md section 3
 metrics:no-code|atlas-content-sourcing|Rights and asset requests tracker; answers no question code in orchestration.md section 3

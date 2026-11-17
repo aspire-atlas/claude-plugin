@@ -79,7 +79,7 @@ def check_skill(label, path, owner, extra=()):
 
 orch = open(ORCH).read()
 sec3 = re.search(r"^## 3\. .*?(?=^## )", orch, re.S | re.M)
-codes = set(re.findall(r"^\| ([IPOA]\d) \|", sec3.group(0) if sec3 else "", re.M))
+codes = set(re.findall(r"^\| ([IPOA]\d+) \|", sec3.group(0) if sec3 else "", re.M))
 if not codes:
     err(f"no question codes found in {ORCH} section 3")
 

@@ -121,7 +121,8 @@ person.
   code sheet CSV when any row goes on it.
 - **`report`**: read the period's sales from the store (only the order fields and codes the
   reference lists) or from the uploaded file with the proposed mapping; compute the figures
-  per creator and for the program; read each creator's posts in Atlas for the timeline
+  per creator and for the program; read each creator's posts in Atlas for the timeline, with
+  views, likes, and comments for every post and engagement per 1,000 views worked out from them
   (`list_post_search_fields` once; only paths it returns); build the recommendations and the
   commission lines (closed months only); add retire rows to the sheet when the store cannot turn
   codes off.
