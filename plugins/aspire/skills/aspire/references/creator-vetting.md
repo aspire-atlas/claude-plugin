@@ -127,10 +127,12 @@ The main thread gets the list; the agent never asks for it. Three sources, offer
    path. Read it with the `Read` tool. Find the handle columns by header, case-insensitive:
    `instagram`, `instagram handle`, `instagram username`, `tiktok`, `tiktok handle`,
    `tiktok username`, `handle`, `username`, `social`, `profile url`, or a column whose values
-   are profile URLs. Take the name column (`name`, `creator`, `full name`) for display only.
-   An Excel file: ask for it saved as CSV. Show what was found before going on ("42 rows:
-   38 Instagram handles, 11 TikTok handles, 3 rows with no handle") and which columns were
-   used.
+   are profile URLs. Take the name column (`name`, `creator`, `full name`) for display. Keep
+   the file and every other column: when the list is a campaign's applicants (**Applicant
+   reviews**), the contact details and form answers are imported with each applicant (**Applicant
+   review**, **Importing applicants**). An Excel file: ask for it saved as CSV. Show what was found
+   before going on ("42 rows: 38 Instagram handles, 11 TikTok handles, 3 rows with no handle") and
+   which columns were used; an applicant export's full found-and-missing report comes at the import.
 2. **Paste handles.** One per line or comma separated, `@handle`, a bare handle, or a profile
    URL. A bare handle with no network asks the network once for the whole list (Instagram /
    TikTok / Both).
@@ -251,6 +253,9 @@ What the **Creator vetting** section of SKILL.md does around the agent.
 3c. **Ask R5 once, in its own call, after the criteria source is settled** (after R2, and after 3b
    for a review), still before the storyline draft, so its options come from the source the run
    uses: a review's saved visual checks (**Applicant review**, **How screening applies a review**), otherwise R5's own options.
+3d. **Import a campaign's applicant export** when R2 named an applicant review and the list came
+   from a CSV: per **Applicant review**, **Importing applicants**, with its own found-and-missing
+   report and confirmation, before the launch. Its read-back is the run's list from then on.
 4. Launch `atlas-creator-vetting` with: tool prefix, `profile_id`, `profile_slug`, brand handles and
    networks, the normalized list, the list name, slug and source, the criteria source, the approved
    fetches, the R4 answer, `visual_check` (from R5 or the ask: `none`, or `{name, kind: "named" |
@@ -836,6 +841,9 @@ three, newest first; with none saved, AR1's own campaign options, up to three), 
 campaign: use {brand}'s vetting criteria". The answer writes nothing: it only picks the campaign.
 Picking a review's campaign makes that review R2's first option; picking "Not for a campaign"
 means the list is not counted as a campaign's applicants.
+
+A review's CSV is imported into Atlas and the review Sheet before screening (**Main thread: the
+run**, step 3d), so each applicant's contact details and form answers are kept with them.
 
 How the run changes for a review (criteria, thresholds, hard stops, red lines, language on camera,
 form rules, visual checks, the page, and what each finding records) is set out once, in

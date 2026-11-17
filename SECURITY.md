@@ -21,6 +21,8 @@ Email **security@aspire.io** with a description, reproduction steps, and impact.
 
   Creator vetting may use a browser tool already connected to the session to read a creator list from the Aspire app. You sign in yourself; Claude never types, reads, or stores a password or code, and changes nothing in the app.
 
+  When a campaign's applicant export is imported for an applicant review, each applicant's contact details and application answers are kept with their record in your Atlas organization and in the campaign's review Sheet, after you confirm. Payment and tax columns (PayPal, bank, tax ids, card numbers) are left out. The plugin tells you to share the review Sheet only inside your team, never with a client.
+
   The quality review reads only the work you name: through a Google Drive connector you connected (its read and download tools), the Artifact tool, or a file you attach. When Drive returns no text for a deck, it may open that one deck's presentation view in a browser tool already connected to the session, where you are signed in yourself, and read the page text. It never edits, moves, shares, or comments on the file, and writes nothing to Atlas.
 
   The PPA pitch builds its PowerPoint file with the PowerPoint skill already in the session, never with a snippet of its own. For Google Slides it hands you the file to open in Google Drive, or, with a Google Slides connector you have connected, builds the deck there only after you confirm.

@@ -2,7 +2,8 @@
 
 Used by the **Applicant review** section of SKILL.md, and read by **Creator vetting** when it
 screens a campaign's applicants. Holds the setup interview for one campaign's applicant review,
-the records it saves, the review Sheet it creates, and how a screening run reads it all back.
+the records it saves, the review Sheet it creates, how a campaign's applicant export is imported
+into Atlas and the Sheet, and how a screening run reads it all back.
 
 The main thread's part of this flow, except **How screening applies a review**, which the
 `atlas-creator-vetting` agent reads too. A bold section name in it (**Creator vetting**,
@@ -14,6 +15,7 @@ The main thread's part of this flow, except **How screening applies a review**, 
 - [The records](#the-records)
 - [Setup interview](#setup-interview)
 - [The review Sheet](#the-review-sheet)
+- [Importing applicants](#importing-applicants)
 - [When setup is done](#when-setup-is-done)
 - [Reading the setup back (screening)](#reading-the-setup-back-screening)
 - [How screening applies a review](#how-screening-applies-a-review)
@@ -152,20 +154,23 @@ Rules:
 
 ## The review Sheet
 
-One Sheet per review, set aside for the team to filter applicants and record calls once a flow fills it. Atlas holds the
-record; the Sheet is the team's working view of it. Setup only creates the Sheet and saves its
-link. No flow in this plugin writes applicant rows yet: until one does, the Sheet holds its header
-row only, the team works the list from the vetting page, and a run that has the Sheet link says in
-one line that the Sheet is not filled yet. Screening never writes to the Sheet, and never reads it
-as the record.
+One Sheet per review, where the team sees every applicant, filters them, and records its calls.
+Atlas holds the record; the Sheet is the team's working view of it. Setup creates the Sheet and
+saves its link; **Importing applicants** adds one row per applicant, after Atlas holds them.
+Screening does not write vetting columns yet: until it does, those columns stay blank and the team
+reads the calls on the vetting page. No flow reads the Sheet as the record.
+
+The Sheet holds applicants' contact details and application responses, so it is shared only inside
+the team.
 
 1. **Create it** after the confirmation's option 1, through the Claude Docs connector as a Sheet
    (load the connector's guide first and follow it). Name it "{brand} · {campaign} applicant
    review". Never create it as a page, a Doc, or a Google Sheet.
-2. **Write the header row only**, in this order: Handle, Network, Recommendation, Maybe question,
-   Team call, Fit score, Evidence, Card link, then one column per form question when the form is
-   known, then Status, Source, Applied, Aspire applicant id. Team call is a dropdown of Approve,
-   Maybe, and Reject, left blank. Write no applicant rows (see above).
+2. **Write the header row only**, in this order, most important first (the Sheet pane shows about
+   six): Instagram, TikTok, Recommendation, Fit score, Evidence, Maybe question, Status, Team call,
+   then one column per contact detail and form question when the form is known, then Source,
+   Applied, Aspire applicant id. Team call is a dropdown of Approve, Maybe, and Reject, left blank
+   until the team overrides Atlas. Rows come from **Importing applicants**.
 3. **Save the link** as `-sheet` with `sheet: <link>`.
 4. **When it can't be created** (the connector is not connected, has no Sheets, or refuses), or
    the user picked "Save without a Sheet": write `sheet: none (<reason in a few words>)` and say in
@@ -178,14 +183,120 @@ as the record.
 
 Share the Sheet only with the people the user names, and never with a client contributor.
 
+## Importing applicants
+
+How a campaign's applicant export from Aspire becomes one Atlas applicant record per applicant and
+one row each in the review Sheet. The main thread runs it inside **Creator vetting** (**Main
+thread: the run**, step 3d), once the review is picked and read back, and before any screening. It
+runs for a CSV (uploaded, or exported from the Aspire app at R1), never for pasted handles, which
+carry no form answers. Interactive only. The whole export is imported once, even when screening
+then splits it into runs of 100.
+
+**1. Read every column.** Read the file with the `Read` tool, in parts of a few hundred lines when
+it is long; a quoted cell may hold commas and line breaks, so a row ends only outside quotes. The
+first row is the header. Sort each column into one of these, by header, case-insensitive, after
+trimming spaces:
+
+| Column | Headers | Goes to |
+| ------ | ------- | ------- |
+| Applicant id | `applicant id`, `aspire applicant id`, `member id`, `creator id`, `id` | `aspireApplicantId` |
+| Instagram | `instagram`, `instagram handle`, `instagram username`, or profile URLs on instagram.com | `instagramHandle`, normalized per **Creator vetting**, **Getting the list** |
+| TikTok | `tiktok`, `tiktok handle`, `tiktok username`, or profile URLs on tiktok.com | `tiktokHandle`, normalized the same way |
+| Applied date | `date applied`, `applied`, `applied date`, `applied at`, `date added` | `appliedAt`, as an ISO date |
+| Payment and tax | any header naming `paypal`, `venmo`, `bank`, `routing`, `iban`, `swift`, `tax`, `ssn`, `card` | Not kept anywhere, and the report says which columns were left out |
+| Everything else | Contact details (name, email, phone, address, city, state, country), the application form's questions, and Aspire's own columns (followers, engagement, YouTube, campaigns) | `formAnswers`, one key per column |
+
+Every other column is kept, never judged by its header: contact details and form answers are
+vetting evidence. A `formAnswers` key is the header exactly as written (trimmed); a header that
+repeats gets ` (2)`, ` (3)`. Empty cells are left out, and values are kept as text, as written.
+Aspire's figure columns (followers, engagement) are Aspire's figures from the export day; the
+vetting run reads Atlas's own, and says so when they differ.
+
+**2. One applicant per person.** Dedupe before anything is written:
+
+- With an applicant id column, rows with the same id are one applicant.
+- Without one (Aspire's applicant exports usually have none), rows that share an Instagram handle,
+  a TikTok handle, or an email are one applicant, and the id is built from what they share, in
+  this order: `ig-<instagram handle>`, `tt-<tiktok handle>`, `email-<email, lowercased>`. A row
+  with none of the three gets `row-<its row number>` and the report names it.
+- An id has no `:` and at most 80 characters: replace `:` with `-` and cut longer ones to 80.
+- Duplicate rows keep the row with the newest applied date (the lower one in the file on a tie).
+  The report counts duplicates and names any whose answers differ.
+- Drop rows whose handle is one of the brand's own (the brand handles **Creator vetting** holds
+  for the run) and say how many.
+- A saved `competitor` handle is still imported: screening rejects it.
+
+The import writes the id it used to every record and Sheet row, so a later export of the same
+campaign finds the same applicants. A row with no applied date gets the import date (shell clock),
+and the report says how many did.
+
+**3. Check what Atlas holds.** Call `list_applicants` with `reviewId` = the review's slug, no
+`statuses`, `limit` 1000, paged with `cursor` to the end. An applicant already there is not
+written again, whatever their answers say now: the report counts them as already imported and names
+any whose answers changed.
+
+**4. Show the found-and-missing report, then confirm.** In text, before any write:
+
+```
+{file name}: {rows} rows, {unique} applicants ({duplicates} duplicate rows merged{, k with
+different answers: @a, @b}).
+Handles: {i} Instagram, {t} TikTok, {none} with neither (imported; screening marks them can't vet).
+Not imported: {own} of {brand}'s own handles.
+Already in Atlas for this review: {existing}. New: {new}.
+Kept: {n} columns as answers ({the first five headers}, ...); {applied date column} as the applied
+date{; no applied date on {d} rows, using today}.
+Left out: {payment and tax columns, or "nothing"}.
+```
+
+Then ask with `AskUserQuestion`: "Add {new} applicants to the {campaign} review in {brand}'s Atlas
+and its review Sheet? Their contact details and answers are kept with them, for the team only."
+Drop "and its review Sheet" when `-sheet` holds no link. Options: 1) Add them (Recommended);
+2) Not now. With no new applicants, ask nothing: say that every applicant is already imported and
+go on to screening. "Not now" writes nothing, and the run goes on vetting the list as a plain list.
+
+**5. Write to Atlas.** `append_insights` with `asProfileId`, `runKey`
+`applicant-import-{slug}-{YYYY-MM-DD}`, at most 100 findings per call (25 when the export has more
+than 40 columns, to keep each call small), each:
+
+- `role: "applicant"`, `schema: "profile"`, `entityKind: "profile"`, `entityId` = the brand
+  profile's id;
+- `summary`: `Applicant {@handle, or the name column when there is no handle} applied to {campaign}`;
+- `idempotencyKey`: `{slug}:{aspireApplicantId}:intake`;
+- `detail`: `{reviewId: "{slug}", aspireApplicantId, instagramHandle?, tiktokHandle?,
+  formAnswers, source: "csv", appliedAt}`, with handles leaving off a network the applicant didn't
+  give.
+
+A new applicant's status is `new`: nothing more is written for it. A call is all or nothing; on an
+error, fix the finding it names and resend the same call (the keys make a resend safe). A timeout
+is resent once as it is. Never change a key to get a finding through.
+
+**6. Read back.** Page `list_applicants` again as in step 3. The import is done when every
+applicant id from step 2 is there. Any missing is named in the summary as not imported, and the
+Sheet gets no row for it.
+
+**7. Add Sheet rows.** Only when `-sheet` holds a link and the Claude Docs connector is in the
+session (load its guide first). Read the Sheet's header and its Aspire applicant id column. Add a
+column for each `formAnswers` key the header lacks, before Source; columns are matched by header,
+never by position. Then append one row per applicant read back in step 6 whose id is not in the
+Sheet yet: Instagram and TikTok as `@handle`, Status `new`, every answer under its column, Source
+`csv`, Applied, and Aspire applicant id; Recommendation, Fit score, Evidence, Maybe question and Team
+call stay blank. Never change a row already there, a Team call, or a column the team added: rows
+are matched on Aspire applicant id, since the team sorts and filters the Sheet. When the connector
+is missing or refuses, say so in one line: Atlas holds the applicants, and the next import adds the
+rows.
+
+**8. Summarize** in one line before going on: "{new} applicants added to the {campaign} review
+({existing} were already there), {rows} rows added to the review Sheet." Screening then vets the
+applicants read back in step 6, as the run's list.
+
 ## When setup is done
 
 A review is set up when `-campaign`, `-criteria`, `-checks`, and `-thresholds` exist for its slug,
 and `-red-lines`, `-form-rules`, and `-visuals` are each saved or recorded as a `decline`. Until
 then, setup asks only the missing questions, in order, then confirms the batch once.
 
-`-client-view` and `-sheet` are optional: their readers (the client contributor role, Sheet sync)
-come later, so a review without them still counts as set up and screening never stops for them. An
+`-client-view` and `-sheet` are optional: the client contributor role comes later, and an import
+with no Sheet writes Atlas only, so a review without them still counts as set up and screening never stops for them. An
 interactive setup run still offers a missing one: AR8 for `-client-view`, and for `-sheet` the
 "Create the review Sheet for {campaign} now?" question (**The review Sheet**, step 4), which appends
 the record when none exists. Screening reads a missing `-sheet` as `sheet: none`.
@@ -231,7 +342,7 @@ What changes against a `vetting` run in **Creator vetting**:
 | Red lines | The brand red lines plus the review's red lines, each its own check |
 | Hard stops | The checks the review's `reject:` line lists (`competitor-deals`, `disclosure`, `language-on-camera`), in place of `vetting:hard-rejects` (**Creator vetting**, **The recommendation**, rule 2). Every check runs whatever `reject:` says; one it doesn't list stays a Flag |
 | `vetting:criteria`, `vetting:thresholds`, `vetting:hard-rejects` | Not read; the review replaces them. Bought engagement and no recent posts are Flags, never rejects on their own |
-| Form answer rules | Not applied: a vetting list carries handles and names, not form answers. Each saved rule is listed by name on the page under what is missing, and the run summary names them, so a team never reads a recommendation as having passed them. A form hard stop or required answer therefore never changes the call yet; the team applies it by hand |
+| Form answer rules | Not applied yet: an imported applicant's answers are on their Atlas record and in the Sheet (**Importing applicants**), but screening does not read them yet. Each saved rule is listed by name on the page under what is missing, and the run summary names them, so a team never reads a recommendation as having passed them. A form hard stop or required answer therefore never changes the call yet; the team applies it by hand |
 | Visual checks | The review's saved checks feed R5 (**Creator vetting**, **4. Visual check**): R5 is still asked, with up to two of the review's `-visuals` checks as its options after "No visual check", the first marked (Recommended). A `named:` check runs as a named check with its saved definition; a `free:` check runs as a free-text check. One check per run, held to **Creator vetting**'s **What a visual check may look for**; it never changes a call. A saved check not run this time is listed under what is missing |
 | The page | Shows the campaign's name, the review's checks in words, and the Sheet link when the review holds one |
 
