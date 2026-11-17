@@ -54,7 +54,7 @@ for p in $(plugin_names); do
 
   # File types the directory accepts from an organization that is not Verified (tracked files only).
   if [[ " $NOT_SUBMITTED " != *" $p "* ]]; then
-    while IFS= read -r f; do
+    while IFS= read -r -d '' f; do
       shopt -s nocasematch
       case "$f" in
         */LICENSE|*.md|*.txt|*.json|*.yaml|*.yml)
@@ -63,7 +63,7 @@ for p in $(plugin_names); do
         *) err "$f: the directory refuses this file type from an organization that is not Verified; wrap it in Markdown or move it out of $src" ;;
       esac
       shopt -u nocasematch
-    done < <(git ls-files "$src")
+    done < <(git ls-files -z "$src")
   fi
 
   # h and Fragment are JSX's own names in every .tsx or .jsx file, tests included.
