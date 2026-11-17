@@ -15,6 +15,8 @@ export type Turn = {
   connectors: Record<string, string>
   /** Text the main thread wrote, plus what its subagents returned to it. */
   text: string
+  /** Only what the main thread wrote itself: no tool result, so no file it read and no agent's output. */
+  said: string
   /** The final reply of the turn, as `claude -p` reports it. */
   reply: string
   toolUses: ToolUse[]
@@ -146,10 +148,11 @@ function usageTotal(usage: Record<string, any> | undefined): number {
 
 export function summarizeTurn(events: Event[]): Turn {
   const turn: Turn = {
-    sessionId: null, scratchpad: null, model: null, connectors: {}, text: '', reply: '', toolUses: [], toolResults: {},
+    sessionId: null, scratchpad: null, model: null, connectors: {}, text: '', said: '', reply: '', toolUses: [], toolResults: {},
     contextTokens: 0, billedTokens: 0, costUsd: 0, compactions: 0, failed: true,
   }
   const parts: string[] = []
+  const said: string[] = []
   for (const event of events) {
     const main = !event.parent_tool_use_id
     if (event.type === 'system' && event.subtype === 'init') {
@@ -161,7 +164,10 @@ export function summarizeTurn(events: Event[]): Turn {
       turn.compactions += 1
     } else if (event.type === 'assistant') {
       for (const block of event.message?.content ?? []) {
-        if (block.type === 'text' && main) parts.push(block.text)
+        if (block.type === 'text' && main) {
+          parts.push(block.text)
+          said.push(block.text)
+        }
         if (block.type === 'tool_use') turn.toolUses.push({ id: block.id, name: block.name, input: block.input ?? {}, main })
       }
       if (main) turn.contextTokens = usageTotal(event.message?.usage) || turn.contextTokens
@@ -181,6 +187,7 @@ export function summarizeTurn(events: Event[]): Turn {
     }
   }
   turn.text = parts.join('\n')
+  turn.said = said.join('\n')
   return turn
 }
 
@@ -377,14 +384,15 @@ const SETUP_WORDS = [/keep these answers for next time/i, /\bpage only\b/i, /\bs
 /**
  * FU1: the first message of a repeat run. It passes when the message opens the follow-up ("Last time (12 Nov)
  * you asked ..."), asks about what has happened since, and asks none of the setup questions the first run
- * settled. The Credits question is not a setup question: a run that will spend still asks it. The reasons name
- * headers and rules only, never the message's words.
+ * settled. The Credits question is not a setup question: a run that will spend still asks it. Only the main
+ * thread's own words are read: a file it opened (the contract's own example opens with "Last time") is not
+ * something the person saw. The reasons name headers and rules only, never the message's words.
  */
 export function repeatAsk(turn: Turn): { result: Result; reasons: string[] } {
   const asks = turn.toolUses.filter(use => use.main && use.name === 'AskUserQuestion')
   const questions = asks.flatMap(use => (Array.isArray(use.input?.questions) ? use.input.questions : []))
   const headers = questions.map((question: any) => String(question?.header ?? '').trim().toLowerCase())
-  const text = [turn.text, ...asks.map(use => askText(use.input)), turn.reply].join('\n')
+  const text = [turn.said, ...asks.map(use => askText(use.input)), turn.reply].join('\n')
   if (!text.trim()) return { result: 'not run', reasons: ['the repeat run sent no message'] }
   const reasons: string[] = []
   if (!/\blast time \(/i.test(text)) reasons.push('the message does not open with "Last time ({date}) you asked"')

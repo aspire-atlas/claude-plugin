@@ -52,5 +52,8 @@ thread can tell a finished item from one the page lost.
   and fails.
 - R5 and R6 hold for carried items as for new ones: each keeps its owner and date, and decisions
   stay apart from next steps.
-- The page shared outside the team (`artifact-standard.md`, section 2) keeps the "Since {date}"
-  list but leaves out any item whose owner is on the team that prepared it.
+- A page shared outside the team (`artifact-standard.md`, section 2) still leads with what
+  changed in the results, as a conclusion. It leaves out the "Since {date}" list, the last
+  page's figures, the link to the last page, and every item whose owner is on the team that
+  prepared it: a client version carries no revision history (`SKILL.md`, section 2). An item the
+  client owns stays in part 5 or part 4 with "open since {date}".

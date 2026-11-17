@@ -501,6 +501,9 @@ test('a repeat run passes when it opens with last time and asks only what change
   expect(repeatAsk(chatTurn('Last time (12 Nov) you asked which posts to run as ads. What has happened since on these two steps?')).result).toBe('pass')
   expect(repeatAsk(chatTurn('Last time (12 Nov) you asked which posts to run as ads. Since then: page only, or save to Atlas?')).result).toBe('fail')
   expect(repeatAsk(chatTurn('')).result).toBe('not run')
+  // The contract's own example, read from a file, is not what the person was told.
+  const readFile = [{ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 'r1', content: 'Last time (12 Nov) you asked which creator posts to run as ads. What has happened since?' }] } }]
+  expect(repeatAsk(chatTurn('You asked which posts to run as ads. Is that right?', [], readFile)).result).toBe('fail')
 })
 
 test('the repeat pair is a line under the table, kept in a baseline without its link, and a fail is named', () => {

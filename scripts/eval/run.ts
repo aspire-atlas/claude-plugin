@@ -484,7 +484,8 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
   const closed = Boolean(link) || Boolean(last && !last.failed && findPage(last).finished)
   const chat = checkChat(turns, closed, chatRules)
   writeFileSync(join(qDir, 'chat.json'), JSON.stringify({ ...chat.checks, text: chat.messages, hits: chat.hits }, null, 2) + '\n')
-  const transcriptTokens = last?.contextTokens ?? 0
+  // The sizes describe the first run, as they do without --repeat, so a run with the pair compares with one without.
+  const sizes = { transcriptTokens: last?.contextTokens ?? 0, billedTokens: billed, compactions, costUsd: cost }
   // The repeat pair: the same ask again, in the same session, once the first page is kept. Reruns refuse every
   // Atlas write, so the flow follows up from this session's own first run (orchestration.md, 2, A repeat run).
   let repeat: Rerun['repeat'] = null
@@ -499,7 +500,7 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
       repeat = { link: second.link, rounds: second.rounds, asks: asked.result, reasons: asked.reasons }
     }
   }
-  return { link, rounds, transcriptTokens, billedTokens: billed, compactions, costUsd: cost, problems, model, chat: chat.checks, repeat }
+  return { link, rounds, ...sizes, problems, model, chat: chat.checks, repeat }
 }
 
 const repeatPage = (qDir: string) => join(qDir, 'repeat', 'page.html')
@@ -511,7 +512,7 @@ const repeatPage = (qDir: string) => join(qDir, 'repeat', 'page.html')
 async function judgeRepeat(firstPage: string, secondPage: string, check: any, dir: string, emptyMcp: string, options: Options): Promise<{ result: Result; reason: string }> {
   const first = join(dir, 'first.html')
   const second = join(dir, 'second.html')
-  writeFileSync(first, stripDataUris(readFileSync(firstPage, 'utf8')))
+  writeFileSync(first, stripTitlePrefix(stripDataUris(readFileSync(firstPage, 'utf8')), options.titlePrefix))
   writeFileSync(second, stripTitlePrefix(stripDataUris(readFileSync(secondPage, 'utf8')), options.titlePrefix))
   const system = [
     'You grade one published page against one check, as a careful reviewer who was not there when it was built.',
@@ -564,9 +565,11 @@ async function runQuestion(question: Question, config: any, local: Local, eCheck
     stored ?? (approved.path ? checkPage(approved.path, 'approved', question, null, eChecks, qDir, emptyMcp, options) : null),
     second && leadsCheck ? judgeRepeat(captured, second, leadsCheck, join(qDir, 'repeat'), emptyMcp, options) : null,
   ])
-  // A second run that published no page fails the page check: there is no page to lead with anything.
+  // A second run that published no page fails the page check: there is no page to lead with anything. With a
+  // page and no judged check in questions.json, nothing judged it, so it did not run.
+  const unjudged: Result = second || run.repeat?.asks === 'not run' ? 'not run' : 'fail'
   const repeat: RepeatChecks | undefined = run.repeat
-    ? { asks: run.repeat.asks, leads: leads?.result ?? (run.repeat.asks === 'not run' ? 'not run' : 'fail'), rounds: run.repeat.rounds, page: { link: run.repeat.link, captured: !!second } }
+    ? { asks: run.repeat.asks, leads: leads?.result ?? unjudged, rounds: run.repeat.rounds, page: { link: run.repeat.link, captured: !!second } }
     : undefined
   // The reasons stay in the run folder, which is never committed or uploaded.
   if (run.repeat) writeFileSync(join(qDir, 'repeat.json'), JSON.stringify({ ...repeat, reasons: { FU1: run.repeat.reasons, FU2: leads?.reason ?? null } }, null, 2) + '\n')
@@ -733,7 +736,8 @@ async function main() {
     }
   } finally {
     if (options.cleanup) {
-      const links = results.questions.flatMap(question => [question.page.link, question.repeat?.page.link]).filter((link): link is string => !!link)
+      // A second run may republish to the first page's link: delete it once.
+      const links = [...new Set(results.questions.flatMap(question => [question.page.link, question.repeat?.page.link]).filter((link): link is string => !!link))]
       await cleanup(links, runDir, emptyMcp).catch(error => console.error(`  cleanup failed: ${error}`))
     }
     rmSync(secrets, { recursive: true, force: true })

@@ -471,6 +471,11 @@ open, and builds a page that leads with what changed.
    for the same agent with a `page` and its `openItems` (**9**). It lasts only as long as the
    session.
 
+There is no last run, and so no repeat run, when the record's first line says `follow: off`,
+or when the person stopped the follow-up earlier in this session. The person turns it back on
+by asking ("follow up on this next time"): the next write that close-out confirms removes
+`follow: off`.
+
 **When a run is a repeat.** An interactive run is a repeat when the last run answered the same
 question: the same question code (with no code, the same flow), the same campaign or program
 when the flow runs per campaign or program, and the same subject when the question names one (a
@@ -494,9 +499,11 @@ pre-filled as before.
 5. **The question**, header "Since then": "What has happened since on these?", then the open
    items, numbered, decisions first, each in one line with its owner and date ("1. Approve the
    11 creators (you, by 4 Nov)."), and one sentence saying what is kept: "I will keep your
-   answer and the new page's open items for the next run." Options, none marked recommended,
-   since this asks for a fact:
-   - "All still open"
+   answer and the new page's open items for the next run." Leave that sentence out when the
+   last run came from this session after the person chose to keep nothing (Keeping the record).
+   Options, with the safe one first: an item left open is asked about again, and an item
+   wrongly marked done is lost.
+   - "All still open (Recommended)"
    - "All done"
    - "All dropped": none of them matters any more.
    - "Stop following up": nothing is carried over and the kept items are cleared.
@@ -507,6 +514,8 @@ pre-filled as before.
 
 Nothing the first run settled is asked again: no Heard, Scope, Save, Remember, or Storyline
 question, and no question of the flow's own that the last run or a saved record answered. The
+**Prompt coach** does not run on a repeat run, however short the ask: the last run already
+holds what it would ask for. The
 answer to "Since then" confirms what line 2 said, as "Yes, run it" does in Heard. What a repeat
 run still asks is what only this run can settle: the Credits question, in the same call, when
 this run will spend; a flow question whose answer the last run could not have held (a new list
@@ -516,8 +525,8 @@ close-out offers the save as a proposal (**10**).
 
 **No open items.** When the last run's page left nothing open, the reply still opens with the
 "Last time" line and asks one question, header "Since then", "Has anything changed that the new
-page should take into account?", with the options "Nothing, run it again" and "Stop following
-up", and the free text field.
+page should take into account?", with the options "Nothing, run it again (Recommended)" and
+"Stop following up", and the free text field.
 
 **The answers go to the agent.** The launch block's `since` (**5**) carries the last run's date
 and page, and every item with the status the person gave it: `done`, `open`, or `dropped`. An
@@ -530,13 +539,14 @@ the `since` items join it.
 
 **Stop following up.** The run is launched with `since` `null`, as a first run with saved
 answers would be. That answer confirms one write: supersede the record with its last-run lines
-removed and `follow: off` added to its first line.
+removed and `follow: off` added to its first line (with no record yet, add one whose first
+line holds this run's answers and `follow: off`).
 
 **A scheduled run has nobody to ask.** An unattended run reads the last run from the record,
 launches with every open item's status as `not confirmed`, and asks nothing. Its page carries
-them over under "Not confirmed since {date}". It updates the last-run lines only under the
-standing approval its flow's setup gave for saving (**7**); with none, the record stays as it
-is, so the next interactive run still asks about the same items.
+them over under "Not confirmed since {date}". It writes nothing to the record (Saved answers),
+so the next interactive run still asks about the same items, and "Last time" stays the last
+time a person asked.
 
 **Keeping the record.** At close-out (**10**), after an interactive run that published a page,
 the main thread writes the last run to the flow's `lastrun:` record, as lines after the body's
@@ -558,7 +568,9 @@ body in these lines; an item that needs one points to the page.
 It is one Write (**7**), confirmed once per run by the first of these that applies:
 
 - **A repeat run:** the "Since then" answer, which names it. Every answer but "Stop following
-  up" confirms it.
+  up" confirms it. When the last run came from this session and the person had chosen to keep
+  nothing for it ("Just for me", "Just this run", or "Not this time"), the question does not
+  name it and nothing is kept this time either.
 - **The Remember question was asked this run** (Saved answers): "For everyone running {the
   flow}" confirms it, and its description adds "and keeps this page's open decisions and next
   steps, so the next run can follow up". "Just for me" and "Just this run" keep nothing, and
