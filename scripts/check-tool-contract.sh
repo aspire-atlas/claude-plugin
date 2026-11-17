@@ -3,8 +3,10 @@
 #
 # contract/atlas-mcp-tools.json is a trimmed snapshot of the Atlas server's
 # tools list (the public and organization-admin surfaces): each tool's name,
-# required inputs and input property paths. The server repo is private, so the
-# snapshot is vendored here and refreshed by hand.
+# required inputs and input property paths, plus calibrationKeyPattern, the
+# pattern append_calibration accepts for a key (scripts/check-calibration-keys.sh
+# checks every key the plugin names against it). The server repo is private, so
+# the snapshot is vendored here and refreshed by hand.
 #
 #   scripts/check-tool-contract.sh
 #       Offline (CI). Call examples are matched one line at a time: keep each
@@ -45,6 +47,8 @@ snapshot() {
     {
       generated: $date,
       source: "apps/api/lib/mcp/tools-list.golden.json",
+      calibrationKeyPattern: ([.["/mcp"][] | select(.name == "append_calibration")
+                               | .inputSchema.properties.key.pattern][0]),
       surfaces: {
         "/mcp": surface(.["/mcp"]),
         "/mcp/admin-organization": surface(.["/mcp/admin-organization"])
@@ -65,7 +69,7 @@ case "${1:-}" in
   --golden)
     golden="${2:?usage: check-tool-contract.sh --golden <tools-list.golden.json>}"
     [[ -f "$golden" ]] || { echo "FAIL $golden not found"; exit 2; }
-    if ! diff <(jq -S '.surfaces' "$C") <(snapshot "$golden" | jq -S '.surfaces'); then
+    if ! diff <(jq -S '{calibrationKeyPattern, surfaces}' "$C") <(snapshot "$golden" | jq -S '{calibrationKeyPattern, surfaces}'); then
       echo "FAIL $C differs from $golden (lines marked > are the server). Review the change, update the plugin, then run --update."
       exit 1
     fi

@@ -116,7 +116,7 @@ main thread may offer V2 alone; it is not required. Otherwise it asks the missin
 to V4, one `AskUserQuestion` each, in order, then confirms the batch once and writes the records.
 
 **Keys starting `vetting:` belong to creator vetting only**, like `review:` keys belong to
-content review. Every other flow drops them. Keys starting `applicant-review:` belong to the
+content review. Every other flow drops them. Keys starting `applicantreview:` belong to the
 applicant review; vetting reads them only for the review R2 named (**Applicant reviews**).
 
 ## Getting the list
@@ -818,8 +818,8 @@ Maybe, and Reject keep their status colors under any theme.
 ## Applicant reviews
 
 A campaign's applicants are screened against its applicant review: the setup saved once under
-`applicant-review:{slug}-*` (**Applicant review**, **The records**). The criteria source is
-`applicant-review:{slug}`. The main thread reads the review back per **Applicant review**,
+`applicantreview:{slug}-*` (**Applicant review**, **The records**). The criteria source is
+`applicantreview:{slug}`. The main thread reads the review back per **Applicant review**,
 **Reading the setup back (screening)**, and passes it resolved in the launch. Neither asks V1 to
 V4, and the main thread asks no setup question of a complete review: a gap or a missing pointer is
 asked there, before the launch, and the agent asks none.
@@ -839,7 +839,7 @@ means the list is not counted as a campaign's applicants.
 How the run changes for a review (criteria, thresholds, hard stops, red lines, language on camera,
 form rules, visual checks, the page, and what each finding records) is set out once, in
 **Applicant review**, **How screening applies a review**. Read it for every run whose criteria
-source is `applicant-review:{slug}`.
+source is `applicantreview:{slug}`.
 
 ## Creator-ads lanes (CAS campaigns)
 
