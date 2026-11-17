@@ -494,8 +494,10 @@ checks, discovery criteria, and red-line scans leave it out.
 
 **Keys starting `lastrun:` are a flow's saved setup answers** (**Orchestration contract**, **2**,
 Saved answers): its reader, scope and save choice, as `guideline` records with
-`detail.concern` `preference`. The main thread reads them to pre-fill the setup reply and the
-prompt coach's window, reader and save options. They are never a brand guideline: brief
+`detail.concern` `preference`, and, when the person said to keep it, the flow's last run: the
+question, the page, and the decisions and next steps it left open (**Orchestration contract**,
+**2**, **A repeat run**). The main thread reads them to pre-fill the setup reply and the
+prompt coach's window, reader and save options, and to follow up on a repeat run. They are never a brand guideline: brief
 conflicts, content review checks, discovery criteria, red-line scans, and the coach's source, role,
 competitor and red-line defaults leave them out. Every flow and agent that drops other flows' keys
 from brand memory drops `lastrun:` keys with them, whether or not its own list names them.

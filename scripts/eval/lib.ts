@@ -67,7 +67,19 @@ export type QuestionResult = {
   approved: PageChecks | null
   /** `not run` for a question graded from a file, and for results stored before the chat check (normalizeRun). */
   chat: ChatChecks
+  /** The second run of the same question, when the run was asked for the repeat pair (`--repeat`). */
+  repeat?: RepeatChecks
   problems: string[]
+}
+
+/** The repeat pair (docs/STANDARD.md, S4): the same question asked again in the same session. */
+export type RepeatChecks = {
+  /** FU1, from the transcript: the second run's first message follows up on the first run and asks no setup question. */
+  asks: Result
+  /** FU2, from a judge that reads both pages: the second page's first section says what changed since the first. */
+  leads: Result
+  rounds: number
+  page: { link: string | null; captured: boolean }
 }
 
 export type RunResults = {
@@ -352,6 +364,59 @@ export function checkChat(turns: Turn[], closed: boolean, rules: ChatRules): { c
   return { checks, messages, hits }
 }
 
+export const REPEAT_CHECKS = [
+  { id: 'FU1', name: 'Repeat run asks what changed' },
+  { id: 'FU2', name: 'Repeat page leads with what changed' },
+]
+
+// The headers of the questions a first run settles (orchestration.md, 2). A repeat run asks none of them.
+const SETUP_HEADERS = ['heard', 'scope', 'save', 'remember', 'storyline', 'role', 'relationship']
+// What those questions say when a host refuses the question tool and the flow asks in text.
+const SETUP_WORDS = [/keep these answers for next time/i, /\bpage only\b/i, /\bsave to atlas\b/i, /\byes, run it\b/i]
+
+/**
+ * FU1: the first message of a repeat run. It passes when the message opens the follow-up ("Last time (12 Nov)
+ * you asked ..."), asks about what has happened since, and asks none of the setup questions the first run
+ * settled. The Credits question is not a setup question: a run that will spend still asks it. The reasons name
+ * headers and rules only, never the message's words.
+ */
+export function repeatAsk(turn: Turn): { result: Result; reasons: string[] } {
+  const asks = turn.toolUses.filter(use => use.main && use.name === 'AskUserQuestion')
+  const questions = asks.flatMap(use => (Array.isArray(use.input?.questions) ? use.input.questions : []))
+  const headers = questions.map((question: any) => String(question?.header ?? '').trim().toLowerCase())
+  const text = [turn.text, ...asks.map(use => askText(use.input)), turn.reply].join('\n')
+  if (!text.trim()) return { result: 'not run', reasons: ['the repeat run sent no message'] }
+  const reasons: string[] = []
+  if (!/\blast time \(/i.test(text)) reasons.push('the message does not open with "Last time ({date}) you asked"')
+  const repeated = headers.filter(header => SETUP_HEADERS.includes(header))
+  if (repeated.length) reasons.push(`it asks setup questions again: ${[...new Set(repeated)].join(', ')}`)
+  if (questions.length) {
+    if (!headers.includes('since then')) reasons.push('no question is headed "Since then"')
+  } else {
+    if (!/\bsince\b/i.test(text)) reasons.push('it does not ask what has happened since')
+    const said = SETUP_WORDS.filter(pattern => pattern.test(turn.reply))
+    if (said.length) reasons.push(`its reply asks setup questions again (${said.length} setup phrase${said.length === 1 ? '' : 's'})`)
+  }
+  return { result: reasons.length ? 'fail' : 'pass', reasons }
+}
+
+/** One line under a question's table for the repeat pair. Null when the pair was not run. */
+export function repeatLine(repeat: RepeatChecks | undefined): string | null {
+  if (!repeat) return null
+  const [asks, leads] = REPEAT_CHECKS
+  const page = repeat.page.link ?? (repeat.page.captured ? 'captured, no link' : 'none published')
+  return `Repeat run: ${asks.name} (${asks.id}): ${cell(repeat.asks)}; ${leads.name} (${leads.id}): ${cell(repeat.leads)}. ` +
+    `Confirmation rounds: ${repeat.rounds} · Second page: ${page}.`
+}
+
+/** The questions whose repeat pair failed a check. Like the chat, it has no approved result to compare with. */
+export function repeatFailures(results: RunResults): { code: string; id: string }[] {
+  return results.questions.flatMap(question => [
+    ...(question.repeat?.asks === 'fail' ? [{ code: question.code, id: REPEAT_CHECKS[0].id }] : []),
+    ...(question.repeat?.leads === 'fail' ? [{ code: question.code, id: REPEAT_CHECKS[1].id }] : []),
+  ])
+}
+
 /** The chat item of docs/STANDARD.md that the counts prove. */
 export const CHAT_CHECK = { id: 'C5', name: 'Chat wording' }
 
@@ -514,7 +579,8 @@ export function renderQuestion(question: QuestionResult, eChecks: CheckDef[], rL
   lines.push(`Transcript: ${question.transcriptTokens.toLocaleString('en-US')} tokens${compactions} · ` +
     `Confirmation rounds: ${question.rounds} · New page: ${question.page.link ?? (question.page.captured ? 'captured, no link' : 'none published')}`)
   const chat = chatLine(question.chat)
-  const notes = [...question.problems, ...(chat ? [chat] : []), ...(question.new?.notes ?? []).map(n => `New page: ${n}`), ...(question.approved?.notes ?? []).map(n => `Approved page: ${n}`)]
+  const repeat = repeatLine(question.repeat)
+  const notes = [...question.problems, ...(chat ? [chat] : []), ...(repeat ? [repeat] : []), ...(question.new?.notes ?? []).map(n => `New page: ${n}`), ...(question.approved?.notes ?? []).map(n => `Approved page: ${n}`)]
   for (const note of notes) lines.push(`- ${note}`)
   const waiting = eChecks.filter(check => check.waitsFor && eResult(question.new, check.id) === 'not run')
   if (waiting.length) lines.push(`- Not run yet: ${waiting.map(check => `${check.id} (${check.waitsFor})`).join(', ')}.`)
@@ -540,6 +606,7 @@ export function forBaseline(results: RunResults): RunResults {
       page: { link: null, captured: question.page.captured },
       new: strip(question.new),
       approved: strip(question.approved),
+      ...(question.repeat ? { repeat: { ...question.repeat, page: { link: null, captured: question.repeat.page.captured } } } : {}),
       problems: [],
     })),
   }

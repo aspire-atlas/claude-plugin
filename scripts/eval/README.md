@@ -13,6 +13,7 @@ It runs on a developer's machine, and in CI on every pull request that changes a
 - [Commands](#commands)
 - [What one run does](#what-one-run-does)
 - [The table](#the-table)
+- [The repeat pair](#the-repeat-pair)
 - [What is committed and what is not](#what-is-committed-and-what-is-not)
 - [What a rerun may and may not do](#what-a-rerun-may-and-may-not-do)
 - [In CI](#in-ci)
@@ -67,6 +68,7 @@ bun run eval:pages --compare 2026-11-10 latest           # what changed between 
 bun run eval:pages --only I4 --page page.html            # grade a page file, without a rerun
 bun run eval:pages --dry-run               # print what would run
 bun run eval:pages --only O3 --approved-from newest   # take the approved column from the newest baseline
+bun run eval:pages --only I4 --repeat      # ask it twice, and check that the second run follows up on the first
 bun run eval:test                          # the harness's own tests (no Claude, no Atlas)
 ```
 
@@ -166,12 +168,32 @@ no Must fix, and its reason lists each Must with its row and how deep the first 
 harness renders the page with `scripts/render-page.ts` and passes the reviewer that folder, so it needs
 Playwright with Chromium on the machine; without it the review judges by source order and says so in the reason.
 
+## The repeat pair
+
+`--repeat` asks each question in `repeat.codes` (`questions.json`) a second time, in the same session, once its
+first page is kept. It proves item S4 of `docs/STANDARD.md`: a repeat run follows up on the last one. The
+harness answers what the second run asks with `repeat.reply` (every open item is still open; save nothing).
+Two checks, shown as one line under the question's table:
+
+| Check | Judged by | Passes when |
+| ----- | --------- | ----------- |
+| FU1 Repeat run asks what changed | Script, from the second run's first turn | The message opens with "Last time ({date}) you asked", a question is headed "Since then", and no question is headed Heard, Scope, Save, Remember, Storyline, Role or Relationship. On a host that refuses the question tool, the reply is read: it must ask what has happened since and use none of the setup questions' phrases |
+| FU2 Repeat page leads with what changed | A judge, as its own session with both pages and nothing from the runs | The second page's first section says what changed since the first, then carries over the items still open |
+
+The pair has no approved result to compare with, so a `fail` on either fails the run, as C5 does. A second run
+that publishes no page fails FU2. The reasons are kept in the run's `repeat.json`, and the second run's turns as
+`repeat-turn-<n>.jsonl`, never in a baseline or a comment. CI does not pass `--repeat`: run it by hand for a
+change to the repeat-run rules (`orchestration.md`, **2**, **A repeat run**, or `page-standard/follow-up.md`).
+
+A rerun refuses every Atlas write, so the second run cannot read a last run kept in Atlas. It follows up from
+the session's own first run, which the same rules cover. The record kept in Atlas is not exercised here.
+
 ## What is committed and what is not
 
 | Path | Committed | Holds |
 | ---- | --------- | ----- |
 | `baselines/<date>/results.json`, `table.md` | Yes | Results, the chat counts, token counts, rounds, the plugin commit, the models. No page, link, brand, reason text, or chat text |
-| `.runs/<time>/` | No | Each turn's transcript, both pages, each check's reasons, the chat messages (`chat.json`), `results.json`, `table.md` |
+| `.runs/<time>/` | No | Each turn's transcript, both pages, each check's reasons, the chat messages (`chat.json`), the repeat pair's second page and reasons (`repeat/`, `repeat.json`), `results.json`, `table.md` |
 | `.cache/approved/` | No | The copy of each approved page |
 | `local.json` | No | Brands, links, the dev server address |
 
