@@ -167,8 +167,8 @@ the team.
    (load the connector's guide first and follow it). Name it "{brand} · {campaign} applicant
    review". Never create it as a page, a Doc, or a Google Sheet.
 2. **Write the header row only**, in this order, most important first (the Sheet pane shows about
-   six): Instagram, TikTok, Recommendation, Fit score, Evidence, Maybe question, Status, Team call,
-   then one column per contact detail and form question when the form is known, then Source,
+   six): Name, Instagram, TikTok, Recommendation, Fit score, Evidence, Maybe question, Status, Team
+   call, then one column per other contact detail and form question when the form is known, then Source,
    Applied, Aspire applicant id. Team call is a dropdown of Approve, Maybe, and Reject, left blank
    until the team overrides Atlas. Rows come from **Importing applicants**.
 3. **Save the link** as `-sheet` with `sheet: <link>`.
@@ -275,10 +275,13 @@ applicant id from step 2 is there. Any missing is named in the summary as not im
 Sheet gets no row for it.
 
 **7. Add Sheet rows.** Only when `-sheet` holds a link and the Claude Docs connector is in the
-session (load its guide first). Read the Sheet's header and its Aspire applicant id column. Add a
-column for each `formAnswers` key the header lacks, before Source; columns are matched by header,
-never by position. Then append one row per applicant read back in step 6 whose id is not in the
-Sheet yet: Instagram and TikTok as `@handle`, Status `new`, every answer under its column, Source
+session (load its guide first). Read the Sheet's header and its Aspire applicant id column. A
+Sheet made before a column joined **The review Sheet**'s header order gets that column in its
+place (Name first); then add a column for each other `formAnswers` key the header lacks, before
+Source. Columns are matched by header, never by position. Then append one row per applicant read
+back in step 6 whose id is not in the Sheet yet: Name from the export's name column (`name`, `full
+name`, `creator`; else `first name` and `last name` joined; else blank), which then gets no column
+of its own, Instagram and TikTok as `@handle`, Status `new`, every other answer under its column, Source
 `csv`, Applied, and Aspire applicant id; Recommendation, Fit score, Evidence, Maybe question and Team
 call stay blank. Never change a row already there, a Team call, or a column the team added: rows
 are matched on Aspire applicant id, since the team sorts and filters the Sheet. When the connector
