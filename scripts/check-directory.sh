@@ -52,18 +52,18 @@ for p in $(plugin_names); do
   done < <(find "$src" -type f ! -name '*.png' ! -name '*.jpg' ! -name '*.jpeg' ! -name '*.gif' ! -name '*.webp' \
     ! -name '*.ico' ! -name '*.woff' ! -name '*.woff2' ! -name '*.ttf' ! -name '*.otf' | sort)
 
-  # File types the directory accepts from an organization that is not Verified (tracked files only).
+  # File types the directory accepts from an organization that is not Verified (the committed tree, which is what a push sends).
   if [[ " $NOT_SUBMITTED " != *" $p "* ]]; then
     while IFS= read -r -d '' f; do
       shopt -s nocasematch
       case "$f" in
         */LICENSE|*.md|*.txt|*.json|*.yaml|*.yml)
-          if [ "$(head -c2 "$f")" = '#!' ]; then err "$f starts with #!, which the directory refuses from an organization that is not Verified"; fi ;;
+          if [ "$(git show "HEAD:$f" | head -c2)" = '#!' ]; then err "$f starts with #!, which the directory refuses from an organization that is not Verified"; fi ;;
         *.png|*.jpg|*.jpeg|*.gif|*.webp|*.ico) ;;
         *) err "$f: the directory refuses this file type from an organization that is not Verified; wrap it in Markdown or move it out of $src" ;;
       esac
       shopt -u nocasematch
-    done < <(git ls-files -z "$src")
+    done < <(git ls-tree -r -z --name-only HEAD -- "$src")
   fi
 
   # h and Fragment are JSX's own names in every .tsx or .jsx file, tests included.
