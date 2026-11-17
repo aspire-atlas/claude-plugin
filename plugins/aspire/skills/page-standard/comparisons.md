@@ -7,6 +7,12 @@ when it was skipped: a brand's posts looked weaker than a competitor's until its
 were taken out; a brand had 20 posts about it, not 2, once posts naming it without the "@" were
 counted; and a share of revenue came from the same share of affiliates.
 
+## Contents
+
+- [The four checks](#the-four-checks)
+- [Markup the script reads (R15)](#markup-the-script-reads-r15)
+- [What is judged](#what-is-judged)
+
 ## The four checks
 
 Run them as you write each comparison, before the sentence goes on the page or into a bullet.
@@ -29,7 +35,14 @@ Run them as you write each comparison, before the sentence goes on the page or i
 - **A comparison that fails and stays says which check it fails, in one plain line** beside it:
   "Not like for like: the {competitor} posts mix TikTok Shop selling with other posts, which Atlas
   could not tell apart." A side of 20 posts or fewer is never excused this way: it carries
-  "directional" and its count.
+  "directional" and its count. On a page shared outside the team the line stays and says only what
+  the sides hold ("Not like for like: the {competitor} figure includes TikTok Shop selling
+  posts"); why Atlas could not split them goes in the page check's `gaps` (`SKILL.md`, section 1).
+- **Explain "directional" once,** where the page first uses it: "Directional: from 20 posts or
+  fewer, so it shows a direction, not a settled result."
+- **The first three checks are about posts.** A comparison whose sides are not posts (two months
+  of revenue, two creators' fees) carries no markup and is judged by reading; a share is always
+  marked, whatever it is a share of.
 - **In a storyline bullet and in chat,** the same four checks hold, in words: the bullet names the
   kind and the post count of each side, and says "directional" for a side of 20 or fewer.
 
@@ -72,8 +85,8 @@ Run them as you write each comparison, before the sentence goes on the page or i
 </section>
 ```
 
-- Mark every comparison the page makes: in the headline, an insight, a table row, a chart's
-  caption. `data-compare` goes on the smallest element that holds the whole comparison, and each
+- Mark every comparison of posts and every share the page makes: in the headline, an insight, a
+  table row, a chart's caption. `data-compare` goes on the smallest element that holds the whole comparison, and each
   `data-side` on the element that shows that side's number. In a table, the row or the table is
   the comparison and each compared cell a side.
 - `data-fails` takes `same-kind`, `mentions`, or `share-size`, entries joined by `;`, so a line

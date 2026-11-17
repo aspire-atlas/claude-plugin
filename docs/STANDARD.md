@@ -119,7 +119,9 @@ A comparison is any place a page sets two groups, two periods or two brands side
 a share. Every comparison passes these four checks, or says in one plain line which one it fails.
 The checks, their markup and the 20-post line are in
 `plugins/aspire/skills/page-standard/comparisons.md`; the examples are from a competitive read and
-an affiliate report.
+an affiliate report. "The English read" in **Checked by** is the separate read every page gets
+before it publishes (V1), which marks a page against rule 8 of `references/english-rules.md`. It
+checks pages, not pull requests, so these items are not in the judgment review.
 
 | Id | Item | Ticket | Checked by | Good | Bad |
 | -- | ---- | ------ | ---------- | ---- | --- |

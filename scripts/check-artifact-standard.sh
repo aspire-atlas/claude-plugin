@@ -196,6 +196,16 @@ else
       have="$(sed -nE 's/^DIRECTIONAL_MAX = ([0-9]+)$/\1/p' "$tmp/page_check.py") $(sed -nE 's/^IN_LINE_POINTS = ([0-9]+)$/\1/p' "$tmp/page_check.py")"
       [ -n "$line" ] && [ "$line" = "$have" ] ||
         err "$PC's DIRECTIONAL_MAX and IN_LINE_POINTS ($have) differ from $CM's directional-max line (${line:-none})"
+      # A file that restates either number states the same one.
+      if [ -n "$line" ]; then
+        for f in "$CM" "$PS" "$P/skills/page-standard/storyline.md" "$P/skills/page-standard/blocks.md" "$R/english-rules.md" \
+          "$R/reader-standard.md" "$R/market-signal.md" docs/STANDARD.md .github/pull_request_template.md; do
+          [ -f "$f" ] || continue
+          off=$(grep -oE '[0-9]+ (posts )?or fewer|more than [0-9]+ posts|within [0-9]+ points' "$f" | sort -u |
+            awk -v max="${line% *}" -v pts="${line#* }" '{ n = $0; gsub(/[^0-9]/, "", n); want = /points/ ? pts : max; if (n != want) printf "\"%s\" ", $0 }' || true)
+          [ -z "$off" ] || err "$f restates the like-for-like numbers as ${off}but $CM sets ${line% *} posts and ${line#* } points"
+        done
+      fi
       # The markup example in comparisons.md is what agents copy, so it must pass R15.
       awk '/^```html$/{g=1;next} g&&/^```$/{exit} g' "$CM" > "$tmp/compare.html"
       out=$(python3 -I "$tmp/page_check.py" "$tmp/compare.html" 2>&1) || true

@@ -602,8 +602,21 @@ def percent(value):
     value = (value or "").strip().rstrip("%").strip()
     return value if re.fullmatch(r"\d+(?:\.\d+)?", value) else None
 
-def shows_percent(shown, value):
-    return re.search(r"(?<![\d.,])%s\s*(?:%%|percent\b)" % re.escape(value), shown) is not None
+def shows_percent(shown, value, times=1):
+    return len(re.findall(r"(?<![\d.,])%s\s*(?:%%|percent\b)" % re.escape(value), shown)) >= times
+
+def declared(node):
+    # data-fails="{check}: {line}; ..." as ({check: line}, [entries that are not that shape]).
+    fails, bad = {}, []
+    for entry in (node.attrs.get("data-fails") or "").split(";"):
+        if not entry.strip():
+            continue
+        name, sep, line = entry.partition(":")
+        if sep and name.strip().lower() in MAY_FAIL and line.strip():
+            fails[name.strip().lower()] = line.strip()
+        else:
+            bad.append(entry.strip())
+    return fails, bad
 
 def sides_of(comparison):
     # The data-side elements of this comparison, not those of a comparison nested in it.
@@ -622,8 +635,7 @@ def comparisons(nodes):
                             "kind": (s.attrs.get("data-kind") or "").strip().lower() or None,
                             "posts": whole(s.attrs.get("data-posts")),
                             "mentions": "data-mentions" in s.attrs} for s in sides_of(node)],
-                 "fails": sorted(name.strip().lower() for name, sep, _ in
-                                 (e.partition(":") for e in (node.attrs.get("data-fails") or "").split(";")) if sep)}
+                 "fails": sorted(declared(node)[0])}
         if entry["compare"] == "share":
             entry["share"], entry["groupShare"] = percent(node.attrs.get("data-share")), percent(node.attrs.get("data-group-share"))
             entry["posts"] = whole(node.attrs.get("data-posts"))
@@ -647,19 +659,14 @@ def r15(nodes, regions):
         if kind_of not in COMPARES:
             problems.append("%s has data-compare \"%s\"; use one of %s" % (label, kind_of, ", ".join(COMPARES)))
             continue
-        fails = {}
-        for entry in (node.attrs.get("data-fails") or "").split(";"):
-            if not entry.strip():
-                continue
-            name, sep, line = entry.partition(":")
-            name = name.strip().lower()
-            if not sep or name not in MAY_FAIL or not line.strip():
-                problems.append("%s has a data-fails entry \"%s\" that is not \"{check}: {line}\" with check one of %s"
-                                % (label, entry.strip(), ", ".join(MAY_FAIL)))
-            elif not has(shown, line):
-                problems.append("%s notes that it fails %s but does not show that line (%s)" % (label, name, line.strip()))
-            else:
-                fails[name] = line.strip()
+        fails, bad = declared(node)
+        for entry in bad:
+            problems.append("%s has a data-fails entry \"%s\" that is not \"{check}: {line}\" with check one of %s"
+                            % (label, entry, ", ".join(MAY_FAIL)))
+        for name, line in sorted(fails.items()):
+            if not has(shown, line):
+                problems.append("%s notes that it fails %s but does not show that line (%s)" % (label, name, line))
+                del fails[name]
         def small(owner, what):
             posts = whole(owner.attrs.get("data-posts"))
             if posts is None or posts > DIRECTIONAL_MAX:
@@ -679,7 +686,7 @@ def r15(nodes, regions):
             if "share-size" not in fails:
                 if group is None:
                     problems.append("%s states a share with no data-group-share: show the group's share of the whole beside it" % label)
-                elif not shows_percent(shown, group):
+                elif not shows_percent(shown, group, times=2 if group == share else 1):
                     problems.append("%s does not show the group's share of the whole (%s%%) beside the share" % (label, group))
                 elif share is not None and abs(float(share) - float(group)) <= IN_LINE_POINTS and not has_phrase(shown, "in line with"):
                     problems.append("%s: the share (%s%%) is within %d points of the group's size (%s%%) but the page does not say it is \"in line with\" it"
