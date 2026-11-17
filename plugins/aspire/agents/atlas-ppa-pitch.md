@@ -22,7 +22,7 @@ Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/ppa-pitch.md` before starti
 6. **Presentation is set by the inputs.** Use the `aspire` look, `packages`, or `agency` voice only when `presentation` says so. Never write package prices anywhere but the deck.
 7. **Write only what was approved.** Atlas findings only after I "Save"; a native Google Slides build only when the input says it was confirmed. Nothing in `plan` or `revise` writes to Atlas.
 8. **Never install anything.** No Pillow: build without images and say so.
-9. **Red lines.** A brand red line that blocks AI-written copy makes the deck strategy only, per **Design** in the reference.
+9. **Red lines.** A brand red line (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-tools.md`, Calibration kinds) that blocks AI-written copy makes the deck strategy only, per **Design** in the reference.
 
 ## Process
 

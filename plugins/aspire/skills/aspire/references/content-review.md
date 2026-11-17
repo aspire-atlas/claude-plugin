@@ -96,7 +96,7 @@ Rules:
   the agent needs both to reach a verdict. To answer a declined question later, retract the
   `decline` record through its Destructive tools confirmation, then ask the question again as
   a fresh setup item.
-- Write C1's options from the brand's context. If no brand red line is saved, say so in C1's
+- Write C1's options from the brand's context. If no brand red line (**Atlas tools**, Calibration kinds) or `review:rule-*` record is saved, say so in C1's
   question text ("No red lines are saved yet, so option 2 blocks nothing").
 - C3's option list starts from what exists: when `guideline` records (never `applicant-review:` or `lastrun:` keys) or the
   `voice_and_content_ops` brand fact are saved, summarize them in one line in the question
@@ -216,7 +216,7 @@ One check per brief field that is specified:
 
 ### 3. Brand safety
 
-- Every `red_line` calibration except `applicant-review:` keys, with its `action`: `block` fails the post, `flag` flags it,
+- Every brand red line and every `review:rule-*` hard rule, with its `action`: `block` fails the post, `flag` flags it,
   `escalate` flags it and names the primary contact (`user:primary-contact`) in the verdict.
   This includes the review hard rules (`review:rule-*`, see **Hard rules for every review**).
   Each one is its own check, and the page names the rule.

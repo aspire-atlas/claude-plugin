@@ -80,6 +80,9 @@ jobs:
       - name: Every agent carries the orchestration contract and has a permission level
         run: bash scripts/check-orchestration.sh
 
+      - name: Drop lists and red-line readers keep flow-owned calibration keys out of brand memory
+        run: bash scripts/check-calibration-keys.sh
+
       - name: Every agent and skill spec follows the spec format
         run: bash scripts/check-agent-specs.sh
 

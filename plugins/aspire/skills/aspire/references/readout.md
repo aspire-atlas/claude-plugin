@@ -138,7 +138,7 @@ confirmation, one confirmation per key.
 Filter-only path, no `queryText`, unless noted. Every call carries a `context` argument
 (`[<runId>]`, then 15 to 25 words, third person; the run id prefix does not count toward them).
 
-1. `search_calibrations` as above. Extract: readout calibrations, brand red lines, `guideline`,
+1. `search_calibrations` as above. Extract: readout calibrations, brand red lines (**Atlas tools**, Calibration kinds), `guideline`,
    `competitor`, `partner`, `brand:summary`, `target:weekly-health`, `theme:brand`. Drop every
    `review:` key (content review only; see **Atlas tools**), every `applicant-review:` key (one
    campaign's applicant screening only), and every `lastrun:` key (a flow's
@@ -184,7 +184,7 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
    **Content review**, **Feeding the readouts**. Read only; never write a review finding.
    A content review edit is closed only by a later review's `close` finding, never by a
    readout: the readout's own resolving `went_well` applies to readout and brief items only.
-7. Red-line scan: for each `red_line` with `action: block|flag|escalate`, one semantic
+7. Red-line scan: for each brand red line with `action: block|flag|escalate`, one semantic
    `search_posts` with `queryText` = the red-line body, filtered to the window and the brand's
    handles, limit 10. Report hits by permalink. Never invent a hit. `review:` and
    `applicant-review:` keys were dropped in step 1; hits on content review hard rules come from step 6b (`hardRuleHits`).

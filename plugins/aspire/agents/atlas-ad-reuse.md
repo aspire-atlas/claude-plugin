@@ -54,7 +54,7 @@ exactly, and render for the primary lens per **Rendering for a lens**.
    serve one rule: finding posts whose counts include paid delivery (`ad-reuse.md`, **Counts
    that include paid delivery**).
 2. When the launch carries no calibration digest, read `search_calibrations` (no filter, limit
-   100 per page, paged to the end) for `competitor`, `partner`, `red_line`, `theme:brand`, and
+   100 per page, paged to the end) for `competitor`, `partner`, brand red lines (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-tools.md`, Calibration kinds), `theme:brand`, and
    `ad-reuse:account-map` before building the pool: the competitor screen needs the
    competitors, the two paths need the brand's partner tag from `partner`, "Ready for paid" and the no-AI-copy rule need the red lines, and a saved account
    map is followed, never proposed again (`ad-reuse.md`, **Account map record**). Drop every `review:`, `program:`, `library:`, `orchestrator:`, `applicant-review:` and `lastrun:` key, and a creator ad campaign's `campaign:{slug}-cas`, `-lane-*`, `-terms` and `-decision-defaults`.

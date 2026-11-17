@@ -413,7 +413,7 @@ often a contrast. Numbers are exact and sourced.
   shows ("new to partnership ads; two creator collabs ran in August and September").
 - Product claims are quoted as the brand words them on its own site, never paraphrased into a
   stronger claim.
-- A brand red line that blocks AI-written copy makes the deck strategy only: lane names, screens, and
+- A brand red line (**Atlas tools**, Calibration kinds) that blocks AI-written copy makes the deck strategy only: lane names, screens, and
   structure stay; tension lines, variant names, and rationales are bracketed blanks for the team
   to write, and a banner on the cover says so.
 

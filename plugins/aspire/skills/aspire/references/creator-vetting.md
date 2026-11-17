@@ -101,7 +101,7 @@ Rules:
 - V3: call `get_brand_instruction` with `agentType: "brand_safety"` first. If an instruction
   exists, quote its first line in the question text and make option 1 "Use the saved brand
   safety instruction (Recommended)". Never call `set_brand_instruction` from this flow.
-- Name the brand red lines and saved `competitor` records in V3's and V4's question text, so the
+- Name the brand red lines (**Atlas tools**, Calibration kinds) and saved `competitor` records in V3's and V4's question text, so the
   user sees they already apply and only adds to them.
 - Confirm the batch once with `AskUserQuestion` ("Save this vetting setup for {brand}? Every
   teammate's vetting will use it."), then write the records. A `key-exists` follows the

@@ -168,7 +168,7 @@ components "Can't check" and say so; never infer the opening from a cover.
 ## Hook score (out of 100)
 
 **Verdict bands.** 70 and up: **run**. 50 to 69: **cut first** (it works only as a cut of its
-strongest segment). Under 50: **leave**. One override: a brand red line hit, or a competitor in
+strongest segment). Under 50: **leave**. One override: a hit on a brand red line (**Atlas tools**, Calibration kinds), or a competitor in
 frame on a post that isn't brand-led (**Candidate pool**, **Competitors on screen**), makes it
 **leave** at any score, with the reason. A brand-led post keeps its band. The page's method shows
 these bands as they are here.

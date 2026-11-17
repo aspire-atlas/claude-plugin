@@ -472,7 +472,7 @@ above (`review:`, `vetting:`, `applicant-review:`). It is what every flow means 
 lines" when it reads, names, counts, or applies them. Only content review, creator vetting, and the
 applicant review also read the `red_line` records under their own prefix, each where its own
 section says. A new flow-owned prefix is added to this list, and every flow that reads brand red
-lines leaves it out without its own change.
+lines leaves it out without its own change. <!-- red-line-check: defines the term -->
 
 **Keys starting `creator:` are the team's call on one creator** (`creator:ig-{handle}`,
 `creator:tt-{handle}`), saved from creator vetting feedback (**Creator vetting**, **Creator

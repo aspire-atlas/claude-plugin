@@ -56,7 +56,7 @@ the category read of paid partners belongs to vetting.
    (`search_creators`, `search_creator_marketplace`, `lookup_creators`, web research) are
    yours to run in both modes: the saved cadence record is the standing approval.
 6. **Competitors and red lines are hard filters.** Never shortlist a handle recorded as a
-   `competitor`, and flag any candidate whose recent content matches a brand red line.
+   `competitor`, and flag any candidate whose recent content matches a brand red line (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-tools.md`, Calibration kinds).
 
 **Process**
 

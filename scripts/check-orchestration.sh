@@ -9,14 +9,6 @@
 #   - every shortcut in the contract is named in SKILL.md's Arguments table
 #   - the result packet and launch block examples parse as JSON and carry every field
 #   - every agent carries the checkpoint paragraph (section 11) exactly once, verbatim
-#   - every list of keys a flow drops from brand memory (a paragraph, list item, or table row that
-#     drops or ignores `orchestrator:` keys) drops `lastrun:` keys too: they are saved setup answers
-#     (section 2, Saved answers), kind guideline, and would otherwise read as brand guidelines
-#   - every block that names the `red_line` kind, or reads calibrations and names red lines in prose,
-#     says "brand red line" (atlas-tools.md, Calibration kinds) or drops `applicant-review:` keys in a
-#     negated list of keys, so one campaign's screening red lines never read as brand-wide; a block
-#     that writes or defines red-line records opts out with `<!-- red-line-check: <reason> -->`. The
-#     matcher is tested first against scripts/fixtures/red-line/
 # What an agent actually returns at run time is not checked here; this keeps the instructions in step.
 #
 #   scripts/check-orchestration.sh
@@ -126,91 +118,5 @@ for tag, keys in want.items():
 sys.exit(bad)
 PY
 
-# Two checks over every agent and skill file, split into blocks once (a block is a paragraph, a list
-# item, or a table row).
-# 1. A drop list that leaves out `lastrun:` hands a flow's saved setup answers to the agent as brand
-#    guidelines, and one that leaves out `applicant-review:` hands it one campaign's screening red
-#    lines and criteria as brand-wide rules. Every drop list names `orchestrator:`, so that is the
-#    anchor.
-# 2. A block that names the `red_line` kind, or that reads calibrations and names red lines in prose,
-#    must say "brand red line" (atlas-tools.md, Calibration kinds) or drop `applicant-review:` keys
-#    in a negated list of keys. A block that writes or defines red-line records rather than reading
-#    the brand's opts out with `<!-- red-line-check: <reason> -->` on the block itself.
-# The red-line matcher runs on scripts/fixtures/red-line/ first: every block in pass.md must pass and
-# every block in a fail-*.md file must fail, so a change to it shows what it breaks.
-python3 -I - <<'PY' || fail=1
-import glob, re, sys
-
-BLOCK_START = re.compile(r"^ *([0-9]+[a-z]?\.|-|\|) ")
-KEY = r"`[a-z][a-z-]*:[^`]*`"
-ITEM = KEY + r"(?:\s+keys?)?(?:\s+\([^()]*\))?"
-SEP = r"(?:\s*,\s*(?:(?:or|nor|and)\s+)?|\s+(?:or|nor|and)\s+)"
-# A negation that heads a list of keys; a negated verb ("never drop") is not a drop.
-NEG = (r"(?<!never )(?<!not )(?<!n't )\b(?:never|not|nor|except|excluding|without|drop|dropping|"
-       r"ignore|ignoring|skip|skipping|leave out|leaving out|other than)\b")
-# Between the negation and the list: articles and nouns naming what is dropped ("a flow-owned key"),
-# then an optional "e.g." or "for example" that introduces the list.
-LEAD = (r"(?:\s+(?:a|an|any|the|every|other|keys?|starting|flow-owned|flow's|flows'|prefixes?))*"
-        r"(?:,?\s+(?:e\.g\.,?|for example,?|such as|like))?")
-DROP_LIST = re.compile(NEG + LEAD + r"\s+((?:" + ITEM + SEP + r")*" + ITEM + ")")
-DROPPED_AFTER = re.compile(r"`applicant-review:`(?:\s+keys?)?\s+(?:(?:were|are)\s+dropped|(?:don't|do not|never)\s+count)")
-READS = re.compile(r"search_calibrations|get_brand_context")
-PROSE = re.compile(r"\bred lines?\b")
-OPT_OUT = "<!-- red-line-check:"
-
-def blocks(path):
-    blk, start = [], 0
-    for i, line in enumerate(open(path).read().split("\n"), 1):
-        if not line.strip() or BLOCK_START.match(line):
-            if blk:
-                yield start, " ".join(blk)
-            blk = []
-            if not line.strip():
-                continue
-        if not blk:
-            start = i
-        blk.append(line)
-    if blk:
-        yield start, " ".join(blk)
-
-def drops_applicant_review(b):
-    if DROPPED_AFTER.search(b):
-        return True
-    return any("`applicant-review:" in m.group(1) for m in DROP_LIST.finditer(b))
-
-def red_line_ok(text):
-    b = text.lower()
-    names_kind = "`red_line`" in b
-    prose_read = bool(PROSE.search(b.replace("brand red line", ""))) and bool(READS.search(b))
-    if not (names_kind or prose_read):
-        return True
-    return "brand red line" in b or OPT_OUT in b or drops_applicant_review(b)
-
-bad = 0
-for f in sorted(glob.glob("scripts/fixtures/red-line/*.md")):
-    want = not f.split("/")[-1].startswith("fail-")
-    for start, b in blocks(f):
-        if b.startswith("#"):
-            continue
-        if red_line_ok(b) != want:
-            print(f"FAIL {f}:{start}: the red-line matcher gives {'fail' if want else 'pass'}, the fixture expects {'pass' if want else 'fail'}")
-            bad = 1
-
-files = sorted(glob.glob("plugins/*/agents/*.md")) + sorted(glob.glob("plugins/**/skills/**/*.md", recursive=True))
-required = [("lastrun", "orchestration.md, section 2, Saved answers"),
-            ("applicant-review", "atlas-tools.md, Calibration kinds")]
-for f in files:
-    for start, b in blocks(f):
-        if "`orchestrator:" in b and re.search(r"[Dd]rop|[Ii]gnore|[Ss]kipping|[Ll]eave out", b):
-            for key, why in required:
-                if f"`{key}:" not in b:
-                    print(f"FAIL {f}:{start}: drops `orchestrator:` keys but not `{key}:` keys ({why})")
-                    bad = 1
-        if not red_line_ok(b):
-            print(f"FAIL {f}:{start}: names red lines but neither says brand red line nor drops `applicant-review:` keys (atlas-tools.md, Calibration kinds)")
-            bad = 1
-sys.exit(bad)
-PY
-
-[ "$fail" -eq 0 ] && echo "OK   every agent carries the orchestration contract and has a permission level; routes and shortcuts resolve; every drop list drops lastrun: and applicant-review: keys, and every red-line reader reads brand red lines only"
+[ "$fail" -eq 0 ] && echo "OK   every agent carries the orchestration contract and has a permission level; routes and shortcuts resolve"
 exit "$fail"

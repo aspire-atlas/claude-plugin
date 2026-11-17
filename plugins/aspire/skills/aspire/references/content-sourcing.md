@@ -154,7 +154,7 @@ Never share it with creators."
 Read with the agent's own calls, every pass:
 
 - **Setup**: `program:{slug}-program`, `-terms`, `-catalog`, `-outreach`, `-routing`;
-  `brand:summary`, `brand:business-context`, `competitor`, brand red lines, `theme:brand`,
+  `brand:summary`, `brand:business-context`, `competitor`, brand red lines (**Atlas tools**, Calibration kinds), `theme:brand`,
   `fees:rate-card` (only for a USD reference on the team data), and `creator:*` notes. Drop every other flow's keys.
 - **Working state** on the prefix `program-{profile}-{slug}`, newest per identity: `roster`,
   `terms`, `deliverable`, `asset`, `rights`, `draft`, `reply`, and the `page` findings with keys

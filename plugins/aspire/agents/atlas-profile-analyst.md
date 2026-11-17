@@ -66,7 +66,7 @@ findings and pushes only, saying in the summary that nothing was saved.
    evidence post, and a numeric target from the account's own medians (for example 1.5x median Reel
    views). Lead with the strongest pattern; give the weakest at most a test slot. Respect the cadence
    the account already sustains. Describe the idea, never write captions, scripts, or hooks when a
-   brand red line blocks AI-written copy. Pushes that need creators or a budget belong in the creator
+   brand red line (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-tools.md`, Calibration kinds) blocks AI-written copy. Pushes that need creators or a budget belong in the creator
    brief: say so in one line and offer it.
 7. Mode `handle` only: **compare it against its own peers, never against the brand.** Build the peer
    set and compare per **Peer set** in

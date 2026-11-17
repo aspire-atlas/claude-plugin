@@ -93,7 +93,7 @@ records never stop the run.
 2. Read the time from the shell clock (`date -u +%FT%TZ`), never from the prompt. That value
    is `vettedAt` on every finding; its date part feeds the `runKey`.
 3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): every `vetting:*` record including lessons, every `creator:*`
-   record, `red_line`, `competitor`, `partner`, `brand:summary`, `brand:business-context`,
+   record, brand red lines (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-tools.md`, Calibration kinds), `competitor`, `partner`, `brand:summary`, `brand:business-context`,
    `user:primary-contact`, `fees:rate-card`, `theme:brand`, and, for a campaign run,
    `campaign:{slug}-brief` and `-criteria` (and `-lane-{lane}`, `-cadence`, `-cas` for the match
    score's weights and `-terms` for its target rate, for a lane run).

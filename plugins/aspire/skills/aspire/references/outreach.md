@@ -176,7 +176,7 @@ Skip a creator, and list them under "Needs the main thread", when:
 
 - a `creator:*` calibration for them has stance `reject` ("Saved team call: reject");
 - their handle is a saved `competitor`;
-- a brand red line blocks AI-written outreach: give three talking points instead of a draft, as
+- a brand red line (**Atlas tools**, Calibration kinds) blocks AI-written outreach: give three talking points instead of a draft, as
   **Creator card actions** in SKILL.md does;
 - `yourCall` is open on their row;
 - they have no channel the program uses that has a route (**Channels**).

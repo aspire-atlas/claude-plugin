@@ -69,8 +69,7 @@ run rules. Follow it exactly.
 3. Pull data per the **Data pull** section of the reference: yesterday's posts, the 28-day
    baseline aggregation, current follower count, the last daily readout's insights (`runKey`
    prefix `readout-daily-{profile}`), yesterday's content reviews (`content-review-{profile}`,
-   step 6b of the data pull), and one semantic red-line scan per `red_line`
-   (skipping `review:` and `applicant-review:` keys, per the data pull).
+   step 6b of the data pull), and one semantic red-line scan per brand red line (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-tools.md`, Calibration kinds).
 3b. **Launch pulse.** Keep every `campaign:*-pulse` record from the calibration read whose
    window covers the target date, plus the campaign the caller passed. For each, run the four
    pulse reads in **Daily launch pulse** in the reference. None open: skip.
