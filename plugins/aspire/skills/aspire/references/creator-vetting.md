@@ -203,7 +203,7 @@ with the same Team call count as one row; with different Team calls, they are du
   with the unreadable rows as "duplicate rows: decide in the Sheet", naming the rows, until one of
   these no longer holds.
 
-Every list entry and `sheet_calls` entry from the Sheet carries its row's applicant id. Decided
+Every list entry from the Sheet carries its row's applicant id, so an F1 answer on it records it. Decided
 rows go through **Check what Atlas holds** with the list, so each Sheet call has its account id.
 They are never fetched and never counted in R3.
 
@@ -779,9 +779,9 @@ comes from is on the run summary), `listName`, `listSource` (`csv`, `pasted`,
 `feedback` finding adds `userVerdict` (`approve`, `maybe`, or `reject`), `agentVerdict`, and the
 user's words verbatim; one for a creator whose list came from a review Sheet also adds
 the row's `applicantId`. One that saves a Sheet call as it stands in the
-Sheet also adds `sheetCall: true`; a Sheet call the user changed in F1 option 2 is saved without
-it, as an F1 answer. One saved from a Sheet call takes the Sheet's Recommendation as `agentVerdict`
-when the creator was not vetted in this run, and its Note as the user's words. Supply an
+Sheet also adds `sheetCall: true`, and takes the Sheet's Recommendation as `agentVerdict` when the
+creator was not vetted in this run and the row's Note as the user's words; a Sheet call the user
+changed in F1 option 2 is saved without them, as an F1 answer with the user's own words. Supply an
 `idempotencyKey` per finding
 (`vet-{list-slug}-{entityId}-{findingType}`, and for a `feedback` finding
 `vet-{list-slug}-{entityId}-feedback-{vettedAt}`, so a call changed back to an earlier one in a
