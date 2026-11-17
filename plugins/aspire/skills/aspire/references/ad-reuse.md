@@ -40,7 +40,7 @@ both are passed by default. Detail lives in this file. For one post, use
 2. Launch `atlas-ad-reuse` with the tool prefix, `profile_id`, `profile_slug`,
    the linked handles and networks, `reuse_scope`, the window, any placements named,
    `recipient`, a digest of the brand's calibrations (competitors, red lines, partners, and the
-   `ad-reuse:account-map` record when saved), and whether the user approved the write. It reads
+   `adreuse:account-map` record when saved), and whether the user approved the write. It reads
    only what Atlas holds, and returns the found and briefed paths as two lists.
    When its result packet carries an `approve-account-map` proposal (it returns one only when the
    user chose Save in step 1; never ask it after Page only), ask once with
@@ -80,7 +80,7 @@ the Meta Ads connector, so it also follows **Meta Ads**.
     pages, team or sponsorship accounts (a sports team, league, event or venue account posting
     the brand as its sponsor), and accounts posting another brand's sponsored content. Keep only creators unless the
     person asked otherwise, and name how many of each were set aside. When an
-    `ad-reuse:account-map` record is saved (**Account map record**), follow its labels and sort
+    `adreuse:account-map` record is saved (**Account map record**), follow its labels and sort
     only the authors it doesn't list.
   - **Competitors on screen.** Judge a post that also shows a `competitor` by which brand is the
     subject, never by whether one appears: count the brand's products against all products the
@@ -496,7 +496,7 @@ result packet's `proposals` (level `write`, gate `approve-account-map`).
 | Field | Value |
 | ----- | ----- |
 | `kind` | `guideline` |
-| `key` | `ad-reuse:account-map` |
+| `key` | `adreuse:account-map` |
 | `statement` | "Who counts as a creator for {brand}'s ad reuse: {n} accounts labelled." (under 280 characters) |
 | `detail` | `{concern: "preference", appliesTo: ["ad-reuse"], accounts: [{handle, platform: instagram\|tiktok, label, evidence}], includeNonCreators: false, sourceRunKey}` |
 | `provenance` | `interview`: the person confirmed it |
@@ -509,7 +509,7 @@ An interactive run's reader, scope, and save choice go on `lastrun:ad-reuse`, ap
 account map (**Orchestration contract**, **2**, Saved answers).
 
 **Reading it back.** The launch digest carries it when saved; without a digest, the agent's own
-`search_calibrations` read keeps the `ad-reuse:account-map` key. Follow its labels as saved and
+`search_calibrations` read keeps the `adreuse:account-map` key. Follow its labels as saved and
 sort only authors it doesn't list. When those new authors exist, propose only them, as an update
 to the saved record; the main thread then writes the merged map with `supersede_calibration` and
 the record's `ifVersion`, never a second `append_calibration`. With nothing new, propose nothing.
