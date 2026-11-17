@@ -63,6 +63,16 @@ BANNED = [
     (re.compile(EDGE % r"(?:(?:top|our|first|creator|the|your|weekly|daily|today's|this\s+week's)\s+(?:picks|reads)"
                 r"|pulses?|the\s+run(?![-\s]+(?:up|rate)\b)|reach\s+slots?|practitioners?)", re.I), "a report label"),
 ]
+# A post by someone other than the brand has a "paid label" or "no paid label" (post-kinds.md).
+# Only the word said of posts fails, so "organic cotton" beside a handle stays a plain word.
+PAID_CODES = {"O1", "O2", "O3"}
+HANDLE = re.compile(r"(?<!\w)@[\w.]+")
+VERSUS = r"(?:vs\.?|versus|and|or|against|to|from)"
+UNLABELLED = re.compile(EDGE % (
+    r"(?:organically|unpaid|paid\s+%s\s+organic"
+    r"|organic(?=\s+%s\s+paid(?![A-Za-z0-9])"
+    r"|\s+(?:posts?|mentions?|content|buzz|reach|views|engagement|conversations?|coverage|videos?|reels?|creators?|share|traction)(?![A-Za-z0-9])"
+    r"|\s*(?:[.,;:)!?]|$)))" % (VERSUS, VERSUS)), re.I)
 NOTHING = re.compile(r"\b(?:nothing|no decisions?) needs? (?:your )?approval\b", re.I)
 # Required metrics on every cited post, by question code. Kept equal to the required-metrics table in
 # SKILL.md, section 8, by scripts/check-artifact-standard.sh.
@@ -172,6 +182,13 @@ def inside(node, name):
         node = node.parent
     return False
 
+def ancestors(node):
+    found = []
+    while node.parent is not None:
+        node = node.parent
+        found.append(node)
+    return found
+
 def platforms(region):
     found = {}
     for node in walk(region):
@@ -278,6 +295,43 @@ def r6(nodes, regions):
         problems.append("%d decision(s) sit outside the decisions section" % len(stray))
     return problems
 
+def own(node):
+    return "data-own" in node.attrs
+
+def rows(node, skip):
+    # The words a reader sees, one block per line; a table row stays one line.
+    out, stack = [], [node]
+    while stack:
+        item = stack.pop()
+        if isinstance(item, str):
+            out.append(item)
+        elif item.tag not in SKIP and not skip(item):
+            pad = " " if item.tag in INLINE or item.tag in ("td", "th") else "\n"
+            stack.append(pad)
+            stack.extend(reversed(item.kids))
+            stack.append(pad)
+    return [line for line in (re.sub(r"[^\S\n]+", " ", l).strip() for l in "".join(out).split("\n")) if line]
+
+def paid_label(nodes, regions):
+    scope = (regions.get("scope") or [None])[0]
+    code = ((scope.attrs.get("data-question") or "") if scope is not None else "").strip().upper()
+    mentions = [n for n in nodes if "data-mention" in n.attrs]
+    if code not in PAID_CODES and not mentions:
+        return []
+    skip = lambda n: exempt(n) or own(n)
+    hits = []
+    for line in rows(nodes[0], skip):
+        for sentence in re.split(r"(?<=[.!?;])\s+", line):
+            handle = HANDLE.search(sentence)
+            if handle:
+                hits += [(m.group(0), "beside %s" % handle.group(0)) for m in UNLABELLED.finditer(sentence)]
+    for node in mentions:
+        if not any(skip(n) for n in [node] + ancestors(node)):
+            hits += [(m.group(0), "on another account's post") for line in rows(node, skip) for m in UNLABELLED.finditer(line)]
+    seen = sorted({(word.lower(), where) for word, where in hits})[:5]
+    return ["says \"%s\" %s: say \"paid label\" or \"no paid label\", or mark the brand's own posts or records with data-own"
+            % hit for hit in seen]
+
 def r11(nodes, regions):
     kept = list(walk(nodes[0], keep=lambda n: n.tag not in SKIP and not exempt(n)))
     shown = " ".join([text(nodes[0], gap=" ", skip=exempt)] +
@@ -291,7 +345,7 @@ def r11(nodes, regions):
     for pattern, kind in BANNED:
         for hit in sorted(set(pattern.findall(shown)))[:5]:
             problems.append("names %s: \"%s\"" % (kind, hit))
-    return problems
+    return problems + paid_label(nodes, regions)
 
 def post_label(post, index):
     link = next((n.attrs.get("href") for n in walk(post) if n.tag == "a" and n.attrs.get("href")), "")
