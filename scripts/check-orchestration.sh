@@ -12,6 +12,11 @@
 #   - every list of keys a flow drops from brand memory (a paragraph, list item, or table row that
 #     drops or ignores `orchestrator:` keys) drops `lastrun:` keys too: they are saved setup answers
 #     (section 2, Saved answers), kind guideline, and would otherwise read as brand guidelines
+#   - every block that names the `red_line` kind, or reads calibrations and names red lines in prose,
+#     says "brand red line" (atlas-tools.md, Calibration kinds) or drops `applicant-review:` keys in a
+#     negated list of keys, so one campaign's screening red lines never read as brand-wide; a block
+#     that writes or defines red-line records opts out with `<!-- red-line-check: <reason> -->`. The
+#     matcher is tested first against scripts/fixtures/red-line/
 # What an agent actually returns at run time is not checked here; this keeps the instructions in step.
 #
 #   scripts/check-orchestration.sh
@@ -143,7 +148,11 @@ SEP = r"(?:\s*,\s*(?:(?:or|nor|and)\s+)?|\s+(?:or|nor|and)\s+)"
 # A negation that heads a list of keys; a negated verb ("never drop") is not a drop.
 NEG = (r"(?<!never )(?<!not )(?<!n't )\b(?:never|not|nor|except|excluding|without|drop|dropping|"
        r"ignore|ignoring|skip|skipping|leave out|leaving out|other than)\b")
-DROP_LIST = re.compile(NEG + r"(?:\s+(?:a|an|any|the|every|keys?|starting))*\s+((?:" + ITEM + SEP + r")*" + ITEM + ")")
+# Between the negation and the list: articles and nouns naming what is dropped ("a flow-owned key"),
+# then an optional "e.g." or "for example" that introduces the list.
+LEAD = (r"(?:\s+(?:a|an|any|the|every|other|keys?|starting|flow-owned|flow's|flows'|prefixes?))*"
+        r"(?:,?\s+(?:e\.g\.,?|for example,?|such as|like))?")
+DROP_LIST = re.compile(NEG + LEAD + r"\s+((?:" + ITEM + SEP + r")*" + ITEM + ")")
 DROPPED_AFTER = re.compile(r"`applicant-review:`(?:\s+keys?)?\s+(?:(?:were|are)\s+dropped|(?:don't|do not|never)\s+count)")
 READS = re.compile(r"search_calibrations|get_brand_context")
 PROSE = re.compile(r"\bred lines?\b")
