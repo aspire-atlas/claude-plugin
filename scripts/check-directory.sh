@@ -20,10 +20,10 @@
 #     and agent event it hooks, and the tools it answers itself
 #   - every skill's description is at most 1,024 characters, the skill spec's limit. The directory
 #     has not flagged this, but a reviewer or a later scan can, so it is held here too
-#   - a plugin without a mod ships only the file types the directory accepts from an organization that is
+#   - a submitted plugin ships only the file types the directory accepts from an organization that is
 #     not Verified (Markdown, text, JSON, YAML, PNG, JPEG, GIF, WebP, ICO, and its LICENSE), none starting
-#     with #!: the directory refused 5.3.0 for its .svg marks, which now sit in .svg.md files. A plugin
-#     with a mod (hooks/) is held back from main and not submitted, so it is not held to this
+#     with #!: the directory refused 5.3.0 for its .svg marks, which now sit in .svg.md files. Only the
+#     plugins in NOT_SUBMITTED (aspire-mod, beta only and held back from main) are not held to this
 # plugin.json carrying no version is check-channel.sh's rule, kept on purpose; it is not checked here.
 #
 #   scripts/check-directory.sh
@@ -34,6 +34,7 @@ cd "$(dirname "$0")/.."
 MAX_BYTES=262144
 MAX_DESC=1024
 KNOWN_READ=216907
+NOT_SUBMITTED="aspire-mod"
 fail=0
 err() { echo "FAIL $*"; fail=1; }
 
@@ -51,15 +52,18 @@ for p in $(plugin_names); do
   done < <(find "$src" -type f ! -name '*.png' ! -name '*.jpg' ! -name '*.jpeg' ! -name '*.gif' ! -name '*.webp' \
     ! -name '*.ico' ! -name '*.woff' ! -name '*.woff2' ! -name '*.ttf' ! -name '*.otf' | sort)
 
-  # File types the directory accepts from an organization that is not Verified.
-  if [ ! -d "$src/hooks" ]; then
+  # File types the directory accepts from an organization that is not Verified (tracked files only).
+  if [[ " $NOT_SUBMITTED " != *" $p "* ]]; then
     while IFS= read -r f; do
+      shopt -s nocasematch
       case "$f" in
-        */LICENSE|*.md|*.txt|*.json|*.yaml|*.yml|*.png|*.jpg|*.jpeg|*.gif|*.webp|*.ico) ;;
+        */LICENSE|*.md|*.txt|*.json|*.yaml|*.yml)
+          if [ "$(head -c2 "$f")" = '#!' ]; then err "$f starts with #!, which the directory refuses from an organization that is not Verified"; fi ;;
+        *.png|*.jpg|*.jpeg|*.gif|*.webp|*.ico) ;;
         *) err "$f: the directory refuses this file type from an organization that is not Verified; wrap it in Markdown or move it out of $src" ;;
       esac
-      [ "$(head -c2 "$f")" = '#!' ] && err "$f starts with #!, which the directory refuses from an organization that is not Verified"
-    done < <(find "$src" -type f | sort)
+      shopt -u nocasematch
+    done < <(git ls-files "$src")
   fi
 
   # h and Fragment are JSX's own names in every .tsx or .jsx file, tests included.
