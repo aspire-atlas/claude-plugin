@@ -6,9 +6,50 @@ and overdue, recording invoices and payments from pasted text or a CSV export, w
 kept, the budget figures, the finance export, the questions the main thread asks, the packet,
 the records written, and the ledger page.
 
-Read `program.md` first. Its state model (the `ledger` row, **Currencies**, **Ledger lines
+Read **Influencer program** first. Its state model (the `ledger` row, **Currencies**, **Ledger lines
 hand-off**, **Who owns a deal**), **7** (pages) and **What program flows never do** apply here
 unchanged.
+
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Program ledger (what we owe creators, invoices, payments, and budget)](#program-ledger-what-we-owe-creators-invoices-payments-and-budget)
+- [What the agent does](#what-the-agent-does)
+- [Modes](#modes)
+- [Inputs](#inputs)
+- [Building the lines](#building-the-lines)
+- [Line identity](#line-identity)
+- [Statuses](#statuses)
+- [Recording invoices and payments](#recording-invoices-and-payments)
+- [Budget](#budget)
+- [The finance export](#the-finance-export)
+- [The questions (main thread)](#the-questions-main-thread)
+- [The packet](#the-packet)
+- [Records written](#records-written)
+- [The page](#the-page)
+- [Sample mode](#sample-mode)
+- [What the ledger never does](#what-the-ledger-never-does)
+
+## Program ledger (what we owe creators, invoices, payments, and budget)
+
+Trigger: "update payments", "what do we owe creators", "what's been paid", "where are we against
+budget", "how much budget is left", "which invoices are overdue", "these invoices came in",
+"mark @handle's fee paid", "export the ledger for finance"; an attached payments or invoices
+export; a `ledger-lines` block from the affiliate manager or content sourcing; or the **Program
+manager** dispatch's "Update payments". Requires a saved program (**Program setup**). The ledger
+records; it never pays. Interactive only: never schedule it; without `AskUserQuestion`, say in
+one line that the ledger needs a person to confirm it, and stop.
+
+Before step 1, read this file (**The questions (main thread)** and
+**Running the ledger (main thread)**) and follow it. Launch `atlas-program-ledger` with `mode`
+`build`, `payments`, or `export` (`pass: propose`, then `pass: record` with the `ledger-packet`;
+inputs: tool prefix, `profile_id`, `profile_slug`, handles and networks, program slug,
+`connections`, `recipient`, `ledger-lines` blocks, the G answers). G1 and G4 confirm the writes,
+G2 the source, G3 the columns, G5 each your-call item; ask them exactly as worded there, at most
+four per call (**Guardrails**, Pickers). Never match an unmatched row yourself. Amounts are for
+Editors only; never keep, ask for, or repeat bank details, tax ids, or card numbers.
 
 ## What the agent does
 
@@ -137,7 +178,7 @@ to settle in the affiliate report".
 ### Lines passed in
 
 A `ledger-lines` block from the affiliate manager or content sourcing carries the same lines
-(`program.md`, **Ledger lines hand-off**). For each:
+(**Influencer program**, **Ledger lines hand-off**). For each:
 
 - When the ledger built the same `lineId` from the records with the same amount, currency, and
   due date, it is the same line. Use it once.
@@ -445,7 +486,7 @@ recommended answer's.
 
 ## Records written
 
-All on the program's working state (`program.md`, **Working state**): `append_insights`, role
+All on the program's working state (**Influencer program**, **Working state**): `append_insights`, role
 `account_review`, runKey `program-{profile}-{slug}-{YYYY-MM-DD}`, `schema` the network,
 `entityKind` `account`, `entityId` the creator's account id from the roster or the source
 record. Each finding carries `detail.recordType` `ledger`, `detail.program`,
@@ -463,7 +504,7 @@ detail, change what moved, and write it whole.
 | `void` | `action_item` `low` |
 | Any product line | `went_well` `low` |
 
-**Fields this agent adds to `ledger`** (beyond `program.md`'s list): `network`, `name`,
+**Fields this agent adds to `ledger`** (beyond **Influencer program**'s list): `network`, `name`,
 `basis`, `revises`, `revisedFrom`, `period` (`YYYY-MM`, for months and commission),
 `paymentTiming` and `timingDefault` (true when the default was used), `cash` (false for
 product), `invoicedAt`, `approvedAt`, `paymentRef`, `source` (`built`, `handoff`, `pasted`,
@@ -488,12 +529,12 @@ The agent never writes `roster`, `terms`, `fulfillment`, `deliverable`, `affilia
 
 One page per program, the ledger page, republished to the link in the `page` finding with key
 `ledger`. Title "{Brand} {Program}: Ledger". Load `artifact-design` and `artifact-capabilities`
-before building and `dataviz` for the chart; apply `theme:brand` per `theme.md`, **Applying the
-theme**; draw creators with the creator card (`creator-card.md`, page profile, no actions);
+before building and `dataviz` for the chart; apply `theme:brand` per **Theme**, **Applying the
+theme**; draw creators with the creator card (**Creator card**, page profile);
 render for `recipient`.
 
 **Who sees what.** Every figure on this page is money, so every amount lives in page data under
-`team`, readable by Editors only (`program.md`, **7**). The page itself holds statuses, dates,
+`team`, readable by Editors only (**Influencer program**, **7**). The page itself holds statuses, dates,
 references, and counts, never an amount, so a Contributor can chase an overdue invoice without
 seeing anyone's fee. Never put an amount in the page's own HTML. Declare on every publish (the
 whole object; restating replaces the set):
@@ -524,7 +565,7 @@ Sections, in order:
 
 1. **Header**: the program and term, the "Prepared for" chip, and "Amounts: team view" for
    viewers without the team data. The animated Aspire Atlas mark sits at the top right
-   ([`artifact-standard.md`](artifact-standard.md)).
+   (**Artifact standard**).
 2. **KPI row**: Budget, Committed, Paid, Remaining, in the budget's currency, from
    `team/budget`. Product cost and Forecast to term end sit under Committed and Remaining in
    small type. Other currencies get their own smaller row. Without the team data the row shows
@@ -551,7 +592,7 @@ Sections, in order:
    details were removed and not saved" when any were.
 10. **Footer**: "The ledger records; payments run in Aspire or your finance tool. Read from
     Atlas as of {timestamp}." Then the footnote with the team audience line
-    ([`artifact-standard.md`](artifact-standard.md)). Amounts stay in the Editor-only page data, so
+    (**Artifact standard**). Amounts stay in the Editor-only page data, so
     the footnote carries no amount.
 
 In `propose`, new lines and status changes show "Proposed". In `record`, the approved ones show
@@ -559,7 +600,7 @@ their new status.
 
 ## Sample mode
 
-The holiday's sample brand per `sample-artifact.md`, four creators: a paid creator whose
+The holiday's sample brand per **Sample artifacts** (the agent brief), four creators: a paid creator whose
 invoice is overdue, an ambassador with two months paid and one accrued, an affiliate with a
 commission line, and a gifting creator with product cost only. One unmatched payment, four
 months on the burn chart, a budget in USD. Render the team figures in the page itself, marked

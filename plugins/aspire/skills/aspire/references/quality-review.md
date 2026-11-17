@@ -15,6 +15,56 @@ It never changes the work it reviews, never writes to Atlas, and never starts di
 only writes are its own review page and, when `log` is set, one row in the organization's own review
 log (**10**). It records what it saw and what to fix; the person decides what to change.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Quality review (is this page or deck ready to send?)](#quality-review-is-this-page-or-deck-ready-to-send-1)
+- [1. Inputs](#1-inputs)
+- [2. Reading the target](#2-reading-the-target)
+- [3. Which checks apply](#3-which-checks-apply)
+- [4. The rubric](#4-the-rubric)
+- [5. Severity and verdict](#5-severity-and-verdict)
+- [6. Writing rules](#6-writing-rules)
+- [7. The page](#7-the-page)
+- [8. Output to the main thread](#8-output-to-the-main-thread)
+- [9. Grade mode (for other skills)](#9-grade-mode-for-other-skills)
+  - [9.1 The English read (before every page publishes)](#91-the-english-read-before-every-page-publishes)
+  - [9.2 The UX review (before every page publishes)](#92-the-ux-review-before-every-page-publishes)
+- [10. The review log](#10-the-review-log)
+- [11. The main thread: run, offer, and review log](#11-the-main-thread-run-offer-and-review-log)
+
+## Quality review (is this page or deck ready to send?)
+
+Trigger on `/aspire:aspire quality review`, on "review this deck", "audit this deck", "is this
+ready to send", or "check this page before I share it", on "Review it" in **The offer**, and on
+feedback about reviewed work (Run step 7). It checks one finished piece of work: a plugin page, or
+a pitch, proposal, brief, or report made elsewhere. It reads and reports: it never edits the work,
+never writes to Atlas, never starts discovery work, and needs no write confirmation. Interactive
+only: never schedule it or run it unattended. Another skill may launch it with `mode: grade`
+(`quality-review.md`, **9**), and every page's English read (**9.1**) and UX review (**9.2**) run
+in that mode, in scheduled runs too. Before anything, read this file (**1**, **8**,
+**10**, **11**) and follow **11**, asking every question exactly as worded there.
+
+### Run
+
+1. **The work**: the link or file given, else the "Review" question.
+2. **Who reads it, and against what**: one call ("For", "Brief", "Atlas").
+3. **Launch** `atlas-quality-review` (**Running agents**) with the inputs in **11.1**, `log` read
+   from `quality-review:log`.
+4. **Relay** the page link, verdict, failed checks, Critical findings, data access, and coverage.
+5. **Next**: "Review it again after the fixes?"; "Apply the fixes" relaunches the flow that built
+   the page with a "Review fixes" paragraph.
+6. **Adjustments**: with a saved log, a disputed or missed finding gets a confirmed "Log" row.
+7. **Feedback later**: match the saved log row and confirm as in step 6, else hand vetting and
+   content review feedback to those flows or offer a review.
+
+### Review log
+
+Off unless the organization names a Doc; one "Log" confirmation writes `quality-review:log`
+(**11.2**). Never suggest one.
+
 ## 1. Inputs
 
 | Input | What it is |
@@ -24,7 +74,7 @@ log (**10**). It records what it saw and what to fix; the person decides what to
 | `kind` | `plugin` when the target is a page this plugin published (the main thread knows from the flow that made it), else `external` |
 | `flow` | For `plugin`: the flow and agent that made it ("Creator brief", `atlas-creator-brief`) |
 | `brief` | Optional: what the work was asked to answer (an RFP, a brief, the user's request in their words). Turns on check **4.1** |
-| `recipient` | The lens of whoever acts on the work (`recipient-lens.md`) |
+| `recipient` | The lens of whoever acts on the work (**Recipient lens**) |
 | `audience` | Who will see the work, which sets **4.11** (item 5, platform disclosures, applies outside the team), the audience line checked in **4.12**, the scope of **R2** and **R9**, and the severity of **R11**: `team` (the brand's own team, leadership included), `client` (a brand or agency outside the team), `creator`, or `public`. Default `team` |
 | `page_check` | Optional, for `plugin`: the `page-check` block the agent returned with the page (`skills/page-standard/SKILL.md`, section 7). Used in **4.14** |
 | `evidence_dir` | Optional: a folder with the raw output of the run that made the work, for **R7** |
@@ -34,8 +84,9 @@ log (**10**). It records what it saw and what to fix; the person decides what to
 | `earlier_review` | The link, or a local file, of an earlier review of the same work, when this is a re-review. A link is republished in place |
 | `publish` | `artifact` (default): publish with the Artifact tool. `file:{path}`: write the same page as a full HTML document (doctype, head, body) to that path. `none`: build no page |
 | `log` | `file:{path}`, `docs:{Claude Docs link}`, or `none` (default): the organization's own review log (**10**) |
-| `checks` | Grade mode only: `reader-standard` (default) or `all` |
-| `run` | Always `interactive`. The review has no unattended mode |
+| `checks` | Grade mode only: `reader-standard` (default), `all`, `english` (the English read, **9.1**), or `ux` (the UX review, **9.2**) |
+| `reader`, `question` | Grade mode with `checks: english` or `ux` only: the page's primary reader in words, and its question code |
+| `run` | `interactive`. The review has no unattended mode; only the English read (**9.1**) and the UX review (**9.2**) also run `unattended` |
 
 ## 2. Reading the target
 
@@ -57,16 +108,16 @@ reported as "check whether these show on the slide", never as certain on-slide t
 Every check runs on every target unless this table marks it `n/a`. A check marked `n/a` is listed
 on the page as not applicable, with the reason, never silently skipped.
 
-| Target | 4.x n/a | R checks n/a (`reader-standard.md`) |
+| Target | 4.x n/a | R checks n/a (**Reader standard**) |
 | ------ | ------- | ------------ |
-| A proposal, pitch, or RFP response | none | R2 unless it cites social data; R12 |
+| A proposal, pitch, or RFP response | none | R2 unless it cites social data; R12; R13 unless it cites posts; R14 unless it cites accounts |
 | A plugin report or signal (readout, market signal, quarterly signal, profile, post analysis, ad reuse) | 4.6 Commercial, 4.8 People (unless it names a team) | none |
 | A plugin brief, shortlist, or vetting page | 4.8 People | none |
 | A plugin dashboard or program page (org dashboard, program dashboard, ledger, CAS campaign, orchestrator, order form) | 4.7 Proof | R3 when the page is a tracker with no single question; R4's three-insight cap |
 | A plugin working page (content review, outreach, negotiation, fulfillment, deliverable tracker, affiliate, roster health, content sourcing, content library, shops plan) | 4.7 Proof, 4.8 People | R3 when the page is a tracker with no single question; R4's three-insight cap |
 | Any other plugin page | 4.6 Commercial, 4.7 Proof, and 4.8 People, unless the page shows prices, case studies, or a team | none |
 | A plugin deck (PPA pitch) | none | none |
-| A decision audit page | 4.5 to 4.10 | R3 to R6, R10, R12 |
+| A decision audit page | 4.5 to 4.10 | R3 to R6, R10, R12, R13, R14 |
 | A quality review's own page | not reviewed | not reviewed |
 
 On any plugin page, **R2** is n/a when the page shows no social data, or when it covers one post,
@@ -193,7 +244,7 @@ nobody outside the publisher's company can reach that company's private tools. C
 2. **Other connectors.** Figures from a connector other than Atlas (Meta Ads, a store, a mailbox,
    Drive, Slack, a calendar) were read through the publisher's own connection. Name each one, say
    who can refresh or check those figures and who cannot, and confirm the source line names the
-   connector (`artifact-standard.md`, section 2). A figure from another connector presented as
+   connector (**Artifact standard**, section 2). A figure from another connector presented as
    Atlas's is a finding.
 3. **Outside tools.** Any figure, chart, screenshot, or link that came from a tool outside the
    bundled connectors and the reader's own (a company BI or reporting tool, a private data store, a
@@ -225,7 +276,7 @@ nobody outside the publisher's company can reach that company's private tools. C
 ### 4.12 Artifact standard
 
 For pages this plugin published, and external work that carries the mark, run the checklist in
-`artifact-standard.md`, section 4 (**Before publishing**), against the variant section 3 sets for
+**Artifact standard**, section 4 (**Before publishing**), against the variant section 3 sets for
 that kind of page (sample, review, no Atlas data, inline widget, deck, order form). A page that uses
 its variant correctly passes. The audience line must match `audience`: a page whose footer says
 "Internal use only" while `audience` is `client`, `creator`, or `public` is a Critical finding.
@@ -239,7 +290,7 @@ inconsistent naming or capitalization. Broken links are not judged here: they ar
 
 ### 4.14 Reader standard
 
-Run every R check in `reader-standard.md`, in ID order, by the rules there: **R7** against
+Run every R check in **Reader standard**, in ID order, by the rules there: **R7** against
 `evidence_dir` when it is given, **R10** on a 1280×800 first screen, each FAIL a finding at its
 default severity or higher, and one defect filed once under its most specific check with both IDs
 listed in **Failed checks**.
@@ -315,10 +366,10 @@ Title "{Work title} Review". One page, published per `publish`: with the Artifac
 as a full HTML file (`file:{path}`), or not at all (`none`). A re-review reads `earlier_review`
 first; when it is an artifact link and `publish` is `artifact`, publish with `url` set to it, so
 the team keeps one link. Load `artifact-design`, and `dataviz` for any chart. Apply the brand's
-saved theme when there is a profile (`theme.md`, **Applying the theme**), semantic colors excepted.
+saved theme when there is a profile (**Theme**, **Applying the theme**), semantic colors excepted.
 Sections, in order, with these exact headings where quoted:
 
-1. **Header:** the mark at the top right and the "Prepared for" chip per `artifact-standard.md`; the
+1. **Header:** the mark at the top right and the "Prepared for" chip per **Artifact standard**; the
    work's title and where it lives; the verdict stamp (Ready, Ready with fixes, Not ready) and its
    one-sentence reason; the coverage line (**4.0**).
 2. **"Before you send"**: each Critical finding in one line, the top three fixes, and the share
@@ -338,7 +389,7 @@ Sections, in order, with these exact headings where quoted:
    sending** list (facts to source or confirm (**4.3**), the Atlas re-check results when it ran,
    timecodes not verified (**4.15**), and who must share what with the reader (**4.11**, item 4));
    and, on a re-review, **earlier findings** (each fixed, still open, or no longer applies).
-7. **Footer:** the coverage line again, then the source line per `artifact-standard.md`, section
+7. **Footer:** the coverage line again, then the source line per **Artifact standard**, section
    3, **Review pages**, with the rubric version and the team audience line (a review is for the
    team, never the work's reader).
 
@@ -395,11 +446,13 @@ Then the agent's audit trail block, as every agent ends.
 
 A flow in `/aspire:aspire` can launch the agent with `mode: grade` to grade a draft it made, inside
 an interactive session, so the draft is not graded by the same run that wrote it. The launch carries
-the `launch` block (`orchestration.md` **5**) like any other; grade mode returns no result packet.
+the `launch` block (**Orchestration contract** **5**) like any other; grade mode returns no result packet.
 
 - Inputs: `target` (required), `checks` (`reader-standard`, the default, or `all`), and optionally
   `evidence_dir`, `brief`, `recipient`, and `audience`.
 - It builds no page (`publish` is `none`) and writes no log row.
+- `checks: english` is the English read (**9.1**) and `checks: ux` the UX review (**9.2**), each with
+  its own inputs and output. Everything below in this list is for the other two.
 - `checks: reader-standard` returns all 12 R rows, each PASS, FAIL, or N/A; `all` adds 4.0 to 4.15.
 - The output is only this JSON block, then the audit trail. No summary lines.
 
@@ -417,6 +470,196 @@ the `launch` block (`orchestration.md` **5**) like any other; grade mode returns
   }
 }
 ```
+
+### 9.1 The English read (before every page publishes)
+
+A builder cannot see its own mistakes, so every page any flow builds is read once more by someone
+who did not build it, after the builder's self-check and before the page is published
+(`skills/page-standard/SKILL.md`, section 4, step 4b). The main thread launches it for every page,
+interactive or scheduled (**Running agents**, step 4). It reads the page the
+way an English teacher marks an essay: every word the reader sees, and nothing else.
+
+**Inputs, and nothing more.** `mode: grade`, `checks: english`, `target` (the path of the draft
+page file), `reader` (the page's primary reader, in words), `question` (its code, or `null`), and
+`run` (`interactive` or `unattended`). Never the brief, the person's ask, the builder's result
+packet, its page check, its findings, or its evidence: a reviewer who knows what the page meant to
+say reads what it meant, not what it says. When a launch carries any of those, ignore them. It
+calls no Atlas tool, reads no calibration, asks nothing, builds no page, and writes no log row.
+
+**Read only the visible text.** Extract it with the page check script's `--text` option
+(`skills/page-standard/page-check.md`), from a copy in a new temporary folder:
+
+```bash
+d=$(mktemp -d) && cp {target} "$d/page.html" && awk '/^<!-- page-check -->$/{f=1;next} /^<!-- \/page-check -->$/{f=0} f' "${CLAUDE_PLUGIN_ROOT}/skills/page-standard/page-check.md" | sed '1d;$d' > "$d/page_check.py" && python3 -I "$d/page_check.py" --text "$d/page.html"
+```
+
+Judge only what it prints. Never open the page file with the Read tool or read its markup, its
+comments, or its script. Without Python, read the file and judge only the text between its tags,
+leaving out `script` and `style`, and set `textFrom` to `html`.
+
+**What it checks, on every line.** The seven checks in **English rules**, **The rules**, which the
+main thread also holds its own chat messages to. Read that table before judging, cite each fix by
+its row number there, and add no check of your own. Text marked `[quoted: ...]` is someone else's
+words (a caption, a creator's name): never fix it. Handles, hashtags, links, and emails stay as
+written.
+
+**Levels.**
+
+- **Must**: the reader would misread the page or stop reading. A number that does not match its
+  label, a heading the reader cannot parse, a report label, an unexplained term in the headline, a
+  decision, or a next step, or an arrow or "vs" standing in for a claim. The builder applies every
+  Must before publishing.
+- **Should**: the meaning holds, but the line reads badly. A tense change, two ideas in one
+  sentence, a term explained later than its first use.
+- **Nice**: polish. A shorter word, a smoother order.
+
+**Every fix quotes and replaces.** `text` is the exact words as `--text` printed them, enough to
+find them once on the page. `replace` is the complete replacement, ready to paste: it keeps every
+number, name, and claim the original carried and adds none. When a fix needs a fact the page does
+not show (which of two numbers is right, what a term means for this brand), `replace` is `null` and
+`why` says what the builder must check; a Must stays a Must. Write each replacement for this reader,
+by the writing rules in **6**.
+
+**Output.** Only this JSON block, then the audit trail. No summary lines, no result packet.
+
+```json
+{
+  "english_read": {
+    "version": "1",
+    "target": "{the target as given}",
+    "reader": "{reader}",
+    "question": "{code or null}",
+    "textFrom": "script",
+    "counts": {"must": 2, "should": 0, "nice": 0},
+    "fixes": [
+      {"id": "EN1", "level": "Must", "check": 3, "where": "Insight 2",
+       "text": "Gift and routine framing lifts posts. Ran at 1.27×.",
+       "replace": "Posts that show the toy as a gift or as part of a daily routine got 1.27 times the views of the account's usual post.",
+       "why": "A stack of nouns and a bare multiplier: the reader cannot tell what was compared with what."},
+      {"id": "EN2", "level": "Must", "check": 6, "where": "Shortlist heading",
+       "text": "Top 5 creators to contact", "replace": null,
+       "why": "The table under it lists four creators. Check whether a fifth was dropped or the heading should say 4."}
+    ]
+  }
+}
+```
+
+**Examples.** Good: the monthly program report in the examples library, after its English read.
+The separate read found four Must fixes on the draft, and the page that published has none. Bad:
+"Gift and routine framing lifts posts" as a heading, with "ran at 1.27×" beside it. Neither line says
+what was measured, or against what.
+
+### 9.2 The UX review (before every page publishes)
+
+The English read checks the words. The UX review checks whether a reader can understand what is
+happening and act on it, in the right order, without help, on the screen they will open it on. It
+runs on every page any flow builds, after the English read in the build loop
+(`skills/page-standard/SKILL.md`, section 4, step 4c), on the same draft, and the main thread
+launches the two together (**Running agents**, step 4).
+
+**Inputs, and nothing more.** `mode: grade`, `checks: ux`, `target` (the path of the draft page
+file), `reader`, `question`, and `run`, as for the English read, and optionally `render`: a folder
+the caller already rendered the page into (CI and the plugin repository's page eval make one). Never the brief, the person's ask,
+the builder's result packet, its page check, or its findings; ignore them when a launch carries
+them. It calls no Atlas tool, asks nothing, builds no page, and writes no log row.
+
+**Render it.** Use the first of these the session has:
+
+| What the session has | How the page is rendered |
+| -------------------- | ------------------------ |
+| A `render` folder in the launch | Read it: the screenshots `{view}.png` (the whole page) and `{view}-first.png` (the first screen) for each view, and `render.json` |
+| A browser tool: Claude Code's built-in browser, Chrome in Cowork, or Claude in Chrome | Open the draft file in it and take the three views below yourself, a whole-page and a first-screen look at each |
+| Neither (claude.ai with no browser) | No render. Judge by source order and say so (`rendered: false`) |
+
+Look at every screenshot with the Read tool. `render.json` holds what a screenshot cannot show:
+each view's page height, sideways scroll, where the first task sits (`firstTask.top`, in pixels, and
+`screens`, in screen heights), controls under the tap size, which app controls and "Connect {app}"
+lines show, and what each button did when pressed (`changedPage`, what it `copied`, `navigated`,
+any `errors`, and `why` a control was not pressed). In a browser, find the same things by looking:
+scroll to the first task and note how far down it sits, and try to scroll sideways on the phone.
+
+**The three views.** A `render` folder holds these; a browser takes the same ones:
+
+1. **Desktop light**: 1280 by 800, light theme, apps as built. The first screen is what R10 reads.
+2. **Phone dark**: 390 wide, dark theme, apps as built.
+3. **No apps connected**: 390 wide, light theme, every control marked `data-app` hidden and every
+   `data-app-missing` line ("Connect Gmail to send these from here") shown (`blocks.md`, **Apps
+   never assumed**). A page with neither mark has assumed its apps when it shows an app button.
+
+Then run every button in the desktop view, folded steps included: open, edit, copy, create, save a
+draft, connect (a `render` folder has already pressed them). A button
+that changes nothing, copies text the reader did not see, or throws an error is a finding. With no
+render, read the page in source order and judge what that order would show, on a 390px phone,
+first.
+
+**What it checks.** One row per rule of the UX standard. Every fix names its row.
+
+| Row | Passes when | Fails on |
+| --- | ----------- | -------- |
+| Order | The reader's actions come first. A time-bound page opens with the headline, a one-line takeaway, and its dates, then one line per main finding, then the steps. Each step and decision carries a one-line "Why" that points to a finding. The full evidence comes after the plan | The first task more than two phone screens down (a `firstTask.top` over 1,700 on the phone); a step with no reason given |
+| Steps | Each step is one row: number, what, who ("You" for the reader), date, and its status. Only the first step not done is open, and a step can be marked done | A step that is a stack of attachments ("15 drafts, CSV, doc") with no count of what is done |
+| Numbering | Only the steps are numbered. Sections have names, and a cross-link names its target | Two "3"s on one screen; "see section 3" |
+| Colour | One meaning per colour: urgent, done, risk, error. Categories use hues never used for status, links use the text colour, and brand inputs are neutral | One colour meaning several things |
+| One list of people | One roster, with each person's status on their row. Other views link to it | The same creators listed twice, or with different details in two places |
+| Labels | No term means two things, every number carries its label, and sections and buttons use words the reader already says | A section named in Atlas's own words; a bare number in a row |
+| Show before copy | The reader sees the exact text before copying it, can edit a message first, and gets a notice saying what was copied | A Copy button whose text is not on screen, or that copies something other than what is shown |
+| Apps never assumed | A button only for an app marked connected; otherwise one quiet "Connect {app} to ..." line per step. App status sits in one line | An app button in the no-apps view; a "Connect" nudge repeated in several loud boxes |
+| Writes | A write button that cannot run is disabled with the reason beside it. A confirm states every value in one sentence, and a failed item is fixed in its row | A write with no confirm; a failure that leaves no way to fix it |
+| Repeated sends | Many messages use a list and an editor: the subject is its own field, the actions sit above the text, and each person gets a sent mark | Fifteen messages laid out one after another, each with its buttons at the bottom |
+| Buttons | One verb pattern ("Copy offer", "Copy terms"), one main button per step, at least 36px tall on desktop and 44px on a phone, in the body font | Eight wordings of Copy; `smallControls` listing a main action |
+| Mobile | Under 640px tables become stacked cards and wide grids become lists, long groups fold after the first, and nothing scrolls sideways | `sidewaysScroll` on the phone; a table column cut off |
+| Dark mode and access | No block keeps light colours in dark mode, every control shows a focus ring, text meets AA contrast, and a live region announces one line | A white tile on the dark page; a button with no visible focus |
+| Say it once | Nothing is said twice | Two buttons for the same action; a closing list that repeats the steps |
+| Where progress lives | The page says where ticks and edits are kept ("in this browser only") | Steps that can be ticked with no word on who else sees it |
+
+**Levels.**
+
+- **Must**: the reader cannot act, or would act wrongly. The first task more than two phone screens
+  down, a dead or misleading button, an app button in the no-apps view, a sideways scroll on the
+  phone, text that cannot be read in dark mode, a Copy that copies unseen text.
+- **Should**: the reader can act, but it is slower or less sure. Most rows' fails land here.
+- **Nice**: polish.
+
+**Every fix says what to change.** `problem` is what the reader meets, in the view named; `fix` is
+the change the builder makes, concrete enough to make without seeing the screenshot ("Move the
+Next steps section above Why this plan"; "Hide the Send from Gmail button unless Gmail is connected
+and add the line: Connect Gmail to send the offers from this page."). Write both for the builder,
+by the writing rules in **6**.
+
+**Output.** Only this JSON block, then the audit trail. No summary lines, no result packet.
+
+```json
+{
+  "ux_review": {
+    "version": "1",
+    "target": "{the target as given}",
+    "reader": "{reader}",
+    "question": "{code or null}",
+    "rendered": true,
+    "renderer": "browser",
+    "views": ["desktop-light", "phone-dark", "no-apps"],
+    "firstTask": {"phone": 3300, "desktop": 1450},
+    "counts": {"must": 2, "should": 1, "nice": 0},
+    "fixes": [
+      {"id": "UX1", "level": "Must", "row": "Order", "view": "phone-dark", "where": "Next steps",
+       "problem": "The first task sits 3,300px down on a phone, below four sections of findings.",
+       "fix": "Move Next steps above Why this plan, and keep one line per finding above it."},
+      {"id": "UX2", "level": "Must", "row": "Apps never assumed", "view": "no-apps", "where": "Step 2",
+       "problem": "The Send from Gmail button shows with Gmail not connected.",
+       "fix": "Mark the button data-app=\"gmail\" and add a data-app-missing=\"gmail\" line: Connect Gmail to send the offers from this page."}
+    ]
+  }
+}
+```
+
+`renderer` is `render-folder` (the caller's `render` input), `browser`, or `none`. `rendered: false` sets `views` to `[]` and
+`firstTask` to `null`, and the fixes come from source order alone. A view the renderer could not
+take is left out of `views`, with the reason in that fix list as a Must on the **Mobile** or
+**Dark mode and access** row.
+
+**Examples.** Good: the monthly program report in the examples library, after its UX review: the
+answer, then three takeaways with their copy text shown, then the steps, on one phone screen. Bad:
+the first task sits 3,300px down on a phone, found only when a person opened the published page.
 
 ## 10. The review log
 

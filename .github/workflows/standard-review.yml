@@ -1,0 +1,128 @@
+name: Standard review
+
+# A judgment review of a pull request's agent, skill and flow prose against docs/STANDARD.md: the
+# items no script can count. It posts one comment on the pull request and edits it on each push.
+# How it works and how to answer a finding: docs/STANDARD.md, "The judgment review".
+#
+# Advisory until the repository variable STANDARD_REVIEW_BLOCKING is "true"; then a Must finding,
+# or a review that could not run, fails this check. An event that changes nothing the reviewer
+# reads (another label, a title or body edit) reuses the last review of the same commit, so the
+# check keeps its result instead of being skipped, which GitHub would count as passing. The reviewer gets no tools, so text in a pull
+# request can change what the comment says but cannot run anything.
+on:
+  pull_request:
+    branches: [develop, main]
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled, edited]
+    paths:
+      - 'plugins/*/agents/**'
+      - 'plugins/*/skills/**'
+      - 'docs/STANDARD.md'
+
+# A review run cancels the earlier review of the same pull request. A reuse run gets a group of its
+# own, so another label added mid-review never cancels the review.
+concurrency:
+  group: >-
+    standard-review-${{ github.event.pull_request.number }}-${{
+    ((github.event.action == 'labeled' || github.event.action == 'unlabeled') &&
+     github.event.label.name != 'skip-standard-review' || github.event.action == 'edited')
+    && github.run_id || 'review' }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  standard-review:
+    # Draft pull requests wait until they are ready.
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      REPO: ${{ github.repository }}
+      PR: ${{ github.event.pull_request.number }}
+      BASE: ${{ github.event.pull_request.base.sha }}
+      HEAD: ${{ github.event.pull_request.head.sha }}
+      GH_TOKEN: ${{ github.token }}
+      STANDARD_REVIEW_BLOCKING: ${{ vars.STANDARD_REVIEW_BLOCKING || 'false' }}
+      STANDARD_REVIEW_MODEL: ${{ vars.STANDARD_REVIEW_MODEL || 'opus' }}
+      OUT: ${{ runner.temp }}/standard-review
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Write the pull request body to a file
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          mkdir -p "$OUT"
+          printf '%s\n' "$BODY" > "$OUT/body.md"
+
+      - name: Choose skip, reuse or review
+        id: mode
+        env:
+          SKIP: ${{ contains(github.event.pull_request.labels.*.name, 'skip-standard-review') }}
+          OTHER: >-
+            ${{ (github.event.action == 'labeled' || github.event.action == 'unlabeled') &&
+            github.event.label.name != 'skip-standard-review' || github.event.action == 'edited' }}
+        run: |
+          if [ "$SKIP" = true ]; then echo "mode=skip" >> "$GITHUB_OUTPUT"; exit 0; fi
+          if [ "$OTHER" = true ]; then
+            status=$(bash scripts/standard-review/review.sh last "$HEAD")
+            if [ "$status" != none ]; then
+              echo "This commit was already reviewed; keeping that result."
+              { echo "mode=reuse"; echo "status=$status"; } >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          fi
+          echo "mode=review" >> "$GITHUB_OUTPUT"
+
+      - name: Skipped by label
+        if: steps.mode.outputs.mode == 'skip'
+        run: |
+          bash scripts/standard-review/review.sh skipped "$OUT/body.md" > "$OUT/comment.md"
+          bash scripts/standard-review/review.sh post "$OUT/comment.md"
+
+      - uses: actions/setup-node@v4
+        if: steps.mode.outputs.mode == 'review'
+        with:
+          node-version: 22
+
+      - name: Install Claude Code CLI
+        if: steps.mode.outputs.mode == 'review'
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Review
+        id: review
+        if: steps.mode.outputs.mode == 'review'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          # A pull request from a fork gets no secrets and a read-only token. Advisory: say so and
+          # stop. Blocking: fail, since a review that did not run must not look passed; an owner
+          # adds the skip label with the reason.
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::notice::No ANTHROPIC_API_KEY for this run (a fork, or the secret is not set). The standard review did not run."
+            [ "$STANDARD_REVIEW_BLOCKING" = true ] && echo "status=1" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          status=0
+          bash scripts/standard-review/review.sh run "$BASE" "$HEAD" "$OUT/body.md" || status=$?
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          if [ -f "$OUT/comment.md" ]; then
+            echo "comment=true" >> "$GITHUB_OUTPUT"
+            cat "$OUT/comment.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit 0
+
+      - name: Post the review on the pull request
+        if: steps.review.outputs.comment == 'true'
+        run: bash scripts/standard-review/review.sh post "$OUT/comment.md"
+
+      - name: Fail on a Must finding (blocking mode only)
+        if: steps.review.outputs.status == '1' || steps.mode.outputs.status == '1'
+        run: |
+          echo "STANDARD_REVIEW_BLOCKING is true and the standard review found a Must finding or did not run. See the comment on this pull request."
+          exit 1

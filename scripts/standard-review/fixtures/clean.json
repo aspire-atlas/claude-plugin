@@ -1,0 +1,1 @@
+{ "summary": "The change rewords one step of the readout flow. There are no Must findings.", "items": [ { "id": "C1", "verdict": "pass" } ], "rules": [], "findings": [] }

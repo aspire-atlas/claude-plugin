@@ -9,7 +9,7 @@
 #   - the page blocks (skills/page-standard/blocks.md) have a snippet per block, take colors only
 #     from the tokens, keep the Starter Guide palette, and a page built from all of them passes the self-check
 #   - the standard's source sentence is written in that one file only, so the wording cannot drift
-#   - the references that define a published page link the standard
+#   - the references that define a published page point to the standard, by its section name
 #   - the standard's print block (section 6) holds the page footer and the print rules, the page
 #     blocks' style carries the same rules, and no page CSS in a skill turns on dark mode in print
 # What an agent actually publishes is not checked here; this keeps the instructions in step.
@@ -38,7 +38,7 @@ for p in $(plugin_names); do
   compgen -G "$src/agents/*.md" >/dev/null || continue
   if [ "$src" != "$P" ]; then
     # The block and the standard name these paths under the plugin's own root.
-    for f in skills/aspire/references/artifact-standard.md skills/page-standard/SKILL.md \
+    for f in skills/aspire/references/artifact-standard.md skills/page-standard/SKILL.md skills/page-standard/page-check.md \
       skills/aspire/references/reader-standard.md assets/aspire-animated.svg assets/aspire-animated-small.svg; do
       [ -e "$src/$f" ] || { err "$p: $src/$f is missing; link it to $P/$f"; continue; }
       { [ -L "$src/$f" ] && [ "$src/$f" -ef "$P/$f" ]; } || err "$p: $src/$f must be a symbolic link to $P/$f, not a copy"
@@ -61,11 +61,11 @@ grep -qF 'Not for public publishing.' "$STD" || err "the standard lost its audie
 
 # References that define a published page or deck, in the aspire plugin.
 for f in ad-reuse affiliate cas-campaign content-library content-review content-sourcing creator-brief creator-card \
-  creator-discovery creator-profile creator-vetting deliverable-tracker fulfillment market-signal negotiation org-dashboard \
+  creator-discovery creator-profile creator-vetting deliverable-tracker fulfillment market-signal negotiation \
   orchestrator outreach post-analysis ppa-pitch program program-dashboard program-ledger quality-review quarterly-signal \
   readout roster-manager shops first-run agents/decision-audit agents/sample-artifact; do
   [ -f "$R/$f.md" ] || { err "$R/$f.md is missing"; continue; }
-  grep -q 'artifact-standard' "$R/$f.md" || err "$f.md does not link artifact-standard.md"
+  grep -q '\*\*Artifact standard\*\*' "$R/$f.md" || err "$f.md does not point to the artifact standard (cite it as **Artifact standard**, which SKILL.md's Sections index resolves)"
 done
 
 # Print (section 6): the print block holds the footer and the print rules, the page blocks' style
@@ -109,6 +109,7 @@ done < <(grep -rnE 'prefers-color-scheme: ?dark|data-theme=.?dark|\.dark[ .{,]' 
 # The page standard: a shared skill no one can call as a command, which the agent block links, and
 # whose self-check script passes the good fixture and fails each bad one on the check it names.
 PS=$P/skills/page-standard/SKILL.md
+PC=$P/skills/page-standard/page-check.md
 FX=scripts/fixtures/page-standard
 if [ ! -f "$PS" ]; then
   err "$PS is missing"
@@ -143,27 +144,30 @@ else
     [ -z "$hexes" ] || err "$BL's block styles write colors ($hexes); take them from the tokens"
     # The default tokens are the Atlas Starter Guide's palette: every token both set in light mode
     # (their first :root rule) has the same value in each.
-    light() { awk '/^:root\{/{f=1} f{print} f&&/\}/{exit}' | tr ';{}' '\n\n\n' | sed -nE 's/^[[:space:]]*(--[a-z0-9-]+):(.*)$/\1=\2/p' | sort; }
-    drift=$(join -t= <(light <<< "$style") <(light < "$R/first-run.md") | awk -F= '$2!=$3{print $1" "$2" vs "$3}' | tr '\n' ',' || true)
+    # join needs both lists sorted on the token name alone, in one collation: a whole-line sort puts
+    # --brand-ink before --brand ('-' < '='), which older joins only warn about and newer ones reject.
+    light() { awk '/^:root\{/{f=1} f{print} f&&/\}/{exit}' | tr ';{}' '\n\n\n' | sed -nE 's/^[[:space:]]*(--[a-z0-9-]+):(.*)$/\1=\2/p' | LC_ALL=C sort -t= -k1,1; }
+    drift=$(LC_ALL=C join -t= <(light <<< "$style") <(light < "$R/first-run.md") | awk -F= '$2!=$3{print $1" "$2" vs "$3}' | tr '\n' ',' || true)
     [ -z "$drift" ] || err "$BL's default tokens differ from first-run.md's palette: $drift"
     ! LC_ALL=C grep -q '[^ -~]' "$BL" || err "$BL holds non-ASCII text; pages stay ASCII"
   fi
   # The script's tool list matches the Atlas tool contract, so R11 catches every tool name.
-  listed=$(awk '/^TOOLS = frozenset\("""/{f=1;next} f&&/^"""/{f=0} f' "$PS" | tr -s ' ' '\n' | sed '/^$/d' | sort -u)
+  listed=$(awk '/^TOOLS = frozenset\("""/{f=1;next} f&&/^"""/{f=0} f' "$PC" | tr -s ' ' '\n' | sed '/^$/d' | sort -u)
   known=$(jq -r '.surfaces[] | keys[]' contract/atlas-mcp-tools.json | sort -u)
-  [ "$listed" = "$known" ] || err "$PS's TOOLS list differs from contract/atlas-mcp-tools.json: $(diff <(echo "$known") <(echo "$listed") | grep '^[<>]' | tr '\n' ' ')"
+  [ "$listed" = "$known" ] || err "$PC's TOOLS list differs from contract/atlas-mcp-tools.json: $(diff <(echo "$known") <(echo "$listed") | grep '^[<>]' | tr '\n' ' ')"
   if command -v python3 >/dev/null; then
     tmp=$(mktemp -d)
     trap 'rm -rf "$tmp"' EXIT
-    awk '/^<!-- page-check -->$/{f=1;next} /^<!-- \/page-check -->$/{f=0} f' "$PS" | sed '1d;$d' > "$tmp/page_check.py"
-    [ -s "$tmp/page_check.py" ] || err "$PS has no <!-- page-check --> script"
-    # Each fixture prints exactly four results and no error: a pass*.html page fails nothing, and a
+    awk '/^<!-- page-check -->$/{f=1;next} /^<!-- \/page-check -->$/{f=0} f' "$PC" | sed '1d;$d' > "$tmp/page_check.py"
+    [ -s "$tmp/page_check.py" ] || err "$PC has no <!-- page-check --> script"
+    grep -qF 'skills/page-standard/page-check.md' "$PS" || err "$PS does not link skills/page-standard/page-check.md"
+    # Each fixture prints exactly six results and no error: a pass*.html page fails nothing, and a
     # fail-rN*.html page fails RN and nothing else. Exit 2 means the script could not read the page.
     for f in "$FX"/*.html; do
       [ -f "$f" ] || continue
       name=${f##*/}
       out=$(python3 -I "$tmp/page_check.py" "$f" 2>&1) && code=0 || code=$?
-      [ "$code" -ne 2 ] && [ "$(grep -c '"check": "R' <<< "$out")" -eq 4 ] && ! grep -q Traceback <<< "$out" ||
+      [ "$code" -ne 2 ] && [ "$(grep -c '"check": "R' <<< "$out")" -eq 6 ] && ! grep -q Traceback <<< "$out" ||
         { err "page check did not run cleanly on $f (exit $code): $out"; continue; }
       failed=$(grep -o '"check": "R[0-9]*", "name": "[^"]*", "result": "fail"' <<< "$out" | sed -E 's/^"check": "(R[0-9]+)".*/\1/' | tr '\n' ' ' || true)
       case $name in
@@ -176,6 +180,30 @@ else
     done
     ran="page check gives every fixture its result"
 
+    # The markup example in the page standard's section 5 is what agents copy, so it must pass R14.
+    awk '/^## 5\. Markup/{f=1} f&&/^```html$/{g=1;next} g&&/^```$/{exit} g' "$PS" > "$tmp/markup.html"
+    out=$(python3 -I "$tmp/page_check.py" "$tmp/markup.html" 2>&1) || true
+    grep -q '"check": "R14", "name": "Data freshness", "result": "pass"' <<< "$out" ||
+      err "the markup example in $PS (section 5) does not pass R14: $(grep '"R14"' <<< "$out")"
+
+    # R13 checks the metrics the page standard's required-metrics table names, code by code: the
+    # table's Codes and On every cited post columns equal the script's REQUIRED_ROWS.
+    rows=$(python3 -I -c '
+import re, sys
+skill, script = (open(p, encoding="utf-8").read() for p in sys.argv[1:3])
+def pairs(lines):
+    return sorted({(c, m) for codes, ms in lines for c in codes for m in ms})
+block = re.search(r"^<!-- required-metrics -->$(.*?)^<!-- /required-metrics -->$", skill, re.S | re.M)
+table = [] if not block else [(re.findall(r"\b[A-Z][0-9]+\b", cells[2]), re.findall(r"`([a-z]+)`", cells[3]))
+         for cells in (l.split("|") for l in block.group(1).splitlines() if l.startswith("| ") and "---" not in l)
+         if re.findall(r"\b[A-Z][0-9]+\b", cells[2])]
+rows = re.search(r"^REQUIRED_ROWS = \"\"\"(.*?)^\"\"\"", script, re.S | re.M)
+code = [] if not rows else [(l.split(":")[0].split(), l.split(":")[1].split()) for l in rows.group(1).strip().splitlines()]
+a, b = pairs(table), pairs(code)
+print("ok" if a and a == b else "table %s; script %s" % (sorted(set(a) - set(b)), sorted(set(b) - set(a))))
+' "$PS" "$PC" 2>&1 || true)
+    [ "$rows" = ok ] || err "$PC's REQUIRED_ROWS differ from the required-metrics table in $PS (section 8): $rows"
+
     # The page blocks: a page assembled from every block passes the page check, so a block can't
     # drift from the markup the script reads.
     if [ -n "$blocks" ]; then
@@ -185,11 +213,13 @@ else
         echo "$style"
         echo '</head><body>'
         section block:scope | sed -e "/the coverage strip (3.2) goes here/{r $tmp/coverage.html" -e 'd;}'
-        for b in $blocks; do case $b in scope|coverage) ;; *) section "block:$b" ;; esac; done
-        echo '<footer class="atlas-footnote"><p>Internal use only. Not for public publishing.</p></footer></body></html>'
+        for b in $blocks; do case $b in scope|coverage|freshness) ;; *) section "block:$b" ;; esac; done
+        echo '<footer class="atlas-footnote">'
+        section block:freshness
+        echo '<p>Internal use only. Not for public publishing.</p></footer></body></html>'
       } > "$tmp/blocks.html"
       out=$(python3 -I "$tmp/page_check.py" "$tmp/blocks.html" 2>&1) && code=0 || code=$?
-      [ "$code" -eq 0 ] && [ "$(grep -c '"result": "pass"' <<< "$out")" -eq 4 ] ||
+      [ "$code" -eq 0 ] && [ "$(grep -c '"result": "pass"' <<< "$out")" -eq 6 ] ||
         err "a page built from every block in $BL does not pass the page check (exit $code): $out"
       ran="$ran, and a page built from every block passes it"
     fi

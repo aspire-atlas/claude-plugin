@@ -3,6 +3,17 @@
 Shared by every agent and by **Reading the ask** in SKILL.md. Holds the lens shape, the team
 catalog, how the main thread infers and confirms a lens, and how an agent renders for one.
 
+A bold section name with no file beside it (**Artifact standard**, **Reading the ask**) is another part of this skill;
+`SKILL.md`'s **Sections** index names its file.
+
+## Contents
+
+- [Why lenses exist](#why-lenses-exist)
+- [The lens](#the-lens)
+- [Team catalog](#team-catalog)
+- [Inferring and confirming (main thread)](#inferring-and-confirming-main-thread)
+- [Rendering for a lens (every agent)](#rendering-for-a-lens-every-agent)
+
 ## Why lenses exist
 
 Every request has two users. The **requester** types the ask. The **recipient** is the person
@@ -12,8 +23,8 @@ feature, and how is this new competitor landing?" If Atlas builds a generic repo
 requester reworks it before forwarding it. If Atlas reads who is waiting, what they decide,
 and when, it builds the output they act on.
 
-The analysis runs once. The lens changes what is selected, the order, the vocabulary, and the
-length. It never changes a number.
+The analysis runs once. The lens changes what is selected, the order, the result the page is
+headlined and ranked by, the vocabulary, and the length. It never changes a number.
 
 ## The lens
 
@@ -50,27 +61,56 @@ to be fast and complete, and end in a next step.
 | `performance` | "reuse as ads", "whitelist", "spark ads", "license", "paid", "best hooks", "what will convert" | Which hooks and openings will work as paid media? | What to license and put spend behind | Paid creative planning | Hook patterns, first-three-second breakdowns, ad practice applied to organic posts, ranked licensing candidates | `atlas-ad-reuse`, `atlas-content-review` (ad reuse check), `atlas-post-analysis` (reuse order), `atlas-ppa-pitch` |
 | `team` | No other reader named; "for us", "our", day-to-day asks | Fast, complete, a next step | The team's own next move | Chat, the team's page | The flow's default shape | Every agent |
 
+### Result judged on
+
+What each reader answers for. It sets the headline's figure and the order of the page's ranked
+posts and topics (**Rendering for a lens**, Headline and rank by the reader's result). The last
+column ranks a list of posts when the page holds no such figure for each post. A flow's reference
+may name a closer stand-in (a hook score for videos headed for paid), and that one wins.
+
+<!-- result-judged-on -->
+| Team | Result judged on | Posts rank by, when the page holds no such figure per post |
+| ---- | ---------------- | ---------------------------------------------------------- |
+| `product` | Capabilities won or lost against competitors, and friction, by how many creators raise each | Engagement per 1,000 views |
+| `pmm` | Whose message carries: share of voice by message, by creators and posts | Engagement per 1,000 views |
+| `leadership` | The decision: the business result behind it (sales, sign-ups, return on spend), then the trend against the last period | Engagement per 1,000 views |
+| `growth` | Return on the next dollar: cost per result by creator and format | Engagement per 1,000 views |
+| `campaign` | The campaign's own saved goal, against its target | The goal's own metric when a post carries it (views, engagement); otherwise engagement per 1,000 views |
+| `brand` | Risk: the severity of what would go live under the brand's name | Severity, highest first |
+| `creative` | Ads that hold attention: hook and hold in the first three seconds | Engagement per 1,000 views |
+| `performance` | Sign-ups, sales, and cost per result | Engagement per 1,000 views |
+| `team` | Reach and engagement, against the account's own usual | Engagement per 1,000 views |
+<!-- /result-judged-on -->
+
 **Hand-offs.** Two chains recur: Performance picks the candidates, then Creative cuts them;
 Campaign runs the launch, then Brand approves the drafts. When the primary lens is one end of
 a chain, add the other end as a second lens by default and say so in the confirmation.
 
 ## Inferring and confirming (main thread)
 
-1. Read the ask for cues from the catalog, plus any reader, meeting, or date the user names
-   ("for the product review Thursday", "our head of product asked"). A named reader or venue beats a cue.
-2. Pick the primary lens and, where the catalog or a hand-off suggests it, one secondary.
-3. Confirm the guess in one line, never a form. One `AskUserQuestion`, header "For", asked in
+1. **A saved answer comes first.** When the ask names no reader, meeting, or venue, take the
+   person's own default for the question code, then the flow's saved reader (**Orchestration
+   contract**, **2**, Saved answers, for the records and the order). It replaces the guess in step
+   4: offer it as the (Recommended) option and say where it came from ("as saved for the weekly
+   report"); with a setup reply, the Heard question carries it instead. A changed reader is kept
+   only through that section's "Remember" question.
+2. Otherwise read the ask for cues from the catalog, plus any reader, meeting, or date the user
+   names ("for the product review Thursday", "our head of product asked"). A named reader or venue
+   beats a cue.
+3. Pick the primary lens and, where the catalog or a hand-off suggests it, one secondary.
+4. Confirm the guess in one line, never a form. One `AskUserQuestion`, header "For", asked in
    the same call as the flow's first question when there is one (the tool takes up to four
    questions). Word it as the guess, for example "This reads like it's for the product
    review. Should I track it weekly and add a messaging view for PMM?" Options: the guess
    (Recommended), one or two alternative lenses from the cues, and "Just for our team". The
    free-text field covers anything else.
-4. Skip the question when the user already named the reader and the decision, when the same
+5. Skip the question when the user already named the reader and the decision, when the same
    conversation already confirmed a lens for the same kind of ask, or when the ask is plainly
    the team's own routine ("run the daily"). Then pass the lens with `confirmed: true` if the
    user named it, `false` otherwise.
-5. Unattended runs never ask. They use the lenses saved for that flow (`guideline:readout-audience`,
-   `market-signal:lenses`), or `team`.
+6. Unattended runs never ask. They use the flow's saved readers (`guideline:readout-audience`,
+   `market-signal:lenses`, or the flow's `lastrun:` record), or `team`, and never a person's own
+   default.
 
 Never ask who the output is for in plain text, and never ask more than once per request.
 
@@ -79,6 +119,28 @@ Never ask who the output is for in plain text, and never ask more than once per 
 - **Lead with the decision.** The first line of the chat summary and the page headline answer
   the primary lens's `decision` in the reader's terms. The page header carries a "Prepared for"
   chip: the reader (or team), the decision, and `when` when known.
+- **Headline and rank by the reader's result.** The headline's figure and the order of the
+  page's ranked posts and topics use the primary lens's row in **Team catalog**, Result judged on.
+  The same data gives a paid-social page and a social-team page different headlines and a
+  different top item.
+  - **A list a flow ranks by its own score keeps that order** (a fit score on a shortlist, a
+    hook score on ad candidates, a creator's own top posts). The headline still answers in the
+    reader's result, and one line says what the list is ranked by.
+  - **Where the result comes from.** A flow reads sales, sign-ups, and cost per result only with
+    the tools its row in **Atlas tools** lists, by currency, never added to organic figures, and
+    never inferred. A flow with no ad or store read does not hold them, whatever is connected.
+  - **When the page does not hold it**, rank by the stand-in the flow's reference names, or
+    else by the last column of the lens's row, never by views alone. Say so in one line beside the headline or
+    the list, naming the metric and the reason: "Ranked by engagement per 1,000 views, because
+    this page holds no sales for these posts." Name a connection only when connecting it would
+    let this flow read the result ("Connect the Meta ad account to rank by sales"). On a page
+    shared outside the team (**Artifact standard**, section 2, **No platform disclosures**) the
+    page names only the metric it ranked by; the rest goes to the requester in chat.
+  - **Views alone never top a list of posts.** When the result is reach, a post tops the list on
+    its views only when its engagement per 1,000 views is at or above the median of the posts in
+    that list (for an account's own posts, the account's own usual, **Page standard**, section
+    8). A post below it stays in the evidence, labelled "high reach, low engagement". A rate a
+    flow works out over many posts (the market signal's reach rate) keeps its definition.
 - **Select and order for the reader.** Use the catalog's shape. Leadership gets one screen and
   outcomes first. Product gets receipts and no gloss. Creative gets timestamps and specs.
   Evidence the reader will not use moves to an appendix or is left out; it is never altered.
@@ -89,7 +151,7 @@ Never ask who the output is for in plain text, and never ask more than once per 
   data only when a lens needs a field the primary did not (a transcript for a cut list).
 - **Name what the reader needs but Atlas doesn't hold.** Spend, conversions, usage rights,
   product telemetry: list them under data gaps and never infer them. On a page shared outside
-  the team (`artifact-standard.md`, section 2, **No platform disclosures**), name them only to
+  the team (**Artifact standard**, section 2, **No platform disclosures**), name them only to
   the requester in chat; the page may ask the reader to share their own figures as a next step,
   never saying Atlas lacks them.
 - **End with a forward note.** The chat summary closes with two or three lines the requester

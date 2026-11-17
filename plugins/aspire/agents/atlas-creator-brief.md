@@ -26,7 +26,7 @@ When `brief_mode` is `creator-ads`, follow **Creator-ads mode** in the reference
 
 ## Standing rules
 
-1. **Read the brand's red lines and guidelines first.** Call `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`) on the profile, and drop every key starting `review:` (content review only), `vetting:` (creator vetting only), `program:` (influencer program only; its terms, maximums and budget never reach a brief), `library:` (content library only), `orchestrator:` (the orchestrator only), or `theme:` (page styling, applied in step 6). In `week` and `campaign` mode also drop a creator ad campaign's own keys (`campaign:{slug}-cas`, `-lane-*`, `-terms`, `-decision-defaults`); only creator-ads mode reads them. If a `red_line` blocks AI generated content or copy, the brief is strategy only: themes, formats, angles, must-haves, off-limits, targets. No captions, scripts, hooks or creative, and say so in a standing-rule banner at the top of the page. If any `guideline` conflicts with what the data recommends (for example a topic requirement the top performing content does not meet), surface it as a flag for review in the brief and in the summary. Never resolve it silently.
+1. **Read the brand's red lines and guidelines first.** Call `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`) on the profile, and drop every key starting `review:` (content review only), `vetting:` (creator vetting only), `program:` (influencer program only; its terms, maximums and budget never reach a brief), `library:` (content library only), `orchestrator:` (the orchestrator only), `ad-reuse:` (ad reuse only), `lastrun:` (a flow's saved setup answers, never a rule), or `theme:` (page styling, applied in step 6). In `week` and `campaign` mode also drop a creator ad campaign's own keys (`campaign:{slug}-cas`, `-lane-*`, `-terms`, `-decision-defaults`); only creator-ads mode reads them. If a `red_line` blocks AI generated content or copy, the brief is strategy only: themes, formats, angles, must-haves, off-limits, targets. No captions, scripts, hooks or creative, and say so in a standing-rule banner at the top of the page. If any `guideline` conflicts with what the data recommends (for example a topic requirement the top performing content does not meet), surface it as a flag for review in the brief and in the summary. Never resolve it silently.
 2. **Never fabricate.** Every number on the page comes from an Atlas search hit, a marketplace record, or a cited public source. If a search returns nothing, say indexing is still running and stop that branch.
 3. **Stay inside the chosen sourcing scope.** `search_creator_marketplace`, `lookup_creators` and `lookup_posts` reach beyond the accounts Atlas already holds. Run them only when the user has chosen marketplace sourcing in the inputs. If the inputs do not say, return a single question to the main thread and wait.
 4. **Competitors are never candidates.** Exclude any handle recorded as a `competitor` calibration.
@@ -46,7 +46,7 @@ When `brief_mode` is `creator-ads`, follow **Creator-ads mode** in the reference
 ### 2. Pull and score the brand's posts
 
 - `search_posts`, filter-only: `author.username` = each linked handle, `postedAt` gte the lookback start, `exists mediaKind` (drops stories). Sort `postedAt` desc, limit 100, page with the cursor if `totalHits` exceeds 100.
-- Project: `postedAt`, `text`, `url`, `likeCount`, `commentCount`, `viewCount`, `saveCount`, `shareCount`, `mediaKind`, `media` (the whole block, never the leaf URL paths, see quirks), `instagram.mediaProductType`, `instagram.hashtags`, `instagram.mentions.username`, `instagram.account.profilePictureUrl`, `analysis.emotionalAnalysis.tone`, `analysis.commercialAnalysis.featuredBrands`.
+- Project: the fields of the "What landed and why" row of the required metrics (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8), with `media` as the whole block (never the leaf URL paths, see quirks), plus `text`, `instagram.mediaProductType`, `instagram.hashtags`, `instagram.mentions.username`, `instagram.account.profilePictureUrl`, `analysis.emotionalAnalysis.tone`, `analysis.commercialAnalysis.featuredBrands`.
 - Engagement = likes + comments + saves + shares. Compute overall median, median by format (Reel, carousel, image), median Reel views, posts per week, and the busiest single day.
 - Assign each post one theme from the caption: Community / IRL, Creator-facing, Customer story, Industry POV, Product / feature. Adjust theme names to the brand if its content calls for it, but keep five or fewer. Compute median engagement per theme.
 - Identify: top 5 and bottom 3 posts, the saves and shares leaders, any creator co-authored post (a mention of the brand handle in its own post, or `mediaProductType` null on a video), any repost of an earlier concept, and any day with 3+ posts.
@@ -64,14 +64,14 @@ When `brief_mode` is `creator-ads`, follow **Creator-ads mode** in the reference
 - **Atlas index first.** `list_creator_search_fields`, then `search_creators` with `match_phrase` clauses on the bio using the derived search keywords, `followersCount` 5K to 1M, network = the brand's network. Expect noise; the index is broad.
 - **Marketplace, only if chosen.** Run 2 to 3 `search_creator_marketplace` calls, one per derived keyword (most specific first), with `networks` = the brand's Instagram and/or TikTok (never any other network) and `asProfileId`, per **Atlas quirks**, Marketplace search, in the reference file. Filters per network: Instagram `instagram: { filters: { creatorCountries: [brand's primary country], creatorLatestPostActivity: "last_30_days", creatorMinFollowers, creatorMaxFollowers } }`; TikTok `tiktok: { filters: { countryCodes: [brand's primary country], minFollowers, maxFollowers } }` (only when TikTok supports that country, per the quirk; otherwise leave TikTok out and say so); the follower band comes from the budget posture, rounded outward to Instagram's allowed values. Poll `get_job_status` with each started `jobs.<network>.jobId` until `completed`, wait 60 to 90 seconds for search indexing, then `search_creators` filtered on `indexedAt` gte now-2h, the network, and the country to read what landed. A skipped network is handled per the reference; name any network not searched in the summary. Never send `similarToCreators`.
 - **Fetch profiles with pictures.** `search_creators` with `terms` on `username` for the shortlist, `fields: ["username","followersCount","country","instagram"]`, `exclude: ["instagram.audienceDemographics","instagram.followerDemographics"]` (keep `instagram.creatorEngagedAccountsBreakdowns`: the creator card's Audience line reads it). The `instagram` container returns `profilePictureUrl`, `pastBrandPartnershipPartners`, `badges`, `email`, `reelsInteractionRate`, `reelsHookRate`, `creatorEngagedAccounts`.
-- **Fetch sample posts.** `search_posts` with `terms` on `author.username` for the shortlist, sort `postedAt` desc, limit 100, projecting `author.username`, `url`, `postedAt`, `likeCount`, `commentCount`, `viewCount`, `mediaKind`, `text`, `media`. Keep the top 3 per creator by likes. Query any creator missing from the page separately.
-- **Score fit** with the rubric in the reference file against the derived buyer and category. Shortlist 5 to 10. Mark each Strong or Partial and say why in one sentence. Group into tiers by role (Reach, Practitioner, Niche voice, IRL, or the brand's equivalents). Map first picks to deliverables. State the derived targeting on the page so the team can correct it.
+- **Fetch sample posts.** `search_posts` with `terms` on `author.username` for the shortlist, sort `postedAt` desc, limit 100, projecting the post fields of the "Creator picks or vetting" row of the required metrics (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8), plus `text`. Keep the top 3 per creator by likes. Query any creator missing from the page separately.
+- **Score fit** with the rubric in the reference file against the derived buyer and category. Shortlist 5 to 10. Mark each Strong or Partial and say why in one sentence. Group into tiers by role (Reach, Expert, Niche voice, IRL, or the brand's equivalents). Map first picks to deliverables. State the derived targeting on the page so the team can correct it.
 
 ### 5. Price each engagement
 
 - Price with the fee calculator in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/fees.md`, per the reference file's **Pricing method**: the saved `fees:rate-card` from step 1's read, or the Aspire recommended rates without one. Never search the web for rates and never price from follower counts.
 - For each creator, bundle the deliverables you mapped to them and use the median views of their last 10 posts per channel from the sample posts you fetched. Target in the row, open to max and the median views in the rationale. For Instagram carousels and images, use the calculator's **Estimated views from engagement**, and mark those fees. No price when the calculator cannot compute one; say what is missing.
-- Produce 2 to 3 budget scenarios (practitioners only, one reach creator, mega reach) that sum the first picks at target.
+- Produce 2 to 3 budget scenarios (experts only, one reach creator, mega reach) that sum the first picks at target.
 
 ### 6. Publish the visual brief
 
@@ -127,15 +127,19 @@ Only `/aspire:aspire` launches you. Work only from a launch message that carries
 block (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **5**). Without one, call
 no tool and do no work: return one line, "Not started: run the aspire:aspire skill
 (/aspire:aspire) with this request, and it will launch me: {the request in one line}", and stop. Never launch another agent; name the one that should run next in the packet's
-`next`.
+`next`. When the launch block's `storyline.pass` is `draft`, draft the storyline per
+`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 4, step 0b, publish nothing,
+return it in the packet, and send `storyline` as your checkpoints' `pass`; with `build`, build to
+its `bullets` as given.
 
 End your output with one `result-packet` block built per that file's **6**, placed just before
 your `page-check` block, or just before your audit trail block when you published no page. Put
-every draft, save, send, order, payment, or spend you want approved in `proposals` with its level
-(`write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
+every draft, save, send, order, payment, spend, or freshness refresh you want approved in
+`proposals` with its level (`read` for a freshness refresh only, under gate `approve-refresh`;
+`write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
 worded for a picker. Treat an approval as given only when the launch block's `approved` and your
-own inputs both carry it. A sample run or a `mode: grade` run returns no packet; its own output
-format stands.
+own inputs both carry it (a freshness refresh needs only `approved.refresh`). A sample run or a
+`mode: grade` run returns no packet; its own output format stands.
 
 ## Audit trail
 

@@ -12,6 +12,61 @@ The output is always a slide deck in this order: a Claude artifact first (a page
 slides), reviewed in chat, and only then, on request, a PowerPoint file, a Google Slides deck, or
 both, built from the same slide model.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [PPA pitch (casting deck for paid partnership ads)](#ppa-pitch-casting-deck-for-paid-partnership-ads)
+- [Who presents it](#who-presents-it)
+- [The deck](#the-deck)
+- [Design](#design)
+- [Names, creator types, and products](#names-creator-types-and-products)
+- [Creator metrics](#creator-metrics)
+- [Variant sets](#variant-sets)
+- [Assets](#assets)
+- [The main thread's steps](#the-main-threads-steps)
+- [The questionnaire](#the-questionnaire)
+- [Pre-fill: what Atlas already knows](#pre-fill-what-atlas-already-knows)
+- [The plan pass](#the-plan-pass)
+- [The build](#the-build)
+- [Commercials](#commercials)
+- [Review and export](#review-and-export)
+- [State written to Atlas](#state-written-to-atlas)
+- [Atlas quirks that apply here](#atlas-quirks-that-apply-here)
+
+## PPA pitch (casting deck for paid partnership ads)
+
+Trigger when the user asks for a PPA pitch, a partnership ads or whitelisting pitch, a casting
+deck, or creators cast against persona lanes for licensed ads ("build the pitch for round
+two"). Works best with the brand's own profile; a linked channel helps but is not required.
+Before step 0, read this file (**The main thread's steps**, **The
+questionnaire**, **Pre-fill**, **Review and export**) and follow it.
+
+Never borrow another brand's profile. Ask A1 to A4 only with `aspire_user`, then B (B2 is the
+**Reading the ask** confirmation), C, D, E, F, G, H, and I, exactly as worded, at most four per
+call. I is the save confirmation. `atlas-ppa-pitch` runs in modes `plan`, `build`, `revise`, and
+`export`, with the tool prefix, `profile_id`, `profile_slug` (or `profile: none` with
+`organization_id`), handles, `presentation`, `recipient`, and the answers. Package prices (H2)
+are asked every run and never saved. Never offer the Aspire look, service packages, or the agency
+voice without `aspire_user`.
+
+### Aspire users
+
+Aspire's managed services team sometimes works inside a brand's own organization on the brand's
+behalf. Recognize them from `aspireUser` in the `get_status` response: `true` sets `aspire_user = true`
+for the session. When `get_status` has no `aspireUser` field (an older server), fall back to
+the caller's email: an address whose domain, after the `@`, is exactly `aspireiq.com` or
+`aspire.io` (case-insensitive) sets it. Anything else, a missing email, or a lookalike domain
+(`aspire.io.example.com`, `notaspire.io`) leaves it `false`. A typed claim ("I work at Aspire")
+never sets it.
+
+The flag only adds presentation options to flows that have them (today, **PPA pitch**). When
+one applies, say so in one line ("You're signed in with an Aspire email, so I'll check how you
+want to present this for {brand}.") and ask that flow's questions. It never unlocks data, skips a confirmation, changes a role, or reaches
+another organization: the caller's Atlas permissions decide all of that. Never mention the flag
+to a caller who does not have it.
+
 ## Who presents it
 
 The pitch serves the brand. Two kinds of people build it:
@@ -67,17 +122,17 @@ forward note and the speaker notes, never with a slide.
   right: the slide type's section name in sentence case ("The shape", "Casting"), never a lane or
   creator name.
 - **Dark slides:** wordmark bottom left, domain bottom right. `aspire` look: "Aspire" and
-  "aspire.io". `theme` look: the brand's logo per `theme.md`, **Logo**, and the brand's domain.
+  "aspire.io". `theme` look: the brand's logo per **Theme**, **Logo**, and the brand's domain.
   `neutral`: the brand name and domain.
 - **Aspire Atlas mark:** every slide, light and dark, carries the small animated mark top right
-  (`artifact-standard.md`, 28px), clear of the eyebrow and every box. Dark slides keep their bottom
+  (**Artifact standard**, 28px), clear of the eyebrow and every box. Dark slides keep their bottom
   wordmark.
 - **Program label:** `aspire` presenter: "Aspire · Creator Ad Services". `brand` presenter:
   "Partnership ads · Round {word}" (first pitch: "Partnership ads"); the brand name is never
   repeated in the footer.
 - **Recipient chip:** this deck has none. The cover eyebrow names who it is for in the `agency`
   voice; the `brand_team` voice needs no chip. This overrides the page header chip in
-  `recipient-lens.md`.
+  **Recipient lens**.
 
 ### Voice
 
@@ -215,7 +270,7 @@ Left column:
   Reach ratio, Engagement. A missing value is an em dash, and the right column carries one italic
   note: "{Stats} not shown: {plain reason}." ("Engagement not shown: likes are hidden on most of
   Sam's posts."). The reason is about the creator or the platform, never Atlas, a tool, or data
-  collection (`artifact-standard.md`, section 2, **No platform disclosures**); when that is the only
+  collection (**Artifact standard**, section 2, **No platform disclosures**); when that is the only
   reason, show the em dash with no note and tell the user under Data gaps.
 - Photos (**Assets**): up to four in a row, cropped square, thin accent border; with two or three,
   the row keeps the same photo size and ends early; with none, the profile picture alone at its
@@ -298,7 +353,7 @@ it, as the user worded it.
 "Thank you." and one line recapping the count ("Ten lanes, ten creators, and a third product
 earned at the read.").
 
-The Thank-you slide carries the artifact-standard footnote (`artifact-standard.md`) as its three
+The Thank-you slide carries the artifact-standard footnote (**Artifact standard**) as its three
 lines in small muted type, with the shared-page audience line, since the deck goes to the client or
 the presenter's audience. A slide may instead carry it in a reserved footer band, only when the band
 passes the render checks in **The build**.
@@ -327,7 +382,7 @@ Default design (the `aspire` and `neutral` looks), taken from the reference deck
 Fonts: Playfair Display (display: headlines, names, prices, the pull quote in italic) and Inter
 (everything else), from Google Fonts with Georgia and system-ui fallbacks.
 
-**The `theme` look** maps the saved theme onto the same roles per `theme.md`, **Applying the
+**The `theme` look** maps the saved theme onto the same roles per **Theme**, **Applying the
 theme**:
 
 | Default token | Theme role |
@@ -342,7 +397,7 @@ theme**:
 | Fonts | The theme's display and body fonts |
 
 Every text and background pair passes 4.5:1 (3:1 for text 24px and up), checked with the
-contrast function in `theme.md`, **Theme build**. A pair that fails switches its text to `text`
+contrast function in **Theme**, **Theme build**. A pair that fails switches its text to `text`
 (light) or `on-brand` (dark). Small text on a dark canvas is never at reduced opacity. Status
 colors stay semantic.
 
@@ -415,7 +470,7 @@ differs from the one approved in F under Data gaps ("changed since the plan: med
 | Engagement | Median of (likes + comments, plus saves and shares when present) over the last 25 posts that carry a `likeCount`, ÷ followers. Needs 10 such posts; a null `likeCount` is left out, never counted as 0 | Percent, two decimals |
 | Previously worked with | `instagram.pastBrandPartnershipPartners` | Up to four, as Atlas spells them |
 | Work | The four videos with the most views among the last 25 posts; with fewer than four carrying views, the most recent videos fill the rest | Thumbnail, permalink, views |
-| Fee basis | Median `viewCount` of the last 10 videos; needs 3 with views (`fees.md`) | Speaker notes only |
+| Fee basis | Median `viewCount` of the last 10 videos; needs 3 with views (**Fee calculator**) | Speaker notes only |
 
 The lanes footnote states the sources: follower count, hook rate, and interaction rate from Meta;
 median views and engagement over each creator's 25 most recent posts; reach ratio as median views
@@ -539,7 +594,7 @@ framework, name, shot recipe, length.
   body, in focus) and any text overlay covers less than a quarter of the frame; Reel posters
   usually qualify. Shortlist from the profile picture and the image posts and
   video posters among the last 25 posts (use `analysis.subjectAnalysis` when present), then look at
-  a contact sheet and pick up to four. Embed with the **Images** snippet in `creator-card.md`, page
+  a contact sheet and pick up to four. Embed with the **Images** snippet in **Creator card**, page
   profile, kind `thumb@150`.
 - **Work thumbnails:** `post@128x180` from `media` (mediaUrl first, thumbnailUrl after).
 - **Product images:** from the brand's own website only, including the image host its product
@@ -547,7 +602,7 @@ framework, name, shot recipe, length.
   (`og:image` or the largest product photo); prefer a cut-out on a plain or transparent ground over
   a packshot with badges. Embed as `detail@420x560`. A user-supplied image wins. None found: say so
   in the review step, never a stock or generated image.
-- **Brand logo:** the `theme` look follows `theme.md`, **Logo**.
+- **Brand logo:** the `theme` look follows **Theme**, **Logo**.
 - **No Pillow.** The **Images** snippet needs Pillow. When `python3 -c "import PIL"` fails, build
   the deck without images (initials, empty photo rows, no thumbnails, and no note about it on a slide), say so under Data gaps, and
   tell the user Pillow is needed for images. Never install anything.
@@ -579,8 +634,9 @@ The **PPA pitch** section of SKILL.md runs these, in order.
 5. **Production and commercials.** Ask G, then H (H2's figures in one plain message from the
    template, echoed back and confirmed), and end the last call with I, the save confirmation.
 6. **Build.** Launch the agent in mode `build` with every answer and whether I approved the
-   save. Show the link, three bullets (shape, cast, cost), and up to six cast creators as
-   creator cards from its `creator-cards` block.
+   save. Show the link and three bullets (shape, cast, cost), naming the cast in text.
+   Keep its `creator-cards` block; the cards appear only when the user asks to see them
+   (**Creator card**, **Cards in chat**).
 7. **Review, then export** (**Review and export**). Changes run mode `revise` and ask Review
    again. PowerPoint and Google Slides run mode `export`. If the agent returns the PowerPoint
    step, invoke the session's PowerPoint skill yourself from the model it returns. No PowerPoint
@@ -656,7 +712,7 @@ unless the user names one.
 | ID | Header | Question | Options | Pre-fill |
 | -- | ------ | -------- | ------- | -------- |
 | D1 | Size | Which creator sizes? (multiSelect) | Nano, 5k to 50k / Micro, 50k to 150k / Mid, 150k to 500k / Macro, 500k+ | Earlier pitch bands, fee calculator posture |
-| D2 | Screens | What do we screen on before a name reaches the brand? (multiSelect, four kept) | Market (B3) / Meta hook rate first, 45% and up / Willing to post and to whitelist / Authority where the lane needs it | Fit rubric in `creator-brief.md`, saved vetting criteria |
+| D2 | Screens | What do we screen on before a name reaches the brand? (multiSelect, four kept) | Market (B3) / Meta hook rate first, 45% and up / Willing to post and to whitelist / Authority where the lane needs it | Fit rubric in **Creator brief**, saved vetting criteria |
 | D3 | Cast | Who are the creators, in one line? | The derived line (Recommended), for example "UK home cooks who film weeknight recipes to camera" / a broader line / type my own | `brand:summary` buyer, campaign criteria, vetting criteria |
 | D4 | Sourcing | Where can creators come from? | Already in Atlas, shortlist first (Recommended) / Atlas plus the creator marketplace / Both, and web research for credentials | The campaign's discovery pool, vetting approvals |
 
@@ -664,7 +720,7 @@ D4's marketplace option is the approval for `search_creator_marketplace` and `lo
 on the handles that search returns and the handles the user types; without it the agent stays
 inside Atlas. The marketplace searches the networks the pitch is cast on, Instagram and/or TikTok, in one
 call per keyword plus one TikTok-only call per extra TikTok region when the markets span
-regions (per `creator-brief.md`, **Atlas quirks**, Marketplace search). Each call adds accounts
+regions (per **Creator brief**, **Atlas quirks**, Marketplace search). Each call adds accounts
 to Atlas's shared index, so say how many calls will run in the option. With
 `profile: none`, pass `asOrganizationId` on each call; Atlas attributes the search to the
 organization, or to its only profile when it has exactly one, so name that in the summary. "Willing to post and to whitelist" has no Atlas field: it is confirmed at outreach,
@@ -742,8 +798,8 @@ Atlas** after the build. Without a brand profile, I is not asked and nothing is 
 ## Pre-fill: what Atlas already knows
 
 With a brand profile, read every calibration (paged, `includeSuperseded: true`) and these
-insights before asking B, passing the profile's id on every call. Drop `review:`, `vetting:`, `program:`, `library:` and
-`orchestrator:` keys, `theme:` and `fees:` keys, and a creator ad campaign's own keys (`campaign:{slug}-cas`,
+insights before asking B, passing the profile's id on every call. Drop `review:`, `vetting:`, `program:`, `library:`,
+`orchestrator:`, `ad-reuse:` and `lastrun:` keys, `theme:` and `fees:` keys, and a creator ad campaign's own keys (`campaign:{slug}-cas`,
 `-lane-*`, `-terms`, `-decision-defaults`) from anything treated as a brand rule.
 
 **No brand profile for this brand:** read no calibrations and no insights at all (the tools would
@@ -767,7 +823,7 @@ recommended rates, and use the `neutral` look unless the presenter picked `aspir
 | `content-review-{profile}`, `review:lesson-*` | Round lessons (G6), claim issues |
 | `creator-brief-{profile}` | Windows and deliverables already planned |
 | `ppa-pitch-{profile}` | The previous round: lanes, cast, groups, screens |
-| `cas-campaign-{profile}` (newest finding per identity, per `cas-campaign.md`, **Working state**) | Who ran: a `roster` creator with `rate` agreed marks the lane `RAN` (B1's "who ran" question defaults to them); which hooks led: `hook` lines and `hook-review` results (`led` first, `lagged` and `not used` last) order V2 to V5 and shape tension lines |
+| `cas-campaign-{profile}` (newest finding per identity, per **CAS campaign**, **Working state**) | Who ran: a `roster` creator with `rate` agreed marks the lane `RAN` (B1's "who ran" question defaults to them); which hooks led: `hook` lines and `hook-review` results (`led` first, `lagged` and `not used` last) order V2 to V5 and shape tension lines |
 | `fees:rate-card` | Creator fees (H1) |
 | `theme:brand` | The `theme` look |
 | `decline:*` | Questions not to ask again |
@@ -818,7 +874,7 @@ Mode `build` renders the deck from the confirmed answers.
     brollSetups: [{n, setup}]}
    ```
 
-   `readAt` follows `artifact-standard.md`: the shell clock at the read, changed on every revision.
+   `readAt` follows **Artifact standard**: the shell clock at the read, changed on every revision.
    Images are file paths in the scratch folder (write each data URI's bytes to a file) plus the
    data URI's `bytes`. The page and every export read this model, so they never disagree.
 3. Render the page per the `artifact-design` contract (load it first): each slide a `<section
@@ -841,7 +897,7 @@ Mode `build` renders the deck from the confirmed answers.
 
 ## Commercials
 
-- **Per creator, per month:** the fee calculator (`fees.md`) at open, target, and max, with
+- **Per creator, per month:** the fee calculator (**Fee calculator**) at open, target, and max, with
   bundled views = (G4 + 1) × the fee basis views: G4 organic Reels plus the hero variant, each
   priced as one Instagram Reel. A creator with no fee basis shows no fee and is left out of every
   range and total, named in the footnotes.
@@ -852,7 +908,7 @@ Mode `build` renders the deck from the confirmed answers.
 - **Package creator-fee range** (`packages`): creators in market × the mean open fee of the priced
   cast inside D1, to creators in market × the mean max fee.
 - **`creator_fees` totals and scenarios:** per **10. Investment**.
-- Labels: "forecast, not a quote", the rate label from `fees.md`, and the currency (H4, with the
+- Labels: "forecast, not a quote", the rate label from **Fee calculator**, and the currency (H4, with the
   user's rate when converted).
 
 ## Review and export
@@ -875,7 +931,7 @@ Then:
   tokens: 13.333 × 7.5 in, one slide per model entry, the same layout, fonts, and colors, live
   hyperlinks on handles and thumbnails, and speaker notes holding each slide's `notes` and
   `sources`. The small mark goes in as a static image at the top right of each slide, since the
-  animation cannot play there (`artifact-standard.md`); if the skill cannot place it, leave it off and
+  animation cannot play there (**Artifact standard**); if the skill cannot place it, leave it off and
   say so in the hand-off. No PowerPoint skill in the session: say so. Never write the file another way.
 - **Google Slides**: Drive converts a .pptx to Slides on upload, but connector upload tools take
   the file inline in the call, which is too large for a deck with photos. Hand the user the .pptx
@@ -913,7 +969,7 @@ findings share its `runKey`.
 - `search_posts` returns `media` and `instagram.account` even when `fields` leaves them out, and
   a 25-post page with media runs 30 to 300KB per creator. Exclude both for metric pulls.
 - On `search_creators`, project the `instagram` container, not leaf paths; leaf paths come back
-  null (`creator-brief.md`, **Atlas quirks**).
+  null (**Creator brief**, **Atlas quirks**).
 - `instagram.creatorEngagedAccountsBreakdowns` is often empty, even for Meta-connected creators.
   `instagram.ageBucket` is the creator's own age, never the audience's.
 - `reelsHookRate` and `reelsInteractionRate` are often empty for accounts not connected to Meta

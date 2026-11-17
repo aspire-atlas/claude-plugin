@@ -1,0 +1,56 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["summary", "items", "rules", "findings"],
+  "properties": {
+    "summary": { "type": "string" },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "verdict"],
+        "properties": {
+          "id": { "type": "string" },
+          "verdict": { "enum": ["pass", "fail", "n/a"] },
+          "file": { "type": "string" },
+          "quote": { "type": "string" },
+          "fix": { "type": "string" }
+        }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["file", "quote", "namesBehavior", "goodExample", "badExample", "examplesLookReal", "atItsStep"],
+        "properties": {
+          "file": { "type": "string" },
+          "quote": { "type": "string" },
+          "namesBehavior": { "type": "boolean" },
+          "goodExample": { "type": "boolean" },
+          "badExample": { "type": "boolean" },
+          "examplesLookReal": { "enum": ["yes", "no", "unclear", "no examples"] },
+          "atItsStep": { "type": "boolean" }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["severity", "item", "file", "quote", "why", "fix"],
+        "properties": {
+          "severity": { "enum": ["Must", "Should", "Nice"] },
+          "item": { "type": "string" },
+          "file": { "type": "string" },
+          "quote": { "type": "string" },
+          "why": { "type": "string" },
+          "fix": { "type": "string" }
+        }
+      }
+    }
+  }
+}

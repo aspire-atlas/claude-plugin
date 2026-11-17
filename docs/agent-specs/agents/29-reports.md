@@ -5,7 +5,7 @@ team: 6 Organic and operations
 personas: Influencer Manager, Paid Social Manager, Organic Social Manager
 wave: 1
 permission: Read
-plugin_agents: atlas-daily-insights-report, atlas-weekly-insights-report, atlas-quarterly-signal, atlas-program-dashboard, atlas-org-dashboard
+plugin_agents: atlas-daily-insights-report, atlas-weekly-insights-report, atlas-quarterly-signal, atlas-program-dashboard
 ---
 
 # Reports
@@ -73,7 +73,7 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 
 ## Writes to Atlas
 
-Findings, under the one batch confirmation at launch or the standing approval a scheduled report got at setup. The daily report saves up to five insights, plus three per open launch pulse. The weekly report saves its patterns and next steps and closes action items that are now met. The quarterly report saves its findings when the person confirms. The program dashboard saves a snapshot after approval. The organization dashboard saves nothing itself; `/aspire` saves its link to brand memory, or a personal link for one person, in the Organization dashboard setup.
+Findings, under the one batch confirmation at launch or the standing approval a scheduled report got at setup. The daily report saves up to five insights, plus three per open launch pulse. The weekly report saves its patterns and next steps and closes action items that are now met. The quarterly report saves its findings when the person confirms. The program dashboard saves a snapshot after approval. The organization dashboard is the Atlas server's widget and saves nothing.
 
 ## Non-goals
 

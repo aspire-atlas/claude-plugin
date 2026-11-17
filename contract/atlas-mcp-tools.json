@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-30",
+  "generated": "2026-11-10",
   "source": "apps/api/lib/mcp/tools-list.golden.json",
   "surfaces": {
     "/mcp": {
@@ -67,7 +67,8 @@
           "elicitationId",
           "replace",
           "returnUrl",
-          "share"
+          "share",
+          "skipHeldAccounts"
         ]
       },
       "create_profile": {
@@ -116,6 +117,104 @@
           "asProfileId"
         ]
       },
+      "get_cas_briefs": {
+        "required": [
+          "campaignId"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "campaignId"
+        ]
+      },
+      "get_cas_campaign": {
+        "required": [],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "campaignId"
+        ]
+      },
+      "get_cas_rates": {
+        "required": [
+          "campaignId"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "campaignId"
+        ]
+      },
+      "get_cas_results": {
+        "required": [
+          "campaignId"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "campaignId"
+        ]
+      },
+      "get_cas_selection": {
+        "required": [
+          "campaignId"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "campaignId",
+          "round"
+        ]
+      },
+      "get_cas_setup_form": {
+        "required": [
+          "brandName",
+          "conceptSource",
+          "concepts"
+        ],
+        "paths": [
+          "approvedBy",
+          "approvedOn",
+          "asOrganizationId",
+          "asProfileId",
+          "brandName",
+          "campaign",
+          "campaign.creators",
+          "campaign.description",
+          "campaign.name",
+          "campaign.termEnd",
+          "campaign.termStart",
+          "campaign.usageDays",
+          "campaign.variants",
+          "conceptSource",
+          "concepts",
+          "criteria",
+          "criteria.exclusions",
+          "criteria.market",
+          "criteria.networks",
+          "currency",
+          "files"
+        ]
+      },
+      "get_creator": {
+        "required": [
+          "handle",
+          "network"
+        ],
+        "paths": [
+          "asProfileId",
+          "handle",
+          "network"
+        ]
+      },
+      "get_dashboard": {
+        "required": [],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "billingAccountId"
+        ]
+      },
       "get_fee_rate_card": {
         "required": [],
         "paths": [
@@ -142,11 +241,30 @@
           "asProfileId"
         ]
       },
+      "get_onboarding_report": {
+        "required": [],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "reportId"
+        ]
+      },
       "get_profile": {
         "required": [],
         "paths": [
           "asOrganizationId",
           "asProfileId"
+        ]
+      },
+      "get_shop_analytics": {
+        "required": [],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "endDate",
+          "startDate",
+          "tiktokShopId",
+          "view"
         ]
       },
       "get_status": {
@@ -456,7 +574,8 @@
           "exclude",
           "fields",
           "limit",
-          "sort"
+          "sort",
+          "widgetExtras"
         ]
       },
       "search_insights": {
@@ -520,7 +639,8 @@
           "partnership.isRecommended",
           "partnership.permissionStatus",
           "queryText",
-          "sort"
+          "sort",
+          "widgetExtras"
         ]
       },
       "set_brand_instruction": {
@@ -534,6 +654,28 @@
           "asProfileId",
           "idempotencyKey",
           "instructionText"
+        ]
+      },
+      "show_ads": {
+        "required": [
+          "adIds"
+        ],
+        "paths": [
+          "adIds",
+          "asOrganizationId",
+          "asProfileId",
+          "dateFrom",
+          "dateTo"
+        ]
+      },
+      "show_partnership_content": {
+        "required": [
+          "igMediaIds"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "igMediaIds"
         ]
       },
       "start_business_discovery": {

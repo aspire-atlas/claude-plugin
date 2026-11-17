@@ -6,6 +6,28 @@ The version lives in exactly one place: `plugins[].version` in `.claude-plugin/m
 
 ## [Unreleased]
 
+## [5.3.0] - 2026-11-16
+
+Minor release. `/aspire` answers in chat first, every page is checked for plain English and rendered before it publishes, Meta Ads is routed safely, and creator ad and onboarding flows use the Atlas server's widgets. Every flow keeps its earlier path when the server does not offer the new ones.
+
+### Added
+- Chat answers first: `/aspire` answers in chat text and draws cards and previews only on request. `SKILL.md` is now a router with one reference per flow.
+- Page checks before publishing: an English read by a separate reviewer and a rendered UX review run on every page, and every page is headlined and ranked by its reader's result.
+- Data freshness per network on every page, with each cited account named, and an offer to refresh stale data.
+- Creator ad campaigns (CAS): the full brief and cut review state are saved to Atlas, and the campaign widgets are used where the host draws them.
+- Server-runnable agent cores in `server-agents/` (a brand snapshot core), read by the same file the server vendors.
+- Always-allow guidance during onboarding for the Atlas tools and the store connection, with destructive and send tools held back.
+- Organic to Ads learnings in the ad reuse agent: found and briefed paths, and ad codes kept out of its output.
+
+### Changed
+- Bare `/aspire` shows the organization selector alone, then the dashboard, and resumes on the next message after the pick; the dashboard uses the Atlas server widget.
+- The Meta Ads connector is routed and scoped more tightly: writes and readout enrichment follow the saved approval rules.
+- The setup reply opens with the need, the connections, and the approvals, and keeps to one cost question for every kind of spend.
+- The Atlas tool contract is refreshed to the current server tool list.
+
+### Fixed
+- Page-standard freshness and R13 and R14 checks: scheduled runs make no freshness refresh, a scope that reports no posts must name its accounts, and a platform with no posts reads "Atlas has no data".
+
 ## [5.2.0] - 2026-10-30
 
 Minor release. The plugin uses the Atlas server's inline widgets and new tools when they are there, asks fewer questions at the start, exports creator lists for Aspire, and prints its pages cleanly. Every flow keeps its earlier path when the server does not offer the new ones.
@@ -272,7 +294,8 @@ First public release. Versioning restarts at 1.0.0; earlier 0.x builds were inte
 - Two release channels: `aspire-atlas` (official, pinned) and `aspire-atlas-beta` (tracks `develop`).
 - Apache-2.0 license.
 
-[Unreleased]: https://github.com/aspire-atlas/claude-plugin/compare/v5.1.0...HEAD
+[Unreleased]: https://github.com/aspire-atlas/claude-plugin/compare/v5.3.0...HEAD
+[5.3.0]: https://github.com/aspire-atlas/claude-plugin/compare/v5.2.0...v5.3.0
 [5.2.0]: https://github.com/aspire-atlas/claude-plugin/compare/v5.1.0...v5.2.0
 [5.1.0]: https://github.com/aspire-atlas/claude-plugin/compare/v5.0.0...v5.1.0
 [5.0.0]: https://github.com/aspire-atlas/claude-plugin/compare/v4.2.0...v5.0.0

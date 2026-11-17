@@ -71,7 +71,7 @@ the category read of paid partners belongs to vetting.
 3. Read `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the five
    campaign records, plus `brand:summary`, every `competitor`, `partner`, `red_line`, and
    `guideline`. Drop every key starting `review:` (content review only), `vetting:` (creator
-   vetting only), `program:` (influencer program only), `library:` (content library only), or `orchestrator:` (the orchestrator only), and the CAS keys (`-cas`, `-lane-*`, `-decision-defaults`, `-terms`) of any
+   vetting only), `program:` (influencer program only), `library:` (content library only), `orchestrator:` (the orchestrator only), `ad-reuse:` (ad reuse only), or `lastrun:` (a flow's saved setup answers), and the CAS keys (`-cas`, `-lane-*`, `-decision-defaults`, `-terms`) of any
    campaign other than this one. Keep `theme:brand` for the page in step 10; it is never a guideline. Keep
    every `creator:*` record apart: it is the team's call on one creator, not a criterion. Add
    each one with stance `reject` to the dedupe set, and show any other stance on that
@@ -100,7 +100,10 @@ the category read of paid partners belongs to vetting.
    recommendation pass returned, and `tierScheme: 2` on every candidate. Resolve every web-sourced handle with
    `lookup_creators` before scoring it.
 8. Score each new candidate with the reference's table, naming the field behind each
-   component. A component with no data scores zero and is listed as missing.
+   component. A component with no data scores zero and is listed as missing. Then work out
+   **The findings behind the shortlist** from the posts this run already read, tag every check
+   with its finding, and list any criterion a finding suggests as a proposed change; never
+   apply one.
 9. Write `action_item` findings for every candidate added or re-scored, per the reference's
    `detail` shape, with an `idempotencyKey` per candidate per run.
 10. Build and republish the living page to the same path per the reference, **The living
@@ -124,6 +127,9 @@ the category read of paid partners belongs to vetting.
 - Gaps: tiers that came back empty (including "no lookalike seed qualified"), in creator-ads
   mode any recommendation pass that returned nothing (a gap, not an error), criteria with no data behind them, the page's "as of"
   timestamp, and whether any source was unavailable this run.
+- Proposed criteria changes: each as `campaign:{slug}-criteria | current wording | proposed
+  wording | the finding behind it`, gate id `approve-record-changes`; the main thread offers each
+  through its own confirmation. Leave the line out when there are none.
 - Forward note, for a lens other than `team`: two or three lines the requester can paste to the reader.
 - One closing line: candidates written, the `runKey` used, the page link, and — in
   interactive mode — the numbered range the user can reply against to decide. Gate id for
@@ -170,15 +176,19 @@ Only `/aspire:aspire` launches you. Work only from a launch message that carries
 block (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **5**). Without one, call
 no tool and do no work: return one line, "Not started: run the aspire:aspire skill
 (/aspire:aspire) with this request, and it will launch me: {the request in one line}", and stop. Never launch another agent; name the one that should run next in the packet's
-`next`.
+`next`. When the launch block's `storyline.pass` is `draft`, draft the storyline per
+`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 4, step 0b, publish nothing,
+return it in the packet, and send `storyline` as your checkpoints' `pass`; with `build`, build to
+its `bullets` as given.
 
 End your output with one `result-packet` block built per that file's **6**, placed just before
 your `page-check` block, or just before your audit trail block when you published no page. Put
-every draft, save, send, order, payment, or spend you want approved in `proposals` with its level
-(`write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
+every draft, save, send, order, payment, spend, or freshness refresh you want approved in
+`proposals` with its level (`read` for a freshness refresh only, under gate `approve-refresh`;
+`write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
 worded for a picker. Treat an approval as given only when the launch block's `approved` and your
-own inputs both carry it. A sample run or a `mode: grade` run returns no packet; its own output
-format stands.
+own inputs both carry it (a freshness refresh needs only `approved.refresh`). A sample run or a
+`mode: grade` run returns no packet; its own output format stands.
 
 ## Audit trail
 

@@ -90,7 +90,7 @@ Do not develop from a folder that is mounted read-only or delete-restricted (som
    bash scripts/check-skill-args.sh
    bash scripts/check-directory.sh
    ```
-4. Open a PR into `develop`. Required: one approval, the `validate` check green, conversations resolved.
+4. Open a PR into `develop` and fill in its template (the checklist from `docs/STANDARD.md`). Required: one approval (a code owner's for the paths in `.github/CODEOWNERS`), the `validate` check green, conversations resolved.
 5. Merge. Within about a minute:
    - `Validate` runs on `develop`.
    - `Mirror to internal` force-pushes `develop` to `claude-plugin-internal/main`.
@@ -236,13 +236,22 @@ These are product and safety commitments. A PR that breaks one is blocked in rev
 
 | What | Where | Minimum role |
 | --- | --- | --- |
-| Merge to `develop` | Public repo | Write, plus one approving review |
+| Merge to `develop` | Public repo | Write, plus one approving review; for a path in `.github/CODEOWNERS`, the approval of a code owner |
 | Merge to `main` | Public repo | Write, plus one approving review, `validate` and `gate` green |
 | Change branch protection, secrets, deploy keys | Public repo Settings | Admin |
 | Org marketplace settings | claude.ai admin console | Org Owner or Primary Owner |
 | Directory submission | claude.ai admin console | Org Owner (or delegated directory role) |
 
 Branch protection on both branches: PRs required, 1 approval, stale reviews dismissed, conversations resolved, no force pushes, no deletions. Admins are not exempt by policy; they can technically bypass, and should not.
+
+`develop` also requires a code-owner review (`require_code_owner_reviews`). `.github/CODEOWNERS` lists the paths and their owners (the agents, the skills, `scripts/`, `docs/STANDARD.md` and `.github/`), so a change there merges only after someone who keeps the standard has read it. Other paths need any one approval. `scripts/bootstrap-github.sh` sets it; on the live repository it is the Settings change below, made by an admin:
+
+```bash
+gh api -X PATCH repos/aspire-atlas/claude-plugin/branches/develop/protection/required_pull_request_reviews \
+  -F require_code_owner_reviews=true -F required_approving_review_count=1
+```
+
+Every pull request opens with `.github/pull_request_template.md`: the checklist from `docs/STANDARD.md`, the question rerun with its table, the gap a new rule closes, and the checks that cover the change.
 
 ## 12. Troubleshooting
 
@@ -288,11 +297,11 @@ Everything in this repository ships to customers. A plugin meant only for Aspire
 
 1. Branch from `develop` as for any feature.
 2. Create `plugins/<name>/` with `.claude-plugin/plugin.json` (`name`, `displayName`, `description`, `author`, `homepage`, `repository`, `license`; no `version`), a `README.md`, and its `skills/`. Agents are named `atlas-<name>.md`; list each in a skill's agent hand-off and Model tiers tables and in the plugin README's agent table, as `aspire` does.
-3. Share files with `aspire` by symbolic link, never by copy. Every agent carries the artifact standard's agent block verbatim, and that block names `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md` and `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, which reads `reader-standard.md`, so the plugin links those three paths and the two animated marks in `assets/` to `aspire`'s files:
+3. Share files with `aspire` by symbolic link, never by copy. Every agent carries the artifact standard's agent block verbatim, and that block names `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md` and `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, which reads `reader-standard.md` and runs the script in `page-check.md`, so the plugin links those four paths and the two animated marks in `assets/` to `aspire`'s files:
    ```bash
    mkdir -p plugins/<name>/skills/aspire/references plugins/<name>/skills/page-standard plugins/<name>/assets
    ln -s ../../../../aspire/skills/aspire/references/artifact-standard.md ../../../../aspire/skills/aspire/references/reader-standard.md plugins/<name>/skills/aspire/references/
-   ln -s ../../../aspire/skills/page-standard/SKILL.md plugins/<name>/skills/page-standard/
+   ln -s ../../../aspire/skills/page-standard/SKILL.md ../../../aspire/skills/page-standard/page-check.md plugins/<name>/skills/page-standard/
    ln -s ../../aspire/assets/aspire-animated.svg ../../aspire/assets/aspire-animated-small.svg plugins/<name>/assets/
    ```
    The checks require real links to `aspire`'s files; a copy fails. Claude Code copies the target of a link that stays inside the marketplace when it installs the plugin, and the release zip stores the target's contents. Before the plugin's first official release, install it from the org catalog (through the mirror) and from a release zip, and confirm the linked files arrive there too.

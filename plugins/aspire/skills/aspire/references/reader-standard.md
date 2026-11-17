@@ -1,6 +1,6 @@
 # Reader standard
 
-Reader standard v1.1, Oct 29, 2026.
+Reader standard v1.3.
 
 The reader checks ask whether the reader can act on the work: does it answer first, give numbers
 context, keep decisions apart, and fit the person who will read it. This file is the one place they
@@ -8,11 +8,11 @@ are defined. Two things run them:
 
 - **The page standard** (`skills/page-standard/SKILL.md`): every agent checks its own page against
   them before it publishes, and reports the result in its page check.
-- **The quality review** (`quality-review.md`): runs them as check **4.14**, after the accuracy
+- **The quality review** (`SKILL.md` **Quality review**): runs them as check **4.14**, after the accuracy
   checks, on any page or deck before it is shared.
 
 Each check returns PASS, FAIL, or N/A with a one-line reason; which ones are N/A for a kind of target
-is in `quality-review.md`, **3**.
+is in **Quality review**, **3**.
 
 | ID | Check | Passes when | Fails when, for example | Default severity on FAIL |
 | --- | --- | --- | --- | --- |
@@ -26,8 +26,10 @@ is in `quality-review.md`, **3**.
 | R8 | Shows its working | Scores and recommendations explain how they were reached, with the weights behind any score | A score with no explanation | High |
 | R9 | Names what's missing | On a team page, missing data is named, with what connecting it would add | Says nothing about missing ad data | Medium; High when the gap would change the decision |
 | R10 | Fits the reader | A VP or budget owner sees the answer, decisions, and next steps on one screen, with "Prepared by" at the top and detail below. A client sees the client version: no revision history and no named rejects | A VP brief that opens with the method | High when `recipient` is `leadership` or the page names a VP or budget owner; else Medium |
-| R11 | Plain language | No agent, skill, tool, or system names in the body, and no jargon. The Aspire Atlas mark and the source line `artifact-standard.md` requires are exempt | "The atlas-market-signal agent found" | Medium when `audience` is `team`; High otherwise |
+| R11 | Plain language | No agent, skill, tool, or system names in the body, and no jargon. The Aspire Atlas mark and the source line **Artifact standard** requires are exempt | "The atlas-market-signal agent found" | Medium when `audience` is `team`; High otherwise |
 | R12 | Built for this question | The page's sections and visuals come from what this question and reader need | A launch timeline on a one-creator profile | High |
+| R13 | Required metrics | Every post the page cites carries each metric its kind of question requires (**Page standard**, section 8), or says beside it why that metric is not available. Nothing missing is shown as 0 | 21.6 million views with no likes, comments, shares, or saves beside them; a save count Atlas does not hold shown as 0 | High |
+| R14 | Data freshness | Every account the page cites has a freshness line in the source line: the newest post Atlas holds and when Atlas last fetched it, or, when Atlas has no fetch time, "last changed", "not fetched by Atlas yet", or "freshness unknown" (**Page standard**, section 9). On a team page, a period Atlas has not fetched reads "Atlas has no data for {period}"; a page shared outside the team leaves it out | "No posts this week" for a week Atlas never fetched; a page with no word on how old its figures are | High |
 
 ## How to judge them
 
@@ -39,11 +41,15 @@ is in `quality-review.md`, **3**.
   checking its own page judges R7 against what its run read, and treats storyboard timecodes as
   drafts until a 1-second frame scan confirms them.
 - **R2** is n/a on a page that covers one post, one creator, or one account on one network
-  (`quality-review.md`, **3**).
+  (**Quality review**, **3**).
+- **R13** is n/a on a page that cites no post. On a page with no question code, judge it against
+  the row for the kind of question the page answers (**Page standard**, section 8).
+- **R14** is n/a on a page that cites no account. A chat reply is judged the same way: one that cites
+  an account's data carries its freshness line (**Page standard**, section 9).
 - **Links.** R7 covers evidence links only; every other broken link is filed as the table in
-  `quality-review.md`, **4.15**, **Broken links**, says.
+  **Quality review**, **4.15**, **Broken links**, says.
 - **R2 and R9 outside the team.** When `audience` is `client`, `creator`, or `public` (the page
-  carries the shared audience line from `artifact-standard.md`, section 2), gaps go to the
+  carries the shared audience line from **Artifact standard**, section 2), gaps go to the
   requester, never onto the page. R9 is N/A ("gaps go to the requester"). R2 passes when the page
   lists the platforms it covers with their post counts and claims no others; a page that names a
   platform Atlas could not collect fails **4.11**, item 5, not R2.
@@ -56,8 +62,14 @@ is in `quality-review.md`, **3**.
   an agent name (`atlas-...`), an Atlas tool name in any form (`search_posts`,
   `mcp__Aspire_Atlas__search_posts`), Claude, Anthropic, LLM, MCP, API, JSON, runKey (matched by
   case, plurals included, so "Atlas-indexed" passes), and subagent, tool call, webhook, endpoint,
-  and schema (any case). Handles, hashtags, emails, and links are not checked. Other jargon is a
-  judgment.
+  and schema (any case). It also fails on the labels Atlas's own reports use for themselves, which
+  mean nothing to a reader (any case): pulse, reach slot, and practitioner (each with its plural), the run,
+  and picks or reads used as a label after top, our, first, creator, the, your, weekly,
+  daily, today's, or this week's ("Top picks", "Our reads"). "The run" followed by "up" or "rate",
+  with a hyphen or a space ("the run-up", "the run rate"), passes; "picks" and "reads" as plain verbs
+  or counts ("Atlas reads public posts", "3 picks and 2 passes") pass, and the English read judges
+  them. Say what the thing is: "the creators we recommend", "this week's results", "Atlas compared",
+  "this review", "the spot for reach", "the people who do the work". Handles, hashtags, emails, and links are not checked. Other jargon is a judgment.
 - One defect is one finding. A defect that fails an R check and a 4.x check (a headline count that
   disagrees with the table fails R7 and 4.4) is filed under the more specific check, here 4.4, and
   both IDs go in **Failed checks**.

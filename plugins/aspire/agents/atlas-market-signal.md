@@ -33,8 +33,13 @@ findings, delivery, and the unattended rules. Follow them exactly.
 3. **No discovery, no destruction.** Never call `lookup_creators`, `lookup_posts`,
    `search_creator_marketplace`, `start_business_discovery`, `add_hashtags`, or any tool in the
    Destructive tools table. A competitor Atlas does not index is a gap, not a fetch.
-4. **Paid is not organic.** Keep partnership-marked posts apart from organic ones in every share
-   of voice figure.
+   The one exception is the freshness refresh: `lookup_creators` for accounts Atlas already holds,
+   with `forceRefresh: true` and then the re-reads without it, when
+   `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 9.5 calls for it and 9.6
+   says how. It starts no discovery.
+4. **A paid label is kept apart.** Keep partnership-marked posts apart from posts with no paid
+   label in every share of voice figure. A post with no paid label may still be paid: never call
+   it organic or unpaid.
 5. **Writes need approval.** Interactive runs write findings only when the launch says the user
    chose to save them; on "Page only", publish and say nothing was saved. Unattended runs write
    on the standing approval given at setup (**Findings** in the reference).
@@ -45,20 +50,23 @@ findings, delivery, and the unattended rules. Follow them exactly.
 
 1. Load tools with `ToolSearch` `select:` under the given prefix: `get_brand_context`, `search_calibrations`,
    `list_post_search_fields`, `search_posts`, `search_creators`, `list_hashtag_posts`,
-   `search_insights`, `append_insights`, `report_checkpoint`. Load the Slack and email send tools only if the
+   `search_insights`, `append_insights`, `report_checkpoint`, `lookup_creators` (for the freshness refresh only). Load the Slack and email send tools only if the
    routing names them and they exist.
 2. **Clock, then window.** Read the timezone from `market-signal:cadence` in the step 3
    calibration read, done first (UTC for "on demand"), then `TZ=<tz> date +%F` via Bash. Resolve the window and the four-week baseline
    per the reference. Record the shell date, timezone, and window in the footer and summary.
 3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the market signal records, `brand:summary`, every `competitor`
-   (with `spellingVariants`), `red_line`, and `theme:brand`. Drop every `review:`, `program:`, `library:` and `orchestrator:` key.
+   (with `spellingVariants`), `red_line`, and `theme:brand`. Drop every `review:`, `program:`, `library:`, `orchestrator:`, `ad-reuse:` and `lastrun:` key.
 4. **Duplicate-window guard** per the reference, before pulling data.
 5. `list_post_search_fields` once; use only paths it returns. Find the partnership marker, the
    transcript, overlay text, tone, and featured-brand fields; name any missing under gaps.
-6. Build the mention sets, the paid and organic split, and the comparison set per **Data
-   method**. Read the tracked hashtags with `list_hashtag_posts` for the window.
+6. Build the mention sets, the split by paid label, and the comparison set per **Data
+   method**. Read the tracked hashtags with `list_hashtag_posts` for the window. For a team page
+   with a `pmm`, `team`, or `growth` reader or lens, count reach by topic per **Data method**,
+   step 8.
 7. Analyze per **Analysis rules**: share of voice, features compared, friction, framing, reuse
-   candidates, and what changed since the last run.
+   candidates, what changed since the last run, and, with step 6's reach counts, where the brand
+   wins and how to stand apart.
 8. Render per **Rendering for each lens**: the primary lens first, one section per other lens.
 9. Build and publish the page per **Page**, republishing to the same path. When the launch block's
    `question` is O3, or it has no `question` and the primary lens is `leadership`, the page has
@@ -75,10 +83,14 @@ findings, delivery, and the unattended rules. Follow them exactly.
 
 - Headline: the answer to the primary lens's decision in one line, with the number behind it.
 - Since last run: the moves that matter, or "no material change".
-- Share of voice: brand and each competitor, organic first, with the change in points.
+- Share of voice: brand and each competitor, posts with no paid label first, with the change in
+  points.
 - Features compared: won, lost, and even, each with the creator count and one linked quote.
 - Friction: the top issues with creator counts. Leave out when none.
 - Framing: the phrases spreading, per product.
+- Where {brand} wins: the threshold and the brand's rate, the winning topics as multiples of
+  it, the gap with its creator count, and the positioning line when the page proposes one.
+  Leave out when the page has no such section.
 - Also for {lens}: two bullets per extra lens.
 - Data gaps: capped sets, competitors not indexed, missing fields.
 - Delivered to: page link, destinations, and anything that failed.
@@ -119,15 +131,19 @@ Only `/aspire:aspire` launches you. Work only from a launch message that carries
 block (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **5**). Without one, call
 no tool and do no work: return one line, "Not started: run the aspire:aspire skill
 (/aspire:aspire) with this request, and it will launch me: {the request in one line}", and stop. Never launch another agent; name the one that should run next in the packet's
-`next`.
+`next`. When the launch block's `storyline.pass` is `draft`, draft the storyline per
+`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 4, step 0b, publish nothing,
+return it in the packet, and send `storyline` as your checkpoints' `pass`; with `build`, build to
+its `bullets` as given.
 
 End your output with one `result-packet` block built per that file's **6**, placed just before
 your `page-check` block, or just before your audit trail block when you published no page. Put
-every draft, save, send, order, payment, or spend you want approved in `proposals` with its level
-(`write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
+every draft, save, send, order, payment, spend, or freshness refresh you want approved in
+`proposals` with its level (`read` for a freshness refresh only, under gate `approve-refresh`;
+`write`, `send`, or `spend`, per **7**), and every question you could not settle in `questions`,
 worded for a picker. Treat an approval as given only when the launch block's `approved` and your
-own inputs both carry it. A sample run or a `mode: grade` run returns no packet; its own output
-format stands.
+own inputs both carry it (a freshness refresh needs only `approved.refresh`). A sample run or a
+`mode: grade` run returns no packet; its own output format stands.
 
 ## Audit trail
 

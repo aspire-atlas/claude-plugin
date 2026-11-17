@@ -4,6 +4,60 @@ Shared by the `atlas-creator-discovery` agent and the **Creator discovery** sect
 Holds the setup interview, the campaign calibrations, the tier model, scoring, the pool state
 machine, the page structure, delivery, and the rules for scheduled (unattended) runs.
 
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Creator discovery (standing creator shortlist per campaign)](#creator-discovery-standing-creator-shortlist-per-campaign)
+- [Why the discovery agent exists](#why-the-discovery-agent-exists)
+- [Setup: the interview is generated, not fixed](#setup-the-interview-is-generated-not-fixed)
+- [The pool](#the-pool)
+- [Tiers: where candidates come from, and in what order](#tiers-where-candidates-come-from-and-in-what-order)
+- [Scoring](#scoring)
+- [The findings behind the shortlist](#the-findings-behind-the-shortlist)
+- [State written to Atlas](#state-written-to-atlas)
+- [The living page](#the-living-page)
+- [Decisions](#decisions)
+- [Delivery](#delivery)
+- [Jobs and task names](#jobs-and-task-names)
+- [Main thread: setup, run, and schedule](#main-thread-setup-run-and-schedule)
+- [Scheduled (unattended) runs](#scheduled-unattended-runs)
+- [Creator-ads mode (CAS campaigns)](#creator-ads-mode-cas-campaigns)
+- [Atlas quirks that apply here](#atlas-quirks-that-apply-here)
+
+## Creator discovery (standing creator shortlist per campaign)
+
+Trigger when the user asks to find creators for a campaign, refill or review a shortlist, ask who
+to add, or schedule any of that. Requires a brand profile; linked channels help but are not
+required. Keeps a pool of undecided candidates at a saved target (default 50) for one named
+campaign; it is not the creator brief. Before anything, read this file
+(**Setup**, **Decisions**, **Jobs and task names**, **Main thread: setup, run, and schedule**) and
+follow it.
+
+### Setup
+
+Skip to **Run** when the five `campaign:{slug}-*` keys exist; otherwise S1, 3 to 5 generated
+questions, S7 to S9, then one batch confirmation before writing. S8 and S9 are the standing
+approvals to deliver and to run discovery unattended.
+
+### Run
+
+Ask the run question, then launch `atlas-creator-discovery` (run mode `interactive`, `job`
+`discover` or `view`, campaign slug, `recipient`). Relay the summary, page link, numbered range,
+and the top new candidates by name, in text (cards only on request). Recording decisions stays in the main thread:
+one confirmation naming the rejected handles, then `append_insights`. Ask every question exactly
+as worded in the reference, at most four per call (**Guardrails**); the batch and decision
+confirmations confirm writes, S8 sends.
+
+### Schedule (two schedules, one pass)
+
+Never for a CAS campaign (`type: creator-ads`); offer the CAS weekly call instead. Otherwise offer
+"Set up the recurring discovery now?" and follow **Readouts**, Schedule. This is the only flow
+that may start discovery work on a schedule, and only under the `campaign:{slug}-cadence` record
+the user saved. Unattended runs never ask questions and never record a verdict; with setup
+incomplete they publish a "setup needed" card and stop.
+
 ## Why the discovery agent exists
 
 The creator brief plans one week and sources creators for it. Creator discovery is the layer under
@@ -61,6 +115,8 @@ Rules:
 - Confirm the batch once before writing, then write all five records.
 - Derive `{slug}` from the campaign name: lowercase, hyphenated, no dates. Show it once so the
   user can recognize it later; never ask them to invent it.
+- An interactive run's reader and save choice go on `lastrun:creator-discovery-{slug}`
+  (**Orchestration contract**, **2**, Saved answers).
 - A teammate re-running setup sees the saved answers and is offered "Keep as saved
   (Recommended)" / "Change" per item. Changes go through `supersede_calibration` with its own
   confirmation.
@@ -132,16 +188,16 @@ refilling the shortlist with creators like the ones already delivering.
      the band. One call per seed, never several seeds in one call, so every result is credited to the seed
      that found it. TikTok has no
      lookalike filter, so a TikTok seed gets the first two ways only. Never send `keyword` with
-     `similarToCreators`: the server rejects the two together (see `creator-brief.md`, **Atlas
+     `similarToCreators`: the server rejects the two together (see **Creator brief**, **Atlas
      quirks**). Never add `recommendationType` to this call either, in any mode: the server
      accepts the pair but returns nothing.
 3. Read marketplace results through `search_creators` once they land (1 to 3 minutes after
-   each network's job completes, per `creator-brief.md`, **Atlas quirks**).
+   each network's job completes, per **Creator brief**, **Atlas quirks**).
    Record `source` `lookalike of @{seed}` and `detail.seed` on each candidate; the card's
    `{DETAILS}` names the seed with the source, per the card's **Badges** rule. A lookalike is scored like any other candidate: resemblance earns
    no points of its own.
 
-**Marketplace search.** Follow `creator-brief.md`, **Atlas quirks**, Marketplace search, for
+**Marketplace search.** Follow **Creator brief**, **Atlas quirks**, Marketplace search, for
 the call shape, polling, and skips. For tier 5:
 
 - `networks` is the saved Networks answer. A network the brand did not choose is never sent.
@@ -152,7 +208,7 @@ the call shape, polling, and skips. For tier 5:
   A creator ad campaign adds `featuredInPaidAds: true` for the paid track record, and may add
   `recommendationType: "high_ad_performance"` to each keyword call (see **Recommendation
   passes**), and `creatorLanguage` only when the lane or campaign criteria name a language in
-  the enum (`creator-brief.md`, **Atlas quirks**). Yes-only filters are sent as `true` or left
+  the enum (**Creator brief**, **Atlas quirks**). Yes-only filters are sent as `true` or left
   out, never `false`.
 - TikTok: `minFollowers` / `maxFollowers` as the exact band, and `countryCodes` from the saved
   countries TikTok supports (per the quirk). When they span regions (US; DE, ES, FR, GB, IT;
@@ -169,7 +225,7 @@ Rules:
 - Record the tier and the exact source on every candidate; the page shows it.
 - Never surface the brand's own handles, any `competitor` handle, any handle already
   decided for this campaign, or any creator whose `creator:*` calibration has stance `reject`
-  (the team's call from creator vetting, `creator-vetting.md`). Any other stance is shown on
+  (the team's call from creator vetting, **Creator vetting**). Any other stance is shown on
   the card under "Notes".
 - Web research is evidence, never a write: a web-sourced candidate still enters the pool
   through `lookup_creators`, with the source URL in its evidence.
@@ -178,7 +234,8 @@ Rules:
 
 A fit score out of 100, computed from the saved criteria only. Every component names the
 field or hit it came from; a component with no data scores zero and is listed as missing,
-never guessed.
+never guessed, and the page shows it as "not available: {reason}", never as 0 (**Page
+standard**, section 8).
 
 | Component | Weight | Source |
 | --------- | ------ | ------ |
@@ -196,6 +253,39 @@ are about it, whatever words they use.
 Risk flags are reported, never scored: competitor mention, a `red_line` match in recent
 content, no contact route, or a follower-to-engagement pattern that looks bought. A flagged
 candidate still appears, with the flag on its card.
+
+## The findings behind the shortlist
+
+The shortlist opens with the same three findings and the same "What we look for" checks as the
+vetting slate, worked out exactly as **Creator vetting**, **The findings behind the checks** says,
+so the reader sees why the checks matter before the candidates. Three differences:
+
+- **The product posts** are the posts this run read that mention the brand or the product: the
+  tier 1 partnership posts and the tier 2 posts that mention the brand, and the topic evidence
+  posts read per candidate that mention the brand or product (one about the campaign's broader
+  subject alone does not count). No search is added for them.
+- **A candidate's usual views** is the `instagram.medianViews` the `search_creators` hit already
+  carries when `instagram.medianViewsWindowDays` is 90, so it matches the vetting slate's 90-day
+  usual. Otherwise (another window, TikTok, which names none, or no field) the usual is worked out
+  from the candidate's posts this run read, as vetting does; with fewer than 5, it is not
+  available. The page's key names the window.
+- **The checks** are the components of the scoring table above, worded in the campaign's terms,
+  each tagged with its finding. The fit score still decides the rank. In creator-ads mode the
+  checks are the match score's client factors with Budget vs target left out, marked as vetting's
+  creator-ads lanes say, and the score shown beside them is the client score, so no check or score
+  on the page shows price. A criterion a finding
+  suggests is a proposed change to `campaign:{slug}-criteria`: it goes in the page's Decisions
+  and in the result's "Proposed criteria changes", and the run never applies it. An unattended
+  run only puts it on the page.
+
+**Supply explains a short pool.** When the pool is under its target, the supply finding says why
+with its numbers ("4 of 55 posts about {product} come from US accounts, so the pool holds 14 of
+50"), and Next steps says where the next search should look. The pool is never padded with
+candidates below the criteria.
+
+The findings live on the page only. Discovery writes no extra finding for them, so every
+record in the pool stays a candidate; the vetting run on this pool works them out again from
+its own reads.
 
 ## State written to Atlas
 
@@ -223,45 +313,52 @@ wins. `search_insights` returns findings tenant-wide, so always filter on the pr
 One page per campaign, republished to the same path every run so the link stays stable. It is
 the working list behind question **I1** ("Which creators should we contact for this launch, and
 why?"). The page that answers I1 is the vetting slate built from this pool
-(`creator-vetting.md`, **The page**), so the result packet's `next` names the vetting agent
+(**Creator vetting**, **The page**), so the result packet's `next` names the vetting agent
 whenever undecided candidates are ready to vet. Build this page from the page blocks
 (`skills/page-standard/blocks.md`). Sections in order:
 
 1. **Header** (3.1, 3.2): brand, campaign name, network chips with the creators found per
    platform, pool counts (undecided / accepted / rejected against target), run timestamp, a
-   "Prepared for" chip fed by `recipient` (`recipient-lens.md`), and the animated mark at the
+   "Prepared for" chip fed by `recipient` (**Recipient lens**), and the animated mark at the
    top right.
 2. **Answer** (3.3), written last: where the pool stands and what to do with it ("50 in the
    pool, 12 new this run. Vet the top 20 next."), then **Decisions** (3.5): the candidates to
-   accept or reject, by number, or "Nothing needs approval" when the pool holds no new ones.
+   accept or reject, by number, and each proposed change to the criteria with the finding behind
+   it, or "Nothing needs approval" when the pool holds no new candidates and there is no
+   proposal.
    Then **Next steps** (3.6), its own section: which numbers to vet next and by when, and any
    tier that ran dry with what would refill it.
-3. **Since last run**: added, re-scored up or down, went dormant, decided. One line each;
+3. **What people are doing well with {product}**, **Where people are having challenges**, and
+   **What this means for picking creators** (3.4, three insight cards, each with its chart or
+   table as the vetting page has them), then **What we look for in a {product} creator**: the
+   checks with their finding tags, per **The findings behind the shortlist**.
+4. **Since last run**: added, re-scored up or down, went dormant, decided. One line each;
    "no change" is a valid line.
-4. **Active list**: accepted creators as creator cards, so the working set is visible first.
-5. **Shortlist**: the undecided pool, grouped by tier, ranked by fit score inside it.
+5. **Active list**: accepted creators as creator cards, so the working set is visible first.
+6. **Shortlist**: the undecided pool, grouped by tier, ranked by fit score inside it.
    Numbered from 1 across the whole shortlist, stable for the run, because those numbers are
-   what the user replies with. Each candidate is a creator card (`creator-card.md`): the fit
+   what the user replies with. Each candidate is a creator card (**Creator card**): the fit
    score in the ring; flow chips `#{number}` and the tier (`Added by team` for `manual`), then
    the card's own badges; safety flags in the brand safety tile and every other risk flag under
    "Notes" in `{DETAILS}`, per the card's **Brand safety** rule; evidence posts first in the
-   thumbnails. `{DETAILS}` also holds the two strongest fit components with their points, the
+   thumbnails. `{DETAILS}` also holds each check's mark with the post or number behind it (a
+   lift as "3.0× usual views"), the two strongest fit components with their points, the
    source, the contact route if known, and the estimated fee from the fee calculator
-   (`fees.md`, **Applying the rates**) on the campaign's platforms: "Est. fee {open} to {max},
+   (**Fee calculator**, **Applying the rates**) on the campaign's platforms: "Est. fee {open} to {max},
    target {target}" (marked "est. from engagement" when the calculator estimated the views), or nothing when it gives no price. The page footer carries the rate
    label once.
-6. **Rejected this cycle**: collapsed list of handles with the reason recorded, so a
+7. **Rejected this cycle**: collapsed list of handles with the reason recorded, so a
    decision is auditable.
-7. **Criteria and scoring** (3.11): the saved criteria in plain words, the scoring table's
+8. **Criteria and scoring** (3.11): the saved criteria in plain words, the scoring table's
    components and weights, and the platform counts again, so a reader can see what "fit" meant.
-8. **Footer**: sources, a note that images are a snapshot, "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote. The mark and the footnote follow [artifact-standard.md](artifact-standard.md).
+9. **Footer**: sources, a note that images are a snapshot, "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote. The mark and the footnote follow **Artifact standard**.
 
 More than 12 candidates means a chart leads the shortlist: fit score by tier, or follower
 count against engagement rate with the pool plotted. Embed every image with the snippet in
-`creator-card.md`, **Images**, page profile, and keep the images under 8MB and the page under
+**Creator card**, **Images**, page profile, and keep the images under 8MB and the page under
 10MB. A large pool cuts thumbnails per card (then rejected-list images) before quality, per
 **Images**. Load `artifact-design`, and `dataviz`
-for any chart, before building. Apply the saved brand theme (`theme:brand`) per `theme.md`, **Applying the theme**; without one, the design here stands. Title: "<Brand> Creator Discovery: <Campaign>".
+for any chart, before building. Apply the saved brand theme (`theme:brand`) per **Theme**, **Applying the theme**; without one, the design here stands. Title: "<Brand> Creator Discovery: <Campaign>".
 
 ## Decisions
 
@@ -283,7 +380,7 @@ Decisions happen in chat, in any later session, off the numbers on the page.
 ## Delivery
 
 Read `campaign:{slug}-routing`. The page and chat summary always ship. Slack and email follow
-the readout rules in `readout.md`, **Delivery**: one message with the headline, the top
+the readout rules in **Readouts**, **Delivery**: one message with the headline, the top
 bullets, and the page link; interactive runs confirm the send once; the S8 confirmation is the
 standing approval for unattended runs; never send to a destination that is not in the routing
 record.
@@ -318,7 +415,8 @@ offer "Change setup" as an option on the run question. Several campaigns may be 
 1. Ask S1: what the campaign is, in the user's own words.
 2. **Then write the refinement questions.** Read the S1 answer together with `brand:summary`,
    `brand:business-context`, and the `competitor`, `red_line` and `guideline` records (not
-   `review:` keys, which are content review only, nor `theme:` keys, which style pages), and from
+   `review:` keys, which are content review only, nor `theme:` keys, which style pages, nor
+   `lastrun:` keys, which hold a flow's saved setup answers), and from
    those compose 3 to 5 `AskUserQuestion` questions covering the dimensions above, in their
    order, skipping anything S1 already settled. The options are inferred from the brief and the
    brand context, never generic. Never ask more than five, never ask in plain text.
@@ -336,23 +434,30 @@ shortlist", "Change setup". Then launch `atlas-creator-discovery` with: tool pre
 `interactive`, `job` (`view` for "Show the current shortlist", else `discover`), and `recipient`
 (SKILL.md, **Reading the ask**; `growth` when the ask is for more creators like the ones
 working). Relay its summary, the page link, and the numbered range the user can decide against.
-Show the candidates added this run inline as creator cards from the agent's `creator-cards`
-block (top six by fit score, badged with their shortlist numbers).
+Name the top candidates added this run in text, with their shortlist numbers and fit scores.
+Then offer each item on the agent's "Proposed criteria changes" line through its own Destructive
+tools confirmation (`supersede_calibration` on `campaign:{slug}-criteria`, gate
+`approve-record-changes`), one per call; a declined proposal stays unsaved. A scheduled run's
+proposals wait on the page until someone runs discovery and is offered them.
+Keep the agent's `creator-cards` block (top six by fit score); the cards appear only when the
+user asks to see them (**Creator card**, **Cards in chat**).
 
 **Recording decisions** ("Record decisions on the shortlist", or a reply against the page
 numbers) stays in the main thread, never the agent, per **Decisions** above. Rejected creators
 never reappear; accepted ones free their slot for the next run.
 
-**Scheduling.** A CAS campaign's discovery runs only from **CAS campaign** (`cas-campaign.md`):
+**Scheduling.** A CAS campaign's discovery runs only from **CAS campaign**:
 when the campaign's `campaign:{slug}-brief` has the `type: creator-ads` line, never schedule
 discovery for it; offer the CAS weekly call instead. Otherwise, after the first successful run,
 or whenever the user asks, offer with `AskUserQuestion`: "Set up the recurring discovery now?"
 Options: "Yes, discovery and shortlist (Recommended)", "Discovery only", "Shortlist only", "Not
-now". On yes, follow the same mechanics as SKILL.md **Readouts**, Schedule (`readout.md`,
-**Scheduling (main thread)**): read the times and timezone from `campaign:{slug}-cadence`,
+now". On yes, follow the same mechanics as SKILL.md **Readouts**, Schedule
+(**Scheduling (main thread)**): read the times and timezone from `campaign:{slug}-cadence`,
 convert to UTC cron, create one task per job with the session's scheduled-task tools, named as in
-**Jobs and task names**, confirm both in one `AskUserQuestion` before creating them, and tell the
-user the tasks run in fresh sessions so Aspire Atlas must be enabled for scheduled tasks. Prompts
+**Jobs and task names**, show the always-allow block in SKILL.md **1.6** and confirm both in
+one `AskUserQuestion` before creating them, and tell the user the tasks run in fresh sessions so
+Aspire Atlas must be enabled for scheduled tasks with its tools on Always allow, except the ones
+1.6 holds back. Prompts
 must say "do not ask questions", name the brand by its exact Atlas profile `name` and the
 campaign slug, and state no date.
 
@@ -363,7 +468,7 @@ A scheduled run starts a fresh session with nobody to answer questions.
 - Never ask a question. If `campaign:{slug}-brief`, `-criteria`, `-pool`, `-routing`, or
   `-cadence` is missing, publish a one-card page titled "<Brand> Creator Discovery: setup needed" listing what
   is missing (it still carries the mark and the footnote, with the "No Atlas data on this page" variant in
-  [artifact-standard.md](artifact-standard.md)), write nothing to Atlas, and end with "Run /aspire:aspire and ask for creator
+  **Artifact standard**), write nothing to Atlas, and end with "Run /aspire:aspire and ask for creator
   discovery setup."
 - **Discovery is allowed unattended for this agent**, and only this agent: the S9 cadence
   record is the standing approval, and it covers `search_creators`, `search_creator_marketplace`
@@ -373,7 +478,7 @@ A scheduled run starts a fresh session with nobody to answer questions.
 - Never run a destructive tool, and never record a verdict. Only a person decides, so an
   unattended run publishes and writes `action_item` findings, nothing else.
 - Resolve the date from the shell clock in the cadence record's timezone (`TZ=<tz> date +%F`),
-  never from the task prompt or the session header — the rule in `readout.md`,
+  never from the task prompt or the session header — the rule in **Readouts**,
   **Resolving "today"**, applies here too.
 - If Atlas returns an unauthorized error, publish the "setup needed" card with "Aspire Atlas
   needs a fresh sign in" and stop.
@@ -383,7 +488,7 @@ A scheduled run starts a fresh session with nobody to answer questions.
 ## Creator-ads mode (CAS campaigns)
 
 A campaign whose `campaign:{slug}-brief` body starts with `type: creator-ads` is a creator ad
-campaign, set up by the **CAS campaign** section of SKILL.md (`cas-campaign.md`), not by S1 to
+campaign, set up by the **CAS campaign** section of SKILL.md, not by S1 to
 S9. The main thread passes `campaign_type` `creator-ads` and the lane to fill when there is one.
 Everything above applies, with these changes:
 
@@ -401,18 +506,18 @@ Everything above applies, with these changes:
   campaign, in interactive runs too (SKILL.md, **Guardrails**). The weekly sync never launches
   discovery; it runs when the CM picks it.
 - **The fit score is the campaign's match score.** Score every candidate with the one procedure
-  in `cas-campaign-page-brief.md`, **Creator Selection**, **The match score**, against their lane's
+  in **CAS campaign**, **Creator Selection**, **The match score**, against their lane's
   concept, with the weights in `match` in `campaign:{slug}-cas` (read it and `-terms` for this
   campaign only), so the shortlist and the campaign page show the same number for the same
   inputs. When `match` has a `basis`, the page says
   "Weights tuned {date} from {n} client decisions" in its About this data, else "Default weights". The casting keywords and target cities are `casting` in the lane record,
   which the campaign page's edits are pulled into, else derived from the lane's persona and casting filter and named as derived
-  on the page. Budget vs target uses `rates-and-terms.md`, **Expected cost** (the
+  on the page. Budget vs target uses **Rates and terms**, **Expected cost** (the
   roster's offer, counter or agreed fee for a creator carried from an earlier round, else the
   calculator's target plus the uplift) and **Target rate**. Read the candidates' `roster` findings
   on the `cas-campaign-{profile}-` prefix, every campaign of the brand's, for those fees and for
   worked with the brand before.
-  Past paid partners are a plain count here; the category read is vetting's (`creator-vetting.md`,
+  Past paid partners are a plain count here; the category read is vetting's (**Creator vetting**,
   **Creator-ads lanes**), and the campaign page uses it once vetting has screened the lane.
   Write the result in `detail.match` (`{score, band, factors, without, conflict, pastDeals,
   weights, scoredAt}`) with `fitScore` equal to `score`, and show the band and any competitor
@@ -423,7 +528,15 @@ Everything above applies, with these changes:
   campaigns.
 - **Recommendation passes** fill each lane from Meta's own rankings, per the block below.
 - **Ad figures on every card**, in `{DETAILS}` and in `detail.adFigures`, drawn per
-  `creator-card.md`, **Creator-ads details**:
+  **Creator card**, **Creator-ads details**. Write `detail.adFigures` with exactly these keys,
+  each a number, list or string as Atlas returned it, and leave out a key Atlas holds nothing
+  for: `hookRate`, `reelsInteractionRate`, `pastPaidPartners` (the names), `partnershipReadiness`
+  ("Ready", "Partly" or "Not yet"), `isPaidPartnershipMessagesEnabled`, `views`, `interactions`,
+  `reach`, `engagedAccounts`, `category` and `contactRoute` (the route in words, never the
+  address). `get_cas_selection` reads them for the selection widget; it also accepts the
+  Instagram field names cited below (`reelsHookRate`, `pastBrandPartnershipPartners`,
+  `totalViews`, `accountInteractions`, `creatorMarketplaceReach`, `creatorEngagedAccounts`), so
+  a finding written earlier still shows. The figures:
   - Hook rate (`instagram.reelsHookRate`)
   - Reels interaction rate (`instagram.reelsInteractionRate`)
   - Past paid partners (`instagram.pastBrandPartnershipPartners`, named, at most five)
@@ -442,7 +555,7 @@ Everything above applies, with these changes:
   - Meta recommends: `detail.recommendationTypes` as chips in plain words ("High ad
     performance", "Most ads experience", "Similar brands"); left out when empty
 
-  Project the `instagram` container to read them, per `creator-brief.md`, **Atlas quirks**. A
+  Project the `instagram` container to read them, per **Creator brief**, **Atlas quirks**. A
   figure Atlas does not hold shows "Not in Atlas", never a guess. Atlas gives no period for
   views or interactions, so never call them "30-day" or "lifetime". TikTok cards carry one
   plain line: "Hook rate is not available on TikTok."
@@ -451,7 +564,7 @@ Everything above applies, with these changes:
   Inside a lane, tiers and fit score sort as above. Numbering still runs from 1 across the whole
   page. Title "<Brand> Creator Discovery: <Campaign>" stays.
 - **Decisions come from Gate 2.** The main thread writes the verdicts when the client's slate
-  decisions close Gate 2 (`cas-campaign.md`, **Gate 2**). The agent still writes only undecided
+  decisions close Gate 2 (**CAS campaign**, **Gate 2**). The agent still writes only undecided
   findings.
 
 ### Recommendation passes
@@ -478,7 +591,7 @@ after, if the lane is still short.
 - Never `similarToCreators` (the pair returns nothing), never `keyword`, and never `false` for
   a yes-only filter.
 
-Poll each job and read its results through `search_creators` per `creator-brief.md`, **Atlas
+Poll each job and read its results through `search_creators` per **Creator brief**, **Atlas
 quirks** (1 to 3 minutes after the job completes). `excludeMessagedCreators` is best effort, so
 the campaign dedupe set is still what keeps decided creators out. `most_ads_experience` can
 return nothing for a brand: that is a valid result, not an error.
@@ -503,7 +616,7 @@ returned nothing is named under Gaps as a gap line, never as an error.
 
 ## Atlas quirks that apply here
 
-Inherited from `creator-brief.md` and `readout.md`: project the `media` and
+Inherited from **Creator brief** and **Readouts**: project the `media` and
 `instagram.account` containers, not leaf URLs; exclude stories with `exists mediaKind`; some
 `/thumbnail` routes 404 on image posts; published pages cannot load `cdn.aspire.io` images, so embed them.
 New for creator discovery: `search_creators` carries no post-level fields, so topic evidence always

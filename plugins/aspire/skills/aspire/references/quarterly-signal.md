@@ -1,9 +1,42 @@
 # Quarterly signal reference (the quarter's story for leadership)
 
 Shared by the `atlas-quarterly-signal` agent and the **Quarterly signal** section of SKILL.md.
-Serves the `leadership` lens (`recipient-lens.md`): is this worth the investment, and what is
+Serves the `leadership` lens (**Recipient lens**): is this worth the investment, and what is
 the story for the quarter? The decision it feeds is budget, headcount, and where influencer
 sits in the channel mix. It lands in a quarterly business review.
+
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Quarterly signal (the quarter's story for leadership)](#quarterly-signal-the-quarters-story-for-leadership)
+- [Why the quarterly signal exists](#why-the-quarterly-signal-exists)
+- [Inputs and window](#inputs-and-window)
+- [What it reads](#what-it-reads)
+- [The page: one page, outcome first](#the-page-one-page-outcome-first)
+- [Findings](#findings)
+- [Unattended runs](#unattended-runs)
+
+## Quarterly signal (the quarter's story for leadership)
+
+Trigger when the user asks how the creator or influencer program did this quarter, for a
+QBR, a quarter in review, or whether the program is working. Requires a brand profile. Full
+detail lives in this file.
+
+1. Ask in one `AskUserQuestion` call, together with the **Reading the ask** confirmation
+   (default `leadership`): which quarter (last completed quarter (Recommended), quarter to
+   date, or typed dates or a fiscal quarter), and "Save the quarter's findings to Atlas?"
+   (Save (Recommended) / Page only). If the user mentions spend, take the number as typed;
+   never ask for it, and never estimate it. When no spend was typed and a program dashboard has
+   saved ledger figures, add a third question, header "Spend": "Show the program's paid amount
+   from the ledger on this page? Everyone it's shared with will see it." Options: "Leave spend
+   out (Recommended)" / "Show it". Pass the answer as `ledger_spend` (`omit` or `show`).
+2. Launch `atlas-quarterly-signal` with: tool prefix, `profile_id`, `profile_slug`, linked handles and
+   networks, run mode `interactive`, `recipient`, the quarter, any spend given, `ledger_spend`,
+   and the write answer.
+3. Relay the page link, the outcome line, the KPIs, and the forward note. When the data gaps
+   name missing readouts, offer readout setup or scheduling so next quarter has them.
 
 ## Why the quarterly signal exists
 
@@ -31,9 +64,9 @@ never re-runs another agent.
 
 ## What it reads
 
-All reads, no discovery, no destruction. `search_insights` with a `prefix` filter on
-`detail.account_review.runKey`, paged, keeping findings whose run date falls in the quarter or
-the prior quarter:
+All reads, no discovery, no destruction, apart from the freshness refresh below.
+`search_insights` with a `prefix` filter on `detail.account_review.runKey`, paged, keeping
+findings whose run date falls in the quarter or the prior quarter:
 
 | Source | Prefix | What it gives |
 | ------ | ------ | ------------- |
@@ -52,10 +85,18 @@ Fresh aggregates, filter path:
 
 - The brand's own posts in the quarter and the prior quarter, per linked handle: posts,
   engagement, views, engagement rate, format mix. Page with the cursor.
-- Creator posts about the brand (the mention set in `market-signal.md`, **Data method**, step
+- Creator posts about the brand (the mention set in **Market signal**, **Data method**, step
   3) in both quarters: posts, distinct creators, engagement, paid vs organic.
 - Current follower counts from `search_creators`, against the first saved follower count in
   the quarter's readout findings.
+- Freshness (**Page standard**, section 9): each linked handle's `freshness` from the same
+  `search_creators` call, with no wildcard `exclude`, and the freshness read (section 9.1), both
+  before the brand's posts. An unattended run refreshes nothing: its handles get the freshness
+  line and any behind-pace note only (section 9.5, the unattended row). A relaunch with handles in
+  `approved.refresh` refreshes those before the posts are read, and makes no new offer. An interactive run with `approved.refresh` null works out each
+  handle's pace from the freshness read (section 9.4) and offers the refresh, with its time and
+  cost, for a handle behind it, holding its findings until the relaunch. The page's source line
+  carries the freshness line, and a period with no posts reads as section 9.3 says.
 
 A source with no findings in the quarter is named under data gaps, never filled.
 
@@ -67,7 +108,7 @@ second; a program whose first snapshot falls inside the quarter counts from its 
 program with no snapshot in the quarter is a gap: "{program}: no dashboard saved this quarter".
 Spend from a snapshot is used only when its `basis` is `ledger` and `ledger_spend` is `show`: the
 quarter's paid amount, per currency, labelled "paid, from the program ledger". Currencies are never added or converted.
-Calibration reads still drop `program:*`, `library:*`, and `orchestrator:*` keys; the program is named from its dashboard's page
+Calibration reads still drop `program:*`, `library:*`, `orchestrator:*`, and `lastrun:*` keys; the program is named from its dashboard's page
 title.
 
 ## The page: one page, outcome first
@@ -95,10 +136,10 @@ linkable. Sections:
 8. **Appendix:** links to the quarter's readout, brief, shortlist, and market signal pages,
    and each program's dashboard (`pageUrl` on its newest snapshot),
    where the findings carry them, then sources and data gaps. The page ends with the
-   artifact-standard footnote, and the mark and the footnote follow [artifact-standard.md](artifact-standard.md).
+   artifact-standard footnote, and the mark and the footnote follow **Artifact standard**.
 
 Keep it to one screen before the appendix. Load `artifact-design` and `dataviz` first; apply
-`theme:brand` per `theme.md`, **Applying the theme**.
+`theme:brand` per **Theme**, **Applying the theme**.
 
 ## Findings
 
@@ -117,5 +158,6 @@ No setup step or scheduled task creates one today. A run is unattended only when
 task launches the agent with `run: unattended`; every other run is interactive.
 
 Never ask, never write findings, never deliver. Default to the last completed calendar quarter. No spend means the cost tiles are
-left out and named as a gap. No discovery, no destruction. An unauthorized error publishes a
+left out and named as a gap. No discovery, no destruction; the freshness refresh in **What it
+reads** is the one lookup it makes. An unauthorized error publishes a
 "setup needed" card with "Aspire Atlas needs a fresh sign in".

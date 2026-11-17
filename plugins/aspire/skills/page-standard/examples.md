@@ -38,15 +38,24 @@ the skeleton and the blocks alone.
 | P1 | Plan | Paid social, then creative | Ad reuse |
 <!-- /examples -->
 
+## Contents
+
+- [What each example sets](#what-each-example-sets)
+- [The examples library](#the-examples-library)
+
 ## What each example sets
 
 Which block holds each element is in `blocks.md`, section 5. Each flow's reference says where
-they go on its page.
+they go on its page. Every element that shows a post (a card, a scored row, a storyboard) also
+carries the metrics the code's row in `SKILL.md`, section 8, requires, or the reason one is not
+available.
 
 ### I1: which creators to contact for this launch, and why
 
 What makes it work: the headline is the decision ("49 creators reviewed. Contact 11 this week."),
-with a reason for every yes, maybe, and no, plus fees and expected return.
+with a reason for every yes, maybe, and no, plus fees and expected return. Before the list, the
+page shows what works with the product, where people get stuck, and what that means for picking,
+and every check names the finding it comes from.
 
 1. A headline with how many were reviewed and how many to contact, and by when.
 2. A verdict tally: yes, maybe, and no with counts and the reasons behind each column.
@@ -58,6 +67,16 @@ with a reason for every yes, maybe, and no, plus fees and expected return.
 6. Next steps in order, each with its week and the creators it covers.
 7. A clock from offers to the first read of results.
 8. How the verdict was made: both scores, the verdict lines, the weights, and every correction.
+9. What people are doing well with the product: a chart of views against each creator's usual
+   (the post's views divided by the creator's 90-day median) by what the post does, with how many
+   posts were measured and named example posts for each pattern.
+10. Where people get stuck: the comment sentiment counts, each challenge numbered with quoted and
+    linked posts, and a chart of the other brands the posts name.
+11. What this means for picking: how concentrated reach is (the top post's share, the paid partner
+    posts) and how scarce the target market is, which explains a list shorter than asked.
+12. What we look for: each check names the finding it comes from ("Doing well", "Challenge 3",
+    "Reach", "US supply"), with a 1, ½, or 0 mark per creator and the bar for a yes in plain
+    words; a check a finding suggests but the brand hasn't saved is a proposed change in Decisions.
 
 ### O3: where we stand against competitors, and what to do
 
@@ -78,20 +97,30 @@ plan with owners.
 
 ### P1: which creator posts to run as ads, and how to cut them
 
-What makes it work: the scoring shown in full and shot-by-shot edit plans with timestamps. Paid
-results are still to come: until a Meta ad account is connected, the page names that gap.
+What makes it work: the reasoning is the story. The reader sees how much Atlas read to get to
+the recommended posts, what it learned from the posts, and why each pick won, with the scoring in full below
+and shot-by-shot edit plans with timestamps. Paid results are still to come: until a Meta ad
+account is connected, the page names that gap.
 
 1. The answer and the takeaway first, then up to four recommendations as ranked next steps.
-2. The scoring method in full: each criterion with its weight, what a high and a low score mean,
+2. How Atlas got there: one strip of counts from the posts considered per platform to the posts
+   recommended (about the brand, videos, read frame by frame, scored), each the run's own count.
+3. What Atlas learned, up to three learnings, each with a headline stat, the claim, a short
+   paragraph, a chart of the data behind it, a frame pair (one that works, one that misses, each
+   with its timecode), and a "So Atlas recommends" line.
+4. The posts Atlas recommends, found then briefed as two groups, each checked against every
+   learning in the learnings' order: a ✓ where it meets one, a "+" with the fix the cut list makes
+   where it misses, and one line on why it was picked. The candidates held back are named with
+   their scores and the reason (counts only on a page for a client).
+5. The scoring method in full: each criterion with its weight, what a high and a low score mean,
    the score bands, and any override.
-3. Every post scored, with thumbnail, handle, source, date, length, score, verdict, and a note.
-4. What the scores show, each with a "So:" line and a visual that proves it.
-5. One cut structure and the specs every cut shares.
-6. A storyboard per recommended ad: a still for every beat, timecodes, a one-line description, a
+6. Every post scored, with thumbnail, handle, source, date, length, score, verdict, and a note.
+7. One cut structure and the specs every cut shares.
+8. A storyboard per recommended ad: a still for every beat, timecodes, a one-line description, a
    duration strip, and edit notes.
-7. A test plan: one variable per test, a hypothesis, and the Scale, Fix, or Stop rule for each.
-8. Approvals and access needed, with when; rights for each candidate, with its expiry.
-9. A brief for the next creator round, offered as a draft.
+9. A test plan: one variable per test, a hypothesis, and the Scale, Fix, or Stop rule for each.
+10. Approvals and access needed, with when; rights for each candidate, with its expiry.
+11. A brief for the next creator round, offered as a draft.
 
 ## The examples library
 

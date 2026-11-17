@@ -3,7 +3,47 @@
 The full-page view of one creator: the creator card at full width, then the evidence behind
 it (audience, best and weakest posts, engagement, sentiment, brand safety, partnerships, fees,
 peers, next steps). Use it for a portfolio or profile view of a single creator. Everywhere else
-a creator is shown, the compact card in `creator-card.md` stays the only layout.
+a creator is shown, the compact card in **Creator card** stays the only layout.
+
+The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+
+## Contents
+
+- [Creator profile (full page for one creator)](#creator-profile-full-page-for-one-creator)
+- [When it renders](#when-it-renders)
+- [Page layout](#page-layout)
+- [Data behind each section](#data-behind-each-section)
+- [Images](#images)
+- [Style block](#style-block)
+- [Page template](#page-template)
+- [Rules](#rules)
+
+## Creator profile (full page for one creator)
+
+Trigger when the user asks for one creator's full profile, portfolio, or deep dive, or what a
+named creator would cost ("full profile for @handle", "show me @handle's portfolio"). Requires
+a brand profile. The page is described in this file, and its fees come
+from the **Fee calculator**.
+
+1. Read the target: one network and one handle with the `@` stripped. If the network is
+   missing, ask with `AskUserQuestion` (Instagram / TikTok). Only those two are searchable in
+   Atlas today; for YouTube, say so and offer the other two. A handle that is one of the
+   profile's own linked handles is an account review (Phase 6, mode `own`), not a profile.
+2. Naming the handle **is** the approval for fetching it from Atlas when the held data is
+   missing or over a day old, as in Phase 6; neither the skill nor the agent asks again.
+3. Launch the `atlas-creator-profile` subagent with the tool prefix, `profile_id`, `profile_slug`, the
+   network and handle, any comparison accounts the user named, `recipient` (**Reading the
+   ask**), and a note that the user approved the fetch. It writes nothing to Atlas, so it needs no write confirmation.
+4. Lead with text: the agent's headline, up to three of its summary bullets, the fee line, the
+   next step, and the page link. Draw no card. Keep the agent's `creator-cards` block: when
+   the user asks to see the card ("show me the card"), the host draws it from `lookup_creators`
+   on that handle, per **Creator card**, **Cards in chat**, and the reply adds only what the
+   card cannot show.
+5. If the agent reports a brand account, say so and offer an account review (Phase 6, mode
+   `handle`). If it reports the handle could not be resolved, relay what was tried.
+6. When the fees used the Aspire recommended rates, make the fee calculator offer from **Fee
+   calculator**, Offers, after the reply.
 
 ## When it renders
 
@@ -12,8 +52,9 @@ a creator is shown, the compact card in `creator-card.md` stays the only layout.
 | "Full profile for @handle", "creator profile", "portfolio", "deep dive on @handle", "what would @handle cost" | `atlas-creator-profile`, launched from SKILL.md, **Creator profile** | Published page |
 | An account review of a creator, when the user takes up the offer of the full profile | The same agent, on the same handle | Published page |
 
-The profile is a page only. It is too large for an inline widget: in chat, the main thread
-shows the compact card inline (from the agent's `creator-cards` block) and links the page.
+The profile is a page only. In chat, the main thread answers in text and links the page; the
+compact card appears only when the user asks to see it, drawn by the host from
+`lookup_creators` (**Creator card**, **Cards in chat**).
 Brand accounts never get a creator profile; they get an account review. The agent writes
 nothing to Atlas: Next steps are recommendations on the page, not saved action items.
 
@@ -22,15 +63,14 @@ nothing to Atlas: Next steps are recommendations on the page, not saved action i
 One published page per creator. Title: "{Name or @handle} Creator Profile". Republish to the
 same file path on a later run for the same handle, so the link stays the same. Load
 `artifact-design`, and `dataviz` for the charts, before building. Apply the saved theme per
-`theme.md`, **Applying the theme**, including the **Creator profile** override there.
+**Theme**, **Applying the theme**, including the **Creator profile** override there.
 
 The page body is the page header (the theme's `header` rule when a theme is saved), then one
 `<main class="acp">` holding, in order:
 
-1. **Creator card**, full width. Build it exactly as `creator-card.md` describes (fields,
+1. **Creator card**, full width. Build it exactly as **Creator card** describes (fields,
    leave-out rules, badges, tiles, stats, network chips), with its style block, and with two
-   changes: leave out the thumbnails row (Top posts replaces it) and the actions row (pages
-   never carry actions). The profile's style block widens it.
+   changes: leave out the thumbnails row (Top posts replaces it). The profile's style block widens it.
 2. **Summary**
 3. **Profile & audience**
 4. **Top posts**
@@ -56,9 +96,10 @@ profile needs these as well:
 
 - The creator record with its demographics: project the `instagram` or `tiktok` container
   **without** excluding the demographics blobs this time.
-- On each post: `likeCount`, `commentCount`, `viewCount`, `media`, the permalink, the product
-  type, `postedAt`, `analysis.brandSafety`, `analysis.commentSentimentBreakdown`, and any
-  paid-partnership or brand-tag field the post field census lists.
+- On each post: the fields of the "Creator picks or vetting" row of the required metrics
+  (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8), the permalink, the product type,
+  `analysis.brandSafety`, `analysis.commentSentimentBreakdown`, and any paid-partnership or
+  brand-tag field the post field census lists.
 
 Use only field paths the live census returns (`list_creator_search_fields`,
 `list_post_search_fields`). A field the census does not list leaves its part out.
@@ -66,7 +107,7 @@ Use only field paths the live census returns (`list_creator_search_fields`,
 **Usable post**: a post with a non-null `likeCount`. **Engagement rate** for a post: (likes +
 comments) / followers. **View rate**: views / followers, on posts with a `viewCount`. Medians,
 not means, everywhere on this page except where the creator card's own rules say otherwise.
-Number format follows `creator-card.md`.
+Number format follows **Creator card**.
 
 | Section | Content and source | Leave out when |
 | ------- | ------------------ | -------------- |
@@ -81,17 +122,17 @@ Number format follows `creator-card.md`.
 | Comment sentiment | Stacked bar and legend: positive, neutral, negative shares of `commentSentimentBreakdown` counts summed over the posts. Lede: "Based on {n} comments across {k} analyzed posts." Top themes as badges only when the census exposes a comment-theme field; a safety-adjacent theme takes the warning badge | Fewer than 20 classified comments |
 | Brand safety | One cell per category `analysis.brandSafety` rates, named as Atlas names them. A category rated anything but `Low Risk` on any post is flagged (warning tone); the rest are low risk. One sentence below: how many categories were low risk on every post, then each flagged category with the post count and the context in plain words | Fewer than 3 analyzed posts |
 | Brand partnerships | Two groups. **Paid partnerships (confirmed)**: brands on posts marked as paid partnerships, or with a clear disclosure (#ad, #sponsored, "paid partnership with"), plus `pastBrandPartnershipPartners`, as success badges, with one line on how many paid posts and how they were disclosed. **Organic mentions (not confirmed as paid)**: other brands tagged or named without a disclosure, as outline badges, with the line "Spotted in captions or on screen. Treat these as organic visibility, not partnership history." A brand that matches a saved `competitor` record carries "(competitor)" | Neither group has an entry. Leave out an empty group |
-| Recommended fees | The fee calculator (`fees.md`): a bundle of one post on each of the creator's channels that the brand's rates cover, priced from the median views of each channel's last 10 posts. Open, target, and max from the saved `fees:rate-card`, or the Aspire recommended rates. Target takes `--ac-brand`. The note lists each channel's median views and the single-channel target for the primary channel. Lede carries the rate label | The calculator gives no price for any channel (`fees.md`, **No data, no price**). A channel priced from estimated views carries "est. from engagement" and its working in the note |
-| How {name} compares | Grouped bars per account: median engagement rate and median view rate, the reviewed account first and in bold, then the peer set (`account-resolution.md`, **Peer set**). Lede names the peer set and its follower band. View rate bars only when every account has views | Fewer than 3 usable peers |
+| Recommended fees | The fee calculator (**Fee calculator**): a bundle of one post on each of the creator's channels that the brand's rates cover, priced from the median views of each channel's last 10 posts. Open, target, and max from the saved `fees:rate-card`, or the Aspire recommended rates. Target takes `--ac-brand`. The note lists each channel's median views and the single-channel target for the primary channel. Lede carries the rate label | The calculator gives no price for any channel (**Fee calculator**, **No data, no price**). A channel priced from estimated views carries "est. from engagement" and its working in the note |
+| How {name} compares | Grouped bars per account: median engagement rate and median view rate, the reviewed account first and in bold, then the peer set (**Account resolution**, **Peer set**). Lede names the peer set and its follower band. View rate bars only when every account has views | Fewer than 3 usable peers |
 | Next steps | The agent's 2 or 3 ranked recommendations, each with a priority badge: High (brand fill), Medium (secondary), Monitor (outline), a bold lead sentence and one line of reason | The agent has no recommendation |
-| Data gaps & freshness | Bullets: the freshness line first ("Profiles were refreshed on {date}" or "indexed through {date}"), then the analyzed window, missing counts (saves, shares, views), how the peers were chosen, and which sections cover only one network. Also every section left out for lack of data, in one bullet | Never |
+| Data gaps & freshness | Bullets: the freshness line first, worded as **Page standard**, section 9.2 sets it, then the analyzed window, missing counts (saves, shares, views), how the peers were chosen, and which sections cover only one network. Also every section left out for lack of data, in one bullet | Never |
 
 Write about the creator by name, or with "they". Never infer pronouns from a name, a photo, or
 a gender breakdown. Section 12's title uses the display name, or the handle when there is none.
 
 ## Images
 
-Embed every image as a data URI with the **Images** snippet in `creator-card.md`, page profile,
+Embed every image as a data URI with the **Images** snippet in **Creator card**, page profile,
 passing `media.mediaUrl` then `media.thumbnailUrl` for each post. The kinds, sized to this
 page's boxes:
 
@@ -106,13 +147,13 @@ with `ok: false` leaves its media box empty (the tile background shows) with the
 `alt`; never substitute another image. The page follows the snippet's page budget (images
 under 8MB, the page under 10MB); this page stays far below it, but if it ever goes over, drop
 Lowest posts images first. Top posts are the page's subject and are never dropped. Note once in
-the page footer that images are a snapshot. The page carries the animated Aspire Atlas mark at the top right and the artifact-standard footnote after the data gaps, per [artifact-standard.md](artifact-standard.md).
+the page footer that images are a snapshot. The page carries the animated Aspire Atlas mark at the top right and the artifact-standard footnote after the data gaps, per **Artifact standard**.
 
 ## Style block
 
 Once per page, in the `<head>`, after the creator card's style block. The profile carries the
 same `--ac-*` tokens as the card, so it follows the host and the saved theme the same way. Then
-paste the print block from `artifact-standard.md`, section 6, with the creator's handle as the
+paste the print block from **Artifact standard**, section 6, with the creator's handle as the
 title.
 
 ```html
@@ -236,12 +277,12 @@ title.
 
 Sections and repeated rows are marked with `<!-- … -->` comments, each repeated row on its own line; drop a section with its
 comment when its rule says so, and drop the comments themselves. `{CARD}` is the creator card
-from `creator-card.md`, filled as described in **Page layout**. Heights and widths are
+from **Creator card**, filled as described in **Page layout**. Heights and widths are
 percentages of the axis or the largest value, written inline.
 
 ```html
 <main class="acp" aria-label="Creator profile: {HANDLE}">
-  <div class="acp-top"><!-- the animated mark, once, per artifact-standard.md -->{MARK}</div>
+  <div class="acp-top"><!-- the animated mark, once, per the artifact standard -->{MARK}</div>
 
   {CARD}
 
@@ -388,7 +429,7 @@ percentages of the axis or the largest value, written inline.
   </section>
 
   <footer class="atlas-footnote acp-foot" data-updated="{UPDATED_ISO}">
-    <!-- the images-are-a-snapshot note, then the source line from artifact-standard.md -->{FOOTNOTE}
+    <!-- the images-are-a-snapshot note, then the source line from the artifact standard -->{FOOTNOTE}
   </footer>
 </main>
 ```
@@ -399,12 +440,12 @@ legend entry with it.
 
 ## Rules
 
-- Every rule in `creator-card.md`, **Rules**, applies here: no fabricated numbers, badges, or
+- Every rule in **Creator card**, **Rules**, applies here: no fabricated numbers, badges, or
   images; no internal ids, slugs, field names, or tool names; escape every value from Atlas or
   the web.
 - Every number on the page comes from the reads above or from the agent's analysis of them.
   A section whose number cannot be computed is left out, never estimated.
-- Fees come only from the fee calculator (`fees.md`), with its rate label. They are an
+- Fees come only from the fee calculator (**Fee calculator**), with its rate label. They are an
   estimate from public view counts; never present them as the creator's rate card.
 - Charts keep the page's semantic colors for sentiment (negative stays red) and brand safety
   (flags stay warning). The theme recolors the chart series only.
