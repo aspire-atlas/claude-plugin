@@ -571,3 +571,7 @@ Key namespaces: `adreuse`, `applicantreview`, `brand`, `campaign`, `competitor`,
 `decline`, `examples`, `fees`, `gap`, `guideline`, `lastrun`, `library`, `marketsignal`,
 `orchestrator`, `partner`, `policy`, `program`, `qualityreview`, `redline`, `review`, `target`,
 `theme`, `user`, `vetting`. A new namespace is added here first.
+
+A flow's name keeps its hyphen where it is a tag (`appliesTo`, `runKey` prefixes), never in a key:
+`ad-reuse` saves under `adreuse:`, `applicant-review` under `applicantreview:`, `market-signal`
+under `marketsignal:`, and `quality-review` under `qualityreview:`.

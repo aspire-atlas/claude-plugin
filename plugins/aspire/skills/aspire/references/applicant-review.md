@@ -61,9 +61,9 @@ namespace has one.
 and brand. When `applicantreview:{slug}-campaign` already exists for a different campaign or a different brand profile, add `-2`,
 `-3`, and so on.
 
-**The slug is 30 characters at most, any `-2` suffix included**, per **Atlas tools**' slug cap,
-which also says how to shorten a long brand and campaign name. With the longest part,
-`-client-view`, the key stays within the 48 characters Atlas allows after the colon.
+**The slug keeps to Atlas tools' slug cap, any `-2` suffix included** (**Atlas tools**, Calibration
+kinds), which also says how to shorten a long brand and campaign name. Then even the longest
+part, `-client-view`, stays within the length Atlas allows after the colon.
 
 | Key | kind | detail | Holds |
 | --- | ---- | ------ | ----- |

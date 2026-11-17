@@ -22,12 +22,12 @@
 #         one character, or
 #       - with every {slug}, {campaign-slug} or lone * at the slug cap (atlas-tools.md) and
 #         {ig|tt} or {network} at 2, it is longer than the pattern allows.
-#   - the applicant review's slug cap is the shared one and its longest part fits
-#     (applicant-review.md, The records), and the creator slug cap leaves room for `-99`
-#     (creator-vetting.md, creator calibrations)
-# The block checks run first on scripts/fixtures/red-line/, scripts/fixtures/drop-list/ and
-# scripts/fixtures/key-format/: every block in pass.md must pass and every block in a fail-*.md
-# file must fail.
+#   - every applicant review key (applicant-review.md, The records) fits with a slug at the cap,
+#     and the creator slug cap leaves room for `-99` (creator-vetting.md, creator calibrations)
+#   - atlas-tools.md quotes the same pattern the contract holds, and lists only namespaces it allows
+# Each block rule runs first on its own fixture folder (scripts/fixtures/red-line/, drop-list/ and
+# key-format/), against that rule only: every block in pass.md must pass and every block in a
+# fail-*.md file must fail.
 #
 #   scripts/check-calibration-keys.sh
 set -euo pipefail
@@ -65,7 +65,13 @@ tools = open(f"{REFS}/atlas-tools.md").read()
 m = re.search(r"Key namespaces: (.*?)\. A new namespace", tools, re.S)
 if not m:
     die(f"{REFS}/atlas-tools.md has no \"Key namespaces:\" list")
-NAMESPACES = set(re.findall(r"`([a-z0-9]+)`", m.group(1)))
+NAMESPACES = set(re.findall(r"`([^`]+)`", m.group(1)))
+for ns in sorted(NAMESPACES):
+    if not KEY.fullmatch(f"{ns}:x"):
+        die(f"{REFS}/atlas-tools.md lists `{ns}` as a key namespace, which Atlas refuses ({pattern})")
+# The pattern the reference quotes to agents is the one the server enforces.
+if f"`{pattern}`" not in tools:
+    die(f"{REFS}/atlas-tools.md does not quote the key pattern as `{pattern}` (contract/atlas-mcp-tools.json)")
 m = re.search(r"\*\*A `\{slug\}` built from .*? is (\d+) characters at most", tools, re.S)
 if not m:
     die(f"{REFS}/atlas-tools.md has no slug cap (\"A `{{slug}}` built from ... is N characters at most\")")
@@ -131,7 +137,7 @@ def key_problems(b):
         token = f"{ns}:{rest}"
         called_key = bool(KEY_BEFORE.search(b[:m.start()]) or KEY_AFTER.match(b[m.end():]))
         canon = re.sub(r"[-_]", "", ns.lower())
-        if ns != canon:
+        if not KEY.fullmatch(f"{ns}:x"):
             if canon in NAMESPACES or called_key:
                 out.append(f"`{token}`: a key's namespace is lowercase letters and digits only ({KEY.pattern})")
             continue
@@ -139,7 +145,7 @@ def key_problems(b):
             if called_key:
                 out.append(f"`{token}` is called a key but `{ns}` is not in atlas-tools.md's Key namespaces list")
             continue
-        if not rest or rest.endswith("-"):
+        if not rest:
             continue
         # One character per {placeholder} or *, so a template is checked on its fixed part.
         probe = re.sub(r"\{[^}]*\}|\*", "x", rest)
@@ -156,8 +162,16 @@ def problems(b):
     rl = red_line_problem(b)
     return out + ([rl] if rl else [])
 
+def red_line_problems(b):
+    rl = red_line_problem(b)
+    return [rl] if rl else []
+
+# Each fixture folder is tested against its own rule only, so a fail fixture proves that rule.
+FIXTURE_RULES = {"red-line": red_line_problems, "drop-list": drop_list_problems,
+                 "key-format": key_problems}
+
 bad = 0
-for name in ("red-line", "drop-list", "key-format"):
+for name, rule in FIXTURE_RULES.items():
     folder = f"scripts/fixtures/{name}"
     fixtures = sorted(glob.glob(f"{folder}/*.md"))
     if not os.path.exists(f"{folder}/pass.md") or not any(os.path.basename(f).startswith("fail-") for f in fixtures):
@@ -168,7 +182,7 @@ for name in ("red-line", "drop-list", "key-format"):
         for start, b in blocks(f):
             if b.startswith("#"):
                 continue
-            passes = not problems(b)
+            passes = not rule(b)
             if passes != want_pass:
                 print(f"FAIL {f}:{start}: the check gives {'pass' if passes else 'fail'}, the fixture expects {'pass' if want_pass else 'fail'}")
                 bad = 1
@@ -187,21 +201,18 @@ for f in files:
         print(f"FAIL {f}: says brand red line but does not point to its definition (atlas-tools.md, Calibration kinds)")
         bad = 1
 
-# An applicant review's longest key fits: the shared slug cap plus the longest part.
+# Every applicant review key, built from a slug at the cap and each part in The records table,
+# goes through the same key rule as the rest.
 ar = f"{REFS}/applicant-review.md"
-text = open(ar).read()
-cap = re.search(r"\*\*The slug is (\d+) characters at most", text)
-parts = re.findall(r"^\| `(-[a-z0-9-]+)` \|", text.split("## The records", 1)[-1].split("\n## ", 1)[0], re.M)
-if not cap or len(parts) != 9:
-    print(f"FAIL {ar}: The records needs the slug cap sentence and the nine parts (found {len(parts)})")
+records = open(ar).read().split("## The records", 1)[-1].split("\n## ", 1)[0]
+parts = re.findall(r"^\| `(-[a-z0-9-]+)` \|", records, re.M)
+if not parts:
+    print(f"FAIL {ar}: The records table lists no parts (rows starting | `-part` |)")
     bad = 1
-elif int(cap.group(1)) != SLUG_CAP:
-    print(f"FAIL {ar}: its slug cap ({cap.group(1)}) is not atlas-tools.md's ({SLUG_CAP})")
-    bad = 1
-elif SLUG_CAP + max(map(len, parts)) > KEY_MAX:
-    longest = max(parts, key=len)
-    print(f"FAIL {ar}: a {SLUG_CAP}-character slug plus `{longest}` is over the {KEY_MAX} characters Atlas allows after the colon")
-    bad = 1
+for part in parts:
+    for p in key_problems(f"`applicantreview:{{slug}}{part}`"):
+        print(f"FAIL {ar}: The records: {p}")
+        bad = 1
 
 # A creator key's slug cap leaves room for a -2 to -99 suffix.
 cv = f"{REFS}/creator-vetting.md"
