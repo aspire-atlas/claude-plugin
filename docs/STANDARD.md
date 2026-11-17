@@ -20,6 +20,7 @@ does not apply.
 - [7. Questions](#7-questions)
 - [8. Proof](#8-proof)
 - [The eval on a pull request](#the-eval-on-a-pull-request)
+- [Adding a client example](#adding-a-client-example)
 - [How to write a rule](#how-to-write-a-rule)
 - [The judgment review](#the-judgment-review)
 - [Rules that still apply](#rules-that-still-apply)
@@ -123,7 +124,9 @@ How to read the comment:
 1. **The first line** says whether anything regressed. A regression is a check the approved page passes that
    the new page fails; it blocks the merge. Fix the change, or, when the check itself is wrong, say so in the
    PR and fix the check in the same change.
-2. **The table** has one row per check: E1 to E8 (the Evals tab), then R1 onward (the reader standard). New
+2. **The table** has one row per check: a client case's own assertions first (see
+   [Adding a client example](#adding-a-client-example)), then E1 to E8 (the Evals tab), then R1 onward (the
+   reader standard). New
    page and Approved page are `pass`, `fail`, `n/a`, or `–` when the check did not run. **Sets the bar** marks
    the checks this question's approved page is the example for: those are the rows this standard's items
    above are proven on (E1 and E8 for S1, E4 for M3, E6 and E7 for V1).
@@ -138,9 +141,53 @@ How to read the comment:
    regression and blocks the merge. The line says which message broke which rule, or that a message was
    not sent; the words themselves stay in the run's folder.
 
+6. **An assertion row** names its ticket. While the ticket is open a `fail` is expected, and a line under the
+   table lists it as waiting. Once the ticket's pull request sets the assertion's `landed` flag, a `fail` is a
+   regression and blocks the merge, with or without an approved page.
+
 The comment is edited in place on every push. `skipped: <reason>` means the PR carries the `skip-eval` label
 (the reason is the PR body's `skip-eval:` line), or that nothing the questions answer differs from the base
 branch any more.
+
+## Adding a client example
+
+A client example is a page for a real brand that a reviewer found drew a wrong conclusion. It is evidence
+for a rule the plugin already has or is getting. It is not a reason for a new rule.
+
+Each fix in the plugin update doc is one rule or one check, with a "What it covers" column that lists the
+examples it was written from. The eval holds the same list: a **client case** in `scripts/eval/questions.json`
+is a question with `assertions`, one per behaviour the reviewed page got wrong, each naming the ticket that
+fixes it.
+
+| Fix in the doc | Its rule or check | Case and assertions |
+| -------------- | ----------------- | ------------------- |
+| 2. Compare like with like | The like-for-like check (ASP-5974), fed by the paid and shop split (ASP-5976) and the mention count (ASP-5977) | CR1 A1, A2, A3; AR1 A1 |
+| 3. Look at all the evidence | The full search before an explanation (ASP-5978); engagement on the affiliate timeline (ASP-5979) | AR1 A2, A5 |
+| 4. Priced recommendations | Commission tiers with an invite list and a hold list (ASP-5981); a cost on every recommendation (ASP-5982) | AR1 A3, A4 |
+
+To add an example:
+
+1. **Find the fix it falls under.** Read the example against the rules above. Most examples are a new
+   instance of a behaviour an assertion already states.
+2. **Add a row to the eval case.** Put one sentence in that assertion's `examples`: what the page showed and
+   what was true, with the figures kept and every brand, competitor and handle replaced by a placeholder.
+   When the example shows a behaviour that no assertion states but the fix's rule covers, add an assertion to
+   the case instead, with the ticket that will make it pass and `"landed": false`.
+3. **Add the same row to the doc.** Put the example in the "What it covers" column of that fix.
+4. **Show it on the fixture pages.** Add the wrong reading to the case's `-wrong.html` page and the corrected
+   one to its `-corrected.html` page in `scripts/fixtures/eval-cases/`, then run
+   `bun run eval:pages --fixtures`. Every assertion must fail on the first page and pass on the second.
+5. **Change no rule.** The pull request says "no new rule". The rule's own ticket makes the assertion pass
+   and sets `landed` to `true` in the same pull request.
+
+Good: a second brand's report states "92% of sales" from 90% of its creators. It becomes a second entry in
+AR1 A1's `examples` and a second line in fix 2's "What it covers".
+
+Bad: the same report becomes a new line in `references/affiliate.md`, "never lead with a share of sales
+above 90%". That is a special case of the rule fix 2 already has.
+
+An example that no fix covers is a gap. It goes through [How to write a rule](#how-to-write-a-rule): prove
+the gap with a rerun first, then add the rule, and a new case or assertion with it.
 
 ## How to write a rule
 

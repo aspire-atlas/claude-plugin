@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "source": "The five approved examples in the plugin update doc, section \"Examples to follow\" (2026-11-05), O2, the Creator Trends page its reviewer edited for ASP-5813, and P1, the creator ad cut-downs page its reviewer edited for ASP-5812, with question codes from the examples library. Brand names, organizations and page links are customer details: they live in scripts/eval/local.json, never here.",
+  "source": "The five approved examples in the plugin update doc, section \"Examples to follow\" (2026-11-05), O2, the Creator Trends page its reviewer edited for ASP-5813, and P1, the creator ad cut-downs page its reviewer edited for ASP-5812, with question codes from the examples library. Brand names, organizations and page links are customer details: they live in scripts/eval/local.json, never here. CR1 and AR1 are client cases: questions whose first reviewed page drew a wrong conclusion, each with assertions that name the behaviour that was wrong and the ticket that fixes it (docs/STANDARD.md, \"Adding a client example\"). Their examples keep the figures and replace every brand, competitor and handle with a placeholder.",
   "changes": {
     "3": {
       "name": "Pull the right metrics for each question",
@@ -162,6 +162,143 @@
       "paths": [
         "plugins/aspire/agents/atlas-ad-reuse.md",
         "plugins/aspire/skills/aspire/references/ad-reuse.md"
+      ]
+    },
+    {
+      "code": "CR1",
+      "question": "O3",
+      "example": "Competitive read with shop posts and untagged mentions",
+      "kind": "Readout",
+      "reader": "leadership",
+      "readerInWords": "marketing leadership",
+      "ask": "For {brand}: leadership wants to know where we stand against competitors in what creators post, and what to do.",
+      "setsBarFor": [],
+      "paths": [
+        "plugins/aspire/agents/atlas-market-signal.md",
+        "plugins/aspire/skills/aspire/references/market-signal.md"
+      ],
+      "fixtures": {
+        "wrong": "scripts/fixtures/eval-cases/cr1-wrong.html",
+        "corrected": "scripts/fixtures/eval-cases/cr1-corrected.html"
+      },
+      "assertions": [
+        {
+          "id": "A1",
+          "name": "Shop posts are their own group",
+          "fix": 2,
+          "ticket": "ASP-5976",
+          "landed": false,
+          "passesWhen": "Every engagement rate on the page is over posts of one kind: posts with a paid label, TikTok Shop selling posts, or posts with no paid label. Shop posts have their own row or group with their own engagements per 1,000 views. A page whose data holds no shop posts says so in one line.",
+          "failsWhen": "One rate is given over shop posts and other posts together, or a brand-against-competitor rate is compared without saying which kind of post each side holds.",
+          "examples": [
+            "A consumer brand's competitive read: TikTok Shop posts drew 3.6 engagements per 1,000 views against 14.7 for the rest, and the page showed one mixed rate, which turned the comparison around."
+          ]
+        },
+        {
+          "id": "A2",
+          "name": "Mentions count with or without the @",
+          "fix": 2,
+          "ticket": "ASP-5977",
+          "landed": false,
+          "passesWhen": "Each count of posts about a brand or a competitor includes posts that name it in the caption, on screen or aloud without tagging it, and says how the posts were found: how many tagged it and how many named it.",
+          "whenNamed": "The count for {competitor} is at least {competitorPosts} posts.",
+          "failsWhen": "A count comes from tags or @handles alone, or the page does not say how its mentions were found.",
+          "examples": [
+            "A consumer brand's competitive read: a competitor was shown with 2 posts. It had 20: 2 tagged it and 18 named it in the caption or aloud."
+          ]
+        },
+        {
+          "id": "A3",
+          "name": "A figure from 20 posts or fewer is marked directional",
+          "fix": 2,
+          "ticket": "ASP-5974",
+          "landed": false,
+          "passesWhen": "Every rate, median or share that rests on 20 posts or fewer carries the word directional beside the number, with the post count.",
+          "failsWhen": "A figure from 20 posts or fewer is stated as plainly as one from hundreds, or the page gives no post count for a side of a comparison.",
+          "examples": [
+            "A consumer brand's competitive read: a competitor's rate came from 20 posts and was set beside the brand's rate from several hundred with no mark."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "AR1",
+      "question": null,
+      "example": "Affiliate report",
+      "kind": "Readout",
+      "reader": "growth",
+      "readerInWords": "the person who runs the affiliate program and holds its budget",
+      "ask": "For {brand}: here is last month's affiliate sales export. Who is driving sales, what do we owe in commission, and what should we change? I run the affiliate program and hold its budget.",
+      "setsBarFor": [],
+      "paths": [
+        "plugins/aspire/agents/atlas-affiliate-manager.md",
+        "plugins/aspire/skills/aspire/references/affiliate.md"
+      ],
+      "fixtures": {
+        "wrong": "scripts/fixtures/eval-cases/ar1-wrong.html",
+        "corrected": "scripts/fixtures/eval-cases/ar1-corrected.html"
+      },
+      "assertions": [
+        {
+          "id": "A1",
+          "name": "A share is shown against the group's size",
+          "fix": 2,
+          "ticket": "ASP-5974",
+          "landed": false,
+          "passesWhen": "Every share of revenue or orders that the page gives for a group of affiliates sits beside that group's share of all affiliates. When the two are within a few points, the page says the share is in line with the group's size.",
+          "failsWhen": "A share is given as a finding with no group size beside it.",
+          "examples": [
+            "A consumer brand's affiliate report: \"87% of revenue\" came from 88% of affiliates, so the share said nothing, and the page led with it."
+          ]
+        },
+        {
+          "id": "A2",
+          "name": "The top sellers' explanation cites linked Atlas evidence first",
+          "fix": 3,
+          "ticket": "ASP-5978",
+          "landed": false,
+          "passesWhen": "Where the page explains why the top sellers sold, it first cites what Atlas holds about them on any network and at any date, each cited post as a link to the post. Coupon sites come after that evidence, or the page says no evidence was found and what was searched.",
+          "failsWhen": "The sales are put down to coupon sites, or to any cause, with no linked post or page behind the explanation, or coupon sites are named before the creator's own posts were searched.",
+          "examples": [
+            "A consumer brand's affiliate report: the top sellers were put down to coupon sites. Atlas held an older TikTok, a code in a YouTube description and the shop's own website."
+          ]
+        },
+        {
+          "id": "A3",
+          "name": "Commission tiers show an invite list and a hold list",
+          "fix": 4,
+          "ticket": "ASP-5981",
+          "landed": false,
+          "passesWhen": "The page shows each commission tier with its rate and the threshold to reach it, a list of affiliates to invite to the next tier with the figure that qualifies each, and a list of affiliates to hold with the reason and what would move each one up. An empty invite list names the nearest affiliate and what they still need.",
+          "failsWhen": "The page says nobody newly qualified and stops there, or recommends a raise with no tier, no named affiliates to move up and none to hold.",
+          "examples": [
+            "A consumer brand's affiliate report: \"0 affiliates newly qualified for Tier 3\" and \"raise commission 5 points\", with nobody named to move up or to hold."
+          ]
+        },
+        {
+          "id": "A4",
+          "name": "Every recommendation shows a cost",
+          "fix": 4,
+          "ticket": "ASP-5982",
+          "landed": false,
+          "passesWhen": "Every recommendation that spends money or changes what the brand pays states its cost with the arithmetic in one line, per month for a raise or a promotion, labelled as an estimate. One that costs no money says so. One that cannot be priced says which figure is missing.",
+          "failsWhen": "A recommendation to raise commission, promote, pay or move a creator to another deal has no cost beside it.",
+          "examples": [
+            "A consumer brand's affiliate report: \"raise commission 5 points\" with no cost. The priced line is \"+5 points on USD 3,240 a month is about USD 162 a month\"."
+          ]
+        },
+        {
+          "id": "A5",
+          "name": "Every timeline post shows engagement",
+          "fix": 3,
+          "ticket": "ASP-5979",
+          "landed": false,
+          "passesWhen": "Every post on the sales and posts timeline, on its marker or in the list under the chart, shows its views and its engagement, or a note saying why one is missing.",
+          "failsWhen": "A timeline post shows only its date, link or format.",
+          "examples": [
+            "A consumer brand's affiliate report: the timeline marked each post by date and format, so nobody could tell whether a post had reached anyone."
+          ]
+        }
       ]
     }
   ]

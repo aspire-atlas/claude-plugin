@@ -12,6 +12,10 @@
     "O2":  {"brand": "{brand}", "approved": "https://claude.ai/artifact/{id}", "approvedFile": null, "data": "held | public handles indexed"},
     "O3":  {"brand": "{brand}", "approved": "https://claude.ai/artifact/{id}", "approvedFile": null, "data": "held | public handles indexed"},
     "I1":  {"brand": "{brand}", "approved": "https://claude.ai/artifact/{id}", "approvedFile": null, "data": "held | public handles indexed"},
-    "P1":  {"brand": "{brand}", "approved": "https://claude.ai/artifact/{id}", "approvedFile": null, "data": "held | public handles indexed"}
+    "P1":  {"brand": "{brand}", "approved": "https://claude.ai/artifact/{id}", "approvedFile": null, "data": "held | public handles indexed"},
+    "CR1": {"brand": "{brand}", "approved": null, "approvedFile": null, "data": "held | public handles indexed",
+            "values": {"competitor": "{the competitor the first page undercounted}", "competitorPosts": "{the count it should reach}"}},
+    "AR1": {"brand": "{brand}", "approved": null, "approvedFile": null, "data": "held",
+            "files": [{"name": "affiliate-sales.csv", "path": "{a path on this machine, or use \"text\" with the file's content}"}]}
   }
 }

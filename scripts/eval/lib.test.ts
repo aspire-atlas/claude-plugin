@@ -4,8 +4,9 @@ import { join } from 'node:path'
 import {
   ATLAS_READS, ATLAS_WRITES, barChecks, compareRuns, extractPageCheckScript, fencedBlocks, fill, findJsonWithKey, configuredQuestions, skippedLine,
   findPage, forBaseline, normalizeResult, codesForChanges, readerResult, regressions, renderComment, renderSkipped, renderSlack, COMMENT_MARKER, renderStopped, stripTitlePrefix, checkNames, parsePageCheck, parseStream, renderRun, rIds, rResult, stripDataUris,
+  aResult, assertionNotes, assertionRefs, fixtureProblems, passesWhen, questionCode, rows,
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, askText, chatCodes, chatFailures, chatLine, chatMessages, checkChat, countChat, noChat, normalizeRun, CHAT_CHECK,
-  type PageChecks, type QuestionResult, type RunResults,
+  type Assertion, type AssertionRef, type PageChecks, type QuestionResult, type RunResults,
 } from './lib'
 
 const ROOT = join(import.meta.dir, '../..')
@@ -173,11 +174,12 @@ test('every question\'s reader has a row in the result table the judge is handed
 test('the question set, the checks, and the Atlas tool lists hold together', () => {
   const config = JSON.parse(readFileSync(join(import.meta.dir, 'questions.json'), 'utf8'))
   const eChecks = JSON.parse(readFileSync(join(import.meta.dir, 'e-checks.json'), 'utf8')).checks
-  expect(config.questions.map((q: any) => q.code)).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1'])
+  expect(config.questions.map((q: any) => q.code)).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'CR1', 'AR1'])
   expect(eChecks.map((c: any) => c.id)).toEqual(['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'E8'])
   for (const question of config.questions) {
     expect(question.ask).toContain('{brand}')
-    expect(barChecks(question.setsBarFor, config.changes).length).toBeGreaterThan(0)
+    // A question sets the bar for a change of the first review, or carries assertions of its own.
+    expect(barChecks(question.setsBarFor, config.changes).length + (question.assertions?.length ?? 0)).toBeGreaterThan(0)
   }
   expect(barChecks([5, 6], config.changes)).toContain('E6')
   expect(fill('For {brand}: {other}', { brand: 'Acme' })).toBe('For Acme: {other}')
@@ -239,16 +241,18 @@ test('a pull request reruns the questions its changed agents and flow files answ
   const config = JSON.parse(readFileSync(join(import.meta.dir, 'questions.json'), 'utf8'))
   const pick = (changed: string[]) => codesForChanges(changed, config.questions, config.sharedPaths).codes
   expect(pick(['README.md', 'docs/STANDARD.md'])).toEqual([])
-  expect(pick(['plugins/aspire/agents/atlas-market-signal.md'])).toEqual(['O2', 'O3'])
+  expect(pick(['plugins/aspire/agents/atlas-market-signal.md'])).toEqual(['O2', 'O3', 'CR1'])
   expect(pick(['plugins/aspire/agents/atlas-ad-reuse.md'])).toEqual(['P1'])
   expect(pick(['plugins/aspire/skills/aspire/references/ad-reuse.md'])).toEqual(['P1'])
+  expect(pick(['plugins/aspire/skills/aspire/references/affiliate.md'])).toEqual(['AR1'])
+  expect(pick(['plugins/aspire/agents/atlas-affiliate-manager.md'])).toEqual(['AR1'])
   expect(pick(['plugins/aspire/skills/aspire/references/creator-vetting.md', 'plugins/aspire/agents/atlas-creator-brief.md'])).toEqual(['I4', 'I1'])
-  // A watched file no question answers reruns nothing; a file every flow reads reruns all seven.
+  // A watched file no question answers reruns nothing; a file every flow reads reruns every question.
   expect(pick(['plugins/aspire/agents/atlas-shops.md'])).toEqual([])
-  expect(pick(['plugins/aspire/skills/aspire/references/reader-standard.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1'])
-  // The page standard and the router shape every page, so a change to either reruns all seven.
-  expect(pick(['plugins/aspire/skills/page-standard/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1'])
-  expect(pick(['plugins/aspire/skills/aspire/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1'])
+  expect(pick(['plugins/aspire/skills/aspire/references/reader-standard.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'CR1', 'AR1'])
+  // The page standard and the router shape every page, so a change to either reruns every question.
+  expect(pick(['plugins/aspire/skills/page-standard/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'CR1', 'AR1'])
+  expect(pick(['plugins/aspire/skills/aspire/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'CR1', 'AR1'])
   expect(pick(['plugins/aspire/skills/org-admin/SKILL.md'])).toEqual([])
   // Every path a question names exists, so a renamed agent cannot silently stop rerunning its question.
   for (const path of [...config.questions.flatMap((q: any) => q.paths), ...config.sharedPaths]) {
@@ -482,4 +486,99 @@ test('a run stored before the chat check reads as chat not run, and adds no chan
   expect(compared).toContain('Chat wording (C5): pass → fail')
   expect(compared).toContain('1 check result changed.')
   expect(compared).not.toContain('No check changed.')
+})
+
+// ---------------------------------------------------------------- client cases and their assertions
+
+const SHOP: AssertionRef = { id: 'A1', name: 'Shop posts are their own group', ticket: 'ASP-5976', landed: false }
+const MENTIONS: AssertionRef = { id: 'A2', name: 'Mentions count with or without the @', ticket: 'ASP-5977', landed: false }
+
+/** A client case with no approved page: A1 fails and A2 passes on the new page. */
+function caseRun(assertions: AssertionRef[] = [SHOP, MENTIONS], asserted: Record<string, any> = { A1: 'fail', A2: 'pass' }): RunResults {
+  const results = run({ code: 'CR1', example: 'Competitive read', setsBarFor: [], barChecks: [], approved: null, assertions })
+  results.questions[0].new = { ...results.questions[0].new!, graded: { R1: 'pass' }, asserted }
+  return results
+}
+
+test('every client case names a ticket per assertion, has both fixture pages, and holds no customer detail', () => {
+  const config = JSON.parse(readFileSync(join(import.meta.dir, 'questions.json'), 'utf8'))
+  const cases = config.questions.filter((q: any) => q.assertions)
+  expect(cases.map((q: any) => q.code)).toEqual(['CR1', 'AR1'])
+  for (const question of cases) {
+    const ids = question.assertions.map((a: Assertion) => a.id)
+    expect(new Set(ids).size).toBe(ids.length)
+    for (const a of question.assertions as Assertion[]) {
+      expect(a.ticket).toMatch(/^ASP-\d+$/)
+      expect(typeof a.landed).toBe('boolean')
+      expect(a.passesWhen.length).toBeGreaterThan(20)
+      expect(a.failsWhen.length).toBeGreaterThan(20)
+      // The first row of "what it covers": the client example the assertion came from.
+      expect(a.examples.length).toBeGreaterThan(0)
+    }
+    for (const role of ['wrong', 'corrected']) expect(existsSync(join(ROOT, question.fixtures[role]))).toBe(true)
+  }
+  // The competitive read is the plugin's own question; the affiliate report has no question code.
+  expect(config.questions.map(questionCode)).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'O3', null])
+})
+
+test('an expected figure joins an assertion only when local.json names everything it asks about', () => {
+  const a: Assertion = { ...MENTIONS, fix: 2, passesWhen: 'Counts name matches.', failsWhen: 'Tags only.', examples: [], whenNamed: 'The count for {competitor} is at least {competitorPosts} posts.' }
+  expect(passesWhen(a, {})).toBe('Counts name matches.')
+  expect(passesWhen(a, { competitor: 'Lumen Kids' })).toBe('Counts name matches.')
+  expect(passesWhen(a, { competitor: 'Lumen Kids', competitorPosts: '20' })).toBe('Counts name matches. The count for Lumen Kids is at least 20 posts.')
+})
+
+test('a case shows its assertions first, each with its ticket, and says which still wait on one', () => {
+  const results = caseRun()
+  expect(rows(results.questions[0], E_CHECKS, []).slice(0, 2).map(row => [row.id, row.new, row.approved, row.bar])).toEqual([['A1', 'fail', 'not run', true], ['A2', 'pass', 'not run', true]])
+  const table = renderRun(results, E_CHECKS, {})
+  expect(table).toContain('| A1 Shop posts are their own group (ASP-5976) | fail | – | yes |')
+  expect(table.indexOf('| A1 ')).toBeLessThan(table.indexOf('| E1 '))
+  expect(table).toContain('- Waiting on a ticket, so not a regression: A1 (ASP-5976).')
+  expect(table).toContain('- Passes before its ticket is marked as landed: A2 (ASP-5977).')
+  expect(assertionNotes(caseRun([{ ...SHOP, landed: true }], { A1: 'pass' }).questions[0])).toEqual([])
+  expect(aResult(null, 'A1')).toBe('not run')
+  expect(assertionRefs(undefined)).toEqual([])
+})
+
+test('an assertion blocks nothing until its ticket lands, and from then on a failure is a regression', () => {
+  expect(regressions(caseRun(), E_CHECKS)).toEqual([])
+  const landed = caseRun([{ ...SHOP, landed: true }, MENTIONS])
+  expect(regressions(landed, E_CHECKS)).toEqual([{ kind: 'assertion', code: 'CR1', id: 'A1', ticket: 'ASP-5976', now: 'fail' }])
+  const comment = renderComment(landed, E_CHECKS, {}, null, null)
+  expect(comment).toContain('- CR1 A1 Shop posts are their own group: ASP-5976 landed, new fail')
+  expect(renderSlack(landed, E_CHECKS, null)).toContain('regressed A1')
+  // No page at all brings the wrong reading back as surely as a failing one.
+  const noPage = caseRun([{ ...SHOP, landed: true }])
+  noPage.questions[0].new = null
+  expect(regressions(noPage, E_CHECKS)).toEqual([{ kind: 'assertion', code: 'CR1', id: 'A1', ticket: 'ASP-5976', now: 'no page' }])
+  // A landed assertion that did not run or does not apply is not a failure the job saw.
+  expect(regressions(caseRun([{ ...SHOP, landed: true }], { A1: 'n/a' }), E_CHECKS)).toEqual([])
+  expect(regressions(caseRun([{ ...SHOP, landed: true }], {}), E_CHECKS)).toEqual([])
+  // Before its ticket lands, an assertion regresses only against an approved page that passes it.
+  const approved = caseRun()
+  approved.questions[0].approved = { ...approved.questions[0].new!, asserted: { A1: 'pass', A2: 'pass' } }
+  expect(regressions(approved, E_CHECKS)).toEqual([{ kind: 'page', code: 'CR1', id: 'A1', was: 'pass', now: 'fail' }])
+})
+
+test('a baseline keeps assertion results, and a compare matches them by id when a case gains one', () => {
+  const kept = forBaseline(caseRun()).questions[0]
+  expect(kept.new!.asserted).toEqual({ A1: 'fail', A2: 'pass' })
+  expect(kept.assertions).toEqual([SHOP, MENTIONS])
+  // A question with no assertions stores none.
+  expect('asserted' in forBaseline(run()).questions[0].new!).toBe(false)
+  const before = caseRun([MENTIONS], { A2: 'pass' })
+  const after = caseRun([SHOP, MENTIONS], { A1: 'fail', A2: 'pass' })
+  const diff = compareRuns(before, after, E_CHECKS)
+  expect(diff).toContain('| A1 | – → fail | – |')
+  expect(diff).not.toContain('| A2 |')
+  expect(diff).toContain('1 check result changed.')
+})
+
+test('the fixture pages must split every assertion: fail on the wrong reading, pass on the corrected one', () => {
+  expect(fixtureProblems([SHOP, MENTIONS], { A1: 'fail', A2: 'fail' }, { A1: 'pass', A2: 'pass' })).toEqual([])
+  expect(fixtureProblems([SHOP, MENTIONS], { A1: 'pass', A2: 'fail' }, { A1: 'pass' })).toEqual([
+    'A1: the page with the wrong reading got pass, not fail',
+    'A2: the corrected page got not run, not pass',
+  ])
 })
