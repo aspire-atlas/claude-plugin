@@ -9,7 +9,7 @@ import {
   ATLAS_READS, ATLAS_WRITES, HARNESS_VERSION, barChecks, compareRuns, extractPageCheckScript, fill, findJsonWithKey, configuredQuestions,
   findPage, forBaseline, normalizeResult, readerResult, checkNames as namesFrom, stripTitlePrefix, parsePageCheck, parseStream, renderQuestion, renderRun, rIds, stripDataUris,
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, checkChat, chatCodes, chatFailures, noChat, normalizeRun,
-  askRecords, checkApprovals, noApprovals, placeholderKeys,
+  askRecords, checkApprovals, noApprovals, placeholderKeys, wasAnswered,
   type AnswerRule, type ApprovalChecks, type ChatChecks, type ChatRules, type CheckDef, type PageChecks, type QuestionResult, type Result, type RunResults, type Turn,
 } from './lib'
 import { renderPage } from '../render-page'
@@ -425,7 +425,7 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
   let compactions = 0
   for (;;) {
     console.error(`  ${question.code}: turn ${replies + 1}`)
-    const answered = turns.reduce((n, earlier) => n + earlier.asks.filter(ask => ask.questions.some(asked => asked.answer !== null)).length, 0)
+    const answered = turns.reduce((n, earlier) => n + earlier.asks.filter(wasAnswered).length, 0)
     const turn = await runTurn({
       prompt, cwd: work, out: join(qDir, `turn-${replies + 1}.jsonl`), timeoutMin: options.timeoutMin, resume: session, plugin: PLUGIN,
       // With a token the connector comes from the harness's own file and nothing else loads. With a sign-in it is
@@ -436,7 +436,7 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
     last = turn
     turns.push(turn)
     // A confirmation round is one picker the harness answered, or one text reply it sent.
-    rounds += turn.asks.filter(ask => ask.main && ask.questions.some(asked => asked.answer !== null)).length
+    rounds += turn.asks.filter(ask => ask.main && wasAnswered(ask)).length
     session = turn.sessionId ?? session
     model = turn.model ?? model
     billed += turn.billedTokens
@@ -631,9 +631,10 @@ async function main() {
     return
   }
 
-  // A value still copied from local.example.json would send the flow off to pick a brand, or an organization, on its own.
-  const placeholders = placeholderKeys(local)
-  if (placeholders.length) fail(`local.json still holds a placeholder at ${placeholders.join(', ')}. Fill ${placeholders.length === 1 ? 'it' : 'each one'} in, or remove the entry of a question that is not set up.`)
+  // A value still copied from local.example.json would send the flow off to pick a brand, or an organization, on
+  // its own. Only what this run reads is checked: the entry of a question that is not running cannot mislead it.
+  const placeholders = placeholderKeys({ ...local, questions: Object.fromEntries(questions.map(question => [question.code, local.questions?.[question.code]])) })
+  if (placeholders.length) fail(`local.json still holds a placeholder at ${placeholders.join(', ')}. Fill ${placeholders.length === 1 ? 'it' : 'each one'} in.`)
 
   let token = ''
   if (!options.page) {

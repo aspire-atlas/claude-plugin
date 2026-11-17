@@ -57,9 +57,10 @@ It runs on a developer's machine, and in CI on every pull request that changes a
   and the nightly Slack post all name it as skipped, and a run with nothing left to run posts a skip
   and passes. Once a baseline holds a question's approved results, a missing brand stops the run
   instead, so a lost or mistyped entry cannot quietly drop a question that gates pull requests.
-  A run also stops before its first turn while any value in `local.json` still holds a `{placeholder}`
-  from the example file, and names each key. A flow asked about "{brand}" picks a brand on its own.
-  Fill each one in, or remove the entry of a question that is not set up.
+  A run also stops before its first turn while a value it reads from `local.json` still holds a
+  `{placeholder}` from the example file, and names each key: the connector, the organization, the
+  `chatAllow` names, and the entry of every question it is about to run. A flow asked about "{brand}"
+  picks a brand on its own. The entry of a question that is not running is not checked.
 
 ## Commands
 
@@ -105,14 +106,16 @@ For each question:
    Whatever is answered, every Atlas tool that changes a record is refused (see
    [What a rerun may and may not do](#what-a-rerun-may-and-may-not-do)).
 
-   The harness stops answering once a page is published or an agent returns its result, page or no page:
-   the next picker is the flow's offer of more work, so the turn ends there. It also stops after
-   `--max-asks` pickers. When a turn ends with no picker and no page (the flow asked in text), the harness
+   The harness stops answering once a page is published, or an agent returns its result with a page
+   file: the next picker is the flow's offer of more work, so the turn ends there. A result with no page
+   (a refresh to approve, a storyline draft) is not the end, and the picker that follows it is answered.
+   It also stops after `--max-asks` pickers. When a turn ends with no picker and no page (the flow asked in text), the harness
    resumes the session with one fixed reply (`defaultReply` in `questions.json`), up to `--max-rounds` times.
 
-   The run folder keeps `asks.json` for each question: for every picker, the text written above it, each
-   question with its options, and the answer given and how it was chosen (`list`, `recommended` or `first`).
-   The text above the first picker is the setup reply.
+   The run folder keeps `asks.json` for each question: for every picker, the text written above it
+   (`before`), the message the picker sits in (`message`, the part of `before` written after the main
+   thread's last tool result), each question with its options, and the answer given and how it was chosen
+   (`list`, `recommended` or `first`). The first picker's `message` is the setup reply.
 3. **Keeps the page.** The HTML file the run published and its link.
 4. **Reads the approved page.** From `approvedFile`, or by reading the link once and keeping a copy on this
    machine (`--refresh-approved` reads it again).
@@ -144,7 +147,7 @@ Q3 is the run's approvals, not the page's, so its approved column is always `–
 approval the run asked for was named in the setup reply's "This run will ask you to approve" line
 (`orchestration.md`, section 2, **Before the questions**). An approval is a question for the page's main
 points (the storyline), credits, a refresh, a save, mailbox drafts, sending the page to Slack or email, or
-a send. Each is known by its picker's header or its wording, and each item of the line by the wording of
+a send (a question that opens with "Send"). Each is known by its picker's header or its wording, and each item of the line by the wording of
 the table in that section; a flow's own confirmation that fits none of them is not counted. A subagent's
 question counts, and so does one the harness left unanswered because the run had finished. An approval
 the line did not name still passes when the text above its own question says "One more approval than I
@@ -157,9 +160,9 @@ page to compare with. It is read from the transcript:
 
 | Message | What is read |
 | ------- | ------------ |
-| Setup reply | What the main thread wrote above its first picker, the first turn's questions, their option labels and descriptions, and the reply the turn ended on |
+| Setup reply | The message the first picker sits in, the first turn's questions up to its storyline check-in, their option labels and descriptions, and the reply the turn ended on |
 | Storyline check-in | Every question headed "Storyline" and every turn a storyline draft came back in, so a redraft after Change or Widen is counted too |
-| Close-out | The last turn's reply, only when the run published a page or its agent finished. When the harness ended the run at the picker that follows the page, the text above that picker. A run that stopped earlier shows "close-out not sent" |
+| Close-out | The last turn's reply, only when the run published a page or its agent finished. When the harness ended the run at the picker that follows the page, the message that picker sits in. A run that stopped earlier shows "close-out not sent" |
 | Question the run stopped on | Only for a run that stopped without closing out, on a question after the setup reply that is not a storyline check-in: that turn's questions and its reply. A run that stopped on the setup reply or on a storyline check-in has its last reply counted there |
 
 Each is counted for arrows, "vs" in any case, and codes. The codes are read from the files that define them,

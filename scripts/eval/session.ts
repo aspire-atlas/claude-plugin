@@ -28,8 +28,8 @@ export type TurnOptions = {
 
 /**
  * Runs one turn and returns it as the transcript reader sees it. The handler answers a picker while the run
- * is still working toward its page. Once a page is published or an agent has returned its result, the next
- * picker is the flow's offer of more work: the handler leaves it unanswered and ends the turn there.
+ * is still working toward its page. Once a page is published, or an agent has returned its result with a page
+ * file, the next picker is the flow's offer of more work: the handler leaves it unanswered and ends the turn there.
  */
 export async function runTurn(options: TurnOptions): Promise<Turn> {
   const events: Event[] = []
@@ -45,8 +45,10 @@ export async function runTurn(options: TurnOptions): Promise<Turn> {
     // Only the picker comes here to be answered. Any other tool that reaches the handler is one the tool
     // lists did not allow, which `claude -p` refuses without asking.
     if (name !== ASK_TOOL) return { behavior: 'deny', message: 'This tool is not allowed in an eval rerun.' }
+    // A packet with no page is not the end: its proposals and questions still stand between the run and its page.
     const page = findPage(summarizeTurn(events))
-    const declined = page.link || page.finished ? 'the run had finished' : asks >= options.maxAsks ? 'the harness had answered its limit of pickers' : null
+    const done = Boolean(page.link) || (page.finished && Boolean(page.file))
+    const declined = done ? 'the run had finished' : asks >= options.maxAsks ? 'the harness had answered its limit of pickers' : null
     if (declined) {
       record({ type: ANSWER_EVENT, tool_use_id: context.toolUseID, declined })
       return { behavior: 'deny', message: `The eval run ends here: ${declined}.`, interrupt: true }

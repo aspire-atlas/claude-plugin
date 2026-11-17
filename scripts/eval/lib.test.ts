@@ -5,7 +5,7 @@ import {
   ATLAS_READS, ATLAS_WRITES, barChecks, compareRuns, extractPageCheckScript, fencedBlocks, fill, findJsonWithKey, configuredQuestions, skippedLine,
   findPage, forBaseline, normalizeResult, codesForChanges, readerResult, regressions, renderComment, renderSkipped, renderSlack, COMMENT_MARKER, renderStopped, stripTitlePrefix, checkNames, parsePageCheck, parseStream, renderRun, rIds, rResult, stripDataUris,
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, askText, chatCodes, chatFailures, chatLine, chatMessages, checkChat, countChat, noChat, normalizeRun, CHAT_CHECK,
-  answerFor, answersFor, approvalKind, approvalsLine, askRecords, checkApprovals, namedApprovals, noApprovals, placeholderKeys, ANSWER_EVENT, APPROVALS_CHECK,
+  answerFor, answersFor, approvalKind, approvalsLine, askRecords, checkApprovals, namedApprovals, noApprovals, placeholderKeys, wasAnswered, ANSWER_EVENT, APPROVALS_CHECK,
   type PageChecks, type QuestionResult, type RunResults,
 } from './lib'
 
@@ -613,4 +613,71 @@ test('local.json is refused while a value still holds a placeholder, and the key
   const filled = { mcp: { url: 'https://atlas.example.test/mcp', name: 'Aspire_Atlas_Dev' }, organization: 'Test org', chatAllow: ['Canon R5', '{product}'], questions: { I1: { brand: 'Acme', approved: null } } }
   expect(placeholderKeys(filled)).toEqual(['chatAllow[1]'])
   expect(placeholderKeys({ ...filled, chatAllow: [] })).toEqual([])
+})
+
+test('a storyline draft packet that names its draft file is not a page, and does not end the run', () => {
+  const packet = (body: string) => summarizeTurn(parseStream([
+    line({ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 't1', content: '```result-packet\n' + body + '\n```' }] } }),
+    line({ type: 'result', session_id: 's1', result: 'Which should I build?', is_error: false }),
+  ].join('\n')))
+  expect(findPage(packet('{"page": "/tmp/s/draft.html", "storyline": {"pass": "draft"}}'))).toEqual({ link: null, file: null, finished: false })
+  expect(findPage(packet('{"page": "/tmp/s/page.html", "storyline": {"pass": "build"}}'))).toEqual({ link: null, file: '/tmp/s/page.html', finished: true })
+})
+
+test('an answer line written before its picker in the transcript is still read', () => {
+  const picker = { type: 'assistant', message: { content: [{ type: 'tool_use', id: 'q1', name: 'AskUserQuestion', input: { questions: [{ header: 'Heard', question: 'Right?', options: [{ label: 'Yes, run it (Recommended)' }] }] } }] } }
+  const answer = { type: ANSWER_EVENT, tool_use_id: 'q1', answers: { 'Right?': { answer: 'Yes, run it (Recommended)', by: 'recommended' } } }
+  for (const order of [[picker, answer], [answer, picker]]) {
+    const turn = summarizeTurn(parseStream(order.map(line).join('\n')))
+    expect(turn.asks[0].questions[0].answer).toBe('Yes, run it (Recommended)')
+    expect(wasAnswered(turn.asks[0])).toBe(true)
+  }
+  const declined = summarizeTurn(parseStream([line({ type: ANSWER_EVENT, tool_use_id: 'q1', declined: 'the run had finished' }), line(picker)].join('\n')))
+  expect(declined.asks[0].declined).toBe('the run had finished')
+  expect(wasAnswered(declined.asks[0])).toBe(false)
+})
+
+test('progress notes and a picker asked during the build are not read as the setup reply or the close-out', () => {
+  const say = (text: string) => ({ type: 'assistant', message: { content: [{ type: 'text', text }] } })
+  const ask = (id: string, header: string, question: string) => ({ type: 'assistant', message: { content: [{ type: 'tool_use', id, name: 'AskUserQuestion', input: { questions: [{ header, question, options: [{ label: 'Yes (Recommended)' }] }] } }] } })
+  const tool = (id: string) => ({ type: 'assistant', message: { content: [{ type: 'tool_use', id, name: 'Task', input: {} }] } })
+  const result = (id: string, content: string) => ({ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: id, content }] } })
+  const turn = summarizeTurn(parseStream([
+    say('Checking Atlas -> status.'), tool('t0'), result('t0', 'ok'),
+    say('You need a shortlist.'), ask('q1', 'Heard', 'You asked who to contact. Is that right?'),
+    say('Drafting -> storyline.'), tool('t1'), result('t1', '```result-packet\n{"page": null, "storyline": {"pass": "draft"}}\n```'),
+    ask('q2', 'Storyline', 'Gift posts beat the usual views.'),
+    say('Building -> reviews.'), ask('q3', 'Account', 'Refresh @acme first -> newer posts?'),
+    tool('t2'), result('t2', '```result-packet\n{"page": "https://claude.ai/artifact/AbC123", "storyline": {"pass": "build"}}\n```'),
+    say('The page is ready.'), ask('q4', 'Next', 'What next?'),
+    { type: ANSWER_EVENT, tool_use_id: 'q4', declined: 'the run had finished' },
+  ].map(line).join('\n')))
+  expect(turn.asks[0].before).toBe('Checking Atlas -> status.\nYou need a shortlist.')
+  expect(turn.asks[0].message).toBe('You need a shortlist.')
+  const messages = chatMessages([turn], true)
+  expect(messages.setup).toBe('You need a shortlist.\nYou asked who to contact. Is that right?\nYes (Recommended)')
+  expect(messages.storyline).toBe('Gift posts beat the usual views.\nYes (Recommended)')
+  expect(messages.closeOut).toBe('The page is ready.')
+  expect(checkChat([turn], true, RULES).checks.result).toBe('pass')
+})
+
+test('a question is a send only when it opens with the word, and an approvals line written as a list names each item', () => {
+  expect(approvalKind({ header: 'Next', question: 'What next? I can draft outreach, or send nothing more.' })).toBeNull()
+  expect(approvalKind({ header: 'Heard', question: 'You asked who to contact. I will send nothing. Is that right?' })).toBeNull()
+  expect(approvalKind({ header: 'Tags', question: 'Send these 6 drafts now?' })).toBe('send')
+  expect(namedApprovals('You need a shortlist.\nThis run will ask you to approve:\n- the page\'s three main points, before I build it\n- the Atlas credits this run uses\n- saving the ranked creators to Atlas\n\nMore below.'))
+    .toEqual(['storyline', 'credits', 'save'])
+  expect(namedApprovals('This run will ask you to approve: saving the findings to Atlas.\nClaude itself may also ask to let Atlas\'s tools run.')).toEqual(['save'])
+})
+
+test('a compare does not count the approval check appearing for the first time', () => {
+  const before = run()
+  const after = run()
+  after.questions[0].approvals = { result: 'pass', line: true, named: [], asked: [], unnamed: [] }
+  expect(compareRuns(before, after, E_CHECKS)).toContain('0 check results changed.')
+  const failed = run()
+  failed.questions[0].approvals = { result: 'fail', line: true, named: [], asked: ['save'], unnamed: ['save'] }
+  const compared = compareRuns(after, failed, E_CHECKS)
+  expect(compared).toContain('| Q3 | pass → fail |')
+  expect(compared).toContain('1 check result changed.')
 })

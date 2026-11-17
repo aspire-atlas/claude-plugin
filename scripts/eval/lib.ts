@@ -26,6 +26,8 @@ export type Ask = {
   main: boolean
   /** What the main thread wrote in this turn before the call, since the call before it. Empty for a subagent's call. */
   before: string
+  /** The end of `before`: the message the picker sits in, written after the main thread's last tool result. */
+  message: string
   questions: Asked[]
   /** Why the harness left the call unanswered and ended the turn, when it did. */
   declined: string | null
@@ -183,6 +185,9 @@ export function summarizeTurn(events: Event[]): Turn {
   const parts: string[] = []
   // What the main thread has written since the last picker: the text the person reads above the next one.
   let said: string[] = []
+  // The part of it written since the main thread's last tool result: the message the next picker sits in.
+  let message: string[] = []
+  const answers: Event[] = []
   for (const event of events) {
     const main = !event.parent_tool_use_id
     if (event.type === 'system' && event.subtype === 'init') {
@@ -197,11 +202,18 @@ export function summarizeTurn(events: Event[]): Turn {
         if (block.type === 'text' && main) {
           parts.push(block.text)
           said.push(block.text)
+          message.push(block.text)
         }
         if (block.type === 'tool_use') turn.toolUses.push({ id: block.id, name: block.name, input: block.input ?? {}, main })
         if (block.type === 'tool_use' && block.name === ASK_TOOL) {
-          turn.asks.push({ id: block.id, main, before: main ? said.join('\n').trim() : '', questions: askedQuestions(block.input), declined: null })
-          if (main) said = []
+          turn.asks.push({
+            id: block.id, main, before: main ? said.join('\n').trim() : '', message: main ? message.join('\n').trim() : '',
+            questions: askedQuestions(block.input), declined: null,
+          })
+          if (main) {
+            said = []
+            message = []
+          }
         }
       }
       if (main) turn.contextTokens = usageTotal(event.message?.usage) || turn.contextTokens
@@ -211,24 +223,29 @@ export function summarizeTurn(events: Event[]): Turn {
         const text = contentText(block.content)
         turn.toolResults[block.tool_use_id] = { text, error: block.is_error === true }
         if (main) parts.push(text)
+        if (main) message = []
       }
     } else if (event.type === ANSWER_EVENT) {
-      // The harness's own line, written beside the stream when it answers a picker (session.ts).
-      const ask = turn.asks.find(candidate => candidate.id === event.tool_use_id)
-      if (!ask) continue
-      ask.declined = typeof event.declined === 'string' ? event.declined : null
-      for (const question of ask.questions) {
-        const given = event.answers?.[question.question]
-        if (typeof given?.answer !== 'string') continue
-        question.answer = given.answer
-        question.by = given.by ?? null
-      }
+      answers.push(event)
     } else if (event.type === 'result') {
       turn.sessionId = event.session_id ?? turn.sessionId
       turn.reply = typeof event.result === 'string' ? event.result : ''
       turn.billedTokens = usageTotal(event.usage)
       turn.costUsd = event.total_cost_usd ?? 0
       turn.failed = event.is_error === true
+    }
+  }
+  // The harness's own lines, written beside the stream when it answers a picker (session.ts). They are read
+  // last: the handler can write one before the stream's own line for the picker it answers.
+  for (const event of answers) {
+    const ask = turn.asks.find(candidate => candidate.id === event.tool_use_id)
+    if (!ask) continue
+    ask.declined = typeof event.declined === 'string' ? event.declined : null
+    for (const question of ask.questions) {
+      const given = event.answers?.[question.question]
+      if (typeof given?.answer !== 'string') continue
+      question.answer = given.answer
+      question.by = given.by ?? null
     }
   }
   turn.text = parts.join('\n')
@@ -257,14 +274,18 @@ export function findPage(turn: Turn): { link: string | null; file: string | null
   const packets = fencedBlocks(turn.text, 'result-packet')
   // On a host that cannot publish, the packet's page is the path of the file the page was saved to.
   let saved: string | null = null
-  // A storyline draft returns a packet marked `pass: "draft"` and no page: the run waits on the person's answer
+  // A storyline draft returns a packet marked `pass: "draft"` and no published page: the run waits on the person's answer
   // until a later packet builds or publishes. A feeder agent's packet in the same turn does not end that wait.
   let awaitingStoryline = false
   for (const packet of packets) {
     const parsed = parseJsonLoose(packet)
     const pass = parsed?.storyline?.pass
-    if (pass === 'draft') awaitingStoryline = true
-    else if (pass === 'build' || pass === 'state') awaitingStoryline = false
+    if (pass === 'draft') {
+      // A draft pass may name its draft file as `page` (orchestration.md, section 6). That file is never the page.
+      awaitingStoryline = true
+      continue
+    }
+    if (pass === 'build' || pass === 'state') awaitingStoryline = false
     const value = parsed?.page
     const page = Array.isArray(value) ? value[0] : value
     if (typeof page !== 'string' || page.length === 0) continue
@@ -294,7 +315,8 @@ const isStorylineAsk = (ask: Ask) => ask.questions.some(question => /storyline/i
  * AskUserQuestion call and, when the turn ended on it, from the turn's reply as well, since a host that
  * refuses the tool asks in text. The last turn's reply is the close-out only when the run `closed`: it
  * published a page or its agent finished. When the harness ended the run at the picker that follows the page,
- * the close-out is the text above that picker, and the picker itself is not read. A run that stopped earlier
+ * the close-out is the message that picker sits in, and the picker itself is not read. Progress notes written
+ * before the main thread's last tool result are in neither message. A run that stopped earlier
  * sent no close-out, and its last reply is the question it stopped on: part of the setup reply or of a
  * storyline check-in when it stopped there, and `stoppedOn` when it stopped on any later question, so no reply
  * the person read goes uncounted.
@@ -309,13 +331,16 @@ export function chatMessages(turns: Turn[], closed: boolean): Partial<Record<Cha
   const last = turns.length - 1
   // A turn's reply is a question the person read, unless it is the close-out.
   const asked = (i: number) => (i < last || !closed ? [turns[i].reply] : [])
-  const opening = turns[0].asks.find(ask => ask.main && !ask.declined)?.before ?? ''
-  const setup = [opening, ...asks(turns[0], false), ...(isStoryline(turns[0]) ? [] : asked(0))].filter(Boolean)
+  // The setup reply is the first picker's own message and the pickers before the storyline check-in. A picker
+  // that comes after it in the same turn (a refresh offer during the build) is not part of the setup reply.
+  const first = turns[0].asks.filter(ask => ask.main && !ask.declined)
+  const check = first.findIndex(isStorylineAsk)
+  const setup = [first[0]?.message, ...(check === -1 ? first : first.slice(0, check)).map(askText), ...(isStoryline(turns[0]) ? [] : asked(0))].filter(Boolean)
   if (setup.length) found.setup = setup.join('\n')
   const storyline = turns.flatMap((turn, i) => (isStoryline(turn) ? [...asks(turn, true), ...asked(i)] : [])).filter(Boolean)
   if (storyline.length) found.storyline = storyline.join('\n')
   const after = turns[last].asks.find(ask => ask.main && ask.declined)
-  if (closed && after?.before) found.closeOut = after.before
+  if (closed && after?.message) found.closeOut = after.message
   else if (closed && !turns[last].failed && turns[last].reply) found.closeOut = turns[last].reply
   if (!closed && last > 0 && !isStoryline(turns[last])) {
     const stoppedOn = [...asks(turns[last], false), turns[last].reply].filter(Boolean)
@@ -632,6 +657,8 @@ export function compareRuns(before: RunResults, after: RunResults, eChecks: Chec
     const changed = rows(next, eChecks, rList)
       .map((row, i) => ({ row, was: prevRows[i] }))
       .filter(({ row, was }) => row.new !== was.new || row.approved !== was.approved)
+      // A run stored before the approval check, or one that asked no picker, has nothing to compare it with.
+      .filter(({ row, was }) => row.id !== APPROVALS_CHECK.id || (row.new !== 'not run' && was.new !== 'not run'))
     if (changed.length) {
       lines.push('| Check | New page | Approved page |', '| ----- | -------- | ------------- |')
       for (const { row, was } of changed) {
@@ -758,7 +785,10 @@ export function answersFor(input: Record<string, any>, rules: AnswerRule[]): Rec
   return answers
 }
 
-/** What the run folder keeps for each picker: the turn it came in, the text above it, and each question with its options and answer. */
+/** A picker the harness answered, rather than one it left at the end of the run. */
+export const wasAnswered = (ask: Ask) => ask.questions.some(asked => asked.answer !== null)
+
+/** What the run folder keeps for each picker: the turn it came in, the text above it, the message it sits in, and each question with its options and answer. */
 export type AskRecord = { turn: number } & Omit<Ask, 'id'>
 
 export function askRecords(turns: Turn[]): AskRecord[] {
@@ -783,14 +813,15 @@ const NAMED: [ApprovalKind, RegExp][] = [
 
 /**
  * The approvals the setup reply named. Null when the text holds no such line, and an empty list for "This run
- * asks you to approve nothing." The line ends at the end of its paragraph.
+ * asks you to approve nothing." The line ends at the end of its paragraph, and its items are split at
+ * semicolons and line ends, so a line written as a list reads the same.
  */
 export function namedApprovals(reply: string): ApprovalKind[] | null {
   if (/This run asks you to approve nothing/i.test(reply)) return []
   const line = reply.match(/This run will ask you to approve:?\s*([\s\S]*?)(?:\n\s*\n|$)/i)?.[1]
   if (line === undefined) return null
   const kinds = new Set<ApprovalKind>()
-  for (const item of line.split(';')) {
+  for (const item of line.split(/[;\n]/)) {
     const kind = NAMED.find(([, words]) => words.test(item))?.[0]
     if (kind) kinds.add(kind)
   }
@@ -801,7 +832,7 @@ export function namedApprovals(reply: string): ApprovalKind[] | null {
  * The approval one asked question is, or null for a question that approves nothing (Heard, Scope, a role).
  * Read from the header first, then the wording, as the flows write them: the Storyline, Credits and Save
  * headers (orchestration.md, section 2), the refresh offer (page standard, 9.5), a mailbox draft, sending the
- * page to Slack or email, and a send.
+ * page to Slack or email, and a question that opens with "Send".
  */
 export function approvalKind(asked: Pick<Asked, 'header' | 'question'>): ApprovalKind | null {
   const { header, question } = asked
@@ -811,7 +842,7 @@ export function approvalKind(asked: Pick<Asked, 'header' | 'question'>): Approva
   if (/^save$/i.test(header)) return 'save'
   if (/mailbox/i.test(header) || /\bdrafts?\b[^.?]*\bmailbox\b|\bmailbox\b[^.?]*\bdrafts?\b/i.test(question)) return 'drafts'
   if (/deliver/i.test(header) || /\b(?:send|post|share|email)\b[^.?]*\b(?:page|report|readout)\b[^.?]*\b(?:slack|email)\b/i.test(question)) return 'delivery'
-  if (/^send/i.test(header) || /\bsend\b/i.test(question)) return 'send'
+  if (/^send/i.test(header) || /^\W*send\b/i.test(question)) return 'send'
   if (/\bsave\b[^.?]*\bto atlas\b/i.test(question)) return 'save'
   return null
 }
