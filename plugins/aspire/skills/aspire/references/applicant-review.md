@@ -194,67 +194,10 @@ runs for a CSV (uploaded, or exported from the Aspire app at R1), never for past
 carry no form answers. Interactive only. The whole export is imported once, even when screening
 then splits it into runs of 100.
 
-**1. Read every column.** Read the file with the snippet below, never with the `Read` tool: `Read`
-cuts lines over 2000 characters, and an export's free-text answers and quoted cells (which may
-hold commas and line breaks) run longer. Copy the file into a new temporary folder and run the
-snippet there, 25 rows at a time (`0 25`, `25 25`, and so on, until a run prints no rows; 10 at a
-time when a run's output comes back cut):
-
-```
-d=$(mktemp -d) && cp "{csv path}" "$d/applicants.csv" && awk '/^<!-- applicant-csv -->$/{f=1;next} /^<!-- \/applicant-csv -->$/{f=0} f' "${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/applicant-review.md" | sed '1d;$d' > "$d/applicant_csv.py" && python3 -I "$d/applicant_csv.py" "$d/applicants.csv" 0 25
-```
-
-The first run prints the row count, the columns kept, and the columns left out, then one line per
-row: its row number and its non-empty cells under their headers (trimmed; a header that repeats
-gets ` (2)`, ` (3)`). The snippet leaves out **payment and tax columns** before anything is printed:
-a header naming PayPal, Venmo, Zelle, Cash App, a bank, an account number, a routing or sort code,
-an IBAN, SWIFT or BIC, a tax id (tax, TIN, EIN, W-9, W-8), a Social Security or National Insurance
-number, a card number (credit, debit, CVV, CVC), or a payout; and any other column, except a phone
-column, holding a value shaped like a card number or an IBAN. Those values are kept nowhere, and
-the report names the columns. With no Python, say so and stop the import: the run goes on vetting
-the list as a plain list.
-
-<!-- applicant-csv -->
-```python
-import csv, json, re, sys
-
-path, start, count = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
-PAY = re.compile(r"\b(pay ?pal|venmo|zelle|cash ?app|bank|account (number|no)|acct|routing|"
-                 r"sort code|iban|swift|bic|tax|tin|ein|w-?9|w-?8|ssn|social security|"
-                 r"national insurance|card (number|no)|credit card|debit card|cvv|cvc|payout)\b", re.I)
-PHONE = re.compile(r"phone|mobile|cell|whatsapp|\btel\b", re.I)
-IBAN = re.compile(r"^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$")
-
-
-def luhn(s):
-    d = [int(c) for c in reversed(s)]
-    return (sum(d[0::2]) + sum(sum(divmod(2 * x, 10)) for x in d[1::2])) % 10 == 0
-
-
-def account_like(v):
-    s = re.sub(r"[ -]", "", v.strip())
-    return bool(IBAN.match(s.upper())) or (s.isdigit() and 13 <= len(s) <= 19 and luhn(s))
-
-
-with open(path, newline="", encoding="utf-8-sig", errors="replace") as f:
-    rows = list(csv.reader(f))
-head = [h.strip() for h in rows[0]] if rows else []
-body = [r for r in rows[1:] if any(c.strip() for c in r)]
-seen, keys = {}, []
-for h in head:
-    seen[h.lower()] = seen.get(h.lower(), 0) + 1
-    keys.append(h if seen[h.lower()] == 1 else f"{h} ({seen[h.lower()]})")
-out = {i for i, h in enumerate(head) if PAY.search(h) or (
-    not PHONE.search(h) and any(i < len(r) and account_like(r[i]) for r in body))}
-if start == 0:
-    print(json.dumps({"rows": len(body),
-                      "kept": [k for i, k in enumerate(keys) if i not in out],
-                      "left_out": [k for i, k in enumerate(keys) if i in out]}, ensure_ascii=False))
-for n, r in enumerate(body[start:start + count], start + 2):
-    cells = {keys[i]: c.strip() for i, c in enumerate(r) if i < len(keys) and i not in out and c.strip()}
-    print(json.dumps({"row": n, "cells": cells}, ensure_ascii=False))
-```
-<!-- /applicant-csv -->
+**1. Read every column.** Read the file with the **Applicant CSV snippet**, never with the `Read` tool, which cuts lines over 2000
+characters. When **Getting the list** already ran it on this file, use those rows; otherwise run
+it as that file says. It leaves out payment and tax columns, and card- or IBAN-shaped values,
+before any row is printed, and the report names what it left out.
 
 Then sort each kept column into one of these, by header, case-insensitive:
 
@@ -262,46 +205,47 @@ Then sort each kept column into one of these, by header, case-insensitive:
 | ------ | ------- | ------- |
 | Applicant id | `applicant id`, `aspire applicant id`, `member id`, `creator id`, `id` | `aspireApplicantId` |
 | Handles | The handle headers and profile URL values in **Creator vetting**, **Getting the list**, read to a network the same way | `instagramHandle`, `tiktokHandle`, normalized per **Getting the list** |
+| Email | The first header naming `email` (`email`, `email address`, `e-mail`) | `formAnswers`, and the applicant's email in step 2 |
 | Name | `name`, `full name`, `creator`; else `first name` and `last name`, joined | The Sheet's Name column; the name columns stay in `formAnswers` but get no Sheet column of their own |
 | Applied date | `date applied`, `applied`, `applied date`, `applied at`, `date added` | `appliedAt`, as an ISO date |
-| Everything else | Contact details (email, phone, address, city, state, country), the application form's questions, and Aspire's own columns (followers, engagement, YouTube, campaigns) | `formAnswers`, one key per column |
+| Everything else | Contact details (phone, address, city, state, country), the application form's questions, and Aspire's own columns (followers, engagement, YouTube, campaigns) | `formAnswers`, one key per column |
 
-Every kept column is kept, never judged by its header: contact details and form answers are
-vetting evidence. A `formAnswers` key is the header as the snippet printed it, and values are kept
-as text, as written.
+A `formAnswers` key is the key the snippet printed, and values are kept as text, as written.
 
-**2. One applicant per person.** Dedupe before anything is written:
+**2. One applicant per person.** Dedupe before anything is written. Two rows, or a row and an Atlas
+record (step 3), are the same applicant when they share the applicant id, or, with no id column, an
+Instagram handle, a TikTok handle, or the email (step 1's Email row; on a record, the
+`formAnswers` value under a header naming email).
 
-- With an applicant id column, rows with the same id are one applicant, and that is the id.
-- Without one (Aspire's applicant exports usually have none), rows that share an Instagram handle,
-  a TikTok handle, or an email are one applicant. Its id comes from what the applicant has, not
-  from what the rows happen to share, so the next export gives the same id: `ig-<instagram
+- With an applicant id column, that is the id.
+- Without one (Aspire's applicant exports usually have none), the id comes from what the applicant
+  has, not from what the rows happen to share, so the next export gives the same id: `ig-<instagram
   handle>` when any of its rows has one, else `tt-<tiktok handle>`, else `email-<email,
   lowercased>`, else `name-<the name, lowercased, spaces as hyphens>`. When its rows hold two
   different handles on one network, the kept row's wins. A row with no handle, email, or name is
   not imported, and the report names its row number.
 - An id has no `:` and at most 120 characters: replace `:` with `-` and cut a longer one to 120.
-  When two ids are the same after the cut, the second applicant is not imported, and the report
-  names both rows.
+- **Two different applicants with the same id** (two people of the same name with no handle or
+  email, or two ids the same after the cut): only the first is imported, and the report names both
+  rows.
 - Duplicate rows keep the row with the newest applied date (the lower one in the file on a tie).
   The report counts duplicates and names any whose answers differ.
 - Drop rows whose handle is one of the brand's own (the brand handles **Creator vetting** holds
   for the run) and say how many.
 - A saved `competitor` handle is still imported: screening rejects it.
 
-The import writes the id it used to every record and Sheet row. A row with no applied date gets the
-import date (shell clock), and the report says how many did.
+A row with no applied date gets the import date (shell clock), and the report says how many did.
 
 **3. Check what Atlas and the Sheet hold.** Call `list_applicants` with `asProfileId` (the same
 Profile step 5 writes to), `reviewId` = the review's slug, no `statuses`, `limit` 1000, paged with
 `cursor` to the end. When the server has no `list_applicants`, say the import can't be checked yet
-and stop before writing: the run goes on vetting the list as a plain list. An applicant is already
-imported when a record has its id, or the same Instagram handle, TikTok handle, or email (any
-`formAnswers` value under a header naming email): it takes that record's `aspireApplicantId` from
-then on, so its key and Sheet row stay the same, and is not written again, whatever its answers
-say now. The report counts them and names any whose answers changed. When `-sheet` holds a link and
-the Claude Docs connector is in the session (load its guide first), also read the Sheet's Aspire
-applicant id column, to count the applicants of this file it has no row for.
+and stop before writing: the run goes on vetting the list as a plain list. An applicant that is the
+same as a record (step 2) is already imported: it takes that record's `aspireApplicantId` from then
+on, so its key and Sheet row stay the same, and is not written again, whatever its answers say now.
+The report counts them and names any whose answers changed. From here on, "this file's ids" means
+the ids after this step. When `-sheet` holds a link and the Claude Docs connector is in the session
+(load its guide first), also read the Sheet's Aspire applicant id column, to count this file's
+applicants it has no row for.
 
 **4. Show the found-and-missing report, then confirm.** In text, before any write:
 
@@ -309,24 +253,25 @@ applicant id column, to count the applicants of this file it has no row for.
 {file name}: {rows} rows, {unique} applicants ({duplicates} duplicate rows merged{, k with
 different answers: @a, @b}).
 Handles: {i} Instagram, {t} TikTok, {none} with neither (imported; screening marks them can't vet).
-Not imported: {own} of {brand}'s own handles{; rows {n, m} with nothing to tell the applicant by}.
+Not imported: {own} of {brand}'s own handles{; rows {n, m} with nothing to tell the applicant by}{;
+row {n} shares an id with row {m}}.
 Already in Atlas for this review: {existing}. New: {new}.{ Not in the review Sheet yet: {missing}.}
 Kept: {n} columns as answers ({the first five headers}, ...); {applied date column} as the applied
 date{; no applied date on {d} rows, using today}.
-Left out: {payment and tax columns, or "nothing"}.
+Left out: {payment and tax columns, and {c} card- or account-shaped answers, or "nothing"}.
 ```
 
-Then ask with `AskUserQuestion`: "Add {new} applicants to the {campaign} review in {brand}'s Atlas
-and its review Sheet? Their contact details and answers are kept with them, for the team only."
-Drop "and its review Sheet" unless step 3 read the Sheet. Options: 1) Add them (Recommended);
-2) Not now. With no new applicants but applicants the Sheet has no row for, ask instead "Add {missing}
-applicants Atlas already holds to the {campaign} review Sheet?", with the same options, and skip
-step 5. With nothing new and nothing missing, ask nothing: say that every applicant is already
-imported and go to step 8. "Not now" writes nothing, and the run goes on vetting the list as a
-plain list.
+Then, when there is anything to write, ask once with `AskUserQuestion`, built from the counts:
+"Add {new} applicants to the {campaign} review in {brand}'s Atlas{ and its review Sheet}? Their
+contact details and answers are kept with them, for the team only." With no new applicants, "Add
+{missing} applicants Atlas already holds to the {campaign} review Sheet?" The Sheet part is there
+only when step 3 read the Sheet. Options: 1) Add them (Recommended); 2) Not now. "Not now" writes
+nothing, and the run goes on vetting the list as a plain list. With nothing new and nothing
+missing, ask nothing and say every applicant is already imported.
 
-**5. Write to Atlas.** `append_insights` with `asProfileId`, `runKey`
-`applicant-import-{slug}-{YYYY-MM-DD}`, at most 100 findings per call, each:
+**5. Write to Atlas**, when there are new applicants and the user picked "Add them".
+`append_insights` with `asProfileId`, `runKey` `applicant-import-{slug}-{YYYY-MM-DD}`, at most 100
+findings per call, each:
 
 - `role: "applicant"`, `schema: "profile"`, `entityKind: "profile"`, `entityId` = the brand
   profile's id;
@@ -340,18 +285,18 @@ A new applicant's status is `new`: nothing more is written for it. A call is all
 error, fix the finding it names and resend the same call (the keys make a resend safe). A timeout
 is resent once as it is. Never change a key to get a finding through.
 
-**6. Read back.** Page `list_applicants` again as in step 3. The import is done when every
-applicant id from step 2 is there. Any missing is named in the summary as not imported, and the
+**6. Read back**, after step 5. Page `list_applicants` again as in step 3. The import is done when
+all of this file's ids are there. Any missing is named in the summary as not imported, and the
 Sheet gets no row for it.
 
-**7. Add Sheet rows.** Only when step 3 read the Sheet. Bring its header up to **The review
-Sheet**'s order first, then append one row per applicant of this file read back in step 6 whose id
-is not in the Sheet yet: Name (step 1), Instagram and TikTok as `@handle`, Status `new`, every
-other answer under its column, Source `csv`, Applied, and Aspire applicant id; Recommendation, Fit
-score, Evidence, Maybe question and Team call stay blank. Never change a row already there, a Team
-call, or a column the team added: rows are matched on Aspire applicant id, since the team sorts and
-filters the Sheet. When the connector refuses, say so in one line: Atlas holds the applicants, and
-the next import adds the rows.
+**7. Add Sheet rows**, when step 3 read the Sheet, it lacks rows for this file's applicants that
+Atlas holds, and the user picked "Add them". Bring its header up to **The review Sheet**'s order
+first, then append one row per such applicant: Name (step 1), Instagram and TikTok as `@handle`,
+Status `new`, every other answer under its column, Source `csv`, Applied, and Aspire applicant id;
+Recommendation, Fit score, Evidence, Maybe question and Team call stay blank. Never change a row
+already there, a Team call, or a column the team added: rows are matched on Aspire applicant id,
+since the team sorts and filters the Sheet. When the connector refuses, say so in one line: Atlas
+holds the applicants, and the next import adds the rows.
 
 **8. Summarize** in one line: "{new} applicants added to the {campaign} review ({existing} were
 already there), {rows} rows added to the review Sheet."

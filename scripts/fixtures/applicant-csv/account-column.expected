@@ -1,0 +1,4 @@
+{"rows": 3, "encoding": "utf-8", "kept": ["Name", "Instagram"], "left_out": ["Details"], "cells_left_out": 0}
+{"row": 2, "cells": {"Name": "A", "Instagram": "@a"}}
+{"row": 3, "cells": {"Name": "B", "Instagram": "@b"}}
+{"row": 4, "cells": {"Name": "C", "Instagram": "@c"}}
