@@ -75,8 +75,9 @@ limit 100 per page, paged to the end, `includeSuperseded: true`, `asProfileId` =
 for each profile with a connected channel, in `get_status` order, and stop at the first
 profile with brand context. A profile has brand context when the read holds any record of kind
 `brand_fact`, `user_fact`, `competitor`, `red_line`, `partner`, or `decline`: those are the kinds
-the Phase 5 core set writes, including its skips and "not sure yet" answers. Keep the result,
-so the Phase 5 gap check reuses it and never reads twice.
+the Phase 5 core set writes, including its skips and "not sure yet" answers. Records whose keys
+start `applicant-review:` don't count, so an applicant review set up first leaves a profile
+unonboarded. Keep the result, so the Phase 5 gap check reuses it and never reads twice. <!-- red-line-check: counts record kinds for brand context, not red-line rules -->
 
 ## 4. What the page may use from `get_status`
 

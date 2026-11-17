@@ -85,6 +85,7 @@ Do not develop from a folder that is mounted read-only or delete-restricted (som
    bash scripts/check-agent-roster.sh
    bash scripts/check-artifact-standard.sh
    bash scripts/check-orchestration.sh
+   bash scripts/check-calibration-keys.sh
    bash scripts/check-agent-specs.sh
    bash scripts/check-palette.sh
    bash scripts/check-skill-args.sh
@@ -215,8 +216,9 @@ These are product and safety commitments. A PR that breaks one is blocked in rev
 
 ## 10. Anthropic plugin directory
 
-- Submission (one time): https://claude.ai/admin-settings/directory/submissions/plugins/new with the public repo URL. Requires an Owner on the Aspire Team or Enterprise org. Track status at https://claude.ai/admin-settings/directory/submissions.
-- After approval, the directory mirrors `main` and screens each update automatically. No re-submission for new versions.
+- Submission (one time): the developer portal at https://claude.ai/directory/manage, **Submit new**, **Plugin bundle**, with the public repo URL, branch `main`, and plugin folder `plugins/aspire` (the directory takes one plugin folder per submission; `aspire-mod` is not submitted). Select **Validate** first and fix every **Blocking** finding. Requires an Owner, or a member with the **Directory** permission, on the Aspire Team or Enterprise org. Track status in the same portal.
+- After approval, the directory follows `main` and scans each new commit automatically. No re-submission for new versions. A validation report covers one commit: after a push, select **Re-validate** before continuing a draft. Never withdraw a submission to retry it.
+- Publish setting: review every version. Each scanned commit on `main` waits for an Owner to publish it in the portal before people who have the plugin get it.
 - Governing documents: the Anthropic Software Directory Terms and Policy. Practical implications: keep the description narrow and accurate, keep the connector list to what the plugin uses (three: Aspire Atlas for data and Aspire Atlas Organization Admin for organization members, both on atlas.aspire.io, and the optional Meta Ads connector at mcp.facebook.com/ads), and respond to Anthropic within a reasonable time if they flag something.
 - Directory findings. Each push to `main` is scanned, and a finding marked **Blocking** keeps that version off the listing until a new version fixes it. Warnings and notes hold a version for a reviewer or are only recorded. Fix a finding in the plugin when it is blocking, or when the fix breaks no rule of this repo; `scripts/check-directory.sh` catches the blocking ones before a push, and also holds every skill's description to the skill spec's 1,024 characters, which the directory has not flagged. These are kept on purpose and stay as they are:
 

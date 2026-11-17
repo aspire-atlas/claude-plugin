@@ -99,8 +99,7 @@ skip any the S1 answer already settles. Never ask more than five.
    cost), with bands that suit the archetype rather than fixed numbers.
 4. **Geography and language** — market fit, when the brief implies a market at all.
 5. **Content and hard exclusions** — formats the campaign needs, and who is disqualified.
-   Always fold in the brand's existing `competitor` and `red_line` records (except `review:`
-   keys, which are content review only) as a stated default ("competitors already recorded are excluded"), so the user only has to add to it.
+   Always fold in the brand's existing `competitor` records and brand red lines (**Atlas tools**, Calibration kinds) as a stated default ("competitors already recorded are excluded"), so the user only has to add to it.
 
 Rules:
 
@@ -250,7 +249,7 @@ Infer a trait from what the posts show, never from a number or label the creator
 A niche fandom or subculture the criteria name is a theme, not a keyword: count the posts that
 are about it, whatever words they use.
 
-Risk flags are reported, never scored: competitor mention, a `red_line` match in recent
+Risk flags are reported, never scored: competitor mention, a brand red line match in recent
 content, no contact route, or a follower-to-engagement pattern that looks bought. A flagged
 candidate still appears, with the flag on its card.
 
@@ -414,8 +413,9 @@ offer "Change setup" as an option on the run question. Several campaigns may be 
 
 1. Ask S1: what the campaign is, in the user's own words.
 2. **Then write the refinement questions.** Read the S1 answer together with `brand:summary`,
-   `brand:business-context`, and the `competitor`, `red_line` and `guideline` records (not
-   `review:` keys, which are content review only, nor `theme:` keys, which style pages, nor
+   `brand:business-context`, the brand red lines, and the `competitor` and `guideline` records (not
+   `review:` keys, which are content review only, nor `applicant-review:` keys, which are
+   one campaign's applicant screening only, nor `theme:` keys, which style pages, nor
    `lastrun:` keys, which hold a flow's saved setup answers), and from
    those compose 3 to 5 `AskUserQuestion` questions covering the dimensions above, in their
    order, skipping anything S1 already settled. The options are inferred from the brief and the

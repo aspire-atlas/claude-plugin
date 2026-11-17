@@ -176,7 +176,7 @@ Skip a creator, and list them under "Needs the main thread", when:
 
 - a `creator:*` calibration for them has stance `reject` ("Saved team call: reject");
 - their handle is a saved `competitor`;
-- a `red_line` blocks AI-written outreach: give three talking points instead of a draft, as
+- a brand red line (**Atlas tools**, Calibration kinds) blocks AI-written outreach: give three talking points instead of a draft, as
   **Creator card actions** in SKILL.md does;
 - `yourCall` is open on their row;
 - they have no channel the program uses that has a route (**Channels**).
@@ -202,7 +202,7 @@ exists:
    limit 5.
 3. The creator's strongest recent post against their own median engagement.
 
-Never pick a post with a brand safety category above low risk, a `red_line` hit, a paid
+Never pick a post with a brand safety category above low risk, a brand red line hit, a paid
 partnership with a saved `competitor`, or any paid partnership when an organic post qualifies.
 Follow-up 2 uses a different post from the first touch when one qualifies.
 
