@@ -10,4 +10,8 @@ The key `creator:{ig|tt}-{handle}` holds one creator's note, and `qualityreview:
 
 A key at the limit passes: `brand:abcdefghijklmnopqrstuvwxyz0123456789abcdefghijkl`.
 
-Names that are not keys pass: `object-fit:cover`, `anthropic-skills:pptx`, `aspire:aspire`, `mode:week`, `https://example.com`.
+The longest keys built from a slug still fit: `campaign:{slug}-decision-defaults`, `lastrun:creator-discovery-{slug}`.
+
+A quoted key passes: `append_calibration(key: "applicantreview:acme-holiday-campaign")`.
+
+Names that are not keys pass: `object-fit:cover`, `font-size:14px`, `allowed-tools:`, `anthropic-skills:pptx`, `aspire:aspire`, `mode:week`, `https://example.com`.

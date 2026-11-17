@@ -558,5 +558,16 @@ Keys are `<namespace>:<slug>`, lowercase, e.g. `brand:summary`, `competitor:acme
 `user:primary-contact`, `target:q4-awareness`. Atlas refuses any other key with a validation
 error (`^[a-z0-9]+:[a-z0-9-]{1,48}$`): the namespace is letters and digits only, never a hyphen
 (so `applicantreview:`, not applicant-review), and the slug after the colon is letters, digits
-and hyphens, 48 characters at most. A slug built from a name is cut so the longest key built
-from it still fits.
+and hyphens, 48 characters at most.
+
+**A `{slug}` built from a campaign, program, brand or other name is 30 characters at most, any
+`-2` suffix included**, so the longest key built from one (`campaign:{slug}-decision-defaults`,
+`lastrun:creator-discovery-{slug}`) still fits. Shorten a longer name before adding the suffix:
+drop filler words (`the`, `and`, `for`, `campaign`), then cut at a hyphen. Never cut mid-word when
+a whole-word cut fits. A creator's handle slug has its own cap (**Creator vetting**, creator
+calibrations).
+
+Key namespaces: `adreuse`, `applicantreview`, `brand`, `campaign`, `competitor`, `creator`,
+`decline`, `examples`, `fees`, `gap`, `guideline`, `lastrun`, `library`, `marketsignal`,
+`orchestrator`, `partner`, `policy`, `program`, `qualityreview`, `redline`, `review`, `target`,
+`theme`, `user`, `vetting`. A new namespace is added here first.

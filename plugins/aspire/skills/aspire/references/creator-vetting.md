@@ -603,7 +603,8 @@ or `retract_calibration`), one per call. A proposal the user declines stays unsa
 One record per creator per network, organization-wide, read by vetting and creator discovery.
 
 - kind `guideline`, key `creator:{ig|tt}-{handle}`: the handle lowercase with every
-  character outside `a-z0-9` turned into `-`, the whole slug 48 characters at most. The exact
+  character outside `a-z0-9` turned into `-`, the whole slug (`ig-` or `tt-` and the handle) 45
+  characters at most before any `-2` suffix, so a suffix up to `-99` still fits in 48. The exact
   handle is always in `statement` and `body`, because two handles can share a slug; on a
   `key-exists` whose body names a different handle, add `-2`.
 - `statement`: "@{handle} ({network}): {stance}. {reason}", under 280 characters.

@@ -62,6 +62,11 @@ case "${1:-}" in
     [[ -f "$golden" ]] || { echo "FAIL $golden not found"; exit 2; }
     tmp=$(mktemp)
     snapshot "$golden" > "$tmp"
+    if ! jq -e '.calibrationKeyPattern | type == "string"' "$tmp" >/dev/null; then
+      rm -f "$tmp"
+      echo "FAIL $golden has no key pattern on /mcp append_calibration; scripts/check-calibration-keys.sh needs one. Find where it moved and update snapshot()."
+      exit 1
+    fi
     mv "$tmp" "$C"
     echo "wrote $C"
     exit 0
