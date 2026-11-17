@@ -124,7 +124,8 @@ applicant review; vetting reads them only for the review R2 named (**Applicant r
 The main thread gets the list; the agent never asks for it. Three sources, offered in R1:
 
 1. **Upload a CSV export from Aspire** (Recommended). The user attaches the file, or gives its
-   path. Read it with the `Read` tool. Find the handle columns by header, case-insensitive:
+   path. Read it with the `Read` tool (a campaign's applicant export is read again in full at the
+   import, with **Applicant review**'s snippet). Find the handle columns by header, case-insensitive:
    `instagram`, `instagram handle`, `instagram username`, `tiktok`, `tiktok handle`,
    `tiktok username`, `handle`, `username`, `social`, `profile url`, or a column whose values
    are profile URLs. Take the name column (`name`, `creator`, `full name`) for display. Keep
@@ -255,7 +256,10 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    uses: a review's saved visual checks (**Applicant review**, **How screening applies a review**), otherwise R5's own options.
 3d. **Import a campaign's applicant export** when R2 named an applicant review and the list came
    from a CSV: per **Applicant review**, **Importing applicants**, with its own found-and-missing
-   report and confirmation, before the launch. Its read-back is the run's list from then on.
+   report and confirmation, before the launch. From then on the run's list is this file's
+   applicants as read back (the ids its step 2 built), never the review's other applicants, so the
+   handles R3 approved are the ones looked up. "Not now", or an import that stops, leaves the list
+   as it was.
 4. Launch `atlas-creator-vetting` with: tool prefix, `profile_id`, `profile_slug`, brand handles and
    networks, the normalized list, the list name, slug and source, the criteria source, the approved
    fetches, the R4 answer, `visual_check` (from R5 or the ask: `none`, or `{name, kind: "named" |
@@ -841,9 +845,6 @@ three, newest first; with none saved, AR1's own campaign options, up to three), 
 campaign: use {brand}'s vetting criteria". The answer writes nothing: it only picks the campaign.
 Picking a review's campaign makes that review R2's first option; picking "Not for a campaign"
 means the list is not counted as a campaign's applicants.
-
-A review's CSV is imported into Atlas and the review Sheet before screening (**Main thread: the
-run**, step 3d), so each applicant's contact details and form answers are kept with them.
 
 How the run changes for a review (criteria, thresholds, hard stops, red lines, language on camera,
 form rules, visual checks, the page, and what each finding records) is set out once, in
