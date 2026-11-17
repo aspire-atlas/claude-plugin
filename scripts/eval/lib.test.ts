@@ -5,6 +5,7 @@ import {
   ATLAS_READS, ATLAS_WRITES, barChecks, compareRuns, extractPageCheckScript, fencedBlocks, fill, findJsonWithKey, configuredQuestions, skippedLine,
   findPage, forBaseline, normalizeResult, codesForChanges, readerResult, regressions, renderComment, renderSkipped, renderSlack, COMMENT_MARKER, renderStopped, stripTitlePrefix, checkNames, parsePageCheck, parseStream, renderRun, rIds, rResult, stripDataUris,
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, askText, chatCodes, chatFailures, chatLine, chatMessages, checkChat, countChat, noChat, normalizeRun, CHAT_CHECK,
+  answerFor, answersFor, approvalKind, approvalsLine, askRecords, checkApprovals, namedApprovals, noApprovals, placeholderKeys, ANSWER_EVENT, APPROVALS_CHECK,
   type PageChecks, type QuestionResult, type RunResults,
 } from './lib'
 
@@ -109,7 +110,7 @@ function run(overrides: Partial<QuestionResult> = {}, date = '2026-11-10'): RunR
   const question: QuestionResult = {
     code: 'I4', example: 'Holiday creator plan', setsBarFor: [5, 6], barChecks: ['E1', 'R3'],
     page: { link: 'https://claude.ai/artifact/AbC123', captured: true }, rounds: 2, transcriptTokens: 123456, billedTokens: 1, compactions: 1, costUsd: 1,
-    new: page, approved: { ...page, graded: { R1: 'pass', R3: 'pass' } }, chat: noChat(), problems: ['Approved page for Acme'], ...overrides,
+    new: page, approved: { ...page, graded: { R1: 'pass', R3: 'pass' } }, chat: noChat(), approvals: noApprovals(), problems: ['Approved page for Acme'], ...overrides,
   }
   return { harness: 1, date, commit: 'abcdef1234', model: 'm', judgeModel: 'm', eChecksVersion: '3', questions: [question] }
 }
@@ -295,7 +296,7 @@ test('the CI title prefix is removed before grading, and nothing else is', () =>
 
 test('check names come from e-checks and the reader standard table', () => {
   const names = checkNames([{ id: 'E1', name: 'Answers the real question' }], '| R1 | Reader and scope | x |\n| R13 | Required metrics | y |')
-  expect(names).toEqual({ E1: 'Answers the real question', R1: 'Reader and scope', R13: 'Required metrics', C5: 'Chat wording' })
+  expect(names).toEqual({ E1: 'Answers the real question', R1: 'Reader and scope', R13: 'Required metrics', C5: 'Chat wording', Q3: 'Approvals named in the setup reply' })
 })
 
 test('a question local.json names no brand for is skipped while no baseline grades it, and stops the run once one does', () => {
@@ -482,4 +483,134 @@ test('a run stored before the chat check reads as chat not run, and adds no chan
   expect(compared).toContain('Chat wording (C5): pass → fail')
   expect(compared).toContain('1 check result changed.')
   expect(compared).not.toContain('No check changed.')
+})
+
+// ---------------------------------------------------------------- pickers, answers and approvals
+
+const FIXTURES = join(import.meta.dir, 'fixtures')
+const fixtureTurn = (name: string) => summarizeTurn(parseStream(readFileSync(join(FIXTURES, name), 'utf8')))
+
+test('a picker is answered from the list, then by the recommended option, then by the first one', () => {
+  const save = { header: 'Save', question: 'Save the findings to Atlas?', options: [{ label: 'Save to Atlas (Recommended)', description: '' }, { label: 'Page only', description: '' }] }
+  const rules = [{ header: 'Storyline', pick: '^Build' }, { header: 'save', pick: '^Page only' }]
+  expect(answerFor(save, rules)).toEqual({ answer: 'Page only', by: 'list' })
+  expect(answerFor(save, [])).toEqual({ answer: 'Save to Atlas (Recommended)', by: 'recommended' })
+  // An entry whose pick matches no option is passed over, and a question's wording can choose the entry.
+  expect(answerFor(save, [{ header: 'Save', pick: 'Slides' }, { question: 'findings', text: 'Only the top three.' }])).toEqual({ answer: 'Only the top three.', by: 'list' })
+  expect(answerFor({ header: 'Scope', question: 'Which channels?', options: [{ label: 'Instagram only', description: '' }, { label: 'TikTok only', description: '' }] }, rules))
+    .toEqual({ answer: 'Instagram only', by: 'first' })
+  // An entry with only a pick answers any question that offers it.
+  expect(answerFor({ header: 'Metrics', question: 'Saves are missing.', options: [{ label: 'Change the scope', description: '' }, { label: 'Build with the gaps noted', description: '' }] }, [{ pick: '^Build with the gaps' }]))
+    .toEqual({ answer: 'Build with the gaps noted', by: 'list' })
+  expect(answerFor({ header: 'Heard', question: 'Right?', options: [] }, rules)).toBeNull()
+  expect(answersFor({ questions: [save, { header: 'Heard', question: 'Right?', options: [{ label: 'Yes, run it (Recommended)' }] }] }, rules)).toEqual({
+    'Save the findings to Atlas?': { answer: 'Page only', by: 'list' }, 'Right?': { answer: 'Yes, run it (Recommended)', by: 'recommended' },
+  })
+})
+
+test('the answer list in questions.json holds patterns that compile, and answers the storyline and the save as the fixed reply does', () => {
+  const config = JSON.parse(readFileSync(join(import.meta.dir, 'questions.json'), 'utf8'))
+  const rules = [...config.answers, ...config.questions.flatMap((question: any) => question.answers ?? [])]
+  for (const rule of rules) for (const source of [rule.pick, rule.question]) if (source !== undefined) expect(() => new RegExp(source, 'i')).not.toThrow()
+  const options = (...labels: string[]) => labels.map(label => ({ label, description: '' }))
+  expect(answerFor({ header: 'Storyline', question: 'Only 6 posts fit.', options: options('Widen to 26 weeks (Recommended)', 'Build', 'Change') }, config.answers)?.answer).toBe('Build')
+  expect(answerFor({ header: 'Save', question: 'Save?', options: options('Save to Atlas (Recommended)', 'Page only') }, config.answers)?.answer).toBe('Page only')
+})
+
+test('a run folder record holds the text above each picker, every question with its options, and the answer given', () => {
+  const records = askRecords([fixtureTurn('approvals-named.jsonl')])
+  expect(records.map(record => record.questions.map(question => question.header))).toEqual([['Heard', 'Credits'], ['Storyline', 'Save'], ['Next']])
+  expect(records[0].turn).toBe(1)
+  expect(records[0].before).toContain('You need to know which creators to contact')
+  expect(records[0].before).toContain('This run will ask you to approve')
+  expect(records[0].questions[1]).toEqual({
+    header: 'Credits', question: 'This fetches 12 handles Atlas does not hold. Cap it at 12?', multiSelect: false,
+    options: [{ label: 'Cap at 12 fetches (Recommended)', description: 'Fetch up to 12.' }, { label: 'Fetch none, use what Atlas holds', description: '' }],
+    answer: 'Cap at 12 fetches (Recommended)', by: 'recommended',
+  })
+  expect(records[1].questions.map(question => [question.answer, question.by])).toEqual([['Build (Recommended)', 'list'], ['Page only', 'list']])
+  // The picker that follows the page is left unanswered, and says why. A subagent's picker carries no text above it.
+  expect(records[2].declined).toBe('the run had finished')
+  expect(records[2].questions[0].answer).toBeNull()
+  expect(askRecords([fixtureTurn('approvals-unnamed.jsonl')]).find(record => !record.main)?.before).toBe('')
+})
+
+test('the approvals line is read by kind, and a question is an approval by its header or its wording', () => {
+  const line = 'This run will ask you to approve: the page\'s three main points, before I build it; the Atlas credits this run uses, capped in the question below; ' +
+    'a refresh of @acme, which is out of date (the refresh is free and the new posts it collects use credits); saving the ranked posts to Atlas; ' +
+    'drafts in your mailbox, which send nothing; sending the page to Slack; each message, one at a time, after the run.\nClaude itself may also ask to let Atlas\'s tools run.'
+  expect(namedApprovals(`You need a shortlist.\n${line}\n\nAnother paragraph about saving.`)).toEqual(['storyline', 'credits', 'refresh', 'save', 'drafts', 'delivery', 'send'])
+  expect(namedApprovals('This run will ask you to approve: saving the message drafts to Atlas.')).toEqual(['save'])
+  expect(namedApprovals('This run asks you to approve nothing.')).toEqual([])
+  expect(namedApprovals('I heard P1. Before I start, please answer the questions below.')).toBeNull()
+  const kind = (header: string, question: string) => approvalKind({ header, question })
+  expect(kind('Storyline', 'Three points. Build?')).toBe('storyline')
+  expect(kind('Credits', 'Cap it at 12?')).toBe('credits')
+  expect(kind('Account', 'Atlas\'s newest post for @acme is Nov 2. Refresh it first? About 2 minutes.')).toBe('refresh')
+  expect(kind('Save', 'Save the shops plan to Atlas?')).toBe('save')
+  expect(kind('Record', 'Save the 12 recommendations to Atlas, so later runs start from them?')).toBe('save')
+  expect(kind('Mailbox', 'Create 8 drafts in your mailbox? Nothing is sent.')).toBe('drafts')
+  expect(kind('Routing', 'Send the page to Slack, in #social?')).toBe('delivery')
+  expect(kind('Requests', 'Send the rights request to @acme now?')).toBe('send')
+  // Questions that approve nothing, among them a metric check-in that only offers a refresh as an option.
+  expect(kind('Heard', 'You asked who to contact. Is that right?')).toBeNull()
+  expect(kind('Scope', 'Which channels and dates?')).toBeNull()
+  expect(kind('Metrics', 'Saves and shares are missing for 4 posts. How should I go on?')).toBeNull()
+})
+
+test('the approval check passes when the setup reply named every approval asked, and fails on one it did not name', () => {
+  const named = checkApprovals([fixtureTurn('approvals-named.jsonl')])
+  expect(named).toEqual({ result: 'pass', line: true, named: ['credits', 'storyline', 'save'], asked: ['credits', 'storyline', 'save'], unnamed: [] })
+  expect(approvalsLine(named)).toBeNull()
+  // The fixture run names the storyline only, then asks to save, to refresh and, from its agent, to create mailbox
+  // drafts. The refresh is called out above its own question as one more approval, so it passes; the others fail.
+  const unnamed = checkApprovals([fixtureTurn('approvals-unnamed.jsonl')])
+  expect(unnamed).toEqual({ result: 'fail', line: true, named: ['storyline'], asked: ['storyline', 'save', 'refresh', 'drafts'], unnamed: ['save', 'drafts'] })
+  expect(approvalsLine(unnamed)).toBe('Approvals named in the setup reply (Q3): fail. The run asked for save, drafts, which the setup reply did not name.')
+  // A setup reply with no line names nothing, and a run that asked no picker has no setup reply to read.
+  const noLine = checkApprovals([chatTurn('', [{ header: 'Heard', question: 'Right?' }, { header: 'Save', question: 'Save the findings to Atlas?' }])])
+  expect(noLine).toEqual({ result: 'fail', line: false, named: [], asked: ['save'], unnamed: ['save'] })
+  expect(approvalsLine(noLine)).toContain('has no "This run will ask you to approve" line')
+  expect(checkApprovals([chatTurn('', [{ header: 'Heard', question: 'Right?' }])]).result).toBe('pass')
+  expect(checkApprovals([chatTurn('Here is the page.')])).toEqual(noApprovals())
+})
+
+test('the approval check is a row of the table with no approved result, and never a regression', () => {
+  const failing = run()
+  failing.questions[0].approvals = checkApprovals([fixtureTurn('approvals-unnamed.jsonl')])
+  const names = checkNames(E_CHECKS, '')
+  const table = renderRun(failing, E_CHECKS, names)
+  expect(table).toContain('| Q3 Approvals named in the setup reply | fail | – |  |')
+  expect(table).toContain('- Approvals named in the setup reply (Q3): fail. The run asked for save, drafts')
+  expect(regressions(failing, E_CHECKS).map(r => r.id)).toEqual(['R3'])
+  expect(renderRun(run(), E_CHECKS, names)).toContain(`| ${APPROVALS_CHECK.id} ${APPROVALS_CHECK.name} | – | – |  |`)
+  // A baseline keeps the kinds, which hold no chat text, and a run stored before the check reads as not run.
+  expect(forBaseline(failing).questions[0].approvals).toEqual(failing.questions[0].approvals)
+  const stored = run()
+  delete (stored.questions[0] as any).approvals
+  expect(normalizeRun(stored).questions[0].approvals).toEqual(noApprovals())
+})
+
+test('the close-out of a run the harness ended at the next picker is the text above that picker', () => {
+  const turn = fixtureTurn('approvals-named.jsonl')
+  expect(turn.failed).toBe(true) // the interrupted turn reports an error; the page it published still counts
+  const messages = chatMessages([turn], true)
+  expect(messages.setup).toContain('This run will ask you to approve')
+  expect(messages.setup).toContain('Cap at 12 fetches (Recommended)')
+  expect(messages.setup).not.toContain('What next?')
+  expect(messages.storyline).toContain('Gift posts beat the usual views')
+  expect(messages.closeOut).toBe('The page is ready: https://claude.ai/artifact/AbC123. It ranks 12 creators.')
+})
+
+test('local.json is refused while a value still holds a placeholder, and the key is named', () => {
+  const example = JSON.parse(readFileSync(join(import.meta.dir, 'local.example.json'), 'utf8'))
+  const keys = placeholderKeys(example)
+  expect(keys).toContain('mcp.url')
+  expect(keys).toContain('organization')
+  expect(keys).toContain('questions.P1.brand')
+  expect(keys).toContain('questions.I1.approved')
+  expect(keys).not.toContain('questions.I1.data')
+  const filled = { mcp: { url: 'https://atlas.example.test/mcp', name: 'Aspire_Atlas_Dev' }, organization: 'Test org', chatAllow: ['Canon R5', '{product}'], questions: { I1: { brand: 'Acme', approved: null } } }
+  expect(placeholderKeys(filled)).toEqual(['chatAllow[1]'])
+  expect(placeholderKeys({ ...filled, chatAllow: [] })).toEqual([])
 })

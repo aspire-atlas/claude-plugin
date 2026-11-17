@@ -39,6 +39,11 @@
     }
   },
   "defaultReply": "Yes, that is right. Go ahead with what you proposed and your recommended options. Save nothing to Atlas and send nothing.",
+  "answers": [
+    {"pick": "^Build with the gaps noted"},
+    {"header": "Storyline", "pick": "^Build"},
+    {"header": "Save", "pick": "^Page only"}
+  ],
   "sharedPaths": [
     "plugins/aspire/skills/aspire/SKILL.md",
     "plugins/aspire/skills/page-standard/",

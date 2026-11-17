@@ -9,9 +9,11 @@ import {
   ATLAS_READS, ATLAS_WRITES, HARNESS_VERSION, barChecks, compareRuns, extractPageCheckScript, fill, findJsonWithKey, configuredQuestions,
   findPage, forBaseline, normalizeResult, readerResult, checkNames as namesFrom, stripTitlePrefix, parsePageCheck, parseStream, renderQuestion, renderRun, rIds, stripDataUris,
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, checkChat, chatCodes, chatFailures, noChat, normalizeRun,
-  type ChatChecks, type ChatRules, type CheckDef, type PageChecks, type QuestionResult, type Result, type RunResults, type Turn,
+  askRecords, checkApprovals, noApprovals, placeholderKeys,
+  type AnswerRule, type ApprovalChecks, type ChatChecks, type ChatRules, type CheckDef, type PageChecks, type QuestionResult, type Result, type RunResults, type Turn,
 } from './lib'
 import { renderPage } from '../render-page'
+import { runTurn } from './session'
 
 const HERE = import.meta.dir
 const ROOT = resolve(HERE, '../..')
@@ -28,7 +30,8 @@ const USAGE = `bun run eval:pages [options]
   --compare <a> <b>        Print what changed between two runs, and run nothing
   --model <model>          Model for the reruns (default: the CLI's own default)
   --judge-model <model>    Model for the grade and the E-checks (default: the same as --model)
-  --max-rounds <n>         Replies the harness will send before it gives up on a page (default: 6)
+  --max-rounds <n>         Text replies the harness will send before it gives up on a page (default: 6)
+  --max-asks <n>           Pickers the harness will answer for one question before it gives up (default: 12)
   --timeout-min <n>        Minutes one turn may take (default: 45)
   --page <file>            With --only <code>: grade this page file as the new page, without a rerun
   --refresh-approved       Read the approved pages again instead of using the copies kept on this machine
@@ -45,6 +48,8 @@ A run is named by its folder under scripts/eval/.runs/, a baseline by its date, 
 type Question = {
   code: string; example: string; kind: string; reader: string; readerInWords: string; ask: string
   setsBarFor: number[]; reply?: string
+  /** Answers for this question's pickers, tried before the shared `answers` list of questions.json. */
+  answers?: AnswerRule[]
 }
 type Local = {
   mcp?: { url: string; name?: string; tokenEnv?: string }
@@ -55,7 +60,7 @@ type Local = {
 }
 type Options = {
   only: string[] | null; baseline: string | null; from: string | null; compare: [string, string] | null; explain: string | null
-  model: string | null; judgeModel: string | null; maxRounds: number; timeoutMin: number
+  model: string | null; judgeModel: string | null; maxRounds: number; maxAsks: number; timeoutMin: number
   refreshApproved: boolean; dryRun: boolean; page: string | null
   approvedFrom: string | null; titlePrefix: string | null; cleanup: boolean; out: string | null
 }
@@ -68,7 +73,7 @@ function fail(message: string): never {
 function parseArgs(argv: string[]): Options {
   const options: Options = {
     only: null, baseline: null, from: null, compare: null, explain: null, model: null, judgeModel: null,
-    maxRounds: 6, timeoutMin: 45, refreshApproved: false, dryRun: false, page: null,
+    maxRounds: 6, maxAsks: 12, timeoutMin: 45, refreshApproved: false, dryRun: false, page: null,
     approvedFrom: null, titlePrefix: null, cleanup: false, out: null,
   }
   const value = (i: number, flag: string) => (argv[i] && !argv[i].startsWith('--') ? argv[i] : fail(`${flag} needs a value`))
@@ -85,6 +90,7 @@ function parseArgs(argv: string[]): Options {
     else if (flag === '--model') options.model = value(++i, flag)
     else if (flag === '--judge-model') options.judgeModel = value(++i, flag)
     else if (flag === '--max-rounds') options.maxRounds = Number(value(++i, flag))
+    else if (flag === '--max-asks') options.maxAsks = Number(value(++i, flag))
     else if (flag === '--timeout-min') options.timeoutMin = Number(value(++i, flag))
     else if (flag === '--page') options.page = resolve(value(++i, flag))
     else if (flag === '--refresh-approved') options.refreshApproved = true
@@ -96,6 +102,7 @@ function parseArgs(argv: string[]): Options {
     else fail(`unknown option ${flag}\n\n${USAGE}`)
   }
   if (!Number.isInteger(options.maxRounds) || options.maxRounds < 0) fail('--max-rounds takes a whole number')
+  if (!Number.isInteger(options.maxAsks) || options.maxAsks < 0) fail('--max-asks takes a whole number')
   if (!(options.timeoutMin > 0)) fail('--timeout-min takes a number of minutes')
   if (options.baseline && !/^\d{4}-\d{2}-\d{2}$/.test(options.baseline)) fail('--baseline takes a date as YYYY-MM-DD')
   if (options.from && !options.baseline) fail('--from goes with --baseline')
@@ -118,7 +125,7 @@ function commit(): string {
   return git('status', '--porcelain', '--', 'plugins') ? `${head}+changes` : head
 }
 
-/** One `claude -p` call. The prompt goes in on stdin; the stream is kept in `out` for the record. */
+/** One `claude -p` call, for the grading sessions, which ask nothing. The prompt goes in on stdin; the stream is kept in `out` for the record. */
 async function claude(args: string[], prompt: string, cwd: string, out: string, timeoutMin: number): Promise<Turn> {
   const child = Bun.spawn(['claude', '-p', '--output-format', 'stream-json', '--verbose', ...args], {
     cwd, stdin: new Blob([prompt]), stdout: Bun.file(out), stderr: Bun.file(`${out}.err`),
@@ -376,7 +383,7 @@ async function startingSession(cwd: string): Promise<{ connectors: string[]; too
 
 type Rerun = {
   link: string | null; rounds: number; transcriptTokens: number; billedTokens: number; compactions: number
-  costUsd: number; problems: string[]; model: string | null; chat: ChatChecks
+  costUsd: number; problems: string[]; model: string | null; chat: ChatChecks; approvals: ApprovalChecks
 }
 
 /** Ask the question the way a person would, answer what the flow asks back, and keep the page it publishes. */
@@ -397,22 +404,18 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
   const refused = [...new Set(['plugin:aspire:Aspire Atlas', 'plugin:aspire:Aspire Atlas Organization Admin', 'plugin:aspire:Meta Ads',
     'Aspire Atlas', 'Aspire Atlas Organization Admin', 'claude.ai Aspire Atlas', ...starting.connectors])]
     .filter(name => name !== connector && name !== 'aspire-mod')
-  const args = [
-    // With a token the connector comes from the harness's own file and nothing else loads. With a sign-in it is
-    // the one the person added to Claude Code (user scope), which is where the sign-in is kept.
-    '--plugin-dir', PLUGIN, ...(local.mcp?.tokenEnv ? ['--strict-mcp-config', '--mcp-config', atlasMcp] : []),
-    '--permission-mode', 'acceptEdits',
-    '--allowedTools', 'Read', 'Write', 'Edit', 'Glob', 'Grep', 'Bash', 'Skill', 'Task', 'Agent', 'Artifact', 'ToolSearch',
-    'WebSearch', 'WebFetch', ...ATLAS_READS.map(tool => atlas + tool),
-    '--disallowedTools', ...ATLAS_WRITES.map(tool => atlas + tool), ...refused.map(name => toolPrefix(name).slice(0, -2)),
-    ...(options.model ? ['--model', options.model] : []),
-  ]
+  const allowedTools = ['Read', 'Write', 'Edit', 'Glob', 'Grep', 'Bash', 'Skill', 'Task', 'Agent', 'Artifact', 'ToolSearch',
+    'WebSearch', 'WebFetch', ...ATLAS_READS.map(tool => atlas + tool)]
+  const disallowedTools = [...ATLAS_WRITES.map(tool => atlas + tool), ...refused.map(name => toolPrefix(name).slice(0, -2))]
+  // This question's own answers come first, then the shared list.
+  const answers: AnswerRule[] = [...(question.answers ?? []), ...(config.answers ?? [])]
   const problems: string[] = []
   let session: string | null = null
   let model: string | null = null
   let prompt = `/aspire:aspire ${fill(question.ask, { brand })}` + (local.organization ? ` Use the ${local.organization} organization.` : '') +
     (options.titlePrefix ? ` Start the page's title with "${options.titlePrefix} · ".` : '')
   let rounds = 0
+  let replies = 0
   let link: string | null = null
   let file: string | null = null
   let last: Turn | null = null
@@ -421,10 +424,19 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
   let cost = 0
   let compactions = 0
   for (;;) {
-    console.error(`  ${question.code}: turn ${rounds + 1}`)
-    const turn = await claude(session ? [...args, '--resume', session] : args, prompt, work, join(qDir, `turn-${rounds + 1}.jsonl`), options.timeoutMin)
+    console.error(`  ${question.code}: turn ${replies + 1}`)
+    const answered = turns.reduce((n, earlier) => n + earlier.asks.filter(ask => ask.questions.some(asked => asked.answer !== null)).length, 0)
+    const turn = await runTurn({
+      prompt, cwd: work, out: join(qDir, `turn-${replies + 1}.jsonl`), timeoutMin: options.timeoutMin, resume: session, plugin: PLUGIN,
+      // With a token the connector comes from the harness's own file and nothing else loads. With a sign-in it is
+      // the one the person added to Claude Code (user scope), which is where the sign-in is kept.
+      mcpConfig: local.mcp?.tokenEnv ? atlasMcp : null, allowedTools, disallowedTools, model: options.model,
+      answers, maxAsks: Math.max(0, options.maxAsks - answered),
+    })
     last = turn
     turns.push(turn)
+    // A confirmation round is one picker the harness answered, or one text reply it sent.
+    rounds += turn.asks.filter(ask => ask.main && ask.questions.some(asked => asked.answer !== null)).length
     session = turn.sessionId ?? session
     model = turn.model ?? model
     billed += turn.billedTokens
@@ -436,7 +448,7 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
     // Copy the page while it is still there: a later turn may rewrite or remove it.
     if (file && existsSync(file)) copyFileSync(file, captured)
     if (link) break
-    if (rounds === 0 && turn.connectors[connector] !== 'connected') {
+    if (replies === 0 && turn.connectors[connector] !== 'connected') {
       // Without Atlas the flow can only publish a setup page, which would be graded as if it were the answer.
       fail(`the Atlas connector "${connector}" is ${turn.connectors[connector] ?? 'missing'}, not connected. ` +
         (local.mcp?.tokenEnv ? 'The server refused the token.' : `Add it for every folder and sign in once: claude mcp add --scope user --transport http ${connector} ${local.mcp?.url}, then run claude, type /mcp, pick it and authenticate.`))
@@ -444,9 +456,11 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
     // Any other live Atlas connector whose tools are not refused above could answer in place of the test one,
     // so the run stops rather than risk reading the wrong server.
     const others = Object.keys(turn.connectors).filter(name => name !== connector && !refused.includes(name) && /atlas/i.test(name) && turn.connectors[name] === 'connected')
-    if (rounds === 0 && others.length) fail(`another Atlas connector is connected: ${others.join(', ')}. Disconnect it (claude, then /mcp) so the rerun can only reach "${connector}".`)
-    if (turn.failed || !session) {
-      problems.push(`The run stopped on turn ${rounds + 1} without publishing a page`)
+    if (replies === 0 && others.length) fail(`another Atlas connector is connected: ${others.join(', ')}. Disconnect it (claude, then /mcp) so the rerun can only reach "${connector}".`)
+    // The harness ends a turn itself at a picker it will not answer: that turn did not fail.
+    const declined = turn.asks.find(ask => ask.declined)?.declined
+    if ((turn.failed && !declined) || !session) {
+      problems.push(`The run stopped on turn ${replies + 1} without publishing a page`)
       break
     }
     if (page.finished) {
@@ -454,11 +468,17 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
       if (!existsSync(captured)) problems.push('The flow finished its run without a page')
       break
     }
-    if (rounds >= options.maxRounds) {
-      problems.push(`No page after ${rounds} replies`)
+    if (declined) {
+      problems.push(`No page after ${options.maxAsks} pickers`)
       break
     }
+    if (replies >= options.maxRounds) {
+      problems.push(`No page after ${replies} replies`)
+      break
+    }
+    replies += 1
     rounds += 1
+    // A turn that ended without a picker asked in text, or paused: the fixed reply answers it.
     prompt = question.reply ?? config.defaultReply
   }
   if (existsSync(captured) && !link) problems.push(publishes ? 'The run wrote a page but returned no link for it' : 'The page was saved as a file: this Claude Code cannot publish pages')
@@ -466,10 +486,14 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
   // The setup reply, the storyline check-ins and the close-out, counted for arrows, "vs" and codes (docs/STANDARD.md, C5).
   // The last reply is a close-out only when the run published or its agent finished. The messages and the words
   // each count matched stay in the run folder, which is never committed or uploaded.
-  const closed = Boolean(link) || Boolean(last && !last.failed && findPage(last).finished)
+  const closed = Boolean(link) || Boolean(last && findPage(last).finished && (!last.failed || last.asks.some(ask => ask.declined)))
   const chat = checkChat(turns, closed, chatRules)
   writeFileSync(join(qDir, 'chat.json'), JSON.stringify({ ...chat.checks, text: chat.messages, hits: chat.hits }, null, 2) + '\n')
-  return { link, rounds, transcriptTokens: last?.contextTokens ?? 0, billedTokens: billed, compactions, costUsd: cost, problems, model, chat: chat.checks }
+  // Every picker of the run: the text above it, each question with its options, and the answer given. With
+  // them, whether every approval the run asked for was named in the setup reply (docs/STANDARD.md, Q3).
+  const approvals = checkApprovals(turns)
+  writeFileSync(join(qDir, 'asks.json'), JSON.stringify({ approvals, asks: askRecords(turns) }, null, 2) + '\n')
+  return { link, rounds, transcriptTokens: last?.contextTokens ?? 0, billedTokens: billed, compactions, costUsd: cost, problems, model, chat: chat.checks, approvals }
 }
 
 async function runQuestion(question: Question, config: any, local: Local, eChecks: any[], chatRules: ChatRules, runDir: string, atlasMcp: string, emptyMcp: string, options: Options): Promise<{ result: QuestionResult; model: string | null }> {
@@ -479,7 +503,7 @@ async function runQuestion(question: Question, config: any, local: Local, eCheck
   let run: Rerun
   if (options.page) {
     copyFileSync(options.page, captured)
-    run = { link: null, rounds: 0, transcriptTokens: 0, billedTokens: 0, compactions: 0, costUsd: 0, problems: ['Graded from a file: the question was not rerun'], model: null, chat: noChat() }
+    run = { link: null, rounds: 0, transcriptTokens: 0, billedTokens: 0, compactions: 0, costUsd: 0, problems: ['Graded from a file: the question was not rerun'], model: null, chat: noChat(), approvals: noApprovals() }
   } else {
     run = await rerun(question, config, local, chatRules, qDir, captured, atlasMcp, options)
   }
@@ -502,7 +526,7 @@ async function runQuestion(question: Question, config: any, local: Local, eCheck
       code: question.code, example: question.example, setsBarFor: question.setsBarFor,
       barChecks: barChecks(question.setsBarFor, config.changes),
       page: { link, captured: hasPage }, rounds: run.rounds, transcriptTokens: run.transcriptTokens,
-      billedTokens: run.billedTokens, compactions: run.compactions, costUsd: run.costUsd, new: newChecks, approved: approvedChecks, chat: run.chat, problems,
+      billedTokens: run.billedTokens, compactions: run.compactions, costUsd: run.costUsd, new: newChecks, approved: approvedChecks, chat: run.chat, approvals: run.approvals, problems,
     },
   }
 }
@@ -606,6 +630,10 @@ async function main() {
     console.log(`Atlas: ${local.mcp?.url ?? 'not set in local.json'} as "${local.mcp?.name ?? 'Aspire Atlas'}", ${local.mcp?.tokenEnv ? `token from ${local.mcp.tokenEnv}` : 'signed-in account'}; ${ATLAS_READS.length} tools allowed, ${ATLAS_WRITES.length} refused`)
     return
   }
+
+  // A value still copied from local.example.json would send the flow off to pick a brand, or an organization, on its own.
+  const placeholders = placeholderKeys(local)
+  if (placeholders.length) fail(`local.json still holds a placeholder at ${placeholders.join(', ')}. Fill ${placeholders.length === 1 ? 'it' : 'each one'} in, or remove the entry of a question that is not set up.`)
 
   let token = ''
   if (!options.page) {
