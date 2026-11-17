@@ -192,27 +192,37 @@ CSV's handle column and normalize it per **Getting the list**.
 - **No applicant id or no handle**: skipped, and listed with the unreadable rows (in chat, and on
   the page under What's missing).
 
-**Duplicate rows.** A creator (network and handle) with two or more rows is left for the team to
-settle in the Sheet: not vetted, no call offered or saved, and listed with the unreadable rows as
-"duplicate rows: decide in the Sheet", naming the rows, until only one row remains.
+**Duplicate rows.** Counted after the skipped rows are set aside. Rows that repeat one applicant id
+with the same Team call count as one row; with different Team calls, they are duplicates. A creator
+(network and handle) with two or more rows is settled this way:
+
+- The decided rows hold one call and at most one row is undecided: the creator is one row with that
+  call. An undecided row beside it is listed as a duplicate and adds nothing.
+- The decided rows hold different calls, or two or more rows are undecided: the creator is left for
+  the team to settle in the Sheet. It is not vetted, no call is offered or saved, and it is listed
+  with the unreadable rows as "duplicate rows: decide in the Sheet", naming the rows, until one of
+  these no longer holds.
 
 Every list entry and `sheet_calls` entry from the Sheet carries its row's applicant id. Decided
 rows go through **Check what Atlas holds** with the list, so each Sheet call has its account id.
 They are never fetched and never counted in R3.
 
-**Which Sheet calls are new.** Compare each decided row's Sheet call with the newest `feedback`
-finding carrying its `applicantId` for the same creator (`entityId`): the last call saved
-for the row, from the Sheet or from F1 (**State written to Atlas**):
+**Which Sheet calls are new.** Compare each decided row's Sheet call with the last Sheet value saved
+for the row: the newest `feedback` finding for the same creator (`entityId`) carrying its
+`applicantId` and `sheetCall: true` (**State written to Atlas**). With no such finding, compare it
+with the newest `feedback` finding carrying the row's `applicantId`, which an F1 answer on the row
+writes:
 
-- The same call: unchanged and not offered, so a newer call the team made in chat stands.
-- A different call, or no such finding: **new**.
+- The same call: unchanged and not offered, so a call the team made since in F1 stands.
+- A different call, or neither finding: **new**: the team edited the Sheet.
 - The creator isn't in Atlas (no `entityId`): not offered; listed as waiting for Atlas to hold
   the creator.
 
-**Reopened rows.** An undecided row (blank or unreadable) is **reopened** when the creator's newest
-`feedback` finding of any kind carries the row's `applicantId` and has `sheetCall: true`:
-the team took back in the Sheet a call saved from there, and made none since in F1. It is
-vetted like any undecided row, and the team's F1 answer on it replaces the old call.
+**Reopened rows.** An undecided row (blank or unreadable) is **reopened** only when the newest
+`feedback` finding for the creator, of any kind and from any list or run, is one that carries the
+row's `applicantId` and `sheetCall: true`: the team took back in the Sheet a call saved from there,
+and no newer call on the creator was saved since, in F1 or otherwise. It is vetted like any
+undecided row, and the team's F1 answer on it replaces the old call.
 
 **`sheet_calls`** go to the agent: for each decided row, the handle, network, account id,
 applicant id, Sheet call, Note, Recommendation, and whether it is new; and for each reopened row,
@@ -225,9 +235,9 @@ lists them numbered `s1`, `s2`, …, each as a call line with its note, naming a
 option 3 saves none. In option 2 the user changes or drops one by its number ("reject s2, drop
 s3"). Each Note is the user's reason for its call, for F2 and F3.
 
-**When every row is decided**, the list is empty. After **Check what Atlas holds** (**Main
-thread: the run**, step 2), skip R2 to R5, the launch, and the page. With no new Sheet calls, say
-so in one line, naming any duplicate rows, and stop. Otherwise ask a Sheet-only F1: "Save the {k}
+**When the list is empty** (every row decided, a duplicate, or skipped), after **Check what Atlas
+holds** (**Main thread: the run**, step 2), skip R2 to R5, the launch, and the page. With no new
+Sheet calls, say so in one line, naming any duplicate rows, and stop. Otherwise ask a Sheet-only F1: "Save the {k}
 new calls from the review Sheet to {brand}'s Atlas?" with 1) Save them (Recommended); 2) Change
 some (type them, for example "reject s2, drop s3"); 3) Decide later (nothing is saved). Read
 `vettedAt` from the shell clock once, write what it saves under this run's `runKey` with no
@@ -310,8 +320,8 @@ What the **Creator vetting** section of SKILL.md does around the agent.
 1. **Get the list** per **Getting the list**, from the R1 answer (skip R1 when the user already
    attached a file or pasted handles). Show what was found and the list name.
 2. **Check what Atlas holds**: `search_creators` with a `terms` filter on the username field,
-   per network, at most 100 handles per call. A review Sheet with every row decided goes from here
-   to **Reading the review Sheet**, When every row is decided.
+   per network, at most 100 handles per call. A review Sheet that leaves the list empty goes from
+   here to **Reading the review Sheet**, When the list is empty.
 3. Ask R2 to R5 in `AskUserQuestion` calls of at most four questions, with the **Reading the ask**
    confirmation (SKILL.md) in the first. R2, R3, and R5 change what the agent reads, so they go with
    that confirmation, before the storyline draft. On a new page, R4 is answered by the storyline
