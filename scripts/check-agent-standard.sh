@@ -112,6 +112,7 @@ if not sec3:
     error(f"{rel(ORCH)} has no section 3 (Question codes) to read the routes from")
 routes = {}
 for row in re.findall(r"^\| ([IPOA][0-9]+) \|(.*)$", sec3.group(0) if sec3 else "", re.M):
+    QUESTION_CODES.add(row[0])
     for agent in re.findall(r"`(atlas-[a-z-]+)`", row[1]):
         routes.setdefault(agent, set()).add(row[0])
 

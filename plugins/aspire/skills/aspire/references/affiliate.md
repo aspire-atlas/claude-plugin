@@ -302,8 +302,8 @@ For each creator with 3 or more orders in the period, and for the program total:
    author username and network, `postedAt` in the window, projecting the fields of the "Program
    tracking" row of the required metrics
    (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8), plus whether the post tags
-   or mentions the brand. That gives each post its date, link, format, views, likes, and
-   comments. A post whose link matches a `deliverable` finding is marked "program post".
+   or mentions the brand, and without `media`, since the timeline draws no thumbnails. That gives
+   each post its date, link, format, views, likes, and comments. A post whose link matches a `deliverable` finding is marked "program post".
 3. **Engagement on each post:** engagement per 1,000 views, worked out as section 8 of the page
    standard sets it. The timeline reads likes and comments only, so the page's method says
    "Engagement counts likes and comments". A metric a post lacks is never shown as 0: it gets the
@@ -317,10 +317,13 @@ For each creator with 3 or more orders in the period, and for the program total:
 Draw it as a timeline: daily bars, post markers on their dates, the 4-day windows shaded. Each
 marker shows the post's views and its engagement per 1,000 views, or the note for the one it
 lacks, so a reader can see whether the post reached anyone before reading the orders beside it.
-Under the chart, list every post on it, oldest first: the creator, the date, the format, the
+Where markers sit too close for their figures to be read, the figures show when a marker is
+focused or tapped, and the list carries them.
+Under each creator's chart, list every post on it, oldest first: the date, the format, the
 link, "program post" where it is one, views, likes, comments, engagement per 1,000 views, and
-the orders line from step 4. The list holds every marker's post, and each row is a cited post
-(**The page**). The
+the orders line from step 4. Every marker's post is in exactly one list: the program total
+chart marks the same posts and points to the creators' lists, with no list of its own. Each
+row is a cited post (**The page**). The
 words under it are always: "Sales and posts on the same days are a correlation, not proof that
 the post drove them." Fewer than 3 orders in the period, or no posts in Atlas, says so in place
 of the chart. Never claim a post caused a sale, and never estimate revenue a post "drove".
@@ -551,7 +554,7 @@ one line each in the shape **Influencer program** sets (**Ledger lines hand-off*
 
 One page per program, the affiliate page, republished to the link in the `page` finding with
 key `affiliate`. Title "{Brand} {Program}: Affiliate". It answers question code I12
-(**Orchestration**, **3**), so its scope carries `data-question="I12"` and every timeline post
+(**Orchestration contract**, **3**), so its scope carries `data-question="I12"` and every timeline post
 carries the "Program tracking" row's metrics, plus engagement per 1,000 views, or a note saying
 why one is missing. Load `artifact-design` and
 `artifact-capabilities` before building and `dataviz` for the charts; apply `theme:brand` per
@@ -596,13 +599,15 @@ Sections, in order:
    per click when present, change from last month, and a small sparkline of daily orders.
 5. **Sales and posts**: the program total timeline with post markers and the shaded 4-day
    windows, then one small timeline per creator with 3 or more orders. Each marker shows the
-   post's views and engagement per 1,000 views, and the list of posts sits under each chart
-   (**Sales and posts timeline**). Each row of a list is a post evidence card in row form
+   post's views and engagement per 1,000 views, and the list of posts sits under each
+   creator's chart (**Sales and posts timeline**). Each row of a list is a post evidence card in row form
    (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/blocks.md`, 3.8): `data-post` with the post's
    link, `data-account`, `data-metric` on views, likes, comments, and engagement, and
    `data-missing` with the reason shown in the row for any of them the post lacks. A marker
-   repeats its row's figures and carries no `data-post` of its own. The correlation line under
-   it, word for word.
+   repeats its row's figures and carries no `data-post` of its own. Each creator whose posts
+   are listed is a subject account: the scope's `data-accounts` names them, and each gets its
+   freshness entry (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 9). The
+   correlation line under it, word for word.
 6. **Codes**: every in-scope creator's code: code, discount, status (Planned, Live, Retired),
    how it was made (In {store}, On the sheet), the date, and the last sale date. Codes not yet
    live lead.
@@ -611,7 +616,9 @@ Sections, in order:
    "Proposed" or "Sent to the ledger".
 9. **Data notes**: the source and how it was read, the column mapping for an export, refunds
    included or not, "Other codes" with its order count, codes to check, creators with no
-   sales, and how engagement was counted ("Engagement counts likes and comments").
+   sales, how engagement was counted ("Engagement counts likes and comments"), and each metric
+   missing on a timeline post with its count and reason ("Views: missing on 2 of 9 posts, image
+   posts have no view count").
 10. **Footer**: "Revenue is {source}'s figure in {currency}, read {timestamp}. Atlas data as of
     {timestamp}. Sales and posts on the same days are a correlation, not proof." Then the footnote
     with the team audience line (**Artifact standard**); its source line
