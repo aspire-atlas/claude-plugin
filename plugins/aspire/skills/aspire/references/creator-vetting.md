@@ -207,16 +207,17 @@ Every list entry and `sheet_calls` entry from the Sheet carries its row's applic
 rows go through **Check what Atlas holds** with the list, so each Sheet call has its account id.
 They are never fetched and never counted in R3.
 
-**Which Sheet calls are new.** Compare each decided row's Sheet call with the last Sheet value saved
-for the row: the newest `feedback` finding for the same creator (`entityId`) carrying its
-`applicantId` and `sheetCall: true` (**State written to Atlas**). With no such finding, compare it
-with the newest `feedback` finding carrying the row's `applicantId`, which an F1 answer on the row
-writes:
+**Which Sheet calls are new.** A decided row's Sheet call is **new** only when it differs from both
+of these, for the same creator (`entityId`) (**State written to Atlas**):
 
-- The same call: unchanged and not offered, so a call the team made since in F1 stands.
-- A different call, or neither finding: **new**: the team edited the Sheet.
-- The creator isn't in Atlas (no `entityId`): not offered; listed as waiting for Atlas to hold
-  the creator.
+- the current call: the newest `feedback` finding carrying the row's `applicantId`, from the Sheet
+  or from F1
+- the last Sheet value saved: the newest one that also has `sheetCall: true`
+
+A call that matches either is not offered, so a call the team made since in F1 stands, and a call
+typed into the Sheet to match it is not asked again. With neither finding, the call is new. A call
+on a creator Atlas doesn't hold (no `entityId`) is not offered; it is listed as waiting for Atlas
+to hold the creator.
 
 **Reopened rows.** An undecided row (blank or unreadable) is **reopened** only when the newest
 `feedback` finding for the creator, of any kind and from any list or run, is one that carries the
