@@ -1,7 +1,8 @@
 // The animated Aspire mark: the AI letters over a field of squares that shuffle slowly. Every square fades in and out on its own
 // cycle (7 to 23 seconds, in one of four shapes, from its own starting point), so the pattern keeps changing and takes minutes
-// to repeat. The two files in the aspire plugin's assets/ are this output, written at 20 and 10 squares across:
-//   bun -e "import {logoSvg} from './plugins/aspire-mod/hooks/logo.ts'; await Bun.write('plugins/aspire/assets/aspire-animated.svg', logoSvg(512, true, 20)); await Bun.write('plugins/aspire/assets/aspire-animated-small.svg', logoSvg(512, true, 10))"
+// to repeat. The two marks in the aspire plugin's assets/ are this output, at 20 and 10 squares across, each inside the svg fence
+// of a Markdown file (the plugin directory takes no .svg from an organization that is not Verified):
+//   bun -e "import {logoSvg} from './plugins/aspire-mod/hooks/logo.ts'; for (const [n, g] of [['', 20], ['-small', 10]]) { const p = 'plugins/aspire/assets/aspire-animated' + n + '.svg.md'; await Bun.write(p, (await Bun.file(p).text()).replace(/<svg[\s\S]*<\/svg>/, () => logoSvg(512, true, g))) }"
 // Change the mark here, rewrite both files, and keep them in step.
 
 import { BRAND } from './palette'
@@ -62,7 +63,7 @@ ${animated ? `${ANIMATED}\n${REDUCED}` : STILL}
 <g fill="#fff" fill-rule="evenodd"><path d="M62 413 L183 98 L236 98 L356 413 L296 413 L275 354 C235 392 190 413 130 413 Z M212 185 L257 296 C225 330 185 354 145 358 Z"/><rect x="365" y="98" width="64" height="316"/></g>`
 
 // The twin-comet spinner the Atlas tool row shows while a call runs: the A and the I over the edge ring of the same 10 by 10 grid,
-// with two lime comets chasing each other round it. assets/aspire-spinner-twin.svg is the page version of this mark (its colors
+// with two lime comets chasing each other round it. assets/aspire-spinner-twin.svg.md is the page version of this mark (its colors
 // are CSS variables a page can set); here the colors are fixed, because an Svg row is drawn as an image and takes no page styles.
 const RING: Array<[number, number]> = []
 for (let c = 0; c < SMALL_GRID; c++) RING.push([c, 0])

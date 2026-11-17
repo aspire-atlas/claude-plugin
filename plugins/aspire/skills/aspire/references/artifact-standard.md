@@ -42,11 +42,11 @@ source in the hand-off message instead.
 
 ## 1. The mark
 
-- Full pages: paste `${CLAUDE_PLUGIN_ROOT}/assets/aspire-animated.svg` inline (read the file; about
+- Full pages: paste the `<svg>` from the fence in `${CLAUDE_PLUGIN_ROOT}/assets/aspire-animated.svg.md` (read the file; about
   27KB, ASCII) as an inline `<svg>`, 40px square, in the header's right-hand group, with
   `role="img"` and `aria-label="Aspire Atlas"` kept as the file has them. One copy per page.
 - Widgets, slides, and anything with several copies (the theme preview widget):
-  paste `${CLAUDE_PLUGIN_ROOT}/assets/aspire-animated-small.svg` (about 8KB), 28px.
+  paste the `<svg>` from `${CLAUDE_PLUGIN_ROOT}/assets/aspire-animated-small.svg.md` (about 8KB), 28px.
 - Never load it from a URL: published pages and widgets cannot load outside images. Never recolor,
   restyle, or replace it, and never let the brand theme recolor it; it keeps its own dark tile. Give
   it a 1px `var(--border)` outline so its edge shows on a dark page.

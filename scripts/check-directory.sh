@@ -20,6 +20,10 @@
 #     and agent event it hooks, and the tools it answers itself
 #   - every skill's description is at most 1,024 characters, the skill spec's limit. The directory
 #     has not flagged this, but a reviewer or a later scan can, so it is held here too
+#   - a plugin without a mod ships only the file types the directory accepts from an organization that is
+#     not Verified (Markdown, text, JSON, YAML, PNG, JPEG, GIF, WebP, ICO, and its LICENSE), none starting
+#     with #!: the directory refused 5.3.0 for its .svg marks, which now sit in .svg.md files. A plugin
+#     with a mod (hooks/) is held back from main and not submitted, so it is not held to this
 # plugin.json carrying no version is check-channel.sh's rule, kept on purpose; it is not checked here.
 #
 #   scripts/check-directory.sh
@@ -46,6 +50,17 @@ for p in $(plugin_names); do
     fi
   done < <(find "$src" -type f ! -name '*.png' ! -name '*.jpg' ! -name '*.jpeg' ! -name '*.gif' ! -name '*.webp' \
     ! -name '*.ico' ! -name '*.woff' ! -name '*.woff2' ! -name '*.ttf' ! -name '*.otf' | sort)
+
+  # File types the directory accepts from an organization that is not Verified.
+  if [ ! -d "$src/hooks" ]; then
+    while IFS= read -r f; do
+      case "$f" in
+        */LICENSE|*.md|*.txt|*.json|*.yaml|*.yml|*.png|*.jpg|*.jpeg|*.gif|*.webp|*.ico) ;;
+        *) err "$f: the directory refuses this file type from an organization that is not Verified; wrap it in Markdown or move it out of $src" ;;
+      esac
+      [ "$(head -c2 "$f")" = '#!' ] && err "$f starts with #!, which the directory refuses from an organization that is not Verified"
+    done < <(find "$src" -type f | sort)
+  fi
 
   # h and Fragment are JSX's own names in every .tsx or .jsx file, tests included.
   jsxname='(^|[^A-Za-z0-9_$.'"'"'"`-])(h|Fragment)[[:space:]]*[?]?:|\.(h|Fragment)\b|\b(const|let|var|function|class)[[:space:]]+(h|Fragment)\b|\bimport\b[^;]*\b(h|Fragment)\b|(^|[^A-Za-z0-9_$.])(h|Fragment)[[:space:]]*=[^=>]|[(,][[:space:]]*(h|Fragment)[[:space:]]*[,)=]'
@@ -133,5 +148,5 @@ for p in $(plugin_names); do
   fi
 done
 
-[ "$fail" -eq 0 ] && echo "OK   plugins pass the directory's mod form, file size, skill description, and hook documentation checks"
+[ "$fail" -eq 0 ] && echo "OK   plugins pass the directory's mod form, file type, file size, skill description, and hook documentation checks"
 exit "$fail"
