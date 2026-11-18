@@ -294,6 +294,7 @@ platforms, or more accounts, whichever the run has room for.
 | Creator picks or vetting | 5 per creator over the flow's window |
 | Ads and cut-downs | 5 videos |
 | Program tracking | None: the posts owed are the pool, and a thin one is the finding |
+| Affiliate sales | None: the period's sales are the pool, and the affiliate flow says in place of a chart when orders or posts are too few |
 | One named post (O5, P2) | None: the post is the question; its bullets rest on it and the posts it is compared against, and say so |
 
 For a row counted per brand or per creator, the pool is under its minimum when half or more of them

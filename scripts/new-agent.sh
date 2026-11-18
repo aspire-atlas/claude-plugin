@@ -42,6 +42,10 @@ command -v python3 >/dev/null || { echo "new-agent.sh: python3 is needed" >&2; e
 python3 -I - "$@" <<'PY'
 import difflib, glob, json, os, re, sys
 
+sys.dont_write_bytecode = True
+sys.path.insert(0, "scripts")
+from question_codes import code_rows, section3
+
 USAGE = """usage: scripts/new-agent.sh <slug> [--name "<Name>"] [--codes I1,P2] [--permission read|write|send|spend]
                             [--model sonnet|inherit] [--team 1-6] [--wave 1-4]
                             [--group insights|discover|create|program|measure] [--dry-run]
@@ -143,14 +147,14 @@ def heading_index(lines, pattern, path):
 
 def question_codes():
     """{code: (question, default reader)} from orchestration.md section 3."""
-    sec = re.search(r"^## 3\. .*?(?=^## )", read(ORCH), re.S | re.M)
+    sec = section3(read(ORCH))
     if not sec:
         die(f"{ORCH} has no section 3")
     codes = {}
-    for row in re.findall(r"^\| ([IPOA][0-9]+) \|(.*)$", sec.group(0), re.M):
-        cells = [c.strip() for c in row[1].split("|")]
+    for code, rest in code_rows(sec):
+        cells = [c.strip() for c in rest.split("|")]
         reader = re.search(r"`([a-z]+)`", cells[1])
-        codes[row[0]] = (cells[0], reader.group(1) if reader else "team")
+        codes[code] = (cells[0], reader.group(1) if reader else "team")
     return codes
 
 
@@ -319,7 +323,7 @@ else:
         if [a for a in plugin_agents(read(old_spec)) if a != "none"]:
             die(f"{old_spec} already has the name {name!r} and names its own agent; pick another --name")
         q = re.search(r"^## Questions answered\n(.*?)(?=^## |\Z)", read(old_spec), re.M | re.S)
-        old_codes = re.findall(r"^\| ([IPOA][0-9]+) \|", q.group(1), re.M) if q else []
+        old_codes = [code for code, _ in code_rows(q.group(1))] if q else []
         if not old_codes:
             die(f"{old_spec} answers no question code yet. Add the codes this agent answers to its Questions "
                 "answered table (one row per code, in the table shape docs/agent-specs/templates/agent.md "

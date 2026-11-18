@@ -299,34 +299,34 @@ For each creator with 3 or more orders in the period, and for the program total:
 
 1. Daily orders and revenue across the period.
 2. The creator's posts in Atlas in the period and the 7 days before it: `search_posts` on their
-   author username and network, `postedAt` in the window, projecting the fields of the "Program
-   tracking" row of the required metrics
+   author username and network, `postedAt` in the window, projecting the fields of the
+   "Affiliate sales" row of the required metrics
    (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8), plus whether the post tags
-   or mentions the brand, and without `media`, since the timeline draws no thumbnails. That gives
-   each post its date, link, format, views, likes, and comments. A post whose link matches a `deliverable` finding is marked "program post".
-3. **Engagement on each post:** engagement per 1,000 views, worked out as section 8 of the page
-   standard sets it. The timeline reads likes and comments only, so the page's method says
-   "Engagement counts likes and comments". A metric a post lacks is never shown as 0: it gets the
-   reason from
-   `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/network-metrics.md` ("image posts have no view
-   count"), and a post with no views has no engagement figure, for the same reason.
-4. **Around each post:** orders on the post day and the 3 days after, against the creator's
+   or mentions the brand. A post whose link matches a `deliverable` finding is marked "program
+   post". The program total takes the posts of every creator in scope, whatever their orders.
+   A post from the 7 days before the period is read only for step 3, where it keeps the days
+   after it out of the typical days. It has no date on the chart, so it is not marked, listed,
+   or cited.
+3. **Around each post:** orders on the post day and the 3 days after, against the creator's
    median daily orders on days with no post in the 3 days before. Shown as "{n} orders in the 4
    days after the post, against {m} on a typical 4 days".
 
-Draw it as a timeline: daily bars, post markers on their dates, the 4-day windows shaded. Each
-marker shows the post's views and its engagement per 1,000 views, or the note for the one it
-lacks, so a reader can see whether the post reached anyone before reading the orders beside it.
-Where markers sit too close for their figures to be read, the figures show when a marker is
-focused or tapped, and the list carries them.
-Under each creator's chart, list every post on it, oldest first: the date, the format, the
-link, "program post" where it is one, views, likes, comments, engagement per 1,000 views, and
-the orders line from step 4. Every marker's post is in exactly one list: the program total
-chart marks the same posts and points to the creators' lists, with no list of its own. Each
-row is a cited post (**The page**). The
+Draw it as a timeline: daily bars, post markers on their dates, the 4-day windows shaded. A
+marker is labelled with two of its post's figures, views and engagement per 1,000 views, taken
+from the post's card, so a reader can see whether the post reached anyone before reading the
+orders beside it. On a chart where the labels would overlap, markers carry the date only and
+the cards carry the figures. The
 words under it are always: "Sales and posts on the same days are a correlation, not proof that
 the post drove them." Fewer than 3 orders in the period, or no posts in Atlas, says so in place
 of the chart. Never claim a post caused a sale, and never estimate revenue a post "drove".
+
+Under the program total timeline, show one post evidence card
+(`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/blocks.md`, 3.8) for every post dated in the
+period, grouped by creator, oldest first. Each card carries the row's required metrics, "program
+post" where it is one, and the orders line from step 3 as its comparison. A creator's own chart
+marks that creator's posts and points to these cards, so every marker's post has exactly one
+card, whatever the creator's orders. Engagement, its method line, and missing metrics follow
+the page standard, section 8 (**A missing metric is never 0**).
 
 ## Recommendations
 
@@ -554,9 +554,8 @@ one line each in the shape **Influencer program** sets (**Ledger lines hand-off*
 
 One page per program, the affiliate page, republished to the link in the `page` finding with
 key `affiliate`. Title "{Brand} {Program}: Affiliate". It answers question code I12
-(**Orchestration contract**, **3**), so its scope carries `data-question="I12"` and every timeline post
-carries the "Program tracking" row's metrics, plus engagement per 1,000 views, or a note saying
-why one is missing. Load `artifact-design` and
+(**Orchestration contract**, **3**), so its scope carries `data-question="I12"` and every
+timeline post carries that code's required metrics, or a note saying why one is missing. Load `artifact-design` and
 `artifact-capabilities` before building and `dataviz` for the charts; apply `theme:brand` per
 **Theme**, **Applying the theme**; draw creators with the creator card (**Creator card**, page
 profile); render for `recipient`.
@@ -598,16 +597,11 @@ Sections, in order:
    type chip Affiliate or Hybrid), code, orders, revenue, AOV, commission and its basis, orders
    per click when present, change from last month, and a small sparkline of daily orders.
 5. **Sales and posts**: the program total timeline with post markers and the shaded 4-day
-   windows, then one small timeline per creator with 3 or more orders. Each marker shows the
-   post's views and engagement per 1,000 views, and the list of posts sits under each
-   creator's chart (**Sales and posts timeline**). Each row of a list is a post evidence card in row form
-   (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/blocks.md`, 3.8): `data-post` with the post's
-   link, `data-account`, `data-metric` on views, likes, comments, and engagement, and
-   `data-missing` with the reason shown in the row for any of them the post lacks. A marker
-   repeats its row's figures and carries no `data-post` of its own. Each creator whose posts
-   are listed is a subject account: the scope's `data-accounts` names them, and each gets its
-   freshness entry (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 9). The
-   correlation line under it, word for word.
+   windows, the post cards under it, then one small timeline per creator with 3 or more orders
+   (**Sales and posts timeline**). Each creator with a post card is a subject account: the
+   scope's `data-accounts` names them, and each gets its freshness entry
+   (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 9). The correlation line
+   under it, word for word.
 6. **Codes**: every in-scope creator's code: code, discount, status (Planned, Live, Retired),
    how it was made (In {store}, On the sheet), the date, and the last sale date. Codes not yet
    live lead.
@@ -616,9 +610,8 @@ Sections, in order:
    "Proposed" or "Sent to the ledger".
 9. **Data notes**: the source and how it was read, the column mapping for an export, refunds
    included or not, "Other codes" with its order count, codes to check, creators with no
-   sales, how engagement was counted ("Engagement counts likes and comments"), and each metric
-   missing on a timeline post with its count and reason ("Views: missing on 2 of 9 posts, image
-   posts have no view count").
+   sales, and the timeline posts' engagement method and missing metrics, as section 8 of the
+   page standard words them.
 10. **Footer**: "Revenue is {source}'s figure in {currency}, read {timestamp}. Atlas data as of
     {timestamp}. Sales and posts on the same days are a correlation, not proof." Then the footnote
     with the team audience line (**Artifact standard**); its source line
@@ -632,8 +625,8 @@ budget, a maximum, or the sales goal outside the team view.
 
 The holiday's sample brand per **Sample artifacts** (the agent brief), four creators: a top earner with a
 raise as your call, a hybrid with a store-created code, an affiliate whose fixed-amount code is
-on the sheet, and an inactive code to retire. A month's timeline with three post markers, each
-with views and engagement and one of them an image post with its missing-views note, three
+on the sheet, and an inactive code to retire. A month's timeline with three post markers and their three
+post cards, one of them an image post with its missing metrics noted, three
 commission lines, a code sheet of two rows. Render the goal tile in the page itself, marked
 "team view". Declare no page data capability and seed nothing.
 
