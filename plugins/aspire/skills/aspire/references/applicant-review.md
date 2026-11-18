@@ -75,7 +75,7 @@ part, `-client-view`, stays within the length Atlas allows after the colon.
 | `-checks` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body `reject: <the checks that reject on their own, from competitor-deals, disclosure, language-on-camera; or none>` | Which checks reject on their own (all of them always run: **How screening applies a review**) |
 | `-red-lines` | `red_line` | `{action: "block", appliesTo: ["applicant-review", "{slug}"], body}`; body one red line per line | Red lines for this campaign only, on top of the brand red lines <!-- red-line-check: defines the review's own red-line record --> |
 | `-thresholds` | `guideline` | `{concern: "ceiling", appliesTo: ["applicant-review", "{slug}"], body}`; body is `source: vetting:thresholds` or `approve >= <n>; maybe >= <m>` | Where Approve, Maybe, and Reject sit |
-| `-form-rules` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body one rule per line: `required: <form question>`, `stop: <form question> = <answer>`, `boost: <form question> = <answer>`, or `prompt: <instruction for the screening agent>` | How form answers change a call |
+| `-form-rules` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body one rule per line: `required: <form question>` or `required: <form question> = <answer>`, `stop: <form question> <test>`, `boost: <form question> <test>`, or `prompt: <instruction for the screening agent>`, where `<test>` is `= <answer>`, or `>`, `>=`, `<`, or `<=` and a number (`> 10`; **Applying the form rules**, step 2) | How form answers change a call |
 | `-visuals` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body one check per line: `named: <name> = <what counts as a pass>`, or `free: <what to look for>` | What to look for in each applicant's videos |
 | `-client-view` | `guideline` | `{concern: "ceiling", appliesTo: ["applicant-review", "{slug}"], body}`; body `client sees: <final-list, content \| final-list \| none>` and `hidden: scores, notes, maybes, team calls` | What the client contributor role sees |
 | `-sheet` | `policy` | `{area: "routing", body}`; body `sheet: <link>` or `sheet: none (<reason>)` | The campaign's review Sheet |
@@ -422,11 +422,30 @@ email columns, the contact detail columns **Importing applicants**, step 1 names
 city, state, country, zip or postal code), and Aspire's own columns (followers, engagement,
 YouTube, campaigns): a creator who leaves a phone number blank answered the form.
 
-An answer matches a rule's `<answer>` when the two are the same once lowercased, trimmed, and with
-space runs made single. A multi-choice answer (choices split by `;`, `|`, or a line break)
-matches when any one choice does. A comma never splits an answer: "Yes, last month" does not
-match `Yes`. Nothing else matches: no synonyms, no ranges, no numbers read
-from words. Anything looser belongs in a `prompt:` rule, which never rejects on its own.
+A rule's test is the last ` = `, ` > `, ` >= `, ` < `, or ` <= ` in its line, spaces around it.
+
+**`= <answer>`** matches when the answer and `<answer>` are the same once lowercased, trimmed, with
+space runs made single, and with a final `.` or `!` dropped ("YES" and "Yes." match `Yes`). A
+multi-choice answer (choices split by `;`, `|`, or a line break) matches when any one choice does.
+A comma never splits an answer: "Yes, last month" and "Yes, I agree" do not match `Yes`. No
+synonyms, no translations, no typos read through ("si", "I agree", and "Yws" do not match `Yes`).
+
+**A number test** (`> 10`, `<= 5`; a unit after the number, as in `> 10 lb`, is read as said)
+compares the one figure the answer gives:
+
+- A figure is a number, or a range read as its low end ("10-15", "15 to 20", "between 10 and
+  15" read as 10, 15, 10). Words around it change nothing ("~15", "about 10 pounds", "Like 20",
+  "10ish", "Vet wants him to lose 20 pounds" read as 15, 10, 20, 10, 20).
+- A figure followed by `kg`, `kgs`, `kilo`, or `kilos` is turned into pounds (× 2.2, one decimal),
+  and a rule's `kg` the same way; any other figure is read in the rule's unit.
+- An answer with no figure reads as 0 when it says there is none ("none", "no", "0", "not
+  overweight", "he is not overweight"), and otherwise gives no figure ("idk", "a few", "several
+  pounds").
+- An answer with more than one figure ("Dixie 8-10, Sky 10-15", "should be 13-15 lbs, 5-7 lbs
+  overweight") gives no figure: it is `unclear`, and the evidence quotes it for the team.
+
+No figure never matches. Anything looser (reading an answer's meaning, several dogs, a written-out
+number) belongs in a `prompt:` rule, which never rejects on its own.
 
 ### 3. Apply each rule
 
@@ -437,8 +456,9 @@ Rules apply in the order saved; each gives one `formRules[]` entry, `{rule, type
 | Rule | `result` | What it does to the call |
 | ---- | -------- | ------------------------ |
 | `required: <question>` | `met`, or `missing` when the answer is empty | A `missing` caps the call at Maybe (**The recommendation**, rule 4): an Approve becomes a Maybe, a Maybe stays one, and a fit score Reject stays a Reject with the missing answer noted. The Maybe question is "Ask them: {question}", one per missing question |
-| `stop: <question> = <answer>` | `matched` or `not-matched` (`missing` when blank) | `matched` rejects (**The recommendation**, rule 2) naming the rule: "Rejected by form hard stop: '{question}' = '{answer}'". A blank answer is never a match |
-| `boost: <question> = <answer>` | `matched` or `not-matched` (`missing` when blank) | `matched` counts toward priority (step 5) and lifts a fit score Maybe within 10 points of the approve line to Approve (**The recommendation**, rule 5), naming the boost. It never lifts a Maybe that a cap made |
+| `required: <question> = <answer>` | `met`, `missing`, or `not-matched` when the answer is not `<answer>` | `missing` as above. `not-matched` caps the call the same way, with the Maybe question "Confirm with them: {question} They said '{answer}'". Use it for an answer the brand needs, and a `stop:` for the answer that rules an applicant out: an answer in between goes to the team, never to a reject |
+| `stop: <question> <test>` | `matched`, `not-matched`, `unclear` (a number test with no figure), or `missing` when blank | `matched` rejects (**The recommendation**, rule 2) naming the rule: "Rejected by form hard stop: '{question}' = '{answer}'". A blank or `unclear` answer never rejects |
+| `boost: <question> <test>` | `matched`, `not-matched`, `unclear`, or `missing` when blank | `matched` counts toward priority (step 5) and lifts a fit score Maybe within 10 points of the approve line to Approve (**The recommendation**, rule 5), naming the boost. It never lifts a Maybe that a cap made |
 | `prompt: <instruction>` | `applied`, or `not-applied` with the reason | Steers how the responses and posts are read (step 4) and may name a priority signal (step 5). It never rejects, never approves, never relaxes a red line, a competitor, a hard stop, a team call, or another form rule, and never reads an appearance or another trait **What a visual check may look for** rules out. A prompt that asks for one of those is `not-applied`, changes nothing, and goes under "Needs the main thread" as a proposed `stop:` or `required:` rule in its own words |
 
 A rule that is `not-checked` (step 1 or 2) changes nothing and is listed under what is missing.
@@ -513,3 +533,19 @@ Answers are given in the order of the rules' questions: weight, US, vet.
 | D | 20; No; Yes | Fit 88 | **Reject** (rule 2): "Rejected by form hard stop: 'Do you live in the US?' = 'No'" |
 | E | (blank); Yes; Yes | Fit 41 | **Reject** on fit score (rule 5); the missing answer is noted, and the boost lifts nothing |
 | F | no record (pasted handle) | Fit 75 | **Approve** on the checks alone; every form rule listed as not checked: no application on record |
+
+The same brand with number and expected-answer rules:
+
+```
+required: Do you agree to the usage in perpetuity? = Yes
+stop: Do you agree to the usage in perpetuity? = No
+boost: How many pounds overweight is your dog? > 10
+```
+
+| Applicant | Answers (usage, weight) | Checks | Call and why |
+| --------- | ----------------------- | ------ | ------------ |
+| G | Yes; "Like 20" | Fit 63 | **Approve** on the boost (20 > 10; a Maybe within 10 of 70): "Approved on form boost: 'How many pounds overweight is your dog?' > 10 ('Like 20')" |
+| H | "If paid"; 15 | Fit 81 | **Maybe** (rule 4): "Confirm with them: Do you agree to the usage in perpetuity? They said 'If paid'" |
+| I | no; 25 | Fit 85 | **Reject** (rule 2): "Rejected by form hard stop: 'Do you agree to the usage in perpetuity?' = 'no'" |
+| J | Yes; "10-15" | Fit 66 | **Maybe** on fit: the range reads as 10, which is not more than 10, so no boost |
+| K | Yes; "Dixie 8-10, Sky 10-15" | Fit 66 | **Maybe** on fit: the weight is `unclear` (two figures), quoted in the evidence for the team |

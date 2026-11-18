@@ -536,9 +536,9 @@ In this order; the first rule that applies decides, and the page names it:
 3. **Not enough to go on.** The handle could not be resolved, or fewer than 5 posts in 180
    days → **Can't vet**, with the reason. Never reject a creator for missing data.
 4. **Safety caps.** Any other Fail, a `flag` or `escalate` red line, or two or more Flags →
-   at most **Maybe**. In an applicant review run, a `required:` form answer left blank caps the
-   call the same way: an Approve becomes a Maybe asking for the answer, and a fit score Reject
-   stays a Reject.
+   at most **Maybe**. In an applicant review run, a `required:` form answer left blank, or not
+   the answer the rule expects, caps the call the same way: an Approve becomes a Maybe asking for
+   the answer, and a fit score Reject stays a Reject.
 5. **Fit score** against `vetting:thresholds` (default 70 and 50): **Approve** at or above
    the approve line, **Maybe** at or above the maybe line, **Reject** under it. In a creator-ads
    lane this is the score without Budget vs target (**Creator-ads lanes**). In an applicant review
