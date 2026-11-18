@@ -1,4 +1,5 @@
 {"rows": 14, "encoding": "utf-8", "kept": ["Name", "Instagram", "Anything else?"], "left_out": [], "cells_left_out": 5}
+{"next": 0}
 {"row": 2, "cells": {"Name": "A", "Instagram": "@a", "Anything else?": "exp 12/[left out]"}}
 {"row": 3, "cells": {"Name": "B", "Instagram": "@b", "Anything else?": "Exp 12/[left out]"}}
 {"row": 4, "cells": {"Name": "C", "Instagram": "@c", "Anything else?": "Visa/[left out]"}}

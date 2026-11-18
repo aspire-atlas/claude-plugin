@@ -1,4 +1,5 @@
 {"rows": 3, "encoding": "utf-8", "kept": ["Name", "Instagram", "Tell us about your creator journey", "Anything else?"], "left_out": [], "cells_left_out": 2}
+{"next": 0}
 {"row": 2, "cells": {"Name": "A", "Instagram": "@a", "Tell us about your creator journey": "my card is [left out] thanks", "Anything else?": "IBAN [left out] please"}}
 {"row": 3, "cells": {"Name": "B", "Instagram": "@b", "Tell us about your creator journey": "started in 2019", "Anything else?": "call me on 07911 123456"}}
 {"row": 4, "cells": {"Name": "C", "Instagram": "@c", "Anything else?": "no"}}

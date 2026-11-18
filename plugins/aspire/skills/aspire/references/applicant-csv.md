@@ -22,23 +22,23 @@ between calls. A failed first run removes the folder itself:
 
 <!-- applicant-csv-run -->
 ```
-d=$(mktemp -d) && cp "{csv path}" "$d/applicants.csv" && awk '/^<!-- applicant-csv -->$/{f=1;next} /^<!-- \/applicant-csv -->$/{f=0} f' "${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/applicant-csv.md" | sed '1d;$d' > "$d/applicant_csv.py" && echo "$d" && python3 -I "$d/applicant_csv.py" "$d/applicants.csv" 0 || rm -rf "$d"
+d=$(mktemp -d) && cp "{csv path}" "$d/applicants.csv" && awk '/^<!-- applicant-csv -->$/{f=1;next} /^<!-- \/applicant-csv -->$/{f=0} f' "${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/applicant-csv.md" | sed '1d;$d' > "$d/applicant_csv.py" && echo "$d" && python3 -I "$d/applicant_csv.py" "$d/applicants.csv" summary || rm -rf "$d"
 ```
 <!-- /applicant-csv-run -->
 
-Each run prints rows up to about 20,000 characters, so its output is never cut, and ends with
-`{"next": n}` while rows remain (`"r0"` when the header line alone filled the first run): run `python3 -I "{folder}/applicant_csv.py"
-"{folder}/applicants.csv" {n}` next. After the last run, and whenever the import stops early
+The first run prints the summary line and `{"next": 0}`. Each later run prints rows up to about
+20,000 characters, so its output is never cut, and ends with `{"next": n}` while rows remain: run
+`python3 -I "{folder}/applicant_csv.py" "{folder}/applicants.csv" {n}` next, starting with `0`. After the last run, and whenever the import stops early
 (an error, "Not now", or the user stopping), `rm -rf "{folder}"`. With no Python, say so: the
 import stops, and a plain list is read with the `Read` tool instead. When a run prints `error`,
 say it in one line and stop the import the same way.
 
 ## What it prints
 
-The first run (start `0`) prints one line first: `rows` (applicant rows, blank
+The summary line holds `rows` (applicant rows, blank
 rows not counted), `encoding` (`utf-8`, `utf-16`, `cp1252` for a file Excel saved in Windows
 encoding, or `latin-1`), `kept` (the column keys printed), `left_out` (the columns left out), and
-`cells_left_out`. Then one line per row: `row`, its row number in the file (the header is row 1,
+`cells_left_out`. A row run prints one line per row: `row`, its row number in the file (the header is row 1,
 a blank row still counts), and `cells`, its non-empty cells, trimmed, under their keys. A key is
 the header as written, trimmed; a header that repeats gets ` (2)`, ` (3)`. Columns may be
 separated by commas, tabs (Excel's "Unicode Text"), or semicolons: the header line decides. A row
@@ -54,8 +54,9 @@ Payment and tax data, so it is kept nowhere and the report names it:
 - in every other column except the ones `KEEP` names (a header that is exactly a handle, name,
   email, phone, place, or id header), wherever it sits in the cell: a card number (13 to 19
   digits as one block or groups of 4 to 6, that pass the Luhn check, alone or with up to two short
-  expiry or CVV groups at either end, and not inside a link) and an IBAN (in any case, spaces or dashes allowed,
-  exactly its country's length, with the right check digits). The match becomes `[left out]`, and
+  expiry or CVV groups at either end, and not inside a link) and an IBAN (in any case, spaces or dashes
+  allowed, 15 to 34 characters ending at a group's end, mostly digits after the country and check
+  digits, with the right check digits). The match becomes `[left out]`, and
   `cells_left_out` counts the cells;
 - such a column whole, when more than half its non-empty cells hold one.
 
@@ -65,8 +66,7 @@ Payment and tax data, so it is kept nowhere and the report names it:
 ```python
 import csv, io, json, re, sys
 
-path, arg = sys.argv[1], sys.argv[2]
-start = int(arg.lstrip("r"))  # "r0": rows from 0, without the summary line
+path, arg = sys.argv[1], sys.argv[2]  # "summary", or the position of the first row to print
 PAY = re.compile(r"\b(payments?|pay ?pal|venmo|zelle|cash ?app|bank|account (number|no)|acct|routing|"
                  r"sort code|iban|swift|bic|tax|tin|ein|w-?9|w-?8|ssn|social security|"
                  r"national insurance|card (number|no)|credit card|debit card|cvv|cvc|payouts?)\b", re.I)
@@ -79,14 +79,12 @@ KEEP = {"instagram", "instagram handle", "instagram username", "instagram url", 
         "phone number", "mobile", "mobile number", "address", "street", "city", "state", "country",
         "region", "zip", "zip code", "postal code"}
 DIGITS = re.compile(r"\d(?:[ -]?\d){12,}")
+# The card shape: 13 to 19 digits as one block or as groups of 4 to 6 (4-4-4-4, 4-6-5); phone numbers
+# and dates, in groups of 2 or 3, are not. SHORT is an expiry or CVV group beside it.
+CARD_CORE = re.compile(r"\d+|\d{4,6}(?: \d{4,6})+")
+SHORT = re.compile(r"\d{2,4}")
 URL = re.compile(r"(https?://|www\.)\S*$", re.I)
 IBAN = re.compile(r"\b[A-Z]{2}\d{2}(?:[ -]?[A-Z0-9]){11,30}", re.I)
-# Each IBAN country's fixed length.
-IBAN_LEN = {c[:2]: int(c[2:]) for c in (
-    "AD24 AE23 AL28 AT20 AZ28 BA20 BE16 BG22 BH22 BR29 CH21 CR22 CY28 CZ24 DE22 DK18 DO28 EE20 EG29 "
-    "ES24 FI18 FO18 FR27 GB22 GE22 GI23 GL18 GR27 GT28 HR21 HU28 IE22 IL23 IQ23 IS26 IT27 JO30 KW30 "
-    "KZ20 LB28 LC32 LI21 LT20 LU20 LV21 MC27 MD24 ME22 MK19 MR27 MT31 MU30 NL18 NO15 PK24 PL28 PS29 "
-    "PT25 QA29 RO24 RS22 SA24 SC31 SE24 SI19 SK24 SM27 ST25 SV28 TL23 TN24 TR26 UA29 VA22 VG24 XK20").split()}
 LIMIT = 20000
 
 
@@ -100,32 +98,33 @@ def mod97(s):
 
 
 def card(m):
-    # The run, or the run without up to two short groups (an expiry, a CVV) at either end, as one block
-    # or groups of 4 to 6 digits (4-4-4-4, 4-6-5), 13 to 19 digits that pass Luhn. Phone numbers and
-    # dates (groups of 2 or 3) are not cards, nor is a number inside a link (a video or user id).
+    # A card is CARD_CORE that passes Luhn, alone or with up to two SHORT groups (an expiry, a CVV) at
+    # either end. Every way of setting those groups aside is tried, since one match can't retry them.
+    # A number inside a link (a video or user id) is never a card.
     if URL.search(m.string[:m.start()]):
         return m.group()
     g = re.split(r"[ -]", m.group())
     for a in range(3):
         for b in range(3):
-            mid = g[a:len(g) - b]
-            ends = g[:a] + g[len(g) - b:]
-            if mid and all(2 <= len(x) <= 4 for x in ends) and (len(mid) == 1 or all(4 <= len(x) <= 6 for x in mid)):
-                if 13 <= len("".join(mid)) <= 19 and luhn("".join(mid)):
-                    return "[left out]"
+            core, ends = " ".join(g[a:len(g) - b]), g[:a] + g[len(g) - b:]
+            digits = core.replace(" ", "")
+            if (CARD_CORE.fullmatch(core) and all(SHORT.fullmatch(x) for x in ends)
+                    and 13 <= len(digits) <= 19 and luhn(digits)):
+                return "[left out]"
     return m.group()
 
 
 def iban(m):
-    # Exactly the country's length, ending at the end of a group, with the right check digits.
+    # The longest prefix ending at the end of a group that is 15 to 34 characters, mostly digits after
+    # the country and check digits (an account number, not words), with the right check digits.
     g = m.group()
-    want, n = IBAN_LEN.get(g[:2].upper()), 0
-    for end, c in enumerate(g, 1):
-        n += c not in " -"
-        if n == want:
-            if (end == len(g) or g[end] in " -") and mod97(re.sub(r"[ -]", "", g[:end]).upper()):
-                return "[left out]" + g[end:]
-            break
+    for end in range(len(g), 0, -1):
+        if end < len(g) and g[end] not in " -" or g[end - 1] in " -":
+            continue
+        s = re.sub(r"[ -]", "", g[:end]).upper()
+        digits = sum(c.isdigit() for c in s[4:])
+        if 15 <= len(s) <= 34 and digits >= 8 and digits * 2 >= len(s) - 4 and mod97(s):
+            return "[left out]" + g[end:]
     return g
 
 
@@ -183,10 +182,8 @@ def line(n, got, room):
     out_line = json.dumps({"row": n, "cells": cells}, ensure_ascii=False)
     if len(out_line) <= room:
         return out_line
-    # One row too long for a run: cut its long cells to share what the keys leave, halving until it fits.
-    bare = len(json.dumps({"row": n, "cells": {k: "…[cut, 1000000 characters]" for k in cells}},
-                          ensure_ascii=False))
-    cap = max(40, (room - bare) // max(len(cells), 1))
+    # One row too long for a run alone: cut its long cells, halving the cap until the row fits.
+    cap = max(40, room // len(cells))
     while True:
         short = {k: f"{v[:cap]}…[cut, {len(v)} characters]" if len(v) > cap else v for k, v in cells.items()}
         out_line = json.dumps({"row": n, "cells": short}, ensure_ascii=False)
@@ -195,21 +192,19 @@ def line(n, got, room):
         cap = max(40, cap // 2)
 
 
-size = 0
-if arg == "0":
+if arg == "summary":
     head_line = json.dumps({"rows": len(body), "encoding": enc,
                             "kept": [k for i, k in enumerate(keys) if i not in out],
                             "left_out": [k for i, k in enumerate(keys) if i in out],
                             "cells_left_out": sum(sum(f) for i, f in scrubbed.items() if i not in out)},
                            ensure_ascii=False)
     print(head_line)
-    size = len(head_line)
-    if size > LIMIT // 2:
-        print(json.dumps({"next": "r0"}))  # a long header: the rows start in the next run
-        sys.exit(0)
+    print(json.dumps({"next": 0}))
+    sys.exit(0)
+start, size = int(arg), 0
 for k in range(start, len(body)):
     # Only a run's first row is cut to fit; a later row too big for what is left moves to the next run.
-    out_line = line(*body[k], LIMIT - size if k == start else LIMIT)
+    out_line = line(*body[k], LIMIT)
     if k > start and size + len(out_line) > LIMIT:
         print(json.dumps({"next": k}))
         break
