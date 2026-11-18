@@ -294,6 +294,7 @@ platforms, or more accounts, whichever the run has room for.
 | Creator picks or vetting | 5 per creator over the flow's window |
 | Ads and cut-downs | 5 videos |
 | Program tracking | None: the posts owed are the pool, and a thin one is the finding |
+| Affiliate sales | None: the period's sales are the pool, and the affiliate flow says in place of a chart when orders or posts are too few |
 | One named post (O5, P2) | None: the post is the question; its bullets rest on it and the posts it is compared against, and say so |
 
 For a row counted per brand or per creator, the pool is under its minimum when half or more of them
@@ -463,6 +464,7 @@ person asks something close, use the nearest code, and its wording (never the co
 | I5 | Which of the creators we seeded actually posted? | `team` | `atlas-deliverable-tracker` | Ready |
 | I6 | How did the program do this quarter? Keep, grow, or cut? | `leadership` | `atlas-quarterly-signal` | Ready |
 | I11 | How is the program doing this month, and what should I change? | `team` | `atlas-program-dashboard` | Ready |
+| I12 | Which affiliates are driving sales, and what do we owe in commission? | `team` | `atlas-affiliate-manager` | Ready |
 | P1 | Which creator posts should we run as ads, and how do we cut them? | `performance`, then `creative` | `atlas-ad-reuse` | Ready |
 | P2 | There's profanity in this video. Can it run on paid? | `performance` | `atlas-post-analysis` | Ready |
 | P3 | Which posts do we still have rights to, and when do they expire? | `performance` | `atlas-content-library` | Ready |
