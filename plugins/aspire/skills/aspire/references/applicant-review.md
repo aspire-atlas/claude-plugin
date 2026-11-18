@@ -506,8 +506,9 @@ counts a bio line: a lead that the posts confirm or contradict.
     evidence names it: "Rejected: says the dog is not overweight ('he is not overweight'); the
     campaign needs an overweight dog". A strong account or posts never outweigh it.
   - **An unclear answer is a Maybe** (rule 4), never a reject: it hedges, guesses, or doesn't say
-    ("idk", "not sure", "a few", "he's a bit chunky maybe"), or part of it meets the must ("snorkie
-    none, husky 10lbs overweight"). Its Maybe question asks them to settle it ("Confirm the dog is
+    ("idk", "not sure", "he's a bit chunky maybe"), or part of it meets the must ("snorkie none,
+    husky 10lbs overweight"). An answer that says the must is met without a clear figure ("a few",
+    "several pounds", "5-7 lbs overweight") meets it: only a number test reads it as `unclear`. Its Maybe question asks them to settle it ("Confirm the dog is
     overweight: they said 'not sure'"). When in doubt whether an answer is clear, it is unclear.
 - **Topic evidence**, **Engagement quality**, **Cadence and recency**, and **Format match** stay
   from the posts and Atlas's figures only; a stated follower or engagement figure never replaces
