@@ -15,7 +15,7 @@ export type ApprovalKind = 'storyline' | 'credits' | 'refresh' | 'save' | 'draft
  * its header before its wording, so the order of the rows is the precedence: a Save header is a save even
  * when its question mentions a mailbox.
  */
-const KINDS: { kind: ApprovalKind; named: RegExp; header?: RegExp; question?: RegExp }[] = [
+const KINDS: { kind: ApprovalKind; named?: RegExp; header?: RegExp; question?: RegExp }[] = [
   { kind: 'storyline', named: /\bmain points\b/i, header: /storyline/i },
   { kind: 'credits', named: /\bcredits?\b/i, header: /credit/i, question: /\bcap it at\b/i },
   { kind: 'refresh', named: /\brefresh/i, header: /refresh/i, question: /\brefresh (?:it|them|@\S+) first\b/i },
@@ -23,7 +23,8 @@ const KINDS: { kind: ApprovalKind; named: RegExp; header?: RegExp; question?: Re
   { kind: 'drafts', named: /\bmailbox\b/i, header: /mailbox/i, question: /\bdrafts?\b[^.?]*\bmailbox\b|\bmailbox\b[^.?]*\bdrafts?\b/i },
   { kind: 'delivery', named: /\bsending the page\b|\bto (?:slack|email)\b/i, header: /deliver/i, question: /\b(?:send|post|share|email)\b[^.?]*\b(?:page|report|readout)\b[^.?]*\b(?:slack|email)\b/i },
   { kind: 'send', named: /\bone at a time\b/i, header: /^send$/i, question: /^\W*send\b(?! (?:me|us)\b)/i },
-  { kind: 'save', named: /\bsav(?:e|ing)\b/i, question: /\bsave\b[^.?]*\bto atlas\b/i },
+  // No `named`: the save row above reads the line. This one only ranks the wording test below a send.
+  { kind: 'save', question: /\bsave\b[^.?]*\bto atlas\b/i },
 ]
 
 /**
@@ -43,7 +44,7 @@ export function namedApprovals(reply: string): ApprovalKind[] | null {
     .replace(/\s*\n\s*/g, ' ')
     .split(';')
   const kinds = new Set<ApprovalKind>()
-  for (const item of items) for (const row of KINDS) if (row.named.test(item)) kinds.add(row.kind)
+  for (const item of items) for (const row of KINDS) if (row.named?.test(item)) kinds.add(row.kind)
   return [...kinds]
 }
 

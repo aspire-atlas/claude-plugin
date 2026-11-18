@@ -9,6 +9,9 @@ import { query, type Options, type PermissionResult } from '@anthropic-ai/claude
 import { answersFor, type AnswerRule } from './answers'
 import { ANSWER_EVENT, ASK_TOOL, findPage, summarizeTurn, type Declined, type Event, type Turn } from './lib'
 
+/** What the session is told when the harness leaves a picker unanswered. */
+const WHY: Record<Declined, string> = { finished: 'the run had finished', limit: 'the harness had answered its limit of pickers' }
+
 export type TurnOptions = {
   prompt: string
   cwd: string
@@ -41,21 +44,17 @@ export async function runTurn(options: TurnOptions): Promise<Turn> {
   writeFileSync(options.out, '')
   writeFileSync(`${options.out}.err`, '')
   let asks = 0
-  // Whether the run has its page. It is worked out from the transcript at a picker, only when the transcript
-  // has grown since the last one, and it stays true once it is.
+  // Whether the run has its page. It is worked out from the transcript at a picker, and it stays true once it is.
   let done = false
-  let read = 0
-  const WHY: Record<Declined, string> = { finished: 'the run had finished', limit: 'the harness had answered its limit of pickers' }
 
   const canUseTool = async (name: string, input: Record<string, unknown>, context: { toolUseID: string }): Promise<PermissionResult> => {
     // Only the picker comes here to be answered. Any other tool that reaches the handler is one the tool
     // lists did not allow, which `claude -p` refuses without asking.
     if (name !== ASK_TOOL) return { behavior: 'deny', message: 'This tool is not allowed in an eval rerun.' }
     // A packet with no page is not the end: its proposals and questions still stand between the run and its page.
-    if (!done && read < events.length) {
+    if (!done) {
       const page = findPage(summarizeTurn(events))
       done = Boolean(page.link) || (page.finished && Boolean(page.file))
-      read = events.length
     }
     const declined: Declined | null = done ? 'finished' : asks >= options.maxAsks ? 'limit' : null
     if (declined) {
