@@ -5,8 +5,8 @@ screens a campaign's applicants. Holds the setup interview for one campaign's ap
 the records it saves, the review Sheet it creates, how a campaign's applicant export is imported
 into Atlas and the Sheet, and how a screening run reads it all back.
 
-The main thread's part of this flow, except **How screening applies a review**, which the
-`atlas-creator-vetting` agent reads too. A bold section name in it (**Creator vetting**,
+The main thread's part of this flow, except **How screening applies a review** and **Applying
+the form rules**, which the `atlas-creator-vetting` agent reads too. A bold section name in it (**Creator vetting**,
 **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
 
 ## Contents
@@ -19,6 +19,7 @@ The main thread's part of this flow, except **How screening applies a review**, 
 - [When setup is done](#when-setup-is-done)
 - [Reading the setup back (screening)](#reading-the-setup-back-screening)
 - [How screening applies a review](#how-screening-applies-a-review)
+- [Applying the form rules](#applying-the-form-rules)
 
 ## Applicant review (set up once per campaign)
 
@@ -105,7 +106,7 @@ text (**Question format rule**). The tool adds its own free text field; never ad
 | AR3 | Screening checks every applicant for brand safety, fit, competitor deals, disclosure, and language on camera, and flags what it finds. Which of these should reject an applicant on their own? (multiSelect) | 1) A paid partnership with a saved competitor in the last 90 days (Recommended); 2) Paid posts without a disclosure; 3) Swearing, or a red line's words, said on camera or shown on screen (the review's own red lines always reject; {brand}'s saved red lines keep their own action); 4) None: flag them for the team to decide (picked with others, the others count) | `-checks` |
 | AR4 | {brand}'s saved red lines and competitors apply to every applicant: {red lines and competitors}{, and the brand safety instruction: "<its first line>"}. Any red lines for {campaign} only? With none saved: {brand} has no saved red lines yet. Any red lines for {campaign}? | 1) Only the saved red lines (Recommended) (with none saved: "No red lines for this campaign"); 2) Add red lines for this campaign (type them, one per line) | `-red-lines` |
 | AR5 | Where should the lines sit between Approve, Maybe, and Reject? | 1) {brand}'s vetting thresholds: Approve at {n}, Maybe from {m} (Recommended) (only when `vetting:thresholds` exists); 2) Approve at 70 and up, Maybe from 50 to 69 (Recommended when there are no vetting thresholds); options 2 to 4 each left out when the vetting thresholds already match it; 3) Stricter: Approve at 80, Maybe from 60; 4) Looser: Approve at 60, Maybe from 40 | `-thresholds` |
-| AR6 | Should any application form answer change a call? Type one rule per line: required (a missing answer makes a Maybe), hard stop (an answer that rejects), priority boost (an answer that moves an applicant up), or a note for the screening agent. Screening does not apply these yet: they are saved, named on the screening page as not checked, and the team applies them by hand. | 1) No form rules for {campaign} (Recommended when the form asks only for handles); 2) Required: every form question is answered (Recommended when the form asks more than handles); then up to two rules drafted from the form's questions when the form is known (for example "Required: How many pounds overweight is your dog?") | `-form-rules` |
+| AR6 | Should any application form answer change a call? Type one rule per line: required (a missing answer makes a Maybe), hard stop (an answer that rejects), priority boost (an answer that moves an applicant up), or a note for the screening agent. Screening applies them to every applicant and reads every answer as evidence beside Atlas's own analysis. | 1) No form rules for {campaign} (Recommended when the form asks only for handles); 2) Required: every form question is answered (Recommended when the form asks more than handles); then up to two rules drafted from the form's questions when the form is known (for example "Required: How many pounds overweight is your dog?") | `-form-rules` |
 | AR7 | Should screening look for something in each applicant's videos? Name each check and what counts as a pass. Screening runs one of these per run, picked when the run starts; it never changes a call on its own, and the page marks its reads as approximate. | 1) No visual checks (Recommended when the criteria name nothing visual); 2) Face on camera: the creator appears and speaks to camera (Recommended when the criteria name something visual and no check is drafted; otherwise the first drafted check is Recommended); then up to two named checks drafted from the criteria (for example "Product on screen: the {product} is visible and in use") | `-visuals` |
 | AR8 | What should the client see once the review is shared with them? | 1) The final list and the content behind it, with no scores or notes (Recommended); 2) The final list only; 3) Nothing: no client access for {campaign} | `-client-view` |
 
@@ -124,6 +125,7 @@ Rules:
 - **AR4** names every brand red line and saved `competitor` in the question text (another
   campaign's review red lines never apply here), so the user only adds to them; with none saved it asks the second wording. Option 1 writes a `decline` record.
 - **AR5** option 1 writes `source: vetting:thresholds`. AR5 cannot be declined.
+- **AR6** option 2 writes `required: every form question`.
 - **AR6** and **AR7**: option 1 writes a `decline` record. A rule or check typed without one of
   the forms in **The records** is asked back once with it reworded into that form; never guess
   the form. A visual check the user describes but cannot name is saved as `free:`, and the
@@ -355,13 +357,159 @@ What changes against a `vetting` run in **Creator vetting**:
 | Red lines | The brand red lines plus the review's red lines, each its own check |
 | Hard stops | The checks the review's `reject:` line lists (`competitor-deals`, `disclosure`, `language-on-camera`), in place of `vetting:hard-rejects` (**Creator vetting**, **The recommendation**, rule 2). Every check runs whatever `reject:` says; one it doesn't list stays a Flag |
 | `vetting:criteria`, `vetting:thresholds`, `vetting:hard-rejects` | Not read; the review replaces them. Bought engagement and no recent posts are Flags, never rejects on their own |
-| Form answer rules | Not applied yet: an imported applicant's answers are on their Atlas record and in the Sheet (**Importing applicants**), but screening does not read them yet. Each saved rule is listed by name on the page under what is missing, and the run summary names them, so a team never reads a recommendation as having passed them. A form hard stop or required answer therefore never changes the call yet; the team applies it by hand |
+| Form answer rules and responses | Applied to every applicant per **Applying the form rules** below: a hard stop rejects (**The recommendation**, rule 2), a missing required answer caps the call at Maybe (rule 4), a boost lifts a near Maybe and moves the applicant up the priority order (rule 5), a prompt rule steers the read within its limits, and every response is read as evidence beside Atlas's own analysis |
+| Priority order | Within each recommendation, applicants are ranked by priority (**Applying the form rules**, **5. Priority**), not by fit score alone; the card numbers follow that order |
 | Visual checks | The review's saved checks feed R5 (**Creator vetting**, **4. Visual check**): R5 is still asked, with up to two of the review's `-visuals` checks as its options after "No visual check", the first marked (Recommended). A `named:` check runs as a named check with its saved definition; a `free:` check runs as a free-text check. One check per run, held to **Creator vetting**'s **What a visual check may look for**; it never changes a call. A saved check not run this time is listed under what is missing |
-| The page | Shows the campaign's name, the review's checks in words, and the Sheet link when the review holds one |
+| The page | Shows the campaign's name, the review's checks and form rules in words, and the Sheet link when the review holds one. Each card's `{DETAILS}` shows the applicant's form rule results and the responses that shaped the call; a rule not checked for an applicant (no record, or the form had no such question) is listed under what is missing |
 
 Everything else (brand safety and fit, competitor deals and disclosure, `vetting:safety-scope` and
 the `brand_safety` instruction, the creator calibrations, lessons, the recommendation rule, the feedback loop,
 and the state written to Atlas) runs as in a `vetting` run. Every finding carries
 `detail.applicantReview` set to the review's slug; `detail.campaign` is set only when the review's
 `campaign key` names a saved campaign, to that campaign's slug. `calibrationsApplied[]` names the
-`applicantreview:` keys that shaped the call.
+`applicantreview:` keys that shaped the call, `-form-rules` included when a rule or response did.
+Each finding also carries `aspireApplicantId` when the applicant has a record, and the
+`formRules[]`, `responsesUsed[]`, and `priority` that **Applying the form rules** returns.
+
+## Applying the form rules
+
+One step, run per applicant by the `atlas-creator-vetting` agent after it has read the applicant's
+posts and run every check, and before the recommendation. It is written so any screening run can
+call it unchanged, the scheduled one included: it asks no question, writes nothing, and changes
+nothing on its own; it hands back a result that **Creator vetting**'s **The recommendation** and
+the finding use.
+
+**In:** the review's form rules (the `-form-rules` body, one rule per line, or "none" for a
+`decline`), the applicant's `formAnswers` (or none), the resolved criteria and thresholds, and
+the applicant's results from the checks (fit components, brand safety, red lines, hard stops).
+**Out:** `formRules[]`, `responsesUsed[]`, the fit adjustments, the call change, `priority`, the
+Maybe question, and the evidence lines. The same in gives the same out.
+
+### 1. Get the answers
+
+Read them from Atlas, never from the list the launch passed: `list_applicants` with `asProfileId`,
+`reviewId` = the review's slug, no `statuses`, `limit` 1000, paged with `cursor` to the end, once
+per run (a run split into batches reads it once per batch). Every record read sets the form's
+questions (step 2); only the list's own applicants are screened. Match each list
+entry by its `aspireApplicantId` when the launch gives one, otherwise by its Instagram or TikTok
+handle (normalized as **Creator vetting**, **Getting the list** says) against the record's
+`instagramHandle` or `tiktokHandle`. Keep each applicant's newest record. An applicant with no
+record (pasted handles, a list that was not imported, or an import that stopped) has no answers:
+every rule is `not-checked` with the reason "no application on record", and the call comes from
+the checks alone. Without `list_applicants` in the session, say so once and treat every applicant
+that way.
+
+Every key in `formAnswers` is a response, whatever its header: the contact detail columns carry
+the answers to the application page's own questions, so none is skipped for looking like contact
+data. The import keeps no key for a blank cell, so a question the applicant left blank is simply
+absent from their `formAnswers`: an absent key, an empty value, or one of only spaces is no answer.
+Payment and tax data was left out at import (**Importing applicants**, by the **Applicant CSV snippet**) and is never brought back: a
+`[left out]` value counts as answered but is never read or quoted, and a column whose header
+matches the snippet's `PAY` list is never read even if a record still holds one.
+
+### 2. Match each rule to a question
+
+The form's questions are every `formAnswers` key held by any of the review's applicants read in
+step 1 (all of them, not only this run's). A rule's form question matches the one key that is the
+same once both are lowercased, with space runs made single and spaces and a trailing `?`, `:` or
+`.` trimmed. No match, or two: the rule is `not-checked` for every applicant, with the reason "the
+form has no question '{question}'" (or "two questions match"), and the page lists it under what is
+missing; a question no applicant answered at all reads the same way, since nothing shows it was on
+the form. Once a rule's question matches, an applicant without that key left it blank.
+
+`required: every form question` (AR6 option 2) covers every `formAnswers` key except the name and
+email columns, the contact detail columns **Importing applicants**, step 1 names (phone, address,
+city, state, country, zip or postal code), and Aspire's own columns (followers, engagement,
+YouTube, campaigns): a creator who leaves a phone number blank answered the form.
+
+An answer matches a rule's `<answer>` when the two are the same once lowercased, trimmed, and with
+space runs made single. A multi-choice answer (choices split by `;`, `|`, or a line break)
+matches when any one choice does. A comma never splits an answer: "Yes, last month" does not
+match `Yes`. Nothing else matches: no synonyms, no ranges, no numbers read
+from words. Anything looser belongs in a `prompt:` rule, which never rejects on its own.
+
+### 3. Apply each rule
+
+Rules apply in the order saved; each gives one `formRules[]` entry, `{rule, type: "required" |
+"stop" | "boost" | "prompt", result, answer?, reason?}`, where `rule` is the line as saved and
+`answer` the applicant's words, cut to 200 characters.
+
+| Rule | `result` | What it does to the call |
+| ---- | -------- | ------------------------ |
+| `required: <question>` | `met`, or `missing` when the answer is empty | A `missing` caps the call at Maybe (**The recommendation**, rule 4): an Approve becomes a Maybe, a Maybe stays one, and a fit score Reject stays a Reject with the missing answer noted. The Maybe question is "Ask them: {question}", one per missing question |
+| `stop: <question> = <answer>` | `matched` or `not-matched` (`missing` when blank) | `matched` rejects (**The recommendation**, rule 2) naming the rule: "Rejected by form hard stop: '{question}' = '{answer}'". A blank answer is never a match |
+| `boost: <question> = <answer>` | `matched` or `not-matched` (`missing` when blank) | `matched` counts toward priority (step 5) and lifts a fit score Maybe within 10 points of the approve line to Approve (**The recommendation**, rule 5), naming the boost. It never lifts a Maybe that a cap made |
+| `prompt: <instruction>` | `applied`, or `not-applied` with the reason | Steers how the responses and posts are read (step 4) and may name a priority signal (step 5). It never rejects, never approves, never relaxes a red line, a competitor, a hard stop, a team call, or another form rule, and never reads an appearance or another trait **What a visual check may look for** rules out. A prompt that asks for one of those is `not-applied`, changes nothing, and goes under "Needs the main thread" as a proposed `stop:` or `required:` rule in its own words |
+
+A rule that is `not-checked` (step 1 or 2) changes nothing and is listed under what is missing.
+
+### 4. Every response as evidence
+
+Read every response, with or without a rule, against the criteria, beside Atlas's own analysis of
+the account and its posts (brand fit, brand safety, audience, performance), never in place of it.
+A response is the creator's own claim, so it counts the way **Creator vetting**'s **The checks**
+counts a bio line: a lead that the posts confirm or contradict.
+
+- **Audience and archetype fit** and **Market fit** can use a response that speaks to a criterion
+  ("How many pounds overweight is your dog? 15" against criteria for overweight dogs, or a
+  country): confirmed by the posts, it counts like any other evidence; not shown either way, it
+  earns at most half of what that evidence would give the component; contradicted by the posts,
+  it earns nothing and the contradiction is a reason on the card.
+- **Topic evidence**, **Engagement quality**, **Cadence and recency**, and **Format match** stay
+  from the posts and Atlas's figures only; a stated follower or engagement figure never replaces
+  Atlas's.
+- A response that sets off a check (a competitor named as a current partner, a red line's words)
+  is evidence for that check, quoted; the check's own rule decides what it does.
+- A response that touches no criterion and no check changes nothing, and is not listed.
+
+`responsesUsed[]` lists `{question, answer, use: "fit" | "check" | "rule" | "prompt", effect}` for
+each response that shaped a score, a check, or the call, with `effect` in a few words ("+8
+audience fit, confirmed by 3 Reels").
+
+### 5. Priority
+
+`priority` is the applicant's rank inside its recommendation, 1 first, and the order the page and
+the Sheet list each recommendation in. Rank by, in order: the priority signal a `prompt:` rule
+names when that rule says it comes first (for example "use the dog weight answer as the first
+priority signal": more pounds first); the number of `boost:` rules `matched`, most first; any other
+priority signal a `prompt:` rule names; then fit score, highest first; then list order. A response
+a signal needs but the applicant left blank ranks after the ones that gave it.
+
+### 6. Evidence and the Maybe question
+
+The card's reasons, the finding's `evidence[]`, and, once screening writes the review Sheet, its
+Evidence column name what decided the call, one line each:
+
+- the rule, when a form rule decided it ("Rejected by form hard stop: 'Do you live in the US?' =
+  'No'"; "Maybe: did not answer 'How many pounds overweight is your dog?'"; "Approved on form
+  boost: 'Has your vet recommended weight loss?' = 'Yes'");
+- otherwise the responses and the Atlas evidence together, both cited when both shaped the call,
+  for example "Says the dog is 15 lb overweight; 3 recent Reels show the dog on camera; no brand
+  safety flags".
+
+A response is quoted as the creator's words, short, and never an email, phone number, street
+address, or a `[left out]` value. A Maybe from a missing required answer carries the Maybe
+question "Ask them: {question}"; with several, one line naming each. A Maybe for another reason
+keeps its own question and adds the missing answers after it.
+
+### Worked examples
+
+A pet-food brand's review, approve at 70 and Maybe from 50, with these form rules:
+
+```
+required: How many pounds overweight is your dog?
+stop: Do you live in the US? = No
+boost: Has your vet recommended weight loss? = Yes
+prompt: use the dog weight answer as the first priority signal
+```
+
+Answers are given in the order of the rules' questions: weight, US, vet.
+
+| Applicant | Answers | Checks | Call and why |
+| --------- | ------- | ------ | ------------ |
+| A | 15; Yes; Yes | Fit 82, no flags; 3 Reels show the dog | **Approve**, priority 1 (most pounds): "Says the dog is 15 lb overweight; 3 recent Reels show the dog on camera; no brand safety flags" |
+| B | 8; Yes; Yes | Fit 64, no flags | **Approve** on the boost (Maybe within 10 of 70): "Approved on form boost: 'Has your vet recommended weight loss?' = 'Yes'"; priority after A |
+| C | (blank); Yes; No | Fit 77, no flags | **Maybe** (rule 4): "Maybe: did not answer 'How many pounds overweight is your dog?'"; Maybe question "Ask them: How many pounds overweight is your dog?" |
+| D | 20; No; Yes | Fit 88 | **Reject** (rule 2): "Rejected by form hard stop: 'Do you live in the US?' = 'No'" |
+| E | (blank); Yes; Yes | Fit 41 | **Reject** on fit score (rule 5); the missing answer is noted, and the boost lifts nothing |
+| F | no record (pasted handle) | Fit 75 | **Approve** on the checks alone; every form rule listed as not checked: no application on record |
