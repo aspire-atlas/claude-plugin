@@ -783,8 +783,8 @@ account.
   is `unknown`, shown as "freshness unknown".
 - On a team page, an account behind its pace, or refreshed in this run, says so on the same entry,
   a refresh skipped as recently refreshed says "refreshed recently, skipped", and an account left
-  out by the run's limit says "not refreshed in this run: over the limit of 10" (`SKILL.md`,
-  section 9.5). A page shared outside the team leaves those notes out (`SKILL.md`, section 9.2).
+  out by the run's refresh limit carries the left-out note `SKILL.md`, section 9.5, gives. A page
+  shared outside the team leaves those notes out (`SKILL.md`, section 9.2).
 - The page check's R14 reads these.
 
 <!-- block:freshness -->

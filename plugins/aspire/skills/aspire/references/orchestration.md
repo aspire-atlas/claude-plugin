@@ -174,7 +174,7 @@ No heading, no table, no bold, and no tool, record, or agent name.
    | ------- | -------------- |
    | Builds a new page, interactive (**The storyline**) | "the page's three main points, before I build it" |
    | Asks the Credits question | "the Atlas credits this run uses, capped in the question below" |
-   | Reads an account this session already holds as behind its pace, in a run **Page standard**, section 9.5, says asks first | "a refresh of {@handle}, which is out of date (the refresh is free and the new posts it collects use credits)" |
+   | Reads an account this session already holds as behind its pace, in a run **Page standard**, section 9.5, says asks first | "a refresh of {@handle}, which is out of date (the refresh is free and the new posts it collects use credits)"; with more than 10 behind, "a refresh of up to 10 out-of-date accounts, the most-viewed first (…)", per that section's limit |
    | Asks the Save question, in this reply or in the storyline call | "saving {what the Save question names: the findings, the ranked posts} to Atlas" |
    | Will keep the page's open items for the next run, and no question of this reply confirms it (**Repeat run**, **Keeping the record**) | "keeping this page's open decisions and next steps, so the next run can follow up" |
    | The agent's row in **7** names mailbox drafts | "drafts in your mailbox, which send nothing" |
