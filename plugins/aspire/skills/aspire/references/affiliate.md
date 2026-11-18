@@ -503,11 +503,11 @@ period.
 | A1, a code planned | `code`, kind, value, `codeStatus` `planned`, `period` this month | `action_item` `low` |
 | A2, created in the store | `codeStatus` `live`, `codeMethod` `store`, `codeCreatedAt`, `storeRef` | `action_item` `low` until it has sales |
 | A4, live or off from the sheet | `codeStatus` `live` or `retired`, `codeMethod` `sheet`, `codeCreatedAt` or `retiredAt` | as above |
-| A8, a report | Every figure in **Per creator, per period**, `source`, `sourceLabel`, `partial`, and `saved` (the captures behind the page's explanation, carried forward from the last report while the page still relies on them) | `went_well` with sales; `action_item` `low` with none |
+| A8, a report | Every figure in **Per creator, per period**, `source`, `sourceLabel`, `partial`, and `saved` (the captures behind the page's explanations, plus every earlier one, carried forward unchanged) | `went_well` with sales; `action_item` `low` with none |
 | A9, turned off in the store | `codeStatus` `retired`, `retiredAt` | `action_item` `low` |
 
 Only an A8 report finding carries `source` (store or csv). A code finding copies the code
-fields, never `source` or a period's figures, and never counts as a report: the Program manager's "Report sales and commission" row and the dashboard's "Sales to
+fields and `saved`, so no capture is lost between reports, never `source` or a period's figures, and never counts as a report: the Program manager's "Report sales and commission" row and the dashboard's "Sales to
 report" item look for a report finding for the last closed month.
 
 **Fields this agent adds to `affiliate`** (beyond **Influencer program**'s list): `type` (`affiliate` or

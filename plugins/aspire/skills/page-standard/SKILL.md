@@ -259,9 +259,10 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   view count"). Never show a missing metric as 0; a 0 Atlas read is a real 0. A page that cites
   no post, or answers no code, has no `data-question` and gets R13 `n/a`.
 - Every cited post links to itself: the element with `data-post` holds an `<a href>` to the same
-  link. An explanation carries `data-explain`, its evidence `data-evidence` (each a link), or a
-  `data-unexplained` line with `data-searched`; saved outside evidence carries `data-saved`
-  (`explanations.md`; blocks 3.21 and 3.22). R7's script fails anything else.
+  post. An explanation carries `data-explain`, its evidence `data-evidence` (each a link to the
+  evidence, or to a saved capture on the page by its `#id`), or a `data-unexplained` line with
+  `data-searched`; saved outside evidence carries `data-saved` (`explanations.md`; blocks 3.21 and
+  3.22). An explanation left unmarked passes the script, so mark every one.
 - Every account the page cites carries `data-account="{network}:{handle}"`: each cited post, and
   each creator or account card. A post cited only as mention evidence carries `data-mention`
   instead, and the source line then holds one `data-fresh="mentions"` entry. The scope's

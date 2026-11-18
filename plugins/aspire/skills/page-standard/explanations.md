@@ -17,6 +17,7 @@ none of them and puts the sales down to whatever outside source it saw last.
 - [3. Save evidence that can disappear](#3-save-evidence-that-can-disappear)
 - [4. The next run](#4-the-next-run)
 - [5. What the result reports](#5-what-the-result-reports)
+- [6. A good explanation and a bad one](#6-a-good-explanation-and-a-bad-one)
 
 ## 1. Search everything before explaining
 
@@ -95,12 +96,23 @@ the new page still relies on:
   screenshot when the earlier page can be read (`page`), marked `data-gone` with "No longer visible
   on {today}". Carry the entry forward unchanged in this run's finding, so the capture outlives the
   site.
-- A capture the new page no longer relies on is left out of the page and kept in the finding.
+- A capture the new page no longer relies on is left out of the page and still carried forward
+  in the finding, so no capture is lost between runs.
 
 ## 5. What the result reports
 
 The page check's `explanations` (`SKILL.md`, section 7) has one entry per explanation block: its
 claim in a few words, the count of linked evidence, every search made as section 1 lists it, and
 the captures saved or carried. The audit trail's data gaps list each outside source that could not
-be read and each "Screenshot not taken". An example of a good and a bad explanation is in
-`docs/STANDARD.md`, **Explanations**.
+be read and each "Screenshot not taken".
+
+## 6. A good explanation and a bad one
+
+Good: "@handle's code sold through her own posts: a TikTok from Mar 3 that still names the code,
+and the code in her YouTube video's description (Sep 18). A coupon site lists it too (saved Oct
+30, 3:20 PM UTC, with its screenshot)." Each piece is a link, the posts from Atlas come first, and
+the coupon site sits beside them as a saved capture.
+
+Bad: "Most of @handle's sales came through coupon sites." It was written after reading only the
+month's Instagram posts, names no linked evidence, and saves nothing, so a week later, when the
+sites blocked the check, nobody could see what it rested on.

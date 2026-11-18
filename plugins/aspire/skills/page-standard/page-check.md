@@ -18,7 +18,7 @@ the required-metrics table (`SKILL.md`, section 8) changes, `REQUIRED_ROWS` here
 <!-- page-check -->
 ```python
 # Page standard self-check: R1, R2, R6, R7 (its linked evidence), R11, R13, R14 and R15 from reader-standard.md. Reads the HTML files named; writes nothing.
-import datetime, json, re, sys
+import datetime, json, re, sys, urllib.parse
 from html.parser import HTMLParser
 
 NETWORKS = ("instagram", "tiktok", "youtube")
@@ -329,11 +329,34 @@ GONE = re.compile(r"(?i)\bno longer visible\b")
 def web(value):
     return re.match(r"(?i)^https?://[^\s/]+\.[^\s/]+", (value or "").strip()) is not None
 
+def anchors(node):
+    # The links a reader can open: never one inside a script, style, template, or noscript.
+    return [(n.attrs.get("href") or "").strip() for n in walk(node, keep=lambda n: n.tag not in SKIP) if n.tag == "a"]
+
 def links(node):
-    return [(n.attrs.get("href") or "").strip() for n in walk(node) if n.tag == "a" and web(n.attrs.get("href"))]
+    return [href for href in anchors(node) if web(href)]
+
+# Share and tracking parameters that change nothing about which post a link opens.
+TRACKING = re.compile(r"(?i)^(?:utm_\w+|igsh|igshid|si|fbclid|is_from_webapp|sender_device)$")
 
 def bare(url):
-    return url.strip().rstrip("/").lower()
+    # The host (any case, with or without www.), the path (with or without its last /), and the
+    # query parameters that pick the post, case kept (a YouTube video id is case-sensitive).
+    parts = urllib.parse.urlsplit(url.strip())
+    query = sorted((k, v) for k, v in urllib.parse.parse_qsl(parts.query) if not TRACKING.match(k))
+    return re.sub(r"^www\.", "", parts.netloc.lower()), parts.path.rstrip("/"), tuple(query)
+
+def captured_at(value):
+    # data-captured as a date and time ("2026-10-30T15:20Z"); None when it is not one.
+    if not re.match(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}", value):
+        return None
+    try:
+        return datetime.datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+# Markup that belongs inside a data-explain block, and is unchecked anywhere else.
+EXPLAIN_PARTS = ("data-evidence", "data-unexplained", "data-searched")
 
 def r7(nodes, regions, out):
     problems = []
@@ -345,7 +368,11 @@ def r7(nodes, regions, out):
             problems.append("%s is cited with no link a reader can open; link the post itself" % url)
     # Evidence links to the post or page, or to a saved capture on this page by its id.
     saved_ids = {"#" + n.attrs["id"].strip() for n in nodes if "data-saved" in n.attrs and (n.attrs.get("id") or "").strip()}
-    linked = lambda n: links(n) or any(a.tag == "a" and (a.attrs.get("href") or "").strip() in saved_ids for a in walk(n))
+    linked = lambda n: links(n) or any(href in saved_ids for href in anchors(n))
+    stray = [n for n in nodes if any(a in n.attrs for a in EXPLAIN_PARTS)
+             and not any("data-explain" in a.attrs for a in [n] + ancestors(n))]
+    if stray:
+        problems.append("%d explanation part(s) (data-evidence, data-unexplained, data-searched) sit outside a data-explain block; wrap the explanation in one" % len(stray))
     for index, block in enumerate((n for n in nodes if "data-explain" in n.attrs), 1):
         label = "explanation %d (\"%s\")" % (index, text(block)[:50])
         evidence = [n for n in walk(block) if "data-evidence" in n.attrs]
@@ -353,7 +380,7 @@ def r7(nodes, regions, out):
         if any(not linked(n) for n in evidence):
             problems.append("%s marks evidence with no link to it" % label)
         if unexplained:
-            if not UNEXPLAINED.search(text(unexplained[0], gap=" ")):
+            if not all(UNEXPLAINED.search(text(n, gap=" ")) for n in unexplained):
                 problems.append("%s marks data-unexplained but does not say \"not explained yet\"" % label)
             if not any("data-searched" in n.attrs and text(n) for n in walk(block)):
                 problems.append("%s is not explained yet but does not say what was searched (data-searched)" % label)
@@ -364,13 +391,15 @@ def r7(nodes, regions, out):
         if not links(saved):
             problems.append("%s has no link to where it was read" % label)
         when = (saved.attrs.get("data-captured") or "").strip()
-        try:
-            datetime.date.fromisoformat(when[:10])
-        except ValueError:
-            problems.append("%s has data-captured \"%s\", which is not a date and time" % (label, when))
+        moment = captured_at(when)
+        if moment is None:
+            problems.append("%s has data-captured \"%s\", which is not a date and time (YYYY-MM-DDTHH:MMZ)" % (label, when))
         else:
-            if not shows_date(shown, when):
-                problems.append("%s does not show the date it was saved (%s)" % (label, when[:10]))
+            # The page may show the date in the reader's time zone, a day either side of the UTC date.
+            day = moment.astimezone(datetime.timezone.utc).date()
+            days = [(day + datetime.timedelta(days=d)).isoformat() for d in (0, -1, 1)]
+            if not any(shows_date(shown, d) for d in days):
+                problems.append("%s does not show the date it was saved (%s)" % (label, days[0]))
         if not any(quoted(n) for n in walk(saved)):
             problems.append("%s quotes none of the text it rests on (blockquote, q, or data-quoted)" % label)
         if not any(n.tag == "img" for n in walk(saved)) and not NO_SCREENSHOT.search(shown):
