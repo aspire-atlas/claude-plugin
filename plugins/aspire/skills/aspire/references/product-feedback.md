@@ -34,11 +34,12 @@ another flow is not a request, and this flow does not start on one.
 ## What belongs somewhere else
 
 Some feedback teaches Atlas about the brand, and that stays in the brand's own records, where the
-next run reads it. Hand these off and send nothing from here:
+next run reads it. Check this table first, before the questions. Hand these off and send nothing
+from here:
 
 | The person says | Goes to |
 | --------------- | ------- |
-| Feedback on a page Atlas made, with its link ("the headline is wrong on {link}") | **Quality review**, Run step 7 (Feedback later) |
+| Feedback on a page or deck, with its link ("the headline is wrong on {link}", `feedback {link}`) | Pick the brand profile, then **Quality review**, Run step 7 (Feedback later). A link that only illustrates a point about Atlas ("export to a sheet like {link}") stays here |
 | A call on a creator ("never show us @handle again") | **Creator vetting**, its feedback section. When they also ask to tell the team, run this flow for that sentence afterwards |
 | A lesson for the next content review ("we never allow alcohol in frame") | **Content review**, its feedback section |
 
@@ -167,8 +168,8 @@ When the call is refused, say one line and leave the text in the chat:
 | ---------------- | -- | --- |
 | `unauthorized` | Nothing more | "Aspire Atlas needs a fresh sign in, so nothing was sent." |
 | `forbidden` | Nothing more | "You are not a member of {organization name}, so feedback can't be sent for it." |
-| `not-found` | Send once more without the profile | If refused again: "Atlas could not find that organization, so nothing was sent." |
-| `invalid-input` | Send once more without `agent`, `runId` and the profile | If refused again: "Atlas did not accept the feedback, so nothing was sent." |
+| `not-found` | When a profile was sent, send once more without it | If refused again, or no profile was sent: "Atlas could not find that organization, so nothing was sent." |
+| `invalid-input` | When `agent`, `runId` or a profile was sent, send once more without them | If refused again, or none was sent: "Atlas did not accept the feedback, so nothing was sent." |
 | Anything else, or no answer | Nothing more | "The feedback was not sent. Your text is above." |
 
 A refused call stored nothing, so the one resend in the table cannot send a piece twice. Never
