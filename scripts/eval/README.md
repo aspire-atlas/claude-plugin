@@ -193,6 +193,10 @@ those names are customer details.
 | `false` | Expected. The table lists it under "Waiting on a ticket", and it blocks nothing |
 | `true` | A regression: the wrong reading came back. It fails the job with no approved page needed |
 
+A landed assertion must pass. The judge answers PASS or FAIL for an assertion and has no N/A, so a page that
+drops the part an assertion is about fails it. An assertion the judge returned no row for, or answered N/A
+for anyway, also counts as a regression once it has landed: either would let the wrong reading back unseen.
+
 The pull request that makes an assertion pass sets its `landed` to `true`, so the case goes green one ticket
 at a time. An assertion that passes while still `false` is named under the table, so the flag is not forgotten.
 
@@ -201,16 +205,20 @@ profile with no shop posts cannot show a shop-post finding. So each case also ha
 `scripts/fixtures/eval-cases/`: one with the wrong reading and one with the corrected one, with invented
 brands. `bun run eval:pages --fixtures` judges the assertions on both and fails unless every assertion fails
 on the first and passes on the second. Run it after changing an assertion's wording or adding an example.
-CI runs it on every pull request that changes `questions.json`, a fixture page, `run.ts` or `lib.ts`, and
-nightly; the `skip-eval` label does not skip it. A case's `fixtures.values` stands in for `local.json`'s
+CI runs it on every pull request that changes a file listed in `fixturePaths` in `questions.json` (the
+question set, the fixture pages and the harness files that judge them), and nightly; the `skip-eval` label
+does not skip it. A new file the fixture check depends on goes in that list. A case's `fixtures.values` stands in for `local.json`'s
 `values` there, with invented names, so a `whenNamed` figure is judged on the fixture pages too.
 
 **What a case needs to rerun.** A brand in `local.json` whose profile holds the kind of data the case is
 about: for CR1, competitors with creator posts that sell through TikTok Shop and posts that name a brand
 without tagging it; for AR1, a saved influencer program with affiliate terms. AR1 also needs a sales export,
 because the dev server has no store connected. Name it under the question's `files` in `local.json`, by
-`path` on a developer's machine or as `text` inside the `EVAL_LOCAL_JSON` secret. The harness writes it into
-the run's own folder and tells the flow it is there. Until `local.json` names a brand, a case is skipped like
+`path` on a developer's machine or as `text` inside the `EVAL_LOCAL_JSON` secret. A relative `path` is read
+from `scripts/eval/`, like `approvedFile`, whichever folder the command runs from. The harness checks every
+question's files before the first question runs, and stops there when one has no text and no path that
+exists, or when two would be saved under the same name. It then writes each into the run's own folder and
+tells the flow it is there. Until `local.json` names a brand, a case is skipped like
 any new question. Once one of its assertions has landed, a missing brand stops the run instead, as it does for
 a question with approved results: the case gates pull requests from then on.
 
@@ -255,7 +263,7 @@ The `eval` job in `.github/workflows/validate.yml` runs after the static checks 
   opens with the regressions, then the table for each question, with the transcript size, the confirmation
   rounds and the page link (none when the run saved the page as a file).
 - It fails when a check the approved page passes now fails on the new page (a **regression**), when an
-  assertion fails after its ticket landed, or when C5 fails (the setup reply, the storyline check-in or the
+  assertion does not pass after its ticket landed, or when C5 fails (the setup reply, the storyline check-in or the
   close-out has an arrow, a "vs" or a code), and only then. A question that published no page regresses on every check its approved page passes. A check that
   did not run, or one the approved page fails too, never fails the job. It also fails when the run stopped
   before any question finished, since nothing was checked, and the comment says so.
@@ -298,7 +306,7 @@ when the run ends, so the comment's link stops opening after the job finishes.
 | `e-checks.json` | The eight E-checks, copied from the Evals tab, with who judges each |
 | `local.example.json` | The shape of `local.json` |
 | `run.ts` | The command |
-| `ci.ts` | CI: which questions a change reruns, the PR comment, the nightly Slack message |
+| `ci.ts` | CI: which questions a change reruns, whether it calls for the fixture check, the PR comment, the nightly Slack message |
 | `post-comment.sh` | CI: posts the comment, or edits the one already on the PR |
 | `lib.ts`, `lib.test.ts` | Reading a transcript, the table, baselines, compare, and their tests |
 | `baselines/` | One folder per stored run |

@@ -142,8 +142,8 @@ How to read the comment:
    not sent; the words themselves stay in the run's folder.
 
 6. **An assertion row** names its ticket. While the ticket is open a `fail` is expected, and a line under the
-   table lists it as waiting. Once the ticket's pull request sets the assertion's `landed` flag, a `fail` is a
-   regression and blocks the merge, with or without an approved page.
+   table lists it as waiting. Once the ticket's pull request sets the assertion's `landed` flag, anything but a
+   `pass` is a regression and blocks the merge, with or without an approved page.
 
 The comment is edited in place on every push. `skipped: <reason>` means the PR carries the `skip-eval` label
 (the reason is the PR body's `skip-eval:` line), or that nothing the questions answer differs from the base

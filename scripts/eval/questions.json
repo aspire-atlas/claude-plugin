@@ -49,6 +49,12 @@
     "plugins/aspire/skills/aspire/references/recipient-lens.md",
     "plugins/aspire/skills/aspire/references/running-agents.md"
   ],
+  "fixturePaths": [
+    "scripts/eval/questions.json",
+    "scripts/eval/run.ts",
+    "scripts/eval/lib.ts",
+    "scripts/fixtures/eval-cases/"
+  ],
   "questions": [
     {
       "code": "I4",

@@ -3,13 +3,14 @@
 // comment it gets, and the nightly Slack message. It reads files and prints; the workflow does the posting.
 //
 //   bun scripts/eval/ci.ts select <changed-files.txt>     prints the question codes, comma-separated, or nothing
+//   bun scripts/eval/ci.ts fixtures <changed-files.txt>   prints "true" when the change calls for the fixture check
 //   bun scripts/eval/ci.ts comment <run-dir> [run-url]     prints the PR comment; exits 1 on a regression, 2 when the run stopped
 //   bun scripts/eval/ci.ts skipped <reason>                prints the comment for a skipped run
 //   bun scripts/eval/ci.ts slack <run-dir> [run-url]       prints the Slack payload as JSON; exits 1 on a regression
 
 import { existsSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { checkNames, codesForChanges, normalizeRun, regressions, renderComment, renderSkipped, renderSlack, renderStopped, type RunResults } from './lib'
+import { checkNames, codesForChanges, fixturesForChanges, normalizeRun, regressions, renderComment, renderSkipped, renderSlack, renderStopped, type RunResults } from './lib'
 
 const HERE = import.meta.dir
 const PLUGIN = resolve(HERE, '../../plugins/aspire')
@@ -34,6 +35,10 @@ if (command === 'select' && arg) {
   const { watched, codes } = codesForChanges(changed, config.questions, config.sharedPaths ?? [])
   console.error(`watched files changed: ${watched.length ? watched.join(', ') : 'none'}`)
   console.log(codes.join(','))
+} else if (command === 'fixtures' && arg) {
+  // Prints "true" when a changed file is one the fixture check depends on, and nothing otherwise.
+  const changed = readFileSync(arg, 'utf8').split('\n').map(line => line.trim()).filter(Boolean)
+  if (fixturesForChanges(changed, readJson(join(HERE, 'questions.json')).fixturePaths ?? [])) console.log('true')
 } else if (command === 'comment' && arg) {
   const run = results(arg)
   if (!run) {
@@ -53,6 +58,6 @@ if (command === 'select' && arg) {
   process.stdout.write(JSON.stringify({ text: renderSlack(run, eChecks, runUrl ?? null) }))
   process.exit(regressions(run, eChecks).length ? 1 : 0)
 } else {
-  console.error('usage: bun scripts/eval/ci.ts select <changed-files> | comment <run-dir> [url] | skipped <reason> | slack <run-dir> [url]')
+  console.error('usage: bun scripts/eval/ci.ts select <changed-files> | fixtures <changed-files> | comment <run-dir> [url] | skipped <reason> | slack <run-dir> [url]')
   process.exit(2)
 }

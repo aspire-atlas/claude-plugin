@@ -36,8 +36,8 @@ export type PageChecks = {
   graded: Record<string, Result>
   /** E rows from the judge. */
   e: Record<string, Result>
-  /** The question's own assertions, by id. Absent for a question that has none and in results stored before them. */
-  asserted?: Record<string, Result>
+  /** The question's own assertions, by id. Empty for a question that has none (normalizeRun fills it in older results). */
+  asserted: Record<string, Result>
   reasons: Record<string, string>
   notes: string[]
 }
@@ -75,8 +75,8 @@ export function passesWhen(assertion: Assertion, values: Record<string, string>)
 /** What a result keeps of an assertion: enough to draw its row and to tell an expected failure from a regression. */
 export type AssertionRef = Pick<Assertion, 'id' | 'name' | 'ticket' | 'landed'>
 
-export const assertionRefs = (assertions: Assertion[] | undefined): AssertionRef[] =>
-  (assertions ?? []).map(({ id, name, ticket, landed }) => ({ id, name, ticket, landed }))
+export const assertionRefs = (assertions: Assertion[]): AssertionRef[] =>
+  assertions.map(({ id, name, ticket, landed }) => ({ id, name, ticket, landed }))
 
 export type QuestionResult = {
   code: string
@@ -94,8 +94,8 @@ export type QuestionResult = {
   /** `not run` for a question graded from a file, and for results stored before the chat check (normalizeRun). */
   chat: ChatChecks
   problems: string[]
-  /** The assertions the question was graded on. Absent for a question that has none. */
-  assertions?: AssertionRef[]
+  /** The assertions the question was graded on. Empty for a question that has none. */
+  assertions: AssertionRef[]
 }
 
 export type RunResults = {
@@ -401,7 +401,14 @@ export function chatLine(chat: ChatChecks): string | null {
 
 /** Stored results as this version reads them: a run stored before the chat check has no chat on its questions. */
 export function normalizeRun(results: RunResults): RunResults {
-  return { ...results, questions: results.questions.map(question => ({ ...question, chat: question.chat ?? noChat() })) }
+  const page = (checks: PageChecks | null) => checks && { ...checks, asserted: checks.asserted ?? {} }
+  return {
+    ...results,
+    questions: results.questions.map(question => ({
+      ...question, chat: question.chat ?? noChat(), assertions: question.assertions ?? [],
+      new: page(question.new), approved: page(question.approved),
+    })),
+  }
 }
 
 export function fencedBlocks(text: string, label: string): string[] {
@@ -516,19 +523,20 @@ export function rIds(results: QuestionResult[]): string[] {
 
 export type CheckDef = { id: string; name: string; judgedBy?: string; waitsFor?: string }
 
-const cell = (result: Result) => (result === 'not run' ? '–' : result)
+export const cell = (result: Result) => (result === 'not run' ? '–' : result)
 
-export const aResult = (checks: PageChecks | null, id: string): Result => checks?.asserted?.[id] ?? 'not run'
+export const aResult = (checks: PageChecks | null, id: string): Result => checks?.asserted[id] ?? 'not run'
 
-export type Row = { id: string; new: Result; approved: Result; bar: boolean; assertion?: AssertionRef }
+/** `name` is what a report prints beside the id: an assertion's own name, or the check's name from `names`. */
+export type Row = { id: string; name?: string; new: Result; approved: Result; bar: boolean; assertion?: AssertionRef }
 
 /** A question's rows: its own assertions first, since they are what the case is there to show, then E and R. */
-export function rows(question: QuestionResult, eChecks: CheckDef[], rList: string[]): Row[] {
+export function rows(question: QuestionResult, eChecks: CheckDef[], rList: string[], names: Record<string, string> = {}): Row[] {
   const bar = new Set(question.barChecks)
   return [
-    ...(question.assertions ?? []).map(assertion => ({ id: assertion.id, new: aResult(question.new, assertion.id), approved: aResult(question.approved, assertion.id), bar: true, assertion })),
-    ...eChecks.map(check => ({ id: check.id, new: eResult(question.new, check.id), approved: eResult(question.approved, check.id), bar: bar.has(check.id) })),
-    ...rList.map(id => ({ id, new: rResult(question.new, id), approved: rResult(question.approved, id), bar: bar.has(id) })),
+    ...question.assertions.map(assertion => ({ id: assertion.id, name: assertion.name, new: aResult(question.new, assertion.id), approved: aResult(question.approved, assertion.id), bar: true, assertion })),
+    ...eChecks.map(check => ({ id: check.id, name: names[check.id], new: eResult(question.new, check.id), approved: eResult(question.approved, check.id), bar: bar.has(check.id) })),
+    ...rList.map(id => ({ id, name: names[id], new: rResult(question.new, id), approved: rResult(question.approved, id), bar: bar.has(id) })),
   ]
 }
 
@@ -538,7 +546,7 @@ export function rows(question: QuestionResult, eChecks: CheckDef[], rList: strin
  */
 export function assertionNotes(question: QuestionResult): string[] {
   if (!question.new) return []
-  const open = (question.assertions ?? []).filter(assertion => !assertion.landed)
+  const open = question.assertions.filter(assertion => !assertion.landed)
   const label = (assertion: AssertionRef) => `${assertion.id} (${assertion.ticket})`
   const got = (result: Result) => open.filter(assertion => aResult(question.new, assertion.id) === result)
   const [waiting, early, unjudged, notApplied] = [got('fail'), got('pass'), got('not run'), got('n/a')]
@@ -557,8 +565,8 @@ export function renderQuestion(question: QuestionResult, eChecks: CheckDef[], rL
   lines.push('')
   lines.push('| Check | New page | Approved page | Sets the bar |')
   lines.push('| ----- | -------- | ------------- | ------------ |')
-  for (const row of rows(question, eChecks, rList)) {
-    const name = row.assertion ? ` ${row.assertion.name} (${row.assertion.ticket})` : names[row.id] ? ` ${names[row.id]}` : ''
+  for (const row of rows(question, eChecks, rList, names)) {
+    const name = row.name ? ` ${row.name}${row.assertion ? ` (${row.assertion.ticket})` : ''}` : ''
     lines.push(`| ${row.id}${name} | ${cell(row.new)} | ${cell(row.approved)} | ${row.bar ? 'yes' : ''} |`)
   }
   lines.push('')
@@ -584,7 +592,7 @@ export function renderRun(results: RunResults, eChecks: CheckDef[], names: Recor
 /** What a stored baseline keeps: results and sizes. No page, link, brand, or quoted text. */
 export function forBaseline(results: RunResults): RunResults {
   const strip = (checks: PageChecks | null): PageChecks | null =>
-    checks && { scripted: checks.scripted, graded: checks.graded, e: checks.e, ...(checks.asserted ? { asserted: checks.asserted } : {}), reasons: {}, notes: [] }
+    checks && { scripted: checks.scripted, graded: checks.graded, e: checks.e, asserted: checks.asserted, reasons: {}, notes: [] }
   return {
     ...results,
     questions: results.questions.map(question => ({
@@ -716,15 +724,41 @@ const coveredBy = (path: string, entry: string) => (entry.endsWith('/') ? path.s
 export type QuestionPaths = { code: string; paths?: string[] }
 
 /** True when a failure of this question can already block a merge with no approved page: one of its assertions has landed. */
-export const hasLandedAssertion = (question: { assertions?: { landed: boolean }[] }): boolean =>
-  (question.assertions ?? []).some(assertion => assertion.landed)
+export const hasLandedAssertion = (question: { assertions: { landed: boolean }[] }): boolean =>
+  question.assertions.some(assertion => assertion.landed)
 
 /** A file name from local.json as the run's folder holds it: no path parts, nothing a shell or a prompt could misread. */
 export const safeFileName = (name: string): string => name.replace(/[^A-Za-z0-9._-]/g, '_').replace(/^\.+/, '_')
 
-/** The plugin's own question code for an eval question: `question` when the entry names one (null for a flow with no code), else its `code`. */
-export const questionCode = (question: { code: string; question?: string | null }): string | null =>
-  question.question === undefined ? question.code : question.question
+/**
+ * A questions.json entry as the harness uses it. `question` is the plugin's own question code: the entry's
+ * `code` unless it names another, and null for a flow that has no code. `assertions` is empty for a question
+ * that is not a client case. Resolved once here, so no caller handles a missing field.
+ */
+export function resolveQuestion<Q extends { code: string; question?: string | null; assertions?: Assertion[] }>(entry: Q): Q & { question: string | null; assertions: Assertion[] } {
+  return { ...entry, question: entry.question === undefined ? entry.code : entry.question, assertions: entry.assertions ?? [] }
+}
+
+/** True when a changed file is one the fixture check depends on (`fixturePaths` in questions.json). */
+export const fixturesForChanges = (changed: string[], fixturePaths: string[]): boolean =>
+  changed.some(path => fixturePaths.some(entry => coveredBy(path, entry)))
+
+export type InputFile = { name: string; path?: string; text?: string }
+
+/**
+ * The files local.json hands a question, as the run's folder will hold them, and what is wrong with them.
+ * `exists` says whether a path is on this machine. Checked for every question before the first one runs, so a
+ * bad entry stops the run before any page is published instead of part way through.
+ */
+export function planInputFiles(code: string, files: InputFile[], exists: (path: string) => boolean): { names: string[]; problems: string[] } {
+  const names = files.map(file => safeFileName(String(file.name)))
+  const problems: string[] = []
+  files.forEach((file, i) => {
+    if (names.indexOf(names[i]) !== i) problems.push(`${code}: the files ${files[names.indexOf(names[i])].name} and ${file.name} would both be saved as ${names[i]}`)
+    if (typeof file.text !== 'string' && !(typeof file.path === 'string' && exists(file.path))) problems.push(`${code}: the file ${file.name} has no text and no path that exists`)
+  })
+  return { names, problems }
+}
 
 /**
  * The verdict on a case's two fixture pages (scripts/fixtures/eval-cases/): the page with the wrong reading
@@ -753,9 +787,9 @@ export function codesForChanges(changed: string[], questions: QuestionPaths[], s
 
 /** A page check that got worse, or a run whose chat broke a countable rule, which has no approved result to name. */
 export type Regression =
-  | { kind: 'page'; code: string; id: string; was: Result; now: Result | 'no page' }
-  | { kind: 'assertion'; code: string; id: string; ticket: string; now: Result | 'no page' }
-  | { kind: 'chat'; code: string; id: string }
+  | { kind: 'page'; code: string; id: string; name?: string; was: Result; now: Result | 'no page' }
+  | { kind: 'assertion'; code: string; id: string; name?: string; ticket: string; now: Result | 'no page' }
+  | { kind: 'chat'; code: string; id: string; name?: string }
 
 /**
  * The questions whose chat broke a countable English rule. The chat has no approved result to compare with:
@@ -764,29 +798,32 @@ export type Regression =
 export function chatFailures(results: RunResults): Regression[] {
   return results.questions
     .filter(question => question.chat.result === 'fail')
-    .map(question => ({ kind: 'chat', code: question.code, id: CHAT_CHECK.id }))
+    .map(question => ({ kind: 'chat', code: question.code, id: CHAT_CHECK.id, name: CHAT_CHECK.name }))
 }
 
 /**
  * A regression is a check the approved page passes that the new page fails. A question that published no page
  * regresses on every check its approved page passes. A check the new page did not run, or one with no approved
  * result, is never a regression: the job fails on what it saw fail, and only that. An assertion whose ticket
- * has landed needs no approved result: the ticket fixed a wrong reading, so a failure means it came back. One
- * whose ticket has not landed regresses only the usual way, against an approved page that passes it. The chat
- * failures are added after the page checks (chatFailures).
+ * has landed is held to more: the ticket fixed a wrong reading, so the assertion must pass, with no approved
+ * result needed. A failure, a judge that answered n/a, and a judge that returned no row all count, since any of
+ * them lets the wrong reading back in unseen. One whose ticket has not landed regresses only the usual way,
+ * against an approved page that passes it. The chat failures are added after the page checks (chatFailures).
+ * `names` gives each regression the name a report prints.
  */
-export function regressions(results: RunResults, eChecks: CheckDef[]): Regression[] {
+export function regressions(results: RunResults, eChecks: CheckDef[], names: Record<string, string> = {}): Regression[] {
   const rList = rIds(results.questions)
   const found: Regression[] = []
   for (const question of results.questions) {
-    for (const row of rows(question, eChecks, rList)) {
+    for (const row of rows(question, eChecks, rList, names)) {
+      const at = { code: question.code, id: row.id, name: row.name }
       if (row.assertion?.landed) {
-        if (!question.new || row.new === 'fail') found.push({ kind: 'assertion', code: question.code, id: row.id, ticket: row.assertion.ticket, now: question.new ? row.new : 'no page' })
+        if (!question.new || row.new !== 'pass') found.push({ kind: 'assertion', ...at, ticket: row.assertion.ticket, now: question.new ? row.new : 'no page' })
         continue
       }
       if (row.approved !== 'pass') continue
-      if (!question.new) found.push({ kind: 'page', code: question.code, id: row.id, was: row.approved, now: 'no page' })
-      else if (row.new === 'fail') found.push({ kind: 'page', code: question.code, id: row.id, was: row.approved, now: row.new })
+      if (!question.new) found.push({ kind: 'page', ...at, was: row.approved, now: 'no page' })
+      else if (row.new === 'fail') found.push({ kind: 'page', ...at, was: row.approved, now: row.new })
     }
   }
   return [...found, ...chatFailures(results)]
@@ -802,17 +839,15 @@ export function renderComment(results: RunResults, eChecks: CheckDef[], names: R
   if (!results.questions.length) {
     return renderSkipped(`no question ran. ${skippedLine(results.skipped) ?? 'None was chosen.'}${runUrl ? ` Run: ${runUrl}` : ''}`)
   }
-  const found = regressions(results, eChecks)
+  const found = regressions(results, eChecks, names)
   const missingApproved = results.questions.filter(question => !question.approved).map(question => question.code)
   const lines = [COMMENT_MARKER, `## Page eval · ${results.questions.map(question => question.code).join(', ')}`, '']
   if (found.length) {
-    lines.push(`**${found.length} regression${found.length === 1 ? '' : 's'}**: checks the approved page passes that the new page does not, assertions that fail after their ticket landed, and chat wording that breaks a countable rule.`, '')
+    lines.push(`**${found.length} regression${found.length === 1 ? '' : 's'}**: checks the approved page passes that the new page does not, assertions that do not pass after their ticket landed, and chat wording that breaks a countable rule.`, '')
     for (const r of found) {
-      // An assertion row can regress either way: after its ticket landed, or against an approved page before it.
-      const own = results.questions.find(question => question.code === r.code)?.assertions?.find(assertion => assertion.id === r.id)?.name ?? names[r.id]
-      const name = `${r.code} ${r.id}${own ? ` ${own}` : ''}`
+      const name = `${r.code} ${r.id}${r.name ? ` ${r.name}` : ''}`
       lines.push(r.kind === 'chat' ? `- ${name}: the run's chat broke a countable rule`
-        : r.kind === 'assertion' ? `- ${name}: ${r.ticket} landed, new ${r.now}`
+        : r.kind === 'assertion' ? `- ${name}: ${r.ticket} landed, new ${r.now === 'not run' ? 'not judged' : r.now}`
         : `- ${name}: approved ${r.was}, new ${r.now}`)
     }
   } else {

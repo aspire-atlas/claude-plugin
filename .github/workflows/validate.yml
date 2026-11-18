@@ -210,11 +210,9 @@ jobs:
             echo "codes=$(jq -r '[.questions[].code] | join(",")' scripts/eval/questions.json)" >> "$GITHUB_OUTPUT"; exit 0
           fi
           git diff --name-only "origin/$BASE...HEAD" > "$RUNNER_TEMP/changed.txt"
-          # The client cases' fixture pages are judged whenever an assertion, a fixture page or the harness that
-          # judges them changes. It needs no Atlas and reruns no question, so the skip-eval label does not skip it.
-          if grep -qE '^scripts/(eval/(questions\.json|run\.ts|lib\.ts)|fixtures/eval-cases/)' "$RUNNER_TEMP/changed.txt"; then
-            echo "fixtures=true" >> "$GITHUB_OUTPUT"
-          fi
+          # The client cases' fixture pages are judged when a file in questions.json's fixturePaths changes. It
+          # needs no Atlas and reruns no question, so the skip-eval label does not skip it.
+          echo "fixtures=$(bun scripts/eval/ci.ts fixtures "$RUNNER_TEMP/changed.txt")" >> "$GITHUB_OUTPUT"
           # Labels and body are read now, not from the event, so "Re-run jobs" after adding skip-eval sees it.
           gh api "repos/$GITHUB_REPOSITORY/pulls/$PR" > "$RUNNER_TEMP/pr.json"
           if jq -e '[.labels[].name] | index("skip-eval")' "$RUNNER_TEMP/pr.json" >/dev/null; then
@@ -300,7 +298,7 @@ jobs:
         if: steps.report.outputs.status != '' && steps.report.outputs.status != '0'
         run: |
           if [ "${{ steps.report.outputs.status }}" = 1 ]; then
-            echo "::error::A check the approved page passes now fails, an assertion fails after its ticket landed, or the run's chat broke a countable English rule (C5). The table is in the PR comment and the job summary."
+            echo "::error::A check the approved page passes now fails, an assertion does not pass after its ticket landed, or the run's chat broke a countable English rule (C5). The table is in the PR comment and the job summary."
           else
             echo "::error::The eval run stopped before any question finished. See the 'Rerun the questions' step."
           fi
@@ -309,7 +307,7 @@ jobs:
       # Each client case's assertions, judged on its two fixture pages (scripts/eval/README.md, "Client cases and
       # their assertions"). Last, so a failure here never stops the reruns above from being posted.
       - name: Check the case fixtures
-        if: always() && steps.pick.outputs.fixtures == 'true' && env.HAS_KEY == 'true'
+        if: ${{ !cancelled() && steps.pick.outputs.fixtures == 'true' && env.HAS_KEY == 'true' }}
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
