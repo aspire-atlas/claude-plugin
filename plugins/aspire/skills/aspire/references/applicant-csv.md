@@ -89,7 +89,7 @@ AMEX = re.compile(r"3[47]\d{13}")
 # A number inside a link (a video, post or user id): the rest of an https:// or www. link, up to a space
 # or , ; | (a card joined to a link by those is still a card), or right after / or = in a bare one.
 URL = re.compile(r"(https?://|www\.)[^\s,;|]*$|\b[\w-]+\.[a-z]{2,}/\S*[/=]$", re.I)
-IBAN = re.compile(r"\b[A-Z]{2}\d{2}(?:[ -]?[A-Z0-9]){11,30}", re.I | re.A)
+IBAN = re.compile(r"\b[A-Z]{2}\d{2}(?:[ -]?[A-Z0-9]){11,}", re.I | re.A)
 # The countries that issue IBANs (codes only: their lengths keep changing).
 IBAN_COUNTRIES = set((
     "AD AE AL AT AZ BA BE BG BH BI BR BY CH CR CY CZ DE DJ DK DO EE EG ES FI FK FO FR GB GE GI GL GR GT "
@@ -139,19 +139,46 @@ def mostly_digits(s):
 def iban(m):
     # An IBAN country, then its groups, in any bank's layout (4-4-4, 8-8-8, 5-5-11-2, 3-7-2): every
     # group of digits, and groups holding a letter of at most 4 characters (a longer word is never part
-    # of it). It ends at the end of one of those groups, the longest that is 15 to 34 characters, mostly
-    # digits, with the right check digits, so a number written after it (a year, an amount) stays.
+    # of it). It is 15 to 34 characters, mostly digits, with the right check digits. Where it ends is
+    # tried in rounds, longest first in each: at the last group or just before a group holding a letter;
+    # then between two groups of digits (a year or an amount after it), but only before any word that
+    # comes once it is already long enough, so a cut never stops inside a card typed after a word.
     g = m.group()
     if g[:2].upper() not in IBAN_COUNTRIES:
         return g
-    cuts = []
+    groups = []
     for i, group in enumerate(re.finditer(r"[A-Z0-9]+", g, re.I | re.A)):
         if i and not group.group().isdigit() and len(group.group()) > 4:
             break
-        cuts.append(group.end())
-    for end in reversed(cuts):
+        groups.append(group)
+    size = lambda end: len(re.sub(r"[ -]", "", g[:end]))  # characters, without separators
+    digits = [x.group()[2 if i == 0 else 0:].isdigit() for i, x in enumerate(groups)]  # after the country
+    at_letters, between_digits, open_ = [groups[-1].end()], [], True
+    for i, (before, group) in enumerate(zip(groups, groups[1:])):
+        if digits[i + 1]:
+            if digits[i] and open_:
+                between_digits.append(before.end())
+        else:
+            at_letters.append(before.end())
+            open_ = open_ and size(before.end()) < 15
+    # Between digit groups, first after a group shorter than the one before it (an IBAN's last group
+    # is its short one: 4-4-4-2), so a card typed right after it is not cut into.
+    short_end = [e for e in between_digits if any(x.end() == e and i and len(x.group()) < len(groups[i - 1].group())
+                                                  for i, x in enumerate(groups))]
+    tries = sorted(at_letters, reverse=True) + sorted(short_end, reverse=True) + sorted(between_digits, reverse=True)
+    def card_from(end):
+        # The digits right after this group end hold a card (with any expiry, year or CVV beside it).
+        run = DIGITS.match(m.string[m.start() + end:].lstrip(" -"))
+        return bool(run) and card(run) != run.group()
+
+    def valid(end):
         s = re.sub(r"[ -]", "", g[:end]).upper()
-        if 15 <= len(s) <= 34 and mostly_digits(s) and mod97(s):
+        return 15 <= len(s) <= 34 and mostly_digits(s) and mod97(s)
+
+    for end in tries:
+        if any(j < end and valid(j) and card_from(j) for j in between_digits):
+            continue  # a valid IBAN ends earlier and a card starts there: this end would cut into it
+        if valid(end):
             return "[left out]" + g[end:]
     return g
 
