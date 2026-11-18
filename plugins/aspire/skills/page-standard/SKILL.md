@@ -104,8 +104,7 @@ Two checks cover the whole page:
   "was 5, now 12", no named rejects, and the brand's own colors and type from `theme.md`. The
   `brand` lens in `recipient-lens.md` (the brand's own safety and approval team) is not a client
   reader. A flow that sets its own client view (the CAS campaign page) keeps it.
-- **Any other reader:** the "Prepared for" chip from `recipient-lens.md` and the order the lens
-  sets.
+- **Any other reader:** the "Prepared for" chip from `recipient-lens.md` and the order the lens sets.
 
 ## 3. Evidence standards
 
@@ -168,8 +167,7 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    return it in the result's `questions` (`orchestration.md`, **6**) and build nothing. Options:
    "Build with the gaps noted (Recommended)", the fix when there is one ("Connect the account
    first" only when it is not connected, "Refresh the posts first"), and "Change the scope". An
-   unattended run builds with the gaps noted and lists the metric in the page's "what is missing"
-   part.
+   unattended run builds with the gaps noted and lists the metric in the page's "what is missing" part.
 3. **Draft the page** for this question and this reader, from the blocks in
    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/blocks.md`. They already carry the markup in
    section 5. The blocks set what each part holds and the order of its evidence; the flow's
@@ -384,8 +382,7 @@ returns is a gap, named on the page like any other missing metric. Add the flow'
   label it as that and never call it engagement per 1,000 views.
 
 **Where each metric comes from, and the reason a page shows when one is missing, per network,**
-are in `network-metrics.md` in this folder. Read it before step 2a counts and before the page
-names a gap.
+are in `network-metrics.md` in this folder. Read it before step 2a counts and before the page names a gap.
 
 **A missing metric is never 0.** On the page it reads "not available: {reason}" beside where the
 number would sit, and the post carries it in `data-missing` (section 5). A 0 that Atlas read is a

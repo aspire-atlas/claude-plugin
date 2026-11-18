@@ -155,7 +155,8 @@ It is confirmed once per run, by the first of these that applies:
   to follow up again: one question in the close-out's call, header "Follow up", "Keep this
   page's open decisions and next steps, so the next run of {the flow} can ask what happened?"
   Options: "Keep them (Recommended)", "Not this time", and "Never for {the flow}", which
-  confirms one write of `follow: off` to the record's first line and is never asked again.
+  confirms one write of `follow: off` to the record's first line and is not asked again unless
+  the person asks to follow up (**Stopping and restarting the follow-up**, Starting again).
   When the record holds another question's last run, the question says what it replaces ("This
   replaces the items kept from 12 Nov.").
 

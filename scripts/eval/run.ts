@@ -439,8 +439,8 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
     const others = Object.keys(turn.connectors).filter(name => name !== connector && !refused.includes(name) && /atlas/i.test(name) && turn.connectors[name] === 'connected')
     if (others.length) fail(`another Atlas connector is connected: ${others.join(', ')}. Disconnect it (claude, then /mcp) so the rerun can only reach "${connector}".`)
   }
-  const talk = { args, work, qDir, code: question.code, ask, options }
-  const first = await converse({ ...talk, session: null, what: '', files: 'turn', reply: question.reply ?? config.defaultReply, page: captured, onFirstTurn: checkConnectors })
+  const base = { args, work, qDir, code: question.code, ask, options }
+  const first = await converse({ ...base, session: null, what: '', files: 'turn', reply: question.reply ?? config.defaultReply, page: captured, onFirstTurn: checkConnectors })
   problems.push(...first.problems)
   const { link, rounds, turns } = first
   const last = turns.at(-1) ?? null
@@ -464,8 +464,10 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
       // The first run ends on its close-out, which may ask whether to keep its open items or offer a next step.
       // Answer that first, so the repeat ask arrives as a new request and not as the answer to that question.
       console.error(`  ${question.code}: close-out answer`)
-      const closeOut = await claude([...args, '--resume', first.session], config.repeat.closeOutReply ?? config.defaultReply, work, join(qDir, 'close-out-turn.jsonl'), options.timeoutMin)
-      const second = await converse({ ...talk, session: closeOut.sessionId ?? first.session, what: 'repeat ', files: 'repeat-turn', reply: config.repeat.reply ?? config.defaultReply, page: repeatPage(qDir) })
+      // No fallback to defaultReply: its "go ahead" would accept the close-out's next-step offer, which this turn is here to decline.
+      const closeOut = await claude([...args, '--resume', first.session], config.repeat.closeOutReply ?? fail('questions.json needs repeat.closeOutReply for --repeat'), work, join(qDir, 'close-out-turn.jsonl'), options.timeoutMin)
+      if (closeOut.failed) problems.push('The close-out answer before the repeat run failed, so the repeat ask may have landed as the answer to the close-out question')
+      const second = await converse({ ...base, session: closeOut.sessionId ?? first.session, what: 'repeat ', files: 'repeat-turn', reply: config.repeat.reply ?? config.defaultReply, page: repeatPage(qDir) })
       problems.push(...second.problems)
       const asked = second.turns[0] ? repeatAsk(second.turns[0]) : { result: 'not run' as Result, reasons: [] }
       // The second run was started: one that sent no message asked nothing about last time, which is a fail.
