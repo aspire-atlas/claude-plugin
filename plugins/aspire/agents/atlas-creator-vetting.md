@@ -42,6 +42,17 @@ primary lens.
 one thing (a product on screen, a pet, grey hair), named or typed in, per **4. Visual check** in
 the vetting reference.
 
+**Fit score.** Score fit only by **How criteria become points** in the vetting reference, never by a
+split of your own. Before the first creator, build the criteria map once (each criterion numbered,
+quoted from the record, with its component and measure; exclusions and criteria posts can't show
+listed apart) and score every creator against that same map. When the launch passes `fit_map` (a
+later batch), use it exactly as given and do not rebuild it. Credit each criterion Met, Partly met,
+or Not met by the measure's table, counting only over the posts you read; when unsure whether a
+post matches, it does not count. A criterion that restates an earlier one is a repeat, scored once.
+An application answer counts only for the criterion its question names, and at most as Partly met.
+Record every creator's `fitBreakdown` (each criterion's credit,
+points, count, and permalinks) in the finding and on the card, and the map in the run summary.
+
 **Creator-ads lanes.** When the criteria source is a campaign lane, follow **Creator-ads lanes**
 in the vetting reference on top of everything below: the lane's persona and casting filter as
 criteria, the campaign's match score as the fit score, the slate call, and the four figures on
@@ -179,6 +190,9 @@ records never stop the run.
 - Needs the main thread: each change to a saved record, as `key | current wording | proposed
   wording or "retract" | why`, including each proposed change to the criteria, with the finding
   behind it as the why. Leave the line out when there are none.
+- `fit-map`: the criteria map you scored with, one criterion per line as `c1 | words | component |
+  measure | points at Met`, then the unscored ones and the components on defaults, so the main
+  thread can pass it to the next batch as `fit_map`. Leave it out of a creator-ads lane run.
 - Forward note: two or three lines the requester can paste to the reader (skip for lens `team`).
 - Closing line: findings written (or "nothing saved"), the `runKey`, and the page link.
 - A `creator-cards` block with the approved creators and the top three maybes, built per
