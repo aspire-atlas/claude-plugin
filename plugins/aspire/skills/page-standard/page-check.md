@@ -64,6 +64,29 @@ BANNED = [
     (re.compile(EDGE % r"(?:(?:top|our|first|creator|the|your|weekly|daily|today's|this\s+week's)\s+(?:picks|reads)"
                 r"|pulses?|the\s+run(?![-\s]+(?:up|rate)\b)|reach\s+slots?|practitioners?)", re.I), "a report label"),
 ]
+# Links and emails, then handles and hashtags: never read as words. An email starts at a word
+# character, so a handle after "(" or a quote stays a handle.
+LINKS = re.compile(r"https?://\S+|(?<![\w.])[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
+NAMES = re.compile(r"(?<!\w)[@#][\w.]+")
+HANDLE = re.compile(r"(?<!\w)@[\w.]+")
+# A post by someone other than the brand has a "paid label" or "no paid label" (post-kinds.md).
+# PAID_CODES is kept equal to the codes post-kinds.md names by scripts/check-artifact-standard.sh.
+PAID_CODES = {"O1", "O2", "O3", "I6"}
+# Only the word said of posts fails, so "organic cotton", "organic, fair-trade" and "2 unpaid
+# invoices" beside a handle stay plain words. To cover a new kind of post, add its noun here.
+POST_NOUNS = ("posts?", "mentions?", "content", "buzz", "reach", "views", "engagement", "conversations?",
+              "coverage", "videos?", "reels?", "shorts", "stories", "creators?", "share")
+POST_VERBS = ("posted", "mentioned", "shared", "spread", "grew", "talked")
+VERSUS = r"(?:vs\.?|versus|and|or|against|to|from)"
+BEFORE_NOUN = r"(?:organic|unpaid)\s+(?:%s)" % "|".join(POST_NOUNS)
+PAIRED = r"paid\s+%s\s+(?:organic|unpaid)|(?:organic|unpaid)\s+%s\s+paid" % (VERSUS, VERSUS)
+ADVERB = r"(?:%s)\s+organically|organically\s+(?:%s)" % ("|".join(POST_VERBS), "|".join(POST_VERBS))
+# The word closing a clause or standing alone in a table cell: "the buzz is organic.", "| Unpaid |".
+CLAUSE_END = r"(?:organic|unpaid)(?=\s*(?:[.;!?|]|$))"
+UNLABELLED = re.compile(EDGE % ("(?:%s)" % "|".join((PAIRED, BEFORE_NOUN, ADVERB, CLAUSE_END))), re.I)
+# A sentence ends at . ! ? or ; before anything but a lowercase letter, and never at an abbreviation.
+SENTENCE = re.compile(r"(?<=[.!?;])\s+(?=[^a-z])")
+ABBREVIATION = re.compile(r"(?i)(?<![a-z])(?:vs|e\.g|i\.e|etc|approx|est|avg|incl|no|jan|feb|mar|apr|jun|jul|aug|sept?|oct|nov|dec)\.$")
 NOTHING = re.compile(r"\b(?:nothing|no decisions?) needs? (?:your )?approval\b", re.I)
 # Required metrics on every cited post, by question code. Kept equal to the required-metrics table in
 # SKILL.md, section 8, by scripts/check-artifact-standard.sh.
@@ -142,18 +165,25 @@ def exempt(node):
     return (quoted(node) or node.attrs.get("aria-label") == "Aspire Atlas"
             or "atlas-footnote" in (node.attrs.get("class") or "").split())
 
-def text(node, gap="", skip=lambda n: False):
+def flow(node, wrap, skip=lambda n: False, seen=lambda n: None):
+    # The page's words in reading order. wrap(node) gives what goes before and after a node's
+    # words; skip(node) leaves a node and everything in it out; seen(node) is told each node kept.
     out, stack = [], [node]
     while stack:
         item = stack.pop()
         if isinstance(item, str):
             out.append(item)
         elif item.tag not in SKIP and not skip(item):
-            pad = gap if item.tag in INLINE else " "
-            stack.append(pad)
+            seen(item)
+            before, after = wrap(item)
+            stack.append(after)
             stack.extend(reversed(item.kids))
-            stack.append(pad)
-    return re.sub(r"\s+", " ", "".join(out)).strip()
+            stack.append(before)
+    return "".join(out)
+
+def text(node, gap="", skip=lambda n: False):
+    pad = lambda n: (gap, gap) if n.tag in INLINE else (" ", " ")
+    return re.sub(r"\s+", " ", flow(node, pad, skip)).strip()
 
 def has(haystack, needle):
     # Word for word, whatever the markup around the words: an inline element pads its text with
@@ -170,12 +200,14 @@ def page_name(node):
     return (node.attrs.get("data-page") or "").strip().lower()
 
 def inside(node, name):
-    node = node.parent
-    while node is not None:
-        if page_name(node) == name:
-            return True
+    return any(page_name(a) == name for a in ancestors(node))
+
+def ancestors(node):
+    found = []
+    while node.parent is not None:
         node = node.parent
-    return False
+        found.append(node)
+    return found
 
 def platforms(region):
     found = {}
@@ -287,11 +319,67 @@ def r6(nodes, regions, out):
         problems.append("%d decision(s) sit outside the decisions section" % len(stray))
     return problems
 
+def question_code(regions):
+    scope = (regions.get("scope") or [None])[0]
+    return ((scope.attrs.get("data-question") or "") if scope is not None else "").strip().upper()
+
+def rows(node, skip):
+    # The words a reader sees or hears, one block or label per line; a table row stays one line,
+    # its cells set apart by "|".
+    labels = []
+    pad = lambda n: (" ", " ") if n.tag in INLINE else (" | ", " | ") if n.tag in ("td", "th") else ("\n", "\n")
+    lines = flow(node, pad, skip, lambda n: labels.extend(n.attrs[a] for a in ATTRS if n.attrs.get(a))).split("\n")
+    return [line for line in (re.sub(r"\s+", " ", l).strip() for l in lines + labels) if line.strip(" |")]
+
+def sentences(line):
+    found = []
+    for part in SENTENCE.split(line):
+        if found and ABBREVIATION.search(found[-1]):
+            found[-1] += " " + part
+        else:
+            found.append(part)
+    return found
+
+def unlabelled(line, beside=None):
+    # "organic" or "unpaid" said of posts, per sentence: beside the handle given, or else beside
+    # one in the same sentence. Yields (word, sentence, where).
+    for sentence in sentences(LINKS.sub(" ", line)):
+        handle = HANDLE.search(sentence)
+        where = beside or (handle and "beside %s" % handle.group(0))
+        if where:
+            for match in UNLABELLED.finditer(NAMES.sub(" ", sentence)):
+                yield match.group(0).lower(), sentence, where
+
+def paid_label(nodes, regions):
+    mentions = [n for n in nodes if "data-mention" in n.attrs]
+    if question_code(regions) not in PAID_CODES and not mentions:
+        return []
+    # data-own marks the brand's own posts or records, where "organic" and "unpaid" are right.
+    skip = lambda n: exempt(n) or "data-own" in n.attrs
+    shown = lambda n: not any(a.tag in SKIP or skip(a) for a in [n] + ancestors(n))
+    hits = {}
+    def read(lines, beside=None):
+        # One hit per word and sentence, so a table row read twice is reported once.
+        for line in lines:
+            for word, sentence, where in unlabelled(line, beside):
+                hits.setdefault((word, sentence), where)
+    read(rows(nodes[0], skip))
+    # A table that names a handle in any row is read whole, so a column heading counts.
+    for table in (n for n in nodes if n.tag == "table" and shown(n)):
+        lines = rows(table, skip)
+        handle = next((m.group(0) for m in map(HANDLE.search, (LINKS.sub(" ", l) for l in lines)) if m), None)
+        if handle:
+            read(lines, "in a table with %s" % handle)
+    for node in (n for n in mentions if shown(n)):
+        read(rows(node, skip), "on another account's post")
+    return ["says \"%s\" %s: say \"paid label\" or \"no paid label\", or mark the brand's own posts or records with data-own"
+            % (word, where) for word, where in sorted({(w, where) for (w, _), where in hits.items()})[:5]]
+
 def r11(nodes, regions, out):
     kept = list(walk(nodes[0], keep=lambda n: n.tag not in SKIP and not exempt(n)))
     shown = " ".join([text(nodes[0], gap=" ", skip=exempt)] +
                      [n.attrs[a] for n in kept for a in ATTRS if n.attrs.get(a)])
-    shown = re.sub(r"https?://\S+|\S+@\S+\.\w+|(?<!\w)[@#][\w.]+", " ", shown)
+    shown = NAMES.sub(" ", LINKS.sub(" ", shown))
     problems = []
     for token in sorted(set(re.findall(r"[A-Za-z0-9]+(?:_+[A-Za-z0-9]+)+", shown))):
         parts = token.lower().split("__")
@@ -300,7 +388,7 @@ def r11(nodes, regions, out):
     for pattern, kind in BANNED:
         for hit in sorted(set(pattern.findall(shown)))[:5]:
             problems.append("names %s: \"%s\"" % (kind, hit))
-    return problems
+    return problems + paid_label(nodes, regions)
 
 def post_label(post, index):
     link = next((n.attrs.get("href") for n in walk(post) if n.tag == "a" and n.attrs.get("href")), "")
@@ -310,8 +398,7 @@ def r13(nodes, regions, out):
     # Every cited post (data-post) shows each metric its question's row requires (data-metric), or
     # names it in data-missing="{metric}: {reason}" with the reason shown on the post. Returns None
     # (n/a) on a page with no question code and no cited post.
-    scope = (regions.get("scope") or [None])[0]
-    code = ((scope.attrs.get("data-question") or "") if scope is not None else "").strip().upper()
+    code = question_code(regions)
     posts = [n for n in nodes if "data-post" in n.attrs]
     if not code:
         if posts:
@@ -809,26 +896,19 @@ def visible(path):
     with open(path, encoding="utf-8", errors="replace") as f:
         tree.feed(f.read())
     tree.close()
-    out, stack = [], [tree.root]
-    while stack:
-        item = stack.pop()
-        if isinstance(item, str):
-            out.append(item)
-            continue
-        if item.tag in SKIP or (exempt(item) and not quoted(item)):
-            continue
+    def wrap(item):
         pad = "" if item.tag in INLINE else ("\n" if item.tag in BLOCK or item.tag in ("tr", "td", "th", "br") else " ")
         # Words a screen reader says or a field shows, which R11 checks too: alt text, any aria-label
         # (an icon button, a role="img" chart), and a field's placeholder or value.
         image = item.tag in ("svg", "img") or item.attrs.get("role") == "img"
         label = item.attrs.get("alt") or item.attrs.get("aria-label") or ""
         field = (item.attrs.get("placeholder") or item.attrs.get("value") or "") if item.tag in ("input", "textarea") else ""
-        stack.append(("]" if quoted(item) else "") + pad)
-        stack.extend(reversed(item.kids))
-        stack.append(pad + ("[quoted: " if quoted(item) else "")
-                     + (("[image: %s] " if image else "[label: %s] ") % label if label else "")
-                     + ("[field: %s] " % field if field else ""))
-    lines = (re.sub(r"[ \t\r\f\v]+", " ", line).strip() for line in "".join(out).split("\n"))
+        return (pad + ("[quoted: " if quoted(item) else "")
+                + (("[image: %s] " if image else "[label: %s] ") % label if label else "")
+                + ("[field: %s] " % field if field else ""),
+                ("]" if quoted(item) else "") + pad)
+    shown = flow(tree.root, wrap, lambda n: exempt(n) and not quoted(n))
+    lines = (re.sub(r"[ \t\r\f\v]+", " ", line).strip() for line in shown.split("\n"))
     return "\n".join(line for line in lines if line)
 
 def show(paths):

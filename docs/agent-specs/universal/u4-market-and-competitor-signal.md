@@ -18,7 +18,7 @@ Answers how the brand is talked about against competitors, and what the real thr
 
 ## Output
 
-Share of voice per brand (posts, distinct creators, engagement), organic and paid apart, with the change in points; each feature marked won, lost, even, or unclear against each competitor, with creator counts and quoted proof; friction users mention; phrases that are spreading; what changed since the last run; and the gaps (capped sets, competitors Atlas does not index).
+Share of voice per brand (posts, distinct creators, engagement), posts with a paid label apart from posts with none, with the change in points; each feature marked won, lost, even, or unclear against each competitor, with creator counts and quoted proof; friction users mention; phrases that are spreading; what changed since the last run; and the gaps (capped sets, competitors Atlas does not index).
 
 ## Callable
 
