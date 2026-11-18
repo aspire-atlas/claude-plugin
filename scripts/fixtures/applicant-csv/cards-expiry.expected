@@ -1,0 +1,15 @@
+{"rows": 14, "encoding": "utf-8", "kept": ["Name", "Instagram", "Anything else?"], "left_out": [], "cells_left_out": 5}
+{"row": 2, "cells": {"Name": "A", "Instagram": "@a", "Anything else?": "exp 12/[left out]"}}
+{"row": 3, "cells": {"Name": "B", "Instagram": "@b", "Anything else?": "Exp 12/[left out]"}}
+{"row": 4, "cells": {"Name": "C", "Instagram": "@c", "Anything else?": "Visa/[left out]"}}
+{"row": 5, "cells": {"Name": "D", "Instagram": "@d", "Anything else?": "[left out]"}}
+{"row": 6, "cells": {"Name": "E", "Instagram": "@e", "Anything else?": "card [left out]"}}
+{"row": 7, "cells": {"Name": "F", "Instagram": "@f", "Anything else?": "see https://example.com/p/4111111111111111"}}
+{"row": 8, "cells": {"Name": "Z0", "Instagram": "@z0", "Anything else?": "no"}}
+{"row": 9, "cells": {"Name": "Z1", "Instagram": "@z1", "Anything else?": "no"}}
+{"row": 10, "cells": {"Name": "Z2", "Instagram": "@z2", "Anything else?": "no"}}
+{"row": 11, "cells": {"Name": "Z3", "Instagram": "@z3", "Anything else?": "no"}}
+{"row": 12, "cells": {"Name": "Z4", "Instagram": "@z4", "Anything else?": "no"}}
+{"row": 13, "cells": {"Name": "Z5", "Instagram": "@z5", "Anything else?": "no"}}
+{"row": 14, "cells": {"Name": "Z6", "Instagram": "@z6", "Anything else?": "no"}}
+{"row": 15, "cells": {"Name": "Z7", "Instagram": "@z7", "Anything else?": "no"}}

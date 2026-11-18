@@ -53,8 +53,8 @@ Payment and tax data, so it is kept nowhere and the report names it:
 - every column whose header matches `PAY` below;
 - in every other column except the ones `KEEP` names (a header that is exactly a handle, name,
   email, phone, place, or id header), wherever it sits in the cell: a card number (13 to 19
-  digits, spaces or dashes allowed, that pass the Luhn check, alone or with a short expiry or CVV
-  group at either end, and not inside a link) and an IBAN (in any case, spaces or dashes allowed,
+  digits as one block or groups of 4 to 6, that pass the Luhn check, alone or with up to two short
+  expiry or CVV groups at either end, and not inside a link) and an IBAN (in any case, spaces or dashes allowed,
   exactly its country's length, with the right check digits). The match becomes `[left out]`, and
   `cells_left_out` counts the cells;
 - such a column whole, when more than half its non-empty cells hold one.
@@ -79,6 +79,7 @@ KEEP = {"instagram", "instagram handle", "instagram username", "instagram url", 
         "phone number", "mobile", "mobile number", "address", "street", "city", "state", "country",
         "region", "zip", "zip code", "postal code"}
 DIGITS = re.compile(r"\d(?:[ -]?\d){12,}")
+URL = re.compile(r"(https?://|www\.)\S*$", re.I)
 IBAN = re.compile(r"\b[A-Z]{2}\d{2}(?:[ -]?[A-Z0-9]){11,30}", re.I)
 # Each IBAN country's fixed length.
 IBAN_LEN = {c[:2]: int(c[2:]) for c in (
@@ -94,20 +95,25 @@ def luhn(s):
     return (sum(d[0::2]) + sum(sum(divmod(2 * x, 10)) for x in d[1::2])) % 10 == 0
 
 
+def mod97(s):
+    return int("".join(str(int(c, 36)) for c in s[4:] + s[:4])) % 97 == 1
+
+
 def card(m):
-    # The whole run, or the run without one short group (an expiry or CVV) at its start or end.
-    if m.start() and m.string[m.start() - 1] in "/=":
-        return m.group()  # a number in a link (a video or user id), not a card
-    groups = re.split(r"[ -]", m.group())
-    tries = [groups]
-    if len(groups) > 1 and 2 <= len(groups[-1]) <= 4:
-        tries.append(groups[:-1])
-    if len(groups) > 1 and 3 <= len(groups[0]) <= 4:
-        tries.append(groups[1:])
-    # A card is one block, or groups of 4 to 6 digits (4-4-4-4, 4-6-5); phone numbers and dates are not.
-    hit = any(13 <= len("".join(t)) <= 19 and luhn("".join(t))
-              and (len(t) == 1 or all(4 <= len(g) <= 6 for g in t)) for t in tries)
-    return "[left out]" if hit else m.group()
+    # The run, or the run without up to two short groups (an expiry, a CVV) at either end, as one block
+    # or groups of 4 to 6 digits (4-4-4-4, 4-6-5), 13 to 19 digits that pass Luhn. Phone numbers and
+    # dates (groups of 2 or 3) are not cards, nor is a number inside a link (a video or user id).
+    if URL.search(m.string[:m.start()]):
+        return m.group()
+    g = re.split(r"[ -]", m.group())
+    for a in range(3):
+        for b in range(3):
+            mid = g[a:len(g) - b]
+            ends = g[:a] + g[len(g) - b:]
+            if mid and all(2 <= len(x) <= 4 for x in ends) and (len(mid) == 1 or all(4 <= len(x) <= 6 for x in mid)):
+                if 13 <= len("".join(mid)) <= 19 and luhn("".join(mid)):
+                    return "[left out]"
+    return m.group()
 
 
 def iban(m):
@@ -117,8 +123,7 @@ def iban(m):
     for end, c in enumerate(g, 1):
         n += c not in " -"
         if n == want:
-            s = re.sub(r"[ -]", "", g[:end]).upper()
-            if (end == len(g) or g[end] in " -") and int("".join(str(int(c, 36)) for c in s[4:] + s[:4])) % 97 == 1:
+            if (end == len(g) or g[end] in " -") and mod97(re.sub(r"[ -]", "", g[:end]).upper()):
                 return "[left out]" + g[end:]
             break
     return g
@@ -155,38 +160,38 @@ for h in head:
     seen[h.lower()] = seen.get(h.lower(), 0) + 1
     keys.append(h if seen[h.lower()] == 1 else f"{h} ({seen[h.lower()]})")
 check = {i for i, h in enumerate(head) if h.lower() not in KEEP}
-# Every non-empty cell once, with its scrubbed text: (row number, [(column, text, was it scrubbed)]).
-body = []
+# Every non-empty cell, scrubbed once: body holds (row number, {column: text}), and scrubbed[column]
+# says, cell by cell, whether a card or IBAN was cut from it.
+body, scrubbed = [], {i: [] for i in check}
 for n, r in enumerate(rows[1:], 2):
-    got = []
+    got = {}
     for i, c in enumerate(r[:len(keys)]):
         c = c.strip()
-        if c:
-            s = scrub(c) if i in check else c
-            got.append((i, s, s != c))
+        if c and i in check:
+            got[i] = scrub(c)
+            scrubbed[i].append(got[i] != c)
+        elif c:
+            got[i] = c
     if got:
         body.append((n, got))
 out = {i for i, h in enumerate(head) if PAY.search(h)}
-for i in check - out:
-    hits = [x for _, got in body for j, _, x in got if j == i]
-    if hits and sum(hits) * 2 > len(hits):
-        out.add(i)
+out |= {i for i, flags in scrubbed.items() if sum(flags) * 2 > len(flags)}
 
 
 def line(n, got, room):
-    cells = {keys[i]: s for i, s, _ in got if i not in out}
-    text = json.dumps({"row": n, "cells": cells}, ensure_ascii=False)
-    if len(text) <= room:
-        return text
+    cells = {keys[i]: v for i, v in got.items() if i not in out}
+    out_line = json.dumps({"row": n, "cells": cells}, ensure_ascii=False)
+    if len(out_line) <= room:
+        return out_line
     # One row too long for a run: cut its long cells to share what the keys leave, halving until it fits.
     bare = len(json.dumps({"row": n, "cells": {k: "…[cut, 1000000 characters]" for k in cells}},
                           ensure_ascii=False))
     cap = max(40, (room - bare) // max(len(cells), 1))
     while True:
         short = {k: f"{v[:cap]}…[cut, {len(v)} characters]" if len(v) > cap else v for k, v in cells.items()}
-        text = json.dumps({"row": n, "cells": short}, ensure_ascii=False)
-        if len(text) <= room or cap == 40:
-            return text
+        out_line = json.dumps({"row": n, "cells": short}, ensure_ascii=False)
+        if len(out_line) <= room or cap == 40:
+            return out_line
         cap = max(40, cap // 2)
 
 
@@ -195,7 +200,7 @@ if arg == "0":
     head_line = json.dumps({"rows": len(body), "encoding": enc,
                             "kept": [k for i, k in enumerate(keys) if i not in out],
                             "left_out": [k for i, k in enumerate(keys) if i in out],
-                            "cells_left_out": sum(x for _, got in body for i, _, x in got if i not in out)},
+                            "cells_left_out": sum(sum(f) for i, f in scrubbed.items() if i not in out)},
                            ensure_ascii=False)
     print(head_line)
     size = len(head_line)
@@ -203,11 +208,12 @@ if arg == "0":
         print(json.dumps({"next": "r0"}))  # a long header: the rows start in the next run
         sys.exit(0)
 for k in range(start, len(body)):
-    text = line(*body[k], LIMIT - size)
-    if k > start and size + len(text) > LIMIT:
+    # Only a run's first row is cut to fit; a later row too big for what is left moves to the next run.
+    out_line = line(*body[k], LIMIT - size if k == start else LIMIT)
+    if k > start and size + len(out_line) > LIMIT:
         print(json.dumps({"next": k}))
         break
-    print(text)
-    size += len(text)
+    print(out_line)
+    size += len(out_line)
 ```
 <!-- /applicant-csv -->

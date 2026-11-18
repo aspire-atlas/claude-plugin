@@ -25,7 +25,7 @@ runs() {
   while :; do
     printf '%s\n' "$got"
     next=$(tail -1 <<< "$got" | sed -n 's/^{"next": "\{0,1\}\(r\{0,1\}[0-9]*\)"\{0,1\}}$/\1/p')
-    [ -n "$next" ] && [ -d "$dir" ] || break
+    [ -n "$next" ] || break
     got=$(python3 -I "$dir/applicant_csv.py" "$dir/applicants.csv" "$next")
   done
   rm -rf "$dir"
