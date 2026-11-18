@@ -39,8 +39,7 @@ the agent, skipping any the user already answered. In campaign mode it also sett
 (a saved `campaign:*-brief`, or "a new campaign", which runs **Creator discovery** Setup first
 unless the user declines) and the first post date.
 
-1. **Scope.** If a `red_line` calibration blocks AI generated content (ignore `review:` keys,
-   which are content review only), offer "Strategy brief only (Recommended)" vs "Include draft
+1. **Scope.** If a brand red line (**Atlas tools**, Calibration kinds) blocks AI generated content, offer "Strategy brief only (Recommended)" vs "Include draft
    copy (overrides the red line; record the exception first)". Never produce copy without the
    override.
 2. **Creator sourcing.** "Already in Atlas", "Atlas creator marketplace (searches beyond your
@@ -162,7 +161,7 @@ from**, and leave them out of the data block, since they aren't parts of the bri
   round, never per lane.
 - **Disclosure treatment**: the paid partnership label, plus anything `review:disclosure` says
   when it exists (read it for disclosure only).
-- **Do's and don'ts**, one line each: from saved `red_line` and `guideline` records (never `review:`, `vetting:`, `program:`, `orchestrator:`, `ad-reuse:` or `lastrun:` keys,
+- **Do's and don'ts**, one line each: from brand red lines and saved `guideline` records (never `review:`, `vetting:`, `program:`, `orchestrator:`, `adreuse:`, `applicantreview:` or `lastrun:` keys,
   and never the campaign's own `-cas`, `-lane-*`, `-terms` or `-decision-defaults` records).
   When the client's own creator brief guardrails are saved (a `guideline` whose body names
   them), mirror them line for line.
@@ -207,7 +206,7 @@ from**, and leave them out of the data block, since they aren't parts of the bri
 - **Creators**: the lane's approved creators from the roster, as creator cards, each with the
   agreed fee and ship date.
 
-A `red_line` that blocks AI-written copy still applies: hooks, CTAs and the body become
+A brand red line that blocks AI-written copy still applies: hooks, CTAs and the body become
 directions, per **Hooks and CTAs**, **Limits**. Say so in the standing-rule banner.
 
 **Editing coverage check**, before the page ships. Every brief must pass all three; fix the
@@ -312,7 +311,7 @@ calibrations (never from Aspire's own positioning; this plugin serves any brand)
   `brand:business-context`. Write one line each, for example buyer "home cooks who buy
   premium cookware", category "consumer kitchen brands".
 - **Off-audience signals**: the content types that would not reach that buyer. Infer from the
-  buyer line and any `guideline` or `red_line` records (never `review:`, `vetting:`, `program:`, `orchestrator:`, `ad-reuse:` or `lastrun:`
+  buyer line, any brand red line, and any `guideline` records (never `review:`, `vetting:`, `program:`, `orchestrator:`, `adreuse:`, `applicantreview:` or `lastrun:`
   keys, and never a creator ad campaign's `campaign:{slug}-cas`, `-lane-*`, `-terms` or
   `-decision-defaults`).
 - **Search vocabulary**: 3 to 6 bio keywords a creator serving that buyer would use. Derive

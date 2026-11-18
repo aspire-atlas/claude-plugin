@@ -17,7 +17,7 @@ the tagging and scoring of other flows rather than defining its own:
 | Frames, when the agent reads them | **Content review**, **Media: what the agent can and cannot see**, with the ad reuse sampling in **Ad reuse**, **What to read per candidate** |
 | People on screen and what reuse would need cleared | **Post analysis**, **The page**, section 11, and its **Rules** |
 | Brand safety categories | **Post analysis**, **The page**, section 8 (the 12 categories) |
-| Topics creators talk about | **Market signal**, the `market-signal:topics` record, when saved |
+| Topics creators talk about | **Market signal**, the `marketsignal:topics` record, when saved |
 | Rights records | **Influencer program**, the `rights` record type, written by `atlas-content-sourcing` |
 
 The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
@@ -218,12 +218,12 @@ empty and counted under gaps, never guessed.
 | --- | ---- |
 | Format | Reel, TikTok video, feed video, image, or carousel, from `instagram.mediaProductType` and `mediaKind`. |
 | Products | Match each product name from every `program:{slug}-catalog` in scope, and the products named in `brand:summary` and `brand:business-context`, against the caption, `analysis.transcript`, `analysis.overlayText`, and `featuredProducts`. Keep which field matched. A product seen only in frames counts when the agent viewed the frame, with its time. |
-| Themes | One or two from: unboxing, review, tutorial or how-to, get ready with me, day in the life, haul, comparison, in use (recipe, workout, routine), before and after, lifestyle, testimonial. Add the brand's `market-signal:topics` names when saved. From the caption, transcript, and overlay text. |
+| Themes | One or two from: unboxing, review, tutorial or how-to, get ready with me, day in the life, haul, comparison, in use (recipe, workout, routine), before and after, lifestyle, testimonial. Add the brand's `marketsignal:topics` names when saved. From the caption, transcript, and overlay text. |
 | Hook pattern | One pattern from **Ad reuse**, **Hook patterns**, read from the first three seconds of the transcript and overlay text, or from frames when read. Video only. No transcript, overlay text, or frames: untagged. |
 | Ad readiness score | The **Ad reuse** **Hook score**, out of 100, with its six components and their evidence. Video only; images and carousels show "Not scored: no hook timing". See **Scoring at library scale**. |
 | People on screen | Per **Post analysis**, section 11: how many people, their roles (the creator, others, possible minors), and names only when the caption, on-screen text, transcript, or the account names them. Never identify a person from a face alone. From frames when read; otherwise from the caption and transcript, marked "not checked on screen". |
 | Reuse needs | What a reuse cut would need cleared: others' likeness, trademarks on screen, and the audio (`instagram.mediaAudioType` original or licensed, or "unconfirmed"; "music rights unknown" when music is present). A checklist for the brand's legal team, not legal advice. |
-| Brand safety | Atlas's `analysis.brandSafety` categories at medium or higher, one semantic `search_posts` per `red_line` (its body as `queryText`, filtered to the catalog's post ids, skipping `review:` keys), and any saved competitor named or in frame. `clear`, `flag` (named flags), or `block` (a `block` red line hit or a competitor). |
+| Brand safety | Atlas's `analysis.brandSafety` categories at medium or higher, one semantic `search_posts` per brand red line (**Atlas tools**, Calibration kinds) (its body as `queryText`, filtered to the catalog's post ids, skipping `review:` and `applicantreview:` keys), and any saved competitor named or in frame. `clear`, `flag` (named flags), or `block` (a `block` red line hit or a competitor). |
 | Source | Per **Collecting assets**. |
 
 ### Scoring at library scale

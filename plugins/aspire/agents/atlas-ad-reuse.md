@@ -15,7 +15,7 @@ and slug, every linked handle with its network, `reuse_scope` (`own`, `creators`
 window, any placements the user named, whether the user approved saving the candidates,
 `recipient` (one or more lenses per `recipient-lens.md`; default `performance` and `creative`),
 a digest of the brand's calibrations (competitors, red lines, partners, and the
-`ad-reuse:account-map` record when saved), and `run`
+`adreuse:account-map` record when saved), and `run`
 (`interactive` or `unattended`; default `interactive`). Launch messages
 from before the split also carry `target_mode` `reuse`; ignore it. Every Atlas tool needs a
 `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed, load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
@@ -54,10 +54,10 @@ exactly, and render for the primary lens per **Rendering for a lens**.
    serve one rule: finding posts whose counts include paid delivery (`ad-reuse.md`, **Counts
    that include paid delivery**).
 2. When the launch carries no calibration digest, read `search_calibrations` (no filter, limit
-   100 per page, paged to the end) for `competitor`, `partner`, `red_line`, `theme:brand`, and
-   `ad-reuse:account-map` before building the pool: the competitor screen needs the
+   100 per page, paged to the end) for `competitor`, `partner`, brand red lines (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-tools.md`, Calibration kinds), `theme:brand`, and
+   `adreuse:account-map` before building the pool: the competitor screen needs the
    competitors, the two paths need the brand's partner tag from `partner`, "Ready for paid" and the no-AI-copy rule need the red lines, and a saved account
-   map is followed, never proposed again (`ad-reuse.md`, **Account map record**). Drop every `review:`, `program:`, `library:`, `orchestrator:` and `lastrun:` key, and a creator ad campaign's `campaign:{slug}-cas`, `-lane-*`, `-terms` and `-decision-defaults`.
+   map is followed, never proposed again (`ad-reuse.md`, **Account map record**). Drop every `review:`, `program:`, `library:`, `orchestrator:`, `applicantreview:` and `lastrun:` key, and a creator ad campaign's `campaign:{slug}-cas`, `-lane-*`, `-terms` and `-decision-defaults`.
 3. Call `list_post_search_fields` once and use only field paths it returns. Never guess a path.
 4. Build the candidate pool per **Candidate pool**: the window, the sources for `reuse_scope`,
    the account map, the competitor screen, the two paths, video only, then the posts whose

@@ -11,12 +11,12 @@ Sorts the accounts posting about the brand into creators and everyone else, so c
 
 ## Inputs
 
-- From brand memory: the `ad-reuse:account-map` calibration when one is saved, the brand's linked handles, partners, and competitors.
+- From brand memory: the `adreuse:account-map` calibration when one is saved, the brand's linked handles, partners, and competitors.
 - From the launch message: whether the person wants retailers or other non-creator accounts included.
 
 ## Output
 
-Each author labelled creator, brand-owned (own or regional account), retailer or reseller, deal or news page, team or sponsorship account, or another brand's sponsored post, with the evidence for the label (handle, caption wording, posting mix). Brand-owned accounts are excluded; the rest are counted and set aside unless the person includes them. Uncertain labels are flagged, never guessed. A proposed map, or only the authors a saved map doesn't list, is returned as a `write` proposal for one batch question; the saved record is a `guideline` under the ad-reuse-only `ad-reuse:account-map` key, which every other flow drops; until it is saved, every count on the page reads "unconfirmed account map".
+Each author labelled creator, brand-owned (own or regional account), retailer or reseller, deal or news page, team or sponsorship account, or another brand's sponsored post, with the evidence for the label (handle, caption wording, posting mix). Brand-owned accounts are excluded; the rest are counted and set aside unless the person includes them. Uncertain labels are flagged, never guessed. A proposed map, or only the authors a saved map doesn't list, is returned as a `write` proposal for one batch question; the saved record is a `guideline` under the ad-reuse-only `adreuse:account-map` key, which every other flow drops; until it is saved, every count on the page reads "unconfirmed account map".
 
 ## Callable
 
