@@ -475,6 +475,12 @@ counts a bio line: a lead that the posts confirm or contradict.
   country): confirmed by the posts, it counts like any other evidence; not shown either way, it
   earns at most half of what that evidence would give the component; contradicted by the posts,
   it earns nothing and the contradiction is a reason on the card.
+- A response that says the applicant does **not** meet a criterion ("he is not overweight", "we
+  don't live in the US") is a miss on that component: it earns nothing, and the call follows the
+  fit score with that miss in it. Only posts that clearly show otherwise (the dog visibly overweight
+  in recent posts) restore the points, and then the card names both. Its Maybe question, when the
+  call is a Maybe, asks them to confirm it ("Confirm the dog is overweight: they said 'he is not
+  overweight'").
 - **Topic evidence**, **Engagement quality**, **Cadence and recency**, and **Format match** stay
   from the posts and Atlas's figures only; a stated follower or engagement figure never replaces
   Atlas's.
@@ -549,3 +555,4 @@ boost: How many pounds overweight is your dog? > 10
 | I | no; 25 | Fit 85 | **Reject** (rule 2): "Rejected by form hard stop: 'Do you agree to the usage in perpetuity?' = 'no'" |
 | J | Yes; "10-15" | Fit 66 | **Maybe** on fit: the range reads as 10, which is not more than 10, so no boost |
 | K | Yes; "Dixie 8-10, Sky 10-15" | Fit 66 | **Maybe** on fit: the weight is `unclear` (two figures), quoted in the evidence for the team |
+| L | Yes; "Not overweight." | Fit 41 once audience fit counts the answer as a miss | **Reject** on fit: "Says the dog is not overweight; no recent post shows otherwise" |
