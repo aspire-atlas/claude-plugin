@@ -306,6 +306,11 @@ jobs:
 
       # Each client case's assertions, judged on its two fixture pages (scripts/eval/README.md, "Client cases and
       # their assertions"). Last, so a failure here never stops the reruns above from being posted.
+      - name: The key for the fixture check is missing
+        if: steps.pick.outputs.fixtures == 'true' && env.HAS_KEY != 'true'
+        run: |
+          echo "::warning::ANTHROPIC_API_KEY is not set: the client cases' fixture pages were not judged."
+
       - name: Check the case fixtures
         if: ${{ !cancelled() && steps.pick.outputs.fixtures == 'true' && env.HAS_KEY == 'true' }}
         env:
