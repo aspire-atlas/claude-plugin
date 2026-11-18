@@ -54,7 +54,7 @@ Payment and tax data, so it is kept nowhere and the report names it:
 - in every other column except the ones `KEEP` names (a header that is exactly a handle, name,
   email, phone, place, or id header), wherever it sits in the cell: a card number (13 to 19
   digits as one block or groups of 4 to 6, that pass the Luhn check, alone or with up to two short
-  expiry or CVV groups at either end, and not inside a link) and an IBAN (in any case, spaces or dashes
+  expiry or CVV groups at either end, and not right after `/` or `=` inside a link) and an IBAN (in any case, spaces or dashes
   allowed, 15 to 34 characters ending at a group's end, mostly digits after the country and check
   digits, with the right check digits). The match becomes `[left out]`, and
   `cells_left_out` counts the cells;
@@ -64,7 +64,7 @@ Payment and tax data, so it is kept nowhere and the report names it:
 
 <!-- applicant-csv -->
 ```python
-import csv, io, json, re, sys
+import csv, io, itertools, json, re, sys
 
 path, arg = sys.argv[1], sys.argv[2]  # "summary", or the position of the first row to print
 PAY = re.compile(r"\b(payments?|pay ?pal|venmo|zelle|cash ?app|bank|account (number|no)|acct|routing|"
@@ -80,10 +80,12 @@ KEEP = {"instagram", "instagram handle", "instagram username", "instagram url", 
         "region", "zip", "zip code", "postal code"}
 DIGITS = re.compile(r"\d(?:[ -]?\d){12,}")
 # The card shape: 13 to 19 digits as one block or as groups of 4 to 6 (4-4-4-4, 4-6-5); phone numbers
-# and dates, in groups of 2 or 3, are not. SHORT is an expiry or CVV group beside it.
+# and dates, in groups of 2 or 3, are not. SHORT is an expiry or CVV group beside it: 2 or 3 digits, or
+# 4 that read as a month first (0127), so a tracking number's 4-digit groups are not set aside.
 CARD_CORE = re.compile(r"\d+|\d{4,6}(?: \d{4,6})+")
-SHORT = re.compile(r"\d{2,4}")
-URL = re.compile(r"(https?://|www\.)\S*$", re.I)
+SHORT = re.compile(r"\d{2,3}|(0[1-9]|1[0-2])\d\d")
+# A number right after / or = inside a link (a video or user id), with or without https:// or www.
+URL = re.compile(r"(https?://|www\.|\b[\w-]+\.[a-z]{2,}/)\S*[/=]$", re.I)
 IBAN = re.compile(r"\b[A-Z]{2}\d{2}(?:[ -]?[A-Z0-9]){11,30}", re.I)
 LIMIT = 20000
 
@@ -97,20 +99,21 @@ def mod97(s):
     return int("".join(str(int(c, 36)) for c in s[4:] + s[:4])) % 97 == 1
 
 
+def card_shape(core, ends):
+    return bool(CARD_CORE.fullmatch(core)) and all(SHORT.fullmatch(x) for x in ends)
+
+
 def card(m):
-    # A card is CARD_CORE that passes Luhn, alone or with up to two SHORT groups (an expiry, a CVV) at
-    # either end. Every way of setting those groups aside is tried, since one match can't retry them.
-    # A number inside a link (a video or user id) is never a card.
+    # A card is a core of the card shape that passes Luhn, alone or with up to two SHORT groups at either
+    # end. Every way of setting those groups aside is tried, since one match can't retry them.
     if URL.search(m.string[:m.start()]):
         return m.group()
     g = re.split(r"[ -]", m.group())
-    for a in range(3):
-        for b in range(3):
-            core, ends = " ".join(g[a:len(g) - b]), g[:a] + g[len(g) - b:]
-            digits = core.replace(" ", "")
-            if (CARD_CORE.fullmatch(core) and all(SHORT.fullmatch(x) for x in ends)
-                    and 13 <= len(digits) <= 19 and luhn(digits)):
-                return "[left out]"
+    for a, b in itertools.product(range(3), repeat=2):
+        core, ends = " ".join(g[a:len(g) - b]), g[:a] + g[len(g) - b:]
+        digits = core.replace(" ", "")
+        if card_shape(core, ends) and 13 <= len(digits) <= 19 and luhn(digits):
+            return "[left out]"
     return m.group()
 
 
