@@ -15,6 +15,8 @@ export type Turn = {
   connectors: Record<string, string>
   /** Text the main thread wrote, plus what its subagents returned to it. */
   text: string
+  /** Only what the main thread wrote itself: no tool result, so no file it read and no agent's output. */
+  said: string
   /** The final reply of the turn, as `claude -p` reports it. */
   reply: string
   toolUses: ToolUse[]
@@ -30,12 +32,14 @@ export type Turn = {
 }
 
 export type PageChecks = {
-  /** R1, R2, R6, R11, R13 and R14 from the page-check script: pass, fail, n/a or unmarked. */
+  /** R1, R2, R6, R11, R13, R14 and R15 from the page-check script: pass, fail, n/a or unmarked. */
   scripted: Record<string, string>
   /** R rows from the quality review's grade mode. */
   graded: Record<string, Result>
   /** E rows from the judge. */
   e: Record<string, Result>
+  /** The question's own assertions, by id. Empty for a question that has none (normalizeRun fills it in older results). */
+  asserted: Record<string, Result>
   reasons: Record<string, string>
   notes: string[]
 }
@@ -52,6 +56,30 @@ export type ChatChecks = {
   messages: Partial<Record<ChatMessage, ChatCount>>
 }
 
+/**
+ * One assertion of a client case (questions.json). `ticket` is the work that makes it pass. `landed` is false
+ * until that ticket merges: until then a failure is expected and blocks nothing, and from then on a failure
+ * is a regression. `examples` are the client examples the assertion covers, with brands as placeholders.
+ */
+export type Assertion = {
+  id: string; name: string; fix: number; ticket: string; landed: boolean
+  passesWhen: string; failsWhen: string; examples: string[]
+  /** Added to `passesWhen` only when local.json's `values` fill every {placeholder} in it: an expected figure for a named competitor. */
+  whenNamed?: string
+}
+
+/** What an assertion passes on, with `whenNamed` added when `values` name everything it asks about. */
+export function passesWhen(assertion: Assertion, values: Record<string, string>): string {
+  const named = assertion.whenNamed ? fill(assertion.whenNamed, values) : ''
+  return fill(assertion.passesWhen, values) + (named && !/\{\w+\}/.test(named) ? ` ${named}` : '')
+}
+
+/** What a result keeps of an assertion: enough to draw its row and to tell an expected failure from a regression. */
+export type AssertionRef = Pick<Assertion, 'id' | 'name' | 'ticket' | 'landed'>
+
+export const assertionRefs = (assertions: Assertion[]): AssertionRef[] =>
+  assertions.map(({ id, name, ticket, landed }) => ({ id, name, ticket, landed }))
+
 export type QuestionResult = {
   code: string
   example: string
@@ -67,7 +95,25 @@ export type QuestionResult = {
   approved: PageChecks | null
   /** `not run` for a question graded from a file, and for results stored before the chat check (normalizeRun). */
   chat: ChatChecks
+  /** The second run of the same question, when the run was asked for the repeat pair (`--repeat`). */
+  repeat?: RepeatChecks
   problems: string[]
+  /** The assertions the question was graded on. Empty for a question that has none. */
+  assertions: AssertionRef[]
+}
+
+/** The repeat pair (docs/STANDARD.md, S4): the same question asked again in the same session. */
+export type RepeatChecks = {
+  /** FU1, from the transcript: the second run's first message follows up on the first run and asks no setup question. */
+  asks: Result
+  /** FU2, from a judge that reads both pages: the second page's first section says what changed since the first. */
+  leads: Result
+  rounds: number
+  /** What the second run cost, the close-out answer before it included. The question's own sizes describe the first run. */
+  billedTokens: number
+  costUsd: number
+  compactions: number
+  page: { link: string | null; captured: boolean }
 }
 
 export type RunResults = {
@@ -89,11 +135,11 @@ export const HARNESS_VERSION = 1
 // mint_run_id and report_checkpoint change no Atlas record. lib.test.ts fails when the contract gains a tool
 // that is in neither list.
 export const ATLAS_READS = [
-  'calculate_creator_fee', 'get_brand_context', 'get_brand_instruction', 'get_brand_theme', 'get_cas_briefs',
+  'calculate_creator_fee', 'get_brand_context', 'get_brand_instruction', 'get_brand_theme', 'get_card_images', 'get_cas_briefs',
   'get_cas_campaign', 'get_cas_rates', 'get_cas_results', 'get_cas_selection', 'get_cas_setup_form', 'get_creator',
   'get_dashboard', 'get_fee_rate_card', 'get_job_status', 'get_more_tools', 'get_onboarding_form',
   'get_onboarding_report', 'get_profile', 'get_shop_analytics', 'get_status', 'list_ad_accounts',
-  'list_ad_search_fields', 'list_available_hashtags', 'list_channels', 'list_creator_marketplace_labels',
+  'list_ad_search_fields', 'list_applicants', 'list_available_hashtags', 'list_channels', 'list_creator_marketplace_labels',
   'list_creator_search_fields', 'list_hashtag_posts', 'list_hashtags', 'list_insight_search_fields',
   'list_my_organizations', 'list_my_profiles', 'list_post_search_fields', 'lookup_creators', 'lookup_posts',
   'mint_run_id', 'report_checkpoint', 'search_ads', 'search_calibrations', 'search_creator_marketplace',
@@ -134,10 +180,11 @@ function usageTotal(usage: Record<string, any> | undefined): number {
 
 export function summarizeTurn(events: Event[]): Turn {
   const turn: Turn = {
-    sessionId: null, scratchpad: null, model: null, connectors: {}, text: '', reply: '', toolUses: [], toolResults: {},
+    sessionId: null, scratchpad: null, model: null, connectors: {}, text: '', said: '', reply: '', toolUses: [], toolResults: {},
     contextTokens: 0, billedTokens: 0, costUsd: 0, compactions: 0, failed: true,
   }
   const parts: string[] = []
+  const said: string[] = []
   for (const event of events) {
     const main = !event.parent_tool_use_id
     if (event.type === 'system' && event.subtype === 'init') {
@@ -149,7 +196,10 @@ export function summarizeTurn(events: Event[]): Turn {
       turn.compactions += 1
     } else if (event.type === 'assistant') {
       for (const block of event.message?.content ?? []) {
-        if (block.type === 'text' && main) parts.push(block.text)
+        if (block.type === 'text' && main) {
+          parts.push(block.text)
+          said.push(block.text)
+        }
         if (block.type === 'tool_use') turn.toolUses.push({ id: block.id, name: block.name, input: block.input ?? {}, main })
       }
       if (main) turn.contextTokens = usageTotal(event.message?.usage) || turn.contextTokens
@@ -169,6 +219,7 @@ export function summarizeTurn(events: Event[]): Turn {
     }
   }
   turn.text = parts.join('\n')
+  turn.said = said.join('\n')
   return turn
 }
 
@@ -352,6 +403,70 @@ export function checkChat(turns: Turn[], closed: boolean, rules: ChatRules): { c
   return { checks, messages, hits }
 }
 
+/** The repeat pair's two checks, by what each result holds. Their names and wording are in questions.json (repeat.checks). */
+export const REPEAT_IDS = { asks: 'FU1', leads: 'FU2' } as const
+
+// The headers of the questions a first run settles, and the header of the one question a repeat run asks.
+// They are the contract's own (orchestration.md, 2, and repeat-run.md, The reply): lib.test.ts fails when
+// either file stops naming one, so a renamed header cannot leave FU1 looking for the old one.
+export const SETUP_HEADERS = ['Heard', 'Scope', 'Save', 'Remember', 'Storyline', 'Role', 'Relationship']
+export const SINCE_HEADER = 'Since then'
+// What the setup questions say when a host refuses the question tool and the flow asks in text.
+const SETUP_WORDS = [/keep these answers for next time/i, /\bpage only\b/i, /\bsave to atlas\b/i, /\byes, run it\b/i]
+// The follow-up's first line, allowing for a quote mark or emphasis in front of it.
+const OPENING = /^[\s>*_"“]*last time \(/i
+
+/**
+ * FU1: the first message of a repeat run. It passes when the message opens the follow-up ("Last time (12 Nov)
+ * you asked ..."), asks about what has happened since, and asks none of the setup questions the first run
+ * settled. The Credits question is not a setup question: a run that will spend still asks it. Only the main
+ * thread's own words are read: a file it opened (the contract's own example opens with "Last time") is not
+ * something the person saw. The opening must be a line of its own that comes before any question the message
+ * asks, so a setup reply that mentions last time further down, or only inside a question, fails. The reasons
+ * name headers and rules only, never the message's words.
+ */
+export function repeatAsk(turn: Turn): { result: Result; reasons: string[] } {
+  const asks = turn.toolUses.filter(use => use.main && use.name === 'AskUserQuestion')
+  const questions = asks.flatMap(use => (Array.isArray(use.input?.questions) ? use.input.questions : []))
+  const headers = questions.map((question: any) => String(question?.header ?? '').trim().toLowerCase())
+  // Everything the main thread wrote in the turn; the reply alone when the stream kept no text blocks.
+  const message = turn.said.trim() ? turn.said : turn.reply
+  if (!message.trim() && !questions.length) return { result: 'not run', reasons: ['the repeat run sent no message'] }
+  const reasons: string[] = []
+  const lines = message.split('\n')
+  const opening = lines.findIndex(line => OPENING.test(line))
+  if (opening < 0 || lines.slice(0, opening).join('\n').includes('?')) reasons.push('the message does not open with "Last time ({date}) you asked"')
+  const setup = SETUP_HEADERS.map(header => header.toLowerCase())
+  const repeated = headers.filter(header => setup.includes(header))
+  if (repeated.length) reasons.push(`it asks setup questions again: ${[...new Set(repeated)].join(', ')}`)
+  if (questions.length) {
+    if (!headers.includes(SINCE_HEADER.toLowerCase())) reasons.push(`no question is headed "${SINCE_HEADER}"`)
+  } else {
+    if (!/\bsince\b/i.test(message)) reasons.push('it does not ask what has happened since')
+    const said = SETUP_WORDS.filter(pattern => pattern.test(`${turn.said}\n${turn.reply}`))
+    if (said.length) reasons.push(`it asks setup questions again in text (${said.length} setup phrase${said.length === 1 ? '' : 's'})`)
+  }
+  return { result: reasons.length ? 'fail' : 'pass', reasons }
+}
+
+/** One line under a question's table for the repeat pair. Null when the pair was not run. */
+export function repeatLine(repeat: RepeatChecks | undefined, names: Record<string, string>): string | null {
+  if (!repeat) return null
+  const part = (id: string, result: Result) => `${names[id] ? `${names[id]} ` : ''}(${id}): ${cell(result)}`
+  const page = repeat.page.link ?? (repeat.page.captured ? 'captured, no link' : 'none published')
+  const compactions = repeat.compactions ? `, compacted ${repeat.compactions} time${repeat.compactions === 1 ? '' : 's'}` : ''
+  return `Repeat run: ${part(REPEAT_IDS.asks, repeat.asks)}; ${part(REPEAT_IDS.leads, repeat.leads)}. ` +
+    `Confirmation rounds: ${repeat.rounds} · Second run: ${repeat.billedTokens.toLocaleString('en-US')} tokens billed${compactions} · Second page: ${page}.`
+}
+
+/** The questions whose repeat pair failed a check. Like the chat, it has no approved result to compare with. */
+export function repeatFailures(results: RunResults): { code: string; id: string }[] {
+  return results.questions.flatMap(question =>
+    (Object.keys(REPEAT_IDS) as (keyof typeof REPEAT_IDS)[])
+      .filter(key => question.repeat?.[key] === 'fail')
+      .map(key => ({ code: question.code, id: REPEAT_IDS[key] })))
+}
+
 /** The chat item of docs/STANDARD.md that the counts prove. */
 export const CHAT_CHECK = { id: 'C5', name: 'Chat wording' }
 
@@ -373,7 +488,14 @@ export function chatLine(chat: ChatChecks): string | null {
 
 /** Stored results as this version reads them: a run stored before the chat check has no chat on its questions. */
 export function normalizeRun(results: RunResults): RunResults {
-  return { ...results, questions: results.questions.map(question => ({ ...question, chat: question.chat ?? noChat() })) }
+  const page = (checks: PageChecks | null) => checks && { ...checks, asserted: checks.asserted ?? {} }
+  return {
+    ...results,
+    questions: results.questions.map(question => ({
+      ...question, chat: question.chat ?? noChat(), assertions: question.assertions ?? [],
+      new: page(question.new), approved: page(question.approved),
+    })),
+  }
 }
 
 export function fencedBlocks(text: string, label: string): string[] {
@@ -470,9 +592,9 @@ export function eResult(checks: PageChecks | null, id: string): Result {
   return checks?.e[id] ?? 'not run'
 }
 
-const R_FLOOR = 14
+const R_FLOOR = 15
 
-/** R ids to show: R1 to R14 always, and any later ones a grade or the page check returned (the reader standard grows). */
+/** R ids to show: R1 to R15 always, and any later ones a grade or the page check returned (the reader standard grows). */
 export function rIds(results: QuestionResult[]): string[] {
   let top = R_FLOOR
   for (const question of results) {
@@ -488,13 +610,38 @@ export function rIds(results: QuestionResult[]): string[] {
 
 export type CheckDef = { id: string; name: string; judgedBy?: string; waitsFor?: string }
 
-const cell = (result: Result) => (result === 'not run' ? '–' : result)
+export const cell = (result: Result) => (result === 'not run' ? '–' : result)
 
-export function rows(question: QuestionResult, eChecks: CheckDef[], rList: string[]): { id: string; new: Result; approved: Result; bar: boolean }[] {
+export const aResult = (checks: PageChecks | null, id: string): Result => checks?.asserted[id] ?? 'not run'
+
+/** `name` is what a report prints beside the id: an assertion's own name, or the check's name from `names`. */
+export type Row = { id: string; name?: string; new: Result; approved: Result; bar: boolean; assertion?: AssertionRef }
+
+/** A question's rows: its own assertions first, since they are what the case is there to show, then E and R. */
+export function rows(question: QuestionResult, eChecks: CheckDef[], rList: string[], names: Record<string, string>): Row[] {
   const bar = new Set(question.barChecks)
   return [
-    ...eChecks.map(check => ({ id: check.id, new: eResult(question.new, check.id), approved: eResult(question.approved, check.id), bar: bar.has(check.id) })),
-    ...rList.map(id => ({ id, new: rResult(question.new, id), approved: rResult(question.approved, id), bar: bar.has(id) })),
+    ...question.assertions.map(assertion => ({ id: assertion.id, name: assertion.name, new: aResult(question.new, assertion.id), approved: aResult(question.approved, assertion.id), bar: true, assertion })),
+    ...eChecks.map(check => ({ id: check.id, name: names[check.id], new: eResult(question.new, check.id), approved: eResult(question.approved, check.id), bar: bar.has(check.id) })),
+    ...rList.map(id => ({ id, name: names[id], new: rResult(question.new, id), approved: rResult(question.approved, id), bar: bar.has(id) })),
+  ]
+}
+
+/**
+ * The lines under a case's table that say where each assertion stands against its ticket: the ones still
+ * waiting on a ticket, and the ones that pass before their ticket is marked as landed.
+ */
+export function assertionNotes(question: QuestionResult): string[] {
+  if (!question.new) return []
+  const open = question.assertions.filter(assertion => !assertion.landed)
+  const label = (assertion: AssertionRef) => `${assertion.id} (${assertion.ticket})`
+  const got = (result: Result) => open.filter(assertion => aResult(question.new, assertion.id) === result)
+  // The assertion judge is told to answer PASS or FAIL only, so an N/A is no more a result than a missing row.
+  const [waiting, early, unjudged] = [got('fail'), got('pass'), [...got('not run'), ...got('n/a')]]
+  return [
+    ...(waiting.length ? [`Waiting on a ticket, so not a regression: ${waiting.map(label).join(', ')}.`] : []),
+    ...(unjudged.length ? [`Not judged (the judge returned no row, or an N/A it is told not to give), so nothing is known about: ${unjudged.map(label).join(', ')}.`] : []),
+    ...(early.length ? [`Passes before its ticket is marked as landed: ${early.map(label).join(', ')}. Set "landed" in scripts/eval/questions.json in the ticket's pull request.`] : []),
   ]
 }
 
@@ -505,8 +652,8 @@ export function renderQuestion(question: QuestionResult, eChecks: CheckDef[], rL
   lines.push('')
   lines.push('| Check | New page | Approved page | Sets the bar |')
   lines.push('| ----- | -------- | ------------- | ------------ |')
-  for (const row of rows(question, eChecks, rList)) {
-    const name = names[row.id] ? ` ${names[row.id]}` : ''
+  for (const row of rows(question, eChecks, rList, names)) {
+    const name = row.name ? ` ${row.name}${row.assertion ? ` (${row.assertion.ticket})` : ''}` : ''
     lines.push(`| ${row.id}${name} | ${cell(row.new)} | ${cell(row.approved)} | ${row.bar ? 'yes' : ''} |`)
   }
   lines.push('')
@@ -514,7 +661,7 @@ export function renderQuestion(question: QuestionResult, eChecks: CheckDef[], rL
   lines.push(`Transcript: ${question.transcriptTokens.toLocaleString('en-US')} tokens${compactions} · ` +
     `Confirmation rounds: ${question.rounds} · New page: ${question.page.link ?? (question.page.captured ? 'captured, no link' : 'none published')}`)
   const chat = chatLine(question.chat)
-  const notes = [...question.problems, ...(chat ? [chat] : []), ...(question.new?.notes ?? []).map(n => `New page: ${n}`), ...(question.approved?.notes ?? []).map(n => `Approved page: ${n}`)]
+  const notes = [...question.problems, ...assertionNotes(question), ...(chat ? [chat] : []), ...(question.new?.notes ?? []).map(n => `New page: ${n}`), ...(question.approved?.notes ?? []).map(n => `Approved page: ${n}`)]
   for (const note of notes) lines.push(`- ${note}`)
   const waiting = eChecks.filter(check => check.waitsFor && eResult(question.new, check.id) === 'not run')
   if (waiting.length) lines.push(`- Not run yet: ${waiting.map(check => `${check.id} (${check.waitsFor})`).join(', ')}.`)
@@ -532,7 +679,7 @@ export function renderRun(results: RunResults, eChecks: CheckDef[], names: Recor
 /** What a stored baseline keeps: results and sizes. No page, link, brand, or quoted text. */
 export function forBaseline(results: RunResults): RunResults {
   const strip = (checks: PageChecks | null): PageChecks | null =>
-    checks && { scripted: checks.scripted, graded: checks.graded, e: checks.e, reasons: {}, notes: [] }
+    checks && { scripted: checks.scripted, graded: checks.graded, e: checks.e, asserted: checks.asserted, reasons: {}, notes: [] }
   return {
     ...results,
     questions: results.questions.map(question => ({
@@ -540,6 +687,7 @@ export function forBaseline(results: RunResults): RunResults {
       page: { link: null, captured: question.page.captured },
       new: strip(question.new),
       approved: strip(question.approved),
+      ...(question.repeat ? { repeat: { ...question.repeat, page: { link: null, captured: question.repeat.page.captured } } } : {}),
       problems: [],
     })),
   }
@@ -557,9 +705,10 @@ export function compareRuns(before: RunResults, after: RunResults, eChecks: Chec
       lines.push('Not in the first run.')
       continue
     }
-    const prevRows = rows(prev, eChecks, rList)
-    const changed = rows(next, eChecks, rList)
-      .map((row, i) => ({ row, was: prevRows[i] }))
+    // Matched by id, not by position: a case's assertion list can grow between two runs.
+    const prevRows = new Map(rows(prev, eChecks, rList, {}).map(row => [row.id, row]))
+    const changed = rows(next, eChecks, rList, {})
+      .map(row => ({ row, was: prevRows.get(row.id) ?? { ...row, new: 'not run' as Result, approved: 'not run' as Result } }))
       .filter(({ row, was }) => row.new !== was.new || row.approved !== was.approved)
     if (changed.length) {
       lines.push('| Check | New page | Approved page |', '| ----- | -------- | ------------- |')
@@ -625,20 +774,21 @@ export function fill(template: string, values: Record<string, string>): string {
 
 /**
  * Splits the chosen questions by whether local.json names a brand for them. A question with no brand is skipped
- * only while no baseline holds approved results for it (a question not yet set up); one that has them is
- * `missing`, and the run must stop, since a lost or mistyped entry would otherwise drop a gated question. Grading
- * a given page or a dry run needs no brand, so then nothing is skipped.
+ * only while nothing about it gates a pull request (a question not yet set up). `gates` says when one does: a
+ * baseline holds approved results for it, or one of its assertions has landed. Such a question is `missing`,
+ * and the run must stop, since a lost or mistyped entry would otherwise drop a gated question. Grading a given
+ * page or a dry run needs no brand, so then nothing is skipped.
  */
 export function configuredQuestions<Q extends { code: string }>(
   questions: Q[], local: { questions?: Record<string, { brand?: string }> }, needsNoBrand: boolean,
-  hasApproved: (code: string) => boolean,
+  gates: (code: string) => boolean,
 ): { run: Q[]; skipped: string[]; missing: string[] } {
   if (needsNoBrand) return { run: questions, skipped: [], missing: [] }
   const unset = questions.filter(question => !local.questions?.[question.code]?.brand).map(question => question.code)
   return {
     run: questions.filter(question => !unset.includes(question.code)),
-    skipped: unset.filter(code => !hasApproved(code)),
-    missing: unset.filter(code => hasApproved(code)),
+    skipped: unset.filter(code => !gates(code)),
+    missing: unset.filter(code => gates(code)),
   }
 }
 
@@ -659,7 +809,63 @@ export const EVAL_PATHS = [
 /** A `sharedPaths` entry ending in "/" covers every file under it. */
 const coveredBy = (path: string, entry: string) => (entry.endsWith('/') ? path.startsWith(entry) : path === entry)
 
+/** True when a changed file is one of `entries`, or sits under one that names a folder. */
+const touches = (changed: string[], entries: string[]): boolean => changed.some(path => entries.some(entry => coveredBy(path, entry)))
+
 export type QuestionPaths = { code: string; paths?: string[] }
+
+/** True when a failure of this question can already block a merge with no approved page: one of its assertions has landed. */
+export const hasLandedAssertion = (question: { assertions: { landed: boolean }[] }): boolean =>
+  question.assertions.some(assertion => assertion.landed)
+
+/** A file name from local.json as the run's folder holds it: no path parts, nothing a shell or a prompt could misread. */
+export const safeFileName = (name: string): string => name.replace(/[^A-Za-z0-9._-]/g, '_').replace(/^\.+/, '_')
+
+/**
+ * A questions.json entry as the harness uses it. `question` is the plugin's own question code: the entry's
+ * `code` unless it names another, and null for a flow that has no code. `assertions` is empty for a question
+ * that is not a client case. Resolved once here, so no caller handles a missing field.
+ */
+export function resolveQuestion<Q extends { code: string; question?: string | null; assertions?: Assertion[] }>(entry: Q): Q & { question: string | null; assertions: Assertion[] } {
+  return { ...entry, question: entry.question === undefined ? entry.code : entry.question, assertions: entry.assertions ?? [] }
+}
+
+/** True when a changed file is one the fixture check depends on (`fixturePaths` in questions.json). */
+export const fixturesForChanges = (changed: string[], fixturePaths: string[]): boolean => touches(changed, fixturePaths)
+
+export type InputFile = { name: string; path?: string; text?: string }
+
+/**
+ * The files local.json hands a question, as the run's folder will hold them, and what is wrong with them.
+ * `isFile` says whether a path is a file on this machine (a folder is not). Checked for every question before
+ * the first one runs, so a bad entry stops the run before any page is published instead of part way through.
+ * Two names that differ only in case count as the same: most developers' disks would save them as one file.
+ */
+export function planInputFiles(code: string, files: InputFile[], isFile: (path: string) => boolean): { names: string[]; problems: string[] } {
+  const names = files.map(file => safeFileName(String(file.name ?? '')))
+  const folded = names.map(name => name.toLowerCase())
+  const problems: string[] = []
+  files.forEach((file, i) => {
+    if (!names[i]) problems.push(`${code}: a file has no name`)
+    else if (folded.indexOf(folded[i]) !== i) problems.push(`${code}: the files ${files[folded.indexOf(folded[i])].name} and ${file.name} would both be saved as ${names[i]}`)
+    if (typeof file.text !== 'string' && !(typeof file.path === 'string' && isFile(file.path))) problems.push(`${code}: the file ${file.name || '(no name)'} has no text and no path to a file that exists`)
+  })
+  return { names, problems }
+}
+
+/**
+ * The verdict on a case's two fixture pages (scripts/fixtures/eval-cases/): the page with the wrong reading
+ * must fail every assertion and the corrected page must pass every one, or the assertion is worded so that a
+ * judge cannot tell the two readings apart. Returns the assertions that did not come out that way.
+ */
+export function fixtureProblems(assertions: AssertionRef[], wrong: Record<string, Result>, corrected: Record<string, Result>): string[] {
+  const problems: string[] = []
+  for (const { id } of assertions) {
+    if ((wrong[id] ?? 'not run') !== 'fail') problems.push(`${id}: the page with the wrong reading got ${wrong[id] ?? 'not run'}, not fail`)
+    if ((corrected[id] ?? 'not run') !== 'pass') problems.push(`${id}: the corrected page got ${corrected[id] ?? 'not run'}, not pass`)
+  }
+  return problems
+}
 
 /**
  * The question codes a set of changed files reruns: a question whose own `paths` holds a changed file, or every
@@ -667,43 +873,53 @@ export type QuestionPaths = { code: string; paths?: string[] }
  */
 export function codesForChanges(changed: string[], questions: QuestionPaths[], sharedPaths: string[]): { watched: string[]; codes: string[] } {
   const watched = changed.filter(path => EVAL_PATHS.some(prefix => path.startsWith(prefix)))
-  if (watched.some(path => sharedPaths.some(entry => coveredBy(path, entry)))) return { watched, codes: questions.map(question => question.code) }
+  if (touches(watched, sharedPaths)) return { watched, codes: questions.map(question => question.code) }
   const codes = questions.filter(question => (question.paths ?? []).some(path => watched.includes(path))).map(question => question.code)
   return { watched, codes }
 }
 
 /** A page check that got worse, or a run whose chat broke a countable rule, which has no approved result to name. */
 export type Regression =
-  | { kind: 'page'; code: string; id: string; was: Result; now: Result | 'no page' }
-  | { kind: 'chat'; code: string; id: string }
+  | { kind: 'page'; code: string; id: string; name?: string; was: Result; now: Result | 'no page' }
+  | { kind: 'assertion'; code: string; id: string; name?: string; ticket: string; now: Result | 'no page' }
+  | { kind: 'chat'; code: string; id: string; name?: string }
 
 /**
  * The questions whose chat broke a countable English rule. The chat has no approved result to compare with:
  * a broken rule in the run's own chat always counts, and this is the one place that decides it.
  */
-export function chatFailures(results: RunResults): Regression[] {
+export function chatFailures(results: RunResults, names: Record<string, string>): Regression[] {
   return results.questions
     .filter(question => question.chat.result === 'fail')
-    .map(question => ({ kind: 'chat', code: question.code, id: CHAT_CHECK.id }))
+    .map(question => ({ kind: 'chat', code: question.code, id: CHAT_CHECK.id, name: names[CHAT_CHECK.id] }))
 }
 
 /**
  * A regression is a check the approved page passes that the new page fails. A question that published no page
  * regresses on every check its approved page passes. A check the new page did not run, or one with no approved
- * result, is never a regression: the job fails on what it saw fail, and only that. The chat failures are added
- * after the page checks (chatFailures).
+ * result, is never a regression: the job fails on what it saw fail, and only that. An assertion whose ticket
+ * has landed is held to more: the ticket fixed a wrong reading, so the assertion must pass, with no approved
+ * result needed. A failure, a judge that answered n/a, and a judge that returned no row all count, since any of
+ * them lets the wrong reading back in unseen. One whose ticket has not landed regresses only the usual way,
+ * against an approved page that passes it. The chat failures are added after the page checks (chatFailures).
+ * `names` (checkNames) gives each regression the name a report prints.
  */
-export function regressions(results: RunResults, eChecks: CheckDef[]): Regression[] {
+export function regressions(results: RunResults, eChecks: CheckDef[], names: Record<string, string>): Regression[] {
   const rList = rIds(results.questions)
   const found: Regression[] = []
   for (const question of results.questions) {
-    for (const row of rows(question, eChecks, rList)) {
+    for (const row of rows(question, eChecks, rList, names)) {
+      const at = { code: question.code, id: row.id, name: row.name }
+      if (row.assertion?.landed) {
+        if (!question.new || row.new !== 'pass') found.push({ kind: 'assertion', ...at, ticket: row.assertion.ticket, now: question.new ? row.new : 'no page' })
+        continue
+      }
       if (row.approved !== 'pass') continue
-      if (!question.new) found.push({ kind: 'page', code: question.code, id: row.id, was: row.approved, now: 'no page' })
-      else if (row.new === 'fail') found.push({ kind: 'page', code: question.code, id: row.id, was: row.approved, now: row.new })
+      if (!question.new) found.push({ kind: 'page', ...at, was: row.approved, now: 'no page' })
+      else if (row.new === 'fail') found.push({ kind: 'page', ...at, was: row.approved, now: row.new })
     }
   }
-  return [...found, ...chatFailures(results)]
+  return [...found, ...chatFailures(results, names)]
 }
 
 /** Marks the one eval comment on a pull request, so later pushes edit it instead of adding another. */
@@ -716,17 +932,19 @@ export function renderComment(results: RunResults, eChecks: CheckDef[], names: R
   if (!results.questions.length) {
     return renderSkipped(`no question ran. ${skippedLine(results.skipped) ?? 'None was chosen.'}${runUrl ? ` Run: ${runUrl}` : ''}`)
   }
-  const found = regressions(results, eChecks)
+  const found = regressions(results, eChecks, names)
   const missingApproved = results.questions.filter(question => !question.approved).map(question => question.code)
   const lines = [COMMENT_MARKER, `## Page eval · ${results.questions.map(question => question.code).join(', ')}`, '']
   if (found.length) {
-    lines.push(`**${found.length} regression${found.length === 1 ? '' : 's'}**: checks the approved page passes that the new page does not, and chat wording that breaks a countable rule.`, '')
+    lines.push(`**${found.length} regression${found.length === 1 ? '' : 's'}**: checks the approved page passes that the new page does not, assertions that do not pass after their ticket landed, and chat wording that breaks a countable rule.`, '')
     for (const r of found) {
-      const name = `${r.code} ${r.id}${names[r.id] ? ` ${names[r.id]}` : ''}`
-      lines.push(r.kind === 'chat' ? `- ${name}: the run's chat broke a countable rule` : `- ${name}: approved ${r.was}, new ${r.now}`)
+      const name = `${r.code} ${r.id}${r.name ? ` ${r.name}` : ''}`
+      lines.push(r.kind === 'chat' ? `- ${name}: the run's chat broke a countable rule`
+        : r.kind === 'assertion' ? `- ${name}: ${r.ticket} landed, new ${r.now === 'not run' ? 'not judged' : r.now}`
+        : `- ${name}: approved ${r.was}, new ${r.now}`)
     }
   } else {
-    lines.push('**No regressions**: every check the approved page passes, the new page passes or did not run.')
+    lines.push('**No regressions**: every check the approved page passes, and every assertion whose ticket landed, the new page passes or did not run.')
   }
   lines.push('')
   if (approvedSource) lines.push(`Approved page results: ${approvedSource}.`)
@@ -767,12 +985,12 @@ export function stripTitlePrefix(html: string, prefix: string | null): string {
 }
 
 /** The nightly run's Slack message: one line per question, regressions named. Plain text, no page links. */
-export function renderSlack(results: RunResults, eChecks: CheckDef[], runUrl: string | null): string {
-  const found = regressions(results, eChecks)
+export function renderSlack(results: RunResults, eChecks: CheckDef[], names: Record<string, string>, runUrl: string | null): string {
+  const found = regressions(results, eChecks, names)
   const rList = rIds(results.questions)
   const lines = [`Atlas page eval, nightly on develop (${results.commit.slice(0, 7)}): ${found.length ? `${found.length} regression${found.length === 1 ? '' : 's'}` : 'no regressions'}`]
   for (const question of results.questions) {
-    const all = rows(question, eChecks, rList)
+    const all = rows(question, eChecks, rList, names)
     const passed = all.filter(row => row.new === 'pass').length
     const ran = all.filter(row => row.new !== 'not run').length
     const mine = found.filter(r => r.code === question.code).map(r => r.id)

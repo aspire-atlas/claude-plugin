@@ -99,9 +99,9 @@ import json, re, sys
 text = open(sys.argv[1]).read()
 want = {
     "result-packet": ["runId", "agent", "question", "reader", "page", "findings", "proposals",
-                      "questions", "next", "cost", "coverage", "selfCheck", "storyline"],
+                      "questions", "next", "cost", "coverage", "selfCheck", "storyline", "openItems"],
     "launch": ["from", "runId", "agent", "mode", "run", "question", "persona", "reader",
-               "shortcut", "scope", "approved", "examples", "storyline"],
+               "shortcut", "scope", "approved", "examples", "storyline", "since"],
 }
 bad = 0
 for tag, keys in want.items():

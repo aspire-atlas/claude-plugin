@@ -19,7 +19,9 @@ does not apply.
 - [6. Reviews](#6-reviews)
 - [7. Questions](#7-questions)
 - [8. Proof](#8-proof)
+- [9. Comparisons](#9-comparisons)
 - [The eval on a pull request](#the-eval-on-a-pull-request)
+- [Adding a client example](#adding-a-client-example)
 - [How to write a rule](#how-to-write-a-rule)
 - [The judgment review](#the-judgment-review)
 - [Rules that still apply](#rules-that-still-apply)
@@ -87,7 +89,8 @@ that changes an agent or flow).
 | -- | ---- | ------ | ---------- | ---- | --- |
 | S1 | A new page goes through the storyline step before it is built: three short bullets, each with the size of its evidence, asked as one `AskUserQuestion` with Build, Change, and Widen. A repeat run of the same page skips it. | ASP-5297 | reviewer; eval (E1, E8) | "Gift framing drives saves (14 posts, 6 creators, 410K views). Build?" | A holiday plan built on the first guess at the argument, which took five rounds to reach an approved page. |
 | S2 | A scheduled or unattended run asks nothing and states its storyline at the top of the page and in the delivery message. | ASP-5297 | reviewer; judgment review | A daily insights page whose answer block opens with its three storyline bullets and their evidence sizes. | A scheduled run that waits on a question nobody is there to answer. |
-| S3 | Saved answers go to the right record: a person's own defaults under their `user:usr-<id>` `user_fact` key, a flow's reader, scope, save choice and last run on the flow's organization-wide `applied_config` record. Never another person's key. | ASP-5298, ASP-5299 | reviewer | "Reader: leadership, as the weekly readout was last run. Right?", saved on the readout's own record. | A teammate's reader choice written to the first person's key, so a scheduled run follows one person's preference. |
+| S3 | Saved answers go to the right record: a person's own defaults under their `user:usr-<id>` `user_fact` key, a flow's reader, scope, save choice and last run on the flow's own `guideline` record (`lastrun:{flow}`), which every teammate and scheduled run on the brand profile reads. Never another person's key. | ASP-5298, ASP-5299 | reviewer | "Reader: leadership, as the weekly readout was last run. Right?", saved on the readout's own record. | A teammate's reader choice written to the first person's key, so a scheduled run follows one person's preference. |
+| S4 | A repeat run of the same question follows up, not sets up: its reply opens with "Last time ({date}) you asked …", asks one question about what happened to the decisions and next steps the last page left open, and repeats no setup question. The new page leads with what changed since that run, then the items still open. A scheduled run asks nothing and carries them over as "not confirmed". | ASP-5848 | eval: the repeat pair (`bun run eval:pages --repeat`), FU1 from the transcript and FU2 from the two pages; reviewer | "Last time (12 Nov) you asked which creator posts to run as ads. What has happened since on these? 1. License the three unboxing videos (you, by 19 Nov)." Then a page headed "Two of three steps are done since 12 Nov, and saves are up by half." | A second run that asks the reader, the scope and the save again, then publishes last time's page with new numbers. |
 
 ## 6. Reviews
 
@@ -112,6 +115,23 @@ that changes an agent or flow).
 | P2 | Each question code the agent answers has an eval question in `scripts/eval/questions.json`, and once it has an approved page, the spec's **Approved example** names the ticket that holds it. | ASP-5302 | reviewer; eval (the `eval` job on the PR) | The I4 question, with its reader and its approved plan named by ticket. | An agent whose page has never been rerun, so a rule change cannot show it helped. |
 | P3 | A PR that adds or changes a rule carries the before-and-after table from `bun run eval:pages`, and the gap the rule closes. A PR with no new rule says "no new rule". | ASP-5302 | reviewer; the PR template; eval (the `eval` job's comment on the PR) | The table for the question the rule is about, with the check that failed before and passes after. | A new rule with no rerun, so nobody knows whether the page already got it right. |
 
+## 9. Comparisons
+
+A comparison is any place a page sets two groups, two periods or two brands side by side, or states
+a share. Every comparison passes these four checks, or says in one plain line which one it fails.
+The checks, their markup and the 20-post line are in
+`plugins/aspire/skills/page-standard/comparisons.md`; the examples are from a competitive read and
+an affiliate report. "The English read" in **Checked by** is the separate read every page gets
+before it publishes (V1), which marks a page against rule 8 of `references/english-rules.md`. It
+checks pages, not pull requests, so these items are not in the judgment review.
+
+| Id | Item | Ticket | Checked by | Good | Bad |
+| -- | ---- | ------ | ---------- | ---- | --- |
+| K1 | Same kind: both sides hold one kind of post (paid label, TikTok Shop selling, or no paid label). A mixed side is split, or the comparison is dropped. | ASP-5974 | script: page check R15; the English read (rule 8) | "{brand}'s TikTok Shop posts drew 3.6 engagements per 1,000 views (18 posts, directional), against 14.7 across its 212 other posts. Shop posts are left out of the comparison with {competitor}." | "{brand} trails {competitor} on engagement", from an average that mixed the Shop posts in. Split by kind, the comparison said the opposite. |
+| K2 | Every mention counted: a count of posts about a brand or creator includes the posts that name it without the "@", and the method says how the mentions were found. | ASP-5974 | script: page check R15 (the method sentence); the English read (rule 8) | "{competitor}: 20 posts, directional. Mentions were found by tag, by @handle, and by the name written without the @." | "{competitor}: 2 posts", counted from "@" mentions only, when 18 more named it in plain text. |
+| K3 | Enough posts: a figure that rests on posts at or under the directional line set in `comparisons.md` is marked "directional" beside the number, with the post count. | ASP-5974 | script: page check R15; the English read (rule 8) | "3.6 engagements per 1,000 views (18 posts, directional)" | "Shop posts earn a quarter of the engagement", from 18 posts, with no post count and no mark. |
+| K4 | Share against size: a share is shown next to its group's share of the whole. When the two are as close as `comparisons.md` sets, the page says the share matches the group's size and draws no finding from it. | ASP-5974 | the English read (rule 8); script: page check R15 on the shares the page marks | "87% of revenue came from 88% of affiliates, so the share is in line with the group's size." | "87% of revenue comes from this group", as the headline finding, with no word that the group is 88% of affiliates. |
+
 ## The eval on a pull request
 
 A pull request that changes an agent or a flow file gets a comment from the `eval` job: the questions those
@@ -123,7 +143,9 @@ How to read the comment:
 1. **The first line** says whether anything regressed. A regression is a check the approved page passes that
    the new page fails; it blocks the merge. Fix the change, or, when the check itself is wrong, say so in the
    PR and fix the check in the same change.
-2. **The table** has one row per check: E1 to E8 (the Evals tab), then R1 onward (the reader standard). New
+2. **The table** has one row per check: a client case's own assertions first (see
+   [Adding a client example](#adding-a-client-example)), then E1 to E8 (the Evals tab), then R1 onward (the
+   reader standard). New
    page and Approved page are `pass`, `fail`, `n/a`, or `–` when the check did not run. **Sets the bar** marks
    the checks this question's approved page is the example for: those are the rows this standard's items
    above are proven on (E1 and E8 for S1, E4 for M3, E6 and E7 for V1).
@@ -138,9 +160,53 @@ How to read the comment:
    regression and blocks the merge. The line says which message broke which rule, or that a message was
    not sent; the words themselves stay in the run's folder.
 
+6. **An assertion row** names its ticket. While the ticket is open a `fail` is expected, and a line under the
+   table lists it as waiting. Once the ticket's pull request sets the assertion's `landed` flag, anything but a
+   `pass` is a regression and blocks the merge, with or without an approved page.
+
 The comment is edited in place on every push. `skipped: <reason>` means the PR carries the `skip-eval` label
 (the reason is the PR body's `skip-eval:` line), or that nothing the questions answer differs from the base
 branch any more.
+
+## Adding a client example
+
+A client example is a page for a real brand that a reviewer found drew a wrong conclusion. It is evidence
+for a rule the plugin already has or is getting. It is not a reason for a new rule.
+
+Each fix in the plugin update doc is one rule or one check, with a "What it covers" column that lists the
+examples it was written from. The eval holds the same list: a **client case** in `scripts/eval/questions.json`
+is a question with `assertions`, one per behaviour the reviewed page got wrong, each naming the ticket that
+fixes it.
+
+| Fix in the doc | Its rule or check | Case and assertions |
+| -------------- | ----------------- | ------------------- |
+| 2. Compare like with like | The like-for-like check (ASP-5974), fed by the paid and shop split (ASP-5976) and the mention count (ASP-5977) | CR1 A1, A2, A3; AR1 A1 |
+| 3. Look at all the evidence | The full search before an explanation (ASP-5978); engagement on the affiliate timeline (ASP-5979) | AR1 A2, A5 |
+| 4. Priced recommendations | Commission tiers with an invite list and a hold list (ASP-5981); a cost on every recommendation (ASP-5982) | AR1 A3, A4 |
+
+To add an example:
+
+1. **Find the fix it falls under.** Read the example against the rules above. Most examples are a new
+   instance of a behaviour an assertion already states.
+2. **Add a row to the eval case.** Put one sentence in that assertion's `examples`: what the page showed and
+   what was true, with the figures kept and every brand, competitor and handle replaced by a placeholder.
+   When the example shows a behaviour that no assertion states but the fix's rule covers, add an assertion to
+   the case instead, with the ticket that will make it pass and `"landed": false`.
+3. **Add the same row to the doc.** Put the example in the "What it covers" column of that fix.
+4. **Show it on the fixture pages.** Add the wrong reading to the case's `-wrong.html` page and the corrected
+   one to its `-corrected.html` page in `scripts/fixtures/eval-cases/`, then run
+   `bun run eval:pages --fixtures`. Every assertion must fail on the first page and pass on the second.
+5. **Change no rule.** The pull request says "no new rule". The rule's own ticket makes the assertion pass
+   and sets `landed` to `true` in the same pull request.
+
+Good: a second brand's report states "92% of sales" from 90% of its creators. It becomes a second entry in
+AR1 A1's `examples` and a second line in fix 2's "What it covers".
+
+Bad: the same report becomes a new line in `references/affiliate.md`, "never lead with a share of sales
+above 90%". That is a special case of the rule fix 2 already has.
+
+An example that no fix covers is a gap. It goes through [How to write a rule](#how-to-write-a-rule): prove
+the gap with a rerun first, then add the rule, and a new case or assertion with it.
 
 ## How to write a rule
 

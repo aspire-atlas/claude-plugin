@@ -52,6 +52,12 @@ flow change" here and skip the list.
 - [ ] P2 Each question code it answers has an eval question, and its approved page once it has one
 - [ ] P3 A new or changed rule carries the before-and-after table below
 
+**Comparisons**
+- [ ] K1 Both sides of a comparison hold one kind of post (paid label, TikTok Shop selling, or no paid label)
+- [ ] K2 Mention counts include mentions without the "@", and the method says how they were found
+- [ ] K3 A figure from too few posts (the line is in page-standard's `comparisons.md`) is marked "directional", with the post count
+- [ ] K4 A share is shown next to its group's share of the whole
+
 ## Question rerun
 
 <!--
