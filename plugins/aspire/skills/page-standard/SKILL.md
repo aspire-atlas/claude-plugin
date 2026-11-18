@@ -447,49 +447,48 @@ treat it as not fetched. An account fetched in the last 24 hours is not behind: 
 posting, and the page says so ("@x has not posted since Nov 2; it usually posts every 2 days"). An
 account with fewer than 2 posts in its freshness read has no pace; it is behind unless fetched in 24 hours.
 
-**9.5 When to refresh.** One refresh per handle per run, whichever row asks for it:
+**9.5 When to refresh.** One refresh per account (one `{network}:{handle}`) per run, whichever row
+asks for it. Atlas also refreshes on its own: a connected account about every 12 hours, and every
+Instagram and TikTok account read, looked up or found by a search in the last 7 days every 1 to 3
+days, so a run's own reads count toward it.
 
 | Run | What is refreshed | Asked first? |
 | --- | ----------------- | ------------ |
 | The user named the handle (handle mode, the creator profile) | That handle when it is not current. It is current only when Atlas holds the account and `lastFetchedAt` is under 24 hours old; with `lastFetchedAt` null or `freshness` absent, when its newest post (`newestPostAt`, or the newest post the searches return) is. No account record, no posts, or an older time is stale, so an account that posts less than daily is refreshed, as intended. A handle with no account record is the flow's reference to resolve (account resolution), never a 9.6 refresh | No: naming the handle approved it |
-| Interactive, any other subject account | Each account behind its pace | Yes |
-| Unattended (a scheduled run) | Nothing. Atlas already refreshes a connected account about every 12 hours and other accounts it tracks every 1 to 3 days, and a refresh's new posts count against the customer's credits with nobody there to approve them. Every subject account gets the freshness line and behind-pace notes only. The final shortlist is the one exception (next row) | No, and it never asks |
+| Interactive, any other subject account | Each account behind its pace, up to the refresh limit (below) | Yes |
+| Unattended (a scheduled run) | Nothing. Atlas's own refresh (above) covers these accounts, and a refresh's new posts count against the customer's credits with nobody there to approve them. Every subject account gets the freshness line and behind-pace notes only. The final shortlist is the one exception (next row) | No, and it never asks |
 | The page's final shortlist | As section 4, step 2, scheduled runs included: the page shows those creators' posts, and the shortlist is a small set Atlas already holds | No |
 | A flow whose reference or agent file rules out lookups (the content library, the organization dashboard, and every agent whose file says to read only what Atlas holds and does not name the freshness refresh as its one exception) | Nothing; the freshness line and behind-pace notes only | Never |
+
+**The refresh limit.** An interactive run refreshes at most **10** accounts from the second row,
+counted across the run and its relaunch, the brand's own included. Only the first row's runs (handle
+mode, the creator profile) and the final shortlist sit outside it: a handle named in any other run
+is counted and asked like the rest. With more behind than the limit, offer the brand's own accounts
+first, then one from each platform in turn, each group ranked by median views per post over the
+posts the flow already read, then by followers, then handle order for accounts with neither. Each
+account left out says on its freshness entry "not refreshed in this run: over the limit", adding ";
+Atlas refreshes it on its own within 1 to 3 days" on Instagram and TikTok; a shared page puts the
+note in `gaps` (9.2).
 
 The offer names each account, its newest post, and its pace, then the time and the cost: "Atlas's
 newest post for @x is Nov 2, and @x usually posts every 2 days. Refresh it first? About 2 minutes.
 Public data: the refresh is not charged, and the new posts it collects count against your credits."
-Options: "Refresh first (Recommended)" and "Use what Atlas holds". Ask with `AskUserQuestion` when
-the run asks its own questions. Otherwise build with what Atlas holds, mark each behind account on
-the page, and return the offer as a proposal in the result packet
-(`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **6** and **7**): level
-`read`, gate `approve-refresh`, one `items` entry per handle as `{network}:{handle}`, and the offer
-above as `what`. That run publishes its page but holds its Atlas writes and its delivery. The main
-thread asks the offer with these options and launches the run again with the same `runId` and
-`approved.refresh` set: the approved handles, or `[]` for "Use what Atlas holds". The relaunch
-makes no new offer: it refreshes exactly those handles before reading, republishes the page, and
-only then writes and delivers, so the first pass never trips a flow's duplicate-window guard.
+Over the limit it opens with the count: "{n} accounts look behind their pace. I can refresh {limit}
+now: your own accounts first, then the most-viewed on each platform." Options: "Refresh first
+(Recommended)" and "Use what Atlas holds". Ask with `AskUserQuestion` when the run asks its own
+questions. Otherwise build with what Atlas holds, mark each behind account on the page, and return
+the offer as a proposal in the result packet
+(`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **6** and **7**): level `read`,
+gate `approve-refresh`, one `items` entry per account as `{network}:{handle}`, at most the limit's
+top-ranked accounts (the rest go on the page as left out), and the offer above as `what`. That run
+publishes its page but holds its Atlas writes and its delivery. The main thread asks the offer with
+these options and launches the run again with the same `runId` and `approved.refresh` set: the
+approved handles, or `[]` for "Use what Atlas holds". The relaunch makes no new offer: it refreshes
+exactly those handles, never more than the limit, before reading, republishes the page, and only
+then writes and delivers, so the first pass never trips a flow's duplicate-window guard.
 
-**9.6 How to refresh.** Call `lookup_creators` with `forceRefresh: true`, `entityKind: "account"`,
-the network as `schema`, the handle as `identifier`, and the run's own `asOrganizationId` and
-`asProfileId`, up to 100 handles per call. Refresh only accounts Atlas already holds, so the call
-starts no discovery; a named handle Atlas does not hold is the flow's to resolve (9.5, first row).
-
-- The first response carries what Atlas already held. Re-read the same items with `lookup_creators`
-  without `forceRefresh` about every 15 seconds, up to roughly 3 minutes.
-- An account counts as refreshed when its `refresh` result is `skipped` with reason
-  `recently-refreshed` (make no second call), or when a re-read after a `started` result shows a
-  `lastFetchedAt` later than the call. With `freshness` absent on the re-read, a `snapshotAt` later
-  than the call, or a newer newest post than before, counts instead. One still `fetching` at the
-  limit, or whose refresh `failed`, keeps the data Atlas held and its freshness line says so.
-- Re-run the flow's searches. Search indexing lags the lookup: when a refreshed account's searches
-  come back empty, or their newest post is older than the re-read's `newestPostAt`, retry once
-  after about 30 seconds. Once they catch up, the page shows the new newest post; an account whose
-  searches still lag is reported like an unrefreshed one, with the refresh's time.
-- A team page names every refresh that was skipped as recently refreshed, and every one that
-  failed; a shared page puts them in `gaps` (9.2).
-- Never refresh with `start_business_discovery`: every call starts a new billable job.
+**9.6 How to refresh.** As `refresh.md` in this folder says. Never `start_business_discovery`: every
+call starts a new billable job.
 
 **9.7 Examples.** Good: "Atlas has no data for Nov 3 to 9 for @{brand} on TikTok; last fetched
 Nov 2." Bad: "No posts this week" for a week Atlas never fetched.
