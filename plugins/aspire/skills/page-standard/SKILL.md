@@ -27,7 +27,7 @@ This skill sets what a page says. `skills/aspire/references/artifact-standard.md
 and the source line, `skills/aspire/references/recipient-lens.md` sets the reader, and
 `skills/aspire/references/theme.md` sets the colors and type, `blocks.md` in this folder holds
 the parts each page is built from, with their markup, `page-check.md` holds the self-check
-script, `comparisons.md` the four checks on every comparison, `english-read.md` and `ux-review.md` the two reviews before publishing, and `examples.md` lists the evidence each
+script, `comparisons.md` the four checks on every comparison, `english-read.md` and `ux-review.md` the two reviews before publishing, `follow-up.md` what a repeat run's page leads with, and `examples.md` lists the evidence each
 approved example sets, by question code. **The flow's own reference wins**
 wherever it sets a rule: its layout, what its page leaves out, who sees money, and the form its
 evidence takes. This skill fills in what the reference leaves open. One exception: a reference
@@ -58,6 +58,8 @@ may ask Atlas for more metrics than section 8's row, never fewer.
 | 7 | How it was worked out | The scoring weights and the reasoning behind every score and recommendation, and the platform counts again. | R8, R2 |
 | 8 | What is missing | Team pages only. Missing data and what connecting it would add ("Paid results need a connected Meta ad account"). | R9 |
 | 9 | What Atlas can draft next | The drafts Atlas can make next, for example outreach to the 11, offers, discount codes. Nothing is sent without approval. | Judged (`draftNext`) |
+
+**Every page reports its open items, and a repeat run leads with what changed.** On every run, first runs included, the result's `openItems` (`orchestration.md`, **6**) lists every decision in part 5 and every next step in part 4 as the page words them, each with `kind`, `owner`, `due`, `status` `open`, and `opened` (today's date for a new item); the main thread keeps them so the next run can follow up. When the launch block's `since` is not `null`, the page repeats a question asked before: part 2 leads with what changed since that run, and the items carried over sit first in parts 5 and 4. Follow `follow-up.md` in this folder.
 
 A part that applies but has nothing to show says so in one line ("Nothing needs approval", "No
 insights this run: 3 posts is too few to compare"). A part does not apply, and is reported `n/a`
@@ -102,8 +104,7 @@ Two checks cover the whole page:
   "was 5, now 12", no named rejects, and the brand's own colors and type from `theme.md`. The
   `brand` lens in `recipient-lens.md` (the brand's own safety and approval team) is not a client
   reader. A flow that sets its own client view (the CAS campaign page) keeps it.
-- **Any other reader:** the "Prepared for" chip from `recipient-lens.md` and the order the lens
-  sets.
+- **Any other reader:** the "Prepared for" chip from `recipient-lens.md` and the order the lens sets.
 
 ## 3. Evidence standards
 
@@ -166,8 +167,7 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    return it in the result's `questions` (`orchestration.md`, **6**) and build nothing. Options:
    "Build with the gaps noted (Recommended)", the fix when there is one ("Connect the account
    first" only when it is not connected, "Refresh the posts first"), and "Change the scope". An
-   unattended run builds with the gaps noted and lists the metric in the page's "what is missing"
-   part.
+   unattended run builds with the gaps noted and lists the metric in the page's "what is missing" part.
 3. **Draft the page** for this question and this reader, from the blocks in
    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/blocks.md`. They already carry the markup in
    section 5. The blocks set what each part holds and the order of its evidence; the flow's
@@ -189,8 +189,7 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    - A rerun for the same page writes the same file again. Steps 1 to 4 do not change, and
      this rule holds over a flow reference that says to publish with the Artifact tool.
 
-Write the headline last. Draft every other part, then write the headline from the decision the
-page supports.
+Write the headline last. Draft every other part, then write the headline from the decision the page supports.
 
 ## 5. Markup and the scripted checks (R1, R2, R6, R11, R13, R14, R15)
 
@@ -383,8 +382,7 @@ returns is a gap, named on the page like any other missing metric. Add the flow'
   label it as that and never call it engagement per 1,000 views.
 
 **Where each metric comes from, and the reason a page shows when one is missing, per network,**
-are in `network-metrics.md` in this folder. Read it before step 2a counts and before the page
-names a gap.
+are in `network-metrics.md` in this folder. Read it before step 2a counts and before the page names a gap.
 
 **A missing metric is never 0.** On the page it reads "not available: {reason}" beside where the
 number would sit, and the post carries it in `data-missing` (section 5). A 0 that Atlas read is a

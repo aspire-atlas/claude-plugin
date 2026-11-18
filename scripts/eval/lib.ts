@@ -15,6 +15,8 @@ export type Turn = {
   connectors: Record<string, string>
   /** Text the main thread wrote, plus what its subagents returned to it. */
   text: string
+  /** Only what the main thread wrote itself: no tool result, so no file it read and no agent's output. */
+  said: string
   /** The final reply of the turn, as `claude -p` reports it. */
   reply: string
   toolUses: ToolUse[]
@@ -67,7 +69,23 @@ export type QuestionResult = {
   approved: PageChecks | null
   /** `not run` for a question graded from a file, and for results stored before the chat check (normalizeRun). */
   chat: ChatChecks
+  /** The second run of the same question, when the run was asked for the repeat pair (`--repeat`). */
+  repeat?: RepeatChecks
   problems: string[]
+}
+
+/** The repeat pair (docs/STANDARD.md, S4): the same question asked again in the same session. */
+export type RepeatChecks = {
+  /** FU1, from the transcript: the second run's first message follows up on the first run and asks no setup question. */
+  asks: Result
+  /** FU2, from a judge that reads both pages: the second page's first section says what changed since the first. */
+  leads: Result
+  rounds: number
+  /** What the second run cost, the close-out answer before it included. The question's own sizes describe the first run. */
+  billedTokens: number
+  costUsd: number
+  compactions: number
+  page: { link: string | null; captured: boolean }
 }
 
 export type RunResults = {
@@ -89,11 +107,11 @@ export const HARNESS_VERSION = 1
 // mint_run_id and report_checkpoint change no Atlas record. lib.test.ts fails when the contract gains a tool
 // that is in neither list.
 export const ATLAS_READS = [
-  'calculate_creator_fee', 'get_brand_context', 'get_brand_instruction', 'get_brand_theme', 'get_cas_briefs',
+  'calculate_creator_fee', 'get_brand_context', 'get_brand_instruction', 'get_brand_theme', 'get_card_images', 'get_cas_briefs',
   'get_cas_campaign', 'get_cas_rates', 'get_cas_results', 'get_cas_selection', 'get_cas_setup_form', 'get_creator',
   'get_dashboard', 'get_fee_rate_card', 'get_job_status', 'get_more_tools', 'get_onboarding_form',
   'get_onboarding_report', 'get_profile', 'get_shop_analytics', 'get_status', 'list_ad_accounts',
-  'list_ad_search_fields', 'list_available_hashtags', 'list_channels', 'list_creator_marketplace_labels',
+  'list_ad_search_fields', 'list_applicants', 'list_available_hashtags', 'list_channels', 'list_creator_marketplace_labels',
   'list_creator_search_fields', 'list_hashtag_posts', 'list_hashtags', 'list_insight_search_fields',
   'list_my_organizations', 'list_my_profiles', 'list_post_search_fields', 'lookup_creators', 'lookup_posts',
   'mint_run_id', 'report_checkpoint', 'search_ads', 'search_calibrations', 'search_creator_marketplace',
@@ -134,10 +152,11 @@ function usageTotal(usage: Record<string, any> | undefined): number {
 
 export function summarizeTurn(events: Event[]): Turn {
   const turn: Turn = {
-    sessionId: null, scratchpad: null, model: null, connectors: {}, text: '', reply: '', toolUses: [], toolResults: {},
+    sessionId: null, scratchpad: null, model: null, connectors: {}, text: '', said: '', reply: '', toolUses: [], toolResults: {},
     contextTokens: 0, billedTokens: 0, costUsd: 0, compactions: 0, failed: true,
   }
   const parts: string[] = []
+  const said: string[] = []
   for (const event of events) {
     const main = !event.parent_tool_use_id
     if (event.type === 'system' && event.subtype === 'init') {
@@ -149,7 +168,10 @@ export function summarizeTurn(events: Event[]): Turn {
       turn.compactions += 1
     } else if (event.type === 'assistant') {
       for (const block of event.message?.content ?? []) {
-        if (block.type === 'text' && main) parts.push(block.text)
+        if (block.type === 'text' && main) {
+          parts.push(block.text)
+          said.push(block.text)
+        }
         if (block.type === 'tool_use') turn.toolUses.push({ id: block.id, name: block.name, input: block.input ?? {}, main })
       }
       if (main) turn.contextTokens = usageTotal(event.message?.usage) || turn.contextTokens
@@ -169,6 +191,7 @@ export function summarizeTurn(events: Event[]): Turn {
     }
   }
   turn.text = parts.join('\n')
+  turn.said = said.join('\n')
   return turn
 }
 
@@ -352,6 +375,70 @@ export function checkChat(turns: Turn[], closed: boolean, rules: ChatRules): { c
   return { checks, messages, hits }
 }
 
+/** The repeat pair's two checks, by what each result holds. Their names and wording are in questions.json (repeat.checks). */
+export const REPEAT_IDS = { asks: 'FU1', leads: 'FU2' } as const
+
+// The headers of the questions a first run settles, and the header of the one question a repeat run asks.
+// They are the contract's own (orchestration.md, 2, and repeat-run.md, The reply): lib.test.ts fails when
+// either file stops naming one, so a renamed header cannot leave FU1 looking for the old one.
+export const SETUP_HEADERS = ['Heard', 'Scope', 'Save', 'Remember', 'Storyline', 'Role', 'Relationship']
+export const SINCE_HEADER = 'Since then'
+// What the setup questions say when a host refuses the question tool and the flow asks in text.
+const SETUP_WORDS = [/keep these answers for next time/i, /\bpage only\b/i, /\bsave to atlas\b/i, /\byes, run it\b/i]
+// The follow-up's first line, allowing for a quote mark or emphasis in front of it.
+const OPENING = /^[\s>*_"“]*last time \(/i
+
+/**
+ * FU1: the first message of a repeat run. It passes when the message opens the follow-up ("Last time (12 Nov)
+ * you asked ..."), asks about what has happened since, and asks none of the setup questions the first run
+ * settled. The Credits question is not a setup question: a run that will spend still asks it. Only the main
+ * thread's own words are read: a file it opened (the contract's own example opens with "Last time") is not
+ * something the person saw. The opening must be a line of its own that comes before any question the message
+ * asks, so a setup reply that mentions last time further down, or only inside a question, fails. The reasons
+ * name headers and rules only, never the message's words.
+ */
+export function repeatAsk(turn: Turn): { result: Result; reasons: string[] } {
+  const asks = turn.toolUses.filter(use => use.main && use.name === 'AskUserQuestion')
+  const questions = asks.flatMap(use => (Array.isArray(use.input?.questions) ? use.input.questions : []))
+  const headers = questions.map((question: any) => String(question?.header ?? '').trim().toLowerCase())
+  // Everything the main thread wrote in the turn; the reply alone when the stream kept no text blocks.
+  const message = turn.said.trim() ? turn.said : turn.reply
+  if (!message.trim() && !questions.length) return { result: 'not run', reasons: ['the repeat run sent no message'] }
+  const reasons: string[] = []
+  const lines = message.split('\n')
+  const opening = lines.findIndex(line => OPENING.test(line))
+  if (opening < 0 || lines.slice(0, opening).join('\n').includes('?')) reasons.push('the message does not open with "Last time ({date}) you asked"')
+  const setup = SETUP_HEADERS.map(header => header.toLowerCase())
+  const repeated = headers.filter(header => setup.includes(header))
+  if (repeated.length) reasons.push(`it asks setup questions again: ${[...new Set(repeated)].join(', ')}`)
+  if (questions.length) {
+    if (!headers.includes(SINCE_HEADER.toLowerCase())) reasons.push(`no question is headed "${SINCE_HEADER}"`)
+  } else {
+    if (!/\bsince\b/i.test(message)) reasons.push('it does not ask what has happened since')
+    const said = SETUP_WORDS.filter(pattern => pattern.test(`${turn.said}\n${turn.reply}`))
+    if (said.length) reasons.push(`it asks setup questions again in text (${said.length} setup phrase${said.length === 1 ? '' : 's'})`)
+  }
+  return { result: reasons.length ? 'fail' : 'pass', reasons }
+}
+
+/** One line under a question's table for the repeat pair. Null when the pair was not run. */
+export function repeatLine(repeat: RepeatChecks | undefined, names: Record<string, string>): string | null {
+  if (!repeat) return null
+  const part = (id: string, result: Result) => `${names[id] ? `${names[id]} ` : ''}(${id}): ${cell(result)}`
+  const page = repeat.page.link ?? (repeat.page.captured ? 'captured, no link' : 'none published')
+  const compactions = repeat.compactions ? `, compacted ${repeat.compactions} time${repeat.compactions === 1 ? '' : 's'}` : ''
+  return `Repeat run: ${part(REPEAT_IDS.asks, repeat.asks)}; ${part(REPEAT_IDS.leads, repeat.leads)}. ` +
+    `Confirmation rounds: ${repeat.rounds} · Second run: ${repeat.billedTokens.toLocaleString('en-US')} tokens billed${compactions} · Second page: ${page}.`
+}
+
+/** The questions whose repeat pair failed a check. Like the chat, it has no approved result to compare with. */
+export function repeatFailures(results: RunResults): { code: string; id: string }[] {
+  return results.questions.flatMap(question =>
+    (Object.keys(REPEAT_IDS) as (keyof typeof REPEAT_IDS)[])
+      .filter(key => question.repeat?.[key] === 'fail')
+      .map(key => ({ code: question.code, id: REPEAT_IDS[key] })))
+}
+
 /** The chat item of docs/STANDARD.md that the counts prove. */
 export const CHAT_CHECK = { id: 'C5', name: 'Chat wording' }
 
@@ -514,7 +601,8 @@ export function renderQuestion(question: QuestionResult, eChecks: CheckDef[], rL
   lines.push(`Transcript: ${question.transcriptTokens.toLocaleString('en-US')} tokens${compactions} · ` +
     `Confirmation rounds: ${question.rounds} · New page: ${question.page.link ?? (question.page.captured ? 'captured, no link' : 'none published')}`)
   const chat = chatLine(question.chat)
-  const notes = [...question.problems, ...(chat ? [chat] : []), ...(question.new?.notes ?? []).map(n => `New page: ${n}`), ...(question.approved?.notes ?? []).map(n => `Approved page: ${n}`)]
+  const repeat = repeatLine(question.repeat, names)
+  const notes = [...question.problems, ...(chat ? [chat] : []), ...(repeat ? [repeat] : []), ...(question.new?.notes ?? []).map(n => `New page: ${n}`), ...(question.approved?.notes ?? []).map(n => `Approved page: ${n}`)]
   for (const note of notes) lines.push(`- ${note}`)
   const waiting = eChecks.filter(check => check.waitsFor && eResult(question.new, check.id) === 'not run')
   if (waiting.length) lines.push(`- Not run yet: ${waiting.map(check => `${check.id} (${check.waitsFor})`).join(', ')}.`)
@@ -540,6 +628,7 @@ export function forBaseline(results: RunResults): RunResults {
       page: { link: null, captured: question.page.captured },
       new: strip(question.new),
       approved: strip(question.approved),
+      ...(question.repeat ? { repeat: { ...question.repeat, page: { link: null, captured: question.repeat.page.captured } } } : {}),
       problems: [],
     })),
   }
