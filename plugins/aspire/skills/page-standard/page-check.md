@@ -1,7 +1,7 @@
 # Page check script
 
-The script `SKILL.md`, section 5, runs on every page before it is published: R1, R2, R6, R11, R13,
-R14 and R15 from the reader standard. Extract it with the command there; never retype it. It reads only the
+The script `SKILL.md`, section 5, runs on every page before it is published: R1, R2, R6, R7's linked
+evidence (`explanations.md`), R11, R13, R14 and R15 from the reader standard. Extract it with the command there; never retype it. It reads only the
 pages named and writes nothing. With `--text` anywhere among its arguments it runs no check and prints the
 words a reader sees instead, one block per line, which is all the English read (`SKILL.md`,
 section 4, step 4b) is given. It lives in this file so `SKILL.md` stays short; when the reader
@@ -17,7 +17,7 @@ the required-metrics table (`SKILL.md`, section 8) changes, `REQUIRED_ROWS` here
 
 <!-- page-check -->
 ```python
-# Page standard self-check: R1, R2, R6, R11, R13, R14 and R15 from reader-standard.md. Reads the HTML files named; writes nothing.
+# Page standard self-check: R1, R2, R6, R7 (its linked evidence), R11, R13, R14 and R15 from reader-standard.md. Reads the HTML files named; writes nothing.
 import datetime, json, re, sys
 from html.parser import HTMLParser
 
@@ -317,6 +317,66 @@ def r6(nodes, regions, out):
     stray = [n for n in nodes if "data-decision" in n.attrs and id(n) not in mine]
     if stray:
         problems.append("%d decision(s) sit outside the decisions section" % len(stray))
+    return problems
+
+# R7's scripted part (explanations.md): every cited post links to itself, every explanation names
+# linked evidence or says it is not explained yet, and every saved capture carries its link, date,
+# quote, and screenshot or the reason there is none. Each figure is still judged by reading.
+UNEXPLAINED = re.compile(r"(?i)\bnot explained yet\b")
+NO_SCREENSHOT = re.compile(r"(?i)\bscreenshot not taken\b")
+GONE = re.compile(r"(?i)\bno longer visible\b")
+
+def web(value):
+    return re.match(r"(?i)^https?://[^\s/]+\.[^\s/]+", (value or "").strip()) is not None
+
+def links(node):
+    return [(n.attrs.get("href") or "").strip() for n in walk(node) if n.tag == "a" and web(n.attrs.get("href"))]
+
+def bare(url):
+    return url.strip().rstrip("/").lower()
+
+def r7(nodes, regions, out):
+    problems = []
+    for index, post in enumerate((n for n in nodes if "data-post" in n.attrs), 1):
+        url = (post.attrs.get("data-post") or "").strip()
+        if not web(url):
+            problems.append("cited post %d has data-post \"%s\", which is not the post's link" % (index, url))
+        elif bare(url) not in {bare(link) for link in links(post)}:
+            problems.append("%s is cited with no link a reader can open; link the post itself" % url)
+    # Evidence links to the post or page, or to a saved capture on this page by its id.
+    saved_ids = {"#" + n.attrs["id"].strip() for n in nodes if "data-saved" in n.attrs and (n.attrs.get("id") or "").strip()}
+    linked = lambda n: links(n) or any(a.tag == "a" and (a.attrs.get("href") or "").strip() in saved_ids for a in walk(n))
+    for index, block in enumerate((n for n in nodes if "data-explain" in n.attrs), 1):
+        label = "explanation %d (\"%s\")" % (index, text(block)[:50])
+        evidence = [n for n in walk(block) if "data-evidence" in n.attrs]
+        unexplained = [n for n in walk(block) if "data-unexplained" in n.attrs]
+        if any(not linked(n) for n in evidence):
+            problems.append("%s marks evidence with no link to it" % label)
+        if unexplained:
+            if not UNEXPLAINED.search(text(unexplained[0], gap=" ")):
+                problems.append("%s marks data-unexplained but does not say \"not explained yet\"" % label)
+            if not any("data-searched" in n.attrs and text(n) for n in walk(block)):
+                problems.append("%s is not explained yet but does not say what was searched (data-searched)" % label)
+        elif not evidence:
+            problems.append("%s names no linked evidence (data-evidence) and does not say \"not explained yet\"" % label)
+    for index, saved in enumerate((n for n in nodes if "data-saved" in n.attrs), 1):
+        label, shown = "saved evidence %d" % index, text(saved, gap=" ")
+        if not links(saved):
+            problems.append("%s has no link to where it was read" % label)
+        when = (saved.attrs.get("data-captured") or "").strip()
+        try:
+            datetime.date.fromisoformat(when[:10])
+        except ValueError:
+            problems.append("%s has data-captured \"%s\", which is not a date and time" % (label, when))
+        else:
+            if not shows_date(shown, when):
+                problems.append("%s does not show the date it was saved (%s)" % (label, when[:10]))
+        if not any(quoted(n) for n in walk(saved)):
+            problems.append("%s quotes none of the text it rests on (blockquote, q, or data-quoted)" % label)
+        if not any(n.tag == "img" for n in walk(saved)) and not NO_SCREENSHOT.search(shown):
+            problems.append("%s has no screenshot and does not say \"screenshot not taken\"" % label)
+        if "data-gone" in saved.attrs and not GONE.search(shown):
+            problems.append("%s is marked data-gone but does not say \"no longer visible\"" % label)
     return problems
 
 def question_code(regions):
@@ -837,7 +897,7 @@ NO_RESULT = {"R13": ("n/a", "the page names no question code and cites no post")
              "R14": ("n/a", "the page cites no account and no post, its scope reports on no account, and it has no freshness entry"),
              "R15": ("unmarked", "the page marks no comparison; read it for one, and put R15 in data-na only when it compares nothing")}
 CHECKS = (("R1", "Reader and scope", r1), ("R2", "Platforms covered", r2),
-          ("R6", "Decisions kept separate", r6), ("R11", "Plain language", r11),
+          ("R6", "Decisions kept separate", r6), ("R7", "Real evidence, linked", r7), ("R11", "Plain language", r11),
           ("R13", "Required metrics", r13), ("R14", "Data freshness", r14), ("R15", "Like for like", r15))
 
 def check(path):

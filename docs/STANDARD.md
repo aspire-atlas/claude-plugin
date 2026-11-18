@@ -20,6 +20,7 @@ does not apply.
 - [7. Questions](#7-questions)
 - [8. Proof](#8-proof)
 - [9. Comparisons](#9-comparisons)
+- [10. Explanations](#10-explanations)
 - [The eval on a pull request](#the-eval-on-a-pull-request)
 - [Adding a client example](#adding-a-client-example)
 - [How to write a rule](#how-to-write-a-rule)
@@ -131,6 +132,20 @@ checks pages, not pull requests, so these items are not in the judgment review.
 | K2 | Every mention counted: a count of posts about a brand or creator includes the posts that name it without the "@", and the method says how the mentions were found. | ASP-5974 | script: page check R15 (the method sentence); the English read (rule 8) | "{competitor}: 20 posts, directional. Mentions were found by tag, by @handle, and by the name written without the @." | "{competitor}: 2 posts", counted from "@" mentions only, when 18 more named it in plain text. |
 | K3 | Enough posts: a figure that rests on posts at or under the directional line set in `comparisons.md` is marked "directional" beside the number, with the post count. | ASP-5974 | script: page check R15; the English read (rule 8) | "3.6 engagements per 1,000 views (18 posts, directional)" | "Shop posts earn a quarter of the engagement", from 18 posts, with no post count and no mark. |
 | K4 | Share against size: a share is shown next to its group's share of the whole. When the two are as close as `comparisons.md` sets, the page says the share matches the group's size and draws no finding from it. | ASP-5974 | the English read (rule 8); script: page check R15 on the shares the page marks | "87% of revenue came from 88% of affiliates, so the share is in line with the group's size." | "87% of revenue comes from this group", as the headline finding, with no word that the group is 88% of affiliates. |
+
+## 10. Explanations
+
+An explanation is any place a page says why something happened: a sales spike, a top seller, a
+drop. The rule, its markup and the saved-evidence block are in
+`plugins/aspire/skills/page-standard/explanations.md`. The examples are from an affiliate report
+whose first run put the top sellers down to coupon sites; a wider search of Atlas found an older
+TikTok, a code in a YouTube description, and the brand's own site.
+
+| Id | Item | Ticket | Checked by | Good | Bad |
+| -- | ---- | ------ | ---------- | ---- | --- |
+| X1 | Before a page says why something happened, it searches everything Atlas holds on the people involved: every network, no date limit, captions, transcripts and descriptions, and the brand's own site where the run can read it. Outside sources come last. | ASP-5978 | reviewer; the page check's `explanations` lists what was searched; eval (the affiliate rerun) | "@handle's code sold through her own posts: a TikTok from Mar 3 that still names the code, and the code in her YouTube video's description (Sep 18). A coupon site lists it too (saved Oct 30)." | "Most of @handle's sales came through coupon sites", written after reading only this month's Instagram posts. |
+| X2 | Every post an explanation cites is a link to the post, and the explanation names the evidence it rests on. With no evidence in Atlas it says "Not explained yet" and what was searched. | ASP-5978 | script: page check R7 | "@handle's orders on Oct 9: not explained yet. Searched: Instagram, TikTok and YouTube posts at any date, with captions, transcripts and descriptions, and the brand's site." | "Driven by her older TikTok content", with no link to any post. |
+| X3 | Outside evidence that can disappear (a coupon-site listing, a store page, an expiring post) is saved the moment it is read: the link, the date and time, the exact words, and a screenshot or "Screenshot not taken". The next run shows the saved capture with its date, marked "No longer visible" when the source now blocks the check. | ASP-5978 | script: page check R7 (the saved block); reviewer | A saved block with the coupon site's link, "saved Oct 30, 3:20 PM UTC", the quoted listing "{CODE}: 15% off sitewide", and its screenshot; a week later the same block with "No longer visible on Nov 6". | "Listed on several coupon sites", with no link or date, which nobody could check a week later when the sites blocked it. |
 
 ## The eval on a pull request
 

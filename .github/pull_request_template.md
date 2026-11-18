@@ -58,6 +58,11 @@ flow change" here and skip the list.
 - [ ] K3 A figure from too few posts (the line is in page-standard's `comparisons.md`) is marked "directional", with the post count
 - [ ] K4 A share is shown next to its group's share of the whole
 
+**Explanations**
+- [ ] X1 Before a page says why something happened, it searches everything Atlas holds on the people involved
+- [ ] X2 Every cited post is a link, and an explanation names its evidence or says "Not explained yet" with what was searched
+- [ ] X3 Outside evidence that can disappear is saved when read: link, date and time, quoted words, screenshot
+
 ## Question rerun
 
 <!--

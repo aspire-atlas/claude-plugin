@@ -22,7 +22,7 @@ is in **Quality review**, **3**.
 | R4 | Numbers have context | Every number in the summary and insights is compared with something (last period, peers, a goal), each insight ends in what to do about it, and there are no more than three insights | "48K views" with nothing beside it | High |
 | R5 | Clear next steps | Every next step says what to do, who does it, by when, and what it should change | "Consider optimizing content" | High |
 | R6 | Decisions kept separate | What the reader must approve sits in its own section, each with its deadline when it has one, or the page says nothing needs approval | Approvals buried in the to-do list | High |
-| R7 | Real evidence | Every creator, post, and number comes from the run's data, and every evidence link (a post or profile URL) opens what it claims | A handle or number that isn't in the data | **Critical** |
+| R7 | Real evidence | Every creator, post, and number comes from the run's data, and every evidence link (a post or profile URL) opens what it claims. Every cited post is a link to the post. Every explanation of why something happened names the linked evidence it rests on, or says "Not explained yet" with what was searched, and outside evidence it relies on is saved with its link, date, and quoted words (**Page standard**, `explanations.md`) | A handle or number that isn't in the data; a cited post with no link; sales put down to coupon sites with no link and no search of the creator's other posts | **Critical** |
 | R8 | Shows its working | Scores and recommendations explain how they were reached, with the weights behind any score | A score with no explanation | High |
 | R9 | Names what's missing | On a team page, missing data is named, with what connecting it would add | Says nothing about missing ad data | Medium; High when the gap would change the decision |
 | R10 | Fits the reader | A VP or budget owner sees the answer, decisions, and next steps on one screen, with "Prepared by" at the top and detail below. A client sees the client version: no revision history and no named rejects | A VP brief that opens with the method | High when `recipient` is `leadership` or the page names a VP or budget owner; else Medium |
@@ -40,7 +40,8 @@ is in **Quality review**, **3**.
   computable from, the files in `evidence_dir`. Without it, judge R7 on links and internal
   consistency only, and add "R7 checked without the run's raw data" to **Not verified**. An agent
   checking its own page judges R7 against what its run read, and treats storyboard timecodes as
-  drafts until a 1-second frame scan confirms them.
+  drafts until a 1-second frame scan confirms them. The links are scripted (**Page standard**,
+  section 5); whether an explanation's evidence supports its claim is judged.
 - **R2** is n/a on a page that covers one post, one creator, or one account on one network
   (**Quality review**, **3**).
 - **R13** is n/a on a page that cites no post. On a page with no question code, judge it against
