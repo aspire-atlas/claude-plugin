@@ -9,10 +9,13 @@ import {
   ATLAS_READS, ATLAS_WRITES, HARNESS_VERSION, barChecks, compareRuns, extractPageCheckScript, fill, findJsonWithKey, configuredQuestions,
   findPage, forBaseline, normalizeResult, readerResult, checkNames as namesFrom, stripTitlePrefix, parsePageCheck, parseStream, renderQuestion, renderRun, rIds, stripDataUris,
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, checkChat, chatCodes, chatFailures, noChat, normalizeRun,
-  assertionRefs, cell, fixtureProblems, hasLandedAssertion, passesWhen, planInputFiles, regressions, resolveQuestion,
+  assertionRefs, cell, fixtureProblems, hasLandedAssertion, passesWhen, placeholderKeys, planInputFiles, regressions, resolveQuestion,
   type Assertion, type InputFile, type ChatChecks, type ChatRules, type CheckDef, type PageChecks, type QuestionResult, type Result, type RunResults, type Turn,
 } from './lib'
 import { renderPage } from '../render-page'
+import { askRecords, wasAnswered, type AnswerRule } from './answers'
+import { checkApprovals, noApprovals, type ApprovalChecks } from './approvals'
+import { runTurn, type TurnOptions } from './session'
 
 const HERE = import.meta.dir
 const ROOT = resolve(HERE, '../..')
@@ -31,7 +34,8 @@ const USAGE = `bun run eval:pages [options]
   --compare <a> <b>        Print what changed between two runs, and run nothing
   --model <model>          Model for the reruns (default: the CLI's own default)
   --judge-model <model>    Model for the grade and the E-checks (default: the same as --model)
-  --max-rounds <n>         Replies the harness will send before it gives up on a page (default: 6)
+  --max-rounds <n>         Text replies the harness will send before it gives up on a page (default: 6)
+  --max-asks <n>           Pickers the harness will answer in one run of a question before it gives up (default: 12)
   --timeout-min <n>        Minutes one turn may take (default: 45)
   --page <file>            With --only <code>: grade this page file as the new page, without a rerun
   --refresh-approved       Read the approved pages again instead of using the copies kept on this machine
@@ -50,6 +54,8 @@ A run is named by its folder under scripts/eval/.runs/, a baseline by its date, 
 type Question = {
   code: string; example: string; kind: string; reader: string; readerInWords: string; ask: string
   setsBarFor: number[]; reply?: string
+  /** Answers for this question's pickers, tried before the shared `answers` list of questions.json. */
+  answers?: AnswerRule[]
   /** The plugin's own question code; null for a flow that has none (resolveQuestion). */
   question: string | null
   /** A client case's own assertions (empty for any other question), and its two fixture pages, as paths from the repository root. */
@@ -73,7 +79,7 @@ type Local = {
 }
 type Options = {
   only: string[] | null; baseline: string | null; from: string | null; compare: [string, string] | null; explain: string | null
-  model: string | null; judgeModel: string | null; maxRounds: number; timeoutMin: number
+  model: string | null; judgeModel: string | null; maxRounds: number; maxAsks: number; timeoutMin: number
   refreshApproved: boolean; dryRun: boolean; page: string | null; fixtures: boolean
   approvedFrom: string | null; titlePrefix: string | null; cleanup: boolean; out: string | null
 }
@@ -86,7 +92,7 @@ function fail(message: string): never {
 function parseArgs(argv: string[]): Options {
   const options: Options = {
     only: null, baseline: null, from: null, compare: null, explain: null, model: null, judgeModel: null,
-    maxRounds: 6, timeoutMin: 45, refreshApproved: false, dryRun: false, page: null, fixtures: false,
+    maxRounds: 6, maxAsks: 12, timeoutMin: 45, refreshApproved: false, dryRun: false, page: null, fixtures: false,
     approvedFrom: null, titlePrefix: null, cleanup: false, out: null,
   }
   const value = (i: number, flag: string) => (argv[i] && !argv[i].startsWith('--') ? argv[i] : fail(`${flag} needs a value`))
@@ -103,6 +109,7 @@ function parseArgs(argv: string[]): Options {
     else if (flag === '--model') options.model = value(++i, flag)
     else if (flag === '--judge-model') options.judgeModel = value(++i, flag)
     else if (flag === '--max-rounds') options.maxRounds = Number(value(++i, flag))
+    else if (flag === '--max-asks') options.maxAsks = Number(value(++i, flag))
     else if (flag === '--timeout-min') options.timeoutMin = Number(value(++i, flag))
     else if (flag === '--page') options.page = resolve(value(++i, flag))
     else if (flag === '--refresh-approved') options.refreshApproved = true
@@ -116,6 +123,7 @@ function parseArgs(argv: string[]): Options {
     else fail(`unknown option ${flag}\n\n${USAGE}`)
   }
   if (!Number.isInteger(options.maxRounds) || options.maxRounds < 0) fail('--max-rounds takes a whole number')
+  if (!Number.isInteger(options.maxAsks) || options.maxAsks < 0) fail('--max-asks takes a whole number')
   if (!(options.timeoutMin > 0)) fail('--timeout-min takes a number of minutes')
   if (options.baseline && !/^\d{4}-\d{2}-\d{2}$/.test(options.baseline)) fail('--baseline takes a date as YYYY-MM-DD')
   if (options.from && !options.baseline) fail('--from goes with --baseline')
@@ -139,7 +147,7 @@ function commit(): string {
   return git('status', '--porcelain', '--', 'plugins') ? `${head}+changes` : head
 }
 
-/** One `claude -p` call. The prompt goes in on stdin; the stream is kept in `out` for the record. */
+/** One `claude -p` call, for the grading sessions, which ask nothing. The prompt goes in on stdin; the stream is kept in `out` for the record. */
 async function claude(args: string[], prompt: string, cwd: string, out: string, timeoutMin: number): Promise<Turn> {
   const child = Bun.spawn(['claude', '-p', '--output-format', 'stream-json', '--verbose', ...args], {
     cwd, stdin: new Blob([prompt]), stdout: Bun.file(out), stderr: Bun.file(`${out}.err`),
@@ -463,7 +471,7 @@ async function startingSession(cwd: string): Promise<{ connectors: string[]; too
 
 type Rerun = {
   link: string | null; rounds: number; transcriptTokens: number; billedTokens: number; compactions: number
-  costUsd: number; problems: string[]; model: string | null; chat: ChatChecks
+  costUsd: number; problems: string[]; model: string | null; chat: ChatChecks; approvals: ApprovalChecks
   /** The second run of the repeat pair: its page, its rounds and FU1. FU2 is judged once both pages are kept. */
   repeat: { link: string | null; rounds: number; asks: Result; reasons: string[]; billedTokens: number; costUsd: number; compactions: number } | null
 }
@@ -486,19 +494,18 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
   const refused = [...new Set(['plugin:aspire:Aspire Atlas', 'plugin:aspire:Aspire Atlas Organization Admin', 'plugin:aspire:Meta Ads',
     'Aspire Atlas', 'Aspire Atlas Organization Admin', 'claude.ai Aspire Atlas', ...starting.connectors])]
     .filter(name => name !== connector && name !== 'aspire-mod')
-  const args = [
+  // What every turn of this question's session is started with. This question's own answers come before the shared list.
+  const session: Session = {
+    cwd: work, timeoutMin: options.timeoutMin, plugin: PLUGIN,
     // With a token the connector comes from the harness's own file and nothing else loads. With a sign-in it is
     // the one the person added to Claude Code (user scope), which is where the sign-in is kept.
-    '--plugin-dir', PLUGIN, ...(local.mcp?.tokenEnv ? ['--strict-mcp-config', '--mcp-config', atlasMcp] : []),
-    '--permission-mode', 'acceptEdits',
-    '--allowedTools', 'Read', 'Write', 'Edit', 'Glob', 'Grep', 'Bash', 'Skill', 'Task', 'Agent', 'Artifact', 'ToolSearch',
-    'WebSearch', 'WebFetch', ...ATLAS_READS.map(tool => atlas + tool),
-    '--disallowedTools', ...ATLAS_WRITES.map(tool => atlas + tool), ...refused.map(name => toolPrefix(name).slice(0, -2)),
-    ...(options.model ? ['--model', options.model] : []),
-  ]
+    mcpConfig: local.mcp?.tokenEnv ? atlasMcp : null,
+    allowedTools: ['Read', 'Write', 'Edit', 'Glob', 'Grep', 'Bash', 'Skill', 'Task', 'Agent', 'Artifact', 'ToolSearch',
+      'WebSearch', 'WebFetch', ...ATLAS_READS.map(tool => atlas + tool)],
+    disallowedTools: [...ATLAS_WRITES.map(tool => atlas + tool), ...refused.map(name => toolPrefix(name).slice(0, -2))],
+    model: options.model, answers: [...(question.answers ?? []), ...(config.answers ?? [])],
+  }
   const problems: string[] = []
-  let session: string | null = null
-  let model: string | null = null
   // A case's input files (a sales export) are customer data: they come from local.json and are written into the
   // run's own folder, which is never committed or uploaded.
   // main checked every entry before the first question ran. A file that has gone since then is thrown, not
@@ -511,7 +518,7 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
     else copyFileSync(resolve(HERE, file.path!), join(work, names[i]))
   })
   const attached = names.length ? ` The file${names.length === 1 ? '' : 's'} for this ${names.length === 1 ? 'is' : 'are'} in the current folder: ${names.join(', ')}.` : ''
-  let prompt = `/aspire:aspire ${fill(question.ask, { ...local.questions?.[question.code]?.values, brand })}` + attached + (local.organization ? ` Use the ${local.organization} organization.` : '') +
+  const ask = `/aspire:aspire ${fill(question.ask, { ...local.questions?.[question.code]?.values, brand })}` + attached + (local.organization ? ` Use the ${local.organization} organization.` : '') +
     (options.titlePrefix ? ` Start the page's title with "${options.titlePrefix} · ".` : '')
   /** Checked once, on the first turn of the first run: the test connector is the only Atlas the rerun can reach. */
   const checkConnectors = (turn: Turn) => {
@@ -525,8 +532,8 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
     const others = Object.keys(turn.connectors).filter(name => name !== connector && !refused.includes(name) && /atlas/i.test(name) && turn.connectors[name] === 'connected')
     if (others.length) fail(`another Atlas connector is connected: ${others.join(', ')}. Disconnect it (claude, then /mcp) so the rerun can only reach "${connector}".`)
   }
-  const base = { args, work, qDir, code: question.code, ask, options }
-  const first = await converse({ ...base, session: null, what: '', files: 'turn', reply: question.reply ?? config.defaultReply, page: captured, onFirstTurn: checkConnectors })
+  const base = { session, qDir, code: question.code, ask, options }
+  const first = await converse({ ...base, resume: null, what: '', files: 'turn', reply: question.reply ?? config.defaultReply, page: captured, onFirstTurn: checkConnectors })
   problems.push(...first.problems)
   const { link, rounds, turns } = first
   const last = turns.at(-1) ?? null
@@ -535,14 +542,18 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
   // The setup reply, the storyline check-ins and the close-out, counted for arrows, "vs" and codes (docs/STANDARD.md, C5).
   // The last reply is a close-out only when the run published or its agent finished. The messages and the words
   // each count matched stay in the run folder, which is never committed or uploaded.
-  const closed = Boolean(link) || Boolean(last && !last.failed && findPage(last).finished)
+  const closed = Boolean(link) || Boolean(last && findPage(last).finished && (!last.failed || last.asks.some(ask => ask.declined === 'finished')))
   const chat = checkChat(turns, closed, chatRules)
   writeFileSync(join(qDir, 'chat.json'), JSON.stringify({ ...chat.checks, text: chat.messages, hits: chat.hits }, null, 2) + '\n')
+  // Every picker of the first run: the text above it, each question with its options, and the answer given. With
+  // them, whether every approval the run asked for was named in the setup reply (docs/STANDARD.md, Q3).
+  const approvals = checkApprovals(turns)
+  writeFileSync(join(qDir, 'asks.json'), JSON.stringify({ approvals, asks: askRecords(turns) }, null, 2) + '\n')
   // The repeat pair: the same ask again, in the same session, once the first page is kept. Reruns refuse every
   // Atlas write, so the flow follows up from this session's own first run (repeat-run.md, The last run).
   let repeat: Rerun['repeat'] = null
   if (options.repeat && config.repeat?.codes?.includes(question.code)) {
-    if (!existsSync(captured) || !first.session) {
+    if (!existsSync(captured) || !first.resume) {
       problems.push('The repeat run was not started: the first run kept no page')
       repeat = { link: null, rounds: 0, asks: 'not run', reasons: [], billedTokens: 0, costUsd: 0, compactions: 0 }
     } else {
@@ -551,9 +562,13 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
       // Answer that first, so the repeat ask arrives as a new request and not as the answer to that question.
       console.error(`  ${question.code}: close-out answer`)
       // No fallback to defaultReply: its "go ahead" would accept the close-out's next-step offer, which this turn is here to decline.
-      const closeOut = await claude([...args, '--resume', first.session], config.repeat.closeOutReply ?? fail('questions.json needs repeat.closeOutReply for --repeat'), work, join(qDir, 'close-out-turn.jsonl'), options.timeoutMin)
-      if (closeOut.failed) problems.push('The close-out answer before the repeat run failed, so the repeat ask may have landed as the answer to the close-out question')
-      const second = await converse({ ...base, session: closeOut.sessionId ?? first.session, what: 'repeat ', files: 'repeat-turn', reply: config.repeat.reply ?? config.defaultReply, page: repeatPage(qDir) })
+      // It answers no picker: the reply is the whole answer, and a picker here would be one more offer.
+      const closeOut = await runTurn({
+        ...session, prompt: config.repeat.closeOutReply ?? fail('questions.json needs repeat.closeOutReply for --repeat'),
+        out: join(qDir, 'close-out-turn.jsonl'), resume: first.resume, maxAsks: 0,
+      })
+      if (closeOut.failed && !closeOut.asks.some(ask => ask.declined)) problems.push('The close-out answer before the repeat run failed, so the repeat ask may have landed as the answer to the close-out question')
+      const second = await converse({ ...base, resume: closeOut.sessionId ?? first.resume, what: 'repeat ', files: 'repeat-turn', reply: config.repeat.reply ?? config.defaultReply, page: repeatPage(qDir) })
       problems.push(...second.problems)
       const asked = second.turns[0] ? repeatAsk(second.turns[0]) : { result: 'not run' as Result, reasons: [] }
       // The second run was started: one that sent no message asked nothing about last time, which is a fail.
@@ -566,33 +581,47 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
   }
   return {
     link, rounds, transcriptTokens: last?.contextTokens ?? 0, billedTokens: first.billedTokens, compactions: first.compactions, costUsd: first.costUsd,
-    problems, model: first.model, chat: chat.checks, repeat,
+    problems, model: first.model, chat: chat.checks, approvals, repeat,
   }
 }
 
+/** What every turn of one question's session is started with (session.ts). */
+type Session = Omit<TurnOptions, 'prompt' | 'out' | 'resume' | 'maxAsks'>
+
 type Talk = {
-  link: string | null; rounds: number; turns: Turn[]; session: string | null; model: string | null
+  /** The confirmation rounds: the main thread's pickers the harness answered, plus the text replies it sent. */
+  link: string | null; rounds: number; turns: Turn[]; resume: string | null; model: string | null
   billedTokens: number; costUsd: number; compactions: number; problems: string[]
 }
 
 /**
- * One ask and the replies to what the flow asks back, until it publishes a page, finishes, or stops. It returns
- * its own totals and changes nothing outside it. `what` names the run in a problem ("" or "repeat "), `files`
- * is the prefix of each turn's transcript, and a `session` continues that conversation.
+ * One ask and the answers to what the flow asks back, until it publishes a page, finishes, or stops. A picker is
+ * answered inside the turn (session.ts); a turn that ends with no picker and no page asked in text, or paused,
+ * and gets the fixed `reply`. It returns its own totals and changes nothing outside it. `what` names the run in
+ * a problem ("" or "repeat "), `files` is the prefix of each turn's transcript, and `resume` continues that
+ * conversation.
  */
 async function converse(input: {
-  args: string[]; work: string; qDir: string; code: string; ask: string; options: Options
-  session: string | null; what: string; files: string; reply: string; page: string; onFirstTurn?: (turn: Turn) => void
+  session: Session; qDir: string; code: string; ask: string; options: Options
+  resume: string | null; what: string; files: string; reply: string; page: string; onFirstTurn?: (turn: Turn) => void
 }): Promise<Talk> {
-  const { args, work, qDir, code, options, what, files, reply, page } = input
-  const talk: Talk = { link: null, rounds: 0, turns: [], session: input.session, model: null, billedTokens: 0, costUsd: 0, compactions: 0, problems: [] }
+  const { session, qDir, code, options, what, files, reply, page } = input
+  const talk: Talk = { link: null, rounds: 0, turns: [], resume: input.resume, model: null, billedTokens: 0, costUsd: 0, compactions: 0, problems: [] }
   let prompt = input.ask
   let file: string | null = null
+  // The text replies sent, and the pickers answered: every one, which the limit counts, and the main thread's.
+  let replies = 0
+  let answered = 0
+  let answeredMain = 0
   for (;;) {
-    console.error(`  ${code}: ${what}turn ${talk.rounds + 1}`)
-    const turn = await claude(talk.session ? [...args, '--resume', talk.session] : args, prompt, work, join(qDir, `${files}-${talk.rounds + 1}.jsonl`), options.timeoutMin)
+    console.error(`  ${code}: ${what}turn ${replies + 1}`)
+    const turn = await runTurn({
+      ...session, prompt, out: join(qDir, `${files}-${replies + 1}.jsonl`), resume: talk.resume, maxAsks: Math.max(0, options.maxAsks - answered),
+    })
     talk.turns.push(turn)
-    talk.session = turn.sessionId ?? talk.session
+    answered += turn.asks.filter(wasAnswered).length
+    answeredMain += turn.asks.filter(ask => ask.main && wasAnswered(ask)).length
+    talk.resume = turn.sessionId ?? talk.resume
     talk.model = turn.model ?? talk.model
     talk.billedTokens += turn.billedTokens
     talk.costUsd += turn.costUsd
@@ -603,9 +632,15 @@ async function converse(input: {
     // Copy the page while it is still there: a later turn may rewrite or remove it.
     if (file && existsSync(file)) copyFileSync(file, page)
     if (talk.link) break
-    if (talk.rounds === 0) input.onFirstTurn?.(turn)
-    if (turn.failed || !talk.session) {
-      talk.problems.push(`The ${what}run stopped on turn ${talk.rounds + 1} without publishing a page`)
+    if (replies === 0) input.onFirstTurn?.(turn)
+    // The harness ends a turn itself at a picker it will not answer: that turn did not fail.
+    const declined = turn.asks.find(ask => ask.declined)?.declined ?? null
+    if ((turn.failed && !declined) || !talk.resume) {
+      talk.problems.push(`The ${what}run stopped on turn ${replies + 1} without publishing a page`)
+      break
+    }
+    if (declined === 'limit') {
+      talk.problems.push(`No ${what}page after ${options.maxAsks} pickers`)
       break
     }
     if (found.finished) {
@@ -613,13 +648,14 @@ async function converse(input: {
       if (!existsSync(page)) talk.problems.push(`The flow finished its ${what}run without a page`)
       break
     }
-    if (talk.rounds >= options.maxRounds) {
-      talk.problems.push(`No ${what}page after ${talk.rounds} replies`)
+    if (replies >= options.maxRounds) {
+      talk.problems.push(`No ${what}page after ${replies} replies`)
       break
     }
-    talk.rounds += 1
+    replies += 1
     prompt = reply
   }
+  talk.rounds = answeredMain + replies
   return talk
 }
 
@@ -659,7 +695,7 @@ async function runQuestion(question: Question, config: any, local: Local, eCheck
   let run: Rerun
   if (options.page) {
     copyFileSync(options.page, captured)
-    run = { link: null, rounds: 0, transcriptTokens: 0, billedTokens: 0, compactions: 0, costUsd: 0, problems: ['Graded from a file: the question was not rerun'], model: null, chat: noChat(), repeat: null }
+    run = { link: null, rounds: 0, transcriptTokens: 0, billedTokens: 0, compactions: 0, costUsd: 0, problems: ['Graded from a file: the question was not rerun'], model: null, chat: noChat(), approvals: noApprovals(), repeat: null }
   } else {
     run = await rerun(question, config, local, chatRules, qDir, captured, atlasMcp, options)
   }
@@ -695,7 +731,7 @@ async function runQuestion(question: Question, config: any, local: Local, eCheck
       code: question.code, example: question.example, setsBarFor: question.setsBarFor,
       barChecks: barChecks(question.setsBarFor, config.changes),
       page: { link, captured: hasPage }, rounds: run.rounds, transcriptTokens: run.transcriptTokens,
-      billedTokens: run.billedTokens, compactions: run.compactions, costUsd: run.costUsd, new: newChecks, approved: approvedChecks, chat: run.chat, problems,
+      billedTokens: run.billedTokens, compactions: run.compactions, costUsd: run.costUsd, new: newChecks, approved: approvedChecks, chat: run.chat, approvals: run.approvals, problems,
       assertions: assertionRefs(question.assertions),
     },
   }
@@ -814,6 +850,13 @@ async function main() {
     console.log(`Atlas: ${local.mcp?.url ?? 'not set in local.json'} as "${local.mcp?.name ?? 'Aspire Atlas'}", ${local.mcp?.tokenEnv ? `token from ${local.mcp.tokenEnv}` : 'signed-in account'}; ${ATLAS_READS.length} tools allowed, ${ATLAS_WRITES.length} refused`)
     return
   }
+
+  // A value still copied from local.example.json would send the flow off to pick a brand, or an organization, on
+  // its own. Only what this run reads is checked: the entries of the questions it runs, and, for a rerun, the
+  // connector, the organization and the allowed names. Grading a page file reads only the question's entry.
+  const entries = Object.fromEntries(questions.map(question => [question.code, local.questions?.[question.code]]))
+  const placeholders = placeholderKeys(options.page ? { questions: entries } : { ...local, questions: entries })
+  if (placeholders.length) fail(`local.json still holds a placeholder at ${placeholders.join(', ')}. Fill ${placeholders.length === 1 ? 'it' : 'each one'} in.`)
 
   let token = ''
   if (!options.page) {

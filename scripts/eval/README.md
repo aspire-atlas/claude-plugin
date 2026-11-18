@@ -23,6 +23,8 @@ It runs on a developer's machine, and in CI on every pull request that changes a
 ## What it needs
 
 - `bun`, `python3`, and the `claude` CLI signed in (the same account that can open the approved pages).
+  Run `bun install` once: the reruns are driven through the Agent SDK (`session.ts`), which is the
+  repository's one development dependency.
   A Claude Code with the Artifact tool (a session on the web) publishes each page and reads the approved
   pages from their links. One without it (a local terminal) still works: the flow saves its page as a
   file, the table shows no link, and each approved page must be given as a file, either `approvedFile`
@@ -56,6 +58,11 @@ It runs on a developer's machine, and in CI on every pull request that changes a
   and the nightly Slack post all name it as skipped, and a run with nothing left to run posts a skip
   and passes. Once a baseline holds a question's approved results, or one of its assertions has landed,
   a missing brand stops the run instead, so a lost or mistyped entry cannot quietly drop a question that gates pull requests.
+  A run also stops before its first turn while a value it reads from `local.json` still holds a
+  `{placeholder}` from the example file, and names each key: the connector, the organization, the
+  `chatAllow` names, and the entry of every question it is about to run. A flow asked about "{brand}"
+  picks a brand on its own. The entry of a question that is not running is not checked, and grading a
+  page file (`--page`) checks only that question's entry.
 
 ## Commands
 
@@ -74,7 +81,8 @@ bun run eval:test                          # the harness's own tests (no Claude,
 ```
 
 A run is named by its folder under `scripts/eval/.runs/`, a baseline by its date, the newest run by `latest`.
-`--model` sets the model for the reruns and `--judge-model` the model for the grading.
+`--model` sets the model for the reruns and `--judge-model` the model for the grading. `--max-asks` is how
+many pickers the harness answers for one question (12) and `--max-rounds` how many text replies it sends (6).
 `--approved-from <date|newest>` takes the approved page's results from a stored baseline instead of reading and
 grading the approved page again; E8 then judges the new page on its own. `--title-prefix <text>` asks the flow to
 start the page's title with that text, `--cleanup` deletes every page the run published once it is graded, and
@@ -84,14 +92,36 @@ start the page's title with that text, `--cleanup` deletes every page the run pu
 
 For each question:
 
-1. **Asks it.** `claude -p` with the plugin loaded from `plugins/aspire` in this checkout, the dev Atlas
-   connector in place of the bundled ones, and the question from `questions.json` as `/aspire:aspire ...`,
-   worded as the person who asked it. When the connector is not connected at the start, the run stops there:
-   a page built without Atlas is never graded.
-2. **Answers what the flow asks back.** While no page is published, the harness resumes the session with one
-   fixed reply (`defaultReply` in `questions.json`: yes to what was proposed, save nothing, send nothing).
-   Each reply is one confirmation round. It stops at `--max-rounds`. It also stops as soon as an agent
-   returns its result, page or no page: another "go ahead" would start the flow's next offer.
+1. **Asks it.** A session through the Agent SDK (`session.ts`), with the plugin loaded from `plugins/aspire`
+   in this checkout, the dev Atlas connector in place of the bundled ones, and the question from
+   `questions.json` as `/aspire:aspire ...`, worded as the person who asked it. When the connector is not
+   connected at the start, the run stops there: a page built without Atlas is never graded.
+
+   The SDK is used because a headless `claude -p` session has no `AskUserQuestion` tool: the flow sees
+   that, skips its setup picker and its storyline question, and runs on defaults. Through the SDK the flow
+   gets the same tool a person's session has, with Claude Code's own system prompt, and the harness
+   answers each call. A stand-in question tool
+   was the other option; it would have needed a line in the prompt telling the flow to use it, so the run
+   would no longer be the one a person gets.
+2. **Answers what the flow asks.** Each picker is answered from the answer list: `answers` in
+   `questions.json`, with a question's own `answers` tried first. An entry names the picker by its `header`
+   or by a pattern over its `question`, and gives a `pick` (a pattern over the option labels) or a `text`
+   for the free text field. With no entry that fits, the answer is the option marked (Recommended), and
+   with none marked, the first option. The shared list builds the storyline as drafted and saves nothing.
+   Whatever is answered, every Atlas tool that changes a record is refused (see
+   [What a rerun may and may not do](#what-a-rerun-may-and-may-not-do)).
+
+   The harness stops answering once a page is published, or an agent returns its result with a page
+   file: the next picker is the flow's offer of more work, so the turn ends there. A result with no page
+   (a refresh to approve, a storyline draft) is not the end, and the picker that follows it is answered.
+   It also stops after `--max-asks` pickers. When a turn ends with no picker and no page (the flow asked in text), the harness
+   resumes the session with one fixed reply (`defaultReply` in `questions.json`), up to `--max-rounds` times.
+
+   The run folder keeps `asks.json` for each question: for every picker, the text its thread wrote above
+   it (`before`), the message the picker sits in (`message`, the part of `before` written after that
+   thread's last tool result), each question with its options, the answer given and how it was chosen
+   (`list`, `recommended` or `first`), and `declined` (`finished` or `limit`) when the harness left it
+   unanswered. The first picker's `before` is the setup reply.
 3. **Keeps the page.** The HTML file the run published and its link.
 4. **Reads the approved page.** From `approvedFile`, or by reading the link once and keeping a copy on this
    machine (`--refresh-approved` reads it again).
@@ -110,23 +140,37 @@ predates the rule; the table shows that, and `--compare` marks a changed approve
 
 | Column | What it holds |
 | ------ | ------------- |
-| Check | A client case's own assertions, each with its ticket, then E1 to E8 from the Evals tab, then every R check the reader standard has |
+| Check | A client case's own assertions, each with its ticket, then E1 to E8 from the Evals tab, then Q3 (below), then every R check the reader standard has |
 | New page, Approved page | `pass`, `fail`, `n/a`, or `–` when the check did not run |
 | Sets the bar | `yes` when the approved page was named as the example for a change this check covers, and on every assertion |
 
 An R check that the script covers passes only when the script and the grade both pass it; a note under the
 table names any check where the two disagree. Under each table: the size of the main conversation in tokens
-at its last message (and how many times it compacted), the number of confirmation rounds, and the link to
-the new page.
+at its last message (and how many times it compacted), the number of confirmation rounds (the pickers the
+harness answered plus the text replies it sent), and the link to the new page.
+
+Q3 is the run's approvals, not the page's, so its approved column is always `–`: it passes when every
+approval the run asked for was named in the setup reply's "This run will ask you to approve" line
+(`orchestration.md`, section 2, **Before the questions**). An approval is a question for the page's main
+points (the storyline), credits, a refresh, a save, mailbox drafts, sending the page to Slack or email, or
+a send (a question that opens with "Send", or a Send header). Each is known by its picker's header or its
+wording, and each item of the line by the wording of the table in that section; the one table of kinds is in
+`approvals.ts`. A flow's own confirmation that fits none of them is not counted. A subagent's question
+counts. The picker the harness left unanswered because the run had finished does not: it is the flow's
+offer of more work after the page. An approval the line did not name still passes when the text above its
+own question, written by whoever asked it, says "One more approval than I listed". When it fails, a line
+under the table names the approvals by kind. It is `–` for a run that asked
+no picker. Q3 never fails a pull request: a reviewer reads the row and `asks.json`
+(`docs/STANDARD.md`, Q3).
 
 C5, the chat wording, is a line under the table and not a row, because it is the run's chat and has no approved
 page to compare with. It is read from the transcript:
 
 | Message | What is read |
 | ------- | ------------ |
-| Setup reply | The first turn's questions, their option labels and descriptions, and the reply the turn ended on |
-| Storyline check-in | Every question headed "Storyline" and every turn a storyline draft came back in, so a redraft after Change or Widen is counted too |
-| Close-out | The last turn's reply, only when the run published a page or its agent finished. A run that stopped earlier shows "close-out not sent" |
+| Setup reply | What the main thread wrote above its first picker, the first turn's questions up to its storyline check-in, their option labels and descriptions, and the reply the turn ended on. None when the first picker is the storyline check-in |
+| Storyline check-in | Every question headed "Storyline" with the message it sits in, and every turn a storyline draft came back in, so a redraft after Change or Widen is counted too |
+| Close-out | The last turn's reply, only when the run published a page or its agent finished. When the harness ended the run at the picker that follows the page, the message that picker sits in. A run that stopped earlier shows "close-out not sent" |
 | Question the run stopped on | Only for a run that stopped without closing out, on a question after the setup reply that is not a storyline check-in: that turn's questions and its reply. A run that stopped on the setup reply or on a storyline check-in has its last reply counted there |
 
 Each is counted for arrows, "vs" in any case, and codes. The codes are read from the files that define them,
@@ -227,8 +271,8 @@ a question with approved results: the case gates pull requests from then on.
 
 | Path | Committed | Holds |
 | ---- | --------- | ----- |
-| `baselines/<date>/results.json`, `table.md` | Yes | Results, each assertion's name and ticket, the chat counts, token counts, rounds, the plugin commit, the models. No page, link, brand, reason text, or chat text |
-| `.runs/<time>/` | No | Each turn's transcript, both pages, each check's reasons, the chat messages (`chat.json`), `results.json`, `table.md` |
+| `baselines/<date>/results.json`, `table.md` | Yes | Results, each assertion's name and ticket, the chat counts, the approvals by kind, token counts, rounds, the plugin commit, the models. No page, link, brand, reason text, or chat text |
+| `.runs/<time>/` | No | Each turn's transcript, both pages, each check's reasons, the chat messages (`chat.json`), every picker with its answer (`asks.json`), `results.json`, `table.md` |
 | `.cache/approved/` | No | The copy of each approved page |
 | `local.json` | No | Brands, links, the dev server address, a case's competitor names and its input files |
 | `scripts/fixtures/eval-cases/` | Yes | The cases' fixture pages, with invented brands and no customer data |
@@ -303,10 +347,14 @@ when the run ends, so the comment's link stops opening after the job finishes.
 
 | File | What it is |
 | ---- | ---------- |
-| `questions.json` | The questions: code, reader, the ask, the changes each example sets the bar for, and a client case's assertions |
+| `questions.json` | The questions: code, reader, the ask, the changes each example sets the bar for, and a client case's assertions; and the answer list for the pickers |
 | `e-checks.json` | The eight E-checks, copied from the Evals tab, with who judges each |
 | `local.example.json` | The shape of `local.json` |
 | `run.ts` | The command |
+| `session.ts` | One turn of a rerun through the Agent SDK, and the handler that answers its pickers |
+| `answers.ts`, `answers.test.ts` | How a picker is answered from the answer list, and what `asks.json` keeps |
+| `approvals.ts`, `approvals.test.ts` | The Q3 check: the kinds of approval, how the setup line and each question are read |
+| `fixtures/` | Transcripts for the harness's tests: a run that named every approval it asked for, and one that did not |
 | `ci.ts` | CI: which questions a change reruns, whether it calls for the fixture check, the PR comment, the nightly Slack message |
 | `post-comment.sh` | CI: posts the comment, or edits the one already on the PR |
 | `lib.ts`, `lib.test.ts` | Reading a transcript, the table, baselines, compare, and their tests |

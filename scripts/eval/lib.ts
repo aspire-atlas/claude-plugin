@@ -1,11 +1,42 @@
 // Pure helpers for the page eval harness (scripts/eval/README.md). No process, network or file calls here,
 // so `bun test scripts/eval` covers them without running Claude.
 
+import { APPROVALS_CHECK, approvalsLine, noApprovals, type ApprovalChecks } from './approvals'
+
 export type Result = 'pass' | 'fail' | 'n/a' | 'not run'
 
 export type Event = Record<string, any>
 
 export type ToolUse = { id: string; name: string; input: Record<string, any>; main: boolean }
+
+/** How the harness chose an answer: from the answer list, the (Recommended) option, or the first option. */
+export type AnswerSource = 'list' | 'recommended' | 'first'
+
+export type Asked = {
+  header: string
+  question: string
+  multiSelect: boolean
+  options: { label: string; description: string }[]
+  /** Null when the harness did not answer: the run had already finished, or the tool was not answered at all. */
+  answer: string | null
+  by: AnswerSource | null
+}
+
+/** One AskUserQuestion call, as the person met it. */
+export type Ask = {
+  id: string
+  main: boolean
+  /** What its thread (the main thread, or the subagent that asked) wrote in this turn before the call, since that thread's call before it. */
+  before: string
+  /** The end of `before`: the message the picker sits in, written after that thread's last tool result. */
+  message: string
+  questions: Asked[]
+  /** Why the harness left the call unanswered and ended the turn, when it did. */
+  declined: Declined | null
+}
+
+/** `finished`: the run had its page, so the picker was the flow's offer of more work. `limit`: the harness had answered `--max-asks` pickers. */
+export type Declined = 'finished' | 'limit'
 
 export type Turn = {
   sessionId: string | null
@@ -20,6 +51,8 @@ export type Turn = {
   /** The final reply of the turn, as `claude -p` reports it. */
   reply: string
   toolUses: ToolUse[]
+  /** Every AskUserQuestion call of the turn, in order, with the answer the harness gave. */
+  asks: Ask[]
   /** tool_use id to the text of its result and whether it failed. */
   toolResults: Record<string, { text: string; error: boolean }>
   /** Size of the main thread's context at its last message: what the next message would carry. */
@@ -95,6 +128,8 @@ export type QuestionResult = {
   approved: PageChecks | null
   /** `not run` for a question graded from a file, and for results stored before the chat check (normalizeRun). */
   chat: ChatChecks
+  /** `not run` for a question graded from a file, a run that asked no picker, and results stored before the check. */
+  approvals: ApprovalChecks
   /** The second run of the same question, when the run was asked for the repeat pair (`--repeat`). */
   repeat?: RepeatChecks
   problems: string[]
@@ -128,7 +163,8 @@ export type RunResults = {
   skipped?: string[]
 }
 
-export const HARNESS_VERSION = 1
+// 2: reruns go through the Agent SDK and answer pickers, and `rounds` counts answered pickers as well as text replies.
+export const HARNESS_VERSION = 2
 
 // Atlas tools a rerun may call. Everything else on the Atlas connector is refused, so a rerun reads the test
 // organization and never changes it. lookup_* may refresh what Atlas holds, which the page standard asks for;
@@ -178,15 +214,38 @@ function usageTotal(usage: Record<string, any> | undefined): number {
     (usage.cache_read_input_tokens ?? 0) + (usage.output_tokens ?? 0)
 }
 
+export const ASK_TOOL = 'AskUserQuestion'
+
+/** The type of the line the harness adds to a turn's transcript for each picker it answers or declines. */
+export const ANSWER_EVENT = 'eval_answer'
+
+const str = (value: unknown) => (typeof value === 'string' ? value : '')
+
+export function askedQuestions(input: Record<string, any> | undefined): Asked[] {
+  return (Array.isArray(input?.questions) ? input.questions : []).map((question: any) => ({
+    header: str(question?.header), question: str(question?.question), multiSelect: question?.multiSelect === true,
+    options: (Array.isArray(question?.options) ? question.options : []).map((option: any) => ({ label: str(option?.label), description: str(option?.description) })),
+    answer: null, by: null,
+  }))
+}
+
 export function summarizeTurn(events: Event[]): Turn {
   const turn: Turn = {
-    sessionId: null, scratchpad: null, model: null, connectors: {}, text: '', said: '', reply: '', toolUses: [], toolResults: {},
+    sessionId: null, scratchpad: null, model: null, connectors: {}, text: '', said: '', reply: '', toolUses: [], asks: [], toolResults: {},
     contextTokens: 0, billedTokens: 0, costUsd: 0, compactions: 0, failed: true,
   }
   const parts: string[] = []
-  const said: string[] = []
+  // Everything the main thread wrote in the turn.
+  const mainSaid: string[] = []
+  // Per thread ('' is the main thread, a subagent is its Task call's id): what it has written since its last
+  // picker, the text above the next one, and the part of that written since its last tool result, which is the
+  // message the next picker sits in.
+  const said: Record<string, string[]> = {}
+  const message: Record<string, string[]> = {}
+  const answers: Event[] = []
   for (const event of events) {
     const main = !event.parent_tool_use_id
+    const thread = String(event.parent_tool_use_id ?? '')
     if (event.type === 'system' && event.subtype === 'init') {
       turn.sessionId = event.session_id ?? turn.sessionId
       turn.scratchpad = event.scratchpad_path ?? null
@@ -196,11 +255,21 @@ export function summarizeTurn(events: Event[]): Turn {
       turn.compactions += 1
     } else if (event.type === 'assistant') {
       for (const block of event.message?.content ?? []) {
-        if (block.type === 'text' && main) {
-          parts.push(block.text)
-          said.push(block.text)
+        if (block.type === 'text') {
+          if (main) parts.push(block.text)
+          if (main) mainSaid.push(block.text)
+          ;(said[thread] ??= []).push(block.text)
+          ;(message[thread] ??= []).push(block.text)
         }
         if (block.type === 'tool_use') turn.toolUses.push({ id: block.id, name: block.name, input: block.input ?? {}, main })
+        if (block.type === 'tool_use' && block.name === ASK_TOOL) {
+          turn.asks.push({
+            id: block.id, main, before: (said[thread] ?? []).join('\n').trim(), message: (message[thread] ?? []).join('\n').trim(),
+            questions: askedQuestions(block.input), declined: null,
+          })
+          said[thread] = []
+          message[thread] = []
+        }
       }
       if (main) turn.contextTokens = usageTotal(event.message?.usage) || turn.contextTokens
     } else if (event.type === 'user') {
@@ -209,7 +278,10 @@ export function summarizeTurn(events: Event[]): Turn {
         const text = contentText(block.content)
         turn.toolResults[block.tool_use_id] = { text, error: block.is_error === true }
         if (main) parts.push(text)
+        message[thread] = []
       }
+    } else if (event.type === ANSWER_EVENT) {
+      answers.push(event)
     } else if (event.type === 'result') {
       turn.sessionId = event.session_id ?? turn.sessionId
       turn.reply = typeof event.result === 'string' ? event.result : ''
@@ -218,8 +290,21 @@ export function summarizeTurn(events: Event[]): Turn {
       turn.failed = event.is_error === true
     }
   }
+  // The harness's own lines, written beside the stream when it answers a picker (session.ts). They are read
+  // last: the handler can write one before the stream's own line for the picker it answers.
+  for (const event of answers) {
+    const ask = turn.asks.find(candidate => candidate.id === event.tool_use_id)
+    if (!ask) continue
+    ask.declined = event.declined === 'finished' || event.declined === 'limit' ? event.declined : null
+    for (const question of ask.questions) {
+      const given = event.answers?.[question.question]
+      if (typeof given?.answer !== 'string') continue
+      question.answer = given.answer
+      question.by = given.by ?? null
+    }
+  }
   turn.text = parts.join('\n')
-  turn.said = said.join('\n')
+  turn.said = mainSaid.join('\n')
   return turn
 }
 
@@ -245,14 +330,18 @@ export function findPage(turn: Turn): { link: string | null; file: string | null
   const packets = fencedBlocks(turn.text, 'result-packet')
   // On a host that cannot publish, the packet's page is the path of the file the page was saved to.
   let saved: string | null = null
-  // A storyline draft returns a packet marked `pass: "draft"` and no page: the run waits on the person's answer
+  // A storyline draft returns a packet marked `pass: "draft"` and no published page: the run waits on the person's answer
   // until a later packet builds or publishes. A feeder agent's packet in the same turn does not end that wait.
   let awaitingStoryline = false
   for (const packet of packets) {
     const parsed = parseJsonLoose(packet)
     const pass = parsed?.storyline?.pass
-    if (pass === 'draft') awaitingStoryline = true
-    else if (pass === 'build' || pass === 'state') awaitingStoryline = false
+    if (pass === 'draft') {
+      // A draft pass may name its draft file as `page` (orchestration.md, section 6). That file is never the page.
+      awaitingStoryline = true
+      continue
+    }
+    if (pass === 'build' || pass === 'state') awaitingStoryline = false
     const value = parsed?.page
     const page = Array.isArray(value) ? value[0] : value
     if (typeof page !== 'string' || page.length === 0) continue
@@ -263,43 +352,53 @@ export function findPage(turn: Turn): { link: string | null; file: string | null
   return { link, file: file ?? saved ?? written, finished: packets.length > 0 && !awaitingStoryline }
 }
 
-/** Every word of an AskUserQuestion call that the person reads: each question, its option labels and their descriptions. */
-export function askText(input: Record<string, any>): string {
-  const parts: unknown[] = []
-  for (const question of Array.isArray(input?.questions) ? input.questions : []) {
-    parts.push(question?.question)
-    for (const option of Array.isArray(question?.options) ? question.options : []) parts.push(option?.label, option?.description)
-  }
-  return parts.filter(part => typeof part === 'string' && part.trim()).join('\n')
+/** Every word of a picker that the person reads: each question, its option labels and their descriptions. */
+export function askText(questions: Asked[]): string {
+  return questions.flatMap(question => [question.question, ...question.options.flatMap(option => [option.label, option.description])])
+    .filter(part => part.trim()).join('\n')
 }
 
-const isStorylineAsk = (use: ToolUse) =>
-  (Array.isArray(use.input?.questions) ? use.input.questions : []).some((q: any) => /storyline/i.test(String(q?.header ?? '')))
+const isStorylineAsk = (ask: Ask) => ask.questions.some(question => /storyline/i.test(question.header))
 
 /**
  * The chat messages a run sends, as the person reads them: the setup reply, every storyline check-in (a
- * Change or Widen answer brings a redraft, and each one is read) and the close-out. A question is read from
- * the AskUserQuestion call and, when the turn ended on it, from the turn's reply as well, since a host that
+ * Change or Widen answer brings a redraft, and each one is read, with the message its picker sits in) and the
+ * close-out. The setup reply is the text the main thread wrote above its first picker, and that picker. A question is read from the
+ * AskUserQuestion call and, when the turn ended on it, from the turn's reply as well, since a host that
  * refuses the tool asks in text. The last turn's reply is the close-out only when the run `closed`: it
- * published a page or its agent finished. A run that stopped earlier sent no close-out, and its last reply is
- * the question it stopped on: part of the setup reply or of a storyline check-in when it stopped there, and
- * `stoppedOn` when it stopped on any later question, so no reply the person read goes uncounted.
+ * published a page or its agent finished. When the harness ended the run at the picker that follows the page,
+ * the close-out is the message that picker sits in, and the picker itself is not read. Progress notes written
+ * during the build, before the main thread's last tool result, are not part of the close-out. A run that stopped earlier
+ * sent no close-out, and its last reply is the question it stopped on: part of the setup reply or of a
+ * storyline check-in when it stopped there, and `stoppedOn` when it stopped on any later question, so no reply
+ * the person read goes uncounted.
  */
 export function chatMessages(turns: Turn[], closed: boolean): Partial<Record<ChatMessage, string>> {
   const found: Partial<Record<ChatMessage, string>> = {}
   if (!turns.length) return found
+  // A storyline check-in is read with the message it sits in, where the draft is written above the picker.
   const asks = (turn: Turn, storyline: boolean) =>
-    turn.toolUses.filter(use => use.main && use.name === 'AskUserQuestion' && isStorylineAsk(use) === storyline).map(use => askText(use.input))
+    turn.asks.filter(ask => ask.main && !ask.declined && isStorylineAsk(ask) === storyline)
+      .flatMap(ask => [...(storyline ? [ask.message] : []), askText(ask.questions)])
   const isStoryline = (turn: Turn) =>
     asks(turn, true).length > 0 || fencedBlocks(turn.text, 'result-packet').some(packet => parseJsonLoose(packet)?.storyline?.pass === 'draft')
   const last = turns.length - 1
   // A turn's reply is a question the person read, unless it is the close-out.
   const asked = (i: number) => (i < last || !closed ? [turns[i].reply] : [])
-  const setup = [...asks(turns[0], false), ...(isStoryline(turns[0]) ? [] : asked(0))].filter(Boolean)
+  // The setup reply is what the main thread wrote above its first picker, which is the text the approval check
+  // reads too, and the pickers before the storyline check-in. A picker that comes after the check-in in the
+  // same turn (a refresh offer during the build) is not part of it, and when the first picker is the storyline
+  // check-in the run sent no setup reply.
+  const first = turns[0].asks.filter(ask => ask.main && !ask.declined)
+  const check = first.findIndex(isStorylineAsk)
+  const before = check === -1 ? first : first.slice(0, check)
+  const setup = [before[0]?.before, ...before.map(ask => askText(ask.questions)), ...(isStoryline(turns[0]) ? [] : asked(0))].filter(Boolean)
   if (setup.length) found.setup = setup.join('\n')
   const storyline = turns.flatMap((turn, i) => (isStoryline(turn) ? [...asks(turn, true), ...asked(i)] : [])).filter(Boolean)
   if (storyline.length) found.storyline = storyline.join('\n')
-  if (closed && !turns[last].failed && turns[last].reply) found.closeOut = turns[last].reply
+  const after = turns[last].asks.find(ask => ask.main && ask.declined)
+  if (closed && after?.message) found.closeOut = after.message
+  else if (closed && !turns[last].failed && turns[last].reply) found.closeOut = turns[last].reply
   if (!closed && last > 0 && !isStoryline(turns[last])) {
     const stoppedOn = [...asks(turns[last], false), turns[last].reply].filter(Boolean)
     if (stoppedOn.length) found.stoppedOn = stoppedOn.join('\n')
@@ -486,13 +585,13 @@ export function chatLine(chat: ChatChecks): string | null {
   return `${CHAT_CHECK.name} (${CHAT_CHECK.id}): ${chat.result}. ${parts.filter(Boolean).join('; ')}.`
 }
 
-/** Stored results as this version reads them: a run stored before the chat check has no chat on its questions. */
+/** Stored results as this version reads them: a run stored before the chat check or the approval check has neither on its questions. */
 export function normalizeRun(results: RunResults): RunResults {
   const page = (checks: PageChecks | null) => checks && { ...checks, asserted: checks.asserted ?? {} }
   return {
     ...results,
     questions: results.questions.map(question => ({
-      ...question, chat: question.chat ?? noChat(), assertions: question.assertions ?? [],
+      ...question, chat: question.chat ?? noChat(), assertions: question.assertions ?? [], approvals: question.approvals ?? noApprovals(),
       new: page(question.new), approved: page(question.approved),
     })),
   }
@@ -623,6 +722,8 @@ export function rows(question: QuestionResult, eChecks: CheckDef[], rList: strin
   return [
     ...question.assertions.map(assertion => ({ id: assertion.id, name: assertion.name, new: aResult(question.new, assertion.id), approved: aResult(question.approved, assertion.id), bar: true, assertion })),
     ...eChecks.map(check => ({ id: check.id, name: names[check.id], new: eResult(question.new, check.id), approved: eResult(question.approved, check.id), bar: bar.has(check.id) })),
+    // The run's own approvals, not the page's: an approved page has no run to read, so its column stays empty.
+    { id: APPROVALS_CHECK.id, name: APPROVALS_CHECK.name, new: question.approvals.result, approved: 'not run' as Result, bar: false },
     ...rList.map(id => ({ id, name: names[id], new: rResult(question.new, id), approved: rResult(question.approved, id), bar: bar.has(id) })),
   ]
 }
@@ -661,7 +762,8 @@ export function renderQuestion(question: QuestionResult, eChecks: CheckDef[], rL
   lines.push(`Transcript: ${question.transcriptTokens.toLocaleString('en-US')} tokens${compactions} · ` +
     `Confirmation rounds: ${question.rounds} · New page: ${question.page.link ?? (question.page.captured ? 'captured, no link' : 'none published')}`)
   const chat = chatLine(question.chat)
-  const notes = [...question.problems, ...assertionNotes(question), ...(chat ? [chat] : []), ...(question.new?.notes ?? []).map(n => `New page: ${n}`), ...(question.approved?.notes ?? []).map(n => `Approved page: ${n}`)]
+  const approvals = approvalsLine(question.approvals)
+  const notes = [...question.problems, ...assertionNotes(question), ...(chat ? [chat] : []), ...(approvals ? [approvals] : []), ...(question.new?.notes ?? []).map(n => `New page: ${n}`), ...(question.approved?.notes ?? []).map(n => `Approved page: ${n}`)]
   for (const note of notes) lines.push(`- ${note}`)
   const waiting = eChecks.filter(check => check.waitsFor && eResult(question.new, check.id) === 'not run')
   if (waiting.length) lines.push(`- Not run yet: ${waiting.map(check => `${check.id} (${check.waitsFor})`).join(', ')}.`)
@@ -696,6 +798,10 @@ export function forBaseline(results: RunResults): RunResults {
 /** What changed between two runs, question by question. A changed approved-page result is a drifted check. */
 export function compareRuns(before: RunResults, after: RunResults, eChecks: CheckDef[]): string {
   const lines: string[] = [`## Page eval compare · ${before.date} (${before.commit.slice(0, 7)}) → ${after.date} (${after.commit.slice(0, 7)})`]
+  if (before.harness !== after.harness) {
+    lines.push('', `The runs come from harness versions ${before.harness} and ${after.harness}, which ask the questions differently: ` +
+      'confirmation rounds and transcript tokens are not comparable between them.')
+  }
   const rList = rIds([...before.questions, ...after.questions])
   let changes = 0
   for (const next of after.questions) {
@@ -710,6 +816,8 @@ export function compareRuns(before: RunResults, after: RunResults, eChecks: Chec
     const changed = rows(next, eChecks, rList, {})
       .map(row => ({ row, was: prevRows.get(row.id) ?? { ...row, new: 'not run' as Result, approved: 'not run' as Result } }))
       .filter(({ row, was }) => row.new !== was.new || row.approved !== was.approved)
+      // A run stored before the approval check, or one that asked no picker, has nothing to compare it with.
+      .filter(({ row, was }) => row.id !== APPROVALS_CHECK.id || (row.new !== 'not run' && was.new !== 'not run'))
     if (changed.length) {
       lines.push('| Check | New page | Approved page |', '| ----- | -------- | ------------- |')
       for (const { row, was } of changed) {
@@ -796,6 +904,21 @@ export function configuredQuestions<Q extends { code: string }>(
 export function skippedLine(skipped: string[] | undefined): string | null {
   if (!skipped?.length) return null
   return `Skipped: ${skipped.join(', ')} (no brand in local.json), so ${skipped.length === 1 ? 'it was' : 'they were'} not graded and cannot regress.`
+}
+
+// ---------------------------------------------------------------- local.json
+
+/**
+ * The keys of local.json that still hold a value copied from local.example.json: any text with a `{placeholder}`
+ * in it. A run with one would ask about a brand named "{brand}", and the flow would pick a brand on its own.
+ */
+export function placeholderKeys(value: unknown, path = ''): string[] {
+  if (typeof value === 'string') return /\{[^{}]+\}/.test(value) ? [path] : []
+  if (Array.isArray(value)) return value.flatMap((item, i) => placeholderKeys(item, `${path}[${i}]`))
+  if (value && typeof value === 'object') {
+    return Object.entries(value).flatMap(([key, item]) => placeholderKeys(item, path ? `${path}.${key}` : key))
+  }
+  return []
 }
 
 // ---------------------------------------------------------------- CI: which questions a change reruns, and the PR comment
@@ -974,6 +1097,7 @@ export function checkNames(eChecks: { id: string; name: string }[], readerStanda
   const names: Record<string, string> = Object.fromEntries(eChecks.map(check => [check.id, check.name]))
   for (const match of readerStandard.matchAll(/^\| (R\d+) \| ([^|]+) \|/gm)) names[match[1]] = match[2].trim()
   names[CHAT_CHECK.id] = CHAT_CHECK.name
+  names[APPROVALS_CHECK.id] = APPROVALS_CHECK.name
   return names
 }
 

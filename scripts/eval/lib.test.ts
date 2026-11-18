@@ -6,8 +6,11 @@ import {
   findPage, forBaseline, normalizeResult, codesForChanges, readerResult, regressions, renderComment, renderSkipped, renderSlack, COMMENT_MARKER, renderStopped, stripTitlePrefix, checkNames, parsePageCheck, parseStream, renderRun, rIds, rResult, stripDataUris,
   aResult, assertionNotes, assertionRefs, cell, fixtureProblems, fixturesForChanges, hasLandedAssertion, passesWhen, planInputFiles, resolveQuestion, rows, safeFileName,
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, askText, chatCodes, chatFailures, chatLine, chatMessages, checkChat, countChat, noChat, normalizeRun, CHAT_CHECK,
+  placeholderKeys, ANSWER_EVENT,
   type Assertion, type AssertionRef, type PageChecks, type QuestionResult, type RunResults,
 } from './lib'
+import { wasAnswered } from './answers'
+import { APPROVALS_CHECK, checkApprovals, noApprovals } from './approvals'
 
 const ROOT = join(import.meta.dir, '../..')
 const line = (event: unknown) => JSON.stringify(event)
@@ -110,7 +113,7 @@ function run(overrides: Partial<QuestionResult> = {}, date = '2026-11-10'): RunR
   const question: QuestionResult = {
     code: 'I4', example: 'Holiday creator plan', setsBarFor: [5, 6], barChecks: ['E1', 'R3'],
     page: { link: 'https://claude.ai/artifact/AbC123', captured: true }, rounds: 2, transcriptTokens: 123456, billedTokens: 1, compactions: 1, costUsd: 1,
-    new: page, approved: { ...page, graded: { R1: 'pass', R3: 'pass' } }, chat: noChat(), problems: ['Approved page for Acme'], assertions: [], ...overrides,
+    new: page, approved: { ...page, graded: { R1: 'pass', R3: 'pass' } }, chat: noChat(), approvals: noApprovals(), problems: ['Approved page for Acme'], assertions: [], ...overrides,
   }
   return { harness: 1, date, commit: 'abcdef1234', model: 'm', judgeModel: 'm', eChecksVersion: '3', questions: [question] }
 }
@@ -299,7 +302,7 @@ test('the CI title prefix is removed before grading, and nothing else is', () =>
 
 test('check names come from e-checks and the reader standard table', () => {
   const names = checkNames([{ id: 'E1', name: 'Answers the real question' }], '| R1 | Reader and scope | x |\n| R13 | Required metrics | y |')
-  expect(names).toEqual({ E1: 'Answers the real question', R1: 'Reader and scope', R13: 'Required metrics', C5: 'Chat wording' })
+  expect(names).toEqual({ E1: 'Answers the real question', R1: 'Reader and scope', R13: 'Required metrics', C5: 'Chat wording', Q3: 'Approvals named in the setup reply' })
 })
 
 test('a question local.json names no brand for is skipped while no baseline grades it, and stops the run once one does', () => {
@@ -357,7 +360,7 @@ test('the three chat messages are read from the questions asked and the replies 
   expect(checked.hits).toEqual([])
   // A run of one turn that published holds a close-out and no setup reply.
   expect(chatMessages([chatTurn('Here is the page.')], true)).toEqual({ closeOut: 'Here is the page.' })
-  expect(askText({ questions: [{ question: 'Q?', header: 'Heard', options: [{ label: 'A', description: 'why' }] }] })).toBe('Q?\nA\nwhy')
+  expect(askText([{ question: 'Q?', header: 'Heard', multiSelect: false, options: [{ label: 'A', description: 'why' }, { label: 'B', description: '' }], answer: null, by: null }])).toBe('Q?\nA\nwhy\nB')
   // A host that refuses the question tool asks in text: a storyline draft packet marks that turn.
   const refused = [chatTurn('I heard I2. Right?'), chatTurn('Storyline: gifts vs deals. Build?', [], DRAFT), chatTurn('Done.')]
   expect(chatMessages(refused, true)).toEqual({ setup: 'I heard I2. Right?', storyline: 'Storyline: gifts vs deals. Build?', closeOut: 'Done.' })
@@ -486,6 +489,131 @@ test('a run stored before the chat check reads as chat not run, and adds no chan
   expect(compared).toContain('Chat wording (C5): pass → fail')
   expect(compared).toContain('1 check result changed.')
   expect(compared).not.toContain('No check changed.')
+})
+
+// ---------------------------------------------------------------- pickers in the transcript, the table and local.json
+
+const FIXTURES = join(import.meta.dir, 'fixtures')
+const fixtureTurn = (name: string) => summarizeTurn(parseStream(readFileSync(join(FIXTURES, name), 'utf8')))
+
+test('the approval check is a row of the table with no approved result, and never a regression', () => {
+  const failing = run()
+  failing.questions[0].approvals = checkApprovals([fixtureTurn('approvals-unnamed.jsonl')])
+  const names = checkNames(E_CHECKS, '')
+  const table = renderRun(failing, E_CHECKS, names)
+  expect(table).toContain('| Q3 Approvals named in the setup reply | fail | – |  |')
+  expect(table).toContain('- Approvals named in the setup reply (Q3): fail. The run asked for save, drafts')
+  expect(regressions(failing, E_CHECKS, names).map(r => r.id)).toEqual(['R3'])
+  expect(renderRun(run(), E_CHECKS, names)).toContain(`| ${APPROVALS_CHECK.id} ${APPROVALS_CHECK.name} | – | – |  |`)
+  // A baseline keeps the kinds, which hold no chat text, and a run stored before the check reads as not run.
+  expect(forBaseline(failing).questions[0].approvals).toEqual(failing.questions[0].approvals)
+  const stored = run()
+  delete (stored.questions[0] as any).approvals
+  expect(normalizeRun(stored).questions[0].approvals).toEqual(noApprovals())
+})
+
+test('the close-out of a run the harness ended at the next picker is the text above that picker', () => {
+  const turn = fixtureTurn('approvals-named.jsonl')
+  expect(turn.failed).toBe(true) // the interrupted turn reports an error; the page it published still counts
+  const messages = chatMessages([turn], true)
+  expect(messages.setup).toContain('This run will ask you to approve')
+  expect(messages.setup).toContain('Cap at 12 fetches (Recommended)')
+  expect(messages.setup).not.toContain('What next?')
+  expect(messages.storyline).toContain('Gift posts beat the usual views')
+  expect(messages.closeOut).toBe('The page is ready: https://claude.ai/artifact/AbC123. It ranks 12 creators.')
+})
+
+test('local.json is refused while a value still holds a placeholder, and the key is named', () => {
+  const example = JSON.parse(readFileSync(join(import.meta.dir, 'local.example.json'), 'utf8'))
+  const keys = placeholderKeys(example)
+  expect(keys).toContain('mcp.url')
+  expect(keys).toContain('organization')
+  expect(keys).toContain('questions.P1.brand')
+  expect(keys).toContain('questions.I1.approved')
+  expect(keys).not.toContain('questions.I1.data')
+  const filled = { mcp: { url: 'https://atlas.example.test/mcp', name: 'Aspire_Atlas_Dev' }, organization: 'Test org', chatAllow: ['Canon R5', '{product}'], questions: { I1: { brand: 'Acme', approved: null } } }
+  expect(placeholderKeys(filled)).toEqual(['chatAllow[1]'])
+  expect(placeholderKeys({ ...filled, chatAllow: [] })).toEqual([])
+})
+
+test('a storyline draft packet that names its draft file is not a page, and does not end the run', () => {
+  const packet = (body: string) => summarizeTurn(parseStream([
+    line({ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 't1', content: '```result-packet\n' + body + '\n```' }] } }),
+    line({ type: 'result', session_id: 's1', result: 'Which should I build?', is_error: false }),
+  ].join('\n')))
+  expect(findPage(packet('{"page": "/tmp/s/draft.html", "storyline": {"pass": "draft"}}'))).toEqual({ link: null, file: null, finished: false })
+  expect(findPage(packet('{"page": "/tmp/s/page.html", "storyline": {"pass": "build"}}'))).toEqual({ link: null, file: '/tmp/s/page.html', finished: true })
+})
+
+test('an answer line written before its picker in the transcript is still read', () => {
+  const picker = { type: 'assistant', message: { content: [{ type: 'tool_use', id: 'q1', name: 'AskUserQuestion', input: { questions: [{ header: 'Heard', question: 'Right?', options: [{ label: 'Yes, run it (Recommended)' }] }] } }] } }
+  const answer = { type: ANSWER_EVENT, tool_use_id: 'q1', answers: { 'Right?': { answer: 'Yes, run it (Recommended)', by: 'recommended' } } }
+  for (const order of [[picker, answer], [answer, picker]]) {
+    const turn = summarizeTurn(parseStream(order.map(line).join('\n')))
+    expect(turn.asks[0].questions[0].answer).toBe('Yes, run it (Recommended)')
+    expect(wasAnswered(turn.asks[0])).toBe(true)
+  }
+  const declined = summarizeTurn(parseStream([line({ type: ANSWER_EVENT, tool_use_id: 'q1', declined: 'finished' }), line(picker)].join('\n')))
+  expect(declined.asks[0].declined).toBe('finished')
+  // A reason the harness does not write is not taken as one.
+  expect(summarizeTurn(parseStream([line(picker), line({ type: ANSWER_EVENT, tool_use_id: 'q1', declined: 'something else' })].join('\n'))).asks[0].declined).toBeNull()
+  expect(wasAnswered(declined.asks[0])).toBe(false)
+})
+
+test('the setup reply is the text above the first picker, and notes and a picker during the build are in no message', () => {
+  const say = (text: string) => ({ type: 'assistant', message: { content: [{ type: 'text', text }] } })
+  const ask = (id: string, header: string, question: string) => ({ type: 'assistant', message: { content: [{ type: 'tool_use', id, name: 'AskUserQuestion', input: { questions: [{ header, question, options: [{ label: 'Yes (Recommended)' }] }] } }] } })
+  const tool = (id: string) => ({ type: 'assistant', message: { content: [{ type: 'tool_use', id, name: 'Task', input: {} }] } })
+  const result = (id: string, content: string) => ({ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: id, content }] } })
+  const turn = summarizeTurn(parseStream([
+    say('You need a shortlist.'), tool('t0'), result('t0', 'ok'),
+    say('It will ask you to approve nothing.'), ask('q1', 'Heard', 'You asked who to contact. Is that right?'),
+    say('Drafting -> storyline.'), tool('t1'), result('t1', '```result-packet\n{"page": null, "storyline": {"pass": "draft"}}\n```'),
+    say('Here is the draft of the three points.'), ask('q2', 'Storyline', 'Gift posts beat the usual views.'),
+    say('Building -> reviews.'), ask('q3', 'Account', 'Refresh @acme first -> newer posts?'),
+    tool('t2'), result('t2', '```result-packet\n{"page": "https://claude.ai/artifact/AbC123", "storyline": {"pass": "build"}}\n```'),
+    say('The page is ready.'), ask('q4', 'Next', 'What next?'),
+    { type: ANSWER_EVENT, tool_use_id: 'q4', declined: 'finished' },
+  ].map(line).join('\n')))
+  // Setup lines written before a tool call (loading the question tool, a status read) are still the setup reply.
+  expect(turn.asks[0].before).toBe('You need a shortlist.\nIt will ask you to approve nothing.')
+  expect(turn.asks[0].message).toBe('It will ask you to approve nothing.')
+  const messages = chatMessages([turn], true)
+  expect(messages.setup).toBe('You need a shortlist.\nIt will ask you to approve nothing.\nYou asked who to contact. Is that right?\nYes (Recommended)')
+  // The draft written above the storyline picker is part of the check-in; the note before the tool call is not.
+  expect(messages.storyline).toBe('Here is the draft of the three points.\nGift posts beat the usual views.\nYes (Recommended)')
+  expect(messages.closeOut).toBe('The page is ready.')
+  expect(checkChat([turn], true, RULES).checks.result).toBe('pass')
+  // A draft with an arrow above the storyline picker is counted, in a run of one turn.
+  const drafted = summarizeTurn(parseStream([
+    say('You need a shortlist.'), ask('q1', 'Heard', 'Is that right?'),
+    tool('t1'), result('t1', '```result-packet\n{"page": null, "storyline": {"pass": "draft"}}\n```'),
+    say('Gifts -> views.'), ask('q2', 'Storyline', 'Build it?'),
+    tool('t2'), result('t2', '```result-packet\n{"page": "https://claude.ai/artifact/AbC123", "storyline": {"pass": "build"}}\n```'),
+    { type: 'result', session_id: 's1', result: 'The page is ready.', is_error: false },
+  ].map(line).join('\n')))
+  expect(checkChat([drafted], true, RULES).checks.messages.storyline).toEqual({ arrows: 1, vs: 0, codes: 0 })
+  // A run whose first picker is the storyline check-in sent no setup reply: the draft is not counted twice.
+  const noSetup = summarizeTurn(parseStream([
+    tool('t1'), result('t1', '```result-packet\n{"page": null, "storyline": {"pass": "draft"}}\n```'),
+    say('Gifts -> views.'), ask('q2', 'Storyline', 'Build it?'),
+  ].map(line).join('\n')))
+  expect(chatMessages([noSetup], false)).toEqual({ storyline: 'Gifts -> views.\nBuild it?\nYes (Recommended)' })
+})
+
+test('a compare does not count the approval check appearing for the first time', () => {
+  const before = run()
+  const after = run()
+  after.questions[0].approvals = { result: 'pass', line: true, named: [], asked: [], unnamed: [] }
+  expect(compareRuns(before, after, E_CHECKS)).toContain('0 check results changed.')
+  const failed = run()
+  failed.questions[0].approvals = { result: 'fail', line: true, named: [], asked: ['save'], unnamed: ['save'] }
+  const compared = compareRuns(after, failed, E_CHECKS)
+  expect(compared).toContain('| Q3 | pass → fail |')
+  expect(compared).toContain('1 check result changed.')
+  expect(compared).not.toContain('harness versions')
+  // Runs from the two harnesses are told apart, since their rounds and tokens are counted differently.
+  expect(compareRuns({ ...before, harness: 1 }, { ...after, harness: 2 }, E_CHECKS)).toContain('harness versions 1 and 2')
 })
 
 // ---------------------------------------------------------------- client cases and their assertions
