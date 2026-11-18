@@ -75,6 +75,9 @@ is in **Quality review**, **3**.
   or counts ("Atlas reads public posts", "3 picks and 2 passes") pass, and the English read judges
   them. Say what the thing is: "the creators we recommend", "this week's results", "Atlas compared",
   "this review", "the spot for reach", "the people who do the work". Handles, hashtags, emails, and links are not checked. Other jargon is a judgment.
+- **R11, paid label or none.** A post by someone other than the brand has a "paid label" or "no
+  paid label", never "organic" or "unpaid". The rule, the pages and places the script reads, and
+  what is left to judgment are in **Page standard**, section 8 (`post-kinds.md`).
 - One defect is one finding. A defect that fails an R check and a 4.x check (a headline count that
   disagrees with the table fails R7 and 4.4) is filed under the more specific check, here 4.4, and
   both IDs go in **Failed checks**.

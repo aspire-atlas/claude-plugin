@@ -39,6 +39,19 @@
     }
   },
   "defaultReply": "Yes, that is right. Go ahead with what you proposed and your recommended options. Save nothing to Atlas and send nothing.",
+  "answers": [
+    {
+      "pick": "^Build with the gaps noted"
+    },
+    {
+      "header": "Storyline",
+      "pick": "^Build"
+    },
+    {
+      "header": "Save",
+      "pick": "^Page only"
+    }
+  ],
   "repeat": {
     "what": "The repeat pair (docs/STANDARD.md, S4). With --repeat, each question in codes is asked a second time in the same session once its first page is published and its close-out is answered with closeOutReply. Reruns refuse every Atlas write, so the second run follows up from the session's own first run, not from a record kept in Atlas.",
     "codes": [
@@ -80,6 +93,9 @@
     "scripts/eval/questions.json",
     "scripts/eval/run.ts",
     "scripts/eval/lib.ts",
+    "scripts/eval/session.ts",
+    "scripts/eval/approvals.ts",
+    "scripts/eval/answers.ts",
     "scripts/render-page.ts",
     "scripts/fixtures/eval-cases/"
   ],

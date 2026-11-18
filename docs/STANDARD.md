@@ -105,7 +105,7 @@ that changes an agent or flow).
 | -- | ---- | ------ | ---------- | ---- | --- |
 | Q1 | Every question, routine ones included, is an `AskUserQuestion` picker: the suggested answer first as the (Recommended) option, 2 to 4 options in all, and the tool's free text field as the blank. Never a question in chat text, a `wrap_up` button, or a template to fill in. | ASP-4093 (decided 2026-11-09) | reviewer; script (lands with ASP-5382) | "Which launch is this for?" with "Holiday gift sets (Recommended)" from the brand's site, "Spring refresh", and the free text field for anything else. | "What's the product and launch date? Reply with: Product: [ ] Date: [ ]" |
 | Q2 | A new flow's questions live in its own `references/<flow>.md` (L1), with the option set each one ships with. | ASP-4093 | reviewer | Each question in the flow file lists its options and which one is recommended. | A question whose options the flow makes up at run time, different on every run. |
-| Q3 | The setup reply says what the run is for before it asks: it opens with the lines in **Orchestration contract** 2, **Before the questions**, shows no question code, and every approval asked later was named there or is called out as an extra one. | ASP-5835 | reviewer, who also reads the first message and each approval in the eval transcripts (`scripts/eval/.runs/`) once the harness can answer the picker (ASP-5921); judgment review | Opens with the need, the decision and the result, then any missing connection and the approvals line; the full example is the good opening in **Orchestration contract** 2, **Before the questions**. | "I heard P1. Before I start, please answer the questions below.", then four questions, and a save question and a credits prompt that first appear mid-run. |
+| Q3 | The setup reply says what the run is for before it asks: it opens with the lines in **Orchestration contract** 2, **Before the questions**, shows no question code, and every approval asked later was named there or is called out as an extra one. | ASP-5835 | eval (the Q3 row: every approval the run asked for was named in the setup reply; it reports and does not block); reviewer, who also reads the first message and each approval in the run's `asks.json` (`scripts/eval/.runs/`); judgment review | Opens with the need, the decision and the result, then any missing connection and the approvals line; the full example is the good opening in **Orchestration contract** 2, **Before the questions**. | "I heard P1. Before I start, please answer the questions below.", then four questions, and a save question and a credits prompt that first appear mid-run. |
 
 ## 8. Proof
 
@@ -144,8 +144,8 @@ How to read the comment:
    the new page fails; it blocks the merge. Fix the change, or, when the check itself is wrong, say so in the
    PR and fix the check in the same change.
 2. **The table** has one row per check: a client case's own assertions first (see
-   [Adding a client example](#adding-a-client-example)), then E1 to E8 (the Evals tab), then R1 onward (the
-   reader standard). New
+   [Adding a client example](#adding-a-client-example)), then E1 to E8 (the Evals tab), Q3 (the approvals the run asked for,
+   with no approved result), then R1 onward (the reader standard). New
    page and Approved page are `pass`, `fail`, `n/a`, or `–` when the check did not run. **Sets the bar** marks
    the checks this question's approved page is the example for: those are the rows this standard's items
    above are proven on (E1 and E8 for S1, E4 for M3, E6 and E7 for V1).

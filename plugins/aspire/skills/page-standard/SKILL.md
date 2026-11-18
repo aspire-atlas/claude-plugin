@@ -309,7 +309,7 @@ When the reader standard changes, this table and the script change in the same c
   no self-check and no page check.
 - **A review page** (a quality review) runs the check with the words of the work under review
   marked as quoted.
-- The scripted checks look only at the markup in section 5. A page can pass the script and still
+- The scripted checks look only at the markup in section 5 and the `data-own` mark (section 8). A page can pass the script and still
   fail the check in substance (a scope that names "the team" as the reader, an approval worded as
   a next step); judge that too.
 
@@ -383,6 +383,8 @@ returns is a gap, named on the page like any other missing metric. Add the flow'
 
 **Where each metric comes from, and the reason a page shows when one is missing, per network,**
 are in `network-metrics.md` in this folder. Read it before step 2a counts and before the page names a gap.
+
+**Paid label or none.** A post by someone other than the brand has a "paid label" or "no paid label", never "organic" or "unpaid". The rule, and the `data-own` mark its R11 check reads, are in `post-kinds.md` in this folder; read it before a page, a chat reply, or a delivery message describes another account's posts.
 
 **A missing metric is never 0.** On the page it reads "not available: {reason}" beside where the
 number would sit, and the post carries it in `data-missing` (section 5). A 0 that Atlas read is a

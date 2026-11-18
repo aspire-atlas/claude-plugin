@@ -475,7 +475,7 @@ and the contact route Atlas holds.
 - **Competitors.** Every `competitor` handle and its `spellingVariants` in captions and
   mentions. A paid partnership with a competitor in the last 90 days is a Fail when
   `vetting:hard-rejects` lists it, or, in an applicant review run, the review's `reject:` line
-  does; a Flag otherwise. An organic mention is a note.
+  does; a Flag otherwise. A mention with no paid label is a note.
 - **Disclosure habits.** Posts with the partnership marker, or that tag a brand with
   `#ad`, `#sponsored`, or "paid partnership", against posts that read as paid without one. A
   paid post without disclosure is a Flag (a Fail when `vetting:hard-rejects` lists it, or, in an

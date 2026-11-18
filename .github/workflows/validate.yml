@@ -269,6 +269,8 @@ jobs:
           CODES: ${{ steps.pick.outputs.codes }}
         run: |
           npm install -g @anthropic-ai/claude-code
+          # The Agent SDK the reruns are driven through (scripts/eval/session.ts), at the version the lockfile pins.
+          bun install --frozen-lockfile
           # Brands and the dev server address are customer details: they come from a secret, never the repository.
           printf '%s' "$EVAL_LOCAL_JSON" > scripts/eval/local.json
           bun run eval:pages --only "$CODES" --out "$RUNNER_TEMP/eval-run" --approved-from newest \

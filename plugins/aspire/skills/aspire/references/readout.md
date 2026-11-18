@@ -333,6 +333,9 @@ campaign (`detail.campaign`, `detail.recipient`), outside the daily cap of five.
 only what Atlas holds: no lookups, no marketplace. In the freshness line (**Page standard**,
 section 9), the campaign's accepted creators are subject accounts with their own entries and no
 refresh; mention posts and verbatims share the one mentions entry, marked `data-mention`.
+Because a readout carries mention evidence, its page is checked for the paid label wording
+(**Page standard**, section 8, **Paid label or none**): a block that gives the brand's own organic
+figures carries `data-own`, and another account's post is never called organic or unpaid.
 
 ## Weekly readout
 
