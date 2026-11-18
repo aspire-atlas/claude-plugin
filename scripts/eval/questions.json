@@ -39,6 +39,30 @@
     }
   },
   "defaultReply": "Yes, that is right. Go ahead with what you proposed and your recommended options. Save nothing to Atlas and send nothing.",
+  "repeat": {
+    "what": "The repeat pair (docs/STANDARD.md, S4). With --repeat, each question in codes is asked a second time in the same session once its first page is published and its close-out is answered with closeOutReply. Reruns refuse every Atlas write, so the second run follows up from the session's own first run, not from a record kept in Atlas.",
+    "codes": [
+      "I4"
+    ],
+    "closeOutReply": "Not this time: keep nothing for next time, save nothing to Atlas, send nothing, and start nothing else. That is all for this page.",
+    "reply": "All of them are still open; nothing else has changed. Go ahead with what you proposed and your recommended options. Save nothing to Atlas and send nothing.",
+    "checks": [
+      {
+        "id": "FU1",
+        "name": "Repeat run asks what changed",
+        "judgedBy": "script",
+        "passesWhen": "The second run's first message opens with \"Last time ({date}) you asked ...\", asks one question about what has happened since to the decisions and next steps the first page left open, and repeats none of the first run's setup questions (the question heard, the reader, the scope, the save, the storyline).",
+        "failsWhen": "A second run that confirms the reader and the scope again, or asks the storyline again, and never mentions the first run's next steps."
+      },
+      {
+        "id": "FU2",
+        "name": "Repeat page leads with what changed",
+        "judgedBy": "judge",
+        "passesWhen": "The second page's first section after its reader and scope line says what changed since the first page: its headline is a conclusion about the change, and a short list under it gives each decision and next step the first page left open with its status (done, still open, dropped, or not confirmed). Items still open are then carried into the decisions and next steps with their owner and date, ahead of new ones. A page that says plainly that nothing has changed passes.",
+        "failsWhen": "A second page that reads like the first with new numbers and never mentions it; a topic title such as \"What changed since 12 Nov\" with no conclusion; an open item from the first page that the second page drops without a word."
+      }
+    ]
+  },
   "sharedPaths": [
     "plugins/aspire/skills/aspire/SKILL.md",
     "plugins/aspire/skills/page-standard/",
@@ -46,6 +70,7 @@
     "plugins/aspire/skills/aspire/references/reader-standard.md",
     "plugins/aspire/skills/aspire/references/english-rules.md",
     "plugins/aspire/skills/aspire/references/orchestration.md",
+    "plugins/aspire/skills/aspire/references/repeat-run.md",
     "plugins/aspire/skills/aspire/references/recipient-lens.md",
     "plugins/aspire/skills/aspire/references/running-agents.md"
   ],
