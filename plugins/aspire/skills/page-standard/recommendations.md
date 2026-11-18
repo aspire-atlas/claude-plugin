@@ -115,22 +115,27 @@ taken before any signal, with spend behind it.
 </article>
 ```
 
+- A next step is each list item, or each table row with a `td`; a table's heading cells are
+  `th`. When the section has neither, each block directly inside it is a step, headings aside. A
+  section with nothing to do says "No next steps".
 - `data-recommend` goes on the element that holds the whole recommendation: the decision, the
   list item or table row of a next step, or a flow's own recommendation card. `data-cost-line`
   goes on the element that shows the cost, inside it. In a next steps table the row carries
   `data-recommend` and the Cost cell `data-cost-line`.
-- The script fails R5 when a decision or a next step is not marked as a recommendation, when a
-  next steps section holds words but no marked step and does not say "No next steps", when a
+- The script fails R5 when a decision or a next step is not marked as a recommendation on
+  itself or inside itself (a mark on the section or another wrapper prices nothing), when a
   `reader` step sits on a page with no shared audience line or shows a cost line, when a
   recommendation has no `data-cost` or no cost line, when a `money` line shows no amount with its
-  currency ("USD 162", or a currency symbol), when a monthly cost does not say "a month" (or "per month", "monthly", "/month") and
+  currency (a currency code such as USD, EUR, GBP, CAD or AUD beside the number, or a currency
+  symbol), when a monthly cost does not give an amount per month ("USD 162 a month", "per month",
+  "monthly", "/month") and say
   "estimate", when a `none` line does not say "no spend", when an `unpriced` line does not say
   "cannot be priced" and show its `data-cost-missing` and `data-cost-holder`, and when a `team`
   line does not say "team view".
 - It also fails R5 when a `data-trend` block is not labelled "Trend to watch", does not hold one
   `helps` and one `hurts` reading, lists no signal or more than three, has a signal that does not
   show its `data-where` and its `data-by` date, sits in the decisions, or carries a
-  `data-recommend` step that is anything but watching.
+  `data-recommend` step that is anything but watching at no cost (`data-cost="none"`).
 - A page with no decision, no next steps section, and nothing marked gets R5 `unmarked`: read it
   for a recommendation. R5 is never N/A through `data-na`.
 - The script's R5 line lists what it read as `recommendations` and `trends`. Copy both lists into

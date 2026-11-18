@@ -329,15 +329,20 @@ NO_SPEND = re.compile(r"(?i)\bno spend\b")
 UNPRICED = re.compile(r"(?i)\bcannot be priced\b")
 TEAM_VIEW = re.compile(r"(?i)\bteam view\b")
 ESTIMATE = re.compile(r"(?i)\bestimated?\b")
-PER_MONTH = re.compile(r"(?i)\b(?:a|per|each|every)\s+month\b|\bmonthly\b|/\s?(?:month|mo)\b")
-# An amount with its currency: a code before or after the number ("USD 162", "162 USD") or a symbol.
-AMOUNT = re.compile(r"(?<![A-Za-z])[A-Z]{3}\s?\d[\d,]*(?:\.\d+)?|\d[\d,]*(?:\.\d+)?\s?[A-Z]{3}(?![A-Za-z])|[$€£¥]\s?\d[\d,]*(?:\.\d+)?")
+# An amount with its currency: a currency code before or after the number ("USD 162", "162 USD") or
+# a symbol. Only these codes count, so "GMV 3,240" or "ROI 4" is not an amount.
+CURRENCIES = "USD|EUR|GBP|CAD|AUD|NZD|JPY|CHF|SEK|NOK|DKK|MXN|BRL|INR|SGD|HKD|CNY|KRW|ZAR|AED|PLN|ILS"
+NUMBER = r"\d[\d,]*(?:\.\d+)?"
+AMOUNT_RE = r"(?:(?<![A-Za-z])(?:%s)\s?%s|%s\s?(?:%s)(?![A-Za-z])|[$€£¥]\s?%s)" % (CURRENCIES, NUMBER, NUMBER, CURRENCIES, NUMBER)
+AMOUNT = re.compile(AMOUNT_RE)
+# The cost per month: an amount with the period right after it ("USD 162 a month", "$162/month").
+PER_MONTH = re.compile(AMOUNT_RE + r"\s*(?:(?:a|per|each|every)\s+month\b|/\s?(?:month|mo)\b|monthly\b)", re.I)
 READINGS = ("helps", "hurts")
 SIGNALS_MAX = 3
 
-def marked(node, attr):
-    # The attribute on the node, on something inside it, or on something around it.
-    return any(attr in n.attrs for n in list(walk(node)) + ancestors(node))
+def marked(node, attr, around=False):
+    # The attribute on the node or on something inside it; with around, on something around it too.
+    return any(attr in n.attrs for n in list(walk(node)) + (ancestors(node) if around else []))
 
 def step_items(region):
     # The next steps as the section lists them: each list item or table row that holds a cell, never
@@ -346,11 +351,19 @@ def step_items(region):
         return n.tag == "li" or (n.tag == "tr" and any(k.tag == "td" for k in n.kids if isinstance(k, Node)))
     def nested(n):
         return any(item(a) for a in ancestors(n) if a is not region and region in ancestors(a))
-    return [n for n in walk(region) if n is not region and item(n) and not nested(n)]
+    found = [n for n in walk(region) if n is not region and item(n) and not nested(n)
+             and not NO_STEPS.search(text(n, gap=" "))]
+    if found:
+        return found
+    # Steps written as cards or paragraphs: each block directly in the section, headings aside.
+    return [k for k in region.kids if isinstance(k, Node) and k.tag not in SKIP and not re.fullmatch(r"h[1-6]", k.tag)
+            and text(k, gap=" ") and not NO_STEPS.search(text(k, gap=" "))]
 
 def cost_problems(node, label, out, outside):
     kind = (node.attrs.get("data-cost") or "").strip().lower()
-    lines = [n for n in walk(node, keep=lambda n: n.tag not in SKIP) if "data-cost-line" in n.attrs]
+    # Its own cost lines, never those of a recommendation nested in it.
+    inner = lambda n: n is not node and "data-recommend" in n.attrs
+    lines = [n for n in walk(node, keep=lambda n: n.tag not in SKIP and not inner(n)) if "data-cost-line" in n.attrs]
     line = " ".join(text(n, gap=" ") for n in lines)
     out.setdefault("recommendations", []).append({"text": text(node, gap=" ")[:80], "cost": kind or None, "line": line[:160]})
     if kind not in COSTS:
@@ -393,7 +406,7 @@ def trend_problems(node, label, out):
     shown, problems = text(node, gap=" "), []
     if not has_phrase(shown, "trend to watch"):
         problems.append("%s is not labelled \"Trend to watch\"" % label)
-    if inside(node, "decisions") or any("data-decision" in n.attrs for n in [node] + list(walk(node)) + ancestors(node)):
+    if inside(node, "decisions") or marked(node, "data-decision", around=True):
         problems.append("%s is written as a decision; a trend to watch is not one, so it sits outside the decisions" % label)
     readings = [(n.attrs.get("data-reading") or "").strip().lower() for n in walk(node) if "data-reading" in n.attrs]
     if sorted(readings) != sorted(READINGS):
@@ -414,7 +427,7 @@ def trend_problems(node, label, out):
         elif not shows_date(said, by):
             problems.append("%s: signal %d does not show its date (%s)" % (label, number, by))
     for step in (n for n in walk(node) if "data-recommend" in n.attrs):
-        if not has_phrase(text(step, gap=" "), "watch"):
+        if (step.attrs.get("data-cost") or "").strip().lower() != "none" or not has_phrase(text(step, gap=" "), "watch"):
             problems.append("%s carries a next step other than watching its signals" % label)
     out.setdefault("trends", []).append({"text": shown[:80], "signals": len(signals)})
     return problems
@@ -433,11 +446,11 @@ def r5(nodes, regions, out):
         for node in found:
             if not marked(node, "data-recommend"):
                 problems.append("%s \"%s\" is a recommendation with no cost: mark it data-recommend with data-cost and a cost line" % (what, text(node, gap=" ")[:60]))
-    for region in regions.get("next-steps", []):
-        # Steps written as paragraphs or cards are not found as items, so they must be marked.
-        words = text(region, gap=" ", skip=lambda n: n.tag in ("h1", "h2", "h3", "h4", "h5", "h6"))
-        if words and not step_items(region) and not any("data-recommend" in n.attrs for n in walk(region)) and not NO_STEPS.search(words):
-            problems.append("the next steps section marks no step: put data-recommend on each one, or say \"No next steps\"")
+    for node in recommends:
+        # One recommendation, one cost: a mark around several steps or decisions prices none of them.
+        held = [n for n in steps + decisions if n is not node and node in ancestors(n)]
+        if len(held) > 1:
+            problems.append("one data-recommend wraps %d steps or decisions; mark each one with its own cost" % len(held))
     outside = shared(nodes)
     for index, node in enumerate(recommends, 1):
         problems += cost_problems(node, "recommendation %d (\"%s\")" % (index, text(node, gap=" ")[:50]), out, outside)

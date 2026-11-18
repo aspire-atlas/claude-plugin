@@ -359,7 +359,9 @@ With fewer, say so in one line, propose none, and use **Without a ladder** below
 1. **Tier 1** is the program's standard `commissionPct`, from any order.
 2. **Tier 2**'s threshold is the period revenue of the creator at the top quarter's edge (the 75th
    percentile of in-scope creators with orders), rounded down to two leading digits (USD 1,040
-   becomes USD 1,000). **Tier 3**'s is the same at the top tenth's edge.
+   becomes USD 1,000). **Tier 3**'s is the same at the top tenth's edge. When the two rounded
+   thresholds are equal, propose two tiers only: Tier 2 at that threshold, with the rate step 3
+   gives Tier 3.
 3. **Rates.** Tier 3 is `commissionPctMax` and Tier 2 sits halfway between it and the standard,
    rounded to a whole point. With no `commissionPctMax` saved, propose the thresholds only and ask
    for the two rates. Never suggest a rate from outside the program's own terms.
@@ -527,10 +529,11 @@ store is missing, offer to connect it once and carry on with the sheet or an upl
    your-call item alone (with A7 for an export). For "Use this ladder", a changed one, or "No
    tiers" (an empty `tiers` list), save `tiers` in the affiliate block of `program:{slug}-terms`,
    the way **Program setup** changes a saved record (the Phase 5 supersede rule, with its own
-   confirmation naming the tiers). For a changed ladder or "No tiers", relaunch `pass: propose`
-   so the lists follow the saved answer, and relay the new page. "Decide later" saves nothing and
-   asks no tier invite this run. Then ask A7 (export only), A8, A9 (only when the agent recommends
-   retiring codes) and Y (a proposed ladder, tier invites, hybrid moves, promotions to paid, commission figures that
+   confirmation naming the tiers). After any saved answer, relaunch `pass: propose` once, so the
+   page and its lists follow the saved terms and nothing still reads "Proposed", and relay the
+   new page. "Decide later" saves nothing and asks no tier invite this run. Then ask what is
+   left, never the ladder or an A7 already answered: A7 (export only), A8, A9 (only when the
+   agent recommends retiring codes) and Y (tier invites, a raise without a ladder, hybrid moves, promotions to paid, commission figures that
    differ from the platform's), skipping what has nothing to ask, your-call items first and at
    most four questions per call.
 4. A7 "Change something" relaunches `pass: propose` with the change. Otherwise relaunch with
@@ -739,8 +742,8 @@ budget, a maximum, or the sales goal outside the team view.
 ## Sample mode
 
 The holiday's sample brand per **Sample artifacts** (the agent brief), four creators: a top earner with a
-tier invite as your call, a three-tier ladder with one creator to invite and one to hold, a hybrid with a store-created code, an affiliate whose fixed-amount code is
-on the sheet, and an inactive code to retire. A month's timeline with three post markers and their three
+tier invite as your call, a hybrid with a store-created code who is on the hold list, an affiliate whose fixed-amount code is
+on the sheet, and an inactive code to retire, under a three-tier commission ladder. A month's timeline with three post markers and their three
 post cards, one of them an image post with its missing metrics noted, three
 commission lines, a code sheet of two rows. Render the goal tile in the page itself, marked
 "team view". Declare no page data capability and seed nothing.
