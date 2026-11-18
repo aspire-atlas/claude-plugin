@@ -69,6 +69,7 @@ bun run eval:pages --compare 2026-11-10 latest           # what changed between 
 bun run eval:pages --only I4 --page page.html            # grade a page file, without a rerun
 bun run eval:pages --dry-run               # print what would run
 bun run eval:pages --only O3 --approved-from newest   # take the approved column from the newest baseline
+bun run eval:pages --only I4 --repeat      # ask it twice, and check that the second run follows up on the first
 bun run eval:test                          # the harness's own tests (no Claude, no Atlas)
 ```
 

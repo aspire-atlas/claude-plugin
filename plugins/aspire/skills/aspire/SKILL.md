@@ -86,6 +86,7 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 | ------------------ | ---- |
 | **Artifact standard** (the mark and the source line on every page) | `references/artifact-standard.md` |
 | **Orchestration contract** (the shape of every launch and result) | `references/orchestration.md` |
+| **Repeat run** (the same question asked again: follow up, not setup) | `references/repeat-run.md` |
 | **Recipient lens** (who the reader is: the lens catalog and cues) | `references/recipient-lens.md` |
 | **List agents** | `references/agents-menu.md` (the hand-off table is **Agent hand-off** below) |
 | **Running agents**, **Checkpoints**, **Reading the ask**, **Campaign plan**, **Examples library**, **Decision audit** | `references/running-agents.md` (the decision audit brief a subagent is handed: `references/agents/decision-audit.md`) |
@@ -100,7 +101,7 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 | **PPA pitch**, **Aspire users** | `references/ppa-pitch.md` |
 | **Meta Ads** | `references/meta-ads-tools.md` |
 | **Creator discovery** | `references/creator-discovery.md` |
-| **Creator vetting**; **Applicant review** (a campaign's applicant screening setup) | `references/creator-vetting.md`; `references/applicant-review.md` |
+| **Creator vetting**; **Applicant review** (a campaign's applicant screening setup); **Applicant CSV snippet** (reading an uploaded CSV) | `references/creator-vetting.md`; `references/applicant-review.md`; `references/applicant-csv.md` |
 | **Creator CSV** | `references/creator-csv.md` |
 | **Orchestrator** | `references/orchestrator.md` |
 | **Influencer program** (Program setup, Program manager, Drafts) | `references/program.md` |
@@ -288,8 +289,7 @@ Check whether Atlas tools are available in this session before doing anything el
    `aspire_atlas`, never the Atlas data connection. A match whose only tools are `authenticate`
    and `complete_authentication` is a copy that is not signed in. When several prefixes match,
    use the one that has `get_status`; if none has it, go to 1.3c (`references/connect.md`).
-3. If ToolSearch returns nothing, also scan the deferred tool list in context for the same
-   patterns.
+3. If ToolSearch returns nothing, also scan the deferred tool list in context for the same patterns.
 4. If still nothing, follow `references/connect.md` from 1.1 step 4: the one `ListConnectors`
    call, the one connector card, and the guided add (1.3 to 1.4). Come back here at 1.5.
 
@@ -376,8 +376,7 @@ for naming only: record keys, file names, and the profile slug handed to agents.
 construct either value. When `profile_id` is missing (a resumed session, or a scheduled run
 whose prompt names only the brand), re-read it with `list_my_profiles` and match the brand by
 profile name (exact, ignoring case) across `organizations[].profiles[]`. An unattended run that finds no match or
-more than one publishes the "setup needed" card and stops; it never asks and never falls back
-to unattributed calls.
+more than one publishes the "setup needed" card and stops; it never asks and never falls back to unattributed calls.
 
 Speak in handles and brand names. Never surface slugs, ids, or tool names.
 

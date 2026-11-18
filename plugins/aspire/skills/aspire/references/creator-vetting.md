@@ -116,7 +116,7 @@ main thread may offer V2 alone; it is not required. Otherwise it asks the missin
 to V4, one `AskUserQuestion` each, in order, then confirms the batch once and writes the records.
 
 **Keys starting `vetting:` belong to creator vetting only**, like `review:` keys belong to
-content review. Every other flow drops them. Keys starting `applicant-review:` belong to the
+content review. Every other flow drops them. Keys starting `applicantreview:` belong to the
 applicant review; vetting reads them only for the review R2 named (**Applicant reviews**).
 
 ## Getting the list
@@ -124,13 +124,17 @@ applicant review; vetting reads them only for the review R2 named (**Applicant r
 The main thread gets the list; the agent never asks for it. Three sources, offered in R1:
 
 1. **Upload a CSV export from Aspire** (Recommended). The user attaches the file, or gives its
-   path. Read it with the `Read` tool. Find the handle columns by header, case-insensitive:
+   path. Read it with the **Applicant CSV snippet**, which cuts no
+   long line and leaves out payment and tax data; the import reuses its rows. With no Python, read
+   it with the `Read` tool, and an applicant export is not imported. Find the handle columns by header, case-insensitive:
    `instagram`, `instagram handle`, `instagram username`, `tiktok`, `tiktok handle`,
    `tiktok username`, `handle`, `username`, `social`, `profile url`, or a column whose values
-   are profile URLs. Take the name column (`name`, `creator`, `full name`) for display only.
-   An Excel file: ask for it saved as CSV. Show what was found before going on ("42 rows:
-   38 Instagram handles, 11 TikTok handles, 3 rows with no handle") and which columns were
-   used.
+   are profile URLs. Take the name column (`name`, `creator`, `full name`) for display. Keep
+   the file and every other column: when the list is a campaign's applicants (**Applicant
+   reviews**), the contact details and form answers are imported with each applicant (**Applicant
+   review**, **Importing applicants**). An Excel file: ask for it saved as CSV. Show what was found
+   before going on ("42 rows: 38 Instagram handles, 11 TikTok handles, 3 rows with no handle") and
+   which columns were used; an applicant export's full found-and-missing report comes at the import.
 2. **Paste handles.** One per line or comma separated, `@handle`, a bare handle, or a profile
    URL. A bare handle with no network asks the network once for the whole list (Instagram /
    TikTok / Both).
@@ -251,6 +255,12 @@ What the **Creator vetting** section of SKILL.md does around the agent.
 3c. **Ask R5 once, in its own call, after the criteria source is settled** (after R2, and after 3b
    for a review), still before the storyline draft, so its options come from the source the run
    uses: a review's saved visual checks (**Applicant review**, **How screening applies a review**), otherwise R5's own options.
+3d. **Import a campaign's applicant export** when R2 named an applicant review and the list came
+   from a CSV: per **Applicant review**, **Importing applicants**, with its own found-and-missing
+   report and confirmation, before the launch. From then on the run's list is this file's
+   applicants as read back (the ids after **Check what Atlas and the Sheet hold**), never the review's other applicants, so the
+   handles R3 approved are the ones looked up. "Not now", or an import that stops, leaves the list
+   as it was.
 4. Launch `atlas-creator-vetting` with: tool prefix, `profile_id`, `profile_slug`, brand handles and
    networks, the normalized list, the list name, slug and source, the criteria source, the approved
    fetches, the R4 answer, `visual_check` (from R5 or the ask: `none`, or `{name, kind: "named" |
@@ -603,7 +613,8 @@ or `retract_calibration`), one per call. A proposal the user declines stays unsa
 One record per creator per network, organization-wide, read by vetting and creator discovery.
 
 - kind `guideline`, key `creator:{ig|tt}-{handle}`: the handle lowercase with every
-  character outside `a-z0-9` turned into `-`, the whole slug 48 characters at most. The exact
+  character outside `a-z0-9` turned into `-`, the whole slug (`ig-` or `tt-` and the handle) 45
+  characters at most before any `-2` suffix, so a suffix up to `-99` still fits in 48. The exact
   handle is always in `statement` and `body`, because two handles can share a slug; on a
   `key-exists` whose body names a different handle, add `-2`.
 - `statement`: "@{handle} ({network}): {stance}. {reason}", under 280 characters.
@@ -818,8 +829,8 @@ Maybe, and Reject keep their status colors under any theme.
 ## Applicant reviews
 
 A campaign's applicants are screened against its applicant review: the setup saved once under
-`applicant-review:{slug}-*` (**Applicant review**, **The records**). The criteria source is
-`applicant-review:{slug}`. The main thread reads the review back per **Applicant review**,
+`applicantreview:{slug}-*` (**Applicant review**, **The records**). The criteria source is
+`applicantreview:{slug}`. The main thread reads the review back per **Applicant review**,
 **Reading the setup back (screening)**, and passes it resolved in the launch. Neither asks V1 to
 V4, and the main thread asks no setup question of a complete review: a gap or a missing pointer is
 asked there, before the launch, and the agent asks none.
@@ -839,7 +850,7 @@ means the list is not counted as a campaign's applicants.
 How the run changes for a review (criteria, thresholds, hard stops, red lines, language on camera,
 form rules, visual checks, the page, and what each finding records) is set out once, in
 **Applicant review**, **How screening applies a review**. Read it for every run whose criteria
-source is `applicant-review:{slug}`.
+source is `applicantreview:{slug}`.
 
 ## Creator-ads lanes (CAS campaigns)
 

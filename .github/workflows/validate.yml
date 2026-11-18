@@ -95,6 +95,9 @@ jobs:
       - name: What the plugin directory's scan blocks (mod form, file size, hook docs), and skill description length
         run: bash scripts/check-directory.sh
 
+      - name: The applicant CSV snippet gives every fixture its result
+        run: bash scripts/check-applicant-csv.sh
+
       - name: The skill layout check gives every fixture its result
         run: bash scripts/check-skill-layout.sh --fixtures
 
