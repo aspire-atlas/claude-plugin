@@ -88,7 +88,8 @@ Fresh aggregates, filter path:
 - Creator posts about the brand (the mention set in **Market signal**, **Data method**, step
   3) in both quarters: posts, distinct creators, engagement, and how many posts carry a paid
   label and how many carry none. The page says "paid label" and "no paid label" for these posts,
-  never "organic" or "unpaid" (**Page standard**, section 8).
+  never "organic" or "unpaid" (**Page standard**, section 8). A block that gives the brand's own
+  organic figures, or what the program's records say a creator was paid, carries `data-own`.
 - Current follower counts from `search_creators`, against the first saved follower count in
   the quarter's readout findings.
 - Freshness (**Page standard**, section 9): each linked handle's `freshness` from the same

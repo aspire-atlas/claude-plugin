@@ -204,6 +204,13 @@ print("ok" if a and a == b else "table %s; script %s" % (sorted(set(a) - set(b))
 ' "$PS" "$PC" 2>&1 || true)
     [ "$rows" = ok ] || err "$PC's REQUIRED_ROWS differ from the required-metrics table in $PS (section 8): $rows"
 
+    # The paid label wording is checked on the question codes post-kinds.md names (R ids aside), and it is the
+    # only file that names them: they equal the script's PAID_CODES.
+    PK=$P/skills/page-standard/post-kinds.md
+    named=$(grep -oE '\b[A-QS-Z][0-9]+\b' "$PK" | sort -u | tr '\n' ' ')
+    coded=$(sed -n 's/^PAID_CODES = {\(.*\)}$/\1/p' "$PC" | grep -oE '[A-Z][0-9]+' | sort -u | tr '\n' ' ')
+    [ -n "$coded" ] && [ "$named" = "$coded" ] || err "$PC's PAID_CODES ($coded) differ from the question codes $PK names ($named)"
+
     # The page blocks: a page assembled from every block passes the page check, so a block can't
     # drift from the markup the script reads.
     if [ -n "$blocks" ]; then

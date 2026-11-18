@@ -299,7 +299,7 @@ flow. Every check is pass, fail, or N/A, never a score.
 
 | Check | How |
 | ----- | --- |
-| R1 Reader and scope, R2 Platforms covered, R6 Decisions kept separate, R11 Plain language, R13 Required metrics, R14 Data freshness | Script, or by reading when the page is drawn in script or carries no markup. R14's wording beyond the entry itself is judged: the period wording ("Atlas has no data for {period}", section 9.3), behind-pace notes, and refreshes skipped as recently refreshed |
+| R1 Reader and scope, R2 Platforms covered, R6 Decisions kept separate, R11 Plain language, R13 Required metrics, R14 Data freshness | Script, or by reading when the page is drawn in script or carries no markup. R14's wording beyond the entry itself is judged: the period wording ("Atlas has no data for {period}", section 9.3), behind-pace notes, and refreshes skipped as recently refreshed. R11's paid label wording is scripted only on the pages `post-kinds.md` names and beside a handle; elsewhere it is judged |
 | R3, R4, R5, R8, R10, R12 | Judgment |
 | R7 Real evidence | Judgment, checking each figure against what the run read |
 | R9 Names what's missing | Judgment on a team page; N/A on a page shared outside the team |
@@ -382,8 +382,8 @@ returns is a gap, named on the page like any other missing metric. Add the flow'
   label it as that and never call it engagement per 1,000 views.
 
 **Where each metric comes from, and the reason a page shows when one is missing, per network,**
-are in `network-metrics.md` in this folder. Read it before step 2a counts and before the page
-names a gap.
+are in `network-metrics.md` in this folder. Read it before step 2a counts and before the page names a gap.
+
 **Paid label or none.** A post by someone other than the brand has a "paid label" or "no paid label", never "organic" or "unpaid". The rule, and the `data-own` mark its R11 check reads, are in `post-kinds.md` in this folder; read it before a page, a chat reply, or a delivery message describes another account's posts.
 
 **A missing metric is never 0.** On the page it reads "not available: {reason}" beside where the
