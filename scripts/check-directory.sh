@@ -52,20 +52,6 @@ for p in $(plugin_names); do
   done < <(find "$src" -type f ! -name '*.png' ! -name '*.jpg' ! -name '*.jpeg' ! -name '*.gif' ! -name '*.webp' \
     ! -name '*.ico' ! -name '*.woff' ! -name '*.woff2' ! -name '*.ttf' ! -name '*.otf' | sort)
 
-  # File types the directory accepts from an organization that is not Verified (the committed tree, which is what a push sends).
-  if [[ " $NOT_SUBMITTED " != *" $p "* ]]; then
-    while IFS= read -r -d '' f; do
-      shopt -s nocasematch
-      case "$f" in
-        */LICENSE|*.md|*.txt|*.json|*.yaml|*.yml)
-          if [ "$(git show "HEAD:$f" | head -c2)" = '#!' ]; then err "$f starts with #!, which the directory refuses from an organization that is not Verified"; fi ;;
-        *.png|*.jpg|*.jpeg|*.gif|*.webp|*.ico) ;;
-        *) err "$f: the directory refuses this file type from an organization that is not Verified; wrap it in Markdown or move it out of $src" ;;
-      esac
-      shopt -u nocasematch
-    done < <(git ls-tree -r -z --name-only HEAD -- "$src")
-  fi
-
   # h and Fragment are JSX's own names in every .tsx or .jsx file, tests included.
   jsxname='(^|[^A-Za-z0-9_$.'"'"'"`-])(h|Fragment)[[:space:]]*[?]?:|\.(h|Fragment)\b|\b(const|let|var|function|class)[[:space:]]+(h|Fragment)\b|\bimport\b[^;]*\b(h|Fragment)\b|(^|[^A-Za-z0-9_$.])(h|Fragment)[[:space:]]*=[^=>]|[(,][[:space:]]*(h|Fragment)[[:space:]]*[,)=]'
   while IFS= read -r f; do
@@ -151,6 +137,22 @@ for p in $(plugin_names); do
     grep -q 'Tools the mod answers itself' <<<"$doc" || err "$R, What each hook does: a tool.call hook answers without next; say which tools under 'Tools the mod answers itself'"
   fi
 done
+
+# File types the directory accepts from an organization that is not Verified. Read the committed
+# tree, which is what a push sends, and take the plugins and their folders from that same commit.
+while IFS=$'\t' read -r p src; do
+  [[ " $NOT_SUBMITTED " == *" $p "* ]] && continue
+  while IFS= read -r -d '' f; do
+    shopt -s nocasematch
+    case "$f" in
+      */LICENSE|*.md|*.txt|*.json|*.yaml|*.yml)
+        if [ "$(git show "HEAD:$f" | head -c2)" = '#!' ]; then err "$f starts with #!, which the directory refuses from an organization that is not Verified"; fi ;;
+      *.png|*.jpg|*.jpeg|*.gif|*.webp|*.ico) ;;
+      *) err "$f: the directory refuses this file type from an organization that is not Verified; wrap it in Markdown or move it out of $src" ;;
+    esac
+    shopt -u nocasematch
+  done < <(git ls-tree -r -z --name-only HEAD -- "$src")
+done < <(git show "HEAD:$PLUGINS_MARKETPLACE" | jq -r '.plugins[] | select(.source | type == "string") | "\(.name)\t\(.source | ltrimstr("./"))"')
 
 [ "$fail" -eq 0 ] && echo "OK   plugins pass the directory's mod form, file type, file size, skill description, and hook documentation checks"
 exit "$fail"
