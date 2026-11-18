@@ -203,7 +203,8 @@ exists:
 3. The creator's strongest recent post against their own median engagement.
 
 Never pick a post with a brand safety category above low risk, a brand red line hit, a paid
-partnership with a saved `competitor`, or any paid partnership when an organic post qualifies.
+partnership with a saved `competitor`, or any post with a paid label when one with no paid label
+qualifies.
 Follow-up 2 uses a different post from the first touch when one qualifies.
 
 **Write the post line** from what the post shows: its caption, transcript, or on-screen text.

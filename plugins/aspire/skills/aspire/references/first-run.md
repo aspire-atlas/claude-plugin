@@ -76,7 +76,7 @@ for each profile with a connected channel, in `get_status` order, and stop at th
 profile with brand context. A profile has brand context when the read holds any record of kind
 `brand_fact`, `user_fact`, `competitor`, `red_line`, `partner`, or `decline`: those are the kinds
 the Phase 5 core set writes, including its skips and "not sure yet" answers. Records whose keys
-start `applicant-review:` don't count, so an applicant review set up first leaves a profile
+start `applicantreview:` don't count, so an applicant review set up first leaves a profile
 unonboarded. Keep the result, so the Phase 5 gap check reuses it and never reads twice. <!-- red-line-check: counts record kinds for brand context, not red-line rules -->
 
 ## 4. What the page may use from `get_status`
@@ -110,8 +110,8 @@ without a connection (**7**), use none of them.
    - **Next up.** Remove `hidden` from the one `<span class="next" hidden>` in the step the route
      continues at: `step-profile` (new org), `step-accounts` (profile only), `step-context`
      (existing, no brand context). On request, leave every one hidden.
-3. The header carries the full animated Aspire Atlas mark (pasted from `assets/aspire-animated.svg`
-   into the template, 40px, with its `role` and `aria-label`, a 1px `var(--border)` outline, never
+3. The header carries the full animated Aspire Atlas mark (the `<svg>` inside the fence in
+   `assets/aspire-animated.svg.md`, pasted into the template, 40px, with its `role` and `aria-label`, a 1px `var(--border)` outline, never
    recolored). **Deliberate variant:** on this page the mark sits at the upper left, at the start of
    the header, because the page has no brand logo to take that corner and was asked for this
    placement; **Artifact standard** puts it at the top right on every other

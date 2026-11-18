@@ -104,7 +104,7 @@ person.
    and this pass uses.
 3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the `program:{slug}-*` records, `brand:summary`, `theme:brand`,
    brand red lines (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-tools.md`, Calibration kinds), and `competitor`. Parse every `program:` body with a JSON parser. Drop every other
-   flow's keys, `review:` and `applicant-review:` among them.
+   flow's keys, `review:` and `applicantreview:` among them.
 4. `search_insights` on the prefix `program-{profile}-{slug}`, newest first, paged to the end.
    Keep the newest `roster`, `terms`, and `draft` per creator, every `affiliate` finding, the
    `deliverable` findings with a `postUrl`, and the `page` finding with key `affiliate`. For
@@ -121,7 +121,8 @@ person.
   code sheet CSV when any row goes on it.
 - **`report`**: read the period's sales from the store (only the order fields and codes the
   reference lists) or from the uploaded file with the proposed mapping; compute the figures
-  per creator and for the program; read each creator's posts in Atlas for the timeline
+  per creator and for the program; read each creator's posts in Atlas for the timeline, with the
+  required metrics the reference's **Sales and posts timeline** points to
   (`list_post_search_fields` once; only paths it returns); build the recommendations and the
   commission lines (closed months only); add retire rows to the sheet when the store cannot turn
   codes off.

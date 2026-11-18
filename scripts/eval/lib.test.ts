@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import {
   ATLAS_READS, ATLAS_WRITES, barChecks, compareRuns, extractPageCheckScript, fencedBlocks, fill, findJsonWithKey, configuredQuestions, skippedLine,
   findPage, forBaseline, normalizeResult, codesForChanges, readerResult, regressions, renderComment, renderSkipped, renderSlack, COMMENT_MARKER, renderStopped, stripTitlePrefix, checkNames, parsePageCheck, parseStream, renderRun, rIds, rResult, stripDataUris,
+  aResult, assertionNotes, assertionRefs, cell, fixtureProblems, fixturesForChanges, hasLandedAssertion, passesWhen, planInputFiles, resolveQuestion, rows, safeFileName,
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, askText, chatCodes, chatFailures, chatLine, chatMessages, checkChat, countChat, noChat, normalizeRun, CHAT_CHECK,
   placeholderKeys, ANSWER_EVENT,
   type PageChecks, type QuestionResult, type RunResults,
@@ -96,7 +97,7 @@ test('embedded images are removed and visible text is measured', () => {
 
 test('results are normalized, and an R row needs the script and the grade to agree on a pass', () => {
   expect(['PASS', 'fixed', 'FAIL', 'N/A', 'unmarked', undefined].map(normalizeResult)).toEqual(['pass', 'pass', 'fail', 'n/a', 'not run', 'not run'])
-  const checks = (scripted: Record<string, string>, graded: Record<string, any>): PageChecks => ({ scripted, graded, e: {}, reasons: {}, notes: [] })
+  const checks = (scripted: Record<string, string>, graded: Record<string, any>): PageChecks => ({ scripted, graded, e: {}, asserted: {}, reasons: {}, notes: [] })
   expect(rResult(checks({ R1: 'pass' }, { R1: 'fail' }), 'R1')).toBe('fail')
   expect(rResult(checks({ R1: 'fail' }, { R1: 'pass' }), 'R1')).toBe('fail')
   expect(rResult(checks({ R1: 'unmarked' }, { R1: 'pass' }), 'R1')).toBe('pass')
@@ -108,7 +109,7 @@ test('results are normalized, and an R row needs the script and the grade to agr
 const E_CHECKS = [{ id: 'E1', name: 'Answers the real question' }, { id: 'E6', name: 'Reads like an editor checked it', waitsFor: 'ASP-5300' }]
 
 function run(overrides: Partial<QuestionResult> = {}, date = '2026-11-10'): RunResults {
-  const page: PageChecks = { scripted: { R1: 'pass' }, graded: { R1: 'pass', R3: 'fail' }, e: { E1: 'pass' }, reasons: { R3: 'Headline says "Acme overview"' }, notes: ['a note naming Acme'] }
+  const page: PageChecks = { scripted: { R1: 'pass' }, graded: { R1: 'pass', R3: 'fail' }, e: { E1: 'pass' }, asserted: {}, reasons: { R3: 'Headline says "Acme overview"' }, notes: ['a note naming Acme'] }
   const question: QuestionResult = {
     code: 'I4', example: 'Holiday creator plan', setsBarFor: [5, 6], barChecks: ['E1', 'R3'],
     page: { link: 'https://claude.ai/artifact/AbC123', captured: true }, rounds: 2, transcriptTokens: 123456, billedTokens: 1, compactions: 1, costUsd: 1,
@@ -136,9 +137,9 @@ test('an approved page that was not read shows no result, never a pass', () => {
 
 test('later R checks appear once a grade returns them', () => {
   const results = run()
-  expect(rIds(results.questions).at(-1)).toBe('R14')
-  results.questions[0].new!.graded.R15 = 'pass'
   expect(rIds(results.questions).at(-1)).toBe('R15')
+  results.questions[0].new!.graded.R16 = 'pass'
+  expect(rIds(results.questions).at(-1)).toBe('R16')
 })
 
 test('a baseline keeps results and sizes, and no link, reason, note, or problem', () => {
@@ -176,11 +177,12 @@ test('every question\'s reader has a row in the result table the judge is handed
 test('the question set, the checks, and the Atlas tool lists hold together', () => {
   const config = JSON.parse(readFileSync(join(import.meta.dir, 'questions.json'), 'utf8'))
   const eChecks = JSON.parse(readFileSync(join(import.meta.dir, 'e-checks.json'), 'utf8')).checks
-  expect(config.questions.map((q: any) => q.code)).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1'])
+  expect(config.questions.map((q: any) => q.code)).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'CR1', 'AR1'])
   expect(eChecks.map((c: any) => c.id)).toEqual(['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'E8'])
   for (const question of config.questions) {
     expect(question.ask).toContain('{brand}')
-    expect(barChecks(question.setsBarFor, config.changes).length).toBeGreaterThan(0)
+    // A question sets the bar for a change of the first review, or carries assertions of its own.
+    expect(barChecks(question.setsBarFor, config.changes).length + (question.assertions?.length ?? 0)).toBeGreaterThan(0)
   }
   expect(barChecks([5, 6], config.changes)).toContain('E6')
   expect(fill('For {brand}: {other}', { brand: 'Acme' })).toBe('For Acme: {other}')
@@ -242,16 +244,18 @@ test('a pull request reruns the questions its changed agents and flow files answ
   const config = JSON.parse(readFileSync(join(import.meta.dir, 'questions.json'), 'utf8'))
   const pick = (changed: string[]) => codesForChanges(changed, config.questions, config.sharedPaths).codes
   expect(pick(['README.md', 'docs/STANDARD.md'])).toEqual([])
-  expect(pick(['plugins/aspire/agents/atlas-market-signal.md'])).toEqual(['O2', 'O3'])
+  expect(pick(['plugins/aspire/agents/atlas-market-signal.md'])).toEqual(['O2', 'O3', 'CR1'])
   expect(pick(['plugins/aspire/agents/atlas-ad-reuse.md'])).toEqual(['P1'])
   expect(pick(['plugins/aspire/skills/aspire/references/ad-reuse.md'])).toEqual(['P1'])
+  expect(pick(['plugins/aspire/skills/aspire/references/affiliate.md'])).toEqual(['AR1'])
+  expect(pick(['plugins/aspire/agents/atlas-affiliate-manager.md'])).toEqual(['AR1'])
   expect(pick(['plugins/aspire/skills/aspire/references/creator-vetting.md', 'plugins/aspire/agents/atlas-creator-brief.md'])).toEqual(['I4', 'I1'])
-  // A watched file no question answers reruns nothing; a file every flow reads reruns all seven.
+  // A watched file no question answers reruns nothing; a file every flow reads reruns every question.
   expect(pick(['plugins/aspire/agents/atlas-shops.md'])).toEqual([])
-  expect(pick(['plugins/aspire/skills/aspire/references/reader-standard.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1'])
-  // The page standard and the router shape every page, so a change to either reruns all seven.
-  expect(pick(['plugins/aspire/skills/page-standard/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1'])
-  expect(pick(['plugins/aspire/skills/aspire/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1'])
+  expect(pick(['plugins/aspire/skills/aspire/references/reader-standard.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'CR1', 'AR1'])
+  // The page standard and the router shape every page, so a change to either reruns every question.
+  expect(pick(['plugins/aspire/skills/page-standard/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'CR1', 'AR1'])
+  expect(pick(['plugins/aspire/skills/aspire/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'CR1', 'AR1'])
   expect(pick(['plugins/aspire/skills/org-admin/SKILL.md'])).toEqual([])
   // Every path a question names exists, so a renamed agent cannot silently stop rerunning its question.
   for (const path of [...config.questions.flatMap((q: any) => q.paths), ...config.sharedPaths]) {
@@ -260,14 +264,14 @@ test('a pull request reruns the questions its changed agents and flow files answ
 })
 
 test('only a check the approved page passes and the new page fails is a regression', () => {
-  expect(regressions(run(), E_CHECKS)).toEqual([{ kind: 'page', code: 'I4', id: 'R3', was: 'pass', now: 'fail' }])
+  expect(regressions(run(), E_CHECKS, {})).toEqual([{ kind: 'page', code: 'I4', id: 'R3', was: 'pass', now: 'fail' }])
   // The approved page failing too, or not having run, is not a regression.
   const both = run()
   both.questions[0].approved!.graded.R3 = 'fail'
-  expect(regressions(both, E_CHECKS)).toEqual([])
-  expect(regressions(run({ approved: null }), E_CHECKS)).toEqual([])
+  expect(regressions(both, E_CHECKS, {})).toEqual([])
+  expect(regressions(run({ approved: null }), E_CHECKS, {})).toEqual([])
   // No page at all regresses every check the approved page passes.
-  expect(regressions(run({ new: null }), E_CHECKS).map(r => r.id)).toEqual(['E1', 'R1', 'R3'])
+  expect(regressions(run({ new: null }), E_CHECKS, {}).map(r => r.id)).toEqual(['E1', 'R1', 'R3'])
 })
 
 test('the PR comment carries the marker, the regressions, and the table, and a skip says why', () => {
@@ -284,7 +288,7 @@ test('the PR comment carries the marker, the regressions, and the table, and a s
 })
 
 test('the Slack message names each question and its regressions, and no page link', () => {
-  const text = renderSlack(run(), E_CHECKS, null)
+  const text = renderSlack(run(), E_CHECKS, {}, null)
   expect(text).toContain('1 regression')
   expect(text).toContain('• I4 Holiday creator plan: 2/3 checks pass; regressed R3')
   expect(text).not.toContain('claude.ai')
@@ -316,13 +320,13 @@ test('every report names the skipped questions, and a run with none left posts a
   expect(skippedLine(['O2'])).toBe('Skipped: O2 (no brand in local.json), so it was not graded and cannot regress.')
   const withSkip = { ...run(), skipped: ['O2'] }
   expect(renderComment(withSkip, E_CHECKS, {}, null, null)).toContain('Skipped: O2')
-  expect(renderSlack(withSkip, E_CHECKS, null)).toContain('Skipped: O2')
+  expect(renderSlack(withSkip, E_CHECKS, {}, null)).toContain('Skipped: O2')
   expect(renderRun(withSkip, E_CHECKS, {})).toContain('Skipped: O2')
   const nothing = { ...run(), questions: [], skipped: ['O2'] }
   const comment = renderComment(nothing, E_CHECKS, {}, null, 'https://example.test/run/2')
   expect(comment).toContain('skipped: no question ran. Skipped: O2')
   expect(comment).toContain('Run: https://example.test/run/2')
-  expect(regressions(nothing, E_CHECKS)).toEqual([])
+  expect(regressions(nothing, E_CHECKS, {})).toEqual([])
 })
 
 // One turn of a run: what the main thread asked with AskUserQuestion, and the reply the turn ended on.
@@ -454,8 +458,8 @@ test('a countable rule broken in chat fails the run, with no approved result to 
   failing.questions[0].approved!.graded.R3 = 'fail'
   failing.questions[0].chat = chat
   const names = { [CHAT_CHECK.id]: CHAT_CHECK.name }
-  expect(chatFailures(failing)).toEqual([{ kind: 'chat', code: 'I4', id: 'C5' }])
-  expect(regressions(failing, E_CHECKS)).toEqual(chatFailures(failing))
+  expect(chatFailures(failing, names)).toEqual([{ kind: 'chat', code: 'I4', id: 'C5', name: 'Chat wording' }])
+  expect(regressions(failing, E_CHECKS, names)).toEqual(chatFailures(failing, names))
   // The chat is a line under the table, not a row of it: it is not a page comparison.
   const table = renderRun(failing, E_CHECKS, names)
   expect(table).not.toContain('| C5')
@@ -465,9 +469,9 @@ test('a countable rule broken in chat fails the run, with no approved result to 
   // A baseline keeps the counts, which hold no chat text; a clean chat never fails.
   expect(forBaseline(failing).questions[0].chat).toEqual(chat)
   failing.questions[0].chat = { result: 'pass', messages: { closeOut: CLEAN } }
-  expect(regressions(failing, E_CHECKS)).toEqual([])
+  expect(regressions(failing, E_CHECKS, {})).toEqual([])
   expect(chatLine(failing.questions[0].chat)).toBe('Chat wording (C5): pass. setup reply not sent; storyline check-in not sent; close-out clean.')
-  expect(regressions(run(), E_CHECKS).map(r => r.id)).toEqual(['R3'])
+  expect(regressions(run(), E_CHECKS, {}).map(r => r.id)).toEqual(['R3'])
   expect(chatLine(noChat())).toBeNull()
 })
 

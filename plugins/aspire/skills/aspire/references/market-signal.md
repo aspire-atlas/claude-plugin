@@ -68,11 +68,11 @@ use `append_calibration`, `provenance: "interview"`, `statement` under 280 chara
 
 | # | Question (via `AskUserQuestion`) | Options | kind | key | detail |
 | - | -------------------------------- | ------- | ---- | --- | ------ |
-| M1 | Which competitors should creators' posts be compared against? (multiSelect) | Every saved `competitor` record, up to four; the free text field adds others | `guideline` | `market-signal:scope` | `{concern: "requirement", appliesTo: ["market-signal"], body: "competitors: <names and handles>; networks: <instagram, tiktok>"}` |
-| M2 | Which products, features, or topics should it track? (multiSelect) | Three to four inferred from `brand:summary` and `brand:business-context` (product names, flagship features, the category's recurring comparisons) | `guideline` | `market-signal:topics` | `{concern: "requirement", appliesTo: ["market-signal"], body: "<one topic per line, with the words creators use for it>"}` |
-| M3 | Who reads it? (multiSelect) | 1) Product and engineering (parity read) (Recommended); 2) Product marketing (messaging read); 3) Performance and creative (reuse candidates); 4) Campaign planning (brief input) | `guideline` | `market-signal:lenses` | `{concern: "preference", appliesTo: ["market-signal"], body: "primary: <lens>; lenses: <lens>[><destination>], ..."}` |
-| M4 | Where should each run land? (multiSelect) | 1) Published page + chat summary (always on); 2) Slack channel (type the channel); 3) Email (type the recipients) | `policy` | `market-signal:routing` | `{area: "routing", body: "page; slack:#channel; email:a@x.com"}` |
-| M5 | How often should it run? | 1) Weekly, Monday 7:00, my timezone, before the weekly readout (Recommended); 2) Weekly on another day (type it); 3) On demand only | `policy` | `market-signal:cadence` | `{area: "cadence", cadence: "weekly", body: "weekly <DAY HH:MM>, <IANA timezone>"}` or `body: "on demand"` |
+| M1 | Which competitors should creators' posts be compared against? (multiSelect) | Every saved `competitor` record, up to four; the free text field adds others | `guideline` | `marketsignal:scope` | `{concern: "requirement", appliesTo: ["market-signal"], body: "competitors: <names and handles>; networks: <instagram, tiktok>"}` |
+| M2 | Which products, features, or topics should it track? (multiSelect) | Three to four inferred from `brand:summary` and `brand:business-context` (product names, flagship features, the category's recurring comparisons) | `guideline` | `marketsignal:topics` | `{concern: "requirement", appliesTo: ["market-signal"], body: "<one topic per line, with the words creators use for it>"}` |
+| M3 | Who reads it? (multiSelect) | 1) Product and engineering (parity read) (Recommended); 2) Product marketing (messaging read); 3) Performance and creative (reuse candidates); 4) Campaign planning (brief input) | `guideline` | `marketsignal:lenses` | `{concern: "preference", appliesTo: ["market-signal"], body: "primary: <lens>; lenses: <lens>[><destination>], ..."}` |
+| M4 | Where should each run land? (multiSelect) | 1) Published page + chat summary (always on); 2) Slack channel (type the channel); 3) Email (type the recipients) | `policy` | `marketsignal:routing` | `{area: "routing", body: "page; slack:#channel; email:a@x.com"}` |
+| M5 | How often should it run? | 1) Weekly, Monday 7:00, my timezone, before the weekly readout (Recommended); 2) Weekly on another day (type it); 3) On demand only | `policy` | `marketsignal:cadence` | `{area: "cadence", cadence: "weekly", body: "weekly <DAY HH:MM>, <IANA timezone>"}` or `body: "on demand"` |
 
 Rules:
 
@@ -96,7 +96,7 @@ Rules:
 
 More setup rules for the main thread (the **Market signal** section of SKILL.md, Setup):
 
-- If `market-signal:scope`, `-topics`, `-lenses`, `-routing`, and `-cadence` all exist, skip to
+- If `marketsignal:scope`, `-topics`, `-lenses`, `-routing`, and `-cadence` all exist, skip to
   the run and offer "Change setup" on the run question. Otherwise ask the missing questions M1 to
   M5, one `AskUserQuestion` each, in order.
 - When **Reading the ask** already confirmed readers, preselect them as M3's recommended option.
@@ -116,7 +116,7 @@ it names competitors Atlas does not index, offer an account review of each (Phas
 
 **Schedule.** After the first successful run, if M5 is weekly, offer with `AskUserQuestion`:
 "Track this weekly?" Options: "Yes, weekly (Recommended)" / "Not now". Follow SKILL.md
-**Readouts**, Schedule, for the mechanics: UTC cron from `market-signal:cadence`, one task named
+**Readouts**, Schedule, for the mechanics: UTC cron from `marketsignal:cadence`, one task named
 "Atlas market signal: {brand}", the prompt from the README under **Scheduling the market
 signal**, confirmed before creating. When the weekly readout is set up, offer to add the
 `product` and `pmm` lenses to R6 so its page carries the parity and messaging sections from this
@@ -145,6 +145,8 @@ Filter path unless noted, `context` on every call, only field paths from the cen
    refreshed (that would start discovery). The page's source line and the chat summary carry the
    freshness line. Creators cited only as mention evidence (comparison
    cards, quotes, share-of-voice counts) share the one mentions entry, marked `data-mention`.
+   A block that gives the brand's own organic results from a connected account carries `data-own`
+   (**Page standard**, section 8, **Paid label or none**).
 3. **Mention sets.** Per entity: `search_posts` where the text matches the name or a spelling
    variant (`match_phrase`), or `instagram.mentions.username` names a handle, or a hashtag
    matches; `must_not` the entity's own handles and the brand's handles; `exists mediaKind`;
@@ -177,7 +179,7 @@ Filter path unless noted, `context` on every call, only field paths from the cen
      posts per topic, and its newest posts have not had time to reach the threshold. The chart
      caption states the period.
    - **Topics.** Each M2 topic, matched inside the brand's mention-set query (step 3) run over
-     the period, with the words saved for it in `market-signal:topics` (`match_phrase`); the brand's creator program, as one topic,
+     the period, with the words saved for it in `marketsignal:topics` (`match_phrase`); the brand's creator program, as one topic,
      when a tracked hashtag joins the brand's name with "creator", "partner", or "ambassador"
      (`#{brand}creator`); and "{brand} with {competitor}" for each competitor: the brand's posts
      that also match that competitor's name, spelling variants, or handles (the filter half of
@@ -230,9 +232,14 @@ From **Data method** step 8 and the posts already read in step 6; no other reads
 - **Reach rate.** A topic's rate is its posts at the threshold divided by its posts. The brand's
   rate is the same over all its posts in the period. Each topic is compared with the brand's
   rate as a multiple ("2.8 times as often as the average {brand} post").
-- **Which topics show.** A topic with fewer than 20 posts is left off the chart and named in the
-  method as too few. Every other topic is shown, ordered by rate, with the brand's rate as its
-  own bar between the topics above it and those below.
+- **Which topics show.** A topic at or under the directional line (**Page standard**,
+  `comparisons.md`) is left off the chart and named in the method as too few.
+  Every other topic is shown, ordered by rate, with the brand's rate as its own bar between the
+  topics above it and those below.
+- **Like for like.** Every comparison of posts and every share on the page follows **Page
+  standard**, `comparisons.md`. The reach chart counts posts with and without a paid label
+  together, so each of its sides is mixed: the caption's sentence saying so is the chart's line
+  for the same-kind check.
 - **Concentrated.** A topic with fewer than 5 creators, or whose top two creators made over half
   its posts at the threshold, is concentrated. It gets one line under the chart that calls it
   those creators' reach, not the topic's ("all 48 come from two creators, @a and @b, so that is
@@ -419,7 +426,7 @@ read. A flow that shows it labels it "no paid label", never "organic".
 
 ## Delivery
 
-Read `market-signal:routing` and the per-lens destinations in `market-signal:lenses`. The page
+Read `marketsignal:routing` and the per-lens destinations in `marketsignal:lenses`. The page
 and chat summary always ship. Slack and email follow **Readouts**, **Delivery**. A lens with
 its own destination gets its own message: that lens's three bullets and the page link with
 the lens section's anchor (`#lens-product`). Interactive runs confirm the sends once;
@@ -427,7 +434,7 @@ unattended runs send on the M3 and M4 standing approval. Never send anywhere els
 
 ## Scheduled (unattended) runs
 
-- Never ask a question. If `market-signal:scope`, `-topics`, `-lenses`, `-routing`, or
+- Never ask a question. If `marketsignal:scope`, `-topics`, `-lenses`, `-routing`, or
   `-cadence` is missing, publish a one-card page "<Brand> Market Signal: setup needed" (it still carries the mark and the
   footnote, with the "No Atlas data on this page" variant in **Artifact standard**) listing what is
   missing, write nothing, and end with "Run /aspire:aspire and ask for market signal setup."

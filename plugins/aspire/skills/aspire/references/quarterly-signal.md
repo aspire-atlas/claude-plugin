@@ -86,7 +86,10 @@ Fresh aggregates, filter path:
 - The brand's own posts in the quarter and the prior quarter, per linked handle: posts,
   engagement, views, engagement rate, format mix. Page with the cursor.
 - Creator posts about the brand (the mention set in **Market signal**, **Data method**, step
-  3) in both quarters: posts, distinct creators, engagement, paid vs organic.
+  3) in both quarters: posts, distinct creators, engagement, and how many posts carry a paid
+  label and how many carry none. The page says "paid label" and "no paid label" for these posts,
+  never "organic" or "unpaid" (**Page standard**, section 8). A block that gives the brand's own
+  organic figures, or what the program's records say a creator was paid, carries `data-own`.
 - Current follower counts from `search_creators`, against the first saved follower count in
   the quarter's readout findings.
 - Freshness (**Page standard**, section 9): each linked handle's `freshness` from the same
@@ -108,7 +111,7 @@ second; a program whose first snapshot falls inside the quarter counts from its 
 program with no snapshot in the quarter is a gap: "{program}: no dashboard saved this quarter".
 Spend from a snapshot is used only when its `basis` is `ledger` and `ledger_spend` is `show`: the
 quarter's paid amount, per currency, labelled "paid, from the program ledger". Currencies are never added or converted.
-Calibration reads still drop `program:*`, `library:*`, `orchestrator:*`, `applicant-review:*` and `lastrun:*` keys; the program is named from its dashboard's page
+Calibration reads still drop `program:*`, `library:*`, `orchestrator:*`, `applicantreview:*` and `lastrun:*` keys; the program is named from its dashboard's page
 title.
 
 ## The page: one page, outcome first

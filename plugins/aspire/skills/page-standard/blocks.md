@@ -86,6 +86,7 @@ build it.
 | Timeline | 4 | `timeline` | 3.17 |
 | Quote | 6 | `quote` | 3.18 |
 | Freshness line | Source line | `freshness` | 3.19 |
+| Comparison | 3 | `comparison` | 3.20 |
 
 A page also has sections of its own that no block covers: a comparison table, a 2x2 map, a scatter
 chart, a calculator, a section menu. They belong to this question, so the flow builds them. Use
@@ -793,6 +794,30 @@ account.
   <span data-fresh="tiktok:brightsidetoys" data-newest="2026-10-27" data-fetched="2026-10-28">@brightsidetoys on TikTok: newest post Oct 27, last fetched Oct 28</span>.</p>
 ```
 <!-- /block:freshness -->
+
+### 3.20 Comparison
+
+**Holds:** two groups, two periods, or two brands set side by side, or a share with the size of
+the group it comes from. Wherever a page compares, in an insight, the answer, a table row, or a
+chart's caption, the comparison carries this markup (`comparisons.md`).
+
+- Each side says how many posts it rests on. A thin side shows "directional" and its post count
+  beside its number, as `comparisons.md` sets the line.
+- Both sides hold one kind of post, and `data-kind` names it: `paid-label`, `shop`, or
+  `no-paid-label`. The kinds differ only in a `data-compare="kinds"` comparison.
+- A share shows the group's share of the whole beside it (`data-share`, `data-group-share`).
+- A comparison that fails a check and stays says which, in one line, named in `data-fails`.
+- The page check's R15 reads these.
+
+<!-- block:comparison -->
+```html
+<p data-compare="kinds" data-block="comparison">TikTok Shop posts drew
+  <span data-side="TikTok Shop posts" data-kind="shop" data-posts="18">3.6 engagements per 1,000 views
+    <span class="pb-chip">18 posts, directional</span></span>, against
+  <span data-side="Posts with no paid label" data-kind="no-paid-label" data-posts="212">14.7 across the
+    212 posts with no paid label</span>.</p>
+```
+<!-- /block:comparison -->
 
 ## 4. Building a page from the blocks
 

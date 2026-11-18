@@ -52,9 +52,12 @@ findings and pushes only, saying in the summary that nothing was saved.
      posts, to size the sample.
 5. Assess per account: posting cadence over the window, engagement per post relative to follower count,
    top 3 posts by engagement and what they share, format mix, and any content that touches a stated red
-   line (never a `review:` or `applicant-review:` key; those are content review and one campaign's
+   line (never a `review:` or `applicantreview:` key; those are content review and one campaign's
    applicant screening only).
 6. Mode `own` only: cross reference the brand's 90-day goal and competitors. Name gaps and quick wins.
+   On the page, a block that gives the brand's own organic figures carries `data-own`, and a
+   competitor's or creator's posts are never called organic or unpaid
+   (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8, **Paid label or none**).
    **Benchmark against competitors Atlas already indexes.** For each `competitor` handle that
    `search_creators` returns, read its last 90 days with the same `search_posts` filter and compare
    on rates, never raw counts: engagement per post against follower count, posts per week, format
@@ -74,7 +77,7 @@ findings and pushes only, saying in the summary that nothing was saved.
    - The brand's calibrations are still for two things only: saying whether the handle matches a saved
      `competitor` or `partner` record, which is a classification, not a benchmark, and framing why the
      account is or is not relevant to the brand's stated goal. Apply brand red line checks only to the
-     brand's own accounts, and ignore every key starting `review:` (content review only), `program:` (influencer program only), `library:` (content library only), `orchestrator:` (the orchestrator only), `ad-reuse:` (ad reuse only), `applicant-review:` (one campaign's applicant screening only), or `lastrun:` (a flow's saved setup answers, never a rule).
+     brand's own accounts, and ignore every key starting `review:` (content review only), `program:` (influencer program only), `library:` (content library only), `orchestrator:` (the orchestrator only), `adreuse:` (ad reuse only), `applicantreview:` (one campaign's applicant screening only), or `lastrun:` (a flow's saved setup answers, never a rule).
 8. Interactive runs only: write findings back with `append_insights`: one `runKey` for this run — mode `own`:
    `onboarding-{profile}-{date}` when `onboarding: true`, else `account-review-{profile}-own-{date}`;
    mode `handle`: `account-review-{profile}-{handle}-{date}` — role
