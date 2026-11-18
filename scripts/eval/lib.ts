@@ -102,7 +102,8 @@ export const ATLAS_READS = [
 ]
 export const ATLAS_WRITES = [
   'add_hashtags', 'append_calibration', 'append_insights', 'connect_channel', 'create_profile', 'delete_profile',
-  'remove_hashtags', 'retract_calibration', 'set_brand_instruction', 'start_business_discovery',
+  'remove_hashtags', 'retract_calibration', 'send_feedback', 'set_brand_instruction',
+  'start_business_discovery',
   'supersede_calibration', 'switch_billing_account', 'unlink_channel', 'update_profile',
 ]
 
