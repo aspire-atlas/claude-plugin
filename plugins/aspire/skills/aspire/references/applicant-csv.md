@@ -7,7 +7,16 @@ cells that hold commas or line breaks stay whole, and it leaves out payment and 
 Claude reads a row. `scripts/check-applicant-csv.sh` runs the command below on every fixture in
 `scripts/fixtures/applicant-csv/`.
 
-**Running it.** Make one temporary folder per import, copy the file there once, and keep the
+## Contents
+
+- [Running it](#running-it)
+- [What it prints](#what-it-prints)
+- [What it leaves out](#what-it-leaves-out)
+- [The snippet](#the-snippet)
+
+## Running it
+
+Make one temporary folder per import, copy the file there once, and keep the
 folder's path (the first line printed) for every later run, since shell state does not carry
 between calls. A failed first run removes the folder itself:
 
@@ -24,7 +33,9 @@ Each run prints rows up to about 20,000 characters, so its output is never cut, 
 import stops, and a plain list is read with the `Read` tool instead. When a run prints `error`,
 say it in one line and stop the import the same way.
 
-**What it prints.** The first run (start `0`) prints one line first: `rows` (applicant rows, blank
+## What it prints
+
+The first run (start `0`) prints one line first: `rows` (applicant rows, blank
 rows not counted), `encoding` (`utf-8`, `utf-16`, `cp1252` for a file Excel saved in Windows
 encoding, or `latin-1`), `kept` (the column keys printed), `left_out` (the columns left out), and
 `cells_left_out`. Then one line per row: `row`, its row number in the file (the header is row 1,
@@ -32,7 +43,9 @@ a blank row still counts), and `cells`, its non-empty cells, trimmed, under thei
 the header as written, trimmed; a header that repeats gets ` (2)`, ` (3)`. A file that mixes UTF-8
 with another encoding prints only `error`: ask for it saved again as CSV UTF-8.
 
-**What it leaves out**, so it is kept nowhere and the report names it:
+## What it leaves out
+
+Payment and tax data, so it is kept nowhere and the report names it:
 
 - every column whose header matches `PAY` below;
 - in every other column except the ones `KEEP` names (a header that is exactly a handle, name,
@@ -40,6 +53,8 @@ with another encoding prints only `error`: ask for it saved again as CSV UTF-8.
   card number) and every IBAN, wherever it sits in the cell: the match becomes `[left out]`, and
   `cells_left_out` counts the cells;
 - such a column whole, when more than half its non-empty cells hold one.
+
+## The snippet
 
 <!-- applicant-csv -->
 ```python
