@@ -3,7 +3,8 @@
 Used by the **Applicant review** section of SKILL.md, and read by **Creator vetting** when it
 screens a campaign's applicants. Holds the setup interview for one campaign's applicant review,
 the records it saves, the review Sheet it creates, how a campaign's applicant export is imported
-into Atlas and the Sheet, and how a screening run reads it all back.
+into Atlas and the Sheet, the schedule that screens new applicants with nobody present, and how a
+screening run reads it all back.
 
 The main thread's part of this flow, except **How screening applies a review** and **Applying
 the form rules**, which the `atlas-creator-vetting` agent reads too. A bold section name in it (**Creator vetting**,
@@ -17,6 +18,7 @@ the form rules**, which the `atlas-creator-vetting` agent reads too. A bold sect
 - [The review Sheet](#the-review-sheet)
 - [Importing applicants](#importing-applicants)
 - [When setup is done](#when-setup-is-done)
+- [Scheduled screening setup](#scheduled-screening-setup)
 - [Reading the setup back (screening)](#reading-the-setup-back-screening)
 - [How screening applies a review](#how-screening-applies-a-review)
 - [Applying the form rules](#applying-the-form-rules)
@@ -42,14 +44,14 @@ organization-wide. Every review is keyed by its own slug and names its brand pro
 
 ## The records
 
-A review is exactly the nine keys in the table below, each `applicantreview:{slug}-{part}`. Keys
+A review is exactly the ten keys in the table below, each `applicantreview:{slug}-{part}`. Keys
 starting `applicantreview:` belong to the applicant review and to **Creator vetting** when it
 screens for that review; every other flow drops them (**Atlas tools**, Calibration kinds).
 
-**Read a review by its nine exact keys, never by prefix.** One slug can start another
+**Read a review by its ten exact keys, never by prefix.** One slug can start another
 (`acme-holiday` and `acme-holiday-seeding`, or `acme-holiday-seeding` and
 `acme-holiday-seeding-2`), so an `applicantreview:{slug}-` prefix read can pick up another review's
-records. Keep only the nine keys of the review in hand and drop every other `applicantreview:` key.
+records. Keep only the ten keys of the review in hand and drop every other `applicantreview:` key.
 No part name ends with another part name (that is why visual checks are `-visuals`), so two slugs
 never build the same key. The separator stays `-` because keys follow **Atlas tools**' `<namespace>:<slug>` form, one
 colon and a lowercase hyphenated slug, so no other character can mark where the part starts. The
@@ -79,6 +81,7 @@ part, `-client-view`, stays within the length Atlas allows after the colon.
 | `-visuals` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body one check per line: `named: <name> = <what counts as a pass>`, or `free: <what to look for>` | What to look for in each applicant's videos |
 | `-client-view` | `guideline` | `{concern: "ceiling", appliesTo: ["applicant-review", "{slug}"], body}`; body `client sees: <final-list, content \| final-list \| none>` and `hidden: scores, notes, maybes, team calls` | What the client contributor role sees |
 | `-sheet` | `policy` | `{area: "routing", body}`; body `sheet: <link>` or `sheet: none (<reason>)` | The campaign's review Sheet |
+| `-schedule` | `policy` | `{area: "cadence", cadence: "hourly" \| "daily", body}`; body lines `screen: hourly` or `screen: daily <HH:MM> <IANA timezone>`, `fetch: instagram, tiktok`, `save: recommendations, statuses, sheet calls`, and `sheet: write` or `sheet: none` | The standing approval for scheduled screening (**Scheduled screening setup**) |
 
 `-red-lines`, `-form-rules`, and `-visuals` may be declined: a declined question is written
 as kind `decline` with the same key (`{topic: "<the question>"}`), so it is never asked again and
@@ -312,11 +315,60 @@ A review is set up when `-campaign`, `-criteria`, `-checks`, and `-thresholds` e
 and `-red-lines`, `-form-rules`, and `-visuals` are each saved or recorded as a `decline`. Until
 then, setup asks only the missing questions, in order, then confirms the batch once.
 
-`-client-view` and `-sheet` are optional: the client contributor role comes later, and an import
-with no Sheet writes Atlas only, so a review without them still counts as set up and screening never stops for them. An
+`-client-view`, `-sheet`, and `-schedule` are optional: the client contributor role comes later,
+an import with no Sheet writes Atlas only, and a review without a schedule is screened only when a
+person runs it, so a review without them still counts as set up and screening never stops for them. An
 interactive setup run still offers a missing one: AR8 for `-client-view`, and for `-sheet` the
 "Create the review Sheet for {campaign} now?" question (**The review Sheet**, step 4), which appends
-the record when none exists. Screening reads a missing `-sheet` as `sheet: none`.
+the record when none exists. Screening reads a missing `-sheet` as `sheet: none`. A missing
+`-schedule` is offered only as **Scheduled screening setup** says, never in the setup interview.
+
+## Scheduled screening setup
+
+How a person sets up the schedule that screens a review's new applicants with nobody present
+(**Creator vetting**, **Scheduled screening**). Interactive only: it asks questions and creates the
+scheduled task. Its confirmation is the **standing approval** for every Atlas write, lookup, and
+Sheet write a scheduled run makes, the way a discovery campaign's cadence or the readouts' routing
+is, so a scheduled run never asks.
+
+**When it is offered.** Once, with `AskUserQuestion`, after the last batch of an interactive
+screening run on a review with no `-schedule` (after its F1 to F4), and whenever the user asks
+("screen {campaign}'s applicants on a schedule", "keep screening new applicants"). Never during the
+setup interview, never in an unattended run, and only for a review that is set up (**When setup is
+done**). Offer: "Screen new {campaign} applicants on a schedule?" Options: 1) Set up the schedule
+(Recommended); 2) Not now. "Not now" saves nothing and is not offered again this session.
+
+| # | Question | Options |
+| - | -------- | ------- |
+| AR9 | How often should new {campaign} applicants be screened? Each run screens up to 500 new applicants, in batches of 100, and stops when none are left. | 1) Every hour (Recommended); 2) Once a day at 07:00 {timezone} (type another time to change it) |
+| AR10 | Should scheduled runs also write each applicant's results to the {campaign} review Sheet? (only when `-sheet` holds a link) | 1) Yes: Recommendation, Fit score, Evidence, Maybe question, and Status (Recommended); 2) No: Atlas only |
+
+`{timezone}` is the IANA timezone saved in `policy:readout-cadence`, else UTC, named in the option.
+
+**Confirm once, then write and create.** Show the always-allow block in SKILL.md **1.6**, then ask:
+"Screen new {campaign} applicants {every hour | every day at HH:MM timezone} with nobody present?
+Each run fetches the Instagram and TikTok accounts Atlas doesn't hold yet (a TikTok account costs
+one paid lookup), saves each applicant's recommendation and status and the team's new calls from
+the review Sheet to {brand}'s Atlas{, and writes the results to the review Sheet}, without asking
+each time. It never sends anything, never saves a creator note or a lesson, and never changes the
+review." Options: 1) Save and create it (Atlas tools are set to Always allow) (Recommended); 2) Not
+now. On option 1:
+
+1. Write `-schedule` with `append_calibration` (`provenance: "interview"`), its body from AR9 and
+   AR10 (`sheet: none` when AR10 was not asked or answered No). A `key-exists` is a change: below.
+2. Create the scheduled task per **Readouts**, **Scheduling (main thread)**, steps 1, 2, 4, and 5
+   (this confirmation stands in for its step 3). Name it "Atlas applicant screening: {brand} -
+   {campaign}", repeating hourly (`0 * * * *`) or daily at the saved time converted to UTC cron,
+   with the prompt in the README under **Scheduling applicant screening**, filled with the
+   profile's exact Atlas `name`, the campaign's name, and the review's slug. It must say "do not
+   ask questions" and state no date.
+3. Answer in one line: the task's name, when it runs, and that pausing the task stops it.
+
+**Changing or stopping it.** A person re-running this setup sees the saved schedule, offered "Keep
+as saved (Recommended)" or "Change"; a change goes through `supersede_calibration` with its own
+Destructive tools confirmation, then updates the task in place. Pausing or deleting the task stops
+the runs; retracting `-schedule` (its own Destructive tools confirmation) withdraws the approval,
+so a task left running stops at its next run with "setup needed".
 
 ## Reading the setup back (screening)
 
@@ -340,7 +392,12 @@ a missing pointer is asked per steps 3 and 4.
    body. A pointer to a record that no longer exists names it in words ("the saved {campaign} brief",
    "{brand}'s vetting criteria"), asks AR2 or AR5 again, and replaces the pointer through the
    Phase 5 supersede rule.
-5. **Hand it over.** The resolved review goes in the vetting launch as the criteria source: the
+5. **Unattended (scheduled screening).** Steps 1, 3, and 4 ask nothing. The review is the one the
+   task's prompt names by its slug, and its `-schedule` record is the pick. A gap in the review, a
+   missing `-schedule`, or a pointer to a record that no longer exists stops the run with "setup
+   needed: the {campaign} applicant review" and writes nothing (**Creator vetting**, **Scheduled
+   screening**, step 1).
+6. **Hand it over.** The resolved review goes in the vetting launch as the criteria source: the
    slug, the campaign's name and `campaign key`, criteria, thresholds, the `reject:`
    checks, the review's red lines, form rules, visual checks, the client view, and the Sheet link.
    **How screening applies a review** says how screening applies each.

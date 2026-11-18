@@ -477,7 +477,7 @@ Organization Admin connection itself.
   Never call them speculatively during onboarding; the connected channels' own data is enough.
   The exceptions: Phase 6 named-handle mode, where the user named the account; content
   review, where pasting a post link approves `lookup_posts` for that one post; creator
-  vetting, where R3 approves `lookup_creators` for the listed handles Atlas does not hold; the
+  vetting, where R3, or an applicant review's saved screening schedule, approves `lookup_creators` for the listed handles Atlas does not hold; the
   PPA pitch, where D4's marketplace option approves it for the handles the marketplace returns
   and the handles the user types; creator discovery, whose saved cadence record approves it
   on every run including scheduled ones; and the deliverable tracker, where T0 approves

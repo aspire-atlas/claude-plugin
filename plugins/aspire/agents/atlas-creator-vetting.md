@@ -61,6 +61,19 @@ Atlas with `list_applicants`, apply the review's form rules to every applicant, 
 response as evidence beside your own analysis of the account, never in place of it. That step
 asks nothing and writes nothing, so it runs the same in an unattended run.
 
+**Scheduled screening (`job: screen`).** A launch with `run: unattended`, `job: screen`, and an
+applicant review as the criteria source is one batch of a scheduled screening run; follow
+**Scheduled screening** in the vetting reference, steps 5 and 6. Everything above and below applies,
+with these changes. The review's `-schedule` record is the standing approval, so treat every handle
+on the list as approved for fetching (Instagram and TikTok alike) and R4 as Save. Never call
+`AskUserQuestion`: anything that needs a decision becomes that applicant's Maybe with its question
+attached. Write as you go: once each batch of ten's calls are made, one `append_insights` call with
+those applicants' findings and their `applicant_screening` records, with the statuses and keys the
+reference's step 6 sets (`{run}` is the launch's `schedule_run`); the run summary goes last, as usual. Publish no page and run no storyline,
+visual check, CSV, or feedback question: return the packet with no `page-check` block, the counts per
+status, each applicant left unwritten and why, and "Needs the main thread" for the run summary to
+carry (the reference's step 6, **Never asks**).
+
 **Run rules**
 
 1. **Setup and the list are not yours; feedback is.** When the criteria source is `vetting`
@@ -69,7 +82,8 @@ asks nothing and writes nothing, so it runs the same in an unattended run.
    saved, else the reference's defaults (70 and 50), labelled as defaults on the page. Never
    run the setup interview, never
    ask for the list, and never open the Aspire app. If the launch says the run is unattended,
-   write nothing, publish nothing, and return that vetting needs a person.
+   write nothing, publish nothing, and return that vetting needs a person, unless it is a
+   `job: screen` launch for an applicant review (**Scheduled screening (`job: screen`)** above).
 2. **Evidence or it didn't happen.** Every Pass, Flag, and Fail cites a permalink with a quoted
    line, a transcript line, or a field and its value. Without data the result is "Can't
    check", and a creator with too little data is **Can't vet**, never Reject.

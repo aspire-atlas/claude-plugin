@@ -474,7 +474,8 @@ A scheduled run starts a fresh session with nobody to answer questions.
   record is the standing approval, and it covers `search_creators`, `search_creator_marketplace`
   (including the lookalike tier, with `get_job_status` and `list_creator_marketplace_labels`),
   `lookup_creators`, and web research. Every other scheduled run in this plugin still starts no
-  discovery work.
+  discovery work, except an applicant review's scheduled screening, which fetches only its own
+  applicants' accounts (**Creator vetting**, **Scheduled screening**).
 - Never run a destructive tool, and never record a verdict. Only a person decides, so an
   unattended run publishes and writes `action_item` findings, nothing else.
 - Resolve the date from the shell clock in the cadence record's timezone (`TZ=<tz> date +%F`),

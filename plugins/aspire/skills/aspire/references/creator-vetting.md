@@ -24,6 +24,7 @@ in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Se
 - [State written to Atlas](#state-written-to-atlas)
 - [The page](#the-page)
 - [Applicant reviews](#applicant-reviews)
+- [Scheduled screening](#scheduled-screening)
 - [Creator-ads lanes (CAS campaigns)](#creator-ads-lanes-cas-campaigns)
 - [Atlas quirks that apply here](#atlas-quirks-that-apply-here)
 
@@ -31,9 +32,10 @@ in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Se
 
 Trigger when the user has a list of creators to decide on: a CSV export from Aspire, pasted
 handles, or "the creators in our Aspire program" ("vet these creators", "which of these should we
-approve", "screen these applicants"). Requires a brand profile. Interactive only: never schedule
-it; without `AskUserQuestion`, say vetting needs a person to supply the list and make the call,
-and stop. One creator in depth is **Creator profile**; new creators, **Creator discovery**.
+approve", "screen these applicants"). Requires a brand profile. Interactive only, except the
+**Scheduled screening** of an applicant review's new applicants: never schedule anything else, and
+without `AskUserQuestion` outside that, say vetting needs a person to supply the list and make the
+call, and stop. One creator in depth is **Creator profile**; new creators, **Creator discovery**.
 Before anything, read this file (**Setup**, **Getting the list**,
 **Per-run questions**, **Main thread: the run**, **The feedback loop**) and follow it.
 
@@ -62,6 +64,14 @@ visual check's last batch. F1 confirms its own write; notes are shown worded bef
 Supersedes and retractions are the main thread's, one Destructive tools confirmation each. Feedback
 outside a run: "Save this about @handle for future vetting and discovery?"
 
+### Scheduled screening of applicants
+
+A scheduled task screens an applicant review's new applicants, 100 at a time, with nobody present,
+under the standing approval **Applicant review**, **Scheduled screening setup** saves. An
+unattended run whose prompt names an applicant review goes straight to **Scheduled screening**; any
+other unattended vetting stops. It never asks: anything that needs a decision becomes a Maybe with
+its question.
+
 ## Why the vetting agent exists
 
 Creator discovery finds creators. Vetting starts from a list the team already has: applicants
@@ -73,9 +83,12 @@ own call. What the team says about a creator is saved as a calibration, so the n
 run, creator discovery, and every teammate start from it. The recommendations are saved as
 insights, so a creator vetted once is never vetted blind again.
 
-Vetting is interactive only. A person supplies the list and a person makes the final call.
-Never schedule it; if `AskUserQuestion` is unavailable, say in one line that vetting needs a
-person to supply the list and make the call, and stop. For one creator in depth, use
+Vetting is interactive. A person supplies the list and a person makes the final call. The one
+scheduled run is **Scheduled screening**, where the list is an applicant review's new applicants and
+the schedule a person saved approves the run; it recommends and records statuses, and the call
+still belongs to people. Never schedule any other vetting; outside it, if `AskUserQuestion` is
+unavailable, say in one line that vetting needs a person to supply the list and make the call, and
+stop. For one creator in depth, use
 **Creator profile** in SKILL.md; to find new creators, **Creator discovery**.
 
 ## Setup: define what fit means, once, for everyone
@@ -813,7 +826,9 @@ F1 feedback findings, which F1 confirms. Instagram and TikTok only.
 | The team's call (F1) | `went_well` for approve, `needs_improvement` for reject, `action_item` `medium` for maybe | as the kind needs | `feedback` |
 | Run summary | `action_item` | `low` | `summary` |
 
-The run summary is anchored to the brand's own account on the first linked network and
+The run summary is anchored to the brand's own account on the first linked network, or, when the
+profile has no linked channel, to the account of the first creator on the list Atlas holds, so it
+is saved either way (with neither, the applicant statuses and the page are the record). It
 carries the list name and source, the counts per recommendation, the handles that could not
 be resolved or were not vetted, the visual check run (name, kind, and the count per result and
 confidence, with no counts for a check on a person's appearance, **What a visual check may look
@@ -837,7 +852,7 @@ gives one, `visualCheck` when the run had a visual check and it ran on the creat
 `confidence` null for Can't check), `usualViews` (or the reason it is not available), `checks`
 (`{component: 1 | 0.5 | 0 | null}`, `null` for a component with no data; the finding each check
 comes from is on the run summary), `listName`, `listSource` (`csv`, `pasted`,
-`aspire-app`, `review-sheet`, or `cas-lane`), `campaign` when R2 named one, `applicantReview`
+`aspire-app`, `review-sheet`, `cas-lane`, or `schedule`), `campaign` when R2 named one, `applicantReview`
 when the criteria source is an applicant review (**Applicant reviews**), and with it
 `aspireApplicantId`, `formRules[]`, `responsesUsed[]`, and `priorityKeys` (**Applicant review**,
 **Applying the form rules**), `reviewPage`, and `recipient` (**Recipient lens**). A
@@ -1014,6 +1029,135 @@ How the run changes for a review (criteria, thresholds, hard stops, red lines, l
 form rules, visual checks, the page, and what each finding records) is set out once, in
 **Applicant review**, **How screening applies a review**. Read it for every run whose criteria
 source is `applicantreview:{slug}`.
+
+## Scheduled screening
+
+How a scheduled task screens an applicant review's new applicants with nobody present. A person
+sets it up once per review (**Applicant review**, **Scheduled screening setup**), and its saved
+`applicantreview:{slug}-schedule` record is the standing approval for every write, lookup, and Sheet
+write below. It is the only vetting that runs unattended. A run screens every applicant whose status
+is `new`, 100 at a time, against the review's criteria, the brand safety checks, and each
+applicant's form answers, exactly as an interactive applicant review run does (**Applicant
+reviews**), and records every applicant's status. Nothing in it asks a question, offers anything,
+publishes a page, delivers anything, or runs a destructive tool.
+
+**Statuses.** Atlas holds each applicant's status in its newest `applicant_screening` record: `new`
+until one is written, then `screened` (with the recommendation), `waiting_on_data`, or `cant_vet`.
+Records are only ever added, so a status changes by adding a newer one. A run claims each batch
+before screening it (step 4), so two runs never screen the same applicant, and writes a result only
+for an applicant it finished, so a stopped run leaves the rest `new` for the next run to pick up.
+
+**How it starts.** The task runs `/aspire:aspire vet` with the prompt in the README under
+**Scheduling applicant screening**, which names the brand's profile, the campaign, and the review's
+slug, and says not to ask questions (**Orchestration contract**, **1**, Unattended runs). The main
+thread runs Phase 1 and Phase 2 + 3, then these steps. Read the time once from the shell clock
+(`date -u +%FT%TZ`), never from the prompt; its date part is `{date}` below, and its compact form
+(`date -u +%Y%m%dt%H%M%S`, read at the same moment) is `{run}`, this run's id in the keys below.
+Each batch's launch gets its own `runId` per **Running agents**.
+
+1. **Read the review** per **Applicant review**, **Reading the setup back (screening)**, step 5, and
+   its `-schedule` record. When any of it is missing, or Atlas returns an unauthorized error,
+   publish a one-card page titled "<Brand> Applicant Screening: setup needed" listing what is
+   missing (or "Aspire Atlas needs a fresh sign in"), with the mark and the footnote in the "No Atlas
+   data on this page" variant of **Artifact standard**, write nothing to Atlas, and end with "Run
+   /aspire:aspire and ask to set up the {campaign} applicant review." Without `list_applicants` in
+   the session, do the same with "Atlas can't list this review's applicants yet".
+2. **Save the team's new calls from the review Sheet**, when `-sheet` holds a link. Read it per
+   **Reading the review Sheet** (its rows, Team calls, duplicates, Rows to fix, which calls are new,
+   and reopened rows), with the reads **Main thread: the run**, step 2, makes for a Sheet. Save each
+   new Sheet call offered this run (at most 50) exactly as F1's option 1 saves it (**Reading the
+   review Sheet**, F1 with Sheet calls; **State written to Atlas**): one `feedback` finding with
+   `sheetValue` and the row's Note as its words, under `runKey`
+   `creator-vetting-{profile}-{date}-{slug}-sheet` with no `reviewPage`. The schedule's approval
+   stands in for F1. Nothing else from the feedback loop runs: no creator note, no lesson, and no
+   change to a saved record. When the Claude Docs connector is not in the session or can't open the
+   Sheet, skip this step and note why for step 9. The Sheet never picks who is screened: an
+   applicant the team already called in the Sheet is still screened in its turn, so its status
+   moves on, and its finding and the review's records keep the team's call apart from the
+   recommendation.
+3. **Pick the batch.** Call `list_applicants` with `asProfileId`, `reviewId` = the review's slug,
+   `statuses` `["new", "waiting_on_data"]`, `limit` 1000, paged with `cursor` to the end; `total`
+   is exact. A **claim** is an `applicant_screening` record whose `screeningSummary` starts
+   "Claimed for screening by run" (step 4). In the order returned, an applicant is **due** when:
+   - it is `new` with no screening record yet (no `screenedAt`);
+   - it is `new` and its newest record is a claim more than 12 hours old: the run that claimed it
+     stopped, so it is screened again from the start;
+   - it is `waiting_on_data` and its newest record is more than 1 hour old.
+
+   A `new` applicant claimed less than 12 hours ago is not due: another run is screening it. The
+   batch is the first 100 due applicants. With none due, go to step 9.
+4. **Claim the batch.** One `append_insights` call, `runKey` `applicant-screening-{slug}-{date}`,
+   one `applicant_screening` finding per applicant in the batch: `schema` and `entityKind`
+   `profile`, `entityId` the brand profile's id, `idempotencyKey`
+   `{slug}:{aspireApplicantId}:claim-{run}`. For an applicant with an Instagram or TikTok handle,
+   `summary` "Claimed for screening by run {run}" and `detail` `{reviewId, aspireApplicantId,
+   status: "new"}`, adding `evidence` with its first evidence line when it was `waiting_on_data`,
+   so the "Waiting on Atlas since" line (step 6) carries over. An applicant with neither handle is
+   not claimed: its finding is the final one, `status: "cant_vet"`, `summary` "Applicant {name}
+   can't be vetted: no Instagram or TikTok handle", and that reason as its `evidence`. Then page
+   `list_applicants` again as in step 3, and keep in the batch only the applicants whose newest
+   record is this run's claim: one claimed by another run at the same moment is that run's. A call
+   that fails is resent once as it is; failing again, stop the run here (step 9).
+5. **Launch `atlas-creator-vetting`** per **Main thread: the run**, step 4, with `run: unattended`
+   and `job: screen`, and:
+   - the list: the batch, one entry per network and handle as **Getting the list** normalizes it,
+     each with its `aspireApplicantId` and name; list name "{campaign} applicants, {date} batch
+     {n}", slug `{slug}-{date}-{n}` with `{n}` counting the batches of this run, source `schedule`;
+   - the criteria source: the review, resolved as step 1 read it;
+   - approved fetches: every handle on the list, Instagram and TikTok alike, under the schedule's
+     approval (`fetch:` in `-schedule`), with no separate approval for a TikTok lookup;
+   - `schedule_run`: `{run}`, for the keys in step 6;
+   - the R4 answer: Save; `visual_check`: none (a scheduled run runs no visual check, so its batches
+     stay at 100); `sheet_calls`: none; `recipient`: `team`;
+   - every input **Main thread: the run**, step 4, gives a later batch of a split list, for the
+     second batch on.
+6. **What the agent writes**, under `job: screen`:
+   for each batch of ten, once its calls are made, one `append_insights` call holding each
+   applicant's findings per **State written to Atlas** and its `applicant_screening` record, so a
+   stopped run never leaves an applicant with one and not the other. The record is anchored like the
+   claim, with `idempotencyKey` `{slug}:{aspireApplicantId}:screen-{run}`, `summary` "{@handle}
+   screened for {campaign}: {Approve | Maybe | Reject}" (or the reason it isn't screened), and
+   `detail` `{reviewId, aspireApplicantId, status, recommendation?, fitScore?, evidence?,
+   maybeQuestion?}`:
+
+   | The applicant's result | `status` | Also |
+   | ---------------------- | -------- | ---- |
+   | Approve, Maybe, or Reject | `screened` | `recommendation` (`approve`, `maybe`, `reject`); `fitScore` when the score was worked out; `evidence`, the lines that decided the call (**Applicant review**, **Applying the form rules**, step 6, quoting rule included); on a Maybe, `maybeQuestion`, what would settle it, with any missing answers after it |
+   | Can't vet (**The recommendation**, rule 3), or the account can't be found | `cant_vet` | `evidence`, the reason |
+   | An account Atlas is still fetching when the lookup's wait ends (**Atlas quirks that apply here**) | `waiting_on_data` | `evidence` starting "Waiting on Atlas since {the first time it waited, as an ISO timestamp}"; a later run screens it again. After 48 hours of waiting it is `cant_vet`: "Atlas could not fetch @handle in 48 hours" |
+
+   An applicant with both handles gets one record, from its one recommendation.
+
+   **Never asks.** Anything an interactive run would put to a person becomes the applicant's Maybe,
+   with the question as its `maybeQuestion`: a brand rule the team must settle before the call
+   holds, an answer too unclear to judge, a `prompt:` rule the run could not apply. A Maybe from the
+   checks keeps its own question. A rule caps an Approve at Maybe this way; it never lifts a call.
+   What the run would ask about the review itself (each "Needs the main thread" item, each proposed
+   change to the criteria) is never applied: it goes in the batch's run summary for the next person
+   who runs vetting on the review.
+7. **Write the review Sheet.** The step that writes each screened applicant's Recommendation, Fit
+   score, Evidence, Maybe question, and Status into its row of the review Sheet, matched on Aspire
+   applicant id, when `-schedule` says `sheet: write` and `-sheet` holds a link. It is not built
+   yet: until it is, it writes nothing, and step 9 says the Sheet was not updated. It reads what
+   it writes from `list_applicants`, never from the agent's output, so a later run can fill the
+   rows a stopped run left. Atlas holds every result either way.
+8. **Next batch.** Repeat steps 3 to 7 until no applicant is due or this run has launched 5
+   batches (500 applicants); the next run carries on from there.
+9. **Run summary.** One `append_insights` call, `runKey` `creator-vetting-{profile}-{date}-{slug}-schedule`,
+   one `summary` finding (`action_item`, `low`), anchored as **State written to Atlas** anchors a run
+   summary (the brand's own account, else the first account the run vetted), `idempotencyKey`
+   `vet-{slug}-schedule-{run}-summary`. `detail` carries `findingType: "summary"`, `vettedAt`,
+   `applicantReview`, `run`, the batches and their `runKey`s, the counts per status and
+   recommendation, the applicants still due (from the last step 3 read), the claims made that were
+   not screened, the team calls saved and **Rows to fix** (step 2, or why the Sheet wasn't read),
+   and whether the Sheet was written. With no account to anchor it, the applicant records are the
+   run's record. Then one line, the run's last: "{n} applicants screened for {campaign} ({a}
+   approve, {m} maybe, {r} reject, {c} can't vet, {w} waiting on Atlas); {d} still new."
+
+**A run that stops** (the session ends, a call fails twice, the task is paused) leaves every
+applicant it finished `screened`, `cant_vet`, or `waiting_on_data`, and every applicant it claimed
+but did not finish still `new`. The next run screens the unclaimed ones first, and the claimed ones
+once their claim is 12 hours old. No applicant is screened twice, and none is skipped.
 
 ## Creator-ads lanes (CAS campaigns)
 

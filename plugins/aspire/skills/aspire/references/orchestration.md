@@ -707,7 +707,9 @@ enrichment at their Read level.
 The existing exceptions stay as they are and are the only ones: the Orchestrator's hourly run may
 act on an Editor's approval on the Next actions page within its saved limits
 (**Orchestrator** **4**), `atlas-creator-discovery` may start discovery work unattended under the
-cadence the person saved for that campaign, and an unattended run acts only on the standing
+cadence the person saved for that campaign, `atlas-creator-vetting` may fetch and screen an
+applicant review's new applicants unattended under the screening schedule the person saved for that
+review (**Creator vetting**, **Scheduled screening**), and an unattended run acts only on the standing
 approvals its setup saved. Unattended runs never confirm anything: a proposal without a standing approval waits for
 the next interactive session.
 
