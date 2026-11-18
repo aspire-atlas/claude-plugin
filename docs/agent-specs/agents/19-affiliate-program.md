@@ -16,7 +16,9 @@ When I run affiliates, I want each creator enrolled with terms, sales by creator
 
 ## Questions answered
 
-None. No question in the map routes here yet.
+| Code | Question | Primary reader | Kind of page | Approved example |
+| ---- | -------- | -------------- | ------------ | ---------------- |
+| I12 | Which affiliates are driving sales, and what do we owe in commission? | Self | Dashboard | None yet |
 
 ## Skills carried (6)
 

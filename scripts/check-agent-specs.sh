@@ -21,6 +21,10 @@ command -v python3 >/dev/null || { echo "FAIL python3 is needed"; exit 1; }
 python3 -I - "$@" <<'PY'
 import json, os, re, sys
 
+sys.dont_write_bytecode = True
+sys.path.insert(0, "scripts")
+from question_codes import code_rows, section3
+
 D = "docs/agent-specs"
 ORCH = "plugins/aspire/skills/aspire/references/orchestration.md"
 AGENTS_DIR = "plugins/aspire/agents"
@@ -78,8 +82,7 @@ def check_skill(label, path, owner, extra=()):
     return None if problems else head
 
 orch = open(ORCH).read()
-sec3 = re.search(r"^## 3\. .*?(?=^## )", orch, re.S | re.M)
-codes = set(re.findall(r"^\| ([IPOA]\d) \|", sec3.group(0) if sec3 else "", re.M))
+codes = {code for code, _ in code_rows(section3(orch))}
 if not codes:
     err(f"no question codes found in {ORCH} section 3")
 
