@@ -258,7 +258,7 @@ What the **Creator vetting** section of SKILL.md does around the agent.
 3d. **Import a campaign's applicant export** when R2 named an applicant review and the list came
    from a CSV: per **Applicant review**, **Importing applicants**, with its own found-and-missing
    report and confirmation, before the launch. From then on the run's list is this file's
-   applicants as read back (the ids after its step 3), never the review's other applicants, so the
+   applicants as read back (the ids after **Check what Atlas and the Sheet hold**), never the review's other applicants, so the
    handles R3 approved are the ones looked up. "Not now", or an import that stops, leaves the list
    as it was.
 4. Launch `atlas-creator-vetting` with: tool prefix, `profile_id`, `profile_slug`, brand handles and

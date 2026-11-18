@@ -196,8 +196,7 @@ then splits it into runs of 100.
 
 **1. Read every column.** Read the file with the **Applicant CSV snippet**, never with the `Read` tool, which cuts lines over 2000
 characters. When **Getting the list** already ran it on this file, use those rows; otherwise run
-it as that file says. It leaves out payment and tax columns, and card- or IBAN-shaped values,
-before any row is printed, and the report names what it left out.
+it as that file says.
 
 Then sort each kept column into one of these, by header, case-insensitive:
 
@@ -213,8 +212,8 @@ Then sort each kept column into one of these, by header, case-insensitive:
 A `formAnswers` key is the key the snippet printed, and values are kept as text, as written.
 
 **2. One applicant per person.** Dedupe before anything is written. Two rows, or a row and an Atlas
-record (step 3), are the same applicant when they share the applicant id, or, with no id column, an
-Instagram handle, a TikTok handle, or the email (step 1's Email row; on a record, the
+record (step 3), are the same applicant when they share the applicant id, or, with no id column,
+the id this step builds, an Instagram handle, a TikTok handle, or the email (step 1's Email row; on a record, the
 `formAnswers` value under a header naming email).
 
 - With an applicant id column, that is the id.
@@ -242,7 +241,8 @@ Profile step 5 writes to), `reviewId` = the review's slug, no `statuses`, `limit
 and stop before writing: the run goes on vetting the list as a plain list. An applicant that is the
 same as a record (step 2) is already imported: it takes that record's `aspireApplicantId` from then
 on, so its key and Sheet row stay the same, and is not written again, whatever its answers say now.
-The report counts them and names any whose answers changed. From here on, "this file's ids" means
+The report counts them and names any whose answers changed, and any matched by a `name-` id alone,
+since a name is the only thing tying that applicant to the record. From here on, "this file's ids" means
 the ids after this step. When `-sheet` holds a link and the Claude Docs connector is in the session
 (load its guide first), also read the Sheet's Aspire applicant id column, to count this file's
 applicants it has no row for.
@@ -262,7 +262,8 @@ Left out: {payment and tax columns, and {c} card- or account-shaped answers, or 
 ```
 
 Then, when there is anything to write, ask once with `AskUserQuestion`, built from the counts:
-"Add {new} applicants to the {campaign} review in {brand}'s Atlas{ and its review Sheet}? Their
+"Add {new} applicants to the {campaign} review in {brand}'s Atlas{ and its review Sheet}{, and
+Sheet rows for {missing} it already holds}? Their
 contact details and answers are kept with them, for the team only." With no new applicants, "Add
 {missing} applicants Atlas already holds to the {campaign} review Sheet?" The Sheet part is there
 only when step 3 read the Sheet. Options: 1) Add them (Recommended); 2) Not now. "Not now" writes
