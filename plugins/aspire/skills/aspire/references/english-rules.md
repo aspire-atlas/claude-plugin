@@ -26,7 +26,7 @@ written.
 The main thread applies the table itself, before sending, to the three messages every run sends:
 
 1. **The setup reply** (**Orchestration contract**, **2**): each question's text, its option labels,
-   and their descriptions.
+   and their descriptions. A repeat run's reply (**Repeat run**) is held to the same rules.
 2. **The storyline check-in** (**Orchestration contract**, **2**, **The storyline**): the question,
    every bullet with its evidence, the lines for what was not checked, and the option labels.
 3. **The close-out** (**Orchestration contract**, **10**), and the chat reply it belongs to.
