@@ -174,7 +174,7 @@ No heading, no table, no bold, and no tool, record, or agent name.
    | ------- | -------------- |
    | Builds a new page, interactive (**The storyline**) | "the page's three main points, before I build it" |
    | Asks the Credits question | "the Atlas credits this run uses, capped in the question below" |
-   | Reads an account this session already holds as behind its pace, in a run **Page standard**, section 9.5, says asks first | "a refresh of {@handle}, which is out of date (the refresh is free and the new posts it collects use credits)" |
+   | Reads an account this session already holds as behind its pace, in a run **Page standard**, section 9.5, says asks first | "a refresh of {@handle}, which is out of date (the refresh is free and the new posts it collects use credits)"; when more of the accounts this session already holds are behind than that section's refresh limit, "a refresh of {limit} out-of-date accounts, your own first, then the most-viewed on each platform (the refresh is free and the new posts it collects use credits)" |
    | Asks the Save question, in this reply or in the storyline call | "saving {what the Save question names: the findings, the ranked posts} to Atlas" |
    | Will keep the page's open items for the next run, and no question of this reply confirms it (**Repeat run**, **Keeping the record**) | "keeping this page's open decisions and next steps, so the next run can follow up" |
    | The agent's row in **7** names mailbox drafts | "drafts in your mailbox, which send nothing" |
@@ -616,7 +616,7 @@ acts on.
 
 | Field | Holds |
 | ----- | ----- |
-| `page` | The link to the page published or republished this run; the absolute path of its HTML file when the session has no Artifact tool (`skills/page-standard/SKILL.md`, section 4, step 5); the draft file's absolute path in a draft pass (`skills/page-standard/SKILL.md`, section 4, step 4b), which the main thread never relays; `null` when the run built no page. A run that published more than one page or deck gives a list of links, main page first, each with its own `page-check` block. |
+| `page` | The link to the page published or republished this run; the absolute path of its HTML file when the session has no Artifact tool (`skills/page-standard/page-file.md`); the draft file's absolute path in a draft pass (`skills/page-standard/SKILL.md`, section 4, step 4b), which the main thread never relays; `null` when the run built no page. A run that published more than one page or deck gives a list of links, main page first, each with its own `page-check` block. |
 | `findings` | Up to five, the ones the page leads with. `kind` is `observation`, `inference`, or `recommendation`; `confidence` is `high`, `medium`, or `low`. Every finding cites its evidence; one that cannot is left out. |
 | `proposals` | Every draft, save, send, order, payment, spend, or freshness refresh the agent wants approved, each with its `level` (**7**), its `items`, and its `gate`: `approve-` plus a short kebab-case name of what is approved (`approve-shortlist`, `approve-offers`, `approve-saves`), 2 to 40 lower-case letters, digits, and hyphens. The main thread sends the person's verdict under the same `gate` (SKILL.md, **Running agents**). Empty when there is nothing to approve. |
 | `questions` | Everything the agent could not settle, worded so the main thread can put it in `AskUserQuestion` as is. |

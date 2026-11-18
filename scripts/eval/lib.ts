@@ -65,7 +65,7 @@ export type Turn = {
 }
 
 export type PageChecks = {
-  /** R1, R2, R6, R11, R13, R14 and R15 from the page-check script: pass, fail, n/a or unmarked. */
+  /** R1, R2, R6, R7 (its links), R11, R13, R14 and R15 from the page-check script: pass, fail, n/a or unmarked. */
   scripted: Record<string, string>
   /** R rows from the quality review's grade mode. */
   graded: Record<string, Result>

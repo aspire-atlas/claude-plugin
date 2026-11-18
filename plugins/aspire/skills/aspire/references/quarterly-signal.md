@@ -98,7 +98,7 @@ Fresh aggregates, filter path:
   line and any behind-pace note only (section 9.5, the unattended row). A relaunch with handles in
   `approved.refresh` refreshes those before the posts are read, and makes no new offer. An interactive run with `approved.refresh` null works out each
   handle's pace from the freshness read (section 9.4) and offers the refresh, with its time and
-  cost, for a handle behind it, holding its findings until the relaunch. The page's source line
+  cost, for each handle behind it up to the refresh limit (section 9.5), holding its findings until the relaunch. The page's source line
   carries the freshness line, and a period with no posts reads as section 9.3 says.
 
 A source with no findings in the quarter is named under data gaps, never filled.

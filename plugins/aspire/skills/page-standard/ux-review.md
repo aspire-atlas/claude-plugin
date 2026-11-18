@@ -33,7 +33,7 @@ English read's fixes:
 
 **Open Musts block an interactive publish.** When a Must is still open after this pass:
 
-- **Interactive run**: do not publish. Save the page as a file (`SKILL.md`, section 4, step 5),
+- **Interactive run**: do not publish. Save the page as a file (`page-file.md`),
   hold the Atlas writes and deliveries as the draft pass did, and return with `uxReview.status`
   `blocked`. The main thread names each open Must to the person and asks: "Fix it first" or
   "Publish it as it is". "Fix it first" relaunches this pass with the person's words in
