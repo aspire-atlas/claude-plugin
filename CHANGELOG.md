@@ -6,6 +6,19 @@ The version lives in exactly one place: `plugins[].version` in `.claude-plugin/m
 
 ## [Unreleased]
 
+## [5.4.0] - 2026-11-18
+
+Minor release. Adds an applicant review setup saved once per campaign, fixes calibration keys Atlas refused, and ships the Aspire marks as Markdown to meet the plugin directory's file-type rule.
+
+### Added
+- Applicant review: `/aspire applicant review` saves a campaign's fit criteria, checks, red lines, thresholds, form rules, visual checks and review Sheet once, and creator vetting reads them back without asking again.
+
+### Changed
+- The animated Aspire marks and the spinner now ship as `assets/*.svg.md`, each SVG unchanged inside a fence, because the plugin directory accepts no `.svg` file from an organization that is not Verified. Pages render the same.
+
+### Fixed
+- Calibration keys use namespaces Atlas accepts (`applicantreview:`, `adreuse:`, `marketsignal:`, `qualityreview:`), so applicant review, ad reuse, market signal and quality review saves are no longer refused.
+
 ## [5.3.0] - 2026-11-16
 
 Minor release. `/aspire` answers in chat first, every page is checked for plain English and rendered before it publishes, Meta Ads is routed safely, and creator ad and onboarding flows use the Atlas server's widgets. Every flow keeps its earlier path when the server does not offer the new ones.
