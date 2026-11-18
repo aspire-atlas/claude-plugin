@@ -187,7 +187,9 @@ applicant id, never on position, because people sort and filter the Sheet. Read 
 CSV's handle column and normalize it per **Getting the list**, so a row with both handles is
 vetted on each. A row's **account id** is fixed in step 2 of **Main thread: the run**, before any
 R3 fetch: the `entityId` of the newest `feedback` finding carrying the row's applicant id, when
-there is one, else its Instagram account's when Atlas holds it, else its TikTok account's. Every
+there is one, else its Instagram account's when Atlas holds it, else its TikTok account's; when
+Atlas holds neither, it is set after R3's fetch, Instagram first. Every list entry from the Sheet
+carries it. Every
 `feedback` finding for the row is written under it and every lookup below matches on it, so a call
 stays on one id even after Atlas starts holding the row's other account.
 
