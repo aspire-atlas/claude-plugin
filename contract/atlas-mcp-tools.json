@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-10",
+  "generated": "2026-11-17",
   "source": "apps/api/lib/mcp/tools-list.golden.json",
   "calibrationKeyPattern": "^[a-z0-9]+:[a-z0-9-]{1,48}$",
   "surfaces": {
@@ -116,6 +116,14 @@
         "paths": [
           "asOrganizationId",
           "asProfileId"
+        ]
+      },
+      "get_card_images": {
+        "required": [
+          "images"
+        ],
+        "paths": [
+          "images"
         ]
       },
       "get_cas_briefs": {
@@ -286,6 +294,19 @@
       "list_ad_search_fields": {
         "required": [],
         "paths": []
+      },
+      "list_applicants": {
+        "required": [
+          "reviewId"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "cursor",
+          "limit",
+          "reviewId",
+          "statuses"
+        ]
       },
       "list_available_hashtags": {
         "required": [
