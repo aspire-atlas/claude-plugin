@@ -174,7 +174,7 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    reference and this reader set the layout. Add the print block with the page's title as
    `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md`, section 6, sets, so the page saves to PDF
    in the light theme with a footer on every page.
-   **3a. Like for like.** As you write each comparison (two groups, two periods, or two brands side by side, or a share), run the four checks in `comparisons.md` in this folder: same kind of post on both sides, every mention counted, "directional" with the post count on a side of 20 posts or fewer, and a share beside its group's share of the whole. One that fails a check and stays says which, in one line.
+   **3a. Like for like.** As you write each comparison (two groups, two periods, or two brands side by side, or a share), run the four checks in `comparisons.md` in this folder (same kind, every mention counted, enough posts, share against size). One that fails a check and stays says which, in one line.
 4. **Self-check R1 to R15.** Run the script in section 5 for R1, R2, R6, R11, R13, R14, and R15, and judge
    the others against `reader-standard.md`. Fix every fail you can and check again. **4b.** The English read by a separate reviewer: follow `english-read.md` in this folder. **4c.** The rendered UX review, on the same draft: follow `ux-review.md`.
 5. **Publish** in the publish pass (steps 4b and 4c), even when a check still fails; report it (section 7). An open UX Must holds an interactive publish (`ux-review.md`).
@@ -244,10 +244,10 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   knows it by an `atlas-footnote` saying "Shared with") lists only the platforms with posts. Show
   the exact count ("1,412 posts"), never a rounded one ("1.4K").
 - A check that is N/A for this page (section 1) goes in `data-na` on the scope, for example
-  `data-na="R2"` on a ledger or a one-creator profile; the script reports it `n/a`. Only R2 and R6
-  can be N/A; R1 and R11 apply to every page, and naming them fails the check. R13, R14, and R15 are
-  `n/a` on their own terms (no `data-question` and no cited post; no cited account; no marked
-  comparison), never through `data-na`. Comparisons carry the markup in `comparisons.md`.
+  `data-na="R2"` on a ledger or a one-creator profile; the script reports it `n/a`. Only R2, R6,
+  and R15 (on a page that compares nothing and states no share) can be N/A; R1 and R11 apply to
+  every page, and naming them fails the check. R13 and R14 are `n/a` on their own terms (no
+  `data-question` and no cited post; no cited account), never through `data-na`.
 - A decisions section with no decision says "Nothing needs approval" (or "No decision needs
   approval"). A `data-by` date is a real date the page also shows.
 - Mark anything in someone else's words with `blockquote`, `q`, or `data-quoted`: a creator's
@@ -275,7 +275,7 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   or `unknown`, or, with no `freshness` on record, `data-changed` ("last changed"). The entry shows
   each date and the platform. A page that cites and reports on no account gets `n/a`.
 - A page with no `data-page` markup yet (a flow whose reference does not add it) gets `unmarked`
-  for R1, R2, R6, R13, R14, and R15. Judge those by reading; R11 still runs.
+  for R1, R2, R6, R13, R14, and R15, and a page that marks no comparison (`comparisons.md`) gets it for R15. Judge those by reading; R11 still runs.
 
 Run the check on every page before you publish it. Copy the page into a new temporary folder,
 extract the script there from `page-check.md` in this folder (never retype it), and run it:
@@ -286,7 +286,7 @@ d=$(mktemp -d) && cp {page.html} "$d/" && awk '/^<!-- page-check -->$/{f=1;next}
 
 It reads only the pages named, writes nothing, and prints one JSON line per check and page:
 `pass`, `fail`, `n/a`, or `unmarked`. It exits 0 when nothing failed, 1 when a check failed, and 2
-when it could not read a page. When Python is not installed, judge the seven by reading and report
+when it could not read a page. When Python is not installed, judge the scripted checks by reading and report
 `scripted` as `read`.
 
 The script is in `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/page-check.md`, between its

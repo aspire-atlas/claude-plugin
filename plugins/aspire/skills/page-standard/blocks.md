@@ -801,8 +801,8 @@ account.
 the group it comes from. Wherever a page compares, in an insight, the answer, a table row, or a
 chart's caption, the comparison carries this markup (`comparisons.md`).
 
-- Each side says how many posts it rests on. A side of 20 posts or fewer shows "directional" and
-  its post count beside its number.
+- Each side says how many posts it rests on. A thin side shows "directional" and its post count
+  beside its number, as `comparisons.md` sets the line.
 - Both sides hold one kind of post, and `data-kind` names it: `paid-label`, `shop`, or
   `no-paid-label`. The kinds differ only in a `data-compare="kinds"` comparison.
 - A share shows the group's share of the whole beside it (`data-share`, `data-group-share`).

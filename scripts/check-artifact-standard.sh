@@ -161,13 +161,16 @@ else
     awk '/^<!-- page-check -->$/{f=1;next} /^<!-- \/page-check -->$/{f=0} f' "$PC" | sed '1d;$d' > "$tmp/page_check.py"
     [ -s "$tmp/page_check.py" ] || err "$PC has no <!-- page-check --> script"
     grep -qF 'skills/page-standard/page-check.md' "$PS" || err "$PS does not link skills/page-standard/page-check.md"
-    # Each fixture prints exactly seven results and no error: a pass*.html page fails nothing, and a
-    # fail-rN*.html page fails RN and nothing else. Exit 2 means the script could not read the page.
+    # Each fixture prints one result per scripted check (as many as pass.html prints) and no error:
+    # a pass*.html page fails nothing, and a fail-rN*.html page fails RN and nothing else. Exit 2
+    # means the script could not read the page.
+    n=$(python3 -I "$tmp/page_check.py" "$FX/pass.html" 2>/dev/null | grep -c '"check": "R' || true)
+    [ "$n" -gt 0 ] || err "page check printed no result for $FX/pass.html"
     for f in "$FX"/*.html; do
       [ -f "$f" ] || continue
       name=${f##*/}
       out=$(python3 -I "$tmp/page_check.py" "$f" 2>&1) && code=0 || code=$?
-      [ "$code" -ne 2 ] && [ "$(grep -c '"check": "R' <<< "$out")" -eq 7 ] && ! grep -q Traceback <<< "$out" ||
+      [ "$code" -ne 2 ] && [ "$(grep -c '"check": "R' <<< "$out")" -eq "$n" ] && ! grep -q Traceback <<< "$out" ||
         { err "page check did not run cleanly on $f (exit $code): $out"; continue; }
       failed=$(grep -o '"check": "R[0-9]*", "name": "[^"]*", "result": "fail"' <<< "$out" | sed -E 's/^"check": "(R[0-9]+)".*/\1/' | tr '\n' ' ' || true)
       case $name in
@@ -196,15 +199,17 @@ else
       have="$(sed -nE 's/^DIRECTIONAL_MAX = ([0-9]+)$/\1/p' "$tmp/page_check.py") $(sed -nE 's/^IN_LINE_POINTS = ([0-9]+)$/\1/p' "$tmp/page_check.py")"
       [ -n "$line" ] && [ "$line" = "$have" ] ||
         err "$PC's DIRECTIONAL_MAX and IN_LINE_POINTS ($have) differ from $CM's directional-max line (${line:-none})"
-      # A file that restates either number states the same one.
+      # comparisons.md is the only file that states either number. Elsewhere, a line about the
+      # directional mark or a share in line with its group points there instead of naming a
+      # number, and no line gives the directional line's number as a post threshold.
       if [ -n "$line" ]; then
-        for f in "$CM" "$PS" "$P/skills/page-standard/storyline.md" "$P/skills/page-standard/blocks.md" "$R/english-rules.md" \
-          "$R/reader-standard.md" "$R/market-signal.md" docs/STANDARD.md .github/pull_request_template.md; do
-          [ -f "$f" ] || continue
-          off=$(grep -oE '[0-9]+ (posts )?or fewer|more than [0-9]+ posts|within [0-9]+ points' "$f" | sort -u |
-            awk -v max="${line% *}" -v pts="${line#* }" '{ n = $0; gsub(/[^0-9]/, "", n); want = /points/ ? pts : max; if (n != want) printf "\"%s\" ", $0 }' || true)
-          [ -z "$off" ] || err "$f restates the like-for-like numbers as ${off}but $CM sets ${line% *} posts and ${line#* } points"
-        done
+        max=${line% *}
+        th='[0-9]+ (posts )?or fewer|[0-9]+ or fewer posts|fewer than [0-9]+ posts|under [0-9]+ posts|more than [0-9]+ posts|[0-9]+ posts minimum|within [0-9]+ points'
+        own="$max (posts )?or fewer|$max or fewer posts|fewer than $max posts|under $max posts|more than $max posts|$max posts minimum"
+        while IFS= read -r hit; do
+          [ -n "$hit" ] && err "${hit%%:*}:$(cut -d: -f2 <<< "$hit") restates a like-for-like number; point to $CM instead"
+        done < <(grep -rnE "$th" plugins/*/skills docs/STANDARD.md .github/pull_request_template.md --include='*.md' |
+          grep -v "^$CM:" | grep -iE "directional|in line with|^[^:]+:[0-9]+:.*($own)" || true)
       fi
       # The markup example in comparisons.md is what agents copy, so it must pass R15.
       awk '/^```html$/{g=1;next} g&&/^```$/{exit} g' "$CM" > "$tmp/compare.html"
@@ -246,7 +251,7 @@ print("ok" if a and a == b else "table %s; script %s" % (sorted(set(a) - set(b))
         echo '<p>Internal use only. Not for public publishing.</p></footer></body></html>'
       } > "$tmp/blocks.html"
       out=$(python3 -I "$tmp/page_check.py" "$tmp/blocks.html" 2>&1) && code=0 || code=$?
-      [ "$code" -eq 0 ] && [ "$(grep -c '"result": "pass"' <<< "$out")" -eq 7 ] ||
+      [ "$code" -eq 0 ] && [ "$(grep -c '"result": "pass"' <<< "$out")" -eq "$n" ] ||
         err "a page built from every block in $BL does not pass the page check (exit $code): $out"
       ran="$ran, and a page built from every block passes it"
     fi

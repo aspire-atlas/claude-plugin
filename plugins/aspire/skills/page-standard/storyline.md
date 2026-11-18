@@ -49,7 +49,7 @@ To draft it:
    `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/english-rules.md` (**In chat**). Except on a one-post question, a bullet on fewer than 3 posts says how
    few ("from only two posts"). A bullet that compares two groups, periods, or brands, or states a
    share, passes the four checks in `comparisons.md` first: it names the kind and the post count of
-   each side, and says "directional" for a side of 20 posts or fewer. The good and bad examples are in `orchestration.md`, **2**.
+   each side, and marks a thin side as that file says. The good and bad examples are in `orchestration.md`, **2**.
 3. **Watch the most-viewed video behind each bullet.** With a shell, `ffmpeg`, and the post's
    media from the Atlas read tools, run the 1-second frame scan (`SKILL.md`, section 3; `quality-review.md`,
    4.15) on that video, and check every timecode and on-screen claim the bullet rests on.

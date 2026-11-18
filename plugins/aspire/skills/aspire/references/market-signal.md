@@ -231,7 +231,7 @@ From **Data method** step 8 and the posts already read in step 6; no other reads
   rate is the same over all its posts in the period. Each topic is compared with the brand's
   rate as a multiple ("2.8 times as often as the average {brand} post").
 - **Which topics show.** A topic at or under the directional line (**Page standard**,
-  `comparisons.md`: 20 posts or fewer) is left off the chart and named in the method as too few.
+  `comparisons.md`) is left off the chart and named in the method as too few.
   Every other topic is shown, ordered by rate, with the brand's rate as its own bar between the
   topics above it and those below.
 - **Like for like.** Every comparison of posts and every share on the page follows **Page

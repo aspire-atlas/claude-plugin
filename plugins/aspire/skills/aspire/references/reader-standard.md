@@ -30,7 +30,7 @@ is in **Quality review**, **3**.
 | R12 | Built for this question | The page's sections and visuals come from what this question and reader need | A launch timeline on a one-creator profile | High |
 | R13 | Required metrics | Every post the page cites carries each metric its kind of question requires (**Page standard**, section 8), or says beside it why that metric is not available. Nothing missing is shown as 0 | 21.6 million views with no likes, comments, shares, or saves beside them; a save count Atlas does not hold shown as 0 | High |
 | R14 | Data freshness | Every account the page cites has a freshness line in the source line: the newest post Atlas holds and when Atlas last fetched it, or, when Atlas has no fetch time, "last changed", "not fetched by Atlas yet", or "freshness unknown" (**Page standard**, section 9). On a team page, a period Atlas has not fetched reads "Atlas has no data for {period}"; a page shared outside the team leaves it out | "No posts this week" for a week Atlas never fetched; a page with no word on how old its figures are | High |
-| R15 | Like for like | Every comparison (two groups, two periods, or two brands side by side, or a share) passes the four checks in **Page standard**, `comparisons.md`: one kind of post on both sides; mentions counted with and without the "@"; "directional" and the post count beside a figure that rests on 20 posts or fewer; and a share shown beside its group's share of the whole. A comparison that fails one and stays says which, in one plain line | A brand's TikTok Shop posts mixed into its average against a competitor's; "87% of revenue" from 88% of affiliates given as a finding; a rate from 6 posts with no "directional" | High |
+| R15 | Like for like | Every comparison (two groups, two periods, or two brands side by side, or a share) passes the four checks in **Page standard**, `comparisons.md`: one kind of post on both sides; mentions counted with and without the "@"; "directional" and the post count beside a figure that rests on too few posts; and a share shown beside its group's share of the whole. A comparison that fails one and stays says which, in one plain line | A brand's TikTok Shop posts mixed into its average against a competitor's; "87% of revenue" from 88% of affiliates given as a finding; a rate from 6 posts with no "directional" | High |
 
 ## How to judge them
 
@@ -47,9 +47,10 @@ is in **Quality review**, **3**.
   the row for the kind of question the page answers (**Page standard**, section 8).
 - **R14** is n/a on a page that cites no account. A chat reply is judged the same way: one that cites
   an account's data carries its freshness line (**Page standard**, section 9).
-- **R15** is n/a on a page that compares nothing and states no share. The script counts only the
-  comparisons the page marks, so also read the headline, the insights, and the chart captions for
-  one it missed. A chat reply is judged the same way.
+- **R15** is n/a only on a page that compares nothing and states no share. The script counts only
+  the comparisons the page marks and reports a page that marks none as unmarked, so read the
+  headline, the insights, and the chart captions for one it missed. A chat reply is judged the
+  same way.
 - **Links.** R7 covers evidence links only; every other broken link is filed as the table in
   **Quality review**, **4.15**, **Broken links**, says.
 - **R2 and R9 outside the team.** When `audience` is `client`, `creator`, or `public` (the page
