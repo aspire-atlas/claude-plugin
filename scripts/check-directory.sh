@@ -20,6 +20,10 @@
 #     and agent event it hooks, and the tools it answers itself
 #   - every skill's description is at most 1,024 characters, the skill spec's limit. The directory
 #     has not flagged this, but a reviewer or a later scan can, so it is held here too
+#   - a submitted plugin ships only the file types the directory accepts from an organization that is
+#     not Verified (Markdown, text, JSON, YAML, PNG, JPEG, GIF, WebP, ICO, and its LICENSE), none starting
+#     with #!: the directory refused 5.3.0 for its .svg marks, which now sit in .svg.md files. Plugins
+#     named in NOT_SUBMITTED below (beta only, held back from main) are not held to this
 # plugin.json carrying no version is check-channel.sh's rule, kept on purpose; it is not checked here.
 #
 #   scripts/check-directory.sh
@@ -30,6 +34,7 @@ cd "$(dirname "$0")/.."
 MAX_BYTES=262144
 MAX_DESC=1024
 KNOWN_READ=216907
+NOT_SUBMITTED="aspire-mod"
 fail=0
 err() { echo "FAIL $*"; fail=1; }
 
@@ -133,5 +138,40 @@ for p in $(plugin_names); do
   fi
 done
 
-[ "$fail" -eq 0 ] && echo "OK   plugins pass the directory's mod form, file size, skill description, and hook documentation checks"
+# File types the directory accepts from an organization that is not Verified. Like the checks above,
+# this reads the working tree (tracked and untracked files), so run it on what you are about to commit;
+# CI runs it on the pushed commit. A symbolic link ships as its target's contents under its own name.
+root=$(pwd -P)
+checked=0
+shopt -s nocasematch
+for p in $(plugin_names); do
+  [[ " $NOT_SUBMITTED " == *" $p "* ]] && continue
+  src=$(plugin_src "$p")
+  files=$(git -c core.quotePath=false ls-files --cached --others --exclude-standard -- "$src")
+  [ -n "$files" ] || err "$p: git lists no files under $src"
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    checked=$((checked + 1))
+    if [ -L "$f" ]; then
+      target=$(realpath -e "$f" 2>/dev/null) || { err "$f is a symbolic link to nothing"; continue; }
+      [[ "$target" == "$root/"* ]] || { err "$f links outside the repository ($target)"; continue; }
+    fi
+    case "$f" in
+      */LICENSE|*.md|*.txt|*.json|*.yaml|*.yml)
+        # A byte order mark before #! still counts as #!.
+        if [ "$(head -c5 "$f" | LC_ALL=C sed '1s/^\xEF\xBB\xBF//' | head -c2)" = '#!' ]; then
+          err "$f starts with #!, which the directory refuses from an organization that is not Verified"
+        fi ;;
+      *.png|*.jpg|*.jpeg|*.gif|*.webp|*.ico) ;;
+      *) err "$f: the directory refuses this file type from an organization that is not Verified; wrap it in Markdown or move it out of $src" ;;
+    esac
+  done <<<"$files"
+  if [ -n "$(git status --porcelain -- "$src" "$PLUGINS_MARKETPLACE")" ]; then
+    echo "note $src or $PLUGINS_MARKETPLACE differs from the last commit: this checked the working tree, and CI checks the commit you push"
+  fi
+done
+shopt -u nocasematch
+[ "$checked" -gt 0 ] || err "the file-type check found no files to check"
+
+[ "$fail" -eq 0 ] && echo "OK   plugins pass the directory's mod form, file type, file size, skill description, and hook documentation checks"
 exit "$fail"

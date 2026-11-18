@@ -26,7 +26,7 @@ fail=0
 err() { echo "FAIL $*"; fail=1; }
 
 [ -f "$STD" ] || { echo "FAIL $STD is missing"; exit 1; }
-for f in "$P/assets/aspire-animated.svg" "$P/assets/aspire-animated-small.svg"; do
+for f in "$P/assets/aspire-animated.svg.md" "$P/assets/aspire-animated-small.svg.md"; do
   [ -f "$f" ] || err "$f is missing (the standard pastes it into pages)"
 done
 
@@ -39,7 +39,7 @@ for p in $(plugin_names); do
   if [ "$src" != "$P" ]; then
     # The block and the standard name these paths under the plugin's own root.
     for f in skills/aspire/references/artifact-standard.md skills/page-standard/SKILL.md skills/page-standard/page-check.md \
-      skills/aspire/references/reader-standard.md assets/aspire-animated.svg assets/aspire-animated-small.svg; do
+      skills/aspire/references/reader-standard.md assets/aspire-animated.svg.md assets/aspire-animated-small.svg.md; do
       [ -e "$src/$f" ] || { err "$p: $src/$f is missing; link it to $P/$f"; continue; }
       { [ -L "$src/$f" ] && [ "$src/$f" -ef "$P/$f" ]; } || err "$p: $src/$f must be a symbolic link to $P/$f, not a copy"
     done
