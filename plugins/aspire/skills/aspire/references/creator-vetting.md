@@ -184,18 +184,20 @@ columns **The review Sheet** writes, found by header, case-insensitive, and a No
 team added one. When the connector is not in the session or can't open the Sheet, say so in one
 line and offer sources 1 and 2; never ask the user to add a connector. Match rows on the Aspire
 applicant id, never on position, because people sort and filter the Sheet. Read each handle like a
-CSV's handle column and normalize it per **Getting the list**. A row's creator is its Instagram
-handle when it has one, else its TikTok handle; the other handle is not read, so every call on a
-row is matched on one account id.
+CSV's handle column and normalize it per **Getting the list**, so a row with both handles is
+vetted on each. A row's **account id** is its Instagram account's when it has an Instagram handle
+Atlas holds, else its TikTok account's: every `feedback` finding for the row is written under it,
+and every lookup below matches on it, so a call is never split across two ids.
 
 **What each row becomes**, by its Team call, trimmed and with case ignored:
 
 - **Starts with Approve, Maybe, or Reject** ("Approved", "reject"): **decided**. The matched word,
   lowercased (`approve`, `maybe`, or `reject`), is the row's **Sheet call**, and the row is not
   vetted again.
-- **Blank**: undecided, so it goes on the list, unless Atlas already holds a team call on the
-  creator (**Reading it back**) and the row is not reopened (below): the team decided it outside
-  the Sheet, so it is not vetted again and its call stands.
+- **Blank**: undecided, so it goes on the list, unless Atlas holds a `feedback` finding carrying
+  the row's applicant id and the row is not reopened (below): the team decided this application
+  in F1, so it is not vetted again and its call stands. A call on the creator from another list
+  or campaign does not keep the row off the list.
 - **Anything else** ("Yes", "?"): undecided too, read like a blank, and the value is listed in
   **Rows to fix**.
 - **No applicant id or no handle**: skipped, and listed in **Rows to fix**.
@@ -727,7 +729,8 @@ none. It leaves out creators left to decide in the Sheet, Sheet calls on creator
 hold yet, and a reopened creator (**Reading the review Sheet**) until F1 saves a new call for
 them. With no team call in Atlas and no Sheet call
 for any creator, it is the recommendations, headed "Recommendations, not yet the team's calls". The main thread gives it in
-chat after the last batch's F1, covering the whole list, with "(Sheet only)" after a Sheet call Atlas
+chat after the last batch's F1, covering the whole list and, for a review Sheet, every row with
+a call (in the Sheet or in Atlas), with "(Sheet only)" after a Sheet call Atlas
 holds no call for and **Rows to fix** under it. The page carries it as a button (**The
 page**, Decisions) with neither, covering the creators on that page and the Sheet calls it was
 passed; the chat version is the full one.
