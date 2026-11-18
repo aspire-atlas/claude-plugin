@@ -1,19 +1,39 @@
-{"rows": 17, "encoding": "utf-8", "kept": ["Name", "Instagram", "Anything else?"], "left_out": [], "cells_left_out": 8}
+{"rows": 37, "encoding": "utf-8", "kept": ["Name", "Instagram", "Anything else?"], "left_out": [], "cells_left_out": 16}
 {"next": 0}
-{"row": 2, "cells": {"Name": "J", "Instagram": "@j", "Anything else?": "my page https://instagram.com/maya,[left out] exp 12/27"}}
-{"row": 3, "cells": {"Name": "K", "Instagram": "@k", "Anything else?": "see https://pay.me/maya;[left out]"}}
-{"row": 4, "cells": {"Name": "L", "Instagram": "@l", "Anything else?": "https://linktr.ee/maya|[left out]"}}
-{"row": 5, "cells": {"Name": "A", "Instagram": "@a", "Anything else?": "exp 12/[left out]"}}
-{"row": 6, "cells": {"Name": "B", "Instagram": "@b", "Anything else?": "Exp 12/[left out]"}}
-{"row": 7, "cells": {"Name": "C", "Instagram": "@c", "Anything else?": "Visa/[left out]"}}
-{"row": 8, "cells": {"Name": "D", "Instagram": "@d", "Anything else?": "[left out]"}}
-{"row": 9, "cells": {"Name": "E", "Instagram": "@e", "Anything else?": "card [left out]"}}
-{"row": 10, "cells": {"Name": "F", "Instagram": "@f", "Anything else?": "see https://example.com/p/4111111111111111"}}
-{"row": 11, "cells": {"Name": "Z0", "Instagram": "@z0", "Anything else?": "no"}}
-{"row": 12, "cells": {"Name": "Z1", "Instagram": "@z1", "Anything else?": "no"}}
-{"row": 13, "cells": {"Name": "Z2", "Instagram": "@z2", "Anything else?": "no"}}
-{"row": 14, "cells": {"Name": "Z3", "Instagram": "@z3", "Anything else?": "no"}}
-{"row": 15, "cells": {"Name": "Z4", "Instagram": "@z4", "Anything else?": "no"}}
-{"row": 16, "cells": {"Name": "Z5", "Instagram": "@z5", "Anything else?": "no"}}
-{"row": 17, "cells": {"Name": "Z6", "Instagram": "@z6", "Anything else?": "no"}}
-{"row": 18, "cells": {"Name": "Z7", "Instagram": "@z7", "Anything else?": "no"}}
+{"row": 2, "cells": {"Name": "X0", "Instagram": "@x0", "Anything else?": "[left out]"}}
+{"row": 3, "cells": {"Name": "X1", "Instagram": "@x1", "Anything else?": "[left out]"}}
+{"row": 4, "cells": {"Name": "X2", "Instagram": "@x2", "Anything else?": "[left out]"}}
+{"row": 5, "cells": {"Name": "X3", "Instagram": "@x3", "Anything else?": "[left out]"}}
+{"row": 6, "cells": {"Name": "X4", "Instagram": "@x4", "Anything else?": "[left out]"}}
+{"row": 7, "cells": {"Name": "X5", "Instagram": "@x5", "Anything else?": "[left out]"}}
+{"row": 8, "cells": {"Name": "X6", "Instagram": "@x6", "Anything else?": "[left out]"}}
+{"row": 9, "cells": {"Name": "X7", "Instagram": "@x7", "Anything else?": "[left out]"}}
+{"row": 10, "cells": {"Name": "J", "Instagram": "@j", "Anything else?": "my page https://instagram.com/maya,[left out] exp 12/27"}}
+{"row": 11, "cells": {"Name": "K", "Instagram": "@k", "Anything else?": "see https://pay.me/maya;[left out]"}}
+{"row": 12, "cells": {"Name": "L", "Instagram": "@l", "Anything else?": "https://linktr.ee/maya|[left out]"}}
+{"row": 13, "cells": {"Name": "A", "Instagram": "@a", "Anything else?": "exp 12/[left out]"}}
+{"row": 14, "cells": {"Name": "B", "Instagram": "@b", "Anything else?": "Exp 12/[left out]"}}
+{"row": 15, "cells": {"Name": "C", "Instagram": "@c", "Anything else?": "Visa/[left out]"}}
+{"row": 16, "cells": {"Name": "D", "Instagram": "@d", "Anything else?": "[left out]"}}
+{"row": 17, "cells": {"Name": "E", "Instagram": "@e", "Anything else?": "card [left out]"}}
+{"row": 18, "cells": {"Name": "F", "Instagram": "@f", "Anything else?": "see https://example.com/p/4111111111111111"}}
+{"row": 19, "cells": {"Name": "Z0", "Instagram": "@z0", "Anything else?": "no"}}
+{"row": 20, "cells": {"Name": "Z1", "Instagram": "@z1", "Anything else?": "no"}}
+{"row": 21, "cells": {"Name": "Z2", "Instagram": "@z2", "Anything else?": "no"}}
+{"row": 22, "cells": {"Name": "Z3", "Instagram": "@z3", "Anything else?": "no"}}
+{"row": 23, "cells": {"Name": "Z4", "Instagram": "@z4", "Anything else?": "no"}}
+{"row": 24, "cells": {"Name": "Z5", "Instagram": "@z5", "Anything else?": "no"}}
+{"row": 25, "cells": {"Name": "Z6", "Instagram": "@z6", "Anything else?": "no"}}
+{"row": 26, "cells": {"Name": "Z7", "Instagram": "@z7", "Anything else?": "no"}}
+{"row": 27, "cells": {"Name": "Y0", "Instagram": "@y0", "Anything else?": "no"}}
+{"row": 28, "cells": {"Name": "Y1", "Instagram": "@y1", "Anything else?": "no"}}
+{"row": 29, "cells": {"Name": "Y2", "Instagram": "@y2", "Anything else?": "no"}}
+{"row": 30, "cells": {"Name": "Y3", "Instagram": "@y3", "Anything else?": "no"}}
+{"row": 31, "cells": {"Name": "Y4", "Instagram": "@y4", "Anything else?": "no"}}
+{"row": 32, "cells": {"Name": "Y5", "Instagram": "@y5", "Anything else?": "no"}}
+{"row": 33, "cells": {"Name": "Y6", "Instagram": "@y6", "Anything else?": "no"}}
+{"row": 34, "cells": {"Name": "Y7", "Instagram": "@y7", "Anything else?": "no"}}
+{"row": 35, "cells": {"Name": "Y8", "Instagram": "@y8", "Anything else?": "no"}}
+{"row": 36, "cells": {"Name": "Y9", "Instagram": "@y9", "Anything else?": "no"}}
+{"row": 37, "cells": {"Name": "Y10", "Instagram": "@y10", "Anything else?": "no"}}
+{"row": 38, "cells": {"Name": "Y11", "Instagram": "@y11", "Anything else?": "no"}}

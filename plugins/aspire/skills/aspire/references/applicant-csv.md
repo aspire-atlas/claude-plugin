@@ -54,7 +54,7 @@ Payment and tax data, so it is kept nowhere and the report names it:
 - in every other column except the ones `KEEP` names (a header that is exactly a handle, name,
   email, phone, place, or id header), wherever it sits in the cell: a card number (13 to 19
   digits as one block or groups of 4 to 6, that pass the Luhn check, alone or with up to two short
-  expiry or CVV groups at either end, and not right after `/` or `=` inside a link) and an IBAN (in any case, spaces or dashes
+  expiry or CVV groups at either end, and not inside a link) and an IBAN (in any case, spaces or dashes
   allowed, from a country that issues IBANs, 15 to 34 characters ending at a group's end, mostly
   digits after the country and check digits, with the right check digits). The match becomes `[left out]`, and
   `cells_left_out` counts the cells;
@@ -81,11 +81,14 @@ KEEP = {"instagram", "instagram handle", "instagram username", "instagram url", 
 DIGITS = re.compile(r"\d(?:[ -]?\d){12,}")
 # The card shape: 13 to 19 digits as one block or as groups of 4 to 6 (4-4-4-4, 4-6-5); phone numbers
 # and dates, in groups of 2 or 3, are not. SHORT is an expiry or CVV group beside it: 2 or 3 digits, or
-# 4 that read as a month first (0127), so a tracking number's 4-digit groups are not set aside.
+# 4 that read as an expiry (MMYY 0127, YYMM 2701, a year 2027); an Amex card's CID may be any 4 digits.
+# Any other 4-digit group is not set aside, so a tracking number's groups are not taken for one.
 CARD_CORE = re.compile(r"\d+|\d{4,6}(?: \d{4,6})+")
-SHORT = re.compile(r"\d{2,3}|(0[1-9]|1[0-2])\d\d")
-# A number right after / or = inside a link (a video or user id), with or without https:// or www.
-URL = re.compile(r"(https?://|www\.|\b[\w-]+\.[a-z]{2,}/)\S*[/=]$", re.I)
+SHORT = re.compile(r"\d{2,3}|(0[1-9]|1[0-2])\d\d|[2-3]\d(0[1-9]|1[0-2])|20[2-4]\d")
+AMEX = re.compile(r"3[47]\d{13}")
+# A number inside a link (a video, post or user id): the rest of an https:// or www. link, up to a space
+# or , ; | (a card joined to a link by those is still a card), or right after / or = in a bare one.
+URL = re.compile(r"(https?://|www\.)[^\s,;|]*$|\b[\w-]+\.[a-z]{2,}/\S*[/=]$", re.I)
 IBAN = re.compile(r"\b[A-Z]{2}\d{2}(?:[ -]?[A-Z0-9]){11,30}", re.I | re.A)
 # The countries that issue IBANs (codes only: their lengths keep changing).
 IBAN_COUNTRIES = set((
@@ -104,20 +107,22 @@ def mod97(s):
     return int("".join(str(int(c, 36)) for c in s[4:] + s[:4])) % 97 == 1
 
 
-def card_shape(core, ends):
-    return bool(CARD_CORE.fullmatch(core)) and all(SHORT.fullmatch(x) for x in ends)
+def is_card(core, ends):
+    # The whole card rule: the card shape, 13 to 19 digits that pass Luhn, and end groups that are SHORT
+    # (any 4 digits beside an Amex number).
+    digits = core.replace(" ", "")
+    return (bool(CARD_CORE.fullmatch(core)) and 13 <= len(digits) <= 19 and luhn(digits)
+            and all(SHORT.fullmatch(x) or AMEX.fullmatch(digits) and len(x) == 4 for x in ends))
 
 
 def card(m):
-    # A card is a core of the card shape that passes Luhn, alone or with up to two SHORT groups at either
-    # end. Every way of setting those groups aside is tried, since one match can't retry them.
+    # A card alone or with up to two SHORT groups at either end. Every way of setting those groups aside
+    # is tried, since one match can't retry them.
     if URL.search(m.string[:m.start()]):
         return m.group()
     g = re.split(r"[ -]", m.group())
     for a, b in itertools.product(range(3), repeat=2):
-        core, ends = " ".join(g[a:len(g) - b]), g[:a] + g[len(g) - b:]
-        digits = core.replace(" ", "")
-        if card_shape(core, ends) and 13 <= len(digits) <= 19 and luhn(digits):
+        if is_card(" ".join(g[a:len(g) - b]), g[:a] + g[len(g) - b:]):
             return "[left out]"
     return m.group()
 

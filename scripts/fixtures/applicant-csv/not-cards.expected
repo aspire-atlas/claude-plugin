@@ -1,11 +1,12 @@
-{"rows": 9, "encoding": "utf-8", "kept": ["Name", "Instagram", "Link to your best TikTok", "Anything else?"], "left_out": [], "cells_left_out": 0}
+{"rows": 10, "encoding": "utf-8", "kept": ["Name", "Instagram", "Link to your best TikTok", "Anything else?"], "left_out": [], "cells_left_out": 0}
 {"next": 0}
-{"row": 2, "cells": {"Name": "L", "Instagram": "@l", "Anything else?": "order PO57 9500 5566 7139 7628 5141 6178 tracking JD018645530809715946"}}
-{"row": 3, "cells": {"Name": "M", "Instagram": "@m", "Anything else?": "temp KK12 3456 7890 1234 567"}}
-{"row": 4, "cells": {"Name": "J", "Instagram": "@j", "Link to your best TikTok": "tiktok.com/@maya/video/7301234567890123459", "Anything else?": "Tracking: 9400 8683 4497 8690 7366 21"}}
-{"row": 5, "cells": {"Name": "K", "Instagram": "@k", "Link to your best TikTok": "x.com/maya/status/1723456789012345677", "Anything else?": "facebook.com/profile.php?id=1723456789012345677"}}
-{"row": 6, "cells": {"Name": "A", "Instagram": "@a", "Link to your best TikTok": "https://www.tiktok.com/@maya/video/7312345678901234567", "Anything else?": "555-123-4567 555-987-6543"}}
-{"row": 7, "cells": {"Name": "B", "Instagram": "@b", "Link to your best TikTok": "https://x.com/maya/status/1798765432109876543", "Anything else?": "2024-06-01 2024-06-15"}}
-{"row": 8, "cells": {"Name": "C", "Instagram": "@c", "Link to your best TikTok": "https://www.tiktok.com/@c/video/7312345678901234560", "Anything else?": "UK64 video great share audience post my"}}
-{"row": 9, "cells": {"Name": "D", "Instagram": "@d", "Anything else?": "FY24 SW19 GT86 goals and reach and audience growth"}}
-{"row": 10, "cells": {"Name": "E", "Instagram": "@e", "Anything else?": "20240601123045"}}
+{"row": 2, "cells": {"Name": "N", "Instagram": "@n", "Link to your best TikTok": "https://www.linkedin.com/posts/maya_launch-activity-7123456789012345674-AbCd", "Anything else?": "https://www.linkedin.com/feed/update/urn:li:activity:7123456789012345674/"}}
+{"row": 3, "cells": {"Name": "L", "Instagram": "@l", "Anything else?": "order PO57 9500 5566 7139 7628 5141 6178 tracking JD018645530809715946"}}
+{"row": 4, "cells": {"Name": "M", "Instagram": "@m", "Anything else?": "temp KK12 3456 7890 1234 567"}}
+{"row": 5, "cells": {"Name": "J", "Instagram": "@j", "Link to your best TikTok": "tiktok.com/@maya/video/7301234567890123459", "Anything else?": "Tracking: 9400 8683 4497 8690 7366 21"}}
+{"row": 6, "cells": {"Name": "K", "Instagram": "@k", "Link to your best TikTok": "x.com/maya/status/1723456789012345677", "Anything else?": "facebook.com/profile.php?id=1723456789012345677"}}
+{"row": 7, "cells": {"Name": "A", "Instagram": "@a", "Link to your best TikTok": "https://www.tiktok.com/@maya/video/7312345678901234567", "Anything else?": "555-123-4567 555-987-6543"}}
+{"row": 8, "cells": {"Name": "B", "Instagram": "@b", "Link to your best TikTok": "https://x.com/maya/status/1798765432109876543", "Anything else?": "2024-06-01 2024-06-15"}}
+{"row": 9, "cells": {"Name": "C", "Instagram": "@c", "Link to your best TikTok": "https://www.tiktok.com/@c/video/7312345678901234560", "Anything else?": "UK64 video great share audience post my"}}
+{"row": 10, "cells": {"Name": "D", "Instagram": "@d", "Anything else?": "FY24 SW19 GT86 goals and reach and audience growth"}}
+{"row": 11, "cells": {"Name": "E", "Instagram": "@e", "Anything else?": "20240601123045"}}
