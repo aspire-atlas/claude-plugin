@@ -17,7 +17,7 @@ path learns about hooks, formats and creators carries to the other.
 
 - From brand memory: the program's deals and the posts each creator owes, saved content review
   findings, the brand's partner hashtags, partners and competitors, and the
-  `ad-reuse:account-map` calibration.
+  `adreuse:account-map` calibration.
 - From Atlas: each post's caption hashtags and its partnership-ads permission, when held, and past
   `ad-learning` findings for the brand, each tagged with its path.
 - From the launch message: which path or paths to run (default both).

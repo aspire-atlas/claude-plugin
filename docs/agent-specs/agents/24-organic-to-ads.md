@@ -71,7 +71,7 @@ Brief does, one question per creator. It writes no other `rights` status: the cr
 (granted, countered or declined) goes to 26 Content Library and Rights to record. On "Page only" it
 publishes and saves nothing, and an unattended run saves nothing. The running `atlas-ad-reuse` agent
 drafts nothing; until the build, licence requests go through `atlas-content-sourcing`. The account
-map is proposed in the result packet (gate `approve-account-map`), and, when the person confirms it, saved by the main thread as the `ad-reuse:account-map` calibration after the same batch
+map is proposed in the result packet (gate `approve-account-map`), and, when the person confirms it, saved by the main thread as the `adreuse:account-map` calibration after the same batch
 question, or superseded to add new accounts; a saved map is followed, never proposed again. Each `action_item` carries a `snapshot` of the score's components and counts at the run,
 so 25 Partnership Ads Launcher's learning compares results with what was known before launch.
 Each `action_item` also carries its `path` (`found` or `briefed`) and the rule that placed it; the

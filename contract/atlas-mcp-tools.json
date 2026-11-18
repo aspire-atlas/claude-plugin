@@ -1,6 +1,7 @@
 {
   "generated": "2026-11-10",
   "source": "apps/api/lib/mcp/tools-list.golden.json",
+  "calibrationKeyPattern": "^[a-z0-9]+:[a-z0-9-]{1,48}$",
   "surfaces": {
     "/mcp": {
       "add_hashtags": {
