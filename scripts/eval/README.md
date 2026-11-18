@@ -1,6 +1,6 @@
 # Page eval: rerun the example questions and grade each new page
 
-`bun run eval:pages` asks the seven example questions through the plugin in this checkout, keeps the page each
+`bun run eval:pages` asks the questions in `questions.json` through the plugin in this checkout, keeps the page each
 one publishes, and prints one table per question: every check as pass or fail for the new page, beside the same
 check run on the approved page. It is how a change to a rule is tested (see `CONTRIBUTING.md`).
 
@@ -13,7 +13,7 @@ It runs on a developer's machine, and in CI on every pull request that changes a
 - [Commands](#commands)
 - [What one run does](#what-one-run-does)
 - [The table](#the-table)
-- [The repeat pair](#the-repeat-pair)
+- [Client cases and their assertions](#client-cases-and-their-assertions)
 - [What is committed and what is not](#what-is-committed-and-what-is-not)
 - [What a rerun may and may not do](#what-a-rerun-may-and-may-not-do)
 - [In CI](#in-ci)
@@ -27,7 +27,7 @@ It runs on a developer's machine, and in CI on every pull request that changes a
   pages from their links. One without it (a local terminal) still works: the flow saves its page as a
   file, the table shows no link, and each approved page must be given as a file, either `approvedFile`
   in `local.json` or a copy at `scripts/eval/.cache/approved/<code>.html`.
-- A test organization on the dev Atlas server, with a brand profile for each brand behind the seven
+- A test organization on the dev Atlas server, with a brand profile for each brand behind the
   questions (a brand may answer more than one). Each profile needs enough data for its question: either the
   brand's own data held in the organization, or its public handles and its competitors indexed. Write which
   one each brand has in the `data` field of `local.json`, so a thin page can be told from a thin data set.
@@ -54,14 +54,15 @@ It runs on a developer's machine, and in CI on every pull request that changes a
   a newly added question runs nowhere, CI included, until its brand and approved page are added to
   `local.json` and the `EVAL_LOCAL_JSON` secret. The run's `results.json`, the table, the PR comment
   and the nightly Slack post all name it as skipped, and a run with nothing left to run posts a skip
-  and passes. Once a baseline holds a question's approved results, a missing brand stops the run
-  instead, so a lost or mistyped entry cannot quietly drop a question that gates pull requests.
+  and passes. Once a baseline holds a question's approved results, or one of its assertions has landed,
+  a missing brand stops the run instead, so a lost or mistyped entry cannot quietly drop a question that gates pull requests.
 
 ## Commands
 
 ```bash
-bun run eval:pages                         # all seven questions
-bun run eval:pages --only O3               # one question (I4, I11, O1, O2, O3, I1, P1)
+bun run eval:pages                         # every question in questions.json
+bun run eval:pages --only O3               # one question, by its code in questions.json
+bun run eval:pages --fixtures              # the client cases' assertions on their fixture pages (no Atlas, no local.json)
 bun run eval:pages --baseline              # run, then store the results under baselines/<today>/
 bun run eval:pages --baseline 2026-11-12 --from latest   # store an earlier run without running again
 bun run eval:pages --compare 2026-11-10 latest           # what changed between two runs
@@ -109,9 +110,9 @@ predates the rule; the table shows that, and `--compare` marks a changed approve
 
 | Column | What it holds |
 | ------ | ------------- |
-| Check | E1 to E8 from the Evals tab, then every R check the reader standard has |
+| Check | A client case's own assertions, each with its ticket, then E1 to E8 from the Evals tab, then every R check the reader standard has |
 | New page, Approved page | `pass`, `fail`, `n/a`, or `–` when the check did not run |
-| Sets the bar | `yes` when the approved page was named as the example for a change this check covers |
+| Sets the bar | `yes` when the approved page was named as the example for a change this check covers, and on every assertion |
 
 An R check that the script covers passes only when the script and the grade both pass it; a note under the
 table names any check where the two disagree. Under each table: the size of the main conversation in tokens
@@ -168,40 +169,69 @@ no Must fix, and its reason lists each Must with its row and how deep the first 
 harness renders the page with `scripts/render-page.ts` and passes the reviewer that folder, so it needs
 Playwright with Chromium on the machine; without it the review judges by source order and says so in the reason.
 
-## The repeat pair
+## Client cases and their assertions
 
-`--repeat` asks each question in `repeat.codes` (`questions.json`) a second time, in the same session, once its
-first page is kept. It proves item S4 of `docs/STANDARD.md`: a repeat run follows up on the last one. The first
-run ends on its close-out, which may ask whether to keep its open items, so the harness answers that first with
-`repeat.closeOutReply` (keep nothing, start nothing else); the second ask then arrives as a new request. It
-answers what the second run asks with `repeat.reply` (every open item is still open; save nothing).
-Two checks, shown as one line under the question's table:
+A client case is a question whose first reviewed page drew a wrong conclusion. It is in `questions.json` like
+any other question, with a list of `assertions`: each names one behaviour that page got wrong, in words a
+judge can check on any brand's page, and the ticket that fixes it. `docs/STANDARD.md`, "Adding a client
+example", says how a new example joins a case.
 
-| Check | Judged by | Passes when |
-| ----- | --------- | ----------- |
-| FU1 Repeat run asks what changed | Script, from the second run's first turn | A line of the main thread's own message starts with "Last time (" and no question comes before it, a question is headed "Since then", and no question is headed Heard, Scope, Save, Remember, Storyline, Role or Relationship. On a host that refuses the question tool, everything the main thread wrote in the turn is read: it must ask what has happened since and use none of the setup questions' phrases. A file the main thread read does not count as its message |
-| FU2 Repeat page leads with what changed | A judge, as its own session with both pages and nothing from the runs | The second page's first section says what changed since the first, then carries over the items still open |
+| Code | The page | Asked as | Assertions |
+| ---- | -------- | -------- | ---------- |
+| CR1 | A competitive read where shop posts and untagged mentions changed the finding | The plugin's O3 question | A1 to A3 |
+| AR1 | An affiliate report | A question with no code of its own | A1 to A5 |
 
-The pair has no approved result to compare with, so a `fail` on either fails the run, as C5 does. A second run
-that sends no message fails FU1, and one that publishes no page fails FU2. The line also gives the second run's
-billed tokens and compactions; the sizes under the table stay the first run's, so a run with the pair compares
-with one without. The check ids and names come from `repeat.checks` in `questions.json`, and `bun run eval:test`
-fails when a header FU1 looks for is no longer one the contract names. The reasons are kept in the run's
-`repeat.json`, the close-out answer as `close-out-turn.jsonl` and the second run's turns as
-`repeat-turn-<n>.jsonl`, never in a baseline or a comment. CI does not pass `--repeat`: run it by hand for a
-change to the repeat-run rules (`references/repeat-run.md` or `page-standard/follow-up.md`).
+**How an assertion is judged.** A separate session reads the page and each assertion's `passesWhen` and
+`failsWhen`, and nothing from the run that built it. Its `examples` are the client examples it covers, with
+brands as placeholders. `whenNamed` adds an expected figure ("the count for {competitor} is at least
+{competitorPosts} posts") only when `local.json` gives every name in it under the question's `values`, since
+those names are customer details.
 
-A rerun refuses every Atlas write, so the second run cannot read a last run kept in Atlas. It follows up from
-the session's own first run, which the same rules cover. The record kept in Atlas is not exercised here.
+**How an assertion gates.** `landed` is `false` until the assertion's ticket merges:
+
+| `landed` | A failure on the new page |
+| -------- | ------------------------- |
+| `false` | Expected. The table lists it under "Waiting on a ticket", and it blocks nothing |
+| `true` | A regression: the wrong reading came back. It fails the job with no approved page needed |
+
+A landed assertion must pass. The judge answers PASS or FAIL for an assertion and has no N/A, so a page that
+drops the part an assertion is about fails it. An assertion the judge returned no row for, or answered N/A
+for anyway, also counts as a regression once it has landed: either would let the wrong reading back unseen.
+
+The pull request that makes an assertion pass sets its `landed` to `true`, so the case goes green one ticket
+at a time. An assertion that passes while still `false` is named under the table, so the flag is not forgotten.
+
+**The fixture pages.** A rerun on the dev server can only show what the test profile's data holds, and a
+profile with no shop posts cannot show a shop-post finding. So each case also has two short pages in
+`scripts/fixtures/eval-cases/`: one with the wrong reading and one with the corrected one, with invented
+brands. `bun run eval:pages --fixtures` judges the assertions on both and fails unless every assertion fails
+on the first and passes on the second. Run it after changing an assertion's wording or adding an example.
+CI runs it on every pull request that changes a file listed in `fixturePaths` in `questions.json` (the
+question set, the fixture pages and the harness files that judge them), and nightly; the `skip-eval` label
+does not skip it. A new file the fixture check depends on goes in that list. A case's `fixtures.values` stands in for `local.json`'s
+`values` there, with invented names, so a `whenNamed` figure is judged on the fixture pages too.
+
+**What a case needs to rerun.** A brand in `local.json` whose profile holds the kind of data the case is
+about: for CR1, competitors with creator posts that sell through TikTok Shop and posts that name a brand
+without tagging it; for AR1, a saved influencer program with affiliate terms. AR1 also needs a sales export,
+because the dev server has no store connected. Name it under the question's `files` in `local.json`, by
+`path` on a developer's machine or as `text` inside the `EVAL_LOCAL_JSON` secret. A relative `path` is read
+from `scripts/eval/`, like `approvedFile`, whichever folder the command runs from. The harness checks every
+question's files before the first question runs, and stops there when one has no name, has no text and no path to a
+file that exists (a folder does not count), or when two would be saved under the same name, ignoring case. It then writes each into the run's own folder and
+tells the flow it is there. Until `local.json` names a brand, a case is skipped like
+any new question. Once one of its assertions has landed, a missing brand stops the run instead, as it does for
+a question with approved results: the case gates pull requests from then on.
 
 ## What is committed and what is not
 
 | Path | Committed | Holds |
 | ---- | --------- | ----- |
-| `baselines/<date>/results.json`, `table.md` | Yes | Results, the chat counts, token counts, rounds, the plugin commit, the models. No page, link, brand, reason text, or chat text |
-| `.runs/<time>/` | No | Each turn's transcript, both pages, each check's reasons, the chat messages (`chat.json`), the repeat pair's second page and reasons (`repeat/`, `repeat.json`), `results.json`, `table.md` |
+| `baselines/<date>/results.json`, `table.md` | Yes | Results, each assertion's name and ticket, the chat counts, token counts, rounds, the plugin commit, the models. No page, link, brand, reason text, or chat text |
+| `.runs/<time>/` | No | Each turn's transcript, both pages, each check's reasons, the chat messages (`chat.json`), `results.json`, `table.md` |
 | `.cache/approved/` | No | The copy of each approved page |
-| `local.json` | No | Brands, links, the dev server address |
+| `local.json` | No | Brands, links, the dev server address, a case's competitor names and its input files |
+| `scripts/fixtures/eval-cases/` | Yes | The cases' fixture pages, with invented brands and no customer data |
 
 Paste `.runs/<time>/table.md` into the pull request. Its page links open only for people in the organization.
 
@@ -226,16 +256,16 @@ The `eval` job in `.github/workflows/validate.yml` runs after the static checks 
   `plugins/aspire/skills/aspire/SKILL.md` and `plugins/aspire/skills/page-standard/`. A changed file that a
   question lists in its `paths` (`questions.json`) reruns that question. A changed file in `sharedPaths`
   (one every flow reads, such as the reader standard or anything under the page standard; an entry ending in
-  `/` covers its folder) reruns all seven. Anything else reruns nothing, and the job passes; when the PR
+  `/` covers its folder) reruns every question. Anything else reruns nothing, and the job passes; when the PR
   already has an eval comment, it is edited to say nothing was rerun.
 - It runs `bun run eval:pages --only <codes> --approved-from newest --title-prefix "CI eval" --cleanup`. The
   title prefix is removed from the new page before it is graded, so it cannot fail a check.
 - It posts the table as one PR comment, edited in place on later pushes, and in the job summary. The comment
   opens with the regressions, then the table for each question, with the transcript size, the confirmation
   rounds and the page link (none when the run saved the page as a file).
-- It fails when a check the approved page passes now fails on the new page (a **regression**), or when C5
-  fails (the setup reply, the storyline check-in or the close-out has an arrow, a "vs" or a code), and only
-  then. A question that published no page regresses on every check its approved page passes. A check that
+- It fails when a check the approved page passes now fails on the new page (a **regression**), when an
+  assertion does not pass after its ticket landed, or when C5 fails (the setup reply, the storyline check-in or the
+  close-out has an arrow, a "vs" or a code), and only then. A question that published no page regresses on every check its approved page passes. A check that
   did not run, or one the approved page fails too, never fails the job. It also fails when the run stopped
   before any question finished, since nothing was checked, and the comment says so.
 - The `skip-eval` label skips the rerun. The PR body says why on a line `skip-eval: <reason>`; the job posts
@@ -243,7 +273,7 @@ The `eval` job in `.github/workflows/validate.yml` runs after the static checks 
   Adding the label does not start a run: push again, or use **Re-run jobs** on the eval job, which reads the
   labels and body as they are then. A push cancels the eval still running for the PR.
 
-**Nightly** at 07:17 UTC it reruns all seven questions on `develop` and posts one line per question to the Atlas
+**Nightly** at 07:17 UTC it reruns every question on `develop` and posts one line per question to the Atlas
 engineering Slack channel, with any regression named. A schedule runs from `main`'s copy of the workflow, so
 the nightly run starts once this job is released to `main`. `workflow_dispatch` runs the same thing by hand.
 
@@ -273,14 +303,15 @@ when the run ends, so the comment's link stops opening after the job finishes.
 
 | File | What it is |
 | ---- | ---------- |
-| `questions.json` | The seven questions: code, reader, the ask, and the changes each example sets the bar for |
+| `questions.json` | The questions: code, reader, the ask, the changes each example sets the bar for, and a client case's assertions |
 | `e-checks.json` | The eight E-checks, copied from the Evals tab, with who judges each |
 | `local.example.json` | The shape of `local.json` |
 | `run.ts` | The command |
-| `ci.ts` | CI: which questions a change reruns, the PR comment, the nightly Slack message |
+| `ci.ts` | CI: which questions a change reruns, whether it calls for the fixture check, the PR comment, the nightly Slack message |
 | `post-comment.sh` | CI: posts the comment, or edits the one already on the PR |
 | `lib.ts`, `lib.test.ts` | Reading a transcript, the table, baselines, compare, and their tests |
 | `baselines/` | One folder per stored run |
+| `../fixtures/eval-cases/` | Each client case's two fixture pages |
 
 ## Limits
 
@@ -289,5 +320,7 @@ when the run ends, so the comment's link stops opening after the job finishes.
 - E3 and R7 are judged on the page alone: the harness does not hand the run's raw data to the graders.
 - The judge's calls are Claude's judgment. They earn trust as they match the reviewers' own calls on the
   same pages; until then a pass here is evidence, not a sign-off.
-- One run of seven questions is seven full flows and twenty-eight grading sessions. Use `--only` while iterating.
+- A run is one full flow per question and four grading sessions per page, five for a client case. Use `--only` while iterating.
+- An assertion is judged on the page alone, like E3: the judge cannot see a post the page left out. `whenNamed`
+  is the one place a case can state a figure the page must reach.
   CI reruns only the questions a change touches, and with `--approved-from` grades only the new page.

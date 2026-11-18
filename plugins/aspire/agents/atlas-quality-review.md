@@ -27,7 +27,7 @@ Read these before starting:
 - `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/quality-review.md`: how to read the target, which
   checks apply, the rubric, severity and verdict, the writing rules, the page, your output, grade
   mode, and the review log.
-- `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/reader-standard.md`: the R1 to R14 checks for
+- `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/reader-standard.md`: the R1 to R15 checks for
   **4.14**.
 - `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md`: check **4.12**, and your
   own page's header and footer.
@@ -80,7 +80,7 @@ question was asked before you started, and anything still open goes in your outp
 **Grade mode** (`mode: grade`): read the target, run the checks `checks` names (**9**), build no
 page, write no log row, and return only the `quality_review_grade` JSON block and the audit trail.
 With `checks: english` it is the English read every page gets before it publishes (**9.1**): read
-`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/english-rules.md` for its seven checks, take
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/english-rules.md` for its eight checks, take
 only `target`, `reader`, `question`, and `run`, ignore anything else the launch carries, read only
 the text the page check script's `--text` prints, call no Atlas tool (`report_checkpoint` aside),
 and return only the `english_read` JSON block and the audit trail. It runs unattended too.

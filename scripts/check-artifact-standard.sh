@@ -161,13 +161,16 @@ else
     awk '/^<!-- page-check -->$/{f=1;next} /^<!-- \/page-check -->$/{f=0} f' "$PC" | sed '1d;$d' > "$tmp/page_check.py"
     [ -s "$tmp/page_check.py" ] || err "$PC has no <!-- page-check --> script"
     grep -qF 'skills/page-standard/page-check.md' "$PS" || err "$PS does not link skills/page-standard/page-check.md"
-    # Each fixture prints exactly six results and no error: a pass*.html page fails nothing, and a
-    # fail-rN*.html page fails RN and nothing else. Exit 2 means the script could not read the page.
+    # Each fixture prints one result per scripted check (as many as pass.html prints) and no error:
+    # a pass*.html page fails nothing, and a fail-rN*.html page fails RN and nothing else. Exit 2
+    # means the script could not read the page.
+    n=$(python3 -I "$tmp/page_check.py" "$FX/pass.html" 2>/dev/null | grep -c '"check": "R' || true)
+    [ "$n" -gt 0 ] || err "page check printed no result for $FX/pass.html"
     for f in "$FX"/*.html; do
       [ -f "$f" ] || continue
       name=${f##*/}
       out=$(python3 -I "$tmp/page_check.py" "$f" 2>&1) && code=0 || code=$?
-      [ "$code" -ne 2 ] && [ "$(grep -c '"check": "R' <<< "$out")" -eq 6 ] && ! grep -q Traceback <<< "$out" ||
+      [ "$code" -ne 2 ] && [ "$(grep -c '"check": "R' <<< "$out")" -eq "$n" ] && ! grep -q Traceback <<< "$out" ||
         { err "page check did not run cleanly on $f (exit $code): $out"; continue; }
       failed=$(grep -o '"check": "R[0-9]*", "name": "[^"]*", "result": "fail"' <<< "$out" | sed -E 's/^"check": "(R[0-9]+)".*/\1/' | tr '\n' ' ' || true)
       case $name in
@@ -185,6 +188,35 @@ else
     out=$(python3 -I "$tmp/page_check.py" "$tmp/markup.html" 2>&1) || true
     grep -q '"check": "R14", "name": "Data freshness", "result": "pass"' <<< "$out" ||
       err "the markup example in $PS (section 5) does not pass R14: $(grep '"R14"' <<< "$out")"
+
+    # The like-for-like check's two numbers are set once, in comparisons.md, and the script holds the same.
+    CM=$P/skills/page-standard/comparisons.md
+    if [ ! -f "$CM" ]; then
+      err "$CM is missing"
+    else
+      grep -qF 'comparisons.md' "$PS" || err "$PS does not link comparisons.md"
+      line=$(sed -nE 's/^<!-- directional-max: ([0-9]+); in-line-points: ([0-9]+) -->$/\1 \2/p' "$CM")
+      have="$(sed -nE 's/^DIRECTIONAL_MAX = ([0-9]+)$/\1/p' "$tmp/page_check.py") $(sed -nE 's/^IN_LINE_POINTS = ([0-9]+)$/\1/p' "$tmp/page_check.py")"
+      [ -n "$line" ] && [ "$line" = "$have" ] ||
+        err "$PC's DIRECTIONAL_MAX and IN_LINE_POINTS ($have) differ from $CM's directional-max line (${line:-none})"
+      # comparisons.md is the only file that states either number. Elsewhere, a line about the
+      # directional mark or a share in line with its group points there instead of naming a
+      # number, and no line gives the directional line's number as a post threshold.
+      if [ -n "$line" ]; then
+        max=${line% *}
+        th='[0-9]+ (posts )?or fewer|[0-9]+ or fewer posts|(fewer than|less than|under|below|more than) [0-9]+ posts|[0-9]+ posts minimum|within [0-9]+ points'
+        own="$max (posts )?or fewer|$max or fewer posts|(fewer than|less than|under|below|more than) $max posts|$max posts minimum"
+        while IFS= read -r hit; do
+          [ -n "$hit" ] && err "${hit%%:*}:$(cut -d: -f2 <<< "$hit") restates a like-for-like number; point to $CM instead"
+        done < <(grep -rniE "$th" plugins/*/skills plugins/*/agents docs/STANDARD.md .github/pull_request_template.md --include='*.md' 2>/dev/null |
+          grep -v "^$CM:" | grep -iE "directional|in line with|^[^:]+:[0-9]+:.*($own)" || true)
+      fi
+      # The markup example in comparisons.md is what agents copy, so it must pass R15.
+      awk '/^```html$/{g=1;next} g&&/^```$/{exit} g' "$CM" > "$tmp/compare.html"
+      out=$(python3 -I "$tmp/page_check.py" "$tmp/compare.html" 2>&1) || true
+      grep -q '"check": "R15", "name": "Like for like", "result": "pass"' <<< "$out" ||
+        err "the markup example in $CM does not pass R15: $(grep '"R15"' <<< "$out")"
+    fi
 
     # R13 checks the metrics the page standard's required-metrics table names, code by code: the
     # table's Codes and On every cited post columns equal the script's REQUIRED_ROWS.
@@ -226,7 +258,7 @@ print("ok" if a and a == b else "table %s; script %s" % (sorted(set(a) - set(b))
         echo '<p>Internal use only. Not for public publishing.</p></footer></body></html>'
       } > "$tmp/blocks.html"
       out=$(python3 -I "$tmp/page_check.py" "$tmp/blocks.html" 2>&1) && code=0 || code=$?
-      [ "$code" -eq 0 ] && [ "$(grep -c '"result": "pass"' <<< "$out")" -eq 6 ] ||
+      [ "$code" -eq 0 ] && [ "$(grep -c '"result": "pass"' <<< "$out")" -eq "$n" ] ||
         err "a page built from every block in $BL does not pass the page check (exit $code): $out"
       ran="$ran, and a page built from every block passes it"
     fi
