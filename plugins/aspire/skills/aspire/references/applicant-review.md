@@ -496,10 +496,13 @@ counts a bio line: a lead that the posts confirm or contradict.
   earns at most half of what that evidence would give the component; contradicted by the posts,
   it earns nothing and the contradiction is a reason on the card.
 - A response that says the applicant does **not** meet a criterion ("he is not overweight", "we
-  don't live in the US") is a miss on that component: it earns nothing, and the call follows the
-  fit score with that miss in it. Only posts that clearly show otherwise (the dog visibly overweight
-  in recent posts) restore the points, and then the card names both. Its Maybe question, when the
-  call is a Maybe, asks them to confirm it ("Confirm the dog is overweight: they said 'he is not
+  don't live in the US") is a miss on that component: it earns nothing. When the criteria word
+  that criterion as a must ("must", "has to", "only", or a "not" the creator has to meet, such as
+  "the dog must be overweight"), the response also caps the call at Maybe (**The recommendation**,
+  rule 4): a strong account never outscores the applicant's own word that they fail a must, and a
+  fit score Reject stays a Reject. Only posts that clearly show otherwise (the dog visibly
+  overweight in recent posts) restore the points and lift the cap, and then the card names both.
+  Its Maybe question asks them to confirm it ("Confirm the dog is overweight: they said 'he is not
   overweight'").
 - **Topic evidence**, **Engagement quality**, **Cadence and recency**, and **Format match** stay
   from the posts and Atlas's figures only; a stated follower or engagement figure never replaces
@@ -517,7 +520,9 @@ audience fit, confirmed by 3 Reels") and `answer` held to step 6's quoting rule.
 The step gives each applicant its `priorityKeys`, `{signal, boosts, fitScore}`: `signal` is the
 value of the priority signal a `prompt:` rule names (for example "use the dog weight answer as the
 first priority signal" gives the pounds, read as step 2 reads a figure; `null` when the applicant
-gave none), `boosts` the number of `boost:` rules `matched`, and `fitScore` the fit score. They
+gave none; a range gives its low end, so "10-15" gives 10, the reading that never ranks an
+applicant above what they are sure of), `boosts` the number of `boost:` rules `matched`, and
+`fitScore` the fit score. They
 are the applicant's own, so they never change with who else is on the list.
 
 The order comes after every call is made, from the keys, never from a rank worked out per
@@ -588,5 +593,6 @@ stop: How many pounds overweight is your dog? < 3
 | J | Yes; "10-15" | Fit 66 | **Maybe** on fit: the boost is `unclear` (10 is not over 10, 15 is), so it boosts nothing |
 | K | Yes; "Dixie 8-10, Sky 10-15" | Fit 66 | **Maybe** on fit: the weight is `unclear` (two figures), quoted in the evidence for the team |
 | L | Yes; "Not overweight." | Fit 41 once audience fit counts the answer as a miss | **Reject** on fit: "Says the dog is not overweight; no recent post shows otherwise" |
+| L2 | Yes; "he is not overweight" | Fit 74, the dog in most posts | **Maybe** (rule 4): "the dog must be overweight" is a must, and their own answer says it is not met. Maybe question "Confirm the dog is overweight: they said 'he is not overweight'" |
 | M | Yes; "2-8" | Fit 74 | **Approve**: the `< 3` stop is `unclear` (2 is under 3, 8 is not), so it never rejects |
 | N | Yes; "4 kg" | Fit 72 | **Approve** on fit: 4 kg is 8.8 lb, not over 10, so no boost; the `< 3` stop is `not-matched` |

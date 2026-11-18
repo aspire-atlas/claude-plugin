@@ -656,7 +656,7 @@ In this order; the first rule that applies decides, and the page names it:
    days → **Can't vet**, with the reason. Never reject a creator for missing data.
 4. **Safety caps.** Any other Fail, a `flag` or `escalate` red line, or two or more Flags →
    at most **Maybe**. In an applicant review run, so does a `required:` form rule that is not
-   met.
+   met, or an application answer saying the applicant fails a criterion worded as a must.
 5. **Fit score** against `vetting:thresholds` (default 70 and 50): **Approve** at or above
    the approve line, **Maybe** at or above the maybe line, **Reject** under it. In a creator-ads
    lane this is the score without Budget vs target (**Creator-ads lanes**). In an applicant review
