@@ -185,9 +185,11 @@ team added one. When the connector is not in the session or can't open the Sheet
 line and offer sources 1 and 2; never ask the user to add a connector. Match rows on the Aspire
 applicant id, never on position, because people sort and filter the Sheet. Read each handle like a
 CSV's handle column and normalize it per **Getting the list**, so a row with both handles is
-vetted on each. A row's **account id** is its Instagram account's when it has an Instagram handle
-Atlas holds, else its TikTok account's: every `feedback` finding for the row is written under it,
-and every lookup below matches on it, so a call is never split across two ids.
+vetted on each. A row's **account id** is fixed in step 2 of **Main thread: the run**, before any
+R3 fetch: the `entityId` of the newest `feedback` finding carrying the row's applicant id, when
+there is one, else its Instagram account's when Atlas holds it, else its TikTok account's. Every
+`feedback` finding for the row is written under it and every lookup below matches on it, so a call
+stays on one id even after Atlas starts holding the row's other account.
 
 **What each row becomes**, by its Team call, trimmed and with case ignored:
 
@@ -842,7 +844,9 @@ own, or the one its feedback packet carries.
 **Reading it back.** `search_insights` with a `prefix` filter on
 `detail.account_review.runKey` = `creator-vetting-{profile}`, newest first, paged; the newest
 record per `entityId` wins, and a `feedback` finding outranks a `recommendation` from the same
-run. The newest `feedback` finding per `entityId` is the team's call on that creator.
+run. The newest `feedback` finding per `entityId` is the team's call on that creator. For a review
+Sheet row vetted on two channels, the team's call is under the row's account id (**Reading the
+review Sheet**); the other channel's id holds only its recommendation.
 
 ## The page
 
