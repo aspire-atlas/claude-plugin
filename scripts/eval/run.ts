@@ -200,8 +200,16 @@ async function scripted(page: string, dir: string): Promise<{ results: Record<st
   return { ...parsed, note }
 }
 
-/** Whether an input file's `path` is there. A relative path is read from scripts/eval/, as `approvedFile` is. */
-const inputFileExists = (path: string) => existsSync(resolve(HERE, path))
+/** Whether an input file's `path` is a file that is there. A relative path is read from scripts/eval/, as `approvedFile` is. */
+const inputFileExists = (path: string) => statSync(resolve(HERE, path), { throwIfNoEntry: false })?.isFile() ?? false
+
+type Config = { questions: Question[]; defaultReply: string; changes: Record<string, { checks: string[] }>; sharedPaths?: string[] }
+
+/** questions.json as the harness uses it: every question resolved, so its code and its assertions are always there. */
+function loadConfig(): Config {
+  const config = readJson(join(HERE, 'questions.json'))
+  return { ...config, questions: config.questions.map(resolveQuestion) }
+}
 
 /** The review's `question:` input, left out for a flow that has no question code. */
 const questionLine = (question: Question) => (question.question ? [`question: ${question.question}`] : [])
@@ -283,7 +291,14 @@ async function uxReview(page: string, question: Question, dir: string, emptyMcp:
  * `{"<key>": [{"id", "result", "reason"}]}`. Rows with an id that was not asked for are dropped. A row the
  * judge left out stays `not run`, and the note says how many came back.
  */
-async function judgeRows(system: string, prompt: string, key: string, ids: string[], what: string, dir: string, log: string, emptyMcp: string, options: Options): Promise<{ results: Record<string, Result>; reasons: Record<string, string>; note: string | null }> {
+type JudgeCall = {
+  system: string; prompt: string
+  /** The key of the reply's JSON list, the ids asked for, and what the note calls them ("E-checks"). */
+  key: string; ids: string[]; what: string
+  dir: string; log: string
+}
+
+async function judgeRows({ system, prompt, key, ids, what, dir, log }: JudgeCall, emptyMcp: string, options: Options): Promise<{ results: Record<string, Result>; reasons: Record<string, string>; note: string | null }> {
   const args = [
     '--system-prompt', system, '--strict-mcp-config', '--mcp-config', emptyMcp, '--disable-slash-commands',
     '--tools', 'Read', '--allowedTools', 'Read', ...(options.judgeModel ? ['--model', options.judgeModel] : []),
@@ -323,8 +338,8 @@ async function judge(page: string, question: Question, approvedPage: string | nu
       : 'No approved example is given for this question, so judge E8 on the page alone: does it do one job, with only what this reader needs.',
     'Read the whole page with the Read tool (in parts when it is long), then reply.',
   ].join('\n')
-  const { results: e, reasons, note } = await judgeRows(system, prompt, 'e_checks', mine.map(check => check.id), 'E-checks', dir, 'judge.jsonl', emptyMcp, options)
-  return { e, reasons, note }
+  const { results: e, ...rest } = await judgeRows({ system, prompt, key: 'e_checks', ids: mine.map(check => check.id), what: 'E-checks', dir, log: 'judge.jsonl' }, emptyMcp, options)
+  return { e, ...rest }
 }
 
 /**
@@ -352,7 +367,7 @@ async function assert(page: string, question: Question, values: Record<string, s
     `The page to check: ${page}`,
     'Read the whole page with the Read tool (in parts when it is long), then reply.',
   ].join('\n')
-  const judged = await judgeRows(system, prompt, 'assertions', mine.map(a => a.id), 'assertions', dir, 'assertions.jsonl', emptyMcp, options)
+  const judged = await judgeRows({ system, prompt, key: 'assertions', ids: mine.map(a => a.id), what: 'assertions', dir, log: 'assertions.jsonl' }, emptyMcp, options)
   // Keyed apart from the E and R reasons: an assertion id is only unique inside its case.
   const reasons = Object.fromEntries(Object.entries(judged.reasons).map(([id, reason]) => [`assertion ${id}`, reason]))
   return { asserted: judged.results, reasons, note: judged.note }
@@ -480,9 +495,11 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
   let model: string | null = null
   // A case's input files (a sales export) are customer data: they come from local.json and are written into the
   // run's own folder, which is never committed or uploaded.
-  // main checked every entry before the first question ran, so nothing here can stop the run part way.
+  // main checked every entry before the first question ran. A file that has gone since then is thrown, not
+  // exited on, so the run still writes its results and cleans up.
   const files = local.questions?.[question.code]?.files ?? []
-  const { names } = planInputFiles(question.code, files, inputFileExists)
+  const { names, problems: badFiles } = planInputFiles(question.code, files, inputFileExists)
+  if (badFiles.length) throw new Error(`eval:pages: ${badFiles.join('. ')}`)
   files.forEach((file, i) => {
     if (typeof file.text === 'string') writeFileSync(join(work, names[i]), file.text)
     else copyFileSync(resolve(HERE, file.path!), join(work, names[i]))
@@ -640,8 +657,7 @@ function storeBaseline(results: RunResults, date: string, eChecks: CheckDef[], n
 
 async function main() {
   const options = parseArgs(process.argv.slice(2))
-  const config = readJson(join(HERE, 'questions.json'))
-  config.questions = config.questions.map(resolveQuestion)
+  const config = loadConfig()
   const eFile = readJson(join(HERE, 'e-checks.json'))
   const eChecks: any[] = eFile.checks
   const names = checkNames(eChecks)
@@ -762,7 +778,7 @@ async function main() {
   if (options.baseline) storeBaseline(results, options.baseline, eChecks, names)
   // A run fails when a question published no page, its chat broke a countable English rule,
   // or an assertion did not pass after its ticket landed.
-  if (results.questions.some(question => !question.new) || chatFailures(results).length || regressions(results, eChecks).some(r => r.kind === 'assertion')) process.exit(1)
+  if (results.questions.some(question => !question.new) || chatFailures(results, names).length || regressions(results, eChecks, names).some(r => r.kind === 'assertion')) process.exit(1)
 }
 
 /**

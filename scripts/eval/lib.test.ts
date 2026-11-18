@@ -261,14 +261,14 @@ test('a pull request reruns the questions its changed agents and flow files answ
 })
 
 test('only a check the approved page passes and the new page fails is a regression', () => {
-  expect(regressions(run(), E_CHECKS)).toEqual([{ kind: 'page', code: 'I4', id: 'R3', was: 'pass', now: 'fail' }])
+  expect(regressions(run(), E_CHECKS, {})).toEqual([{ kind: 'page', code: 'I4', id: 'R3', was: 'pass', now: 'fail' }])
   // The approved page failing too, or not having run, is not a regression.
   const both = run()
   both.questions[0].approved!.graded.R3 = 'fail'
-  expect(regressions(both, E_CHECKS)).toEqual([])
-  expect(regressions(run({ approved: null }), E_CHECKS)).toEqual([])
+  expect(regressions(both, E_CHECKS, {})).toEqual([])
+  expect(regressions(run({ approved: null }), E_CHECKS, {})).toEqual([])
   // No page at all regresses every check the approved page passes.
-  expect(regressions(run({ new: null }), E_CHECKS).map(r => r.id)).toEqual(['E1', 'R1', 'R3'])
+  expect(regressions(run({ new: null }), E_CHECKS, {}).map(r => r.id)).toEqual(['E1', 'R1', 'R3'])
 })
 
 test('the PR comment carries the marker, the regressions, and the table, and a skip says why', () => {
@@ -285,7 +285,7 @@ test('the PR comment carries the marker, the regressions, and the table, and a s
 })
 
 test('the Slack message names each question and its regressions, and no page link', () => {
-  const text = renderSlack(run(), E_CHECKS, null)
+  const text = renderSlack(run(), E_CHECKS, {}, null)
   expect(text).toContain('1 regression')
   expect(text).toContain('• I4 Holiday creator plan: 2/3 checks pass; regressed R3')
   expect(text).not.toContain('claude.ai')
@@ -317,13 +317,13 @@ test('every report names the skipped questions, and a run with none left posts a
   expect(skippedLine(['O2'])).toBe('Skipped: O2 (no brand in local.json), so it was not graded and cannot regress.')
   const withSkip = { ...run(), skipped: ['O2'] }
   expect(renderComment(withSkip, E_CHECKS, {}, null, null)).toContain('Skipped: O2')
-  expect(renderSlack(withSkip, E_CHECKS, null)).toContain('Skipped: O2')
+  expect(renderSlack(withSkip, E_CHECKS, {}, null)).toContain('Skipped: O2')
   expect(renderRun(withSkip, E_CHECKS, {})).toContain('Skipped: O2')
   const nothing = { ...run(), questions: [], skipped: ['O2'] }
   const comment = renderComment(nothing, E_CHECKS, {}, null, 'https://example.test/run/2')
   expect(comment).toContain('skipped: no question ran. Skipped: O2')
   expect(comment).toContain('Run: https://example.test/run/2')
-  expect(regressions(nothing, E_CHECKS)).toEqual([])
+  expect(regressions(nothing, E_CHECKS, {})).toEqual([])
 })
 
 // One turn of a run: what the main thread asked with AskUserQuestion, and the reply the turn ended on.
@@ -455,8 +455,8 @@ test('a countable rule broken in chat fails the run, with no approved result to 
   failing.questions[0].approved!.graded.R3 = 'fail'
   failing.questions[0].chat = chat
   const names = { [CHAT_CHECK.id]: CHAT_CHECK.name }
-  expect(chatFailures(failing)).toEqual([{ kind: 'chat', code: 'I4', id: 'C5', name: 'Chat wording' }])
-  expect(regressions(failing, E_CHECKS)).toEqual(chatFailures(failing))
+  expect(chatFailures(failing, names)).toEqual([{ kind: 'chat', code: 'I4', id: 'C5', name: 'Chat wording' }])
+  expect(regressions(failing, E_CHECKS, names)).toEqual(chatFailures(failing, names))
   // The chat is a line under the table, not a row of it: it is not a page comparison.
   const table = renderRun(failing, E_CHECKS, names)
   expect(table).not.toContain('| C5')
@@ -466,9 +466,9 @@ test('a countable rule broken in chat fails the run, with no approved result to 
   // A baseline keeps the counts, which hold no chat text; a clean chat never fails.
   expect(forBaseline(failing).questions[0].chat).toEqual(chat)
   failing.questions[0].chat = { result: 'pass', messages: { closeOut: CLEAN } }
-  expect(regressions(failing, E_CHECKS)).toEqual([])
+  expect(regressions(failing, E_CHECKS, {})).toEqual([])
   expect(chatLine(failing.questions[0].chat)).toBe('Chat wording (C5): pass. setup reply not sent; storyline check-in not sent; close-out clean.')
-  expect(regressions(run(), E_CHECKS).map(r => r.id)).toEqual(['R3'])
+  expect(regressions(run(), E_CHECKS, {}).map(r => r.id)).toEqual(['R3'])
   expect(chatLine(noChat())).toBeNull()
 })
 
@@ -539,7 +539,7 @@ test('an expected figure joins an assertion only when local.json names everythin
 
 test('a case shows its assertions first, each with its ticket, and says which still wait on one', () => {
   const results = caseRun()
-  expect(rows(results.questions[0], E_CHECKS, []).slice(0, 2).map(row => [row.id, row.new, row.approved, row.bar])).toEqual([['A1', 'fail', 'not run', true], ['A2', 'pass', 'not run', true]])
+  expect(rows(results.questions[0], E_CHECKS, [], {}).slice(0, 2).map(row => [row.id, row.new, row.approved, row.bar])).toEqual([['A1', 'fail', 'not run', true], ['A2', 'pass', 'not run', true]])
   const table = renderRun(results, E_CHECKS, {})
   expect(table).toContain('| A1 Shop posts are their own group (ASP-5976) | fail | – | yes |')
   expect(table.indexOf('| A1 ')).toBeLessThan(table.indexOf('| E1 '))
@@ -548,8 +548,7 @@ test('a case shows its assertions first, each with its ticket, and says which st
   expect(assertionNotes(caseRun([{ ...SHOP, landed: true }], { A1: 'pass' }).questions[0])).toEqual([])
   // An assertion the judge did not return, or one the page's data cannot show, is never listed as a failure.
   expect(assertionNotes(caseRun([SHOP, MENTIONS], { A2: 'n/a' }).questions[0])).toEqual([
-    'Not judged, so nothing is known about: A1 (ASP-5976).',
-    "Does not apply to this page's data, so it shows nothing yet: A2 (ASP-5977).",
+    'Not judged (the judge returned no row, or an N/A it is told not to give), so nothing is known about: A1 (ASP-5976), A2 (ASP-5977).',
   ])
   expect(aResult(null, 'A1')).toBe('not run')
   expect(assertionRefs([])).toEqual([])
@@ -557,26 +556,26 @@ test('a case shows its assertions first, each with its ticket, and says which st
 })
 
 test('an assertion blocks nothing until its ticket lands, and from then on a failure is a regression', () => {
-  expect(regressions(caseRun(), E_CHECKS)).toEqual([])
+  expect(regressions(caseRun(), E_CHECKS, {})).toEqual([])
   const landed = caseRun([{ ...SHOP, landed: true }, MENTIONS])
-  expect(regressions(landed, E_CHECKS)).toEqual([{ kind: 'assertion', code: 'CR1', id: 'A1', name: SHOP.name, ticket: 'ASP-5976', now: 'fail' }])
+  expect(regressions(landed, E_CHECKS, {})).toEqual([{ kind: 'assertion', code: 'CR1', id: 'A1', name: SHOP.name, ticket: 'ASP-5976', now: 'fail' }])
   const comment = renderComment(landed, E_CHECKS, {}, null, null)
   expect(comment).toContain('- CR1 A1 Shop posts are their own group: ASP-5976 landed, new fail')
-  expect(renderSlack(landed, E_CHECKS, null)).toContain('regressed A1')
+  expect(renderSlack(landed, E_CHECKS, {}, null)).toContain('regressed A1')
   // No page at all brings the wrong reading back as surely as a failing one.
   const noPage = caseRun([{ ...SHOP, landed: true }])
   noPage.questions[0].new = null
-  expect(regressions(noPage, E_CHECKS)).toEqual([{ kind: 'assertion', code: 'CR1', id: 'A1', name: SHOP.name, ticket: 'ASP-5976', now: 'no page' }])
+  expect(regressions(noPage, E_CHECKS, {})).toEqual([{ kind: 'assertion', code: 'CR1', id: 'A1', name: SHOP.name, ticket: 'ASP-5976', now: 'no page' }])
   // A landed assertion must pass. A judge that answers n/a, or returns no row, lets the wrong reading back in unseen.
-  expect(regressions(caseRun([{ ...SHOP, landed: true }], { A1: 'n/a' }), E_CHECKS).map(r => r.kind === 'assertion' && r.now)).toEqual(['n/a'])
+  expect(regressions(caseRun([{ ...SHOP, landed: true }], { A1: 'n/a' }), E_CHECKS, {}).map(r => r.kind === 'assertion' && r.now)).toEqual(['n/a'])
   const unjudged = caseRun([{ ...SHOP, landed: true }], {})
-  expect(regressions(unjudged, E_CHECKS).map(r => r.kind === 'assertion' && r.now)).toEqual(['not run'])
+  expect(regressions(unjudged, E_CHECKS, {}).map(r => r.kind === 'assertion' && r.now)).toEqual(['not run'])
   expect(renderComment(unjudged, E_CHECKS, {}, null, null)).toContain('- CR1 A1 Shop posts are their own group: ASP-5976 landed, new not judged')
-  expect(regressions(caseRun([{ ...SHOP, landed: true }], { A1: 'pass' }), E_CHECKS)).toEqual([])
+  expect(regressions(caseRun([{ ...SHOP, landed: true }], { A1: 'pass' }), E_CHECKS, {})).toEqual([])
   // Before its ticket lands, an assertion regresses only against an approved page that passes it.
   const approved = caseRun()
   approved.questions[0].approved = { ...approved.questions[0].new!, asserted: { A1: 'pass', A2: 'pass' } }
-  expect(regressions(approved, E_CHECKS)).toEqual([{ kind: 'page', code: 'CR1', id: 'A1', name: SHOP.name, was: 'pass', now: 'fail' }])
+  expect(regressions(approved, E_CHECKS, {})).toEqual([{ kind: 'page', code: 'CR1', id: 'A1', name: SHOP.name, was: 'pass', now: 'fail' }])
   expect(renderComment(approved, E_CHECKS, {}, null, null)).toContain('- CR1 A1 Shop posts are their own group: approved pass, new fail')
 })
 
@@ -590,7 +589,7 @@ test('a baseline keeps assertion results, and a compare matches them by id when 
   delete old.questions[0].new.asserted
   expect(normalizeRun(old).questions[0].assertions).toEqual([])
   expect(normalizeRun(old).questions[0].new!.asserted).toEqual({})
-  expect(regressions(normalizeRun(old), E_CHECKS).map(r => r.id)).toEqual(['R3'])
+  expect(regressions(normalizeRun(old), E_CHECKS, {}).map(r => r.id)).toEqual(['R3'])
   const before = caseRun([MENTIONS], { A2: 'pass' })
   const after = caseRun([SHOP, MENTIONS], { A1: 'fail', A2: 'pass' })
   const diff = compareRuns(before, after, E_CHECKS)
@@ -620,10 +619,15 @@ test('a question\'s input files are checked before any question runs: a missing 
   const exists = (path: string) => path === 'exports/sales.csv'
   expect(planInputFiles('AR1', [{ name: 'sales export.csv', path: 'exports/sales.csv' }, { name: 'notes.txt', text: 'a' }], exists))
     .toEqual({ names: ['sales_export.csv', 'notes.txt'], problems: [] })
-  expect(planInputFiles('AR1', [{ name: 'sales.csv', path: 'laptop/only.csv' }], exists).problems).toEqual(['AR1: the file sales.csv has no text and no path that exists'])
+  expect(planInputFiles('AR1', [{ name: 'sales.csv', path: 'laptop/only.csv' }], exists).problems).toEqual(['AR1: the file sales.csv has no text and no path to a file that exists'])
   expect(planInputFiles('AR1', [{ name: 'sales.csv', path: 'exports/sales.csv', text: null as any }], exists).problems).toEqual([])
   expect(planInputFiles('AR1', [{ name: 'sales export.csv', text: 'a' }, { name: 'sales_export.csv', text: 'b' }], exists).problems)
     .toEqual(['AR1: the files sales export.csv and sales_export.csv would both be saved as sales_export.csv'])
+  // Most developers' disks ignore case, so two names that differ only in case are one file there.
+  expect(planInputFiles('AR1', [{ name: 'Sales.csv', text: 'a' }, { name: 'sales.csv', text: 'b' }], exists).problems)
+    .toEqual(['AR1: the files Sales.csv and sales.csv would both be saved as sales.csv'])
+  // An empty name would be written to the run's folder itself.
+  expect(planInputFiles('AR1', [{ name: '', text: 'a' }], exists).problems).toEqual(['AR1: a file has no name'])
 })
 
 test('the fixture check runs for a change to a file questions.json lists, and each listed path exists', () => {
@@ -634,6 +638,16 @@ test('the fixture check runs for a change to a file questions.json lists, and ea
   expect(needed(['scripts/eval/lib.ts'])).toBe(true)
   expect(needed(['plugins/aspire/agents/atlas-market-signal.md', 'README.md'])).toBe(false)
   for (const path of config.fixturePaths) expect(existsSync(join(ROOT, path))).toBe(true)
+  // The list is complete for the harness itself: where the command is defined, the workflow step that runs it,
+  // and every local file run.ts loads, directly or through lib.ts.
+  expect(needed(['package.json'])).toBe(true)
+  expect(needed(['.github/workflows/validate.yml'])).toBe(true)
+  for (const file of ['run.ts', 'lib.ts']) {
+    const source = readFileSync(join(import.meta.dir, file), 'utf8')
+    for (const match of source.matchAll(/from '(\.{1,2}\/[^']+)'/g)) {
+      expect(needed([join('scripts/eval', `${match[1]}.ts`)])).toBe(true)
+    }
+  }
   // Every case's fixture pages sit under a listed path, so a new case's pages cannot go unjudged.
   for (const question of config.questions) for (const role of ['wrong', 'corrected']) if (question.fixtures) expect(needed([question.fixtures[role]])).toBe(true)
 })

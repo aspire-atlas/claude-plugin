@@ -531,7 +531,7 @@ export const aResult = (checks: PageChecks | null, id: string): Result => checks
 export type Row = { id: string; name?: string; new: Result; approved: Result; bar: boolean; assertion?: AssertionRef }
 
 /** A question's rows: its own assertions first, since they are what the case is there to show, then E and R. */
-export function rows(question: QuestionResult, eChecks: CheckDef[], rList: string[], names: Record<string, string> = {}): Row[] {
+export function rows(question: QuestionResult, eChecks: CheckDef[], rList: string[], names: Record<string, string>): Row[] {
   const bar = new Set(question.barChecks)
   return [
     ...question.assertions.map(assertion => ({ id: assertion.id, name: assertion.name, new: aResult(question.new, assertion.id), approved: aResult(question.approved, assertion.id), bar: true, assertion })),
@@ -549,11 +549,11 @@ export function assertionNotes(question: QuestionResult): string[] {
   const open = question.assertions.filter(assertion => !assertion.landed)
   const label = (assertion: AssertionRef) => `${assertion.id} (${assertion.ticket})`
   const got = (result: Result) => open.filter(assertion => aResult(question.new, assertion.id) === result)
-  const [waiting, early, unjudged, notApplied] = [got('fail'), got('pass'), got('not run'), got('n/a')]
+  // The assertion judge is told to answer PASS or FAIL only, so an N/A is no more a result than a missing row.
+  const [waiting, early, unjudged] = [got('fail'), got('pass'), [...got('not run'), ...got('n/a')]]
   return [
     ...(waiting.length ? [`Waiting on a ticket, so not a regression: ${waiting.map(label).join(', ')}.`] : []),
-    ...(unjudged.length ? [`Not judged, so nothing is known about: ${unjudged.map(label).join(', ')}.`] : []),
-    ...(notApplied.length ? [`Does not apply to this page's data, so it shows nothing yet: ${notApplied.map(label).join(', ')}.`] : []),
+    ...(unjudged.length ? [`Not judged (the judge returned no row, or an N/A it is told not to give), so nothing is known about: ${unjudged.map(label).join(', ')}.`] : []),
     ...(early.length ? [`Passes before its ticket is marked as landed: ${early.map(label).join(', ')}. Set "landed" in scripts/eval/questions.json in the ticket's pull request.`] : []),
   ]
 }
@@ -618,8 +618,8 @@ export function compareRuns(before: RunResults, after: RunResults, eChecks: Chec
       continue
     }
     // Matched by id, not by position: a case's assertion list can grow between two runs.
-    const prevRows = new Map(rows(prev, eChecks, rList).map(row => [row.id, row]))
-    const changed = rows(next, eChecks, rList)
+    const prevRows = new Map(rows(prev, eChecks, rList, {}).map(row => [row.id, row]))
+    const changed = rows(next, eChecks, rList, {})
       .map(row => ({ row, was: prevRows.get(row.id) ?? { ...row, new: 'not run' as Result, approved: 'not run' as Result } }))
       .filter(({ row, was }) => row.new !== was.new || row.approved !== was.approved)
     if (changed.length) {
@@ -721,6 +721,9 @@ export const EVAL_PATHS = [
 /** A `sharedPaths` entry ending in "/" covers every file under it. */
 const coveredBy = (path: string, entry: string) => (entry.endsWith('/') ? path.startsWith(entry) : path === entry)
 
+/** True when a changed file is one of `entries`, or sits under one that names a folder. */
+const touches = (changed: string[], entries: string[]): boolean => changed.some(path => entries.some(entry => coveredBy(path, entry)))
+
 export type QuestionPaths = { code: string; paths?: string[] }
 
 /** True when a failure of this question can already block a merge with no approved page: one of its assertions has landed. */
@@ -740,22 +743,24 @@ export function resolveQuestion<Q extends { code: string; question?: string | nu
 }
 
 /** True when a changed file is one the fixture check depends on (`fixturePaths` in questions.json). */
-export const fixturesForChanges = (changed: string[], fixturePaths: string[]): boolean =>
-  changed.some(path => fixturePaths.some(entry => coveredBy(path, entry)))
+export const fixturesForChanges = (changed: string[], fixturePaths: string[]): boolean => touches(changed, fixturePaths)
 
 export type InputFile = { name: string; path?: string; text?: string }
 
 /**
  * The files local.json hands a question, as the run's folder will hold them, and what is wrong with them.
- * `exists` says whether a path is on this machine. Checked for every question before the first one runs, so a
- * bad entry stops the run before any page is published instead of part way through.
+ * `isFile` says whether a path is a file on this machine (a folder is not). Checked for every question before
+ * the first one runs, so a bad entry stops the run before any page is published instead of part way through.
+ * Two names that differ only in case count as the same: most developers' disks would save them as one file.
  */
-export function planInputFiles(code: string, files: InputFile[], exists: (path: string) => boolean): { names: string[]; problems: string[] } {
-  const names = files.map(file => safeFileName(String(file.name)))
+export function planInputFiles(code: string, files: InputFile[], isFile: (path: string) => boolean): { names: string[]; problems: string[] } {
+  const names = files.map(file => safeFileName(String(file.name ?? '')))
+  const folded = names.map(name => name.toLowerCase())
   const problems: string[] = []
   files.forEach((file, i) => {
-    if (names.indexOf(names[i]) !== i) problems.push(`${code}: the files ${files[names.indexOf(names[i])].name} and ${file.name} would both be saved as ${names[i]}`)
-    if (typeof file.text !== 'string' && !(typeof file.path === 'string' && exists(file.path))) problems.push(`${code}: the file ${file.name} has no text and no path that exists`)
+    if (!names[i]) problems.push(`${code}: a file has no name`)
+    else if (folded.indexOf(folded[i]) !== i) problems.push(`${code}: the files ${files[folded.indexOf(folded[i])].name} and ${file.name} would both be saved as ${names[i]}`)
+    if (typeof file.text !== 'string' && !(typeof file.path === 'string' && isFile(file.path))) problems.push(`${code}: the file ${file.name || '(no name)'} has no text and no path to a file that exists`)
   })
   return { names, problems }
 }
@@ -780,7 +785,7 @@ export function fixtureProblems(assertions: AssertionRef[], wrong: Record<string
  */
 export function codesForChanges(changed: string[], questions: QuestionPaths[], sharedPaths: string[]): { watched: string[]; codes: string[] } {
   const watched = changed.filter(path => EVAL_PATHS.some(prefix => path.startsWith(prefix)))
-  if (watched.some(path => sharedPaths.some(entry => coveredBy(path, entry)))) return { watched, codes: questions.map(question => question.code) }
+  if (touches(watched, sharedPaths)) return { watched, codes: questions.map(question => question.code) }
   const codes = questions.filter(question => (question.paths ?? []).some(path => watched.includes(path))).map(question => question.code)
   return { watched, codes }
 }
@@ -795,10 +800,10 @@ export type Regression =
  * The questions whose chat broke a countable English rule. The chat has no approved result to compare with:
  * a broken rule in the run's own chat always counts, and this is the one place that decides it.
  */
-export function chatFailures(results: RunResults): Regression[] {
+export function chatFailures(results: RunResults, names: Record<string, string>): Regression[] {
   return results.questions
     .filter(question => question.chat.result === 'fail')
-    .map(question => ({ kind: 'chat', code: question.code, id: CHAT_CHECK.id, name: CHAT_CHECK.name }))
+    .map(question => ({ kind: 'chat', code: question.code, id: CHAT_CHECK.id, name: names[CHAT_CHECK.id] }))
 }
 
 /**
@@ -809,9 +814,9 @@ export function chatFailures(results: RunResults): Regression[] {
  * result needed. A failure, a judge that answered n/a, and a judge that returned no row all count, since any of
  * them lets the wrong reading back in unseen. One whose ticket has not landed regresses only the usual way,
  * against an approved page that passes it. The chat failures are added after the page checks (chatFailures).
- * `names` gives each regression the name a report prints.
+ * `names` (checkNames) gives each regression the name a report prints.
  */
-export function regressions(results: RunResults, eChecks: CheckDef[], names: Record<string, string> = {}): Regression[] {
+export function regressions(results: RunResults, eChecks: CheckDef[], names: Record<string, string>): Regression[] {
   const rList = rIds(results.questions)
   const found: Regression[] = []
   for (const question of results.questions) {
@@ -826,7 +831,7 @@ export function regressions(results: RunResults, eChecks: CheckDef[], names: Rec
       else if (row.new === 'fail') found.push({ kind: 'page', ...at, was: row.approved, now: row.new })
     }
   }
-  return [...found, ...chatFailures(results)]
+  return [...found, ...chatFailures(results, names)]
 }
 
 /** Marks the one eval comment on a pull request, so later pushes edit it instead of adding another. */
@@ -892,12 +897,12 @@ export function stripTitlePrefix(html: string, prefix: string | null): string {
 }
 
 /** The nightly run's Slack message: one line per question, regressions named. Plain text, no page links. */
-export function renderSlack(results: RunResults, eChecks: CheckDef[], runUrl: string | null): string {
-  const found = regressions(results, eChecks)
+export function renderSlack(results: RunResults, eChecks: CheckDef[], names: Record<string, string>, runUrl: string | null): string {
+  const found = regressions(results, eChecks, names)
   const rList = rIds(results.questions)
   const lines = [`Atlas page eval, nightly on develop (${results.commit.slice(0, 7)}): ${found.length ? `${found.length} regression${found.length === 1 ? '' : 's'}` : 'no regressions'}`]
   for (const question of results.questions) {
-    const all = rows(question, eChecks, rList)
+    const all = rows(question, eChecks, rList, names)
     const passed = all.filter(row => row.new === 'pass').length
     const ran = all.filter(row => row.new !== 'not run').length
     const mine = found.filter(r => r.code === question.code).map(r => r.id)

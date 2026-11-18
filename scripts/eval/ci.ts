@@ -29,16 +29,19 @@ function results(runDir: string): RunResults | null {
 
 const [command, arg, runUrl] = process.argv.slice(2)
 const eChecks = readJson(join(HERE, 'e-checks.json')).checks
-if (command === 'select' && arg) {
+if ((command === 'select' || command === 'fixtures') && arg) {
   const config = readJson(join(HERE, 'questions.json'))
   const changed = readFileSync(arg, 'utf8').split('\n').map(line => line.trim()).filter(Boolean)
-  const { watched, codes } = codesForChanges(changed, config.questions, config.sharedPaths ?? [])
-  console.error(`watched files changed: ${watched.length ? watched.join(', ') : 'none'}`)
-  console.log(codes.join(','))
-} else if (command === 'fixtures' && arg) {
-  // Prints "true" when a changed file is one the fixture check depends on, and nothing otherwise.
-  const changed = readFileSync(arg, 'utf8').split('\n').map(line => line.trim()).filter(Boolean)
-  if (fixturesForChanges(changed, readJson(join(HERE, 'questions.json')).fixturePaths ?? [])) console.log('true')
+  if (command === 'select') {
+    const { watched, codes } = codesForChanges(changed, config.questions, config.sharedPaths ?? [])
+    console.error(`watched files changed: ${watched.length ? watched.join(', ') : 'none'}`)
+    console.log(codes.join(','))
+  } else {
+    // A missing list must stop the job: read as empty, it would turn the fixture check off with no error.
+    if (!Array.isArray(config.fixturePaths)) throw new Error('scripts/eval/questions.json has no fixturePaths list')
+    // Prints "true" when a changed file is one the fixture check depends on, and nothing otherwise.
+    if (fixturesForChanges(changed, config.fixturePaths)) console.log('true')
+  }
 } else if (command === 'comment' && arg) {
   const run = results(arg)
   if (!run) {
@@ -49,14 +52,14 @@ if (command === 'select' && arg) {
   const from = existsSync(join(arg, 'approved-from.txt')) ? readFileSync(join(arg, 'approved-from.txt'), 'utf8').trim() : null
   const source = from && from !== 'none' ? `the baseline of ${from}` : from === 'none' ? null : 'the approved pages, graded in this run'
   process.stdout.write(renderComment(run, eChecks, names(eChecks), source, runUrl ?? null))
-  process.exit(regressions(run, eChecks).length ? 1 : 0)
+  process.exit(regressions(run, eChecks, names(eChecks)).length ? 1 : 0)
 } else if (command === 'skipped' && arg) {
   process.stdout.write(renderSkipped(arg))
 } else if (command === 'slack' && arg) {
   const run = results(arg)
   if (!run) process.exit(2)
-  process.stdout.write(JSON.stringify({ text: renderSlack(run, eChecks, runUrl ?? null) }))
-  process.exit(regressions(run, eChecks).length ? 1 : 0)
+  process.stdout.write(JSON.stringify({ text: renderSlack(run, eChecks, names(eChecks), runUrl ?? null) }))
+  process.exit(regressions(run, eChecks, names(eChecks)).length ? 1 : 0)
 } else {
   console.error('usage: bun scripts/eval/ci.ts select <changed-files> | fixtures <changed-files> | comment <run-dir> [url] | skipped <reason> | slack <run-dir> [url]')
   process.exit(2)

@@ -216,8 +216,8 @@ without tagging it; for AR1, a saved influencer program with affiliate terms. AR
 because the dev server has no store connected. Name it under the question's `files` in `local.json`, by
 `path` on a developer's machine or as `text` inside the `EVAL_LOCAL_JSON` secret. A relative `path` is read
 from `scripts/eval/`, like `approvedFile`, whichever folder the command runs from. The harness checks every
-question's files before the first question runs, and stops there when one has no text and no path that
-exists, or when two would be saved under the same name. It then writes each into the run's own folder and
+question's files before the first question runs, and stops there when one has no name, has no text and no path to a
+file that exists (a folder does not count), or when two would be saved under the same name, ignoring case. It then writes each into the run's own folder and
 tells the flow it is there. Until `local.json` names a brand, a case is skipped like
 any new question. Once one of its assertions has landed, a missing brand stops the run instead, as it does for
 a question with approved results: the case gates pull requests from then on.

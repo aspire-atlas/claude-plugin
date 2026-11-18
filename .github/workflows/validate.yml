@@ -212,7 +212,9 @@ jobs:
           git diff --name-only "origin/$BASE...HEAD" > "$RUNNER_TEMP/changed.txt"
           # The client cases' fixture pages are judged when a file in questions.json's fixturePaths changes. It
           # needs no Atlas and reruns no question, so the skip-eval label does not skip it.
-          echo "fixtures=$(bun scripts/eval/ci.ts fixtures "$RUNNER_TEMP/changed.txt")" >> "$GITHUB_OUTPUT"
+          # Assigned first: a failing command inside echo's own arguments would not stop the step.
+          fixtures=$(bun scripts/eval/ci.ts fixtures "$RUNNER_TEMP/changed.txt")
+          echo "fixtures=$fixtures" >> "$GITHUB_OUTPUT"
           # Labels and body are read now, not from the event, so "Re-run jobs" after adding skip-eval sees it.
           gh api "repos/$GITHUB_REPOSITORY/pulls/$PR" > "$RUNNER_TEMP/pr.json"
           if jq -e '[.labels[].name] | index("skip-eval")' "$RUNNER_TEMP/pr.json" >/dev/null; then
@@ -307,7 +309,7 @@ jobs:
       # Each client case's assertions, judged on its two fixture pages (scripts/eval/README.md, "Client cases and
       # their assertions"). Last, so a failure here never stops the reruns above from being posted.
       - name: The key for the fixture check is missing
-        if: steps.pick.outputs.fixtures == 'true' && env.HAS_KEY != 'true'
+        if: ${{ !cancelled() && steps.pick.outputs.fixtures == 'true' && env.HAS_KEY != 'true' }}
         run: |
           echo "::warning::ANTHROPIC_API_KEY is not set: the client cases' fixture pages were not judged."
 
@@ -317,4 +319,6 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           command -v claude >/dev/null || npm install -g @anthropic-ai/claude-code
+          # Without pipefail the step would take tee's exit status and could never fail.
+          set -o pipefail
           bun run eval:pages --fixtures --out "$RUNNER_TEMP/eval-fixtures" --timeout-min 15 | tee -a "$GITHUB_STEP_SUMMARY"

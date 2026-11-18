@@ -50,9 +50,12 @@
     "plugins/aspire/skills/aspire/references/running-agents.md"
   ],
   "fixturePaths": [
+    "package.json",
+    ".github/workflows/validate.yml",
     "scripts/eval/questions.json",
     "scripts/eval/run.ts",
     "scripts/eval/lib.ts",
+    "scripts/render-page.ts",
     "scripts/fixtures/eval-cases/"
   ],
   "questions": [
