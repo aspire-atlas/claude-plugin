@@ -125,13 +125,17 @@ applicant review; vetting reads them only for the review R2 named (**Applicant r
 The main thread gets the list; the agent never asks for it. The sources, offered in R1:
 
 1. **Upload a CSV export from Aspire** (Recommended). The user attaches the file, or gives its
-   path. Read it with the `Read` tool. Find the handle columns by header, case-insensitive:
+   path. Read it with the **Applicant CSV snippet**, which cuts no
+   long line and leaves out payment and tax data; the import reuses its rows. With no Python, read
+   it with the `Read` tool, and an applicant export is not imported. Find the handle columns by header, case-insensitive:
    `instagram`, `instagram handle`, `instagram username`, `tiktok`, `tiktok handle`,
    `tiktok username`, `handle`, `username`, `social`, `profile url`, or a column whose values
-   are profile URLs. Take the name column (`name`, `creator`, `full name`) for display only.
-   An Excel file: ask for it saved as CSV. Show what was found before going on ("42 rows:
-   38 Instagram handles, 11 TikTok handles, 3 rows with no handle") and which columns were
-   used.
+   are profile URLs. Take the name column (`name`, `creator`, `full name`) for display. Keep
+   the file and every other column: when the list is a campaign's applicants (**Applicant
+   reviews**), the contact details and form answers are imported with each applicant (**Applicant
+   review**, **Importing applicants**). An Excel file: ask for it saved as CSV. Show what was found
+   before going on ("42 rows: 38 Instagram handles, 11 TikTok handles, 3 rows with no handle") and
+   which columns were used; an applicant export's full found-and-missing report comes at the import.
 2. **Paste handles.** One per line or comma separated, `@handle`, a bare handle, or a profile
    URL. A bare handle with no network asks the network once for the whole list (Instagram /
    TikTok / Both).
@@ -326,17 +330,29 @@ What the **Creator vetting** section of SKILL.md does around the agent.
 1. **Get the list** per **Getting the list**, from the R1 answer (skip R1 when the user already
    attached a file or pasted handles). Show what was found and the list name.
 2. **Check what Atlas holds**: `search_creators` with a `terms` filter on the username field,
-   per network, at most 100 handles per call. A review Sheet that leaves the list empty goes from
-   here to **Reading the review Sheet**, When the list is empty.
-3. Ask R2 to R5 in `AskUserQuestion` calls of at most four questions, with the **Reading the ask**
-   confirmation (SKILL.md) in the first. R2, R3, and R5 change what the agent reads, so they go with
-   that confirmation, before the storyline draft. On a new page, R4 is answered by the storyline
-   call's Save (**Orchestration contract**, **2**); on a rerun to a page already published, it joins
-   this call when there is room. The confirmation sets the recipient (`team` by default; `brand` for
-   "are these safe"; `campaign` when the list is a launch lineup). Skip R3 when Atlas holds every
-   creator. When the first call would need five questions (the confirmation, a credit cap, R2, R3,
-   and R5), R2 folds into the confirmation's own text the way Scope does ("Vetting against {brand}'s
-   vetting criteria unless you say otherwise"), and a typed answer naming a campaign switches it.
+   one call per network.
+2b. **Vetting setup missing:** when R2 has nothing but {brand}'s vetting criteria to offer, ask V1
+   to V4 now (**Setup**). Otherwise (rule 1 of **R2 options**) ask them only once R2 picks
+   {brand}'s vetting criteria, before 3c; a campaign or a review picked at R2 needs no vetting
+   setup.
+3. Ask R2 to R4 in one `AskUserQuestion` call with the **Reading the ask** confirmation (SKILL.md).
+   R2 and R3 change what the agent reads, so they go with that confirmation, before the storyline
+   draft. On a new page, R4 is answered by the storyline call's Save (**Orchestration contract**,
+   **2**); on a rerun to a page already published, it joins this call when there is room. The
+   confirmation sets the recipient (`team` by default; `brand` for "are these safe"; `campaign` when
+   the list is a launch lineup). Skip R3 when Atlas holds every creator.
+3b. **An applicant review named in R2** is read back per **Applicant review**, **Reading the setup
+   back (screening)**, before the launch: any missing setup question asked first, and its pointers
+   resolved.
+3c. **Ask R5 once, in its own call, after the criteria source is settled** (after R2, and after 3b
+   for a review), still before the storyline draft, so its options come from the source the run
+   uses: a review's saved visual checks (**Applicant review**, **How screening applies a review**), otherwise R5's own options.
+3d. **Import a campaign's applicant export** when R2 named an applicant review and the list came
+   from a CSV: per **Applicant review**, **Importing applicants**, with its own found-and-missing
+   report and confirmation, before the launch. From then on the run's list is this file's
+   applicants as read back (the ids after **Check what Atlas and the Sheet hold**), never the review's other applicants, so the
+   handles R3 approved are the ones looked up. "Not now", or an import that stops, leaves the list
+   as it was.
 4. Launch `atlas-creator-vetting` with: tool prefix, `profile_id`, `profile_slug`, brand handles and
    networks, the normalized list, the list name, slug and source, the criteria source, the approved
    fetches, the R4 answer, `visual_check` (from R5 or the ask: `none`, or `{name, kind: "named" |

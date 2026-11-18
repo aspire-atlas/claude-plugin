@@ -110,8 +110,8 @@ without a connection (**7**), use none of them.
    - **Next up.** Remove `hidden` from the one `<span class="next" hidden>` in the step the route
      continues at: `step-profile` (new org), `step-accounts` (profile only), `step-context`
      (existing, no brand context). On request, leave every one hidden.
-3. The header carries the full animated Aspire Atlas mark (pasted from `assets/aspire-animated.svg`
-   into the template, 40px, with its `role` and `aria-label`, a 1px `var(--border)` outline, never
+3. The header carries the full animated Aspire Atlas mark (the `<svg>` inside the fence in
+   `assets/aspire-animated.svg.md`, pasted into the template, 40px, with its `role` and `aria-label`, a 1px `var(--border)` outline, never
    recolored). **Deliberate variant:** on this page the mark sits at the upper left, at the start of
    the header, because the page has no brand logo to take that corner and was asked for this
    placement; **Artifact standard** puts it at the top right on every other
