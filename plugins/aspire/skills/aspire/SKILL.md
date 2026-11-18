@@ -100,7 +100,7 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 | **PPA pitch**, **Aspire users** | `references/ppa-pitch.md` |
 | **Meta Ads** | `references/meta-ads-tools.md` |
 | **Creator discovery** | `references/creator-discovery.md` |
-| **Creator vetting**; **Applicant review** (a campaign's applicant screening setup) | `references/creator-vetting.md`; `references/applicant-review.md` |
+| **Creator vetting**; **Applicant review** (a campaign's applicant screening setup); **Applicant CSV snippet** (reading an uploaded CSV) | `references/creator-vetting.md`; `references/applicant-review.md`; `references/applicant-csv.md` |
 | **Creator CSV** | `references/creator-csv.md` |
 | **Orchestrator** | `references/orchestrator.md` |
 | **Influencer program** (Program setup, Program manager, Drafts) | `references/program.md` |

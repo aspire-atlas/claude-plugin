@@ -1,0 +1,21 @@
+{"rows": 19, "encoding": "utf-8", "kept": ["Name", "Instagram", "Anything else?"], "left_out": [], "cells_left_out": 6}
+{"next": 0}
+{"row": 2, "cells": {"Name": "A", "Instagram": "@a", "Anything else?": "[left out]/27"}}
+{"row": 3, "cells": {"Name": "B", "Instagram": "@b", "Anything else?": "card [left out]"}}
+{"row": 4, "cells": {"Name": "C", "Instagram": "@c", "Anything else?": "cvv [left out]"}}
+{"row": 5, "cells": {"Name": "D", "Instagram": "@d", "Anything else?": "[left out]/27 and -[left out]"}}
+{"row": 6, "cells": {"Name": "E", "Instagram": "@e", "Anything else?": "[left out]"}}
+{"row": 7, "cells": {"Name": "F", "Instagram": "@f", "Anything else?": "[left out]"}}
+{"row": 8, "cells": {"Name": "G", "Instagram": "@g", "Anything else?": "order 1234567890123 and handle is12abcdefghijk"}}
+{"row": 9, "cells": {"Name": "H", "Instagram": "@h", "Anything else?": "fine"}}
+{"row": 10, "cells": {"Name": "I", "Instagram": "@i", "Anything else?": "ok"}}
+{"row": 11, "cells": {"Name": "Z0", "Instagram": "@z0", "Anything else?": "no"}}
+{"row": 12, "cells": {"Name": "Z1", "Instagram": "@z1", "Anything else?": "no"}}
+{"row": 13, "cells": {"Name": "Z2", "Instagram": "@z2", "Anything else?": "no"}}
+{"row": 14, "cells": {"Name": "Z3", "Instagram": "@z3", "Anything else?": "no"}}
+{"row": 15, "cells": {"Name": "Z4", "Instagram": "@z4", "Anything else?": "no"}}
+{"row": 16, "cells": {"Name": "Z5", "Instagram": "@z5", "Anything else?": "no"}}
+{"row": 17, "cells": {"Name": "Z6", "Instagram": "@z6", "Anything else?": "no"}}
+{"row": 18, "cells": {"Name": "Z7", "Instagram": "@z7", "Anything else?": "no"}}
+{"row": 19, "cells": {"Name": "Z8", "Instagram": "@z8", "Anything else?": "no"}}
+{"row": 20, "cells": {"Name": "Z9", "Instagram": "@z9", "Anything else?": "no"}}
