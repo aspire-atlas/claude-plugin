@@ -1,5 +1,5 @@
 {"rows": 3, "encoding": "utf-8", "kept": ["Name", "Instagram", "Email", "Address", "How many pounds overweight is your dog?", "Do you live in the US?", "Has your vet recommended weight loss?"], "left_out": ["PayPal email"], "cells_left_out": 0}
 {"next": 0}
-{"row": 2, "cells": {"Name": "A", "Instagram": "@a", "Email": "a@example.com", "Address": "Dog is a 6 yo lab, 2 walks a day", "How many pounds overweight is your dog?": "15", "Do you live in the US?": "Yes", "Has your vet recommended weight loss?": "Yes"}}
-{"row": 3, "cells": {"Name": "C", "Instagram": "@c", "Email": "c@example.com", "Do you live in the US?": "Yes", "Has your vet recommended weight loss?": "No"}}
-{"row": 4, "cells": {"Name": "D", "Instagram": "@d", "Email": "d@example.com", "How many pounds overweight is your dog?": "20", "Do you live in the US?": "No", "Has your vet recommended weight loss?": "Yes, last month"}}
+{"row": 2, "cells": {"Name": "P", "Instagram": "@p", "Email": "p@example.com", "Address": "Dog is a 6 yo lab, 2 walks a day", "How many pounds overweight is your dog?": "15", "Do you live in the US?": "Yes", "Has your vet recommended weight loss?": "Yes"}}
+{"row": 3, "cells": {"Name": "Q", "Instagram": "@q", "Email": "q@example.com", "Do you live in the US?": "Yes", "Has your vet recommended weight loss?": "No"}}
+{"row": 4, "cells": {"Name": "R", "Instagram": "@r", "Email": "r@example.com", "How many pounds overweight is your dog?": "20", "Do you live in the US?": "No", "Has your vet recommended weight loss?": "Yes, last month"}}

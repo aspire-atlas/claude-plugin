@@ -75,7 +75,7 @@ part, `-client-view`, stays within the length Atlas allows after the colon.
 | `-checks` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body `reject: <the checks that reject on their own, from competitor-deals, disclosure, language-on-camera; or none>` | Which checks reject on their own (all of them always run: **How screening applies a review**) |
 | `-red-lines` | `red_line` | `{action: "block", appliesTo: ["applicant-review", "{slug}"], body}`; body one red line per line | Red lines for this campaign only, on top of the brand red lines <!-- red-line-check: defines the review's own red-line record --> |
 | `-thresholds` | `guideline` | `{concern: "ceiling", appliesTo: ["applicant-review", "{slug}"], body}`; body is `source: vetting:thresholds` or `approve >= <n>; maybe >= <m>` | Where Approve, Maybe, and Reject sit |
-| `-form-rules` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body one rule per line: `required: <form question>` or `required: <form question> = <answer>`, `stop: <form question> <test>`, `boost: <form question> <test>`, or `prompt: <instruction for the screening agent>`, where `<test>` is `= <answer>`, or `>`, `>=`, `<`, or `<=` and a number (`> 10`; **Applying the form rules**, step 2) | How form answers change a call |
+| `-form-rules` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body one rule per line: `required: <form question>`, `required: <form question> = <answer>`, `required: every form question`, `stop: <form question> <test>`, `boost: <form question> <test>`, or `prompt: <instruction for the screening agent>`, where `<test>` is `= <answer>`, or `>`, `>=`, `<`, or `<=` and a number (`> 10`; **Applying the form rules**, step 2) | How form answers change a call |
 | `-visuals` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body one check per line: `named: <name> = <what counts as a pass>`, or `free: <what to look for>` | What to look for in each applicant's videos |
 | `-client-view` | `guideline` | `{concern: "ceiling", appliesTo: ["applicant-review", "{slug}"], body}`; body `client sees: <final-list, content \| final-list \| none>` and `hidden: scores, notes, maybes, team calls` | What the client contributor role sees |
 | `-sheet` | `policy` | `{area: "routing", body}`; body `sheet: <link>` or `sheet: none (<reason>)` | The campaign's review Sheet |
@@ -209,7 +209,7 @@ Then sort each kept column into one of these, by header, case-insensitive:
 | Email | The first header naming `email` (`email`, `email address`, `e-mail`) | `formAnswers`, and the applicant's email in step 2 |
 | Name | `name`, `full name`, `creator`; else `first name` and `last name`, joined | The Sheet's Name column; the name columns stay in `formAnswers` but get no Sheet column of their own |
 | Applied date | `date applied`, `applied`, `applied date`, `applied at`, `date added` | `appliedAt`, as an ISO date |
-| Everything else | Contact details (phone, address, city, state, country), the application form's questions, and Aspire's own columns (followers, engagement, YouTube, campaigns) | `formAnswers`, one key per column |
+| Everything else | Contact details (phone, address, city, state, country, zip or postal code), the application form's questions, and Aspire's own columns (followers, engagement, YouTube, campaigns) | `formAnswers`, one key per column |
 
 A `formAnswers` key is the key the snippet printed, and values are kept as text, as written.
 
@@ -357,8 +357,8 @@ What changes against a `vetting` run in **Creator vetting**:
 | Red lines | The brand red lines plus the review's red lines, each its own check |
 | Hard stops | The checks the review's `reject:` line lists (`competitor-deals`, `disclosure`, `language-on-camera`), in place of `vetting:hard-rejects` (**Creator vetting**, **The recommendation**, rule 2). Every check runs whatever `reject:` says; one it doesn't list stays a Flag |
 | `vetting:criteria`, `vetting:thresholds`, `vetting:hard-rejects` | Not read; the review replaces them. Bought engagement and no recent posts are Flags, never rejects on their own |
-| Form answer rules and responses | Applied to every applicant per **Applying the form rules** below: a hard stop rejects (**The recommendation**, rule 2), a missing required answer caps the call at Maybe (rule 4), a boost lifts a near Maybe and moves the applicant up the priority order (rule 5), a prompt rule steers the read within its limits, and every response is read as evidence beside Atlas's own analysis |
-| Priority order | Within each recommendation, applicants are ranked by priority (**Applying the form rules**, **5. Priority**), not by fit score alone; the card numbers follow that order |
+| Form answer rules and responses | Applied to every applicant per **Applying the form rules** below, whose step 3 table says what each rule does to the call; every response is read as evidence beside Atlas's own analysis |
+| Priority order | Within each recommendation, applicants are ordered by their priority keys once every call is made (**Applying the form rules**, **5. Priority**), not by fit score alone; the card numbers follow that order |
 | Visual checks | The review's saved checks feed R5 (**Creator vetting**, **4. Visual check**): R5 is still asked, with up to two of the review's `-visuals` checks as its options after "No visual check", the first marked (Recommended). A `named:` check runs as a named check with its saved definition; a `free:` check runs as a free-text check. One check per run, held to **Creator vetting**'s **What a visual check may look for**; it never changes a call. A saved check not run this time is listed under what is missing |
 | The page | Shows the campaign's name, the review's checks and form rules in words, and the Sheet link when the review holds one. Each card's `{DETAILS}` shows the applicant's form rule results and the responses that shaped the call; a rule not checked for an applicant (no record, or the form had no such question) is listed under what is missing |
 
@@ -369,7 +369,7 @@ and the state written to Atlas) runs as in a `vetting` run. Every finding carrie
 `campaign key` names a saved campaign, to that campaign's slug. `calibrationsApplied[]` names the
 `applicantreview:` keys that shaped the call, `-form-rules` included when a rule or response did.
 Each finding also carries `aspireApplicantId` when the applicant has a record, and the
-`formRules[]`, `responsesUsed[]`, and `priority` that **Applying the form rules** returns.
+`formRules[]`, `responsesUsed[]`, and `priorityKeys` that **Applying the form rules** returns.
 
 ## Applying the form rules
 
@@ -380,84 +380,100 @@ nothing on its own; it hands back a result that **Creator vetting**'s **The reco
 the finding use.
 
 **In:** the review's form rules (the `-form-rules` body, one rule per line, or "none" for a
-`decline`), the applicant's `formAnswers` (or none), the resolved criteria and thresholds, and
-the applicant's results from the checks (fit components, brand safety, red lines, hard stops).
-**Out:** `formRules[]`, `responsesUsed[]`, the fit adjustments, the call change, `priority`, the
-Maybe question, and the evidence lines. The same in gives the same out.
+`decline`), the applicant's `formAnswers` (or none), the form's questions (step 2), the resolved
+criteria and thresholds, and the applicant's results from the checks (fit components, brand
+safety, red lines, hard stops). **Out:** `formRules[]`, `responsesUsed[]`, the fit adjustments,
+the call change, `priorityKeys` (step 5), the Maybe question, and the evidence lines. The same in
+gives the same out: nothing here depends on another applicant's result.
 
 ### 1. Get the answers
 
-Read them from Atlas, never from the list the launch passed: `list_applicants` with `asProfileId`,
-`reviewId` = the review's slug, no `statuses`, `limit` 1000, paged with `cursor` to the end, once
-per run (a run split into batches reads it once per batch). Every record read sets the form's
-questions (step 2); only the list's own applicants are screened. Match each list
-entry by its `aspireApplicantId` when the launch gives one, otherwise by its Instagram or TikTok
-handle (normalized as **Creator vetting**, **Getting the list** says) against the record's
-`instagramHandle` or `tiktokHandle`. Keep each applicant's newest record. An applicant with no
-record (pasted handles, a list that was not imported, or an import that stopped) has no answers:
-every rule is `not-checked` with the reason "no application on record", and the call comes from
-the checks alone. Without `list_applicants` in the session, say so once and treat every applicant
-that way.
+Read them from Atlas, never from the list the launch passed, with the same `list_applicants` call
+**Importing applicants**, step 3, makes, once per launch (not once per batch of ten inside it).
+Every record read sets the form's questions (step 2); only the list's own applicants are screened.
+Match each list entry by its `aspireApplicantId` when the launch gives one, otherwise by its
+Instagram or TikTok handle (normalized as **Creator vetting**, **Getting the list** says) against
+the record's `instagramHandle` or `tiktokHandle`. Keep each applicant's newest record. An applicant
+with no record (pasted handles, a list that was not imported, or an import that stopped) has no
+answers: every rule is `not-checked` with the reason "no application on record", and the call comes
+from the checks alone. Without `list_applicants` in the session, say so once and treat every
+applicant that way.
 
 Every key in `formAnswers` is a response, whatever its header: the contact detail columns carry
 the answers to the application page's own questions, so none is skipped for looking like contact
 data. The import keeps no key for a blank cell, so a question the applicant left blank is simply
 absent from their `formAnswers`: an absent key, an empty value, or one of only spaces is no answer.
-Payment and tax data was left out at import (**Importing applicants**, by the **Applicant CSV snippet**) and is never brought back: a
-`[left out]` value counts as answered but is never read or quoted, and a column whose header
-matches the snippet's `PAY` list is never read even if a record still holds one.
+Payment and tax data was left out at import (**Importing applicants**, by the **Applicant CSV
+snippet**) and is never brought back: a `[left out]` value counts as answered but is never read or
+quoted, and a column whose header matches the snippet's `PAY` list is never read even if a record
+still holds one.
 
 ### 2. Match each rule to a question
 
-The form's questions are every `formAnswers` key held by any of the review's applicants read in
-step 1 (all of them, not only this run's). A rule's form question matches the one key that is the
-same once both are lowercased, with space runs made single and spaces and a trailing `?`, `:` or
-`.` trimmed. No match, or two: the rule is `not-checked` for every applicant, with the reason "the
-form has no question '{question}'" (or "two questions match"), and the page lists it under what is
-missing; a question no applicant answered at all reads the same way, since nothing shows it was on
-the form. Once a rule's question matches, an applicant without that key left it blank.
+**Normalizing.** Text is compared after it is lowercased, trimmed, with space runs made single and
+a final `?`, `:`, `.`, or `!` dropped. Questions and answers use this one rule.
 
-`required: every form question` (AR6 option 2) covers every `formAnswers` key except the name and
-email columns, the contact detail columns **Importing applicants**, step 1 names (phone, address,
-city, state, country, zip or postal code), and Aspire's own columns (followers, engagement,
-YouTube, campaigns): a creator who leaves a phone number blank answered the form.
+**The form's questions** are every `formAnswers` key held by any of the review's applicants read in
+step 1 (all of them, not only this launch's). A question no applicant answered at all is not on
+the form, since nothing shows it was.
 
-A rule's test is the last ` = `, ` > `, ` >= `, ` < `, or ` <= ` in its line, spaces around it.
+**Reading a rule.** After its type (`required:`, `stop:`, `boost:`), a rule's line starts with its
+question: the longest start of the line that normalizes to one of the form's questions. What
+follows is its test: nothing, ` = <answer>`, or ` >`, ` >=`, ` <`, or ` <=` and a number with an
+optional unit (`> 10`, `<= 5 kg`). So a question that itself holds `=` or `>` ("Is your dog > 2
+years old?") is read whole, and "Pick one = A = B" tests the answer "A = B" when "Pick one" is the
+question. `required:` takes no test or ` = <answer>`; `stop:` and `boost:` need a test.
+`required: every form question` (AR6 option 2) is its own form, below. No question matches, two
+match equally, or the rest is not a test the type takes: the rule is `not-checked` for every
+applicant, with the reason ("the form has no question '{question}'", "two questions match", "not a
+test"), and the page lists it under what is missing. Once a rule's question matches, an applicant
+without that key left it blank.
 
-**`= <answer>`** matches when the answer and `<answer>` are the same once lowercased, trimmed, with
-space runs made single, and with a final `.` or `!` dropped ("YES" and "Yes." match `Yes`). A
-multi-choice answer (choices split by `;`, `|`, or a line break) matches when any one choice does.
-A comma never splits an answer: "Yes, last month" and "Yes, I agree" do not match `Yes`. No
-synonyms, no translations, no typos read through ("si", "I agree", and "Yws" do not match `Yes`).
+`required: every form question` covers every question except the name and email columns, the
+contact detail columns, and Aspire's own columns, each as **Importing applicants**, step 1, lists
+them: a creator who leaves a phone number blank answered the form. An application question that
+sits under a contact header is required only by naming it in its own `required:` rule.
 
-**A number test** (`> 10`, `<= 5`; a unit after the number, as in `> 10 lb`, is read as said)
-compares the one figure the answer gives:
+**`= <answer>`** matches when the answer and `<answer>` are the same once normalized ("YES" and
+"Yes." match `Yes`). A multi-choice answer (choices split by `;`, `|`, or a line break) matches
+when any one choice does. A comma never splits an answer: "Yes, last month" and "Yes, I agree" do
+not match `Yes`. No synonyms, no translations, no typos read through ("si", "I agree", and "Yws" do
+not match `Yes`).
 
-- A figure is a number, or a range read as its low end ("10-15", "15 to 20", "between 10 and
-  15" read as 10, 15, 10). Words around it change nothing ("~15", "about 10 pounds", "Like 20",
-  "10ish", "Vet wants him to lose 20 pounds" read as 15, 10, 20, 10, 20).
-- A figure followed by `kg`, `kgs`, `kilo`, or `kilos` is turned into pounds (× 2.2, one decimal),
-  and a rule's `kg` the same way; any other figure is read in the rule's unit.
+**A number test** compares the one figure the answer gives:
+
+- A figure is a number ("~15", "about 10 pounds", "Like 20", "10ish", "Vet wants him to lose 20
+  pounds" read as 15, 10, 20, 10, 20), or a range ("10-15", "15 to 20", "between 10 and 15").
+- Units: both sides are read in the rule's unit, pounds unless the rule says `kg`. An answer's
+  figure followed by `kg`, `kgs`, `kilo`, or `kilos`, or by `lb`, `lbs`, `pound`, or `pounds`, is
+  turned into the rule's unit (1 kg = 2.2 lb, one decimal); a figure with no unit is read in the
+  rule's unit.
+- A range passes or fails only when both its ends do: "10-15" is `matched` for `>= 10`,
+  `not-matched` for `> 20`, and `unclear` for `> 10`, where its ends fall on either side of the
+  line. So a range never rejects or boosts on the reading that suits the rule.
 - An answer with no figure reads as 0 when it says there is none ("none", "no", "0", "not
   overweight", "he is not overweight"), and otherwise gives no figure ("idk", "a few", "several
   pounds").
 - An answer with more than one figure ("Dixie 8-10, Sky 10-15", "should be 13-15 lbs, 5-7 lbs
-  overweight") gives no figure: it is `unclear`, and the evidence quotes it for the team.
+  overweight") gives no figure.
 
-No figure never matches. Anything looser (reading an answer's meaning, several dogs, a written-out
-number) belongs in a `prompt:` rule, which never rejects on its own.
+No figure is `unclear`, and `unclear` never matches; the evidence quotes it for the team. Anything
+looser (reading an answer's meaning, several dogs, a written-out number) belongs in a `prompt:`
+rule, which never rejects on its own.
 
 ### 3. Apply each rule
 
 Rules apply in the order saved; each gives one `formRules[]` entry, `{rule, type: "required" |
 "stop" | "boost" | "prompt", result, answer?, reason?}`, where `rule` is the line as saved and
-`answer` the applicant's words, cut to 200 characters.
+`answer` the applicant's words, cut to 200 characters and held to step 6's quoting rule. This
+table is the one place that says what a form rule does to the call; **The recommendation** and the
+agent point here.
 
 | Rule | `result` | What it does to the call |
 | ---- | -------- | ------------------------ |
-| `required: <question>` | `met`, or `missing` when the answer is empty | A `missing` caps the call at Maybe (**The recommendation**, rule 4): an Approve becomes a Maybe, a Maybe stays one, and a fit score Reject stays a Reject with the missing answer noted. The Maybe question is "Ask them: {question}", one per missing question |
+| `required: <question>`, or `required: every form question` | `met`, or `missing` when an answer is empty | A `missing` caps the call at Maybe (**The recommendation**, rule 4): an Approve becomes a Maybe, a Maybe stays one, and a fit score Reject stays a Reject with the missing answer noted. The Maybe question is "Ask them: {question}", one per missing question |
 | `required: <question> = <answer>` | `met`, `missing`, or `not-matched` when the answer is not `<answer>` | `missing` as above. `not-matched` caps the call the same way, with the Maybe question "Confirm with them: {question} They said '{answer}'". Use it for an answer the brand needs, and a `stop:` for the answer that rules an applicant out: an answer in between goes to the team, never to a reject |
-| `stop: <question> <test>` | `matched`, `not-matched`, `unclear` (a number test with no figure), or `missing` when blank | `matched` rejects (**The recommendation**, rule 2) naming the rule: "Rejected by form hard stop: '{question}' = '{answer}'". A blank or `unclear` answer never rejects |
+| `stop: <question> <test>` | `matched`, `not-matched`, `unclear`, or `missing` when blank | `matched` rejects (**The recommendation**, rule 2) naming the rule: "Rejected by form hard stop: '{question}' = '{answer}'". A blank or `unclear` answer never rejects |
 | `boost: <question> <test>` | `matched`, `not-matched`, `unclear`, or `missing` when blank | `matched` counts toward priority (step 5) and lifts a fit score Maybe within 10 points of the approve line to Approve (**The recommendation**, rule 5), naming the boost. It never lifts a Maybe that a cap made |
 | `prompt: <instruction>` | `applied`, or `not-applied` with the reason | Steers how the responses and posts are read (step 4) and may name a priority signal (step 5). It never rejects, never approves, never relaxes a red line, a competitor, a hard stop, a team call, or another form rule, and never reads an appearance or another trait **What a visual check may look for** rules out. A prompt that asks for one of those is `not-applied`, changes nothing, and goes under "Needs the main thread" as a proposed `stop:` or `required:` rule in its own words |
 
@@ -490,16 +506,24 @@ counts a bio line: a lead that the posts confirm or contradict.
 
 `responsesUsed[]` lists `{question, answer, use: "fit" | "check" | "rule" | "prompt", effect}` for
 each response that shaped a score, a check, or the call, with `effect` in a few words ("+8
-audience fit, confirmed by 3 Reels").
+audience fit, confirmed by 3 Reels") and `answer` held to step 6's quoting rule.
 
 ### 5. Priority
 
-`priority` is the applicant's rank inside its recommendation, 1 first, and the order the page and
-the Sheet list each recommendation in. Rank by, in order: the priority signal a `prompt:` rule
-names when that rule says it comes first (for example "use the dog weight answer as the first
-priority signal": more pounds first); the number of `boost:` rules `matched`, most first; any other
-priority signal a `prompt:` rule names; then fit score, highest first; then list order. A response
-a signal needs but the applicant left blank ranks after the ones that gave it.
+The step gives each applicant its `priorityKeys`, `{signal, boosts, fitScore}`: `signal` is the
+value of the priority signal a `prompt:` rule names (for example "use the dog weight answer as the
+first priority signal" gives the pounds, read as step 2 reads a figure; `null` when the applicant
+gave none), `boosts` the number of `boost:` rules `matched`, and `fitScore` the fit score. They
+are the applicant's own, so they never change with who else is on the list.
+
+The order comes after every call is made, from the keys, never from a rank worked out per
+applicant: inside each recommendation, by `signal` first when the `prompt:` rule says it comes
+first (more first, or as the rule says), then `boosts`, most first, then `signal` when the rule
+does not put it first, then `fitScore`, highest first; a `null` signal ranks after every value.
+The page numbers its cards in that order. A list screened in several launches is ordered the same
+way across them, because each finding carries its keys: the run summary of the last launch, and
+the review Sheet once screening writes it, sort every finding of the review by them, so the
+heaviest dog of the third launch comes before a lighter one from the first.
 
 ### 6. Evidence and the Maybe question
 
@@ -513,10 +537,13 @@ Evidence column name what decided the call, one line each:
   for example "Says the dog is 15 lb overweight; 3 recent Reels show the dog on camera; no brand
   safety flags".
 
-A response is quoted as the creator's words, short, and never an email, phone number, street
-address, or a `[left out]` value. A Maybe from a missing required answer carries the Maybe
-question "Ask them: {question}"; with several, one line naming each. A Maybe for another reason
-keeps its own question and adds the missing answers after it.
+**Quoting rule.** A response is quoted as the creator's words, short. What it says decides, not
+its header: an application answer under an Address header ("Dog is a 6 yo lab, 2 walks a day") is
+quoted like any other, while an email address, a phone number, a street address, or a `[left out]`
+value is never quoted, in the evidence, the card, `formRules[].answer`, or `responsesUsed[].answer`,
+whatever the rule that read it: it is written `[contact detail]` instead. A Maybe from a missing
+required answer carries the Maybe question "Ask them: {question}"; with several, one line naming
+each. A Maybe for another reason keeps its own question and adds the missing answers after it.
 
 ### Worked examples
 
@@ -533,8 +560,8 @@ Answers are given in the order of the rules' questions: weight, US, vet.
 
 | Applicant | Answers | Checks | Call and why |
 | --------- | ------- | ------ | ------------ |
-| A | 15; Yes; Yes | Fit 82, no flags; 3 Reels show the dog | **Approve**, priority 1 (most pounds): "Says the dog is 15 lb overweight; 3 recent Reels show the dog on camera; no brand safety flags" |
-| B | 8; Yes; Yes | Fit 64, no flags | **Approve** on the boost (Maybe within 10 of 70): "Approved on form boost: 'Has your vet recommended weight loss?' = 'Yes'"; priority after A |
+| A | 15; Yes; Yes | Fit 82, no flags; 3 Reels show the dog | **Approve**, first among the Approves (most pounds): "Says the dog is 15 lb overweight; 3 recent Reels show the dog on camera; no brand safety flags" |
+| B | 8; Yes; Yes | Fit 64, no flags | **Approve** on the boost (Maybe within 10 of 70): "Approved on form boost: 'Has your vet recommended weight loss?' = 'Yes'"; after A |
 | C | (blank); Yes; No | Fit 77, no flags | **Maybe** (rule 4): "Maybe: did not answer 'How many pounds overweight is your dog?'"; Maybe question "Ask them: How many pounds overweight is your dog?" |
 | D | 20; No; Yes | Fit 88 | **Reject** (rule 2): "Rejected by form hard stop: 'Do you live in the US?' = 'No'" |
 | E | (blank); Yes; Yes | Fit 41 | **Reject** on fit score (rule 5); the missing answer is noted, and the boost lifts nothing |
@@ -546,6 +573,7 @@ The same brand with number and expected-answer rules:
 required: Do you agree to the usage in perpetuity? = Yes
 stop: Do you agree to the usage in perpetuity? = No
 boost: How many pounds overweight is your dog? > 10
+stop: How many pounds overweight is your dog? < 3
 ```
 
 | Applicant | Answers (usage, weight) | Checks | Call and why |
@@ -553,6 +581,8 @@ boost: How many pounds overweight is your dog? > 10
 | G | Yes; "Like 20" | Fit 63 | **Approve** on the boost (20 > 10; a Maybe within 10 of 70): "Approved on form boost: 'How many pounds overweight is your dog?' > 10 ('Like 20')" |
 | H | "If paid"; 15 | Fit 81 | **Maybe** (rule 4): "Confirm with them: Do you agree to the usage in perpetuity? They said 'If paid'" |
 | I | no; 25 | Fit 85 | **Reject** (rule 2): "Rejected by form hard stop: 'Do you agree to the usage in perpetuity?' = 'no'" |
-| J | Yes; "10-15" | Fit 66 | **Maybe** on fit: the range reads as 10, which is not more than 10, so no boost |
+| J | Yes; "10-15" | Fit 66 | **Maybe** on fit: the boost is `unclear` (10 is not over 10, 15 is), so it boosts nothing |
 | K | Yes; "Dixie 8-10, Sky 10-15" | Fit 66 | **Maybe** on fit: the weight is `unclear` (two figures), quoted in the evidence for the team |
 | L | Yes; "Not overweight." | Fit 41 once audience fit counts the answer as a miss | **Reject** on fit: "Says the dog is not overweight; no recent post shows otherwise" |
+| M | Yes; "2-8" | Fit 74 | **Approve**: the `< 3` stop is `unclear` (2 is under 3, 8 is not), so it never rejects |
+| N | Yes; "4 kg" | Fit 72 | **Approve** on fit: 4 kg is 8.8 lb, not over 10, so no boost; the `< 3` stop is `not-matched` |

@@ -531,20 +531,20 @@ In this order; the first rule that applies decides, and the page names it:
    fails that the saved call predates: then **Maybe**, naming what is new since.
 2. **Hard stops.** A saved `competitor` handle, a `block` red line that fails, a
    `vetting:hard-rejects` rule that fails, or, in an applicant review run, a check the review's
-   `reject:` line lists that fails or a form `stop:` rule that matches (**Applicant review**,
-   **Applying the form rules**) → **Reject**, naming the rule.
+   `reject:` line lists that fails or a form `stop:` rule that matches → **Reject**, naming the
+   rule.
 3. **Not enough to go on.** The handle could not be resolved, or fewer than 5 posts in 180
    days → **Can't vet**, with the reason. Never reject a creator for missing data.
 4. **Safety caps.** Any other Fail, a `flag` or `escalate` red line, or two or more Flags →
-   at most **Maybe**. In an applicant review run, a `required:` form answer left blank, or not
-   the answer the rule expects, caps the call the same way: an Approve becomes a Maybe asking for
-   the answer, and a fit score Reject stays a Reject.
+   at most **Maybe**. In an applicant review run, so does a `required:` form rule that is not
+   met.
 5. **Fit score** against `vetting:thresholds` (default 70 and 50): **Approve** at or above
    the approve line, **Maybe** at or above the maybe line, **Reject** under it. In a creator-ads
    lane this is the score without Budget vs target (**Creator-ads lanes**). In an applicant review
-   run, a matched `boost:` form rule makes a Maybe within 10 points of the approve line an
-   **Approve**, naming the boost; the fit score itself already counts the responses (**Applicant
-   review**, **Applying the form rules**).
+   run, a matched `boost:` form rule can lift a Maybe.
+
+What each form rule does in rules 2, 4, and 5, exactly, is set out once in **Applicant review**,
+**Applying the form rules**, step 3.
 
 A visual check (**4. Visual check**) is not one of these rules: it never changes a recommendation. A
 `vetting:lesson-*` record can change how a check is judged; mark every call a lesson changed
@@ -702,7 +702,7 @@ gives one, `visualCheck` when the run had a visual check and it ran on the creat
 comes from is on the run summary), `listName`, `listSource` (`csv`, `pasted`, `aspire-app`, or
 `cas-lane`), `campaign` when R2 named one, `applicantReview` when R2 named an applicant review
 (**Applicant reviews**), and with it `aspireApplicantId`, `formRules[]`, `responsesUsed[]`, and
-`priority` (**Applicant review**, **Applying the form rules**), `reviewPage`, and `recipient` (**Recipient lens**). A
+`priorityKeys` (**Applicant review**, **Applying the form rules**), `reviewPage`, and `recipient` (**Recipient lens**). A
 `feedback` finding adds `userVerdict`, `agentVerdict`, and the user's words verbatim. Supply an
 `idempotencyKey` per finding (`vet-{list-slug}-{entityId}-{findingType}`).
 

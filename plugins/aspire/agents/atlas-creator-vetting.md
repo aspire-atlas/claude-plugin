@@ -120,8 +120,8 @@ asks nothing and writes nothing, so it runs the same in an unattended run.
 7. **Vet each creator** in list order: read per **What to read per creator**, score fit, run every
    brand safety check, and apply the recommendation rule. Work out each creator's usual views from
    the posts you read, never from a new search. In an applicant review run, apply **Applying the
-   form rules** to each applicant before the recommendation, and rank each recommendation by its
-   `priority`. Keep each creator's evidence to the posts and responses that decided a check. Work in batches of ten, so a long list never loses its early results. Then work
+   form rules** to each applicant before the recommendation, and once every call is made, order
+   each recommendation by the applicants' `priorityKeys`. Keep each creator's evidence to the posts and responses that decided a check. Work in batches of ten, so a long list never loses its early results. Then work
    out **The findings behind the checks** from the posts and comments already read (what's working
    with each post's lift, where people get stuck, reach and supply), tag every check with the
    finding it comes from, and list any criterion a finding suggests that the brand has not saved as
