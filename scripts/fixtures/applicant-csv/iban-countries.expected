@@ -1,12 +1,37 @@
-{"rows": 10, "encoding": "utf-8", "kept": ["Name", "Instagram", "Notes"], "left_out": [], "cells_left_out": 5}
+{"rows": 35, "encoding": "utf-8", "kept": ["Name", "Instagram", "Notes"], "left_out": [], "cells_left_out": 14}
 {"next": 0}
-{"row": 2, "cells": {"Name": "D", "Instagram": "@d", "Notes": "[left out] please"}}
-{"row": 3, "cells": {"Name": "E", "Instagram": "@e", "Notes": "[left out]"}}
-{"row": 4, "cells": {"Name": "A", "Instagram": "@a", "Notes": "my iban [left out] thanks"}}
-{"row": 5, "cells": {"Name": "B", "Instagram": "@b", "Notes": "[left out]"}}
-{"row": 6, "cells": {"Name": "C", "Instagram": "@c", "Notes": "[left out]"}}
-{"row": 7, "cells": {"Name": "Z0", "Instagram": "@z0", "Notes": "no"}}
-{"row": 8, "cells": {"Name": "Z1", "Instagram": "@z1", "Notes": "no"}}
-{"row": 9, "cells": {"Name": "Z2", "Instagram": "@z2", "Notes": "no"}}
-{"row": 10, "cells": {"Name": "Z3", "Instagram": "@z3", "Notes": "no"}}
-{"row": 11, "cells": {"Name": "Z4", "Instagram": "@z4", "Notes": "no"}}
+{"row": 2, "cells": {"Name": "I0", "Instagram": "@i0", "Notes": "IBAN [left out] 2024"}}
+{"row": 3, "cells": {"Name": "I1", "Instagram": "@i1", "Notes": "[left out] 50 EUR"}}
+{"row": 4, "cells": {"Name": "I2", "Instagram": "@i2", "Notes": "[left out] 12"}}
+{"row": 5, "cells": {"Name": "I3", "Instagram": "@i3", "Notes": "[left out]"}}
+{"row": 6, "cells": {"Name": "I4", "Instagram": "@i4", "Notes": "[left out]"}}
+{"row": 7, "cells": {"Name": "I5", "Instagram": "@i5", "Notes": "[left out]"}}
+{"row": 8, "cells": {"Name": "I6", "Instagram": "@i6", "Notes": "[left out]"}}
+{"row": 9, "cells": {"Name": "I7", "Instagram": "@i7", "Notes": "[left out]"}}
+{"row": 10, "cells": {"Name": "I8", "Instagram": "@i8", "Notes": "[left out] DEUTDEFF"}}
+{"row": 11, "cells": {"Name": "W0", "Instagram": "@w0", "Notes": "no"}}
+{"row": 12, "cells": {"Name": "W1", "Instagram": "@w1", "Notes": "no"}}
+{"row": 13, "cells": {"Name": "W2", "Instagram": "@w2", "Notes": "no"}}
+{"row": 14, "cells": {"Name": "W3", "Instagram": "@w3", "Notes": "no"}}
+{"row": 15, "cells": {"Name": "W4", "Instagram": "@w4", "Notes": "no"}}
+{"row": 16, "cells": {"Name": "W5", "Instagram": "@w5", "Notes": "no"}}
+{"row": 17, "cells": {"Name": "W6", "Instagram": "@w6", "Notes": "no"}}
+{"row": 18, "cells": {"Name": "W7", "Instagram": "@w7", "Notes": "no"}}
+{"row": 19, "cells": {"Name": "W8", "Instagram": "@w8", "Notes": "no"}}
+{"row": 20, "cells": {"Name": "W9", "Instagram": "@w9", "Notes": "no"}}
+{"row": 21, "cells": {"Name": "W10", "Instagram": "@w10", "Notes": "no"}}
+{"row": 22, "cells": {"Name": "W11", "Instagram": "@w11", "Notes": "no"}}
+{"row": 23, "cells": {"Name": "W12", "Instagram": "@w12", "Notes": "no"}}
+{"row": 24, "cells": {"Name": "W13", "Instagram": "@w13", "Notes": "no"}}
+{"row": 25, "cells": {"Name": "W14", "Instagram": "@w14", "Notes": "no"}}
+{"row": 26, "cells": {"Name": "W15", "Instagram": "@w15", "Notes": "no"}}
+{"row": 27, "cells": {"Name": "D", "Instagram": "@d", "Notes": "[left out] please"}}
+{"row": 28, "cells": {"Name": "E", "Instagram": "@e", "Notes": "[left out]"}}
+{"row": 29, "cells": {"Name": "A", "Instagram": "@a", "Notes": "my iban [left out] thanks"}}
+{"row": 30, "cells": {"Name": "B", "Instagram": "@b", "Notes": "[left out]"}}
+{"row": 31, "cells": {"Name": "C", "Instagram": "@c", "Notes": "[left out]"}}
+{"row": 32, "cells": {"Name": "Z0", "Instagram": "@z0", "Notes": "no"}}
+{"row": 33, "cells": {"Name": "Z1", "Instagram": "@z1", "Notes": "no"}}
+{"row": 34, "cells": {"Name": "Z2", "Instagram": "@z2", "Notes": "no"}}
+{"row": 35, "cells": {"Name": "Z3", "Instagram": "@z3", "Notes": "no"}}
+{"row": 36, "cells": {"Name": "Z4", "Instagram": "@z4", "Notes": "no"}}

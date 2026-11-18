@@ -55,8 +55,8 @@ Payment and tax data, so it is kept nowhere and the report names it:
   email, phone, place, or id header), wherever it sits in the cell: a card number (13 to 19
   digits as one block or groups of 4 to 6, that pass the Luhn check, alone or with up to two short
   expiry or CVV groups at either end, and not inside a link) and an IBAN (in any case, spaces or dashes
-  allowed, from a country that issues IBANs, 15 to 34 characters ending at a group's end, mostly
-  digits after the country and check digits, with the right check digits). The match becomes `[left out]`, and
+  allowed, in any bank's grouping, from a country that issues IBANs, 15 to 34 characters ending at
+  a group's end, mostly digits after the country and check digits, with the right check digits). The match becomes `[left out]`, and
   `cells_left_out` counts the cells;
 - such a column whole, when more than half its non-empty cells hold one.
 
@@ -119,7 +119,9 @@ def card(m):
     # A card alone or with up to two SHORT groups at either end. Every way of setting those groups aside
     # is tried, since one match can't retry them.
     if URL.search(m.string[:m.start()]):
-        return m.group()
+        # Only the part of the run inside the link is the link's; a card after a space is still a card.
+        head, sep, rest = m.group().partition(" ")
+        return head + sep + DIGITS.sub(card, rest)
     g = re.split(r"[ -]", m.group())
     for a, b in itertools.product(range(3), repeat=2):
         if is_card(" ".join(g[a:len(g) - b]), g[:a] + g[len(g) - b:]):
@@ -135,20 +137,19 @@ def mostly_digits(s):
 
 
 def iban(m):
-    # An IBAN country, then groups: one unbroken block, or groups of at most 4 (a longer word after it
-    # is never part of it). It may end at its last group, or just before a group holding a letter,
-    # never between two groups of digits. It is 15 to 34 characters, mostly digits, with the right
-    # check digits.
+    # An IBAN country, then its groups, in any bank's layout (4-4-4, 8-8-8, 5-5-11-2, 3-7-2): every
+    # group of digits, and groups holding a letter of at most 4 characters (a longer word is never part
+    # of it). It ends at the end of one of those groups, the longest that is 15 to 34 characters, mostly
+    # digits, with the right check digits, so a number written after it (a year, an amount) stays.
     g = m.group()
     if g[:2].upper() not in IBAN_COUNTRIES:
         return g
-    groups = [(x.end(), x.group()) for x in re.finditer(r"[A-Z0-9]+", g, re.I | re.A)]
-    keep = 1
-    while keep < len(groups) and len(groups[keep][1]) <= 4:
-        keep += 1
-    ends = [groups[keep - 1][0]] + [groups[i - 1][0] for i in range(keep - 1, 0, -1)
-                                    if not groups[i][1].isdigit()]
-    for end in ends:
+    cuts = []
+    for i, group in enumerate(re.finditer(r"[A-Z0-9]+", g, re.I | re.A)):
+        if i and not group.group().isdigit() and len(group.group()) > 4:
+            break
+        cuts.append(group.end())
+    for end in reversed(cuts):
         s = re.sub(r"[ -]", "", g[:end]).upper()
         if 15 <= len(s) <= 34 and mostly_digits(s) and mod97(s):
             return "[left out]" + g[end:]
