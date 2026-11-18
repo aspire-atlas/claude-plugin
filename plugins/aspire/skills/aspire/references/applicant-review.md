@@ -160,7 +160,9 @@ One Sheet per review, where the team sees every applicant, filters them, and rec
 Atlas holds the record; the Sheet is the team's working view of it. Setup creates the Sheet and
 saves its link; **Importing applicants** adds one row per applicant, after Atlas holds them.
 Screening does not write vetting columns yet: until it does, those columns stay blank and the team
-reads the calls on the vetting page. No flow reads the Sheet as the record.
+reads the recommendations on the vetting page. **Creator vetting** reads the Team call column back
+and saves new calls to Atlas through its feedback questions (**Reading the review Sheet**); Atlas
+stays the record, and no flow writes a call back to the Sheet.
 
 1. **Create it** after the confirmation's option 1, through the Claude Docs connector as a Sheet
    (load the connector's guide first and follow it). Name it "{brand} · {campaign} applicant
@@ -327,7 +329,9 @@ a missing pointer is asked per steps 3 and 4.
    for, R2 offers "An applicant review (pick which next)" and a second `AskUserQuestion` lists the
    three newest reviews by campaign name plus "Another review (type its campaign name)". When R2's
    reviews option covers exactly one review, picking it uses that review without a second question.
-   R2 is always asked: a saved review is never used without being picked.
+   R2 is always asked, except when the list is the review's own Sheet (**Creator vetting**,
+   **Reading the review Sheet**), where picking that Sheet picks the review: a saved review is never
+   used without being picked.
 2. **Read it** per **The records**.
 3. **Check it is complete** per **When setup is done**. A gap runs setup for the missing questions
    first, then goes on.

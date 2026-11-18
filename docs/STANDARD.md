@@ -19,6 +19,7 @@ does not apply.
 - [6. Reviews](#6-reviews)
 - [7. Questions](#7-questions)
 - [8. Proof](#8-proof)
+- [9. Comparisons](#9-comparisons)
 - [The eval on a pull request](#the-eval-on-a-pull-request)
 - [Adding a client example](#adding-a-client-example)
 - [How to write a rule](#how-to-write-a-rule)
@@ -113,6 +114,23 @@ that changes an agent or flow).
 | P1 | A new agent ships with its spec in `docs/agent-specs/agents/`, its roster rows, and its orchestration block. | ASP-4101, ASP-5381 | script: `check-agent-specs.sh`, `check-agent-roster.sh`, `check-orchestration.sh`; presence of the spec lands with ASP-5382 | A new agent PR with its spec, its hand-off row, and its section 11 block. | An agent file with no spec, so nobody can say which questions it answers or who reads its page. |
 | P2 | Each question code the agent answers has an eval question in `scripts/eval/questions.json`, and once it has an approved page, the spec's **Approved example** names the ticket that holds it. | ASP-5302 | reviewer; eval (the `eval` job on the PR) | The I4 question, with its reader and its approved plan named by ticket. | An agent whose page has never been rerun, so a rule change cannot show it helped. |
 | P3 | A PR that adds or changes a rule carries the before-and-after table from `bun run eval:pages`, and the gap the rule closes. A PR with no new rule says "no new rule". | ASP-5302 | reviewer; the PR template; eval (the `eval` job's comment on the PR) | The table for the question the rule is about, with the check that failed before and passes after. | A new rule with no rerun, so nobody knows whether the page already got it right. |
+
+## 9. Comparisons
+
+A comparison is any place a page sets two groups, two periods or two brands side by side, or states
+a share. Every comparison passes these four checks, or says in one plain line which one it fails.
+The checks, their markup and the 20-post line are in
+`plugins/aspire/skills/page-standard/comparisons.md`; the examples are from a competitive read and
+an affiliate report. "The English read" in **Checked by** is the separate read every page gets
+before it publishes (V1), which marks a page against rule 8 of `references/english-rules.md`. It
+checks pages, not pull requests, so these items are not in the judgment review.
+
+| Id | Item | Ticket | Checked by | Good | Bad |
+| -- | ---- | ------ | ---------- | ---- | --- |
+| K1 | Same kind: both sides hold one kind of post (paid label, TikTok Shop selling, or no paid label). A mixed side is split, or the comparison is dropped. | ASP-5974 | script: page check R15; the English read (rule 8) | "{brand}'s TikTok Shop posts drew 3.6 engagements per 1,000 views (18 posts, directional), against 14.7 across its 212 other posts. Shop posts are left out of the comparison with {competitor}." | "{brand} trails {competitor} on engagement", from an average that mixed the Shop posts in. Split by kind, the comparison said the opposite. |
+| K2 | Every mention counted: a count of posts about a brand or creator includes the posts that name it without the "@", and the method says how the mentions were found. | ASP-5974 | script: page check R15 (the method sentence); the English read (rule 8) | "{competitor}: 20 posts, directional. Mentions were found by tag, by @handle, and by the name written without the @." | "{competitor}: 2 posts", counted from "@" mentions only, when 18 more named it in plain text. |
+| K3 | Enough posts: a figure that rests on posts at or under the directional line set in `comparisons.md` is marked "directional" beside the number, with the post count. | ASP-5974 | script: page check R15; the English read (rule 8) | "3.6 engagements per 1,000 views (18 posts, directional)" | "Shop posts earn a quarter of the engagement", from 18 posts, with no post count and no mark. |
+| K4 | Share against size: a share is shown next to its group's share of the whole. When the two are as close as `comparisons.md` sets, the page says the share matches the group's size and draws no finding from it. | ASP-5974 | the English read (rule 8); script: page check R15 on the shares the page marks | "87% of revenue came from 88% of affiliates, so the share is in line with the group's size." | "87% of revenue comes from this group", as the headline finding, with no word that the group is 88% of affiliates. |
 
 ## The eval on a pull request
 

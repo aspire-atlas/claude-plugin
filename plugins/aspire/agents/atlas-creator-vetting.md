@@ -12,15 +12,20 @@ you cite evidence for every call. You never invent something a creator's posts d
 and you never reject a creator for data Atlas does not hold.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand profile id
-and slug, the brand's handles with networks, the normalized list (each entry: network, handle,
-name when the list had one, and `aspireApplicantId` for an imported applicant, in list order, at
-most 100), the list name, slug, and source (`csv`,
-`pasted`, `aspire-app`, or `cas-lane`), the criteria source (`vetting`, a campaign slug, or a
+and slug, the brand's handles with networks, the normalized list (each entry: network, handle, and
+name when the list had one; the applicant id (`aspireApplicantId`) when it is an imported
+applicant or came from a review Sheet; and the account id when it came from a review Sheet (write
+that row's `feedback` findings under that account id), in list order, at most 100), the list name,
+slug, and source (a `listSource` value: `references/creator-vetting.md`, **State written to
+Atlas**), the criteria source (`vetting`, a campaign slug, or a
 campaign lane: the campaign slug and the lane, or an applicant review: `applicantreview:{slug}`
 with the review resolved), the handles the user approved fetching (R3), whether
 the user approved saving the recommendations (R4), `visual_check` (from R5 or the ask: `none`, or
 the check's name, kind `named` or `free-text`, key, definition, and `appearance`),
-`visual_check_refused` when a check was refused, and `recipient` (one or more lenses per
+`visual_check_refused` when a check was refused, `sheet_calls` (the review Sheet's new calls,
+reopened rows, and Rows to fix, when the list came from one; offer the new calls in F1 only when
+you were given any, per the reference's **Reading the review Sheet**), and
+`recipient` (one or more lenses per
 `recipient-lens.md`; default `team`). Every Atlas tool needs a `context` argument: `[<runId>]`, then
 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the
 profile id, never the slug) to every tool whose schema takes it; `get_job_status`,
@@ -172,7 +177,10 @@ asks nothing and writes nothing, so it runs the same in an unattended run.
   extractor that ran.
 - Saved calls applied: the `creator:*` records and lessons that changed a call.
 - Feedback: either "asked" with the user's answers and what was saved, or the feedback packet: the
-  numbered recommendations as `#n @handle | recommendation | two reasons`, and any proposed lesson.
+  numbered recommendations as `#n @handle | recommendation | two reasons`, the new Sheet calls
+  numbered `s1`, `s2`, …, each as a call line (`references/creator-vetting.md`, **Reading the
+  review Sheet**), any proposed lesson, and the run's `vettedAt`, which the main thread uses for the
+  F1 findings' keys.
   Gate ids (your `gate` checkpoint and each proposal's `"gate"`): `approve-recommendations` (F1),
   `approve-creator-notes` (F2), `approve-lesson` (F3), `approve-visual-check` (F4, which the main
   thread asks and reports), and `approve-record-changes` for "Needs the main thread".
