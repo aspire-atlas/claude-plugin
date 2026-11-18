@@ -21,6 +21,7 @@ does not apply.
 - [8. Proof](#8-proof)
 - [9. Comparisons](#9-comparisons)
 - [10. Explanations](#10-explanations)
+- [11. Recommendations](#11-recommendations)
 - [The eval on a pull request](#the-eval-on-a-pull-request)
 - [Adding a client example](#adding-a-client-example)
 - [How to write a rule](#how-to-write-a-rule)
@@ -147,6 +148,23 @@ TikTok, a code in a YouTube description, and the brand's own site.
 | X2 | Every post an explanation cites is a link to the post, and the explanation names the evidence it rests on. With no evidence in Atlas it says "Not explained yet" and what was searched. | ASP-5978 | script: page check R7 | "@handle's orders on Oct 9: not explained yet. Searched: Instagram, TikTok and YouTube posts at any date, with captions, transcripts and descriptions, and the brand's site." | "Driven by her older TikTok content", with no link to any post. |
 | X3 | Outside evidence that can disappear (a coupon-site listing, a store page, an expiring post) is saved the moment it is read: the link, the date and time, the exact words, and a screenshot or "Screenshot not taken". The next run shows the saved capture with its date, marked "No longer visible" when the source now blocks the check. | ASP-5978 | script: page check R7 (the saved block); reviewer | A saved block with the coupon site's link, "saved Oct 30, 3:20 PM UTC", the quoted listing "{CODE}: 15% off sitewide", and its screenshot; a week later the same block with "No longer visible on Nov 6". | "Listed on several coupon sites", with no link or date, which nobody could check a week later when the sites blocked it. |
 
+## 11. Recommendations
+
+A recommendation is anything a page asks its reader to do or approve: a decision, a next step, or
+a recommendation in a flow's own section. The cost rule, the trend to watch, and their markup are
+in `plugins/aspire/skills/page-standard/recommendations.md`; the tiers are in
+`references/affiliate.md` (**Commission tiers**) and the message test in
+`references/market-signal.md` (**Where the brand wins, and how to stand apart**). The examples are
+from an affiliate report and a competitive read. As in section 9, "the English read" is the
+separate read every page gets before it publishes, so these items are not in the judgment review.
+
+| Id | Item | Ticket | Checked by | Good | Bad |
+| -- | ---- | ------ | ---------- | ---- | --- |
+| N1 | Every recommendation states its cost: the amount with its arithmetic in one line; per month, from the last period's figures and labelled an estimate, for a raise, a promotion or a recurring deal; "no spend" when it costs time only; or "cannot be priced" with the missing figure and who has it. Costs keep their currency. | ASP-5982 | script: page check R5; eval (AR1 A4) | "Move @handle from 10% to 15%. Cost: +5 points on USD 3,240 a month is about USD 162 a month (estimate, from October's revenue)." | "Raise commission 5 points for the top affiliates", with no amount, period or basis. |
+| N2 | An affiliate report shows each commission tier with its rate, threshold and members, an invite list (who meets the next tier, the figure that qualifies them, the monthly cost) and a hold list (who is close or should wait, and what would move them up). An empty invite list names the nearest affiliate and what they still need. | ASP-5982 | eval (AR1 A3); the English read | "Invite to Tier 3: @handle, USD 3,240 in October and USD 2,870 in September, about USD 162 a month. Hold: @other, USD 520 short; a second month above USD 2,500 moves them up." | "0 affiliates newly qualified for Tier 3." |
+| N3 | A finding that could plausibly help or hurt the brand is labelled "Trend to watch", with both readings in one line each and one to three signals that would settle it, each with where Atlas would see it and by when. It is not a decision, and its only next step is to watch the signals. | ASP-5982 | script: page check R5 on the trends the page marks; the English read | "Trend to watch: creators call the starter kit 'the cheap one' in 14 of 61 posts. If it helps: the price brings new buyers. If it hurts: 'cheap' sticks to the whole brand. Watch: comments that mention quality, in the weekly report, by Nov 25." | "Creators love the low price: lean into 'the cheap one' in the next brief." |
+| N4 | A positioning recommendation gives engagement per 1,000 views on the brand's posts that carry the message and on those that do not, with both post counts and a strength word. When the comparison is flat, negative or thin, the page offers only "run it as a test" and writes the test. | ASP-5982 | script: page check R15 on the comparison's sides; the English read | "Posts that carry it drew 16.2 engagements per 1,000 views over 34 posts, against 11.8 over 212 that do not (strong)." | "Own 'the professional's choice': no competitor is described that way", when the 9 posts that carry it drew less than the rest. |
+
 ## The eval on a pull request
 
 A pull request that changes an agent or a flow file gets a comment from the `eval` job: the questions those
@@ -197,7 +215,7 @@ fixes it.
 | -------------- | ----------------- | ------------------- |
 | 2. Compare like with like | The like-for-like check (ASP-5974), fed by the paid and shop split (ASP-5976) and the mention count (ASP-5977) | CR1 A1, A2, A3; AR1 A1 |
 | 3. Look at all the evidence | The full search before an explanation (ASP-5978); engagement on the affiliate timeline (ASP-5979) | AR1 A2, A5 |
-| 4. Priced recommendations | Commission tiers with an invite list and a hold list (ASP-5981); a cost on every recommendation (ASP-5982) | AR1 A3, A4 |
+| 4. Priced recommendations | Commission tiers with an invite list and a hold list, and a cost on every recommendation (both ASP-5982) | AR1 A3, A4 |
 
 To add an example:
 

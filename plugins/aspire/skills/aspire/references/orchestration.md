@@ -611,7 +611,9 @@ acts on.
                "unchecked": ["{line for each check not made}"],
                "widen": "{the wider scope the agent would read, or null}"},
  "openItems": [{"id": "d1", "kind": "decision", "text": "{one line}", "owner": "{who}",
-                "due": "{YYYY-MM-DD, or null}", "status": "open", "opened": "{YYYY-MM-DD}"}]}
+                "due": "{YYYY-MM-DD, or null}", "status": "open", "opened": "{YYYY-MM-DD}",
+                "cost": {"kind": "{money, none, unpriced, or team}", "line": "{the cost line}",
+                         "basis": "{the figures and period it was worked from, or null}"}}]}
 ```
 
 | Field | Holds |
@@ -626,7 +628,7 @@ acts on.
 | `coverage` | Each channel in scope with its post count, and any channel missing with why. |
 | `selfCheck` | The page check's results by check code and name (`skills/page-standard/SKILL.md`, **7**): those fixed before publishing and those still failing. Empty lists when no page was published. |
 | `storyline` | The storyline the page says, or would say (**2**, **The storyline**): its `pass`, the launch block's `storyline.pass` as given, so a `draft` packet is told apart from a build that published nothing; its `bullets` (three, or fewer per **2**, **Fewer bullets**), each with the posts, accounts, and views behind it (`null` for a size the claim does not rest on); the `pool` of posts that fit the question against the row's `minimum` (`null` for program tracking and a one-post question); an `unchecked` line for each check this host could not make ("Timecodes and on-screen claims are unverified.", "{fact} is not checked against the company's announcement."); and `widen`, the wider scope the agent would read next, or `null` when the scope has no room left. For a row counted per brand or per creator, `posts` is the total, `minimum` the per-entity one, and `under` names each brand or creator under it (`[]` otherwise). On a `draft` pass it is the run's only finding and `page` is `null`; on `build` it repeats the confirmed bullets; on `state` it is what the page states. `null` when the launch's pass was `none`. |
-| `openItems` | Every decision the page asks its reader to approve (part 5) and every ranked next step (part 4), as the page words them, each with its owner, its due date (`null` with none), and the date it was first opened. `kind` is `decision` or `step`. On a repeat run it also holds each `since` item with the status the page gives it, under the `id` it came with; a new item takes the next free id (`d2`, `s4`). The main thread keeps the open ones for the next run (**Repeat run**). `[]` when the run published no page or the page leaves nothing open. |
+| `openItems` | Every decision the page asks its reader to approve (part 5) and every ranked next step (part 4), as the page words them, each with its owner, its due date (`null` with none), the date it was first opened, and its `cost` as the page's cost line gives it (`skills/page-standard/recommendations.md`). `kind` is `decision` or `step`. On a repeat run it also holds each `since` item with the status the page gives it, under the `id` it came with; a new item takes the next free id (`d2`, `s4`). The main thread keeps the open ones for the next run (**Repeat run**). `[]` when the run published no page or the page leaves nothing open. |
 
 Write the packet as valid JSON on as many lines as it needs. A field with nothing in it is an
 empty list or `null`, never left out.

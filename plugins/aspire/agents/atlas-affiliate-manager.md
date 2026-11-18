@@ -32,7 +32,8 @@ before any other call.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/affiliate.md` before starting. It holds
 the modes, who is in scope, making and checking codes, the store and the code sheet, the
-sales report, commission, the timeline, the recommendations, the questions, the packet, the
+sales report, commission, the timeline, the commission tiers with their invite and hold lists,
+the recommendations and the cost line each one carries, the questions, the packet, the
 records, the ledger lines, and the page. Follow it exactly. Read
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/program.md` (the state model, **4**, **5**,
 **7**), `outreach.md` (**Templates** and the voice rules, for the `code-live` draft),

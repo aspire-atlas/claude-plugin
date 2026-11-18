@@ -321,7 +321,7 @@
           "id": "A3",
           "name": "Commission tiers show an invite list and a hold list",
           "fix": 4,
-          "ticket": "ASP-5981",
+          "ticket": "ASP-5982",
           "landed": false,
           "passesWhen": "The page shows each commission tier with its rate and the threshold to reach it, a list of affiliates to invite to the next tier with the figure that qualifies each, and a list of affiliates to hold with the reason and what would move each one up. An empty invite list names the nearest affiliate and what they still need.",
           "failsWhen": "The page says nobody newly qualified and stops there, or recommends a raise with no tier, no named affiliates to move up and none to hold.",

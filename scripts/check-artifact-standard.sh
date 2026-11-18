@@ -218,6 +218,18 @@ else
         err "the markup example in $CM does not pass R15: $(grep '"R15"' <<< "$out")"
     fi
 
+    # The markup example in recommendations.md is what agents copy, so it must pass R5.
+    RC=$P/skills/page-standard/recommendations.md
+    if [ ! -f "$RC" ]; then
+      err "$RC is missing"
+    else
+      grep -qF 'recommendations.md' "$PS" || err "$PS does not link recommendations.md"
+      awk '/^```html$/{g=1;next} g&&/^```$/{exit} g' "$RC" > "$tmp/recommend.html"
+      out=$(python3 -I "$tmp/page_check.py" "$tmp/recommend.html" 2>&1) || true
+      grep -q '"check": "R5", "name": "Clear next steps, priced", "result": "pass"' <<< "$out" ||
+        err "the markup example in $RC does not pass R5: $(grep '"R5"' <<< "$out")"
+    fi
+
     # R13 checks the metrics the page standard's required-metrics table names, code by code: the
     # table's Codes and On every cited post columns equal the script's REQUIRED_ROWS.
     rows=$(python3 -I -c '

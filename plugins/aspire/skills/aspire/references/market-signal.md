@@ -221,6 +221,16 @@ Filter path unless noted, `context` on every call, only field paths from the cen
   retention proxy in **Ad reuse**. List them; the cut list is the `atlas-ad-reuse` agent's job.
 - **What changed.** Against the last run: share-of-voice moves of 3 points or more, new or
   flipped feature outcomes, new friction issues, new spreading phrases.
+- **Trend to watch.** A share-of-voice move, a spreading phrase, a friction issue, or a feature
+  outcome that could plausibly help or hurt the brand is written as a trend to watch, with both
+  readings and the signals that would settle it (**Page standard**, `recommendations.md`). It is
+  never a decision, and its only next step is to watch the signals. A spreading phrase about
+  price is the usual case: it may bring new buyers, or it may become what people say about the
+  whole brand.
+- **What each recommendation costs.** Every decision, next step, and move ends with its cost
+  line (**Page standard**, `recommendations.md`): "No spend" for a change of wording or a brief
+  update, the fees from **Fee calculator** for posts the step would commission, or "Cannot be
+  priced" with the missing figure and who has it.
 - Competitors not indexed (no posts in the window and none in the baseline): say so and
   suggest the watch list or an account review of the competitor's handle. Never start
   discovery for them.
@@ -249,9 +259,12 @@ From **Data method** step 8 and the posts already read in step 6; no other reads
   label "Wins reach", one line on what the posts have in common (from the posts read), the
   evidence (the multiple, both rates, and the number of creators), and one or two sample posts
   as post cards (3.8) with their metrics. A paid-marked post keeps its paid tag. When over a
-  quarter of the topic's posts carry a paid marker or a program tag, the card gives two
-  readings: the content works; or part of the reach was paid for or comes from who was picked,
-  so part of the gap is who posts, not what.
+  quarter of the topic's posts carry a paid marker or a program tag, the card is a trend to
+  watch (**Page standard**, `recommendations.md`) instead of a win, and no move rests on it. Its
+  two readings: the content works; or part of the reach was paid for or comes from who was
+  picked, so part of the gap is who posts, not what. Its signal is the topic's reach rate on
+  posts with no paid marker and no program tag, in the next run's reach chart, by that run's
+  date.
 - **Below average.** Topics under the brand's rate are named in one line with their rates (often
   price lists and head-to-head comparisons). They feed the moves and get no card.
 - **Gap card.** One card, labelled "Where credit leaks", when at least 3 creators show the
@@ -262,12 +275,47 @@ From **Data method** step 8 and the posts already read in step 6; no other reads
   ends with a "So:" line. With fewer than 3 creators there is no gap card.
 - **How to stand apart.** Up to three positioning moves, each a short bold line and one or two
   sentences. Each move names the win card, gap card, or below-average topics it comes from; a
-  move with none behind it is dropped. Then one "So:" line naming the next steps the moves lead
-  to and, when there is one, the positioning decision.
+  move with none behind it is dropped. Each move then states its message test (below) in one
+  sentence, and ends with its cost line. Then one "So:" line naming the next steps the moves
+  lead to and, when there is one, the positioning decision.
+- **The message test.** A difference between the brand and a competitor is worth a message only
+  if posts that carry it do better, so check before recommending it. For each move, and for the
+  positioning line as a whole, take the words creators use for the message (the topic's saved
+  words, or the phrases from **Framing**) and split the brand's mention-set posts over step 8's
+  period into those that carry them and those that do not. Use posts with no paid label only, so
+  both sides hold one kind. Give each side's median engagement per 1,000 views (likes and
+  comments, as this page counts it everywhere) and its post count, then one strength word:
+
+  | Strength word | When | What the move becomes |
+  | ------------- | ---- | --------------------- |
+  | **Strong** | Both sides are above the directional line (**Page standard**, `comparisons.md`), and posts that carry the message draw at least 1.2 times the engagement of those that do not | A recommendation, with "run it as a test" among its options |
+  | **Flat** | Both sides are above the line, and the two figures are within a fifth of each other | A test only |
+  | **Negative** | Both sides are above the line, and posts that carry the message draw under five sixths of the others' engagement | A test only, and the sentence says the message has done worse so far |
+  | **Directional** | Either side is at or under the line, or no post carries the message yet | A test only |
+
+  The sentence reads: "Posts that carry it drew 16.2 engagements per 1,000 views over 34 posts,
+  against 11.8 over 212 that do not (strong)." It is a comparison, so it carries the comparison
+  markup and the "directional" mark with its post count where a side is thin. A capped mention
+  set is named in the method.
+- **A move that becomes a test** is written as one: the test plan block (3.15) with the message
+  as the one variable, the hypothesis, the posts to brief with it and without it (enough on each
+  side to clear the directional line), engagement per 1,000 views as the measure, the date it
+  reads out, and the Scale, Fix, or Stop rule. It is never worded as advice to adopt the message.
 - **Positioning decision.** When the moves add up to one positioning line, the page's Decisions
-  carries it: the line, why (the cards behind it), who decides (product marketing, as a role,
-  unless the brand's saved team names a person), a real date (the next run, or a launch on the
-  brand's calendar), and the options (adopt it, adopt part of it, or keep the current line).
+  carries it: the line, the message test's sentence with both figures and both post counts, why
+  (the cards behind it), who decides (product marketing, as a role, unless the brand's saved
+  team names a person), a real date (the next run, or a launch on the brand's calendar), the
+  cost line, and the options. With a strong test the options are: adopt it, adopt part of it, run
+  it as a test, or keep the current line. With a flat, negative, or directional test the only
+  option offered is to run it as a test; the decision reads "Approve a test of {line}", and the
+  page writes the test.
+
+  Good: "Lead with 'built in an afternoon'. Posts that carry it drew 16.2 engagements per 1,000
+  views over 34 posts, against 11.8 over 212 that do not (strong). Cost: no spend, a change to
+  the next brief."
+
+  Bad: "Own 'the professional's choice': no competitor is described that way." Nothing shows
+  buyers reward the difference; the 9 posts that carry it drew less engagement than the rest.
 - **Next steps.** A step briefs creators on the winning topics, with a target (the next {n}
   posts show a winning topic) and a measure (the share of those posts at the threshold, against
   the topic's rate today). The gap card gets a step when someone owns the next step in the
@@ -330,8 +378,10 @@ when the page has no insights), built per **Where the brand wins, and how to sta
 3. The win cards, then the gap card.
 4. How to stand apart: the moves, then the "So:" line.
 
-The positioning decision goes in the page's decisions (3.5), and the briefing and gap steps in
-its next steps (3.6). The method states the period, the threshold and why it was picked, the
+The positioning decision goes in the page's decisions (3.5), the briefing and gap steps in
+its next steps (3.6), each with its cost line, and a move that became a test in a test plan
+block (3.15) under the moves. The method gives each message test's two figures, its post counts,
+and the words that were matched. The method states the period, the threshold and why it was picked, the
 brand's rate, that posts with and without a paid label count together, the topics with too few
 posts, and the
 posts left out for having no view count. The leadership
@@ -355,18 +405,21 @@ Above the split:
    names the claims below.
 3. **Decisions** (3.5): up to three, each with who approves it and its deadline when it has one
    (`data-by`). A deadline is a real date: the next run, a launch on the brand's calendar, or the
-   date the action that depends on it must start.
+   date the action that depends on it must start. Each carries its cost line, and a decision
+   about how to position the brand carries its message test (**Where the brand wins, and how to
+   stand apart**): with a flat, negative, or directional test it is a decision to approve a test.
 4. **Action plan** (3.6), at most five rows: one row per action: what, the owner as a role (social, product
    marketing, product, performance) unless the brand's saved team names a person, when, how
-   you will know it worked, and how strong the evidence is (the number of creators and posts
-   behind it).
+   you will know it worked, how strong the evidence is (the number of creators and posts
+   behind it), and what it costs.
 
 Below the split, in the order the claims use them:
 
 5. **Up to three claims** (3.4, summary variant first): one card per claim, each linking to its
    section, drawn from share of voice, features compared, friction, and framing, picking those
    that most change what leadership should do. Fewer claims with evidence means fewer cards;
-   never pad to three.
+   never pad to three. A claim that could help or hurt the brand is a trend to watch, with both
+   readings and its signals, and no decision rests on it.
 6. **One section per claim** (3.4): the claim, the evidence with big numbers, the comparison
    (the baseline, or a competitor), a chart for the headline claim (share of voice by period, or
    share and growth by entity), the split by paid label or none, and "What this means for you" as the

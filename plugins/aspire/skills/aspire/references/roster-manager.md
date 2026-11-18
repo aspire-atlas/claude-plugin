@@ -216,6 +216,15 @@ A creator new to the deal (fewer than 30 days since `agreedAt`, nothing due) is
 | `retire` | Your call: drop, pause, or keep | None |
 | `insufficient` | Review again when there is data; say what is missing | None |
 
+**What each recommendation costs.** Every recommendation and your-call item ends with its cost
+line (**Page standard**, `recommendations.md`). A check-in, a re-engagement note, a pause, and a
+drop are "No spend". A rebook, a renewal as is, a raise, or a promotion gives the cost per month
+or per post from the creator's agreed terms or the ledger's last period, as an estimate with its
+basis; on this page amounts live in the team data, so the line reads "Cost: in the team view"
+and the amount with its arithmetic sits there. The agent never prices a new term, so a raise or
+a change of deal type with no fee on record reads "Cannot be priced: next term's fee is not set,
+and the person who approves the renewal has it".
+
 **Changed since the last review.** When a newer `roster-health` exists from an earlier run,
 show the old segment beside the new one and say what moved.
 

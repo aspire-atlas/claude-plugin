@@ -187,7 +187,11 @@ The terms object, one block per type the program carries:
  "affiliate": {"commissionPct": 15, "commissionPctMax": 20, "codeDiscountPct": 20,
                "codeDiscountPctMax": 25, "codePattern": "{HANDLE}20",
                "codeDiscountAmount": null, "attributionDays": 30, "payout": "monthly",
-               "disclosure": "#ad and code in caption"},
+               "disclosure": "#ad and code in caption",
+               "tiers": [{"name": "Tier 1", "commissionPct": 15,
+                          "threshold": {"metric": "revenue", "amount": 0, "months": 1}},
+                         {"name": "Tier 2", "commissionPct": 18,
+                          "threshold": {"metric": "revenue", "amount": 1000, "months": 2}}]},
  "rights": {"organicRepost30": 150, "paidUsage30": 400, "whitelisting30": 600}}
 ```
 
@@ -202,7 +206,10 @@ call. Usage runs from the post date for `usageDays`. Ambassador `postWithinDays`
 start of each month of the term. `graceDays` (default 3) is how long after the due date a post is
 still waiting rather than missing; `mustInclude` lists what each post must carry beyond the
 disclosure (a tag, a link, the code), and is optional on every block. `codeDiscountAmount` is a
-fixed-amount code instead of a percentage. `payout` is `monthly` or `net-{n}` (days after the
+fixed-amount code instead of a percentage. `tiers` is the optional commission ladder, lowest
+tier first: each tier's rate and the `threshold` to reach it (`metric` `revenue` or `orders`, the
+`amount` per month, and for how many closed `months` running); the affiliate manager reads it and
+proposes one when it is absent (**Affiliate manager**). `payout` is `monthly` or `net-{n}` (days after the
 month closes). `paymentTiming` is when a fee is due: `on-agreement`, `net-{n}`, `on-posting`, or
 `on-posting-net-{n}`; P5 asks it, negotiation copies it onto each deal, and without it the
 ledger uses `on-posting-net-30` for paid and `net-30` for ambassador, labelled as a default. The optional `rights` block holds the brand's own usage fees per 30 days, typed in
