@@ -49,19 +49,23 @@ it unless the flow already allows them). Write down each search as you make it, 
 - **Name the evidence the explanation rests on,** Atlas first and oldest first, then outside
   evidence. The block is `explanation` (`blocks.md`, 3.21).
 - **Every post cited is a link to the post.** In the explanation each piece of evidence is a link
-  (`data-evidence`), and each cited post also has its post card (`blocks.md`, 3.8), whose
-  `data-post` element holds an `<a href>` to the same link.
+  carrying `data-evidence` with its source: `atlas` (a post or caption Atlas holds), `site` (the
+  brand's own site or store), or `outside` (a coupon site, another store, and every saved capture).
+  Each cited post also has its post card (`blocks.md`, 3.8), whose `data-post` element holds an
+  `<a href>` to the post (a timecode or share parameters after the link are fine).
 - **No evidence in Atlas, no cause.** Write "Not explained yet" on a `data-unexplained` line, with
   what was searched on a `data-searched` line. Never fill the gap with the likeliest-sounding
   cause, and never name an outside source as the cause when Atlas holds no evidence for it either.
 - **Correlation stays correlation.** A post near a sale is shown beside it, never as its cause.
   Where a flow fixes the wording (the affiliate timeline's correlation line), keep it word for word.
 - **A page shared outside the team** keeps the explanation and its links. A "Not explained yet"
-  line stays: it is a finding about the result, not a gap in what Atlas could read.
+  line stays: it is a finding about the result, not a gap in what Atlas could read. Its
+  `data-searched` line names only what was searched, never a source that could not be read
+  (section 3).
 
 The page check's R7 fails a cited post with no link, an explanation with neither linked evidence nor
-a "Not explained yet" line, and a "Not explained yet" line with nothing searched (`SKILL.md`,
-section 5).
+a "Not explained yet" line, an explanation that rests only on `outside` evidence, and a "Not
+explained yet" line with nothing searched (`SKILL.md`, section 5).
 
 ## 3. Save evidence that can disappear
 
@@ -76,13 +80,15 @@ is read, never later in the run.
    URI, its link, its date and time, and the words in a `blockquote`. The explanation links to it.
 3. **A host that cannot browse or take a screenshot** saves the link, the date and time, and the
    quoted words, and the block says "Screenshot not taken". A source the run could not read at all
-   is not evidence; name it in what was searched as "{site}: could not be read".
-4. **In Atlas, for the next run:** the flow's own finding for that person carries the capture in
-   its detail as `saved`: one entry per capture, `{"url", "capturedAt", "quote", "screenshot":
-   true|false, "page"}`, where `page` is this run's page link. An Atlas finding holds text, not
-   images; the screenshot lives on the published page, which keeps it. Write it with the flow's
-   other findings, under the same confirmation. A flow that writes nothing to Atlas keeps the
-   capture on its page only, and says so in the method.
+   is not evidence. On a team page, name it in what was searched as "{site}: could not be read";
+   on a page shared outside the team, leave it off the page and put it in the page check's `gaps`
+   (`SKILL.md`, section 7).
+4. **In Atlas, for the next run:** a flow whose reference names a finding for captures keeps them
+   there as `saved`, one entry per capture, `{"url", "capturedAt", "quote", "screenshot":
+   true|false, "page"}`, where `page` is this run's page link. Today only the affiliate report does
+   (its A8 report finding). An Atlas finding holds text, not images; the screenshot lives on the
+   published page, which keeps it. Write it with the flow's other findings, under the same
+   confirmation. Every other flow keeps the capture on its page only, and says so in the method.
 
 ## 4. The next run
 
@@ -96,14 +102,16 @@ the new page still relies on:
   screenshot when the earlier page can be read (`page`), marked `data-gone` with "No longer visible
   on {today}". Carry the entry forward unchanged in this run's finding, so the capture outlives the
   site.
-- A capture the new page no longer relies on is left out of the page and still carried forward
-  in the finding, so no capture is lost between runs.
+- **What the finding keeps:** the captures this page relies on, then the earlier ones, newest
+  first, up to 10 in all. A capture the page relies on is never dropped; an older one past the
+  tenth is, since its page still holds it.
 
 ## 5. What the result reports
 
-The page check's `explanations` (`SKILL.md`, section 7) has one entry per explanation block: its
-claim in a few words, the count of linked evidence, every search made as section 1 lists it, and
-the captures saved or carried. The audit trail's data gaps list each outside source that could not
+The script's R7 line lists `explanations`, which the page check block copies (`SKILL.md`,
+section 7): one entry per explanation block, with its claim in a few words, the count of evidence
+from Atlas or the brand's site, what its `data-searched` line names, and the saved captures it
+links. The audit trail's data gaps list each outside source that could not
 be read and each "Screenshot not taken".
 
 ## 6. A good explanation and a bad one

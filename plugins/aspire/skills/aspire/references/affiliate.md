@@ -328,16 +328,10 @@ marks that creator's posts and points to these cards, so every marker's post has
 card, whatever the creator's orders. Engagement, its method line, and missing metrics follow
 the page standard, section 8 (**A missing metric is never 0**).
 
-**Why a creator sells.** The timeline reads only the period's posts, which is right for the
-chart and too narrow for a cause. Before the page says why a creator's code sold (or stopped
-selling), run the wider search in
-`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/explanations.md`, section 1, on that creator: every network Atlas holds for them, posts at any date, with `queryText` on their code
-and the brand's name across captions, transcripts, and descriptions, then the brand's own site
-where the run can read it. A coupon site, deal forum, or other store is read last, saved as
-`explanations.md`, section 3, says the moment it is read, and named as a cause only beside the
-evidence from Atlas, never in its place. With no evidence in Atlas, the page says "Not explained
-yet" with what was searched. Each capture goes in the creator's report finding as `saved`
-(**Records written**), and a later report shows it again as section 4 of that file says.
+**Why a creator sells.** Before the page says why a creator's code sold (or stopped selling),
+follow `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/explanations.md` for that creator, using
+`queryText` on their code and the brand's name. Its captures go in the creator's A8 report finding
+as `saved` (**Records written**).
 
 ## Recommendations
 
@@ -503,11 +497,11 @@ period.
 | A1, a code planned | `code`, kind, value, `codeStatus` `planned`, `period` this month | `action_item` `low` |
 | A2, created in the store | `codeStatus` `live`, `codeMethod` `store`, `codeCreatedAt`, `storeRef` | `action_item` `low` until it has sales |
 | A4, live or off from the sheet | `codeStatus` `live` or `retired`, `codeMethod` `sheet`, `codeCreatedAt` or `retiredAt` | as above |
-| A8, a report | Every figure in **Per creator, per period**, `source`, `sourceLabel`, `partial`, and `saved` (the captures behind the page's explanations, plus every earlier one, carried forward unchanged) | `went_well` with sales; `action_item` `low` with none |
+| A8, a report | Every figure in **Per creator, per period**, `source`, `sourceLabel`, `partial`, and `saved` (read from the creator's last report finding and kept as `explanations.md`, section 4, says) | `went_well` with sales; `action_item` `low` with none |
 | A9, turned off in the store | `codeStatus` `retired`, `retiredAt` | `action_item` `low` |
 
 Only an A8 report finding carries `source` (store or csv). A code finding copies the code
-fields and `saved`, so no capture is lost between reports, never `source` or a period's figures, and never counts as a report: the Program manager's "Report sales and commission" row and the dashboard's "Sales to
+fields, never `source`, `saved`, or a period's figures, and never counts as a report: the Program manager's "Report sales and commission" row and the dashboard's "Sales to
 report" item look for a report finding for the last closed month.
 
 **Fields this agent adds to `affiliate`** (beyond **Influencer program**'s list): `type` (`affiliate` or

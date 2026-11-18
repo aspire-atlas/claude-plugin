@@ -122,8 +122,6 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
   out. Each Maybe carries the one question that would settle it. Screen in the order the user
   ranked the brief's criteria. When the ask comes up short, say so ("3 of the 20 asked for") and
   never pad the list.
-- **Any page that explains why something happened** (a sales spike, a top seller, a drop): search everything Atlas holds on the people involved first (every network, no date limit, captions, transcripts, descriptions, and the brand's own site), then name the linked evidence or write "Not explained yet" with what was searched.
-  Save outside evidence that can disappear (a coupon site, a store page) as it is read. Follow `explanations.md` in this folder.
 
 ## 4. Build loop
 
@@ -177,7 +175,7 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md`, section 6, sets, so the page saves to PDF
    in the light theme with a footer on every page.
    **3a. Like for like.** As you write each comparison (two groups, two periods, or two brands side by side, or a share), run the four checks in `comparisons.md` in this folder (same kind, every mention counted, enough posts, share against size). One that fails a check and stays says which, in one line.
-   **3b. Explanations.** Before you write why something happened, run the wider search in `explanations.md` and save any outside evidence as it is read (section 3).
+   **3b. Explanations.** Before you write why something happened (a sales spike, a top seller, a drop), run the wider search in `explanations.md` and save outside evidence that can disappear as it is read.
 4. **Self-check R1 to R15.** Run the script in section 5 for R1, R2, R6, R7's links, R11, R13, R14, and R15, and judge
    the others against `reader-standard.md`. Fix every fail you can and check again. **4b.** The English read by a separate reviewer: follow `english-read.md` in this folder. **4c.** The rendered UX review, on the same draft: follow `ux-review.md`.
 5. **Publish** in the publish pass (steps 4b and 4c), even when a check still fails; report it (section 7). An open UX Must holds an interactive publish (`ux-review.md`).
@@ -258,11 +256,11 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   shown on the post beside where the number would sit ("Views not available: image posts have no
   view count"). Never show a missing metric as 0; a 0 Atlas read is a real 0. A page that cites
   no post, or answers no code, has no `data-question` and gets R13 `n/a`.
-- Every cited post links to itself: the element with `data-post` holds an `<a href>` to the same
-  post. An explanation carries `data-explain`, its evidence `data-evidence` (each a link to the
-  evidence, or to a saved capture on the page by its `#id`), or a `data-unexplained` line with
+- Every cited post links to itself: the element with `data-post` holds an `<a href>` to the post.
+  An explanation carries `data-explain`, its evidence `data-evidence="atlas|site|outside"` (each a
+  link, or a link to a saved capture by its `#id`), or a `data-unexplained` line with
   `data-searched`; saved outside evidence carries `data-saved` (`explanations.md`; blocks 3.21 and
-  3.22). An explanation left unmarked passes the script, so mark every one.
+  3.22). A page that cites no post and marks no explanation gets R7 `unmarked`: read it for one.
 - Every account the page cites carries `data-account="{network}:{handle}"`: each cited post, and
   each creator or account card. A post cited only as mention evidence carries `data-mention`
   instead, and the source line then holds one `data-fresh="mentions"` entry. The scope's
@@ -331,7 +329,7 @@ words ("page check: 9 pass, 2 fixed, 1 n/a").
   Every `n/a` has its reason here too, as "R2 n/a: {reason}".
 - `gaps`: on a page shared outside the team, what Atlas could not read, for the main thread to
   tell the requester. Empty on a team page, whose gaps are on the page.
-- `comparisons`: every comparison on the page, as the script's R15 line lists them (`comparisons.md`); written by hand in the same shape when the script did not run; `[]` when the page compares nothing. `explanations`: one entry per `data-explain` block, with its linked evidence count, what was searched, and the outside evidence it saved (`explanations.md`); `[]` when the page explains nothing. `scripted`: `ran`, `read` (no Python, or a page drawn in script), or `unmarked`. `englishRead`: as `english-read.md` sets it. `uxReview`: as `ux-review.md` sets it.
+- `comparisons`: every comparison on the page, as the script's R15 line lists them (`comparisons.md`); written by hand in the same shape when the script did not run; `[]` when the page compares nothing. `explanations`: as the script's R7 line lists them (`explanations.md`, section 5); `[]` when the page explains nothing. `scripted`: `ran`, `read` (no Python, or a page drawn in script), or `unmarked`. `englishRead`: as `english-read.md` sets it. `uxReview`: as `ux-review.md` sets it.
 
 ## 8. Required metrics, by kind of question
 

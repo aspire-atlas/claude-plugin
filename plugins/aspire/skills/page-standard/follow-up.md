@@ -35,10 +35,6 @@ it, and its result still lists its `openItems` as `SKILL.md`, section 1, says fo
 5. **When nothing changed, say so.** "Nothing has moved since 12 Nov: the two steps are still
    open and the figures are within a tenth of last time's." is a complete lead.
 
-6. **Saved evidence comes back.** A capture the last run saved and this page still relies on is
-   shown with its first date, and marked "No longer visible" when the source now blocks the
-   check (`explanations.md`, section 4).
-
 Where the flow's reference already leads with change from its own records (a readout's action
 items, the market signal's tracking, the program dashboard's snapshot), follow the reference and
 add the `since` items to it. Never show the same item twice.

@@ -827,8 +827,10 @@ chart's caption, the comparison carries this markup (`comparisons.md`).
 on, or "Not explained yet" with what was searched. The wider search comes first
 (`explanations.md`).
 
-- `data-explain` on the block. Each piece of evidence is a link carrying `data-evidence`: a post,
-  a caption or description at its timecode, a store page, or a saved capture (3.22) by its anchor.
+- `data-explain` on the block. Each piece of evidence is a link carrying `data-evidence` with its
+  source: `atlas` (a post, or a caption or description at its timecode), `site` (the brand's own
+  site or store), or `outside` (a coupon site, another store, and every saved capture (3.22),
+  linked by its anchor). An explanation needs at least one `atlas` or `site` piece.
 - Evidence from Atlas comes first, oldest to newest. Outside evidence follows it.
 - With no evidence in Atlas, the block says "Not explained yet" on a `data-unexplained` line and
   lists what was searched on a `data-searched` line. Never name a cause the evidence does not show.
@@ -839,9 +841,9 @@ on, or "Not explained yet" with what was searched. The wider search comes first
 <div class="pb-card" data-block="explanation" data-explain>
   <p class="pb-claim">@makerjune's code sold through her own older posts, and a coupon site carried it too.</p>
   <ul>
-    <li><a data-evidence href="https://www.tiktok.com/@makerjune/video/EXAMPLE1">Her TikTok from Mar 3, 2026, which still names the code</a></li>
-    <li><a data-evidence href="https://www.youtube.com/watch?v=EXAMPLE2">The code in her YouTube video's description, Sep 18</a></li>
-    <li><a data-evidence href="#saved-1">The code on a coupon site, saved Oct 30</a></li>
+    <li><a data-evidence="atlas" href="https://www.tiktok.com/@makerjune/video/EXAMPLE1">Her TikTok from Mar 3, 2026, which still names the code</a></li>
+    <li><a data-evidence="atlas" href="https://www.youtube.com/watch?v=EXAMPLE2">The code in her YouTube video's description, Sep 18</a></li>
+    <li><a data-evidence="outside" href="#saved-1">The code on a coupon site, saved Oct 30</a></li>
   </ul>
 </div>
 <div class="pb-card" data-block="explanation" data-explain>
