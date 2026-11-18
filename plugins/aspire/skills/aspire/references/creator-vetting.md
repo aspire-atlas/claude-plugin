@@ -436,8 +436,8 @@ their newest 50; the page's key says so.
 ### 1. Brand fit (the fit score, out of 100)
 
 Scored against `vetting:criteria`, the chosen campaign's `campaign:{slug}-brief` and
-`-criteria` when R2 named one, or the applicant review's resolved criteria when R2 named a review. Weights follow creator discovery's **Scoring** so a creator
-scores the same in both flows:
+`-criteria` when R2 named one, or the applicant review's resolved criteria when R2 named a review. Weights follow creator discovery's **Scoring**;
+discovery does not yet use the criteria map below, so its score for a creator can differ from this one:
 
 | Component | Weight | Source |
 | --------- | ------ | ------ |
@@ -496,7 +496,15 @@ criteria gives each one its weight ÷ n. A criterion earns that share times its 
 **Partly met** ½, **Not met** 0. A criterion with no data is "not available", earns 0, and is listed
 as missing. Criterion points are kept to one decimal; a component's points are its weight × (the sum
 of its credits ÷ n), rounded to the nearest whole point, a half rounding up; the fit score is the
-sum of the components' points, then the dormant cap. Example: Audience and archetype fit (30) with
+sum of the components' points, then the dormant cap. When a component is not available for the
+whole run because the criteria name nothing for it and it has no default (Audience and archetype
+fit, step 4), the fit score is that sum × 100 ÷ the weight left (70 without Audience and archetype
+fit), rounded the same way, so every threshold stays reachable; the page says so ("scored out of 70,
+scaled to 100: the criteria name no audience or archetype"). A component that is not available for
+one creator only (no audience census, too few posts with a like count) still earns 0 for that
+creator. The dormant cap applies in every run, whether cadence comes from the criteria or the
+default: a creator with no post in the last 30 days is dormant, and the fit score is capped at 50
+after any scaling. Example: Audience and archetype fit (30) with
 `c1` owns a dog (Met) and `c2` the dog is overweight (Partly met) scores 15 + 7.5 = 22.5, so 23.
 
 **3. Credit by measure.** Counts are over the posts read for the creator (**What to read per
@@ -514,6 +522,10 @@ the finding name the window and the count ("4 of 31 posts, 90 days").
 | `format` | 50% or more of the posts read are in the named formats | 20% to 49% | Under 20% |
 | `country` | The country on record is a named one | n/a | The country on record is another (none on record: not available) |
 | `language` | More than half the posts read are in it | Some, but half or fewer | None |
+
+**The engagement rate** for an `engagement` criterion is the one step 4 defines: the median of
+(likes + comments) ÷ followers over the posts read with a like count. When the criterion names its
+own basis ("6% of views"), views replace followers; the finding names the basis either way.
 
 **What counts as a match.** A post counts for a `trait` or `topic` criterion when its caption,
 hashtags, transcript, or overlay text says it outright, or it is plainly the post's main subject; a
@@ -535,10 +547,11 @@ default criterion, so it scores the same way every run:
 - **Topic evidence**: the brand's subject as `brand:summary` states it, as one `topic` criterion.
 - **Engagement quality**: the creator's median engagement rate, (likes + comments) ÷ followers over
   the posts read with a like count (at least 5, else not available), against the bar for their size
-  band. Bars, Instagram / TikTok: under 10K followers 3.0% / 6.0%; 10K to 50K 2.0% / 5.0%; 50K to
-  250K 1.5% / 4.0%; 250K to 1M 1.0% / 3.0%; 1M and up 0.7% / 2.0%.
+  band. Bars, Instagram / TikTok: under 10K followers 3.0% / 6.0%; 10K to under 50K 2.0% / 5.0%; 50K
+  to under 250K 1.5% / 4.0%; 250K to under 1M 1.0% / 3.0%; 1M and up 0.7% / 2.0%. A creator at exactly
+  50K, 250K, or 1M is in the higher band.
 - **Cadence and recency**: posts in the last 30 days: 8 or more Met, 2 to 7 Partly met, 0 or 1 Not
-  met. No post in the last 30 days is dormant: the fit score is capped at 50.
+  met. The dormant cap (step 2) applies here too.
 - **Format match**: Met for every creator ("no format named").
 - **Market fit**: Met for every creator ("no market named").
 
@@ -581,8 +594,9 @@ a borderline match moves one criterion by one step, which the line-by-line view 
   `vetting:hard-rejects` lists it.
 - **Criteria exclusions.** Each exclusion in the criteria map (**How criteria become points**) is
   its own check over the posts read: a post that shows what it rules out (a paid post for the
-  category it names, a partnership it names) is a Flag citing the post; none is a Pass that names
-  the window read ("90 days read; the criterion asks for 6 months"). Never points.
+  category it names, a partnership it names) is a Flag citing the post. None in a window at least
+  as long as the criterion asks for is a Pass. None in a shorter window is a Pass that says how much
+  was checked ("checked 90 of 180 days"), never a plain Pass. Never points.
 - **Earlier verdicts.** `search_insights` for `brand_safety` role findings on the creator's
   posts, and earlier content reviews of the creator (`content-review-{profile}` prefix,
   `detail.creator`). Cite them; never contradict one silently.
@@ -1057,7 +1071,7 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
 13. **How the verdict was made** (3.11): the fit score's components and weights, the criteria
    map as a table (each criterion's id, words, component, measure, and points at Met; the
    exclusions and the criteria posts can't show listed apart; the components on their defaults
-   named), the credit rules in one line ("Met 1, Partly met ½, Not met 0; posts counted over the
+   named, and the scaling when a component had no criterion in the run), the credit rules in one line ("Met 1, Partly met ½, Not met 0; posts counted over the
    posts read"), the safety
    results, the recommendation order and the thresholds, the hard rejects, every saved call or
    lesson that changed a verdict, which posts the findings used, how a lift is worked out (the
