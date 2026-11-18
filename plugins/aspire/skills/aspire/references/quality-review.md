@@ -52,7 +52,7 @@ in that mode, in scheduled runs too. Before anything, read this file (**1**, **8
 1. **The work**: the link or file given, else the "Review" question.
 2. **Who reads it, and against what**: one call ("For", "Brief", "Atlas").
 3. **Launch** `atlas-quality-review` (**Running agents**) with the inputs in **11.1**, `log` read
-   from `quality-review:log`.
+   from `qualityreview:log`.
 4. **Relay** the page link, verdict, failed checks, Critical findings, data access, and coverage.
 5. **Next**: "Review it again after the fixes?"; "Apply the fixes" relaunches the flow that built
    the page with a "Review fixes" paragraph.
@@ -62,7 +62,7 @@ in that mode, in scheduled runs too. Before anything, read this file (**1**, **8
 
 ### Review log
 
-Off unless the organization names a Doc; one "Log" confirmation writes `quality-review:log`
+Off unless the organization names a Doc; one "Log" confirmation writes `qualityreview:log`
 (**11.2**). Never suggest one.
 
 ## 1. Inputs
@@ -668,7 +668,7 @@ reviewers' and see which checks they agree on. It is a setting the organization 
 Claude Doc it owns, or none. Nothing goes to Atlas, and nothing goes anywhere the organization did
 not name.
 
-- **Where it is saved.** The `quality-review:log` calibration (`policy`, `{area: "routing", body:
+- **Where it is saved.** The `qualityreview:log` calibration (`policy`, `{area: "routing", body:
   "docs:{link}"}`), set from SKILL.md's **Quality review**, Review log. The main thread reads it
   before each launch and passes it as `log`; without it, `log` is `none`. A `file:{path}` log is
   never saved for the organization; it is passed for one review when the user names a local file.
@@ -733,7 +733,7 @@ unattended session.
    `earlier_review` (the earlier review's link) when the same work was reviewed before,
    `page_check` (the page's `page-check` block, when the agent returned one), ending with
    the decision-audit line. For `log`: when Atlas is connected and the session has a profile
-   (whatever the "Atlas" answer was), find the key `quality-review:log` with `search_calibrations`
+   (whatever the "Atlas" answer was), find the key `qualityreview:log` with `search_calibrations`
    (no filter, limit 100 per page, paged to the end; read only) just before launching and pass its
    `body`; with no record, no
    profile, or no connection, pass `none`. Never ask about the log during a review.
@@ -783,7 +783,7 @@ organization. Someone who names a local file gets it for that one review only (p
 `log: file:{path}`), and is told so in one line. Confirm with `AskUserQuestion`, header "Log": "Add
 a row to {doc} after every quality review for {brand}? Each row has the verdict and failed checks,
 with columns left for your reviewers." Options: "Log reviews there (Recommended)", "Not now". On
-yes, write `quality-review:log` with `append_calibration` (`policy`, `{area: "routing", body:
+yes, write `qualityreview:log` with `append_calibration` (`policy`, `{area: "routing", body:
 "docs:{link}"}`, `provenance: "interview"`); a `key-exists` follows the Phase 5 supersede rule. Turning it off is `retract_calibration` with its
 own confirmation. Never suggest a log the organization did not name.
 

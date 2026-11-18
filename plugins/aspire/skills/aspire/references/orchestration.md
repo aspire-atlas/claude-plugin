@@ -359,8 +359,8 @@ The reader, scope, and save choice are kept in two places, by whom the answer is
   `{concern: "preference", appliesTo: ["{flow}"], body: "reader: {lens}[, {lens}]; scope:
   {channels}, {window}; save: page|atlas; at: {UTC time from the shell clock}"}`.
 - **A flow's own setup record wins.** When a flow's setup already saves one of these answers
-  (the readers in `guideline:readout-audience` or `market-signal:lenses`, the scope in
-  `market-signal:scope` or `orchestrator:scope`), that record is the flow's saved answer, and its
+  (the readers in `guideline:readout-audience` or `marketsignal:lenses`, the scope in
+  `marketsignal:scope` or `orchestrator:scope`), that record is the flow's saved answer, and its
   `lastrun:` record leaves that part out. The flow's section names its `lastrun:` key.
 
 **Precedence.** For each answer, the first that holds wins: what this ask says; the person's
