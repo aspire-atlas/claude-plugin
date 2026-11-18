@@ -323,12 +323,13 @@ def r6(nodes, regions, out):
 # any other data-recommend) says what it costs, and every trend to watch gives both readings and
 # the signals that would settle it. Whether a step names its owner, date and result, whether the
 # arithmetic is right, and whether an effect is two-sided are still judged by reading.
-COSTS = ("money", "none", "unpriced", "team")
+COSTS = ("money", "none", "unpriced", "team", "reader")
+NO_STEPS = re.compile(r"(?i)\bno next steps?\b")
 NO_SPEND = re.compile(r"(?i)\bno spend\b")
 UNPRICED = re.compile(r"(?i)\bcannot be priced\b")
 TEAM_VIEW = re.compile(r"(?i)\bteam view\b")
 ESTIMATE = re.compile(r"(?i)\bestimated?\b")
-PER_MONTH = re.compile(r"(?i)\b(?:a|per|each|every)\s+month\b|\bmonthly\b")
+PER_MONTH = re.compile(r"(?i)\b(?:a|per|each|every)\s+month\b|\bmonthly\b|/\s?(?:month|mo)\b")
 # An amount with its currency: a code before or after the number ("USD 162", "162 USD") or a symbol.
 AMOUNT = re.compile(r"(?<![A-Za-z])[A-Z]{3}\s?\d[\d,]*(?:\.\d+)?|\d[\d,]*(?:\.\d+)?\s?[A-Z]{3}(?![A-Za-z])|[$€£¥]\s?\d[\d,]*(?:\.\d+)?")
 READINGS = ("helps", "hurts")
@@ -347,13 +348,18 @@ def step_items(region):
         return any(item(a) for a in ancestors(n) if a is not region and region in ancestors(a))
     return [n for n in walk(region) if n is not region and item(n) and not nested(n)]
 
-def cost_problems(node, label, out):
+def cost_problems(node, label, out, outside):
     kind = (node.attrs.get("data-cost") or "").strip().lower()
     lines = [n for n in walk(node, keep=lambda n: n.tag not in SKIP) if "data-cost-line" in n.attrs]
     line = " ".join(text(n, gap=" ") for n in lines)
     out.setdefault("recommendations", []).append({"text": text(node, gap=" ")[:80], "cost": kind or None, "line": line[:160]})
     if kind not in COSTS:
         return ["%s has data-cost \"%s\"; say what it costs: %s" % (label, kind, ", ".join(COSTS))]
+    if kind == "reader":
+        # A step the outside reader takes themselves: only on a shared page, and with no cost shown.
+        if not outside:
+            return ["%s is marked as the reader's own step, but the page is not shared outside the team; give its cost" % label]
+        return ["%s is the reader's own step, so it shows no cost line" % label] if line else []
     if not line:
         return ["%s shows no cost line (data-cost-line): its cost, \"no spend\", or \"cannot be priced\"" % label]
     problems = []
@@ -414,21 +420,27 @@ def trend_problems(node, label, out):
     return problems
 
 def r5(nodes, regions, out):
-    # Returns None (unmarked) on a page with no decision, no next step, no data-recommend and no
-    # data-trend: read it for a recommendation the markup missed.
+    # Returns None (unmarked) on a page with no decision, no next steps section, no data-recommend
+    # and no data-trend: read it for a recommendation the markup missed.
     recommends = [n for n in nodes if "data-recommend" in n.attrs]
     trends = [n for n in nodes if "data-trend" in n.attrs]
     decisions = [n for n in nodes if "data-decision" in n.attrs]
     steps = [item for region in regions.get("next-steps", []) for item in step_items(region)]
-    if not (recommends or trends or decisions or steps):
+    if not (recommends or trends or decisions or regions.get("next-steps")):
         return None
     problems = []
     for what, found in (("decision", decisions), ("next step", steps)):
         for node in found:
             if not marked(node, "data-recommend"):
                 problems.append("%s \"%s\" is a recommendation with no cost: mark it data-recommend with data-cost and a cost line" % (what, text(node, gap=" ")[:60]))
+    for region in regions.get("next-steps", []):
+        # Steps written as paragraphs or cards are not found as items, so they must be marked.
+        words = text(region, gap=" ", skip=lambda n: n.tag in ("h1", "h2", "h3", "h4", "h5", "h6"))
+        if words and not step_items(region) and not any("data-recommend" in n.attrs for n in walk(region)) and not NO_STEPS.search(words):
+            problems.append("the next steps section marks no step: put data-recommend on each one, or say \"No next steps\"")
+    outside = shared(nodes)
     for index, node in enumerate(recommends, 1):
-        problems += cost_problems(node, "recommendation %d (\"%s\")" % (index, text(node, gap=" ")[:50]), out)
+        problems += cost_problems(node, "recommendation %d (\"%s\")" % (index, text(node, gap=" ")[:50]), out, outside)
     for index, node in enumerate(trends, 1):
         problems += trend_problems(node, "trend %d (\"%s\")" % (index, text(node, gap=" ")[:50]), out)
     return problems
@@ -1068,7 +1080,7 @@ def r15(nodes, regions, out):
 CAN_BE_NA = {"R2", "R6", "R15"}
 NA_REFUSED = {"R15": ("data-compare", "the page marks a comparison")}
 # What a check that returns None reports: n/a on its own terms, or unmarked, to be judged by reading.
-NO_RESULT = {"R5": ("unmarked", "the page marks no decision, next step, recommendation or trend to watch; read it for one"),
+NO_RESULT = {"R5": ("unmarked", "the page has no decision, no next steps section, and no marked recommendation or trend to watch; read it for one"),
              "R7": ("unmarked", "the page cites no post and marks no explanation; read it for one, and mark every explanation"),
              "R13": ("n/a", "the page names no question code and cites no post"),
              "R14": ("n/a", "the page cites no account and no post, its scope reports on no account, and it has no freshness entry"),

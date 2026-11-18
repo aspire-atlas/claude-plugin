@@ -612,7 +612,7 @@ acts on.
                "widen": "{the wider scope the agent would read, or null}"},
  "openItems": [{"id": "d1", "kind": "decision", "text": "{one line}", "owner": "{who}",
                 "due": "{YYYY-MM-DD, or null}", "status": "open", "opened": "{YYYY-MM-DD}",
-                "cost": {"kind": "{money, none, unpriced, or team}", "line": "{the cost line}",
+                "cost": {"kind": "{money, none, unpriced, team, or reader}", "line": "{the cost line}",
                          "basis": "{the figures and period it was worked from, or null}"}}]}
 ```
 

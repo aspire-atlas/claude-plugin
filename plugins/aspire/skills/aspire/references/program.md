@@ -209,7 +209,8 @@ disclosure (a tag, a link, the code), and is optional on every block. `codeDisco
 fixed-amount code instead of a percentage. `tiers` is the optional commission ladder, lowest
 tier first: each tier's rate and the `threshold` to reach it (`metric` `revenue` or `orders`, the
 `amount` per month, and for how many closed `months` running); the affiliate manager reads it and
-proposes one when it is absent (**Affiliate manager**). `payout` is `monthly` or `net-{n}` (days after the
+proposes one when it is absent, and an empty list records that the user chose no tiers
+(**Affiliate manager**). `payout` is `monthly` or `net-{n}` (days after the
 month closes). `paymentTiming` is when a fee is due: `on-agreement`, `net-{n}`, `on-posting`, or
 `on-posting-net-{n}`; P5 asks it, negotiation copies it onto each deal, and without it the
 ledger uses `on-posting-net-30` for paid and `net-30` for ambassador, labelled as a default. The optional `rights` block holds the brand's own usage fees per 30 days, typed in

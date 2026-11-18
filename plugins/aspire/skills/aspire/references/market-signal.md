@@ -203,6 +203,15 @@ Filter path unless noted, `context` on every call, only field paths from the cen
      name any of them, and their creators, as above, over the period. When M2 tracks the brand's own product for that step, count the brand's posts that
      name it beside them.
 
+9. **Message test reads**, for each positioning move and the positioning line (team page and
+   leadership page), made once the moves are drafted. Two `search_posts` reads per message, both
+   on the brand's mention-set query (step 3) over step 8's period, with `exists viewCount` and
+   `must_not` the partnership marker, so each side holds posts with no paid label only: one with
+   a `match_phrase` on the message's words, one with `must_not` those words. Project the metric
+   fields of the competitive read's row. Page each up to 500 hits and say when a side is capped.
+   `totalHits` is the side's post count; the median engagement per 1,000 views comes from the
+   paged hits.
+
 ## Analysis rules
 
 - **Share of voice.** Per entity: posts, distinct creators, and engagement, as shares of the
@@ -237,7 +246,8 @@ Filter path unless noted, `context` on every call, only field paths from the cen
 
 ### Where the brand wins, and how to stand apart
 
-From **Data method** step 8 and the posts already read in step 6; no other reads.
+From **Data method** step 8, the posts already read in step 6, and step 9's two reads per
+message; no other reads.
 
 - **Reach rate.** A topic's rate is its posts at the threshold divided by its posts. The brand's
   rate is the same over all its posts in the period. Each topic is compared with the brand's
@@ -281,15 +291,15 @@ From **Data method** step 8 and the posts already read in step 6; no other reads
 - **The message test.** A difference between the brand and a competitor is worth a message only
   if posts that carry it do better, so check before recommending it. For each move, and for the
   positioning line as a whole, take the words creators use for the message (the topic's saved
-  words, or the phrases from **Framing**) and split the brand's mention-set posts over step 8's
-  period into those that carry them and those that do not. Use posts with no paid label only, so
-  both sides hold one kind. Give each side's median engagement per 1,000 views (likes and
+  words, or the phrases from **Framing**) and read the brand's mention-set posts over step 8's
+  period that carry them and those that do not (**Data method**, step 9). Both sides hold posts
+  with no paid label only, so they are one kind. Give each side's median engagement per 1,000 views (likes and
   comments, as this page counts it everywhere) and its post count, then one strength word:
 
   | Strength word | When | What the move becomes |
   | ------------- | ---- | --------------------- |
   | **Strong** | Both sides are above the directional line (**Page standard**, `comparisons.md`), and posts that carry the message draw at least 1.2 times the engagement of those that do not | A recommendation, with "run it as a test" among its options |
-  | **Flat** | Both sides are above the line, and the two figures are within a fifth of each other | A test only |
+  | **Flat** | Both sides are above the line, and the comparison is neither strong nor negative | A test only |
   | **Negative** | Both sides are above the line, and posts that carry the message draw under five sixths of the others' engagement | A test only, and the sentence says the message has done worse so far |
   | **Directional** | Either side is at or under the line, or no post carries the message yet | A test only |
 
@@ -468,6 +478,7 @@ findings anchor to the post (`entityKind` `post`, the network's own media id). A
 | A feature the brand won, a positive spreading phrase, a win card | `went_well` | n/a |
 | A feature the brand lost, a friction issue, the gap card | `needs_improvement` | n/a |
 | A recommendation per lens (3 max), the positioning decision | `action_item` | Required |
+| A trend to watch, with `detail.trend` (`{helps, hurts, signals[]}`, each signal with `where` and `by`), so the next run can check its signals | `action_item` | `low` |
 
 `detail` carries `recipient` (primary lens), `lens` (for a secondary-lens finding),
 `window` (`{start, end}`), `competitor`, `topic`, `outcome`, `sov` (`{brand, competitors{}, organic, paid}`),

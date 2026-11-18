@@ -350,9 +350,11 @@ A creator's current tier is the highest tier whose rate is at or under their com
 an affiliate here**). When an export carries its own tier per affiliate, show it beside ours and
 list any that differ under data notes.
 
-**No tiers saved.** Propose a ladder from the program's own spread, as one your-call item, when
-10 or more in-scope creators had orders in the period. With fewer, say so in one line and propose
-none.
+**No tiers saved.** When the terms carry no `tiers` at all, propose a ladder from the program's
+own spread, as one your-call item, when 10 or more in-scope creators had orders in the period.
+With fewer, say so in one line, propose none, and use **Without a ladder** below. An empty
+`tiers` list means the user chose to have none: propose nothing unless they ask, and use
+**Without a ladder**.
 
 1. **Tier 1** is the program's standard `commissionPct`, from any order.
 2. **Tier 2**'s threshold is the period revenue of the creator at the top quarter's edge (the 75th
@@ -368,26 +370,35 @@ none.
 The your-call item is worded: "Use this commission ladder for {program}? Tier 1: 10% from any
 order. Tier 2: 12% from USD 1,000 a month. Tier 3: 15% from USD 2,500 a month, two months
 running. Moving the 2 who qualify costs about USD 293 a month. It is saved with the program's
-terms." Options: "Use this ladder (Recommended)", "Change it (type it)", "No tiers for now". The
-agent never writes the terms: the main thread saves the answer (**Main thread steps**, Report,
-step 7). Until it is saved, the proposed ladder and its lists sit in the page's `team` data,
-because its top rate is the maximum: Editors see them marked "Proposed", and everyone else sees
-"A commission ladder is proposed: team view". With "No tiers for now", the page shows no ladder
-and no invite list, and says tiers are not set.
+terms." Options: "Use this ladder (Recommended)", "Change it (type it)", "No tiers". The agent
+never writes the terms: the main thread asks this item before any other and saves the answer,
+"No tiers" included, before the invites are asked (**Main thread steps**, Report, step 3). Until
+it is saved the page shows the ladder and its lists marked "Proposed", and never calls a tier's
+rate the maximum. With "No tiers", the page shows no ladder and no invite list, and says tiers
+are not set.
+
+**Without a ladder** (too few creators to propose one, or the user chose none), the page still
+names who has earned a raise: a creator in the top fifth of in-scope creators by revenue with 10
+or more orders this period, and in the top fifth last period too when there was one. The
+recommendation is your call and proposes `commissionPctMax` as the new rate, with its monthly
+cost worked the same way as an invite's. With no `commissionPctMax` saved it names the creator
+and their figures and reads "Cannot be priced: the new rate is not set, and the person who
+approves the deal has it". Never a flat number of points.
 
 ### The invite list and the hold list
 
-For each tier above the lowest, from the period's figures and the earlier closed months' report
-findings:
+From the period's figures and the earlier closed months' report findings. A creator's target is
+the highest tier above their own whose threshold they meet in each of the `months` it asks for,
+so a creator may skip a tier:
 
-- **Invite.** Every creator below that tier who meets its threshold in each of the `months` it
-  asks for. Each line gives the figure that qualifies them for every month counted, the move
+- **Invite.** Every creator with a target, listed under that tier. Each line gives the figure that qualifies them for every month counted, the move
   ("from 10% to 15%"), and the monthly cost of the higher rate: the difference in points times
   their eligible revenue last period, as an estimate with its basis. "@creator_a: USD 3,240 in
   October and USD 2,870 in September. Moving from 10% to 15% on USD 3,240 a month costs about USD
   162 a month (estimate, from October's revenue)."
-- **Hold.** Every creator who reached three quarters of the threshold this period without
-  qualifying, and every creator above it with a reason to wait: one qualifying month where the
+- **Hold.** Every creator who reached three quarters of the threshold of a tier above their
+  target (or above their own tier, with no target) this period without qualifying, listed under
+  the lowest such tier, and every creator above a threshold with a reason to wait: one qualifying month where the
   tier asks for more, a code under **Check the code**, refunds above a fifth of their revenue, or a
   partial period. Each line gives their figure, how far short they are or the reason to wait, and
   what would move them to the invite list. "@creator_c: USD 1,980 in October, USD 520 short of
@@ -395,8 +406,8 @@ findings:
   list."
 - **An empty invite list** names the nearest creator and what they still need: "Nobody meets Tier
   3 yet. @creator_c is nearest: USD 1,980 in October, USD 520 short." Never "0 qualified" alone.
-- A creator is on one list at most, for the next tier above their own. A creator on neither list
-  is not named.
+- A creator is on one list at most: a creator with a target and no reason to wait is on the
+  invite list only. A creator on neither list is not named.
 - The invite list's total, per currency, is the monthly cost of approving all of it.
 
 ## Recommendations
@@ -407,7 +418,7 @@ amount per month with its arithmetic, from the last closed period, labelled an e
 
 | Recommendation | When | Its cost line | Goes to |
 | -------------- | ---- | ------------- | ------- |
-| **Invite to the next tier** | The creator is on an invite list (**Commission tiers**). Propose the next tier's rate, never a flat number of points | The invite line's monthly cost | Your call, then `atlas-creator-negotiation` in `mode: change` |
+| **Invite to a higher tier** | The creator is on an invite list (**Commission tiers**). Propose that tier's rate, never a flat number of points | The invite line's monthly cost | Your call, then `atlas-creator-negotiation` in `mode: change` |
 | **Hold at this tier** | The creator is on a hold list | "No spend", then what would move them up | A line on the hold list |
 | **Move to hybrid** | One of the top 3 by revenue with 20 or more orders, on an affiliate-only deal | The fee per month from the program's saved terms or the fee calculator, beside the commission they earned last period. With no fee on record: "Cannot be priced: the monthly fee is not set, and the person who approves the deal has it" | Your call, then negotiation in `mode: change` (a change of type) |
 | **Promote to paid** | An affiliate-only creator whose posts lined up with orders on 2 or more posts this period, or whose engagement in Atlas is above the roster median | The fee per post, the same way | Your call, then negotiation in `mode: change` (a change of type) |
@@ -415,8 +426,8 @@ amount per month with its arithmetic, from the last closed period, labelled an e
 | **Check the code** | A live code with orders in the store and none in the export, or the reverse | "No spend, time only" | A line under data notes |
 
 A move to a rate above `commissionPctMax`, or with no max saved, is still proposed as your call,
-and says it is above the standard. The max shows only in the page's team data. With no tiers
-saved or proposed, the page recommends no raise. The agent never changes a deal: a your-call
+and says it is above the standard. The max shows only in the page's team data. With no ladder,
+the only raise recommended is the one **Without a ladder** sets. The agent never changes a deal: a your-call
 answer becomes a hand-off for negotiation, which drafts the creator's note.
 
 Good: "Invite @creator_a to Tier 3: USD 3,240 in October and USD 2,870 in September. Cost: +5
@@ -469,7 +480,7 @@ worded as below, with the names filled in.
 | A7 | Columns | Read the file this way? (lists each mapping: "Discount code → code; Subtotal → order amount; Refunded amount → refunds"; and the match count) | 1) Use this mapping (Recommended); 2) Change something (type it) |
 | A8 | Save | Save {period} sales for {n} creators to {program} and pass {k} commission lines ({total}) to the ledger? | 1) Save (Recommended); 2) Page only |
 | A9 | Retire | Turn off {codes} in {store}? (with the store) or Put {codes} on the sheet to turn off? (without) | 1) Not yet (Recommended); 2) Turn off these {n} (or Put them on the sheet) |
-| Y | Your call | One per item: a proposed commission ladder (worded as in **Commission tiers**), tier invites (one item for the list, naming each creator, the move, and the total monthly cost), hybrids, promotions, commission mismatches | The recommended answer (Recommended), the alternatives, "Decide later" |
+| Y | Your call | One per item: a proposed commission ladder (worded as in **Commission tiers**, asked on its own before the rest), tier invites (one item for the list, naming each creator, the move, and the total monthly cost), a raise without a ladder, hybrids, promotions, commission mismatches | The recommended answer (Recommended), the alternatives, "Decide later" |
 
 More than four questions: ask the your-call items first, then the rest in a second call.
 "Change something" relaunches `propose` with the change. A Y answer that changes a deal is
@@ -512,7 +523,13 @@ store is missing, offer to connect it once and carry on with the sheet or an upl
 2. Launch with `mode: report`, `pass: propose`, A5, and A6 (the file's path for an upload).
 3. Relay the page link, the headline (revenue with its source and currency, orders, commission
    owed), one line per creator, and the timeline's line: "Sales and posts on the same days are a
-   correlation, not proof." Then ask A7 (export only), A8, A9 (only when the agent recommends
+   correlation, not proof." **When the packet proposes a ladder, settle it first:** ask that one
+   your-call item alone (with A7 for an export). For "Use this ladder", a changed one, or "No
+   tiers" (an empty `tiers` list), save `tiers` in the affiliate block of `program:{slug}-terms`,
+   the way **Program setup** changes a saved record (the Phase 5 supersede rule, with its own
+   confirmation naming the tiers). For a changed ladder or "No tiers", relaunch `pass: propose`
+   so the lists follow the saved answer, and relay the new page. "Decide later" saves nothing and
+   asks no tier invite this run. Then ask A7 (export only), A8, A9 (only when the agent recommends
    retiring codes) and Y (a proposed ladder, tier invites, hybrid moves, promotions to paid, commission figures that
    differ from the platform's), skipping what has nothing to ask, your-call items first and at
    most four questions per call.
@@ -524,10 +541,6 @@ store is missing, offer to connect it once and carry on with the sheet or an upl
    offer once, header "Next": "Take @a's {change} to negotiation?" Options: "Draft it
    (Recommended)", "Not now". The first launches `atlas-creator-negotiation` in `mode: change`
    with the change.
-7. **The ladder.** When the answer to a proposed ladder is "Use this ladder" or a changed one,
-   save it as `tiers` in the affiliate block of `program:{slug}-terms`, the way **Program setup**
-   changes a saved record (the Phase 5 supersede rule, with its own confirmation naming the
-   tiers). Then relaunch `pass: propose` once, so the invite and hold lists use the saved ladder.
 
 A1, A4 and A8 confirm Atlas writes; A2 and A9 the store; A3 the mailbox. Sending the
 `code-live` drafts follows SKILL.md **Influencer program**, Drafts: only when the user asks in
@@ -671,7 +684,6 @@ whole object; restating replaces the set):
 | ---- | ------------- |
 | `team/goal` | The sales goal, term-to-date revenue, the share reached, the currency |
 | `team/creator-{net}-{handle}` | `commissionPctMax`, `codeDiscountPctMax`, the room for a raise |
-| `team/ladder` | A proposed commission ladder with its invite and hold lists, until it is saved with the terms |
 | `data/users/{id}/done` | Each person's done marks on the recommendations |
 
 Write `team` right after each publish, one batch. On first publish say once: "Share this page
@@ -690,7 +702,7 @@ Sections, in order:
    Each card is a recommendation in the page standard's markup (`data-recommend`, `data-cost`,
    `data-cost-line`).
 3b. **Commission tiers**: a table of each tier with its rate, its threshold, and how many
-   creators are in it (a proposed ladder renders from `team/ladder`, for Editors only), then "Invite to {tier}" and "Hold"
+   creators are in it ("Proposed" until the ladder is saved), then "Invite to {tier}" and "Hold"
    for each tier above the lowest, one line per creator as **Commission tiers** words them, and
    the invite list's total a month. With no ladder, one line saying tiers are not set.
 4. **Leaderboard**: creators ranked by revenue. Each row: the creator (avatar, handle, name,

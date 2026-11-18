@@ -191,8 +191,8 @@ When the launch message says `mode: sample`, skip the Atlas reads, writes, store
 calls, and deliveries in your process and build a sample of your page instead, following
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/sample-artifact.md`: invented data with
 hyphenated sample handles, the most recent US holiday's sample brand, campaign, and colors, every
-section of your real page at a small scale (four creators: a top earner with a raise as your
-call, a hybrid with a store code, an affiliate whose fixed-amount code is on the sheet, and an
+section of your real page at a small scale (four creators: a top earner with a tier invite as your
+call, a three-tier ladder with one creator to invite and one to hold, a hybrid with a store code, an affiliate whose fixed-amount code is on the sheet, and an
 inactive code to retire; a month's timeline with three post markers; three commission lines; a
 code sheet of two rows), and a sample banner. Render the goal tile in the page itself, marked
 "team view". Declare no page data capability and seed nothing. Call no Atlas tool, ask nothing,

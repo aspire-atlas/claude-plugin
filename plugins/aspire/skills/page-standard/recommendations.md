@@ -28,6 +28,7 @@ line as you write the recommendation, from figures this run read.
 | Time only | `none` | "No spend" | "Cost: no spend, time only." |
 | Money the run cannot work out | `unpriced` | "Cannot be priced", the figure that is missing, and who has it | "Cannot be priced: the kit's unit cost is missing, and the operations lead has it." |
 | Money the flow keeps out of the page (`SKILL.md`, section 1, **Money stays where the flow keeps it**) | `team` | "Cost: in the team view", with the amount and its arithmetic in the team view | "Cost: in the team view." |
+| Nothing to the brand: a step the outside reader takes themselves, on a page shared outside the team | `reader` | No cost line | "Reply by Nov 12 to accept." on a terms summary shared with a creator |
 
 - **Every figure in a cost line is one the run read:** a fee from the fee calculator or the
   program's saved terms, revenue from the store or the export, a unit cost from the catalog. Never
@@ -41,6 +42,10 @@ line as you write the recommendation, from figures this run read.
 - **A headline that names a recommendation that spends money** carries the cost with it: "Invite
   two affiliates to Tier 3 for about USD 293 a month".
 - **A step that only waits or watches** costs no money, and says "No spend" like any other.
+- **On a page shared outside the team** (the shared audience line), a step the reader does
+  themselves is marked `reader` and shows no cost line: a creator's page never shows the brand's
+  costs or points at the team view. What the page asks a client to approve or pay for is still a
+  recommendation with its cost.
 - **In a storyline bullet and in chat,** a recommendation carries its cost in the same sentence.
 
 Good: "Move @creator_a from 10% to 15%. Cost: +5 points on USD 3,240 a month is about USD 162 a
@@ -115,8 +120,10 @@ taken before any signal, with spend behind it.
   goes on the element that shows the cost, inside it. In a next steps table the row carries
   `data-recommend` and the Cost cell `data-cost-line`.
 - The script fails R5 when a decision or a next step is not marked as a recommendation, when a
+  next steps section holds words but no marked step and does not say "No next steps", when a
+  `reader` step sits on a page with no shared audience line or shows a cost line, when a
   recommendation has no `data-cost` or no cost line, when a `money` line shows no amount with its
-  currency ("USD 162", or a currency symbol), when a monthly cost does not say "a month" and
+  currency ("USD 162", or a currency symbol), when a monthly cost does not say "a month" (or "per month", "monthly", "/month") and
   "estimate", when a `none` line does not say "no spend", when an `unpriced` line does not say
   "cannot be priced" and show its `data-cost-missing` and `data-cost-holder`, and when a `team`
   line does not say "team view".
@@ -124,8 +131,8 @@ taken before any signal, with spend behind it.
   `helps` and one `hurts` reading, lists no signal or more than three, has a signal that does not
   show its `data-where` and its `data-by` date, sits in the decisions, or carries a
   `data-recommend` step that is anything but watching.
-- A page with no decision, no next step, and nothing marked gets R5 `unmarked`: read it for a
-  recommendation. R5 is never N/A through `data-na`.
+- A page with no decision, no next steps section, and nothing marked gets R5 `unmarked`: read it
+  for a recommendation. R5 is never N/A through `data-na`.
 - The script's R5 line lists what it read as `recommendations` and `trends`. Copy both lists into
   the page check block (`SKILL.md`, section 7).
 
@@ -147,6 +154,6 @@ The script reads only the cost line's shape. Judge the rest by reading, as part 
 
 Each entry of the result's `openItems` (`SKILL.md`, section 1) carries the recommendation's cost
 as the page shows it: `cost` is `{"kind": "money", "line": "{the cost line}", "basis": "{the
-figures and the period it was worked from}"}`, with `kind` one of `money`, `none`, `unpriced`, or
-`team`, and `basis` `null` for `none`. A trend to watch is one `step` item whose `text` is "Watch:
+figures and the period it was worked from}"}`, with `kind` one of `money`, `none`, `unpriced`,
+`team`, or `reader`, and `basis` `null` for `none`. A trend to watch is one `step` item whose `text` is "Watch:
 {the signals}", with `cost.kind` `none` and `due` the latest signal date.
