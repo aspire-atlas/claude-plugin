@@ -2,7 +2,7 @@
 // cycle (7 to 23 seconds, in one of four shapes, from its own starting point), so the pattern keeps changing and takes minutes
 // to repeat. The two marks in the aspire plugin's assets/ are this output, at 20 and 10 squares across, each inside the svg fence
 // of a Markdown file (the plugin directory takes no .svg from an organization that is not Verified):
-//   bun -e "import {logoSvg} from './plugins/aspire-mod/hooks/logo.ts'; for (const [n, g] of [['', 20], ['-small', 10]]) { const p = 'plugins/aspire/assets/aspire-animated' + n + '.svg.md'; await Bun.write(p, (await Bun.file(p).text()).replace(/<svg[\s\S]*<\/svg>/, () => logoSvg(512, true, g))) }"
+//   bun -e "import {logoSvg} from './plugins/aspire-mod/hooks/logo.ts'; for (const [n, g] of [['', 20], ['-small', 10]]) { const p = 'plugins/aspire/assets/aspire-animated' + n + '.svg.md'; const t = await Bun.file(p).text(); if (!/<svg[\s\S]*<\/svg>/.test(t)) throw new Error(p + ' has no <svg> to replace'); await Bun.write(p, t.replace(/<svg[\s\S]*<\/svg>/, () => logoSvg(512, true, g))) }"
 // Change the mark here, rewrite both files, and keep them in step.
 
 import { BRAND } from './palette'
