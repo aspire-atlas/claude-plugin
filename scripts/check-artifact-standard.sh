@@ -204,11 +204,11 @@ else
       # number, and no line gives the directional line's number as a post threshold.
       if [ -n "$line" ]; then
         max=${line% *}
-        th='[0-9]+ (posts )?or fewer|[0-9]+ or fewer posts|fewer than [0-9]+ posts|under [0-9]+ posts|more than [0-9]+ posts|[0-9]+ posts minimum|within [0-9]+ points'
-        own="$max (posts )?or fewer|$max or fewer posts|fewer than $max posts|under $max posts|more than $max posts|$max posts minimum"
+        th='[0-9]+ (posts )?or fewer|[0-9]+ or fewer posts|(fewer than|less than|under|below|more than) [0-9]+ posts|[0-9]+ posts minimum|within [0-9]+ points'
+        own="$max (posts )?or fewer|$max or fewer posts|(fewer than|less than|under|below|more than) $max posts|$max posts minimum"
         while IFS= read -r hit; do
           [ -n "$hit" ] && err "${hit%%:*}:$(cut -d: -f2 <<< "$hit") restates a like-for-like number; point to $CM instead"
-        done < <(grep -rnE "$th" plugins/*/skills docs/STANDARD.md .github/pull_request_template.md --include='*.md' |
+        done < <(grep -rniE "$th" plugins/*/skills plugins/*/agents docs/STANDARD.md .github/pull_request_template.md --include='*.md' 2>/dev/null |
           grep -v "^$CM:" | grep -iE "directional|in line with|^[^:]+:[0-9]+:.*($own)" || true)
       fi
       # The markup example in comparisons.md is what agents copy, so it must pass R15.

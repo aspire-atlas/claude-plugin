@@ -156,7 +156,10 @@ def text(node, gap="", skip=lambda n: False):
     return re.sub(r"\s+", " ", "".join(out)).strip()
 
 def has(haystack, needle):
-    return re.sub(r"\s+", " ", needle).strip().lower() in haystack.lower()
+    # Word for word, whatever the markup around the words: an inline element pads its text with
+    # spaces, so the two are compared with all white space taken out.
+    squeeze = lambda value: re.sub(r"\s+", "", value).lower()
+    return squeeze(needle) in squeeze(haystack)
 
 def has_phrase(haystack, phrase):
     # The phrase as whole words, so "no data" never matches "no database" or "none" "nonetheless".
@@ -195,7 +198,7 @@ def whole(value):
     value = (value or "").replace(",", "").strip()
     return int(value) if value.isascii() and value.isdigit() else None
 
-def r1(nodes, regions):
+def r1(nodes, regions, out):
     scopes = regions.get("scope", [])
     if len(scopes) != 1:
         return ["the page needs exactly one data-page=\"scope\" (found %d)" % len(scopes)]
@@ -234,7 +237,7 @@ def shared(nodes):
     return any("atlas-footnote" in (n.attrs.get("class") or "").split() and has(text(n), "shared with")
                for n in nodes)
 
-def r2(nodes, regions):
+def r2(nodes, regions, out):
     scopes = regions.get("scope", [])
     if len(scopes) != 1:
         return ["no single scope to read platforms from"]
@@ -259,7 +262,7 @@ def r2(nodes, regions):
             problems.append("the method section's platform counts %s differ from the scope's %s" % (again, top))
     return problems
 
-def r6(nodes, regions):
+def r6(nodes, regions, out):
     sections = regions.get("decisions", [])
     if len(sections) != 1:
         return ["the page needs exactly one data-page=\"decisions\" (found %d)" % len(sections)]
@@ -284,7 +287,7 @@ def r6(nodes, regions):
         problems.append("%d decision(s) sit outside the decisions section" % len(stray))
     return problems
 
-def r11(nodes, regions):
+def r11(nodes, regions, out):
     kept = list(walk(nodes[0], keep=lambda n: n.tag not in SKIP and not exempt(n)))
     shown = " ".join([text(nodes[0], gap=" ", skip=exempt)] +
                      [n.attrs[a] for n in kept for a in ATTRS if n.attrs.get(a)])
@@ -303,7 +306,7 @@ def post_label(post, index):
     link = next((n.attrs.get("href") for n in walk(post) if n.tag == "a" and n.attrs.get("href")), "")
     return (post.attrs.get("data-post") or "").strip() or link or "cited post %d" % index
 
-def r13(nodes, regions):
+def r13(nodes, regions, out):
     # Every cited post (data-post) shows each metric its question's row requires (data-metric), or
     # names it in data-missing="{metric}: {reason}" with the reason shown on the post. Returns None
     # (n/a) on a page with no question code and no cited post.
@@ -488,7 +491,7 @@ def fresh_problems(key, node):
         problems.append("the freshness entry for %s has no fetch time, so it says \"last changed\", never \"last fetched\"" % key)
     return problems
 
-def r14(nodes, regions):
+def r14(nodes, regions, out):
     # Every subject account the page cites (data-account, and the scope's data-accounts) has one
     # freshness entry (data-fresh) in the source line: the newest post Atlas holds, and when Atlas
     # last fetched the account or, with no freshness on record, when it last changed. A cited post
@@ -606,15 +609,10 @@ def percent(value):
 def shows_percent(shown, value, times=1):
     return len(re.findall(r"(?<![\d.,])%s\s*(?:%%|percent\b)" % re.escape(value), shown)) >= times
 
-def shows_line(shown, line):
-    # Word for word, whatever the markup around the words: an inline element pads its text with
-    # spaces, so the two are compared with all white space taken out.
-    squeeze = lambda value: re.sub(r"\s+", "", value).lower()
-    return squeeze(line) in squeeze(shown)
-
 def shows_posts(shown, posts):
-    # The post count as a count of posts ("18 posts", "1 post"), not any number in the text.
-    return re.search(r"(?<![\d.,])%d\s+posts?\b" % posts, shown, re.I) is not None
+    # The post count as a count of posts ("18 posts", "18 TikTok Shop posts", "1 post"), with up to
+    # two words between the number and "posts", not any number in the text.
+    return re.search(r"(?<![\d.,])%d\s+(?:[A-Za-z][\w'-]*\s+){0,2}posts?\b" % posts, shown, re.I) is not None
 
 def declared(node):
     # data-fails="{check}: {line}; ..." as ({check: line}, [entries that are not that shape]).
@@ -661,6 +659,7 @@ def share_problems(node, label, fails):
             problems.append("%s states a share with no data-group-share: show the group's share of the whole beside it" % label)
     elif "share-size" in fails:
         problems.append("%s gives the group's share of the whole (%s%%), so it cannot also note share-size in data-fails" % (label, group))
+        del fails["share-size"]
     elif not shows_percent(shown, group, times=2 if group == share else 1):
         problems.append("%s does not show the group's share of the whole (%s%%) beside the share" % (label, group))
     elif share is not None and abs(float(share) - float(group)) <= IN_LINE_POINTS and not has_phrase(shown, "in line with"):
@@ -690,7 +689,7 @@ def sides_problems(node, label, fails, method):
             how = (side.attrs.get("data-mentions") or "").strip()
             if not how:
                 problems.append("%s: %s counts mentions but data-mentions does not say how they were found" % (label, what))
-            elif not shows_line(method, how):
+            elif not has(method, how):
                 problems.append("%s: %s counts mentions, but the method section does not show how they were found (%s)" % (label, what, how))
     named = sorted({k for k in kinds if k in KIND_NAMES and k != "mixed"})
     if "mixed" in kinds or "same-kind" in fails:
@@ -702,12 +701,12 @@ def sides_problems(node, label, fails, method):
                         % (label, " and ".join(KIND_NAMES[k] for k in named)))
     return problems
 
-def r15(nodes, regions, listed=None):
+def r15(nodes, regions, out):
     # Every marked comparison (data-compare) passes the four like-for-like checks of comparisons.md,
     # or names the one it fails in data-fails="{check}: {line}" with that line shown in it. Returns
-    # None on a page that marks no comparison: the script cannot tell whether it makes one. Appends
-    # to `listed` what the page check block's "comparisons" holds: each comparison with its sides'
-    # post counts and kinds, or a share with its group's share, and the failures it may keep.
+    # None on a page that marks no comparison: the script cannot tell whether it makes one. Puts in
+    # out["comparisons"] what the page check block's "comparisons" holds: each comparison with its
+    # sides' post counts and kinds, or a share with its group's share, and the failures it may keep.
     marked = [n for n in nodes if "data-compare" in n.attrs]
     if not marked:
         return None
@@ -722,10 +721,10 @@ def r15(nodes, regions, listed=None):
             problems.append("%s has a data-fails entry \"%s\" that is not \"{check}: {line}\" with check one of %s"
                             % (label, entry, ", ".join(MAY_FAIL)))
         for name, line in sorted(fails.items()):
-            if not shows_line(shown, line):
+            if not has(shown, line):
                 problems.append("%s notes that it fails %s but does not show that line (%s)" % (label, name, line))
                 del fails[name]
-        entry = {"compare": compare, "fails": sorted(fails),
+        entry = {"compare": compare,
                  "sides": [{"label": (s.attrs.get("data-side") or "").strip() or text(s, gap=" ")[:60],
                             "kind": (s.attrs.get("data-kind") or "").strip().lower() or None,
                             "posts": whole(s.attrs.get("data-posts")),
@@ -738,17 +737,18 @@ def r15(nodes, regions, listed=None):
             problems += share_problems(node, label, fails)
         else:
             problems += sides_problems(node, label, fails, method)
-        if listed is not None:
-            listed.append(entry)
+        entry["fails"] = sorted(fails)
+        out.setdefault("comparisons", []).append(entry)
     return problems
 
-# Only these scripted checks can be N/A (reader-standard.md; quality-review.md, section 3). R13 and
-# R14 are n/a on their own terms, never through data-na. R15 is n/a only when the page says it
-# compares nothing (data-na); a page that marks no comparison and does not say so is unmarked.
+# Only these scripted checks can be N/A through data-na (reader-standard.md; quality-review.md,
+# section 3). One named there while the page carries the attribute in NA_REFUSED fails instead.
 CAN_BE_NA = {"R2", "R6", "R15"}
-NA_REASON = {"R13": "the page names no question code and cites no post",
-             "R14": "the page cites no account and no post, its scope reports on no account, and it has no freshness entry"}
-UNMARKED_REASON = {"R15": "the page marks no comparison; read it for one, and put R15 in data-na only when it compares nothing"}
+NA_REFUSED = {"R15": ("data-compare", "the page marks a comparison")}
+# What a check that returns None reports: n/a on its own terms, or unmarked, to be judged by reading.
+NO_RESULT = {"R13": ("n/a", "the page names no question code and cites no post"),
+             "R14": ("n/a", "the page cites no account and no post, its scope reports on no account, and it has no freshness entry"),
+             "R15": ("unmarked", "the page marks no comparison; read it for one, and put R15 in data-na only when it compares nothing")}
 CHECKS = (("R1", "Reader and scope", r1), ("R2", "Platforms covered", r2),
           ("R6", "Decisions kept separate", r6), ("R11", "Plain language", r11),
           ("R13", "Required metrics", r13), ("R14", "Data freshness", r14), ("R15", "Like for like", r15))
@@ -765,10 +765,11 @@ def check(path):
             regions.setdefault(page_name(node), []).append(node)
     scope = (regions.get("scope") or [None])[0]
     na = set((scope.attrs.get("data-na") or "").upper().split()) if scope is not None else set()
-    results, listed = [], []
+    results, out = [], {}
     for code, name, run in CHECKS:
-        if code == "R15" and code in na and any("data-compare" in n.attrs for n in nodes):
-            results.append((code, name, "fail", ["R15 is in data-na, but the page marks a comparison; remove it from data-na"]))
+        attr, why = NA_REFUSED.get(code, (None, None))
+        if code in na and attr and any(attr in n.attrs for n in nodes):
+            results.append((code, name, "fail", ["%s is in data-na, but %s; remove it from data-na" % (code, why)]))
         elif code in na and code in CAN_BE_NA:
             results.append((code, name, "n/a", []))
         elif code in na:
@@ -776,14 +777,12 @@ def check(path):
         elif code != "R11" and not regions:
             results.append((code, name, "unmarked", ["the page has no data-page markup; judge this check by reading"]))
         else:
-            problems = r15(nodes, regions, listed) if run is r15 else run(nodes, regions)
-            if problems is None and code in UNMARKED_REASON:
-                results.append((code, name, "unmarked", [UNMARKED_REASON[code]]))
-            elif problems is None:
-                results.append((code, name, "n/a", [NA_REASON[code]]))
+            problems = run(nodes, regions, out)
+            if problems is None:
+                results.append((code, name, NO_RESULT[code][0], [NO_RESULT[code][1]]))
             else:
                 results.append((code, name, "fail" if problems else "pass", problems))
-    return results, listed
+    return results, out.get("comparisons", [])
 
 def main(paths):
     status = 0

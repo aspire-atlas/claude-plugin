@@ -94,7 +94,8 @@ Run them as you write each comparison, before the sentence goes on the page or i
   the comparison and each compared cell a side.
 - `data-fails` takes `same-kind`, `mentions`, or `share-size`, entries joined by `;`, so a line
   holds no `;`. The line is shown inside the comparison, word for word.
-- The script fails R15 when a side has 20 posts or fewer and no "directional" with "{n} posts", a
+- The script fails R15 when a side has 20 posts or fewer and no "directional" with its count as
+  posts ("18 posts", "18 TikTok Shop posts"), a
   side has no kind or is `mixed` with no `same-kind` line, the kinds differ outside a `kinds`
   comparison or are the same inside one, a mention count's sentence is not in the method section,
   or a share has no group share shown, or sits within 5 points of it without "in line with".
