@@ -89,7 +89,9 @@ AMEX = re.compile(r"3[47]\d{13}")
 # A number inside a link (a video, post or user id): the rest of an https:// or www. link, up to a space
 # or , ; | (a card joined to a link by those is still a card), or right after / or = in a bare one.
 URL = re.compile(r"(https?://|www\.)[^\s,;|]*$|\b[\w-]+\.[a-z]{2,}/\S*[/=]$", re.I)
-IBAN = re.compile(r"\b[A-Z]{2}\d{2}(?:[ -]?[A-Z0-9]){11,}", re.I | re.A)
+# At most 34 letters and digits, so one match never runs on over the rest of a cell (a second IBAN
+# after it is matched on its own, and a long cell stays fast).
+IBAN = re.compile(r"\b[A-Z]{2}\d{2}(?:[ -]?[A-Z0-9]){11,30}", re.I | re.A)
 # The countries that issue IBANs (codes only: their lengths keep changing).
 IBAN_COUNTRIES = set((
     "AD AE AL AT AZ BA BE BG BH BI BR BY CH CR CY CZ DE DJ DK DO EE EG ES FI FK FO FR GB GE GI GL GR GT "
@@ -147,13 +149,18 @@ def iban(m):
     if g[:2].upper() not in IBAN_COUNTRIES:
         return g
     groups = []
+    word = False  # a word longer than 4 ends the groups: the last group before it is a real end
     for i, group in enumerate(re.finditer(r"[A-Z0-9]+", g, re.I | re.A)):
         if i and not group.group().isdigit() and len(group.group()) > 4:
+            word = True
             break
         groups.append(group)
     size = lambda end: len(re.sub(r"[ -]", "", g[:end]))  # characters, without separators
     digits = [x.group()[2 if i == 0 else 0:].isdigit() for i, x in enumerate(groups)]  # after the country
-    at_letters, between_digits, open_ = [groups[-1].end()], [], True
+    # The last group's end is an end before a long word, or where the text stops; at the 34-character
+    # cap it may be inside whatever follows (a card typed after a word).
+    capped = re.match(r"[ -]?[A-Z0-9]", m.string[m.end():], re.I | re.A)
+    at_letters, between_digits, open_ = ([groups[-1].end()] if word or not capped else []), [], True
     for i, (before, group) in enumerate(zip(groups, groups[1:])):
         if digits[i + 1]:
             if digits[i] and open_:
@@ -184,7 +191,12 @@ def iban(m):
 
 
 def scrub(v):
-    return DIGITS.sub(card, IBAN.sub(iban, v))
+    # IBANs first, again until none is left (a match's tail may hold another IBAN), then cards.
+    while True:
+        cut = IBAN.sub(iban, v)
+        if cut == v:
+            return DIGITS.sub(card, v)
+        v = cut
 
 
 raw = open(path, "rb").read()
