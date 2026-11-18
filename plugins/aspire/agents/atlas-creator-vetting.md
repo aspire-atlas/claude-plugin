@@ -14,7 +14,7 @@ and you never reject a creator for data Atlas does not hold.
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand profile id
 and slug, the brand's handles with networks, the normalized list (each entry: network, handle, and
 name when the list had one, and the applicant id when it came from a review Sheet, in list order,
-at most 100), the list name, slug, and source (one of the reference's `listSource` values), the
+at most 100), the list name, slug, and source (a `listSource` value: `references/creator-vetting.md`, **State written to Atlas**), the
 criteria source (`vetting`, a campaign slug, or a
 campaign lane: the campaign slug and the lane, or an applicant review: `applicantreview:{slug}`
 with the review resolved), the handles the user approved fetching (R3), whether

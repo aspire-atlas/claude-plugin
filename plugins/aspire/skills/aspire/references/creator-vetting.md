@@ -191,26 +191,34 @@ CSV's handle column and normalize it per **Getting the list**.
   lowercased (`approve`, `maybe`, or `reject`), is the row's **Sheet call**, and the row is not
   vetted again.
 - **Blank**: undecided, so it goes on the list.
-- **Anything else** ("Yes", "?"): undecided too, so it is vetted, and F1 names the value as
-  unreadable.
-- **No applicant id or no handle**: skipped, and listed with the unreadable rows (in chat, and on
-  the page under What's missing).
+- **Anything else** ("Yes", "?"): undecided too, so it is vetted, and the value is listed in
+  **Rows to fix**.
+- **No applicant id or no handle**: skipped, and listed in **Rows to fix**.
+
+**Rows to fix** is one list, given in chat and on the page under What's missing: unreadable Team
+calls (those rows are still vetted), skipped rows, duplicate rows left to decide in the Sheet, and
+Sheet calls waiting for Atlas (below).
 
 **Duplicate rows.** Counted after the skipped rows are set aside. Rows that repeat one applicant id
 with the same Team call (as read under **What each row becomes**) count as one row; with different
 Team calls, they are duplicates. A creator (network and handle) with two or more rows is settled
 this way:
 
-- Exactly one row is decided and one other is undecided: the creator is that decided row, with its
-  call and its applicant id. The undecided row is listed as a duplicate and adds nothing.
-- Anything else (two or more decided rows, or two or more undecided rows): the creator is left for
-  the team to settle in the Sheet. It is not vetted, no call is offered or saved, and it is listed
-  with the unreadable rows as "duplicate rows: decide in the Sheet", naming the rows. Each run reads
-  the rows again, so once the team fixes them, the rules above apply.
+- Its decided rows all hold the same Sheet call (one row or several): the creator is one decided
+  row with that call and the first of those rows' applicant ids in sort order, so the same id is
+  picked every run. Its undecided rows are listed as duplicates and add nothing.
+- Its decided rows hold different calls, or it has no decided row: the creator is left for the
+  team to settle in the Sheet. It is not vetted, no call is offered or saved, and its rows go in
+  **Rows to fix** as "duplicate rows: decide in the Sheet". Each run reads the rows again, so once
+  the team fixes them, the rules above apply.
 
 Every list entry from the Sheet carries its row's applicant id, so an F1 answer on it records it. Decided
 rows go through **Check what Atlas holds** with the list, so each Sheet call has its account id.
-They are never fetched and never counted in R3.
+A decided row stays off the list, so it is not fetched or counted in R3, except when Atlas doesn't
+hold the creator, or the row has no Recommendation and Atlas holds no saved recommendation for the
+creator: then it goes on the list and is fetched (R3) and vetted like an undecided row, and its
+Sheet call is still offered in F1. A creator R3 leaves unfetched, or that can't be resolved, is
+listed in **Rows to fix** as waiting for Atlas, and its call is not offered.
 
 **Which Sheet calls are new.** Take the newest `feedback` finding for the same creator (`entityId`)
 that carries the row's `applicantId`, from the Sheet or from F1 (**State written to Atlas**). A
@@ -221,11 +229,7 @@ decided row's Sheet call is **new** only when it differs from both of that findi
   an undecided row)
 
 A call that matches either is not offered, so a call the team made since in F1 stands, and a call
-typed into the Sheet to match it is not asked again. A Sheet left at, or changed back to, the last
-value seen reads the same as no edit. With no such finding, the call is new. A call dropped in F1
-option 2 saves nothing, so it is offered again on the next run. A call on a creator Atlas doesn't
-hold (no `entityId`) is not offered; it is listed with the unreadable rows as waiting for Atlas to
-hold the creator.
+typed into the Sheet to match it is not asked again. With no such finding, the call is new.
 
 **Reopened rows.** An undecided row (blank or unreadable) is **reopened** only when the newest
 `feedback` finding for the creator, of any kind and from any list or run, is one that carries the
@@ -248,7 +252,7 @@ for F2 and F3.
 
 **When the list is empty** (every row decided, a duplicate, or skipped), after **Check what Atlas
 holds** (**Main thread: the run**, step 2), skip R2 to R5, the launch, and the page. With no new
-Sheet calls, say so in one line with the unreadable rows under it, and stop. Otherwise ask a Sheet-only F1: "Save the {k}
+Sheet calls, say so in one line with **Rows to fix** under it, and stop. Otherwise ask a Sheet-only F1: "Save the {k}
 new calls from the review Sheet to {brand}'s Atlas?" with 1) Save them (Recommended); 2) Change
 some (type them, for example "reject s2, drop s3"); 3) Decide later (nothing is saved). Read
 `vettedAt` from the shell clock once, write what it saves under this run's `runKey` with no
@@ -265,7 +269,7 @@ takes up to four questions), skipping any the user already answered.
 | # | Question | Options |
 | - | -------- | ------- |
 | R1 | Where's the list of creators? | 1) Upload a CSV export from Aspire (Recommended); 2) Paste the handles; 3) Pull it from the Aspire app (you'll sign in yourself) (only when a browser tool is available); 4) The applicant review's Sheet (only when the review's Sheet has applicant rows, and then Recommended in place of option 1) |
-| R2 | Vet them against what? | 1) {brand}'s vetting criteria (Recommended); 2) The {campaign} campaign's criteria (one option per saved `campaign:*-criteria`, up to two) |
+| R2 | Vet them against what? | 1) {brand}'s vetting criteria (Recommended); 2) The {campaign} campaign's criteria (one option per saved `campaign:*-criteria`, up to two); 3) The {campaign} applicant review (one option per applicant review saved for this profile). Ordered per **R2 options** |
 | R3 | {n} of these creators aren't in Atlas yet. Fetch them? | 1) Fetch them (Recommended) (description: "Atlas looks up each account and its recent posts. A TikTok account Atlas doesn't hold costs one paid lookup; {t} are TikTok."); 2) Only vet the creators Atlas already holds |
 | R4 | Save the recommendations to {brand}'s Atlas insights? | 1) Save (Recommended); 2) Page only |
 | R5 | Run a visual check on each creator's videos? Type what to look for, or pick a saved check. (Over 25 creators, the question adds: "A visual check splits this list into {k} runs of 25, each with its own page.") | 1) No visual check (Recommended); 2) Product on screen (description: "{product} from the criteria you pick, visible in frame"); 3) and 4) the two newest active `vetting:visual-*` checks, each labelled with its name and described with its "look for" line. Every check option's description ends "Adds a few minutes to each run of 25." |
@@ -706,7 +710,7 @@ none. It leaves out creators left to decide in the Sheet and a reopened creator 
 review Sheet**) until F1 saves a new call for them. With no team call in Atlas and no Sheet call
 for any creator, it is the recommendations, headed "Recommendations, not yet the team's calls". The main thread gives it in
 chat after the last batch's F1, covering the whole list, with "(Sheet only)" after a Sheet call Atlas
-holds no call for and the unreadable Sheet rows under it. The page carries it as a button (**The
+holds no call for and **Rows to fix** under it. The page carries it as a button (**The
 page**, Decisions) with neither.
 
 **Feedback outside a run.** Feedback about a creator outside a run ("never use @handle again",
@@ -798,18 +802,19 @@ gives one, `visualCheck` when the run had a visual check and it ran on the creat
 `confidence` null for Can't check), `usualViews` (or the reason it is not available), `checks`
 (`{component: 1 | 0.5 | 0 | null}`, `null` for a component with no data; the finding each check
 comes from is on the run summary), `listName`, `listSource` (`csv`, `pasted`,
-`aspire-app`, `review-sheet`, or `cas-lane`), `campaign` when R2 named one, `reviewPage`, and
+`aspire-app`, `review-sheet`, or `cas-lane`), `campaign` when R2 named one, `applicantReview`
+when the criteria source is an applicant review (**Applicant reviews**), `reviewPage`, and
 `recipient` (**Recipient lens**). A
 `feedback` finding adds `userVerdict` (`approve`, `maybe`, or `reject`), `agentVerdict`, and the
 user's words verbatim; one for a creator whose list came from a review Sheet also adds
 the row's `applicantId`. One saved from an offered Sheet call also adds `sheetValue`, the Sheet's
-call at that moment, and takes the Sheet's Recommendation as `agentVerdict` when the creator was
-not vetted in this run. Its words are the row's Note when the call saved is that Sheet call as it
+call at that moment. When the creator was not vetted in this run, its `agentVerdict` is the
+row's Recommendation, or else the newest saved recommendation for the creator (**Reading the review
+Sheet** puts a row with neither on the list). Its words are the row's Note when the call saved is that Sheet call as it
 stands (`userVerdict` equals `sheetValue`), and the user's own when they changed it in F1 option 2. Supply an
-`idempotencyKey` per finding
-(`vet-{list-slug}-{entityId}-{findingType}`, and for a `feedback` finding
-`vet-{list-slug}-{entityId}-feedback-{vettedAt}`, so a call changed back to an earlier one in a
-later run is still written). Whoever writes the F1 findings uses the run's `vettedAt`: the agent's
+`idempotencyKey` per finding, `vet-{list-slug}-{entityId}-{findingType}-{vettedAt}`, so a retry
+in one run is written once and a later run on the same list (a review Sheet is read again every
+run) is still written. Whoever writes the F1 findings uses the run's `vettedAt`: the agent's
 own, or the one its feedback packet carries.
 
 **Reading it back.** `search_insights` with a `prefix` filter on
