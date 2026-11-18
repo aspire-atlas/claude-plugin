@@ -375,7 +375,7 @@ def paid_label(nodes, regions):
     return ["says \"%s\" %s: say \"paid label\" or \"no paid label\", or mark the brand's own posts or records with data-own"
             % (word, where) for word, where in sorted({(w, where) for (w, _), where in hits.items()})[:5]]
 
-def r11(nodes, regions):
+def r11(nodes, regions, out):
     kept = list(walk(nodes[0], keep=lambda n: n.tag not in SKIP and not exempt(n)))
     shown = " ".join([text(nodes[0], gap=" ", skip=exempt)] +
                      [n.attrs[a] for n in kept for a in ATTRS if n.attrs.get(a)])
