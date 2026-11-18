@@ -173,7 +173,7 @@ reuse, missing window, reader, save."), once per round.
 - Reader and decision: the lens the ask's words cue in **Recipient lens**; else
   "Just for our team".
 - Sources, roles, competitors, red lines: what `brand:`, `competitor`, brand red lines (**Atlas tools**, Calibration kinds), and `guideline`
-  records hold (never `review:`, `applicant-review:`, `theme:` or `lastrun:` keys); name that source in the option's
+  records hold (never `review:`, `applicantreview:`, `theme:` or `lastrun:` keys); name that source in the option's
   description.
 - Handles and links: only ones the user typed or Atlas already holds for the profile. Never
   guess one; leave `[@handle]`.
