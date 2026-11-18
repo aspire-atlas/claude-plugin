@@ -41,9 +41,9 @@ TOOLS = frozenset("""
 add_hashtags append_calibration append_insights calculate_creator_fee cancel_invitation connect_channel
 create_organization create_profile delete_organization delete_profile get_brand_context get_brand_instruction
 get_brand_theme get_cas_briefs get_cas_campaign get_cas_rates get_cas_results get_cas_selection
-get_cas_setup_form get_creator get_dashboard get_fee_rate_card get_job_status get_more_tools get_onboarding_form
+get_card_images get_cas_setup_form get_creator get_dashboard get_fee_rate_card get_job_status get_more_tools get_onboarding_form
 get_onboarding_report get_profile get_shop_analytics get_status invite_member leave_organization
-list_ad_accounts list_ad_search_fields list_available_hashtags list_channels
+list_ad_accounts list_ad_search_fields list_applicants list_available_hashtags list_channels
 list_creator_marketplace_labels list_creator_search_fields
 list_hashtag_posts list_hashtags list_insight_search_fields list_invitations list_members
 list_my_organizations list_my_profiles list_post_search_fields lookup_creators lookup_posts
@@ -72,6 +72,7 @@ O2 O3: views likes comments engagement
 I1 I2 I3 I4: views likes comments engagement
 P1 P2 P4 P5 P6: views likes comments shares saves engagement
 I5 I6 I11 P3 A1: views likes comments
+I12: views likes comments engagement
 """
 REQUIRED = {code: tuple(metrics.split()) for line in REQUIRED_ROWS.strip().splitlines()
             for codes, metrics in [line.split(":")] for code in codes.split()}

@@ -414,7 +414,7 @@ offer "Change setup" as an option on the run question. Several campaigns may be 
 1. Ask S1: what the campaign is, in the user's own words.
 2. **Then write the refinement questions.** Read the S1 answer together with `brand:summary`,
    `brand:business-context`, the brand red lines, and the `competitor` and `guideline` records (not
-   `review:` keys, which are content review only, nor `applicant-review:` keys, which are
+   `review:` keys, which are content review only, nor `applicantreview:` keys, which are
    one campaign's applicant screening only, nor `theme:` keys, which style pages, nor
    `lastrun:` keys, which hold a flow's saved setup answers), and from
    those compose 3 to 5 `AskUserQuestion` questions covering the dimensions above, in their

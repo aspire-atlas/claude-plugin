@@ -300,6 +300,7 @@ platforms, or more accounts, whichever the run has room for.
 | Creator picks or vetting | 5 per creator over the flow's window |
 | Ads and cut-downs | 5 videos |
 | Program tracking | None: the posts owed are the pool, and a thin one is the finding |
+| Affiliate sales | None: the period's sales are the pool, and the affiliate flow says in place of a chart when orders or posts are too few |
 | One named post (O5, P2) | None: the post is the question; its bullets rest on it and the posts it is compared against, and say so |
 
 For a row counted per brand or per creator, the pool is under its minimum when half or more of them
@@ -367,8 +368,8 @@ The reader, scope, and save choice are kept in two places, by whom the answer is
   body's first line. The lines after it hold the flow's last run, when the person said to keep
   it (**Repeat run**, **Keeping the record**).
 - **A flow's own setup record wins.** When a flow's setup already saves one of these answers
-  (the readers in `guideline:readout-audience` or `market-signal:lenses`, the scope in
-  `market-signal:scope` or `orchestrator:scope`), that record is the flow's saved answer, and its
+  (the readers in `guideline:readout-audience` or `marketsignal:lenses`, the scope in
+  `marketsignal:scope` or `orchestrator:scope`), that record is the flow's saved answer, and its
   `lastrun:` record leaves that part out. The flow's section names its `lastrun:` key.
 
 **Precedence.** For each answer, the first that holds wins: what this ask says; the person's
@@ -480,6 +481,7 @@ person asks something close, use the nearest code, and its wording (never the co
 | I5 | Which of the creators we seeded actually posted? | `team` | `atlas-deliverable-tracker` | Ready |
 | I6 | How did the program do this quarter? Keep, grow, or cut? | `leadership` | `atlas-quarterly-signal` | Ready |
 | I11 | How is the program doing this month, and what should I change? | `team` | `atlas-program-dashboard` | Ready |
+| I12 | Which affiliates are driving sales, and what do we owe in commission? | `team` | `atlas-affiliate-manager` | Ready |
 | P1 | Which creator posts should we run as ads, and how do we cut them? | `performance`, then `creative` | `atlas-ad-reuse` | Ready |
 | P2 | There's profanity in this video. Can it run on paid? | `performance` | `atlas-post-analysis` | Ready |
 | P3 | Which posts do we still have rights to, and when do they expire? | `performance` | `atlas-content-library` | Ready |
