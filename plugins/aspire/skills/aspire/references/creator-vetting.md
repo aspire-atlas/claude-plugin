@@ -197,7 +197,7 @@ CSV's handle column and normalize it per **Getting the list**.
 
 **Rows to fix** is one list, given in chat and on the page under What's missing: unreadable Team
 calls (those rows are still vetted), skipped rows, duplicate rows left to decide in the Sheet, and
-Sheet calls waiting for Atlas (below).
+Sheet calls on creators Atlas doesn't hold yet (below).
 
 **Duplicate rows.** Counted after the skipped rows are set aside. Rows that repeat one applicant id
 with the same Team call (as read under **What each row becomes**) count as one row; with different
@@ -214,11 +214,11 @@ this way:
 
 Every list entry from the Sheet carries its row's applicant id, so an F1 answer on it records it. Decided
 rows go through **Check what Atlas holds** with the list, so each Sheet call has its account id.
-A decided row stays off the list, so it is not fetched or counted in R3, except when Atlas doesn't
-hold the creator, or the row has no Recommendation and Atlas holds no saved recommendation for the
-creator: then it goes on the list and is fetched (R3) and vetted like an undecided row, and its
-Sheet call is still offered in F1. A creator R3 leaves unfetched, or that can't be resolved, is
-listed in **Rows to fix** as waiting for Atlas, and its call is not offered.
+A decided row never goes on the list: it is not fetched, vetted, or counted in R3. When Atlas
+doesn't hold its creator, its call is not offered, and it is listed in **Rows to fix** as "not in
+Atlas yet: vet this creator from a CSV or pasted list (sources 1 or 2) to add them; the next Sheet
+run offers the call". A creator is either a list entry or a Sheet call in a run, never both, so it
+gets at most one `feedback` finding per run.
 
 **Which Sheet calls are new.** Take the newest `feedback` finding for the same creator (`entityId`)
 that carries the row's `applicantId`, from the Sheet or from F1 (**State written to Atlas**). A
@@ -334,7 +334,9 @@ What the **Creator vetting** section of SKILL.md does around the agent.
 1. **Get the list** per **Getting the list**, from the R1 answer (skip R1 when the user already
    attached a file or pasted handles). Show what was found and the list name.
 2. **Check what Atlas holds**: `search_creators` with a `terms` filter on the username field,
-   one call per network.
+   per network, at most 100 handles per call (a review Sheet's decided rows count toward the
+   handles). A review Sheet that leaves the list empty goes from here to **Reading the review
+   Sheet**, When the list is empty.
 2b. **Vetting setup missing:** when R2 has nothing but {brand}'s vetting criteria to offer, ask V1
    to V4 now (**Setup**). Otherwise (rule 1 of **R2 options**) ask them only once R2 picks
    {brand}'s vetting criteria, before 3c; a campaign or a review picked at R2 needs no vetting
@@ -672,7 +674,8 @@ Rules:
   rest as recommended). Resolve the numbers against this run's page.
 - **Sheet calls.** When the list came from a review Sheet, F1 also offers its new Sheet calls, per
   **Reading the review Sheet**, F1 with Sheet calls.
-- **Creator notes.** Every creator the user overturned, and every reason the user gave about
+- **Creator notes.** Every creator the user overturned (a Sheet call whose `agentVerdict` is
+  `none` overturns nothing), and every reason the user gave about
   a creator ("never again, they deleted our post", "great, but only for Reels"), becomes a
   note. Word it yourself: the stance and the reason in one sentence, with the date. Show it in
   F2 before it is saved. Never save a note the user has not seen.
@@ -808,9 +811,9 @@ when the criteria source is an applicant review (**Applicant reviews**), `review
 `feedback` finding adds `userVerdict` (`approve`, `maybe`, or `reject`), `agentVerdict`, and the
 user's words verbatim; one for a creator whose list came from a review Sheet also adds
 the row's `applicantId`. One saved from an offered Sheet call also adds `sheetValue`, the Sheet's
-call at that moment. When the creator was not vetted in this run, its `agentVerdict` is the
-row's Recommendation, or else the newest saved recommendation for the creator (**Reading the review
-Sheet** puts a row with neither on the list). Its words are the row's Note when the call saved is that Sheet call as it
+call at that moment. Its `agentVerdict` is the row's Recommendation, or else the newest saved
+`recommendation` finding for the creator, or else `none` when there is neither (a row the team
+added by hand to a creator never vetted). Its words are the row's Note when the call saved is that Sheet call as it
 stands (`userVerdict` equals `sheetValue`), and the user's own when they changed it in F1 option 2. Supply an
 `idempotencyKey` per finding, `vet-{list-slug}-{entityId}-{findingType}-{vettedAt}`, so a retry
 in one run is written once and a later run on the same list (a review Sheet is read again every
