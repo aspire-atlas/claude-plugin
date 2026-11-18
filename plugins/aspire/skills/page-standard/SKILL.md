@@ -59,7 +59,7 @@ may ask Atlas for more metrics than section 8's row, never fewer.
 | 8 | What is missing | Team pages only. Missing data and what connecting it would add ("Paid results need a connected Meta ad account"). | R9 |
 | 9 | What Atlas can draft next | The drafts Atlas can make next, for example outreach to the 11, offers, discount codes. Nothing is sent without approval. | Judged (`draftNext`) |
 
-**A repeat run leads with what changed.** When the launch block's `since` is not `null`, the page repeats a question asked before: part 2 leads with what changed since that run, then the decisions and next steps carried over from it sit first in parts 5 and 4, and the result's `openItems` lists every decision and next step. Follow `follow-up.md` in this folder.
+**Every page reports its open items, and a repeat run leads with what changed.** On every run, first runs included, the result's `openItems` (`orchestration.md`, **6**) lists every decision in part 5 and every next step in part 4 as the page words them, each with `kind`, `owner`, `due`, `status` `open`, and `opened` (today's date for a new item); the main thread keeps them so the next run can follow up. When the launch block's `since` is not `null`, the page repeats a question asked before: part 2 leads with what changed since that run, and the items carried over sit first in parts 5 and 4. Follow `follow-up.md` in this folder.
 
 A part that applies but has nothing to show says so in one line ("Nothing needs approval", "No
 insights this run: 3 posts is too few to compare"). A part does not apply, and is reported `n/a`

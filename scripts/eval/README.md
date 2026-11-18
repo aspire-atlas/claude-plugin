@@ -171,19 +171,25 @@ Playwright with Chromium on the machine; without it the review judges by source 
 ## The repeat pair
 
 `--repeat` asks each question in `repeat.codes` (`questions.json`) a second time, in the same session, once its
-first page is kept. It proves item S4 of `docs/STANDARD.md`: a repeat run follows up on the last one. The
-harness answers what the second run asks with `repeat.reply` (every open item is still open; save nothing).
+first page is kept. It proves item S4 of `docs/STANDARD.md`: a repeat run follows up on the last one. The first
+run ends on its close-out, which may ask whether to keep its open items, so the harness answers that first with
+`repeat.closeOutReply` (keep nothing, start nothing else); the second ask then arrives as a new request. It
+answers what the second run asks with `repeat.reply` (every open item is still open; save nothing).
 Two checks, shown as one line under the question's table:
 
 | Check | Judged by | Passes when |
 | ----- | --------- | ----------- |
-| FU1 Repeat run asks what changed | Script, from the second run's first turn | The message opens with "Last time ({date}) you asked", a question is headed "Since then", and no question is headed Heard, Scope, Save, Remember, Storyline, Role or Relationship. On a host that refuses the question tool, the reply is read: it must ask what has happened since and use none of the setup questions' phrases |
+| FU1 Repeat run asks what changed | Script, from the second run's first turn | A line of the main thread's own message starts with "Last time (" and no question comes before it, a question is headed "Since then", and no question is headed Heard, Scope, Save, Remember, Storyline, Role or Relationship. On a host that refuses the question tool, everything the main thread wrote in the turn is read: it must ask what has happened since and use none of the setup questions' phrases. A file the main thread read does not count as its message |
 | FU2 Repeat page leads with what changed | A judge, as its own session with both pages and nothing from the runs | The second page's first section says what changed since the first, then carries over the items still open |
 
 The pair has no approved result to compare with, so a `fail` on either fails the run, as C5 does. A second run
-that publishes no page fails FU2. The reasons are kept in the run's `repeat.json`, and the second run's turns as
+that sends no message fails FU1, and one that publishes no page fails FU2. The line also gives the second run's
+billed tokens and compactions; the sizes under the table stay the first run's, so a run with the pair compares
+with one without. The check ids and names come from `repeat.checks` in `questions.json`, and `bun run eval:test`
+fails when a header FU1 looks for is no longer one the contract names. The reasons are kept in the run's
+`repeat.json`, the close-out answer as `close-out-turn.jsonl` and the second run's turns as
 `repeat-turn-<n>.jsonl`, never in a baseline or a comment. CI does not pass `--repeat`: run it by hand for a
-change to the repeat-run rules (`orchestration.md`, **2**, **A repeat run**, or `page-standard/follow-up.md`).
+change to the repeat-run rules (`references/repeat-run.md` or `page-standard/follow-up.md`).
 
 A rerun refuses every Atlas write, so the second run cannot read a last run kept in Atlas. It follows up from
 the session's own first run, which the same rules cover. The record kept in Atlas is not exercised here.

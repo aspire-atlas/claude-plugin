@@ -86,6 +86,7 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 | ------------------ | ---- |
 | **Artifact standard** (the mark and the source line on every page) | `references/artifact-standard.md` |
 | **Orchestration contract** (the shape of every launch and result) | `references/orchestration.md` |
+| **Repeat run** (the same question asked again: follow up, not setup) | `references/repeat-run.md` |
 | **Recipient lens** (who the reader is: the lens catalog and cues) | `references/recipient-lens.md` |
 | **List agents** | `references/agents-menu.md` (the hand-off table is **Agent hand-off** below) |
 | **Running agents**, **Checkpoints**, **Reading the ask**, **Campaign plan**, **Examples library**, **Decision audit** | `references/running-agents.md` (the decision audit brief a subagent is handed: `references/agents/decision-audit.md`) |

@@ -81,6 +81,10 @@ export type RepeatChecks = {
   /** FU2, from a judge that reads both pages: the second page's first section says what changed since the first. */
   leads: Result
   rounds: number
+  /** What the second run cost, the close-out answer before it included. The question's own sizes describe the first run. */
+  billedTokens: number
+  costUsd: number
+  compactions: number
   page: { link: string | null; captured: boolean }
 }
 
@@ -371,58 +375,68 @@ export function checkChat(turns: Turn[], closed: boolean, rules: ChatRules): { c
   return { checks, messages, hits }
 }
 
-export const REPEAT_CHECKS = [
-  { id: 'FU1', name: 'Repeat run asks what changed' },
-  { id: 'FU2', name: 'Repeat page leads with what changed' },
-]
+/** The repeat pair's two checks, by what each result holds. Their names and wording are in questions.json (repeat.checks). */
+export const REPEAT_IDS = { asks: 'FU1', leads: 'FU2' } as const
 
-// The headers of the questions a first run settles (orchestration.md, 2). A repeat run asks none of them.
-const SETUP_HEADERS = ['heard', 'scope', 'save', 'remember', 'storyline', 'role', 'relationship']
-// What those questions say when a host refuses the question tool and the flow asks in text.
+// The headers of the questions a first run settles, and the header of the one question a repeat run asks.
+// They are the contract's own (orchestration.md, 2, and repeat-run.md, The reply): lib.test.ts fails when
+// either file stops naming one, so a renamed header cannot leave FU1 looking for the old one.
+export const SETUP_HEADERS = ['Heard', 'Scope', 'Save', 'Remember', 'Storyline', 'Role', 'Relationship']
+export const SINCE_HEADER = 'Since then'
+// What the setup questions say when a host refuses the question tool and the flow asks in text.
 const SETUP_WORDS = [/keep these answers for next time/i, /\bpage only\b/i, /\bsave to atlas\b/i, /\byes, run it\b/i]
+// The follow-up's first line, allowing for a quote mark or emphasis in front of it.
+const OPENING = /^[\s>*_"“]*last time \(/i
 
 /**
  * FU1: the first message of a repeat run. It passes when the message opens the follow-up ("Last time (12 Nov)
  * you asked ..."), asks about what has happened since, and asks none of the setup questions the first run
  * settled. The Credits question is not a setup question: a run that will spend still asks it. Only the main
  * thread's own words are read: a file it opened (the contract's own example opens with "Last time") is not
- * something the person saw. The reasons name headers and rules only, never the message's words.
+ * something the person saw. The opening must be a line of its own that comes before any question the message
+ * asks, so a setup reply that mentions last time further down, or only inside a question, fails. The reasons
+ * name headers and rules only, never the message's words.
  */
 export function repeatAsk(turn: Turn): { result: Result; reasons: string[] } {
   const asks = turn.toolUses.filter(use => use.main && use.name === 'AskUserQuestion')
   const questions = asks.flatMap(use => (Array.isArray(use.input?.questions) ? use.input.questions : []))
   const headers = questions.map((question: any) => String(question?.header ?? '').trim().toLowerCase())
-  const text = [turn.said, ...asks.map(use => askText(use.input)), turn.reply].join('\n')
-  if (!text.trim()) return { result: 'not run', reasons: ['the repeat run sent no message'] }
+  // Everything the main thread wrote in the turn; the reply alone when the stream kept no text blocks.
+  const message = turn.said.trim() ? turn.said : turn.reply
+  if (!message.trim() && !questions.length) return { result: 'not run', reasons: ['the repeat run sent no message'] }
   const reasons: string[] = []
-  if (!/\blast time \(/i.test(text)) reasons.push('the message does not open with "Last time ({date}) you asked"')
-  const repeated = headers.filter(header => SETUP_HEADERS.includes(header))
+  const lines = message.split('\n')
+  const opening = lines.findIndex(line => OPENING.test(line))
+  if (opening < 0 || lines.slice(0, opening).join('\n').includes('?')) reasons.push('the message does not open with "Last time ({date}) you asked"')
+  const setup = SETUP_HEADERS.map(header => header.toLowerCase())
+  const repeated = headers.filter(header => setup.includes(header))
   if (repeated.length) reasons.push(`it asks setup questions again: ${[...new Set(repeated)].join(', ')}`)
   if (questions.length) {
-    if (!headers.includes('since then')) reasons.push('no question is headed "Since then"')
+    if (!headers.includes(SINCE_HEADER.toLowerCase())) reasons.push(`no question is headed "${SINCE_HEADER}"`)
   } else {
-    if (!/\bsince\b/i.test(text)) reasons.push('it does not ask what has happened since')
-    const said = SETUP_WORDS.filter(pattern => pattern.test(turn.reply))
-    if (said.length) reasons.push(`its reply asks setup questions again (${said.length} setup phrase${said.length === 1 ? '' : 's'})`)
+    if (!/\bsince\b/i.test(message)) reasons.push('it does not ask what has happened since')
+    const said = SETUP_WORDS.filter(pattern => pattern.test(`${turn.said}\n${turn.reply}`))
+    if (said.length) reasons.push(`it asks setup questions again in text (${said.length} setup phrase${said.length === 1 ? '' : 's'})`)
   }
   return { result: reasons.length ? 'fail' : 'pass', reasons }
 }
 
 /** One line under a question's table for the repeat pair. Null when the pair was not run. */
-export function repeatLine(repeat: RepeatChecks | undefined): string | null {
+export function repeatLine(repeat: RepeatChecks | undefined, names: Record<string, string>): string | null {
   if (!repeat) return null
-  const [asks, leads] = REPEAT_CHECKS
+  const part = (id: string, result: Result) => `${names[id] ? `${names[id]} ` : ''}(${id}): ${cell(result)}`
   const page = repeat.page.link ?? (repeat.page.captured ? 'captured, no link' : 'none published')
-  return `Repeat run: ${asks.name} (${asks.id}): ${cell(repeat.asks)}; ${leads.name} (${leads.id}): ${cell(repeat.leads)}. ` +
-    `Confirmation rounds: ${repeat.rounds} · Second page: ${page}.`
+  const compactions = repeat.compactions ? `, compacted ${repeat.compactions} time${repeat.compactions === 1 ? '' : 's'}` : ''
+  return `Repeat run: ${part(REPEAT_IDS.asks, repeat.asks)}; ${part(REPEAT_IDS.leads, repeat.leads)}. ` +
+    `Confirmation rounds: ${repeat.rounds} · Second run: ${repeat.billedTokens.toLocaleString('en-US')} tokens billed${compactions} · Second page: ${page}.`
 }
 
 /** The questions whose repeat pair failed a check. Like the chat, it has no approved result to compare with. */
 export function repeatFailures(results: RunResults): { code: string; id: string }[] {
-  return results.questions.flatMap(question => [
-    ...(question.repeat?.asks === 'fail' ? [{ code: question.code, id: REPEAT_CHECKS[0].id }] : []),
-    ...(question.repeat?.leads === 'fail' ? [{ code: question.code, id: REPEAT_CHECKS[1].id }] : []),
-  ])
+  return results.questions.flatMap(question =>
+    (Object.keys(REPEAT_IDS) as (keyof typeof REPEAT_IDS)[])
+      .filter(key => question.repeat?.[key] === 'fail')
+      .map(key => ({ code: question.code, id: REPEAT_IDS[key] })))
 }
 
 /** The chat item of docs/STANDARD.md that the counts prove. */
@@ -587,7 +601,7 @@ export function renderQuestion(question: QuestionResult, eChecks: CheckDef[], rL
   lines.push(`Transcript: ${question.transcriptTokens.toLocaleString('en-US')} tokens${compactions} · ` +
     `Confirmation rounds: ${question.rounds} · New page: ${question.page.link ?? (question.page.captured ? 'captured, no link' : 'none published')}`)
   const chat = chatLine(question.chat)
-  const repeat = repeatLine(question.repeat)
+  const repeat = repeatLine(question.repeat, names)
   const notes = [...question.problems, ...(chat ? [chat] : []), ...(repeat ? [repeat] : []), ...(question.new?.notes ?? []).map(n => `New page: ${n}`), ...(question.approved?.notes ?? []).map(n => `Approved page: ${n}`)]
   for (const note of notes) lines.push(`- ${note}`)
   const waiting = eChecks.filter(check => check.waitsFor && eResult(question.new, check.id) === 'not run')

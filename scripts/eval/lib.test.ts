@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import {
   ATLAS_READS, ATLAS_WRITES, barChecks, compareRuns, extractPageCheckScript, fencedBlocks, fill, findJsonWithKey, configuredQuestions, skippedLine,
   findPage, forBaseline, normalizeResult, codesForChanges, readerResult, regressions, renderComment, renderSkipped, renderSlack, COMMENT_MARKER, renderStopped, stripTitlePrefix, checkNames, parsePageCheck, parseStream, renderRun, rIds, rResult, stripDataUris,
-  parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, askText, chatCodes, chatFailures, chatLine, chatMessages, checkChat, countChat, noChat, normalizeRun, CHAT_CHECK, repeatAsk, repeatLine, repeatFailures,
+  parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, askText, chatCodes, chatFailures, chatLine, chatMessages, checkChat, countChat, noChat, normalizeRun, CHAT_CHECK, repeatAsk, repeatLine, repeatFailures, REPEAT_IDS, SETUP_HEADERS, SINCE_HEADER,
   type PageChecks, type QuestionResult, type RunResults,
 } from './lib'
 
@@ -485,9 +485,12 @@ test('a run stored before the chat check reads as chat not run, and adds no chan
 })
 
 test('a repeat run passes when it opens with last time and asks only what changed', () => {
-  const since = { header: 'Since then', question: 'What has happened since on these? 1. License the three unboxing videos (you, by 19 Nov).', options: ['All still open', 'All done'] }
-  const opening = [{ type: 'assistant', message: { content: [{ type: 'text', text: 'Last time (12 Nov) you asked which creator posts to run as ads.' }] } }]
+  const since = { header: 'Since then', question: 'What has happened since on these? 1. License the three unboxing videos (you, by 19 Nov).', options: ['All still open (Recommended)', 'All done'] }
+  const says = (text: string) => [{ type: 'assistant', message: { content: [{ type: 'text', text }] } }]
+  const opening = says('Last time (12 Nov) you asked which creator posts to run as ads.')
   expect(repeatAsk(chatTurn('', [since], opening))).toEqual({ result: 'pass', reasons: [] })
+  // A line of narration before the reply is not a question, so the opening still comes first.
+  expect(repeatAsk(chatTurn('', [since], says('Reading what Atlas holds.\n\n> Last time (12 Nov) you asked which posts to run as ads.'))).result).toBe('pass')
   // A run that will spend still asks for its credit cap.
   expect(repeatAsk(chatTurn('', [since, { header: 'Credits', question: 'Cap it at 12 fetches?' }], opening)).result).toBe('pass')
   // Setup questions again, with or without the follow-up beside them.
@@ -497,9 +500,16 @@ test('a repeat run passes when it opens with last time and asks only what change
   const setupOnly = repeatAsk(chatTurn('', [{ header: 'Heard', question: 'You asked which creator posts to run as ads. Is that right?' }]))
   expect(setupOnly.result).toBe('fail')
   expect(setupOnly.reasons).toHaveLength(3)
+  // "Last time (" only inside the question, or after a question the message already asked, is not the opening.
+  const inQuestion = repeatAsk(chatTurn('', [{ ...since, question: 'Last time (12 Nov) you asked about ads. What has happened since?' }], says('Here is what I will do.')))
+  expect(inQuestion.reasons).toEqual(['the message does not open with "Last time ({date}) you asked"'])
+  expect(repeatAsk(chatTurn('', [since], says('Who is this for?\nLast time (12 Nov) you asked which posts to run as ads.'))).result).toBe('fail')
   // A host that refuses the question tool asks in text.
   expect(repeatAsk(chatTurn('Last time (12 Nov) you asked which posts to run as ads. What has happened since on these two steps?')).result).toBe('pass')
   expect(repeatAsk(chatTurn('Last time (12 Nov) you asked which posts to run as ads. Since then: page only, or save to Atlas?')).result).toBe('fail')
+  // Setup wording in an earlier message of the turn counts, whatever the turn's last line says.
+  const earlier = repeatAsk(chatTurn('Tell me when you are ready.', [], says('Last time (12 Nov) you asked about ads. What has happened since?\nPage only, or save to Atlas?')))
+  expect(earlier.reasons).toEqual(['it asks setup questions again in text (2 setup phrases)'])
   expect(repeatAsk(chatTurn('')).result).toBe('not run')
   // The contract's own example, read from a file, is not what the person was told.
   const readFile = [{ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 'r1', content: 'Last time (12 Nov) you asked which creator posts to run as ads. What has happened since?' }] } }]
@@ -507,23 +517,33 @@ test('a repeat run passes when it opens with last time and asks only what change
 })
 
 test('the repeat pair is a line under the table, kept in a baseline without its link, and a fail is named', () => {
-  const repeat = { asks: 'pass' as const, leads: 'fail' as const, rounds: 1, page: { link: 'https://claude.ai/artifact/Second1', captured: true } }
-  expect(repeatLine(undefined)).toBeNull()
-  expect(repeatLine(repeat)).toBe('Repeat run: Repeat run asks what changed (FU1): pass; Repeat page leads with what changed (FU2): fail. Confirmation rounds: 1 · Second page: https://claude.ai/artifact/Second1.')
+  const repeat = { asks: 'pass' as const, leads: 'fail' as const, rounds: 1, billedTokens: 1234567, costUsd: 3.2, compactions: 1, page: { link: 'https://claude.ai/artifact/Second1', captured: true } }
+  const names = { FU1: 'Repeat run asks what changed', FU2: 'Repeat page leads with what changed' }
+  expect(repeatLine(undefined, names)).toBeNull()
+  expect(repeatLine(repeat, names)).toBe('Repeat run: Repeat run asks what changed (FU1): pass; Repeat page leads with what changed (FU2): fail. ' +
+    'Confirmation rounds: 1 · Second run: 1,234,567 tokens billed, compacted 1 time · Second page: https://claude.ai/artifact/Second1.')
+  expect(repeatLine({ ...repeat, compactions: 0 }, {})).toContain('Repeat run: (FU1): pass; (FU2): fail. Confirmation rounds: 1 · Second run: 1,234,567 tokens billed · ')
   const results = { harness: 1, date: '2026-11-17', commit: 'abcdef0', model: 'm', judgeModel: 'm', eChecksVersion: '3', questions: [{
     code: 'I4', example: 'Holiday creator plan', setsBarFor: [5], barChecks: [], page: { link: null, captured: true }, rounds: 2, transcriptTokens: 0,
     billedTokens: 0, compactions: 0, costUsd: 0, new: null, approved: null, chat: noChat(), repeat, problems: [],
   }] } as RunResults
   expect(repeatFailures(results)).toEqual([{ code: 'I4', id: 'FU2' }])
-  expect(renderRun(results, [], {})).toContain('- Repeat run: Repeat run asks what changed (FU1): pass')
+  expect(renderRun(results, [], names)).toContain('- Repeat run: Repeat run asks what changed (FU1): pass')
   expect(forBaseline(results).questions[0].repeat).toEqual({ ...repeat, page: { link: null, captured: true } })
   expect(JSON.stringify(forBaseline(results))).not.toContain('claude.ai/artifact')
 })
 
-test('the repeat pair names a question in the set and its two checks', () => {
+test('the repeat pair names a question in the set, and its checks and headers are the ones the contract names', () => {
   const config = JSON.parse(readFileSync(join(import.meta.dir, 'questions.json'), 'utf8'))
   const codes = config.questions.map((q: any) => q.code)
   for (const code of config.repeat.codes) expect(codes).toContain(code)
-  expect(config.repeat.checks.map((c: any) => c.id)).toEqual(['FU1', 'FU2'])
+  // One source for the checks: questions.json names and words them, and the code looks them up by id.
+  expect(config.repeat.checks.map((c: any) => c.id).sort()).toEqual(Object.values(REPEAT_IDS).sort())
+  expect(config.repeat.checks.find((c: any) => c.id === REPEAT_IDS.leads).judgedBy).toBe('judge')
   expect(config.repeat.reply).toMatch(/Save nothing to Atlas/)
+  expect(config.repeat.closeOutReply).toMatch(/start nothing else/)
+  // FU1 looks for these headers. Each must still be a header the contract tells the main thread to use.
+  const refs = join(ROOT, 'plugins/aspire/skills/aspire/references')
+  const contract = ['orchestration.md', 'repeat-run.md'].map(name => readFileSync(join(refs, name), 'utf8')).join('\n')
+  for (const header of [...SETUP_HEADERS, SINCE_HEADER]) expect(contract).toContain(`header "${header}"`)
 })

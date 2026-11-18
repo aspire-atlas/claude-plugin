@@ -43,7 +43,8 @@ if (command === 'select' && arg) {
   }
   const from = existsSync(join(arg, 'approved-from.txt')) ? readFileSync(join(arg, 'approved-from.txt'), 'utf8').trim() : null
   const source = from && from !== 'none' ? `the baseline of ${from}` : from === 'none' ? null : 'the approved pages, graded in this run'
-  process.stdout.write(renderComment(run, eChecks, names(eChecks), source, runUrl ?? null))
+  const repeatChecks = readJson(join(HERE, 'questions.json')).repeat?.checks ?? []
+  process.stdout.write(renderComment(run, eChecks, names([...eChecks, ...repeatChecks]), source, runUrl ?? null))
   process.exit(regressions(run, eChecks).length ? 1 : 0)
 } else if (command === 'skipped' && arg) {
   process.stdout.write(renderSkipped(arg))

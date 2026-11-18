@@ -2,11 +2,12 @@
 
 Section 1 of `SKILL.md` points here. The main thread's side (when a run is a repeat, the one
 question it asks, and the record it keeps) is in
-`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **2**, **A repeat run**.
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/repeat-run.md`.
 
-The launch block's `since` (**5** there) is the last run of the same question: the date it ran,
-its page, and each decision and next step that page left open, with the status the person gave
-it. When `since` is `null` or absent, this file does not apply.
+The launch block's `since` (`orchestration.md`, **5**) is the last run of the same question: the
+date it ran, its page, and each decision and next step that page left open, with the status the
+person gave it. When `since` is `null` or absent, the page is a first run: nothing below changes
+it, and its result still lists its `openItems` as `SKILL.md`, section 1, says for every run.
 
 ## What the page does with it
 
@@ -38,11 +39,10 @@ Where the flow's reference already leads with change from its own records (a rea
 items, the market signal's tracking, the program dashboard's snapshot), follow the reference and
 add the `since` items to it. Never show the same item twice.
 
-## What the result carries
+## What a repeat run adds to the result
 
-The packet's `openItems` (**6** there) lists every decision in part 5 and every next step in
-part 4 as the page words them, with `kind`, `owner`, `due`, `status`, and `opened`. A carried
-item keeps its `id` and its `opened` date; a new one takes the next free id and today's date.
+`SKILL.md`, section 1, sets what `openItems` lists on every run. On a repeat run, a carried item
+keeps its `id` and its `opened` date, and a new one takes the next free id and today's date.
 Include each `since` item the page reports as `done` or `dropped`, with that status, so the main
 thread can tell a finished item from one the page lost.
 
