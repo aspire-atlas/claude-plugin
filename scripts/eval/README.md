@@ -56,8 +56,8 @@ It runs on a developer's machine, and in CI on every pull request that changes a
   a newly added question runs nowhere, CI included, until its brand and approved page are added to
   `local.json` and the `EVAL_LOCAL_JSON` secret. The run's `results.json`, the table, the PR comment
   and the nightly Slack post all name it as skipped, and a run with nothing left to run posts a skip
-  and passes. Once a baseline holds a question's approved results, a missing brand stops the run
-  instead, so a lost or mistyped entry cannot quietly drop a question that gates pull requests.
+  and passes. Once a baseline holds a question's approved results, or one of its assertions has landed,
+  a missing brand stops the run instead, so a lost or mistyped entry cannot quietly drop a question that gates pull requests.
   A run also stops before its first turn while a value it reads from `local.json` still holds a
   `{placeholder}` from the example file, and names each key: the connector, the organization, the
   `chatAllow` names, and the entry of every question it is about to run. A flow asked about "{brand}"
@@ -140,7 +140,7 @@ predates the rule; the table shows that, and `--compare` marks a changed approve
 
 | Column | What it holds |
 | ------ | ------------- |
-| Check | E1 to E8 from the Evals tab, then Q3 (below), then every R check the reader standard has |
+| Check | A client case's own assertions, each with its ticket, then E1 to E8 from the Evals tab, then Q3 (below), then every R check the reader standard has |
 | New page, Approved page | `pass`, `fail`, `n/a`, or `–` when the check did not run |
 | Sets the bar | `yes` when the approved page was named as the example for a change this check covers, and on every assertion |
 
@@ -271,7 +271,7 @@ a question with approved results: the case gates pull requests from then on.
 
 | Path | Committed | Holds |
 | ---- | --------- | ----- |
-| `baselines/<date>/results.json`, `table.md` | Yes | Results, the chat counts, the approvals by kind, token counts, rounds, the plugin commit, the models. No page, link, brand, reason text, or chat text |
+| `baselines/<date>/results.json`, `table.md` | Yes | Results, each assertion's name and ticket, the chat counts, the approvals by kind, token counts, rounds, the plugin commit, the models. No page, link, brand, reason text, or chat text |
 | `.runs/<time>/` | No | Each turn's transcript, both pages, each check's reasons, the chat messages (`chat.json`), every picker with its answer (`asks.json`), `results.json`, `table.md` |
 | `.cache/approved/` | No | The copy of each approved page |
 | `local.json` | No | Brands, links, the dev server address, a case's competitor names and its input files |
@@ -347,7 +347,7 @@ when the run ends, so the comment's link stops opening after the job finishes.
 
 | File | What it is |
 | ---- | ---------- |
-| `questions.json` | The seven questions: code, reader, the ask, and the changes each example sets the bar for; and the answer list for the pickers |
+| `questions.json` | The questions: code, reader, the ask, the changes each example sets the bar for, and a client case's assertions; and the answer list for the pickers |
 | `e-checks.json` | The eight E-checks, copied from the Evals tab, with who judges each |
 | `local.example.json` | The shape of `local.json` |
 | `run.ts` | The command |
@@ -355,7 +355,7 @@ when the run ends, so the comment's link stops opening after the job finishes.
 | `answers.ts`, `answers.test.ts` | How a picker is answered from the answer list, and what `asks.json` keeps |
 | `approvals.ts`, `approvals.test.ts` | The Q3 check: the kinds of approval, how the setup line and each question are read |
 | `fixtures/` | Transcripts for the harness's tests: a run that named every approval it asked for, and one that did not |
-| `ci.ts` | CI: which questions a change reruns, the PR comment, the nightly Slack message |
+| `ci.ts` | CI: which questions a change reruns, whether it calls for the fixture check, the PR comment, the nightly Slack message |
 | `post-comment.sh` | CI: posts the comment, or edits the one already on the PR |
 | `lib.ts`, `lib.test.ts` | Reading a transcript, the table, baselines, compare, and their tests |
 | `baselines/` | One folder per stored run |

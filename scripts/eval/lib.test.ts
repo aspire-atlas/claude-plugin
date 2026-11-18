@@ -7,7 +7,7 @@ import {
   aResult, assertionNotes, assertionRefs, cell, fixtureProblems, fixturesForChanges, hasLandedAssertion, passesWhen, planInputFiles, resolveQuestion, rows, safeFileName,
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, askText, chatCodes, chatFailures, chatLine, chatMessages, checkChat, countChat, noChat, normalizeRun, CHAT_CHECK,
   placeholderKeys, ANSWER_EVENT,
-  type PageChecks, type QuestionResult, type RunResults,
+  type Assertion, type AssertionRef, type PageChecks, type QuestionResult, type RunResults,
 } from './lib'
 import { wasAnswered } from './answers'
 import { APPROVALS_CHECK, checkApprovals, noApprovals } from './approvals'
@@ -113,7 +113,7 @@ function run(overrides: Partial<QuestionResult> = {}, date = '2026-11-10'): RunR
   const question: QuestionResult = {
     code: 'I4', example: 'Holiday creator plan', setsBarFor: [5, 6], barChecks: ['E1', 'R3'],
     page: { link: 'https://claude.ai/artifact/AbC123', captured: true }, rounds: 2, transcriptTokens: 123456, billedTokens: 1, compactions: 1, costUsd: 1,
-    new: page, approved: { ...page, graded: { R1: 'pass', R3: 'pass' } }, chat: noChat(), approvals: noApprovals(), problems: ['Approved page for Acme'], ...overrides,
+    new: page, approved: { ...page, graded: { R1: 'pass', R3: 'pass' } }, chat: noChat(), approvals: noApprovals(), problems: ['Approved page for Acme'], assertions: [], ...overrides,
   }
   return { harness: 1, date, commit: 'abcdef1234', model: 'm', judgeModel: 'm', eChecksVersion: '3', questions: [question] }
 }
@@ -503,7 +503,7 @@ test('the approval check is a row of the table with no approved result, and neve
   const table = renderRun(failing, E_CHECKS, names)
   expect(table).toContain('| Q3 Approvals named in the setup reply | fail | – |  |')
   expect(table).toContain('- Approvals named in the setup reply (Q3): fail. The run asked for save, drafts')
-  expect(regressions(failing, E_CHECKS).map(r => r.id)).toEqual(['R3'])
+  expect(regressions(failing, E_CHECKS, names).map(r => r.id)).toEqual(['R3'])
   expect(renderRun(run(), E_CHECKS, names)).toContain(`| ${APPROVALS_CHECK.id} ${APPROVALS_CHECK.name} | – | – |  |`)
   // A baseline keeps the kinds, which hold no chat text, and a run stored before the check reads as not run.
   expect(forBaseline(failing).questions[0].approvals).toEqual(failing.questions[0].approvals)
@@ -614,4 +614,168 @@ test('a compare does not count the approval check appearing for the first time',
   expect(compared).not.toContain('harness versions')
   // Runs from the two harnesses are told apart, since their rounds and tokens are counted differently.
   expect(compareRuns({ ...before, harness: 1 }, { ...after, harness: 2 }, E_CHECKS)).toContain('harness versions 1 and 2')
+})
+
+// ---------------------------------------------------------------- client cases and their assertions
+
+const SHOP: AssertionRef = { id: 'A1', name: 'Shop posts are their own group', ticket: 'ASP-5976', landed: false }
+const MENTIONS: AssertionRef = { id: 'A2', name: 'Mentions count with or without the @', ticket: 'ASP-5977', landed: false }
+
+/** A client case with no approved page: A1 fails and A2 passes on the new page. */
+function caseRun(assertions: AssertionRef[] = [SHOP, MENTIONS], asserted: Record<string, any> = { A1: 'fail', A2: 'pass' }): RunResults {
+  const results = run({ code: 'CR1', example: 'Competitive read', setsBarFor: [], barChecks: [], approved: null, assertions })
+  results.questions[0].new = { ...results.questions[0].new!, graded: { R1: 'pass' }, asserted }
+  return results
+}
+
+test('every client case names a ticket per assertion and has both fixture pages, with placeholder handles and links', () => {
+  const config = JSON.parse(readFileSync(join(import.meta.dir, 'questions.json'), 'utf8'))
+  const cases = config.questions.filter((q: any) => q.assertions)
+  expect(cases.map((q: any) => q.code)).toEqual(['CR1', 'AR1'])
+  for (const question of cases) {
+    const ids = question.assertions.map((a: Assertion) => a.id)
+    expect(new Set(ids).size).toBe(ids.length)
+    for (const a of question.assertions as Assertion[]) {
+      expect(a.ticket).toMatch(/^ASP-\d+$/)
+      expect(typeof a.landed).toBe('boolean')
+      expect(a.passesWhen.length).toBeGreaterThan(20)
+      expect(a.failsWhen.length).toBeGreaterThan(20)
+      // The first row of "what it covers": the client example the assertion came from.
+      expect(a.examples.length).toBeGreaterThan(0)
+    }
+    for (const role of ['wrong', 'corrected']) {
+      const page = readFileSync(join(ROOT, question.fixtures[role]), 'utf8')
+      // A handle that could be a real person's, or a link to a real post, never sits beside invented figures.
+      expect((page.match(/@\w+/g) ?? []).every(handle => /^@(creator_[a-z]|handle)$/.test(handle))).toBe(true)
+      expect((page.match(/https?:\/\/[^"\s<]+/g) ?? []).every(link => link.startsWith('https://example.com/'))).toBe(true)
+    }
+    // A figure a case expects on the fixture pages names only what the pages invent.
+    for (const a of question.assertions as Assertion[]) if (a.whenNamed) expect(passesWhen(a, question.fixtures.values ?? {})).toContain(' at least ')
+  }
+  // The competitive read is the plugin's own question; the affiliate report has no question code.
+  const resolved = config.questions.map(resolveQuestion)
+  expect(resolved.map((q: any) => q.question)).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'O3', null])
+  expect(resolved.map((q: any) => q.assertions.length)).toEqual([0, 0, 0, 0, 0, 0, 0, 3, 5])
+})
+
+test('an expected figure joins an assertion only when local.json names everything it asks about', () => {
+  const a: Assertion = { ...MENTIONS, fix: 2, passesWhen: 'Counts name matches.', failsWhen: 'Tags only.', examples: [], whenNamed: 'The count for {competitor} is at least {competitorPosts} posts.' }
+  expect(passesWhen(a, {})).toBe('Counts name matches.')
+  expect(passesWhen(a, { competitor: 'Lumen Kids' })).toBe('Counts name matches.')
+  expect(passesWhen(a, { competitor: 'Lumen Kids', competitorPosts: '20' })).toBe('Counts name matches. The count for Lumen Kids is at least 20 posts.')
+})
+
+test('a case shows its assertions first, each with its ticket, and says which still wait on one', () => {
+  const results = caseRun()
+  expect(rows(results.questions[0], E_CHECKS, [], {}).slice(0, 2).map(row => [row.id, row.new, row.approved, row.bar])).toEqual([['A1', 'fail', 'not run', true], ['A2', 'pass', 'not run', true]])
+  const table = renderRun(results, E_CHECKS, {})
+  expect(table).toContain('| A1 Shop posts are their own group (ASP-5976) | fail | – | yes |')
+  expect(table.indexOf('| A1 ')).toBeLessThan(table.indexOf('| E1 '))
+  expect(table).toContain('- Waiting on a ticket, so not a regression: A1 (ASP-5976).')
+  expect(table).toContain('- Passes before its ticket is marked as landed: A2 (ASP-5977).')
+  expect(assertionNotes(caseRun([{ ...SHOP, landed: true }], { A1: 'pass' }).questions[0])).toEqual([])
+  // An assertion the judge did not return, or one the page's data cannot show, is never listed as a failure.
+  expect(assertionNotes(caseRun([SHOP, MENTIONS], { A2: 'n/a' }).questions[0])).toEqual([
+    'Not judged (the judge returned no row, or an N/A it is told not to give), so nothing is known about: A1 (ASP-5976), A2 (ASP-5977).',
+  ])
+  expect(aResult(null, 'A1')).toBe('not run')
+  expect(assertionRefs([])).toEqual([])
+  expect([cell('not run'), cell('fail')]).toEqual(['–', 'fail'])
+})
+
+test('an assertion blocks nothing until its ticket lands, and from then on a failure is a regression', () => {
+  expect(regressions(caseRun(), E_CHECKS, {})).toEqual([])
+  const landed = caseRun([{ ...SHOP, landed: true }, MENTIONS])
+  expect(regressions(landed, E_CHECKS, {})).toEqual([{ kind: 'assertion', code: 'CR1', id: 'A1', name: SHOP.name, ticket: 'ASP-5976', now: 'fail' }])
+  const comment = renderComment(landed, E_CHECKS, {}, null, null)
+  expect(comment).toContain('- CR1 A1 Shop posts are their own group: ASP-5976 landed, new fail')
+  expect(renderSlack(landed, E_CHECKS, {}, null)).toContain('regressed A1')
+  // No page at all brings the wrong reading back as surely as a failing one.
+  const noPage = caseRun([{ ...SHOP, landed: true }])
+  noPage.questions[0].new = null
+  expect(regressions(noPage, E_CHECKS, {})).toEqual([{ kind: 'assertion', code: 'CR1', id: 'A1', name: SHOP.name, ticket: 'ASP-5976', now: 'no page' }])
+  // A landed assertion must pass. A judge that answers n/a, or returns no row, lets the wrong reading back in unseen.
+  expect(regressions(caseRun([{ ...SHOP, landed: true }], { A1: 'n/a' }), E_CHECKS, {}).map(r => r.kind === 'assertion' && r.now)).toEqual(['n/a'])
+  const unjudged = caseRun([{ ...SHOP, landed: true }], {})
+  expect(regressions(unjudged, E_CHECKS, {}).map(r => r.kind === 'assertion' && r.now)).toEqual(['not run'])
+  expect(renderComment(unjudged, E_CHECKS, {}, null, null)).toContain('- CR1 A1 Shop posts are their own group: ASP-5976 landed, new not judged')
+  expect(regressions(caseRun([{ ...SHOP, landed: true }], { A1: 'pass' }), E_CHECKS, {})).toEqual([])
+  // Before its ticket lands, an assertion regresses only against an approved page that passes it.
+  const approved = caseRun()
+  approved.questions[0].approved = { ...approved.questions[0].new!, asserted: { A1: 'pass', A2: 'pass' } }
+  expect(regressions(approved, E_CHECKS, {})).toEqual([{ kind: 'page', code: 'CR1', id: 'A1', name: SHOP.name, was: 'pass', now: 'fail' }])
+  expect(renderComment(approved, E_CHECKS, {}, null, null)).toContain('- CR1 A1 Shop posts are their own group: approved pass, new fail')
+})
+
+test('a baseline keeps assertion results, and a compare matches them by id when a case gains one', () => {
+  const kept = forBaseline(caseRun()).questions[0]
+  expect(kept.new!.asserted).toEqual({ A1: 'fail', A2: 'pass' })
+  expect(kept.assertions).toEqual([SHOP, MENTIONS])
+  // Results stored before assertions read as having none, so no caller handles a missing field.
+  const old: any = run()
+  delete old.questions[0].assertions
+  delete old.questions[0].new.asserted
+  expect(normalizeRun(old).questions[0].assertions).toEqual([])
+  expect(normalizeRun(old).questions[0].new!.asserted).toEqual({})
+  expect(regressions(normalizeRun(old), E_CHECKS, {}).map(r => r.id)).toEqual(['R3'])
+  const before = caseRun([MENTIONS], { A2: 'pass' })
+  const after = caseRun([SHOP, MENTIONS], { A1: 'fail', A2: 'pass' })
+  const diff = compareRuns(before, after, E_CHECKS)
+  expect(diff).toContain('| A1 | – → fail | – |')
+  expect(diff).not.toContain('| A2 |')
+  expect(diff).toContain('1 check result changed.')
+})
+
+test('the fixture pages must split every assertion: fail on the wrong reading, pass on the corrected one', () => {
+  expect(fixtureProblems([SHOP, MENTIONS], { A1: 'fail', A2: 'fail' }, { A1: 'pass', A2: 'pass' })).toEqual([])
+  expect(fixtureProblems([SHOP, MENTIONS], { A1: 'pass', A2: 'fail' }, { A1: 'pass' })).toEqual([
+    'A1: the page with the wrong reading got pass, not fail',
+    'A2: the corrected page got not run, not pass',
+  ])
+})
+
+test('a case with a landed assertion stops the run when its brand is lost, and its input file names are made safe', () => {
+  const questions = [{ code: 'CR1', assertions: [{ landed: true }] }, { code: 'AR1', assertions: [{ landed: false }] }, { code: 'I4', assertions: [] }]
+  const gates = (code: string) => questions.some(question => question.code === code && hasLandedAssertion(question))
+  expect(configuredQuestions(questions, { questions: {} }, false, gates)).toEqual({ run: [], skipped: ['AR1', 'I4'], missing: ['CR1'] })
+  expect(safeFileName('affiliate sales (Oct).csv')).toBe('affiliate_sales__Oct_.csv')
+  expect(safeFileName('../../.env')).toBe('__.._.env')
+  expect(safeFileName('..')).toBe('_')
+})
+
+test('a question\'s input files are checked before any question runs: a missing one, and two that would share a name', () => {
+  const exists = (path: string) => path === 'exports/sales.csv'
+  expect(planInputFiles('AR1', [{ name: 'sales export.csv', path: 'exports/sales.csv' }, { name: 'notes.txt', text: 'a' }], exists))
+    .toEqual({ names: ['sales_export.csv', 'notes.txt'], problems: [] })
+  expect(planInputFiles('AR1', [{ name: 'sales.csv', path: 'laptop/only.csv' }], exists).problems).toEqual(['AR1: the file sales.csv has no text and no path to a file that exists'])
+  expect(planInputFiles('AR1', [{ name: 'sales.csv', path: 'exports/sales.csv', text: null as any }], exists).problems).toEqual([])
+  expect(planInputFiles('AR1', [{ name: 'sales export.csv', text: 'a' }, { name: 'sales_export.csv', text: 'b' }], exists).problems)
+    .toEqual(['AR1: the files sales export.csv and sales_export.csv would both be saved as sales_export.csv'])
+  // Most developers' disks ignore case, so two names that differ only in case are one file there.
+  expect(planInputFiles('AR1', [{ name: 'Sales.csv', text: 'a' }, { name: 'sales.csv', text: 'b' }], exists).problems)
+    .toEqual(['AR1: the files Sales.csv and sales.csv would both be saved as sales.csv'])
+  // An empty name would be written to the run's folder itself.
+  expect(planInputFiles('AR1', [{ name: '', text: 'a' }], exists).problems).toEqual(['AR1: a file has no name'])
+})
+
+test('the fixture check runs for a change to a file questions.json lists, and each listed path exists', () => {
+  const config = JSON.parse(readFileSync(join(import.meta.dir, 'questions.json'), 'utf8'))
+  const needed = (changed: string[]) => fixturesForChanges(changed, config.fixturePaths)
+  expect(needed(['scripts/eval/questions.json'])).toBe(true)
+  expect(needed(['scripts/fixtures/eval-cases/ar1-wrong.html'])).toBe(true)
+  expect(needed(['scripts/eval/lib.ts'])).toBe(true)
+  expect(needed(['plugins/aspire/agents/atlas-market-signal.md', 'README.md'])).toBe(false)
+  for (const path of config.fixturePaths) expect(existsSync(join(ROOT, path))).toBe(true)
+  // The list is complete for the harness itself: where the command is defined, the workflow step that runs it,
+  // and every local file run.ts loads, directly or through lib.ts.
+  expect(needed(['package.json'])).toBe(true)
+  expect(needed(['.github/workflows/validate.yml'])).toBe(true)
+  for (const file of ['run.ts', 'lib.ts']) {
+    const source = readFileSync(join(import.meta.dir, file), 'utf8')
+    for (const match of source.matchAll(/from '(\.{1,2}\/[^']+)'/g)) {
+      expect(needed([join('scripts/eval', `${match[1]}.ts`)])).toBe(true)
+    }
+  }
+  // Every case's fixture pages sit under a listed path, so a new case's pages cannot go unjudged.
+  for (const question of config.questions) for (const role of ['wrong', 'corrected']) if (question.fixtures) expect(needed([question.fixtures[role]])).toBe(true)
 })

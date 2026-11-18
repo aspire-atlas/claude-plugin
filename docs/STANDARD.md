@@ -143,7 +143,9 @@ How to read the comment:
 1. **The first line** says whether anything regressed. A regression is a check the approved page passes that
    the new page fails; it blocks the merge. Fix the change, or, when the check itself is wrong, say so in the
    PR and fix the check in the same change.
-2. **The table** has one row per check: E1 to E8 (the Evals tab), Q3 (the approvals the run asked for, with no approved result), then R1 onward (the reader standard). New
+2. **The table** has one row per check: a client case's own assertions first (see
+   [Adding a client example](#adding-a-client-example)), then E1 to E8 (the Evals tab), Q3 (the approvals the run asked for,
+   with no approved result), then R1 onward (the reader standard). New
    page and Approved page are `pass`, `fail`, `n/a`, or `–` when the check did not run. **Sets the bar** marks
    the checks this question's approved page is the example for: those are the rows this standard's items
    above are proven on (E1 and E8 for S1, E4 for M3, E6 and E7 for V1).

@@ -130,6 +130,8 @@ export type QuestionResult = {
   chat: ChatChecks
   /** `not run` for a question graded from a file, a run that asked no picker, and results stored before the check. */
   approvals: ApprovalChecks
+  /** The second run of the same question, when the run was asked for the repeat pair (`--repeat`). */
+  repeat?: RepeatChecks
   problems: string[]
   /** The assertions the question was graded on. Empty for a question that has none. */
   assertions: AssertionRef[]
@@ -229,10 +231,12 @@ export function askedQuestions(input: Record<string, any> | undefined): Asked[] 
 
 export function summarizeTurn(events: Event[]): Turn {
   const turn: Turn = {
-    sessionId: null, scratchpad: null, model: null, connectors: {}, text: '', reply: '', toolUses: [], asks: [], toolResults: {},
+    sessionId: null, scratchpad: null, model: null, connectors: {}, text: '', said: '', reply: '', toolUses: [], asks: [], toolResults: {},
     contextTokens: 0, billedTokens: 0, costUsd: 0, compactions: 0, failed: true,
   }
   const parts: string[] = []
+  // Everything the main thread wrote in the turn.
+  const mainSaid: string[] = []
   // Per thread ('' is the main thread, a subagent is its Task call's id): what it has written since its last
   // picker, the text above the next one, and the part of that written since its last tool result, which is the
   // message the next picker sits in.
@@ -253,6 +257,7 @@ export function summarizeTurn(events: Event[]): Turn {
       for (const block of event.message?.content ?? []) {
         if (block.type === 'text') {
           if (main) parts.push(block.text)
+          if (main) mainSaid.push(block.text)
           ;(said[thread] ??= []).push(block.text)
           ;(message[thread] ??= []).push(block.text)
         }
@@ -299,7 +304,7 @@ export function summarizeTurn(events: Event[]): Turn {
     }
   }
   turn.text = parts.join('\n')
-  turn.said = said.join('\n')
+  turn.said = mainSaid.join('\n')
   return turn
 }
 
@@ -582,7 +587,14 @@ export function chatLine(chat: ChatChecks): string | null {
 
 /** Stored results as this version reads them: a run stored before the chat check or the approval check has neither on its questions. */
 export function normalizeRun(results: RunResults): RunResults {
-  return { ...results, questions: results.questions.map(question => ({ ...question, chat: question.chat ?? noChat(), approvals: question.approvals ?? noApprovals() })) }
+  const page = (checks: PageChecks | null) => checks && { ...checks, asserted: checks.asserted ?? {} }
+  return {
+    ...results,
+    questions: results.questions.map(question => ({
+      ...question, chat: question.chat ?? noChat(), assertions: question.assertions ?? [], approvals: question.approvals ?? noApprovals(),
+      new: page(question.new), approved: page(question.approved),
+    })),
+  }
 }
 
 export function fencedBlocks(text: string, label: string): string[] {
@@ -708,10 +720,29 @@ export type Row = { id: string; name?: string; new: Result; approved: Result; ba
 export function rows(question: QuestionResult, eChecks: CheckDef[], rList: string[], names: Record<string, string>): Row[] {
   const bar = new Set(question.barChecks)
   return [
-    ...eChecks.map(check => ({ id: check.id, new: eResult(question.new, check.id), approved: eResult(question.approved, check.id), bar: bar.has(check.id) })),
+    ...question.assertions.map(assertion => ({ id: assertion.id, name: assertion.name, new: aResult(question.new, assertion.id), approved: aResult(question.approved, assertion.id), bar: true, assertion })),
+    ...eChecks.map(check => ({ id: check.id, name: names[check.id], new: eResult(question.new, check.id), approved: eResult(question.approved, check.id), bar: bar.has(check.id) })),
     // The run's own approvals, not the page's: an approved page has no run to read, so its column stays empty.
-    { id: APPROVALS_CHECK.id, new: question.approvals.result, approved: 'not run' as Result, bar: false },
-    ...rList.map(id => ({ id, new: rResult(question.new, id), approved: rResult(question.approved, id), bar: bar.has(id) })),
+    { id: APPROVALS_CHECK.id, name: APPROVALS_CHECK.name, new: question.approvals.result, approved: 'not run' as Result, bar: false },
+    ...rList.map(id => ({ id, name: names[id], new: rResult(question.new, id), approved: rResult(question.approved, id), bar: bar.has(id) })),
+  ]
+}
+
+/**
+ * The lines under a case's table that say where each assertion stands against its ticket: the ones still
+ * waiting on a ticket, and the ones that pass before their ticket is marked as landed.
+ */
+export function assertionNotes(question: QuestionResult): string[] {
+  if (!question.new) return []
+  const open = question.assertions.filter(assertion => !assertion.landed)
+  const label = (assertion: AssertionRef) => `${assertion.id} (${assertion.ticket})`
+  const got = (result: Result) => open.filter(assertion => aResult(question.new, assertion.id) === result)
+  // The assertion judge is told to answer PASS or FAIL only, so an N/A is no more a result than a missing row.
+  const [waiting, early, unjudged] = [got('fail'), got('pass'), [...got('not run'), ...got('n/a')]]
+  return [
+    ...(waiting.length ? [`Waiting on a ticket, so not a regression: ${waiting.map(label).join(', ')}.`] : []),
+    ...(unjudged.length ? [`Not judged (the judge returned no row, or an N/A it is told not to give), so nothing is known about: ${unjudged.map(label).join(', ')}.`] : []),
+    ...(early.length ? [`Passes before its ticket is marked as landed: ${early.map(label).join(', ')}. Set "landed" in scripts/eval/questions.json in the ticket's pull request.`] : []),
   ]
 }
 
@@ -732,7 +763,7 @@ export function renderQuestion(question: QuestionResult, eChecks: CheckDef[], rL
     `Confirmation rounds: ${question.rounds} · New page: ${question.page.link ?? (question.page.captured ? 'captured, no link' : 'none published')}`)
   const chat = chatLine(question.chat)
   const approvals = approvalsLine(question.approvals)
-  const notes = [...question.problems, ...(chat ? [chat] : []), ...(approvals ? [approvals] : []), ...(question.new?.notes ?? []).map(n => `New page: ${n}`), ...(question.approved?.notes ?? []).map(n => `Approved page: ${n}`)]
+  const notes = [...question.problems, ...assertionNotes(question), ...(chat ? [chat] : []), ...(approvals ? [approvals] : []), ...(question.new?.notes ?? []).map(n => `New page: ${n}`), ...(question.approved?.notes ?? []).map(n => `Approved page: ${n}`)]
   for (const note of notes) lines.push(`- ${note}`)
   const waiting = eChecks.filter(check => check.waitsFor && eResult(question.new, check.id) === 'not run')
   if (waiting.length) lines.push(`- Not run yet: ${waiting.map(check => `${check.id} (${check.waitsFor})`).join(', ')}.`)
