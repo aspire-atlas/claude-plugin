@@ -55,8 +55,8 @@ Payment and tax data, so it is kept nowhere and the report names it:
   email, phone, place, or id header), wherever it sits in the cell: a card number (13 to 19
   digits as one block or groups of 4 to 6, that pass the Luhn check, alone or with up to two short
   expiry or CVV groups at either end, and not right after `/` or `=` inside a link) and an IBAN (in any case, spaces or dashes
-  allowed, 15 to 34 characters ending at a group's end, mostly digits after the country and check
-  digits, with the right check digits). The match becomes `[left out]`, and
+  allowed, from a country that issues IBANs, 15 to 34 characters ending at a group's end, mostly
+  digits after the country and check digits, with the right check digits). The match becomes `[left out]`, and
   `cells_left_out` counts the cells;
 - such a column whole, when more than half its non-empty cells hold one.
 
@@ -86,7 +86,12 @@ CARD_CORE = re.compile(r"\d+|\d{4,6}(?: \d{4,6})+")
 SHORT = re.compile(r"\d{2,3}|(0[1-9]|1[0-2])\d\d")
 # A number right after / or = inside a link (a video or user id), with or without https:// or www.
 URL = re.compile(r"(https?://|www\.|\b[\w-]+\.[a-z]{2,}/)\S*[/=]$", re.I)
-IBAN = re.compile(r"\b[A-Z]{2}\d{2}(?:[ -]?[A-Z0-9]){11,30}", re.I)
+IBAN = re.compile(r"\b[A-Z]{2}\d{2}(?:[ -]?[A-Z0-9]){11,30}", re.I | re.A)
+# The countries that issue IBANs (codes only: their lengths keep changing).
+IBAN_COUNTRIES = set((
+    "AD AE AL AT AZ BA BE BG BH BI BR BY CH CR CY CZ DE DJ DK DO EE EG ES FI FK FO FR GB GE GI GL GR GT "
+    "HN HR HU IE IL IQ IS IT JO KW KZ LB LC LI LT LU LV LY MC MD ME MK MN MR MT MU NI NL NO OM PK PL PS "
+    "PT QA RO RS RU SA SC SD SE SI SK SM SO ST SV TL TN TR UA VA VG XK YE").split())
 LIMIT = 20000
 
 
@@ -117,16 +122,30 @@ def card(m):
     return m.group()
 
 
+def mostly_digits(s):
+    # An account number, not words: at least 8 digits after the country and check digits, and at
+    # least half of them.
+    digits = sum(c.isdigit() for c in s[4:])
+    return digits >= 8 and digits * 2 >= len(s) - 4
+
+
 def iban(m):
-    # The longest prefix ending at the end of a group that is 15 to 34 characters, mostly digits after
-    # the country and check digits (an account number, not words), with the right check digits.
+    # An IBAN country, then groups: one unbroken block, or groups of at most 4 (a longer word after it
+    # is never part of it). It may end at its last group, or just before a group holding a letter,
+    # never between two groups of digits. It is 15 to 34 characters, mostly digits, with the right
+    # check digits.
     g = m.group()
-    for end in range(len(g), 0, -1):
-        if end < len(g) and g[end] not in " -" or g[end - 1] in " -":
-            continue
+    if g[:2].upper() not in IBAN_COUNTRIES:
+        return g
+    groups = [(x.end(), x.group()) for x in re.finditer(r"[A-Z0-9]+", g, re.I | re.A)]
+    keep = 1
+    while keep < len(groups) and len(groups[keep][1]) <= 4:
+        keep += 1
+    ends = [groups[keep - 1][0]] + [groups[i - 1][0] for i in range(keep - 1, 0, -1)
+                                    if not groups[i][1].isdigit()]
+    for end in ends:
         s = re.sub(r"[ -]", "", g[:end]).upper()
-        digits = sum(c.isdigit() for c in s[4:])
-        if 15 <= len(s) <= 34 and digits >= 8 and digits * 2 >= len(s) - 4 and mod97(s):
+        if 15 <= len(s) <= 34 and mostly_digits(s) and mod97(s):
             return "[left out]" + g[end:]
     return g
 
@@ -202,7 +221,7 @@ if arg == "summary":
                             "cells_left_out": sum(sum(f) for i, f in scrubbed.items() if i not in out)},
                            ensure_ascii=False)
     print(head_line)
-    print(json.dumps({"next": 0}))
+    print(json.dumps({"next": 0}))  # so every run, this one too, ends by saying where to go next
     sys.exit(0)
 start, size = int(arg), 0
 for k in range(start, len(body)):
