@@ -1,7 +1,7 @@
 # Page check script
 
-The script `SKILL.md`, section 5, runs on every page before it is published: R1, R2, R6, R11, R13,
-R14 and R15 from the reader standard. Extract it with the command there; never retype it. It reads only the
+The script `SKILL.md`, section 5, runs on every page before it is published: R1, R2, R6, R7's linked
+evidence (`explanations.md`), R11, R13, R14 and R15 from the reader standard. Extract it with the command there; never retype it. It reads only the
 pages named and writes nothing. With `--text` anywhere among its arguments it runs no check and prints the
 words a reader sees instead, one block per line, which is all the English read (`SKILL.md`,
 section 4, step 4b) is given. It lives in this file so `SKILL.md` stays short; when the reader
@@ -17,7 +17,7 @@ the required-metrics table (`SKILL.md`, section 8) changes, `REQUIRED_ROWS` here
 
 <!-- page-check -->
 ```python
-# Page standard self-check: R1, R2, R6, R11, R13, R14 and R15 from reader-standard.md. Reads the HTML files named; writes nothing.
+# Page standard self-check: R1, R2, R6, R7 (its linked evidence), R11, R13, R14 and R15 from reader-standard.md. Reads the HTML files named; writes nothing.
 import datetime, json, re, sys
 from html.parser import HTMLParser
 
@@ -318,6 +318,127 @@ def r6(nodes, regions, out):
     if stray:
         problems.append("%d decision(s) sit outside the decisions section" % len(stray))
     return problems
+
+# R7's scripted part (explanations.md): every cited post links to itself, every explanation rests on
+# linked evidence from Atlas or the brand's site or says it is not explained yet, and every saved
+# capture carries its link, date, quote, and screenshot or the reason there is none. Whether the
+# evidence supports the claim, and each figure, is still judged by reading.
+UNEXPLAINED = re.compile(r"(?i)\bnot explained yet\b")
+NO_SCREENSHOT = re.compile(r"(?i)\bscreenshot not taken\b")
+GONE = re.compile(r"(?i)\bno longer visible\b")
+SEARCHED_LABEL = re.compile(r"(?i)^\s*searched\s*:?\s*")
+# data-evidence names where the evidence comes from. Only atlas and site can carry an explanation;
+# outside evidence (a coupon site, another store) and every saved capture sit beside them.
+SOURCES = {"atlas", "site", "outside"}
+# Markup that belongs inside a data-explain block, and is unchecked anywhere else.
+EXPLAIN_PARTS = ("data-evidence", "data-unexplained", "data-searched")
+
+def web(value):
+    return re.match(r"(?i)^https?://[^\s/]+\.[^\s/]+", (value or "").strip()) is not None
+
+def anchors(node):
+    # The links a reader can open: never one inside a script, style, template, or noscript.
+    return [(n.attrs.get("href") or "").strip() for n in walk(node, keep=lambda n: n.tag not in SKIP) if n.tag == "a"]
+
+def links(node):
+    return [href for href in anchors(node) if web(href)]
+
+def opens(href, url):
+    # The link opens the post: data-post itself, or data-post with a timecode or share parameters
+    # after it ("...watch?v=X&t=4s", ".../reel/X/?igsh=1"). Case is kept: post ids are case-sensitive.
+    base = url.rstrip("/")
+    return href.startswith(base) and href[len(base):][:1] in ("", "/", "?", "&", "#")
+
+def captured_at(value):
+    # data-captured as a UTC or offset date and time ("2026-10-30T15:20Z"); None when it is not one.
+    if not re.match(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?(?:Z|[+-]\d{2}:\d{2})$", value):
+        return None
+    try:
+        return datetime.datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+def post_link_problems(nodes):
+    problems = []
+    for index, post in enumerate((n for n in nodes if "data-post" in n.attrs), 1):
+        url = (post.attrs.get("data-post") or "").strip()
+        if not web(url):
+            problems.append("cited post %d has data-post \"%s\", which is not the post's link" % (index, url))
+        elif not any(opens(href, url) for href in links(post)):
+            problems.append("%s is cited with no link a reader can open; link the post itself" % url)
+    return problems
+
+def explain_problems(nodes, out):
+    problems, saved_ids = [], {"#" + n.attrs["id"].strip() for n in nodes
+                               if "data-saved" in n.attrs and (n.attrs.get("id") or "").strip()}
+    stray = [n for n in nodes if any(a in n.attrs for a in EXPLAIN_PARTS)
+             and not any("data-explain" in a.attrs for a in [n] + ancestors(n))]
+    if stray:
+        problems.append("%d explanation part(s) (data-evidence, data-unexplained, data-searched) sit outside a data-explain block; wrap the explanation in one" % len(stray))
+    for index, block in enumerate((n for n in nodes if "data-explain" in n.attrs), 1):
+        label = "explanation %d (\"%s\")" % (index, text(block)[:50])
+        evidence = [n for n in walk(block) if "data-evidence" in n.attrs]
+        unexplained = [n for n in walk(block) if "data-unexplained" in n.attrs]
+        searched = [SEARCHED_LABEL.sub("", text(n, gap=" ")) for n in walk(block) if "data-searched" in n.attrs]
+        carrying, saved = 0, 0
+        for item in evidence:
+            source, hrefs = (item.attrs.get("data-evidence") or "").strip().lower(), anchors(item)
+            to_saved = [h for h in hrefs if h in saved_ids]
+            saved += len(to_saved)
+            if not to_saved and not any(web(h) for h in hrefs):
+                problems.append("%s marks evidence with no link to it" % label)
+            elif source not in SOURCES:
+                problems.append("%s has data-evidence \"%s\"; name its source: atlas, site, or outside" % (label, source))
+            elif to_saved and source != "outside":
+                problems.append("%s marks a saved capture as %s evidence; a saved capture is outside evidence" % (label, source))
+            elif source != "outside":
+                carrying += 1
+        if unexplained:
+            if not all(UNEXPLAINED.search(text(n, gap=" ")) for n in unexplained):
+                problems.append("%s marks data-unexplained but does not say \"not explained yet\"" % label)
+            if not any(searched):
+                problems.append("%s is not explained yet but does not say what was searched (data-searched)" % label)
+        elif not evidence:
+            problems.append("%s names no linked evidence (data-evidence) and does not say \"not explained yet\"" % label)
+        elif not carrying:
+            problems.append("%s rests only on outside evidence; give the evidence from Atlas or the brand's site, or say \"not explained yet\"" % label)
+        out.setdefault("explanations", []).append(
+            {"claim": text(block)[:80], "evidence": carrying, "searched": [s for s in searched if s], "saved": saved,
+             "explained": not unexplained})
+    return problems
+
+def saved_problems(nodes):
+    problems = []
+    for index, saved in enumerate((n for n in nodes if "data-saved" in n.attrs), 1):
+        label, shown = "saved evidence %d" % index, text(saved, gap=" ")
+        if not links(saved):
+            problems.append("%s has no link to where it was read" % label)
+        when = (saved.attrs.get("data-captured") or "").strip()
+        moment = captured_at(when)
+        if moment is None:
+            problems.append("%s has data-captured \"%s\", which is not a date and time with its zone (YYYY-MM-DDTHH:MMZ)" % (label, when))
+        else:
+            # The saved date, outside the quoted words. The page may show it in the reader's time
+            # zone, a day either side of the UTC date.
+            own = text(saved, gap=" ", skip=quoted)
+            day = moment.astimezone(datetime.timezone.utc).date()
+            days = [(day + datetime.timedelta(days=d)).isoformat() for d in (0, -1, 1)]
+            if not any(shows_date(own, d) for d in days):
+                problems.append("%s does not show the date it was saved (%s)" % (label, days[0]))
+        if not any(quoted(n) for n in walk(saved)):
+            problems.append("%s quotes none of the text it rests on (blockquote, q, or data-quoted)" % label)
+        if not any(n.tag == "img" for n in walk(saved)) and not NO_SCREENSHOT.search(shown):
+            problems.append("%s has no screenshot and does not say \"screenshot not taken\"" % label)
+        if "data-gone" in saved.attrs and not GONE.search(shown):
+            problems.append("%s is marked data-gone but does not say \"no longer visible\"" % label)
+    return problems
+
+def r7(nodes, regions, out):
+    # Returns None (unmarked) on a page that cites no post and marks no explanation or capture:
+    # read it for an explanation the markup missed.
+    if not any(a in n.attrs for n in nodes for a in ("data-post", "data-explain", "data-saved") + EXPLAIN_PARTS):
+        return None
+    return post_link_problems(nodes) + explain_problems(nodes, out) + saved_problems(nodes)
 
 def question_code(regions):
     scope = (regions.get("scope") or [None])[0]
@@ -833,11 +954,12 @@ def r15(nodes, regions, out):
 CAN_BE_NA = {"R2", "R6", "R15"}
 NA_REFUSED = {"R15": ("data-compare", "the page marks a comparison")}
 # What a check that returns None reports: n/a on its own terms, or unmarked, to be judged by reading.
-NO_RESULT = {"R13": ("n/a", "the page names no question code and cites no post"),
+NO_RESULT = {"R7": ("unmarked", "the page cites no post and marks no explanation; read it for one, and mark every explanation"),
+             "R13": ("n/a", "the page names no question code and cites no post"),
              "R14": ("n/a", "the page cites no account and no post, its scope reports on no account, and it has no freshness entry"),
              "R15": ("unmarked", "the page marks no comparison; read it for one, and put R15 in data-na only when it compares nothing")}
 CHECKS = (("R1", "Reader and scope", r1), ("R2", "Platforms covered", r2),
-          ("R6", "Decisions kept separate", r6), ("R11", "Plain language", r11),
+          ("R6", "Decisions kept separate", r6), ("R7", "Real evidence, linked", r7), ("R11", "Plain language", r11),
           ("R13", "Required metrics", r13), ("R14", "Data freshness", r14), ("R15", "Like for like", r15))
 
 def check(path):
@@ -869,7 +991,10 @@ def check(path):
                 results.append((code, name, NO_RESULT[code][0], [NO_RESULT[code][1]]))
             else:
                 results.append((code, name, "fail" if problems else "pass", problems))
-    return results, out.get("comparisons", [])
+    return results, out
+
+# What a check lists beside its result line, for the page check block (SKILL.md, section 7).
+LISTED = {"R7": "explanations", "R15": "comparisons"}
 
 def main(paths):
     status = 0
@@ -882,8 +1007,9 @@ def main(paths):
             continue
         for code, name, result, problems in results:
             line = {"page": path, "check": code, "name": name, "result": result, "problems": problems}
-            if code == "R15" and listed:
-                line["comparisons"] = listed
+            field = LISTED.get(code)
+            if field and listed.get(field):
+                line[field] = listed[field]
             print(json.dumps(line))
             if result == "fail" and status == 0:
                 status = 1

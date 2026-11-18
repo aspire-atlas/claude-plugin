@@ -328,6 +328,11 @@ marks that creator's posts and points to these cards, so every marker's post has
 card, whatever the creator's orders. Engagement, its method line, and missing metrics follow
 the page standard, section 8 (**A missing metric is never 0**).
 
+**Why a creator sells.** Before the page says why a creator's code sold (or stopped selling),
+follow `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/explanations.md` for that creator, using
+`queryText` on their code and the brand's name. Its captures go in the creator's A8 report finding
+as `saved` (**Records written**).
+
 ## Recommendations
 
 Each is a line with its evidence, and the ones that change a deal are your call.
@@ -492,11 +497,11 @@ period.
 | A1, a code planned | `code`, kind, value, `codeStatus` `planned`, `period` this month | `action_item` `low` |
 | A2, created in the store | `codeStatus` `live`, `codeMethod` `store`, `codeCreatedAt`, `storeRef` | `action_item` `low` until it has sales |
 | A4, live or off from the sheet | `codeStatus` `live` or `retired`, `codeMethod` `sheet`, `codeCreatedAt` or `retiredAt` | as above |
-| A8, a report | Every figure in **Per creator, per period**, `source`, `sourceLabel`, `partial` | `went_well` with sales; `action_item` `low` with none |
+| A8, a report | Every figure in **Per creator, per period**, `source`, `sourceLabel`, `partial`, and `saved` (read from the creator's last report finding and kept as `explanations.md`, section 4, says) | `went_well` with sales; `action_item` `low` with none |
 | A9, turned off in the store | `codeStatus` `retired`, `retiredAt` | `action_item` `low` |
 
 Only an A8 report finding carries `source` (store or csv). A code finding copies the code
-fields, never `source` or a period's figures, and never counts as a report: the Program manager's "Report sales and commission" row and the dashboard's "Sales to
+fields, never `source`, `saved`, or a period's figures, and never counts as a report: the Program manager's "Report sales and commission" row and the dashboard's "Sales to
 report" item look for a report finding for the last closed month.
 
 **Fields this agent adds to `affiliate`** (beyond **Influencer program**'s list): `type` (`affiliate` or
@@ -602,6 +607,9 @@ Sections, in order:
    scope's `data-accounts` names them, and each gets its freshness entry
    (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 9). The correlation line
    under it, word for word.
+   Where the page says why a creator sold, the explanation block and any saved evidence
+   (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/blocks.md`, 3.21 and 3.22) sit under that
+   creator's timeline (**Why a creator sells**).
 6. **Codes**: every in-scope creator's code: code, discount, status (Planned, Live, Retired),
    how it was made (In {store}, On the sheet), the date, and the last sale date. Codes not yet
    live lead.
@@ -610,7 +618,7 @@ Sections, in order:
    "Proposed" or "Sent to the ledger".
 9. **Data notes**: the source and how it was read, the column mapping for an export, refunds
    included or not, "Other codes" with its order count, codes to check, creators with no
-   sales, and the timeline posts' engagement method and missing metrics, as section 8 of the
+   sales, what each explanation searched, and the timeline posts' engagement method and missing metrics, as section 8 of the
    page standard words them.
 10. **Footer**: "Revenue is {source}'s figure in {currency}, read {timestamp}. Atlas data as of
     {timestamp}. Sales and posts on the same days are a correlation, not proof." Then the footnote
