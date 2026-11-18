@@ -95,7 +95,7 @@ expires if nobody opens it soon; ask me for a fresh one if it stops working.
 | `{NETWORK}` | Instagram, TikTok, or YouTube (display name, never the channel code) |
 | `{ICON}` | `ti-brand-instagram`, `ti-brand-tiktok`, or `ti-brand-youtube` |
 | `{NETWORK_COLOR}` | The network's logo tile fill: Instagram `#D4537E`, TikTok `#111111`, YouTube `#E24B4A`. The icon on it is always white |
-| `{ASPIRE_MARK}` | The whole contents of `${CLAUDE_PLUGIN_ROOT}/assets/aspire-animated-small.svg`, pasted inline unchanged, with `width="84" height="84"` in place of its 512 values (see **The two logos**) |
+| `{ASPIRE_MARK}` | The whole `<svg>` inside the fence in `${CLAUDE_PLUGIN_ROOT}/assets/aspire-animated-small.svg.md`, pasted inline unchanged, with `width="84" height="84"` in place of its 512 values (see **The two logos**) |
 | `{BRAND}` | The profile display name from `create_profile` / `get_status` |
 | `{TITLE}` | Start: `Connect {NETWORK} to Aspire Atlas`. Follow-up: `Finish connecting {NETWORK}` |
 | `{WOULD_LIKE}` | Three `<li>` items from the sets below |

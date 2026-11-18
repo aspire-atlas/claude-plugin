@@ -55,7 +55,7 @@ transcript, or the audio, and the page says which.
 | `recipient` | **Reading the ask**. Default `brand`; `performance` and `creative` when the ask is about reuse as an ad. |
 | `baseline` | Q2 below: `held`, `refresh`, or `skip` |
 | `save` | Q3 below: whether to save the findings |
-| Brand digest | The requesting brand's `brand:summary`, `brand:business-context`, competitors, partners, red lines, and any `campaign:*-brief` records. Drop `review:`, `vetting:`, `program:`, `library:`, `orchestrator:`, `ad-reuse:`, `lastrun:`, `creator:`, `theme:` and `fees:` keys, and a creator ad campaign's `campaign:{slug}-cas`, `-lane-*`, `-terms` and `-decision-defaults` (the theme still styles the page). |
+| Brand digest | The requesting brand's `brand:summary`, `brand:business-context`, competitors, partners, red lines, and any `campaign:*-brief` records. Drop `review:`, `vetting:`, `program:`, `library:`, `orchestrator:`, `adreuse:`, `applicantreview:`, `lastrun:`, `creator:`, `theme:` and `fees:` keys, and a creator ad campaign's `campaign:{slug}-cas`, `-lane-*`, `-terms` and `-decision-defaults` (the theme still styles the page). |
 
 ## Questions (main thread)
 
@@ -182,7 +182,7 @@ have; never drop them when the data exists.
    - **Fit by advertiser risk tolerance:** three tiers (conservative, standard, permissive),
      each with the verticals it suits and whether to use the post as posted or trimmed. Label
      it "Aspire read based on the scores and evidence above. Not an Atlas score."
-   - Apply the brand's own `red_line` records as their own rows when they bear on the post.
+   - Apply the brand red lines (**Atlas tools**, Calibration kinds) as their own rows when they bear on the post.
 9. **Sponsor disclosure.** Whether the sponsor is named in the caption, hashtags, or
    mentions; whether a disclosure word (#ad, "sponsored", "paid partnership") appears; how
    often the account names sponsors in its other held posts. Instagram's "Paid partnership"

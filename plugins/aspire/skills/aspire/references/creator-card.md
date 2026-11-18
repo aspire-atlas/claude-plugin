@@ -107,7 +107,7 @@ it, say so and stop.
 **"Draft outreach to @handle on {network}"**
 
 1. Read `brand:summary`, `brand:business-context`, `guideline:voice`, any `competitor` and
-   `red_line` records (not `review:` keys), and any campaign the creator is in
+   brand red lines (**Atlas tools**, Calibration kinds), and any campaign the creator is in
    (`search_insights` on the `creator-discovery-{profile}` prefix, newest record for the
    creator's `entityId`).
 2. Draft one message in chat: a subject line and a body under 120 words, in the brand's voice,
@@ -121,7 +121,7 @@ it, say so and stop.
 4. Never send. If a mail tool is connected and an email is known, offer with
    `AskUserQuestion`: "Keep it here (Recommended)" / "Save as an email draft". Only the second
    option creates the draft.
-5. A `red_line` that blocks AI-written copy: give talking points instead of a draft and say
+5. A brand red line that blocks AI-written copy: give talking points instead of a draft and say
    why. A `competitor` handle: say it is saved as a competitor and ask before drafting.
 
 **"Add @handle on {network} to a campaign shortlist"**
@@ -530,7 +530,7 @@ fill in from web copy. The one exception is the header row, which always shows.
 **Brand safety.** The tile answers one question: is this creator's content safe for the brand?
 
 - Count **n** = the Atlas categories rated anything but `Low Risk` on any of the posts, plus the
-  flow's safety flags: a `red_line` match, a competitor mention, and on a content review
+  flow's safety flags: a brand red line match, a competitor mention, and on a content review
   page only, a hard-rule hit (`review:` keys never count anywhere else).
 - n = 0 with 3 or more analyzed posts: "Brand safe" / "No flags", success tone.
 - n ≥ 1: "{n} flag" or "{n} flags" / the first one's short name (≤ 4 words, e.g. "Profanity",

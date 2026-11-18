@@ -65,8 +65,8 @@ lens. Follow them exactly.
    Load the Slack and email send tools only when the routing names them and
    they exist.
 3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): every `program:*` record (one program, or every active program
-   for the whole brand), `brand:summary`, `brand:business-context`, `competitor`, `red_line`,
-   `market-signal:topics`, `library:cadence` (for `all`), and `theme:brand`. Drop `review:`, `vetting:`, `orchestrator:`, `ad-reuse:`, `lastrun:`, `creator:`, `fees:`,
+   for the whole brand), `brand:summary`, `brand:business-context`, `competitor`, brand red lines (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-tools.md`, Calibration kinds),
+   `marketsignal:topics`, `library:cadence` (for `all`), and `theme:brand`. Drop `review:`, `vetting:`, `orchestrator:`, `adreuse:`, `applicantreview:`, `lastrun:`, `creator:`, `fees:`,
    and the CAS campaign keys. Parse every JSON body with a JSON parser.
 4. **Date.** `TZ=<cadence timezone> date +%F` when `program:{slug}-cadence` (or, for `all`,
    `library:cadence`) names one, else the

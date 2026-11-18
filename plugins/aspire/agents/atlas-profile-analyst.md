@@ -52,7 +52,8 @@ findings and pushes only, saying in the summary that nothing was saved.
      posts, to size the sample.
 5. Assess per account: posting cadence over the window, engagement per post relative to follower count,
    top 3 posts by engagement and what they share, format mix, and any content that touches a stated red
-   line (never a `review:` key; those are content review only).
+   line (never a `review:` or `applicantreview:` key; those are content review and one campaign's
+   applicant screening only).
 6. Mode `own` only: cross reference the brand's 90-day goal and competitors. Name gaps and quick wins.
    **Benchmark against competitors Atlas already indexes.** For each `competitor` handle that
    `search_creators` returns, read its last 90 days with the same `search_posts` filter and compare
@@ -65,15 +66,15 @@ findings and pushes only, saying in the summary that nothing was saved.
    evidence post, and a numeric target from the account's own medians (for example 1.5x median Reel
    views). Lead with the strongest pattern; give the weakest at most a test slot. Respect the cadence
    the account already sustains. Describe the idea, never write captions, scripts, or hooks when a
-   `red_line` blocks AI-written copy. Pushes that need creators or a budget belong in the creator
+   brand red line (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-tools.md`, Calibration kinds) blocks AI-written copy. Pushes that need creators or a budget belong in the creator
    brief: say so in one line and offer it.
 7. Mode `handle` only: **compare it against its own peers, never against the brand.** Build the peer
    set and compare per **Peer set** in
    `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/account-resolution.md`.
    - The brand's calibrations are still for two things only: saying whether the handle matches a saved
      `competitor` or `partner` record, which is a classification, not a benchmark, and framing why the
-     account is or is not relevant to the brand's stated goal. Apply `red_line` checks only to the
-     brand's own accounts, and ignore every key starting `review:` (content review only), `program:` (influencer program only), `library:` (content library only), `orchestrator:` (the orchestrator only), `ad-reuse:` (ad reuse only), or `lastrun:` (a flow's saved setup answers, never a rule).
+     account is or is not relevant to the brand's stated goal. Apply brand red line checks only to the
+     brand's own accounts, and ignore every key starting `review:` (content review only), `program:` (influencer program only), `library:` (content library only), `orchestrator:` (the orchestrator only), `adreuse:` (ad reuse only), `applicantreview:` (one campaign's applicant screening only), or `lastrun:` (a flow's saved setup answers, never a rule).
 8. Interactive runs only: write findings back with `append_insights`: one `runKey` for this run — mode `own`:
    `onboarding-{profile}-{date}` when `onboarding: true`, else `account-review-{profile}-own-{date}`;
    mode `handle`: `account-review-{profile}-{handle}-{date}` — role

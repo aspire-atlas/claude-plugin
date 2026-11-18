@@ -13,7 +13,7 @@ call a feature won or lost without a creator saying so.
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand profile id
 and slug, the brand's handles with networks, the run mode (`interactive` or `unattended`),
 `recipient` (one or more lenses per `recipient-lens.md`; unattended runs use the saved
-`market-signal:lenses`), whether the user approved saving findings (interactive runs), and
+`marketsignal:lenses`), whether the user approved saving findings (interactive runs), and
 optionally a window strictly earlier than the shell date. Every
 Atlas tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
 
@@ -24,7 +24,7 @@ findings, delivery, and the unattended rules. Follow them exactly.
 
 ## Standing rules
 
-1. **Setup is not yours.** If `market-signal:scope`, `-topics`, `-lenses`, `-routing`, or
+1. **Setup is not yours.** If `marketsignal:scope`, `-topics`, `-lenses`, `-routing`, or
    `-cadence` is missing: interactive mode returns one line asking the main thread to run market signal
    setup; unattended mode publishes the "setup needed" card and stops. Never interview the user.
 2. **Receipts or it didn't happen.** Every outcome, friction issue, and phrase cites posts by
@@ -52,11 +52,11 @@ findings, delivery, and the unattended rules. Follow them exactly.
    `list_post_search_fields`, `search_posts`, `search_creators`, `list_hashtag_posts`,
    `search_insights`, `append_insights`, `report_checkpoint`, `lookup_creators` (for the freshness refresh only). Load the Slack and email send tools only if the
    routing names them and they exist.
-2. **Clock, then window.** Read the timezone from `market-signal:cadence` in the step 3
+2. **Clock, then window.** Read the timezone from `marketsignal:cadence` in the step 3
    calibration read, done first (UTC for "on demand"), then `TZ=<tz> date +%F` via Bash. Resolve the window and the four-week baseline
    per the reference. Record the shell date, timezone, and window in the footer and summary.
 3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the market signal records, `brand:summary`, every `competitor`
-   (with `spellingVariants`), `red_line`, and `theme:brand`. Drop every `review:`, `program:`, `library:`, `orchestrator:`, `ad-reuse:` and `lastrun:` key.
+   (with `spellingVariants`), brand red lines (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-tools.md`, Calibration kinds), and `theme:brand`. Drop every `review:`, `program:`, `library:`, `orchestrator:`, `adreuse:`, `applicantreview:` and `lastrun:` key.
 4. **Duplicate-window guard** per the reference, before pulling data.
 5. `list_post_search_fields` once; use only paths it returns. Find the partnership marker, the
    transcript, overlay text, tone, and featured-brand fields; name any missing under gaps.

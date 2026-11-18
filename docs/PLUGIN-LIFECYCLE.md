@@ -85,6 +85,7 @@ Do not develop from a folder that is mounted read-only or delete-restricted (som
    bash scripts/check-agent-roster.sh
    bash scripts/check-artifact-standard.sh
    bash scripts/check-orchestration.sh
+   bash scripts/check-calibration-keys.sh
    bash scripts/check-agent-specs.sh
    bash scripts/check-palette.sh
    bash scripts/check-skill-args.sh
@@ -215,8 +216,9 @@ These are product and safety commitments. A PR that breaks one is blocked in rev
 
 ## 10. Anthropic plugin directory
 
-- Submission (one time): https://claude.ai/admin-settings/directory/submissions/plugins/new with the public repo URL. Requires an Owner on the Aspire Team or Enterprise org. Track status at https://claude.ai/admin-settings/directory/submissions.
-- After approval, the directory mirrors `main` and screens each update automatically. No re-submission for new versions.
+- Submission (one time): the developer portal at https://claude.ai/directory/manage, **Submit new**, **Plugin bundle**, with the public repo URL, branch `main`, and plugin folder `plugins/aspire` (the directory takes one plugin folder per submission; `aspire-mod` is not submitted). Select **Validate** first and fix every **Blocking** finding. Requires an Owner, or a member with the **Directory** permission, on the Aspire Team or Enterprise org. Track status in the same portal.
+- After approval, the directory follows `main` and scans each new commit automatically. No re-submission for new versions. A validation report covers one commit: after a push, select **Re-validate** before continuing a draft. Never withdraw a submission to retry it.
+- Publish setting: review every version. Each scanned commit on `main` waits for an Owner to publish it in the portal before people who have the plugin get it.
 - Governing documents: the Anthropic Software Directory Terms and Policy. Practical implications: keep the description narrow and accurate, keep the connector list to what the plugin uses (three: Aspire Atlas for data and Aspire Atlas Organization Admin for organization members, both on atlas.aspire.io, and the optional Meta Ads connector at mcp.facebook.com/ads), and respond to Anthropic within a reasonable time if they flag something.
 - Directory findings. Each push to `main` is scanned, and a finding marked **Blocking** keeps that version off the listing until a new version fixes it. Warnings and notes hold a version for a reviewer or are only recorded. Fix a finding in the plugin when it is blocking, or when the fix breaks no rule of this repo; `scripts/check-directory.sh` catches the blocking ones before a push, and also holds every skill's description to the skill spec's 1,024 characters, which the directory has not flagged. These are kept on purpose and stay as they are:
 
@@ -227,7 +229,7 @@ These are product and safety commitments. A PR that breaks one is blocked in rev
   | `icon`, `privacyPolicyUrl`, `documentationUrl`, `supportUrl`, `termsOfServiceUrl` (`UNKNOWN_KEY_CROSS_TOOL`, `UNKNOWN_KEY`) | Listing fields the directory reads: the icon and the listing's Privacy policy, Documentation, Support, and Terms of service links. |
   | Uses hooks, includes a mod, adds tools, hooks prompt, agent, or call events (`USES_HOOKS`, `MOD_*`), `aspire-mod` only | The deliberate 4.0.0 decision, moved out of `aspire` into its own opt-in plugin so `aspire` carries none of these findings; `plugins/aspire-mod/README.md` **What each hook does** answers the reviewer, and `check-directory.sh` keeps it complete. |
   | Uses a credential from the user's machine (`MCP_FORWARDS_CREDENTIAL_ENV`) | Nothing reads a credential; the connectors sign in with their own vendor through OAuth, and the Meta Ads client ID is public. A reviewer confirms it. |
-  | Image or font file the code could run, assets passed unread (`UNREAD_ASSET_REFERENCED`, `ASSETS_PASSED_UNREAD`) | `assets/icon.png` is the listing icon and the marks and spinner are SVG; nothing runs them. A reviewer confirms it. |
+  | Image or font file the code could run, assets passed unread (`UNREAD_ASSET_REFERENCED`, `ASSETS_PASSED_UNREAD`) | `assets/icon.png` is the listing icon and the marks and spinner are SVG text inside Markdown files; nothing runs them. A reviewer confirms it. |
   | Validation didn't finish (`VALIDATION_INCOMPLETE`) | The validator's own state; a reviewer looks at that version. |
   | Reports usage to an outside endpoint (security scan, 5.0.0) | `report_checkpoint` and the `context` sentence on every Atlas call are Atlas product analytics. The plugin README's **Usage data** section and the listing description say so plainly, as the scan asks; keep both true when a checkpoint field or the `context` rule changes. |
 - Optional but worth doing: submit the Atlas MCP server to the Connectors Directory. A plugin that bundles a directory-listed connector shows fewer install warnings and has a better chance at the Anthropic Verified badge.
@@ -302,7 +304,7 @@ Everything in this repository ships to customers. A plugin meant only for Aspire
    mkdir -p plugins/<name>/skills/aspire/references plugins/<name>/skills/page-standard plugins/<name>/assets
    ln -s ../../../../aspire/skills/aspire/references/artifact-standard.md ../../../../aspire/skills/aspire/references/reader-standard.md plugins/<name>/skills/aspire/references/
    ln -s ../../../aspire/skills/page-standard/SKILL.md ../../../aspire/skills/page-standard/page-check.md plugins/<name>/skills/page-standard/
-   ln -s ../../aspire/assets/aspire-animated.svg ../../aspire/assets/aspire-animated-small.svg plugins/<name>/assets/
+   ln -s ../../aspire/assets/aspire-animated.svg.md ../../aspire/assets/aspire-animated-small.svg.md plugins/<name>/assets/
    ```
    The checks require real links to `aspire`'s files; a copy fails. Claude Code copies the target of a link that stays inside the marketplace when it installs the plugin, and the release zip stores the target's contents. Before the plugin's first official release, install it from the org catalog (through the mirror) and from a release zip, and confirm the linked files arrive there too.
 4. Add its entry to `.claude-plugin/marketplace.json` on `develop`: `name`, `"source": "./plugins/<name>"`, `displayName` with " (beta)", `description`, and the same metadata fields `aspire`'s entry carries. No `version`, and no changelog yet. Until its first release, every release branch holds it back (section 5).
