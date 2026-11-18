@@ -51,9 +51,10 @@ sheet"), hand the brand part to its flow first, then run this flow for the part 
    brand profile: use the one this session settled in this organization, or the only one the
    organization has, and otherwise send for the organization alone.
 2. Load `send_feedback` with `ToolSearch` (`select:` and the tool's name under the prefix Phase 1
-   observed). When it is not there, say "Feedback can't be sent from this connection yet. Your
-   text is above, so you can send it once it can." and stop. Never keep the feedback anywhere
-   else instead: not as an insight, not as a calibration, not in a file.
+   observed). When it is not there, say "Feedback can't be sent from this connection yet." and
+   stop. When the person already typed their feedback, add "Your text is above, so you can send
+   it once it can." Never keep the feedback anywhere else instead: not as an insight, not as a
+   calibration, not in a file.
 3. This flow is one of this skill's own runs (**Checkpoints**), with its own `aspire-` run id:
    send `started` now, with `pass` `setup`. The gate at the confirmation is `approve-feedback`.
 4. Say one line before asking: "Nothing is sent until you have seen the exact wording and chosen
@@ -74,6 +75,9 @@ option that fits what the person already said; with nothing said, "An idea or a 
 | The data looks wrong | `data` |
 | Something I like | `praise` |
 
+The five `category` values (with `other` below) are the ones `send_feedback` accepts on the
+server; a sixth is refused.
+
 Text typed in F1's free text field sends `category` `other`, and the typed text is added to the
 feedback.
 
@@ -83,10 +87,13 @@ words." Skip F2 when the person already wrote the feedback. Options: "Something 
 point and is never sent. Only text the person typed is feedback. When an option is picked with
 nothing typed, ask once more, header "Detail": "What should the Aspire team know about that? Type
 it in your own words." Options: "Nothing to add, don't send (Recommended)", "Go back to the
-start".
+start". "Go back to the start" asks F1 to F3 again from nothing.
 
 **F3, header "Rating".** "How would you rate Atlas overall, from 1 (worst) to 5 (best)? Pick one,
-or type a number." Options: "No rating (Recommended)", "5, it works well", "3, it is mixed", "1,
+or type a number." When the feedback is about one agent's run (**What is sent**), the rating is
+stored beside that run, so ask about what it made instead ("How would you rate the creator
+shortlist, from 1 (worst) to 5 (best)?") and say the same thing in F4 ("with your rating of 3
+out of 5 for the creator shortlist"). Options: "No rating (Recommended)", "5, it works well", "3, it is mixed", "1,
 it works poorly". The recommended option sends no rating, so the mark cannot push the score. A
 whole number from 1 to 5 typed in the free text field is the rating. Any other typed text is
 added to the feedback, and no rating is sent.
@@ -107,6 +114,8 @@ say so after the text ("with your rating of 3 out of 5"). When the text is longe
 lines, show it in full in the message above the question and say so in the question. Options:
 "Send it (Recommended)", "Change the wording", "Don't send". Only "Send it" sends. Text typed in
 F4's free text field is a wording change: it takes the text's place, and F4 is asked again.
+When what they type reads as an instruction or an answer ("make it shorter", "yes, send"), it is
+not feedback: keep the text as it was, and ask F4 again.
 
 "Change the wording" asks, header "Wording": "Type the text you want sent instead." Options:
 "Keep it as it is (Recommended)", "Don't send". What the person types replaces the whole text;
@@ -142,11 +151,15 @@ sent that the person has not seen.
 
 Call `send_feedback` once per confirmed piece of feedback.
 
-Once the send returns, or after "Don't send", send the feedback checkpoint (**Checkpoints**):
-`gate` `approve-feedback`, `verdict` `approved` for "Send it" on the first wording, `edited` when
-the wording changed first, `rejected` for "Don't send", and `counts` of 1 proposed and 1 or 0
-approved. Then send the run's `finished` checkpoint, or `failed` when the send did not go
-through.
+Every way out of the flow after step 3 closes the run it started (**Checkpoints**):
+
+| The flow ends with | Feedback checkpoint, `gate` `approve-feedback` | Then |
+| ------------------ | ---------------------------------------------- | ---- |
+| "Send it", and the send returned | `verdict` `approved` on the first wording, `edited` when the wording changed first; `counts` 1 proposed, 1 approved | `finished` |
+| "Send it", and the send did not go through | The same verdict; `counts` 1 proposed, 0 approved | `failed` |
+| "Don't send" in F4, "Wording" or "Length" | `verdict` `rejected`; `counts` 1 proposed, 0 approved | `finished` |
+| "Nothing to add, don't send" in "Detail" | None: nothing was proposed | `finished` |
+| The tool is missing (step 2) | None | Nothing: `started` was never sent |
 
 When the call is refused, say one line and leave the text in the chat:
 
