@@ -121,7 +121,7 @@ Read `program.md` (**4**, and **Working state** for the record types you read), 
 8. **Build the page** per **The shops page** with the "Draft plan" chip and publish it with the
    Artifact tool. When a `page` finding with key `shops` exists, read that artifact first and
    republish to its link; otherwise publish a new one. No Artifact tool: save the page as a file
-   and return its path, per `skills/page-standard/SKILL.md`, section 4, step 5.
+   and return its path, per `skills/page-standard/page-file.md`.
 9. Return the summary and the `shops-packet`.
 
 ### 3. Pass `record`

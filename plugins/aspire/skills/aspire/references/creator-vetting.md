@@ -14,6 +14,7 @@ in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Se
 - [Why the vetting agent exists](#why-the-vetting-agent-exists)
 - [Setup: define what fit means, once, for everyone](#setup-define-what-fit-means-once-for-everyone)
 - [Getting the list](#getting-the-list)
+- [Reading the review Sheet](#reading-the-review-sheet)
 - [Per-run questions](#per-run-questions)
 - [Main thread: the run](#main-thread-the-run)
 - [The checks](#the-checks)
@@ -121,7 +122,7 @@ applicant review; vetting reads them only for the review R2 named (**Applicant r
 
 ## Getting the list
 
-The main thread gets the list; the agent never asks for it. Three sources, offered in R1:
+The main thread gets the list; the agent never asks for it. The sources, offered in R1:
 
 1. **Upload a CSV export from Aspire** (Recommended). The user attaches the file, or gives its
    path. Read it with the **Applicant CSV snippet**, which cuts no
@@ -146,6 +147,8 @@ The main thread gets the list; the agent never asks for it. Three sources, offer
    off the table, page by page. Read only: never change a creator's status, send a message, or
    click anything that writes. No browser tool, or the sign in fails: say so in one line and
    offer options 1 and 2, with the steps to export the list as CSV from the Aspire app.
+4. **The applicant review's Sheet.** Offered, read, and turned into the list per **Reading the
+   review Sheet**.
 
 Normalizing, for every source:
 
@@ -162,7 +165,118 @@ Normalizing, for every source:
   (part {n} of {k})" and `{slug}-part-{n}`, so each run has its own `runKey`, idempotency keys, page
   title, and `listName`.
 - Give the list a short name for the run and the page (the file name, the Aspire list name,
-  or "pasted list"), and a slug from it, lowercase and hyphenated.
+  the review Sheet's title, or "pasted list"), and a slug from it, lowercase and hyphenated.
+
+## Reading the review Sheet
+
+How vetting reads an applicant review's Sheet (**Applicant review**, The review Sheet) as source 4
+of **Getting the list**, and how the team's calls in it reach Atlas.
+
+**When it is offered.** Only when the profile has an applicant review whose
+`applicantreview:{slug}-sheet` record holds a link (`sheet: <link>`) and the Sheet has applicant
+rows. Before asking R1, the main thread reads the profile's active `applicantreview:*-sheet`
+records and opens each linked Sheet to check it has rows. With more than one such review, picking source 4 asks which, as **Applicant review** lists
+them. The review picked answers R2 with its applicant review option (criteria source
+`applicantreview:{slug}`), so R2 is not asked.
+
+**Reading it.** Through the Claude Docs connector, loading the connector's guide first. Use the
+columns **The review Sheet** writes, found by header, case-insensitive, and a Note column when the
+team added one. When the connector is not in the session or can't open the Sheet, say so in one
+line and offer sources 1 and 2; never ask the user to add a connector. Match rows on the Aspire
+applicant id, never on position, because people sort and filter the Sheet. Read each handle like a
+CSV's handle column and normalize it per **Getting the list**, so a row with both handles is
+vetted on each. A row's **account id** is fixed in step 2 of **Main thread: the run**, before any
+R3 fetch: the `entityId` of the newest `feedback` finding carrying the row's applicant id, when
+there is one, else its Instagram account's when Atlas holds it, else its TikTok account's; when
+Atlas holds neither, it is set after R3's fetch, Instagram first. Every list entry from the Sheet
+carries it. Every
+`feedback` finding for the row is written under it and every lookup below matches on it, so a call
+stays on one id even after Atlas starts holding the row's other account.
+
+**What each row becomes**, by its Team call, trimmed and with case ignored:
+
+- **Starts with Approve, Maybe, or Reject** ("Approved", "reject"): **decided**. The matched word,
+  lowercased (`approve`, `maybe`, or `reject`), is the row's **Sheet call**, and the row is not
+  vetted again.
+- **Blank**: undecided, so it goes on the list, unless Atlas holds a `feedback` finding carrying
+  the row's applicant id and the row is not reopened (below): the team decided this application
+  in F1, so it is not vetted again and its call stands. A call on the creator from another list
+  or campaign does not keep the row off the list.
+- **Anything else** ("Yes", "?"): undecided too, read like a blank, and the value is listed in
+  **Rows to fix**.
+- **No applicant id or no handle**: skipped, and listed in **Rows to fix**.
+
+**Rows to fix** is one list, given in chat and on the page under What's missing: unreadable Team
+calls (read like a blank), skipped rows, duplicate rows left to decide in the Sheet, and
+Sheet calls on creators Atlas doesn't hold yet (below).
+
+**Duplicate rows.** Counted after the skipped rows are set aside. Rows that repeat one applicant id
+with the same Team call (as read under **What each row becomes**) count as one row; with different
+Team calls, they are duplicates. A creator (network and handle) with two or more rows is settled
+this way:
+
+- Its decided rows all hold the same Sheet call (one row or several): the creator is one decided
+  row with that call. Its applicant id is the one carried by the newest `feedback` finding that
+  carries any of these rows' ids, else the first of their ids in sort order, so a row added
+  later does not change the id a saved call is matched on. Its undecided rows are listed as duplicates and add nothing.
+- Its decided rows hold different calls, or it has no decided row: the creator is left for the
+  team to settle in the Sheet. It is not vetted, no call is offered or saved, and its rows go in
+  **Rows to fix** as "duplicate rows: decide in the Sheet". Each run reads the rows again, so once
+  the team fixes them, the rules above apply.
+
+Every list entry from the Sheet carries its row's applicant id, so an F1 answer on it records it. Decided
+rows go through **Check what Atlas holds** with the list, so each Sheet call has its account id.
+A decided row never goes on the list: it is not fetched, vetted, or counted in R3. When Atlas
+doesn't hold its creator, its call is not offered, and it is listed in **Rows to fix** as "not in
+Atlas yet: vet this creator from a CSV or pasted list (sources 1 or 2) to add them; the next Sheet
+run offers the call". A creator is either a list entry or a Sheet call in a run, never both, so it
+gets at most one `feedback` finding per run.
+
+**Which Sheet calls are new.** Take the newest `feedback` finding for the same creator (`entityId`)
+that carries the row's `applicantId`, from the Sheet or from F1 (**State written to Atlas**). A
+decided row's Sheet call is **new** only when it differs from both of that finding's values:
+
+- the current call: its `userVerdict`
+- the last Sheet value seen: its `sheetValue`, or none when it has no `sheetValue` (an F1 answer on
+  an undecided row)
+
+A call that matches either is not offered, so a call the team made since in F1 stands, and a call
+typed into the Sheet to match it is not asked again. With no such finding, the call is new.
+
+**Reopened rows.** An undecided row (blank or unreadable) is **reopened** only when the newest
+`feedback` finding for the creator, of any kind and from any list or run, is one that carries the
+row's `applicantId` and a `sheetValue`: the team took back in the Sheet a call saved from there
+(as it stood or changed in F1), and no newer call on the creator was saved since, in F1 or
+otherwise. It is vetted like any
+undecided row, and the team's F1 answer on it replaces the old call.
+
+**Offered this run.** At most 50 new Sheet calls, in applicant id order; F1 says how many more
+wait for the next run, and the next run offers them, since nothing was saved for them.
+
+**`sheet_calls`** go to the agent: for each new call offered this run, the handle, network,
+account id, applicant id, Sheet call, Note, and `agentVerdict` (**State written to Atlas**); for
+each reopened row, the handle, network, account id, and applicant id, marked reopened; and
+**Rows to fix**, for the page's What's missing. A decided row whose call is not new needs no
+entry: Atlas already holds a call for it. Only the first batch of a split list gets the new calls
+and Rows to fix, and offers the calls in F1; later batches get only the reopened rows.
+
+**F1 with Sheet calls.** F1's question adds "and save the {k} new calls from the review Sheet" and
+lists them numbered `s1`, `s2`, …, each as a call line with its note, naming any whose team's call
+(**Reading it back**) differs ("Atlas has Approve from {date}"). Options 1 and 2 save them too;
+option 3 saves none. In option 2 the user changes or drops one by its number ("reject s2, drop
+s3"); a dropped call is asked again on the next run. Each Note is the user's reason for its call,
+for F2 and F3.
+
+**When the list is empty** (every row decided in the Sheet or in Atlas, a duplicate, or skipped), after **Check what Atlas
+holds** (**Main thread: the run**, step 2), skip R2 to R5, the launch, and the page. With no new
+Sheet calls, say so in one line with **Rows to fix** under it, and stop. Otherwise ask a Sheet-only F1: "Save the {k}
+new calls from the review Sheet to {brand}'s Atlas?" with 1) Save them (Recommended); 2) Change
+some (type them, for example "reject s2, drop s3"); 3) Decide later (nothing is saved). Read
+`vettedAt` from the shell clock once, write what it saves under this run's `runKey` with no
+`reviewPage` and no run summary, then give **Copy decisions**.
+
+**A call line** is `@handle (network): {call}`, with ` | {note}` after it in F1 and the feedback
+packet when the row has a Note.
 
 ## Per-run questions
 
@@ -171,7 +285,7 @@ takes up to four questions), skipping any the user already answered.
 
 | # | Question | Options |
 | - | -------- | ------- |
-| R1 | Where's the list of creators? | 1) Upload a CSV export from Aspire (Recommended); 2) Paste the handles; 3) Pull it from the Aspire app (you'll sign in yourself) (only when a browser tool is available) |
+| R1 | Where's the list of creators? | 1) Upload a CSV export from Aspire (Recommended); 2) Paste the handles; 3) Pull it from the Aspire app (you'll sign in yourself) (only when a browser tool is available); 4) The applicant review's Sheet (only when the review's Sheet has applicant rows, and then Recommended in place of option 1) |
 | R2 | Vet them against what? | 1) {brand}'s vetting criteria (Recommended); 2) The {campaign} campaign's criteria (one option per saved `campaign:*-criteria`, up to two); 3) The {campaign} applicant review (one option per applicant review saved for this profile). Ordered per **R2 options** |
 | R3 | {n} of these creators aren't in Atlas yet. Fetch them? | 1) Fetch them (Recommended) (description: "Atlas looks up each account and its recent posts. A TikTok account Atlas doesn't hold costs one paid lookup; {t} are TikTok."); 2) Only vet the creators Atlas already holds |
 | R4 | Save the recommendations to {brand}'s Atlas insights? | 1) Save (Recommended); 2) Page only |
@@ -193,8 +307,7 @@ takes up to four questions), skipping any the user already answered.
    per **Applicant review**, Reading the setup back, step 1.
 
 R3 is asked only after the main thread has checked which handles Atlas holds
-(`search_creators` filtered on the username field, one call per network with a `terms`
-filter on the whole list), and only when some are missing. R3 option 1 is the approval for
+(**Main thread: the run**, step 2), and only when some on the list are missing. R3 option 1 is the approval for
 `lookup_creators` on exactly those handles, and the agent does not ask again. R4 is the write
 confirmation for the recommendation findings; the feedback answers carry their own.
 
@@ -238,7 +351,12 @@ What the **Creator vetting** section of SKILL.md does around the agent.
 1. **Get the list** per **Getting the list**, from the R1 answer (skip R1 when the user already
    attached a file or pasted handles). Show what was found and the list name.
 2. **Check what Atlas holds**: `search_creators` with a `terms` filter on the username field,
-   one call per network.
+   per network, at most 100 handles per call (a review Sheet's decided rows count toward the
+   handles). For a review Sheet, also read the saved findings per **Reading it back** (**State
+   written to Atlas**), then finish the list: the findings settle a duplicate creator's applicant
+   id, which blank rows stay off the list, which Sheet calls are new, which rows are reopened,
+   and each Sheet call's `agentVerdict`. A review Sheet that leaves the list empty goes from here to
+   **Reading the review Sheet**, When the list is empty.
 2b. **Vetting setup missing:** when R2 has nothing but {brand}'s vetting criteria to offer, ask V1
    to V4 now (**Setup**). Otherwise (rule 1 of **R2 options**) ask them only once R2 picks
    {brand}'s vetting criteria, before 3c; a campaign or a review picked at R2 needs no vetting
@@ -269,7 +387,8 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    Product on screen and for a free-text check), the built-in definition for Product on screen, or,
    for a free-text check, the definition the main thread words once from the user's words before the
    first launch: what to look for, what counts, what does not), `visual_check_refused` (the one-line
-   reason, when a check was refused), and `recipient`. A list over 100 creators runs in batches of
+   reason, when a check was refused), `sheet_calls` (**Reading the review Sheet**; else none), and
+   `recipient`. A list over 100 creators runs in batches of
    100, and a run with a visual check in batches of 25, since each creator's frames take room in the
    agent's context; say how many and launch them one at a time, every batch with the same
    `visual_check`.
@@ -354,7 +473,7 @@ and the contact route Atlas holds.
 - **Competitors.** Every `competitor` handle and its `spellingVariants` in captions and
   mentions. A paid partnership with a competitor in the last 90 days is a Fail when
   `vetting:hard-rejects` lists it, or, in an applicant review run, the review's `reject:` line
-  does; a Flag otherwise. An organic mention is a note.
+  does; a Flag otherwise. A mention with no paid label is a note.
 - **Disclosure habits.** Posts with the partnership marker, or that tag a brand with
   `#ad`, `#sponsored`, or "paid partnership", against posts that read as paid without one. A
   paid post without disclosure is a Flag (a Fail when `vetting:hard-rejects` lists it, or, in an
@@ -573,7 +692,10 @@ Rules:
   so. Write one `feedback` finding per creator the user ruled on (option 1 rules on every
   creator with a recommendation; option 2 on the ones typed plus, when the user says so, the
   rest as recommended). Resolve the numbers against this run's page.
-- **Creator notes.** Every creator the user overturned, and every reason the user gave about
+- **Sheet calls.** When the list came from a review Sheet, F1 also offers its new Sheet calls, per
+  **Reading the review Sheet**, F1 with Sheet calls.
+- **Creator notes.** Every creator the user overturned (a Sheet call whose `agentVerdict` is
+  `none` overturns nothing), and every reason the user gave about
   a creator ("never again, they deleted our post", "great, but only for Reels"), becomes a
   note. Word it yourself: the stance and the reason in one sentence, with the date. Show it in
   F2 before it is saved. Never save a note the user has not seen.
@@ -582,7 +704,8 @@ Rules:
   ("Mild profanity in comedy content is fine; flag it only in family content") and ask F3.
   If the correction targets a red line, a competitor, or a hard reject, write no lesson: say
   the rule itself would have to change, and list it under "Needs the main thread".
-- Skip F2 and F3 when F1 is "Agree" with no reasons given, or "Decide later".
+- Skip F2 and F3 when F1 is "Agree" (or the Sheet-only F1's "Save them") with no reasons given
+  (a Sheet call's Note is a reason given), or "Decide later".
 - **F4** is asked once after a free-text check, by the main thread after the last batch (never by
   the agent), whatever F1 was, and is its own write confirmation. The definition saved is the one
   the run used, worded per **Visual check records**, with any correction the user typed. When a
@@ -602,6 +725,19 @@ conversation. Either way, after the last batch of a free-text check, ask F4 with
 worded before the first launch, and offer each "Needs the main thread" change, the proposed changes
 to the criteria among them, through its own Destructive tools confirmation (`supersede_calibration`
 or `retract_calibration`), one per call. A proposal the user declines stays unsaved.
+
+**Copy decisions.** The team's calls for this list as text the user can copy: one **call line**
+(**Reading the review Sheet**) per creator, without notes, grouped Approve, Maybe, Reject. Each
+creator's call is the team's call (**Reading it back**); a Sheet call is used only where Atlas holds
+none. It leaves out creators left to decide in the Sheet, Sheet calls on creators Atlas doesn't
+hold yet, and a reopened creator (**Reading the review Sheet**) until F1 saves a new call for
+them. With no team call in Atlas and no Sheet call
+for any creator, it is the recommendations, headed "Recommendations, not yet the team's calls". The main thread gives it in
+chat after the last batch's F1, covering the whole list and, for a review Sheet, every row with
+a call (in the Sheet or in Atlas), with "(Sheet only)" after a Sheet call Atlas
+holds no call for and **Rows to fix** under it. The page carries it as a button (**The
+page**, Decisions) with neither, covering the creators on that page and the Sheet calls it was
+passed; the chat version is the full one.
 
 **Feedback outside a run.** Feedback about a creator outside a run ("never use @handle again",
 "@handle was great to work with") is saved the same way: word the note, confirm it with
@@ -691,16 +827,28 @@ gives one, `visualCheck` when the run had a visual check and it ran on the creat
 | null, frame: {postUrl, at}, videosRead, framesViewed, coversOnly, reason}`, `frame` and
 `confidence` null for Can't check), `usualViews` (or the reason it is not available), `checks`
 (`{component: 1 | 0.5 | 0 | null}`, `null` for a component with no data; the finding each check
-comes from is on the run summary), `listName`, `listSource` (`csv`, `pasted`, `aspire-app`, or
-`cas-lane`), `campaign` when R2 named one, `applicantReview` when R2 named an applicant review
-(**Applicant reviews**), `reviewPage`, and `recipient` (**Recipient lens**). A
-`feedback` finding adds `userVerdict`, `agentVerdict`, and the user's words verbatim. Supply an
-`idempotencyKey` per finding (`vet-{list-slug}-{entityId}-{findingType}`).
+comes from is on the run summary), `listName`, `listSource` (`csv`, `pasted`,
+`aspire-app`, `review-sheet`, or `cas-lane`), `campaign` when R2 named one, `applicantReview`
+when the criteria source is an applicant review (**Applicant reviews**), `reviewPage`, and
+`recipient` (**Recipient lens**). A
+`feedback` finding adds `userVerdict` (`approve`, `maybe`, or `reject`), `agentVerdict`, and the
+user's words verbatim; one for a creator whose list came from a review Sheet also adds
+the row's `applicantId`. One saved from an offered Sheet call also adds `sheetValue`, the Sheet's
+call at that moment. Its `agentVerdict` is the row's Recommendation, or else the newest saved
+`recommendation` finding for the creator, or else `none` when there is neither (a row the team
+added by hand to a creator never vetted). Its words are the row's Note when the call saved is that Sheet call as it
+stands (`userVerdict` equals `sheetValue`), and the user's own when they changed it in F1 option 2. Supply an
+`idempotencyKey` per finding, `vet-{list-slug}-{entityId}-{findingType}-{vettedAt}`, so a retry
+in one run is written once and a later run on the same list (a review Sheet is read again every
+run) is still written. Whoever writes the F1 findings uses the run's `vettedAt`: the agent's
+own, or the one its feedback packet carries.
 
 **Reading it back.** `search_insights` with a `prefix` filter on
 `detail.account_review.runKey` = `creator-vetting-{profile}`, newest first, paged; the newest
 record per `entityId` wins, and a `feedback` finding outranks a `recommendation` from the same
-run.
+run. The newest `feedback` finding per `entityId` is the team's call on that creator. For a review
+Sheet row vetted on two channels, the team's call is under the row's account id (**Reading the
+review Sheet**); the other channel's id holds only its recommendation.
 
 ## The page
 
@@ -747,7 +895,10 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
    any brand rule the team must settle before a verdict holds (for example, a red line a creator
    sits on the edge of), each proposed change to the criteria with the finding behind it, and,
    after a visual check, the creators whose read is Low confidence, to confirm by eye.
-   Questions that settle one creator stay on that creator's card.
+   Questions that settle one creator stay on that creator's card. Below them, a **Copy
+   decisions** button with the page's text from **Copy decisions** (**The feedback loop**). The
+   button and the cards' Team chips show the calls as they stood when the page was published;
+   calls F1 saves afterwards show on the list's next republish.
 8. **Next steps** (3.6): in order, each with its week, the creators it covers by number, and
    what it should change: contact the approvals, settle the Maybes, line up the backups, and,
    when the list came up short, where a second search should look given the findings, and,
@@ -764,8 +915,10 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
    across the whole page in the order shown, because those numbers are what the user replies with.
    When the criteria name audiences, the Approve grid is grouped by audience with a subtotal per
    group; when they also set how many creators each audience needs, a group short of it names the
-   open slot. On each card: the fit score in the ring; flow chips `#{number}` and the
-   recommendation; safety results in the brand safety tile per the card's **Brand safety** rule;
+   open slot. On each card: the fit score in the ring; flow chips `#{number}`, the
+   recommendation, and "Team: {call}" when the team has a call on the creator (**Reading it
+   back**), or "Team: reopened" for a reopened review Sheet row (**Reading the review Sheet**);
+   safety results in the brand safety tile per the card's **Brand safety** rule;
    three proof posts in the thumbnails; when a visual check ran, a line under the thumbnails with
    the check's name, the result, the confidence word, and the post and timestamp, linked to the
    creator's still in the visual check section (the still itself is not repeated); `{DETAILS}` with

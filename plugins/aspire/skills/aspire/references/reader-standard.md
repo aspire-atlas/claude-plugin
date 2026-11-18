@@ -1,6 +1,6 @@
 # Reader standard
 
-Reader standard v1.3.
+Reader standard v1.4.
 
 The reader checks ask whether the reader can act on the work: does it answer first, give numbers
 context, keep decisions apart, and fit the person who will read it. This file is the one place they
@@ -22,7 +22,7 @@ is in **Quality review**, **3**.
 | R4 | Numbers have context | Every number in the summary and insights is compared with something (last period, peers, a goal), each insight ends in what to do about it, and there are no more than three insights | "48K views" with nothing beside it | High |
 | R5 | Clear next steps | Every next step says what to do, who does it, by when, and what it should change | "Consider optimizing content" | High |
 | R6 | Decisions kept separate | What the reader must approve sits in its own section, each with its deadline when it has one, or the page says nothing needs approval | Approvals buried in the to-do list | High |
-| R7 | Real evidence | Every creator, post, and number comes from the run's data, and every evidence link (a post or profile URL) opens what it claims | A handle or number that isn't in the data | **Critical** |
+| R7 | Real evidence | Every creator, post, and number comes from the run's data, and every evidence link (a post or profile URL) opens what it claims. Every cited post is a link to the post. Every explanation of why something happened names the linked evidence it rests on, or says "Not explained yet" with what was searched, and outside evidence it relies on is saved with its link, date, and quoted words (**Page standard**, `explanations.md`) | A handle or number that isn't in the data; a cited post with no link; sales put down to coupon sites with no link and no search of the creator's other posts | **Critical** |
 | R8 | Shows its working | Scores and recommendations explain how they were reached, with the weights behind any score | A score with no explanation | High |
 | R9 | Names what's missing | On a team page, missing data is named, with what connecting it would add | Says nothing about missing ad data | Medium; High when the gap would change the decision |
 | R10 | Fits the reader | A VP or budget owner sees the answer, decisions, and next steps on one screen, with "Prepared by" at the top and detail below. A client sees the client version: no revision history and no named rejects | A VP brief that opens with the method | High when `recipient` is `leadership` or the page names a VP or budget owner; else Medium |
@@ -30,6 +30,7 @@ is in **Quality review**, **3**.
 | R12 | Built for this question | The page's sections and visuals come from what this question and reader need | A launch timeline on a one-creator profile | High |
 | R13 | Required metrics | Every post the page cites carries each metric its kind of question requires (**Page standard**, section 8), or says beside it why that metric is not available. Nothing missing is shown as 0 | 21.6 million views with no likes, comments, shares, or saves beside them; a save count Atlas does not hold shown as 0 | High |
 | R14 | Data freshness | Every account the page cites has a freshness line in the source line: the newest post Atlas holds and when Atlas last fetched it, or, when Atlas has no fetch time, "last changed", "not fetched by Atlas yet", or "freshness unknown" (**Page standard**, section 9). On a team page, a period Atlas has not fetched reads "Atlas has no data for {period}"; a page shared outside the team leaves it out | "No posts this week" for a week Atlas never fetched; a page with no word on how old its figures are | High |
+| R15 | Like for like | Every comparison (two groups, two periods, or two brands side by side, or a share) passes the four checks in **Page standard**, `comparisons.md`: one kind of post on both sides; mentions counted with and without the "@"; "directional" and the post count beside a figure that rests on too few posts; and a share shown beside its group's share of the whole. A comparison that fails one and stays says which, in one plain line | A brand's TikTok Shop posts mixed into its average against a competitor's; "87% of revenue" from 88% of affiliates given as a finding; a rate from 6 posts with no "directional" | High |
 
 ## How to judge them
 
@@ -39,13 +40,18 @@ is in **Quality review**, **3**.
   computable from, the files in `evidence_dir`. Without it, judge R7 on links and internal
   consistency only, and add "R7 checked without the run's raw data" to **Not verified**. An agent
   checking its own page judges R7 against what its run read, and treats storyboard timecodes as
-  drafts until a 1-second frame scan confirms them.
+  drafts until a 1-second frame scan confirms them. The links are scripted (**Page standard**,
+  section 5); whether an explanation's evidence supports its claim is judged.
 - **R2** is n/a on a page that covers one post, one creator, or one account on one network
   (**Quality review**, **3**).
 - **R13** is n/a on a page that cites no post. On a page with no question code, judge it against
   the row for the kind of question the page answers (**Page standard**, section 8).
 - **R14** is n/a on a page that cites no account. A chat reply is judged the same way: one that cites
   an account's data carries its freshness line (**Page standard**, section 9).
+- **R15** is n/a only on a page that compares nothing and states no share. The script counts only
+  the comparisons the page marks and reports a page that marks none as unmarked, so read the
+  headline, the insights, and the chart captions for one it missed. A chat reply is judged the
+  same way.
 - **Links.** R7 covers evidence links only; every other broken link is filed as the table in
   **Quality review**, **4.15**, **Broken links**, says.
 - **R2 and R9 outside the team.** When `audience` is `client`, `creator`, or `public` (the page
@@ -70,6 +76,9 @@ is in **Quality review**, **3**.
   or counts ("Atlas reads public posts", "3 picks and 2 passes") pass, and the English read judges
   them. Say what the thing is: "the creators we recommend", "this week's results", "Atlas compared",
   "this review", "the spot for reach", "the people who do the work". Handles, hashtags, emails, and links are not checked. Other jargon is a judgment.
+- **R11, paid label or none.** A post by someone other than the brand has a "paid label" or "no
+  paid label", never "organic" or "unpaid". The rule, the pages and places the script reads, and
+  what is left to judgment are in **Page standard**, section 8 (`post-kinds.md`).
 - One defect is one finding. A defect that fails an R check and a 4.x check (a headline count that
   disagrees with the table fails R7 and 4.4) is filed under the more specific check, here 4.4, and
   both IDs go in **Failed checks**.

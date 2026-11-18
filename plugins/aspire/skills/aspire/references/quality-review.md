@@ -110,14 +110,14 @@ on the page as not applicable, with the reason, never silently skipped.
 
 | Target | 4.x n/a | R checks n/a (**Reader standard**) |
 | ------ | ------- | ------------ |
-| A proposal, pitch, or RFP response | none | R2 unless it cites social data; R12; R13 unless it cites posts; R14 unless it cites accounts |
+| A proposal, pitch, or RFP response | none | R2 unless it cites social data; R12; R13 unless it cites posts; R14 unless it cites accounts; R15 unless it compares or states a share |
 | A plugin report or signal (readout, market signal, quarterly signal, profile, post analysis, ad reuse) | 4.6 Commercial, 4.8 People (unless it names a team) | none |
 | A plugin brief, shortlist, or vetting page | 4.8 People | none |
 | A plugin dashboard or program page (org dashboard, program dashboard, ledger, CAS campaign, orchestrator, order form) | 4.7 Proof | R3 when the page is a tracker with no single question; R4's three-insight cap |
 | A plugin working page (content review, outreach, negotiation, fulfillment, deliverable tracker, affiliate, roster health, content sourcing, content library, shops plan) | 4.7 Proof, 4.8 People | R3 when the page is a tracker with no single question; R4's three-insight cap |
 | Any other plugin page | 4.6 Commercial, 4.7 Proof, and 4.8 People, unless the page shows prices, case studies, or a team | none |
 | A plugin deck (PPA pitch) | none | none |
-| A decision audit page | 4.5 to 4.10 | R3 to R6, R10, R12, R13, R14 |
+| A decision audit page | 4.5 to 4.10 | R3 to R6, R10, R12, R13, R14, R15 |
 | A quality review's own page | not reviewed | not reviewed |
 
 On any plugin page, **R2** is n/a when the page shows no social data, or when it covers one post,
@@ -497,7 +497,7 @@ Judge only what it prints. Never open the page file with the Read tool or read i
 comments, or its script. Without Python, read the file and judge only the text between its tags,
 leaving out `script` and `style`, and set `textFrom` to `html`.
 
-**What it checks, on every line.** The seven checks in **English rules**, **The rules**, which the
+**What it checks, on every line.** The eight checks in **English rules**, **The rules**, which the
 main thread also holds its own chat messages to. Read that table before judging, cite each fix by
 its row number there, and add no check of your own. Text marked `[quoted: ...]` is someone else's
 words (a caption, a creator's name): never fix it. Handles, hashtags, links, and emails stay as

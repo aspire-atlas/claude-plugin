@@ -7,7 +7,7 @@ owner: 02-market-signal
 
 ## What it does
 
-Measures how much of the creator conversation in the window is about the brand and each tracked competitor, organic and paid apart.
+Measures how much of the creator conversation in the window is about the brand and each tracked competitor, posts with a paid label apart from posts with none.
 
 ## Inputs
 

@@ -86,7 +86,10 @@ Fresh aggregates, filter path:
 - The brand's own posts in the quarter and the prior quarter, per linked handle: posts,
   engagement, views, engagement rate, format mix. Page with the cursor.
 - Creator posts about the brand (the mention set in **Market signal**, **Data method**, step
-  3) in both quarters: posts, distinct creators, engagement, paid vs organic.
+  3) in both quarters: posts, distinct creators, engagement, and how many posts carry a paid
+  label and how many carry none. The page says "paid label" and "no paid label" for these posts,
+  never "organic" or "unpaid" (**Page standard**, section 8). A block that gives the brand's own
+  organic figures, or what the program's records say a creator was paid, carries `data-own`.
 - Current follower counts from `search_creators`, against the first saved follower count in
   the quarter's readout findings.
 - Freshness (**Page standard**, section 9): each linked handle's `freshness` from the same
@@ -95,7 +98,7 @@ Fresh aggregates, filter path:
   line and any behind-pace note only (section 9.5, the unattended row). A relaunch with handles in
   `approved.refresh` refreshes those before the posts are read, and makes no new offer. An interactive run with `approved.refresh` null works out each
   handle's pace from the freshness read (section 9.4) and offers the refresh, with its time and
-  cost, for a handle behind it, holding its findings until the relaunch. The page's source line
+  cost, for each handle behind it up to the refresh limit (section 9.5), holding its findings until the relaunch. The page's source line
   carries the freshness line, and a period with no posts reads as section 9.3 says.
 
 A source with no findings in the quarter is named under data gaps, never filled.

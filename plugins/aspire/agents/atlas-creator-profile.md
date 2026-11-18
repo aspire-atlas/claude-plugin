@@ -75,7 +75,7 @@ gaps, and stop as for an unresolved handle when Atlas does not hold the account.
     snippet's output to a scratch file rather than reading data URIs back. Build the page per `creator-profile.md`, apply `theme:brand` when saved, and
     publish with the Artifact tool, title "{Name or @handle} Creator Profile", republishing to the same
     file path for the same handle. No Artifact tool: save the page as a file and return its path, per
-    `skills/page-standard/SKILL.md`, section 4, step 5.
+    `skills/page-standard/page-file.md`.
 12. Never invent data. A section with nothing behind it is left out and named under Data gaps.
 
 **Output format (under 200 words):**

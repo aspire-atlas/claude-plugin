@@ -299,17 +299,39 @@ For each creator with 3 or more orders in the period, and for the program total:
 
 1. Daily orders and revenue across the period.
 2. The creator's posts in Atlas in the period and the 7 days before it: `search_posts` on their
-   author username and network, `postedAt` in the window, projecting the date, link, format, and
-   whether it tags or mentions the brand. A post whose link matches a `deliverable` finding is
-   marked "program post".
+   author username and network, `postedAt` in the window, projecting the fields of the
+   "Affiliate sales" row of the required metrics
+   (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8), plus whether the post tags
+   or mentions the brand. A post whose link matches a `deliverable` finding is marked "program
+   post". The program total takes the posts of every creator in scope, whatever their orders.
+   A post from the 7 days before the period is read only for step 3, where it keeps the days
+   after it out of the typical days. It has no date on the chart, so it is not marked, listed,
+   or cited.
 3. **Around each post:** orders on the post day and the 3 days after, against the creator's
    median daily orders on days with no post in the 3 days before. Shown as "{n} orders in the 4
    days after the post, against {m} on a typical 4 days".
 
-Draw it as a timeline: daily bars, post markers on their dates, the 4-day windows shaded. The
+Draw it as a timeline: daily bars, post markers on their dates, the 4-day windows shaded. A
+marker is labelled with two of its post's figures, views and engagement per 1,000 views, taken
+from the post's card, so a reader can see whether the post reached anyone before reading the
+orders beside it. On a chart where the labels would overlap, markers carry the date only and
+the cards carry the figures. The
 words under it are always: "Sales and posts on the same days are a correlation, not proof that
 the post drove them." Fewer than 3 orders in the period, or no posts in Atlas, says so in place
 of the chart. Never claim a post caused a sale, and never estimate revenue a post "drove".
+
+Under the program total timeline, show one post evidence card
+(`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/blocks.md`, 3.8) for every post dated in the
+period, grouped by creator, oldest first. Each card carries the row's required metrics, "program
+post" where it is one, and the orders line from step 3 as its comparison. A creator's own chart
+marks that creator's posts and points to these cards, so every marker's post has exactly one
+card, whatever the creator's orders. Engagement, its method line, and missing metrics follow
+the page standard, section 8 (**A missing metric is never 0**).
+
+**Why a creator sells.** Before the page says why a creator's code sold (or stopped selling),
+follow `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/explanations.md` for that creator, using
+`queryText` on their code and the brand's name. Its captures go in the creator's A8 report finding
+as `saved` (**Records written**).
 
 ## Recommendations
 
@@ -475,11 +497,11 @@ period.
 | A1, a code planned | `code`, kind, value, `codeStatus` `planned`, `period` this month | `action_item` `low` |
 | A2, created in the store | `codeStatus` `live`, `codeMethod` `store`, `codeCreatedAt`, `storeRef` | `action_item` `low` until it has sales |
 | A4, live or off from the sheet | `codeStatus` `live` or `retired`, `codeMethod` `sheet`, `codeCreatedAt` or `retiredAt` | as above |
-| A8, a report | Every figure in **Per creator, per period**, `source`, `sourceLabel`, `partial` | `went_well` with sales; `action_item` `low` with none |
+| A8, a report | Every figure in **Per creator, per period**, `source`, `sourceLabel`, `partial`, and `saved` (read from the creator's last report finding and kept as `explanations.md`, section 4, says) | `went_well` with sales; `action_item` `low` with none |
 | A9, turned off in the store | `codeStatus` `retired`, `retiredAt` | `action_item` `low` |
 
 Only an A8 report finding carries `source` (store or csv). A code finding copies the code
-fields, never `source` or a period's figures, and never counts as a report: the Program manager's "Report sales and commission" row and the dashboard's "Sales to
+fields, never `source`, `saved`, or a period's figures, and never counts as a report: the Program manager's "Report sales and commission" row and the dashboard's "Sales to
 report" item look for a report finding for the last closed month.
 
 **Fields this agent adds to `affiliate`** (beyond **Influencer program**'s list): `type` (`affiliate` or
@@ -536,7 +558,9 @@ one line each in the shape **Influencer program** sets (**Ledger lines hand-off*
 ## The page
 
 One page per program, the affiliate page, republished to the link in the `page` finding with
-key `affiliate`. Title "{Brand} {Program}: Affiliate". Load `artifact-design` and
+key `affiliate`. Title "{Brand} {Program}: Affiliate". It answers question code I12
+(**Orchestration contract**, **3**), so its scope carries `data-question="I12"` and every
+timeline post carries that code's required metrics, or a note saying why one is missing. Load `artifact-design` and
 `artifact-capabilities` before building and `dataviz` for the charts; apply `theme:brand` per
 **Theme**, **Applying the theme**; draw creators with the creator card (**Creator card**, page
 profile); render for `recipient`.
@@ -578,8 +602,14 @@ Sections, in order:
    type chip Affiliate or Hybrid), code, orders, revenue, AOV, commission and its basis, orders
    per click when present, change from last month, and a small sparkline of daily orders.
 5. **Sales and posts**: the program total timeline with post markers and the shaded 4-day
-   windows, then one small timeline per creator with 3 or more orders. The correlation line
+   windows, the post cards under it, then one small timeline per creator with 3 or more orders
+   (**Sales and posts timeline**). Each creator with a post card is a subject account: the
+   scope's `data-accounts` names them, and each gets its freshness entry
+   (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 9). The correlation line
    under it, word for word.
+   Where the page says why a creator sold, the explanation block and any saved evidence
+   (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/blocks.md`, 3.21 and 3.22) sit under that
+   creator's timeline (**Why a creator sells**).
 6. **Codes**: every in-scope creator's code: code, discount, status (Planned, Live, Retired),
    how it was made (In {store}, On the sheet), the date, and the last sale date. Codes not yet
    live lead.
@@ -587,8 +617,9 @@ Sections, in order:
 8. **Commission for the ledger**: one line per creator: period, amount, basis, due date, and
    "Proposed" or "Sent to the ledger".
 9. **Data notes**: the source and how it was read, the column mapping for an export, refunds
-   included or not, "Other codes" with its order count, codes to check, and creators with no
-   sales.
+   included or not, "Other codes" with its order count, codes to check, creators with no
+   sales, what each explanation searched, and the timeline posts' engagement method and missing metrics, as section 8 of the
+   page standard words them.
 10. **Footer**: "Revenue is {source}'s figure in {currency}, read {timestamp}. Atlas data as of
     {timestamp}. Sales and posts on the same days are a correlation, not proof." Then the footnote
     with the team audience line (**Artifact standard**); its source line
@@ -602,7 +633,8 @@ budget, a maximum, or the sales goal outside the team view.
 
 The holiday's sample brand per **Sample artifacts** (the agent brief), four creators: a top earner with a
 raise as your call, a hybrid with a store-created code, an affiliate whose fixed-amount code is
-on the sheet, and an inactive code to retire. A month's timeline with three post markers, three
+on the sheet, and an inactive code to retire. A month's timeline with three post markers and their three
+post cards, one of them an image post with its missing metrics noted, three
 commission lines, a code sheet of two rows. Render the goal tile in the page itself, marked
 "team view". Declare no page data capability and seed nothing.
 

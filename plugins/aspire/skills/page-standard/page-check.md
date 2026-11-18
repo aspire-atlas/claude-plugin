@@ -1,12 +1,13 @@
 # Page check script
 
-The script `SKILL.md`, section 5, runs on every page before it is published: R1, R2, R6, R11 and
-R13 from the reader standard. Extract it with the command there; never retype it. It reads only the
+The script `SKILL.md`, section 5, runs on every page before it is published: R1, R2, R6, R7's linked
+evidence (`explanations.md`), R11, R13, R14 and R15 from the reader standard. Extract it with the command there; never retype it. It reads only the
 pages named and writes nothing. With `--text` anywhere among its arguments it runs no check and prints the
 words a reader sees instead, one block per line, which is all the English read (`SKILL.md`,
 section 4, step 4b) is given. It lives in this file so `SKILL.md` stays short; when the reader
 standard changes, `SKILL.md`'s section 6 table and this script change in the same commit, and when
 the required-metrics table (`SKILL.md`, section 8) changes, `REQUIRED_ROWS` here changes with it.
+`DIRECTIONAL_MAX` and `IN_LINE_POINTS` are the two numbers `comparisons.md` sets.
 
 ## Contents
 
@@ -16,7 +17,7 @@ the required-metrics table (`SKILL.md`, section 8) changes, `REQUIRED_ROWS` here
 
 <!-- page-check -->
 ```python
-# Page standard self-check: R1, R2, R6, R11, R13 and R14 from reader-standard.md. Reads the HTML files named; writes nothing.
+# Page standard self-check: R1, R2, R6, R7 (its linked evidence), R11, R13, R14 and R15 from reader-standard.md. Reads the HTML files named; writes nothing.
 import datetime, json, re, sys
 from html.parser import HTMLParser
 
@@ -63,6 +64,29 @@ BANNED = [
     (re.compile(EDGE % r"(?:(?:top|our|first|creator|the|your|weekly|daily|today's|this\s+week's)\s+(?:picks|reads)"
                 r"|pulses?|the\s+run(?![-\s]+(?:up|rate)\b)|reach\s+slots?|practitioners?)", re.I), "a report label"),
 ]
+# Links and emails, then handles and hashtags: never read as words. An email starts at a word
+# character, so a handle after "(" or a quote stays a handle.
+LINKS = re.compile(r"https?://\S+|(?<![\w.])[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
+NAMES = re.compile(r"(?<!\w)[@#][\w.]+")
+HANDLE = re.compile(r"(?<!\w)@[\w.]+")
+# A post by someone other than the brand has a "paid label" or "no paid label" (post-kinds.md).
+# PAID_CODES is kept equal to the codes post-kinds.md names by scripts/check-artifact-standard.sh.
+PAID_CODES = {"O1", "O2", "O3", "I6"}
+# Only the word said of posts fails, so "organic cotton", "organic, fair-trade" and "2 unpaid
+# invoices" beside a handle stay plain words. To cover a new kind of post, add its noun here.
+POST_NOUNS = ("posts?", "mentions?", "content", "buzz", "reach", "views", "engagement", "conversations?",
+              "coverage", "videos?", "reels?", "shorts", "stories", "creators?", "share")
+POST_VERBS = ("posted", "mentioned", "shared", "spread", "grew", "talked")
+VERSUS = r"(?:vs\.?|versus|and|or|against|to|from)"
+BEFORE_NOUN = r"(?:organic|unpaid)\s+(?:%s)" % "|".join(POST_NOUNS)
+PAIRED = r"paid\s+%s\s+(?:organic|unpaid)|(?:organic|unpaid)\s+%s\s+paid" % (VERSUS, VERSUS)
+ADVERB = r"(?:%s)\s+organically|organically\s+(?:%s)" % ("|".join(POST_VERBS), "|".join(POST_VERBS))
+# The word closing a clause or standing alone in a table cell: "the buzz is organic.", "| Unpaid |".
+CLAUSE_END = r"(?:organic|unpaid)(?=\s*(?:[.;!?|]|$))"
+UNLABELLED = re.compile(EDGE % ("(?:%s)" % "|".join((PAIRED, BEFORE_NOUN, ADVERB, CLAUSE_END))), re.I)
+# A sentence ends at . ! ? or ; before anything but a lowercase letter, and never at an abbreviation.
+SENTENCE = re.compile(r"(?<=[.!?;])\s+(?=[^a-z])")
+ABBREVIATION = re.compile(r"(?i)(?<![a-z])(?:vs|e\.g|i\.e|etc|approx|est|avg|incl|no|jan|feb|mar|apr|jun|jul|aug|sept?|oct|nov|dec)\.$")
 NOTHING = re.compile(r"\b(?:nothing|no decisions?) needs? (?:your )?approval\b", re.I)
 # Required metrics on every cited post, by question code. Kept equal to the required-metrics table in
 # SKILL.md, section 8, by scripts/check-artifact-standard.sh.
@@ -72,6 +96,7 @@ O2 O3: views likes comments engagement
 I1 I2 I3 I4: views likes comments engagement
 P1 P2 P4 P5 P6: views likes comments shares saves engagement
 I5 I6 I11 P3 A1: views likes comments
+I12: views likes comments engagement
 """
 REQUIRED = {code: tuple(metrics.split()) for line in REQUIRED_ROWS.strip().splitlines()
             for codes, metrics in [line.split(":")] for code in codes.split()}
@@ -140,21 +165,31 @@ def exempt(node):
     return (quoted(node) or node.attrs.get("aria-label") == "Aspire Atlas"
             or "atlas-footnote" in (node.attrs.get("class") or "").split())
 
-def text(node, gap="", skip=lambda n: False):
+def flow(node, wrap, skip=lambda n: False, seen=lambda n: None):
+    # The page's words in reading order. wrap(node) gives what goes before and after a node's
+    # words; skip(node) leaves a node and everything in it out; seen(node) is told each node kept.
     out, stack = [], [node]
     while stack:
         item = stack.pop()
         if isinstance(item, str):
             out.append(item)
         elif item.tag not in SKIP and not skip(item):
-            pad = gap if item.tag in INLINE else " "
-            stack.append(pad)
+            seen(item)
+            before, after = wrap(item)
+            stack.append(after)
             stack.extend(reversed(item.kids))
-            stack.append(pad)
-    return re.sub(r"\s+", " ", "".join(out)).strip()
+            stack.append(before)
+    return "".join(out)
+
+def text(node, gap="", skip=lambda n: False):
+    pad = lambda n: (gap, gap) if n.tag in INLINE else (" ", " ")
+    return re.sub(r"\s+", " ", flow(node, pad, skip)).strip()
 
 def has(haystack, needle):
-    return re.sub(r"\s+", " ", needle).strip().lower() in haystack.lower()
+    # Word for word, whatever the markup around the words: an inline element pads its text with
+    # spaces, so the two are compared with all white space taken out.
+    squeeze = lambda value: re.sub(r"\s+", "", value).lower()
+    return squeeze(needle) in squeeze(haystack)
 
 def has_phrase(haystack, phrase):
     # The phrase as whole words, so "no data" never matches "no database" or "none" "nonetheless".
@@ -165,12 +200,14 @@ def page_name(node):
     return (node.attrs.get("data-page") or "").strip().lower()
 
 def inside(node, name):
-    node = node.parent
-    while node is not None:
-        if page_name(node) == name:
-            return True
+    return any(page_name(a) == name for a in ancestors(node))
+
+def ancestors(node):
+    found = []
+    while node.parent is not None:
         node = node.parent
-    return False
+        found.append(node)
+    return found
 
 def platforms(region):
     found = {}
@@ -188,7 +225,12 @@ def numbers(shown):
             found.add(int(m.group(1).replace(",", "")))
     return found
 
-def r1(nodes, regions):
+def whole(value):
+    # A post count as written in data-posts ("1,412", "96"); None when it is not a whole number.
+    value = (value or "").replace(",", "").strip()
+    return int(value) if value.isascii() and value.isdigit() else None
+
+def r1(nodes, regions, out):
     scopes = regions.get("scope", [])
     if len(scopes) != 1:
         return ["the page needs exactly one data-page=\"scope\" (found %d)" % len(scopes)]
@@ -210,12 +252,11 @@ def counts(region, label):
     for name, found in platforms(region).items():
         if len(found) > 1:
             problems.append("%s lists %s more than once" % (label, name))
-        raw = (found[0].attrs.get("data-posts") or "").replace(",", "").strip()
-        if not (raw.isascii() and raw.isdigit()):
+        posts, shown = whole(found[0].attrs.get("data-posts")), text(found[0], gap=" ")
+        if posts is None:
             problems.append("%s gives %s no whole-number data-posts" % (label, name))
             out[name] = None
             continue
-        posts, shown = int(raw), text(found[0], gap=" ")
         if posts == 0 and not any(has_phrase(shown, w) for w in NOT_COVERED):
             problems.append("%s shows %s with 0 posts but says neither that it is not covered nor that Atlas has no data" % (label, name))
         if posts > 0 and posts not in numbers(shown):
@@ -228,7 +269,7 @@ def shared(nodes):
     return any("atlas-footnote" in (n.attrs.get("class") or "").split() and has(text(n), "shared with")
                for n in nodes)
 
-def r2(nodes, regions):
+def r2(nodes, regions, out):
     scopes = regions.get("scope", [])
     if len(scopes) != 1:
         return ["no single scope to read platforms from"]
@@ -253,7 +294,7 @@ def r2(nodes, regions):
             problems.append("the method section's platform counts %s differ from the scope's %s" % (again, top))
     return problems
 
-def r6(nodes, regions):
+def r6(nodes, regions, out):
     sections = regions.get("decisions", [])
     if len(sections) != 1:
         return ["the page needs exactly one data-page=\"decisions\" (found %d)" % len(sections)]
@@ -278,11 +319,188 @@ def r6(nodes, regions):
         problems.append("%d decision(s) sit outside the decisions section" % len(stray))
     return problems
 
-def r11(nodes, regions):
+# R7's scripted part (explanations.md): every cited post links to itself, every explanation rests on
+# linked evidence from Atlas or the brand's site or says it is not explained yet, and every saved
+# capture carries its link, date, quote, and screenshot or the reason there is none. Whether the
+# evidence supports the claim, and each figure, is still judged by reading.
+UNEXPLAINED = re.compile(r"(?i)\bnot explained yet\b")
+NO_SCREENSHOT = re.compile(r"(?i)\bscreenshot not taken\b")
+GONE = re.compile(r"(?i)\bno longer visible\b")
+SEARCHED_LABEL = re.compile(r"(?i)^\s*searched\s*:?\s*")
+# data-evidence names where the evidence comes from. Only atlas and site can carry an explanation;
+# outside evidence (a coupon site, another store) and every saved capture sit beside them.
+SOURCES = {"atlas", "site", "outside"}
+# Markup that belongs inside a data-explain block, and is unchecked anywhere else.
+EXPLAIN_PARTS = ("data-evidence", "data-unexplained", "data-searched")
+
+def web(value):
+    return re.match(r"(?i)^https?://[^\s/]+\.[^\s/]+", (value or "").strip()) is not None
+
+def anchors(node):
+    # The links a reader can open: never one inside a script, style, template, or noscript.
+    return [(n.attrs.get("href") or "").strip() for n in walk(node, keep=lambda n: n.tag not in SKIP) if n.tag == "a"]
+
+def links(node):
+    return [href for href in anchors(node) if web(href)]
+
+def opens(href, url):
+    # The link opens the post: data-post itself, or data-post with a timecode or share parameters
+    # after it ("...watch?v=X&t=4s", ".../reel/X/?igsh=1"). Case is kept: post ids are case-sensitive.
+    base = url.rstrip("/")
+    return href.startswith(base) and href[len(base):][:1] in ("", "/", "?", "&", "#")
+
+def captured_at(value):
+    # data-captured as a UTC or offset date and time ("2026-10-30T15:20Z"); None when it is not one.
+    if not re.match(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?(?:Z|[+-]\d{2}:\d{2})$", value):
+        return None
+    try:
+        return datetime.datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+def post_link_problems(nodes):
+    problems = []
+    for index, post in enumerate((n for n in nodes if "data-post" in n.attrs), 1):
+        url = (post.attrs.get("data-post") or "").strip()
+        if not web(url):
+            problems.append("cited post %d has data-post \"%s\", which is not the post's link" % (index, url))
+        elif not any(opens(href, url) for href in links(post)):
+            problems.append("%s is cited with no link a reader can open; link the post itself" % url)
+    return problems
+
+def explain_problems(nodes, out):
+    problems, saved_ids = [], {"#" + n.attrs["id"].strip() for n in nodes
+                               if "data-saved" in n.attrs and (n.attrs.get("id") or "").strip()}
+    stray = [n for n in nodes if any(a in n.attrs for a in EXPLAIN_PARTS)
+             and not any("data-explain" in a.attrs for a in [n] + ancestors(n))]
+    if stray:
+        problems.append("%d explanation part(s) (data-evidence, data-unexplained, data-searched) sit outside a data-explain block; wrap the explanation in one" % len(stray))
+    for index, block in enumerate((n for n in nodes if "data-explain" in n.attrs), 1):
+        label = "explanation %d (\"%s\")" % (index, text(block)[:50])
+        evidence = [n for n in walk(block) if "data-evidence" in n.attrs]
+        unexplained = [n for n in walk(block) if "data-unexplained" in n.attrs]
+        searched = [SEARCHED_LABEL.sub("", text(n, gap=" ")) for n in walk(block) if "data-searched" in n.attrs]
+        carrying, saved = 0, 0
+        for item in evidence:
+            source, hrefs = (item.attrs.get("data-evidence") or "").strip().lower(), anchors(item)
+            to_saved = [h for h in hrefs if h in saved_ids]
+            saved += len(to_saved)
+            if not to_saved and not any(web(h) for h in hrefs):
+                problems.append("%s marks evidence with no link to it" % label)
+            elif source not in SOURCES:
+                problems.append("%s has data-evidence \"%s\"; name its source: atlas, site, or outside" % (label, source))
+            elif to_saved and source != "outside":
+                problems.append("%s marks a saved capture as %s evidence; a saved capture is outside evidence" % (label, source))
+            elif source != "outside":
+                carrying += 1
+        if unexplained:
+            if not all(UNEXPLAINED.search(text(n, gap=" ")) for n in unexplained):
+                problems.append("%s marks data-unexplained but does not say \"not explained yet\"" % label)
+            if not any(searched):
+                problems.append("%s is not explained yet but does not say what was searched (data-searched)" % label)
+        elif not evidence:
+            problems.append("%s names no linked evidence (data-evidence) and does not say \"not explained yet\"" % label)
+        elif not carrying:
+            problems.append("%s rests only on outside evidence; give the evidence from Atlas or the brand's site, or say \"not explained yet\"" % label)
+        out.setdefault("explanations", []).append(
+            {"claim": text(block)[:80], "evidence": carrying, "searched": [s for s in searched if s], "saved": saved,
+             "explained": not unexplained})
+    return problems
+
+def saved_problems(nodes):
+    problems = []
+    for index, saved in enumerate((n for n in nodes if "data-saved" in n.attrs), 1):
+        label, shown = "saved evidence %d" % index, text(saved, gap=" ")
+        if not links(saved):
+            problems.append("%s has no link to where it was read" % label)
+        when = (saved.attrs.get("data-captured") or "").strip()
+        moment = captured_at(when)
+        if moment is None:
+            problems.append("%s has data-captured \"%s\", which is not a date and time with its zone (YYYY-MM-DDTHH:MMZ)" % (label, when))
+        else:
+            # The saved date, outside the quoted words. The page may show it in the reader's time
+            # zone, a day either side of the UTC date.
+            own = text(saved, gap=" ", skip=quoted)
+            day = moment.astimezone(datetime.timezone.utc).date()
+            days = [(day + datetime.timedelta(days=d)).isoformat() for d in (0, -1, 1)]
+            if not any(shows_date(own, d) for d in days):
+                problems.append("%s does not show the date it was saved (%s)" % (label, days[0]))
+        if not any(quoted(n) for n in walk(saved)):
+            problems.append("%s quotes none of the text it rests on (blockquote, q, or data-quoted)" % label)
+        if not any(n.tag == "img" for n in walk(saved)) and not NO_SCREENSHOT.search(shown):
+            problems.append("%s has no screenshot and does not say \"screenshot not taken\"" % label)
+        if "data-gone" in saved.attrs and not GONE.search(shown):
+            problems.append("%s is marked data-gone but does not say \"no longer visible\"" % label)
+    return problems
+
+def r7(nodes, regions, out):
+    # Returns None (unmarked) on a page that cites no post and marks no explanation or capture:
+    # read it for an explanation the markup missed.
+    if not any(a in n.attrs for n in nodes for a in ("data-post", "data-explain", "data-saved") + EXPLAIN_PARTS):
+        return None
+    return post_link_problems(nodes) + explain_problems(nodes, out) + saved_problems(nodes)
+
+def question_code(regions):
+    scope = (regions.get("scope") or [None])[0]
+    return ((scope.attrs.get("data-question") or "") if scope is not None else "").strip().upper()
+
+def rows(node, skip):
+    # The words a reader sees or hears, one block or label per line; a table row stays one line,
+    # its cells set apart by "|".
+    labels = []
+    pad = lambda n: (" ", " ") if n.tag in INLINE else (" | ", " | ") if n.tag in ("td", "th") else ("\n", "\n")
+    lines = flow(node, pad, skip, lambda n: labels.extend(n.attrs[a] for a in ATTRS if n.attrs.get(a))).split("\n")
+    return [line for line in (re.sub(r"\s+", " ", l).strip() for l in lines + labels) if line.strip(" |")]
+
+def sentences(line):
+    found = []
+    for part in SENTENCE.split(line):
+        if found and ABBREVIATION.search(found[-1]):
+            found[-1] += " " + part
+        else:
+            found.append(part)
+    return found
+
+def unlabelled(line, beside=None):
+    # "organic" or "unpaid" said of posts, per sentence: beside the handle given, or else beside
+    # one in the same sentence. Yields (word, sentence, where).
+    for sentence in sentences(LINKS.sub(" ", line)):
+        handle = HANDLE.search(sentence)
+        where = beside or (handle and "beside %s" % handle.group(0))
+        if where:
+            for match in UNLABELLED.finditer(NAMES.sub(" ", sentence)):
+                yield match.group(0).lower(), sentence, where
+
+def paid_label(nodes, regions):
+    mentions = [n for n in nodes if "data-mention" in n.attrs]
+    if question_code(regions) not in PAID_CODES and not mentions:
+        return []
+    # data-own marks the brand's own posts or records, where "organic" and "unpaid" are right.
+    skip = lambda n: exempt(n) or "data-own" in n.attrs
+    shown = lambda n: not any(a.tag in SKIP or skip(a) for a in [n] + ancestors(n))
+    hits = {}
+    def read(lines, beside=None):
+        # One hit per word and sentence, so a table row read twice is reported once.
+        for line in lines:
+            for word, sentence, where in unlabelled(line, beside):
+                hits.setdefault((word, sentence), where)
+    read(rows(nodes[0], skip))
+    # A table that names a handle in any row is read whole, so a column heading counts.
+    for table in (n for n in nodes if n.tag == "table" and shown(n)):
+        lines = rows(table, skip)
+        handle = next((m.group(0) for m in map(HANDLE.search, (LINKS.sub(" ", l) for l in lines)) if m), None)
+        if handle:
+            read(lines, "in a table with %s" % handle)
+    for node in (n for n in mentions if shown(n)):
+        read(rows(node, skip), "on another account's post")
+    return ["says \"%s\" %s: say \"paid label\" or \"no paid label\", or mark the brand's own posts or records with data-own"
+            % (word, where) for word, where in sorted({(w, where) for (w, _), where in hits.items()})[:5]]
+
+def r11(nodes, regions, out):
     kept = list(walk(nodes[0], keep=lambda n: n.tag not in SKIP and not exempt(n)))
     shown = " ".join([text(nodes[0], gap=" ", skip=exempt)] +
                      [n.attrs[a] for n in kept for a in ATTRS if n.attrs.get(a)])
-    shown = re.sub(r"https?://\S+|\S+@\S+\.\w+|(?<!\w)[@#][\w.]+", " ", shown)
+    shown = NAMES.sub(" ", LINKS.sub(" ", shown))
     problems = []
     for token in sorted(set(re.findall(r"[A-Za-z0-9]+(?:_+[A-Za-z0-9]+)+", shown))):
         parts = token.lower().split("__")
@@ -291,18 +509,17 @@ def r11(nodes, regions):
     for pattern, kind in BANNED:
         for hit in sorted(set(pattern.findall(shown)))[:5]:
             problems.append("names %s: \"%s\"" % (kind, hit))
-    return problems
+    return problems + paid_label(nodes, regions)
 
 def post_label(post, index):
     link = next((n.attrs.get("href") for n in walk(post) if n.tag == "a" and n.attrs.get("href")), "")
     return (post.attrs.get("data-post") or "").strip() or link or "cited post %d" % index
 
-def r13(nodes, regions):
+def r13(nodes, regions, out):
     # Every cited post (data-post) shows each metric its question's row requires (data-metric), or
     # names it in data-missing="{metric}: {reason}" with the reason shown on the post. Returns None
     # (n/a) on a page with no question code and no cited post.
-    scope = (regions.get("scope") or [None])[0]
-    code = ((scope.attrs.get("data-question") or "") if scope is not None else "").strip().upper()
+    code = question_code(regions)
     posts = [n for n in nodes if "data-post" in n.attrs]
     if not code:
         if posts:
@@ -482,7 +699,7 @@ def fresh_problems(key, node):
         problems.append("the freshness entry for %s has no fetch time, so it says \"last changed\", never \"last fetched\"" % key)
     return problems
 
-def r14(nodes, regions):
+def r14(nodes, regions, out):
     # Every subject account the page cites (data-account, and the scope's data-accounts) has one
     # freshness entry (data-fresh) in the source line: the newest post Atlas holds, and when Atlas
     # last fetched the account or, with no freshness on record, when it last changed. A cited post
@@ -514,11 +731,11 @@ def r14(nodes, regions):
     def reports(node):
         # A platform the scope reports on: posts counted, or 0 with "no posts" or "no data". "Not
         # covered" means no linked account, so it reports on none.
-        posts = (node.attrs.get("data-posts") or "").replace(",", "").strip()
-        if not (posts.isascii() and posts.isdigit()) or not node.attrs.get("data-platform"):
+        posts = whole(node.attrs.get("data-posts"))
+        if posts is None or not node.attrs.get("data-platform"):
             return False  # a malformed count is R2's to report
         shown = text(node, gap=" ")
-        return posts != "0" or ((has_phrase(shown, "no posts") or has_phrase(shown, "no data")) and not has_phrase(shown, "not covered"))
+        return posts != 0 or ((has_phrase(shown, "no posts") or has_phrase(shown, "no data")) and not has_phrase(shown, "not covered"))
     reporting = [n for n in walk(scope) if reports(n)] if scope is not None else []
     if reporting and not (scope.attrs.get("data-accounts") or "").strip():
         problems.append("the scope reports posts or their absence but names no account; list them in the scope's data-accounts")
@@ -580,14 +797,170 @@ def r14(nodes, regions):
         problems.append("the page cites mention posts but the source line has no data-fresh=\"mentions\" entry")
     return problems
 
-# Only these scripted checks can be N/A (reader-standard.md; quality-review.md, section 3). R13 and
-# R14 are n/a on their own terms, never through data-na.
-CAN_BE_NA = {"R2", "R6"}
-NA_REASON = {"R13": "the page names no question code and cites no post",
-             "R14": "the page cites no account and no post, its scope reports on no account, and it has no freshness entry"}
+# The like-for-like check (comparisons.md). A side with this many posts or fewer is marked
+# "directional"; a share within this many points of its group's share of the whole is "in line with"
+# the group's size. Kept equal to comparisons.md by scripts/check-artifact-standard.sh.
+DIRECTIONAL_MAX = 20
+IN_LINE_POINTS = 5
+COMPARES = ("groups", "periods", "brands", "kinds", "share")
+# data-kind values. "mixed" is a side the run could not split into one kind.
+KIND_NAMES = {"paid-label": "posts with a paid label", "shop": "TikTok Shop selling posts",
+              "no-paid-label": "posts with no paid label", "mixed": "a mix of kinds"}
+# The checks a comparison may fail and stay on the page, saying so. "Enough posts" is not one: its
+# line is the "directional" mark itself.
+MAY_FAIL = ("same-kind", "mentions", "share-size")
+
+def percent(value):
+    value = (value or "").strip().rstrip("%").strip()
+    return value if re.fullmatch(r"\d+(?:\.\d+)?", value) else None
+
+def shows_percent(shown, value, times=1):
+    return len(re.findall(r"(?<![\d.,])%s\s*(?:%%|percent\b)" % re.escape(value), shown)) >= times
+
+def shows_posts(shown, posts):
+    # The post count as a count of posts ("18 posts", "18 TikTok Shop posts", "1 post"), with up to
+    # two words between the number and "posts", not any number in the text.
+    return re.search(r"(?<![\d.,])%d\s+(?:[A-Za-z][\w'-]*\s+){0,2}posts?\b" % posts, shown, re.I) is not None
+
+def declared(node):
+    # data-fails="{check}: {line}; ..." as ({check: line}, [entries that are not that shape]).
+    fails, bad = {}, []
+    for entry in (node.attrs.get("data-fails") or "").split(";"):
+        if not entry.strip():
+            continue
+        name, sep, line = entry.partition(":")
+        if sep and name.strip().lower() in MAY_FAIL and line.strip():
+            fails[name.strip().lower()] = line.strip()
+        else:
+            bad.append(entry.strip())
+    return fails, bad
+
+def sides_of(comparison):
+    # The data-side elements of this comparison, not those of a comparison nested in it.
+    inner = lambda n: n is not comparison and "data-compare" in n.attrs
+    return [n for n in walk(comparison, keep=lambda n: not inner(n)) if "data-side" in n.attrs]
+
+def thin_problems(owner, what, label):
+    # A side, or a share's group, of DIRECTIONAL_MAX posts or fewer shows "directional" and its count.
+    posts = whole(owner.attrs.get("data-posts"))
+    if posts is None or posts > DIRECTIONAL_MAX:
+        return []
+    said = text(owner, gap=" ")
+    if not has_phrase(said, "directional"):
+        return ["%s: %s has %d posts, %d or fewer, but is not marked \"directional\" beside its number"
+                % (label, what, posts, DIRECTIONAL_MAX)]
+    if not shows_posts(said, posts):
+        return ["%s: %s is marked directional but does not show its post count (\"%d post%s\")"
+                % (label, what, posts, "" if posts == 1 else "s")]
+    return []
+
+def share_problems(node, label, fails):
+    shown, problems = text(node, gap=" "), []
+    share, group = percent(node.attrs.get("data-share")), percent(node.attrs.get("data-group-share"))
+    if share is None:
+        problems.append("%s states a share but has no data-share as a number" % label)
+    elif not shows_percent(shown, share):
+        problems.append("%s does not show its share (%s%%)" % (label, share))
+    if group is None:
+        # Only a share whose whole the run does not know may say so and stay.
+        if "share-size" not in fails:
+            problems.append("%s states a share with no data-group-share: show the group's share of the whole beside it" % label)
+    elif "share-size" in fails:
+        problems.append("%s gives the group's share of the whole (%s%%), so it cannot also note share-size in data-fails" % (label, group))
+        del fails["share-size"]
+    elif not shows_percent(shown, group, times=2 if group == share else 1):
+        problems.append("%s does not show the group's share of the whole (%s%%) beside the share" % (label, group))
+    elif share is not None and abs(float(share) - float(group)) <= IN_LINE_POINTS and not has_phrase(shown, "in line with"):
+        problems.append("%s: the share (%s%%) is within %d points of the group's size (%s%%) but the page does not say it is \"in line with\" it"
+                        % (label, share, IN_LINE_POINTS, group))
+    if "data-posts" in node.attrs:
+        problems += thin_problems(node, "the group", label)
+    return problems
+
+def sides_problems(node, label, fails, method):
+    sides, problems, kinds = sides_of(node), [], []
+    across_kinds = (node.attrs.get("data-compare") or "").strip().lower() == "kinds"
+    if len(sides) < 2:
+        problems.append("%s marks %d data-side; a comparison has at least two" % (label, len(sides)))
+    for number, side in enumerate(sides, 1):
+        what = "side %d (\"%s\")" % (number, (side.attrs.get("data-side") or "").strip() or text(side, gap=" ")[:40])
+        if whole(side.attrs.get("data-posts")) is None:
+            problems.append("%s: %s has no whole-number data-posts" % (label, what))
+        problems += thin_problems(side, what, label)
+        kind = (side.attrs.get("data-kind") or "").strip().lower()
+        kinds.append(kind)
+        if kind not in KIND_NAMES:
+            problems.append("%s: %s has data-kind \"%s\"; use one of %s" % (label, what, kind, ", ".join(KIND_NAMES)))
+        elif kind == "mixed" and "same-kind" not in fails:
+            problems.append("%s: %s mixes kinds of post; split it, drop the comparison, or note same-kind in data-fails with the line shown" % (label, what))
+        if "data-mentions" in side.attrs and "mentions" not in fails:
+            how = (side.attrs.get("data-mentions") or "").strip()
+            if not how:
+                problems.append("%s: %s counts mentions but data-mentions does not say how they were found" % (label, what))
+            elif not has(method, how):
+                problems.append("%s: %s counts mentions, but the method section does not show how they were found (%s)" % (label, what, how))
+    named = sorted({k for k in kinds if k in KIND_NAMES and k != "mixed"})
+    if "mixed" in kinds or "same-kind" in fails:
+        return problems
+    if across_kinds and len(named) < 2:
+        problems.append("%s is marked data-compare=\"kinds\" but its sides hold one kind; a kinds comparison sets two different kinds side by side" % label)
+    elif not across_kinds and len(named) > 1:
+        problems.append("%s sets %s side by side; compare one kind, mark it data-compare=\"kinds\" when the kinds are what it compares, or note same-kind in data-fails"
+                        % (label, " and ".join(KIND_NAMES[k] for k in named)))
+    return problems
+
+def r15(nodes, regions, out):
+    # Every marked comparison (data-compare) passes the four like-for-like checks of comparisons.md,
+    # or names the one it fails in data-fails="{check}: {line}" with that line shown in it. Returns
+    # None on a page that marks no comparison: the script cannot tell whether it makes one. Puts in
+    # out["comparisons"] what the page check block's "comparisons" holds: each comparison with its
+    # sides' post counts and kinds, or a share with its group's share, and the failures it may keep.
+    marked = [n for n in nodes if "data-compare" in n.attrs]
+    if not marked:
+        return None
+    method = " ".join(text(m, gap=" ") for m in regions.get("method", []))
+    problems = []
+    for index, node in enumerate(marked, 1):
+        shown = text(node, gap=" ")
+        label = "comparison %d (\"%s\")" % (index, shown[:50])
+        compare = (node.attrs.get("data-compare") or "").strip().lower()
+        fails, bad = declared(node)
+        for entry in bad:
+            problems.append("%s has a data-fails entry \"%s\" that is not \"{check}: {line}\" with check one of %s"
+                            % (label, entry, ", ".join(MAY_FAIL)))
+        for name, line in sorted(fails.items()):
+            if not has(shown, line):
+                problems.append("%s notes that it fails %s but does not show that line (%s)" % (label, name, line))
+                del fails[name]
+        entry = {"compare": compare,
+                 "sides": [{"label": (s.attrs.get("data-side") or "").strip() or text(s, gap=" ")[:60],
+                            "kind": (s.attrs.get("data-kind") or "").strip().lower() or None,
+                            "posts": whole(s.attrs.get("data-posts")),
+                            "mentions": "data-mentions" in s.attrs} for s in sides_of(node)]}
+        if compare not in COMPARES:
+            problems.append("%s has data-compare \"%s\"; use one of %s" % (label, compare, ", ".join(COMPARES)))
+        elif compare == "share":
+            entry.update(share=percent(node.attrs.get("data-share")), groupShare=percent(node.attrs.get("data-group-share")),
+                         posts=whole(node.attrs.get("data-posts")))
+            problems += share_problems(node, label, fails)
+        else:
+            problems += sides_problems(node, label, fails, method)
+        entry["fails"] = sorted(fails)
+        out.setdefault("comparisons", []).append(entry)
+    return problems
+
+# Only these scripted checks can be N/A through data-na (reader-standard.md; quality-review.md,
+# section 3). One named there while the page carries the attribute in NA_REFUSED fails instead.
+CAN_BE_NA = {"R2", "R6", "R15"}
+NA_REFUSED = {"R15": ("data-compare", "the page marks a comparison")}
+# What a check that returns None reports: n/a on its own terms, or unmarked, to be judged by reading.
+NO_RESULT = {"R7": ("unmarked", "the page cites no post and marks no explanation; read it for one, and mark every explanation"),
+             "R13": ("n/a", "the page names no question code and cites no post"),
+             "R14": ("n/a", "the page cites no account and no post, its scope reports on no account, and it has no freshness entry"),
+             "R15": ("unmarked", "the page marks no comparison; read it for one, and put R15 in data-na only when it compares nothing")}
 CHECKS = (("R1", "Reader and scope", r1), ("R2", "Platforms covered", r2),
-          ("R6", "Decisions kept separate", r6), ("R11", "Plain language", r11),
-          ("R13", "Required metrics", r13), ("R14", "Data freshness", r14))
+          ("R6", "Decisions kept separate", r6), ("R7", "Real evidence, linked", r7), ("R11", "Plain language", r11),
+          ("R13", "Required metrics", r13), ("R14", "Data freshness", r14), ("R15", "Like for like", r15))
 
 def check(path):
     tree = Tree()
@@ -601,33 +974,43 @@ def check(path):
             regions.setdefault(page_name(node), []).append(node)
     scope = (regions.get("scope") or [None])[0]
     na = set((scope.attrs.get("data-na") or "").upper().split()) if scope is not None else set()
-    results = []
+    results, out = [], {}
     for code, name, run in CHECKS:
-        if code in na and code in CAN_BE_NA:
+        attr, why = NA_REFUSED.get(code, (None, None))
+        if code in na and attr and any(attr in n.attrs for n in nodes):
+            results.append((code, name, "fail", ["%s is in data-na, but %s; remove it from data-na" % (code, why)]))
+        elif code in na and code in CAN_BE_NA:
             results.append((code, name, "n/a", []))
         elif code in na:
             results.append((code, name, "fail", ["%s is never N/A; remove it from data-na" % code]))
         elif code != "R11" and not regions:
             results.append((code, name, "unmarked", ["the page has no data-page markup; judge this check by reading"]))
         else:
-            problems = run(nodes, regions)
+            problems = run(nodes, regions, out)
             if problems is None:
-                results.append((code, name, "n/a", [NA_REASON[code]]))
+                results.append((code, name, NO_RESULT[code][0], [NO_RESULT[code][1]]))
             else:
                 results.append((code, name, "fail" if problems else "pass", problems))
-    return results
+    return results, out
+
+# What a check lists beside its result line, for the page check block (SKILL.md, section 7).
+LISTED = {"R7": "explanations", "R15": "comparisons"}
 
 def main(paths):
     status = 0
     for path in paths:
         try:
-            results = check(path)
+            results, listed = check(path)
         except Exception as error:
             print(json.dumps({"page": path, "check": "error", "result": "error", "problems": [repr(error)]}))
             status = 2
             continue
         for code, name, result, problems in results:
-            print(json.dumps({"page": path, "check": code, "name": name, "result": result, "problems": problems}))
+            line = {"page": path, "check": code, "name": name, "result": result, "problems": problems}
+            field = LISTED.get(code)
+            if field and listed.get(field):
+                line[field] = listed[field]
+            print(json.dumps(line))
             if result == "fail" and status == 0:
                 status = 1
     return status
@@ -639,26 +1022,19 @@ def visible(path):
     with open(path, encoding="utf-8", errors="replace") as f:
         tree.feed(f.read())
     tree.close()
-    out, stack = [], [tree.root]
-    while stack:
-        item = stack.pop()
-        if isinstance(item, str):
-            out.append(item)
-            continue
-        if item.tag in SKIP or (exempt(item) and not quoted(item)):
-            continue
+    def wrap(item):
         pad = "" if item.tag in INLINE else ("\n" if item.tag in BLOCK or item.tag in ("tr", "td", "th", "br") else " ")
         # Words a screen reader says or a field shows, which R11 checks too: alt text, any aria-label
         # (an icon button, a role="img" chart), and a field's placeholder or value.
         image = item.tag in ("svg", "img") or item.attrs.get("role") == "img"
         label = item.attrs.get("alt") or item.attrs.get("aria-label") or ""
         field = (item.attrs.get("placeholder") or item.attrs.get("value") or "") if item.tag in ("input", "textarea") else ""
-        stack.append(("]" if quoted(item) else "") + pad)
-        stack.extend(reversed(item.kids))
-        stack.append(pad + ("[quoted: " if quoted(item) else "")
-                     + (("[image: %s] " if image else "[label: %s] ") % label if label else "")
-                     + ("[field: %s] " % field if field else ""))
-    lines = (re.sub(r"[ \t\r\f\v]+", " ", line).strip() for line in "".join(out).split("\n"))
+        return (pad + ("[quoted: " if quoted(item) else "")
+                + (("[image: %s] " if image else "[label: %s] ") % label if label else "")
+                + ("[field: %s] " % field if field else ""),
+                ("]" if quoted(item) else "") + pad)
+    shown = flow(tree.root, wrap, lambda n: exempt(n) and not quoted(n))
+    lines = (re.sub(r"[ \t\r\f\v]+", " ", line).strip() for line in shown.split("\n"))
     return "\n".join(line for line in lines if line)
 
 def show(paths):
