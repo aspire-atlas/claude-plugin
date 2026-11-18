@@ -1,4 +1,4 @@
-{"rows": 52, "encoding": "utf-8", "kept": ["Name", "Instagram", "Notes"], "left_out": [], "cells_left_out": 20}
+{"rows": 59, "encoding": "utf-8", "kept": ["Name", "Instagram", "Notes"], "left_out": [], "cells_left_out": 23}
 {"next": 0}
 {"row": 2, "cells": {"Name": "I0", "Instagram": "@i0", "Notes": "IBAN [left out] 2024"}}
 {"row": 3, "cells": {"Name": "I1", "Instagram": "@i1", "Notes": "[left out] 50 EUR"}}
@@ -52,3 +52,10 @@
 {"row": 51, "cells": {"Name": "R1", "Instagram": "@r1", "Notes": "no"}}
 {"row": 52, "cells": {"Name": "R2", "Instagram": "@r2", "Notes": "no"}}
 {"row": 53, "cells": {"Name": "R3", "Instagram": "@r3", "Notes": "no"}}
+{"row": 54, "cells": {"Name": "Q0", "Instagram": "@q0", "Notes": "[left out] [left out]"}}
+{"row": 55, "cells": {"Name": "Q1", "Instagram": "@q1", "Notes": "[left out] 2024"}}
+{"row": 56, "cells": {"Name": "Q2", "Instagram": "@q2", "Notes": "[left out] 12 EUR"}}
+{"row": 57, "cells": {"Name": "P0", "Instagram": "@p0", "Notes": "no"}}
+{"row": 58, "cells": {"Name": "P1", "Instagram": "@p1", "Notes": "no"}}
+{"row": 59, "cells": {"Name": "P2", "Instagram": "@p2", "Notes": "no"}}
+{"row": 60, "cells": {"Name": "P3", "Instagram": "@p3", "Notes": "no"}}
