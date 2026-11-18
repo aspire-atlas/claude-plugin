@@ -9,10 +9,12 @@ import {
   ATLAS_READS, ATLAS_WRITES, HARNESS_VERSION, barChecks, compareRuns, extractPageCheckScript, fill, findJsonWithKey, configuredQuestions,
   findPage, forBaseline, normalizeResult, readerResult, checkNames as namesFrom, stripTitlePrefix, parsePageCheck, parseStream, renderQuestion, renderRun, rIds, stripDataUris,
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, checkChat, chatCodes, chatFailures, noChat, normalizeRun,
-  askRecords, checkApprovals, noApprovals, placeholderKeys, wasAnswered,
-  type AnswerRule, type ApprovalChecks, type ChatChecks, type ChatRules, type CheckDef, type PageChecks, type QuestionResult, type Result, type RunResults, type Turn,
+  placeholderKeys,
+  type ChatChecks, type ChatRules, type CheckDef, type PageChecks, type QuestionResult, type Result, type RunResults, type Turn,
 } from './lib'
 import { renderPage } from '../render-page'
+import { askRecords, wasAnswered, type AnswerRule } from './answers'
+import { checkApprovals, noApprovals, type ApprovalChecks } from './approvals'
 import { runTurn } from './session'
 
 const HERE = import.meta.dir
@@ -414,8 +416,10 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
   let model: string | null = null
   let prompt = `/aspire:aspire ${fill(question.ask, { brand })}` + (local.organization ? ` Use the ${local.organization} organization.` : '') +
     (options.titlePrefix ? ` Start the page's title with "${options.titlePrefix} · ".` : '')
-  let rounds = 0
+  // The text replies sent, and the pickers answered: every one, which the limit counts, and the main thread's.
   let replies = 0
+  let answered = 0
+  let answeredMain = 0
   let link: string | null = null
   let file: string | null = null
   let last: Turn | null = null
@@ -425,7 +429,6 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
   let compactions = 0
   for (;;) {
     console.error(`  ${question.code}: turn ${replies + 1}`)
-    const answered = turns.reduce((n, earlier) => n + earlier.asks.filter(wasAnswered).length, 0)
     const turn = await runTurn({
       prompt, cwd: work, out: join(qDir, `turn-${replies + 1}.jsonl`), timeoutMin: options.timeoutMin, resume: session, plugin: PLUGIN,
       // With a token the connector comes from the harness's own file and nothing else loads. With a sign-in it is
@@ -435,8 +438,8 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
     })
     last = turn
     turns.push(turn)
-    // A confirmation round is one picker the harness answered, or one text reply it sent.
-    rounds += turn.asks.filter(ask => ask.main && wasAnswered(ask)).length
+    answered += turn.asks.filter(wasAnswered).length
+    answeredMain += turn.asks.filter(ask => ask.main && wasAnswered(ask)).length
     session = turn.sessionId ?? session
     model = turn.model ?? model
     billed += turn.billedTokens
@@ -458,9 +461,13 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
     const others = Object.keys(turn.connectors).filter(name => name !== connector && !refused.includes(name) && /atlas/i.test(name) && turn.connectors[name] === 'connected')
     if (replies === 0 && others.length) fail(`another Atlas connector is connected: ${others.join(', ')}. Disconnect it (claude, then /mcp) so the rerun can only reach "${connector}".`)
     // The harness ends a turn itself at a picker it will not answer: that turn did not fail.
-    const declined = turn.asks.find(ask => ask.declined)?.declined
+    const declined = turn.asks.find(ask => ask.declined)?.declined ?? null
     if ((turn.failed && !declined) || !session) {
       problems.push(`The run stopped on turn ${replies + 1} without publishing a page`)
+      break
+    }
+    if (declined === 'limit') {
+      problems.push(`No page after ${options.maxAsks} pickers`)
       break
     }
     if (page.finished) {
@@ -468,16 +475,11 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
       if (!existsSync(captured)) problems.push('The flow finished its run without a page')
       break
     }
-    if (declined) {
-      problems.push(`No page after ${options.maxAsks} pickers`)
-      break
-    }
     if (replies >= options.maxRounds) {
       problems.push(`No page after ${replies} replies`)
       break
     }
     replies += 1
-    rounds += 1
     // A turn that ended without a picker asked in text, or paused: the fixed reply answers it.
     prompt = question.reply ?? config.defaultReply
   }
@@ -486,12 +488,14 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
   // The setup reply, the storyline check-ins and the close-out, counted for arrows, "vs" and codes (docs/STANDARD.md, C5).
   // The last reply is a close-out only when the run published or its agent finished. The messages and the words
   // each count matched stay in the run folder, which is never committed or uploaded.
-  const closed = Boolean(link) || Boolean(last && findPage(last).finished && (!last.failed || last.asks.some(ask => ask.declined)))
+  const closed = Boolean(link) || Boolean(last && findPage(last).finished && (!last.failed || last.asks.some(ask => ask.declined === 'finished')))
   const chat = checkChat(turns, closed, chatRules)
   writeFileSync(join(qDir, 'chat.json'), JSON.stringify({ ...chat.checks, text: chat.messages, hits: chat.hits }, null, 2) + '\n')
   // Every picker of the run: the text above it, each question with its options, and the answer given. With
   // them, whether every approval the run asked for was named in the setup reply (docs/STANDARD.md, Q3).
   const approvals = checkApprovals(turns)
+  // A confirmation round is one picker of the main thread's that the harness answered, or one text reply it sent.
+  const rounds = answeredMain + replies
   writeFileSync(join(qDir, 'asks.json'), JSON.stringify({ approvals, asks: askRecords(turns) }, null, 2) + '\n')
   return { link, rounds, transcriptTokens: last?.contextTokens ?? 0, billedTokens: billed, compactions, costUsd: cost, problems, model, chat: chat.checks, approvals }
 }
@@ -632,8 +636,10 @@ async function main() {
   }
 
   // A value still copied from local.example.json would send the flow off to pick a brand, or an organization, on
-  // its own. Only what this run reads is checked: the entry of a question that is not running cannot mislead it.
-  const placeholders = placeholderKeys({ ...local, questions: Object.fromEntries(questions.map(question => [question.code, local.questions?.[question.code]])) })
+  // its own. Only what this run reads is checked: the entries of the questions it runs, and, for a rerun, the
+  // connector, the organization and the allowed names. Grading a page file reads only the question's entry.
+  const entries = Object.fromEntries(questions.map(question => [question.code, local.questions?.[question.code]]))
+  const placeholders = placeholderKeys(options.page ? { questions: entries } : { ...local, questions: entries })
   if (placeholders.length) fail(`local.json still holds a placeholder at ${placeholders.join(', ')}. Fill ${placeholders.length === 1 ? 'it' : 'each one'} in.`)
 
   let token = ''

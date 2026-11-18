@@ -1,12 +1,13 @@
 // One turn of a rerun, driven through the Agent SDK instead of `claude -p`. A headless `claude -p` session has
 // no AskUserQuestion tool, so the flow skips its setup picker and its storyline question. Through the SDK the
 // tool is there, and each call comes to the handler below, which answers it from the answer list
-// (questions.json) the way the tool's own picker would. The plugin, the prompt and the tool lists are the
-// ones a person's session gets: nothing tells the flow it is under test.
+// (questions.json) the way the tool's own picker would. The plugin, the prompt, Claude Code's own system
+// prompt and the tool lists are the ones a person's session gets: nothing tells the flow it is under test.
 
 import { appendFileSync, writeFileSync } from 'node:fs'
 import { query, type Options, type PermissionResult } from '@anthropic-ai/claude-agent-sdk'
-import { ANSWER_EVENT, ASK_TOOL, answersFor, findPage, summarizeTurn, type AnswerRule, type Event, type Turn } from './lib'
+import { answersFor, type AnswerRule } from './answers'
+import { ANSWER_EVENT, ASK_TOOL, findPage, summarizeTurn, type Declined, type Event, type Turn } from './lib'
 
 export type TurnOptions = {
   prompt: string
@@ -40,18 +41,26 @@ export async function runTurn(options: TurnOptions): Promise<Turn> {
   writeFileSync(options.out, '')
   writeFileSync(`${options.out}.err`, '')
   let asks = 0
+  // Whether the run has its page. It is worked out from the transcript at a picker, only when the transcript
+  // has grown since the last one, and it stays true once it is.
+  let done = false
+  let read = 0
+  const WHY: Record<Declined, string> = { finished: 'the run had finished', limit: 'the harness had answered its limit of pickers' }
 
   const canUseTool = async (name: string, input: Record<string, unknown>, context: { toolUseID: string }): Promise<PermissionResult> => {
     // Only the picker comes here to be answered. Any other tool that reaches the handler is one the tool
     // lists did not allow, which `claude -p` refuses without asking.
     if (name !== ASK_TOOL) return { behavior: 'deny', message: 'This tool is not allowed in an eval rerun.' }
     // A packet with no page is not the end: its proposals and questions still stand between the run and its page.
-    const page = findPage(summarizeTurn(events))
-    const done = Boolean(page.link) || (page.finished && Boolean(page.file))
-    const declined = done ? 'the run had finished' : asks >= options.maxAsks ? 'the harness had answered its limit of pickers' : null
+    if (!done && read < events.length) {
+      const page = findPage(summarizeTurn(events))
+      done = Boolean(page.link) || (page.finished && Boolean(page.file))
+      read = events.length
+    }
+    const declined: Declined | null = done ? 'finished' : asks >= options.maxAsks ? 'limit' : null
     if (declined) {
       record({ type: ANSWER_EVENT, tool_use_id: context.toolUseID, declined })
-      return { behavior: 'deny', message: `The eval run ends here: ${declined}.`, interrupt: true }
+      return { behavior: 'deny', message: `The eval run ends here: ${WHY[declined]}.`, interrupt: true }
     }
     asks += 1
     const answers = answersFor(input, options.answers)
@@ -69,6 +78,8 @@ export async function runTurn(options: TurnOptions): Promise<Turn> {
     abortController: abort,
     // The `claude` on the PATH, so the reruns and the grading sessions run the same Claude Code.
     pathToClaudeCodeExecutable: Bun.which('claude') ?? undefined,
+    // Claude Code's own system prompt, as `claude -p` and a person's session have it. Left out, the SDK sends none.
+    systemPrompt: { type: 'preset', preset: 'claude_code' },
     plugins: [{ type: 'local', path: options.plugin }],
     permissionMode: 'acceptEdits',
     allowedTools: options.allowedTools,

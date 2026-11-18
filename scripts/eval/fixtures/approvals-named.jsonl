@@ -11,5 +11,5 @@
 {"type": "user", "message": {"content": [{"type": "tool_result", "tool_use_id": "t2", "content": "```result-packet\n{\"page\": \"https://claude.ai/artifact/AbC123\", \"storyline\": {\"pass\": \"build\"}}\n```"}]}}
 {"type": "assistant", "message": {"content": [{"type": "text", "text": "The page is ready: https://claude.ai/artifact/AbC123. It ranks 12 creators."}]}}
 {"type": "assistant", "message": {"content": [{"type": "tool_use", "id": "q3", "name": "AskUserQuestion", "input": {"questions": [{"header": "Next", "question": "What next?", "multiSelect": false, "options": [{"label": "Draft the outreach (Recommended)", "description": ""}, {"label": "Stop here", "description": ""}]}]}}]}}
-{"type": "eval_answer", "tool_use_id": "q3", "declined": "the run had finished"}
+{"type": "eval_answer", "tool_use_id": "q3", "declined": "finished"}
 {"type": "result", "session_id": "s1", "result": "", "is_error": true}
