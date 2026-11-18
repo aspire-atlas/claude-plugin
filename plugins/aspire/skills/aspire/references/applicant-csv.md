@@ -108,11 +108,11 @@ def mod97(s):
 
 
 def is_card(core, ends):
-    # The whole card rule: the card shape, 13 to 19 digits that pass Luhn, and end groups that are SHORT
-    # (any 4 digits beside an Amex number).
+    # The whole card rule in one place (the shapes are explained beside CARD_CORE and SHORT).
     digits = core.replace(" ", "")
+    amex = bool(AMEX.fullmatch(digits))
     return (bool(CARD_CORE.fullmatch(core)) and 13 <= len(digits) <= 19 and luhn(digits)
-            and all(SHORT.fullmatch(x) or AMEX.fullmatch(digits) and len(x) == 4 for x in ends))
+            and all(SHORT.fullmatch(x) or (amex and len(x) == 4) for x in ends))
 
 
 def card(m):
