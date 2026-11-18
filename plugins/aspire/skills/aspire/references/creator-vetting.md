@@ -650,13 +650,14 @@ In this order; the first rule that applies decides, and the page names it:
    fails that the saved call predates: then **Maybe**, naming what is new since.
 2. **Hard stops.** A saved `competitor` handle, a `block` red line that fails, a
    `vetting:hard-rejects` rule that fails, or, in an applicant review run, a check the review's
-   `reject:` line lists that fails or a form `stop:` rule that matches → **Reject**, naming the
-   rule.
+   `reject:` line lists that fails, a form `stop:` rule that matches, or an application answer
+   that plainly says the applicant fails a criterion worded as a must → **Reject**, naming the
+   rule or quoting the answer.
 3. **Not enough to go on.** The handle could not be resolved, or fewer than 5 posts in 180
    days → **Can't vet**, with the reason. Never reject a creator for missing data.
 4. **Safety caps.** Any other Fail, a `flag` or `escalate` red line, or two or more Flags →
    at most **Maybe**. In an applicant review run, so does a `required:` form rule that is not
-   met, or an application answer saying the applicant fails a criterion worded as a must.
+   met, or an application answer too unclear to tell whether a must criterion is met.
 5. **Fit score** against `vetting:thresholds` (default 70 and 50): **Approve** at or above
    the approve line, **Maybe** at or above the maybe line, **Reject** under it. In a creator-ads
    lane this is the score without Budget vs target (**Creator-ads lanes**). In an applicant review

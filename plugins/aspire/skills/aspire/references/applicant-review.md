@@ -498,12 +498,17 @@ counts a bio line: a lead that the posts confirm or contradict.
 - A response that says the applicant does **not** meet a criterion ("he is not overweight", "we
   don't live in the US") is a miss on that component: it earns nothing. When the criteria word
   that criterion as a must ("must", "has to", "only", or a "not" the creator has to meet, such as
-  "the dog must be overweight"), the response also caps the call at Maybe (**The recommendation**,
-  rule 4): a strong account never outscores the applicant's own word that they fail a must, and a
-  fit score Reject stays a Reject. Only posts that clearly show otherwise (the dog visibly
-  overweight in recent posts) restore the points and lift the cap, and then the card names both.
-  Its Maybe question asks them to confirm it ("Confirm the dog is overweight: they said 'he is not
-  overweight'").
+  "the dog must be overweight"), the applicant's own word decides it:
+  - **A clear no rejects** (**The recommendation**, rule 2): the answer plainly says the must is
+    not met, with no hedge, no condition, and nothing else in it that meets the must ("he is not
+    overweight", "Not overweight.", "none", "0", "Her weight is pretty good right now", "Hes thick
+    - so not overweight but can still show the food in a fun way"). The
+    evidence names it: "Rejected: says the dog is not overweight ('he is not overweight'); the
+    campaign needs an overweight dog". A strong account or posts never outweigh it.
+  - **An unclear answer is a Maybe** (rule 4), never a reject: it hedges, guesses, or doesn't say
+    ("idk", "not sure", "a few", "he's a bit chunky maybe"), or part of it meets the must ("snorkie
+    none, husky 10lbs overweight"). Its Maybe question asks them to settle it ("Confirm the dog is
+    overweight: they said 'not sure'"). When in doubt whether an answer is clear, it is unclear.
 - **Topic evidence**, **Engagement quality**, **Cadence and recency**, and **Format match** stay
   from the posts and Atlas's figures only; a stated follower or engagement figure never replaces
   Atlas's.
@@ -593,6 +598,7 @@ stop: How many pounds overweight is your dog? < 3
 | J | Yes; "10-15" | Fit 66 | **Maybe** on fit: the boost is `unclear` (10 is not over 10, 15 is), so it boosts nothing |
 | K | Yes; "Dixie 8-10, Sky 10-15" | Fit 66 | **Maybe** on fit: the weight is `unclear` (two figures), quoted in the evidence for the team |
 | L | Yes; "Not overweight." | Fit 41 once audience fit counts the answer as a miss | **Reject** on fit: "Says the dog is not overweight; no recent post shows otherwise" |
-| L2 | Yes; "he is not overweight" | Fit 74, the dog in most posts | **Maybe** (rule 4): "the dog must be overweight" is a must, and their own answer says it is not met. Maybe question "Confirm the dog is overweight: they said 'he is not overweight'" |
+| L2 | Yes; "he is not overweight" | Fit 74, the dog in most posts | **Reject** (rule 2): "the dog must be overweight" is a must, and their own answer plainly says it is not met: "Rejected: says the dog is not overweight ('he is not overweight'); the campaign needs an overweight dog" |
+| L3 | Yes; "not sure, he's a bit chunky" | Fit 74 | **Maybe** (rule 4): the answer doesn't settle the must. Maybe question "Confirm the dog is overweight: they said 'not sure, he's a bit chunky'" |
 | M | Yes; "2-8" | Fit 74 | **Approve**: the `< 3` stop is `unclear` (2 is under 3, 8 is not), so it never rejects |
 | N | Yes; "4 kg" | Fit 72 | **Approve** on fit: 4 kg is 8.8 lb, not over 10, so no boost; the `< 3` stop is `not-matched` |
