@@ -324,7 +324,6 @@ words ("page check: 9 pass, 2 fixed, 1 n/a").
  "checks": {"R1": "pass", "R2": "pass", "R3": "fixed", "R4": "pass", "R5": "fixed", "R6": "pass",
             "R7": "pass", "R8": "pass", "R9": "n/a", "R10": "pass", "R11": "pass", "R12": "pass",
             "R13": "pass", "R14": "pass", "R15": "pass"},
- "recommendations": [{"text": "Approve the move of @creator_a to Tier 3", "cost": "money", "line": "Cost: about USD 162 a month (estimate, from October's revenue)."}], "trends": [],
  "comparisons": [{"compare": "kinds", "sides": [{"label": "TikTok Shop posts", "kind": "shop", "posts": 18, "mentions": false}, {"label": "Posts with no paid label", "kind": "no-paid-label", "posts": 212, "mentions": false}], "fails": []}], "explanations": [{"claim": "Top seller @makerjune", "evidence": 2, "searched": ["Instagram, TikTok and YouTube posts, all dates: captions, transcripts, descriptions", "the brand's site"], "saved": 1}], "draftNext": "pass", "stillFailing": [], "gaps": [], "scripted": "ran", "englishRead": {"status": "ran", "must": 1, "should": 0, "nice": 0, "musts": [{"id": "EN1", "applied": true}]}, "uxReview": {"status": "ran", "rendered": true, "...": "as ux-review.md sets it"}}
 ```
 
@@ -335,7 +334,7 @@ words ("page check: 9 pass, 2 fixed, 1 n/a").
   Every `n/a` has its reason here too, as "R2 n/a: {reason}".
 - `gaps`: on a page shared outside the team, what Atlas could not read, for the main thread to
   tell the requester. Empty on a team page, whose gaps are on the page.
-- `recommendations` and `trends`: as the script's R5 line lists them (`recommendations.md`); `[]` when the page has none. `comparisons`: every comparison on the page, as the script's R15 line lists them (`comparisons.md`); written by hand in the same shape when the script did not run; `[]` when the page compares nothing. `explanations`: as the script's R7 line lists them (`explanations.md`, section 5); `[]` when the page explains nothing. `scripted`: `ran`, `read` (no Python, or a page drawn in script), or `unmarked`. `englishRead`: as `english-read.md` sets it. `uxReview`: as `ux-review.md` sets it.
+- `comparisons`: every comparison on the page, as the script's R15 line lists them (`comparisons.md`); written by hand in the same shape when the script did not run; `[]` when the page compares nothing. `explanations`: as the script's R7 line lists them (`explanations.md`, section 5); `[]` when the page explains nothing. `scripted`: `ran`, `read` (no Python, or a page drawn in script), or `unmarked`. `englishRead`: as `english-read.md` sets it. `uxReview`: as `ux-review.md` sets it.
 
 ## 8. Required metrics, by kind of question
 

@@ -329,6 +329,8 @@ NO_SPEND = re.compile(r"(?i)\bno spend\b")
 UNPRICED = re.compile(r"(?i)\bcannot be priced\b")
 TEAM_VIEW = re.compile(r"(?i)\bteam view\b")
 ESTIMATE = re.compile(r"(?i)\bestimated?\b")
+# A recurring fee the saved terms set is not an estimate: its line says "fixed" and names the terms.
+FIXED = re.compile(r"(?i)\bfixed\b")
 # An amount with its currency: a currency code before or after the number ("USD 162", "162 USD") or
 # a symbol. Only these codes count, so "GMV 3,240" or "ROI 4" is not an amount.
 CURRENCIES = "USD|EUR|GBP|CAD|AUD|NZD|JPY|CHF|SEK|NOK|DKK|MXN|BRL|INR|SGD|HKD|CNY|KRW|ZAR|AED|PLN|ILS"
@@ -355,21 +357,36 @@ def step_items(region):
              and not NO_STEPS.search(text(n, gap=" "))]
     if found:
         return found
-    # Steps written as cards or paragraphs: each block directly in the section, headings aside.
-    return [k for k in region.kids if isinstance(k, Node) and k.tag not in SKIP and not re.fullmatch(r"h[1-6]", k.tag)
-            and text(k, gap=" ") and not NO_STEPS.search(text(k, gap=" "))]
+    # Steps written as cards or paragraphs: each block in the section, headings aside. A wrapper
+    # that only holds other blocks (no words of its own, no mark) is looked through.
+    def own_words(n):
+        return any(isinstance(k, str) and k.strip() for k in n.kids)
+    def blocks(n):
+        out = []
+        for k in n.kids:
+            if not isinstance(k, Node) or k.tag in SKIP or re.fullmatch(r"h[1-6]", k.tag) or not text(k, gap=" "):
+                continue
+            kids = [c for c in k.kids if isinstance(c, Node) and c.tag in BLOCK and text(c, gap=" ")]
+            if "data-recommend" not in k.attrs and kids and not own_words(k) and len(kids) == len([c for c in k.kids if isinstance(c, Node) and text(c, gap=" ")]):
+                out += blocks(k)
+            elif not NO_STEPS.search(text(k, gap=" ")):
+                out.append(k)
+        return out
+    return blocks(region)
 
-def cost_problems(node, label, out, outside):
+def cost_problems(node, label, outside):
     kind = (node.attrs.get("data-cost") or "").strip().lower()
     # Its own cost lines, never those of a recommendation nested in it.
     inner = lambda n: n is not node and "data-recommend" in n.attrs
     lines = [n for n in walk(node, keep=lambda n: n.tag not in SKIP and not inner(n)) if "data-cost-line" in n.attrs]
     line = " ".join(text(n, gap=" ") for n in lines)
-    out.setdefault("recommendations", []).append({"text": text(node, gap=" ")[:80], "cost": kind or None, "line": line[:160]})
     if kind not in COSTS:
         return ["%s has data-cost \"%s\"; say what it costs: %s" % (label, kind, ", ".join(COSTS))]
     if kind == "reader":
-        # A step the outside reader takes themselves: only on a shared page, and with no cost shown.
+        # A step the outside reader takes themselves: only on a shared page, never a decision, and
+        # with no cost shown. What a shared page asks its reader to approve still shows its cost.
+        if marked(node, "data-decision", around=True):
+            return ["%s is a decision, so it shows its cost; \"reader\" is only for a step the outside reader takes themselves" % label]
         if not outside:
             return ["%s is marked as the reader's own step, but the page is not shared outside the team; give its cost" % label]
         return ["%s is the reader's own step, so it shows no cost line" % label] if line else []
@@ -380,13 +397,13 @@ def cost_problems(node, label, out, outside):
         if not AMOUNT.search(line):
             problems.append("%s costs money but its cost line shows no amount with its currency" % label)
         period = (node.attrs.get("data-cost-period") or "").strip().lower()
-        if period not in ("", "once", "month"):
-            problems.append("%s has data-cost-period \"%s\"; use once or month" % (label, period))
+        if period not in ("", "month"):
+            problems.append("%s has data-cost-period \"%s\"; use month for a recurring cost, or leave it out" % (label, period))
         elif period == "month":
             if not PER_MONTH.search(line):
                 problems.append("%s is a recurring cost but its cost line does not give it per month" % label)
-            if not ESTIMATE.search(line):
-                problems.append("%s is a recurring cost but its cost line does not label it an estimate" % label)
+            if not ESTIMATE.search(line) and not FIXED.search(line):
+                problems.append("%s is a recurring cost but its cost line labels it neither an estimate nor fixed by saved terms" % label)
     elif kind == "none" and not NO_SPEND.search(line):
         problems.append("%s costs no money but its cost line does not say \"no spend\"" % label)
     elif kind == "team" and not TEAM_VIEW.search(line):
@@ -402,7 +419,7 @@ def cost_problems(node, label, out, outside):
                 problems.append("%s cannot be priced but its cost line does not show %s (%s)" % (label, what, value))
     return problems
 
-def trend_problems(node, label, out):
+def trend_problems(node, label):
     shown, problems = text(node, gap=" "), []
     if not has_phrase(shown, "trend to watch"):
         problems.append("%s is not labelled \"Trend to watch\"" % label)
@@ -429,7 +446,6 @@ def trend_problems(node, label, out):
     for step in (n for n in walk(node) if "data-recommend" in n.attrs):
         if (step.attrs.get("data-cost") or "").strip().lower() != "none" or not has_phrase(text(step, gap=" "), "watch"):
             problems.append("%s carries a next step other than watching its signals" % label)
-    out.setdefault("trends", []).append({"text": shown[:80], "signals": len(signals)})
     return problems
 
 def r5(nodes, regions, out):
@@ -453,9 +469,9 @@ def r5(nodes, regions, out):
             problems.append("one data-recommend wraps %d steps or decisions; mark each one with its own cost" % len(held))
     outside = shared(nodes)
     for index, node in enumerate(recommends, 1):
-        problems += cost_problems(node, "recommendation %d (\"%s\")" % (index, text(node, gap=" ")[:50]), out, outside)
+        problems += cost_problems(node, "recommendation %d (\"%s\")" % (index, text(node, gap=" ")[:50]), outside)
     for index, node in enumerate(trends, 1):
-        problems += trend_problems(node, "trend %d (\"%s\")" % (index, text(node, gap=" ")[:50]), out)
+        problems += trend_problems(node, "trend %d (\"%s\")" % (index, text(node, gap=" ")[:50]))
     return problems
 
 # R7's scripted part (explanations.md): every cited post links to itself, every explanation rests on
@@ -1134,7 +1150,7 @@ def check(path):
     return results, out
 
 # What a check lists beside its result line, for the page check block (SKILL.md, section 7).
-LISTED = {"R5": ("recommendations", "trends"), "R7": ("explanations",), "R15": ("comparisons",)}
+LISTED = {"R7": ("explanations",), "R15": ("comparisons",)}
 
 def main(paths):
     status = 0

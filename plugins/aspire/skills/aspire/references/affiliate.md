@@ -422,8 +422,8 @@ amount per month with its arithmetic, from the last closed period, labelled an e
 | -------------- | ---- | ------------- | ------- |
 | **Invite to a higher tier** | The creator is on an invite list (**Commission tiers**). Propose that tier's rate, never a flat number of points | The invite line's monthly cost | Your call, then `atlas-creator-negotiation` in `mode: change` |
 | **Hold at this tier** | The creator is on a hold list | "No spend", then what would move them up | A line on the hold list |
-| **Move to hybrid** | One of the top 3 by revenue with 20 or more orders, on an affiliate-only deal | The fee per month from the program's saved terms or the fee calculator, beside the commission they earned last period. With no fee on record: "Cannot be priced: the monthly fee is not set, and the person who approves the deal has it" | Your call, then negotiation in `mode: change` (a change of type) |
-| **Promote to paid** | An affiliate-only creator whose posts lined up with orders on 2 or more posts this period, or whose engagement in Atlas is above the roster median | The fee per post, the same way | Your call, then negotiation in `mode: change` (a change of type) |
+| **Move to hybrid** | One of the top 3 by revenue with 20 or more orders, on an affiliate-only deal | The fee per month, beside the commission they earned last period: "fixed" when the program's saved terms set it, an estimate when it comes from the fee calculator. With no fee on record: "Cannot be priced: the monthly fee is not set, and the person who approves the deal has it" | Your call, then negotiation in `mode: change` (a change of type) |
+| **Promote to paid** | An affiliate-only creator whose posts lined up with orders on 2 or more posts this period, or whose engagement in Atlas is above the roster median | The cost per month the same way: the fee per post times the posts a month the program's paid terms ask for, with that arithmetic on the line. With no post count in the terms: "Cannot be priced: the posts a month are not set, and the person who approves the deal has it" | Your call, then negotiation in `mode: change` (a change of type) |
 | **Retire the code** | A live code with no orders in the last 2 closed months and live for 60 days or more, or a creator now Declined, Dropped, or past `termEnd` | "No spend" | A9 |
 | **Check the code** | A live code with orders in the store and none in the export, or the reverse | "No spend, time only" | A line under data notes |
 
@@ -568,8 +568,7 @@ recomputes.
    "affiliate": {"…": "the full affiliate detail this run would write"},
    "ledgerLine": {"…": "the commission line, or null"},
    "draft": null,
-   "tier": {"current": "Tier 1", "next": "Tier 3", "list": "invite", "line": "…",
-            "needs": null},
+   "tier": {"current": "Tier 1", "next": "Tier 3", "needs": null},
    "recommendation": {"kind": "invite", "line": "…",
                       "cost": {"kind": "money", "line": "…", "basis": "+5 points on October's eligible revenue of 3240.00 USD"},
                       "yourCall": {"question": "…", "options": ["…"], "recommended": "…"}},
@@ -612,8 +611,9 @@ report" item look for a report finding for the last closed month.
 `codeCreatedAt`, `retiredAt`, `storeRef`, `eligibleRevenue`, `refunds`, `netOfRefunds`,
 `clicks`, `ordersPerClick`, `platformCommission`, `sourceLabel`, `mapping` (field to column),
 `partial`, `posts` (list of `{postUrl, postedAt, program, ordersAfter, typical}`),
-`recommendation` (`{kind, line, cost}`), `tier` (`{current, next, list, line, needs}`, with
-`list` `invite`, `hold`, or `null`), and `recipient`.
+`recommendation` (`{kind, line, cost}`), `tier` (`{current, next, needs}`: the creator's tier, the tier they are
+invited to or held under, and for a hold what would move them up; the list they are on is
+`recommendation.kind`, `invite` or `hold`), and `recipient`.
 
 **idempotencyKey**: `aff-{slug}-{net}-{handle}-{period}-{event}`, where event is `planned`,
 `live`, `retired`, or `report-{YYYY-MM-DD}`. `{net}` is `ig` or `tt`.

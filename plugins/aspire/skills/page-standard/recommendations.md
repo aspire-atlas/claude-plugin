@@ -24,7 +24,7 @@ line as you write the recommendation, from figures this run read.
 | What it costs | `data-cost` | The cost line holds | Example |
 | ------------- | ----------- | ------------------- | ------- |
 | Money, once | `money` | The amount with its currency, and the arithmetic behind it in the same line | "Cost: about USD 1,320: 11 kits at USD 120 each (estimate, from the catalog's unit cost)." |
-| Money, again and again: a promotion, a raise, a recurring deal | `money`, with `data-cost-period="month"` | The cost per month, worked from the last period's figures, the word "estimate", and what it is based on | "Cost: +5 points on USD 3,240 a month is about USD 162 a month (estimate, from October's revenue)." |
+| Money, again and again: a promotion, a raise, a recurring deal | `money`, with `data-cost-period="month"` | The cost per month, worked from the last period's figures, the word "estimate", and what it is based on. A fee the saved terms set says "fixed" and names the terms instead: "Cost: USD 800 a month, fixed by the program's ambassador terms." | "Cost: +5 points on USD 3,240 a month is about USD 162 a month (estimate, from October's revenue)." |
 | Time only | `none` | "No spend" | "Cost: no spend, time only." |
 | Money the run cannot work out | `unpriced` | "Cannot be priced", the figure that is missing, and who has it | "Cannot be priced: the kit's unit cost is missing, and the operations lead has it." |
 | Money the flow keeps out of the page (`SKILL.md`, section 1, **Money stays where the flow keeps it**) | `team` | "Cost: in the team view", with the amount and its arithmetic in the team view | "Cost: in the team view." |
@@ -45,7 +45,7 @@ line as you write the recommendation, from figures this run read.
 - **On a page shared outside the team** (the shared audience line), a step the reader does
   themselves is marked `reader` and shows no cost line: a creator's page never shows the brand's
   costs or points at the team view. What the page asks a client to approve or pay for is still a
-  recommendation with its cost.
+  recommendation with its cost, so a decision is never `reader`.
 - **In a storyline bullet and in chat,** a recommendation carries its cost in the same sentence.
 
 Good: "Move @creator_a from 10% to 15%. Cost: +5 points on USD 3,240 a month is about USD 162 a
@@ -83,37 +83,9 @@ taken before any signal, with spend behind it.
 
 ## Markup the script reads (R5)
 
-```html
-<section data-page="decisions">
-  <h2>Decisions for you</h2>
-  <!-- A decision is a recommendation: data-recommend, its data-cost, and a data-cost-line. -->
-  <p data-decision data-by="2026-11-14" data-recommend data-cost="money" data-cost-period="month">Approve
-    the move of @creator_a and @creator_b to Tier 3 by Nov 14.
-    <span data-cost-line>Cost: about USD 293 a month (USD 162 plus USD 131; estimate, from October's revenue).</span></p>
-</section>
-<section data-page="next-steps">
-  <h2>Next steps</h2>
-  <ol>
-    <li data-recommend data-cost="none">Hold @creator_c at Tier 2 this month, by Nov 14.
-      <span data-cost-line>Cost: no spend.</span></li>
-    <li data-recommend data-cost="unpriced" data-cost-missing="the kit's unit cost" data-cost-holder="the operations lead">Send
-      the new kit to the five top sellers, by Nov 21.
-      <span data-cost-line>Cannot be priced: the kit's unit cost is missing, and the operations lead has it.</span></li>
-  </ol>
-</section>
-<!-- A two-sided effect, outside the decisions. -->
-<article data-trend>
-  <p>Trend to watch</p>
-  <h3>Creators call the starter kit "the cheap one" in 14 of 61 posts</h3>
-  <p data-reading="helps">If it helps: the low price is why new buyers try the kit first.</p>
-  <p data-reading="hurts">If it hurts: "cheap" becomes what people say about the whole brand.</p>
-  <ul>
-    <li data-signal data-where="the weekly report's comment themes" data-by="2026-11-25">Comments that
-      mention quality, in the weekly report's comment themes, by Nov 25.</li>
-  </ul>
-  <p>So: watch this signal. Nothing to approve yet.</p>
-</article>
-```
+The markup is on the blocks agents build from (`blocks.md`): the decisions block (3.5), the next
+steps table (3.6), and the trend to watch block (3.23). `SKILL.md`, section 5, shows a decision and
+a next step.
 
 - A next step is each list item, or each table row with a `td`; a table's heading cells are
   `th`. When the section has neither, each block directly inside it is a step, headings aside. A
@@ -122,24 +94,14 @@ taken before any signal, with spend behind it.
   list item or table row of a next step, or a flow's own recommendation card. `data-cost-line`
   goes on the element that shows the cost, inside it. In a next steps table the row carries
   `data-recommend` and the Cost cell `data-cost-line`.
-- The script fails R5 when a decision or a next step is not marked as a recommendation on
-  itself or inside itself (a mark on the section or another wrapper prices nothing), when a
-  `reader` step sits on a page with no shared audience line or shows a cost line, when a
-  recommendation has no `data-cost` or no cost line, when a `money` line shows no amount with its
-  currency (a currency code such as USD, EUR, GBP, CAD or AUD beside the number, or a currency
-  symbol), when a monthly cost does not give an amount per month ("USD 162 a month", "per month",
-  "monthly", "/month") and say
-  "estimate", when a `none` line does not say "no spend", when an `unpriced` line does not say
-  "cannot be priced" and show its `data-cost-missing` and `data-cost-holder`, and when a `team`
-  line does not say "team view".
-- It also fails R5 when a `data-trend` block is not labelled "Trend to watch", does not hold one
-  `helps` and one `hurts` reading, lists no signal or more than three, has a signal that does not
-  show its `data-where` and its `data-by` date, sits in the decisions, or carries a
-  `data-recommend` step that is anything but watching at no cost (`data-cost="none"`).
+- A recurring cost adds `data-cost-period="month"`; a one-time cost carries no period. An
+  `unpriced` recommendation adds `data-cost-missing` (the figure) and `data-cost-holder` (who has
+  it), both shown in its cost line.
+- A trend to watch is `data-trend`, with `data-reading="helps"` and `data-reading="hurts"`, and
+  each `data-signal` with its `data-where` and its `data-by` date, both shown.
+- When R5 fails, the script's problems name each element and what it lacks. Fix what they name.
 - A page with no decision, no next steps section, and nothing marked gets R5 `unmarked`: read it
   for a recommendation. R5 is never N/A through `data-na`.
-- The script's R5 line lists what it read as `recommendations` and `trends`. Copy both lists into
-  the page check block (`SKILL.md`, section 7).
 
 ## What is judged
 
@@ -157,8 +119,6 @@ The script reads only the cost line's shape. Judge the rest by reading, as part 
 
 ## In the result
 
-Each entry of the result's `openItems` (`SKILL.md`, section 1) carries the recommendation's cost
-as the page shows it: `cost` is `{"kind": "money", "line": "{the cost line}", "basis": "{the
-figures and the period it was worked from}"}`, with `kind` one of `money`, `none`, `unpriced`,
-`team`, or `reader`, and `basis` `null` for `none`. A trend to watch is one `step` item whose `text` is "Watch:
-{the signals}", with `cost.kind` `none` and `due` the latest signal date.
+Each entry of the result's `openItems` carries the recommendation's cost as the page shows it, and
+a trend to watch is one of them. The fields are set in
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **6**.
