@@ -27,7 +27,7 @@ This skill sets what a page says. `skills/aspire/references/artifact-standard.md
 and the source line, `skills/aspire/references/recipient-lens.md` sets the reader, and
 `skills/aspire/references/theme.md` sets the colors and type, `blocks.md` in this folder holds
 the parts each page is built from, with their markup, `page-check.md` holds the self-check
-script, `comparisons.md` the four checks on every comparison, `explanations.md` the evidence behind every explanation and how outside evidence is saved, `page-file.md` the page saved as a file, `english-read.md` and `ux-review.md` the two reviews before publishing, `follow-up.md` what a repeat run's page leads with, and `examples.md` lists the evidence each
+script, `comparisons.md` the four checks on every comparison, `recommendations.md` what every recommendation costs and the trend to watch, `explanations.md` the evidence behind every explanation and how outside evidence is saved, `page-file.md` the page saved as a file, `english-read.md` and `ux-review.md` the two reviews before publishing, `follow-up.md` what a repeat run's page leads with, and `examples.md` lists the evidence each
 approved example sets, by question code. **The flow's own reference wins**
 wherever it sets a rule: its layout, what its page leaves out, who sees money, and the form its
 evidence takes. This skill fills in what the reference leaves open. One exception: a reference
@@ -39,7 +39,7 @@ may ask Atlas for more metrics than section 8's row, never fewer.
 - [2. Reader rules](#2-reader-rules)
 - [3. Evidence standards](#3-evidence-standards)
 - [4. Build loop](#4-build-loop)
-- [5. Markup and the scripted checks (R1, R2, R6, R7, R11, R13, R14, R15)](#5-markup-and-the-scripted-checks-r1-r2-r6-r7-r11-r13-r14-r15)
+- [5. Markup and the scripted checks (R1, R2, R5, R6, R7, R11, R13, R14, R15)](#5-markup-and-the-scripted-checks-r1-r2-r5-r6-r7-r11-r13-r14-r15)
 - [6. How each check is judged](#6-how-each-check-is-judged)
 - [7. The page check in the result](#7-the-page-check-in-the-result)
 - [8. Required metrics, by kind of question](#8-required-metrics-by-kind-of-question)
@@ -51,15 +51,15 @@ may ask Atlas for more metrics than section 8's row, never fewer.
 | - | ---- | ------------- | ----- |
 | 1 | Who it is for and what it covers | The reader, the brand, the date range, and each platform with its post count. On a team page, a platform with no data is named as not covered. The method section repeats the platform counts. | R1, R2 |
 | 2 | Lead with the answer | The headline is the conclusion, written last, from the decision. Never a topic title ("Creator performance overview" fails; "49 creators reviewed. Contact 11 this week." passes). | R3 |
-| 3 | Up to three insights | Each is a claim, the evidence, the comparison (last period, peers, a goal, the account's own baseline), then a "So:" line with the action. Hedges go in the "So:" line, never in the claim. The headline insight gets one chart; a flow's reference may give each insight its own. Every comparison passes the four like-for-like checks (`comparisons.md`). | R4, R15 |
-| 4 | Ranked next steps | Each says what to do, who does it, by when, and what it should change. | R5 |
-| 5 | Decisions kept apart | What the reader must approve, in its own section, each with its deadline when it has one. When nothing does, the section says "Nothing needs approval." | R6 |
+| 3 | Up to three insights | Each is a claim, the evidence, the comparison (last period, peers, a goal, the account's own baseline), then a "So:" line with the action. Hedges go in the "So:" line, never in the claim. The headline insight gets one chart; a flow's reference may give each insight its own. Every comparison passes the four like-for-like checks (`comparisons.md`). A finding that could help or hurt the brand is a trend to watch, with both readings (`recommendations.md`). | R4, R5, R15 |
+| 4 | Ranked next steps | Each says what to do, who does it, by when, what it should change, and what it costs (`recommendations.md`). | R5 |
+| 5 | Decisions kept apart | What the reader must approve, in its own section, each with its deadline when it has one and its cost. When nothing does, the section says "Nothing needs approval." | R6, R5 |
 | 6 | Real evidence | Real posts and creators from this run, linked, with thumbnails or timestamps, below the argument. | R7 |
 | 7 | How it was worked out | The scoring weights and the reasoning behind every score and recommendation, and the platform counts again. | R8, R2 |
 | 8 | What is missing | Team pages only. Missing data and what connecting it would add ("Paid results need a connected Meta ad account"). | R9 |
 | 9 | What Atlas can draft next | The drafts Atlas can make next, for example outreach to the 11, offers, discount codes. Nothing is sent without approval. | Judged (`draftNext`) |
 
-**Every page reports its open items, and a repeat run leads with what changed.** On every run, first runs included, the result's `openItems` (`orchestration.md`, **6**) lists every decision in part 5 and every next step in part 4 as the page words them, each with `kind`, `owner`, `due`, `status` `open`, and `opened` (today's date for a new item); the main thread keeps them so the next run can follow up. When the launch block's `since` is not `null`, the page repeats a question asked before: part 2 leads with what changed since that run, and the items carried over sit first in parts 5 and 4. Follow `follow-up.md` in this folder.
+**Every page reports its open items, and a repeat run leads with what changed.** On every run, first runs included, the result's `openItems` (`orchestration.md`, **6**) lists every decision in part 5 and every next step in part 4 as the page words them, each with `kind`, `owner`, `due`, `cost` (`recommendations.md`), `status` `open`, and `opened` (today's date for a new item); the main thread keeps them so the next run can follow up. When the launch block's `since` is not `null`, the page repeats a question asked before: part 2 leads with what changed since that run, and the items carried over sit first in parts 5 and 4. Follow `follow-up.md` in this folder.
 
 A part that applies but has nothing to show says so in one line ("Nothing needs approval", "No
 insights this run: 3 posts is too few to compare"). A part does not apply, and is reported `n/a`
@@ -176,14 +176,15 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    in the light theme with a footer on every page.
    **3a. Like for like.** As you write each comparison (two groups, two periods, or two brands side by side, or a share), run the four checks in `comparisons.md` in this folder (same kind, every mention counted, enough posts, share against size). One that fails a check and stays says which, in one line.
    **3b. Explanations.** Before you write why something happened (a sales spike, a top seller, a drop), run the wider search in `explanations.md` and save outside evidence that can disappear as it is read.
-4. **Self-check R1 to R15.** Run the script in section 5 for R1, R2, R6, R7's links, R11, R13, R14, and R15, and judge
+   **3c. Recommendations.** As you write each decision, next step, and recommendation, end it with its cost line; write a finding that could help or hurt the brand as a trend to watch. Both rules are in `recommendations.md`.
+4. **Self-check R1 to R15.** Run the script in section 5 for R1, R2, R5's cost lines, R6, R7's links, R11, R13, R14, and R15, and judge
    the others against `reader-standard.md`. Fix every fail you can and check again. **4b.** The English read by a separate reviewer: follow `english-read.md` in this folder. **4c.** The rendered UX review, on the same draft: follow `ux-review.md`.
 5. **Publish** in the publish pass (steps 4b and 4c), even when a check still fails; report it (section 7). An open UX Must holds an interactive publish (`ux-review.md`).
    With no Artifact tool, save the page as a file (`page-file.md`). Never skip the page.
 
 Write the headline last. Draft every other part, then write the headline from the decision the page supports.
 
-## 5. Markup and the scripted checks (R1, R2, R6, R7, R11, R13, R14, R15)
+## 5. Markup and the scripted checks (R1, R2, R5, R6, R7, R11, R13, R14, R15)
 
 Mark the parts the script reads. The attributes carry no styling; style the page as the flow and
 `theme.md` say.
@@ -199,15 +200,18 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   <span data-platform="youtube" data-posts="0">YouTube not covered</span>
 </div>
 
-<!-- Part 5: one item per decision; data-by only when the decision has a deadline. -->
+<!-- Part 5: one item per decision; data-by only when the decision has a deadline. Every decision
+     and next step is a recommendation with its cost line (recommendations.md). -->
 <section data-page="decisions">
   <h2>Decisions for you</h2>
-  <p data-decision data-by="2026-11-04">Approve the 11 creators by Nov 4</p>
+  <p data-decision data-by="2026-11-04" data-recommend data-cost="money">Approve the 11 creators by Nov 4.
+    <span data-cost-line>Cost: USD 18,400, the 11 fees from the fee calculator added up.</span></p>
 </section>
 <!-- ...or: <section data-page="decisions"><h2>Decisions</h2><p>Nothing needs approval.</p></section> -->
 
 <!-- Part 4, never inside the decisions section and never around it. -->
-<section data-page="next-steps">...</section>
+<section data-page="next-steps"><ol><li data-recommend data-cost="none">Send the 11 first messages, by
+  Nov 5. <span data-cost-line>Cost: no spend, time only.</span></li></ol></section>
 
 <!-- Part 7 repeats every data-platform element from the scope, with the same counts. -->
 <section data-page="method">...</section>
@@ -241,13 +245,13 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   every page, and naming them fails the check. R13 and R14 are `n/a` on their own terms (no
   `data-question` and no cited post; no cited account), never through `data-na`.
 - A decisions section with no decision says "Nothing needs approval" (or "No decision needs
-  approval"). A `data-by` date is a real date the page also shows.
+  approval"). A `data-by` date is a real date the page also shows. Every decision, every next step, and every other recommendation carries `data-recommend`, `data-cost`, and a `data-cost-line`; a trend to watch carries `data-trend` (`recommendations.md`).
 - Mark anything in someone else's words with `blockquote`, `q`, or `data-quoted`: a creator's
   caption or name, and on a review page, the words of the work under review. The plain-language
   check skips it, and it skips handles, hashtags, emails, and links. Never change a creator's real
   name or handle to pass a check.
 - A page that draws its sections in script from embedded data (the org dashboard) has nothing the
-  script can read. Judge R1, R2, R6, R7, R11, R13, R14, and R15 from the data and what the page draws, and
+  script can read. Judge R1, R2, R5, R6, R7, R11, R13, R14, and R15 from the data and what the page draws, and
   report `scripted` as `read`.
 - Every post the page cites as evidence (a post card, a storyboard, a row in a post table) carries
   `data-post` with its link, and each required metric of the page's row (section 8) on the element
@@ -271,7 +275,7 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   `data-newest` the newest post's date or `none`, and `data-fetched` the last fetch's date, `none`,
   or `unknown`, or, with no `freshness` on record, `data-changed` ("last changed"). The entry shows
   each date and the platform. A page that cites and reports on no account gets `n/a`.
-- A page with no `data-page` markup yet (a flow whose reference does not add it) gets `unmarked` for R1, R2, R6, R7, R13, R14, and R15, and a page that marks no comparison (`comparisons.md`) gets it for R15. Judge those by reading; R11 still runs.
+- A page with no `data-page` markup yet (a flow whose reference does not add it) gets `unmarked` for R1, R2, R5, R6, R7, R13, R14, and R15, and a page that marks no comparison (`comparisons.md`) gets it for R15. Judge those by reading; R11 still runs.
 
 Run the check on every page before you publish it. Copy the page into a new temporary folder,
 extract the script there from `page-check.md` in this folder (never retype it), and run it:
@@ -294,7 +298,8 @@ flow. Every check is pass, fail, or N/A, never a score.
 | Check | How |
 | ----- | --- |
 | R1 Reader and scope, R2 Platforms covered, R6 Decisions kept separate, R11 Plain language, R13 Required metrics, R14 Data freshness, R15 Like for like | Script, or by reading when the page is drawn in script or carries no markup. R14's wording beyond the entry itself is judged: the period wording ("Atlas has no data for {period}", section 9.3), behind-pace notes, and refreshes skipped as recently refreshed. R15 is also judged: a comparison the markup missed, and whether a share's group size is the right whole (`comparisons.md`, **What is judged**) |
-| R3, R4, R5, R8, R10, R12 | Judgment |
+| R3, R4, R8, R10, R12 | Judgment |
+| R5 Clear next steps | Script for each recommendation's cost line and each trend to watch (`recommendations.md`); judgment for who, by when, what it should change, the arithmetic, and a recommendation or two-sided finding the markup missed |
 | R7 Real evidence | Script for the links (every cited post, every explanation's evidence, every saved capture); judgment for each figure, checked against what the run read |
 | R9 Names what's missing | Judgment on a team page; N/A on a page shared outside the team |
 
