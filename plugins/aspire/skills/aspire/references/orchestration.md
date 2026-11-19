@@ -112,7 +112,7 @@ this order:
 
    | Unit | Agents | `{work}` | `{n}` | `{note}` | None option |
    | ---- | ------ | -------- | ----- | -------- | ----------- |
-   | `fetches` | Every `spend` agent but `atlas-creator-discovery` | "fetches {n} handles or posts Atlas does not hold" | The handles or posts the run needs that Atlas does not hold | Nothing | "Fetch none, use what Atlas holds" |
+   | `fetches` | Every `spend` agent but `atlas-creator-discovery` | "fetches {n} handles or posts Atlas does not hold" | The handles or posts the run needs that Atlas does not hold | `""` (empty) | "Fetch none, use what Atlas holds" |
    | `candidates` | `atlas-creator-discovery` | "finds up to {n} new candidates to fill the {campaign} shortlist to {target}" | The pool target (`campaign:{slug}-pool`) minus the candidates already undecided in it | " The handle lookups behind scoring also use credits and are not capped." | "Add none, re-score the shortlist" |
 
    Accounts Atlas holds behind their pace are not in `{n}`: their refresh is offered and confirmed
@@ -494,7 +494,7 @@ writes neither record.
 ### A repeat run (what changed, not setup)
 
 When the same question was run before, the reply follows up on that run and asks no setup
-question but Credits when the run will spend (and, for discovery, its run question with it): it opens with "Last time ({date}) you asked …", asks one question about the decisions
+question but, for discovery, its run question, and Credits when the run will spend: it opens with "Last time ({date}) you asked …", asks one question about the decisions
 and next steps that page left open, and the new page leads with what changed. The flow's
 `lastrun:` record keeps the last run for it. All of it (when a run is a repeat, the reply, the
 record and its confirmation, scheduled runs, and the examples) is in **Repeat run**.
