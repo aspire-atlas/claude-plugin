@@ -42,3 +42,14 @@ When an agent's page or a main-thread page (not a sample, review, audit, guide, 
 card) is published, ask "Run a quality review on {page title} before you share it?" once per page
 per session, after the flow's own questions and with the decision audit offer in the same call
 (**11.3**). Never in an unattended run.
+
+## Decision audit offer (**Decision audit**, The offer)
+
+When an agent's real work (never a sample) ends in a published page (a deck, a brief, a shortlist, a
+review, a readout, a profile), and after the flow's own follow-up questions, ask once, as the second
+question in the quality review offer's call when that offer is made (**Quality review**, The offer), with
+`AskUserQuestion`, header "Audit": "Would you like an audit of the decisions and tools behind
+{page title}?" Options: "Build the audit page (Recommended)" / "Not now". Ask again after a later
+revision or export of the same work only if the user built an audit for it; then the update
+option is "Update the audit page". Never ask in an unattended run; scheduled runs keep no log. Never
+offer an audit of a quality review's own page.

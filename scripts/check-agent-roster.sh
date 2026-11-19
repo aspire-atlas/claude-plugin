@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Checks, for every plugin with agents (plugins/<name>/agents/), that every agent
 # is listed where agents are listed by hand:
-#   - the plugin's agent hand-off table, in one of its skills' SKILL.md
+#   - the plugin's agent hand-off table, in one of its skills' SKILL.md or references/agents-menu.md
 #   - the Model tiers table in the same skills, whose model must match each
 #     agent's frontmatter `model:`
 #   - the plugin README's agent table (plugins/<name>/README.md)
@@ -28,8 +28,8 @@ check_plugin() { # plugin name
     [[ "$a" == atlas-* ]] || err "$p: agent $a must be named atlas-<name>"
   done
 
-  # Every skill in the plugin, as one text; the tables may sit in any of them.
-  skills_text=$(cat "$P"/skills/*/SKILL.md 2>/dev/null || true)
+  # Every skill in the plugin and its agents menu, as one text; the tables may sit in any of them.
+  skills_text=$(cat "$P"/skills/*/SKILL.md "$P"/skills/*/references/agents-menu.md 2>/dev/null || true)
 
   # One list per place: the names it carries, sorted.
   # The Model tiers section has its own rows in the same shape; keep them out of the hand-off list.
@@ -47,7 +47,7 @@ check_plugin() { # plugin name
     done
   }
 
-  compare "the skill's agent hand-off table (SKILL.md)" "$skill"
+  compare "the skill's agent hand-off table (SKILL.md or references/agents-menu.md)" "$skill"
 
   # Model tiers: every agent has a row, and the row's model is the file's `model:`.
   [ -n "$tiers_section" ] || err "$p: no SKILL.md has a '## Model tiers' section"

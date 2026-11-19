@@ -1,7 +1,7 @@
 # List agents (the agents and run arguments)
 
-Used by SKILL.md's **Arguments** for `agents` and `run {agent}`. The hand-off table step 5
-names lives in SKILL.md (**Agent hand-off**), because the router owns where each agent goes.
+Used by SKILL.md's **Arguments** for `agents` and `run {agent}`, with the hand-off table step 5
+names (**Agent hand-off** below).
 
 A bold section name with no file beside it (**Running agents**, **Prompt coach**) is another part of this skill;
 `SKILL.md`'s **Sections** index names its file.
@@ -32,7 +32,7 @@ time so it never goes stale; never recite it from memory.
    it now". A sample runs **Sample artifacts** and then asks once more whether to run it for real.
    Then hand off to that agent's section of this skill rather than launching the
    agent straight from here. Those sections own the connection check, the profile, and the
-   confirmations each agent needs, per the table in SKILL.md's **Agent hand-off**.
+   confirmations each agent needs, per **Agent hand-off** below.
 
    Answers the **Prompt coach** already collected carry into the hand-off row (**Prompt coach**,
    Carry-over).
@@ -48,3 +48,36 @@ Listing needs no Atlas connection, so do not run Phase 1 and do not render a con
 before the question; run Phase 1 only once an agent is picked. If the `agents/` folder is
 missing or empty, say so in one line and stop; never invent an agent and never offer one that
 is not on disk.
+
+## Agent hand-off
+
+Where step 5 above hands each agent off. Each named section owns the connection check, the profile, and the confirmations its agent needs.
+
+| Chosen agent | Hand off to |
+| ------------ | ----------- |
+| `atlas-profile-analyst` | Phase 1, then Phase 2 + 3 for the profile and handles, then Phase 6 (its target question first) |
+| `atlas-ad-reuse` | Phase 1, then Phase 2 + 3, then **Ad reuse** (its window, sources, and save questions first) |
+| `atlas-creator-profile` | Phase 1, then Phase 2 + 3, then **Creator profile** (it asks for the handle and network first) |
+| `atlas-creator-brief` | Phase 1, then Phase 2 + 3, then **Creator brief** (its three questions first) |
+| `atlas-creator-discovery` | Phase 1, then Phase 2 + 3, then **Creator discovery**, Setup if the campaign is new, then Run |
+| `atlas-creator-vetting` | Phase 1, then Phase 2 + 3, then **Creator vetting**: the list first (R1), then Setup if it has never run (for a campaign's applicants, **Applicant review** instead), then Run |
+| `atlas-content-review` | Phase 1, then Phase 2 + 3, then **Content review**, Setup if it has never run, then Review |
+| `atlas-post-analysis` | Phase 1, then Phase 2 + 3, then **Post analysis** (it asks for the post first) |
+| `atlas-daily-insights-report` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the daily cadence |
+| `atlas-weekly-insights-report` | Phase 1, then Phase 2 + 3, then **Readouts**, Run with the weekly cadence |
+| `atlas-market-signal` | Phase 1, then Phase 2 + 3, then **Market signal**, Setup if it has never run, then Run |
+| `atlas-quarterly-signal` | Phase 1, then Phase 2 + 3, then **Quarterly signal** |
+| `atlas-ppa-pitch` | Phase 1, then Phase 2 + 3, then **PPA pitch** (its questionnaire first) |
+| `atlas-creator-outreach` | Phase 1, then Phase 2 + 3, then **Influencer program**: **Program setup** if no program is saved, then **Creator outreach** (it names the creators and asks the drafts and mailbox questions first) |
+| `atlas-creator-negotiation` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Creator negotiation** |
+| `atlas-product-fulfillment` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Product fulfillment** |
+| `atlas-content-library` | Phase 1, then Phase 2 + 3, then **Content library** (its content, save, and alert questions first) |
+| `atlas-affiliate-manager` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Affiliate manager** |
+| `atlas-content-sourcing` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Content sourcing** |
+| `atlas-deliverable-tracker` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Deliverable tracker** |
+| `atlas-roster-manager` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Roster review** |
+| `atlas-program-dashboard` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Program dashboard** |
+| `atlas-program-ledger` | Phase 1, then Phase 2 + 3, then **Influencer program** (Program setup if no program is saved), then **Program ledger** |
+| `atlas-campaign-orchestrator` | Phase 1, then Phase 2 + 3, then **Orchestrator** (Setup if it has never run) |
+| `atlas-shops` | Phase 1, then Phase 2 + 3, then **Shops** (its shop and stage questions first) |
+| `atlas-quality-review` | **Quality review** (it asks for the work to review first; Phase 1 and Phase 2 + 3 only when the Atlas re-check is wanted) |

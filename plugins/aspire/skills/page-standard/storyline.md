@@ -2,12 +2,12 @@
 
 Step 0b of the build loop in `SKILL.md` (section 4) points here. The main thread's side, the
 storyline question and its answers, the minimum pool, and the good and bad examples, are in
-`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **2**, **The storyline**.
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/storyline-confirm.md`.
 Steps 1, 2, and 2a below are the build loop's steps in `SKILL.md`, section 4.
 
 The launch block's `storyline.pass`
 (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **5**) says what to do with the
-page's argument before it is built (**2**, **The storyline**, there):
+page's argument before it is built (`storyline-confirm.md` beside it says how the main thread runs it):
 - `draft`: run `SKILL.md` section 4, steps 1, 2, and 2a, then draft the storyline below, publish
   nothing, and return it in the packet's `storyline`, with its `pass` `draft` and `page` `null`
   (**6** there). Put step 2a's check-in, when it has one, in `questions`; the main thread asks both
@@ -38,18 +38,18 @@ page's argument before it is built (**2**, **The storyline**, there):
 
 To draft it:
 1. **Count the posts that fit the question:** the posts step 2a counts, and how many accounts
-   they come from. Compare the count with the row's minimum (`orchestration.md`, **2**, **The
-   minimum pool**; none for a question about one named post). Name the wider scope you would read
+   they come from. Compare the count with the row's minimum (`storyline-confirm.md`, **The
+   minimum pool, by kind of question**; none for a question about one named post). Name the wider scope you would read
    next in `widen` (more weeks, more platforms, or more accounts, whichever the launch's `scope`
    leaves room for), or `null` when it has no room left; under the minimum, the main thread
    recommends it.
-2. **Write three short bullets** (fewer only per `orchestration.md`, **2**, **Fewer bullets**),
+2. **Write three short bullets** (fewer only per `storyline-confirm.md`, **Fewer bullets**),
    each a claim the reader can act on, with the posts, accounts,
    and views behind it. The person reads each bullet in chat before any page exists, so it passes
    `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/english-rules.md` (**In chat**). Except on a one-post question, a bullet on fewer than 3 posts says how
    few ("from only two posts"). A bullet that compares two groups, periods, or brands, or states a
    share, passes the four checks in `comparisons.md` first: it names the kind and the post count of
-   each side, and marks a thin side as that file says. A bullet that recommends spending money names the cost, and one that could help or hurt the brand gives both readings (`recommendations.md`). The good and bad examples are in `orchestration.md`, **2**.
+   each side, and marks a thin side as that file says. A bullet that recommends spending money names the cost, and one that could help or hurt the brand gives both readings (`recommendations.md`). The good and bad examples are in `storyline-confirm.md`.
 3. **Watch the most-viewed video behind each bullet.** With a shell, `ffmpeg`, and the post's
    media from the Atlas read tools, run the 1-second frame scan (`SKILL.md`, section 3; `quality-review.md`,
    4.15) on that video, and check every timecode and on-screen claim the bullet rests on.
