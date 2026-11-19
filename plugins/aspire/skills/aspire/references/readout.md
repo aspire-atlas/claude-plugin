@@ -151,7 +151,7 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
    `approved.refresh` refreshes those before step 3, so steps 3 onward read what the refresh
    brought in, and makes no new offer. An interactive
    run with `approved.refresh` null works out each handle's pace from the freshness read (section
-   9.4) and offers the refresh, with its time and cost, for each handle behind it (section 9.5),
+   9.4) and offers the refresh, with its time and cost, for each handle behind it, up to the refresh limit (section 9.5),
    holding its findings and delivery until the relaunch. The page's source line and the chat
    summary carry the freshness line.
 3. `search_posts` per linked handle: `author.username` = handle, `postedAt` gte the window
@@ -359,7 +359,9 @@ bullets per other saved lens:
 - Content reviews: reviews run by verdict, the most common failed check, and creators
   reviewed more than once. For reviewed published posts, the lead metric against the
   creator's own median when Atlas holds it.
-- Next steps: 3 ranked bullets, each tied to a number above.
+- Next steps: 3 ranked bullets, each tied to a number above and ending with its cost line. A
+  change that could help or hurt the brand is a trend to watch with both readings, never a next
+  step to act on (**Page standard**, `recommendations.md`).
 - Freshness: the freshness line (**Page standard**, section 9.2), with any refresh offer.
 - Data gaps and one closing line: findings saved, page link.
 
@@ -379,7 +381,8 @@ section list below. The others:
   partnership-marked posts, and mentions by accounts other than the brand), per creator and per
   format: engagement per post against the creator's own median and the brand's median, and the
   estimated fee from the fee calculator (**Fee calculator**) per 1,000 engagements, labelled as estimated
-  because Atlas holds no spend. End with one recommendation: where the next dollar goes. Each
+  because Atlas holds no spend. End with one recommendation: where the next dollar goes, with
+  its cost line (**Page standard**, `recommendations.md`). Each
   creator that beat both medians gets a `went_well` finding with `detail.creator`,
   `detail.lens: "growth"`, and `detail.seedEligible: true`, which feeds discovery's lookalike tier.
 

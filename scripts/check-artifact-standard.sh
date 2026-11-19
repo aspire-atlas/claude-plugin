@@ -218,6 +218,12 @@ else
         err "the markup example in $CM does not pass R15: $(grep '"R15"' <<< "$out")"
     fi
 
+    # The cost and trend rules live in recommendations.md; their markup is on the blocks, which
+    # the page built from every block (below) runs through R5.
+    RC=$P/skills/page-standard/recommendations.md
+    [ -f "$RC" ] || err "$RC is missing"
+    grep -qF 'recommendations.md' "$PS" || err "$PS does not link recommendations.md"
+
     # R13 checks the metrics the page standard's required-metrics table names, code by code: the
     # table's Codes and On every cited post columns equal the script's REQUIRED_ROWS.
     rows=$(python3 -I -c '

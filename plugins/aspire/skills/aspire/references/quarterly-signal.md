@@ -98,7 +98,7 @@ Fresh aggregates, filter path:
   line and any behind-pace note only (section 9.5, the unattended row). A relaunch with handles in
   `approved.refresh` refreshes those before the posts are read, and makes no new offer. An interactive run with `approved.refresh` null works out each
   handle's pace from the freshness read (section 9.4) and offers the refresh, with its time and
-  cost, for a handle behind it, holding its findings until the relaunch. The page's source line
+  cost, for each handle behind it up to the refresh limit (section 9.5), holding its findings until the relaunch. The page's source line
   carries the freshness line, and a period with no posts reads as section 9.3 says.
 
 A source with no findings in the quarter is named under data gaps, never filled.
@@ -129,13 +129,18 @@ linkable. Sections:
 4. **Trend:** one line chart of the lead metric by week across both quarters, from the weekly
    findings when they cover the quarter, from the fresh aggregates otherwise.
 5. **Two or three headline insights:** each one sentence with a number, drawn from the saved
-   findings (a feature won, a creator format that outperformed, a safety record).
+   findings (a feature won, a creator format that outperformed, a safety record). A change over
+   the quarter that could help or hurt the brand is a trend to watch, with both readings and the
+   signals next quarter would show (**Page standard**, `recommendations.md`).
 6. **The program at work:** one row per influencer program from its dashboards: posts,
    creators, posts on time, assets cleared for ads, and each goal's pace in words only ("on
    pace", "behind", "met"). Never a target, a percent of one, or an amount other than the
    typed spend. Then a compact row of counts: readouts delivered, briefs published,
    creators reviewed and approved, candidates accepted, action items closed.
-7. **Next quarter:** three ranked recommendations tied to the numbers above.
+7. **Next quarter:** three ranked recommendations tied to the numbers above, each ending with
+   its cost line (**Page standard**, `recommendations.md`): the typed spend or the program
+   ledger's figures per month, "No spend", or "Cannot be priced" with the missing figure and
+   who has it. Never a target or an amount the page may not show (item 6).
 8. **Appendix:** links to the quarter's readout, brief, shortlist, and market signal pages,
    and each program's dashboard (`pageUrl` on its newest snapshot),
    where the findings carry them, then sources and data gaps. The page ends with the

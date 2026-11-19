@@ -87,6 +87,9 @@ build it.
 | Quote | 6 | `quote` | 3.18 |
 | Freshness line | Source line | `freshness` | 3.19 |
 | Comparison | 3 | `comparison` | 3.20 |
+| Explanation | 3 | `explanation` | 3.21 |
+| Saved evidence | 6 | `saved-evidence` | 3.22 |
+| Trend to watch | 3 | `trend` | 3.23 |
 
 A page also has sections of its own that no block covers: a comparison table, a 2x2 map, a scatter
 chart, a calculator, a section menu. They belong to this question, so the flow builds them. Use
@@ -385,16 +388,20 @@ around the next steps.
 - One `data-decision` item per decision. `data-by` is the deadline as `YYYY-MM-DD`, and the same
   date shows in the text. Leave `data-by` out when there is no deadline.
 - Each decision says what happens once it is approved, in the `pb-meta` line.
+- Each decision is a recommendation, so it carries `data-recommend`, its `data-cost`, and a cost
+  line (`recommendations.md` in this folder).
 
 <!-- block:decisions -->
 ```html
 <section class="pb-card pb-decisions" data-page="decisions" data-block="decisions">
   <h2 class="pb-h">Decisions for you</h2>
   <ol>
-    <li data-decision data-by="2026-11-04"><span>Approve the 11 creators for outreach</span><span class="pb-due">by Nov 4</span>
-      <span class="pb-meta">Approves: the VP of marketing. Then Atlas drafts the 11 first messages.</span></li>
-    <li data-decision data-by="2026-11-06"><span>Approve a USD 18,400 creator budget</span><span class="pb-due">by Nov 6</span>
-      <span class="pb-meta">Approves: the VP of marketing. Fees come from the brand's fee calculator.</span></li>
+    <li data-decision data-by="2026-11-04" data-recommend data-cost="none"><span>Approve the 11 creators for outreach</span><span class="pb-due">by Nov 4</span>
+      <span class="pb-meta">Approves: the VP of marketing. Then Atlas drafts the 11 first messages.</span>
+      <span class="pb-meta" data-cost-line>Cost: no spend. The fees are the next decision.</span></li>
+    <li data-decision data-by="2026-11-06" data-recommend data-cost="money"><span>Approve a USD 18,400 creator budget</span><span class="pb-due">by Nov 6</span>
+      <span class="pb-meta">Approves: the VP of marketing. Fees come from the brand's fee calculator.</span>
+      <span class="pb-meta" data-cost-line>Cost: USD 18,400 once, the 11 fees from the fee calculator added up.</span></li>
   </ol>
 </section>
 <!-- With no decision: <section class="pb-card pb-decisions" data-page="decisions" data-block="decisions"><h2 class="pb-h">Decisions</h2><p>Nothing needs approval.</p></section> -->
@@ -409,16 +416,19 @@ change. Approvals never go here; they go in the decisions block.
 - Rank by impact on the page's answer, highest first. Five rows at most on a split page's top.
 - "Who" is a role or a named person the run knows, never "the team".
 - "What it should change" is a measurable result with a number where the run has one.
+- "Cost" is the step's cost line: the amount with its arithmetic, "No spend", or "Cannot be
+  priced" with the missing figure and who has it. The row carries `data-recommend` and its
+  `data-cost` (`recommendations.md` in this folder).
 
 <!-- block:next-steps -->
 ```html
 <section class="pb-card" data-page="next-steps" data-block="next-steps">
   <h2 class="pb-h">Next steps</h2>
   <table class="pb-table">
-    <thead><tr><th>#</th><th>What</th><th>Who</th><th>By when</th><th>What it should change</th></tr></thead>
+    <thead><tr><th>#</th><th>What</th><th>Who</th><th>By when</th><th>What it should change</th><th>Cost</th></tr></thead>
     <tbody>
-      <tr><td data-label="Rank" class="pb-rank">1</td><td data-label="What">Send first messages to the 11 approved creators</td><td data-label="Who">Influencer manager</td><td data-label="By when">Nov 5</td><td data-label="What it should change">8 or more replies by Nov 12</td></tr>
-      <tr><td data-label="Rank" class="pb-rank">2</td><td data-label="What">Ship product to creators who say yes</td><td data-label="Who">Operations lead</td><td data-label="By when">Nov 10</td><td data-label="What it should change">Posts live before the Nov 18 launch</td></tr>
+      <tr data-recommend data-cost="none"><td data-label="Rank" class="pb-rank">1</td><td data-label="What">Send first messages to the 11 approved creators</td><td data-label="Who">Influencer manager</td><td data-label="By when">Nov 5</td><td data-label="What it should change">8 or more replies by Nov 12</td><td data-label="Cost" data-cost-line>No spend, time only</td></tr>
+      <tr data-recommend data-cost="money"><td data-label="Rank" class="pb-rank">2</td><td data-label="What">Ship product to creators who say yes</td><td data-label="Who">Operations lead</td><td data-label="By when">Nov 10</td><td data-label="What it should change">Posts live before the Nov 18 launch</td><td data-label="Cost" data-cost-line>About USD 1,320: 11 kits at USD 120 each (estimate, from the catalog's unit cost)</td></tr>
     </tbody>
   </table>
 </section>
@@ -782,8 +792,10 @@ account.
   date, shown as "last changed", never "last fetched". With no `snapshotAt` either, `data-fetched`
   is `unknown`, shown as "freshness unknown".
 - On a team page, an account behind its pace, or refreshed in this run, says so on the same entry,
-  and a refresh skipped as recently refreshed says "refreshed recently, skipped". A page shared
-  outside the team leaves those notes out (`SKILL.md`, section 9.2).
+  a refresh skipped as recently refreshed says "refreshed recently, skipped", and an account left
+  out by the run's refresh limit carries the left-out note `SKILL.md`, section 9.5, gives. A page
+  shared outside the team leaves those notes out and puts them in the page check's `gaps`
+  (`SKILL.md`, section 9.2).
 - The page check's R14 reads these.
 
 <!-- block:freshness -->
@@ -818,6 +830,92 @@ chart's caption, the comparison carries this markup (`comparisons.md`).
     212 posts with no paid label</span>.</p>
 ```
 <!-- /block:comparison -->
+
+### 3.21 Explanation
+
+**Holds:** why something happened (a sales spike, a top seller, a drop), with the evidence it rests
+on, or "Not explained yet" with what was searched. The wider search comes first
+(`explanations.md`).
+
+- `data-explain` on the block. Each piece of evidence is a link carrying `data-evidence` with its
+  source: `atlas` (a post, or a caption or description at its timecode), `site` (the brand's own
+  site or store), or `outside` (a coupon site, another store, and every saved capture (3.22),
+  linked by its anchor). An explanation needs at least one `atlas` or `site` piece.
+- Evidence from Atlas comes first, oldest to newest. Outside evidence follows it.
+- With no evidence in Atlas, the block says "Not explained yet" on a `data-unexplained` line and
+  lists what was searched on a `data-searched` line. Never name a cause the evidence does not show.
+- A cited post also gets its post card (3.8) in the evidence part. The page check's R7 reads these.
+
+<!-- block:explanation -->
+```html
+<div class="pb-card" data-block="explanation" data-explain>
+  <p class="pb-claim">@makerjune's code sold through her own older posts, and a coupon site carried it too.</p>
+  <ul>
+    <li><a data-evidence="atlas" href="https://www.tiktok.com/@makerjune/video/EXAMPLE1">Her TikTok from Mar 3, 2026, which still names the code</a></li>
+    <li><a data-evidence="atlas" href="https://www.youtube.com/watch?v=EXAMPLE2">The code in her YouTube video's description, Sep 18</a></li>
+    <li><a data-evidence="outside" href="#saved-1">The code on a coupon site, saved Oct 30</a></li>
+  </ul>
+</div>
+<div class="pb-card" data-block="explanation" data-explain>
+  <p class="pb-claim">@brightbuilds's orders on Oct 9</p>
+  <p data-unexplained>Not explained yet.</p>
+  <p class="pb-muted" data-searched>Searched: Instagram, TikTok and YouTube posts at any date, with their captions, transcripts and descriptions, and the brand's site.</p>
+</div>
+```
+<!-- /block:explanation -->
+
+### 3.22 Saved evidence
+
+**Holds:** one piece of evidence from outside Atlas that can disappear (a coupon-site listing, a
+store page, a post that expires), saved the moment it was read: its link, the date and time, the
+exact words that matter, and a screenshot (`explanations.md`).
+
+- `data-saved` on the block, with `data-captured` the date and time it was read
+  (`YYYY-MM-DDTHH:MMZ`); the block shows the date. The words are in a `blockquote`.
+- The screenshot is a data URI with `alt` text and `data-print="fit"`. A host that cannot take one
+  shows "Screenshot not taken" in its place.
+- Carried from an earlier run, the block keeps its first date. When the source now blocks the
+  check, add `data-gone` and the line "No longer visible on {date}".
+- The page check's R7 reads these.
+
+<!-- block:saved-evidence -->
+```html
+<figure class="pb-card" id="saved-1" data-block="saved-evidence" data-saved data-captured="2026-10-30T15:20Z">
+  <img src="data:image/png;base64,..." alt="Coupon site listing for the MAKERJUNE15 code" width="320" height="180" data-print="fit">
+  <blockquote>MAKERJUNE15: 15% off sitewide. Verified today.</blockquote>
+  <figcaption class="pb-muted"><a href="https://coupons.example.com/brightside-toys">coupons.example.com</a>, saved Oct 30, 2026, 3:20 PM UTC</figcaption>
+</figure>
+```
+<!-- /block:saved-evidence -->
+
+### 3.23 Trend to watch
+
+**Holds:** a finding that could plausibly help or hurt the brand, with both readings and the
+signals that would settle it (`recommendations.md`). It takes an insight's place and never sits
+in the decisions.
+
+- The label "Trend to watch", then the finding with its numbers.
+- Two readings, one line each: `data-reading="helps"` and `data-reading="hurts"`.
+- One to three signals. Each `data-signal` shows where Atlas would see it (`data-where`) and the
+  date it would show by (`data-by`).
+- Its only next step is to watch the signals. It carries no approval and no other action.
+- The page check's R5 reads these.
+
+<!-- block:trend -->
+```html
+<article class="pb-card" data-trend data-block="trend">
+  <p class="pb-label">Trend to watch</p>
+  <h3 class="pb-h">Creators call the starter kit "the cheap one" in 14 of 61 posts</h3>
+  <p data-reading="helps"><b>If it helps:</b> the low price is why new buyers try the kit first.</p>
+  <p data-reading="hurts"><b>If it hurts:</b> "cheap" becomes what people say about the whole brand.</p>
+  <ul>
+    <li data-signal data-where="the weekly report's comment themes" data-by="2026-11-25">Comments on these posts that mention quality, in the weekly report's comment themes, by Nov 25.</li>
+    <li data-signal data-where="the monthly affiliate report" data-by="2026-12-05">Orders for the full-size set through the same creators' codes, in the monthly affiliate report, by Dec 5.</li>
+  </ul>
+  <p class="pb-so"><b>So:</b> watch these signals. Nothing to approve yet.</p>
+</article>
+```
+<!-- /block:trend -->
 
 ## 4. Building a page from the blocks
 

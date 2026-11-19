@@ -459,22 +459,41 @@ finding is the whole row. It takes the brief agent's data block shape (**Creator
 **Creator-ads mode**, **The data block**), cut to the one lane:
 
 ```json
-{"schema": 1, "version": 3, "title": "…", "summary": "…", "tone": "…", "dos": ["…"],
+{"schema": 2, "version": 3, "title": "…", "summary": "…", "tone": "…", "dos": ["…"],
  "donts": ["…"], "disclosure": "…", "fileNaming": "…", "notice": "",
  "concept": {"lane": "{lane}", "order": 1, "name": "…", "line": "…", "personas": ["…"],
    "trigger": "…", "framework": {"code": "PAS", "name": "Problem, agitate, solve"},
    "story": "…", "sellingPoints": ["…"], "problem": "…", "agitate": "…", "solve": "…",
    "beats": [{"n": 1, "name": "Hook", "seconds": "0-3", "what": "…"}],
-   "hooks": [{"n": 1, "type": "question", "line": "…", "shown": "…", "overlay": "…", "why": "…"}],
-   "ctas": [{"n": 1, "type": "direct", "line": "…", "destination": "…", "moment": "…", "why": "…"}],
+   "hooks": [{"n": 1, "type": "question", "line": "…", "shown": "…", "overlay": "…", "why": "…",
+     "promo": false}],
+   "ctas": [{"n": 1, "type": "direct", "line": "…", "destination": "…", "moment": "…", "why": "…",
+     "promo": true}],
    "body": "…", "length": "30 seconds", "runtime": {"instagram": "…", "tiktok": "…"},
    "broll": [{"n": 1, "shot": "…", "beat": "…"}],
+   "proofPoint": {"line": "…", "moment": "…"},
+   "bridges": [{"from": "hook", "to": "body", "n": 1, "line": "…"},
+     {"from": "body", "to": "cta", "n": 1, "line": "…"}],
+   "claims": [{"claim": "…", "source": "…"}],
+   "pronunciation": [{"term": "…", "say": "…"}],
    "product": {"id": "…", "name": "…", "sku": "…"},
    "coverage": {"passed": 3, "of": 3, "failed": []}},
  "variants": [{"n": 1, "framework": {"code": "PAS", "name": "…"}, "length": "30 seconds",
-   "hook": 1, "cta": 1, "vo": "…", "broll": [1, 4, 7], "note": "…"}],
+   "funnelJob": "conversion", "hook": 1, "cta": 1, "vo": "…", "broll": [1, 4, 7], "note": "…"}],
  "variantCheck": {"passed": true, "failed": []}}
 ```
+
+The schema-2 parts, each written per **Creator brief**, **Creator-ads mode**:
+
+| Part | Where | Shape | Who reads it |
+| ---- | ----- | ----- | ------------ |
+| Proof point | `concept.proofPoint` | `{line, moment}`, one per concept | Client and creator |
+| Bridges | `concept.bridges` | `[{from: "hook" or "body", to: "body" or "cta", n, line}]`, `n` the hook's or CTA's number | Client and creator |
+| Promo flag | `concept.hooks[].promo`, `concept.ctas[].promo` | `true` when the line names a price, a code or an offer | Client and creator |
+| Claims | `concept.claims` | `[{claim, source}]`, `source` the product-page line the claim came from | `claim` for the client and creator; `source` for the agency only |
+| Pronunciation | `concept.pronunciation` | `[{term, say}]` | Client and creator |
+| Funnel job | `variants[].funnelJob` | `reach`, `consideration` or `conversion` | Agency only, with the variant plan |
+| Length | `variants[].length` | Required on every variant | Agency only, with the variant plan |
 
 - **What it holds.** The brief as its writer last saw it: the brief agent's data block for its
   run (**Creator brief**, **Writes**), the page's parts after the edits a pull records (**Pulling
@@ -501,6 +520,10 @@ finding is the whole row. It takes the brief agent's data block shape (**Creator
   brief doesn't have yet is an empty string or an empty list, never left out. A removed or
   deferred concept keeps the content it had. The **Casting** part and the `change-r{n}-{id}` notes
   are not parts of the brief and stay out, as they stay out of the data block.
+- **A schema-1 brief.** `content` with `schema` 1 was written before the schema-2 parts: every
+  reader takes those parts as empty (no proof point, no bridges, claims or pronunciation, every
+  promo flag `false`, no funnel job), never as an error. The next `brief` finding for that lane
+  and round is written as schema 2, with a bracketed blank where the brief has no value yet.
 - **A finding from before.** A `brief` finding with no `content` was written before this field:
   a reader takes the full brief from its `briefPage`, read with the Artifact tool's `read`, and
   the next `brief` finding for that lane and round carries `content`.
@@ -520,7 +543,7 @@ widgets use, so a field is renamed only here and in the same change on the serve
 
 | Record | Fields the agency only reads | A client caller gets |
 | ------ | ---------------------------- | -------------------- |
-| `brief` | `briefPage`, `content.variants`, `content.variantCheck`, `agencyEdits`, `agencyFromResults`, `importedFrom`; and on a finding with no `content` (written before these fields), `edits` and `fromResults` too, since those could hold agency lines | Every other field |
+| `brief` | `briefPage`, `content.variants` (each variant's `funnelJob` and `length` included), `content.variantCheck`, `content.concept.claims[].source`, `agencyEdits`, `agencyFromResults`, `importedFrom`; and on a finding with no `content` (written before these fields), `edits` and `fromResults` too, since those could hold agency lines | Every other field |
 | `cut` | `verdictBy.writer` (a page account id) and `verdictBy.confirmed` (the agency's "Aspire to confirm") | Every other field, `verdictBy.name` and `verdictBy.at` included. A version in Aspire QA is a view, not a secret (**1d**, **Content Review**), so `latestVersion` reads as "Aspire is checking version {k}"; a cut with no version sent has no file to show |
 
 Every other record type (`round`, `gate`, `roster`, `draft`, `reply`, `brief-revision`, `hook`,

@@ -1,7 +1,7 @@
 # Page check script
 
-The script `SKILL.md`, section 5, runs on every page before it is published: R1, R2, R6, R11, R13,
-R14 and R15 from the reader standard. Extract it with the command there; never retype it. It reads only the
+The script `SKILL.md`, section 5, runs on every page before it is published: R1, R2, R5's
+cost lines and trends to watch (`recommendations.md`), R6, R7's linked evidence (`explanations.md`), R11, R13, R14 and R15 from the reader standard. Extract it with the command there; never retype it. It reads only the
 pages named and writes nothing. With `--text` anywhere among its arguments it runs no check and prints the
 words a reader sees instead, one block per line, which is all the English read (`SKILL.md`,
 section 4, step 4b) is given. It lives in this file so `SKILL.md` stays short; when the reader
@@ -17,7 +17,7 @@ the required-metrics table (`SKILL.md`, section 8) changes, `REQUIRED_ROWS` here
 
 <!-- page-check -->
 ```python
-# Page standard self-check: R1, R2, R6, R11, R13, R14 and R15 from reader-standard.md. Reads the HTML files named; writes nothing.
+# Page standard self-check: R1, R2, R5 (its cost lines and trends to watch), R6, R7 (its linked evidence), R11, R13, R14 and R15 from reader-standard.md. Reads the HTML files named; writes nothing.
 import datetime, json, re, sys
 from html.parser import HTMLParser
 
@@ -49,7 +49,7 @@ list_creator_marketplace_labels list_creator_search_fields
 list_hashtag_posts list_hashtags list_insight_search_fields list_invitations list_members
 list_my_organizations list_my_profiles list_post_search_fields lookup_creators lookup_posts
 mint_run_id remove_hashtags remove_member report_checkpoint retract_calibration search_ads search_calibrations
-search_creator_marketplace search_creators search_insights search_partnership_content search_posts
+search_creator_marketplace search_creators search_insights search_partnership_content search_posts send_feedback
 set_brand_instruction show_ads show_partnership_content start_business_discovery supersede_calibration
 switch_billing_account unlink_channel update_member_role update_organization update_profile
 """.split())
@@ -318,6 +318,282 @@ def r6(nodes, regions, out):
     if stray:
         problems.append("%d decision(s) sit outside the decisions section" % len(stray))
     return problems
+
+# R5's scripted part (recommendations.md): every recommendation (each decision, each next step, and
+# any other data-recommend) says what it costs, and every trend to watch gives both readings and
+# the signals that would settle it. Whether a step names its owner, date and result, whether the
+# arithmetic is right, and whether an effect is two-sided are still judged by reading.
+COSTS = ("money", "none", "unpriced", "team", "reader")
+NO_STEPS = re.compile(r"(?i)\bno next steps?\b")
+NO_SPEND = re.compile(r"(?i)\bno spend\b")
+UNPRICED = re.compile(r"(?i)\bcannot be priced\b")
+TEAM_VIEW = re.compile(r"(?i)\bteam view\b")
+ESTIMATE = re.compile(r"(?i)\bestimated?\b")
+# A recurring fee the saved terms set is not an estimate: its line says "fixed" and names the terms.
+FIXED = re.compile(r"(?i)\bfixed\b")
+# An amount with its currency: a currency code before or after the number ("USD 162", "162 USD") or
+# a symbol. Only these codes count, so "GMV 3,240" or "ROI 4" is not an amount.
+CURRENCIES = "USD|EUR|GBP|CAD|AUD|NZD|JPY|CHF|SEK|NOK|DKK|MXN|BRL|INR|SGD|HKD|CNY|KRW|ZAR|AED|PLN|ILS"
+NUMBER = r"\d[\d,]*(?:\.\d+)?"
+AMOUNT_RE = r"(?:(?<![A-Za-z])(?:%s)\s?%s|%s\s?(?:%s)(?![A-Za-z])|[$€£¥]\s?%s)" % (CURRENCIES, NUMBER, NUMBER, CURRENCIES, NUMBER)
+AMOUNT = re.compile(AMOUNT_RE)
+# The cost per month: an amount with the period right after it ("USD 162 a month", "$162/month").
+PER_MONTH = re.compile(AMOUNT_RE + r"\s*(?:(?:a|per|each|every)\s+month\b|/\s?(?:month|mo)\b|monthly\b)", re.I)
+READINGS = ("helps", "hurts")
+SIGNALS_MAX = 3
+
+def marked(node, attr, around=False):
+    # The attribute on the node or on something inside it; with around, on something around it too.
+    return any(attr in n.attrs for n in list(walk(node)) + (ancestors(node) if around else []))
+
+def step_items(region):
+    # The next steps as the section lists them: each list item or table row that holds a cell, never
+    # one nested in another item.
+    def item(n):
+        return n.tag == "li" or (n.tag == "tr" and any(k.tag == "td" for k in n.kids if isinstance(k, Node)))
+    def nested(n):
+        return any(item(a) for a in ancestors(n) if a is not region and region in ancestors(a))
+    found = [n for n in walk(region) if n is not region and item(n) and not nested(n)
+             and not NO_STEPS.search(text(n, gap=" "))]
+    if found:
+        return found
+    # Steps written as cards or paragraphs: each block in the section, headings aside. A wrapper
+    # that only holds other blocks (no words of its own, no mark) is looked through.
+    def own_words(n):
+        return any(isinstance(k, str) and k.strip() for k in n.kids)
+    def blocks(n):
+        out = []
+        for k in n.kids:
+            if not isinstance(k, Node) or k.tag in SKIP or re.fullmatch(r"h[1-6]", k.tag) or not text(k, gap=" "):
+                continue
+            kids = [c for c in k.kids if isinstance(c, Node) and c.tag in BLOCK and text(c, gap=" ")]
+            if "data-recommend" not in k.attrs and kids and not own_words(k) and len(kids) == len([c for c in k.kids if isinstance(c, Node) and text(c, gap=" ")]):
+                out += blocks(k)
+            elif not NO_STEPS.search(text(k, gap=" ")):
+                out.append(k)
+        return out
+    return blocks(region)
+
+def cost_problems(node, label, outside):
+    kind = (node.attrs.get("data-cost") or "").strip().lower()
+    # Its own cost lines, never those of a recommendation nested in it.
+    inner = lambda n: n is not node and "data-recommend" in n.attrs
+    lines = [n for n in walk(node, keep=lambda n: n.tag not in SKIP and not inner(n)) if "data-cost-line" in n.attrs]
+    line = " ".join(text(n, gap=" ") for n in lines)
+    if kind not in COSTS:
+        return ["%s has data-cost \"%s\"; say what it costs: %s" % (label, kind, ", ".join(COSTS))]
+    if kind == "reader":
+        # A step the outside reader takes themselves: only on a shared page, never a decision, and
+        # with no cost shown. What a shared page asks its reader to approve still shows its cost.
+        if marked(node, "data-decision", around=True):
+            return ["%s is a decision, so it shows its cost; \"reader\" is only for a step the outside reader takes themselves" % label]
+        if not outside:
+            return ["%s is marked as the reader's own step, but the page is not shared outside the team; give its cost" % label]
+        return ["%s is the reader's own step, so it shows no cost line" % label] if line else []
+    if not line:
+        return ["%s shows no cost line (data-cost-line): its cost, \"no spend\", or \"cannot be priced\"" % label]
+    problems = []
+    if kind == "money":
+        if not AMOUNT.search(line):
+            problems.append("%s costs money but its cost line shows no amount with its currency" % label)
+        period = (node.attrs.get("data-cost-period") or "").strip().lower()
+        if period not in ("", "month"):
+            problems.append("%s has data-cost-period \"%s\"; use month for a recurring cost, or leave it out" % (label, period))
+        elif period == "month":
+            if not PER_MONTH.search(line):
+                problems.append("%s is a recurring cost but its cost line does not give it per month" % label)
+            if not ESTIMATE.search(line) and not FIXED.search(line):
+                problems.append("%s is a recurring cost but its cost line labels it neither an estimate nor fixed by saved terms" % label)
+    elif kind == "none" and not NO_SPEND.search(line):
+        problems.append("%s costs no money but its cost line does not say \"no spend\"" % label)
+    elif kind == "team" and not TEAM_VIEW.search(line):
+        problems.append("%s keeps its cost in the team view but its cost line does not say \"team view\"" % label)
+    elif kind == "unpriced":
+        if not UNPRICED.search(line):
+            problems.append("%s is not priced but its cost line does not say \"cannot be priced\"" % label)
+        for attr, what in (("data-cost-missing", "which figure is missing"), ("data-cost-holder", "who has that figure")):
+            value = (node.attrs.get(attr) or "").strip()
+            if not value:
+                problems.append("%s cannot be priced but has no %s saying %s" % (label, attr, what))
+            elif not has(line, value):
+                problems.append("%s cannot be priced but its cost line does not show %s (%s)" % (label, what, value))
+    return problems
+
+def trend_problems(node, label):
+    shown, problems = text(node, gap=" "), []
+    if not has_phrase(shown, "trend to watch"):
+        problems.append("%s is not labelled \"Trend to watch\"" % label)
+    if inside(node, "decisions") or marked(node, "data-decision", around=True):
+        problems.append("%s is written as a decision; a trend to watch is not one, so it sits outside the decisions" % label)
+    readings = [(n.attrs.get("data-reading") or "").strip().lower() for n in walk(node) if "data-reading" in n.attrs]
+    if sorted(readings) != sorted(READINGS):
+        problems.append("%s needs two readings, data-reading=\"helps\" and data-reading=\"hurts\" (found: %s)" % (label, ", ".join(readings) or "none"))
+    if any("data-reading" in n.attrs and not text(n, gap=" ") for n in walk(node)):
+        problems.append("%s has a reading with no words" % label)
+    signals = [n for n in walk(node) if "data-signal" in n.attrs]
+    if not 1 <= len(signals) <= SIGNALS_MAX:
+        problems.append("%s lists %d signals (data-signal); give one to %d that would settle it" % (label, len(signals), SIGNALS_MAX))
+    for number, signal in enumerate(signals, 1):
+        said, where, by = text(signal, gap=" "), (signal.attrs.get("data-where") or "").strip(), (signal.attrs.get("data-by") or "").strip()
+        if not where:
+            problems.append("%s: signal %d has no data-where saying where Atlas would see it" % (label, number))
+        elif not has(said, where):
+            problems.append("%s: signal %d does not show where Atlas would see it (%s)" % (label, number, where))
+        if day(by) != "date":
+            problems.append("%s: signal %d has data-by \"%s\", which is not a date (YYYY-MM-DD)" % (label, number, by))
+        elif not shows_date(said, by):
+            problems.append("%s: signal %d does not show its date (%s)" % (label, number, by))
+    for step in (n for n in walk(node) if "data-recommend" in n.attrs):
+        if (step.attrs.get("data-cost") or "").strip().lower() != "none" or not has_phrase(text(step, gap=" "), "watch"):
+            problems.append("%s carries a next step other than watching its signals" % label)
+    return problems
+
+def r5(nodes, regions, out):
+    # Returns None (unmarked) on a page with no decision, no next steps section, no data-recommend
+    # and no data-trend: read it for a recommendation the markup missed.
+    recommends = [n for n in nodes if "data-recommend" in n.attrs]
+    trends = [n for n in nodes if "data-trend" in n.attrs]
+    decisions = [n for n in nodes if "data-decision" in n.attrs]
+    steps = [item for region in regions.get("next-steps", []) for item in step_items(region)]
+    if not (recommends or trends or decisions or regions.get("next-steps")):
+        return None
+    problems = []
+    for what, found in (("decision", decisions), ("next step", steps)):
+        for node in found:
+            if not marked(node, "data-recommend"):
+                problems.append("%s \"%s\" is a recommendation with no cost: mark it data-recommend with data-cost and a cost line" % (what, text(node, gap=" ")[:60]))
+    for node in recommends:
+        # One recommendation, one cost: a mark around several steps or decisions prices none of them.
+        held = [n for n in steps + decisions if n is not node and node in ancestors(n)]
+        if len(held) > 1:
+            problems.append("one data-recommend wraps %d steps or decisions; mark each one with its own cost" % len(held))
+    outside = shared(nodes)
+    for index, node in enumerate(recommends, 1):
+        problems += cost_problems(node, "recommendation %d (\"%s\")" % (index, text(node, gap=" ")[:50]), outside)
+    for index, node in enumerate(trends, 1):
+        problems += trend_problems(node, "trend %d (\"%s\")" % (index, text(node, gap=" ")[:50]))
+    return problems
+
+# R7's scripted part (explanations.md): every cited post links to itself, every explanation rests on
+# linked evidence from Atlas or the brand's site or says it is not explained yet, and every saved
+# capture carries its link, date, quote, and screenshot or the reason there is none. Whether the
+# evidence supports the claim, and each figure, is still judged by reading.
+UNEXPLAINED = re.compile(r"(?i)\bnot explained yet\b")
+NO_SCREENSHOT = re.compile(r"(?i)\bscreenshot not taken\b")
+GONE = re.compile(r"(?i)\bno longer visible\b")
+SEARCHED_LABEL = re.compile(r"(?i)^\s*searched\s*:?\s*")
+# data-evidence names where the evidence comes from. Only atlas and site can carry an explanation;
+# outside evidence (a coupon site, another store) and every saved capture sit beside them.
+SOURCES = {"atlas", "site", "outside"}
+# Markup that belongs inside a data-explain block, and is unchecked anywhere else.
+EXPLAIN_PARTS = ("data-evidence", "data-unexplained", "data-searched")
+
+def web(value):
+    return re.match(r"(?i)^https?://[^\s/]+\.[^\s/]+", (value or "").strip()) is not None
+
+def anchors(node):
+    # The links a reader can open: never one inside a script, style, template, or noscript.
+    return [(n.attrs.get("href") or "").strip() for n in walk(node, keep=lambda n: n.tag not in SKIP) if n.tag == "a"]
+
+def links(node):
+    return [href for href in anchors(node) if web(href)]
+
+def opens(href, url):
+    # The link opens the post: data-post itself, or data-post with a timecode or share parameters
+    # after it ("...watch?v=X&t=4s", ".../reel/X/?igsh=1"). Case is kept: post ids are case-sensitive.
+    base = url.rstrip("/")
+    return href.startswith(base) and href[len(base):][:1] in ("", "/", "?", "&", "#")
+
+def captured_at(value):
+    # data-captured as a UTC or offset date and time ("2026-10-30T15:20Z"); None when it is not one.
+    if not re.match(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?(?:Z|[+-]\d{2}:\d{2})$", value):
+        return None
+    try:
+        return datetime.datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+def post_link_problems(nodes):
+    problems = []
+    for index, post in enumerate((n for n in nodes if "data-post" in n.attrs), 1):
+        url = (post.attrs.get("data-post") or "").strip()
+        if not web(url):
+            problems.append("cited post %d has data-post \"%s\", which is not the post's link" % (index, url))
+        elif not any(opens(href, url) for href in links(post)):
+            problems.append("%s is cited with no link a reader can open; link the post itself" % url)
+    return problems
+
+def explain_problems(nodes, out):
+    problems, saved_ids = [], {"#" + n.attrs["id"].strip() for n in nodes
+                               if "data-saved" in n.attrs and (n.attrs.get("id") or "").strip()}
+    stray = [n for n in nodes if any(a in n.attrs for a in EXPLAIN_PARTS)
+             and not any("data-explain" in a.attrs for a in [n] + ancestors(n))]
+    if stray:
+        problems.append("%d explanation part(s) (data-evidence, data-unexplained, data-searched) sit outside a data-explain block; wrap the explanation in one" % len(stray))
+    for index, block in enumerate((n for n in nodes if "data-explain" in n.attrs), 1):
+        label = "explanation %d (\"%s\")" % (index, text(block)[:50])
+        evidence = [n for n in walk(block) if "data-evidence" in n.attrs]
+        unexplained = [n for n in walk(block) if "data-unexplained" in n.attrs]
+        searched = [SEARCHED_LABEL.sub("", text(n, gap=" ")) for n in walk(block) if "data-searched" in n.attrs]
+        carrying, saved = 0, 0
+        for item in evidence:
+            source, hrefs = (item.attrs.get("data-evidence") or "").strip().lower(), anchors(item)
+            to_saved = [h for h in hrefs if h in saved_ids]
+            saved += len(to_saved)
+            if not to_saved and not any(web(h) for h in hrefs):
+                problems.append("%s marks evidence with no link to it" % label)
+            elif source not in SOURCES:
+                problems.append("%s has data-evidence \"%s\"; name its source: atlas, site, or outside" % (label, source))
+            elif to_saved and source != "outside":
+                problems.append("%s marks a saved capture as %s evidence; a saved capture is outside evidence" % (label, source))
+            elif source != "outside":
+                carrying += 1
+        if unexplained:
+            if not all(UNEXPLAINED.search(text(n, gap=" ")) for n in unexplained):
+                problems.append("%s marks data-unexplained but does not say \"not explained yet\"" % label)
+            if not any(searched):
+                problems.append("%s is not explained yet but does not say what was searched (data-searched)" % label)
+        elif not evidence:
+            problems.append("%s names no linked evidence (data-evidence) and does not say \"not explained yet\"" % label)
+        elif not carrying:
+            problems.append("%s rests only on outside evidence; give the evidence from Atlas or the brand's site, or say \"not explained yet\"" % label)
+        out.setdefault("explanations", []).append(
+            {"claim": text(block)[:80], "evidence": carrying, "searched": [s for s in searched if s], "saved": saved,
+             "explained": not unexplained})
+    return problems
+
+def saved_problems(nodes):
+    problems = []
+    for index, saved in enumerate((n for n in nodes if "data-saved" in n.attrs), 1):
+        label, shown = "saved evidence %d" % index, text(saved, gap=" ")
+        if not links(saved):
+            problems.append("%s has no link to where it was read" % label)
+        when = (saved.attrs.get("data-captured") or "").strip()
+        moment = captured_at(when)
+        if moment is None:
+            problems.append("%s has data-captured \"%s\", which is not a date and time with its zone (YYYY-MM-DDTHH:MMZ)" % (label, when))
+        else:
+            # The saved date, outside the quoted words. The page may show it in the reader's time
+            # zone, a day either side of the UTC date.
+            own = text(saved, gap=" ", skip=quoted)
+            day = moment.astimezone(datetime.timezone.utc).date()
+            days = [(day + datetime.timedelta(days=d)).isoformat() for d in (0, -1, 1)]
+            if not any(shows_date(own, d) for d in days):
+                problems.append("%s does not show the date it was saved (%s)" % (label, days[0]))
+        if not any(quoted(n) for n in walk(saved)):
+            problems.append("%s quotes none of the text it rests on (blockquote, q, or data-quoted)" % label)
+        if not any(n.tag == "img" for n in walk(saved)) and not NO_SCREENSHOT.search(shown):
+            problems.append("%s has no screenshot and does not say \"screenshot not taken\"" % label)
+        if "data-gone" in saved.attrs and not GONE.search(shown):
+            problems.append("%s is marked data-gone but does not say \"no longer visible\"" % label)
+    return problems
+
+def r7(nodes, regions, out):
+    # Returns None (unmarked) on a page that cites no post and marks no explanation or capture:
+    # read it for an explanation the markup missed.
+    if not any(a in n.attrs for n in nodes for a in ("data-post", "data-explain", "data-saved") + EXPLAIN_PARTS):
+        return None
+    return post_link_problems(nodes) + explain_problems(nodes, out) + saved_problems(nodes)
 
 def question_code(regions):
     scope = (regions.get("scope") or [None])[0]
@@ -833,11 +1109,13 @@ def r15(nodes, regions, out):
 CAN_BE_NA = {"R2", "R6", "R15"}
 NA_REFUSED = {"R15": ("data-compare", "the page marks a comparison")}
 # What a check that returns None reports: n/a on its own terms, or unmarked, to be judged by reading.
-NO_RESULT = {"R13": ("n/a", "the page names no question code and cites no post"),
+NO_RESULT = {"R5": ("unmarked", "the page has no decision, no next steps section, and no marked recommendation or trend to watch; read it for one"),
+             "R7": ("unmarked", "the page cites no post and marks no explanation; read it for one, and mark every explanation"),
+             "R13": ("n/a", "the page names no question code and cites no post"),
              "R14": ("n/a", "the page cites no account and no post, its scope reports on no account, and it has no freshness entry"),
              "R15": ("unmarked", "the page marks no comparison; read it for one, and put R15 in data-na only when it compares nothing")}
 CHECKS = (("R1", "Reader and scope", r1), ("R2", "Platforms covered", r2),
-          ("R6", "Decisions kept separate", r6), ("R11", "Plain language", r11),
+          ("R5", "Clear next steps, priced", r5), ("R6", "Decisions kept separate", r6), ("R7", "Real evidence, linked", r7), ("R11", "Plain language", r11),
           ("R13", "Required metrics", r13), ("R14", "Data freshness", r14), ("R15", "Like for like", r15))
 
 def check(path):
@@ -869,7 +1147,10 @@ def check(path):
                 results.append((code, name, NO_RESULT[code][0], [NO_RESULT[code][1]]))
             else:
                 results.append((code, name, "fail" if problems else "pass", problems))
-    return results, out.get("comparisons", [])
+    return results, out
+
+# What a check lists beside its result line, for the page check block (SKILL.md, section 7).
+LISTED = {"R7": ("explanations",), "R15": ("comparisons",)}
 
 def main(paths):
     status = 0
@@ -882,8 +1163,9 @@ def main(paths):
             continue
         for code, name, result, problems in results:
             line = {"page": path, "check": code, "name": name, "result": result, "problems": problems}
-            if code == "R15" and listed:
-                line["comparisons"] = listed
+            for field in LISTED.get(code, ()):
+                if listed.get(field):
+                    line[field] = listed[field]
             print(json.dumps(line))
             if result == "fail" and status == 0:
                 status = 1
