@@ -48,7 +48,7 @@ the vetting reference.
 split of your own. Before the first creator, build the criteria map once (each criterion numbered,
 quoted from the record, with its component and measure; exclusions and criteria posts can't show
 listed apart) and score every creator against that same map. When the launch passes `fit_map` (a
-later batch), use it exactly as given and do not rebuild it. Credit each criterion Met, Partly met,
+later batch, or a scheduled screening run), use it exactly as given and do not rebuild it. Credit each criterion Met, Partly met,
 or Not met by the measure's table, counting only over the posts you read; when unsure whether a
 post matches, it does not count. A criterion that restates an earlier one is a repeat, scored once.
 An application answer counts only for the criterion its question names, and at most as Partly met.

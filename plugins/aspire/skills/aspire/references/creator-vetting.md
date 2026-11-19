@@ -506,7 +506,9 @@ review run's form answers speak to it. Neither changes a score.
 
 The map is the same for every creator in the run. A run in several batches builds it in the first
 batch and returns it in the `fit-map` output line; the main thread passes it unchanged to every
-later batch as `fit_map`, which the agent uses as given.
+later batch as `fit_map`, which the agent uses as given. A scheduled screening run reuses the map
+of the review's last run, for its first batch too, until the criteria change (**Scheduled
+screening**, step 1).
 
 **2. Each component's weight splits evenly across its criteria.** A component with n scored
 criteria gives each one its weight ÷ n. A criterion earns that share times its credit: **Met** 1,
@@ -1189,6 +1191,16 @@ Each batch's launch gets its own `runId` per **Running agents**.
    data on this page" variant of **Artifact standard**, write nothing to Atlas, and end with "Run
    /aspire:aspire and ask to set up the {campaign} applicant review." Without `list_applicants` in
    the session, do the same with "Atlas can't list this review's applicants yet".
+
+   Then find the review's **criteria map**, so every run scores on the same one (**How criteria
+   become points**): `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
+   `creator-vetting-{profile}`, newest first, paged, for the newest `summary` finding whose
+   `detail.applicantReview` is the review's slug and that carries a `detail.criteriaMap`. An
+   interactive run on the review counts, so a schedule set up right after one scores as it did.
+   Reuse that map when its `source` is the review's criteria record, the record was last saved
+   before that summary's `vettedAt`, and each criterion's quoted words, scored and unscored, still
+   appear in the record. Otherwise there is no map to reuse: the first batch builds one, and when an
+   earlier map was set aside because the criteria changed, step 9 says so.
 2. **Save the team's new calls from the review Sheet**, when `-sheet` holds a link. Read it per
    **Reading the review Sheet** (its rows, Team calls, duplicates, Rows to fix, which calls are new,
    and reopened rows), with the reads **Main thread: the run**, step 2, makes for a Sheet. Save each
@@ -1234,6 +1246,8 @@ Each batch's launch gets its own `runId` per **Running agents**.
    - approved fetches: every handle on the list, Instagram and TikTok alike, under the schedule's
      approval (`fetch:` in `-schedule`), with no separate approval for a TikTok lookup;
    - `schedule_run`: `{run}`, for the keys in step 6;
+   - `fit_map`: the map step 1 found, for every batch, the first included; with none, the first
+     batch builds it and every later batch gets the one it returned;
    - the R4 answer: Save; `visual_check`: none (a scheduled run runs no visual check, so its batches
      stay at 100); `sheet_calls`: none; `recipient`: `team`;
    - every input **Main thread: the run**, step 4, gives a later batch of a split list, for the
@@ -1277,7 +1291,9 @@ Each batch's launch gets its own `runId` per **Running agents**.
    `applicantReview`, `run`, the batches and their `runKey`s, the counts per status and
    recommendation, the applicants still due (from the last step 3 read), the claims made that were
    not screened, the team calls saved and **Rows to fix** (step 2, or why the Sheet wasn't read),
-   and whether the Sheet was written. With no account to anchor it, the applicant records are the
+   whether the Sheet was written, and `criteriaMap` with `mapFrom`: the `run` or `runKey` of the
+   summary it was reused from, or `built` with why ("first run on the review", or "criteria changed
+   on {date}; scores before and after are on different maps"). With no account to anchor it, the applicant records are the
    run's record. Then one line, the run's last: "{n} applicants screened for {campaign} ({a}
    approve, {m} maybe, {r} reject, {c} can't vet, {w} waiting on Atlas); {d} still new."
 
