@@ -347,9 +347,11 @@ One record:
 | Can't vet (**Creator vetting**, **The recommendation**, rule 3), or the account can't be found | `cant_vet` | `evidence`, the reason |
 | An account Atlas is still fetching when the lookup's wait ends | `waiting_on_data` | Scheduled runs only, per **Scheduled screening**. An interactive run writes no record for it, so it stays `new` |
 
-An applicant vetted on both networks gets one record: its Instagram call (the account its review
-Sheet row is matched on, **Creator vetting**, **Reading the review Sheet**), with the TikTok call
-added as an evidence line when it differs.
+An applicant gets one record, with the call on its row's account id (**Creator vetting**,
+**Reading the review Sheet**: the account an earlier team call was saved on, else Instagram when
+Atlas holds it, else TikTok). A row with only a TikTok handle, or whose account id is its TikTok
+account, records the TikTok call. An applicant vetted on both networks adds the other network's
+call as an evidence line when it differs.
 
 ## Writing the review Sheet
 
@@ -369,10 +371,10 @@ result either way, and never ask the user to add a connector.
 
 - **Interactive:** after steps 1 to 3 have counted the rows to change, ask once with
   `AskUserQuestion`: "Write Atlas's results for {n} applicants to the {campaign} review Sheet? Only
-  Recommendation, Fit score, Evidence, Maybe question, and Status change; Team call and your own
-  columns stay as they are." Options: 1) Write them (Recommended); 2) Not now. With nothing to
-  change, ask nothing. "Not now" writes nothing; a later run's write catches up, since it writes
-  whatever differs.
+  Recommendation, Fit score, Evidence, Maybe question, and Status change{, and the {columns}
+  column(s) are added}; Team call and your own columns stay as they are." Options: 1) Write them
+  (Recommended); 2) Not now. With nothing to change, ask nothing. "Not now" writes nothing, not
+  even a missing column; a later run's write catches up, since it writes whatever differs.
 - **Scheduled:** the `-schedule` record's `sheet: write` is the standing approval, so it never
   asks; `sheet: none` writes nothing.
 
@@ -391,9 +393,8 @@ left. For each applicant:
 
 **2. Read the Sheet**, fresh every time, since the team sorts and edits it: its header row, the
 Aspire applicant id column, and the five columns above, found by header, case-insensitive. Page a
-partial read to the end. A Sheet without one of the five gets it in its place (**The review
-Sheet**, step 2) before anything is written. With no Aspire applicant id column, write nothing and
-say so in one line.
+partial read to the end. Note each of the five the Sheet lacks: step 4 adds it after the approval,
+never before. With no Aspire applicant id column, write nothing and say so in one line.
 
 **3. Match and compare.** Match each row on its Aspire applicant id, trimmed, never on its
 position. A cell changes only when its value differs from step 1's, compared trimmed. Rows that
@@ -401,12 +402,15 @@ share an id all get that applicant's values. A row whose id Atlas doesn't hold i
 An applicant Atlas holds with no row gets no row here, since rows come from **Importing
 applicants** with the applicant's details: count them for the report.
 
-**4. Write the changed cells only**, by the row and column the step 2 read found them in, guarded
-on that read's revision, at most 200 rows per call. Never write Team call, Name, the handles, the
-answers, Source, Applied, the id, or a column the team added, and never add, remove, move, or sort
-rows. When a call is refused because the Sheet changed since the read (someone sorted or typed),
-read it again and redo steps 3 and 4 from that read for the cells not yet written; a second such
-refusal in a row stops the write. Any other refusal stops it too. The next run's write fills in
+**4. Write the changed cells only**, by the row and column the step 2 read found them in, at most
+200 rows per call. First add each column step 2 found missing, in its place (**The review Sheet**,
+step 2), with its cells filled from step 1. Every call takes the revision of the read it rests on
+as its `base` (the revision a write of yours returned, for the call after it), and the connector
+refuses a call whose `base` is not the Sheet's current revision (`baseIsNotTheRevision`), so a
+sort or edit by anyone since the read stops the call before any cell is written. Never write Team
+call, Name, the handles, the answers, Source, Applied, the id, or a column the team added, and
+never add, remove, move, or sort rows. On that refusal, read the Sheet again and redo steps 3 and 4
+from that read for the cells not yet written; a second such refusal in a row stops the write. Any other refusal stops it too. The next run's write fills in
 what a stopped write left.
 
 Vetting owns the five columns: a value the team types into one is replaced by Atlas's on the next
