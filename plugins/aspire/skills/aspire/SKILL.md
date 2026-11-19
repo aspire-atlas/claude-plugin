@@ -69,6 +69,7 @@ Text after the command is the argument. Route on it before anything else:
 | `next` (also `what's next`, `next actions`, `orchestrator`, and the hourly "Atlas next actions" task) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Orchestrator**. Skip the other phases. |
 | `cas campaign` (also `creator ad campaign`, `campaign manager`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **CAS campaign**. Skip the other phases. |
 | `dashboard` (also `show the dashboard`, `my dashboard`, `where do we stand`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Organization dashboard**, on any organization. Skip the other phases. |
+| `report` (also `brand report`, `show my brand report`, `my brand snapshot`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and the organization, then **Invited first turn**, On request: the brand snapshot report and its next steps, for any organization. Skip the other phases, the first-run guide included. |
 | `shops` (also `shop`, `instagram shop`, `tiktok shop`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Shops**. Skip the other phases. |
 | `quality review` (also `review this deck`, `audit this deck`, `review this page`, `is this ready to send`, `check this before I share it`) | Run **Quality review**. It needs no Atlas connection unless the user wants the work's Atlas figures re-checked, so skip the phases until then. |
 | `feedback` (also `product feedback`, `give feedback`, `report a problem`, `feature request`, `feedback on {link}`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and the organization, then run **Product feedback**, which hands feedback on a page or deck to **Quality review**. Skip the other phases. |
@@ -325,9 +326,9 @@ Write a fresh `context` per call.
    profile's connected channels (including expired authorizations).
 2. **Auth check.** An unauthorized error means the connector token lapsed: render one connector
    card (Phase 1 rules) with "Aspire Atlas needs a fresh sign in. Click Connect above."
-3. **Organization.** First, with someone present: when `firstRun.organization.invited` is true, or
-   the selected organization has no profile and the caller belongs to exactly two, follow **Invited
-   first turn** (**2** there picks the organization on any run; **1** says if it replaces the rest).
+3. **Organization.** First, with someone present: when `firstRun.organization.invited` is true, or the
+   selected organization has no profile and the caller has exactly two, follow **Invited first turn**:
+   **2** picks the organization (one more `get_status` at most, allowed beside the picker); **1** the rest.
    On a bare `/aspire:aspire` run interactively (nothing after the command,
    not unattended) where the caller belongs to more than one organization, the organization
    selector comes first and comes alone. The `get_status` call in step 1 draws it where the host

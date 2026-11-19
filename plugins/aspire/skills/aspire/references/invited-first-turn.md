@@ -29,19 +29,24 @@ that organization's `get_status` result:
 2. `firstRun.organization.invited` is true.
 3. `firstRun.brand.profileCount` is 1, so `firstRun.brand.profile` names the brand.
 4. Nothing is saved yet: `work.programs` and `work.campaigns` are both empty.
-5. Not shown yet for this organization in this session.
+5. Not finished yet for this organization in this session. Keep `invited_turn_shown` in working
+   state, keyed by the organization `id`, and set it only when **5**'s question has been asked. A
+   turn that stopped at **6** or **7** leaves it unset, so the next bare run comes back here.
 
 When all hold, this turn replaces the rest of step 3, the first-run guide, the route's first
-question, and the dashboard for this reply. When any fails, carry on with step 3 in the
-organization **2** settled.
+question, and the dashboard for this reply. When any fails and **2** settled on an invited
+organization, the organization is already chosen: skip the selector and carry on at step 4 there.
+Otherwise carry on with step 3 as written.
 
 Atlas keeps no record that this turn ran, so a bare run shows it again in a later session until a
 program or campaign is saved. That is why the message says what is on file, and never that the
 person set it up themselves: a teammate invited later sees the same true lines.
 
-**On request.** "Show my brand report" or "my brand snapshot", at any time, on an organization
-with one brand profile: run **4** alone, then **5**'s question. Conditions 2, 4 and 5 do not
-apply to it.
+**On request** (the `report` argument, "show my brand report", "my brand snapshot"), at any
+time: run **4** alone, then **5**'s question, with no starter guide and no onboarding question.
+Conditions 1, 2, 4 and 5 do not apply, and it neither reads nor sets `invited_turn_shown`. An
+organization with several brand profiles has no single newest report: say so in one line and
+offer an account review of one brand (Phase 6) instead.
 
 ## 2. The organization
 
@@ -56,19 +61,24 @@ argument, or a name in their message).
 - The selected organization has no brand profile and the caller belongs to exactly two
   organizations: call `get_status` once more with the other one's `id` as `asOrganizationId`. If
   its `firstRun.organization.invited` is true, use it for this run and keep passing its `id`. If
-  not, stay with the selected one. Say nothing about this second call's status card.
+  not, stay with the selected one.
 - Anything else: step 3 as written.
 
-When this section switched the organization, never ask which one. Where the first call drew the
-organization picker, it needs no click: open the reply with "I've opened {org}, the organization
-you were invited to. Say /aspire:aspire org to switch."
+That one call is the only tool call step 3 allows beside the organization picker, and its status
+card gets no line of its own. When it finds no invitation on a bare run, the reply is still the
+picker and its one line, nothing else.
+
+When this section settled on an invited organization, whether it was already selected or this
+section switched to it, never ask which one, and skip step 3's selector. Where the first call
+drew the organization picker, it needs no click: open the reply with "I've opened {org}, the
+organization you were invited to. Say /aspire:aspire org to switch."
 
 ## 3. The message
 
-One short message, then the report. Greet by the first name in `caller.name`, then four lines,
-each a bold label and what is on file:
+One short message, then the report. Greet by the first name in `caller.name` (with no name,
+drop the greeting and start at "Here's"), then four lines, each a bold label and what is on file:
 
-> Welcome back, {first name}. Here's what's on file for {org}, so nothing is asked twice:
+> Hi {first name}. Here's what's on file for {org}, so nothing is asked twice:
 >
 > - **Role** {role}
 > - **Organization** {org}
@@ -99,9 +109,9 @@ next step. Where it draws none, give the report's `answer` in one line and link 
 | Result | Then |
 | ------ | ---- |
 | `kind` `report` | **5** |
-| `kind` `building`, and `steps.snapshot` is `failed`, `skipped` or `done` | **7**: the build ended without a report, and the server does not retry |
+| `kind` `building`, and `steps.snapshot` is `failed`, `skipped` or `done` | **7**: the build ended without a report, and the server does not retry a build that ended |
 | `kind` `building`, any other steps (`running`, or all `not-started`, which also covers a build that has not started and a read that could not tell) | **6** |
-| `not-found` or an error | One line: "I couldn't open your brand report just now." Then **5**'s question from the standing options only. |
+| `kind` `not-found` (no report and no build for this organization), or a tool error | One line: "I couldn't open your brand report just now." Then **5**'s question from the standing options only. |
 
 ## 5. Next steps, with the report open
 
@@ -121,14 +131,16 @@ action carries `minutes`. Description: its `text`. The first option carries "(Re
 
 - **Instagram connected:** leave out any `connect-channels` action. A report built before the
   account was linked still lists it; when it does, add one line: "This report was built before
-  Instagram was linked. A new one is on its way."
+  Instagram was linked. Atlas rebuilds it once after a link, so a newer one will replace it."
+  (Linking Instagram starts that rebuild on the server; **7**'s "does not retry" is about a build
+  that failed.)
 - **Not connected:** option 1 is "Connect Instagram (Recommended)", with the `connect-channels`
   action's `text` as its description when the report has one. The report's own panel shows what
   connecting adds, so do not restate it. Then only the actions whose flow runs without a linked
   account (the table's last column).
 - **Standing options**, when fewer than two are left or the report could not be read: "Find
-  creators" (**Creator discovery**), and "Connect Instagram" when not connected, else "Review
-  your account" (Phase 6).
+  creators" (**Creator discovery**), then "Review your account" (Phase 6) when Instagram is
+  connected, or "Connect Instagram" when it is not and is not already option 1.
 
 Route the answer by the action's `job`:
 
@@ -151,8 +163,8 @@ The flow then runs as it always does, with its own questions and confirmations.
 ## 6. Not ready yet
 
 After the message, say one line: "Your brand report isn't ready yet." Where the widget is drawn it
-shows the build steps and checks again by itself; where it is not, add "Ask for it again in a few
-minutes." Never offer a build on credits here.
+shows the build steps and checks again by itself. Either way add: "Say 'show my brand report' in
+a few minutes to open it." Never offer a build on credits here.
 
 Then offer one step to take meanwhile, as an `AskUserQuestion` with "Wait for the report" as the
 second option: "Connect Instagram" when not connected, else "Answer the brand questions" (Phase
@@ -167,6 +179,7 @@ whether to build first insights here instead, and say the cost in the question: 
 - Build it now, Instagram connected: Phase 6, the brand's connected accounts.
 - Build it now, not connected: there is nothing of the brand's to read yet, so offer Phase 4.2
   first.
-- Not now: one line, "Say /aspire:aspire when you want it.", and stop.
+- Not now: one line, "Say 'show my brand report' when you want it.", and stop. That ask comes
+  back to this offer while there is still no report.
 
 Never start the build without that yes.

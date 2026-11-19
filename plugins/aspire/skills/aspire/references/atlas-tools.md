@@ -87,7 +87,7 @@ run.
 
 | Phase | Tool | Purpose | Notes |
 | ----- | ---- | ------- | ----- |
-| 2, 3 | `get_status` | Orgs, selected org, profiles, channels, expired auths, next-step links | Call once per session (**Invited first turn**, **2**, may add one call for an invited person's other organization; that call's card gets no line of its own). Also returns `aspireUser`, `dashboardUrl`, `setup`, `work` and `firstRun` (what the selected organization's onboarding already answered: **Invited first turn**). `asOrganizationId` to switch org. Keep the organization and profile `id`s it returns. |
+| 2, 3 | `get_status` | Orgs, selected org, profiles, channels, expired auths, next-step links | Call once per session (**Invited first turn**, **2**, may add one call for an invited person's other organization; that call's card gets no line of its own). Also returns `caller` (the person's name), `aspireUser`, `dashboardUrl`, `setup`, `work` and `firstRun` (what the selected organization's onboarding already answered: **Invited first turn**). `asOrganizationId` to switch org. Keep the organization and profile `id`s it returns. |
 | 3 | `get_onboarding_report` | The brand snapshot report Atlas built for the brand, drawn as the report widget | Read only. `asOrganizationId`; the newest report exists only for an organization with exactly one live profile, else pass `reportId`. `kind` is `report` or `building` (with the build `steps`). Used per **Invited first turn**. |
 | 3 | `get_dashboard` | The organization dashboard: the same view as `get_status`, drawn as the dashboard widget | Only for **Organization dashboard**, never the session's first call. The widget reads the rest itself: counts that read no posts for every profile, and a profile's newest posts and accounts only when its tab is opened. Absent on an older server: use `get_status`. |
 | 2 | `list_my_organizations` | Cheap org re-check | |
@@ -334,7 +334,7 @@ the run does not use.
 
 | Tool | What it draws | Needs a click | The line |
 | ---- | ------------- | ------------- | -------- |
-| `get_status`, the first call of a bare interactive run where the caller has more than one organization, before one is picked | The organization picker | Yes, unless **Invited first turn**, **2**, picked the organization: then no, and its line is "I've opened {org}, the organization you were invited to. Say /aspire:aspire org to switch." | "Pick the organization above, then say continue." |
+| `get_status`, the first call of a bare interactive run where the caller has more than one organization, before one is picked | The organization picker | Yes, unless **Invited first turn**, **2**, settled on an invited organization (already selected, or switched to): then no, and its line is "I've opened {org}, the organization you were invited to. Say /aspire:aspire org to switch." | "Pick the organization above, then say continue." |
 | `get_status`, every other call, including the one that follows the pick | The status card | No | "The status card above is for reference. I'm carrying on with {next step}." |
 | `connect_channel`, the call that starts a connection | The connect panel with the sign-in button | Yes | "Use the button above to sign in to {network}. I'll keep watching for it to finish." Then only the resume calls, with no line after each. |
 | `connect_channel`, a resume call that returns awaiting-selection | The connect panel with the account picker | Yes | "Use the button above to pick the accounts to link. I'll keep watching for it to finish." Then only the resume calls. |
