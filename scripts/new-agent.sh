@@ -12,7 +12,7 @@
 #                                                      there instead
 # and adds the agent's rows where agents are listed by hand:
 #   - SKILL.md: the Sections index (the router entry) and the Model tiers table; agents-menu.md: the
-#     Agent hand-off table
+#     Agents menu hand-off table
 #   - plugins/aspire/README.md's agent table
 #   - the agents panel: plugins/aspire-mod/hooks/roster.ts and a placeholder costume in costumes.ts
 #   - orchestration.md section 7's permission level table
@@ -407,7 +407,7 @@ else:
 
     # agents-menu.md: the hand-off row at the end of its table.
     lines = read(MENU).split("\n")
-    end = table_end(lines, heading_index(lines, r"^## Agent hand-off", MENU))
+    end = table_end(lines, heading_index(lines, r"^## Agents menu hand-off", MENU))
     lines.insert(end, f"| `{agent}` | Phase 1, then Phase 2 + 3, then **{name}** |")
     changes[MENU] = "\n".join(lines)
 

@@ -33,12 +33,14 @@ TOC_OVER=100
 # agent loads before it starts; their words together stay at most COMMON_MAX (14,800 words, about
 # 20,000 tokens). Every other reference a run loads is read only when its flow or step is due, so it
 # stays out of COMMON: never add a file there to make room, and move a section out instead of
-# raising the cap.
+# raising the cap. COMMON_MAX is the agreed target itself, so its margin comes from the files: keep
+# them a section's worth under it (about 150 words), so a small fix does not need a move first.
+# PAGE_STD_MAX leaves about 200 words over today's page standard; its 500-line cap binds first.
 COMMON='aspire/SKILL.md aspire/references/orchestration.md aspire/references/running-agents.md'
 COMMON_MAX=14800
 REF_MAX=12000
 PAGE_STD=page-standard/SKILL.md
-PAGE_STD_MAX=7100
+PAGE_STD_MAX=7300
 # References over REF_MAX, each with its own ceiling. Shrink-only: lower a ceiling when its file
 # shrinks, remove a line once its file is under REF_MAX, and never add one (split the file by
 # section instead). One per line: <file, from the skills/ folder>|<most words>

@@ -90,8 +90,8 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 | **Repeat run** (the same question asked again: follow up, not setup) | `references/repeat-run.md` |
 | **The storyline** (confirming a new page's argument before it is built), **Remembering answers** (the "Remember" question), **Cards after a search reply** | `references/storyline-confirm.md`; `references/remember-answers.md`; `references/cards.md` (each read only when **Orchestration contract** says it is due) |
 | **Recipient lens** (who the reader is: the lens catalog and cues) | `references/recipient-lens.md` |
-| **List agents**, **Agent hand-off** | `references/agents-menu.md` |
-| **Running agents**, **Checkpoints**, **Reading the ask**, **Campaign plan**, **Examples library**, **Decision audit** | `references/running-agents.md` (the decision audit brief a subagent is handed: `references/agents/decision-audit.md`) |
+| **List agents**, **Agents menu hand-off**, **Older agent names** | `references/agents-menu.md` |
+| **Running agents**, **Checkpoints**, **Reading the ask**, **Examples library**, **Decision audit** | `references/running-agents.md` (the decision audit brief a subagent is handed: `references/agents/decision-audit.md`) |
 | **Atlas tools** (the tool list and load order, Phase map, **Partnership content**, **After a widget**, Destructive tools, Calibration kinds) | `references/atlas-tools.md` |
 | Phase 1 guided add (1.1 steps 4 and 5, the one card rule, 1.3 to 1.4); **Connection card** | `references/connect.md`; `references/connection-card.md` |
 | **Phase overview**, Phase 4, Phase 5; **Onboarding questions**; **Invited first turn** (an invited person's run before any work is saved: what is on file, then the brand report; also "show my brand report") | `references/onboarding.md`; `references/onboarding-questions.md`; `references/invited-first-turn.md` |
@@ -100,7 +100,7 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 | **Organization pick** (a bare run's organization selector, and the `org` argument) | `references/organization-pick.md` |
 | **Creator profile** | `references/creator-profile.md` |
 | **Ad reuse**, **Partnership content** | `references/ad-reuse.md` |
-| **Creator brief** | `references/creator-brief.md` |
+| **Creator brief**, **Campaign plan** | `references/creator-brief.md` |
 | **PPA pitch**, **Aspire users** | `references/ppa-pitch.md` |
 | **Meta Ads** | `references/meta-ads-tools.md` |
 | **Creator discovery** | `references/creator-discovery.md` |
@@ -192,7 +192,7 @@ When the ask names no flow, route by the primary lens **Reading the ask** reads
 | `leadership` | This quarter, QBR | **Quarterly signal** |
 | `leadership` | This week | **Readouts**, weekly, with the lens |
 | `growth` | Which creators drive results, where to spend | **Readouts**, weekly, with the `growth` lens, then offer lookalikes in **Creator discovery** |
-| `campaign` | A launch or dated campaign that needs creators | **Campaign plan** (**Reading the ask**) |
+| `campaign` | A launch or dated campaign that needs creators | **Campaign plan** |
 | `brand` | Is this post safe or on brand | **Content review** |
 | `brand`, `performance` | What is in someone's post, how it did, and whether to sponsor, partner with, or reuse it (no brief) | **Post analysis** |
 | `brand`, `campaign` | Which creators on a list to approve, or how a campaign's applicants are screened | **Creator vetting** (a campaign's applicants: **Applicant review** first, then vetting with the review) |
@@ -202,7 +202,7 @@ When the ask names no flow, route by the primary lens **Reading the ask** reads
 | Any | What to do next across everything, what needs me, where everything stands | **Orchestrator** |
 | `team` | Anything | The flow the ask names |
 
-A launch ask that spans several agents follows **Campaign plan** (**Reading the ask**).
+A launch ask that spans several agents follows **Campaign plan**.
 
 ## Progress bar
 

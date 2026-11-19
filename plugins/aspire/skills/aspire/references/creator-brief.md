@@ -12,6 +12,7 @@ in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Se
 - [Questions (main thread)](#questions-main-thread)
 - [Page structure](#page-structure)
 - [Campaign mode](#campaign-mode)
+- [Campaign plan (a launch that spans several agents)](#campaign-plan-a-launch-that-spans-several-agents)
 - [Creator-ads mode (the CAS master brief)](#creator-ads-mode-the-cas-master-brief)
 - [Fit rubric](#fit-rubric)
 - [Pricing method](#pricing-method)
@@ -126,6 +127,17 @@ phases instead of one week of three posts.
 - **Page.** Section 3 groups deliverables by phase, section 6 is the phase timeline, and a
   closing "Next steps" box offers content review for drafts and a daily check on how the launch is landing.
   Title "<Brand> Campaign Brief: <Campaign>", republished to the same path for that campaign.
+
+## Campaign plan (a launch that spans several agents)
+
+A launch ask ("we launch on the 14th and need creators") spans four agents.
+Propose the sequence in the setup reply's Heard question ("I'll start a shortlist and brief for the
+launch, then check drafts and run a daily pulse through launch week. Sound right?"), not in a
+confirmation of its own, then run it in order, each step through its own section and its own write
+confirmations, and each new page through its own storyline (**Orchestration contract** **2**, **The
+storyline**) before it is built: **Creator discovery** (Setup for the campaign if new, then Run),
+**Creator brief** in campaign mode, the pulse offer (**Readouts**, **Launch pulse**), and **Content
+review** as drafts arrive.
 
 ## Creator-ads mode (the CAS master brief)
 

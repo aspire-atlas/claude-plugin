@@ -111,12 +111,7 @@ agent only through this skill or a shortcut.
    Scheduling (main thread)). When an agent answers "Not started: run the aspire:aspire skill",
    run this skill with that request, in a scheduled run too.
 
-**Older agent names** still reach the renamed agents: `atlas-account-analyst` is `atlas-profile-analyst`,
-`atlas-daily-readout` is `atlas-daily-insights-report`, and `atlas-weekly-readout` is
-`atlas-weekly-insights-report`. A launch that names `atlas-profile-analyst` with `target_mode`
-`reuse` means `atlas-ad-reuse`, which took over reuse mode. A scheduled task or message that
-names an old agent launches the new one; offer once, in an interactive session, to update the
-task's prompt and name.
+An older agent name in a launch, message, or scheduled task resolves per **Older agent names**.
 
 ## Checkpoints
 
@@ -180,15 +175,6 @@ team catalog, and how agents render for a lens are in **Recipient lens**.
    the same ask is not coached again. Skip it, and run the flow, in an unattended run, for a
    routine ask ("run the daily"), when 0 or 1 inputs are missing, and when the user says to just
    run it.
-
-**Campaign plan.** A launch ask ("we launch on the 14th and need creators") spans four agents.
-Propose the sequence in the setup reply's Heard question ("I'll start a shortlist and brief for the
-launch, then check drafts and run a daily pulse through launch week. Sound right?"), not in a
-confirmation of its own, then run it in order, each step through its own section and its own write
-confirmations, and each new page through its own storyline (**Orchestration contract** **2**, **The
-storyline**) before it is built: **Creator discovery** (Setup for the campaign if new, then Run),
-**Creator brief** in campaign mode, the pulse offer (**Readouts**, **Launch pulse**), and **Content
-review** as drafts arrive.
 
 ## Decision audit (how a piece of work was decided)
 

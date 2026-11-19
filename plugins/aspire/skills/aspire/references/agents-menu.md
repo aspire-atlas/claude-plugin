@@ -1,7 +1,7 @@
 # List agents (the agents and run arguments)
 
 Used by SKILL.md's **Arguments** for `agents` and `run {agent}`, with the hand-off table step 5
-names (**Agent hand-off** below).
+names (**Agents menu hand-off** below).
 
 A bold section name with no file beside it (**Running agents**, **Prompt coach**) is another part of this skill;
 `SKILL.md`'s **Sections** index names its file.
@@ -32,12 +32,12 @@ time so it never goes stale; never recite it from memory.
    it now". A sample runs **Sample artifacts** and then asks once more whether to run it for real.
    Then hand off to that agent's section of this skill rather than launching the
    agent straight from here. Those sections own the connection check, the profile, and the
-   confirmations each agent needs, per **Agent hand-off** below.
+   confirmations each agent needs, per **Agents menu hand-off** below.
 
    Answers the **Prompt coach** already collected carry into the hand-off row (**Prompt coach**,
    Carry-over).
 
-   Older agent names resolve per **Running agents**.
+   Older agent names resolve per **Older agent names** below.
 
    An agent on disk that is not in that table: run Phase 1 and Phase 2 + 3, then launch it
    with the tool prefix, `profile_id`, `profile_slug`, the linked handles and networks, and `recipient`
@@ -49,7 +49,7 @@ before the question; run Phase 1 only once an agent is picked. If the `agents/` 
 missing or empty, say so in one line and stop; never invent an agent and never offer one that
 is not on disk.
 
-## Agent hand-off
+## Agents menu hand-off
 
 Where step 5 above hands each agent off. Each named section owns the connection check, the profile, and the confirmations its agent needs.
 
@@ -81,3 +81,12 @@ Where step 5 above hands each agent off. Each named section owns the connection 
 | `atlas-campaign-orchestrator` | Phase 1, then Phase 2 + 3, then **Orchestrator** (Setup if it has never run) |
 | `atlas-shops` | Phase 1, then Phase 2 + 3, then **Shops** (its shop and stage questions first) |
 | `atlas-quality-review` | **Quality review** (it asks for the work to review first; Phase 1 and Phase 2 + 3 only when the Atlas re-check is wanted) |
+
+## Older agent names
+
+Older agent names still reach the renamed agents: `atlas-account-analyst` is `atlas-profile-analyst`,
+`atlas-daily-readout` is `atlas-daily-insights-report`, and `atlas-weekly-readout` is
+`atlas-weekly-insights-report`. A launch that names `atlas-profile-analyst` with `target_mode`
+`reuse` means `atlas-ad-reuse`, which took over reuse mode. A scheduled task or message that
+names an old agent launches the new one; offer once, in an interactive session, to update the
+task's prompt and name.

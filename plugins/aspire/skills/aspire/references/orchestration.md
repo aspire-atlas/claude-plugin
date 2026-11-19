@@ -246,9 +246,9 @@ saved record answers takes that answer as its (Recommended) option, with its sou
 pre-filled answer (a saved one or a default), when the Scope or Save question was asked because
 no saved record supplied it, or when the person picked a persona in Heard while their own record
 has no role. A run whose answers all came from saved records and stayed as they were is never
-asked, and an unattended run never asks and writes neither record. When it is due, read
-**Remembering answers** before the setup reply: it says when the question shares the setup
-reply's call, its options, and the writes.
+asked, and an unattended run never asks and writes neither record. Read **Remembering answers**
+before the setup reply when it will ask Scope or Save, and otherwise as soon as its answers show a
+changed pre-filled answer or a persona picked in Heard: it holds the options and the writes.
 
 ### A repeat run (what changed, not setup)
 
@@ -317,8 +317,8 @@ from a message that carries it (**11**).
                       "note": "{what the person said about it, or null}"}]}}
 ```
 
-- `runId`: minted once per launch with `mint_run_id`, its `agent` the agent's own name with no
-  `aspire:` prefix (Atlas refuses an id whose name part differs). Without the tool: the name, the
+- `runId`: minted once per launch with `mint_run_id`, its `agent` the agent's current name with no
+  `aspire:` prefix, never a replaced one (Atlas refuses an id whose name part differs). Without the tool: the name, the
   UTC time from `date -u +%Y%m%dt%H%M%S`, and `openssl rand -hex 2`, joined by hyphens in lower case
   (`atlas-creator-vetting-20261029t140312-a3f9`); never made up. A relaunch of the same run (a
   `record` pass, the next mode, a storyline redraft, the build) keeps it. With no shell, leave it
