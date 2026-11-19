@@ -7,7 +7,8 @@
 #   - every agent the question codes and shortcuts route to has a file
 #   - every section 8 row the setup reply's connections table cites exists in the page standard
 #   - every shortcut in the contract is named in SKILL.md's Arguments table
-#   - the result packet and launch block examples parse as JSON and carry every field
+#   - the result packet and launch block examples parse as JSON and carry every field, and both
+#     carry the spend unit the Credits table (section 2) names
 #   - every agent carries the checkpoint paragraph (section 11) exactly once, verbatim
 # What an agent actually returns at run time is not checked here; this keeps the instructions in step.
 #
@@ -104,6 +105,11 @@ want = {
                "shortcut", "scope", "approved", "examples", "storyline", "since"],
 }
 bad = 0
+# The spend units are the Unit column of the Credits table in section 2.
+credits = re.search(r"^   \| Unit \| Agents \|.*?\n(?:   \|.*\n)+", text, re.M)
+units = set(re.findall(r"^   \| `([a-z]+)` \| ", credits.group(0) if credits else "", re.M))
+if units != {"fetches", "candidates"}:
+    print(f"FAIL the Credits table names the units {sorted(units)}; want candidates and fetches"); bad = 1
 for tag, keys in want.items():
     m = re.search(r"```" + tag + r"\n(.*?)\n```", text, re.S)
     if not m:
@@ -115,6 +121,18 @@ for tag, keys in want.items():
     for k in keys:
         if k not in obj:
             print(f"FAIL the {tag} example has no '{k}' field"); bad = 1
+    # The spend cap carries its unit in both examples (section 2, Credits).
+    if tag == "launch":
+        spend = obj.get("approved", {}).get("spend", {})
+        where = "launch example's approved.spend"
+    else:
+        spend = obj.get("cost", {})
+        where = "result-packet example's cost"
+    for k in (["cap", "unit"] if tag == "launch" else ["unit", "used"]):
+        if k not in spend:
+            print(f"FAIL the {where} has no '{k}' field"); bad = 1
+    if spend.get("unit") not in units:
+        print(f"FAIL the {where} unit {spend.get('unit')!r} is not one of {sorted(units)}"); bad = 1
 sys.exit(bad)
 PY
 

@@ -308,7 +308,9 @@ takes up to four questions), skipping any the user already answered.
 
 R3 is asked only after the main thread has checked which handles Atlas holds
 (**Main thread: the run**, step 2), and only when some on the list are missing. R3 option 1 is the approval for
-`lookup_creators` on exactly those handles, and the agent does not ask again. R4 is the write
+`lookup_creators` on exactly those handles, and the agent does not ask again. When the setup
+reply asks the Credits question (**Orchestration contract** **2**), Credits is R3: R3 is not asked
+again, and its cap is the approval. R4 is the write
 confirmation for the recommendation findings; the feedback answers carry their own.
 
 R5 picks the visual check (**4. Visual check**). An option picked is a **named** check; words typed
@@ -393,7 +395,8 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    `recipient`. A list over 100 creators runs in batches of
    100, and a run with a visual check in batches of 25, since each creator's frames take room in the
    agent's context; say how many and launch them one at a time, every batch with the same
-   `visual_check`.
+   `visual_check`, and every batch after the first with the `fit_map` the first one returned
+   (**How criteria become points**).
 5. Answer in text: the counts, up to three points naming the approved creators and top maybes
    with their page numbers, the next step, and the page link. Keep the agent's `creator-cards`
    block; the cards appear only when the user asks to see them (**Creator card**, **Cards in
@@ -437,8 +440,8 @@ their newest 50; the page's key says so.
 ### 1. Brand fit (the fit score, out of 100)
 
 Scored against `vetting:criteria`, the chosen campaign's `campaign:{slug}-brief` and
-`-criteria` when R2 named one, or the applicant review's resolved criteria when R2 named a review. Weights follow creator discovery's **Scoring** so a creator
-scores the same in both flows:
+`-criteria` when R2 named one, or the applicant review's resolved criteria when R2 named a review. Weights follow creator discovery's **Scoring**;
+discovery does not yet use the criteria map below, so its score for a creator can differ from this one:
 
 | Component | Weight | Source |
 | --------- | ------ | ------ |
@@ -453,6 +456,115 @@ A component with no data scores zero and is listed as missing; the page shows it
 available: {reason}", never as 0 (**Page standard**, section 8). Also report, unscored: posts
 that mention the brand (a warm lead), the estimated fee per **Fee calculator**, **Applying the rates**,
 and the contact route Atlas holds.
+
+The points come from **How criteria become points** below, never from a split worked out per
+creator, so two runs on the same creators and the same Atlas data give the same score. A creator-ads
+lane scores with the campaign's match score instead (**Creator-ads lanes**).
+
+#### How criteria become points
+
+**1. The criteria map, built once per run.** Before vetting any creator, split the criteria
+record (the one this section names above) into numbered criteria, `c1`, `c2`, …, in the order the
+record states them, each quoting the record's own words. Split at line breaks and semicolons, and
+within a line wherever "and", "who", "whose", or a comma joins two things that would be checked
+apart ("dog owners whose dog is overweight" is two: owns a dog, the dog is overweight). Never add a
+criterion the record does not state, and never drop one. A criterion that restates an earlier one,
+the same thing to check in other words or as a must ("must own and live with a dog" after "dog
+owners"), is listed as a repeat of it (`c4 = c1`) and scored once, so one post can't count twice. Give each criterion one
+component and one measure:
+
+| The criterion is about | Component | Measure |
+| ---------------------- | --------- | ------- |
+| Who the creator is or what their life shows (owns a dog, is a parent, cooks at home) | Audience and archetype fit | `trait` |
+| Who follows them (an age, gender, or audience country) | Audience and archetype fit | `audience` |
+| A follower range | Audience and archetype fit | `followers` |
+| What their posts are about (features the dog, teaches recipes) | Topic evidence | `topic` |
+| An engagement bar | Engagement quality | `engagement` |
+| How often they post | Cadence and recency | `cadence` |
+| Formats (Reels, TikTok videos, carousels) | Format match | `format` |
+| A country | Market fit | `country` |
+| A language | Market fit | `language` |
+
+Two kinds of criterion carry no points, and the map lists them apart: an **exclusion** ("no dog
+food ads in 6 months", "never promoted a competitor") is checked under **2. Brand safety**,
+**Criteria exclusions**; a criterion posts cannot show (**not from posts**: willing to do a 60-day
+challenge, available in March) is listed on the page under what posts can't tell, and an applicant
+review run's form answers speak to it. Neither changes a score.
+
+The map is the same for every creator in the run. A run in several batches builds it in the first
+batch and returns it in the `fit-map` output line; the main thread passes it unchanged to every
+later batch as `fit_map`, which the agent uses as given.
+
+**2. Each component's weight splits evenly across its criteria.** A component with n scored
+criteria gives each one its weight ÷ n. A criterion earns that share times its credit: **Met** 1,
+**Partly met** ½, **Not met** 0. A criterion with no data is "not available", earns 0, and is listed
+as missing. Criterion points are kept to one decimal; a component's points are its weight × (the sum
+of its credits ÷ n), rounded to the nearest whole point, a half rounding up; the fit score is the
+sum of the components' points, then the dormant cap. When a component is not available for the
+whole run because the criteria name nothing for it and it has no default (Audience and archetype
+fit, step 4), the fit score is that sum × 100 ÷ the weight left (70 without Audience and archetype
+fit), rounded the same way, so every threshold stays reachable; the page says so ("scored out of 70,
+scaled to 100: the criteria name no audience or archetype"). A component that is not available for
+one creator only (no audience census, too few posts with a like count) still earns 0 for that
+creator. The dormant cap applies in every run, whether cadence comes from the criteria or the
+default: a creator with no post in the last 30 days is dormant, and the fit score is capped at 50
+after any scaling. Example: Audience and archetype fit (30) with
+`c1` owns a dog (Met) and `c2` the dog is overweight (Partly met) scores 15 + 7.5 = 22.5, so 23.
+
+**3. Credit by measure.** Counts are over the posts read for the creator (**What to read per
+creator**: the last 90 days, newest 50, or 180 days when widened), never a new search. The page and
+the finding name the window and the count ("4 of 31 posts, 90 days").
+
+| Measure | Met | Partly met | Not met |
+| ------- | --- | ---------- | ------- |
+| `trait` | 3 or more posts show it | 1 or 2 posts show it | No post shows it (a bio claim alone is a lead, never a match) |
+| `topic` | 3 or more matching posts, and at least 20% of the posts read | 2 or more matching posts, short of Met | 0 or 1 matching post |
+| `audience` | The named group is the largest in the audience fields the census lists | The named group is 25% or more, but not the largest | Under 25% |
+| `followers` | Inside the range | Within 20% outside it (a 10K floor: 8,000 to 9,999) | Further outside |
+| `engagement` | At or above the bar | Half the bar or more | Under half the bar |
+| `cadence` | At or above the named rate over the last 30 days | Half the rate or more | Under half |
+| `format` | 50% or more of the posts read are in the named formats | 20% to 49% | Under 20% |
+| `country` | The country on record is a named one | n/a | The country on record is another (none on record: not available) |
+| `language` | More than half the posts read are in it | Some, but half or fewer | None |
+
+**The engagement rate** for an `engagement` criterion is the one step 4 defines: the median of
+(likes + comments) ÷ followers over the posts read with a like count. When the criterion names its
+own basis ("6% of views"), views replace followers; the finding names the basis either way.
+
+**What counts as a match.** A post counts for a `trait` or `topic` criterion when its caption,
+hashtags, transcript, or overlay text says it outright, or it is plainly the post's main subject; a
+passing mention, a tag among many, or the bio alone does not. When in doubt, it does not count. A
+niche fandom or subculture is a theme, not a keyword (**The checks**). A visual check never adds a
+match. One post may count for several criteria, and once per criterion.
+
+**An application answer** (a run that reads applicants' answers, **Applicant review**) counts only
+for the criteria its question names in its own words: "How many pounds overweight is your dog?"
+speaks to "the dog is overweight", not to "owns a dog". Where the posts don't show that criterion
+either way, an answer that says it is met earns Partly met, never Met; one that says it is not met
+earns Not met. The finding marks the credit as from the answer (`count: "answer"`).
+
+**4. The defaults when the criteria are silent.** A component with no scored criterion uses one
+default criterion, so it scores the same way every run:
+
+- **Audience and archetype fit**: none; the component is "not available: the criteria name no
+  audience or archetype".
+- **Topic evidence**: the brand's subject as `brand:summary` states it, as one `topic` criterion.
+- **Engagement quality**: the creator's median engagement rate, (likes + comments) ÷ followers over
+  the posts read with a like count (at least 5, else not available), against the bar for their size
+  band. Bars, Instagram / TikTok: under 10K followers 3.0% / 6.0%; 10K to under 50K 2.0% / 5.0%; 50K
+  to under 250K 1.5% / 4.0%; 250K to under 1M 1.0% / 3.0%; 1M and up 0.7% / 2.0%. A creator at exactly
+  50K, 250K, or 1M is in the higher band.
+- **Cadence and recency**: posts in the last 30 days: 8 or more Met, 2 to 7 Partly met, 0 or 1 Not
+  met. The dormant cap (step 2) applies here too.
+- **Format match**: Met for every creator ("no format named").
+- **Market fit**: Met for every creator ("no market named").
+
+**5. What each finding records.** Every creator's `fitBreakdown` (**State written to Atlas**)
+holds each component's weight, points, basis (`criteria`, `default`, or `not-available` with the
+reason), and each criterion's id, credit, points, count, and the permalinks it rests on. The run
+summary holds the criteria map. Compare two runs line by line: the same map, then per creator the
+same credit per criterion. With the same data the scores match exactly; a post read differently on
+a borderline match moves one criterion by one step, which the line-by-line view shows.
 
 ### 2. Brand safety (every creator, every run)
 
@@ -484,6 +596,11 @@ and the contact route Atlas holds.
   A follower-to-engagement pattern that looks bought (a large account with engagement far
   under its size band, or sudden follower jumps the census shows) is a Flag, a Fail when
   `vetting:hard-rejects` lists it.
+- **Criteria exclusions.** Each exclusion in the criteria map (**How criteria become points**) is
+  its own check over the posts read: a post that shows what it rules out (a paid post for the
+  category it names, a partnership it names) is a Flag citing the post. None in a window at least
+  as long as the criterion asks for is a Pass. None in a shorter window is a Pass that says how much
+  was checked ("checked 90 of 180 days"), never a plain Pass. Never points.
 - **Earlier verdicts.** `search_insights` for `brand_safety` role findings on the creator's
   posts, and earlier content reviews of the creator (`content-review-{profile}` prefix,
   `detail.creator`). Cite them; never contradict one silently.
@@ -822,12 +939,17 @@ still on record. It also carries `detail.findings` (**The findings behind the ch
 `{viewFloor, measured, working: [{label, medianLift, measured, total, examples[]}], sentiment:
 {positive, neutral, mixed, negative, posts}, challenges: [{n, title, evidence[]}], brandsNamed:
 [{brand, posts, competitor}], reach: {totalViews, topPostShare, paidPosts, restAverage}, supply:
-{market, posts, authors, total}, checks: [{component, label, finding}], proposedCriteria[]}`.
+{market, posts, authors, total}, checks: [{component, label, finding}], proposedCriteria[]}`, and
+`detail.criteriaMap` (**How criteria become points**): `{source, criteria: [{id, text, component,
+measure, share}], unscored: [{id, text, why: "exclusion" | "not-from-posts"}], defaults:
+[component]}`, where `source` is the criteria record's key and `share` the criterion's points at Met.
 
 `detail` carries `findingType`, `vettedAt` (full UTC timestamp from the shell clock, the same on
 every finding of one run), `handle`, `network`, `name` (from the list, when given),
-`recommendation`, `rule` (which rule of **The recommendation** decided it), `fitScore`, the
-component breakdown, `safety` (`{category: result}` plus red line, scope, competitor, disclosure,
+`recommendation`, `rule` (which rule of **The recommendation** decided it), `fitScore`,
+`fitBreakdown` (**How criteria become points**: `[{component, weight, points, basis: "criteria" |
+"default" | "not-available", reason, criteria: [{id, credit: 1 | 0.5 | 0 | null, points, count,
+evidence[]}]}]`, `credit` null for a criterion with no data), `safety` (`{category: result}` plus red line, scope, competitor, disclosure,
 and audience checks), `redLineHits[]`, `hardRejectHits[]`, `riskFlags[]`, `calibrationsApplied[]`
 (the keys that shaped the call), `lessonsApplied[]`, `evidence[]`, `estFee` when the calculator
 gives one, `visualCheck` when the run had a visual check and it ran on the creator (left out for a
@@ -933,7 +1055,8 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
    the check's name, the result, the confidence word, and the post and timestamp, linked to the
    creator's still in the visual check section (the still itself is not repeated); `{DETAILS}` with
    the two reasons, each check's mark with the post or number behind it (a lift as "3.0× usual
-   views"), a watch line (the one thing to keep an eye on), what would settle a Maybe (a Maybe that
+   views"), the points per criterion as `c1 Met 15 · c2 Partly 7.5 (2 of 31 posts)`, each count
+   linked to its posts, a watch line (the one thing to keep an eye on), what would settle a Maybe (a Maybe that
    only fills a gap says "Backup: take if {creator} declines" instead; it stays a Maybe in the
    findings), the calibrations and lessons applied, an earlier vetting or discovery state, the
    contact route, "Est. fee {open} to {max}, target {target}" when the calculator gives one with
@@ -957,7 +1080,11 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
 12. **Launch clock** (3.17), when the criteria name a launch date: the weeks from today to that
    date, with each next step placed in its week and the launch marked. No stage gets a date the
    next steps did not set.
-13. **How the verdict was made** (3.11): the fit score's components and weights, the safety
+13. **How the verdict was made** (3.11): the fit score's components and weights, the criteria
+   map as a table (each criterion's id, words, component, measure, and points at Met; the
+   exclusions and the criteria posts can't show listed apart; the components on their defaults
+   named, and the scaling when a component had no criterion in the run), the credit rules in one line ("Met 1, Partly met ½, Not met 0; posts counted over the
+   posts read"), the safety
    results, the recommendation order and the thresholds, the hard rejects, every saved call or
    lesson that changed a verdict, which posts the findings used, how a lift is worked out (the
    post's views divided by the creator's 90-day median) and the view floor, the platform counts
