@@ -507,8 +507,8 @@ export function checkChat(turns: Turn[], closed: boolean, rules: ChatRules): { c
 export const REPEAT_IDS = { asks: 'FU1', leads: 'FU2' } as const
 
 // The headers of the questions a first run settles, and the header of the one question a repeat run asks.
-// They are the contract's own (orchestration.md, 2, remember-answers.md, storyline-confirm.md, and repeat-run.md, The reply): lib.test.ts fails when
-// either file stops naming one, so a renamed header cannot leave FU1 looking for the old one.
+// They are the contract's own: orchestration.md, 2, remember-answers.md, storyline-confirm.md, and repeat-run.md,
+// The reply. Rename one there and here together, or FU1 keeps looking for the old header.
 export const SETUP_HEADERS = ['Heard', 'Scope', 'Save', 'Remember', 'Storyline', 'Role', 'Relationship']
 export const SINCE_HEADER = 'Since then'
 // What the setup questions say when a host refuses the question tool and the flow asks in text.

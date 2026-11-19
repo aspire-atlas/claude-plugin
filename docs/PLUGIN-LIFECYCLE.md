@@ -298,7 +298,7 @@ bash scripts/check-channel.sh develop   # or main
 Everything in this repository ships to customers. A plugin meant only for Aspire's own team does not go here: it belongs in a separate private repository with its own marketplace (see `CLAUDE.md`).
 
 1. Branch from `develop` as for any feature.
-2. Create `plugins/<name>/` with `.claude-plugin/plugin.json` (`name`, `displayName`, `description`, `author`, `homepage`, `repository`, `license`; no `version`), a `README.md`, and its `skills/`. Agents are named `atlas-<name>.md`; list each in a skill's agent hand-off and Model tiers tables and in the plugin README's agent table, as `aspire` does.
+2. Create `plugins/<name>/` with `.claude-plugin/plugin.json` (`name`, `displayName`, `description`, `author`, `homepage`, `repository`, `license`; no `version`), a `README.md`, and its `skills/`. Agents are named `atlas-<name>.md`; list each in an agent hand-off table (a skill's `SKILL.md` or its `references/agents-menu.md`) and a skill's Model tiers table and in the plugin README's agent table, as `aspire` does.
 3. Share files with `aspire` by symbolic link, never by copy. Every agent carries the artifact standard's agent block verbatim, and that block names `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md` and `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, which reads `reader-standard.md` and runs the script in `page-check.md`, so the plugin links those four paths and the two animated marks in `assets/` to `aspire`'s files:
    ```bash
    mkdir -p plugins/<name>/skills/aspire/references plugins/<name>/skills/page-standard plugins/<name>/assets

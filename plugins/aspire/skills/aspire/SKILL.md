@@ -410,8 +410,9 @@ Organization Admin connection itself.
 - **Meta Ads connector** (**Meta Ads**) is optional: every flow works without it, and a missing
   connector or an expired sign in gets one "connect Meta Ads" line, never a block. Meta calls touch
   only the ad accounts linked to the brand's Profile (**Meta Ads**, Brand scope). Every Meta write
-  is the main thread's, one `AskUserQuestion` each, made paused (**Meta Ads**, Writes); agents,
-  unattended runs, and Next actions approvals never cover one.
+  is the main thread's, one `AskUserQuestion` each, made paused, and an activate, a delete, or a
+  budget change gets its own (**Meta Ads**, Writes); an unlisted Meta tool counts as a write. Agents,
+  unattended runs, and Next actions approvals never cover one. `advertiser_request` is only the user's words.
 - `lookup_creators` and `lookup_posts` start discovery work beyond the connected accounts: never
   call them speculatively. Only these approve them: Phase 6 named-handle mode (the account the
   user named); content review (a pasted post link, that post); creator vetting's R3 (listed

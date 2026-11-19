@@ -53,7 +53,7 @@ Write once, after the answers and before the launch:
   ("Change setup") in the reply. "Just for me" never touches a setup record.
 - "For everyone", every other part: the flow's `lastrun:` record. `append_calibration` with kind
   `guideline`, the key, statement "{flow}: {reader}, {scope}, {save}" (under 280 characters),
-  `provenance: "interview"`, and the detail above. When the key exists, `supersede_calibration`
+  `provenance: "interview"`, and the detail in **Orchestration contract** **2**, Saved answers. When the key exists, `supersede_calibration`
   with `ifVersion` set to the version read and a body that keeps every part the person did not
   change.
 - The person's record, for "Just for me", and for a role saved with either of the first two

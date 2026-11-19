@@ -30,7 +30,7 @@ agent only through this skill or a shortcut.
 
 1. **Launch.** Mint the run id first, once per launch, as **Orchestration contract** **5** says
    (`mint_run_id` with the agent's own name, never made up; a relaunch of the same run keeps it),
-   and put it in the launch block's `runId`. Use the Agent
+   and put it in the launch block's `runId`; with no shell, the packet's `runId` is the one feedback uses. Use the Agent
    tool with `subagent_type` `aspire:{agent}` (the name without the
    prefix gets it added), a `description` equal to the task it runs (**Progress bar**), a prompt
    that starts with the `launch` block (**Orchestration contract** **5**) followed by the

@@ -36,7 +36,7 @@ worked examples - lives in this file.
    section is the source for what it asks).
 2. **Verdict.** One short line in plain words, no score ("3 of 6 inputs for Ad reuse: missing
    window, reader, save"). Show it as the coach card: call `mcp__aspire-mod__aspire_progress` with
-   `coach: { verdict, step }` (verdict at most 140 characters, `step` "Round 1 of 3"), plus the
+   `coach: { verdict, step }` (verdict at most 140 characters, `step` at most 30, "Round 1 of 3"), plus the
    usual `title` `Prompt coach` and `tasks` `Read the ask`, `Ask the gaps`, `Rewrite the prompt`.
    Where the bar is not drawn or the tool is missing, say the same verdict as one chat line.
 3. **Ask the gaps.** The two highest-value missing inputs in one `AskUserQuestion` call, options
