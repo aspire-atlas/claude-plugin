@@ -97,7 +97,7 @@ says so.
 An ad in its first 2 to 3 days, or still learning, often looks worse and moves more than it will
 once it settles. When single variants have spent too little, pool them (by creator, persona, length
 or hook) before reading cost per result, and say which pooling was used. An ad under the campaign's
-spend floor (**The target and the floor**) is not read at all.
+spend floor (**The target and the floor**) gets no call but Too early.
 
 ## Reading the figures
 
@@ -188,7 +188,6 @@ Shifts net to zero unless the person asked to change the total budget.
 - **Changes behind a move.** Tie each week over week move to a dated change where one exists (a new
   creative, a paused ad, an event switch, an audience or budget change), and follow up on last
   week's next steps.
-- **Organic cuts.** A variant made for the creator's own feed is not judged on paid figures.
 
 ## The campaign profile
 
@@ -353,7 +352,7 @@ back is not.
 as the brief intended, did the earlier learnings hold); each recurring edit the team made (did the
 variants with it beat those without); which claims appear in winners and losers, and how early;
 whether the account supports the framework chosen for each concept; and the casting check, each
-creator's ad hook rate beside the creator hook rate she was cast on, each labelled (**Four numbers
+creator's ad hook rate beside the creator hook rate they were cast on, each labelled (**Four numbers
 called hook rate**). One account is one data point: say "consistent with", not "proves". A live ad
 with a claim outside the approved list, or a missing disclaimer, is flagged so nobody builds on it.
 

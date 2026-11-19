@@ -1784,7 +1784,8 @@ confirms each one.
 - **The call.** `sample.json` on the default tier, with `cache` left on, once per press. The input
   holds the instruction, the seven checks with their windows, each frame's time in order, {brand},
   the product's name, the hook line and the CTA line from the plan, the safe zone's shares of the
-  frame (**Reels safe zone**), and the shape to answer in: `{checks: {hook, brand, product, cta,
+  frame and its always covered bottom 20% (**Reels safe zone**), with the rule that `safezone`
+  fails only on text, a face or the product in that band, and the shape to answer in: `{checks: {hook, brand, product, cta,
   captions, safezone, disclosure}}`, each `{value: "pass" | "fail" | "unsure", at: seconds or
   null, why: "one sentence"}`. The instruction carries the content review rules: judge only what
   the frames show, never infer speech from pictures, and pass the disclosure only on a visible

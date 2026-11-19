@@ -2,7 +2,8 @@
 # Checks that each request in scripts/agent-triggers.json starts the agent it names and no other:
 # the agent's description lists the request among its "Trigger on" phrases, and no other agent's
 # description lists it or a phrase contained in it. Placeholders ({brand}, {n}) match any
-# placeholder. A case whose agent has no file yet is reported as waiting and does not fail.
+# placeholder. A case whose agent has no file yet waits, and must name the ticket that adds the agent
+# ("waitsFor"), so a case naming an agent that will never exist fails rather than waiting forever.
 #
 #   scripts/check-agent-triggers.sh
 set -euo pipefail
@@ -62,12 +63,17 @@ cases = json.load(open("scripts/agent-triggers.json", encoding="utf-8"))["cases"
 fail = waiting = checked = 0
 for case in cases:
     request, want = norm(case["request"]), case["agent"]
-    others = sorted(a for a, ps in agents.items() if a != want and any(p == request or (p and p in request) for p in ps))
+    padded = f" {request} "
+    others = sorted(a for a, ps in agents.items() if a != want and any(p and f" {p} " in padded for p in ps))
     if others:
         print(f'FAIL "{case["request"]}" also starts {", ".join(others)} ({case["why"]})')
         fail += 1
     if want not in agents:
-        print(f'wait "{case["request"]}": {want} has no agent file yet')
+        if not re.fullmatch(r"ASP-\d+", case.get("waitsFor", "")):
+            print(f'FAIL "{case["request"]}": {want} has no agent file, and the case names no ticket in "waitsFor"')
+            fail += 1
+            continue
+        print(f'wait "{case["request"]}": {want} has no agent file yet ({case["waitsFor"]})')
         waiting += 1
         continue
     checked += 1
