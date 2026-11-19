@@ -321,7 +321,10 @@ Every vetting run on a review writes them, under its own `runKey`:
 
 - **An interactive run** with R4 "Save" writes one for each applicant on its list that has an
   `aspireApplicantId` and a call, in the same `append_insights` call as that applicant's
-  recommendation finding, so Atlas never holds one without the other. "Page only" writes none, and
+  recommendation finding, so Atlas never holds one without the other. It leaves to the schedule
+  every applicant whose newest record is a scheduled run's claim (its summary starts "Claimed for
+  screening by run") less than 12 hours old: that applicant is kept off the list, and the run says
+  "{n} applicants are being screened by the schedule right now". "Page only" writes none, and
   an applicant the run did not finish gets none: both stay `new`, so a scheduled run screens them.
 - **A scheduled run** writes them as **Creator vetting**, **Scheduled screening** says, which also
   claims each batch first.
