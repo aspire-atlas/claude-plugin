@@ -151,8 +151,8 @@ The figures, each worked out from sums over the matched ads in the results curre
 | Cost per sale | spend over purchases |
 | Days live | from the first day the variant's ads spent to the last, both counted, from the launch date to today (step 5) |
 
-The ad hook rate here is not the creator hook rate on **Creator Selection** or the hook result of
-**Hooks and CTAs**; **CAS paid** tells the three apart.
+The ad hook rate here is not the creator hook rate on **Creator Selection**, the hook result of
+**Hooks and CTAs**, or a TikTok ad's 2-second rate; **CAS paid** tells them apart.
 
 **Done when the totals match Meta.** The tab's Spend, Impressions, Purchases and Revenue equal
 Meta Ads Manager's totals for the same ads (the variants' live posts), the same dates and the same
