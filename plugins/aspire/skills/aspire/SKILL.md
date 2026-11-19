@@ -122,6 +122,7 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 | **CAS campaign**, **Ad Performance** (with **Compare**, **Changes for round {t}**), **Inbox**, **Tagging**, **History**, **Export**, the footer, **Where each part lives**, **Page mechanics**, **Editing in place**, **Design standards** | `references/cas-campaign-page-results.md` |
 | **CAS campaign** **1e**, the page data: what the page keeps, program files and the scan, **The activity log**, tags and the inbox, reset decisions, brief versions, the role and edit checks | `references/cas-campaign-data.md` |
 | **Hooks and CTAs** (a CAS campaign's recommendations and the hook review) | `references/hooks-and-ctas.md` |
+| **CAS paid** (the paid figures every CAS paid review shares, the three numbers called hook rate, tying an ad to its variant) | `references/cas-paid.md` |
 | **Rates and terms** | `references/rates-and-terms.md` |
 | **Content review** | `references/content-review.md` |
 | **Post analysis** | `references/post-analysis.md` |

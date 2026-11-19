@@ -1,0 +1,15 @@
+{
+  "about": "Requests that must start one agent and no other, checked by scripts/check-agent-triggers.sh against each agent's \"Trigger on\" phrases. {name} placeholders match any placeholder. A case whose agent has no file yet waits; it is checked once the agent exists.",
+  "cases": [
+    { "request": "weekly review for {brand}", "agent": "atlas-cas-weekly-review", "why": "The weekly paid review of a creator ad campaign, not the weekly insights report" },
+    { "request": "how are the ads doing this week", "agent": "atlas-cas-weekly-review", "why": "A paid question about live ads" },
+    { "request": "check the ads match the plan", "agent": "atlas-cas-launch-check", "why": "The launch check in the first days live" },
+    { "request": "creative baseline for wave {n}", "agent": "atlas-cas-creative-review", "why": "Baseline mode, before spend" },
+    { "request": "feedback on this draft", "agent": "atlas-cas-creative-review", "why": "Draft feedback mode on one cut" },
+    { "request": "where does each ad lose people", "agent": "atlas-cas-wave-diagnosis", "why": "The wave diagnosis" },
+    { "request": "wave {n} artifact", "agent": "atlas-cas-wave-review", "why": "The wave readout for the team and the client" },
+    { "request": "wave {n} review", "agent": "atlas-cas-wave-review", "why": "The wave readout for the team and the client" },
+    { "request": "weekly insights report", "agent": "atlas-weekly-insights-report", "why": "The organic weekly report keeps its own trigger" },
+    { "request": "review this post", "agent": "atlas-content-review", "why": "A published post against a brief stays with content review, not the CAS draft feedback" }
+  ]
+}
