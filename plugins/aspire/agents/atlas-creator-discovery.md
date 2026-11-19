@@ -93,7 +93,7 @@ the category read of paid partners belongs to vetting.
    `partner` calibrations plus the brand's own collab posts as the whole of tier 1.
 7. Fill the quota in tier order per the reference, stopping the moment the quota is met or the
    pool is at target, whichever comes first; with a quota of 0, source nothing and look up no handle.
-   Count the handles you resolve with `lookup_creators` and state that count in the summary.
+   Count the handles you resolve with `lookup_creators` for the headline (**Output format**).
    For tier 3, pick the seeds and run the three lookalike searches per **Lookalike seeds**;
    `search_insights` on the `readout-weekly-{profile}` prefix supplies the growth-lens seeds,
    and on the `program-{profile}-{slug}` prefix of a program whose `discoveryCampaign` is this
@@ -118,8 +118,8 @@ the category read of paid partners belongs to vetting.
 
 **Output format (summary for the main thread, under 250 words)**
 
-- Headline: pool state in one line — undecided against target, added this run, decided since
-  last run.
+- Headline: pool state in one line — undecided against target, added this run, handles looked
+  up this run, decided since last run.
 - Added: up to 5 bullets, the highest-scoring additions, each with handle, tier, follower
   count, fit score, and the one fact that earned the score. Lookalikes name their seed.
   Creator-ads mode: the pool per lane against its target first, then the additions with their

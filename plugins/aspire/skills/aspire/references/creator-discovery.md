@@ -434,8 +434,11 @@ shortlist", "Record decisions on the shortlist", "Change setup". Credits asks th
 candidates (the target minus the undecided candidates already in the pool, counted from the
 newest pool records as the agent's pool rebuild does, `search_insights` on the
 `creator-discovery-{profile}-{campaign}` run key) and applies only to
-"Fill the shortlist"; every other answer launches with a cap of 0. "Change setup" discards the
-same call's Credits and Save answers and asks them again, with the run question, after setup. Then launch `atlas-creator-discovery` with: tool prefix,
+"Fill the shortlist". "Show the current shortlist" launches with a cap of 0. "Record decisions on
+the shortlist" launches nothing: it goes to **Recording decisions** below. "Change setup" launches
+nothing until **Setup** is done, discards the same call's Credits and Save answers, then asks the
+run question and Credits again, and Save only on a first run (a repeat run never asks Save).
+For "Fill the shortlist" or "Show the current shortlist", launch `atlas-creator-discovery` with: tool prefix,
 `profile_id`, `profile_slug`, the campaign slug, the brand handles and networks, run mode
 `interactive`, `job` (`view` for "Show the current shortlist", else `discover`), and `recipient`
 (SKILL.md, **Reading the ask**; `growth` when the ask is for more creators like the ones

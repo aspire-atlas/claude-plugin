@@ -106,14 +106,14 @@ this order:
    ask already gave one.
 3. **Credit cap**, header "Credits", only when the agent's level is `spend` (**7**) and this run
    will spend. It is the one place a run's cost is stated. One template: "This {work}, and each
-   uses Atlas credits ({balance} left). Cap it at {n} {unit}?" Options: "Cap at {n} {unit}
-   (Recommended)", the unit's none option, and "No cap". The `{work}`, `{unit}`, `{n}`, and the
-   none option come from the agent's spend unit:
+   uses Atlas credits ({balance} left). Cap it at {n} {unit}?{note}" Options: "Cap at {n} {unit}
+   (Recommended)", the unit's none option, and "No cap". The `{work}`, `{unit}`, `{n}`, `{note}`,
+   and the none option come from the agent's spend unit:
 
-   | Unit | Agents | `{work}` | `{n}` | None option |
-   | ---- | ------ | -------- | ----- | ----------- |
-   | `fetches` | Every `spend` agent but `atlas-creator-discovery` | "fetches {n} handles or posts Atlas does not hold" | The handles or posts the run needs that Atlas does not hold | "Fetch none, use what Atlas holds" |
-   | `candidates` | `atlas-creator-discovery` | "finds up to {n} new candidates to fill the {campaign} shortlist to {target}; looking up the handles it scores also uses credits, and those lookups are not capped" | The pool target (`campaign:{slug}-pool`) minus the candidates already undecided in it | "Add none, re-score the shortlist" |
+   | Unit | Agents | `{work}` | `{n}` | `{note}` | None option |
+   | ---- | ------ | -------- | ----- | -------- | ----------- |
+   | `fetches` | Every `spend` agent but `atlas-creator-discovery` | "fetches {n} handles or posts Atlas does not hold" | The handles or posts the run needs that Atlas does not hold | Nothing | "Fetch none, use what Atlas holds" |
+   | `candidates` | `atlas-creator-discovery` | "finds up to {n} new candidates to fill the {campaign} shortlist to {target}" | The pool target (`campaign:{slug}-pool`) minus the candidates already undecided in it | " The handle lookups behind scoring also use credits and are not capped." | "Add none, re-score the shortlist" |
 
    Accounts Atlas holds behind their pace are not in `{n}`: their refresh is offered and confirmed
    on its own (**Page standard**, section 9.5; **7**, The freshness refresh). The cap counts in the
@@ -130,12 +130,16 @@ this order:
    interactive run, a repeat run included, and the Credits question opens "If it fills the
    shortlist, …". The campaign is settled before this call (its own question when more than one
    is active), so `{n}` and `{target}` are read from that campaign's pool first. The Credits
-   answer applies only when the run question's answer is "Fill the shortlist"; any other answer
-   launches with no spend, `{"cap": 0, "unit": "candidates"}`. "Change setup" discards the Credits
-   and Save answers given in the same call: after setup, the run question, Credits, and Save are
-   asked again from the new setup. With the pool already at its target, `{n}` is 0, Credits is not
-   asked, and the launch carries a cap of 0. A CAS campaign's discovery (**CAS campaign**) is never asked Credits: its saved sync
-   cadence (C6) is the standing approval for paid discovery, so it launches with
+   answer applies only when the run question's answer is "Fill the shortlist". The other answers:
+   "Show the current shortlist" launches `job: view` with `{"cap": 0, "unit": "candidates"}`;
+   "Record decisions on the shortlist" launches nothing (the main thread records them,
+   **Creator discovery**, **Recording decisions**); "Change setup" launches nothing until setup is
+   done, discards the Credits and Save answers given in the same call, and then asks the run
+   question and Credits again from the new setup, with Save only on a first run (a repeat run
+   never asks Save, **Repeat run**). With the pool already at its target, `{n}` is 0, Credits is
+   not asked, and the launch carries a cap of 0. A CAS campaign's discovery (**CAS campaign**) is
+   never asked Credits: its saved sync cadence (C6) is the standing approval for paid discovery,
+   so it launches with
    `{"cap": null, "unit": "candidates"}` and fills each lane to its own target.
 4. **Save**, header "Save". Whether to save the findings to Atlas, defaulting to no: "Page only
    (Recommended)", "Save to Atlas". This is the run's one write confirmation (**7**, Write), and
@@ -200,7 +204,8 @@ No heading, no table, no bold, and no tool, record, or agent name.
    | The run | The line names |
    | ------- | -------------- |
    | Builds a new page, interactive (**The storyline**) | "the page's three main points, before I build it" |
-   | Asks the Credits question | "the Atlas credits this run uses to {fetch handles or posts Atlas does not hold, or find new candidates for the shortlist}, capped in the question below" |
+   | Asks the Credits question, unit `fetches` | "the Atlas credits this run uses to fetch handles or posts Atlas does not hold, capped in the question below" |
+   | Asks the Credits question, unit `candidates` | "the Atlas credits this run uses to find new candidates for the shortlist, capped in the question below, and to look up the handles it scores, which is not capped" |
    | Reads an account this session already holds as behind its pace, in a run **Page standard**, section 9.5, says asks first | "a refresh of {@handle}, which is out of date (the refresh is free and the new posts it collects use credits)"; when more of the accounts this session already holds are behind than that section's refresh limit, "a refresh of {limit} out-of-date accounts, your own first, then the most-viewed on each platform (the refresh is free and the new posts it collects use credits)" |
    | Asks the Save question, in this reply or in the storyline call | "saving {what the Save question names: the findings, the ranked posts} to Atlas" |
    | Will keep the page's open items for the next run, and no question of this reply confirms it (**Repeat run**, **Keeping the record**) | "keeping this page's open decisions and next steps, so the next run can follow up" |
@@ -563,7 +568,7 @@ lists them. Agents work only from a message that carries it (**11**).
  "question": "{code from 3, or null}", "persona": "{persona, or unknown}",
  "reader": "{primary lens}", "shortcut": "{shortcut, or null}",
  "scope": {"channels": ["instagram", "tiktok"], "from": "{YYYY-MM-DD}", "to": "{YYYY-MM-DD}"},
- "approved": {"write": false, "send": [], "spend": {"cap": null, "unit": "fetches"}},
+ "approved": {"write": false, "send": [], "spend": {"cap": 0, "unit": "fetches"}},
  "examples": ["{link of each approved example for this question}"],
  "storyline": {"pass": "{draft, build, state, or none}", "bullets": ["{each confirmed bullet}"]},
  "since": {"ran": "{YYYY-MM-DD}", "page": "{the last run's page link, or null}",
@@ -654,7 +659,7 @@ acts on.
 | `proposals` | Every draft, save, send, order, payment, spend, or freshness refresh the agent wants approved, each with its `level` (**7**), its `items`, and its `gate`: `approve-` plus a short kebab-case name of what is approved (`approve-shortlist`, `approve-offers`, `approve-saves`), 2 to 40 lower-case letters, digits, and hyphens. The main thread sends the person's verdict under the same `gate` (SKILL.md, **Running agents**). Empty when there is nothing to approve. |
 | `questions` | Everything the agent could not settle, worded so the main thread can put it in `AskUserQuestion` as is. |
 | `next` | The agent that should run next and why, or `null`. A suggestion only: the main thread decides. |
-| `cost` | Credits the run's tools reported using (`null` when none reported any); `unit`, the launch block's `spend.unit` as given; `used`, what the run spent in that unit and counted against `approved.spend.cap` (for `fetches`, the handles or posts it fetched or refreshed; for `candidates`, the new candidates discovery added to the pool, whatever tier or tool found them; the handles it looked up to score them are not counted against the cap, as the Credits question tells the person, and the run's summary states how many it looked up); and minutes from the audit trail's `started` to `finished`. |
+| `cost` | Credits the run's tools reported using (`null` when none reported any); `unit`, the launch block's `spend.unit` as given; `used`, what the run spent in that unit and counted against `approved.spend.cap` (for `fetches`, the handles or posts it fetched or refreshed; for `candidates`, the new candidates discovery added to the pool, whatever tier or tool found them; the handles it looked up to score them are not counted against the cap, as the Credits question tells the person, and the summary's headline states how many it looked up); and minutes from the audit trail's `started` to `finished`. |
 | `question`, `reader` | The code it answered and the primary reader it built for, from the launch block. |
 | `coverage` | Each channel in scope with its post count, and any channel missing with why. |
 | `selfCheck` | The page check's results by check code and name (`skills/page-standard/SKILL.md`, **7**): those fixed before publishing and those still failing. Empty lists when no page was published. |
