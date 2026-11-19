@@ -1197,9 +1197,10 @@ Each batch's launch gets its own `runId` per **Running agents**.
    `creator-vetting-{profile}`, newest first, paged, for the newest `summary` finding whose
    `detail.applicantReview` is the review's slug and that carries a `detail.criteriaMap`. An
    interactive run on the review counts, so a schedule set up right after one scores as it did.
-   Reuse that map when its `source` is the review's criteria record, the record was last saved
-   before that summary's `vettedAt`, and each criterion's quoted words, scored and unscored, still
-   appear in the record. Otherwise there is no map to reuse: the first batch builds one, and when an
+   Reuse that map when its `source` is the review's criteria record, the active record's
+   `createdAt` is before that summary's `vettedAt` (a change to the record saves a new version
+   with its own `createdAt`), and each criterion's quoted words, scored and unscored, still appear
+   in the record. Otherwise there is no map to reuse: the first batch builds one, and when an
    earlier map was set aside because the criteria changed, step 9 says so.
 2. **Save the team's new calls from the review Sheet**, when `-sheet` holds a link. Read it per
    **Reading the review Sheet** (its rows, Team calls, duplicates, Rows to fix, which calls are new,
