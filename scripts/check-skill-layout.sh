@@ -12,7 +12,7 @@
 #   - budget:      a word cap on what each run loads before it starts: the files every run that
 #                  launches an agent reads (COMMON, together), each file under references/
 #                  (REF_MAX, or its own ceiling in BIG), and the page standard every agent reads
-#                  (PAGE_STD). Words are counted with wc -w; at about 1.35 tokens a word,
+#                  (PAGE_STD). Words are counted with LC_ALL=C wc -w, the same on every machine; at about 1.35 tokens a word,
 #                  COMMON_MAX words is the common path's token budget
 # The fixtures in scripts/fixtures/skill-layout/ hold one skills/ tree each: a pass*/ tree fails
 # nothing, and a fail-<rule>*/ tree fails that rule and no other. A fixture's budget.env, beside
@@ -214,19 +214,19 @@ budget() {
   local S=$1 f rel n total=0 found= cap
   for rel in $COMMON; do
     [ -f "$S/$rel" ] || continue
-    n=$(wc -w < "$S/$rel") || return 1; total=$((total + n)); found=1
+    n=$(LC_ALL=C wc -w < "$S/$rel") || return 1; total=$((total + n)); found=1
   done
   [ -z "$found" ] || [ "$total" -le "$COMMON_MAX" ] ||
     echo "budget|$S: the files every run loads ($COMMON) hold $total words, over $COMMON_MAX (about $((COMMON_MAX * 135 / 100)) tokens); move a section a run needs only sometimes into its own reference"
   if [ -f "$S/$PAGE_STD" ]; then
-    n=$(wc -w < "$S/$PAGE_STD") || return 1
+    n=$(LC_ALL=C wc -w < "$S/$PAGE_STD") || return 1
     [ "$n" -le "$PAGE_STD_MAX" ] || echo "budget|$S/$PAGE_STD: $n words, over $PAGE_STD_MAX; every agent loads it, so move detail into a file beside it"
   fi
   while IFS= read -r f; do
     [ -n "$f" ] || continue
     rel=${f#"$S"/}
     cap=$(awk -F'|' -v r="$rel" '$1 == r { print $2 }' <<< "$BIG")
-    n=$(wc -w < "$f") || return 1
+    n=$(LC_ALL=C wc -w < "$f") || return 1
     [ "$n" -le "${cap:-$REF_MAX}" ] || echo "budget|$f: $n words, over ${cap:-$REF_MAX}; split it by section"
   done < <(find "$S" -path "$S/*/references/*" -name '*.md' -type f | sort)
 }
@@ -322,7 +322,7 @@ $from|$to
   while IFS='|' read -r rel cap; do
     [ -n "$rel" ] || continue
     if [ ! -f "$big_src/$rel" ]; then err "BIG line $rel matches no file; remove it"; continue; fi
-    n=$(wc -w < "$big_src/$rel")
+    n=$(LC_ALL=C wc -w < "$big_src/$rel")
     [ "$n" -gt "$REF_MAX" ] || err "BIG line $rel: the file is down to $n words, under $REF_MAX; remove its line"
   done <<< "$BIG"
   ran="${ran:+$ran; }$files skill files are within the layout and the load budget"

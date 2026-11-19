@@ -139,7 +139,7 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 | **Quality review** (Run, Review log); **Reader standard** (R1 to R15); **English rules** (wording, pages and chat) | `references/quality-review.md`; `references/reader-standard.md`; `references/english-rules.md` |
 | **Prompt coach** (and its Carry-over) | `references/prompt-coach.md` |
 | **Product feedback** (what the person thinks of Atlas itself, sent to the Aspire team) | `references/product-feedback.md` |
-| **Creator card** (**Visual output**, **Creator card actions**) | `references/creator-card.md` |
+| **Creator card** (**Visual output**, **Creator card actions**, **Agent hand-off**) | `references/creator-card.md` |
 | **Question format rule**, Phase 5 supersede rule | **Questions and writes** below |
 | Phase 5 web research rule | `references/onboarding.md` (Phase 5, **Web research option**) |
 | The Atlas Starter Guide | `references/first-run.md` |
