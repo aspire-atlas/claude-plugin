@@ -23,9 +23,23 @@ with how far the pool is from the lineup the launch needs. Every Atlas tool need
 third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-discovery.md` before starting. It
-holds the campaign calibration keys, the tier model, the scoring table, the pool state
+holds the campaign calibration keys, the tier model, how scoring applies the vetting map, the pool state
 machine, the page structure, delivery, and the unattended run rules. Follow it exactly.
 Every creator on the page is drawn with the creator card in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-card.md`; read it too. Each candidate's estimated fee comes from the fee calculator in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/fees.md`: the saved `fees:rate-card` from your calibration read, or the Aspire recommended rates without one, applied to view counts on the posts you already fetched.
+
+**Fit score.** Score fit only by **How criteria become points** in
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-vetting.md` (section **1. Brand fit**), as
+the discovery reference's **Scoring** applies it, never by a split of your own: the same map and
+credit rules vetting uses, so a creator gets the same score in both. Read that section and
+**Criteria exclusions** under **2. Brand safety** there. Take the map from the newest pool finding's
+`detail.criteriaMap` when its `version` is the current version of `campaign:{slug}-criteria`, and
+use it exactly as given; otherwise build it once before scoring the first candidate (each criterion
+numbered, quoted from the record, with its component and measure; repeats scored once; exclusions
+and criteria posts can't show listed apart) and score every candidate in the run against it. Count
+only over each candidate's posts read as vetting reads them (90 days, newest 50, widened once to 180
+days with fewer than 5); when unsure whether a post matches, it does not count. An exclusion hit is
+a safety Flag, never points. Record every candidate's `fitBreakdown` and the map in the finding and
+the points per criterion on the card.
 
 **Creator-ads mode.** When `campaign_type` is `creator-ads`, or the `campaign:{slug}-brief`
 body starts with `type: creator-ads`, follow **Creator-ads mode** in the discovery reference on
@@ -85,8 +99,10 @@ the category read of paid partners belongs to vetting.
    write the re-scores and publish. With `job: view`, skip steps 5 to 9 and the delivery in
    step 10: republish the page from the newest pool state as it stands, write nothing to
    Atlas, and return the summary.
-5. Re-score every undecided candidate against current data before sourcing new ones — a
-   candidate who went dormant or dropped engagement should fall before a new one is added.
+5. Settle the criteria map (**Fit score** above): reuse the newest finding's map while the
+   criteria record is at its version, else build it now. Then re-score every undecided candidate
+   against it and current data before sourcing new ones — a candidate who went dormant or dropped
+   engagement should fall before a new one is added. Creator-ads mode builds no map.
 6. Call `list_post_search_fields` and `list_creator_search_fields` once each; use only paths
    they return. Find the partnership marker tier 1 needs in the post census rather than
    assuming a field name; if the census exposes none, say so in the summary and treat
@@ -103,8 +119,9 @@ the category read of paid partners belongs to vetting.
    Record tier, exact source, `seed` for a lookalike, `recommendationTypes` for a creator a
    recommendation pass returned, and `tierScheme: 2` on every candidate. Resolve every web-sourced handle with
    `lookup_creators` before scoring it.
-8. Score each new candidate with the reference's table, naming the field behind each
-   component. A component with no data scores zero and is listed as missing. Then work out
+8. Score each new candidate against the same map, per the reference's **Scoring**, naming the
+   posts or field behind each criterion's credit. A component with no data scores zero and is
+   listed as missing. Then work out
    **The findings behind the shortlist** from the posts this run already read, tag every check
    with its finding, and list any criterion a finding suggests as a proposed change; never
    apply one.
@@ -125,7 +142,8 @@ the category read of paid partners belongs to vetting.
   Creator-ads mode: the pool per lane against its target first, then the additions with their
   lane, hook rate, and the pass that found them ("Meta: high ad performance"), then per lane
   the recommendation passes that ran and how many each returned.
-- Moved: candidates whose score changed materially since the last run, and why.
+- Moved: whether the criteria map was reused or rebuilt (and why), then candidates whose score
+  changed materially since the last run, and why.
 - Flags: risk flags, competitor near-misses, dormant accounts, candidates with no contact
   route. "None" is a valid line.
 - Gaps: tiers that came back empty (including "no lookalike seed qualified"), in creator-ads

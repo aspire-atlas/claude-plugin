@@ -440,8 +440,9 @@ their newest 50; the page's key says so.
 ### 1. Brand fit (the fit score, out of 100)
 
 Scored against `vetting:criteria`, the chosen campaign's `campaign:{slug}-brief` and
-`-criteria` when R2 named one, or the applicant review's resolved criteria when R2 named a review. Weights follow creator discovery's **Scoring**;
-discovery does not yet use the criteria map below, so its score for a creator can differ from this one:
+`-criteria` when R2 named one, or the applicant review's resolved criteria when R2 named a review. Creator discovery
+(**Scoring**) uses the same weights and the same criteria map below, over the same posts, so a
+creator gets the same fit score in both flows:
 
 | Component | Weight | Source |
 | --------- | ------ | ------ |
