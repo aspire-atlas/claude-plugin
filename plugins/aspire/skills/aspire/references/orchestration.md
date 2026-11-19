@@ -107,19 +107,21 @@ this order:
 3. **Credit cap**, header "Credits", only when the agent's level is `spend` (**7**) and this run
    will spend. It is the one place a run's cost is stated. One template: "This {work}, and each
    uses Atlas credits ({balance} left). Cap it at {n} {unit}?" Options: "Cap at {n} {unit}
-   (Recommended)", "Start none, use what Atlas holds", "No cap". The `{work}`, `{unit}`, and `{n}`
-   come from the agent's spend unit:
+   (Recommended)", the unit's none option, and "No cap". The `{work}`, `{unit}`, `{n}`, and the
+   none option come from the agent's spend unit:
 
-   | Unit | Agents | `{work}` | `{n}` |
-   | ---- | ------ | -------- | ----- |
-   | `fetches` | Every `spend` agent but `atlas-creator-discovery` | "fetches {n} handles or posts Atlas does not hold" | The handles or posts the run needs that Atlas does not hold, or holds behind its pace |
-   | `candidates` | `atlas-creator-discovery` | "finds up to {n} new candidates to fill the {campaign} shortlist to {target}" | The pool target (`campaign:{slug}-pool`) minus the candidates already undecided in it |
+   | Unit | Agents | `{work}` | `{n}` | None option |
+   | ---- | ------ | -------- | ----- | ----------- |
+   | `fetches` | Every `spend` agent but `atlas-creator-discovery` | "fetches {n} handles or posts Atlas does not hold" | The handles or posts the run needs that Atlas does not hold | "Fetch none, use what Atlas holds" |
+   | `candidates` | `atlas-creator-discovery` | "finds up to {n} new candidates to fill the {campaign} shortlist to {target}; looking up the handles it scores also uses credits, and those lookups are not capped" | The pool target (`campaign:{slug}-pool`) minus the candidates already undecided in it | "Add none, re-score the shortlist" |
 
-   The cap counts in that unit, and the answer goes in the launch block's `approved.spend` (**5**)
-   with its `unit`; "Start none" is a cap of 0. Credits replaces the flow's own fetch question
-   (vetting's R3), as Save replaces R4, so the same fetches are never approved twice: "Cap at {n}
-   fetches" or "No cap" is R3's "Fetch them", and "Start none" its "Only vet the creators Atlas
-   already holds". Never state a credit price per fetch or candidate unless `get_status` reports
+   Accounts Atlas holds behind their pace are not in `{n}`: their refresh is offered and confirmed
+   on its own (**Page standard**, section 9.5; **7**, The freshness refresh). The cap counts in the
+   unit, and the answer goes in the launch block's `approved.spend` (**5**) with its `unit`; the
+   none option is a cap of 0. Credits replaces the flow's own fetch question (vetting's R3), as
+   Save replaces R4, so the same fetches are never approved twice: "Cap at {n} fetches" or "No
+   cap" is R3's "Fetch them", and the none option its "Only vet the creators Atlas already
+   holds". Never state a credit price per fetch or candidate unless `get_status` reports
    one; the balance comes from `get_status`.
 
    **Discovery's count.** Whether a discovery run spends at all is set by its run question
@@ -129,8 +131,10 @@ this order:
    shortlist, …". The campaign is settled before this call (its own question when more than one
    is active), so `{n}` and `{target}` are read from that campaign's pool first. The Credits
    answer applies only when the run question's answer is "Fill the shortlist"; any other answer
-   launches with no spend. With the pool already at its target, `{n}` is 0 and Credits is not
-   asked. A CAS campaign's discovery (**CAS campaign**) is never asked Credits: its saved sync
+   launches with no spend, `{"cap": 0, "unit": "candidates"}`. "Change setup" discards the Credits
+   and Save answers given in the same call: after setup, the run question, Credits, and Save are
+   asked again from the new setup. With the pool already at its target, `{n}` is 0, Credits is not
+   asked, and the launch carries a cap of 0. A CAS campaign's discovery (**CAS campaign**) is never asked Credits: its saved sync
    cadence (C6) is the standing approval for paid discovery, so it launches with
    `{"cap": null, "unit": "candidates"}` and fills each lane to its own target.
 4. **Save**, header "Save". Whether to save the findings to Atlas, defaulting to no: "Page only
@@ -485,7 +489,7 @@ writes neither record.
 ### A repeat run (what changed, not setup)
 
 When the same question was run before, the reply follows up on that run and asks no setup
-question: it opens with "Last time ({date}) you asked …", asks one question about the decisions
+question but Credits when the run will spend (and, for discovery, its run question with it): it opens with "Last time ({date}) you asked …", asks one question about the decisions
 and next steps that page left open, and the new page leads with what changed. The flow's
 `lastrun:` record keeps the last run for it. All of it (when a run is a repeat, the reply, the
 record and its confirmation, scheduled runs, and the examples) is in **Repeat run**.
@@ -581,7 +585,9 @@ lists them. Agents work only from a message that carries it (**11**).
   the flow's standing approval in an unattended run): from the setup reply, or from the storyline
   call on a run that builds a new page, so `false` on a `draft` pass; `send` names each recipient,
   order, or payment approved one by one; `spend.cap` is the Credits answer (**2**), counted in
-  `spend.unit`, `null` for no cap or no spend, and 0 for "Start none"; `spend.unit` is the agent's
+  `spend.unit`: `null` only for "No cap", a CAS campaign's discovery, and an unattended discovery run
+  under its saved cadence, and 0 for the none option and for every launch that will not spend;
+  `spend.unit` is the agent's
   spend unit from the Credits table (**2**), `fetches` or `candidates`, set on every launch, even with
   no spend, so the packet counts in the same unit; `refresh` is `null` until the person answers a freshness refresh offer, then the list
   of approved handles as `{network}:{handle}` (`[]` when they chose "Use what Atlas holds";
@@ -648,7 +654,7 @@ acts on.
 | `proposals` | Every draft, save, send, order, payment, spend, or freshness refresh the agent wants approved, each with its `level` (**7**), its `items`, and its `gate`: `approve-` plus a short kebab-case name of what is approved (`approve-shortlist`, `approve-offers`, `approve-saves`), 2 to 40 lower-case letters, digits, and hyphens. The main thread sends the person's verdict under the same `gate` (SKILL.md, **Running agents**). Empty when there is nothing to approve. |
 | `questions` | Everything the agent could not settle, worded so the main thread can put it in `AskUserQuestion` as is. |
 | `next` | The agent that should run next and why, or `null`. A suggestion only: the main thread decides. |
-| `cost` | Credits the run's tools reported using (`null` when none reported any); `unit`, the launch block's `spend.unit` as given; `used`, what the run spent in that unit and counted against `approved.spend.cap` (for `fetches`, the handles or posts it fetched or refreshed; for `candidates`, the new candidates discovery added to the pool, whatever tier or tool found them, while the handles it looked up to score them do not count again as fetches); and minutes from the audit trail's `started` to `finished`. |
+| `cost` | Credits the run's tools reported using (`null` when none reported any); `unit`, the launch block's `spend.unit` as given; `used`, what the run spent in that unit and counted against `approved.spend.cap` (for `fetches`, the handles or posts it fetched or refreshed; for `candidates`, the new candidates discovery added to the pool, whatever tier or tool found them; the handles it looked up to score them are not counted against the cap, as the Credits question tells the person, and the run's summary states how many it looked up); and minutes from the audit trail's `started` to `finished`. |
 | `question`, `reader` | The code it answered and the primary reader it built for, from the launch block. |
 | `coverage` | Each channel in scope with its post count, and any channel missing with why. |
 | `selfCheck` | The page check's results by check code and name (`skills/page-standard/SKILL.md`, **7**): those fixed before publishing and those still failing. Empty lists when no page was published. |

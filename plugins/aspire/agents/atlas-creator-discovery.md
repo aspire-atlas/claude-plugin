@@ -91,7 +91,9 @@ the category read of paid partners belongs to vetting.
    they return. Find the partnership marker tier 1 needs in the post census rather than
    assuming a field name; if the census exposes none, say so in the summary and treat
    `partner` calibrations plus the brand's own collab posts as the whole of tier 1.
-7. Fill the quota in tier order per the reference, stopping the moment the pool is at target.
+7. Fill the quota in tier order per the reference, stopping the moment the quota is met or the
+   pool is at target, whichever comes first; with a quota of 0, source nothing and look up no handle.
+   Count the handles you resolve with `lookup_creators` and state that count in the summary.
    For tier 3, pick the seeds and run the three lookalike searches per **Lookalike seeds**;
    `search_insights` on the `readout-weekly-{profile}` prefix supplies the growth-lens seeds,
    and on the `program-{profile}-{slug}` prefix of a program whose `discoveryCampaign` is this
