@@ -77,7 +77,9 @@ the category read of paid partners belongs to vetting.
    creator's card under "Notes".
 4. Rebuild the pool: `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
    `creator-discovery-{profile}-{campaign}`, newest first, paged. Newest record per `entityId`
-   wins. Count undecided against the pool target; that gap is this run's fill quota. With
+   wins. Count undecided against the pool target; that gap is this run's fill quota, lowered to
+   the launch block's `approved.spend.cap` when it is not `null` (its `spend.unit` is
+   `candidates`; 0 means add none and re-score what the pool holds). With
    `job: shortlist` the quota is zero: re-score in step 5, skip steps 7 and 8 (no sourcing), then
    write the re-scores and publish. With `job: view`, skip steps 5 to 9 and the delivery in
    step 10: republish the page from the newest pool state as it stands, write nothing to

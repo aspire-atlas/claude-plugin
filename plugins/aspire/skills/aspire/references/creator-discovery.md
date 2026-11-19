@@ -427,9 +427,14 @@ offer "Change setup" as an option on the run question. Several campaigns may be 
    with `append_calibration`, `provenance: "interview"`. A `key-exists` follows the Phase 5
    supersede rule in SKILL.md with its own confirmation.
 
-**The run question.** Ask once with `AskUserQuestion`: "What should the discovery agent do?"
-Options: "Fill the shortlist to {target}", "Show the current shortlist", "Record decisions on the
-shortlist", "Change setup". Then launch `atlas-creator-discovery` with: tool prefix,
+**The run question.** Ask once with `AskUserQuestion`, in the setup reply's call just before its
+Credits question (**Orchestration contract** **2**), since its answer sets whether the run spends: "What
+should the discovery agent do?" Options: "Fill the shortlist to {target}", "Show the current
+shortlist", "Record decisions on the shortlist", "Change setup". Credits asks the cost in
+candidates (the target minus the undecided candidates already in the pool, counted from the
+newest pool records as the agent's pool rebuild does, `search_insights` on the
+`creator-discovery-{profile}-{campaign}` run key) and applies only to
+"Fill the shortlist". Then launch `atlas-creator-discovery` with: tool prefix,
 `profile_id`, `profile_slug`, the campaign slug, the brand handles and networks, run mode
 `interactive`, `job` (`view` for "Show the current shortlist", else `discover`), and `recipient`
 (SKILL.md, **Reading the ask**; `growth` when the ask is for more creators like the ones

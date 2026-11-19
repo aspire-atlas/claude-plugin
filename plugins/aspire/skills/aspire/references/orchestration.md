@@ -61,17 +61,16 @@ actions page and its hourly run. That run is one more caller of this contract.
    the flow the ask names (**Reading the ask**, step 3). The code's agent and the flow's section own
    the run. A code marked "waiting" has no agent: say in one line what it waits on and offer the
    nearest code that can run.
-4. **Ask once.** The setup reply (**2**). When the same question was run before, the reply
-   follows up on that run and asks no setup question (**Repeat run**).
-5. **State any spend.** When the agent's level is `spend` (**7**) and this run will spend, say
-   the cost before launching (**7**, Spend).
-6. **Launch** with the launch block (**5**) in a subagent (**Running agents**). Up to three at
+4. **Ask once.** The setup reply (**2**). It is where a `spend` run's cost is asked, in its
+   Credits question, and nowhere else. When the same question was run before, the reply follows up
+   on that run and asks only what that run could not settle, including Credits (**Repeat run**).
+5. **Launch** with the launch block (**5**) in a subagent (**Running agents**). Up to three at
    once (**8**). A run that publishes a new page launches first to draft its storyline, asks the
    person to confirm it, and only then launches the build (**2**, **The storyline**).
-7. **Read the packet** (**6**), enforce its levels (**7**), log the run (**9**), and close out (**10**).
+6. **Read the packet** (**6**), enforce its levels (**7**), log the run (**9**), and close out (**10**).
 
 A shortcut (**4**) skips only the "what do you need" step: step 3 takes the shortcut's agent.
-Steps 1, 2, 4, 5, 6 and 7 still run. An unattended run skips step 4 and uses what was saved.
+Steps 1, 2, 4, 5 and 6 still run. An unattended run skips step 4 and uses what was saved.
 
 **Unattended runs.** A scheduled task runs `/aspire:aspire {argument or shortcut} {its prompt}`,
 and its prompt says not to ask questions; that is how the skill knows the run is unattended.
@@ -105,11 +104,26 @@ this order:
    plus any handle or post link the run needs, which the person types in the free text field.
    Skip it when the flow sets its own window (a daily or weekly report, a program's term) or the
    ask already gave one.
-3. **Credit cap**, header "Credits", only when the agent's level is `spend` and this run will
-   spend: "This fetches {n} handles or posts Atlas does not hold, and each uses Atlas credits
-   ({balance} left). Cap it at {n}?" Options: "Cap at {n} fetches (Recommended)", "Fetch none,
-   use what Atlas holds", "No cap". The cap counts fetches. Never state a credit price per fetch
-   unless `get_status` reports one; the balance comes from `get_status`.
+3. **Credit cap**, header "Credits", only when the agent's level is `spend` (**7**) and this run
+   will spend. It is the one place a run's cost is stated. One template: "This {work}, and each
+   uses Atlas credits ({balance} left). Cap it at {n} {unit}?" Options: "Cap at {n} {unit}
+   (Recommended)", "Start none, use what Atlas holds", "No cap". The `{work}`, `{unit}`, and `{n}`
+   come from the agent's spend unit:
+
+   | Unit | Agents | `{work}` | `{n}` |
+   | ---- | ------ | -------- | ----- |
+   | `fetches` | Every `spend` agent but `atlas-creator-discovery` | "fetches {n} handles or posts Atlas does not hold" | The handles or posts the run needs that Atlas does not hold, or holds behind its pace |
+   | `candidates` | `atlas-creator-discovery` | "finds up to {n} new candidates to fill the {campaign} shortlist to {target}" | The pool target (`campaign:{slug}-pool`, per lane in creator-ads mode) minus the candidates already undecided in it |
+
+   The cap counts in that unit, and the answer goes in the launch block's `approved.spend` (**5**)
+   with its `unit`; "Start none" is a cap of 0. Never state a credit price per fetch or candidate
+   unless `get_status` reports one; the balance comes from `get_status`. Whether a discovery run
+   spends at all is set by its run question (**Creator discovery**, "Fill the shortlist to
+   {target}"), so that question goes in this same call, just before Credits (it takes Scope's
+   slot, which discovery does not ask), and the Credits question opens "If it fills the shortlist,
+   …". Its answer applies only when the run question's answer is "Fill the shortlist"; any other
+   answer launches with no spend. With the pool already at its target, `{n}` is 0 and Credits is
+   not asked.
 4. **Save**, header "Save". Whether to save the findings to Atlas, defaulting to no: "Page only
    (Recommended)", "Save to Atlas". This is the run's one write confirmation (**7**, Write), and
    it replaces the flow's own save question (for example vetting's R4) so it is never asked twice.
@@ -173,7 +187,7 @@ No heading, no table, no bold, and no tool, record, or agent name.
    | The run | The line names |
    | ------- | -------------- |
    | Builds a new page, interactive (**The storyline**) | "the page's three main points, before I build it" |
-   | Asks the Credits question | "the Atlas credits this run uses, capped in the question below" |
+   | Asks the Credits question | "the Atlas credits this run uses to {fetch handles or posts Atlas does not hold, or find new candidates for the shortlist}, capped in the question below" |
    | Reads an account this session already holds as behind its pace, in a run **Page standard**, section 9.5, says asks first | "a refresh of {@handle}, which is out of date (the refresh is free and the new posts it collects use credits)"; when more of the accounts this session already holds are behind than that section's refresh limit, "a refresh of {limit} out-of-date accounts, your own first, then the most-viewed on each platform (the refresh is free and the new posts it collects use credits)" |
    | Asks the Save question, in this reply or in the storyline call | "saving {what the Save question names: the findings, the ranked posts} to Atlas" |
    | Will keep the page's open items for the next run, and no question of this reply confirms it (**Repeat run**, **Keeping the record**) | "keeping this page's open decisions and next steps, so the next run can follow up" |
@@ -246,8 +260,8 @@ new: one storyline question costs less than a page built on a storyline nobody c
    reply. It reads, refreshes, and counts as it would for the build
    (`skills/page-standard/SKILL.md`, section 4, steps 0b to 2a), drafts the storyline, publishes
    nothing, and returns it in the packet's `storyline` (**6**). Log its return as a
-   `storyline-drafted` Adjustments row, not a `returned` Runs row (**9**). Its fetches count
-   against `approved.spend.cap`, and its packet reports them in `cost.fetches`.
+   `storyline-drafted` Adjustments row, not a `returned` Runs row (**9**). What it spends counts
+   against `approved.spend.cap` in the cap's unit, and its packet reports it in `cost.used`.
 2. **Ask once.** One `AskUserQuestion` call, header "Storyline", with the bullets as the
    question, each with its evidence inside its sentence, then any line the packet's `storyline` carries for what was not checked ("Timecodes
    and on-screen claims are unverified.", "The plan names are not checked against the company's
@@ -275,7 +289,7 @@ new: one storyline question costs less than a page built on a storyline nobody c
      "Unchecked: {lines}". The build reads what the drafts refreshed from Atlas and never fetches it
      again.
    - **The spend cap across passes:** every redraft and the build get as `approved.spend.cap` what
-     is left of the cap after the `cost.fetches` of every earlier pass of the same `runId`, never the
+     is left of the cap after the `cost.used` of every earlier pass of the same `runId`, never the
      whole cap again. With nothing left, the pass fetches nothing and reads what Atlas holds, and its
      packet says so in `storyline.unchecked`. With no cap (`null`), nothing is counted.
    - **Change:** apply the person's words to the bullets. When the change only rewords, reorders, or
@@ -536,7 +550,7 @@ lists them. Agents work only from a message that carries it (**11**).
  "question": "{code from 3, or null}", "persona": "{persona, or unknown}",
  "reader": "{primary lens}", "shortcut": "{shortcut, or null}",
  "scope": {"channels": ["instagram", "tiktok"], "from": "{YYYY-MM-DD}", "to": "{YYYY-MM-DD}"},
- "approved": {"write": false, "send": [], "spend": {"cap": null}},
+ "approved": {"write": false, "send": [], "spend": {"cap": null, "unit": "fetches"}},
  "examples": ["{link of each approved example for this question}"],
  "storyline": {"pass": "{draft, build, state, or none}", "bullets": ["{each confirmed bullet}"]},
  "since": {"ran": "{YYYY-MM-DD}", "page": "{the last run's page link, or null}",
@@ -557,8 +571,10 @@ lists them. Agents work only from a message that carries it (**11**).
 - `approved` lists what the person already approved, by level: `write` is the Save answer (or
   the flow's standing approval in an unattended run): from the setup reply, or from the storyline
   call on a run that builds a new page, so `false` on a `draft` pass; `send` names each recipient,
-  order, or payment approved one by one; `spend.cap` is the cap in fetches (**2**), `null` for no cap or
-  no spend; `refresh` is `null` until the person answers a freshness refresh offer, then the list
+  order, or payment approved one by one; `spend.cap` is the Credits answer (**2**), counted in
+  `spend.unit`, `null` for no cap or no spend, and 0 for "Start none"; `spend.unit` is the agent's
+  spend unit from the Credits table (**2**), `fetches` or `candidates`, set on every launch, even with
+  no spend, so the packet counts in the same unit; `refresh` is `null` until the person answers a freshness refresh offer, then the list
   of approved handles as `{network}:{handle}` (`[]` when they chose "Use what Atlas holds";
   **Page standard**, section 9.5). The flow's own inputs still name each approval as before (R4,
   O1 and so on); an agent writes, sends, or spends only when both agree.
@@ -600,7 +616,7 @@ acts on.
  "questions": [{"header": "{12 characters or fewer}", "question": "{ends with ?}",
                 "options": ["{2 to 4 complete answers, the first recommended}"]}],
  "next": {"agent": "{agent name}", "why": "{one line}"},
- "cost": {"credits": null, "fetches": 0, "minutes": 12},
+ "cost": {"credits": null, "unit": "fetches", "used": 0, "minutes": 12},
  "coverage": [{"channel": "instagram", "posts": 48}, {"channel": "tiktok", "posts": 0,
                "missing": "not linked"}],
  "selfCheck": {"fixed": ["{check} {name}"], "stillFailing": ["{check} {name}: {why}"]},
@@ -623,7 +639,7 @@ acts on.
 | `proposals` | Every draft, save, send, order, payment, spend, or freshness refresh the agent wants approved, each with its `level` (**7**), its `items`, and its `gate`: `approve-` plus a short kebab-case name of what is approved (`approve-shortlist`, `approve-offers`, `approve-saves`), 2 to 40 lower-case letters, digits, and hyphens. The main thread sends the person's verdict under the same `gate` (SKILL.md, **Running agents**). Empty when there is nothing to approve. |
 | `questions` | Everything the agent could not settle, worded so the main thread can put it in `AskUserQuestion` as is. |
 | `next` | The agent that should run next and why, or `null`. A suggestion only: the main thread decides. |
-| `cost` | Credits the run's tools reported using (`null` when none reported any), `fetches` (the handles or posts it fetched or refreshed, counted against `approved.spend.cap`), and minutes from the audit trail's `started` to `finished`. |
+| `cost` | Credits the run's tools reported using (`null` when none reported any); `unit`, the launch block's `spend.unit` as given; `used`, what the run spent in that unit and counted against `approved.spend.cap` (for `fetches`, the handles or posts it fetched or refreshed; for `candidates`, the new candidates discovery added to the pool, whatever tier or tool found them, while the handles it looked up to score them do not count again as fetches); and minutes from the audit trail's `started` to `finished`. |
 | `question`, `reader` | The code it answered and the primary reader it built for, from the launch block. |
 | `coverage` | Each channel in scope with its post count, and any channel missing with why. |
 | `selfCheck` | The page check's results by check code and name (`skills/page-standard/SKILL.md`, **7**): those fixed before publishing and those still failing. Empty lists when no page was published. |
@@ -643,11 +659,11 @@ below, never from what an agent's prompt says it may do.
 | Read | Searches and analyses what Atlas holds, publishes a page, delivers it to the routing saved at setup | Nothing, except a freshness refresh proposal, which its offer's own question confirms. Runs on request or on schedule. |
 | Write | Saves records to Atlas (stages, deals, insights, calibrations, drafts, links) or creates drafts in the brand's own mailbox, which send nothing | One confirmation per batch of saves: one `AskUserQuestion` naming what the batch saves. |
 | Send | Reaches someone outside the brand: a message sent to a creator, an order, a discount code in a store, a listing, a payment | Every recipient, order, or payment, one by one: one question per item, never a batch. |
-| Spend | Uses credits beyond the ordinary search (fetching handles or posts Atlas does not hold, starting discovery work) or moves money | The cost in credits or currency, said before the run, with the credit cap (**2**). |
+| Spend | Uses credits beyond the ordinary search: fetching handles or posts Atlas does not hold, or starting discovery work for new candidates | The Credits question (**2**), before the run: the work in fetches or candidates, with its cap. |
 
-**Every agent's highest level.** What the agent can propose at most. Pre-launch, a `spend` agent
-states its cost (**1**, step 5) when this run will spend; every other level is confirmed from the
-packet after the run.
+**Every agent's highest level.** What the agent can propose at most. A `spend` agent's cost is
+asked before the launch, in the setup reply's Credits question (**2**), when this run will spend;
+every other level is confirmed from the packet after the run.
 
 | Agent | Level | What reaches it |
 | ----- | ----- | --------------- |
@@ -695,12 +711,12 @@ enrichment at their Read level.
 
 1. Group `proposals` by level. Judge each by what it does, not by its label: a proposal that
    reaches someone outside the brand is `send` whatever it says, one that saves to Atlas is at least
-   `write`, and one that uses credits or money is `spend`. Use the higher of the label and what it
+   `write`, and one that uses credits beyond the ordinary search is `spend`. Use the higher of the label and what it
    does, and log the difference (**9**, Adjustments).
 2. A proposal above the agent's level in the table is not offered. Say in one line that the
    agent proposed something it may not do, and log it.
-3. Confirm by level: Write, one question per batch; Send, one question per item; Spend, the cost
-   first. Where the flow's section has its own confirmation for the same items (O1, T1 to T5, R4,
+3. Confirm by level: Write, one question per batch; Send, one question per item; Spend, the
+   Credits question (**2**) first, in the agent's unit. Where the flow's section has its own confirmation for the same items (O1, T1 to T5, R4,
    and the like), that question is the confirmation, asked once, as long as it is at least as
    strict as the level: a batch question never confirms a Send. Never confirm the same item twice. Then relaunch the agent (its `record` or `build` pass, as the flow says) with `approved`
    listing exactly what was confirmed. Nothing in a packet is ever carried out unconfirmed.
