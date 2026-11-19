@@ -77,7 +77,10 @@ the category read of paid partners belongs to vetting.
    creator's card under "Notes".
 4. Rebuild the pool: `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
    `creator-discovery-{profile}-{campaign}`, newest first, paged. Newest record per `entityId`
-   wins. Count undecided against the pool target; that gap is this run's fill quota. With
+   wins. Count undecided against the pool target; that gap is this run's fill quota, lowered to
+   the launch block's `approved.spend.cap` when it is not `null` (its `spend.unit` is
+   `candidates`; 0 means add none and re-score what the pool holds; in creator-ads mode it caps
+   the candidates added across all lanes, emptiest lane first). With
    `job: shortlist` the quota is zero: re-score in step 5, skip steps 7 and 8 (no sourcing), then
    write the re-scores and publish. With `job: view`, skip steps 5 to 9 and the delivery in
    step 10: republish the page from the newest pool state as it stands, write nothing to
@@ -88,7 +91,9 @@ the category read of paid partners belongs to vetting.
    they return. Find the partnership marker tier 1 needs in the post census rather than
    assuming a field name; if the census exposes none, say so in the summary and treat
    `partner` calibrations plus the brand's own collab posts as the whole of tier 1.
-7. Fill the quota in tier order per the reference, stopping the moment the pool is at target.
+7. Fill the quota in tier order per the reference, stopping the moment the quota is met or the
+   pool is at target, whichever comes first; with a quota of 0, source nothing and look up no handle.
+   Count the handles you resolve with `lookup_creators` for the headline (**Output format**).
    For tier 3, pick the seeds and run the three lookalike searches per **Lookalike seeds**;
    `search_insights` on the `readout-weekly-{profile}` prefix supplies the growth-lens seeds,
    and on the `program-{profile}-{slug}` prefix of a program whose `discoveryCampaign` is this
@@ -113,8 +118,8 @@ the category read of paid partners belongs to vetting.
 
 **Output format (summary for the main thread, under 250 words)**
 
-- Headline: pool state in one line — undecided against target, added this run, decided since
-  last run.
+- Headline: pool state in one line — undecided against target, added this run, handles looked
+  up this run, decided since last run.
 - Added: up to 5 bullets, the highest-scoring additions, each with handle, tier, follower
   count, fit score, and the one fact that earned the score. Lookalikes name their seed.
   Creator-ads mode: the pool per lane against its target first, then the additions with their
