@@ -1193,8 +1193,9 @@ yet): one step is 1/30 of a second. The frame number doesn't show, the frame But
 no `frame:`. Once the rate is learned, the Tooltips and the frame number update without a reload.
 
 **Reels safe zone.** An overlay on the frame showing where Instagram's Reels screen covers the
-video: the top 14%, the bottom 35% and 6% at each side are shaded, and the rest has a dashed
-outline, following Meta's guidance for Reels ads. It is drawn over the video's frame, not the
+video, as **CAS paid**, **Text placement and safe zones**, defines it: the top 14%, the bottom 35%
+and the right 15% are shaded, the bottom 20% that the ad's caption and button always cover is shaded
+darker, and the rest has a dashed outline. It is drawn over the video's frame, not the
 letterbox around it, and scales with it. The overlay ignores taps, so the video and drawing work
 through it. A cut whose frame isn't 9:16 still shows it, with the line "This cut isn't 9:16, so the
 safe zone is only a guide." under the player while it is on.
@@ -1711,12 +1712,12 @@ until the file fills it.
 
 | # | Check | Id | Checked by |
 | --- | ----- | --- | ---------- |
-| 1 | The hook lands in the first 2 seconds | `hook` | An Editor |
+| 1 | The hook lands in the first 3 seconds | `hook` | An Editor |
 | 2 | Brand mark in the first 3 seconds | `brand` | An Editor |
 | 3 | Product on screen by 0:04 | `product` | An Editor |
 | 4 | The CTA matches the brief | `cta` | An Editor |
 | 5 | Captions burned in | `captions` | An Editor |
-| 6 | Clear of the Reels safe zones | `safezone` | An Editor, with the overlay (**Reels safe zone**) |
+| 6 | Clear of the Reels safe zones: no text, face or product in the darker bottom band | `safezone` | An Editor, with the overlay (**Reels safe zone**) |
 | 7 | Paid partnership disclosure in the final 5 seconds | `disclosure` | An Editor |
 | 8 | Runtime 15 to 60 seconds at 9:16 | `runtime` | The file |
 
