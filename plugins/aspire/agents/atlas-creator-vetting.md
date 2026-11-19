@@ -48,7 +48,7 @@ the vetting reference.
 split of your own. Before the first creator, build the criteria map once (each criterion numbered,
 quoted from the record, with its component and measure; exclusions and criteria posts can't show
 listed apart) and score every creator against that same map. When the launch passes `fit_map` (a
-later batch, or a scheduled screening run), use it exactly as given and do not rebuild it. Credit each criterion Met, Partly met,
+later batch, or a run on an applicant review with a saved map), use it exactly as given and do not rebuild it. Credit each criterion Met, Partly met,
 or Not met by the measure's table, counting only over the posts you read; when unsure whether a
 post matches, it does not count. A criterion that restates an earlier one is a repeat, scored once.
 An application answer counts only for the criterion its question names, and at most as Partly met.
@@ -77,7 +77,8 @@ asks nothing and writes nothing, so it runs the same in an unattended run.
 applicant review as the criteria source is one batch of a scheduled screening run; follow
 **Scheduled screening** in the vetting reference, steps 5 and 6. Everything above and below applies,
 with these changes. The review's `-schedule` record is the standing approval, so treat every handle
-on the list as approved for fetching (Instagram and TikTok alike) and R4 as Save. Send `screen` as your checkpoints' `pass`. Never call
+on the list as approved for fetching (Instagram and TikTok alike) and R4 as Save; a handle Atlas holds
+with no posts in the read window counts as missing, so look it up once like the others. Send `screen` as your checkpoints' `pass`. Never call
 `AskUserQuestion`: anything that needs a decision becomes that applicant's Maybe with its question
 attached. Write as you go: once each batch of ten's calls are made, one `append_insights` call with
 those applicants' findings and their `applicant_screening` records, with the statuses and keys the

@@ -347,8 +347,8 @@ done**). Offer: "Screen new {campaign} applicants on a schedule?" Options: 1) Se
 
 **Confirm once, then write and create.** Show the always-allow block in SKILL.md **1.6**, then ask:
 "Screen new {campaign} applicants {every hour | every day at HH:MM timezone} with nobody present?
-Each run fetches the Instagram and TikTok accounts Atlas doesn't hold yet (a TikTok account costs
-one paid lookup), saves each applicant's recommendation and status and the team's new calls from
+Each run fetches the Instagram and TikTok accounts Atlas doesn't hold yet or holds with no recent
+posts (a TikTok account costs one paid lookup), saves each applicant's recommendation and status and the team's new calls from
 the review Sheet to {brand}'s Atlas{, and writes the results to the review Sheet}, without asking
 each time. It never sends anything, never saves a creator note or a lesson, and never changes the
 review." Options: 1) Save and create it (Atlas tools are set to Always allow) (Recommended); 2) Not

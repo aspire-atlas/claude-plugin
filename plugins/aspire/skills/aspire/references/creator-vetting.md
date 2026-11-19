@@ -384,7 +384,11 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    the list is a launch lineup). Skip R3 when Atlas holds every creator.
 3b. **An applicant review named in R2** is read back per **Applicant review**, **Reading the setup
    back (screening)**, before the launch: any missing setup question asked first, and its pointers
-   resolved.
+   resolved. Then find the review's saved criteria map as **Scheduled screening**, step 1, does,
+   and leave out of the list every applicant whose newest `applicant_screening` record is a
+   scheduled run's claim less than 12 hours old (**Scheduled screening**, step 3), saying in one
+   line "{n} applicants are being screened by the schedule right now". The schedule finishes them,
+   so no applicant is screened twice.
 3c. **Ask R5 once, in its own call, after the criteria source is settled** (after R2, and after 3b
    for a review), still before the storyline draft, so its options come from the source the run
    uses: a review's saved visual checks (**Applicant review**, **How screening applies a review**), otherwise R5's own options.
@@ -409,7 +413,8 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    100, and a run with a visual check in batches of 25, since each creator's frames take room in the
    agent's context; say how many and launch them one at a time, every batch with the same
    `visual_check`, and every batch after the first with the `fit_map` the first one returned
-   (**How criteria become points**).
+   (**How criteria become points**). A run on an applicant review passes the review's saved map,
+   when step 3b finds one, to every batch, the first included.
 5. Answer in text: the counts, up to three points naming the approved creators and top maybes
    with their page numbers, the next step, and the page link. Keep the agent's `creator-cards`
    block; the cards appear only when the user asks to see them (**Creator card**, **Cards in
@@ -506,9 +511,10 @@ review run's form answers speak to it. Neither changes a score.
 
 The map is the same for every creator in the run. A run in several batches builds it in the first
 batch and returns it in the `fit-map` output line; the main thread passes it unchanged to every
-later batch as `fit_map`, which the agent uses as given. A scheduled screening run reuses the map
-of the review's last run, for its first batch too, until the criteria change (**Scheduled
-screening**, step 1).
+later batch as `fit_map`, which the agent uses as given. A run on an applicant review, interactive
+or scheduled, reuses the map of the review's last run for every batch, the first included, until
+the criteria change, so applicants screened in different runs are scored alike: the main thread
+finds it as **Scheduled screening**, step 1, says, before the launch.
 
 **2. Each component's weight splits evenly across its criteria.** A component with n scored
 criteria gives each one its weight ÷ n. A criterion earns that share times its credit: **Met** 1,
@@ -1227,7 +1233,9 @@ Each batch's launch gets its own `runId` per **Running agents**.
    - it is `waiting_on_data` and its newest record is more than 1 hour old.
 
    A `new` applicant claimed less than 12 hours ago is not due: another run is screening it. The
-   batch is the first 100 due applicants. With none due, go to step 9.
+   batch is the first 100 due applicants. With none due, go to step 9, except on the run's first
+   read when step 2 saved no Sheet call: then write nothing and end with "No new {campaign}
+   applicants to screen.", so a quiet review adds no record each hour.
 4. **Claim the batch.** One `append_insights` call, `runKey` `applicant-screening-{slug}-{date}`,
    one `applicant_screening` finding per applicant in the batch: `schema` and `entityKind`
    `profile`, `entityId` the brand profile's id, `idempotencyKey`
@@ -1247,7 +1255,9 @@ Each batch's launch gets its own `runId` per **Running agents**.
      {n}", slug `{slug}-{date}-{n}` with `{n}` counting the batches of this run, source `schedule`;
    - the criteria source: the review, resolved as step 1 read it;
    - approved fetches: every handle on the list, Instagram and TikTok alike, under the schedule's
-     approval (`fetch:` in `-schedule`), with no separate approval for a TikTok lookup;
+     approval (`fetch:` in `-schedule`), with no separate approval for a TikTok lookup. A handle
+     Atlas holds with no posts in the read window (**What to read per creator**) counts as missing
+     and is looked up once too, so an empty account is not called can't vet before it is fetched;
    - `schedule_run`: `{run}`, for the keys in step 6;
    - `fit_map`: the map step 1 found, for every batch, the first included; with none, the first
      batch builds it and every later batch gets the one it returned;
