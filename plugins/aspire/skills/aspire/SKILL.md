@@ -62,7 +62,7 @@ Text after the command is the argument. Route on it before anything else:
 | `agents` (also `list agents`, `show agents`) | Run **List agents** (`references/agents-menu.md`). Skip the phases unless the user picks an agent to run. |
 | `run {agent}` (an agent name from the list, with or without the `aspire:` prefix; the agents panel drafts this when someone presses an agent) | Skip steps 1 to 4 of **List agents** (`references/agents-menu.md`) and start at step 5 for that agent: the sample question, then its hand-off row. The agent itself always starts in a subagent (**Running agents**). An unknown name: run **List agents** from step 1. |
 | `org` (also `change organization`, `switch org`; the progress bar's title drafts it) | Run Phase 1, then **Organization pick**, The `org` argument. Change nothing in Atlas. |
-| `getting started` (also `help`, `get started`, `start`, `guide`, `starter guide`, `what can you do`, `how does this work`) | Show the Atlas Starter Guide: publish the page in `references/first-run.md` (**7**, on request), say its link in one line (the page's "Seeing results" section lists "show cards", "always show cards", and "show the palettes"), then make the **Sample artifacts** offer for Atlas as a whole. It needs no Atlas connection, so skip the phases and Phase 1. When Atlas happens to be connected already, use the `On request` status line; otherwise none. Never answer these with a text summary instead of the page, and never run onboarding unless the user asks to set up. |
+| `getting started` (also `help`, `get started`, `start`, `guide`, `starter guide`, `what can you do`, `how does this work`) | Show the Atlas Starter Guide per `references/first-run.md` (**7**, On request): publish the page, say its link in one line, then the **Sample artifacts** offer. Skip the phases and Phase 1. Never a text summary instead of the page, and never onboarding unless the user asks to set up. |
 | `sample` (also `sample {agent}`, `show me a sample`, `example`) | Run **Sample artifacts** (`references/samples.md`). No Atlas connection is needed, so skip the phases. |
 | `fee calculator` (also `fees`, `pricing`, `rate card`, `creator rates`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Fee calculator**. Skip the other phases. |
 | `program` (also `influencer program`, `creator program`, `ambassador program`, `affiliate program`, `gifting program`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Influencer program**. Skip the other phases. |
@@ -146,7 +146,7 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 
 ## Model tiers (which model each agent runs on)
 
-Basic work (reading what Atlas holds, publishing a page, drafting a message) runs on a smaller model to save tokens. Work that decides money, rights, brand safety, or a creator's fate, reads video frames to judge them, or synthesizes across many saved records runs on the session's model. The same `model:` is in each agent file's frontmatter; this table decides what the main thread passes, and `scripts/check-agent-roster.sh` fails when the two disagree. `inherit` means the session's model: pass no `model`. No agent runs on Haiku: every one reads many records or writes a long page, which Haiku's smaller context window cannot be trusted with. Someone who wants it can still say "use Haiku".
+Basic work (reading what Atlas holds, publishing a page, drafting a message) runs on a smaller model. Work that decides money, rights, brand safety, or a creator's fate, judges video frames, or synthesizes many saved records runs on the session's model (`inherit`: pass no `model`). Each agent file's frontmatter carries the same `model:` (`scripts/check-agent-roster.sh`). No agent runs on Haiku, whose smaller context cannot hold their reads; a person may still say "use Haiku".
 
 | Agent | Model | Why |
 | --- | --- | --- |
@@ -412,18 +412,13 @@ Organization Admin connection itself.
   only the ad accounts linked to the brand's Profile (**Meta Ads**, Brand scope). Every Meta write
   is the main thread's, one `AskUserQuestion` each, made paused (**Meta Ads**, Writes); agents,
   unattended runs, and Next actions approvals never cover one.
-- `lookup_creators` and `lookup_posts` start discovery work beyond the connected accounts.
-  Never call them speculatively during onboarding; the connected channels' own data is enough.
-  The exceptions: Phase 6 named-handle mode, where the user named the account; content
-  review, where pasting a post link approves `lookup_posts` for that one post; creator
-  vetting, where R3 approves `lookup_creators` for the listed handles Atlas does not hold; the
-  PPA pitch, where D4's marketplace option approves it for the handles the marketplace returns
-  and the handles the user types; creator discovery, whose saved cadence record approves it
-  on every run including scheduled ones; and the deliverable tracker, where T0 approves
-  `lookup_posts` for the post links the user pasted, in an interactive check only; and
-  **Visual output**, where "show cards", "show me the cards", or a saved `always` approves
-  `lookup_creators` or `lookup_posts` for the chosen creators or posts Atlas already holds, which
-  starts no discovery; and the page standard's shortlist and freshness refreshes (sections 4 and 9).
+- `lookup_creators` and `lookup_posts` start discovery work beyond the connected accounts: never
+  call them speculatively. Only these approve them: Phase 6 named-handle mode (the account the
+  user named); content review (a pasted post link, that post); creator vetting's R3 (listed
+  handles Atlas does not hold); the PPA pitch's D4 (marketplace handles and typed ones); creator
+  discovery's saved cadence, scheduled runs included; the deliverable tracker's T0 (pasted post
+  links, interactive only); "show cards" or a saved `always` (creators or posts Atlas already
+  holds, no discovery); and the page standard's shortlist and freshness refreshes (sections 4 and 9).
 - Keep every user-facing message short. Use bullets for anything with more than two points. Before sending the setup reply, the storyline check-in, or the close-out, check it against **English rules** (**In chat**).
 - Web research is a proposal, never a write: findings are always shown and confirmed before
   any calibration is recorded from them.
