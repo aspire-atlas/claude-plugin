@@ -65,7 +65,7 @@ export type Turn = {
 }
 
 export type PageChecks = {
-  /** R1, R2, R6, R7 (its links), R11, R13, R14 and R15 from the page-check script: pass, fail, n/a or unmarked. */
+  /** R1, R2, R5 (its cost lines), R6, R7 (its links), R11, R13, R14 and R15 from the page-check script: pass, fail, n/a or unmarked. */
   scripted: Record<string, string>
   /** R rows from the quality review's grade mode. */
   graded: Record<string, Result>
@@ -184,7 +184,8 @@ export const ATLAS_READS = [
 ]
 export const ATLAS_WRITES = [
   'add_hashtags', 'append_calibration', 'append_insights', 'connect_channel', 'create_profile', 'delete_profile',
-  'remove_hashtags', 'retract_calibration', 'set_brand_instruction', 'start_business_discovery',
+  'remove_hashtags', 'retract_calibration', 'send_feedback', 'set_brand_instruction',
+  'start_business_discovery',
   'supersede_calibration', 'switch_billing_account', 'unlink_channel', 'update_profile',
 ]
 

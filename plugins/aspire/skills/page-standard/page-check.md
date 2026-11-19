@@ -1,7 +1,7 @@
 # Page check script
 
-The script `SKILL.md`, section 5, runs on every page before it is published: R1, R2, R6, R7's linked
-evidence (`explanations.md`), R11, R13, R14 and R15 from the reader standard. Extract it with the command there; never retype it. It reads only the
+The script `SKILL.md`, section 5, runs on every page before it is published: R1, R2, R5's
+cost lines and trends to watch (`recommendations.md`), R6, R7's linked evidence (`explanations.md`), R11, R13, R14 and R15 from the reader standard. Extract it with the command there; never retype it. It reads only the
 pages named and writes nothing. With `--text` anywhere among its arguments it runs no check and prints the
 words a reader sees instead, one block per line, which is all the English read (`SKILL.md`,
 section 4, step 4b) is given. It lives in this file so `SKILL.md` stays short; when the reader
@@ -17,7 +17,7 @@ the required-metrics table (`SKILL.md`, section 8) changes, `REQUIRED_ROWS` here
 
 <!-- page-check -->
 ```python
-# Page standard self-check: R1, R2, R6, R7 (its linked evidence), R11, R13, R14 and R15 from reader-standard.md. Reads the HTML files named; writes nothing.
+# Page standard self-check: R1, R2, R5 (its cost lines and trends to watch), R6, R7 (its linked evidence), R11, R13, R14 and R15 from reader-standard.md. Reads the HTML files named; writes nothing.
 import datetime, json, re, sys
 from html.parser import HTMLParser
 
@@ -49,7 +49,7 @@ list_creator_marketplace_labels list_creator_search_fields
 list_hashtag_posts list_hashtags list_insight_search_fields list_invitations list_members
 list_my_organizations list_my_profiles list_post_search_fields lookup_creators lookup_posts
 mint_run_id remove_hashtags remove_member report_checkpoint retract_calibration search_ads search_calibrations
-search_creator_marketplace search_creators search_insights search_partnership_content search_posts
+search_creator_marketplace search_creators search_insights search_partnership_content search_posts send_feedback
 set_brand_instruction show_ads show_partnership_content start_business_discovery supersede_calibration
 switch_billing_account unlink_channel update_member_role update_organization update_profile
 """.split())
@@ -317,6 +317,161 @@ def r6(nodes, regions, out):
     stray = [n for n in nodes if "data-decision" in n.attrs and id(n) not in mine]
     if stray:
         problems.append("%d decision(s) sit outside the decisions section" % len(stray))
+    return problems
+
+# R5's scripted part (recommendations.md): every recommendation (each decision, each next step, and
+# any other data-recommend) says what it costs, and every trend to watch gives both readings and
+# the signals that would settle it. Whether a step names its owner, date and result, whether the
+# arithmetic is right, and whether an effect is two-sided are still judged by reading.
+COSTS = ("money", "none", "unpriced", "team", "reader")
+NO_STEPS = re.compile(r"(?i)\bno next steps?\b")
+NO_SPEND = re.compile(r"(?i)\bno spend\b")
+UNPRICED = re.compile(r"(?i)\bcannot be priced\b")
+TEAM_VIEW = re.compile(r"(?i)\bteam view\b")
+ESTIMATE = re.compile(r"(?i)\bestimated?\b")
+# A recurring fee the saved terms set is not an estimate: its line says "fixed" and names the terms.
+FIXED = re.compile(r"(?i)\bfixed\b")
+# An amount with its currency: a currency code before or after the number ("USD 162", "162 USD") or
+# a symbol. Only these codes count, so "GMV 3,240" or "ROI 4" is not an amount.
+CURRENCIES = "USD|EUR|GBP|CAD|AUD|NZD|JPY|CHF|SEK|NOK|DKK|MXN|BRL|INR|SGD|HKD|CNY|KRW|ZAR|AED|PLN|ILS"
+NUMBER = r"\d[\d,]*(?:\.\d+)?"
+AMOUNT_RE = r"(?:(?<![A-Za-z])(?:%s)\s?%s|%s\s?(?:%s)(?![A-Za-z])|[$€£¥]\s?%s)" % (CURRENCIES, NUMBER, NUMBER, CURRENCIES, NUMBER)
+AMOUNT = re.compile(AMOUNT_RE)
+# The cost per month: an amount with the period right after it ("USD 162 a month", "$162/month").
+PER_MONTH = re.compile(AMOUNT_RE + r"\s*(?:(?:a|per|each|every)\s+month\b|/\s?(?:month|mo)\b|monthly\b)", re.I)
+READINGS = ("helps", "hurts")
+SIGNALS_MAX = 3
+
+def marked(node, attr, around=False):
+    # The attribute on the node or on something inside it; with around, on something around it too.
+    return any(attr in n.attrs for n in list(walk(node)) + (ancestors(node) if around else []))
+
+def step_items(region):
+    # The next steps as the section lists them: each list item or table row that holds a cell, never
+    # one nested in another item.
+    def item(n):
+        return n.tag == "li" or (n.tag == "tr" and any(k.tag == "td" for k in n.kids if isinstance(k, Node)))
+    def nested(n):
+        return any(item(a) for a in ancestors(n) if a is not region and region in ancestors(a))
+    found = [n for n in walk(region) if n is not region and item(n) and not nested(n)
+             and not NO_STEPS.search(text(n, gap=" "))]
+    if found:
+        return found
+    # Steps written as cards or paragraphs: each block in the section, headings aside. A wrapper
+    # that only holds other blocks (no words of its own, no mark) is looked through.
+    def own_words(n):
+        return any(isinstance(k, str) and k.strip() for k in n.kids)
+    def blocks(n):
+        out = []
+        for k in n.kids:
+            if not isinstance(k, Node) or k.tag in SKIP or re.fullmatch(r"h[1-6]", k.tag) or not text(k, gap=" "):
+                continue
+            kids = [c for c in k.kids if isinstance(c, Node) and c.tag in BLOCK and text(c, gap=" ")]
+            if "data-recommend" not in k.attrs and kids and not own_words(k) and len(kids) == len([c for c in k.kids if isinstance(c, Node) and text(c, gap=" ")]):
+                out += blocks(k)
+            elif not NO_STEPS.search(text(k, gap=" ")):
+                out.append(k)
+        return out
+    return blocks(region)
+
+def cost_problems(node, label, outside):
+    kind = (node.attrs.get("data-cost") or "").strip().lower()
+    # Its own cost lines, never those of a recommendation nested in it.
+    inner = lambda n: n is not node and "data-recommend" in n.attrs
+    lines = [n for n in walk(node, keep=lambda n: n.tag not in SKIP and not inner(n)) if "data-cost-line" in n.attrs]
+    line = " ".join(text(n, gap=" ") for n in lines)
+    if kind not in COSTS:
+        return ["%s has data-cost \"%s\"; say what it costs: %s" % (label, kind, ", ".join(COSTS))]
+    if kind == "reader":
+        # A step the outside reader takes themselves: only on a shared page, never a decision, and
+        # with no cost shown. What a shared page asks its reader to approve still shows its cost.
+        if marked(node, "data-decision", around=True):
+            return ["%s is a decision, so it shows its cost; \"reader\" is only for a step the outside reader takes themselves" % label]
+        if not outside:
+            return ["%s is marked as the reader's own step, but the page is not shared outside the team; give its cost" % label]
+        return ["%s is the reader's own step, so it shows no cost line" % label] if line else []
+    if not line:
+        return ["%s shows no cost line (data-cost-line): its cost, \"no spend\", or \"cannot be priced\"" % label]
+    problems = []
+    if kind == "money":
+        if not AMOUNT.search(line):
+            problems.append("%s costs money but its cost line shows no amount with its currency" % label)
+        period = (node.attrs.get("data-cost-period") or "").strip().lower()
+        if period not in ("", "month"):
+            problems.append("%s has data-cost-period \"%s\"; use month for a recurring cost, or leave it out" % (label, period))
+        elif period == "month":
+            if not PER_MONTH.search(line):
+                problems.append("%s is a recurring cost but its cost line does not give it per month" % label)
+            if not ESTIMATE.search(line) and not FIXED.search(line):
+                problems.append("%s is a recurring cost but its cost line labels it neither an estimate nor fixed by saved terms" % label)
+    elif kind == "none" and not NO_SPEND.search(line):
+        problems.append("%s costs no money but its cost line does not say \"no spend\"" % label)
+    elif kind == "team" and not TEAM_VIEW.search(line):
+        problems.append("%s keeps its cost in the team view but its cost line does not say \"team view\"" % label)
+    elif kind == "unpriced":
+        if not UNPRICED.search(line):
+            problems.append("%s is not priced but its cost line does not say \"cannot be priced\"" % label)
+        for attr, what in (("data-cost-missing", "which figure is missing"), ("data-cost-holder", "who has that figure")):
+            value = (node.attrs.get(attr) or "").strip()
+            if not value:
+                problems.append("%s cannot be priced but has no %s saying %s" % (label, attr, what))
+            elif not has(line, value):
+                problems.append("%s cannot be priced but its cost line does not show %s (%s)" % (label, what, value))
+    return problems
+
+def trend_problems(node, label):
+    shown, problems = text(node, gap=" "), []
+    if not has_phrase(shown, "trend to watch"):
+        problems.append("%s is not labelled \"Trend to watch\"" % label)
+    if inside(node, "decisions") or marked(node, "data-decision", around=True):
+        problems.append("%s is written as a decision; a trend to watch is not one, so it sits outside the decisions" % label)
+    readings = [(n.attrs.get("data-reading") or "").strip().lower() for n in walk(node) if "data-reading" in n.attrs]
+    if sorted(readings) != sorted(READINGS):
+        problems.append("%s needs two readings, data-reading=\"helps\" and data-reading=\"hurts\" (found: %s)" % (label, ", ".join(readings) or "none"))
+    if any("data-reading" in n.attrs and not text(n, gap=" ") for n in walk(node)):
+        problems.append("%s has a reading with no words" % label)
+    signals = [n for n in walk(node) if "data-signal" in n.attrs]
+    if not 1 <= len(signals) <= SIGNALS_MAX:
+        problems.append("%s lists %d signals (data-signal); give one to %d that would settle it" % (label, len(signals), SIGNALS_MAX))
+    for number, signal in enumerate(signals, 1):
+        said, where, by = text(signal, gap=" "), (signal.attrs.get("data-where") or "").strip(), (signal.attrs.get("data-by") or "").strip()
+        if not where:
+            problems.append("%s: signal %d has no data-where saying where Atlas would see it" % (label, number))
+        elif not has(said, where):
+            problems.append("%s: signal %d does not show where Atlas would see it (%s)" % (label, number, where))
+        if day(by) != "date":
+            problems.append("%s: signal %d has data-by \"%s\", which is not a date (YYYY-MM-DD)" % (label, number, by))
+        elif not shows_date(said, by):
+            problems.append("%s: signal %d does not show its date (%s)" % (label, number, by))
+    for step in (n for n in walk(node) if "data-recommend" in n.attrs):
+        if (step.attrs.get("data-cost") or "").strip().lower() != "none" or not has_phrase(text(step, gap=" "), "watch"):
+            problems.append("%s carries a next step other than watching its signals" % label)
+    return problems
+
+def r5(nodes, regions, out):
+    # Returns None (unmarked) on a page with no decision, no next steps section, no data-recommend
+    # and no data-trend: read it for a recommendation the markup missed.
+    recommends = [n for n in nodes if "data-recommend" in n.attrs]
+    trends = [n for n in nodes if "data-trend" in n.attrs]
+    decisions = [n for n in nodes if "data-decision" in n.attrs]
+    steps = [item for region in regions.get("next-steps", []) for item in step_items(region)]
+    if not (recommends or trends or decisions or regions.get("next-steps")):
+        return None
+    problems = []
+    for what, found in (("decision", decisions), ("next step", steps)):
+        for node in found:
+            if not marked(node, "data-recommend"):
+                problems.append("%s \"%s\" is a recommendation with no cost: mark it data-recommend with data-cost and a cost line" % (what, text(node, gap=" ")[:60]))
+    for node in recommends:
+        # One recommendation, one cost: a mark around several steps or decisions prices none of them.
+        held = [n for n in steps + decisions if n is not node and node in ancestors(n)]
+        if len(held) > 1:
+            problems.append("one data-recommend wraps %d steps or decisions; mark each one with its own cost" % len(held))
+    outside = shared(nodes)
+    for index, node in enumerate(recommends, 1):
+        problems += cost_problems(node, "recommendation %d (\"%s\")" % (index, text(node, gap=" ")[:50]), outside)
+    for index, node in enumerate(trends, 1):
+        problems += trend_problems(node, "trend %d (\"%s\")" % (index, text(node, gap=" ")[:50]))
     return problems
 
 # R7's scripted part (explanations.md): every cited post links to itself, every explanation rests on
@@ -954,12 +1109,13 @@ def r15(nodes, regions, out):
 CAN_BE_NA = {"R2", "R6", "R15"}
 NA_REFUSED = {"R15": ("data-compare", "the page marks a comparison")}
 # What a check that returns None reports: n/a on its own terms, or unmarked, to be judged by reading.
-NO_RESULT = {"R7": ("unmarked", "the page cites no post and marks no explanation; read it for one, and mark every explanation"),
+NO_RESULT = {"R5": ("unmarked", "the page has no decision, no next steps section, and no marked recommendation or trend to watch; read it for one"),
+             "R7": ("unmarked", "the page cites no post and marks no explanation; read it for one, and mark every explanation"),
              "R13": ("n/a", "the page names no question code and cites no post"),
              "R14": ("n/a", "the page cites no account and no post, its scope reports on no account, and it has no freshness entry"),
              "R15": ("unmarked", "the page marks no comparison; read it for one, and put R15 in data-na only when it compares nothing")}
 CHECKS = (("R1", "Reader and scope", r1), ("R2", "Platforms covered", r2),
-          ("R6", "Decisions kept separate", r6), ("R7", "Real evidence, linked", r7), ("R11", "Plain language", r11),
+          ("R5", "Clear next steps, priced", r5), ("R6", "Decisions kept separate", r6), ("R7", "Real evidence, linked", r7), ("R11", "Plain language", r11),
           ("R13", "Required metrics", r13), ("R14", "Data freshness", r14), ("R15", "Like for like", r15))
 
 def check(path):
@@ -994,7 +1150,7 @@ def check(path):
     return results, out
 
 # What a check lists beside its result line, for the page check block (SKILL.md, section 7).
-LISTED = {"R7": "explanations", "R15": "comparisons"}
+LISTED = {"R7": ("explanations",), "R15": ("comparisons",)}
 
 def main(paths):
     status = 0
@@ -1007,9 +1163,9 @@ def main(paths):
             continue
         for code, name, result, problems in results:
             line = {"page": path, "check": code, "name": name, "result": result, "problems": problems}
-            field = LISTED.get(code)
-            if field and listed.get(field):
-                line[field] = listed[field]
+            for field in LISTED.get(code, ()):
+                if listed.get(field):
+                    line[field] = listed[field]
             print(json.dumps(line))
             if result == "fail" and status == 0:
                 status = 1

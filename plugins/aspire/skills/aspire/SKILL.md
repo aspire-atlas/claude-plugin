@@ -5,14 +5,14 @@ description: >
   Connect Instagram, TikTok, and YouTube to see what's working, benchmark competitors, and check
   brand safety. Find, vet, and brief creators. Review posts, run influencer programs and creator
   ad campaigns, and get reports for whoever acts on them. Use for "/aspire" (with agents, help,
-  getting started, fee calculator, or quality review), "what can /aspire do", "onboard my brand",
-  "first time with Atlas", "connect Atlas", "connect my Instagram", "schedule the weekly
-  readout", "find creators for the campaign", "vet these creators", "review this post", "which
-  creator posts can we run as partnership ads", "build a PPA pitch", "start the CAS campaign for
-  {brand}", "where is the {brand} campaign", "pull the client's decisions", "set up our
-  influencer program", "where is the {program} program", "what do we owe creators", "what
-  should we do next", or a short, vague ask ("find me people"), which the prompt coach tightens
-  first.
+  getting started, fee calculator, feedback, or quality review), "what can /aspire do",
+  "onboard my brand", "first time with Atlas", "connect Atlas", "connect my Instagram",
+  "schedule the weekly readout", "find creators for the campaign", "vet these creators",
+  "review this post", "which creator posts can we run as partnership ads", "build a PPA
+  pitch", "start the CAS campaign for {brand}", "where is the {brand} campaign", "pull the
+  client's decisions", "set up our influencer program", "where is the {program} program",
+  "what do we owe creators", "what should we do next", or a vague ask ("find me people"),
+  which the prompt coach tightens.
 metadata:
   author: Aspire
 ---
@@ -71,7 +71,7 @@ Text after the command is the argument. Route on it before anything else:
 | `dashboard` (also `show the dashboard`, `my dashboard`, `where do we stand`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Organization dashboard**, on any organization. Skip the other phases. |
 | `shops` (also `shop`, `instagram shop`, `tiktok shop`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Shops**. Skip the other phases. |
 | `quality review` (also `review this deck`, `audit this deck`, `review this page`, `is this ready to send`, `check this before I share it`) | Run **Quality review**. It needs no Atlas connection unless the user wants the work's Atlas figures re-checked, so skip the phases until then. |
-| `feedback {link}` (also `feedback on {link}`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Quality review**, Run step 7 (Feedback later). Skip the other phases. |
+| `feedback` (also `product feedback`, `give feedback`, `report a problem`, `feature request`, `feedback on {link}`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and the organization, then run **Product feedback**, which hands feedback on a page or deck to **Quality review**. Skip the other phases. |
 | `polish` (also `improve my prompt`, `coach`, `tighten this prompt`) | Run **Prompt coach**. It needs no Atlas connection, so skip the phases until "Run it now" hands the rewritten ask to a flow. |
 | A shortcut: `vet`, `list review`, `applicant review`, `campaign`, `content review`, `payments`, `reports`, `account` (and the aliases in `references/orchestration.md` **4**) | A routing hint only. Run Phase 1 and Phase 2 + 3 to confirm the connection and pick the brand profile, then run that shortcut's section per `references/orchestration.md` **4**, skipping only the "what do you need" step: memory, the setup reply, and every approval still run. Text after the shortcut is context. |
 | empty, or anything else | In an unattended run (a scheduled task, whose prompt says not to ask questions), run Phase 1 and Phase 2 + 3, then the flow the text names, per `references/orchestration.md` **1**, Unattended runs. Otherwise run the phases in order, starting at Phase 1. Treat the text as context. On an unconfigured organization, Phase 2 + 3 publishes the first-run guide before the next phase (**First-run guide** there). With nothing after the command, a configured organization ends Phase 2 + 3 at **Organization dashboard**. |
@@ -135,6 +135,7 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 | **Sample artifacts** | `references/samples.md` (the sample brief every agent reads: `references/agents/sample-artifact.md`) |
 | **Quality review** (Run, Review log); **Reader standard** (R1 to R15); **English rules** (wording, pages and chat) | `references/quality-review.md`; `references/reader-standard.md`; `references/english-rules.md` |
 | **Prompt coach** (and its Carry-over) | `references/prompt-coach.md` |
+| **Product feedback** (what the person thinks of Atlas itself, sent to the Aspire team) | `references/product-feedback.md` |
 | **Creator card** (**Visual output**, **Creator card actions**) | `references/creator-card.md` |
 | **Question format rule**, Phase 5 supersede rule | **Questions and writes** below |
 | Phase 5 web research rule | `references/onboarding.md` (Phase 5, **Web research option**) |

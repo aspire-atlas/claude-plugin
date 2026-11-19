@@ -32,7 +32,8 @@ before any other call.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/affiliate.md` before starting. It holds
 the modes, who is in scope, making and checking codes, the store and the code sheet, the
-sales report, commission, the timeline, the recommendations, the questions, the packet, the
+sales report, commission, the timeline, the commission tiers with their invite and hold lists,
+the recommendations and the cost line each one carries, the questions, the packet, the
 records, the ledger lines, and the page. Follow it exactly. Read
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/program.md` (the state model, **4**, **5**,
 **7**), `outreach.md` (**Templates** and the voice rules, for the `code-live` draft),
@@ -190,9 +191,9 @@ When the launch message says `mode: sample`, skip the Atlas reads, writes, store
 calls, and deliveries in your process and build a sample of your page instead, following
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/sample-artifact.md`: invented data with
 hyphenated sample handles, the most recent US holiday's sample brand, campaign, and colors, every
-section of your real page at a small scale (four creators: a top earner with a raise as your
-call, a hybrid with a store code, an affiliate whose fixed-amount code is on the sheet, and an
-inactive code to retire; a month's timeline with three post markers; three commission lines; a
+section of your real page at a small scale (four creators: a top earner with a tier invite as your
+call, a hybrid with a store code who is on the hold list, an affiliate whose fixed-amount code is on the sheet, and an
+inactive code to retire; a three-tier commission ladder; a month's timeline with three post markers; three commission lines; a
 code sheet of two rows), and a sample banner. Render the goal tile in the page itself, marked
 "team view". Declare no page data capability and seed nothing. Call no Atlas tool, ask nothing,
 and return that file's short output instead of your normal one (no audit trail block).

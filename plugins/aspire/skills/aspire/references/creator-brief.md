@@ -186,6 +186,18 @@ from**, and leave them out of the data block, since they aren't parts of the bri
   hook keeps its pattern, Said, Shown and Overlay; each CTA its type (direct or soft), action,
   destination and moment. The body carries the beats between the hook and the CTA, with its
   length in seconds.
+- **Promo flag** on each hook and CTA: on when its line names a price, a code or an offer, off
+  otherwise.
+- **Proof point**: one per concept, personal and dropped mid-action ("I charged it once on
+  Friday" while the creator is out the door), never a stat read to camera. Its line, and the
+  moment in the beats it lands.
+- **Bridges**: one from each hook to the body and one from the body to each CTA, so any hook and
+  any CTA can be cut onto the same body. Each names the hook or CTA it joins.
+- **Claims**: what the creator may say about the product, each with the product-page line it
+  came from. From the intake answers or the product truth agent's findings when the session has
+  them; otherwise one bracketed blank, never a claim written from memory.
+- **Pronunciation**: how to say the brand and product names a creator could get wrong, from the
+  same sources; otherwise one bracketed blank.
 - **Beat structure**: hook, problem or setup, proof, payoff, CTA, with seconds per beat.
 - **10 to 15 B-roll shots**, numbered B01 onward, each one line: what is filmed and which beat it
   serves.
@@ -199,7 +211,8 @@ from**, and leave them out of the data block, since they aren't parts of the bri
   `campaign:{slug}-cas`, else the defaults in **CAS campaign**, **Master Brief**: V2 BAB,
   V3 4Ps, V4 HSO, V5 SSS), unless that is the concept's framework already, in which case they
   take the next slot's. Each variant:
-  its framework, length, which hook and CTA by number, the VO in a few lines, the B-roll shot numbers it uses,
+  its framework, length, funnel job (reach, consideration or conversion: what the variant is
+  built to do, which Ad Performance judges it against), which hook and CTA by number, the VO in a few lines, the B-roll shot numbers it uses,
   and a one line note. V1 uses H1 and C1. When there are at least as many variants as hooks, every
   hook is used by at least one variant, and every CTA when there are at least two. It is for the
   editors: neither the client nor a creator ever sees it.
@@ -219,7 +232,7 @@ brief, never the check:
 
 Show the result per lane on the page ("Coverage: 3 of 3 checks pass"). The variant plan gets its
 own check, shown with the plan and never counted in the coverage result: every variant names a
-hook, a CTA and shots that exist, and its length holds its beats.
+hook, a CTA and shots that exist, has a length and a funnel job, and its length holds its beats.
 
 **The hook log.** Follow **Hooks and CTAs**, **Limits**: read every hook and CTA ever briefed
 on the campaign, never reuse one, and append every new one as a `hook` finding.
@@ -240,23 +253,35 @@ caption holding `</script>`, say) can end the element. JSON reads those back as 
 characters. In this shape:
 
 ```json
-{"schema": 1, "campaign": "{slug}", "round": 1, "version": 1, "title": "…", "summary": "…",
+{"schema": 2, "campaign": "{slug}", "round": 1, "version": 1, "title": "…", "summary": "…",
  "tone": "…", "dos": ["…"], "donts": ["…"], "disclosure": "…", "fileNaming": "…", "notice": "",
  "frameworks": [{"slot": 1, "code": "PAS", "name": "Problem, agitate, solve", "use": "…"}],
  "concepts": [{"lane": "{lane}", "order": 1, "name": "…", "line": "…", "personas": ["…"],
    "trigger": "…", "framework": {"code": "PAS", "name": "Problem, agitate, solve"},
    "story": "…", "sellingPoints": ["…"], "problem": "…", "agitate": "…", "solve": "…",
    "beats": [{"n": 1, "name": "Hook", "seconds": "0-3", "what": "…"}],
-   "hooks": [{"n": 1, "type": "question", "line": "…", "shown": "…", "overlay": "…", "why": "…"}],
-   "ctas": [{"n": 1, "type": "direct", "line": "…", "destination": "[destination]", "moment": "…", "why": "…"}],
+   "hooks": [{"n": 1, "type": "question", "line": "…", "shown": "…", "overlay": "…", "why": "…",
+              "promo": false}],
+   "ctas": [{"n": 1, "type": "direct", "line": "…", "destination": "[destination]", "moment": "…", "why": "…",
+             "promo": false}],
    "body": "…", "length": "30 seconds", "runtime": {"instagram": "…", "tiktok": "…"},
    "broll": [{"n": 1, "shot": "…", "beat": "…"}],
+   "proofPoint": {"line": "…", "moment": "…"},
+   "bridges": [{"from": "hook", "to": "body", "n": 1, "line": "…"},
+               {"from": "body", "to": "cta", "n": 1, "line": "…"}],
+   "claims": [{"claim": "[claim]", "source": ""}],
+   "pronunciation": [{"term": "[term]", "say": ""}],
    "product": {"name": "…", "sku": "[SKU]"},
    "coverage": {"passed": 3, "of": 3, "failed": []},
    "variantCheck": {"passed": true, "failed": []},
-   "variants": [{"n": 1, "framework": "PAS", "length": "30 seconds", "hook": 1, "cta": 1,
-                 "vo": "…", "broll": [1, 4, 7], "note": "…"}]}]}
+   "variants": [{"n": 1, "framework": "PAS", "length": "30 seconds", "funnelJob": "conversion",
+                 "hook": 1, "cta": 1, "vo": "…", "broll": [1, 4, 7], "note": "…"}]}]}
 ```
+
+A claim's `source` and every variant's `funnelJob` are the agency's: the page keeps them in its
+agency data and Atlas hands them only to the agency (**CAS campaign**, **Working state**, **Who
+reads which field**). A run on a brief whose block is still schema 1 writes schema 2, filling the
+new parts per the rules above and leaving every other part as `current_brief` has it.
 
 Text is plain, with a blank line between paragraphs and "- " or "1. " at the start of a list
 line; the page turns it into its own rich text. A bracketed blank stays a bracketed blank. The
