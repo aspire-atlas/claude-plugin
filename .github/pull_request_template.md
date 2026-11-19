@@ -52,6 +52,17 @@ flow change" here and skip the list.
 - [ ] P2 Each question code it answers has an eval question, and its approved page once it has one
 - [ ] P3 A new or changed rule carries the before-and-after table below
 
+**Comparisons**
+- [ ] K1 Both sides of a comparison hold one kind of post (paid label, TikTok Shop selling, or no paid label)
+- [ ] K2 Mention counts include mentions without the "@", and the method says how they were found
+- [ ] K3 A figure from too few posts (the line is in page-standard's `comparisons.md`) is marked "directional", with the post count
+- [ ] K4 A share is shown next to its group's share of the whole
+
+**Explanations**
+- [ ] X1 Before a page says why something happened, it searches everything Atlas holds on the people involved
+- [ ] X2 Every cited post is a link, and an explanation names its evidence or says "Not explained yet" with what was searched
+- [ ] X3 Outside evidence that can disappear is saved when read: link, date and time, quoted words, screenshot
+
 ## Question rerun
 
 <!--

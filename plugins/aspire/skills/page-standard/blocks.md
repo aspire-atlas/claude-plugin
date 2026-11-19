@@ -86,6 +86,9 @@ build it.
 | Timeline | 4 | `timeline` | 3.17 |
 | Quote | 6 | `quote` | 3.18 |
 | Freshness line | Source line | `freshness` | 3.19 |
+| Comparison | 3 | `comparison` | 3.20 |
+| Explanation | 3 | `explanation` | 3.21 |
+| Saved evidence | 6 | `saved-evidence` | 3.22 |
 
 A page also has sections of its own that no block covers: a comparison table, a 2x2 map, a scatter
 chart, a calculator, a section menu. They belong to this question, so the flow builds them. Use
@@ -781,8 +784,10 @@ account.
   date, shown as "last changed", never "last fetched". With no `snapshotAt` either, `data-fetched`
   is `unknown`, shown as "freshness unknown".
 - On a team page, an account behind its pace, or refreshed in this run, says so on the same entry,
-  and a refresh skipped as recently refreshed says "refreshed recently, skipped". A page shared
-  outside the team leaves those notes out (`SKILL.md`, section 9.2).
+  a refresh skipped as recently refreshed says "refreshed recently, skipped", and an account left
+  out by the run's refresh limit carries the left-out note `SKILL.md`, section 9.5, gives. A page
+  shared outside the team leaves those notes out and puts them in the page check's `gaps`
+  (`SKILL.md`, section 9.2).
 - The page check's R14 reads these.
 
 <!-- block:freshness -->
@@ -793,6 +798,87 @@ account.
   <span data-fresh="tiktok:brightsidetoys" data-newest="2026-10-27" data-fetched="2026-10-28">@brightsidetoys on TikTok: newest post Oct 27, last fetched Oct 28</span>.</p>
 ```
 <!-- /block:freshness -->
+
+### 3.20 Comparison
+
+**Holds:** two groups, two periods, or two brands set side by side, or a share with the size of
+the group it comes from. Wherever a page compares, in an insight, the answer, a table row, or a
+chart's caption, the comparison carries this markup (`comparisons.md`).
+
+- Each side says how many posts it rests on. A thin side shows "directional" and its post count
+  beside its number, as `comparisons.md` sets the line.
+- Both sides hold one kind of post, and `data-kind` names it: `paid-label`, `shop`, or
+  `no-paid-label`. The kinds differ only in a `data-compare="kinds"` comparison.
+- A share shows the group's share of the whole beside it (`data-share`, `data-group-share`).
+- A comparison that fails a check and stays says which, in one line, named in `data-fails`.
+- The page check's R15 reads these.
+
+<!-- block:comparison -->
+```html
+<p data-compare="kinds" data-block="comparison">TikTok Shop posts drew
+  <span data-side="TikTok Shop posts" data-kind="shop" data-posts="18">3.6 engagements per 1,000 views
+    <span class="pb-chip">18 posts, directional</span></span>, against
+  <span data-side="Posts with no paid label" data-kind="no-paid-label" data-posts="212">14.7 across the
+    212 posts with no paid label</span>.</p>
+```
+<!-- /block:comparison -->
+
+### 3.21 Explanation
+
+**Holds:** why something happened (a sales spike, a top seller, a drop), with the evidence it rests
+on, or "Not explained yet" with what was searched. The wider search comes first
+(`explanations.md`).
+
+- `data-explain` on the block. Each piece of evidence is a link carrying `data-evidence` with its
+  source: `atlas` (a post, or a caption or description at its timecode), `site` (the brand's own
+  site or store), or `outside` (a coupon site, another store, and every saved capture (3.22),
+  linked by its anchor). An explanation needs at least one `atlas` or `site` piece.
+- Evidence from Atlas comes first, oldest to newest. Outside evidence follows it.
+- With no evidence in Atlas, the block says "Not explained yet" on a `data-unexplained` line and
+  lists what was searched on a `data-searched` line. Never name a cause the evidence does not show.
+- A cited post also gets its post card (3.8) in the evidence part. The page check's R7 reads these.
+
+<!-- block:explanation -->
+```html
+<div class="pb-card" data-block="explanation" data-explain>
+  <p class="pb-claim">@makerjune's code sold through her own older posts, and a coupon site carried it too.</p>
+  <ul>
+    <li><a data-evidence="atlas" href="https://www.tiktok.com/@makerjune/video/EXAMPLE1">Her TikTok from Mar 3, 2026, which still names the code</a></li>
+    <li><a data-evidence="atlas" href="https://www.youtube.com/watch?v=EXAMPLE2">The code in her YouTube video's description, Sep 18</a></li>
+    <li><a data-evidence="outside" href="#saved-1">The code on a coupon site, saved Oct 30</a></li>
+  </ul>
+</div>
+<div class="pb-card" data-block="explanation" data-explain>
+  <p class="pb-claim">@brightbuilds's orders on Oct 9</p>
+  <p data-unexplained>Not explained yet.</p>
+  <p class="pb-muted" data-searched>Searched: Instagram, TikTok and YouTube posts at any date, with their captions, transcripts and descriptions, and the brand's site.</p>
+</div>
+```
+<!-- /block:explanation -->
+
+### 3.22 Saved evidence
+
+**Holds:** one piece of evidence from outside Atlas that can disappear (a coupon-site listing, a
+store page, a post that expires), saved the moment it was read: its link, the date and time, the
+exact words that matter, and a screenshot (`explanations.md`).
+
+- `data-saved` on the block, with `data-captured` the date and time it was read
+  (`YYYY-MM-DDTHH:MMZ`); the block shows the date. The words are in a `blockquote`.
+- The screenshot is a data URI with `alt` text and `data-print="fit"`. A host that cannot take one
+  shows "Screenshot not taken" in its place.
+- Carried from an earlier run, the block keeps its first date. When the source now blocks the
+  check, add `data-gone` and the line "No longer visible on {date}".
+- The page check's R7 reads these.
+
+<!-- block:saved-evidence -->
+```html
+<figure class="pb-card" id="saved-1" data-block="saved-evidence" data-saved data-captured="2026-10-30T15:20Z">
+  <img src="data:image/png;base64,..." alt="Coupon site listing for the MAKERJUNE15 code" width="320" height="180" data-print="fit">
+  <blockquote>MAKERJUNE15: 15% off sitewide. Verified today.</blockquote>
+  <figcaption class="pb-muted"><a href="https://coupons.example.com/brightside-toys">coupons.example.com</a>, saved Oct 30, 2026, 3:20 PM UTC</figcaption>
+</figure>
+```
+<!-- /block:saved-evidence -->
 
 ## 4. Building a page from the blocks
 

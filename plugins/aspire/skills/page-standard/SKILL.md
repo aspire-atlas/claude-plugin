@@ -5,9 +5,9 @@ description: >
   for and what it covers, the answer first, up to three insights, ranked next steps, decisions
   kept apart, real evidence, how it was worked out, what is missing, what Atlas can draft next),
   the reader and evidence rules, the metrics each kind of question requires and where each is
-  missing per network, the one data freshness rule for every page and chat reply, the self-check
-  against the reader standard (R1 to R14), and the English read and the rendered UX review every
-  page gets before it is published. Agents load it before they build a page. It is not a command.
+  missing per network, the one data freshness rule for every page and chat reply, the four
+  like-for-like checks on every comparison, the self-check against the reader standard (R1 to
+  R15), and the English read and the rendered UX review every page gets before it is published. Agents load it before they build a page. It is not a command.
 user-invocable: false
 metadata:
   author: Aspire
@@ -17,7 +17,7 @@ metadata:
 
 Every page an Atlas agent publishes holds the nine parts below, carries the metrics its kind of
 question requires (section 8), says how fresh its data is (section 9), and is checked against R1
-to R14 before it goes out. The checks are defined once, in
+to R15 before it goes out. The checks are defined once, in
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/reader-standard.md`; the quality review runs the
 same ones on a finished page. Read that file with this one. The parts are fixed. The look is not:
 a creator profile, a competitor brief, and a rights log should still look different. Decide what
@@ -27,7 +27,7 @@ This skill sets what a page says. `skills/aspire/references/artifact-standard.md
 and the source line, `skills/aspire/references/recipient-lens.md` sets the reader, and
 `skills/aspire/references/theme.md` sets the colors and type, `blocks.md` in this folder holds
 the parts each page is built from, with their markup, `page-check.md` holds the self-check
-script, `english-read.md` and `ux-review.md` the two reviews before publishing, and `examples.md` lists the evidence each
+script, `comparisons.md` the four checks on every comparison, `explanations.md` the evidence behind every explanation and how outside evidence is saved, `page-file.md` the page saved as a file, `english-read.md` and `ux-review.md` the two reviews before publishing, `follow-up.md` what a repeat run's page leads with, and `examples.md` lists the evidence each
 approved example sets, by question code. **The flow's own reference wins**
 wherever it sets a rule: its layout, what its page leaves out, who sees money, and the form its
 evidence takes. This skill fills in what the reference leaves open. One exception: a reference
@@ -39,7 +39,7 @@ may ask Atlas for more metrics than section 8's row, never fewer.
 - [2. Reader rules](#2-reader-rules)
 - [3. Evidence standards](#3-evidence-standards)
 - [4. Build loop](#4-build-loop)
-- [5. Markup and the scripted checks (R1, R2, R6, R11, R13, R14)](#5-markup-and-the-scripted-checks-r1-r2-r6-r11-r13-r14)
+- [5. Markup and the scripted checks (R1, R2, R6, R7, R11, R13, R14, R15)](#5-markup-and-the-scripted-checks-r1-r2-r6-r7-r11-r13-r14-r15)
 - [6. How each check is judged](#6-how-each-check-is-judged)
 - [7. The page check in the result](#7-the-page-check-in-the-result)
 - [8. Required metrics, by kind of question](#8-required-metrics-by-kind-of-question)
@@ -51,13 +51,15 @@ may ask Atlas for more metrics than section 8's row, never fewer.
 | - | ---- | ------------- | ----- |
 | 1 | Who it is for and what it covers | The reader, the brand, the date range, and each platform with its post count. On a team page, a platform with no data is named as not covered. The method section repeats the platform counts. | R1, R2 |
 | 2 | Lead with the answer | The headline is the conclusion, written last, from the decision. Never a topic title ("Creator performance overview" fails; "49 creators reviewed. Contact 11 this week." passes). | R3 |
-| 3 | Up to three insights | Each is a claim, the evidence, the comparison (last period, peers, a goal, the account's own baseline), then a "So:" line with the action. Hedges go in the "So:" line, never in the claim. The headline insight gets one chart; a flow's reference may give each insight its own. | R4 |
+| 3 | Up to three insights | Each is a claim, the evidence, the comparison (last period, peers, a goal, the account's own baseline), then a "So:" line with the action. Hedges go in the "So:" line, never in the claim. The headline insight gets one chart; a flow's reference may give each insight its own. Every comparison passes the four like-for-like checks (`comparisons.md`). | R4, R15 |
 | 4 | Ranked next steps | Each says what to do, who does it, by when, and what it should change. | R5 |
 | 5 | Decisions kept apart | What the reader must approve, in its own section, each with its deadline when it has one. When nothing does, the section says "Nothing needs approval." | R6 |
 | 6 | Real evidence | Real posts and creators from this run, linked, with thumbnails or timestamps, below the argument. | R7 |
 | 7 | How it was worked out | The scoring weights and the reasoning behind every score and recommendation, and the platform counts again. | R8, R2 |
 | 8 | What is missing | Team pages only. Missing data and what connecting it would add ("Paid results need a connected Meta ad account"). | R9 |
 | 9 | What Atlas can draft next | The drafts Atlas can make next, for example outreach to the 11, offers, discount codes. Nothing is sent without approval. | Judged (`draftNext`) |
+
+**Every page reports its open items, and a repeat run leads with what changed.** On every run, first runs included, the result's `openItems` (`orchestration.md`, **6**) lists every decision in part 5 and every next step in part 4 as the page words them, each with `kind`, `owner`, `due`, `status` `open`, and `opened` (today's date for a new item); the main thread keeps them so the next run can follow up. When the launch block's `since` is not `null`, the page repeats a question asked before: part 2 leads with what changed since that run, and the items carried over sit first in parts 5 and 4. Follow `follow-up.md` in this folder.
 
 A part that applies but has nothing to show says so in one line ("Nothing needs approval", "No
 insights this run: 3 posts is too few to compare"). A part does not apply, and is reported `n/a`
@@ -102,8 +104,7 @@ Two checks cover the whole page:
   "was 5, now 12", no named rejects, and the brand's own colors and type from `theme.md`. The
   `brand` lens in `recipient-lens.md` (the brand's own safety and approval team) is not a client
   reader. A flow that sets its own client view (the CAS campaign page) keeps it.
-- **Any other reader:** the "Prepared for" chip from `recipient-lens.md` and the order the lens
-  sets.
+- **Any other reader:** the "Prepared for" chip from `recipient-lens.md` and the order the lens sets.
 
 ## 3. Evidence standards
 
@@ -166,32 +167,23 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    return it in the result's `questions` (`orchestration.md`, **6**) and build nothing. Options:
    "Build with the gaps noted (Recommended)", the fix when there is one ("Connect the account
    first" only when it is not connected, "Refresh the posts first"), and "Change the scope". An
-   unattended run builds with the gaps noted and lists the metric in the page's "what is missing"
-   part.
+   unattended run builds with the gaps noted and lists the metric in the page's "what is missing" part.
 3. **Draft the page** for this question and this reader, from the blocks in
    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/blocks.md`. They already carry the markup in
    section 5. The blocks set what each part holds and the order of its evidence; the flow's
    reference and this reader set the layout. Add the print block with the page's title as
    `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md`, section 6, sets, so the page saves to PDF
    in the light theme with a footer on every page.
-4. **Self-check R1 to R14.** Run the script in section 5 for R1, R2, R6, R11, R13, and R14, and judge
+   **3a. Like for like.** As you write each comparison (two groups, two periods, or two brands side by side, or a share), run the four checks in `comparisons.md` in this folder (same kind, every mention counted, enough posts, share against size). One that fails a check and stays says which, in one line.
+   **3b. Explanations.** Before you write why something happened (a sales spike, a top seller, a drop), run the wider search in `explanations.md` and save outside evidence that can disappear as it is read.
+4. **Self-check R1 to R15.** Run the script in section 5 for R1, R2, R6, R7's links, R11, R13, R14, and R15, and judge
    the others against `reader-standard.md`. Fix every fail you can and check again. **4b.** The English read by a separate reviewer: follow `english-read.md` in this folder. **4c.** The rendered UX review, on the same draft: follow `ux-review.md`.
 5. **Publish** in the publish pass (steps 4b and 4c), even when a check still fails; report it (section 7). An open UX Must holds an interactive publish (`ux-review.md`).
-   - **When the session has no Artifact tool, save the page as a file.** Never skip the page, and
-     never return only a summary, because it cannot be published. Write the same page as one
-     full HTML document (doctype, head with the title, body) to `{page name}.html` in the
-     session's scratchpad or temporary folder, with every style, script, and image inline as a
-     published page has them. Send it with `SendUserFile` when the session has that tool.
-   - Put the file's absolute path wherever the link would go: `page` in the result packet and
-     in the page check, and the summary's page line, as "Saved as a file: {path}". Add "Page
-     saved as a file: this session cannot publish pages" to the audit trail's data gaps.
-   - A rerun for the same page writes the same file again. Steps 1 to 4 do not change, and
-     this rule holds over a flow reference that says to publish with the Artifact tool.
+   With no Artifact tool, save the page as a file (`page-file.md`). Never skip the page.
 
-Write the headline last. Draft every other part, then write the headline from the decision the
-page supports.
+Write the headline last. Draft every other part, then write the headline from the decision the page supports.
 
-## 5. Markup and the scripted checks (R1, R2, R6, R11, R13, R14)
+## 5. Markup and the scripted checks (R1, R2, R6, R7, R11, R13, R14, R15)
 
 Mark the parts the script reads. The attributes carry no styling; style the page as the flow and
 `theme.md` say.
@@ -225,6 +217,7 @@ Mark the parts the script reads. The attributes carry no styling; style the page
      data-missing, with the reason shown beside it. -->
 <article data-post="https://www.instagram.com/p/EXAMPLE/" data-account="instagram:brightsidetoys"
          data-missing="views: image posts have no view count; engagement: image posts have no view count">
+  <a href="https://www.instagram.com/p/EXAMPLE/">@brightsidetoys on Instagram, Oct 24</a>
   <span>Views not available: image posts have no view count</span>
   <span data-metric="likes">Likes 1,920</span> <span data-metric="comments">Comments 88</span>
 </article>
@@ -243,10 +236,10 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   knows it by an `atlas-footnote` saying "Shared with") lists only the platforms with posts. Show
   the exact count ("1,412 posts"), never a rounded one ("1.4K").
 - A check that is N/A for this page (section 1) goes in `data-na` on the scope, for example
-  `data-na="R2"` on a ledger or a one-creator profile; the script reports it `n/a`. Only R2 and R6
-  can be N/A; R1 and R11 apply to every page, and naming them fails the check. R13 and R14 are
-  `n/a` on their own terms (no `data-question` and no cited post; no cited account), never through
-  `data-na`.
+  `data-na="R2"` on a ledger or a one-creator profile; the script reports it `n/a`. Only R2, R6,
+  and R15 (on a page that compares nothing and states no share) can be N/A; R1 and R11 apply to
+  every page, and naming them fails the check. R13 and R14 are `n/a` on their own terms (no
+  `data-question` and no cited post; no cited account), never through `data-na`.
 - A decisions section with no decision says "Nothing needs approval" (or "No decision needs
   approval"). A `data-by` date is a real date the page also shows.
 - Mark anything in someone else's words with `blockquote`, `q`, or `data-quoted`: a creator's
@@ -254,7 +247,7 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   check skips it, and it skips handles, hashtags, emails, and links. Never change a creator's real
   name or handle to pass a check.
 - A page that draws its sections in script from embedded data (the org dashboard) has nothing the
-  script can read. Judge R1, R2, R6, R11, R13, and R14 from the data and what the page draws, and
+  script can read. Judge R1, R2, R6, R7, R11, R13, R14, and R15 from the data and what the page draws, and
   report `scripted` as `read`.
 - Every post the page cites as evidence (a post card, a storyboard, a row in a post table) carries
   `data-post` with its link, and each required metric of the page's row (section 8) on the element
@@ -263,6 +256,11 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   shown on the post beside where the number would sit ("Views not available: image posts have no
   view count"). Never show a missing metric as 0; a 0 Atlas read is a real 0. A page that cites
   no post, or answers no code, has no `data-question` and gets R13 `n/a`.
+- Every cited post links to itself: the element with `data-post` holds an `<a href>` to the post.
+  An explanation carries `data-explain`, its evidence `data-evidence="atlas|site|outside"` (each a
+  link, or a link to a saved capture by its `#id`), or a `data-unexplained` line with
+  `data-searched`; saved outside evidence carries `data-saved` (`explanations.md`; blocks 3.21 and
+  3.22). A page that cites no post and marks no explanation gets R7 `unmarked`: read it for one.
 - Every account the page cites carries `data-account="{network}:{handle}"`: each cited post, and
   each creator or account card. A post cited only as mention evidence carries `data-mention`
   instead, and the source line then holds one `data-fresh="mentions"` entry. The scope's
@@ -273,8 +271,7 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   `data-newest` the newest post's date or `none`, and `data-fetched` the last fetch's date, `none`,
   or `unknown`, or, with no `freshness` on record, `data-changed` ("last changed"). The entry shows
   each date and the platform. A page that cites and reports on no account gets `n/a`.
-- A page with no `data-page` markup yet (a flow whose reference does not add it) gets `unmarked`
-  for R1, R2, R6, R13, and R14. Judge those by reading; R11 still runs.
+- A page with no `data-page` markup yet (a flow whose reference does not add it) gets `unmarked` for R1, R2, R6, R7, R13, R14, and R15, and a page that marks no comparison (`comparisons.md`) gets it for R15. Judge those by reading; R11 still runs.
 
 Run the check on every page before you publish it. Copy the page into a new temporary folder,
 extract the script there from `page-check.md` in this folder (never retype it), and run it:
@@ -285,11 +282,8 @@ d=$(mktemp -d) && cp {page.html} "$d/" && awk '/^<!-- page-check -->$/{f=1;next}
 
 It reads only the pages named, writes nothing, and prints one JSON line per check and page:
 `pass`, `fail`, `n/a`, or `unmarked`. It exits 0 when nothing failed, 1 when a check failed, and 2
-when it could not read a page. When Python is not installed, judge the six by reading and report
+when it could not read a page. When Python is not installed, judge the scripted checks by reading and report
 `scripted` as `read`.
-
-The script is in `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/page-check.md`, between its
-`<!-- page-check -->` marks.
 
 ## 6. How each check is judged
 
@@ -299,9 +293,9 @@ flow. Every check is pass, fail, or N/A, never a score.
 
 | Check | How |
 | ----- | --- |
-| R1 Reader and scope, R2 Platforms covered, R6 Decisions kept separate, R11 Plain language, R13 Required metrics, R14 Data freshness | Script, or by reading when the page is drawn in script or carries no markup. R14's wording beyond the entry itself is judged: the period wording ("Atlas has no data for {period}", section 9.3), behind-pace notes, and refreshes skipped as recently refreshed |
+| R1 Reader and scope, R2 Platforms covered, R6 Decisions kept separate, R11 Plain language, R13 Required metrics, R14 Data freshness, R15 Like for like | Script, or by reading when the page is drawn in script or carries no markup. R14's wording beyond the entry itself is judged: the period wording ("Atlas has no data for {period}", section 9.3), behind-pace notes, and refreshes skipped as recently refreshed. R15 is also judged: a comparison the markup missed, and whether a share's group size is the right whole (`comparisons.md`, **What is judged**) |
 | R3, R4, R5, R8, R10, R12 | Judgment |
-| R7 Real evidence | Judgment, checking each figure against what the run read |
+| R7 Real evidence | Script for the links (every cited post, every explanation's evidence, every saved capture); judgment for each figure, checked against what the run read |
 | R9 Names what's missing | Judgment on a team page; N/A on a page shared outside the team |
 
 When the reader standard changes, this table and the script change in the same commit.
@@ -310,7 +304,7 @@ When the reader standard changes, this table and the script change in the same c
   no self-check and no page check.
 - **A review page** (a quality review) runs the check with the words of the work under review
   marked as quoted.
-- The scripted checks look only at the markup in section 5. A page can pass the script and still
+- The scripted checks look only at the markup in section 5 and the `data-own` mark (section 8). A page can pass the script and still
   fail the check in substance (a scope that names "the team" as the reader, an approval worded as
   a next step); judge that too.
 
@@ -324,8 +318,8 @@ words ("page check: 9 pass, 2 fixed, 1 n/a").
 {"page": "{link, or the file's path}", "reader": "{primary reader}",
  "checks": {"R1": "pass", "R2": "pass", "R3": "fixed", "R4": "pass", "R5": "fixed", "R6": "pass",
             "R7": "pass", "R8": "pass", "R9": "n/a", "R10": "pass", "R11": "pass", "R12": "pass",
-            "R13": "pass", "R14": "pass"},
- "draftNext": "pass", "stillFailing": [], "gaps": [], "scripted": "ran", "englishRead": {"status": "ran", "must": 1, "should": 0, "nice": 0, "musts": [{"id": "EN1", "applied": true}]}, "uxReview": {"status": "ran", "rendered": true, "...": "as ux-review.md sets it"}}
+            "R13": "pass", "R14": "pass", "R15": "pass"},
+ "comparisons": [{"compare": "kinds", "sides": [{"label": "TikTok Shop posts", "kind": "shop", "posts": 18, "mentions": false}, {"label": "Posts with no paid label", "kind": "no-paid-label", "posts": 212, "mentions": false}], "fails": []}], "explanations": [{"claim": "Top seller @makerjune", "evidence": 2, "searched": ["Instagram, TikTok and YouTube posts, all dates: captions, transcripts, descriptions", "the brand's site"], "saved": 1}], "draftNext": "pass", "stillFailing": [], "gaps": [], "scripted": "ran", "englishRead": {"status": "ran", "must": 1, "should": 0, "nice": 0, "musts": [{"id": "EN1", "applied": true}]}, "uxReview": {"status": "ran", "rendered": true, "...": "as ux-review.md sets it"}}
 ```
 
 - `checks`: `pass` (passed the first time), `fixed` (failed, fixed before publishing), `fail`
@@ -335,7 +329,7 @@ words ("page check: 9 pass, 2 fixed, 1 n/a").
   Every `n/a` has its reason here too, as "R2 n/a: {reason}".
 - `gaps`: on a page shared outside the team, what Atlas could not read, for the main thread to
   tell the requester. Empty on a team page, whose gaps are on the page.
-- `scripted`: `ran`, `read` (no Python, or a page drawn in script), or `unmarked`. `englishRead`: as `english-read.md` sets it. `uxReview`: as `ux-review.md` sets it.
+- `comparisons`: every comparison on the page, as the script's R15 line lists them (`comparisons.md`); written by hand in the same shape when the script did not run; `[]` when the page compares nothing. `explanations`: as the script's R7 line lists them (`explanations.md`, section 5); `[]` when the page explains nothing. `scripted`: `ran`, `read` (no Python, or a page drawn in script), or `unmarked`. `englishRead`: as `english-read.md` sets it. `uxReview`: as `ux-review.md` sets it.
 
 ## 8. Required metrics, by kind of question
 
@@ -359,6 +353,7 @@ for a lens**); a page that cannot rank by it says in one line which metric it us
 | Creator picks or vetting | I1, I2, I3, I4 | `views` `likes` `comments` `engagement` | Per creator: followers, median views, and median engagement per 1,000 views over the flow's window, against creators of the same size; a fee only from the fee calculator | `search_creators`, `fields`: `username`, `network`, `followersCount`, `instagram.medianViews`, `instagram.medianViewsWindowDays`, `instagram.reelsInteractionRate`, `tiktok.medianViews`, `tiktok.engagementRate`. Then `search_posts` on the creators' handles with the competitive read's post fields |
 | Ads and cut-downs | P1, P2, P4, P5, P6 | `views` `likes` `comments` `shares` `saves` `engagement` | Hook and hold where Atlas holds them; paid results only from a connected Meta ad account, by currency and never added to organic | `search_posts` with the first row's post fields plus `instagram.organicIgReelsAvgWatchTime`, `tiktok.twoSecondViewRate`, `tiktok.sixSecondViewRate`, `tiktok.videoCompletionRate`, `tiktok.averageViewTimeSeconds`; `search_creators` with `instagram.reelsHookRate`, `instagram.reelsInteractionRate`; `search_ads` for paid results |
 | Program tracking | I5, I6, I11, P3, A1 | `views` `likes` `comments` | Posts owed against posts made per creator; each creator's program posts against their own usual; amounts only where the flow shows money | `search_posts` on the program's posts, `fields`: `viewCount`, `likeCount`, `commentCount`, `author.username`, `mediaKind`, `postedAt`, `url`, `media`; `search_insights` for the program's saved records |
+| Affiliate sales | I12 | `views` `likes` `comments` `engagement` | Sales, orders, and commission per creator from the store or an export, each labelled with its source and currency and never converted; each timeline post beside the orders in the 4 days after it, shown as a correlation and never as a cause | `search_posts` on the handles of the program's affiliate and hybrid creators, `fields`: `viewCount`, `likeCount`, `commentCount`, `author.username`, `mediaKind`, `postedAt`, `url`, `media`; `search_insights` for the program's saved records |
 <!-- /required-metrics -->
 
 Call `list_post_search_fields` once per run before the first `search_posts`, and
@@ -382,8 +377,9 @@ returns is a gap, named on the page like any other missing metric. Add the flow'
   label it as that and never call it engagement per 1,000 views.
 
 **Where each metric comes from, and the reason a page shows when one is missing, per network,**
-are in `network-metrics.md` in this folder. Read it before step 2a counts and before the page
-names a gap.
+are in `network-metrics.md` in this folder. Read it before step 2a counts and before the page names a gap.
+
+**Paid label or none.** A post by someone other than the brand has a "paid label" or "no paid label", never "organic" or "unpaid". The rule, and the `data-own` mark its R11 check reads, are in `post-kinds.md` in this folder; read it before a page, a chat reply, or a delivery message describes another account's posts.
 
 **A missing metric is never 0.** On the page it reads "not available: {reason}" beside where the
 number would sit, and the post carries it in `data-missing` (section 5). A 0 that Atlas read is a
@@ -451,49 +447,48 @@ treat it as not fetched. An account fetched in the last 24 hours is not behind: 
 posting, and the page says so ("@x has not posted since Nov 2; it usually posts every 2 days"). An
 account with fewer than 2 posts in its freshness read has no pace; it is behind unless fetched in 24 hours.
 
-**9.5 When to refresh.** One refresh per handle per run, whichever row asks for it:
+**9.5 When to refresh.** One refresh per account (one `{network}:{handle}`) per run, whichever row
+asks for it. Atlas also refreshes on its own: a connected account about every 12 hours, and every
+Instagram and TikTok account read, looked up or found by a search in the last 7 days every 1 to 3
+days, so a run's own reads count toward it.
 
 | Run | What is refreshed | Asked first? |
 | --- | ----------------- | ------------ |
 | The user named the handle (handle mode, the creator profile) | That handle when it is not current. It is current only when Atlas holds the account and `lastFetchedAt` is under 24 hours old; with `lastFetchedAt` null or `freshness` absent, when its newest post (`newestPostAt`, or the newest post the searches return) is. No account record, no posts, or an older time is stale, so an account that posts less than daily is refreshed, as intended. A handle with no account record is the flow's reference to resolve (account resolution), never a 9.6 refresh | No: naming the handle approved it |
-| Interactive, any other subject account | Each account behind its pace | Yes |
-| Unattended (a scheduled run) | Nothing. Atlas already refreshes a connected account about every 12 hours and other accounts it tracks every 1 to 3 days, and a refresh's new posts count against the customer's credits with nobody there to approve them. Every subject account gets the freshness line and behind-pace notes only. The final shortlist is the one exception (next row) | No, and it never asks |
+| Interactive, any other subject account | Each account behind its pace, up to the refresh limit (below) | Yes |
+| Unattended (a scheduled run) | Nothing. Atlas's own refresh (above) covers these accounts, and a refresh's new posts count against the customer's credits with nobody there to approve them. Every subject account gets the freshness line and behind-pace notes only. The final shortlist is the one exception (next row) | No, and it never asks |
 | The page's final shortlist | As section 4, step 2, scheduled runs included: the page shows those creators' posts, and the shortlist is a small set Atlas already holds | No |
 | A flow whose reference or agent file rules out lookups (the content library, the organization dashboard, and every agent whose file says to read only what Atlas holds and does not name the freshness refresh as its one exception) | Nothing; the freshness line and behind-pace notes only | Never |
+
+**The refresh limit.** An interactive run refreshes at most **10** accounts from the second row,
+counted across the run and its relaunch, the brand's own included. Only the first row's runs (handle
+mode, the creator profile) and the final shortlist sit outside it: a handle named in any other run
+is counted and asked like the rest. With more behind than the limit, offer the brand's own accounts
+first, then one from each platform in turn, each group ranked by median views per post over the
+posts the flow already read, then by followers, then handle order for accounts with neither. Each
+account left out says on its freshness entry "not refreshed in this run: over the limit", adding ";
+Atlas refreshes it on its own within 1 to 3 days" on Instagram and TikTok; a shared page puts the
+note in `gaps` (9.2).
 
 The offer names each account, its newest post, and its pace, then the time and the cost: "Atlas's
 newest post for @x is Nov 2, and @x usually posts every 2 days. Refresh it first? About 2 minutes.
 Public data: the refresh is not charged, and the new posts it collects count against your credits."
-Options: "Refresh first (Recommended)" and "Use what Atlas holds". Ask with `AskUserQuestion` when
-the run asks its own questions. Otherwise build with what Atlas holds, mark each behind account on
-the page, and return the offer as a proposal in the result packet
-(`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **6** and **7**): level
-`read`, gate `approve-refresh`, one `items` entry per handle as `{network}:{handle}`, and the offer
-above as `what`. That run publishes its page but holds its Atlas writes and its delivery. The main
-thread asks the offer with these options and launches the run again with the same `runId` and
-`approved.refresh` set: the approved handles, or `[]` for "Use what Atlas holds". The relaunch
-makes no new offer: it refreshes exactly those handles before reading, republishes the page, and
-only then writes and delivers, so the first pass never trips a flow's duplicate-window guard.
+Over the limit it opens with the count: "{n} accounts look behind their pace. I can refresh {limit}
+now: your own accounts first, then the most-viewed on each platform." Options: "Refresh first
+(Recommended)" and "Use what Atlas holds". Ask with `AskUserQuestion` when the run asks its own
+questions. Otherwise build with what Atlas holds, mark each behind account on the page, and return
+the offer as a proposal in the result packet
+(`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **6** and **7**): level `read`,
+gate `approve-refresh`, one `items` entry per account as `{network}:{handle}`, at most the limit's
+top-ranked accounts (the rest go on the page as left out), and the offer above as `what`. That run
+publishes its page but holds its Atlas writes and its delivery. The main thread asks the offer with
+these options and launches the run again with the same `runId` and `approved.refresh` set: the
+approved handles, or `[]` for "Use what Atlas holds". The relaunch makes no new offer: it refreshes
+exactly those handles, never more than the limit, before reading, republishes the page, and only
+then writes and delivers, so the first pass never trips a flow's duplicate-window guard.
 
-**9.6 How to refresh.** Call `lookup_creators` with `forceRefresh: true`, `entityKind: "account"`,
-the network as `schema`, the handle as `identifier`, and the run's own `asOrganizationId` and
-`asProfileId`, up to 100 handles per call. Refresh only accounts Atlas already holds, so the call
-starts no discovery; a named handle Atlas does not hold is the flow's to resolve (9.5, first row).
-
-- The first response carries what Atlas already held. Re-read the same items with `lookup_creators`
-  without `forceRefresh` about every 15 seconds, up to roughly 3 minutes.
-- An account counts as refreshed when its `refresh` result is `skipped` with reason
-  `recently-refreshed` (make no second call), or when a re-read after a `started` result shows a
-  `lastFetchedAt` later than the call. With `freshness` absent on the re-read, a `snapshotAt` later
-  than the call, or a newer newest post than before, counts instead. One still `fetching` at the
-  limit, or whose refresh `failed`, keeps the data Atlas held and its freshness line says so.
-- Re-run the flow's searches. Search indexing lags the lookup: when a refreshed account's searches
-  come back empty, or their newest post is older than the re-read's `newestPostAt`, retry once
-  after about 30 seconds. Once they catch up, the page shows the new newest post; an account whose
-  searches still lag is reported like an unrefreshed one, with the refresh's time.
-- A team page names every refresh that was skipped as recently refreshed, and every one that
-  failed; a shared page puts them in `gaps` (9.2).
-- Never refresh with `start_business_discovery`: every call starts a new billable job.
+**9.6 How to refresh.** As `refresh.md` in this folder says. Never `start_business_discovery`: every
+call starts a new billable job.
 
 **9.7 Examples.** Good: "Atlas has no data for Nov 3 to 9 for @{brand} on TikTok; last fetched
 Nov 2." Bad: "No posts this week" for a week Atlas never fetched.

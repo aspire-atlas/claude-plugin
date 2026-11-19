@@ -4,9 +4,13 @@ import { join } from 'node:path'
 import {
   ATLAS_READS, ATLAS_WRITES, barChecks, compareRuns, extractPageCheckScript, fencedBlocks, fill, findJsonWithKey, configuredQuestions, skippedLine,
   findPage, forBaseline, normalizeResult, codesForChanges, readerResult, regressions, renderComment, renderSkipped, renderSlack, COMMENT_MARKER, renderStopped, stripTitlePrefix, checkNames, parsePageCheck, parseStream, renderRun, rIds, rResult, stripDataUris,
+  aResult, assertionNotes, assertionRefs, cell, fixtureProblems, fixturesForChanges, hasLandedAssertion, passesWhen, planInputFiles, resolveQuestion, rows, safeFileName,
   parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, askText, chatCodes, chatFailures, chatLine, chatMessages, checkChat, countChat, noChat, normalizeRun, CHAT_CHECK,
-  type PageChecks, type QuestionResult, type RunResults,
+  placeholderKeys, ANSWER_EVENT,
+  type Assertion, type AssertionRef, type PageChecks, type QuestionResult, type RunResults,
 } from './lib'
+import { wasAnswered } from './answers'
+import { APPROVALS_CHECK, checkApprovals, noApprovals } from './approvals'
 
 const ROOT = join(import.meta.dir, '../..')
 const line = (event: unknown) => JSON.stringify(event)
@@ -93,7 +97,7 @@ test('embedded images are removed and visible text is measured', () => {
 
 test('results are normalized, and an R row needs the script and the grade to agree on a pass', () => {
   expect(['PASS', 'fixed', 'FAIL', 'N/A', 'unmarked', undefined].map(normalizeResult)).toEqual(['pass', 'pass', 'fail', 'n/a', 'not run', 'not run'])
-  const checks = (scripted: Record<string, string>, graded: Record<string, any>): PageChecks => ({ scripted, graded, e: {}, reasons: {}, notes: [] })
+  const checks = (scripted: Record<string, string>, graded: Record<string, any>): PageChecks => ({ scripted, graded, e: {}, asserted: {}, reasons: {}, notes: [] })
   expect(rResult(checks({ R1: 'pass' }, { R1: 'fail' }), 'R1')).toBe('fail')
   expect(rResult(checks({ R1: 'fail' }, { R1: 'pass' }), 'R1')).toBe('fail')
   expect(rResult(checks({ R1: 'unmarked' }, { R1: 'pass' }), 'R1')).toBe('pass')
@@ -105,11 +109,11 @@ test('results are normalized, and an R row needs the script and the grade to agr
 const E_CHECKS = [{ id: 'E1', name: 'Answers the real question' }, { id: 'E6', name: 'Reads like an editor checked it', waitsFor: 'ASP-5300' }]
 
 function run(overrides: Partial<QuestionResult> = {}, date = '2026-11-10'): RunResults {
-  const page: PageChecks = { scripted: { R1: 'pass' }, graded: { R1: 'pass', R3: 'fail' }, e: { E1: 'pass' }, reasons: { R3: 'Headline says "Acme overview"' }, notes: ['a note naming Acme'] }
+  const page: PageChecks = { scripted: { R1: 'pass' }, graded: { R1: 'pass', R3: 'fail' }, e: { E1: 'pass' }, asserted: {}, reasons: { R3: 'Headline says "Acme overview"' }, notes: ['a note naming Acme'] }
   const question: QuestionResult = {
     code: 'I4', example: 'Holiday creator plan', setsBarFor: [5, 6], barChecks: ['E1', 'R3'],
     page: { link: 'https://claude.ai/artifact/AbC123', captured: true }, rounds: 2, transcriptTokens: 123456, billedTokens: 1, compactions: 1, costUsd: 1,
-    new: page, approved: { ...page, graded: { R1: 'pass', R3: 'pass' } }, chat: noChat(), problems: ['Approved page for Acme'], ...overrides,
+    new: page, approved: { ...page, graded: { R1: 'pass', R3: 'pass' } }, chat: noChat(), approvals: noApprovals(), problems: ['Approved page for Acme'], assertions: [], ...overrides,
   }
   return { harness: 1, date, commit: 'abcdef1234', model: 'm', judgeModel: 'm', eChecksVersion: '3', questions: [question] }
 }
@@ -133,9 +137,9 @@ test('an approved page that was not read shows no result, never a pass', () => {
 
 test('later R checks appear once a grade returns them', () => {
   const results = run()
-  expect(rIds(results.questions).at(-1)).toBe('R14')
-  results.questions[0].new!.graded.R15 = 'pass'
   expect(rIds(results.questions).at(-1)).toBe('R15')
+  results.questions[0].new!.graded.R16 = 'pass'
+  expect(rIds(results.questions).at(-1)).toBe('R16')
 })
 
 test('a baseline keeps results and sizes, and no link, reason, note, or problem', () => {
@@ -173,11 +177,12 @@ test('every question\'s reader has a row in the result table the judge is handed
 test('the question set, the checks, and the Atlas tool lists hold together', () => {
   const config = JSON.parse(readFileSync(join(import.meta.dir, 'questions.json'), 'utf8'))
   const eChecks = JSON.parse(readFileSync(join(import.meta.dir, 'e-checks.json'), 'utf8')).checks
-  expect(config.questions.map((q: any) => q.code)).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1'])
+  expect(config.questions.map((q: any) => q.code)).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'CR1', 'AR1'])
   expect(eChecks.map((c: any) => c.id)).toEqual(['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'E8'])
   for (const question of config.questions) {
     expect(question.ask).toContain('{brand}')
-    expect(barChecks(question.setsBarFor, config.changes).length).toBeGreaterThan(0)
+    // A question sets the bar for a change of the first review, or carries assertions of its own.
+    expect(barChecks(question.setsBarFor, config.changes).length + (question.assertions?.length ?? 0)).toBeGreaterThan(0)
   }
   expect(barChecks([5, 6], config.changes)).toContain('E6')
   expect(fill('For {brand}: {other}', { brand: 'Acme' })).toBe('For Acme: {other}')
@@ -239,16 +244,18 @@ test('a pull request reruns the questions its changed agents and flow files answ
   const config = JSON.parse(readFileSync(join(import.meta.dir, 'questions.json'), 'utf8'))
   const pick = (changed: string[]) => codesForChanges(changed, config.questions, config.sharedPaths).codes
   expect(pick(['README.md', 'docs/STANDARD.md'])).toEqual([])
-  expect(pick(['plugins/aspire/agents/atlas-market-signal.md'])).toEqual(['O2', 'O3'])
+  expect(pick(['plugins/aspire/agents/atlas-market-signal.md'])).toEqual(['O2', 'O3', 'CR1'])
   expect(pick(['plugins/aspire/agents/atlas-ad-reuse.md'])).toEqual(['P1'])
   expect(pick(['plugins/aspire/skills/aspire/references/ad-reuse.md'])).toEqual(['P1'])
+  expect(pick(['plugins/aspire/skills/aspire/references/affiliate.md'])).toEqual(['AR1'])
+  expect(pick(['plugins/aspire/agents/atlas-affiliate-manager.md'])).toEqual(['AR1'])
   expect(pick(['plugins/aspire/skills/aspire/references/creator-vetting.md', 'plugins/aspire/agents/atlas-creator-brief.md'])).toEqual(['I4', 'I1'])
-  // A watched file no question answers reruns nothing; a file every flow reads reruns all seven.
+  // A watched file no question answers reruns nothing; a file every flow reads reruns every question.
   expect(pick(['plugins/aspire/agents/atlas-shops.md'])).toEqual([])
-  expect(pick(['plugins/aspire/skills/aspire/references/reader-standard.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1'])
-  // The page standard and the router shape every page, so a change to either reruns all seven.
-  expect(pick(['plugins/aspire/skills/page-standard/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1'])
-  expect(pick(['plugins/aspire/skills/aspire/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1'])
+  expect(pick(['plugins/aspire/skills/aspire/references/reader-standard.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'CR1', 'AR1'])
+  // The page standard and the router shape every page, so a change to either reruns every question.
+  expect(pick(['plugins/aspire/skills/page-standard/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'CR1', 'AR1'])
+  expect(pick(['plugins/aspire/skills/aspire/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'CR1', 'AR1'])
   expect(pick(['plugins/aspire/skills/org-admin/SKILL.md'])).toEqual([])
   // Every path a question names exists, so a renamed agent cannot silently stop rerunning its question.
   for (const path of [...config.questions.flatMap((q: any) => q.paths), ...config.sharedPaths]) {
@@ -257,14 +264,14 @@ test('a pull request reruns the questions its changed agents and flow files answ
 })
 
 test('only a check the approved page passes and the new page fails is a regression', () => {
-  expect(regressions(run(), E_CHECKS)).toEqual([{ kind: 'page', code: 'I4', id: 'R3', was: 'pass', now: 'fail' }])
+  expect(regressions(run(), E_CHECKS, {})).toEqual([{ kind: 'page', code: 'I4', id: 'R3', was: 'pass', now: 'fail' }])
   // The approved page failing too, or not having run, is not a regression.
   const both = run()
   both.questions[0].approved!.graded.R3 = 'fail'
-  expect(regressions(both, E_CHECKS)).toEqual([])
-  expect(regressions(run({ approved: null }), E_CHECKS)).toEqual([])
+  expect(regressions(both, E_CHECKS, {})).toEqual([])
+  expect(regressions(run({ approved: null }), E_CHECKS, {})).toEqual([])
   // No page at all regresses every check the approved page passes.
-  expect(regressions(run({ new: null }), E_CHECKS).map(r => r.id)).toEqual(['E1', 'R1', 'R3'])
+  expect(regressions(run({ new: null }), E_CHECKS, {}).map(r => r.id)).toEqual(['E1', 'R1', 'R3'])
 })
 
 test('the PR comment carries the marker, the regressions, and the table, and a skip says why', () => {
@@ -281,7 +288,7 @@ test('the PR comment carries the marker, the regressions, and the table, and a s
 })
 
 test('the Slack message names each question and its regressions, and no page link', () => {
-  const text = renderSlack(run(), E_CHECKS, null)
+  const text = renderSlack(run(), E_CHECKS, {}, null)
   expect(text).toContain('1 regression')
   expect(text).toContain('• I4 Holiday creator plan: 2/3 checks pass; regressed R3')
   expect(text).not.toContain('claude.ai')
@@ -295,7 +302,7 @@ test('the CI title prefix is removed before grading, and nothing else is', () =>
 
 test('check names come from e-checks and the reader standard table', () => {
   const names = checkNames([{ id: 'E1', name: 'Answers the real question' }], '| R1 | Reader and scope | x |\n| R13 | Required metrics | y |')
-  expect(names).toEqual({ E1: 'Answers the real question', R1: 'Reader and scope', R13: 'Required metrics', C5: 'Chat wording' })
+  expect(names).toEqual({ E1: 'Answers the real question', R1: 'Reader and scope', R13: 'Required metrics', C5: 'Chat wording', Q3: 'Approvals named in the setup reply' })
 })
 
 test('a question local.json names no brand for is skipped while no baseline grades it, and stops the run once one does', () => {
@@ -313,13 +320,13 @@ test('every report names the skipped questions, and a run with none left posts a
   expect(skippedLine(['O2'])).toBe('Skipped: O2 (no brand in local.json), so it was not graded and cannot regress.')
   const withSkip = { ...run(), skipped: ['O2'] }
   expect(renderComment(withSkip, E_CHECKS, {}, null, null)).toContain('Skipped: O2')
-  expect(renderSlack(withSkip, E_CHECKS, null)).toContain('Skipped: O2')
+  expect(renderSlack(withSkip, E_CHECKS, {}, null)).toContain('Skipped: O2')
   expect(renderRun(withSkip, E_CHECKS, {})).toContain('Skipped: O2')
   const nothing = { ...run(), questions: [], skipped: ['O2'] }
   const comment = renderComment(nothing, E_CHECKS, {}, null, 'https://example.test/run/2')
   expect(comment).toContain('skipped: no question ran. Skipped: O2')
   expect(comment).toContain('Run: https://example.test/run/2')
-  expect(regressions(nothing, E_CHECKS)).toEqual([])
+  expect(regressions(nothing, E_CHECKS, {})).toEqual([])
 })
 
 // One turn of a run: what the main thread asked with AskUserQuestion, and the reply the turn ended on.
@@ -353,7 +360,7 @@ test('the three chat messages are read from the questions asked and the replies 
   expect(checked.hits).toEqual([])
   // A run of one turn that published holds a close-out and no setup reply.
   expect(chatMessages([chatTurn('Here is the page.')], true)).toEqual({ closeOut: 'Here is the page.' })
-  expect(askText({ questions: [{ question: 'Q?', header: 'Heard', options: [{ label: 'A', description: 'why' }] }] })).toBe('Q?\nA\nwhy')
+  expect(askText([{ question: 'Q?', header: 'Heard', multiSelect: false, options: [{ label: 'A', description: 'why' }, { label: 'B', description: '' }], answer: null, by: null }])).toBe('Q?\nA\nwhy\nB')
   // A host that refuses the question tool asks in text: a storyline draft packet marks that turn.
   const refused = [chatTurn('I heard I2. Right?'), chatTurn('Storyline: gifts vs deals. Build?', [], DRAFT), chatTurn('Done.')]
   expect(chatMessages(refused, true)).toEqual({ setup: 'I heard I2. Right?', storyline: 'Storyline: gifts vs deals. Build?', closeOut: 'Done.' })
@@ -451,8 +458,8 @@ test('a countable rule broken in chat fails the run, with no approved result to 
   failing.questions[0].approved!.graded.R3 = 'fail'
   failing.questions[0].chat = chat
   const names = { [CHAT_CHECK.id]: CHAT_CHECK.name }
-  expect(chatFailures(failing)).toEqual([{ kind: 'chat', code: 'I4', id: 'C5' }])
-  expect(regressions(failing, E_CHECKS)).toEqual(chatFailures(failing))
+  expect(chatFailures(failing, names)).toEqual([{ kind: 'chat', code: 'I4', id: 'C5', name: 'Chat wording' }])
+  expect(regressions(failing, E_CHECKS, names)).toEqual(chatFailures(failing, names))
   // The chat is a line under the table, not a row of it: it is not a page comparison.
   const table = renderRun(failing, E_CHECKS, names)
   expect(table).not.toContain('| C5')
@@ -462,9 +469,9 @@ test('a countable rule broken in chat fails the run, with no approved result to 
   // A baseline keeps the counts, which hold no chat text; a clean chat never fails.
   expect(forBaseline(failing).questions[0].chat).toEqual(chat)
   failing.questions[0].chat = { result: 'pass', messages: { closeOut: CLEAN } }
-  expect(regressions(failing, E_CHECKS)).toEqual([])
+  expect(regressions(failing, E_CHECKS, {})).toEqual([])
   expect(chatLine(failing.questions[0].chat)).toBe('Chat wording (C5): pass. setup reply not sent; storyline check-in not sent; close-out clean.')
-  expect(regressions(run(), E_CHECKS).map(r => r.id)).toEqual(['R3'])
+  expect(regressions(run(), E_CHECKS, {}).map(r => r.id)).toEqual(['R3'])
   expect(chatLine(noChat())).toBeNull()
 })
 
@@ -482,4 +489,293 @@ test('a run stored before the chat check reads as chat not run, and adds no chan
   expect(compared).toContain('Chat wording (C5): pass → fail')
   expect(compared).toContain('1 check result changed.')
   expect(compared).not.toContain('No check changed.')
+})
+
+// ---------------------------------------------------------------- pickers in the transcript, the table and local.json
+
+const FIXTURES = join(import.meta.dir, 'fixtures')
+const fixtureTurn = (name: string) => summarizeTurn(parseStream(readFileSync(join(FIXTURES, name), 'utf8')))
+
+test('the approval check is a row of the table with no approved result, and never a regression', () => {
+  const failing = run()
+  failing.questions[0].approvals = checkApprovals([fixtureTurn('approvals-unnamed.jsonl')])
+  const names = checkNames(E_CHECKS, '')
+  const table = renderRun(failing, E_CHECKS, names)
+  expect(table).toContain('| Q3 Approvals named in the setup reply | fail | – |  |')
+  expect(table).toContain('- Approvals named in the setup reply (Q3): fail. The run asked for save, drafts')
+  expect(regressions(failing, E_CHECKS, names).map(r => r.id)).toEqual(['R3'])
+  expect(renderRun(run(), E_CHECKS, names)).toContain(`| ${APPROVALS_CHECK.id} ${APPROVALS_CHECK.name} | – | – |  |`)
+  // A baseline keeps the kinds, which hold no chat text, and a run stored before the check reads as not run.
+  expect(forBaseline(failing).questions[0].approvals).toEqual(failing.questions[0].approvals)
+  const stored = run()
+  delete (stored.questions[0] as any).approvals
+  expect(normalizeRun(stored).questions[0].approvals).toEqual(noApprovals())
+})
+
+test('the close-out of a run the harness ended at the next picker is the text above that picker', () => {
+  const turn = fixtureTurn('approvals-named.jsonl')
+  expect(turn.failed).toBe(true) // the interrupted turn reports an error; the page it published still counts
+  const messages = chatMessages([turn], true)
+  expect(messages.setup).toContain('This run will ask you to approve')
+  expect(messages.setup).toContain('Cap at 12 fetches (Recommended)')
+  expect(messages.setup).not.toContain('What next?')
+  expect(messages.storyline).toContain('Gift posts beat the usual views')
+  expect(messages.closeOut).toBe('The page is ready: https://claude.ai/artifact/AbC123. It ranks 12 creators.')
+})
+
+test('local.json is refused while a value still holds a placeholder, and the key is named', () => {
+  const example = JSON.parse(readFileSync(join(import.meta.dir, 'local.example.json'), 'utf8'))
+  const keys = placeholderKeys(example)
+  expect(keys).toContain('mcp.url')
+  expect(keys).toContain('organization')
+  expect(keys).toContain('questions.P1.brand')
+  expect(keys).toContain('questions.I1.approved')
+  expect(keys).not.toContain('questions.I1.data')
+  const filled = { mcp: { url: 'https://atlas.example.test/mcp', name: 'Aspire_Atlas_Dev' }, organization: 'Test org', chatAllow: ['Canon R5', '{product}'], questions: { I1: { brand: 'Acme', approved: null } } }
+  expect(placeholderKeys(filled)).toEqual(['chatAllow[1]'])
+  expect(placeholderKeys({ ...filled, chatAllow: [] })).toEqual([])
+})
+
+test('a storyline draft packet that names its draft file is not a page, and does not end the run', () => {
+  const packet = (body: string) => summarizeTurn(parseStream([
+    line({ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 't1', content: '```result-packet\n' + body + '\n```' }] } }),
+    line({ type: 'result', session_id: 's1', result: 'Which should I build?', is_error: false }),
+  ].join('\n')))
+  expect(findPage(packet('{"page": "/tmp/s/draft.html", "storyline": {"pass": "draft"}}'))).toEqual({ link: null, file: null, finished: false })
+  expect(findPage(packet('{"page": "/tmp/s/page.html", "storyline": {"pass": "build"}}'))).toEqual({ link: null, file: '/tmp/s/page.html', finished: true })
+})
+
+test('an answer line written before its picker in the transcript is still read', () => {
+  const picker = { type: 'assistant', message: { content: [{ type: 'tool_use', id: 'q1', name: 'AskUserQuestion', input: { questions: [{ header: 'Heard', question: 'Right?', options: [{ label: 'Yes, run it (Recommended)' }] }] } }] } }
+  const answer = { type: ANSWER_EVENT, tool_use_id: 'q1', answers: { 'Right?': { answer: 'Yes, run it (Recommended)', by: 'recommended' } } }
+  for (const order of [[picker, answer], [answer, picker]]) {
+    const turn = summarizeTurn(parseStream(order.map(line).join('\n')))
+    expect(turn.asks[0].questions[0].answer).toBe('Yes, run it (Recommended)')
+    expect(wasAnswered(turn.asks[0])).toBe(true)
+  }
+  const declined = summarizeTurn(parseStream([line({ type: ANSWER_EVENT, tool_use_id: 'q1', declined: 'finished' }), line(picker)].join('\n')))
+  expect(declined.asks[0].declined).toBe('finished')
+  // A reason the harness does not write is not taken as one.
+  expect(summarizeTurn(parseStream([line(picker), line({ type: ANSWER_EVENT, tool_use_id: 'q1', declined: 'something else' })].join('\n'))).asks[0].declined).toBeNull()
+  expect(wasAnswered(declined.asks[0])).toBe(false)
+})
+
+test('the setup reply is the text above the first picker, and notes and a picker during the build are in no message', () => {
+  const say = (text: string) => ({ type: 'assistant', message: { content: [{ type: 'text', text }] } })
+  const ask = (id: string, header: string, question: string) => ({ type: 'assistant', message: { content: [{ type: 'tool_use', id, name: 'AskUserQuestion', input: { questions: [{ header, question, options: [{ label: 'Yes (Recommended)' }] }] } }] } })
+  const tool = (id: string) => ({ type: 'assistant', message: { content: [{ type: 'tool_use', id, name: 'Task', input: {} }] } })
+  const result = (id: string, content: string) => ({ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: id, content }] } })
+  const turn = summarizeTurn(parseStream([
+    say('You need a shortlist.'), tool('t0'), result('t0', 'ok'),
+    say('It will ask you to approve nothing.'), ask('q1', 'Heard', 'You asked who to contact. Is that right?'),
+    say('Drafting -> storyline.'), tool('t1'), result('t1', '```result-packet\n{"page": null, "storyline": {"pass": "draft"}}\n```'),
+    say('Here is the draft of the three points.'), ask('q2', 'Storyline', 'Gift posts beat the usual views.'),
+    say('Building -> reviews.'), ask('q3', 'Account', 'Refresh @acme first -> newer posts?'),
+    tool('t2'), result('t2', '```result-packet\n{"page": "https://claude.ai/artifact/AbC123", "storyline": {"pass": "build"}}\n```'),
+    say('The page is ready.'), ask('q4', 'Next', 'What next?'),
+    { type: ANSWER_EVENT, tool_use_id: 'q4', declined: 'finished' },
+  ].map(line).join('\n')))
+  // Setup lines written before a tool call (loading the question tool, a status read) are still the setup reply.
+  expect(turn.asks[0].before).toBe('You need a shortlist.\nIt will ask you to approve nothing.')
+  expect(turn.asks[0].message).toBe('It will ask you to approve nothing.')
+  const messages = chatMessages([turn], true)
+  expect(messages.setup).toBe('You need a shortlist.\nIt will ask you to approve nothing.\nYou asked who to contact. Is that right?\nYes (Recommended)')
+  // The draft written above the storyline picker is part of the check-in; the note before the tool call is not.
+  expect(messages.storyline).toBe('Here is the draft of the three points.\nGift posts beat the usual views.\nYes (Recommended)')
+  expect(messages.closeOut).toBe('The page is ready.')
+  expect(checkChat([turn], true, RULES).checks.result).toBe('pass')
+  // A draft with an arrow above the storyline picker is counted, in a run of one turn.
+  const drafted = summarizeTurn(parseStream([
+    say('You need a shortlist.'), ask('q1', 'Heard', 'Is that right?'),
+    tool('t1'), result('t1', '```result-packet\n{"page": null, "storyline": {"pass": "draft"}}\n```'),
+    say('Gifts -> views.'), ask('q2', 'Storyline', 'Build it?'),
+    tool('t2'), result('t2', '```result-packet\n{"page": "https://claude.ai/artifact/AbC123", "storyline": {"pass": "build"}}\n```'),
+    { type: 'result', session_id: 's1', result: 'The page is ready.', is_error: false },
+  ].map(line).join('\n')))
+  expect(checkChat([drafted], true, RULES).checks.messages.storyline).toEqual({ arrows: 1, vs: 0, codes: 0 })
+  // A run whose first picker is the storyline check-in sent no setup reply: the draft is not counted twice.
+  const noSetup = summarizeTurn(parseStream([
+    tool('t1'), result('t1', '```result-packet\n{"page": null, "storyline": {"pass": "draft"}}\n```'),
+    say('Gifts -> views.'), ask('q2', 'Storyline', 'Build it?'),
+  ].map(line).join('\n')))
+  expect(chatMessages([noSetup], false)).toEqual({ storyline: 'Gifts -> views.\nBuild it?\nYes (Recommended)' })
+})
+
+test('a compare does not count the approval check appearing for the first time', () => {
+  const before = run()
+  const after = run()
+  after.questions[0].approvals = { result: 'pass', line: true, named: [], asked: [], unnamed: [] }
+  expect(compareRuns(before, after, E_CHECKS)).toContain('0 check results changed.')
+  const failed = run()
+  failed.questions[0].approvals = { result: 'fail', line: true, named: [], asked: ['save'], unnamed: ['save'] }
+  const compared = compareRuns(after, failed, E_CHECKS)
+  expect(compared).toContain('| Q3 | pass → fail |')
+  expect(compared).toContain('1 check result changed.')
+  expect(compared).not.toContain('harness versions')
+  // Runs from the two harnesses are told apart, since their rounds and tokens are counted differently.
+  expect(compareRuns({ ...before, harness: 1 }, { ...after, harness: 2 }, E_CHECKS)).toContain('harness versions 1 and 2')
+})
+
+// ---------------------------------------------------------------- client cases and their assertions
+
+const SHOP: AssertionRef = { id: 'A1', name: 'Shop posts are their own group', ticket: 'ASP-5976', landed: false }
+const MENTIONS: AssertionRef = { id: 'A2', name: 'Mentions count with or without the @', ticket: 'ASP-5977', landed: false }
+
+/** A client case with no approved page: A1 fails and A2 passes on the new page. */
+function caseRun(assertions: AssertionRef[] = [SHOP, MENTIONS], asserted: Record<string, any> = { A1: 'fail', A2: 'pass' }): RunResults {
+  const results = run({ code: 'CR1', example: 'Competitive read', setsBarFor: [], barChecks: [], approved: null, assertions })
+  results.questions[0].new = { ...results.questions[0].new!, graded: { R1: 'pass' }, asserted }
+  return results
+}
+
+test('every client case names a ticket per assertion and has both fixture pages, with placeholder handles and links', () => {
+  const config = JSON.parse(readFileSync(join(import.meta.dir, 'questions.json'), 'utf8'))
+  const cases = config.questions.filter((q: any) => q.assertions)
+  expect(cases.map((q: any) => q.code)).toEqual(['CR1', 'AR1'])
+  for (const question of cases) {
+    const ids = question.assertions.map((a: Assertion) => a.id)
+    expect(new Set(ids).size).toBe(ids.length)
+    for (const a of question.assertions as Assertion[]) {
+      expect(a.ticket).toMatch(/^ASP-\d+$/)
+      expect(typeof a.landed).toBe('boolean')
+      expect(a.passesWhen.length).toBeGreaterThan(20)
+      expect(a.failsWhen.length).toBeGreaterThan(20)
+      // The first row of "what it covers": the client example the assertion came from.
+      expect(a.examples.length).toBeGreaterThan(0)
+    }
+    for (const role of ['wrong', 'corrected']) {
+      const page = readFileSync(join(ROOT, question.fixtures[role]), 'utf8')
+      // A handle that could be a real person's, or a link to a real post, never sits beside invented figures.
+      expect((page.match(/@\w+/g) ?? []).every(handle => /^@(creator_[a-z]|handle)$/.test(handle))).toBe(true)
+      expect((page.match(/https?:\/\/[^"\s<]+/g) ?? []).every(link => link.startsWith('https://example.com/'))).toBe(true)
+    }
+    // A figure a case expects on the fixture pages names only what the pages invent.
+    for (const a of question.assertions as Assertion[]) if (a.whenNamed) expect(passesWhen(a, question.fixtures.values ?? {})).toContain(' at least ')
+  }
+  // The competitive read is the plugin's own question; the affiliate report has no question code.
+  const resolved = config.questions.map(resolveQuestion)
+  expect(resolved.map((q: any) => q.question)).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'O3', null])
+  expect(resolved.map((q: any) => q.assertions.length)).toEqual([0, 0, 0, 0, 0, 0, 0, 3, 5])
+})
+
+test('an expected figure joins an assertion only when local.json names everything it asks about', () => {
+  const a: Assertion = { ...MENTIONS, fix: 2, passesWhen: 'Counts name matches.', failsWhen: 'Tags only.', examples: [], whenNamed: 'The count for {competitor} is at least {competitorPosts} posts.' }
+  expect(passesWhen(a, {})).toBe('Counts name matches.')
+  expect(passesWhen(a, { competitor: 'Lumen Kids' })).toBe('Counts name matches.')
+  expect(passesWhen(a, { competitor: 'Lumen Kids', competitorPosts: '20' })).toBe('Counts name matches. The count for Lumen Kids is at least 20 posts.')
+})
+
+test('a case shows its assertions first, each with its ticket, and says which still wait on one', () => {
+  const results = caseRun()
+  expect(rows(results.questions[0], E_CHECKS, [], {}).slice(0, 2).map(row => [row.id, row.new, row.approved, row.bar])).toEqual([['A1', 'fail', 'not run', true], ['A2', 'pass', 'not run', true]])
+  const table = renderRun(results, E_CHECKS, {})
+  expect(table).toContain('| A1 Shop posts are their own group (ASP-5976) | fail | – | yes |')
+  expect(table.indexOf('| A1 ')).toBeLessThan(table.indexOf('| E1 '))
+  expect(table).toContain('- Waiting on a ticket, so not a regression: A1 (ASP-5976).')
+  expect(table).toContain('- Passes before its ticket is marked as landed: A2 (ASP-5977).')
+  expect(assertionNotes(caseRun([{ ...SHOP, landed: true }], { A1: 'pass' }).questions[0])).toEqual([])
+  // An assertion the judge did not return, or one the page's data cannot show, is never listed as a failure.
+  expect(assertionNotes(caseRun([SHOP, MENTIONS], { A2: 'n/a' }).questions[0])).toEqual([
+    'Not judged (the judge returned no row, or an N/A it is told not to give), so nothing is known about: A1 (ASP-5976), A2 (ASP-5977).',
+  ])
+  expect(aResult(null, 'A1')).toBe('not run')
+  expect(assertionRefs([])).toEqual([])
+  expect([cell('not run'), cell('fail')]).toEqual(['–', 'fail'])
+})
+
+test('an assertion blocks nothing until its ticket lands, and from then on a failure is a regression', () => {
+  expect(regressions(caseRun(), E_CHECKS, {})).toEqual([])
+  const landed = caseRun([{ ...SHOP, landed: true }, MENTIONS])
+  expect(regressions(landed, E_CHECKS, {})).toEqual([{ kind: 'assertion', code: 'CR1', id: 'A1', name: SHOP.name, ticket: 'ASP-5976', now: 'fail' }])
+  const comment = renderComment(landed, E_CHECKS, {}, null, null)
+  expect(comment).toContain('- CR1 A1 Shop posts are their own group: ASP-5976 landed, new fail')
+  expect(renderSlack(landed, E_CHECKS, {}, null)).toContain('regressed A1')
+  // No page at all brings the wrong reading back as surely as a failing one.
+  const noPage = caseRun([{ ...SHOP, landed: true }])
+  noPage.questions[0].new = null
+  expect(regressions(noPage, E_CHECKS, {})).toEqual([{ kind: 'assertion', code: 'CR1', id: 'A1', name: SHOP.name, ticket: 'ASP-5976', now: 'no page' }])
+  // A landed assertion must pass. A judge that answers n/a, or returns no row, lets the wrong reading back in unseen.
+  expect(regressions(caseRun([{ ...SHOP, landed: true }], { A1: 'n/a' }), E_CHECKS, {}).map(r => r.kind === 'assertion' && r.now)).toEqual(['n/a'])
+  const unjudged = caseRun([{ ...SHOP, landed: true }], {})
+  expect(regressions(unjudged, E_CHECKS, {}).map(r => r.kind === 'assertion' && r.now)).toEqual(['not run'])
+  expect(renderComment(unjudged, E_CHECKS, {}, null, null)).toContain('- CR1 A1 Shop posts are their own group: ASP-5976 landed, new not judged')
+  expect(regressions(caseRun([{ ...SHOP, landed: true }], { A1: 'pass' }), E_CHECKS, {})).toEqual([])
+  // Before its ticket lands, an assertion regresses only against an approved page that passes it.
+  const approved = caseRun()
+  approved.questions[0].approved = { ...approved.questions[0].new!, asserted: { A1: 'pass', A2: 'pass' } }
+  expect(regressions(approved, E_CHECKS, {})).toEqual([{ kind: 'page', code: 'CR1', id: 'A1', name: SHOP.name, was: 'pass', now: 'fail' }])
+  expect(renderComment(approved, E_CHECKS, {}, null, null)).toContain('- CR1 A1 Shop posts are their own group: approved pass, new fail')
+})
+
+test('a baseline keeps assertion results, and a compare matches them by id when a case gains one', () => {
+  const kept = forBaseline(caseRun()).questions[0]
+  expect(kept.new!.asserted).toEqual({ A1: 'fail', A2: 'pass' })
+  expect(kept.assertions).toEqual([SHOP, MENTIONS])
+  // Results stored before assertions read as having none, so no caller handles a missing field.
+  const old: any = run()
+  delete old.questions[0].assertions
+  delete old.questions[0].new.asserted
+  expect(normalizeRun(old).questions[0].assertions).toEqual([])
+  expect(normalizeRun(old).questions[0].new!.asserted).toEqual({})
+  expect(regressions(normalizeRun(old), E_CHECKS, {}).map(r => r.id)).toEqual(['R3'])
+  const before = caseRun([MENTIONS], { A2: 'pass' })
+  const after = caseRun([SHOP, MENTIONS], { A1: 'fail', A2: 'pass' })
+  const diff = compareRuns(before, after, E_CHECKS)
+  expect(diff).toContain('| A1 | – → fail | – |')
+  expect(diff).not.toContain('| A2 |')
+  expect(diff).toContain('1 check result changed.')
+})
+
+test('the fixture pages must split every assertion: fail on the wrong reading, pass on the corrected one', () => {
+  expect(fixtureProblems([SHOP, MENTIONS], { A1: 'fail', A2: 'fail' }, { A1: 'pass', A2: 'pass' })).toEqual([])
+  expect(fixtureProblems([SHOP, MENTIONS], { A1: 'pass', A2: 'fail' }, { A1: 'pass' })).toEqual([
+    'A1: the page with the wrong reading got pass, not fail',
+    'A2: the corrected page got not run, not pass',
+  ])
+})
+
+test('a case with a landed assertion stops the run when its brand is lost, and its input file names are made safe', () => {
+  const questions = [{ code: 'CR1', assertions: [{ landed: true }] }, { code: 'AR1', assertions: [{ landed: false }] }, { code: 'I4', assertions: [] }]
+  const gates = (code: string) => questions.some(question => question.code === code && hasLandedAssertion(question))
+  expect(configuredQuestions(questions, { questions: {} }, false, gates)).toEqual({ run: [], skipped: ['AR1', 'I4'], missing: ['CR1'] })
+  expect(safeFileName('affiliate sales (Oct).csv')).toBe('affiliate_sales__Oct_.csv')
+  expect(safeFileName('../../.env')).toBe('__.._.env')
+  expect(safeFileName('..')).toBe('_')
+})
+
+test('a question\'s input files are checked before any question runs: a missing one, and two that would share a name', () => {
+  const exists = (path: string) => path === 'exports/sales.csv'
+  expect(planInputFiles('AR1', [{ name: 'sales export.csv', path: 'exports/sales.csv' }, { name: 'notes.txt', text: 'a' }], exists))
+    .toEqual({ names: ['sales_export.csv', 'notes.txt'], problems: [] })
+  expect(planInputFiles('AR1', [{ name: 'sales.csv', path: 'laptop/only.csv' }], exists).problems).toEqual(['AR1: the file sales.csv has no text and no path to a file that exists'])
+  expect(planInputFiles('AR1', [{ name: 'sales.csv', path: 'exports/sales.csv', text: null as any }], exists).problems).toEqual([])
+  expect(planInputFiles('AR1', [{ name: 'sales export.csv', text: 'a' }, { name: 'sales_export.csv', text: 'b' }], exists).problems)
+    .toEqual(['AR1: the files sales export.csv and sales_export.csv would both be saved as sales_export.csv'])
+  // Most developers' disks ignore case, so two names that differ only in case are one file there.
+  expect(planInputFiles('AR1', [{ name: 'Sales.csv', text: 'a' }, { name: 'sales.csv', text: 'b' }], exists).problems)
+    .toEqual(['AR1: the files Sales.csv and sales.csv would both be saved as sales.csv'])
+  // An empty name would be written to the run's folder itself.
+  expect(planInputFiles('AR1', [{ name: '', text: 'a' }], exists).problems).toEqual(['AR1: a file has no name'])
+})
+
+test('the fixture check runs for a change to a file questions.json lists, and each listed path exists', () => {
+  const config = JSON.parse(readFileSync(join(import.meta.dir, 'questions.json'), 'utf8'))
+  const needed = (changed: string[]) => fixturesForChanges(changed, config.fixturePaths)
+  expect(needed(['scripts/eval/questions.json'])).toBe(true)
+  expect(needed(['scripts/fixtures/eval-cases/ar1-wrong.html'])).toBe(true)
+  expect(needed(['scripts/eval/lib.ts'])).toBe(true)
+  expect(needed(['plugins/aspire/agents/atlas-market-signal.md', 'README.md'])).toBe(false)
+  for (const path of config.fixturePaths) expect(existsSync(join(ROOT, path))).toBe(true)
+  // The list is complete for the harness itself: where the command is defined, the workflow step that runs it,
+  // and every local file run.ts loads, directly or through lib.ts.
+  expect(needed(['package.json'])).toBe(true)
+  expect(needed(['.github/workflows/validate.yml'])).toBe(true)
+  for (const file of ['run.ts', 'lib.ts']) {
+    const source = readFileSync(join(import.meta.dir, file), 'utf8')
+    for (const match of source.matchAll(/from '(\.{1,2}\/[^']+)'/g)) {
+      expect(needed([join('scripts/eval', `${match[1]}.ts`)])).toBe(true)
+    }
+  }
+  // Every case's fixture pages sit under a listed path, so a new case's pages cannot go unjudged.
+  for (const question of config.questions) for (const role of ['wrong', 'corrected']) if (question.fixtures) expect(needed([question.fixtures[role]])).toBe(true)
 })

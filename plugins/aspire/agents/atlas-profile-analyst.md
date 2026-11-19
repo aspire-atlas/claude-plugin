@@ -55,6 +55,9 @@ findings and pushes only, saying in the summary that nothing was saved.
    line (never a `review:` or `applicantreview:` key; those are content review and one campaign's
    applicant screening only).
 6. Mode `own` only: cross reference the brand's 90-day goal and competitors. Name gaps and quick wins.
+   On the page, a block that gives the brand's own organic figures carries `data-own`, and a
+   competitor's or creator's posts are never called organic or unpaid
+   (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8, **Paid label or none**).
    **Benchmark against competitors Atlas already indexes.** For each `competitor` handle that
    `search_creators` returns, read its last 90 days with the same `search_posts` filter and compare
    on rates, never raw counts: engagement per post against follower count, posts per week, format

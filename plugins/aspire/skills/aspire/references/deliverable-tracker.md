@@ -558,7 +558,9 @@ actions); render for the primary `recipient` lens. Sections, in order:
    the term to date.
 8. **Disclosure rate**: matched posts with disclosure found over matched posts checked, by
    type and by network, with missing and unclear counted apart. Under 5 posts checked shows the
-   counts and "too few to rate", never a percent.
+   counts and "too few to rate", never a percent. A rate from more posts than that, but at or
+   under the directional line (**Page standard**, `comparisons.md`), is marked "directional" with
+   its post count.
 9. **Expected from gifting**: gifted creators whose post is hoped for, not owed: posted, still
    in the window, and "no post (not owed)". Never shown as late.
 10. **Posted**: each matched post with its creator, format, date, on time or days late, the

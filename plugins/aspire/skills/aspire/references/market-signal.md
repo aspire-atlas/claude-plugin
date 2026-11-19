@@ -140,11 +140,13 @@ Filter path unless noted, `context` on every call, only field paths from the cen
    (section 9.5, the unattended row); a relaunch with handles
    in `approved.refresh` refreshes those before step 3, and makes no new offer. An
    interactive run with `approved.refresh` null works out each handle's pace from the freshness
-   read (section 9.4) and offers the refresh, with its time and cost, for each handle behind it,
-   holding its findings and delivery until the relaunch. A handle Atlas does not hold is never
+   read (section 9.4) and offers the refresh, with its time and cost, for each handle behind it
+   up to the refresh limit (section 9.5), holding its findings and delivery until the relaunch. A handle Atlas does not hold is never
    refreshed (that would start discovery). The page's source line and the chat summary carry the
    freshness line. Creators cited only as mention evidence (comparison
    cards, quotes, share-of-voice counts) share the one mentions entry, marked `data-mention`.
+   A block that gives the brand's own organic results from a connected account carries `data-own`
+   (**Page standard**, section 8, **Paid label or none**).
 3. **Mention sets.** Per entity: `search_posts` where the text matches the name or a spelling
    variant (`match_phrase`), or `instagram.mentions.username` names a handle, or a hashtag
    matches; `must_not` the entity's own handles and the brand's handles; `exists mediaKind`;
@@ -230,9 +232,14 @@ From **Data method** step 8 and the posts already read in step 6; no other reads
 - **Reach rate.** A topic's rate is its posts at the threshold divided by its posts. The brand's
   rate is the same over all its posts in the period. Each topic is compared with the brand's
   rate as a multiple ("2.8 times as often as the average {brand} post").
-- **Which topics show.** A topic with fewer than 20 posts is left off the chart and named in the
-  method as too few. Every other topic is shown, ordered by rate, with the brand's rate as its
-  own bar between the topics above it and those below.
+- **Which topics show.** A topic at or under the directional line (**Page standard**,
+  `comparisons.md`) is left off the chart and named in the method as too few.
+  Every other topic is shown, ordered by rate, with the brand's rate as its own bar between the
+  topics above it and those below.
+- **Like for like.** Every comparison of posts and every share on the page follows **Page
+  standard**, `comparisons.md`. The reach chart counts posts with and without a paid label
+  together, so each of its sides is mixed: the caption's sentence saying so is the chart's line
+  for the same-kind check.
 - **Concentrated.** A topic with fewer than 5 creators, or whose top two creators made over half
   its posts at the threshold, is concentrated. It gets one line under the chart that calls it
   those creators' reach, not the topic's ("all 48 come from two creators, @a and @b, so that is

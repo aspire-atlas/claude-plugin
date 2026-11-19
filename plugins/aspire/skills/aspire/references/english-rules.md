@@ -20,13 +20,14 @@ written.
 | 5 | Every term explained on first use | A term a reader in this role would not use themselves (hook rate, engagement per 1,000 views, CPM, whitelisting) with no plain explanation where it first appears |
 | 6 | Every number in a label matches what it labels | "Top 5" over four rows, "3 creators to contact" beside two, a percent sign on a count, a total that is not the sum shown under it |
 | 7 | Nothing in Atlas's own report words | The report labels R11 bans (**Reader standard**), "picks" or "reads" used as a section or list name where R11 lets them pass, and any other wording that only makes sense inside Atlas's own reports: a question pasted in Atlas's shorthand, a section named for the agent that made it, a question code ("I2"), a check id ("R3", "EN2"), or a flow's question id ("R4", "D4") |
+| 8 | Every comparison is like for like | A comparison or a share that does not pass the four checks in **Page standard**, `comparisons.md`, as far as the words show. Read that file's table for the two numbers before judging. Two sides with no word on what kind of posts each holds (paid label, TikTok Shop selling, or no paid label); a figure that rests on too few posts with no "directional" and post count beside it; a share ("87% of revenue") with no size of its group beside it ("from 88% of affiliates"); a share that matches its group's size written up as a finding. Good: "TikTok Shop posts drew 3.6 engagements per 1,000 views (18 posts, directional), against 14.7 across the 212 posts with no paid label." Bad: "{brand} drew 6.1 engagements per 1,000 views, behind {competitor} at 9.8." The mark "(18 posts, directional)" and the one line that says which check a comparison fails are required wording: never remove either under rule 3 or rule 4. "Directional" is explained once, where the page first uses it (rule 5) |
 
 ## In chat
 
 The main thread applies the table itself, before sending, to the three messages every run sends:
 
 1. **The setup reply** (**Orchestration contract**, **2**): each question's text, its option labels,
-   and their descriptions.
+   and their descriptions. A repeat run's reply (**Repeat run**) is held to the same rules.
 2. **The storyline check-in** (**Orchestration contract**, **2**, **The storyline**): the question,
    every bullet with its evidence, the lines for what was not checked, and the option labels.
 3. **The close-out** (**Orchestration contract**, **10**), and the chat reply it belongs to.
@@ -52,6 +53,8 @@ What the table means in chat:
   belong in the launch block, the result packet, and the run log (**Orchestration contract**, **5**,
   **6**, **9**), and never reach the person. Name a check by what it means for the reader ("the
   answer now comes first"), not by its id or its name in the standard.
+- **Rule 8.** A storyline bullet or a close-out point that compares names the kind of posts and
+  the post count on each side, and a share comes with its group's size, in the same sentence.
 
 A storyline bullet arrives from the agent's packet and a close-out names what the packet reports.
 Reword either to pass the table, keeping every number, name, and claim, and adding none. The

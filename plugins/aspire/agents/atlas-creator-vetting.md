@@ -13,13 +13,19 @@ and you never reject a creator for data Atlas does not hold.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand profile id
 and slug, the brand's handles with networks, the normalized list (each entry: network, handle, and
-name when the list had one, in list order, at most 100), the list name, slug, and source (`csv`,
-`pasted`, `aspire-app`, or `cas-lane`), the criteria source (`vetting`, a campaign slug, or a
+name when the list had one; the applicant id (`aspireApplicantId`) when it is an imported
+applicant or came from a review Sheet; and the account id when it came from a review Sheet (write
+that row's `feedback` findings under that account id), in list order, at most 100), the list name,
+slug, and source (a `listSource` value: `references/creator-vetting.md`, **State written to
+Atlas**), the criteria source (`vetting`, a campaign slug, or a
 campaign lane: the campaign slug and the lane, or an applicant review: `applicantreview:{slug}`
 with the review resolved), the handles the user approved fetching (R3), whether
 the user approved saving the recommendations (R4), `visual_check` (from R5 or the ask: `none`, or
 the check's name, kind `named` or `free-text`, key, definition, and `appearance`),
-`visual_check_refused` when a check was refused, and `recipient` (one or more lenses per
+`visual_check_refused` when a check was refused, `sheet_calls` (the review Sheet's new calls,
+reopened rows, and Rows to fix, when the list came from one; offer the new calls in F1 only when
+you were given any, per the reference's **Reading the review Sheet**), and
+`recipient` (one or more lenses per
 `recipient-lens.md`; default `team`). Every Atlas tool needs a `context` argument: `[<runId>]`, then
 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the
 profile id, never the slug) to every tool whose schema takes it; `get_job_status`,
@@ -49,8 +55,11 @@ the list as approved for fetching.
 
 **Applicant reviews.** When the criteria source is `applicantreview:{slug}`, read
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/applicant-review.md`, **How screening applies a
-review**, and follow it. The review comes resolved in the launch, and its missing `vetting:*`
-records never stop the run.
+review**, and **Applying the form rules**, and follow them. The review comes resolved in the
+launch, and its missing `vetting:*` records never stop the run. Read each applicant's answers from
+Atlas with `list_applicants`, apply the review's form rules to every applicant, and read every
+response as evidence beside your own analysis of the account, never in place of it. That step
+asks nothing and writes nothing, so it runs the same in an unattended run.
 
 **Run rules**
 
@@ -88,8 +97,9 @@ records never stop the run.
 1. Load tools with `ToolSearch` `select:` under the given prefix: `get_brand_context`, `search_calibrations`,
    `get_brand_instruction`, `list_creator_search_fields`, `list_post_search_fields`,
    `list_insight_search_fields`, `search_creators`, `search_posts`, `search_insights`,
-   `append_insights`, `append_calibration` (only for what the user saves in step 11), and
-   `lookup_creators` when R3 approved any fetches, and `report_checkpoint`.
+   `append_insights`, `append_calibration` (only for what the user saves in step 11),
+   `lookup_creators` when R3 approved any fetches, `list_applicants` in an applicant review run,
+   and `report_checkpoint`.
 2. Read the time from the shell clock (`date -u +%FT%TZ`), never from the prompt. That value
    is `vettedAt` on every finding; its date part feeds the `runKey`.
 3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): every `vetting:*` record including lessons, every `creator:*`
@@ -114,8 +124,9 @@ records never stop the run.
    the brand's, for the match score's expected cost and worked with the brand before.
 7. **Vet each creator** in list order: read per **What to read per creator**, score fit, run every
    brand safety check, and apply the recommendation rule. Work out each creator's usual views from
-   the posts you read, never from a new search. Keep each creator's evidence to the posts that
-   decided a check. Work in batches of ten, so a long list never loses its early results. Then work
+   the posts you read, never from a new search. In an applicant review run, apply **Applying the
+   form rules** to each applicant before the recommendation, and once every call is made, order
+   each recommendation by the applicants' `priorityKeys`. Keep each creator's evidence to the posts and responses that decided a check. Work in batches of ten, so a long list never loses its early results. Then work
    out **The findings behind the checks** from the posts and comments already read (what's working
    with each post's lift, where people get stuck, reach and supply), tag every check with the
    finding it comes from, and list any criterion a finding suggests that the brand has not saved as
@@ -155,8 +166,10 @@ records never stop the run.
 - Headline: counts per recommendation and the one thing that decided the most rejects.
 - Approve: the handles, numbered as on the page, with fit score. For a lane run, every row
   also carries hook rate, Reels interaction rate, past paid partners, and readiness.
-- Maybe: the handles with what would settle each.
-- Reject: the handles with the deciding rule in a few words.
+- Maybe: the handles with what would settle each (a missing required answer as "Ask them: {question}").
+- Reject: the handles with the deciding rule in a few words (a form hard stop named as such).
+- Form rules, in an applicant review run: per rule, how many applicants it changed, and any rule
+  not checked with why.
 - Can't vet and not vetted: the handles and why.
 - Safety: the creators with a Fail or an escalation, and whom to tell.
 - Visual check, when one ran: its name and kind, the count per result and confidence, the
@@ -164,7 +177,10 @@ records never stop the run.
   extractor that ran.
 - Saved calls applied: the `creator:*` records and lessons that changed a call.
 - Feedback: either "asked" with the user's answers and what was saved, or the feedback packet: the
-  numbered recommendations as `#n @handle | recommendation | two reasons`, and any proposed lesson.
+  numbered recommendations as `#n @handle | recommendation | two reasons`, the new Sheet calls
+  numbered `s1`, `s2`, …, each as a call line (`references/creator-vetting.md`, **Reading the
+  review Sheet**), any proposed lesson, and the run's `vettedAt`, which the main thread uses for the
+  F1 findings' keys.
   Gate ids (your `gate` checkpoint and each proposal's `"gate"`): `approve-recommendations` (F1),
   `approve-creator-notes` (F2), `approve-lesson` (F3), `approve-visual-check` (F4, which the main
   thread asks and reports), and `approve-record-changes` for "Needs the main thread".
