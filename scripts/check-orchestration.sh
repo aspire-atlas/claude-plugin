@@ -106,7 +106,8 @@ want = {
 }
 bad = 0
 # The spend units are the Unit column of the Credits table in section 2.
-units = set(re.findall(r"^   \| `([a-z]+)` \| ", text, re.M))
+credits = re.search(r"^   \| Unit \| Agents \|.*?\n(?:   \|.*\n)+", text, re.M)
+units = set(re.findall(r"^   \| `([a-z]+)` \| ", credits.group(0) if credits else "", re.M))
 if units != {"fetches", "candidates"}:
     print(f"FAIL the Credits table names the units {sorted(units)}; want candidates and fetches"); bad = 1
 for tag, keys in want.items():
