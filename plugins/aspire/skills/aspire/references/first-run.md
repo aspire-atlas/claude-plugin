@@ -39,6 +39,8 @@ Show the page when all of these hold:
 4. **Not shown yet for this organization in this session.** Keep `first_run_shown` in working
    state, keyed by the organization `id`.
 5. **Someone is present.** Never in an unattended or scheduled run.
+6. **Invited first turn** does not apply. An invited person's organization was set up on
+   atlas.aspire.io, so that turn opens the brand report instead of this page.
 
 There is no separate "first /aspire" record. Plugin content keeps no local state, and the
 organization's Atlas state stands in for it: a first run on a new or half set up organization
