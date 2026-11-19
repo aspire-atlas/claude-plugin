@@ -77,7 +77,7 @@ asks nothing and writes nothing, so it runs the same in an unattended run.
 applicant review as the criteria source is one batch of a scheduled screening run; follow
 **Scheduled screening** in the vetting reference, steps 5 and 6. Everything above and below applies,
 with these changes. The review's `-schedule` record is the standing approval, so treat every handle
-on the list as approved for fetching (Instagram and TikTok alike) and R4 as Save. Never call
+on the list as approved for fetching (Instagram and TikTok alike) and R4 as Save. Send `screen` as your checkpoints' `pass`. Never call
 `AskUserQuestion`: anything that needs a decision becomes that applicant's Maybe with its question
 attached. Write as you go: once each batch of ten's calls are made, one `append_insights` call with
 those applicants' findings and their `applicant_screening` records, with the statuses and keys the

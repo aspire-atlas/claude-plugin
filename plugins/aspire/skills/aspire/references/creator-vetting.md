@@ -1194,8 +1194,10 @@ Each batch's launch gets its own `runId` per **Running agents**.
 
    Then find the review's **criteria map**, so every run scores on the same one (**How criteria
    become points**): `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
-   `creator-vetting-{profile}`, newest first, paged, for the newest `summary` finding whose
-   `detail.applicantReview` is the review's slug and that carries a `detail.criteriaMap`. An
+   `creator-vetting-{profile}` and `term` filters `detail.account_review.kind` `action_item` and
+   `detail.account_review.priority` `low`, newest first, paged, for the newest hit whose
+   `detailBody` has `findingType` `summary`, `applicantReview` the review's slug, and a
+   `criteriaMap`. Those three are stored but not filterable, so check them on each hit. An
    interactive run on the review counts, so a schedule set up right after one scores as it did.
    Reuse that map when its `source` is the review's criteria record, the active record's
    `createdAt` is before that summary's `vettedAt` (a change to the record saves a new version
