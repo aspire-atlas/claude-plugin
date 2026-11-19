@@ -143,11 +143,12 @@ call it with `kind: "feedback"`, the run's `runId` and `agent`, the `pass` the a
 pass that returned the proposals (its `pass` input such as `propose`, else the launch block's
 `mode` with everything but its letters removed, or `single` for `run`), its `gate`,
 `feedback: {"verdict": "approved"}` (or `edited`, `rejected`, `skipped`), and
-`counts: {"proposed": n, "approved": k}`. This skill's own flows (onboarding and each setup
-section) are runs too, as `agent: "aspire"` with their own id minted the same way
+`counts: {"proposed": n, "approved": k}`. This skill's own flows (onboarding, each setup
+section, and **Product feedback**) are runs too, as `agent: "aspire"` with their own id minted the same way
 (`aspire-20261029t140312-a3f9`; with no shell, send `started` without one and use the one it
 returns): `kind: "checkpoint"` with `status` `started` when the flow starts and `finished` when
-it ends, `pass` `onboarding` or `setup`, no step numbers, and a feedback event at each of their
+it ends, `pass` `onboarding` or `setup` (**Product feedback** sends `feedback`, with the gate
+`approve-feedback`), no step numbers, and a feedback event at each of their
 confirmations, with a `gate` named for what it approves (`approve-profile`,
 `approve-calibrations`). Verdicts Editors give on the orchestrator's Next actions page send no
 feedback event yet.
