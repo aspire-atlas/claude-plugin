@@ -341,7 +341,7 @@ done**). Offer: "Screen new {campaign} applicants on a schedule?" Options: 1) Se
 | # | Question | Options |
 | - | -------- | ------- |
 | AR9 | How often should new {campaign} applicants be screened? Each run screens up to 500 new applicants, in batches of 100, and stops when none are left. | 1) Every hour (Recommended); 2) Once a day at 07:00 {timezone} (type another time to change it) |
-| AR10 | Should scheduled runs also write each applicant's results to the {campaign} review Sheet? (only when `-sheet` holds a link) | 1) Yes: Recommendation, Fit score, Evidence, Maybe question, and Status (Recommended); 2) No: Atlas only |
+| AR10 | Should scheduled runs also write each applicant's results to the {campaign} review Sheet? (only when `-sheet` holds a link and **Creator vetting**, **Scheduled screening**, step 7 is built; until it is, AR10 is not asked and the confirmation names no Sheet write) | 1) Yes: Recommendation, Fit score, Evidence, Maybe question, and Status (Recommended); 2) No: Atlas only |
 
 `{timezone}` is the IANA timezone saved in `policy:readout-cadence`, else UTC, named in the option.
 

@@ -204,7 +204,7 @@ trust any date in this prompt. If setup is incomplete or Atlas needs a fresh sig
 "setup needed" card and stop.
 ```
 
-Each run screens up to 500 new applicants and stops when none are left; a stopped run is picked up by the next one, and no applicant is screened twice. Saving the schedule is what approves its lookups (Instagram and TikTok alike, a TikTok account Atlas doesn't hold, or holds with no recent posts, costing one paid lookup) and its saves to Atlas. Pause the task to stop it.
+Each run screens up to 500 new applicants and stops when none are left; a stopped run is picked up by the next one, and scheduled runs never screen the same applicant twice. Saving the schedule is what approves its lookups (Instagram and TikTok alike, a TikTok account Atlas doesn't hold, or holds with no recent posts, costing one paid lookup) and its saves to Atlas. Pause the task to stop it.
 
 ## Other services this plugin works with
 

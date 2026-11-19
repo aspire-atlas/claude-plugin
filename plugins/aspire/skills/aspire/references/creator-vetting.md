@@ -387,8 +387,9 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    resolved. Then find the review's saved criteria map as **Scheduled screening**, step 1, does,
    and leave out of the list every applicant whose newest `applicant_screening` record is a
    scheduled run's claim less than 12 hours old (**Scheduled screening**, step 3), saying in one
-   line "{n} applicants are being screened by the schedule right now". The schedule finishes them,
-   so no applicant is screened twice.
+   line "{n} applicants are being screened by the schedule right now". The schedule finishes them.
+   This run writes no claims, so a scheduled run that starts while it is open can screen an
+   applicant it is screening too; the newer result then decides the applicant's status.
 3c. **Ask R5 once, in its own call, after the criteria source is settled** (after R2, and after 3b
    for a review), still before the storyline draft, so its options come from the source the run
    uses: a review's saved visual checks (**Applicant review**, **How screening applies a review**), otherwise R5's own options.
@@ -1241,12 +1242,15 @@ Each batch's launch gets its own `runId` per **Running agents**.
    `profile`, `entityId` the brand profile's id, `idempotencyKey`
    `{slug}:{aspireApplicantId}:claim-{run}`. For an applicant with an Instagram or TikTok handle,
    `summary` "Claimed for screening by run {run}" and `detail` `{reviewId, aspireApplicantId,
-   status: "new"}`, adding `evidence` with its first evidence line when it was `waiting_on_data`,
-   so the "Waiting on Atlas since" line (step 6) carries over. An applicant with neither handle is
+   status: "new"}`, adding `evidence` with the "Waiting on Atlas since" line when its newest record
+   holds one (a `waiting_on_data` result, or a stale claim that carried it), so the 48-hour clock
+   (step 6) keeps its first time after a stopped run. An applicant with neither handle is
    not claimed: its finding is the final one, `status: "cant_vet"`, `summary` "Applicant {name}
    can't be vetted: no Instagram or TikTok handle", and that reason as its `evidence`. Then page
-   `list_applicants` again as in step 3, and keep in the batch only the applicants whose newest
-   record is this run's claim: one claimed by another run at the same moment is that run's. A call
+   `list_applicants` again as in step 3, and keep in the batch only the applicants for which this
+   run's claim is the earliest claim less than 12 hours old (on a tie, the lower run id): one an
+   overlapping run claimed first is that run's, and both runs reach the same answer, whichever
+   re-reads first. A call
    that fails is resent once as it is; failing again, stop the run here (step 9).
 5. **Launch `atlas-creator-vetting`** per **Main thread: the run**, step 4, with `run: unattended`
    and `job: screen`, and:
@@ -1299,7 +1303,8 @@ Each batch's launch gets its own `runId` per **Running agents**.
    batches (500 applicants); the next run carries on from there.
 9. **Run summary.** One `append_insights` call, `runKey` `creator-vetting-{profile}-{date}-{slug}-schedule`,
    one `summary` finding (`action_item`, `low`), anchored as **State written to Atlas** anchors a run
-   summary (the brand's own account, else the first account the run vetted), `idempotencyKey`
+   summary (the brand's own account, else the account of the first creator on the list Atlas
+   holds), `idempotencyKey`
    `vet-{slug}-schedule-{run}-summary`. `detail` carries `findingType: "summary"`, `vettedAt`,
    `applicantReview`, `run`, the batches and their `runKey`s, the counts per status and
    recommendation, the applicants still due (from the last step 3 read), the claims made that were
@@ -1313,7 +1318,9 @@ Each batch's launch gets its own `runId` per **Running agents**.
 **A run that stops** (the session ends, a call fails twice, the task is paused) leaves every
 applicant it finished `screened`, `cant_vet`, or `waiting_on_data`, and every applicant it claimed
 but did not finish still `new`. The next run screens the unclaimed ones first, and the claimed ones
-once their claim is 12 hours old. No applicant is screened twice, and none is skipped.
+once their claim is 12 hours old. Claims keep scheduled runs from screening the same applicant
+twice, and none is skipped. An interactive run writes no claims, so a scheduled run that overlaps
+it can screen an applicant both runs reach; the newer result decides its status.
 
 ## Creator-ads lanes (CAS campaigns)
 
