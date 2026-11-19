@@ -308,7 +308,9 @@ takes up to four questions), skipping any the user already answered.
 
 R3 is asked only after the main thread has checked which handles Atlas holds
 (**Main thread: the run**, step 2), and only when some on the list are missing. R3 option 1 is the approval for
-`lookup_creators` on exactly those handles, and the agent does not ask again. R4 is the write
+`lookup_creators` on exactly those handles, and the agent does not ask again. When the setup
+reply asks the Credits question (**Orchestration contract** **2**), Credits is R3: R3 is not asked
+again, and its cap is the approval. R4 is the write
 confirmation for the recommendation findings; the feedback answers carry their own.
 
 R5 picks the visual check (**4. Visual check**). An option picked is a **named** check; words typed

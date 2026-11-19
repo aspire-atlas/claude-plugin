@@ -45,7 +45,8 @@ not a repeat: it gets the ordinary setup reply, with the saved answers pre-fille
 ## The reply
 
 One message, in place of the setup reply: up to five plain lines, then one `AskUserQuestion`
-call with one question.
+call with the Since then question, plus, for creator discovery, its run question; Credits when
+this run will spend; and any flow question the last run could not have held.
 
 1. **"Last time ({date}) you asked {question}."** This is the first line of the message. The
    date is the last run's, as "12 Nov". The question is the last run's `asked` line, in Atlas's
@@ -80,7 +81,9 @@ question, and no question of the flow's own that the last run or a saved record 
 **Prompt coach** does not run on a repeat run, however short the ask: the last run already
 holds what it would ask for. The answer to "Since then" confirms what line 2 said, as "Yes, run
 it" does in Heard. What a repeat run still asks is what only this run can settle: the Credits
-question, in the same call, when this run will spend; a flow question whose answer the last run
+question, in the same call, when this run will spend; creator discovery's run question, in the
+same call on every interactive repeat run and before Credits, since its answer sets whether the run
+spends (**Orchestration contract**, **2**, **Discovery's count**); a flow question whose answer the last run
 could not have held (a new list to vet), in the same call; and each approval the packet brings
 afterward (**7**). A saved "save to Atlas" is not taken as this run's approval: the run
 publishes the page only, and the close-out offers the save as a proposal (**10**).
