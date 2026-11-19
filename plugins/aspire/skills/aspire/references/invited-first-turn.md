@@ -30,8 +30,10 @@ that organization's `get_status` result:
 3. `firstRun.brand.profileCount` is 1, so `firstRun.brand.profile` names the brand.
 4. Nothing is saved yet: `work.programs` and `work.campaigns` are both empty.
 5. Not finished yet for this organization in this session. Keep `invited_turn_shown` in working
-   state, keyed by the organization `id`, and set it only when **5**'s question has been asked. A
-   turn that stopped at **6** or **7** leaves it unset, so the next bare run comes back here.
+   state, keyed by the organization `id`. Set it in two cases only: the report opened (`kind`
+   `report`) and **5**'s question was asked, or **7**'s question was asked, whatever the answer.
+   A turn that stopped at **6**, or whose report could not be read, leaves it unset, so the next
+   bare run comes back here.
 
 When all hold, this turn replaces the rest of step 3, the first-run guide, the route's first
 question, and the dashboard for this reply. When any fails and **2** settled on an invited
@@ -42,11 +44,18 @@ Atlas keeps no record that this turn ran, so a bare run shows it again in a late
 program or campaign is saved. That is why the message says what is on file, and never that the
 person set it up themselves: a teammate invited later sees the same true lines.
 
-**On request** (the `report` argument, "show my brand report", "my brand snapshot"), at any
-time: run **4** alone, then **5**'s question, with no starter guide and no onboarding question.
-Conditions 1, 2, 4 and 5 do not apply, and it neither reads nor sets `invited_turn_shown`. An
-organization with several brand profiles has no single newest report: say so in one line and
-offer an account review of one brand (Phase 6) instead.
+**On request** (the `brand report` argument, "show my brand report", "my brand snapshot"), at
+any time: run **4** alone, then **5**'s question, with no starter guide and no onboarding
+question. Conditions 2, 4 and 5 do not apply, nor does the "from the top" part of condition 1,
+and it neither reads nor sets `invited_turn_shown`.
+
+- **3** is skipped, so its lines were never shown: leave out **5**'s "If anything above is wrong"
+  line, and read **6**'s "after the message" as "after the report call".
+- Someone must still be present. In an unattended run, open the report and stop: ask nothing.
+- No brand profile (`firstRun.brand.profileCount` is 0): do not call the report tool. Say "{org}
+  has no brand yet." and offer to add one (Phase 4.1).
+- Several brand profiles: there is no single newest report. Say so in one line and offer an
+  account review of one brand (Phase 6) instead.
 
 ## 2. The organization
 
@@ -140,7 +149,8 @@ action carries `minutes`. Description: its `text`. The first option carries "(Re
   account (the table's last column).
 - **Standing options**, when fewer than two are left or the report could not be read: "Find
   creators" (**Creator discovery**), then "Review your account" (Phase 6) when Instagram is
-  connected, or "Connect Instagram" when it is not and is not already option 1.
+  connected, or "Connect Instagram" when it is not. Add one only when no option already in the
+  question goes to the same flow.
 
 Route the answer by the action's `job`:
 
@@ -178,8 +188,10 @@ whether to build first insights here instead, and say the cost in the question: 
 
 - Build it now, Instagram connected: Phase 6, the brand's connected accounts.
 - Build it now, not connected: there is nothing of the brand's to read yet, so offer Phase 4.2
-  first.
+  first. Once Instagram is linked, stop there: the link makes Atlas rebuild the report by itself,
+  at no cost to the brand, so do not go on to Phase 6. Say "Atlas is building your report now.
+  Say 'show my brand report' in a few minutes."
 - Not now: one line, "Say 'show my brand report' when you want it.", and stop. That ask comes
-  back to this offer while there is still no report.
+  back to this offer while there is still no report; a bare run no longer does.
 
 Never start the build without that yes.
