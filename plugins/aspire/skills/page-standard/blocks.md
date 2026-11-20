@@ -936,7 +936,7 @@ in the decisions.
 
 ## 5. The validated examples, block by block
 
-Aspire's reviewers approved one page for each of three questions. Each can be rebuilt from these
+Aspire's reviewers approved one page for each question below. Each can be rebuilt from these
 blocks with nothing left out. The evidence each sets is in `examples.md`; read every example
 the launch block lists in full (`SKILL.md`, section 4). The tables below say which block holds each of its elements, and
 which elements stay the flow's own sections (section 6). "Adds" marks what the blocks require and
@@ -968,6 +968,50 @@ the example lacked, so the rebuilt page passes a check the example did not.
 | Every creator against the checks, with score and call | The flow's own table (section 6), above the 3.7 grids |
 | How the verdict was made: the two scores, verdicts, weights, reach penalty, fees, brand post detection, corrections | 3.11 |
 | What's missing (not in the example) | 3.12, adds |
+| Source line | `artifact-standard.md` |
+
+**I4, a dated creator plan sent to the creators** (plan; the influencer manager reads it)
+
+| Example element | Block |
+| --------------- | ----- |
+| Title with the reader; scope and as-of row | 3.1 |
+| Post counts per platform (in the source footer in the example) | 3.2, adds them to the top |
+| The plan, its condition, and its deadline, with the strategy | 3.3 |
+| Dated milestones with day counts | 3.17 |
+| Why this plan: three findings with multiples and post counts | 3.4, three cards, each with its comparison (3.20) |
+| Late-start note: lead times, rate pressure, draft and approval dates | 3.4, a trend to watch (3.23) when it could go either way; otherwise a line in 3.3 |
+| Next steps in order, each with its date and reason | 3.6 |
+| What the brand must settle, and the worked per-order example | 3.5 for the decisions; the worked example is the flow's own (section 6) |
+| Creators and fees: totals at target, opening, and maximum | 3.7, the fee in each card's details slot; the totals in 3.3's tally |
+| Who posts when | The flow's own schedule (section 6), beside 3.17 |
+| Contract terms to agree | 3.5, one decision per term the brand must approve; 3.10 for usage |
+| 72-hour rule table: boost, leave, re-cut, pause | 3.15 |
+| Reporting rhythm with dated reviews | 3.17 |
+| Post cards behind each finding | 3.8 |
+| The creator brief | The flow's own section (section 6) |
+| Next-step checklist saved in the browser | Page layout; the steps still read without script (3.6) |
+| What's missing (not in the example) | 3.12, adds |
+| Source line | `artifact-standard.md` |
+
+**O1, why last week's posts did well** (readout; the social team reads it)
+
+| Example element | Block |
+| --------------- | ----- |
+| Week and title; scope and as-of row | 3.1 |
+| Tallies per platform with post counts | 3.2 |
+| The creative finding and its share of views and shares | 3.3 |
+| The team update to paste, per audience | 3.13, a draft on offer |
+| What the best posts had in common: ranked cards with cover, opening, and ask | 3.8 |
+| Creative choices table: choice, posts, views, against typical, shares per 1,000 views | 3.4 with its comparison (3.20) |
+| Recent weeks against a typical post, by group, with the excluded outlier | 3.4, the headline insight's chart |
+| Comment themes and the ask that drew them | 3.4 with 3.18 for each quote |
+| A platform that went differently, with one test | 3.4, and the test in 3.15 |
+| Next week: decisions and steps | 3.5 and 3.6 |
+| The week in numbers against the 8-week median | 3.11, in `details` |
+| Every post, newest first | 3.16 |
+| Data gaps | 3.12 |
+| How it was worked out | 3.11 |
+| Section menu | Page layout |
 | Source line | `artifact-standard.md` |
 
 **O3, where we stand against competitors** (readout; marketing leadership reads it, split)

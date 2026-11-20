@@ -23,4 +23,4 @@ Never user-callable. Every agent links it, and it is never counted in an agent's
 
 ## Lives in today
 
-`plugins/aspire/skills/aspire/references/orchestration.md` (section 6)
+`plugins/aspire/skills/page-standard/packet.md` (the result packet's fields)

@@ -11,7 +11,8 @@
 #                                                      agent (plugin_agents: none), it names the new agent
 #                                                      there instead
 # and adds the agent's rows where agents are listed by hand:
-#   - SKILL.md: the Sections index (the router entry), the Agent hand-off table, the Model tiers table
+#   - SKILL.md: the Sections index (the router entry) and the Model tiers table; agents-menu.md: the
+#     Agents menu hand-off table
 #   - plugins/aspire/README.md's agent table
 #   - the agents panel: plugins/aspire-mod/hooks/roster.ts and a placeholder costume in costumes.ts
 #   - orchestration.md section 7's permission level table
@@ -57,6 +58,8 @@ REFS = f"{P}/skills/aspire/references"
 SKILL = f"{P}/skills/aspire/SKILL.md"
 README = f"{P}/README.md"
 ORCH = f"{REFS}/orchestration.md"
+BLOCK = f"{P}/skills/aspire/agent-block.md"
+MENU = f"{REFS}/agents-menu.md"
 STD = f"{REFS}/artifact-standard.md"
 PS = f"{P}/skills/page-standard/SKILL.md"
 ROSTER = "plugins/aspire-mod/hooks/roster.ts"
@@ -286,6 +289,8 @@ if remove:
     lines = read(SKILL).split("\n")
     changes[SKILL] = "\n".join(l for l in lines
                                if not l.startswith(row) and not (l.startswith("| **") and f"`references/{slug}.md`" in l))
+    lines = read(MENU).split("\n")
+    changes[MENU] = "\n".join(l for l in lines if not l.startswith(row))
     lines = read(README).split("\n")
     changes[README] = "\n".join(l for l in lines if not l.startswith(f"| Agent {row}"))
     lines = read(ORCH).split("\n")
@@ -372,8 +377,8 @@ else:
         "SPEC_WRITES": spec_writes, "PERMISSION_CAP": permission.capitalize(), "TEAM": f"{team} {TEAMS[team]}",
         "WAVE": wave, "PERSONAS": ", ".join(personas),
         "ARTIFACT_BLOCK": between(read(STD), "<!-- agent-block -->", "<!-- /agent-block -->", STD),
-        "PACKET_BLOCK": between(orch, "<!-- packet-block -->", "<!-- /packet-block -->", ORCH),
-        "CHECKPOINT_BLOCK": between(orch, "<!-- checkpoint-block -->", "<!-- /checkpoint-block -->", ORCH),
+        "PACKET_BLOCK": between(read(BLOCK), "<!-- packet-block -->", "<!-- /packet-block -->", BLOCK),
+        "CHECKPOINT_BLOCK": between(read(BLOCK), "<!-- checkpoint-block -->", "<!-- /checkpoint-block -->", BLOCK),
         "ASK_ROWS": "\n".join(["| Code | Question |", "| ---- | -------- |"]
                               + [f"| {c} | {known[c][0]} |" for c in codes]),
         "METRIC_ROWS": "\n".join(f"| {c} | {kinds[c]} | {MARK}: the metrics this flow adds, or \"None\" |" for c in codes),
@@ -396,11 +401,15 @@ else:
     lines = skill.split("\n")
     at = heading_index(lines, r"^\| \*\*Theme\*\* ", SKILL)
     lines.insert(at, f"| **{name}** | `references/{slug}.md` |")
-    end = table_end(lines, heading_index(lines, r"^### Agent hand-off", SKILL))
-    lines.insert(end, f"| `{agent}` | Phase 1, then Phase 2 + 3, then **{name}** |")
     end = table_end(lines, heading_index(lines, r"^## Model tiers", SKILL))
     lines.insert(end, f"| `{agent}` | {model} | {MARK}: why this model fits the work |")
     changes[SKILL] = "\n".join(lines)
+
+    # agents-menu.md: the hand-off row at the end of its table.
+    lines = read(MENU).split("\n")
+    end = table_end(lines, heading_index(lines, r"^## Agents menu hand-off", MENU))
+    lines.insert(end, f"| `{agent}` | Phase 1, then Phase 2 + 3, then **{name}** |")
+    changes[MENU] = "\n".join(lines)
 
     lines = read(README).split("\n")
     last = max(i for i, l in enumerate(lines) if l.startswith("| Agent | `atlas-"))

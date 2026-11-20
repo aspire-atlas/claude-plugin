@@ -34,7 +34,8 @@ Run them as you write each comparison, before the sentence goes on the page or i
   figure off its page instead and say so in the method: market signal leaves a thin topic off its
   reach chart, and the deliverable tracker shows counts with "too few to rate" under 5 posts. The
   minimum pool for a whole page is a different number
-  (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestration.md`, **2**, **The minimum pool**).
+  (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/storyline-confirm.md`, **The minimum pool, by kind
+  of question**).
 - **A comparison that fails and stays says which check it fails, in one plain line** beside it:
   "Not like for like: the {competitor} posts mix TikTok Shop selling with other posts, which Atlas
   could not tell apart." A side of 20 posts or fewer is never excused this way: it carries

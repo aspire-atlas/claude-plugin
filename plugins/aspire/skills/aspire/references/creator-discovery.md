@@ -481,7 +481,12 @@ shortlist", "Record decisions on the shortlist", "Change setup". Credits asks th
 candidates (the target minus the undecided candidates already in the pool, counted from the
 newest pool records as the agent's pool rebuild does, `search_insights` on the
 `creator-discovery-{profile}-{campaign}` run key) and applies only to
-"Fill the shortlist". "Show the current shortlist" launches with a cap of 0. "Record decisions on
+"Fill the shortlist", so it opens "If it fills the shortlist, …". It is asked on every interactive
+run, a repeat run included, and takes Scope's slot, which discovery does not ask. The campaign is
+settled before this call (its own question when more than one is active), so `{n}` and `{target}`
+are read from that campaign's pool. With the pool already at its target, `{n}` is 0, Credits is
+not asked, and the launch carries a cap of 0. "Show the current shortlist" launches `job: view`
+with `{"cap": 0, "unit": "candidates"}`. "Record decisions on
 the shortlist" launches nothing: it goes to **Recording decisions** below. "Change setup" launches
 nothing until **Setup** is done, discards the same call's Credits and Save answers, then asks the
 run question and Credits again, and Save only on a first run (a repeat run never asks Save).

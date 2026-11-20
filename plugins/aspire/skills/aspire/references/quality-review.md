@@ -657,6 +657,13 @@ by the writing rules in **6**.
 take is left out of `views`, with the reason in that fix list as a Must on the **Mobile** or
 **Dark mode and access** row.
 
+**A page held by the UX review.** When a publish pass returns `"uxReview": {"status": "blocked"}`,
+the page was saved as a file, not published, because a Must is still open
+(`skills/page-standard/ux-review.md`). The main thread names each open Must in one line and asks
+with `AskUserQuestion`: "Fix it first (Recommended)" or "Publish it as it is". It relaunches the
+publish pass with the person's words added to `uxReview` as `personFix`, or with
+`uxReview.publishOpen` set to `true`.
+
 **Examples.** Good: the monthly program report in the examples library, after its UX review: the
 answer, then three takeaways with their copy text shown, then the steps, on one phone screen. Bad:
 the first task sits 3,300px down on a phone, found only when a person opened the published page.
