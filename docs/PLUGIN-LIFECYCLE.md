@@ -83,6 +83,7 @@ Do not develop from a folder that is mounted read-only or delete-restricted (som
    bash scripts/check-channel.sh develop
    bash scripts/check-tool-contract.sh
    bash scripts/check-agent-roster.sh
+   bash scripts/check-agent-triggers.sh
    bash scripts/check-artifact-standard.sh
    bash scripts/check-orchestration.sh
    bash scripts/check-calibration-keys.sh

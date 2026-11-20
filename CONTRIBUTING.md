@@ -41,6 +41,7 @@ for d in plugins/*/; do claude plugin validate "$d"; done
 bash scripts/check-channel.sh develop   # or: main
 bash scripts/check-tool-contract.sh
 bash scripts/check-agent-roster.sh
+bash scripts/check-agent-triggers.sh
 bash scripts/check-artifact-standard.sh
 bash scripts/check-orchestration.sh
 bash scripts/check-calibration-keys.sh
