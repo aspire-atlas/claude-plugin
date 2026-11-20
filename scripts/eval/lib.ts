@@ -93,9 +93,11 @@ export type ChatChecks = {
  * One assertion of a client case (questions.json). `ticket` is the work that makes it pass. `landed` is false
  * until that ticket merges: until then a failure is expected and blocks nothing, and from then on a failure
  * is a regression. `examples` are the client examples the assertion covers, with brands as placeholders.
+ * `fix` is the number of the fix in the plugin update doc the assertion falls under (docs/STANDARD.md, "Adding a
+ * client example"); a case written from a project plan rather than from that doc has none.
  */
 export type Assertion = {
-  id: string; name: string; fix: number; ticket: string; landed: boolean
+  id: string; name: string; fix?: number; ticket: string; landed: boolean
   passesWhen: string; failsWhen: string; examples: string[]
   /** Added to `passesWhen` only when local.json's `values` fill every {placeholder} in it: an expected figure for a named competitor. */
   whenNamed?: string

@@ -207,8 +207,9 @@ stays on one id even after Atlas starts holding the row's other account.
 - **No applicant id or no handle**: skipped, and listed in **Rows to fix**.
 
 **Rows to fix** is one list, given in chat and on the page under What's missing: unreadable Team
-calls (read like a blank), skipped rows, duplicate rows left to decide in the Sheet, and
-Sheet calls on creators Atlas doesn't hold yet (below).
+calls (read like a blank), skipped rows, duplicate rows left to decide in the Sheet,
+Sheet calls on creators Atlas doesn't hold yet, and, in a run with nobody present, Sheet calls that
+conflict with Atlas (below).
 
 **Duplicate rows.** Counted after the skipped rows are set aside. Rows that repeat one applicant id
 with the same Team call (as read under **What each row becomes**) count as one row; with different
@@ -242,6 +243,13 @@ decided row's Sheet call is **new** only when it differs from both of that findi
 
 A call that matches either is not offered, so a call the team made since in F1 stands, and a call
 typed into the Sheet to match it is not asked again. With no such finding, the call is new.
+
+**A Sheet call that conflicts with Atlas.** A new Sheet call conflicts when that same finding's
+`userVerdict` was set outside the Sheet (it has no `sheetValue`, or its `userVerdict` differs from
+its `sheetValue`: an F1 answer) and the Sheet now holds a different call. An interactive run offers
+it in F1, naming the call Atlas holds, and the person decides. A run with nobody present never
+saves it: it is listed in **Rows to fix** as "conflicts with Atlas: {call} saved {date}; settle it
+in an interactive run", and the run reports it.
 
 **Reopened rows.** An undecided row (blank or unreadable) is **reopened** only when the newest
 `feedback` finding for the creator, of any kind and from any list or run, is one that carries the
@@ -404,6 +412,11 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    campaign, offer to add the approved creators to its shortlist per SKILL.md **Creator card
    actions**, "Add @handle on {network} to a campaign shortlist", with one confirmation for the
    batch.
+6. **Write the review Sheet**, when R2 named an applicant review and R4 was "Save": after the last
+   batch's feedback (F1 to F4), per **Applicant review**, **Writing the review Sheet**, with its own
+   confirmation. It writes what Atlas now holds for the review's applicants (each applicant's
+   status record, **Applicant review**, **Applicant status**), so it covers every batch of the run
+   at once and any row an earlier run left.
 
 ## The checks
 
@@ -440,8 +453,9 @@ their newest 50; the page's key says so.
 ### 1. Brand fit (the fit score, out of 100)
 
 Scored against `vetting:criteria`, the chosen campaign's `campaign:{slug}-brief` and
-`-criteria` when R2 named one, or the applicant review's resolved criteria when R2 named a review. Weights follow creator discovery's **Scoring**;
-discovery does not yet use the criteria map below, so its score for a creator can differ from this one:
+`-criteria` when R2 named one, or the applicant review's resolved criteria when R2 named a review. Creator discovery
+(**Scoring**) uses the same weights and the same criteria map below, over the same posts, so a
+creator gets the same fit score in both flows:
 
 | Component | Weight | Source |
 | --------- | ------ | ------ |
@@ -531,11 +545,27 @@ the finding name the window and the count ("4 of 31 posts, 90 days").
 (likes + comments) ÷ followers over the posts read with a like count. When the criterion names its
 own basis ("6% of views"), views replace followers; the finding names the basis either way.
 
-**What counts as a match.** A post counts for a `trait` or `topic` criterion when its caption,
-hashtags, transcript, or overlay text says it outright, or it is plainly the post's main subject; a
-passing mention, a tag among many, or the bio alone does not. When in doubt, it does not count. A
-niche fandom or subculture is a theme, not a keyword (**The checks**). A visual check never adds a
-match. One post may count for several criteria, and once per criterion.
+**What counts as a match.** A post counts for a `trait` or `topic` criterion only when its words
+(caption, hashtags, transcript, or overlay text) show it on their own, with nothing guessed. It
+counts when the words:
+
+- state it about the creator in a sentence of their own ("my dog Milo is 12 pounds over", "our pup's
+  breakfast"), even inside a post about something else ("we have two dogs" in a grocery-budget
+  video counts for owning a dog), or
+- are mostly about it: the post's main subject is the thing the criterion names.
+
+It does not count when:
+
+- the thing is only implied, never said: a photobomb, a background, a tag among many, or a line
+  that names it without saying what it is ("…and Milo turned 9" in a monthly recap);
+- a name or an emoji stands alone, with no word saying what it is ("Louie", "🐶", "squish 🐶");
+- only the bio says it (a lead, never a match).
+
+A word whose everyday meaning is the criterion says it, in a joke or caption alike ("chonky",
+"chubby", or "needs to lose a few pounds" about the creator's dog says the dog is overweight); a
+word that only might ("big boy", "fluffy") does not. When in doubt, it does not count. A niche fandom or subculture is a
+theme, not a keyword (**The checks**). A visual check never adds a match. One post may count for
+several criteria, and once per criterion.
 
 **An application answer** (a run that reads applicants' answers, **Applicant review**) counts only
 for the criteria its question names in its own words: "How many pounds overweight is your dog?"
@@ -555,7 +585,9 @@ default criterion, so it scores the same way every run:
   to under 250K 1.5% / 4.0%; 250K to under 1M 1.0% / 3.0%; 1M and up 0.7% / 2.0%. A creator at exactly
   50K, 250K, or 1M is in the higher band.
 - **Cadence and recency**: posts in the last 30 days: 8 or more Met, 2 to 7 Partly met, 0 or 1 Not
-  met. The dormant cap (step 2) applies here too.
+  met. The dormant cap (step 2) applies here too. "The last 30 days", here and in the dormant cap
+  and a `cadence` criterion, is posts whose `postedAt` is on or after midnight UTC 30 days before
+  today's UTC date from the shell clock, so a post on the boundary counts the same in every run.
 - **Format match**: Met for every creator ("no format named").
 - **Market fit**: Met for every creator ("no market named").
 
@@ -943,6 +975,11 @@ still on record. It also carries `detail.findings` (**The findings behind the ch
 `detail.criteriaMap` (**How criteria become points**): `{source, criteria: [{id, text, component,
 measure, share}], unscored: [{id, text, why: "exclusion" | "not-from-posts"}], defaults:
 [component]}`, where `source` is the criteria record's key and `share` the criterion's points at Met.
+
+In an applicant review run, the same `append_insights` call that holds an applicant's
+recommendation finding also holds its `applicant_screening` record (**Applicant review**,
+**Applicant status**), so the applicant's status moves on with the call and the review Sheet can
+show it.
 
 `detail` carries `findingType`, `vettedAt` (full UTC timestamp from the shell clock, the same on
 every finding of one run), `handle`, `network`, `name` (from the list, when given),
