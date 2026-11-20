@@ -16,6 +16,8 @@ the form rules**, which the `atlas-creator-vetting` agent reads too. A bold sect
 - [Setup interview](#setup-interview)
 - [The review Sheet](#the-review-sheet)
 - [Importing applicants](#importing-applicants)
+- [Applicant status](#applicant-status)
+- [Writing the review Sheet](#writing-the-review-sheet)
 - [When setup is done](#when-setup-is-done)
 - [Reading the setup back (screening)](#reading-the-setup-back-screening)
 - [How screening applies a review](#how-screening-applies-a-review)
@@ -158,11 +160,12 @@ Rules:
 
 One Sheet per review, where the team sees every applicant, filters them, and records its calls.
 Atlas holds the record; the Sheet is the team's working view of it. Setup creates the Sheet and
-saves its link; **Importing applicants** adds one row per applicant, after Atlas holds them.
-Screening does not write vetting columns yet: until it does, those columns stay blank and the team
-reads the recommendations on the vetting page. **Creator vetting** reads the Team call column back
-and saves new calls to Atlas through its feedback questions (**Reading the review Sheet**); Atlas
-stays the record, and no flow writes a call back to the Sheet.
+saves its link; **Importing applicants** adds one row per applicant, after Atlas holds them; after
+each vetting run, **Writing the review Sheet** fills in Recommendation, Fit score, Evidence, Maybe
+question, and Status from Atlas. **Creator vetting** reads the Team call column back and saves new
+calls to Atlas through its feedback questions (**Reading the review Sheet**); Atlas stays the
+record, and no flow writes a call back to the Sheet. Vetting owns the five vetting columns; the
+team owns Team call and any column it adds.
 
 1. **Create it** after the confirmation's option 1, through the Claude Docs connector as a Sheet
    (load the connector's guide first and follow it). Name it "{brand} · {campaign} applicant
@@ -174,7 +177,7 @@ stays the record, and no flow writes a call back to the Sheet.
    until the team overrides Atlas. Rows come from **Importing applicants**.
 
    A Sheet made before a column joined this order gets the column in its place when an import
-   next adds rows; a `formAnswers` key the header lacks (other than the name columns) gets a column
+   next adds rows or vetting next writes its columns (**Writing the review Sheet**); a `formAnswers` key the header lacks (other than the name columns) gets a column
    before Source. Columns are always matched by header, never by position.
 3. **Save the link** as `-sheet` with `sheet: <link>`.
 4. **When it can't be created** (the connector is not connected, has no Sheets, or refuses), or
@@ -305,6 +308,117 @@ holds the applicants, and the next import adds the rows.
 
 **8. Summarize** in one line: "{new} applicants added to the {campaign} review ({existing} were
 already there), {rows} rows added to the review Sheet."
+
+## Applicant status
+
+Atlas holds each applicant's status in its newest `applicant_screening` record: `new` until one is
+written, then `screened`, `waiting_on_data`, or `cant_vet`. `list_applicants` returns it with that
+record's recommendation, fit score, evidence, and Maybe question, and the review Sheet's Status
+column shows it (**Writing the review Sheet**). Records are only ever added, so a status changes by
+adding a newer one.
+
+Every vetting run on a review writes them, under its own `runKey`:
+
+- **An interactive run** with R4 "Save" writes one for each applicant on its list that has an
+  `aspireApplicantId` and a call, in the same `append_insights` call as that applicant's
+  recommendation finding, so Atlas never holds one without the other. It leaves to the schedule
+  every applicant whose newest record is a scheduled run's claim (its summary starts "Claimed for
+  screening by run") less than 12 hours old: that applicant is kept off the list, and the run says
+  "{n} applicants are being screened by the schedule right now". "Page only" writes none, and
+  an applicant the run did not finish gets none: both stay `new`, so a scheduled run screens them.
+- **A scheduled run** writes them as **Creator vetting**, **Scheduled screening** says, which also
+  claims each batch first.
+
+One record:
+
+- `role: "applicant_screening"`, `schema` and `entityKind` `profile`, `entityId` the brand
+  profile's id;
+- `idempotencyKey` `{slug}:{aspireApplicantId}:screen-{run}`, where `{run}` is the run's id: a
+  scheduled run's own, and for an interactive run its `vettedAt` in compact form
+  (`20261119t190512`);
+- `summary` "{@handle} screened for {campaign}: {Approve | Maybe | Reject}", or "{@handle, or the
+  name} can't be vetted for {campaign}: {reason}";
+- `detail` `{reviewId, aspireApplicantId, status, recommendation?, fitScore?, evidence?,
+  maybeQuestion?}`:
+
+| The applicant's result | `status` | Also |
+| ---------------------- | -------- | ---- |
+| Approve, Maybe, or Reject | `screened` | `recommendation` (`approve`, `maybe`, `reject`); `fitScore` when the score was worked out; `evidence`, the lines that decided the call (**Applying the form rules**, step 6, quoting rule included); on a Maybe, `maybeQuestion`, what would settle it, with any missing answers after it |
+| Can't vet (**Creator vetting**, **The recommendation**, rule 3), or the account can't be found | `cant_vet` | `evidence`, the reason |
+| An account Atlas is still fetching when the lookup's wait ends | `waiting_on_data` | Scheduled runs only, per **Scheduled screening**. An interactive run writes no record for it, so it stays `new` |
+
+An applicant gets one record, with the call on its row's account id (**Creator vetting**,
+**Reading the review Sheet**: the account an earlier team call was saved on, else Instagram when
+Atlas holds it, else TikTok). A row with only a TikTok handle, or whose account id is its TikTok
+account, records the TikTok call. An applicant vetted on both networks adds the other network's
+call as an evidence line when it differs.
+
+## Writing the review Sheet
+
+How vetting fills in the five columns it owns in the review Sheet (Recommendation, Fit score,
+Evidence, Maybe question, Status) from what Atlas holds. One step, written so every vetting run
+calls it unchanged: an interactive run once, after its last batch's feedback (**Creator vetting**,
+**Main thread: the run**, step 6), and a scheduled run after each batch (**Creator vetting**,
+**Scheduled screening**). The main thread runs it, never the agent, through the Claude Docs
+connector (load its guide first and follow it).
+
+**When it runs.** The review's `-sheet` holds a link and the connector is in the session.
+Otherwise it writes nothing and the run says why in one line ("the {campaign} review has no
+Sheet", "Claude Docs isn't connected, so the review Sheet wasn't updated"). Atlas holds every
+result either way, and never ask the user to add a connector.
+
+**Approval.**
+
+- **Interactive:** after steps 1 to 3 have counted the rows to change, ask once with
+  `AskUserQuestion`: "Write Atlas's results for {n} applicants to the {campaign} review Sheet? Only
+  Recommendation, Fit score, Evidence, Maybe question, and Status change{, and the {columns}
+  column(s) are added}; Team call and your own columns stay as they are." Options: 1) Write them
+  (Recommended); 2) Not now. With nothing to change, ask nothing. "Not now" writes nothing, not
+  even a missing column; a later run's write catches up, since it writes whatever differs.
+- **Scheduled:** the `-schedule` record's `sheet: write` is the standing approval, so it never
+  asks; `sheet: none` writes nothing.
+
+**1. Read Atlas.** `list_applicants` with `asProfileId`, `reviewId` = the review's slug, no
+`statuses`, `limit` 1000, paged with `cursor` to the end. The values come from here only, never
+from the agent's output or the page, so a run also fills the rows a stopped run or a "Not now"
+left. For each applicant:
+
+| Column | Value |
+| ------ | ----- |
+| Recommendation | `Approve`, `Maybe`, or `Reject` when the status is `screened`; else blank |
+| Fit score | The fit score as a whole number when the record has one; else blank |
+| Evidence | The record's evidence lines joined with "; " on one line, cut at a word at 300 characters with "…"; else blank. The lines already follow the quoting rule (**Applying the form rules**, step 6): never add a contact detail |
+| Maybe question | The record's `maybeQuestion` on a Maybe; else blank |
+| Status | The status: `new`, `screened`, `waiting_on_data`, or `cant_vet` |
+
+**2. Read the Sheet**, fresh every time, since the team sorts and edits it: its header row, the
+Aspire applicant id column, and the five columns above, found by header, case-insensitive. Page a
+partial read to the end. Note each of the five the Sheet lacks: step 4 adds it after the approval,
+never before. With no Aspire applicant id column, write nothing and say so in one line.
+
+**3. Match and compare.** Match each row on its Aspire applicant id, trimmed, never on its
+position. A cell changes only when its value differs from step 1's, compared trimmed. Rows that
+share an id all get that applicant's values. A row whose id Atlas doesn't hold is left as it is.
+An applicant Atlas holds with no row gets no row here, since rows come from **Importing
+applicants** with the applicant's details: count them for the report.
+
+**4. Write the changed cells only**, by the row and column the step 2 read found them in, at most
+200 rows per call. First add each column step 2 found missing, in its place (**The review Sheet**,
+step 2), with its cells filled from step 1. Every call takes the revision of the read it rests on
+as its `base` (the revision a write of yours returned, for the call after it), and the connector
+refuses a call whose `base` is not the Sheet's current revision (`baseIsNotTheRevision`), so a
+sort or edit by anyone since the read stops the call before any cell is written. Never write Team
+call, Name, the handles, the answers, Source, Applied, the id, or a column the team added, and
+never add, remove, move, or sort rows. On that refusal, read the Sheet again and redo steps 3 and 4
+from that read for the cells not yet written; a second such refusal in a row stops the write. Any other refusal stops it too. The next run's write fills in
+what a stopped write left.
+
+Vetting owns the five columns: a value the team types into one is replaced by Atlas's on the next
+write that changes that row. The team's call goes in Team call, a note in a column of its own.
+
+**5. Report** in one line: "{c} rows updated in the {campaign} review Sheet{; {k} applicants have
+no row yet: the next import adds them}{; stopped: {reason}}". A scheduled run carries the same
+counts in its run summary.
 
 ## When setup is done
 
@@ -536,14 +650,14 @@ applicant: inside each recommendation, by `signal` first when the `prompt:` rule
 first (more first, or as the rule says), then `boosts`, most first, then `signal` when the rule
 does not put it first, then `fitScore`, highest first; a `null` signal ranks after every value.
 The page numbers its cards in that order. A list screened in several launches is ordered the same
-way across them, because each finding carries its keys: the run summary of the last launch, and
-the review Sheet once screening writes it, sort every finding of the review by them, so the
-heaviest dog of the third launch comes before a lighter one from the first.
+way across them, because each finding carries its keys: the run summary of the last launch sorts
+every finding of the review by them, so the heaviest dog of the third launch comes before a
+lighter one from the first. The review Sheet keeps the team's own sort: vetting never reorders it.
 
 ### 6. Evidence and the Maybe question
 
-The card's reasons, the finding's `evidence[]`, and, once screening writes the review Sheet, its
-Evidence column name what decided the call, one line each:
+The card's reasons, the finding's `evidence[]`, the applicant's status record (**Applicant
+status**), and the review Sheet's Evidence column name what decided the call, one line each:
 
 - the rule, when a form rule decided it ("Rejected by form hard stop: 'Do you live in the US?' =
   'No'"; "Maybe: did not answer 'How many pounds overweight is your dog?'"; "Approved on form
