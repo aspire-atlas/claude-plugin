@@ -171,7 +171,10 @@ carry (the reference's step 6, **Never asks**).
    Artifact tool.
 10. When R4 was "Save", write the recommendation findings and the run summary with
     `append_insights` per **State written to Atlas**: one `runKey`, an `idempotencyKey` per
-    finding, and the same `vettedAt` on each. On "Page only", write nothing yet and say so.
+    finding, and the same `vettedAt` on each. In an applicant review run, put each applicant's
+    `applicant_screening` record in the same call as its recommendation finding, per
+    `applicant-review.md`, **Applicant status**. On "Page only", write nothing yet and say so.
+    Never write the review Sheet: the main thread does, from what Atlas holds.
 11. **Ask for feedback** per **The feedback loop**.
     - If `AskUserQuestion` is in your tool list, ask F1, then F2 for the creator notes, then F3 when
       a lesson generalizes. Never ask F4: the main thread asks it after the last batch. Write the

@@ -220,8 +220,9 @@ stays on one id even after Atlas starts holding the row's other account.
 - **No applicant id or no handle**: skipped, and listed in **Rows to fix**.
 
 **Rows to fix** is one list, given in chat and on the page under What's missing: unreadable Team
-calls (read like a blank), skipped rows, duplicate rows left to decide in the Sheet, and
-Sheet calls on creators Atlas doesn't hold yet (below).
+calls (read like a blank), skipped rows, duplicate rows left to decide in the Sheet,
+Sheet calls on creators Atlas doesn't hold yet, and, in a run with nobody present, Sheet calls that
+conflict with Atlas (below).
 
 **Duplicate rows.** Counted after the skipped rows are set aside. Rows that repeat one applicant id
 with the same Team call (as read under **What each row becomes**) count as one row; with different
@@ -255,6 +256,13 @@ decided row's Sheet call is **new** only when it differs from both of that findi
 
 A call that matches either is not offered, so a call the team made since in F1 stands, and a call
 typed into the Sheet to match it is not asked again. With no such finding, the call is new.
+
+**A Sheet call that conflicts with Atlas.** A new Sheet call conflicts when that same finding's
+`userVerdict` was set outside the Sheet (it has no `sheetValue`, or its `userVerdict` differs from
+its `sheetValue`: an F1 answer) and the Sheet now holds a different call. An interactive run offers
+it in F1, naming the call Atlas holds, and the person decides. A run with nobody present never
+saves it: it is listed in **Rows to fix** as "conflicts with Atlas: {call} saved {date}; settle it
+in an interactive run", and the run reports it.
 
 **Reopened rows.** An undecided row (blank or unreadable) is **reopened** only when the newest
 `feedback` finding for the creator, of any kind and from any list or run, is one that carries the
@@ -423,6 +431,11 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    campaign, offer to add the approved creators to its shortlist per SKILL.md **Creator card
    actions**, "Add @handle on {network} to a campaign shortlist", with one confirmation for the
    batch.
+6. **Write the review Sheet**, when R2 named an applicant review and R4 was "Save": after the last
+   batch's feedback (F1 to F4), per **Applicant review**, **Writing the review Sheet**, with its own
+   confirmation. It writes what Atlas now holds for the review's applicants (each applicant's
+   status record, **Applicant review**, **Applicant status**), so it covers every batch of the run
+   at once and any row an earlier run left.
 
 ## The checks
 
@@ -968,6 +981,11 @@ still on record. It also carries `detail.findings` (**The findings behind the ch
 measure, share}], unscored: [{id, text, why: "exclusion" | "not-from-posts"}], defaults:
 [component]}`, where `source` is the criteria record's key and `share` the criterion's points at Met.
 
+In an applicant review run, the same `append_insights` call that holds an applicant's
+recommendation finding also holds its `applicant_screening` record (**Applicant review**,
+**Applicant status**), so the applicant's status moves on with the call and the review Sheet can
+show it.
+
 `detail` carries `findingType`, `vettedAt` (full UTC timestamp from the shell clock, the same on
 every finding of one run), `handle`, `network`, `name` (from the list, when given),
 `recommendation`, `rule` (which rule of **The recommendation** decided it), `fitScore`,
@@ -1273,18 +1291,12 @@ Each batch's launch gets its own `runId` per **Running agents**.
    for each batch of ten, once its calls are made, one `append_insights` call holding each
    applicant's findings per **State written to Atlas** and its `applicant_screening` record, so a
    stopped run never leaves an applicant with one and not the other. The record is anchored like the
-   claim, with `idempotencyKey` `{slug}:{aspireApplicantId}:screen-{run}`, `summary` "{@handle}
-   screened for {campaign}: {Approve | Maybe | Reject}" (or the reason it isn't screened), and
-   `detail` `{reviewId, aspireApplicantId, status, recommendation?, fitScore?, evidence?,
-   maybeQuestion?}`:
-
-   | The applicant's result | `status` | Also |
-   | ---------------------- | -------- | ---- |
-   | Approve, Maybe, or Reject | `screened` | `recommendation` (`approve`, `maybe`, `reject`); `fitScore` when the score was worked out; `evidence`, the lines that decided the call (**Applicant review**, **Applying the form rules**, step 6, quoting rule included); on a Maybe, `maybeQuestion`, what would settle it, with any missing answers after it |
-   | Can't vet (**The recommendation**, rule 3), or the account can't be found | `cant_vet` | `evidence`, the reason |
-   | An account Atlas is still fetching when the lookup's wait ends (**Atlas quirks that apply here**) | `waiting_on_data` | `evidence` starting "Waiting on Atlas since {the first time it waited, as an ISO timestamp}"; a later run screens it again. After 48 hours of waiting it is `cant_vet`: "Atlas could not fetch @handle in 48 hours" |
-
-   An applicant with both handles gets one record, from its one recommendation.
+   claim, as **Applicant review**, **Applicant status**, says (its key, `summary`, `detail`, and the
+   result table), with one rule of its own: an account Atlas is still fetching when the lookup's
+   wait ends (**Atlas quirks that apply here**) is `waiting_on_data`, its `evidence` starting
+   "Waiting on Atlas since {the first time it waited, as an ISO timestamp}", and a later run
+   screens it again. After 48 hours of waiting it is `cant_vet`: "Atlas could not fetch @handle in
+   48 hours".
 
    **Never asks.** Anything an interactive run would put to a person becomes the applicant's Maybe,
    with the question as its `maybeQuestion`: a brand rule the team must settle before the call
@@ -1293,12 +1305,10 @@ Each batch's launch gets its own `runId` per **Running agents**.
    What the run would ask about the review itself (each "Needs the main thread" item, each proposed
    change to the criteria) is never applied: it goes in the batch's run summary for the next person
    who runs vetting on the review.
-7. **Write the review Sheet.** The step that writes each screened applicant's Recommendation, Fit
-   score, Evidence, Maybe question, and Status into its row of the review Sheet, matched on Aspire
-   applicant id, when `-schedule` says `sheet: write` and `-sheet` holds a link. It is not built
-   yet: until it is, it writes nothing, and step 9 says the Sheet was not updated. It reads what
-   it writes from `list_applicants`, never from the agent's output, so a later run can fill the
-   rows a stopped run left. Atlas holds every result either way.
+7. **Write the review Sheet** per **Applicant review**, **Writing the review Sheet**, after each
+   batch, when `-schedule` says `sheet: write` (its standing approval, so it never asks); with
+   `sheet: none`, or a missing `-schedule` line, it writes nothing. Its report line's counts go in
+   step 9's summary. Atlas holds every result either way.
 8. **Next batch.** Repeat steps 3 to 7 until no applicant is due or this run has launched 5
    batches (500 applicants); the next run carries on from there.
 9. **Run summary.** One `append_insights` call, `runKey` `creator-vetting-{profile}-{date}-{slug}-schedule`,
@@ -1309,7 +1319,7 @@ Each batch's launch gets its own `runId` per **Running agents**.
    `applicantReview`, `run`, the batches and their `runKey`s, the counts per status and
    recommendation, the applicants still due (from the last step 3 read), the claims made that were
    not screened, the team calls saved and **Rows to fix** (step 2, or why the Sheet wasn't read),
-   whether the Sheet was written, and `criteriaMap` with `mapFrom`: the `run` or `runKey` of the
+   the rows the Sheet writes updated (or why none were), and `criteriaMap` with `mapFrom`: the `run` or `runKey` of the
    summary it was reused from, or `built` with why ("first run on the review", or "criteria changed
    on {date}; scores before and after are on different maps"). With no account to anchor it, the applicant records are the
    run's record. Then one line, the run's last: "{n} applicants screened for {campaign} ({a}
