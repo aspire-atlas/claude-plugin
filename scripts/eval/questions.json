@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "source": "The five approved examples in the plugin update doc, section \"Examples to follow\" (2026-11-05), O2, the Creator Trends page its reviewer edited for ASP-5813, and P1, the creator ad cut-downs page its reviewer edited for ASP-5812, with question codes from the examples library. Brand names, organizations and page links are customer details: they live in scripts/eval/local.json, never here. CR1 and AR1 are client cases: questions whose first reviewed page drew a wrong conclusion, each with assertions that name the behaviour that was wrong and the ticket that fixes it (docs/STANDARD.md, \"Adding a client example\"). Their examples keep the figures and replace every brand, competitor and handle with a placeholder.",
+  "source": "The five approved examples in the plugin update doc, section \"Examples to follow\" (2026-11-05), O2, the Creator Trends page its reviewer edited for ASP-5813, and P1, the creator ad cut-downs page its reviewer edited for ASP-5812, with question codes from the examples library. Brand names, organizations and page links are customer details: they live in scripts/eval/local.json, never here. CR1 and AR1 are client cases: questions whose first reviewed page drew a wrong conclusion, each with assertions that name the behaviour that was wrong and the ticket that fixes it (docs/STANDARD.md, \"Adding a client example\"). Their examples keep the figures and replace every brand, competitor and handle with a placeholder. CAS1 to CAS4 are the paid side of a creator ad campaign: the creative baseline, the weekly paid review, the wave diagnosis and the wave readout. Their approved pages are reference outputs from a live account with customer names removed, linked from local.json like every other.",
   "changes": {
     "3": {
       "name": "Pull the right metrics for each question",
@@ -353,6 +353,70 @@
             "A consumer brand's affiliate report: the timeline marked each post by date and format, so nobody could tell whether a post had reached anyone."
           ]
         }
+      ]
+    },
+    {
+      "code": "CAS1",
+      "question": null,
+      "example": "CAS creative baseline",
+      "kind": "Plan",
+      "reader": "performance",
+      "readerInWords": "the paid social lead, who hands the notes to creative",
+      "ask": "For {brand}: before we put spend behind the wave 1 cuts, give me a creative baseline for each one, and what to fix first. I run paid social for this creator ad campaign.",
+      "setsBarFor": [
+        3
+      ],
+      "paths": [
+        "plugins/aspire/skills/aspire/references/cas-paid.md",
+        "plugins/aspire/skills/aspire/references/cas-campaign-page-results.md"
+      ]
+    },
+    {
+      "code": "CAS2",
+      "question": null,
+      "example": "CAS weekly paid review",
+      "kind": "Readout",
+      "reader": "performance",
+      "readerInWords": "the paid social lead, who makes the calls",
+      "ask": "For {brand}: weekly review of the creator ad campaign. After 7 and 14 days, which named ads do we scale, fix or pause, and why? I run paid social and will make the calls.",
+      "setsBarFor": [
+        3
+      ],
+      "paths": [
+        "plugins/aspire/skills/aspire/references/cas-paid.md",
+        "plugins/aspire/skills/aspire/references/cas-campaign-page-results.md"
+      ]
+    },
+    {
+      "code": "CAS3",
+      "question": null,
+      "example": "CAS wave diagnosis",
+      "kind": "Readout",
+      "reader": "creative",
+      "readerInWords": "the creative team, who re-cut the ads",
+      "ask": "For {brand}: where does each wave 2 ad lose people, and what should the next cut change? Creative will re-cut from this.",
+      "setsBarFor": [
+        3
+      ],
+      "paths": [
+        "plugins/aspire/skills/aspire/references/cas-paid.md",
+        "plugins/aspire/skills/aspire/references/cas-campaign-page-results.md"
+      ]
+    },
+    {
+      "code": "CAS4",
+      "question": null,
+      "example": "CAS wave review",
+      "kind": "Readout",
+      "reader": "team",
+      "readerInWords": "the campaign team, with a version the client reads",
+      "ask": "For {brand}: the wave 2 readout for our team and the client. What worked, what did not, and what we do in wave 3.",
+      "setsBarFor": [
+        3
+      ],
+      "paths": [
+        "plugins/aspire/skills/aspire/references/cas-paid.md",
+        "plugins/aspire/skills/aspire/references/cas-campaign-page-results.md"
       ]
     }
   ]
