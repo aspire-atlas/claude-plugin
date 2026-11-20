@@ -1219,7 +1219,8 @@ Each batch's launch gets its own `runId` per **Running agents**.
 
    Then find the review's **criteria map**, so every run scores on the same one (**How criteria
    become points**): `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
-   `creator-vetting-{profile}` and `term` filters `detail.account_review.kind` `action_item` and
+   `creator-vetting-{profile}` (`{profile}` is the brand profile's slug, as in every vetting
+   `runKey`) and `term` filters `detail.account_review.kind` `action_item` and
    `detail.account_review.priority` `low`, newest first, paged, for the newest hit whose
    `detailBody` has `findingType` `summary`, `applicantReview` the review's slug, and a
    `criteriaMap`. Those three are stored but not filterable, so check them on each hit. An
@@ -1264,11 +1265,15 @@ Each batch's launch gets its own `runId` per **Running agents**.
    holds one (a `waiting_on_data` result, or a stale claim that carried it), so the 48-hour clock
    (step 6) keeps its first time after a stopped run. An applicant with neither handle is
    not claimed: its finding is the final one, `status: "cant_vet"`, `summary` "Applicant {name}
-   can't be vetted: no Instagram or TikTok handle", and that reason as its `evidence`. Then page
-   `list_applicants` again as in step 3, and keep in the batch only the applicants for which this
-   run's claim is the earliest claim less than 12 hours old (on a tie, the lower run id): one an
-   overlapping run claimed first is that run's, and both runs reach the same answer, whichever
-   re-reads first. A call
+   can't be vetted: no Instagram or TikTok handle", and that reason as its `evidence`. Then read
+   every claim on the batch, since `list_applicants` shows only each applicant's newest record:
+   `search_insights` with `term` filters `role` `applicant_screening` and
+   `detail.applicant_screening.reviewId` the review's slug, a `range` filter `createdAt` from 12
+   hours before `{run}`'s time, and a `bool` `should` of `prefix` filters on `idempotencyKey`
+   `{slug}:{aspireApplicantId}:claim-`, one per applicant in the batch, paged to the end. Keep in
+   the batch only the applicants for which this run's claim is the earliest of those (by
+   `createdAt`; on a tie, the lower run id, the key's part after `claim-`): one an overlapping run
+   claimed first is that run's, and both runs reach the same answer, whichever reads first. A call
    that fails is resent once as it is; failing again, stop the run here (step 9).
 5. **Launch `atlas-creator-vetting`** per **Main thread: the run**, step 4, with `run: unattended`
    and `job: screen`, and:
@@ -1279,7 +1284,9 @@ Each batch's launch gets its own `runId` per **Running agents**.
    - approved fetches: every handle on the list, Instagram and TikTok alike, under the schedule's
      approval (`fetch:` in `-schedule`), with no separate approval for a TikTok lookup. A handle
      Atlas holds with no posts in the read window (**What to read per creator**) counts as missing
-     and is looked up once too, so an empty account is not called can't vet before it is fetched;
+     and is looked up once too, so an empty account is not called can't vet before it is fetched.
+     `approved.spend.cap` is the number of handles on the list, in `fetches`: the schedule's
+     approval stands in for the Credits question;
    - `schedule_run`: `{run}`, for the keys in step 6;
    - `fit_map`: the map step 1 found, for every batch, the first included; with none, the first
      batch builds it and every later batch gets the one it returned;
@@ -1288,7 +1295,8 @@ Each batch's launch gets its own `runId` per **Running agents**.
    - every input **Main thread: the run**, step 4, gives a later batch of a split list, for the
      second batch on.
 6. **What the agent writes**, under `job: screen`:
-   for each batch of ten, once its calls are made, one `append_insights` call holding each
+   for every ten applicants of the batch (not list entries: an applicant with both handles counts
+   once), once their calls are made, one `append_insights` call holding each
    applicant's findings per **State written to Atlas** and its `applicant_screening` record, so a
    stopped run never leaves an applicant with one and not the other. The record is anchored like the
    claim, as **Applicant review**, **Applicant status**, says (its key, `summary`, `detail`, and the
@@ -1317,7 +1325,8 @@ Each batch's launch gets its own `runId` per **Running agents**.
    holds), `idempotencyKey`
    `vet-{slug}-schedule-{run}-summary`. `detail` carries `findingType: "summary"`, `vettedAt`,
    `applicantReview`, `run`, the batches and their `runKey`s, the counts per status and
-   recommendation, the applicants still due (from the last step 3 read), the claims made that were
+   recommendation (from a last `list_applicants` read of this run's applicants, never from the
+   agent's packets: a packet that counts differently is named in the summary), the applicants still due (from the last step 3 read), the claims made that were
    not screened, the team calls saved and **Rows to fix** (step 2, or why the Sheet wasn't read),
    the rows the Sheet writes updated (or why none were), and `criteriaMap` with `mapFrom`: the `run` or `runKey` of the
    summary it was reused from, or `built` with why ("first run on the review", or "criteria changed

@@ -304,7 +304,9 @@ Sheet gets no row for it.
 Atlas holds, and the user picked "Add them". Bring its header up to **The review Sheet**'s order
 first, then append one row per such applicant: Name (step 1), Instagram and TikTok as `@handle`,
 Status `new`, every other answer under its column, Source `csv`, Applied, and Aspire applicant id;
-Recommendation, Fit score, Evidence, Maybe question and Team call stay blank. Never change a row
+Recommendation, Fit score, Evidence, Maybe question and Team call stay blank. In the same update,
+give the new rows' Team call cells the column's Approve, Maybe, and Reject dropdown (the
+connector's dropdown guide says how), so the team can make a call on every row. Never change a row
 already there, a Team call, or a column the team added: rows are matched on Aspire applicant id,
 since the team sorts and filters the Sheet. When the connector refuses, say so in one line: Atlas
 holds the applicants, and the next import adds the rows.

@@ -602,7 +602,8 @@ lists them. Agents work only from a message that carries it (**11**).
   call on a run that builds a new page, so `false` on a `draft` pass; `send` names each recipient,
   order, or payment approved one by one; `spend.cap` is the Credits answer (**2**), counted in
   `spend.unit`: `null` only for "No cap", a CAS campaign's discovery, and an unattended discovery run
-  under its saved cadence, and 0 for the none option and for every launch that will not spend;
+  under its saved cadence, the number of handles on the list for a scheduled screening batch (its
+  schedule stands in for the Credits answer), and 0 for the none option and for every launch that will not spend;
   `spend.unit` is the agent's
   spend unit from the Credits table (**2**), `fetches` or `candidates`, set on every launch, even with
   no spend, so the packet counts in the same unit; `refresh` is `null` until the person answers a freshness refresh offer, then the list

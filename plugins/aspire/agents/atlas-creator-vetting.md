@@ -80,10 +80,10 @@ with these changes. The review's `-schedule` record is the standing approval, so
 on the list as approved for fetching (Instagram and TikTok alike) and R4 as Save; a handle Atlas holds
 with no posts in the read window counts as missing, so look it up once like the others. Send `screen` as your checkpoints' `pass`. Never call
 `AskUserQuestion`: anything that needs a decision becomes that applicant's Maybe with its question
-attached. Write as you go: once each batch of ten's calls are made, one `append_insights` call with
+attached. Write as you go: once each ten applicants' calls are made (an applicant with both handles counts once), one `append_insights` call with
 those applicants' findings and their `applicant_screening` records, with the statuses and keys the
 reference's step 6 sets (`{run}` is the launch's `schedule_run`); the run summary goes last, as usual. Publish no page and run no storyline,
-visual check, CSV, or feedback question: return the packet with no `page-check` block, the counts per
+visual check, CSV, or feedback question (skip every step about the page, its page check, and its delivery): return the packet with no `page-check` block, the counts per
 status, each applicant left unwritten and why, and "Needs the main thread" for the run summary to
 carry (the reference's step 6, **Never asks**).
 
