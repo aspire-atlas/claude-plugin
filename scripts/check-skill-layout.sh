@@ -12,8 +12,9 @@
 #   - budget:      a word cap on what each run loads before it starts: the files every run that
 #                  launches an agent reads (COMMON, together), each file under references/
 #                  (REF_MAX, or its own ceiling in BIG), and the page standard every agent reads
-#                  (PAGE_STD). Words are counted with LC_ALL=C wc -w, the same on every machine; at about 1.35 tokens a word,
-#                  COMMON_MAX words is the common path's token budget
+#                  (PAGE_STD). Words are tokens between ASCII whitespace, counted by words()
+#                  the same on every machine; at about 1.35 tokens a word, COMMON_MAX words is
+#                  the common path's token budget
 # The fixtures in scripts/fixtures/skill-layout/ hold one skills/ tree each: a pass*/ tree fails
 # nothing, and a fail-<rule>*/ tree fails that rule and no other. A fixture's budget.env, beside
 # its skills/ folder, sets lower caps so a small tree can exceed them.
@@ -44,13 +45,13 @@ PAGE_STD_MAX=7300
 # References over REF_MAX, each with its own ceiling. Shrink-only: lower a ceiling when its file
 # shrinks, remove a line once its file is under REF_MAX, and never add one (split the file by
 # section instead). One per line: <file, from the skills/ folder>|<most words>
-BIG='aspire/references/cas-campaign.md|26444
+BIG='aspire/references/cas-campaign.md|26446
 aspire/references/cas-campaign-data.md|19166
-aspire/references/cas-campaign-page.md|21643
-aspire/references/cas-campaign-page-brief.md|25542
-aspire/references/cas-campaign-page-creators.md|23996
-aspire/references/cas-campaign-page-results.md|27307
-aspire/references/creator-vetting.md|15757'
+aspire/references/cas-campaign-page.md|21724
+aspire/references/cas-campaign-page-brief.md|25587
+aspire/references/cas-campaign-page-creators.md|24061
+aspire/references/cas-campaign-page-results.md|27358
+aspire/references/creator-vetting.md|15771'
 FX=scripts/fixtures/skill-layout
 
 # Reference citations allowed besides SKILL.md and page-standard. Shrink-only: never add a line to
@@ -209,24 +210,28 @@ chain() {
   done <<< "$hits"
 }
 
+# The words in a file: tokens between ASCII whitespace, a standalone "→" or "·" included. Not wc -w:
+# GNU wc skips a token with no printable character in the C locale, and versions disagree on it.
+words() { LC_ALL=C awk '{n+=NF} END{print n+0}' "$1"; }
+
 # Prints "budget|<what is over>" for each cap a skills/ folder ($1) exceeds.
 budget() {
   local S=$1 f rel n total=0 found= cap
   for rel in $COMMON; do
     [ -f "$S/$rel" ] || continue
-    n=$(LC_ALL=C wc -w < "$S/$rel") || return 1; total=$((total + n)); found=1
+    n=$(words "$S/$rel") || return 1; total=$((total + n)); found=1
   done
   [ -z "$found" ] || [ "$total" -le "$COMMON_MAX" ] ||
     echo "budget|$S: the files every run loads ($COMMON) hold $total words, over $COMMON_MAX (about $((COMMON_MAX * 135 / 100)) tokens); move a section a run needs only sometimes into its own reference"
   if [ -f "$S/$PAGE_STD" ]; then
-    n=$(LC_ALL=C wc -w < "$S/$PAGE_STD") || return 1
+    n=$(words "$S/$PAGE_STD") || return 1
     [ "$n" -le "$PAGE_STD_MAX" ] || echo "budget|$S/$PAGE_STD: $n words, over $PAGE_STD_MAX; every agent loads it, so move detail into a file beside it"
   fi
   while IFS= read -r f; do
     [ -n "$f" ] || continue
     rel=${f#"$S"/}
     cap=$(awk -F'|' -v r="$rel" '$1 == r { print $2 }' <<< "$BIG")
-    n=$(LC_ALL=C wc -w < "$f") || return 1
+    n=$(words "$f") || return 1
     [ "$n" -le "${cap:-$REF_MAX}" ] || echo "budget|$f: $n words, over ${cap:-$REF_MAX}; split it by section"
   done < <(find "$S" -path "$S/*/references/*" -name '*.md' -type f | sort)
 }
@@ -322,7 +327,7 @@ $from|$to
   while IFS='|' read -r rel cap; do
     [ -n "$rel" ] || continue
     if [ ! -f "$big_src/$rel" ]; then err "BIG line $rel matches no file; remove it"; continue; fi
-    n=$(LC_ALL=C wc -w < "$big_src/$rel")
+    n=$(words "$big_src/$rel")
     [ "$n" -gt "$REF_MAX" ] || err "BIG line $rel: the file is down to $n words, under $REF_MAX; remove its line"
   done <<< "$BIG"
   ran="${ran:+$ran; }$files skill files are within the layout and the load budget"
