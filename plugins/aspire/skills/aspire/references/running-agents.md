@@ -66,19 +66,15 @@ agent only through this skill or a shortcut.
      the other, `target` (the draft path), `reader` (the launch's reader, in words), `question`, and
      `run` as the builder's launch had it: never the brief, the ask, or anything from the builder's
      result (**Quality review**, the English read and the UX review). When both return, relaunch the
-     builder with the same `launch` block, the same inputs, and four more: `englishRead` (the
-     `english_read` block), `uxReview` (the `ux_review` block), `draft` (the path), and `packet`
-     (the draft pass's `result-packet`). Act on that publish pass's result as below. Say nothing in
-     between unless the person asks; in an unattended run, wait for each. A reviewer that returns no
-     block counts as no fixes: relaunch with that entry set to `{"error": "{what came back}"}`. The
-     builder reports `not-run` as a failing check, and in a scheduled run also in `gaps` and its
-     delivery message; name it in the close-out like any check still failing.
-   - **A page held by the UX review.** When the publish pass returns `"uxReview": {"status":
-     "blocked"}`, the page was saved as a file, not published, because a Must is still open
-     (`skills/page-standard/ux-review.md`). Name each open Must in one line and ask with
-     `AskUserQuestion`: "Fix it first (Recommended)" or "Publish it as it is". Relaunch the publish
-     pass with the person's words added to `uxReview` as `personFix`, or with `uxReview.publishOpen`
-     set to `true`.
+     builder with the same `launch` block and inputs plus `englishRead` (the `english_read` block),
+     `uxReview` (the `ux_review` block), `draft` (the path), and `packet` (the draft pass's
+     `result-packet`), and act on that pass's result as below. Say nothing in between unless asked;
+     unattended, wait for each. A reviewer that returns no block counts as no fixes: relaunch with
+     that entry set to `{"error": "{what came back}"}`; the builder then reports `not-run` as a
+     failing check (in a scheduled run also in `gaps` and the delivery message), named in the
+     close-out.
+   - **A page held by the UX review** (`"uxReview": {"status": "blocked"}`): follow **Quality
+     review**, A page held by the UX review.
    - A page you build yourself (**Visual output**, a deck you export) gets the same read and review
      before you publish it, and you apply their Musts yourself.
    - Act on the `result-packet` block: relay the summary, the page link ("Saved as a file: {path}"
@@ -97,13 +93,10 @@ agent only through this skill or a shortcut.
    in `stillFailing` written as `{check}, page: make it pass ({reason})`; leave out `n/a` lines
    and a fail the user would have to fix (a connection to add). Never edit an agent's page here. Unattended runs relay the line and offer
    nothing; samples return no page check.
-5. **Several at once.** Different agents, and a second run of the same agent for another brand,
-   handle, or campaign, may run together, up to three for one request (**Orchestration contract**
-   **8**); a fourth waits until one returns. Keep one decision log line per launch and return, and
-   the audit trail blocks per run (**Decision audit**). When several results arrive close
-   together, relay them one at a time, oldest first, and ask each one's questions in its own
-   call. Two runs never write the same record: for the same profile and the same agent, say
-   one is already running and ask whether to wait or run the other anyway.
+5. **Several at once** (up to three, **Orchestration contract** **8**): keep a decision log line
+   and the audit trail blocks per run (**Decision audit**), relay results one at a time, oldest
+   first, each with its own questions. For the same profile and agent, say one is already running
+   and ask whether to wait or run the other anyway.
 6. **Unattended runs** (scheduled tasks) are already a session of their own: they launch the
    agent as a subagent and wait for it, since nothing else is happening there. They apply the
    table's model silently, never ask about it, and never set effort.

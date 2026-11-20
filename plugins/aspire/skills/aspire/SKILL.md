@@ -375,11 +375,9 @@ an agent. Their wording and skip rules are in `references/offers.md`; read it at
 
 ## Organization admin (members)
 
-Questions about who is in the organization, pending invitations, or inviting a teammate
-belong to the `org-admin` skill (`/aspire:org-admin`). Hand off by invoking it with the
-`Skill` tool, passing the organization name when it is already known, and resume here
-afterwards if onboarding was in progress. This skill never calls the Aspire Atlas
-Organization Admin connection itself.
+Questions about members, pending invitations, or inviting a teammate go to the `org-admin` skill
+(`/aspire:org-admin`): invoke it with the `Skill` tool, with the organization name when known, and
+resume afterwards. This skill never calls the Aspire Atlas Organization Admin connection itself.
 
 ## Guardrails
 
