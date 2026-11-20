@@ -337,7 +337,7 @@ Every vetting run on a review writes them, under its own `runKey`:
   screening by run") less than 12 hours old: that applicant is kept off the list, and the run says
   "{n} applicants are being screened by the schedule right now". "Page only" writes none, and
   an applicant the run did not finish gets none: both stay `new`, so a scheduled run screens them.
-- **A scheduled run** writes them as **Creator vetting**, **Scheduled screening** says, which also
+- **A scheduled run** writes them as **Applicant screening**, **Scheduled screening** says, which also
   claims each batch first.
 
 One record:
@@ -358,7 +358,7 @@ One record:
 | Can't vet (**Creator vetting**, **The recommendation**, rule 3), or the account can't be found | `cant_vet` | `evidence`, the reason |
 | An account Atlas is still fetching when the lookup's wait ends | `waiting_on_data` | Scheduled runs only, per **Scheduled screening**. An interactive run writes no record for it, so it stays `new` |
 
-An applicant gets one record, with the call on its row's account id (**Creator vetting**,
+An applicant gets one record, with the call on its row's account id (**Applicant screening**,
 **Reading the review Sheet**: the account an earlier team call was saved on, else Instagram when
 Atlas holds it, else TikTok). A row with only a TikTok handle, or whose account id is its TikTok
 account, records the TikTok call. An applicant vetted on both networks adds the other network's
@@ -369,7 +369,7 @@ call as an evidence line when it differs.
 How vetting fills in the five columns it owns in the review Sheet (Recommendation, Fit score,
 Evidence, Maybe question, Status) from what Atlas holds. One step, written so every vetting run
 calls it unchanged: an interactive run once, after its last batch's feedback (**Creator vetting**,
-**Main thread: the run**, step 6), and a scheduled run after each batch (**Creator vetting**,
+**Main thread: the run**, step 6), and a scheduled run after each batch (**Applicant screening**,
 **Scheduled screening**). The main thread runs it, never the agent, through the Claude Docs
 connector (load its guide first and follow it).
 
@@ -448,7 +448,7 @@ the record when none exists. Screening reads a missing `-sheet` as `sheet: none`
 ## Scheduled screening setup
 
 How a person sets up the schedule that screens a review's new applicants with nobody present
-(**Creator vetting**, **Scheduled screening**). Interactive only: it asks questions and creates the
+(**Applicant screening**, **Scheduled screening**). Interactive only: it asks questions and creates the
 scheduled task. Its confirmation is the **standing approval** for every Atlas write, lookup, and
 Sheet write a scheduled run makes, the way a discovery campaign's cadence or the readouts' routing
 is, so a scheduled run never asks.
@@ -503,7 +503,7 @@ a missing pointer is asked per steps 3 and 4.
    for, R2 offers "An applicant review (pick which next)" and a second `AskUserQuestion` lists the
    three newest reviews by campaign name plus "Another review (type its campaign name)". When R2's
    reviews option covers exactly one review, picking it uses that review without a second question.
-   R2 is always asked, except when the list is the review's own Sheet (**Creator vetting**,
+   R2 is always asked, except when the list is the review's own Sheet (**Applicant screening**,
    **Reading the review Sheet**), where picking that Sheet picks the review: a saved review is never
    used without being picked.
 2. **Read it** per **The records**.

@@ -67,7 +67,8 @@ the list as approved for fetching.
 
 **Applicant reviews.** When the criteria source is `applicantreview:{slug}`, read
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/applicant-review.md`, **How screening applies a
-review**, and **Applying the form rules**, and follow them. The review comes resolved in the
+review**, and **Applying the form rules**, and
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/applicant-screening.md`, and follow them. The review comes resolved in the
 launch, and its missing `vetting:*` records never stop the run. Read each applicant's answers from
 Atlas with `list_applicants`, apply the review's form rules to every applicant, and read every
 response as evidence beside your own analysis of the account, never in place of it. That step
@@ -75,7 +76,7 @@ asks nothing and writes nothing, so it runs the same in an unattended run.
 
 **Scheduled screening (`job: screen`).** A launch with `run: unattended`, `job: screen`, and an
 applicant review as the criteria source is one batch of a scheduled screening run; follow
-**Scheduled screening** in the vetting reference, steps 5 and 6. Everything above and below applies,
+**Scheduled screening** in the applicant screening reference, steps 5 and 6. Everything above and below applies,
 with these changes. The review's `-schedule` record is the standing approval, so treat every handle
 on the list as approved for fetching (Instagram and TikTok alike) and R4 as Save; a handle Atlas holds
 with no posts in the read window counts as missing, so look it up once like the others. Send `screen` as your checkpoints' `pass`. Never call
@@ -208,8 +209,8 @@ carry (the reference's step 6, **Never asks**).
 - Saved calls applied: the `creator:*` records and lessons that changed a call.
 - Feedback: either "asked" with the user's answers and what was saved, or the feedback packet: the
   numbered recommendations as `#n @handle | recommendation | two reasons`, the new Sheet calls
-  numbered `s1`, `s2`, …, each as a call line (`references/creator-vetting.md`, **Reading the
-  review Sheet**), any proposed lesson, and the run's `vettedAt`, which the main thread uses for the
+  numbered `s1`, `s2`, …, each as a call line (`references/applicant-screening.md`, **Reading
+  the review Sheet**), any proposed lesson, and the run's `vettedAt`, which the main thread uses for the
   F1 findings' keys.
   Gate ids (your `gate` checkpoint and each proposal's `"gate"`): `approve-recommendations` (F1),
   `approve-creator-notes` (F2), `approve-lesson` (F3), `approve-visual-check` (F4, which the main

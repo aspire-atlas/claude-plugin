@@ -163,7 +163,8 @@ Text fallback, when there is no page:
   (same path), with the `On request` status line when Atlas is connected and no status line
   when it is not. No Atlas connection or Phase 1 is needed for this. Then make the **Sample
   artifacts** offer for Atlas as a whole. The arguments `getting started` and `help` show it the
-  same way.
+  same way, and say in their one line that the page's "Seeing results" section lists "show cards",
+  "always show cards", and "show the palettes".
 - Never in the middle of a running flow's questions, and never in an unattended run.
 - Never blocks onboarding: whatever happens to the page, the next phase still starts.
 

@@ -538,8 +538,15 @@ the user asks how a launch is landing:
 
 ## Scheduling (main thread)
 
-The mechanics SKILL.md **Readouts**, Schedule names, which other flows' schedules reuse. After the
-first successful run, or whenever the user asks to schedule, offer with `AskUserQuestion`: "Set up
+The mechanics SKILL.md **Readouts**, Schedule names, which other flows' schedules reuse.
+
+**This skill owns every schedule.** Every scheduled task a section of this skill creates has a
+prompt that starts with `/aspire:aspire ` and then the section's prompt, so each run goes through
+this skill, carries the `launch` block with `run: unattended`, and republishes to the same page
+link. A scheduled task whose prompt does not run `/aspire:aspire` (the hourly "Run /aspire:aspire
+next" prompt already does): offer once, in an interactive session, to update its prompt.
+
+After the first successful run, or whenever the user asks to schedule, offer with `AskUserQuestion`: "Set up
 the recurring schedules now?" Options: "Yes, daily and weekly (Recommended)", "Weekly only",
 "Daily only", "Not now". On yes:
 

@@ -27,7 +27,7 @@ This skill sets what a page says. `skills/aspire/references/artifact-standard.md
 and the source line, `skills/aspire/references/recipient-lens.md` sets the reader, and
 `skills/aspire/references/theme.md` sets the colors and type, `blocks.md` in this folder holds
 the parts each page is built from, with their markup, `page-check.md` holds the self-check
-script, `comparisons.md` the four checks on every comparison, `recommendations.md` what every recommendation costs and the trend to watch, `explanations.md` the evidence behind every explanation and how outside evidence is saved, `page-file.md` the page saved as a file, `english-read.md` and `ux-review.md` the two reviews before publishing, `follow-up.md` what a repeat run's page leads with, and `examples.md` lists the evidence each
+script, `comparisons.md` the four checks on every comparison, `recommendations.md` what every recommendation costs and the trend to watch, `explanations.md` the evidence behind every explanation and how outside evidence is saved, `page-file.md` the page saved as a file, `english-read.md` and `ux-review.md` the two reviews before publishing, `follow-up.md` what a repeat run's page leads with, `packet.md` what each field of the result packet holds, and `examples.md` lists the evidence each
 approved example sets, by question code. **The flow's own reference wins**
 wherever it sets a rule: its layout, what its page leaves out, who sees money, and the form its
 evidence takes. This skill fills in what the reference leaves open. One exception: a reference
