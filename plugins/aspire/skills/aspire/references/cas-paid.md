@@ -163,10 +163,10 @@ and nothing changes an ad.
 | Scale | It wins on its goal's figures and holds over the window. Raise its budget 15 to 20% every 2 to 3 days, so the ad set doesn't go back into learning; a bigger jump goes into a duplicate |
 | Pause | It has spent enough to judge, it is clearly worse than its campaign this week, and the period to date confirms it. Name what the video shows as the likely cause (hook rate, average play time). Pause it outright: never lower the budget on an ad with no results |
 | Pause to clean up | The platform has nearly stopped delivering it and its cost per result to date is several times the average, so it can't pick up spend when budgets move |
-| Watch | It has spent too little to judge. Give the figure and the date that decide it ("pause next week if cost per add to cart stays above USD 150") |
+| Watch | It is at or over the spend floor but under the figures in **Enough data to read**. Give the figure and the date that decide it ("pause next week if cost per add to cart stays above USD 150") |
 | Re-cut | It has volume and sits somewhat above average, or it has a proven hook with a weak middle or CTA. Write the re-cut as a recipe (**Diagnosing a wave**, **What to make next**) |
 | Swap the hook | Proven creative that is fatiguing: keep the body, try new hooks on it |
-| Too early | New creative with little spend, or an ad under the campaign's spend floor (**The target and the floor**). Say how much spend it needs before it is judged |
+| Too early | It is under the campaign's spend floor (**The target and the floor**). Say how much spend it needs before it is judged |
 
 A budget shift between campaigns or platforms moves in steps of 10 to 20%, never all at once,
 because the cheaper one's cost rises as spend is added and the platforms attribute differently.
@@ -175,8 +175,8 @@ Shifts net to zero unless the person asked to change the total budget.
 ## Before any figure: data traps
 
 - **Reach is not additive.** Reach summed across ads, ad sets, campaigns or weeks counts people
-  more than once. Never add reach up or work a total out from parts; read it for the window, or
-  leave it blank and say why. The same holds for frequency.
+  more than once. Never add reach up or work a total out from parts. `search_ads` gives reach and
+  frequency only per ad over a single day, so for any longer window leave both blank and say why.
 - **Period to date, differenced.** A week worked out as one period to date minus another is
   directional only, because late conversions move between weeks, and it is never done for reach or
   frequency. Say so beside the figure.

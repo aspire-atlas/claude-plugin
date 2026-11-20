@@ -1717,14 +1717,14 @@ until the file fills it.
 | 3 | Product on screen by 0:04 | `product` | An Editor |
 | 4 | The CTA matches the brief | `cta` | An Editor |
 | 5 | Captions burned in | `captions` | An Editor |
-| 6 | Clear of the Reels safe zones: no text, face or product in the darker bottom band | `safezone` | An Editor, with the overlay (**Reels safe zone**) |
+| 6 | Clear of the Reels safe zones: no text in the darker bottom band | `safezone` | An Editor, with the overlay (**Reels safe zone**) |
 | 7 | Paid partnership disclosure in the final 5 seconds | `disclosure` | An Editor |
 | 8 | Runtime 15 to 60 seconds at 9:16 | `runtime` | The file |
 
 **Each row.** The result Badge (Pass success, Fail warning, Not checked soft, Can't check soft),
 the check's name, and on the right, for the agency in the current round, two ghost Buttons size
 sm, "Pass" and "Fail", with `aria-pressed` and the toggle pressed classes (**Component classes**,
-Review panel). Checks 1, 2, 3 and 7 add a link Button with their window, "Watch 0:00 to 0:02",
+Review panel). Checks 1, 2, 3 and 7 add a link Button with their window, "Watch 0:00 to 0:03",
 "Watch 0:00 to 0:03", "Watch 0:00 to 0:04" and "Watch the last 5 seconds", which seeks to the
 window's start, plays it, and pauses at its end. Check 3 names the creator's product for the round
 under it ("Product: {name}", **Selected Creators**). The Badge's Tooltip says who ticked it and
@@ -1785,7 +1785,7 @@ confirms each one.
   holds the instruction, the seven checks with their windows, each frame's time in order, {brand},
   the product's name, the hook line and the CTA line from the plan, the safe zone's shares of the
   frame and its always covered bottom 20% (**Reels safe zone**), with the rule that `safezone`
-  fails only on text, a face or the product in that band, and the shape to answer in: `{checks: {hook, brand, product, cta,
+  fails only on text in that band, and the shape to answer in: `{checks: {hook, brand, product, cta,
   captions, safezone, disclosure}}`, each `{value: "pass" | "fail" | "unsure", at: seconds or
   null, why: "one sentence"}`. The instruction carries the content review rules: judge only what
   the frames show, never infer speech from pictures, and pass the disclosure only on a visible

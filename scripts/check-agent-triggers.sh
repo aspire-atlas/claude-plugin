@@ -3,7 +3,8 @@
 # the agent's description lists the request among its "Trigger on" phrases, and no other agent's
 # description lists it or a phrase contained in it. Placeholders ({brand}, {n}) match any
 # placeholder. A case whose agent has no file yet waits, and must name the ticket that adds the agent
-# ("waitsFor"), so a case naming an agent that will never exist fails rather than waiting forever.
+# ("waitsFor"); a case that names none fails. When that ticket's agent ships, its cases are renamed to
+# the agent's file name in the same pull request, or they keep waiting and are never checked.
 #
 #   scripts/check-agent-triggers.sh
 set -euo pipefail
