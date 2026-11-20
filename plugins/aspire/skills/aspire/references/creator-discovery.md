@@ -261,10 +261,13 @@ How it applies to discovery:
 - **One map per campaign, kept between runs.** Build the map before scoring the first candidate
   and score every candidate in the run against it, re-scores included. Each candidate's finding
   carries it as `detail.criteriaMap` with the criteria record's `version`. The next run, refill or
-  `shortlist` re-score alike, takes the map from the newest finding and uses it as given while
-  `campaign:{slug}-criteria` is at that version; only when the record has changed does it build a
-  new map, re-score the whole undecided pool against it, and say so under **Since last run**
-  ("criteria changed: map rebuilt, 50 re-scored").
+  `shortlist` re-score alike, takes the map from the newest finding that carries a `criteriaMap`
+  (a verdict written under **Decisions** carries none, so skip past it) and uses it as given while
+  `campaign:{slug}-criteria` is at that version. When the record has changed, it builds a new map,
+  re-scores the whole undecided pool against it, and says so under **Since last run** ("criteria
+  changed: map rebuilt, 50 re-scored"). When no finding carries a map yet (the first run, or a pool
+  written before the map), it builds one at the current version and says "map built, 50 scored
+  against it", never "criteria changed".
 - **Exclusions** in the map are checked as vetting's **2. Brand safety**, **Criteria
   exclusions** says: a post that shows what one rules out is a safety Flag on the card, citing
   the post, never points. Criteria posts can't show are listed on the page under what posts

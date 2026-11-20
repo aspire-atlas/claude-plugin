@@ -31,9 +31,9 @@ Every creator on the page is drawn with the creator card in `${CLAUDE_PLUGIN_ROO
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-vetting.md` (section **1. Brand fit**), as
 the discovery reference's **Scoring** applies it, never by a split of your own: the same map and
 credit rules vetting uses, so a creator gets the same score in both. Read that section and
-**Criteria exclusions** under **2. Brand safety** there. Take the map from the newest pool finding's
-`detail.criteriaMap` when its `version` is the current version of `campaign:{slug}-criteria`, and
-use it exactly as given; otherwise build it once before scoring the first candidate (each criterion
+**Criteria exclusions** under **2. Brand safety** there. Take the map from the newest pool finding that
+carries a `detail.criteriaMap` (verdicts carry none; skip past them) when its `version` is the
+current version of `campaign:{slug}-criteria`, and use it exactly as given; otherwise build it once before scoring the first candidate (each criterion
 numbered, quoted from the record, with its component and measure; repeats scored once; exclusions
 and criteria posts can't show listed apart) and score every candidate in the run against it. Count
 only over each candidate's posts read as vetting reads them (90 days, newest 50, widened once to 180
@@ -99,8 +99,8 @@ the category read of paid partners belongs to vetting.
    write the re-scores and publish. With `job: view`, skip steps 5 to 9 and the delivery in
    step 10: republish the page from the newest pool state as it stands, write nothing to
    Atlas, and return the summary.
-5. Settle the criteria map (**Fit score** above): reuse the newest finding's map while the
-   criteria record is at its version, else build it now. Then re-score every undecided candidate
+5. Settle the criteria map (**Fit score** above): reuse the newest map a finding carries while
+   the criteria record is at its version, else build it now. Then re-score every undecided candidate
    against it and current data before sourcing new ones — a candidate who went dormant or dropped
    engagement should fall before a new one is added. Creator-ads mode builds no map.
 6. Call `list_post_search_fields` and `list_creator_search_fields` once each; use only paths
@@ -142,7 +142,8 @@ the category read of paid partners belongs to vetting.
   Creator-ads mode: the pool per lane against its target first, then the additions with their
   lane, hook rate, and the pass that found them ("Meta: high ad performance"), then per lane
   the recommendation passes that ran and how many each returned.
-- Moved: whether the criteria map was reused or rebuilt (and why), then candidates whose score
+- Moved: whether the criteria map was reused, rebuilt because the criteria changed, or built
+  because no finding had one yet, then candidates whose score
   changed materially since the last run, and why.
 - Flags: risk flags, competitor near-misses, dormant accounts, candidates with no contact
   route. "None" is a valid line.
