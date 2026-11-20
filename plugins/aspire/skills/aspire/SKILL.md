@@ -74,7 +74,7 @@ Text after the command is the argument. Route on it before anything else:
 | `feedback` (also `product feedback`, `give feedback`, `report a problem`, `feature request`, `feedback on {link}`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and the organization, then run **Product feedback**, which hands feedback on a page or deck to **Quality review**. Skip the other phases. |
 | `polish` (also `improve my prompt`, `coach`, `tighten this prompt`) | Run **Prompt coach**. It needs no Atlas connection, so skip the phases until "Run it now" hands the rewritten ask to a flow. |
 | A shortcut: `vet`, `list review`, `applicant review`, `campaign`, `content review`, `payments`, `reports`, `account` (and the aliases in `references/orchestration.md` **4**) | A routing hint only. Run Phase 1 and Phase 2 + 3 to confirm the connection and pick the brand profile, then run that shortcut's section per `references/orchestration.md` **4**, skipping only the "what do you need" step: memory, the setup reply, and every approval still run. Text after the shortcut is context. |
-| empty, or anything else | In an unattended run (a scheduled task, whose prompt says not to ask questions), run Phase 1 and Phase 2 + 3, then the flow the text names, per `references/orchestration.md` **1**, Unattended runs. Otherwise run the phases in order, starting at Phase 1. Treat the text as context. On an unconfigured organization, Phase 2 + 3 publishes the first-run guide before the next phase (**First-run guide** there). With nothing after the command, a configured organization ends Phase 2 + 3 at **Organization dashboard**. |
+| empty, or anything else | `brand report` (also "show my brand report", "my brand snapshot"; never the bare `report`, which is the `reports` shortcut), with someone present: run Phase 1 and Phase 2 + 3 only to confirm the connection and the organization, then **Invited first turn**, On request, and skip the other phases and the first-run guide. In an unattended run (a scheduled task, whose prompt says not to ask questions), run Phase 1 and Phase 2 + 3, then the flow the text names, per `references/orchestration.md` **1**, Unattended runs. Otherwise run the phases in order, starting at Phase 1. Treat the text as context. On an unconfigured organization, Phase 2 + 3 publishes the first-run guide before the next phase (**First-run guide** there). With nothing after the command, a configured organization ends Phase 2 + 3 at **Organization dashboard**. Someone invited to an organization with no saved work gets **Invited first turn** instead of either. |
 
 ## Sections (where each part of this skill lives)
 
@@ -92,7 +92,7 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 | **Running agents**, **Checkpoints**, **Reading the ask**, **Campaign plan**, **Examples library**, **Decision audit** | `references/running-agents.md` (the decision audit brief a subagent is handed: `references/agents/decision-audit.md`) |
 | **Atlas tools** (the tool list and load order, Phase map, **Partnership content**, **After a widget**, Destructive tools, Calibration kinds) | `references/atlas-tools.md` |
 | Phase 1 guided add (1.1 steps 4 and 5, the one card rule, 1.3 to 1.4); **Connection card** | `references/connect.md`; `references/connection-card.md` |
-| **Phase overview**, Phase 4, Phase 5; **Onboarding questions** | `references/onboarding.md`; `references/onboarding-questions.md` |
+| **Phase overview**, Phase 4, Phase 5; **Onboarding questions**; **Invited first turn** (an invited person's run before any work is saved: what is on file, then the brand report; also "show my brand report") | `references/onboarding.md`; `references/onboarding-questions.md`; `references/invited-first-turn.md` |
 | Phase 6 (first insights, account review); **Account resolution** | `references/account-review.md`; `references/account-resolution.md` |
 | **Organization dashboard** | `references/dashboard.md` |
 | **Creator profile** | `references/creator-profile.md` |
@@ -121,7 +121,7 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 | **CAS campaign**, **Selected Creators** (with **Creator records**, **Contract and rates**, **The fee approval**) and **Content Review** | `references/cas-campaign-page-creators.md` |
 | **CAS campaign**, **Ad Performance** (with **Compare**, **Changes for round {t}**), **Inbox**, **Tagging**, **History**, **Export**, the footer, **Where each part lives**, **Page mechanics**, **Editing in place**, **Design standards** | `references/cas-campaign-page-results.md` |
 | **CAS campaign** **1e**, the page data: what the page keeps, program files and the scan, **The activity log**, tags and the inbox, reset decisions, brief versions, the role and edit checks | `references/cas-campaign-data.md` |
-| **Hooks and CTAs** (a CAS campaign's recommendations and the hook review) | `references/hooks-and-ctas.md` |
+| **Hooks and CTAs** (a CAS campaign's recommendations and the hook review); **CAS paid** (the paid figures every CAS paid review shares, the four numbers called hook rate, reading figures and calls on a named ad, tying an ad to its variant, element tags, reviewing a cut and its safe zones, diagnosing a wave) | `references/hooks-and-ctas.md`; `references/cas-paid.md` |
 | **Rates and terms** | `references/rates-and-terms.md` |
 | **Content review** | `references/content-review.md` |
 | **Post analysis** | `references/post-analysis.md` |
@@ -325,8 +325,10 @@ Write a fresh `context` per call.
    profile's connected channels (including expired authorizations).
 2. **Auth check.** An unauthorized error means the connector token lapsed: render one connector
    card (Phase 1 rules) with "Aspire Atlas needs a fresh sign in. Click Connect above."
-3. **Organization.** On a bare `/aspire:aspire` run interactively (nothing after the command,
-   not unattended) where the caller belongs to more than one organization, the organization
+3. **Organization.** First, with someone present, when `firstRun.organization.invited` is true or the
+   selected one has no profile and the caller belongs to exactly two organizations: **Invited first turn**
+   (its **2** may add one `get_status` call beside the picker). On a bare `/aspire:aspire` run interactively
+   (nothing after the command, not unattended) where the caller belongs to more than one organization, the organization
    selector comes first and comes alone. The `get_status` call in step 1 draws it where the host
    renders the tool's widget. End the turn there: no bullets, no summary, no first-run guide, no
    dashboard, and no other tool call or question in that reply; one line only, "Pick the
@@ -362,11 +364,9 @@ Write a fresh `context` per call.
    or existing with no brand context on any linked profile, from the Phase 5 calibration
    read), publish the starter page in `references/first-run.md` once per organization per
    session, say one line with the link, add the always-allow block (**1.6**), and continue at
-   the route's phase in the same reply.
-   On a bare run it waits for the organization pick in step 3, like everything else.
-   It runs only after `get_status` answered (Phase 1 finding Atlas not connected gets the guided
-   add alone), never blocks or replaces a phase, and never runs unattended. The reference holds
-   the trigger and re-run rules.
+   the route's phase in the same reply. On a bare run it waits for the pick in step 3. It runs
+   only after `get_status` answered (Phase 1 finding Atlas not connected gets the guided add alone),
+   never blocks or replaces a phase, and never runs unattended; the reference has the re-run rules.
 
 Once a profile is chosen or created, keep its `id` as `profile_id` and its `slug` as
 `profile_slug`. Pass `asProfileId` = `profile_id` to every Atlas tool whose schema takes it (or
