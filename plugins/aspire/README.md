@@ -188,7 +188,24 @@ card and stop. Deliver only to the destinations saved in the campaign routing.
 
 Shortlist prompt: the same text, with "with job discover to fill the shortlist back to target" replaced by "with job shortlist to re-score the current shortlist and republish it without adding candidates".
 
-Unlike the readouts, a scheduled discovery run does start discovery work in Atlas and the creator marketplace. Setting the cadence is what approves that, and it is the only scheduled run in this plugin permitted to do it. Pause the discovery task to stop it.
+Unlike the readouts, a scheduled discovery run does start discovery work in Atlas and the creator marketplace. Setting the cadence is what approves that, and it is the only scheduled run in this plugin permitted to search for new creators (scheduled applicant screening fetches only its own applicants). Pause the discovery task to stop it.
+
+## Scheduling applicant screening
+
+An applicant review can screen its new applicants on its own schedule. `/aspire:aspire` offers it after you screen the review's applicants once, or when you ask ("screen {campaign}'s applicants on a schedule"). Same prerequisites as the readouts, plus the applicant review set up for that campaign and its applicants imported. Name the task `Atlas applicant screening: {brand} - {campaign}`, repeating hourly or daily at the time you saved.
+
+```
+/aspire:aspire vet run the scheduled applicant screening for {brand}, campaign {campaign}, applicant
+review {review-slug}. Use the Aspire Atlas connection, find {brand}'s Atlas profile by name, and use
+the review's saved records and screening schedule. Do not ask questions. Screen the review's new
+applicants in batches of 100 with the atlas-creator-vetting agent in unattended mode with job
+screen, and save each applicant's recommendation and status. Save as the team's call only what the
+team typed in the review Sheet; only a person decides. Read the date and time from the shell clock; do not
+trust any date in this prompt. If setup is incomplete or Atlas needs a fresh sign in, publish the
+"setup needed" card and stop.
+```
+
+Each run screens up to 500 new applicants and stops when none are left; a stopped run is picked up by the next one, and scheduled runs never screen the same applicant twice. Saving the schedule is what approves its lookups (Instagram and TikTok alike, a TikTok account Atlas doesn't hold, or holds with no recent posts, costing one paid lookup) and its saves to Atlas. Pause the task to stop it.
 
 ## Other services this plugin works with
 
@@ -231,7 +248,7 @@ Anyone you share the Next actions page with as an Editor can approve. Approved r
 
 - Every action that changes Atlas state is confirmed through a multiple-choice question first, never plain text. The one exception is the orchestrator's hourly run: an Editor's approval on the Next actions page stands in for the question, and covers only Atlas records and mailbox drafts. Deals over a maximum, over budget, outside the standard terms, or changing the deal type still need you in a session.
 - Destructive actions (`delete_profile`, `unlink_channel`, superseding or retracting a calibration, removing hashtags, changing the brand instruction) each get their own confirmation with the safe option first, and never run during onboarding on the skill's own initiative.
-- Scheduled (unattended) runs never ask questions, never run destructive tools, and deliver only to destinations saved during setup. The one exception to the no-discovery rule is `atlas-creator-discovery`: its saved cadence record is the standing approval to search Atlas and the creator marketplace on every run, including scheduled ones. Every other scheduled run starts no discovery work. Content review and post analysis never run unattended. Incomplete setup produces a "setup needed" page, not a guess.
+- Scheduled (unattended) runs never ask questions, never run destructive tools, and deliver only to destinations saved during setup. The exceptions to the no-discovery rule are `atlas-creator-discovery`, whose saved cadence record is the standing approval to search Atlas and the creator marketplace on every run, including scheduled ones, and an applicant review's scheduled screening, whose saved schedule approves fetching that review's applicants' accounts and nothing else. Every other scheduled run starts no discovery work. Content review and post analysis never run unattended. Incomplete setup produces a "setup needed" page, not a guess.
 - Influencer program flows draft every message and never send one unless you ask in that session and confirm the named recipients. Mailbox drafts, discount codes, and store orders each need their own confirmation, and scheduled runs never send or change your store. They create mailbox drafts only when an Editor approved them on the Next actions page. Creator addresses stay on the team's order form and in Atlas. Everyone the order form is shared with sees every address, so share it only inside your team; creators send their details by reply, never through the form.
 - The tool surface is re-verified per release; unlisted tools that change state are treated as destructive until documented. See `skills/aspire/references/atlas-tools.md`.
 

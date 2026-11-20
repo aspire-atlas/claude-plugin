@@ -48,7 +48,7 @@ the vetting reference.
 split of your own. Before the first creator, build the criteria map once (each criterion numbered,
 quoted from the record, with its component and measure; exclusions and criteria posts can't show
 listed apart) and score every creator against that same map. When the launch passes `fit_map` (a
-later batch), use it exactly as given and do not rebuild it. Credit each criterion Met, Partly met,
+later batch, or a run on an applicant review with a saved map), use it exactly as given and do not rebuild it. Credit each criterion Met, Partly met,
 or Not met by the measure's table, counting only over the posts you read; when unsure whether a
 post matches, it does not count. A criterion that restates an earlier one is a repeat, scored once.
 An application answer counts only for the criterion its question names, and at most as Partly met.
@@ -67,11 +67,26 @@ the list as approved for fetching.
 
 **Applicant reviews.** When the criteria source is `applicantreview:{slug}`, read
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/applicant-review.md`, **How screening applies a
-review**, and **Applying the form rules**, and follow them. The review comes resolved in the
+review**, and **Applying the form rules**, and
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/applicant-screening.md`, and follow them. The review comes resolved in the
 launch, and its missing `vetting:*` records never stop the run. Read each applicant's answers from
 Atlas with `list_applicants`, apply the review's form rules to every applicant, and read every
 response as evidence beside your own analysis of the account, never in place of it. That step
 asks nothing and writes nothing, so it runs the same in an unattended run.
+
+**Scheduled screening (`job: screen`).** A launch with `run: unattended`, `job: screen`, and an
+applicant review as the criteria source is one batch of a scheduled screening run; follow
+**Scheduled screening** in the applicant screening reference, steps 5 and 6. Everything above and below applies,
+with these changes. The review's `-schedule` record is the standing approval, so treat every handle
+on the list as approved for fetching (Instagram and TikTok alike) and R4 as Save; a handle Atlas holds
+with no posts in the read window counts as missing, so look it up once like the others. Send `screen` as your checkpoints' `pass`. Never call
+`AskUserQuestion`: anything that needs a decision becomes that applicant's Maybe with its question
+attached. Write as you go: once each ten applicants' calls are made (an applicant with both handles counts once), one `append_insights` call with
+those applicants' findings and their `applicant_screening` records, with the statuses and keys the
+reference's step 6 sets (`{run}` is the launch's `schedule_run`); the run summary goes last, as usual. Publish no page and run no storyline,
+visual check, CSV, or feedback question (skip every step about the page, its page check, and its delivery): return the packet with no `page-check` block, the counts per
+status, each applicant left unwritten and why, and "Needs the main thread" for the run summary to
+carry (the reference's step 6, **Never asks**).
 
 **Run rules**
 
@@ -81,7 +96,8 @@ asks nothing and writes nothing, so it runs the same in an unattended run.
    saved, else the reference's defaults (70 and 50), labelled as defaults on the page. Never
    run the setup interview, never
    ask for the list, and never open the Aspire app. If the launch says the run is unattended,
-   write nothing, publish nothing, and return that vetting needs a person.
+   write nothing, publish nothing, and return that vetting needs a person, unless it is a
+   `job: screen` launch for an applicant review (**Scheduled screening (`job: screen`)** above).
 2. **Evidence or it didn't happen.** Every Pass, Flag, and Fail cites a permalink with a quoted
    line, a transcript line, or a field and its value. Without data the result is "Can't
    check", and a creator with too little data is **Can't vet**, never Reject.
@@ -193,8 +209,8 @@ asks nothing and writes nothing, so it runs the same in an unattended run.
 - Saved calls applied: the `creator:*` records and lessons that changed a call.
 - Feedback: either "asked" with the user's answers and what was saved, or the feedback packet: the
   numbered recommendations as `#n @handle | recommendation | two reasons`, the new Sheet calls
-  numbered `s1`, `s2`, …, each as a call line (`references/creator-vetting.md`, **Reading the
-  review Sheet**), any proposed lesson, and the run's `vettedAt`, which the main thread uses for the
+  numbered `s1`, `s2`, …, each as a call line (`references/applicant-screening.md`, **Reading
+  the review Sheet**), any proposed lesson, and the run's `vettedAt`, which the main thread uses for the
   F1 findings' keys.
   Gate ids (your `gate` checkpoint and each proposal's `"gate"`): `approve-recommendations` (F1),
   `approve-creator-notes` (F2), `approve-lesson` (F3), `approve-visual-check` (F4, which the main

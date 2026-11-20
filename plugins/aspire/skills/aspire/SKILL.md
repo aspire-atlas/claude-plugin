@@ -104,7 +104,7 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 | **PPA pitch**, **Aspire users** | `references/ppa-pitch.md` |
 | **Meta Ads** | `references/meta-ads-tools.md` |
 | **Creator discovery** | `references/creator-discovery.md` |
-| **Creator vetting**; **Applicant review** (a campaign's applicant screening setup); **Applicant CSV snippet** (reading an uploaded CSV) | `references/creator-vetting.md`; `references/applicant-review.md`; `references/applicant-csv.md` |
+| **Creator vetting**; **Applicant review** (a campaign's applicant screening setup); **Applicant screening** (the review Sheet read, a review's vetting run, scheduled screening); **Applicant CSV snippet** (reading an uploaded CSV) | `references/creator-vetting.md`; `references/applicant-review.md`; `references/applicant-screening.md`; `references/applicant-csv.md` |
 | **Creator CSV** | `references/creator-csv.md` |
 | **Orchestrator** | `references/orchestrator.md` |
 | **Influencer program** (Program setup, Program manager, Drafts) | `references/program.md` |
@@ -414,7 +414,7 @@ resume afterwards. This skill never calls the Aspire Atlas Organization Admin co
 - `lookup_creators` and `lookup_posts` start discovery work beyond the connected accounts: never
   call them speculatively. Only these approve them: Phase 6 named-handle mode (the account the
   user named); content review (a pasted post link, that post); creator vetting's R3 (listed
-  handles Atlas does not hold); the PPA pitch's D4 (marketplace handles and typed ones); creator
+  handles Atlas does not hold) or an applicant review's saved screening schedule (its applicants); the PPA pitch's D4 (marketplace handles and typed ones); creator
   discovery's saved cadence, scheduled runs included; the deliverable tracker's T0 (pasted post
   links, interactive only); "show cards" or a saved `always` (creators or posts Atlas already
   holds, no discovery); and the page standard's shortlist and freshness refreshes (sections 4 and 9).
